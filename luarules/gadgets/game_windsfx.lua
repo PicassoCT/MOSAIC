@@ -91,8 +91,8 @@ function gadget:GameFrame(frame)
     if boolAnySmokeSwirlActive and frame % 6 == 0 then
          smokeSwirlsCounter = 0
          for id, data in pairs(smokeSwirls) do
-            if data then
-                spawnCegAtPiece("flyinggarbage", id, data.piece)
+            if data and data.piece then
+                spawnCegAtPiece(id, data.piece, "vehsmokepillar")
                 smokeSwirls[id].timeInFrames = smokeSwirls[id].timeInFrames - 6
                 smokeSwirlsCounter = smokeSwirlsCounter + 1
                 if smokeSwirls[id].timeInFrames < 0 then

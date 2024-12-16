@@ -63,7 +63,7 @@ function script.Create()
     initialSetup()
     StartThread(launchAnimation)
     StartThread(traffic)
-       StartThread(foldFuelTowers)
+    StartThread(foldFuelTowers)
 end
 
 function initialSetup()
@@ -205,8 +205,8 @@ function landBooster(boosterNr, booster)
        Spin(LandCone, y_axis, math.rad(spinVal))
 
        spinVal = math.random(40, 120)*randSign()
-       Turn(plums, y_axis, math.rad(spinVal))
-       Spin(plums, y_axis, math.rad(spinVal))
+       turnT(plums, y_axis, math.rad(spinVal))
+       spinT(plums, y_axis, math.rad(spinVal))
        spinVal = math.random(40, 120)*randSign()
        Spin(LandCone, y_axis, math.rad(spinVal))
     end  
@@ -244,8 +244,10 @@ function plattFormFireBloom()
             Turn(cycle, y_axis, math.rad(rotation), 0)
             startVal = 90 + randSign() * 90
             Turn(cycle, x_axis, math.rad(startVal), 360) --reset
-            spinRand(cycle, 50, 500, fireBloomSpeed)
+            val =math.random(50,250)*randSign()
+            Spin(cycle, y_axis, val, fireBloomSpeed)
         end
+        hideT(TableOfPiecesGroups["FireFlower"])
         Sleep(3000)
     end
 
@@ -476,11 +478,11 @@ function HideRocket()
 end
 
 
-returnedTraffic = {}
+trafficCounter = 0
 
 function trafficRun(index)
     if maRa() then return end
-    returnedTraffic[index] = false
+    trafficCounter = trafficCounter +1
     runner = nil
     turnSign= -1
     if maRa() then
@@ -493,15 +495,16 @@ function trafficRun(index)
     speed= 1/index
 
     firstPart = math.random(140, 179)*turnSign
-    WTurn(runner,y_axis, math.rad(firstPart), speed)
+    WTurn(runner, y_axis, math.rad(firstPart), speed)
     if maRa() then Sleep(3000) end
     secondPart = math.random(180, 290)*turnSign
-    WTurn(runner,y_axis, math.rad(secondPart), speed)
+    WTurn(runner, y_axis, math.rad(secondPart), speed)
     if maRa() then Sleep(3000) end
-    WTurn(runner,y_axis, math.rad(360*turnSign), speed)
+    target = 360*turnSign
+    WTurn(runner, y_axis, math.rad(target), speed)
     Hide(runner)
     reset(runner)
-    returnedTraffic[index ] = true
+    trafficCounter = trafficCounter-1
 end
 
 function traffic()
@@ -511,7 +514,7 @@ function traffic()
                 StartThread(trafficRun, i)
             end
             Sleep(100)
-            while (holdsForAllBool(returnedTraffic, false)) do
+            while trafficCounter > 0  do
                 Sleep(1000)
             end
 
