@@ -228,8 +228,10 @@ function trenchCoateAnimation()
 		parentBones[#parentBones+1] = TablesOfPiecesGroups["CoatBone"]
 	end
 	simulationCoat = setupCoat(parentBones)
+	local temporaryForces = {{x = 0.5, y = 0, z = 0}} --wind
+	local constantForces = {{x = 0, y = -9.81, z = 0}} --gravity
 	while true do
-		updateCloth()
+		updateCloth(unitID, constantForces, temporaryForces, {} )
 		Sleep(100)
 	end
 end
