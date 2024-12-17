@@ -1,10 +1,24 @@
 --lib static string
+function getHouseShopName(id, ownerId)
+	houseHasShop = getDeterministicUnitHash(id) % 100 > 75
+	if houseHasShop then
+		
+		--is local shop
+			--frstName
 
-function setHouseStreetNameTooltip(id, detailXHash, detailZHash, Game, boolInnerCityBlock)
+			--secondName
+		-- international company
+
+	end
+end
+
+function setHouseStreetNameTooltip(id, detailXHash, detailZHash, Game, boolInnerCityBlock, addition)
     region = getRegionByCulture(GG.GameConfig.instance.culture, getDetermenisticMapHash(Game))
     if not GG.StreetNameDict then
         GG.StreetNameDict = {}
     end
+
+    addition = additio or ""
     if not GG.Streetnames then
         playername = getRandomPlayerName()
         Highway = "Highway" .. math.random(1, 20)
@@ -392,7 +406,7 @@ function setHouseStreetNameTooltip(id, detailXHash, detailZHash, Game, boolInner
         GG.StreetNameDict[name] = 0
     end
     GG.StreetNameDict[name] = GG.StreetNameDict[name] + 1
-    Spring.SetUnitTooltip(id, "Housing Block - "..name .. "." .. GG.StreetNameDict[name])
+    Spring.SetUnitTooltip(id, "Housing Block - "..name .. "." .. GG.StreetNameDict[name].. " "..addition)
 end
 
 
