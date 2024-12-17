@@ -4484,6 +4484,15 @@ function getDeterministicRandom(hash, maximum)
     return hash % maximum
 end
 
+
+function getDeterministicUnitHash(unitID )
+    defID = Spring.GetUnitDefID(unitID)
+    x,y,z = Spring.GetUnitPosition(unitID)
+    return (x - y) + defID
+end
+
+
+
 function getSafeRandom(T, default)
     if not T then 
 		return default, nil 

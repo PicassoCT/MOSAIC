@@ -1,28 +1,113 @@
 --lib static string
-function getHouseShopName(id, ownerId)
-	houseHasShop = getDeterministicUnitHash(id) % 100 > 75
+
+function getFirstShopName(firstName)
+   -- Get the first letter of the first name
+    local firstLetter = firstName:sub(1, 1):upper()
+    local secondLetter = firstName:sub(2, 1):upper()
+    
+    -- Example more generic products for each letter
+    local products = {
+        A = "Art",
+        B = "Bakery",
+        C = "Crafts",
+        D = "Designer",
+        E = "Essentials",
+        F = "Fashion",
+        G = "Goods",
+        H = "Housewares",
+        I = "Items",
+        J = "Jewelry",
+        K = "Knick-knacks",
+        L = "Luxury",
+        M = "Meats",
+        N = "Novelties",
+        O = "Outfits",
+        P = "Pets",
+        Q = "Quality",
+        R = "Rituals",
+        S = "Supplies",
+        T = "Toys",
+        U = "Utensils",
+        V = "Vegetables",
+        W = "Wares",
+        X = "Xtras",
+        Y = "Yarns",
+        Z = "Zest"
+    }
+    products.D = products.D + " " + products[secondLetter]
+
+    local broducts = {
+        A = "Adult Entertainment",
+        B = "Bunkers",
+        C = "Corpse Dispossal",
+        D = "Drones",
+        E = "Energy Cells",
+        F = "Fuel",
+        G = "Gadgets",
+        H = "Hazmat Suits",
+        I = "Infotrade",
+        J = "Jewel Surgery",
+        K = "Kinetic Weapons",
+        L = "Life Extensions",
+        M = "Methamphetamins",
+        N = "Neuralink Install",
+        O = "Oxygen",
+        P = "Protective Gear",
+        Q = "Quarantine Tests",
+        R = "Radiation Mitigation",
+        S = "Skinjobs",
+        T = "Tactical Tools",
+        U = "Underwear ",
+        V = "Vaccine Serums",
+        W = "Water Purifiers",
+        X = "Xtreme Sports",
+        Y = "YouPorn Emporium",
+        Z = "Zero Neuro Pearls"
+    }
+    
+    -- Get the product corresponding to the first letter
+    local product = products[firstLetter] or "Products"
+    if maRa() then product = broducts[firstLetter] end
+    -- Concatenate the first name and the product with the shop name
+    local shopName = firstName .. "'s " .. product
+    
+    return shopName
+end
+
+function getHouseShopName(id,  buisnessNamesTable, UnitDefs)
+	hash = getDeterministicUnitHash(id) % 100 
+    houseHasShop = hash > 75   
 	if houseHasShop then
-		
-		--is local shop
-			--frstName
-
-			--secondName
-		-- international company
-
+        x,y, z = Spring.GetUnitPosition(id)
+        local gameConfig = GG.GameConfig
+        isLocalShop = (hash % 3 == 0) and not isNearCityCenter(x * gameConfig.houseStreetDim.x, z* gameConfig.houseStreetDim.z, gameConfig)
+		if isLocalShop then
+            --ownerId = 
+            assert(ownerId, "TODO: No people before houses spawned solve this")
+            first, sur =  getDeterministicCultureNames( ownerId, UnitDefs, GG.GameConfig.instance.culture)
+		    if maRa() then
+                return getFirstShopName(first)
+            else
+                return getFirstShopName(sur)
+            end
+        else            
+            return buisnessNamesTable[(id +  (hash% #buisnessNamesTable)) +1]
+        end
 	end
 end
 
-function setHouseStreetNameTooltip(id, detailXHash, detailZHash, Game, boolInnerCityBlock, addition)
+function setHouseStreetNameTooltip(id, detailXHash, detailZHash, Game, boolInnerCityBlock)
+
     region = getRegionByCulture(GG.GameConfig.instance.culture, getDetermenisticMapHash(Game))
     if not GG.StreetNameDict then
         GG.StreetNameDict = {}
     end
 
-    addition = additio or ""
+    addition = addition or ""
     if not GG.Streetnames then
         playername = getRandomPlayerName()
         Highway = "Highway" .. math.random(1, 20)
-        Doctorstreet = "Dr." .. playername .. "way"
+        Doctorstreet = "Dr." .. playername .. " street"
         GG.Streetnames = {
             NorthAmerica = {
                 "Freedomstr",
@@ -67,7 +152,7 @@ function setHouseStreetNameTooltip(id, detailXHash, detailZHash, Game, boolInner
                 "Wilhelmstraße",
                 "Raiffeisenstraße",
                 "Rathausgasse",
-                "Doctorstreet",
+                Doctorstreet,
                 "Hauptstraße",
                 "Schulstraße",
                 "Dorfstraße",
@@ -229,7 +314,7 @@ function setHouseStreetNameTooltip(id, detailXHash, detailZHash, Game, boolInner
                 "HaArba'a Street",
                 "HaMasger Street",
                 "HaYarkon Street",
-                "Highway",
+                Highway,
                 "Ibn Gabirol Street",
                 "Jerusalem Boulevard",
                 "Kaplan Street",
