@@ -708,7 +708,7 @@ function lineBufferForward(buffer)
            buffer[j-1]= buffer[j]
            sum= sum + buffer[j-1]
         end
-        sum = math.max(math.min(sum,90), -90)
+        sum = math.max(math.min(sum, 90), -90)
         if maRa() then
             buffer[#buffer] = math.random(-9,9)
         end
@@ -723,35 +723,38 @@ function lineTicker()
     sbuffer = {}
     
     for i=1, 10 do
-        fbuffer[i] = math.random(-9,9)
-        sbuffer[i] = math.random(-9,9)
+        fbuffer[i] = math.random(1,11)*randSign()
+        sbuffer[i] = math.random(1,11)* randSign()
     end
-    axisline = x_axis
+    axisline = z_axis
 
     while true do
         fbuffer, sum = lineBufferForward(fbuffer)
-
+        resetT(TableOfPiecesGroups["BuisnessWall35Sub"], 0)
         for i=1,10 do
-            Turn(TableOfPiecesGroups["BuisnessWall35Sub"][i], axisline, math.rad(fbuffer[i]),0)
+            goal = fbuffer[i] or math.random(-9,9)
+            WTurn(TableOfPiecesGroups["BuisnessWall35Sub"][i], axisline, math.rad(goal), 1)
             ShowReg(TableOfPiecesGroups["BuisnessWall35Sub"][i])
         end
         if maRa() then
-            Turn(TableOfPiecesGroups["BuisnessWall35Sub"][21], axisline, math.rad(-sum),0)
+            Turn(TableOfPiecesGroups["BuisnessWall35Sub"][21], axisline, math.rad(-sum),1)
             ShowReg(TableOfPiecesGroups["BuisnessWall35Sub"][21])
         end
 
         sbuffer, sum = lineBufferForward(sbuffer)
         for i=11,20 do
-            Turn(TableOfPiecesGroups["BuisnessWall35Sub"][i],axisline, math.rad(sbuffer[i-10]),0)
+            goal = sbuffer[i-10] or math.random(-9,9)
+            WTurn(TableOfPiecesGroups["BuisnessWall35Sub"][i],axisline, math.rad(goal),1)
             ShowReg(TableOfPiecesGroups["BuisnessWall35Sub"][i])
         end
         if maRa() then
-            Turn(TableOfPiecesGroups["BuisnessWall35Sub"][22],axisline, math.rad(-sum),0)
+            Turn(TableOfPiecesGroups["BuisnessWall35Sub"][22],axisline, math.rad(-sum),1)
             ShowReg(TableOfPiecesGroups["BuisnessWall35Sub"][22])
         end
-        Sleep(15000)
+
+        Sleep(1000)
         hideTReg(TableOfPiecesGroups["BuisnessWall35Sub"])
-        Sleep(3000)
+        Sleep(300)
     end
 end
 
@@ -983,7 +986,7 @@ function HoloGrams()
 
         Spin(logo,y_axis, math.rad(5),0)     
         ShowReg(logo)
-        echo("buisness_holo logo is: "..getUnitPieceName(unitID, logo))
+        --echo("buisness_holo logo is: "..getUnitPieceName(unitID, logo))
 
         if randChance(5) then StartThread(flickerBuisnessLogo, logo, getSafeRandom(TableOfPiecesGroups["buisness_holo"], TableOfPiecesGroups["buisness_holo"][1])) end
         if randChance(1) then StartThread(flickerBuisnessAllLogos, logo, TableOfPiecesGroups["buisness_holo"]) end

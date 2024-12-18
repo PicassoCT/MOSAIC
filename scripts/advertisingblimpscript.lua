@@ -15,7 +15,7 @@ local civilianWalkingTypeTable = getCultureUnitModelTypes(  GameConfig.instance.
 local maxSoundFiles = 65
 HoloCenter = piece("HoloCenter")
 
-function defineMaxSoundFiles()
+function defineMaxSoundFiles() 
     fileList = VFS.DirList(advertisingFilePath, "advertisement*.ogg")
     maxSoundFiles = math.max(maxSoundFiles,  #fileList)
     Spring.Echo("maxSoundFiles: "..maxSoundFiles)

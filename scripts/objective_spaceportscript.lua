@@ -105,7 +105,7 @@ function closeDoor(name)
     )  
 end
 
-index = 1
+
 boosterReturned = {}
 function BoostersReturning()
     --Booster decoupling
@@ -113,15 +113,11 @@ function BoostersReturning()
     hideT(TableOfPiecesGroups[RocketThrustPillarN])
 
 
-    foreach(
-        TableOfPiecesGroups["ReturningBooster"],
-        function(booster)
-            assert(booster)
-            boosterReturned[index] = false
-            StartThread(landBooster, index, booster)
-            index = inc(index)
-        end
-    )
+    for i=1, 3 do        
+        boosterReturned[i] = false
+       StartThread(landBooster, i, TableOfPiecesGroups["ReturningBooster"][i])
+    end
+
     Sleep(1000)
     while (holdsForAllBool(boosterReturned, false)) do
         Sleep(1000)
@@ -166,6 +162,7 @@ function getPlum(boosterNr)
         assertTable(TableOfPiecesGroups[ReturningBooster3ThrusterPlumN])
         return TableOfPiecesGroups[ReturningBooster3ThrusterPlumN]
     end
+    assert(nil, boosterNr .." not real")
 end
 
 
@@ -173,7 +170,7 @@ function landBooster(boosterNr, booster)
     resttime = boosterNr*15000
     LandCone = TableOfPiecesGroups["LandCone"][boosterNr]
     axis = 2
-    Sleep(boosterNr)
+    Sleep(resttime)
     plums = getPlum(boosterNr)
     assert(plums)
     booster = TableOfPiecesGroups[ReturningBoosterN][boosterNr]
@@ -329,10 +326,11 @@ function craneLoadToPlatform()
     closeClaw()
     Hide(RocketCrawler)
     Show(CraneRocket)
-    unfoldFuelTowers()
+
     StartThread(driveBackCrawler)
     WTurn(CraneHead, y_axis, math.rad(RocketOnPlatformPos), 0.1)
     Hide(CraneRocket)
+    unfoldFuelTowers()
     ShowRocket()
     openClaw()
     Move(RocketCraneBase, z_axis, -4500, 100)
@@ -340,22 +338,25 @@ function craneLoadToPlatform()
     Turn(CraneHead, y_axis, math.rad(CraneOutOfTheWayPos), 0.1)
     WTurn(CraneHead, y_axis, math.rad(CraneOutOfTheWayPos), 0.1)
     WMove(RocketCraneBase, z_axis, -4500, 15)
-    closeDoor(GroundFrontDoorN)
     StartThread(foldFuelTowers)
+    closeDoor(GroundFrontDoorN)
+
 end
 
 function unfoldFuelTowers()
-    resetT(TableOfPiecesGroups["FuelCrane"], 20.0)
-    resetT(TableOfPiecesGroups["FuelCraneHead"], 20.0)
+    resetT(TableOfPiecesGroups["FuelCrane"], 5.0)
+    resetT(TableOfPiecesGroups["FuelCraneHead"], 5.0)
+    WaitForTurns(TableOfPiecesGroups["FuelCrane"])
+    WaitForTurns(TableOfPiecesGroups["FuelCraneHead"])
 end
 
 function foldFuelTowers()
     showT(TableOfPiecesGroups["FuelCrane"])
     showT(TableOfPiecesGroups["FuelCraneHead"])
-    Turn(TableOfPiecesGroups["FuelCrane"][1],z_axis, math.rad(-80), 20.0)
-    Turn(TableOfPiecesGroups["FuelCraneHead"][1],z_axis, math.rad(80), 20.0)
-Turn(TableOfPiecesGroups["FuelCrane"][2],x_axis, math.rad(80), 20.0)
-    Turn(TableOfPiecesGroups["FuelCraneHead"][2],x_axis, math.rad(-80), 20.0)
+    Turn(TableOfPiecesGroups["FuelCrane"][1],z_axis, math.rad(-80), 5.0)
+    Turn(TableOfPiecesGroups["FuelCraneHead"][1],z_axis, math.rad(80), 5.0)
+Turn(TableOfPiecesGroups["FuelCrane"][2],x_axis, math.rad(80), 5.0)
+    Turn(TableOfPiecesGroups["FuelCraneHead"][2],x_axis, math.rad(-80), 5.0)
 end
 
 function deployCapsule()
