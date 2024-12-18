@@ -27,7 +27,7 @@ function getFirstShopName(firstName)
         R = "Rituals",
         S = "Supplies",
         T = "Toys",
-        U = "Utensils",
+        U = "Used Goods",
         V = "Vegetables",
         W = "Wares",
         X = "Xtras",
