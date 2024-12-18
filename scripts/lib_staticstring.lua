@@ -83,8 +83,7 @@ function getHouseShopName(id,  buisnessNamesTable, UnitDefs)
         isLocalShop = (hash % 3 == 0) and not isNearCityCenter(x * gameConfig.houseStreetDim.x, z* gameConfig.houseStreetDim.z, gameConfig)
 		if isLocalShop then
             --ownerId = 
-            assert(ownerId, "TODO: No people before houses spawned solve this")
-            first, sur =  getDeterministicCultureNames( ownerId, UnitDefs, GG.GameConfig.instance.culture)
+            first, sur =  getDeterministicCultureNames(id+ math.random(1,3000), UnitDefs, GG.GameConfig.instance.culture, true)
 		    if maRa() then
                 return getFirstShopName(first)
             else
@@ -534,13 +533,20 @@ function getCivilianSex(id, UnitDefs)
 end
 
 
- function getDeterministicCultureNames( id, UnitDefs, culture)
-        assert(id)
+ function getDeterministicCultureNames( id, UnitDefs, culture, boolIDOverride)
+      
         if not culture then 
             culture = getInstanceCultureOrDefaultToo() 
         end
 
-        sex = getCivilianSex(id, UnitDefs)
+        sex = "male"
+        if boolIDOverride then
+            if maRa() then
+                sex = "female"
+            end
+        else
+            sex =getCivilianSex(id, UnitDefs)
+        end
 
             names = {
                 arabic = {
