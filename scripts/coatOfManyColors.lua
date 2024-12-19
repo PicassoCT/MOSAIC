@@ -79,7 +79,7 @@ function updateCloth(unitID, globalForce, perPieceForces)
         for i=1, #coatStripe.children do
             local bone = coatStripe.children[i]
             local parent = (i > 1) and coatStripe.children[i-1] or coatStripe.parent
-            if bone ~= parent the
+            if bone ~= parent then
                 -- Get the current world position of the bone and parent bone
                 local worldPos = getBoneWorldPosition(unitID, bone)
          

@@ -726,35 +726,37 @@ function lineTicker()
         fbuffer[i] = math.random(1,11)*randSign()
         sbuffer[i] = math.random(1,11)* randSign()
     end
-    axisline = z_axis
+    axisline = x_axis
+    if randChance(10) then
+        axisline = z_axis
+    end
 
     while true do
         fbuffer, sum = lineBufferForward(fbuffer)
         resetT(TableOfPiecesGroups["BuisnessWall35Sub"], 0)
         for i=1,10 do
-            goal = fbuffer[i] or math.random(-9,9)
-            WTurn(TableOfPiecesGroups["BuisnessWall35Sub"][i], axisline, math.rad(goal), 1)
+            goal = fbuffer[i]            
+            WTurn(TableOfPiecesGroups["BuisnessWall35Sub"][i], axisline, math.rad(goal), 5)
             ShowReg(TableOfPiecesGroups["BuisnessWall35Sub"][i])
         end
         if maRa() then
-            Turn(TableOfPiecesGroups["BuisnessWall35Sub"][21], axisline, math.rad(-sum),1)
+            Turn(TableOfPiecesGroups["BuisnessWall35Sub"][21], axisline, math.rad(-sum),5)
             ShowReg(TableOfPiecesGroups["BuisnessWall35Sub"][21])
         end
 
         sbuffer, sum = lineBufferForward(sbuffer)
         for i=11,20 do
-            goal = sbuffer[i-10] or math.random(-9,9)
-            WTurn(TableOfPiecesGroups["BuisnessWall35Sub"][i],axisline, math.rad(goal),1)
+            goal = sbuffer[i-10]
+            WTurn(TableOfPiecesGroups["BuisnessWall35Sub"][i],axisline, math.rad(goal),5)
             ShowReg(TableOfPiecesGroups["BuisnessWall35Sub"][i])
         end
         if maRa() then
-            Turn(TableOfPiecesGroups["BuisnessWall35Sub"][22],axisline, math.rad(-sum),1)
+            Turn(TableOfPiecesGroups["BuisnessWall35Sub"][22],axisline, math.rad(-sum),5)
             ShowReg(TableOfPiecesGroups["BuisnessWall35Sub"][22])
         end
 
         Sleep(1000)
-        hideTReg(TableOfPiecesGroups["BuisnessWall35Sub"])
-        Sleep(300)
+        hide q
     end
 end
 

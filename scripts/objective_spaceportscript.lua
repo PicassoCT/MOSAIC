@@ -56,7 +56,6 @@ myDefID = Spring.GetUnitDefID(unitID)
 function script.HitByWeapon(x, z, weaponDefID, damage)
 end
 function script.Create()
-    echo(UnitDefs[myDefID].name .. "has placeholder script called")
     -- generatepiecesTableAndArrayCode(unitID)
     TableOfPiecesGroups = getPieceTableByNameGroups(false, true)
     hideAll(unitID)
