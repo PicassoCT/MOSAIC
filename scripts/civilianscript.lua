@@ -570,10 +570,12 @@ attackerID = 0
 boolStartFleeing = false 
 function startFleeing(enemyID)
     attackerID = enemyID
+    echo("Start fleeing called in civilian")
     setCivilianUnitInternalStateMode(unitID, STATE_STARTED)
     boolStartFleeing = true
     return true
 end
+
 boolStartPeaceFullProtest = false
 socialEngineerID = nil
 function startPeacefullProtest( id)
@@ -817,6 +819,7 @@ end
 function fleeEnemy(enemyID)
     Signal(SIG_INTERNAL)
     SetSignalMask(SIG_INTERNAL)
+    echo("Actually fleeing a enemy")
     if not enemyID then 
         setCivilianUnitInternalStateMode(unitID, STATE_ENDED)
         return 
