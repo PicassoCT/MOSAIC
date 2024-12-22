@@ -319,12 +319,14 @@ end
 
 function findLowestPieceInTableFromWithSuggestion(suggestedIndex, Table)
     suggestedPieceId =  Table[suggestedIndex]
-    if not GG.GlobalPieceCounterArcology then 
-        GG.GlobalPieceCounterArcology = {}
+    if not GG.GlobalPieceCounterArcology then  GG.GlobalPieceCounterArcology = {} end
+        
         for k,v in pairs(Table) do
-            GG.GlobalPieceCounterArcology[v] = 0
+            if not  GG.GlobalPieceCounterArcology[v] then
+                GG.GlobalPieceCounterArcology[v] = 0
+            end
         end
-    end
+  
 
     lowestFoundKey, lowestFoundValue = suggestedPieceId, math.huge
     for k,v in pairs(GG.GlobalPieceCounterArcology ) do
