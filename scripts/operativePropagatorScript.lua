@@ -1283,6 +1283,7 @@ function setupCoat(parentT, unitID)
         for i=1, #hierarchy[parent] do
             child = hierarchy[parent][i]
             posVelocDict[child] = { localPos = {x = 0, y = 0, z = 0}, velocity = {x = 0, y = 0, z = 0}}
+    	end
     end
 
     return coatMap

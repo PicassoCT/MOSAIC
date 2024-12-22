@@ -470,7 +470,7 @@ function IkChain:new(unitID, startPiece, endPiece, timeResolution, boolIsWorldCo
     if not boolStartPieceValid or not boolEndPieceValid then return nil, false end
     --forge IK-Chain
 
-    pieceHierarchy = getPieceHierarchy(unitID, piece)
+    pieceHierarchy = getPieceHierarchy(unitID)
     pieceChain = getPieceChain(pieceHierarchy, startPiece, endPiece)
 
     for i = 1, table.getn(pieceChain) do

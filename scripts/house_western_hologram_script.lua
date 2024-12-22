@@ -727,10 +727,8 @@ function lineTicker()
         sbuffer[i] = math.random(1,11)* randSign()
     end
     axisline = x_axis
-    if randChance(10) then
-        axisline = z_axis
-    end
 
+   ShowReg(TableOfPiecesGroups["BuisnessWall35"])
     while true do
         fbuffer, sum = lineBufferForward(fbuffer)
         resetT(TableOfPiecesGroups["BuisnessWall35Sub"], 0)
@@ -756,7 +754,7 @@ function lineTicker()
         end
 
         Sleep(1000)
-        hide q
+        hideT(TableOfPiecesGroups["BuisnessWall35Sub"])
     end
 end
 

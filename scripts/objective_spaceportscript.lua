@@ -145,7 +145,6 @@ function boosterArrivedTravelIntoHangar(boosterNr)
     WTurn(TableOfPiecesGroups[CrawlerBoosterN][boosterNr], y_axis, math.rad(0), 0.1)
 
     boosterReturned[boosterNr] = true
-    if boosterNr == 3 then         closeDoor(GroundRearDoorN) end
 end
 
 function getPlum(boosterNr)
@@ -213,7 +212,7 @@ function landBooster(boosterNr, booster)
     Hide(LandCone)
     Hide(booster)
     assert(TableOfPiecesGroups[LandedBoosterN])
-    showT(TableOfPiecesGroups[LandedBoosterN])
+    Show(TableOfPiecesGroups[LandedBoosterN][boosterNr])
     boosterArrivedTravelIntoHangar(boosterNr)
 end
 
@@ -326,10 +325,10 @@ function craneLoadToPlatform()
     Hide(RocketCrawler)
     Show(CraneRocket)
 
+    StartThread(unfoldFuelTowers)
     StartThread(driveBackCrawler)
     WTurn(CraneHead, y_axis, math.rad(RocketOnPlatformPos), 0.1)
-    Hide(CraneRocket)
-    unfoldFuelTowers()
+    Hide(CraneRocket)   
     ShowRocket()
     openClaw()
     Move(RocketCraneBase, z_axis, -4500, 100)

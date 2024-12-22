@@ -819,11 +819,13 @@ end
 function fleeEnemy(enemyID)
     Signal(SIG_INTERNAL)
     SetSignalMask(SIG_INTERNAL)
-    echo("Actually fleeing a enemy")
+    --echo("Actually fleeing a enemy")
     if not enemyID then 
         setCivilianUnitInternalStateMode(unitID, STATE_ENDED)
         return 
     end  
+    Turn(UpArm1, x_axis, math.rad(180), 50)
+    Turn(UpArm2, x_axis, math.rad(180), 50)
    -- echo(unitID.." starts fleeing from "..enemyID.." with distance "..distanceUnitToUnit(unitID, enemyID))
   
     flightTime =  GameConfig.civilian.MaxFlightTimeMS

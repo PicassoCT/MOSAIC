@@ -78,13 +78,13 @@ if (gadgetHandler:IsSyncedCode()) then
             Cache[id] = Spring.GetGameFrame() 
 
             foreach(getAllOfTypeNearUnit(id, civilianWalkingTypeTable, 256),
-                    function(id)
-                        defID = spGetUnitDefID(id)
-                        if spGetUnitTeam(id) == GaiaTeamID and
-                        not GG.AerosolAffectedCivilians[id] then
-                            Spring.Echo("Sending units fleeing ".. unitID)
-                            startInternalBehaviourOfState(id , "startFleeing", unitID)
-                        return id
+                    function(civId)
+                      
+                        if spGetUnitTeam(civId) == GaiaTeamID and
+                        not GG.AerosolAffectedCivilians[civId] then
+                            Spring.Echo("Sending units fleeing ".. civId)
+                            startInternalBehaviourOfState(civId , "startFleeing", id)
+                        return civId
                         end
                     end)
 
