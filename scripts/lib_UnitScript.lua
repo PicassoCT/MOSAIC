@@ -4484,6 +4484,10 @@ function getDeterministicRandom(hash, maximum)
     return hash % maximum
 end
 
+function getDermenisticChance(unitID, upperLimit)
+    value = getDeterministicUnitHash(unitID)
+    return (value % 100) < upperLimit
+end
 
 function getDeterministicUnitHash(unitID )
     defID = Spring.GetUnitDefID(unitID)
