@@ -718,7 +718,8 @@ function lineBufferForward(buffer)
 end
 
 function lineTicker()
-    Spring.Echo("Starting lineTicker at "..getCoordinateString(unitID))
+    local BuisnessWall35 = piece("BuisnessWall35")
+    --Spring.Echo("Starting lineTicker at "..getCoordinateString(unitID))
     fbuffer = {}
     sbuffer = {}
     
@@ -726,30 +727,30 @@ function lineTicker()
         fbuffer[i] = math.random(1,11)*randSign()
         sbuffer[i] = math.random(1,11)* randSign()
     end
-    axisline = x_axis
+    axisline = y_axis
 
-   ShowReg(TableOfPiecesGroups["BuisnessWall35"])
+   ShowReg(BuisnessWall35)
     while true do
         fbuffer, sum = lineBufferForward(fbuffer)
         resetT(TableOfPiecesGroups["BuisnessWall35Sub"], 0)
         for i=1,10 do
             goal = fbuffer[i]            
-            WTurn(TableOfPiecesGroups["BuisnessWall35Sub"][i], axisline, math.rad(goal), 5)
+            WTurn(TableOfPiecesGroups["BuisnessWall35Sub"][i], axisline, math.rad(goal), 50)
             ShowReg(TableOfPiecesGroups["BuisnessWall35Sub"][i])
         end
         if maRa() then
-            Turn(TableOfPiecesGroups["BuisnessWall35Sub"][21], axisline, math.rad(-sum),5)
+            Turn(TableOfPiecesGroups["BuisnessWall35Sub"][21], axisline, math.rad(-sum),50)
             ShowReg(TableOfPiecesGroups["BuisnessWall35Sub"][21])
         end
 
         sbuffer, sum = lineBufferForward(sbuffer)
         for i=11,20 do
             goal = sbuffer[i-10]
-            WTurn(TableOfPiecesGroups["BuisnessWall35Sub"][i],axisline, math.rad(goal),5)
+            WTurn(TableOfPiecesGroups["BuisnessWall35Sub"][i],axisline, math.rad(goal),50)
             ShowReg(TableOfPiecesGroups["BuisnessWall35Sub"][i])
         end
         if maRa() then
-            Turn(TableOfPiecesGroups["BuisnessWall35Sub"][22],axisline, math.rad(-sum),5)
+            Turn(TableOfPiecesGroups["BuisnessWall35Sub"][22],axisline, math.rad(-sum),50)
             ShowReg(TableOfPiecesGroups["BuisnessWall35Sub"][22])
         end
 

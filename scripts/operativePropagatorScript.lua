@@ -228,7 +228,7 @@ function trenchCoateAnimation()
 	for i=1, #TablesOfPiecesGroups["CoatBone"], 5 do
 		parentBones[#parentBones+1] = TablesOfPiecesGroups["CoatBone"]
 	end
-	simulationCoat = setupCoat(parentBones, unitId)
+	simulationCoat = setupCoat(parentBones)
 	local temporaryForces = {{x = 0.5, y = 0, z = 0}} --wind
 	local constantForces = {{x = 0, y = -9.81, z = 0}} --gravity
 
@@ -312,11 +312,12 @@ function transportControl()
         if isTransported(unitID) == true then
         	transporterdefID = spGetUnitDefID(Spring.GetUnitTransporter(unitID))
 
-        	if  motorBikeTypeTable[transporterdefID] then boolTransportedNoFiring = true end
+        	if  motorBikeTypeTable[transporterdefID] then
+        		boolTransportedNoFiring = true
+            	setOverrideAnimationState(eAnimState.slaved, eAnimState.riding, true, nil, function() return isTransported(unitID) end,    false)     
+	        end
 
-            setOverrideAnimationState(eAnimState.slaved, eAnimState.riding, true, nil, function() return isTransported(unitID) end,    false)     
-	           
-            while isTransported(unitID) == true and transporterdefID == parachuteDefId do    
+            while isTransported(unitID) == true  do    
                 Sleep(100)
                 if transporterdefID == parachuteDefId then
                 	PlayAnimation("PARACHUTE_POSE")
@@ -1274,7 +1275,7 @@ function getNeighbors(TableOfPieceGroups, pieceNr, coatstripeMaxNr)
 end
 
 local posVelocDict  = {}
-function setupCoat(parentT, unitID)
+function setupCoat(parentT)
     hierarchy, root = getPieceHierarchy(unitID)
 
     coatMap = {}

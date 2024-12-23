@@ -69,7 +69,7 @@ function script.AimWeapon1(Heading, pitch)
     boolGroundAiming = true
     Turn(center, y_axis, Heading, math.pi)
     lastValueHeadingRad = Heading
-    Turn(Turret, x_axis, -pitch, math.pi)
+    Turn(Turret, x_axis, -pitch +math.rad(90), math.pi)
     WaitForTurns(center, Turret)
     boolGroundAiming = false
     return true
@@ -77,8 +77,8 @@ end
 
 function script.FireWeapon1()
     StartThread(fireFlowers, 15)
-    WMove(aimPiece,x_axis, -10, 100)
-    Move(aimPiece,x_axis, 0, 0.1)
+    WMove(aimpiece,y_axis, -10, 50)
+    Move(aimpiece,y_axis, 0, 0.1)
     boolGroundAiming = false
     StartThread(guardSwivelTurret)
     return true
