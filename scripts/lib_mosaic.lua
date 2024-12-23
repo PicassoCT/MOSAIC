@@ -557,9 +557,25 @@ end
         return getTypeTable(UnitDefNames, typeTable)
     end
 
+    function getBuildingScrapHeapTypeTable(UnitDefs)
+        local UnitDefNames = getUnitDefNames(UnitDefs)
+
+                typeTable = {
+                    "gcscrapheap"                   
+                }
+                
+        return getTypeTable(UnitDefNames, typeTable),            
+    end
+    
     function getScrapheapTypeTable(UnitDefs)
         local UnitDefNames = getUnitDefNames(UnitDefs)
-        return {[UnitDefNames["gcscrapheap"].id] = UnitDefNames["gcscrapheap"].id}
+
+                typeTable = {
+                    "gcscrapheap",
+                    "vehiclecorpse", 
+                    "tankcorpse"
+                }
+        return getTypeTable(UnitDefNames, typeTable),            
     end
 	
 	function registerEmergency(x, z)
@@ -2940,6 +2956,11 @@ end
             Spring.SetUnitTooltip(parachutID, id .. "")
             setUnitValueExternal(id, 'WANT_CLOAK', 0)
         end
+    end
+
+
+    function getSpawnedMilitaryUnitTypeTable()
+        return  {"ground_truck_mg", "ground_tank_night","ground_truck_rocket","ground_truck_antiarmor","air_copter_blackhawk"}
     end
 
     function delayedKillProjectile(id, timeInMS)            

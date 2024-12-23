@@ -30,7 +30,7 @@ local spDestroyUnit = Spring.DestroyUnit
 local spGetUnitDefID = Spring.GetUnitDefID
 local UnitDefNames = getUnitDefNames(UnitDefs)
 
-local scrapHeapTypeTable = getScrapheapTypeTable(UnitDefs)
+local scrapHeapTypeTable = getBuildingScrapHeapTypeTable(UnitDefs)
  GG.TimeDelayedRespawn = {}
 local BuildingWithWaitingRespawn = {}
 

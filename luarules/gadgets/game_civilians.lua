@@ -36,7 +36,7 @@ local spDestroyUnit = Spring.DestroyUnit
 local UnitDefNames = getUnitDefNames(UnitDefs)
 
 local AllCiviliansTypeTable = getCivilianTypeTable(UnitDefs)
-local scrapHeapTypeTable = getScrapheapTypeTable(UnitDefs)
+local scrapHeapTypeTable = getBuildingScrapHeapTypeTable(UnitDefs)
 local MobileCivilianDefIds = getMobileCivilianDefIDTypeTable(UnitDefs)
 local CivAnimStates = getCivilianAnimationStates()
 local PanicAbleCivliansTable = getPanicableCiviliansTypeTable(UnitDefs)
