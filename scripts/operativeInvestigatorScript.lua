@@ -125,8 +125,9 @@ function showFireArm()
 	end
 end
 
-function externalAimFunction()
+function externalAimFunction(targetPosWorldT, remainderRotation)
     showFireArm()
+    Turn(Torso,y_axis, remainderRotation, 55)
     setOverrideAnimationState(eAnimState.aiming, eAnimState.standing,  true, nil, false)
 end
 

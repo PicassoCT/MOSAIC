@@ -58,19 +58,25 @@ if (gadgetHandler:IsSyncedCode()) then
     GaiaTeamID = Spring.GetGaiaTeamID()
 
     Cache= {}
-
+    local anglesUpperBodyTurnRad = math.rad(55)
+    local OneSecondFrames = 30
     function rotateUnitTowardsPoint(id, positionT)
 
         x,y,z = spGetUnitPosition(id)
         yaw, pitch, roll = spGetUnitRotation(id)
-        pitch = math.pi - math.atan2(x-positionT.x, z-positionT.z) 
-        spSetUnitRotation( id,  yaw,  pitch,  roll ) 
-        if not GG.OperativeTurnTable then GG.OperativeTurnTable = {} end
-        if (GG.OperativeTurnTable[id] == nil) or GG.OperativeTurnTable[id] < Spring.GetGameFrame()+30 then
-            GG.OperativeTurnTable[id] =Spring.GetGameFrame()
+        newPitch = math.pi - math.atan2(x-positionT.x, z-positionT.z) 
+        pitchDiff = pitch - newPitch
+        rotationSign = pitchDiff/math.abs(pitchDiff)
+        pitchDiff = math.abs(pitchDiff)
+        pitchRemainder = pitch + (math.max(0, pitchDiff - anglesUpperBodyTurnRad)*rotationSign)
+        internalPitch = (pitchDiff- pitchRemainder) * rotationSign
+        spSetUnitRotation(id, yaw, pitchRemainder, roll) 
+        gameFrame = Spring.GetGameFrame()
+        if (GG.OperativeTurnTable[id] == nil) or GG.OperativeTurnTable[id] < gameFrame + OneSecondFrames then
+            GG.OperativeTurnTable[id] = gameFrame
             env = Spring.UnitScript.GetScriptEnv(id)
             if env and env.setOverrideAnimationState then
-                Spring.UnitScript.CallAsUnit(id,  env.externalAimFunction)
+                Spring.UnitScript.CallAsUnit(id, env.externalAimFunction, positionT, internalPitch)
             end      
         end   
 

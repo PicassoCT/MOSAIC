@@ -333,7 +333,7 @@ function constantCheck(frame)
                             LaunchedRockets[teamID] = {}
                         end
                         LaunchedRockets[teamID][id] = frame
-                        foreach(getAllNearUnit(launcherId),
+                        foreach(getAllNearUnit(launcherId, 200),
                             function(ad)
                                 defID = Spring.GetUnitDefID(ad)
                                 if not wreckageTypeTable[defID] and not (ad == id ) then
