@@ -557,9 +557,25 @@ end
         return getTypeTable(UnitDefNames, typeTable)
     end
 
+    function getBuildingScrapHeapTypeTable(UnitDefs)
+        local UnitDefNames = getUnitDefNames(UnitDefs)
+
+                typeTable = {
+                    "gcscrapheap"                   
+                }
+                
+        return getTypeTable(UnitDefNames, typeTable),            
+    end
+    
     function getScrapheapTypeTable(UnitDefs)
         local UnitDefNames = getUnitDefNames(UnitDefs)
-        return {[UnitDefNames["gcscrapheap"].id] = UnitDefNames["gcscrapheap"].id}
+
+                typeTable = {
+                    "gcscrapheap",
+                    "vehiclecorpse", 
+                    "tankcorpse"
+                }
+        return getTypeTable(UnitDefNames, typeTable),            
     end
 	
 	function registerEmergency(x, z)

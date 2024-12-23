@@ -318,6 +318,7 @@ local function KillResignedTeams()
     end
 end
 
+local wreckageTypeTable = getScrapheapTypeTable(UnitDefs)
 function constantCheck(frame)
     if GG.Launchers then
         for teamID, launchersT in pairs(GG.Launchers) do
@@ -332,7 +333,17 @@ function constantCheck(frame)
                             LaunchedRockets[teamID] = {}
                         end
                         LaunchedRockets[teamID][id] = frame
-                        Spring.DestroyUnit(launcherID, false, true)
+                        foreach(getAllNearUnit(launcherId),
+                            function(ad)
+                                defID = Spring.GetUnitDefID(ad)
+                                if not wreckageTypeTable[defID] and not (ad == id ) then
+                                   Spring.DestroyUnit(id, true, false)
+                                end
+                            end)
+                        if doesUnitExistAlive(launcherID) then
+                            Spring.DestroyUnit(launcherID, false, true)
+                        end
+
                         GG.Launchers[teamID][launcherID] = nil
 
                         GG.GameStateMachine.Timer = frame

@@ -48,7 +48,7 @@ local loadableTruckType = getLoadAbleTruckTypes(UnitDefs, TruckTypeTable, GameCo
 local refugeeAbleTruckType = getRefugeeAbleTruckTypes(UnitDefs, TruckTypeTable, GameConfig.instance.culture)
 local gaiaTeamID = Spring.GetGaiaTeamID() 
 
-local isFailedState = (( getDetermenisticMapHash(Game) % 2 ) == 0) 
+local isFailedState = (( getDetermenisticMapHash(Game) % 2 ) == 0) or true
 local MAX_STUCK_COUNTER = 3
 local isPeaceTime= true
 
@@ -378,7 +378,7 @@ function gadget:GameFrame(frame)
         end
     end
 
-    if isFailedState or not isPeaceTime and frame % 600 == 0 then
+    if (isFailedState or not isPeaceTime) and frame % 600 == 0 then
         militaryStream(frame)
     end
 end

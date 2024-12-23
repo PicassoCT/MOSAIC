@@ -398,6 +398,8 @@ function launchAnimation()
                 Spin(id, y_axis, math.rad(val), 50)
             end
         )
+        
+        destroyUnitsNearby()
 
         if maRa() then
             rocketPlumage = RocketPlumeN
@@ -523,3 +525,15 @@ function traffic()
     end
 end
 
+wreckageTypeTable = getScrapheapTypeTable(UnitDefs)
+
+function destroyUnitsNearby()
+    foreach(getAllNearUnit(unitID, 350),
+            function(id)
+                defID = Spring.GetUnitDefID(id)
+                if not wreckageTypeTable[defID] then
+                    destroyUnitConditional(id, false, true)
+                end
+            end
+            )
+end
