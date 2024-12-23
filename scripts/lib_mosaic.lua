@@ -2942,6 +2942,11 @@ end
         end
     end
 
+
+    function getSpawnedMilitaryUnitTypeTable()
+        return  {"ground_truck_mg", "ground_tank_night","ground_truck_rocket","ground_truck_antiarmor","air_copter_blackhawk"}
+    end
+
     function delayedKillProjectile(id, timeInMS)            
 
             delayedKill = function(evtID, frame, persPack, startFrame)

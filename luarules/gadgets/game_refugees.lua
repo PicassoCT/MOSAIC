@@ -292,7 +292,7 @@ end
 
 local militaryTable = {}
 local mStuck = {}
-local militaryUnits = {"ground_truck_mg", "ground_tank_night","ground_truck_rocket","ground_truck_antiarmor","air_copter_blackhawk"}
+local militaryUnitTypesTable = getSpawnedMilitaryUnitTypeTable()
 function militaryStream(frame)
     local ex,ez = getMilitaryExitPoint(((escapeeHash + indexOffset)%4)+1)
     local ey = spGetGroundHeight(ex,ez)
@@ -359,7 +359,7 @@ function militaryStream(frame)
     target =  math.max(0,math.random(3,5) - count(militaryTable))
     for i= 1, target, 1 do
        local sx,sz = getMilitarySpawnPoint(((escapeeHash + indexOffset + 1)%4)+1)
-       local id =  spawnUnit(militaryUnits[math.random(1,#militaryUnits)], sx, sz) 
+       local id =  spawnUnit(militaryUnitTypesTable[math.random(1,#militaryUnitTypesTable)], sx, sz) 
        militaryTable[id]= id         
       
         --Spring.AddUnitImpulse(id, math.random(-10,10)/2, 5, math.random(-10,10)/2)
