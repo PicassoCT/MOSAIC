@@ -317,6 +317,26 @@ function addGroundPlaceables()
     end
 end
 
+function findLowestPieceInTableFromWithSuggestion(suggestedIndex, Table)
+    suggestedPieceId =  Table[suggestedIndex]
+    if not GG.GlobalPieceCounterArcology then  GG.GlobalPieceCounterArcology = {} end
+        
+        for k,v in pairs(Table) do
+            if not  GG.GlobalPieceCounterArcology[v] then
+                GG.GlobalPieceCounterArcology[v] = 0
+            end
+        end
+  
+
+    lowestFoundKey, lowestFoundValue = suggestedPieceId, math.huge
+    for k,v in pairs(GG.GlobalPieceCounterArcology ) do
+        if v < lowestFoundValue then
+            lowestFoundKey, lowestFoundValue = k, v
+        end
+    end
+    GG.GlobalPieceCounterArcolog[lowestFoundKey] = GG.GlobalPieceCounterArcolog[lowestFoundKey] +1
+    return lowestFoundKey
+end
 
 
 function buildBuilding()
@@ -326,31 +346,31 @@ function buildBuilding()
         filterArcoProjectTable()
     end
     px, py, pz = Spring.GetUnitPosition(unitID)
-    isArcology = (isNearCityCenter(px, pz, GameConfig) or isMapControlledBuildingPlacement()) and randChance(20) 
+    isArcology = (isNearCityCenter(px, pz, GameConfig) or isMapControlledBuildingPlacement()) and getDermenisticChance(unitID, 20)
                     
-    hash = getDetermenisticMapHash(Game) + px + py
+    hash = getDetermenisticMapHash(Game) + getDeterministicUnitHash(unitID )
     isDualProjectOrMix = randChance(10)
     if isArcology  then
-        pieceToShow = showOne(ArcoT, hash )
+        pieceToShow = findLowestPieceInTableFromWithSuggestion(hash, ArcoT)
         if Mega[pieceToShow] then     GG.MegaBuildingMax = GG.MegaBuildingMax  +1 end
         Show(pieceToShow)
         addToShowTable(pieceToShow)
         showTSubSpins(pieceToShow, TablesOfPieceGroups)
     else
-        pieceToShow = showOne(ProjectT, hash)
+        pieceToShow = findLowestPieceInTableFromWithSuggestion(hash, ProjectT)
         if Mega[pieceToShow] then     GG.MegaBuildingMax = GG.MegaBuildingMax  +1 end
         Show(pieceToShow)
         addToShowTable(pieceToShow)
         showTSubSpins(pieceToShow, TablesOfPieceGroups)
     end
     if isDualProjectOrMix then
-        pieceToShow = showOne(ProjectT, hash + unitID)
+        pieceToShow = findLowestPieceInTableFromWithSuggestion(hash+ unitID, ProjectT)
+        
         if not Mega[pieceToShow] then
             showTSubSpins(pieceToShow, TablesOfPieceGroups)
             Show(pieceToShow)
             addToShowTable(pieceToShow)
-        end
-     
+        end     
     end
 
     if pieceToShow == TablesOfPieceGroups["Project"][1] or pieceToShow == TablesOfPieceGroups["Project"][2] then
