@@ -570,7 +570,7 @@ attackerID = 0
 boolStartFleeing = false 
 function startFleeing(enemyID)
     attackerID = enemyID
-    echo("Start fleeing called in civilian")
+--    echo("Start fleeing called in civilian")
     setCivilianUnitInternalStateMode(unitID, STATE_STARTED)
     boolStartFleeing = true
     return true
@@ -824,8 +824,10 @@ function fleeEnemy(enemyID)
         setCivilianUnitInternalStateMode(unitID, STATE_ENDED)
         return 
     end  
-    Turn(UpArm1, x_axis, math.rad(180), 50)
-    Turn(UpArm2, x_axis, math.rad(180), 50)
+    valr = math.random(70,100)
+    vall = math.random(70,100)
+    Turn(UpArm1, x_axis, math.rad(valr), 50)
+    Turn(UpArm2, x_axis, math.rad(vall), 50)
    -- echo(unitID.." starts fleeing from "..enemyID.." with distance "..distanceUnitToUnit(unitID, enemyID))
   
     flightTime =  GameConfig.civilian.MaxFlightTimeMS

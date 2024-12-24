@@ -193,7 +193,7 @@ end
 function externalAimFunction(targetPosT, remainderRotationRad)
     showFireArm()
     Turn(Torso,y_axis, remainderRotationRad, 55)
-    setOverrideAnimationState(eAnimState.aiming, eAnimState.standing,  true, nil, false)
+    setOverrideAnimationState(eAnimState.aiming, nil,  true, nil, false)
 end
 
 function script.Create()

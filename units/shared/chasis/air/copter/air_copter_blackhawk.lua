@@ -1,6 +1,6 @@
 local unitName = "air_copter_blackhawk"
 
-local unitDef = {
+local blackHawk = VTOL:New{
     name = "Blackhawk",
     Description = "attack helicopter that can transport personal",
     objectName = "air_copter_blackhawk.dae",
@@ -18,12 +18,12 @@ local unitDef = {
     BrakeRate = 1,
     FootprintX = 3,
     FootprintZ = 3,
-    TEDClass = [[VTOL]],
+
     steeringmode = [[1]],
     maneuverleashlength = 1380,
     turnRadius = 16,
     dontLand = false,
-    MaxVelocity = 8.5,
+    MaxVelocity = 4.5,
     MaxWaterDepth = 0,
     MovementClass = "Default2x2",
     TurnRate = 250,
@@ -89,4 +89,4 @@ local unitDef = {
     }
 }
 
-return lowerkeys({[unitName] = unitDef})
+return lowerkeys({[unitName] = blackHawk:New()})

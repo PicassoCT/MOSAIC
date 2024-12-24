@@ -63,14 +63,19 @@ if (gadgetHandler:IsSyncedCode()) then
     function rotateUnitTowardsPoint(id, positionT)
 
         x,y,z = spGetUnitPosition(id)
+        if distance(x,y,z, positionT.x, positionT.y, positionT.z) > 964 then return end --sniperrifle
         yaw, pitch, roll = spGetUnitRotation(id)
         newPitch = math.pi - math.atan2(x-positionT.x, z-positionT.z) 
         pitchDiff = pitch - newPitch
         rotationSign = pitchDiff/math.abs(pitchDiff)
         pitchDiff = math.abs(pitchDiff)
-        pitchRemainder = pitch + (math.max(0, pitchDiff - anglesUpperBodyTurnRad)*rotationSign)
-        internalPitch = (pitchDiff- pitchRemainder) * rotationSign
-        spSetUnitRotation(id, yaw, pitchRemainder, roll) 
+        internalPitch = 0
+        if pitchDiff >  anglesUpperBodyTurnRad then
+            spSetUnitRotation(id, yaw, newPitch, roll) 
+        else           
+            internalPitch = pitchDiff * rotationSign 
+        end
+        
         gameFrame = Spring.GetGameFrame()
         if (GG.OperativeTurnTable[id] == nil) or GG.OperativeTurnTable[id] < gameFrame + OneSecondFrames then
             GG.OperativeTurnTable[id] = gameFrame

@@ -564,7 +564,7 @@ end
                     "gcscrapheap"                   
                 }
                 
-        return getTypeTable(UnitDefNames, typeTable),            
+        return getTypeTable(UnitDefNames, typeTable)          
     end
     
     function getScrapheapTypeTable(UnitDefs)
@@ -575,7 +575,7 @@ end
                     "vehiclecorpse", 
                     "tankcorpse"
                 }
-        return getTypeTable(UnitDefNames, typeTable),            
+        return getTypeTable(UnitDefNames, typeTable)        
     end
 	
 	function registerEmergency(x, z)
@@ -1054,7 +1054,6 @@ end
                 typeTable = {           
                     
                     "objective_westhemhq"  ,
-                    "objective_airport" ,
                     "objective_combatoutpost" ,
                     "objective_pumpstation"
 
@@ -1065,8 +1064,7 @@ end
         function getRefugeeSpawnExitTypes(Unitdefs)
                 typeTable = {           
                     "objective_refugeecamp"  ,
-                    "objective_transrapid" ,
-                    "objective_combatoutpost" 
+                    "objective_transrapid"
 
                 }
             return getTypeTable( getUnitDefNames(UnitDefs), typeTable)

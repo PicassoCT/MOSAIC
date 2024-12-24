@@ -132,8 +132,8 @@ end
 
 function externalAimFunction(targetPosT, remainderRotationRad)
     showFireArm()
-    Turn(Torso,y_axis, remainderRotationRad, 55)
-    setOverrideAnimationState(eAnimState.aiming, eAnimState.standing,  true, nil, false)
+    Turn(Torso, 3, remainderRotationRad, 55)
+    setOverrideAnimationState(eAnimState.aiming, nil,  true, nil, false)
 end
 
 function closeCombatOS()
@@ -241,7 +241,7 @@ function trenchCoateAnimation()
 	local perPieceForces = {}
 	local counter = 0
 	while true do
-		updateCloth(unitID, globalForces ,perPieceForces)
+		updateCloth(simulationCoat, unitID, globalForces ,perPieceForces)
 		Sleep(100)
 		inc(counter)
 		if counter % 10 == 0 then
@@ -713,7 +713,7 @@ UpperAnimationStateFunctions ={
 								resetT(lowerBodyPieces, 10)							
 								StartThread(leftArmPoses, math.pi)
 								while true do 		
-									echo("operativepropagator:StandingAnimation:Alive")
+									--echo("operativepropagator:StandingAnimation:Alive")
 									if maRa() then
 										StartThread(leftArmPoses, math.pi)	
 									end
@@ -1281,10 +1281,13 @@ function setupCoat(parentT)
 
     coatMap = {}
     for num,parent in pairs(parentT) do 
-        coatMap[#coatMap +1] = {parent = parent, children = hierarchy[parent] }
-        for i=1, #hierarchy[parent] do
-            child = hierarchy[parent][i]
-            posVelocDict[child] = { localPos = {x = 0, y = 0, z = 0}, velocity = {x = 0, y = 0, z = 0}}
+    	children = hierarchy[parent] or {}
+        coatMap[#coatMap +1] = {parent = parent, children = children }
+        if hierarchy[parent]then
+	        for i=1, #hierarchy[parent] do
+	            child = hierarchy[parent][i]
+	            posVelocDict[child] = { localPos = {x = 0, y = 0, z = 0}, velocity = {x = 0, y = 0, z = 0}}
+	    	end
     	end
     end
 
@@ -1339,12 +1342,12 @@ end
 
 
 -- Function to simulate coat physics
-function updateCloth(unitID, globalForce, perPieceForces)
+function updateCloth(coatMap, unitID, globalForce, perPieceForces)
 
 
     --from the middle out apply towards the outside of the parent hierarchy- with one neighbor defined
-    for coatStrip = 1, #coatMap do
-        local coatStripe = coatMap[coatStrip]
+    for stripIndex = 1, #coatMap do
+        local coatStripe = coatMap[stripIndex]
         for i=1, #coatStripe.children do
             local bone = coatStripe.children[i]
             local parent = (i > 1) and coatStripe.children[i-1] or coatStripe.parent

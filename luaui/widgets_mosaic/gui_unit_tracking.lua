@@ -135,6 +135,7 @@ local trackKey = 111 --'O'
 local untrackKey = 127 --'DELETE'
 
 local function setTrackedUnit(id)
+  Spring.Echo("Setting tracked "..id)
   local setTrackedMessage = "SET_TRACKED:".. id
   Spring.SendLuaRulesMsg(setTrackedMessage)
 end

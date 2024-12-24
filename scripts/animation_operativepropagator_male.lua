@@ -898,7 +898,7 @@ return {
 
                 {["c"] = "turn", ["p"] = "UpArm2", ["a"] = z_axis, ["t"] =  -deg_1*60, ["s"] = turnInFrames(deg_1 * 90, 25)},
                 
-                {["c"] = "turn", ["p"] = "Torso", ["a"] = z_axis, ["t"] = deg_1*-16, ["s"] = 0.616572},
+               -- {["c"] = "turn", ["p"] = "Torso", ["a"] = z_axis, ["t"] = deg_1*-16, ["s"] = 0.616572},
  
 
 

@@ -334,7 +334,7 @@ function findLowestPieceInTableFromWithSuggestion(suggestedIndex, Table)
             lowestFoundKey, lowestFoundValue = k, v
         end
     end
-    GG.GlobalPieceCounterArcolog[lowestFoundKey] = GG.GlobalPieceCounterArcolog[lowestFoundKey] +1
+    GG.GlobalPieceCounterArcology[lowestFoundKey] = GG.GlobalPieceCounterArcology[lowestFoundKey] +1
     return lowestFoundKey
 end
 

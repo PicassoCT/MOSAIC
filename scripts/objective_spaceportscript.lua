@@ -325,9 +325,10 @@ function craneLoadToPlatform()
     Hide(RocketCrawler)
     Show(CraneRocket)
 
-    StartThread(unfoldFuelTowers)
+
     StartThread(driveBackCrawler)
     WTurn(CraneHead, y_axis, math.rad(RocketOnPlatformPos), 0.1)
+    unfoldFuelTowers()
     Hide(CraneRocket)   
     ShowRocket()
     openClaw()
@@ -530,9 +531,11 @@ wreckageTypeTable = getScrapheapTypeTable(UnitDefs)
 function destroyUnitsNearby()
     foreach(getAllNearUnit(unitID, 350),
             function(id)
-                defID = Spring.GetUnitDefID(id)
-                if not wreckageTypeTable[defID] then
-                    destroyUnitConditional(id, false, true)
+                if id ~= unitID then
+                    defID = Spring.GetUnitDefID(id)
+                    if not wreckageTypeTable[defID]  then
+                        destroyUnitConditional(id, false, true)
+                    end
                 end
             end
             )

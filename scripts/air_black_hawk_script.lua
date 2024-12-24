@@ -11,12 +11,9 @@ bady = piece "bady"
 tailrotor = piece "tailrotor"
 tailrotors = piece "tailrotors"
 
-
-wheel = piece "wheel"
-
 rotor = piece "rotor"
 rotors = piece "rotors"
-turret = piece "turret"
+turret = piece "turrret"
 gun = piece "gun001"
 aim1 = piece "aim1"
 
@@ -58,7 +55,7 @@ function rotorsUp()
     SetSignalMask(SIG_UP)
     --Spring.Echo("Imflying-Copterscript")
     Spin(rotor, y_axis, math.rad(-105192), 35.4)
-    Spin(nightlight, y_axis, math.rad(105192), 35.4)
+    --Spin(nightlight, y_axis, math.rad(105192), 35.4)
 
     Spin(tailrotor, x_axis, math.rad(-105192), 35.4)
 
@@ -82,7 +79,7 @@ function rotorsDown()
     --Spring.Echo("Imlanding-Copterscript")
     Spin(tailrotor, x_axis, math.rad(-190), 0.001)
     Spin(rotor, y_axis, math.rad(-190), 0.001)
-    Spin(nightlight, y_axis, math.rad(190), 0.001)
+ --   Spin(nightlight, y_axis, math.rad(190), 0.001)
     Sleep(350)
     Hide(tailrotors)
 
@@ -143,11 +140,11 @@ function landed()
             dx = lrand(1, 6)
             if boolAir == true then
                 if dx == 3 then
-                    EmitSfx(dirtemit1, chopperdirt)
-                    EmitSfx(dirtemit2, chopperdirt)
+                    --EmitSfx(dirtemit1, chopperdirt)
+                    --EmitSfx(dirtemit2, chopperdirt)
                 else
-                    EmitSfx(dirtemit2, flyinggrass)
-                    EmitSfx(dirtemit2, chopperdirt)
+                  --  EmitSfx(dirtemit2, flyinggrass)
+                  --  EmitSfx(dirtemit2, chopperdirt)
                 end
             end
             Sleep(100)

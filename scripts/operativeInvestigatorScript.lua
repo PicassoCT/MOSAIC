@@ -127,8 +127,8 @@ end
 
 function externalAimFunction(targetPosWorldT, remainderRotation)
     showFireArm()
-    Turn(Torso,y_axis, remainderRotation, 55)
-    setOverrideAnimationState(eAnimState.aiming, eAnimState.standing,  true, nil, false)
+    Turn(Torso,y_axis, -remainderRotation, 55)
+    setOverrideAnimationState(eAnimState.aiming, nil,  true, nil, false)
 end
 
 function closeCombatOS()
