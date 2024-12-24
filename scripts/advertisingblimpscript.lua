@@ -83,7 +83,7 @@ function advertisingLoop()
     while true do
         buildRunDeterministicAdvertisement()
         Sleep(10000)
-      --- echo("Debug code in advertisingblimp")
+        echo("Debug code in advertisingblimp running generated advertisements - do not remove")
     end
 
     while true do
@@ -98,13 +98,11 @@ function advertisingLoop()
         minimum, maximum = 5*60*1000, 10*60*1000
         restTime = math.random(minimum, maximum)
         halfRestTime = math.ceil(restTime/2)
-        if maRa() or true == false then
-            Sleep(restTime)
-        else
-            Sleep(halfRestTime)
-            buildRunDeterministicAdvertisement()
-            Sleep(halfRestTime)
-        end
+
+        Sleep(halfRestTime)
+        buildRunDeterministicAdvertisement()
+        Sleep(halfRestTime)
+
     end
 end
 

@@ -13,6 +13,7 @@ tailrotors = piece "tailrotors"
 
 rotor = piece "rotor"
 rotors = piece "rotors"
+nightlight = piece "rotors"
 turret = piece "turrret"
 gun = piece "gun001"
 aim1 = piece "aim1"
@@ -48,14 +49,11 @@ boolRedBlue = math.random(0, 1) == 1
 
 function rotorsUp()
     Sleep(200)
-
-
     Turn(center, x_axis, math.rad(0), 6.5)
     Move(center, y_axis, 0, 8.8)
     SetSignalMask(SIG_UP)
-    --Spring.Echo("Imflying-Copterscript")
     Spin(rotor, y_axis, math.rad(-105192), 35.4)
-    --Spin(nightlight, y_axis, math.rad(105192), 35.4)
+    Spin(nightlight, y_axis, math.rad(105192), 35.4)
 
     Spin(tailrotor, x_axis, math.rad(-105192), 35.4)
 
@@ -66,6 +64,10 @@ function rotorsUp()
         Show(tailrotors)
         Show(rotors)
     end
+    if isNight() then 
+        Show(nightlight)
+    end
+
     Sleep(350)
     Hide(rotor)
     Hide(tailrotor)
@@ -75,11 +77,12 @@ end
 function rotorsDown()
     SetSignalMask(SIG_Down)
 
+    Hide(nightlight)
     Sleep(600)
     --Spring.Echo("Imlanding-Copterscript")
     Spin(tailrotor, x_axis, math.rad(-190), 0.001)
     Spin(rotor, y_axis, math.rad(-190), 0.001)
- --   Spin(nightlight, y_axis, math.rad(190), 0.001)
+    Spin(nightlight, y_axis, math.rad(190), 0.001)
     Sleep(350)
     Hide(tailrotors)
 
