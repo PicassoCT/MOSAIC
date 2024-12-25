@@ -3969,6 +3969,10 @@ end
 -- ======================================================================================
 -- Section : String Operations
 -- ======================================================================================
+function getFileNameFromPath(path)
+    return path:match("([^/\\]+)$")
+end
+
 
 -- > Displays Text at UnitPos Thread
 -- >> Expects a table with Line "Text", a speaker Name "Text", a DelayByLine "Numeric", a Alpha from wich it will start decaying "Numeric"

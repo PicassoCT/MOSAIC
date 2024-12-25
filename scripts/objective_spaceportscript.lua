@@ -328,16 +328,18 @@ function craneLoadToPlatform()
 
     StartThread(driveBackCrawler)
     WTurn(CraneHead, y_axis, math.rad(RocketOnPlatformPos), 0.1)
-    unfoldFuelTowers()
+
     Hide(CraneRocket)   
     ShowRocket()
     openClaw()
+    unfoldFuelTowers()
     Move(RocketCraneBase, z_axis, -4500, 100)
     deployCapsule()
     Turn(CraneHead, y_axis, math.rad(CraneOutOfTheWayPos), 0.1)
     WTurn(CraneHead, y_axis, math.rad(CraneOutOfTheWayPos), 0.1)
     WMove(RocketCraneBase, z_axis, -4500, 15)
-    StartThread(foldFuelTowers)
+    StartThread(closeDoor, GroundFrontDoorN)
+    foldFuelTowers()
     closeDoor(GroundFrontDoorN)
 
 end
@@ -412,19 +414,19 @@ function launchAnimation()
         Spin(GroundHeatedGasRing,y_axis,math.rad(66),0)
 
         --Lift rocket (rocket is slow and becomes faster)
-        liftRocketShowStage(3000, 1500, TableOfPiecesGroups[rocketPlumage][1], math.random(35, 45)*randSign()/10, 13)
+        liftRocketShowStage(3000, 1500, TableOfPiecesGroups[rocketPlumage][1], math.random(35, 45)*randSign(), 13)
         --Lift rocket
-        liftRocketShowStage(12000, 2000, TableOfPiecesGroups[rocketPlumage][2], math.random(20, 30)*randSign()/10, 11)
+        liftRocketShowStage(12000, 2000, TableOfPiecesGroups[rocketPlumage][2], math.random(20, 30)*randSign(), 11)
         -- Stage2 smoke Spin
         --Lift Rocket
         -- Stage2 smoke Spin
         --Lift Rocket
-        liftRocketShowStage(18000, 2000, TableOfPiecesGroups[rocketPlumage][3], math.random(10, 20)*randSign()/10, 5)
+        liftRocketShowStage(18000, 2000, TableOfPiecesGroups[rocketPlumage][3], math.random(10, 20)*randSign(), 5)
         -- Stage3 smoke Spin
         --Lift Rocket
         plattformFireBloomCleanup()
-        liftRocketShowStage(32000, 2000, TableOfPiecesGroups[rocketPlumage][4], math.random(5, 15)*randSign()/10, 3)
-        liftRocketShowStage(58000, 2000, TableOfPiecesGroups[rocketPlumage][5], math.random(3, 8)*randSign()/10, 1)
+        liftRocketShowStage(32000, 2000, TableOfPiecesGroups[rocketPlumage][4], math.random(5, 15)*randSign(), 3)
+        liftRocketShowStage(58000, 2000, TableOfPiecesGroups[rocketPlumage][5], math.random(3, 8)*randSign(), 1)
         -- Stage4 smoke Spin
         -- Decoupling thrusters
         StartThread(BoostersReturning)

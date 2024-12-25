@@ -1166,18 +1166,18 @@ end
             end
 
             if culture == Cultures.international then
-                    return mergeTables(
+                    return mergeDictionarys(
                         arabicTruckTypeTable,
                         getLoadAbleTruckTypes(UnitDefs, TruckTypeTable, Cultures.western),                        
                         getLoadAbleTruckTypes(UnitDefs, TruckTypeTable, Cultures.asian))
             end
 
             if culture == Cultures.asian then
-                return mergeTables(arabicTruckTypeTable,
+                return mergeDictionarys(arabicTruckTypeTable,
                    getLoadAbleTruckTypes(UnitDefs, TruckTypeTable, Cultures.asian))
             end
             if culture == Cultures.western then
-                return mergeTables(arabicTruckTypeTable,
+                return mergeDictionarys(arabicTruckTypeTable,
                    getLoadAbleTruckTypes(UnitDefs, TruckTypeTable, Cultures.western))
             end
 
@@ -2055,7 +2055,7 @@ end
                 return {}
             end
 
-            function getUnitDefIDFromName(name)
+            function getUnitDefIDFro3MName(name)
                 for i = 1, #UnitDefs do
                     if name == UnitDefs[i].name then return UnitDefs[i].id end
                 end
@@ -2104,7 +2104,7 @@ end
                 closedTable[unitDefID] = true
                 assert(CanBuildList)
                 for num, unitName in pairs(CanBuildList) do
-                    defID = getUnitDefIDFromName(unitName)
+                    defID = getUnitDefIDFro3MName(unitName)
                     boolCanBuildSomething = true
 
                     if defID and not closedTable[defID] then
@@ -3597,6 +3597,10 @@ function IsOnPremisesOfBuilding(unitID, houseID, houseSize)
     return false
 end
 
+function buildSoundFilePath(path, fileName, nr)
+    return string.format("%s/%s/%s-%02d.ogg", path, fileName, fileName, nr)
+end
+
 function buildRunDeterministicAdvertisement()
     local ListOfMediaAdvertisementFileLength = 
         {
@@ -3620,20 +3624,20 @@ function buildRunDeterministicAdvertisement()
             ["6FName-14.ogg"] = 990,["6FName-16.ogg"] = 1090,["6FName-04.ogg"] = 760,["6FName-03.ogg"] = 940,["6FName-12.ogg"] = 1280,
             ["6FName-08.ogg"] = 1140,["6FName-15.ogg"] = 1300,["6FName-10.ogg"] = 1050,["6FName-01.ogg"] = 1130,["6FName-17.ogg"] = 900,
             ["6FName-06.ogg"] = 1080,["6FName-09.ogg"] = 1020,["6FName-07.ogg"] = 1080,["6FName-05.ogg"] = 930,["6FName-02.ogg"] = 990,
-            ["6FName-11.ogg"] = 1170,["MName-17.ogg"] = 850,["MName-21.ogg"] = 900,["MName-20.ogg"] = 990,["MName-07.ogg"] = 930,
-            ["MName-09.ogg"] = 840,["MName-23.ogg"] = 740,["MName-05.ogg"] = 750,["MName-15.ogg"] = 810,["MName-25.ogg"] = 1120,
-            ["MName-19.ogg"] = 680,["MName-10.ogg"] = 720,["MName-01.ogg"] = 880,["MName-13.ogg"] = 880,["MName-04.ogg"] = 960,
-            ["MName-16.ogg"] = 990,["MName-12.ogg"] = 770,["MName-24.ogg"] = 730,["MName-14.ogg"] = 930,["MName-11.ogg"] = 710,
-            ["MName-18.ogg"] = 880,["MName-06.ogg"] = 950,["MName-02.ogg"] = 740,["MName-22.ogg"] = 720,["MName-08.ogg"] = 830,
-            ["MName-03.ogg"] = 1040,["10MediaType-05.ogg"] = 1130,["10MediaType-04.ogg"] = 1130,["10MediaType-02.ogg"] = 1130,
+            ["6FName-11.ogg"] = 1170,["3MName-17.ogg"] = 850,["3MName-21.ogg"] = 900,["3MName-20.ogg"] = 990,["3MName-07.ogg"] = 930,
+            ["3MName-09.ogg"] = 840,["3MName-23.ogg"] = 740,["3MName-05.ogg"] = 750,["3MName-15.ogg"] = 810,["3MName-25.ogg"] = 1120,
+            ["3MName-19.ogg"] = 680,["3MName-10.ogg"] = 720,["3MName-01.ogg"] = 880,["3MName-13.ogg"] = 880,["3MName-04.ogg"] = 960,
+            ["3MName-16.ogg"] = 990,["3MName-12.ogg"] = 770,["3MName-24.ogg"] = 730,["3MName-14.ogg"] = 930,["3MName-11.ogg"] = 710,
+            ["3MName-18.ogg"] = 880,["3MName-06.ogg"] = 950,["3MName-02.ogg"] = 740,["3MName-22.ogg"] = 720,["3MName-08.ogg"] = 830,
+            ["3MName-03.ogg"] = 1040,["10MediaType-05.ogg"] = 1130,["10MediaType-04.ogg"] = 1130,["10MediaType-02.ogg"] = 1130,
             ["10MediaType-01.ogg"] = 1170,["10MediaType-03.ogg"] = 1020,["10MediaType-07.ogg"] = 1310,["10MediaType-06.ogg"] = 1180,
-            ["4MSurNam-09.ogg"] = 1000,["4MSurNam-01.ogg"] = 990,["4MSurNam-13.ogg"] = 830,["4MSurNam-25.ogg"] = 1030,
-            ["4MSurNam-21.ogg"] = 990,["4MSurNam-15.ogg"] = 970,["4MSurNam-06.ogg"] = 1020,["4MSurNam-11.ogg"] = 1040,
-            ["4MSurNam-10.ogg"] = 1030,["4MSurNam-02.ogg"] = 1050,["4MSurNam-19.ogg"] = 890,["4MSurNam-04.ogg"] = 1150,
-            ["4MSurNam-24.ogg"] = 740,["4MSurNam-23.ogg"] = 980,["4MSurNam-20.ogg"] = 1040,["4MSurNam-08.ogg"] = 890,
-            ["4MSurNam-18.ogg"] = 1090,["4MSurNam-26.ogg"] = 1020,["4MSurNam-17.ogg"] = 850,["4MSurNam-03.ogg"] = 850,
-            ["4MSurNam-05.ogg"] = 980,["4MSurNam-07.ogg"] = 1020,["4MSurNam-22.ogg"] = 1130,["4MSurNam-16.ogg"] = 990,
-            ["4MSurNam-14.ogg"] = 890,["4MSurNam-12.ogg"] = 990,["2Superlative-18.ogg"] = 1040,["2Superlative-17.ogg"] = 980,
+            ["4MSurName-09.ogg"] = 1000,["4MSurName-01.ogg"] = 990,["4MSurName-13.ogg"] = 830,["4MSurName-25.ogg"] = 1030,
+            ["4MSurName-21.ogg"] = 990,["4MSurName-15.ogg"] = 970,["4MSurName-06.ogg"] = 1020,["4MSurName-11.ogg"] = 1040,
+            ["4MSurName-10.ogg"] = 1030,["4MSurName-02.ogg"] = 1050,["4MSurName-19.ogg"] = 890,["4MSurName-04.ogg"] = 1150,
+            ["4MSurName-24.ogg"] = 740,["4MSurName-23.ogg"] = 980,["4MSurName-20.ogg"] = 1040,["4MSurName-08.ogg"] = 890,
+            ["4MSurName-18.ogg"] = 1090,["4MSurName-26.ogg"] = 1020,["4MSurName-17.ogg"] = 850,["4MSurName-03.ogg"] = 850,
+            ["4MSurName-05.ogg"] = 980,["4MSurName-07.ogg"] = 1020,["4MSurName-22.ogg"] = 1130,["4MSurName-16.ogg"] = 990,
+            ["4MSurName-14.ogg"] = 890,["4MSurName-12.ogg"] = 990,["2Superlative-18.ogg"] = 1040,["2Superlative-17.ogg"] = 980,
             ["2Superlative-16.ogg"] = 1410,["2Superlative-26.ogg"] = 1200,["2Superlative-27.ogg"] = 1200,["2Superlative-23.ogg"] = 940,
             ["2Superlative-05.ogg"] = 1230,["2Superlative-13.ogg"] = 1220,["2Superlative-28.ogg"] = 1270,["2Superlative-19.ogg"] = 900,
             ["2Superlative-06.ogg"] = 1130,["2Superlative-25.ogg"] = 1290,["2Superlative-10.ogg"] = 1150,["2Superlative-01.ogg"] = 1080,
@@ -3662,7 +3666,15 @@ function buildRunDeterministicAdvertisement()
             ["1Superlative-26.ogg"] = 1210,["1Superlative-07.ogg"] = 1190,["1Superlative-12.ogg"] = 1560,["1Superlative-11.ogg"] = 1020,
             ["1Superlative-05.ogg"] = 1520,["1Superlative-17.ogg"] = 970,["1Superlative-03.ogg"] = 1720,["1Superlative-22.ogg"] = 1070,
             ["1Superlative-16.ogg"] = 1270,["1Superlative-02.ogg"] = 1320,["1Superlative-13.ogg"] = 940,["1Superlative-25.ogg"] = 1450,
-            ["1Superlative-21.ogg"] = 1530,["1Superlative-08.ogg"] = 1370
+            ["1Superlative-21.ogg"] = 1530,["1Superlative-08.ogg"] = 1370,
+            ["5Binding-01.ogg"] = 710 ,
+            ["5Binding-02.ogg"] = 867 ,
+            ["5Binding-03.ogg"] = 1198 ,
+            ["5Binding-04.ogg"] = 1269 ,
+            ["5Binding-05.ogg"] = 1046 ,
+            ["5Bindings-06.ogg"] = 867 ,
+
+
         }
 
     hash= getDetermenisticHash()
@@ -3671,7 +3683,7 @@ function buildRunDeterministicAdvertisement()
     GG.DeterministicCounterAdvertisement  = (GG.DeterministicCounterAdvertisement % 22) +1 
 
     local thisAdvertisementIndex = GG.DeterministicCounterAdvertisement 
-    local rootPath = "sounds/marketing/media"
+    local rootPath = "sounds/advertising/media"
     local identifierList = {
        "1Superlative",
        "2Superlative",
@@ -3685,20 +3697,37 @@ function buildRunDeterministicAdvertisement()
        "10MediaType",
        "11OrderNow",
     }
-    debugConcat = ""
+    local amountList = {
+       ["1Superlative"]=24,
+       ["2Superlative"]=29,
+       ["3MName"]=25,
+       ["4MSurName"]=26,
+       ["5Binding"]=6,
+       ["6FName"]=17,
+       ["7FSurName"]= 19,
+       ["8Starring"]=11,
+       ["9MediaName"]=48,
+       ["10MediaType"]=7,
+       ["11OrderNow"]=48,
+    }
 
     --build identifiers
     soundFileType_NameTime_Map= {}
     for i=1, #identifierList do
         local wordPosIdentifier = identifierList[i]
         elements = {}
-        pathDirectory = rootPath .."/".. wordPosIdentifier
-        local allFilesInPath = VFS.DirList(pathDirectory, "")
-        for f=1, #allFilesInPath do
+
+        for f=1, amountList[wordPosIdentifier] do
+            filePath = buildSoundFilePath(rootPath, wordPosIdentifier, f)
+            fileName = getFileNameFromPath(filePath)
+            if not ListOfMediaAdvertisementFileLength[fileName] then
+                echo("File has no sleep:"..fileName)
+            end
             elements[#elements +1] = {
-                path = allFilesInPath[f], 
-                time = ListOfMediaAdvertisementFileLength[allFilesInPath[f]]
+                path = filePath,             
+                time = ListOfMediaAdvertisementFileLength[fileName] or 900
                 }
+     
         end
         soundFileType_NameTime_Map[wordPosIdentifier] = elements
     end
@@ -3712,11 +3741,11 @@ function buildRunDeterministicAdvertisement()
             i = 8
         end 
         deterministicIndex = ((hash + thisAdvertisementIndex + i) % count(soundFileType_NameTime_Map[wordPosIdentifier])) + 1
+        local counter = 0
         for k,element in pairs(soundFileType_NameTime_Map[wordPosIdentifier]) do
-            deterministicIndex = deterministicIndex -1 
-            if deterministicIndex == 0 then
+            counter = counter +1
+            if deterministicIndex == counter then
                 Spring.PlaySoundFile(element.path, 1.0)
-                echo("Playing generated advertising part :" ..element.path)
                 Sleep(element.time)       
                break 
             end

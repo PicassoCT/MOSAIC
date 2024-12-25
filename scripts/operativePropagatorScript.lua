@@ -214,6 +214,7 @@ function script.Create()
     StartThread(testAnimation)
 end
 
+Coat = piece "Coat"
 function trenchCoateAnimation()
 	if not TablesOfPiecesGroups["HeadDeco"][7] then return end
 	boolFoundTrenchCoat= false
@@ -223,7 +224,7 @@ function trenchCoateAnimation()
 		end
 	end
 	if not boolFoundTrenchCoat then return end
-	showT(TablesOfPiecesGroups["Coat"])
+	Show(Coat)
 	showT(TablesOfPiecesGroups["CoatBone"])
 	parentBones = {}
 	for i=1, #TablesOfPiecesGroups["CoatBone"], 5 do
@@ -241,6 +242,7 @@ function trenchCoateAnimation()
 	local perPieceForces = {}
 	local counter = 0
 	while true do
+		echo("Cloth simulation running")
 		updateCloth(simulationCoat, unitID, globalForces ,perPieceForces)
 		Sleep(100)
 		inc(counter)

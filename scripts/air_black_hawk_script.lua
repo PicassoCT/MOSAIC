@@ -177,31 +177,6 @@ function onTheFly()
     Sleep(3000)
     SumSini = 0
     boolFlop = true
-    while true do
-        if boolFlop == true then
-            StartThread(PlaySoundByUnitDefID, unitdef, soundfolder .. "flying.wav", lsin(SumSini), 1050, 1)
-            SumSini = SumSini + 0.05
-            rest = lrand(950, 1050)
-            Sleep(rest)
-            if SumSini >= 1 then
-                boolFlop = false
-                SumSini = 0
-            end
-        else
-            StartThread(PlaySoundByUnitDefID, unitdef, soundfolder .. "flying2.wav", lsin(SumSini), 1050, 1)
-            SumSini = SumSini + 0.01
-            rest = lrand(950, 1050)
-            Sleep(rest)
-            if SumSini >= 1 then
-                boolFlop = true
-                SumSini = 0
-            end
-        end
-        --Chance for Flyby Sound
-        oneInTen = math.random(1, 55)
-        if oneInTen == 22 then flyBySound() end
-        Sleep(10)
-    end
 end
 
 

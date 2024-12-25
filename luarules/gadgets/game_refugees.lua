@@ -56,10 +56,10 @@ Spring.Echo("Game:Civilians: Map is a failed state ".. toString(isFailedState))
 
 function attachPayload(payLoadID, id)
     if payLoadID then
-           echo("Attaching payload to refugee")
+           --echo("Attaching payload to refugee")
            Spring.SetUnitAlwaysVisible(payLoadID,true)
            pieceMap = Spring.GetUnitPieceMap(id)
-           assert(pieceMap["attachPoint"], "Truck has no attachpoint")
+           --assert(pieceMap["attachPoint"], "Truck has no attachpoint")
            Spring.UnitAttach(id, payLoadID, pieceMap["attachPoint"])
            return payLoadID
     end
@@ -77,7 +77,7 @@ end
 
 function loadRefugee(id, loadType)
     if refugeeAbleTruckType[spGetUnitDefID(id)] then
-        Spring.Echo(id .. " is a refugee loadable truck ")
+     --   Spring.Echo(id .. " is a refugee loadable truck ")
         --Spring.Echo("createUnitAtUnit ".."game_refugees.lua") 
         payLoadID = createUnitAtUnit(gaiaTeamID, loadType, id)
         return attachPayload(payLoadID, id)
@@ -283,9 +283,10 @@ function refugeeStream(frame)
             return
        end
        local id =  spawnUnit("truck_arab"..math.random(1,8), sx, sz)
-       echo("Start Loading refugee")
+--       echo("Start Loading refugee")
        payloadID = loadRefugee(id, "truckpayloadrefugee")
- 
+       --assert(payloadID)
+
        refugeeTable[id]= id   
        Spring.SetUnitTooltip(id, "Refugee from ".. getCountryByCulture(GameConfig.instance.culture , escapeeHash + math.random(0,1)*randSign()))
 

@@ -80,11 +80,6 @@ function advertisingLoop()
     Sleep(rest)
     StartThread(attachHologram)
 
-    while true do
-        buildRunDeterministicAdvertisement()
-        Sleep(10000)
-        echo("Debug code in advertisingblimp running generated advertisements - do not remove")
-    end
 
     while true do
         soundFile = advertisingFilePath.."advertisement"..math.random(1,maxSoundFiles)..".ogg"
@@ -100,7 +95,9 @@ function advertisingLoop()
         halfRestTime = math.ceil(restTime/2)
 
         Sleep(halfRestTime)
-        buildRunDeterministicAdvertisement()
+        if maRa() then
+            buildRunDeterministicAdvertisement()
+        end
         Sleep(halfRestTime)
 
     end

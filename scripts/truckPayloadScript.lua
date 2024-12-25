@@ -45,8 +45,9 @@ function script.Create()
 
     if myDefID == UnitDefNames["truckpayloadrefugee"].id then
         showOnePiece(TablesOfPiecesGroups["RefugeePayload"])
-        StartThread(delayedAttachCivilianLoot)
-
+        if randChance(10) then
+        	StartThread(delayedAttachCivilianLoot)
+    	end
         for i=1, #TablesOfPiecesGroups["RefugeeDeco"] do
             if maRa() == true then
                 Show(TablesOfPiecesGroups["RefugeeDeco"][i] )
