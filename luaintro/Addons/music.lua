@@ -18,7 +18,6 @@ Spring.SetSoundStreamVolume(1)
 
 
 local musicfiles = VFS.DirList("sounds/music/briefing/", "*.ogg")
-local advertisementFiles = VFS.DirList("sounds/music/advertising/", "*.ogg")
 local function playMusicFile()
 	if (#musicfiles > 0) then
 		index=math.random(1,#musicfiles)
@@ -27,16 +26,15 @@ local function playMusicFile()
 	end
 end
 
-function playAdvertisementFile()
-	
-		if (#advertisementFiles > 0) then
-			index=math.random(1,#advertisementFiles)
-			Spring.PlaySoundStream(advertisementFiles[ index ], 1)
-			Spring.SetSoundStreamVolume(1)
-		end
+local advertisementFiles = VFS.DirList("sounds/music/advertising/", "*.ogg")
+local function playAdvertisementFile()
+	if (#advertisementFiles > 0) then
+		index=math.random(1,#advertisementFiles)
+		Spring.PlaySoundStream(advertisementFiles[ index ], 1)
+	end
 end
 
-local loadProgressStep = 0
+local nextProgressStep = 0
 
 function addon.Initialize()
     playMusicFile()
@@ -44,8 +42,8 @@ end
 
 function addon.DrawLoadScreen()
 	local loadProgress = SG.GetLoadProgress()
-	if loadProgress > loadProgressStep then
-		loadProgressStep = loadProgressStep + 0.10
+	if loadProgress > nextProgressStep then
+		nextProgressStep = nextProgressStep + 0.30
 		playAdvertisementFile()
 	end
 end
