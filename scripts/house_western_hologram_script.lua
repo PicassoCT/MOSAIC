@@ -736,8 +736,9 @@ function lineTicker()
     for i=1, 10 do
         fbuffer[i] =  math.random(fscope.min, fscope.max)
         sbuffer[i] =  math.random(sscope.min, sscope.max)
-        fscope.min =  math.min(45, math.max(-45,fscope.min - fbuffer[i]))
         fscope.max =  math.min(45, math.max(-45, fscope.max - fbuffer[i]))
+        fscope.min =  math.min(45, math.max(-45,fscope.min - fbuffer[i]))
+
 
         sscope.min =  math.min(45, math.max(-45,sscope.min - sbuffer[i]))
         sscope.max =  math.min(45, math.max(-45,sscope.max - sbuffer[i]))
