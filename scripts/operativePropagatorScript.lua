@@ -214,6 +214,11 @@ function script.Create()
     StartThread(testAnimation)
 end
 
+function getWindTemporaryForces()
+		dirX, dirY, dirZ, strength, normDirX, normDirY, normDirZ = Spring.GetWind()
+		return {{x=dirX, y = dirY, z = dirZ}}
+end
+
 Coat = piece "Coat"
 function trenchCoateAnimation()
 	if not TablesOfPiecesGroups["HeadDeco"][7] then return end
@@ -231,26 +236,22 @@ function trenchCoateAnimation()
 		parentBones[#parentBones+1] = TablesOfPiecesGroups["CoatBone"][i]
 	end
 	simulationCoat = setupCoat(parentBones)
-	local temporaryForces = {{x = 0.5, y = 0, z = 0}} --wind
-	local constantForces = {{x = 0, y = -9.81, z = 0}} --gravity
+
 
 	-- External forces (e.g., wind)
-	local temporaryForces = {{x = 0.0, y = 0, z = 0}} --wind
 	local constantForces = {{x = 0, y = -9.81, z = 0}} --gravity
-
-	local globalForces = composeForces(constantForces,temporaryForces)
+	local globalForces = composeForces(constantForces,getWindTemporaryForces())
 	local perPieceForces = {}
 	local counter = 0
 	while true do
+
 		updateCloth(simulationCoat, unitID, globalForces ,perPieceForces)
 		Sleep(100)
-		inc(counter)
+		counter = inc(counter)
 		if counter % 10 == 0 then
-			dirX, dirY, dirZ, strength, normDirX, normDirY, normDirZ = Spring.GetWind()
-			temporaryForces[#temporaryForces+1] = {x=dirX, y = dirY, z = dirZ}
-			globalForces = composeForces(constantForces, temporaryForces)
+			globalForces = composeForces(constantForces, getWindTemporaryForces())
 		end
-
+		--[[
 		if counter % 300 == 0 then
 			perPieceForces = {}
 			lx,ly,lz = Spring.GetUnitPiecePosDir(unitID, LowLeg1)
@@ -260,8 +261,7 @@ function trenchCoateAnimation()
 				--coatPieceLeft =
 				--coatPieceRight = 
 				--perPieceForces[] = {}
-
-		end
+		end]]
 	end
 end
 
@@ -1392,6 +1392,11 @@ function addNeighborAsForce(globalForce, worldPos, neighbor )
 return globalForce
 end
 
+function TransformWorldForceToLocalForce(worldForce, unitDir, coatPieceDir)
+	--add -1 * unitDirRotation
+	-- add -1 * CoatRotation
+	return worldForce
+end
 
 -- Function to simulate coat physics
 function updateCloth(coatMap, unitID, globalForce, perPieceForces)
@@ -1399,6 +1404,13 @@ function updateCloth(coatMap, unitID, globalForce, perPieceForces)
 
     --from the middle out apply towards the outside of the parent hierarchy- with one neighbor defined
     local boolMovedAtLeastOne = false
+
+    --we counter apply a inverte unit rotation to all global forces applied to the unit
+    dx,dy, dz = Spring.GetUnitDirection(unitID)
+    unitDir = {x = dx, y= dy, z= dz}
+    cx,cy, cz = Spring.GetUnitPiecePosDir(unitID, Coat)
+    coatPieceDir = {x= cx, y=cy, z= cz}
+    
     for stripIndex = 1, #coatMap do
         local coatStripe = coatMap[stripIndex]
         for i=1, #coatStripe.children do
@@ -1409,13 +1421,11 @@ function updateCloth(coatMap, unitID, globalForce, perPieceForces)
                 local worldPos = getBoneWorldPosition(unitID, bone)
          
                 local posVelocity= posVelocDict[bone]
-
+                
                 globalForce = addNeighborAsForce(globalForce, worldPos, coatStripe.parent)
                 leftNeighbor, rightNeighbor = getNeighbors( stripIndex + i, stripIndex + 5)
                 globalForce = addNeighborAsForce(globalForce, worldPos,leftNeighbor)
                 globalForce = addNeighborAsForce(globalForce, worldPos,rightNeighbor)
-               
-
                 -- Apply spring force to maintain connectivity with the parent
                 
 
@@ -1434,7 +1444,7 @@ function updateCloth(coatMap, unitID, globalForce, perPieceForces)
 				boolMovedAtLeastOne = true
                 setBoneLocalPosition(unitID, bone, parent, posVelocity.localPos, posVelocity.velocity)
             end
-        end
+        endsetBoneLocalPosition
     end
     echo("Reached moving the bones"..toString(boolMovedAtLeastOne))
 end
@@ -1450,12 +1460,13 @@ function getBoneWorldPosition(unitID, bone)
     return {x=x,y=y,z=z}
 end
 
-function setBoneLocalPosition(unitID, bone, parent, targetPos, velocity)
+function setBoneLocalPosition(unitID, bone, parent, targetPos, velocity, unitDir)
     px, py, pz = Spring.GetUnitPiecePosDir(unitID, parent)
     cx, cy, cz = Spring.GetUnitPiecePosDir(unitID, bone)
 
     -- Derive the bone position from the local Pos
     tx,ty,tz = px - targetPos.x, py - targetPos.y, pz - targetPos.z
+
 
     local norm = maxValue(tx, maxValue(ty, tz))
     if norm > 0 then
@@ -1463,7 +1474,7 @@ function setBoneLocalPosition(unitID, bone, parent, targetPos, velocity)
     else
         tx, ty, tz = 0, 0, 0
     end
-    tx,ty,tz = tx /norm, ty /norm, tz /norm
+    tx,ty,tz = tx /norm, ty /norm, tz/norm
     -- the position of the bone relative to its parent
     Turn(parent, x_axis, tx, velocity.x )
     Turn(parent, y_axis, ty, velocity.y )
