@@ -1392,16 +1392,55 @@ function addNeighborAsForce(globalForce, worldPos, neighbor )
 return globalForce
 end
 
-function TransformWorldForceToLocalForce(worldForce, unitDir, coatPieceDir)
-	--add -1 * unitDirRotation
-	-- add -1 * CoatRotation
-	return worldForce
+-- Utility function to normalize a vector
+local function Normalize(vec)
+    local magnitude = math.sqrt(vec.x^2 + vec.y^2 + vec.z^2)
+    return {x = vec.x / magnitude, y = vec.y / magnitude, z = vec.z / magnitude}
+end
+
+-- Utility function to calculate the cross product of two vectors
+local function CrossProduct(a, b)
+    return {
+        x = a.y * b.z - a.z * b.y,
+        y = a.z * b.x - a.x * b.z,
+        z = a.x * b.y - a.y * b.x
+    }
+end
+
+-- Utility function to subtract two vectors
+local function SubtractVectors(a, b)
+    return {x = a.x - b.x, y = a.y - b.y, z = a.z - b.z}
+end
+
+-- Utility function to calculate the dot product of a vector with a basis vector
+local function DotProduct(vec, basis)
+    return vec.x * basis.x + vec.y * basis.y + vec.z * basis.z
+end
+
+
+
+function TransformWorldForceToLocalForce(worldForce,  coatPieceDir)
+-- Normalize direction and use world up as fallback
+    local forward = Normalize(coatPieceDir)
+    worldUp = worldUp or {x = 0, y = 1, z = 0}
+
+    -- Calculate the right and up vectors
+    local right = Normalize(CrossProduct(worldUp, forward))
+    local up = CrossProduct(forward, right)
+
+    -- Translate global vector to relative position
+    local relative = worldForce --SubtractVectors(worldForce, unitPos)
+
+    -- Project the relative position into the local axes
+    return {
+        x = DotProduct(relative, right),
+        y = DotProduct(relative, up),
+        z = DotProduct(relative, forward)
+    }
 end
 
 -- Function to simulate coat physics
 function updateCloth(coatMap, unitID, globalForce, perPieceForces)
-
-
     --from the middle out apply towards the outside of the parent hierarchy- with one neighbor defined
     local boolMovedAtLeastOne = false
 
@@ -1418,7 +1457,7 @@ function updateCloth(coatMap, unitID, globalForce, perPieceForces)
             local parent = coatStripe.parent -- (i > 1) and coatStripe.children[i-1] 
             if bone ~= parent then
                 -- Get the current world position of the bone and parent bone
-                local worldPos = getBoneWorldPosition(unitID, bone)
+                local worldPos, worldDir = getBoneWorldPosition(unitID, bone)
          
                 local posVelocity= posVelocDict[bone]
                 
@@ -1427,7 +1466,7 @@ function updateCloth(coatMap, unitID, globalForce, perPieceForces)
                 globalForce = addNeighborAsForce(globalForce, worldPos,leftNeighbor)
                 globalForce = addNeighborAsForce(globalForce, worldPos,rightNeighbor)
                 -- Apply spring force to maintain connectivity with the parent
-                
+                TransformWorldForceToLocalForce(globalForce,  worldDir)
 
                 -- Update velocity with damping
                 posVelocity.velocity.x = (posVelocity.velocity.x + globalForce.x * deltaTime) * damping
@@ -1457,7 +1496,7 @@ end
 function getBoneWorldPosition(unitID, bone)
     x,y,z, dx, dy, dz = Spring.GetUnitPiecePosDir(unitID, bone)
     -- Return the world position of the bone
-    return {x=x,y=y,z=z}
+    return {x=x,y=y,z=z}, {x=dx, y=dy, z=dz}
 end
 
 function setBoneLocalPosition(unitID, bone, parent, targetPos, velocity, unitDir)
