@@ -3672,7 +3672,7 @@ function buildRunDeterministicAdvertisement()
             ["5Binding-03.ogg"] = 1198 ,
             ["5Binding-04.ogg"] = 1269 ,
             ["5Binding-05.ogg"] = 1046 ,
-            ["5Bindings-06.ogg"] = 867 ,
+            ["5Binding-06.ogg"] = 867 ,
 
 
         }
@@ -3746,7 +3746,7 @@ function buildRunDeterministicAdvertisement()
             counter = counter +1
             if deterministicIndex == counter then
                 Spring.PlaySoundFile(element.path, 1.0)
-                Sleep(element.time)       
+                Sleep(element.time-100)       
                break 
             end
         end       

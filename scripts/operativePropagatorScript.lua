@@ -223,12 +223,12 @@ function trenchCoateAnimation()
 			boolFoundTrenchCoat= true
 		end
 	end
-	if not boolFoundTrenchCoat then return end
+	if  boolFoundTrenchCoat == false then return end
 	Show(Coat)
 	showT(TablesOfPiecesGroups["CoatBone"])
 	parentBones = {}
 	for i=1, #TablesOfPiecesGroups["CoatBone"], 5 do
-		parentBones[#parentBones+1] = TablesOfPiecesGroups["CoatBone"]
+		parentBones[#parentBones+1] = TablesOfPiecesGroups["CoatBone"][i]
 	end
 	simulationCoat = setupCoat(parentBones)
 	local temporaryForces = {{x = 0.5, y = 0, z = 0}} --wind
@@ -242,7 +242,6 @@ function trenchCoateAnimation()
 	local perPieceForces = {}
 	local counter = 0
 	while true do
-		echo("Cloth simulation running")
 		updateCloth(simulationCoat, unitID, globalForces ,perPieceForces)
 		Sleep(100)
 		inc(counter)
@@ -401,7 +400,20 @@ function breathing()
 			tP(Eye1,rx,ry,rz, 16)
 			tP(Eye2,rx,ry,rz, 16)
             tP(Head,0,math.random(-20,20),0, 2)
+   
+        	if randChance(5) then
+        		Show(TablesOfPiecesGroups["HeadDeco"][5])
+				StartThread(cigarettGlowAndSmoke)		
+				PlayAnimation( uppperBodyAnimations[eAnimState.idle][1], lowerBodyPieces, (math.random(5,15)/5))		
+			end
+			if randChance(1) then
+		    	StartThread(rightArmPoses, math.pi)		
+            	StartThread(leftArmPoses, math.pi)		
+            	Hide(TablesOfPiecesGroups["HeadDeco"][5])
+        	end
 		end
+
+
 		Sleep(250)
 	end
 end
@@ -647,6 +659,46 @@ function conditionalFilterOutUpperBodyTable()
 	end
 end
 
+function rightArmPoses(speed)
+	pose = nil
+	ArmPosesPropagatorT ={
+	{
+		UpArm1 ={0,-math.random(60,80), math.random(-10,35)},
+		LowArm1 ={math.rad(math.random(-5,5)),math.rad(math.random(-5,5)*randSign()),math.rad(math.random(-5,5)*randSign())},
+		Hand1 ={math.rad(math.random(-5,5)),math.rad(math.random(-5,5)*randSign()),math.rad(math.random(-5,5)*randSign())},
+	},
+	{
+		UpArm1 ={math.random(-10,0),-math.random(60,80),math.random(-10,35)},
+		LowArm1 ={math.rad(math.random(-5,5)),math.rad(math.random(-5,5)*randSign()),math.rad( math.random(35,55))},
+		Hand1 ={math.rad(math.random(-5,5)),math.rad(math.random(-5,5)*randSign()),math.rad(math.random(-5,5)*randSign())},
+	},
+	{
+		UpArm1 ={math.random(-10,0),-math.random(45,80),math.random(-10,35)},
+		LowArm1 ={math.rad(math.random(-5,5)),math.rad(math.random(-5,5)*randSign()),math.rad(math.random(-5,5)*randSign())},
+		Hand1 ={math.rad(math.random(-5,5)),math.rad(math.random(-5,5)*randSign()),math.rad(math.random(-5,5)*randSign())},
+	},
+
+	}
+
+
+	pose= ArmPosesPropagatorT[math.random(1,#ArmPosesPropagatorT)]
+
+
+	Turn(UpArm1, x_axis, math.rad(pose.UpArm1[1] ),speed)
+	Turn(UpArm1, y_axis, math.rad(pose.UpArm1[2] ),speed)
+	Turn(UpArm1, z_axis, math.rad(pose.UpArm1[3] ),speed) 
+  
+ 	Turn(LowArm1, x_axis, math.rad(pose.LowArm1[1] ),speed)
+	Turn(LowArm1, y_axis, math.rad(pose.LowArm1[2] ),speed)
+	Turn(LowArm1, z_axis, math.rad(pose.LowArm1[3] ),speed)
+
+	Turn(Hand1, x_axis, math.rad(pose.Hand1[1] + math.random(-5,5)),speed)
+	Turn(Hand1, y_axis, math.rad(pose.Hand1[2] + math.random(-5,5)),speed)
+	Turn(Hand1, z_axis, math.rad(pose.Hand1[3] + math.random(-5,5)),speed)
+
+	WaitForTurns(UpArm1,LowArm1, Hand1)
+end
+
 
 
 
@@ -712,19 +764,8 @@ UpperAnimationStateFunctions ={
                 end,
 [eAnimState.standing] = 	function () 								
 								if boolFlying == true then return eAnimState.standing end
-								resetT(lowerBodyPieces, 10)							
-								StartThread(leftArmPoses, math.pi)
+								resetT(lowerBodyPieces, 10)													
 								while true do 		
-									--echo("operativepropagator:StandingAnimation:Alive")
-									if maRa() then
-										StartThread(leftArmPoses, math.pi)	
-									end
-
-									if maRa() then
-										StartThread(cigarettGlowAndSmoke)		
-										PlayAnimation( uppperBodyAnimations[eAnimState.idle][1], lowerBodyPieces, (math.random(5,15)/5))		
-									end
-
 									Sleep(250)
 								end --not boolWalking and not boolAiming and  not boolFlying do	
 	
@@ -1270,9 +1311,16 @@ end
 
 -- Configuration for the trench coat bones
 
-function getNeighbors(TableOfPieceGroups, pieceNr, coatstripeMaxNr)
-    local leftNeighbor = (pieceNr - coatstripeMaxNr >= 1) and TableOfPieceGroups[pieceNr - coatstripeMaxNr] or nil
-    local rightNeighbor = (pieceNr + coatstripeMaxNr <= #TableOfPieceGroups) and TableOfPieceGroups[pieceNr + coatstripeMaxNr] or nil
+function getNeighbors( pieceNr, coatstripeMaxNr)
+    local leftNeighbor = nil
+    if (pieceNr - coatstripeMaxNr >= 1) then 
+    	leftNeighbor = TablesOfPiecesGroups["CoatBone"][pieceNr - coatstripeMaxNr] 
+    end
+
+    local rightNeighbor = nil
+    if (pieceNr + coatstripeMaxNr <= #TablesOfPiecesGroups["CoatBone"]) then
+     rightNeibor = TablesOfPiecesGroups["CoatBone"][pieceNr + coatstripeMaxNr]
+ 	end
 
     return leftNeighbor, rightNeighbor
 end
@@ -1280,9 +1328,10 @@ end
 local posVelocDict  = {}
 function setupCoat(parentT)
     hierarchy, root = getPieceHierarchy(unitID)
+    assert(hierarchy[piece("CoatBone1")])
 
     coatMap = {}
-    for num,parent in pairs(parentT) do 
+    for _, parent in pairs(parentT) do 
     	children = hierarchy[parent] or {}
         coatMap[#coatMap +1] = {parent = parent, children = children }
         if hierarchy[parent]then
@@ -1313,10 +1362,11 @@ function composeForces(constantForces, temporaryForces)
     return globalForce
 end
 -- Physics parameters
-local damping = 0.9
+local damping = 0.999
 local stiffness = 5.0
 local neighborStiffness = 2.0
-local deltaTime = 1 / 60 -- Assume 60 FPS
+local restTimeClothMS = 100
+local deltaTime = (3 / 30) -- Assume 60 FPS
 
 
 function addNeighborAsForce(globalForce, worldPos, neighbor )
@@ -1348,11 +1398,12 @@ function updateCloth(coatMap, unitID, globalForce, perPieceForces)
 
 
     --from the middle out apply towards the outside of the parent hierarchy- with one neighbor defined
+    local boolMovedAtLeastOne = false
     for stripIndex = 1, #coatMap do
         local coatStripe = coatMap[stripIndex]
         for i=1, #coatStripe.children do
             local bone = coatStripe.children[i]
-            local parent = (i > 1) and coatStripe.children[i-1] or coatStripe.parent
+            local parent = coatStripe.parent -- (i > 1) and coatStripe.children[i-1] 
             if bone ~= parent then
                 -- Get the current world position of the bone and parent bone
                 local worldPos = getBoneWorldPosition(unitID, bone)
@@ -1360,7 +1411,7 @@ function updateCloth(coatMap, unitID, globalForce, perPieceForces)
                 local posVelocity= posVelocDict[bone]
 
                 globalForce = addNeighborAsForce(globalForce, worldPos, coatStripe.parent)
-                leftNeighbor, rightNeighbor = getNeighbors(TableOfPieceGroups, pieceNr, coatstripeMaxNr)
+                leftNeighbor, rightNeighbor = getNeighbors( stripIndex + i, stripIndex + 5)
                 globalForce = addNeighborAsForce(globalForce, worldPos,leftNeighbor)
                 globalForce = addNeighborAsForce(globalForce, worldPos,rightNeighbor)
                
@@ -1380,10 +1431,12 @@ function updateCloth(coatMap, unitID, globalForce, perPieceForces)
                 
                 posVelocDict[bone] = posVelocity
                 -- Apply the position in local space (relative to parent bone)
-                setBoneLocalPosition(unitID, bone, posVelocity)
+				boolMovedAtLeastOne = true
+                setBoneLocalPosition(unitID, bone, parent, posVelocity.localPos, posVelocity.velocity)
             end
         end
     end
+    echo("Reached moving the bones"..toString(boolMovedAtLeastOne))
 end
 
 function maxValue(a, b)
@@ -1392,14 +1445,14 @@ end
 
 -- Utility functions (to be implemented based on your engine)
 function getBoneWorldPosition(unitID, bone)
-    x,y,z, dx, dy, dz = Spring.GetUnitPiecePosDir(unitID, boneName)
+    x,y,z, dx, dy, dz = Spring.GetUnitPiecePosDir(unitID, bone)
     -- Return the world position of the bone
-    return x,y,z
+    return {x=x,y=y,z=z}
 end
 
-function setBoneLocalPosition(unitID, length, bone, parent, targetPos, velocity)
-    px, py, pz = Spring.GetUnitPiecePosDir(unitId, parent)
-    cx, cy, cz = Spring.GetUnitPiecePosDir(unitId, bone)
+function setBoneLocalPosition(unitID, bone, parent, targetPos, velocity)
+    px, py, pz = Spring.GetUnitPiecePosDir(unitID, parent)
+    cx, cy, cz = Spring.GetUnitPiecePosDir(unitID, bone)
 
     -- Derive the bone position from the local Pos
     tx,ty,tz = px - targetPos.x, py - targetPos.y, pz - targetPos.z

@@ -703,8 +703,8 @@ function glowWormFlight(speed)
 end
 
 function lineBufferForward(buffer)
-        fscope = {max= 90,
-                  min = -90}
+        fscope = {max= 45,
+                  min = -45}
 
 
         sum = 0
@@ -716,7 +716,7 @@ function lineBufferForward(buffer)
         end
 
         if maRa() then
-            buffer[#buffer] = math.random(fscope.min* 0.5, fscope.max *0.5)
+            buffer[#buffer] = math.min(90, math.max(-90, math.random(fscope.min, fscope.max)))
         end
         sum = sum + buffer[#buffer]
 
@@ -728,19 +728,19 @@ function lineTicker()
     --Spring.Echo("Starting lineTicker at "..getCoordinateString(unitID))
     fbuffer = {}
     sbuffer = {}
-    fscope = {max= 90,
-             min = -90}
-    sscope = {max= 90,
-              min = -90}
+    fscope = {max= 10,
+             min = -10}
+    sscope = {max= 10,
+              min = -10}
     
     for i=1, 10 do
-        fbuffer[i] = math.random(fscope.min*0.5, fscope.max*0.5)
-        sbuffer[i] = math.random(sscope.min*0.5, sscope.max*0.5)
-        fscope.min =  fscope.min + fbuffer[i]
-        fscope.max =  fscope.max + fbuffer[i]
+        fbuffer[i] =  math.random(fscope.min, fscope.max)
+        sbuffer[i] =  math.random(sscope.min, sscope.max)
+        fscope.min =  math.min(45, math.max(-45,fscope.min - fbuffer[i]))
+        fscope.max =  math.min(45, math.max(-45, fscope.max - fbuffer[i]))
 
-        sscope.min =  sscope.min + sbuffer[i]
-        sscope.max =  sscope.max + sbuffer[i]
+        sscope.min =  math.min(45, math.max(-45,sscope.min - sbuffer[i]))
+        sscope.max =  math.min(45, math.max(-45,sscope.max - sbuffer[i]))
     end
     axisline = y_axis
 

@@ -381,10 +381,10 @@ function launchAnimation()
         else
             rocketPlumage = RocketPlumeAN
         end
-        echo("driveOutMainStage")
+        --echo("driveOutMainStage")
         driveOutMainStage()
         craneLoadToPlatform()
-        echoEnter("showHotColdTurbine")
+        --echoEnter("showHotColdTurbine")
         launchState = "launching"
         StartThread(spinUpTurbine)
         --Inginition
@@ -463,7 +463,7 @@ function cloudFallingDown()
         if TableOfPiecesGroups[rocketPlumage][i+1] then
             Move(TableOfPiecesGroups[rocketPlumage][i+1], y_axis, i*4500, 4500)
         end
-        WMove(TableOfPiecesGroups[rocketPlumage][i], y_axis, -i*4500, 4500)
+        WMove(TableOfPiecesGroups[rocketPlumage][i], y_axis, -i*4500, 5500)
         Hide(TableOfPiecesGroups[rocketPlumage][i])
     end
     Sleep(4000)

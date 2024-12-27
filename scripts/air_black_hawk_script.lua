@@ -36,15 +36,9 @@ local SIG_FLY = 32
 local SIG_WAITING = 64
 SIG_RESET = 128
 
-
 local buildProgress = 1
 local boolShortStop = false
 local boolLongStop = false
-boolIsNight = true
-
-boolRedBlue = math.random(0, 1) == 1
-
-
 
 
 function rotorsUp()
@@ -273,6 +267,8 @@ function script.Create()
     --/test
     Hide(dirtemit1)
     Hide(dirtemit2)
+    Hide(imgoingdown)
+
     if Game.windMax <= 1 then boolAir = false end
     --check boolAir
     Hide(aim1)
