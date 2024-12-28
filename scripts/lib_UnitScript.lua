@@ -6466,7 +6466,7 @@ function getEngineVersion()
             end
             return results
         end
-        engineVersion = Split(Engine.version, '-')
+        local engineVersion = Split(Engine.version, '-')
         if engineVersion[2] ~= nil and engineVersion[3] ~= nil then
             return tonumber(string.gsub(engineVersion[1], '%.', '') ..
                                          engineVersion[2])

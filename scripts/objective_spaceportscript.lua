@@ -517,18 +517,16 @@ function traffic()
     while true do
         while launchState ~= "launching" do
             for i=1,4 do
-                StartThread(trafficRun, i)
+                trafficRun(i)
+                if launchState == "launching" then break end
             end
             Sleep(100)
-            while trafficCounter > 0  do
-                Sleep(1000)
-            end
-
-        Sleep(1000)
         end
+
         Sleep(1000)
     end
 end
+
 
 wreckageTypeTable = getScrapheapTypeTable(UnitDefs)
 

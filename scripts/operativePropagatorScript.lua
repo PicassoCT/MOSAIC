@@ -131,10 +131,10 @@ end
 end
 
 function externalAimFunction(targetPosT, remainderRotationRad)
+	if boolMoving == false then
     showFireArm()
     Turn(Torso, 3, remainderRotationRad, 55)
-    if boolMoving == false then
-    	setOverrideAnimationState(eAnimState.aiming, nil,  true, nil, false)
+    setOverrideAnimationStateOnDiff(eAnimState.aiming, nil,  true, nil, false)
 	end
 end
 
@@ -642,6 +642,13 @@ function setAnimationState(AnimationstateUpperOverride, AnimationstateLowerOverr
 end
 
 --<Exposed Function>
+
+function setOverrideAnimationStateOnDiff( AnimationstateUpperOverride, AnimationstateLowerOverride,  boolInstantOverride, conditionFunction, boolDecoupledStates)
+	if locAnimationstateUpperOverride ~= AnimationstateUpperOverride or 
+		locAnimationstateLowerOverride ~= AnimationstateLowerOverride then
+		setOverrideAnimationState( AnimationstateUpperOverride, AnimationstateLowerOverride,  boolInstantOverride, conditionFunction, boolDecoupledStates)
+	end
+end
 
 function setOverrideAnimationState( AnimationstateUpperOverride, AnimationstateLowerOverride,  boolInstantOverride, conditionFunction, boolDecoupledStates)
 	boolDecoupled = boolDecoupledStates
@@ -1487,7 +1494,7 @@ function updateCloth(coatMap, unitID, globalForce, perPieceForces)
             end
         end
     end
-    echo("Reached moving the bones"..toString(boolMovedAtLeastOne))
+    --echo("Reached moving the bones"..toString(boolMovedAtLeastOne))
 end
 
 function maxValue(a, b)
@@ -1517,7 +1524,7 @@ function setBoneLocalPosition(unitID, bone, parent, targetPos, velocity, unitDir
     end
     tx,ty,tz = tx /norm, ty /norm, tz/norm
     -- the position of the bone relative to its parent
-    echo("Turn piece "..parent.." towards : ", targetPos, velocity)
+   -- echo("Turn piece "..parent.." towards : ", targetPos, velocity)
     Turn(parent, x_axis, tx, velocity.x )
     Turn(parent, y_axis, ty, velocity.y )
     Turn(parent, z_axis, tz, velocity.z )

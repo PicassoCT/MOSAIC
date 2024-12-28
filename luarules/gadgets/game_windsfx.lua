@@ -58,7 +58,7 @@ function localspawnCegAtPiece(cegname, unitID, pieceId, offset, dx, dy, dz )
 end
 
 function gadget:UnitDamaged(unitID,unitDefID,teamID, damage)
-    if houseTypeTable[unitDefID] and dmage > 10 then
+    if houseTypeTable[unitDefID] and damage > 10 then
        
         lastHitPiece = spGetUnitLastAttackedPiece ( unitID ) 
         if not lastHitPiece then
