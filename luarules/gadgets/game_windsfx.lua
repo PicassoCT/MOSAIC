@@ -57,21 +57,22 @@ function localspawnCegAtPiece(cegname, unitID, pieceId, offset, dx, dy, dz )
     end
 end
 
-function gadget:UnitDamaged(unitID,unitDefID,teamID)
-    if houseTypeTable[unitDefID] then
+function gadget:UnitDamaged(unitID,unitDefID,teamID, damage)
+    if houseTypeTable[unitDefID] and dmage > 10 then
        
         lastHitPiece = spGetUnitLastAttackedPiece ( unitID ) 
         if not lastHitPiece then
             lastHitPiece = getRandomPiece(unitID)    
-            if not lastHitPiece then return damage end    
+            if not lastHitPiece then return end    
         end
-        echo("UnitDamaged:"..toString(lastHitPiece))
+        --echo("UnitDamaged:"..toString(lastHitPiece))
         if lastHitPiece then            
             localspawnCegAtPiece("civilbuildingdamage", unitID, lastHitPiece)
             registerSmokeSwirl(unitID, lastHitPiece)
 
         end
     end
+    return 
 end
 
 function gadget:GameFrame(frame)

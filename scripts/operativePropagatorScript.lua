@@ -133,7 +133,9 @@ end
 function externalAimFunction(targetPosT, remainderRotationRad)
     showFireArm()
     Turn(Torso, 3, remainderRotationRad, 55)
-    setOverrideAnimationState(eAnimState.aiming, nil,  true, nil, false)
+    if boolMoving == false then
+    	setOverrideAnimationState(eAnimState.aiming, nil,  true, nil, false)
+	end
 end
 
 function closeCombatOS()
@@ -1466,12 +1468,12 @@ function updateCloth(coatMap, unitID, globalForce, perPieceForces)
                 globalForce = addNeighborAsForce(globalForce, worldPos,leftNeighbor)
                 globalForce = addNeighborAsForce(globalForce, worldPos,rightNeighbor)
                 -- Apply spring force to maintain connectivity with the parent
-                TransformWorldForceToLocalForce(globalForce,  worldDir)
+                localForce = TransformWorldForceToLocalForce(globalForce,  worldDir)
 
                 -- Update velocity with damping
-                posVelocity.velocity.x = (posVelocity.velocity.x + globalForce.x * deltaTime) * damping
-                posVelocity.velocity.y = (posVelocity.velocity.y + globalForce.y * deltaTime) * damping
-                posVelocity.velocity.z = (posVelocity.velocity.z + globalForce.z * deltaTime) * damping
+                posVelocity.velocity.x = (posVelocity.velocity.x + localForce.x * deltaTime) * damping
+                posVelocity.velocity.y = (posVelocity.velocity.y + localForce.y * deltaTime) * damping
+                posVelocity.velocity.z = (posVelocity.velocity.z + localForce.z * deltaTime) * damping
 
                 -- Update position
                 posVelocity.localPos.x = posVelocity.localPos.x + posVelocity.velocity.x * deltaTime
@@ -1483,7 +1485,7 @@ function updateCloth(coatMap, unitID, globalForce, perPieceForces)
 				boolMovedAtLeastOne = true
                 setBoneLocalPosition(unitID, bone, parent, posVelocity.localPos, posVelocity.velocity)
             end
-        endsetBoneLocalPosition
+        end
     end
     echo("Reached moving the bones"..toString(boolMovedAtLeastOne))
 end
@@ -1515,6 +1517,7 @@ function setBoneLocalPosition(unitID, bone, parent, targetPos, velocity, unitDir
     end
     tx,ty,tz = tx /norm, ty /norm, tz/norm
     -- the position of the bone relative to its parent
+    echo("Turn piece "..parent.." towards : ", targetPos, velocity)
     Turn(parent, x_axis, tx, velocity.x )
     Turn(parent, y_axis, ty, velocity.y )
     Turn(parent, z_axis, tz, velocity.z )

@@ -194,11 +194,13 @@ function landBooster(boosterNr, booster)
     Turn(booster, x_axis, math.rad(0), 0.5)
     Turn(booster, y_axis, math.rad(0), 3)
     for i= 2000, 0, -10 do
-       WMove(booster, axis, i, 500)
+       WMove(booster, axis, i, math.max(i*2, 400))
 
        spinVal = math.random(40, 120)*randSign()
        Spin(LandCone, y_axis, math.rad(spinVal))
-
+        for k=1, #plums do
+            Move(plums[k], y_axis, math.random(-3,3), 0)
+        end
        spinVal = math.random(40, 120)*randSign()
        turnT(plums, y_axis, math.rad(spinVal))
        spinT(plums, y_axis, math.rad(spinVal))

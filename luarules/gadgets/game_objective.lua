@@ -27,13 +27,14 @@ if (gadgetHandler:IsSyncedCode()) then
     local GameConfig = getGameConfig()
 
     boolInit = false
-    function gadget:Initialize() boolInit = true end
+    function gadget:Initialize() 
+        boolInit = true 
+        echo("Using map controlled objective spawn: "..toString(useMapControlledObjectiveSpawn())) 
+    end
 
     function useMapControlledObjectiveSpawn()
         name = Game.mapName
-        boolMapControlledSpawn = getManualObjectiveSpawnMapNames(name) 
-        echo("Using map controlled objective spawn: "..toString(boolMapControlledSpawn)) 
-
+        boolMapControlledSpawn = getManualObjectiveSpawnMapNames(name)      
         return boolMapControlledSpawn
     end
 

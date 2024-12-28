@@ -4351,15 +4351,15 @@ function echo(stringToEcho, ...)
  
     if arg then
         for k, v in pairs(arg) do
-            if k then
+            if k then                
                 keyString = "[" .. toString(k) .. "]"
                 if type(v) == "table" then
                     Spring.Echo(keyString .. "{")
                     echoT(v)
                     Spring.Echo("}")
                 else
-                    if (keyString ~= "n") then
-                        Spring.Echo(keyString .. "»" .. toString(v))
+                    if (keyString ~= "[n]") then
+                        Spring.Echo(keyString .. "»" .. toString(v))                                                
                     end
                 end
             end
