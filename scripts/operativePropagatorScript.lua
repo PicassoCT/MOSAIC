@@ -131,11 +131,10 @@ end
 end
 
 function externalAimFunction(targetPosT, remainderRotationRad)
-	if boolMoving == false then
-    showFireArm()
+	showFireArm()
     Turn(Torso, 3, remainderRotationRad, 55)
-    setOverrideAnimationStateOnDiff(eAnimState.aiming, nil,  true, nil, false)
-	end
+   	setOverrideAnimationState(eAnimState.aiming, nil, true, nil, false)
+
 end
 
 function closeCombatOS()

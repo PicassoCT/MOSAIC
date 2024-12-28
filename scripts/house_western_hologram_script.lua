@@ -385,12 +385,19 @@ function ShowEmergencyElements ()
     Spin(element , y_axis, math.rad(randSign() * 42), 0)
 end
 
+
+
 function emergencyWatcher()
     while true do
         if GG.GlobalGameState ~= GameConfig.GameState.normal then
             Signal(SIG_CORE)
             hideAllReg(unitID)
-            ShowEmergencyElements()
+            if maRa() then
+                ShowEmergencyElements()
+            else
+                showOne(TableOfPiecesGroups["Politics"])
+            end
+
             --echo("emergency mode active") 
             while GG.GlobalGameState ~= GameConfig.GameState.normal do
                 Sleep(1000)
@@ -1005,7 +1012,12 @@ function HoloGrams()
         ShowReg(logo)
         --echo("buisness_holo logo is: "..getUnitPieceName(unitID, logo))
 
-        if randChance(5) then StartThread(flickerBuisnessLogo, logo, getSafeRandom(TableOfPiecesGroups["buisness_holo"], TableOfPiecesGroups["buisness_holo"][1])) end
+        if randChance(5) then 
+            StartThread(flickerBuisnessLogo, logo, getSafeRandom(TableOfPiecesGroups["buisness_holo"], TableOfPiecesGroups["buisness_holo"][1])) 
+        end
+        if randChance(1) then 
+            StartThread(flickerBuisnessLogo, logo, getSafeRandom(TableOfPiecesGroups["Politics"], TableOfPiecesGroups["Politics"][1])) 
+        end
         if randChance(1) then StartThread(flickerBuisnessAllLogos, logo, TableOfPiecesGroups["buisness_holo"]) end
 
         if maRa() then
