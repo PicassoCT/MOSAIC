@@ -88,8 +88,8 @@ function rotorsDown()
         Show(tailrotor)
     end
     Sleep(1000)
-    Turn(center, x_axis, math.rad(-18), 0.25)
-    Move(center, y_axis, -5.5, 2.8)
+    --Turn(center, x_axis, math.rad(-18), 0.25)
+    --Move(center, y_axis, -5.5, 2.8)
 
 end
 
