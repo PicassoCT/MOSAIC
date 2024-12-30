@@ -146,10 +146,12 @@ function widget:RecvLuaMsg(msg, playerID)
 	end
 
   if msg:find("SEND_TRACKED:") then
+    Spring.Echo("TODO: Confirm working sending tracked "..msg)
     local rawNumber = msg:gsub("SEND_TRACKED:", "")
-    local trackedId = string.tonumber(rawNumber)
-    Spring.Echo("TODO: Confirm working sending tracked "..rawNumber)
-    setTrackedUnit(trackedId)
+    if rawNumber ~= nil then
+      local trackedId = string.tonumber(rawNumber)
+      setTrackedUnit(trackedId)
+    end
   end
 end
 

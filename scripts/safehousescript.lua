@@ -1,7 +1,7 @@
 include "lib_OS.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
---include "lib_Build.lua"
+include "lib_staticstring.lua"
 include "lib_mosaic.lua"
 
 local TablesOfPiecesGroups = {}
@@ -46,8 +46,8 @@ end
 
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
-    boolPredecessorSafehouse = preventBuildingNearPreexistingSafehouse()
-    if boolPredecessorSafehouse == false then
+    boolPredecessorSafehouseNearby = preventBuildingNearPreexistingSafehouse()
+    if boolPredecessorSafehouseNearby == false then
         StartThread(houseAttach)
         StartThread(drawMapRoom)
         Spring.SetUnitBlocking(unitID, false, false, false)
@@ -55,11 +55,12 @@ function script.Create()
         StartThread(killDelayed)
     end
     StartThread(healAgentsNearbyCyle)
+    setSafeHouseTeamName(Unit)
 end
 
 function killDelayed()
     Sleep(1)
-    echo("Killing due to being near a predecessor")
+    echo("Killing due safehouse being near a predecessor")
     destroyUnitConditional(unitID, false, true)
 end
 

@@ -723,7 +723,7 @@ function lineBufferForward(buffer)
         end
 
         if maRa() then
-            buffer[#buffer] = math.min(90, math.max(-90, math.random(fscope.min, fscope.max)))
+            buffer[#buffer] = math.min(45, math.max(-45, math.random(fscope.min, fscope.max)))
         end
         sum = sum + buffer[#buffer]
 
@@ -744,11 +744,12 @@ function lineTicker()
         fbuffer[i] =  math.random(fscope.min, fscope.max)
         sbuffer[i] =  math.random(sscope.min, sscope.max)
         fscope.max =  math.min(45, math.max(-45, fscope.max - fbuffer[i]))
-        fscope.min =  math.min(45, math.max(-45,fscope.min - fbuffer[i]))
+        fscope.min =  math.min(math.min(45, math.max(-45,fscope.min - fbuffer[i])),fscope.max-1)
 
 
-        sscope.min =  math.min(45, math.max(-45,sscope.min - sbuffer[i]))
+        
         sscope.max =  math.min(45, math.max(-45,sscope.max - sbuffer[i]))
+        sscope.min =  math.min(math.min(45, math.max(-45,sscope.min - sbuffer[i])),sscope.max-1)
     end
     axisline = y_axis
 
@@ -1563,7 +1564,7 @@ function addHologramLetters( myMessages)
     allFunctions = getAllTextFx()
     allLetters, posLetters, newMessage = setupMessage(myMessages)
 
-    if maRa() and maRa() or boolIsEverChanging  then 
+    if randChance(25) or boolIsEverChanging  then 
 
         while true do
             restoreMessageOriginalPosition(allLetters, posLetters)
@@ -1571,7 +1572,7 @@ function addHologramLetters( myMessages)
                 name, textFX = randDict(allFunctions)
                -- name, textFx = "circleProject", circleProject
                 if name then
-                    Spring.Log('house_western_hologram_script.lua', 'info',"Hologram "..newMessage.." with textFX "..name)
+                    echo('house_western_hologram_script.lua', 'info',"Hologram "..newMessage.." with textFX "..name)
                     textFX(allLetters, posLetters)
                     Signal(SIG_FLICKER)
                     HideLetters(allLetters,posLetters)

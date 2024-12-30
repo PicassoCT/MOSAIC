@@ -56,6 +56,15 @@ function getAllEnemyTeams(teamID, boolIncludeGaia)
     end) or {}
 end
 
+
+function hasFunding(teamID, amount, types)
+    if types == "m" then types = "metal"end
+    if types == "e" then types = "energy"end
+    currentLevel, storage =  Spring.GetTeamResources (teamID, types )
+    return currentLevel >= amount
+end
+
+
 -- > get all AITeams
 function getAITeams()
     teamList = Spring.GetTeamList()

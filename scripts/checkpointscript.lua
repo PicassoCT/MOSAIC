@@ -1,8 +1,5 @@
 include "createCorpse.lua"
-include "lib_OS.lua"
 include "lib_UnitScript.lua"
-include "lib_Animation.lua"
-include "lib_Build.lua"
 include "lib_mosaic.lua"
 --Changes within this file are not displayed
 TablesOfPiecesGroups = {}
@@ -89,6 +86,7 @@ function revelioThread()
 				 end,
 				 function(id)
 				 	defID = spGetUnitDefID(id)
+				 	if  not hasFunding(myTeamId, gameConfig.checkPointPropagandaCost, "m") then return end
 
 				 	if houseTypeTable[defID] then return end
 				 
@@ -118,6 +116,8 @@ function revelioThread()
 		Sleep(250)
 	end
 end
+
+
 
 function script.Killed(recentDamage, _)
     return 1

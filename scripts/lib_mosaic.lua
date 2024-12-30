@@ -2143,6 +2143,11 @@ end
                 return "protagon"
             end
 
+             function getTeamSideString(teamID)
+                teamID, leader, isDead, isAiTeam, side, allyTeam, incomeMultiplier = Spring.GetTeamInfo(teamID)
+                return side
+            end
+
             function getDecalMap(culture)
                 if culture == "arabic" then
                     return {

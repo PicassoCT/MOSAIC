@@ -791,6 +791,28 @@ function GetBadGuysGroupNames(hash)
     return badGuys[(hash%#badGuys)+1]
 end
 
+function getSafeHouseTeamToolTip(teamID)
+    teamName = string.lower(getTeamSideString(teamID))
+    boolIsProtagon = (teamName == "protagon")
+    if boolIsProtagon then
+        agencyName = GetGoodGuysGroupName(teamID)
+        return agencyName.." base of operation <recruits Agents/ builds upgrades>"
+    else
+        agencyName = GetBadGuysGroupNames(teamID)
+        return agencyName.." base of operation <recruits Agents/ builds upgrades>"
+    end
+
+    echo("Unknown team "..teamName)
+end
+
+function setSafeHouseTeamName(unitID)
+    teamID = Spring.GetUnitTeam(unitID)
+    newToolTip = getSafeHouseTeamToolTip(teamID)
+    if newToolTip then 
+        Spring.SetUnitTooltip(unitID, newToolTip)
+    end
+end
+
 function getDeadDropLastWords(unitID, killerId )
     teamName, isAntagon = getTeamNameIsAntagon(unitID)
     civilianId = getCivilianIdFromAgent(unitID)  or unitID
@@ -808,7 +830,7 @@ function getDeadDropLastWords(unitID, killerId )
         "Long live ".. teamName,
         "Hey ".. SurName,
         "Et tu brute ? Et tu "..agentName,
-        "The ".. teamName.. " send there regards"
+        "The ".. teamName.. " sends there regards"
     }
 
     return lastWords[math.random(1,#lastWords)], agentName, SurName
