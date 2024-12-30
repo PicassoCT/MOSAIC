@@ -55,7 +55,7 @@ function script.Create()
         StartThread(killDelayed)
     end
     StartThread(healAgentsNearbyCyle)
-    setSafeHouseTeamName(Unit)
+    setSafeHouseTeamName(unitID)
 end
 
 function killDelayed()

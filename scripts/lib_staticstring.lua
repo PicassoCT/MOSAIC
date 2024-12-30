@@ -802,7 +802,7 @@ function getSafeHouseTeamToolTip(teamID)
         return agencyName.." base of operation <recruits Agents/ builds upgrades>"
     end
 
-    echo("Unknown team "..teamName)
+    echo("Unknown team in getSafeHouseTeamToolTip: "..teamName)
 end
 
 function setSafeHouseTeamName(unitID)
