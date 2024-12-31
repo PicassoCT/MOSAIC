@@ -436,6 +436,15 @@ function Spring.UnitScript.Hide(piece)
         Spring.Echo("Invalid PieceNumber in "..UnitDefs[defID].name)
         return
     end
+
+    local pieceType = type(piece)
+    if pieceType ~= "number" then
+        local activeUnit = GetActiveUnit()
+        Spring.Echo("Active Unit is of type:"..type(activeUnit))
+        local defID = Spring.GetUnitDefID(activeUnit)
+        local name = UnitDefs[defID].name
+        Spring.Echo("Hide Piece has not a number in "..name.."- got "..pieceType, piece)      
+    end 
    
     return sp_SetPieceVisibility(piece, false)
 end
@@ -444,8 +453,7 @@ function Spring.UnitScript.Show(piece)
 
     if bool_GadgetDebug == true and piece and type(piece) ~= "number" and
         type(piece) ~= "function" then
-        Spring.Echo("PieceNumber not a number " .. piece .. " - got " ..
-                        type(piece) .. " with value " .. piece .. " instead")
+        Spring.Echo("PieceNumber not a number " .. piece .. " - got " ..type(piece) .. " with value " .. piece .. " instead")
     end
     if bool_GadgetDebug == true and (not piece) then
         error("Error: Piece  not handed as argument", 2)
@@ -712,7 +720,7 @@ function gadget:UnitCreated(unitID, unitDefID, unitTeamID, parentID)
         for _, name in ipairs {...} do
 
             if pieces[name] == nil then
-                --	Spring.Echo("Piece "..name.." not found in unittype: "..getUnitName(unitDefID))
+                --	Spring.Echo("Piece "..name.." not found in unittype: "..getUnitTypeName(unitDefID))
                 error("piece not found: " .. tostring(name), 2)
             else
                 p[#p + 1] = pieces[name] or

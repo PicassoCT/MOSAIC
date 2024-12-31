@@ -240,8 +240,11 @@ function checkReSpawnPopulation()
             if x and startNode then
                 goalNode = RouteTabel[startNode][math.random(1, #RouteTabel[startNode])]
                 civilianType = randDict(civilianWalkingTypeTable)
-        		if GG.BusesTable  and #GG.BusesTable > 0 and math.random(1,10) > 9 then
-        			x,_,z = spGetUnitPosition(GG.BusesTable[math.random(1,#GG.BusesTable)])
+        		if GG.BusesTable  and #GG.BusesTable > 0 and randChance(10) then
+                    busId = randDict(GG.BusesTable)
+                    if doesUnitExistAlive(busId) then
+        			    x,_,z = spGetUnitPosition(busId)
+                    end
         		end
                 id = spawnAMobileCivilianUnit(civilianType, x, z, startNode,
                                               goalNode)
@@ -444,7 +447,10 @@ end
 -- truck or Person
 function spawnAMobileCivilianUnit(defID, x, z, startID, goalID)
     --ocassionally spawn from arrived car
-    if (math.random(0,100)/100) > chanceOfCivilianSpawningFromTruck and civilianWalkingTypeTable[defID] and  GG.UnitArrivedAtTarget and # GG.UnitArrivedAtTarget > 0 then
+    if (math.random(0,100)/100) > chanceOfCivilianSpawningFromTruck 
+        and civilianWalkingTypeTable[defID] 
+        and  GG.UnitArrivedAtTarget 
+        and # GG.UnitArrivedAtTarget > 0 then
         for id, boolArrived in pairs(GG.UnitArrivedAtTarget) do
            conditionalEcho(boolDebugCivilians, "Spawned civilian near truck "..id)
             if boolArrived == true and GG.CivilianTable[id].defID and TruckTypeTable[GG.CivilianTable[id].defID] then
@@ -671,11 +677,14 @@ end
 function sozialize(evtID, frame, persPack, startFrame, myID)
 boolDone = false
 
+    if isTrackedPerson(myID) and persPack.chatPartnerID then
+        displayConversationTextAt(myID, persPack.chatPartnerID)
+    end
+
   ---ocassionally detour toward the nearest ally or enemy
     if  math.random(0, 42) > 35 and
         civilianWalkingTypeTable[persPack.mydefID] and 
-        persPack.maxTimeChattingInFrames > 150  then
-            displayConversationTextAt(myID, persPack.chatPartnerID)
+        persPack.maxTimeChattingInFrames > 150  then          
             persPack.chatPartnerID = spGetUnitNearestAlly(myID)
             if persPack.chatPartnerID and civilianWalkingTypeTable[spGetUnitDefID(persPack.chatPartnerID)] then 
                 persPack.boolStartAChat = true

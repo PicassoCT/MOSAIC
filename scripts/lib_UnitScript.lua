@@ -57,6 +57,8 @@ function getAllEnemyTeams(teamID, boolIncludeGaia)
 end
 
 
+
+
 function hasFunding(teamID, amount, types)
     if types == "m" then types = "metal"end
     if types == "e" then types = "energy"end
@@ -1224,8 +1226,11 @@ function getUnitSide(unitID)
     return select(1, getTeamSide(teamid))
 end
 
+function getUnitName(unitID)
+    return getUniTypeName(Spring.GetUnitDefID(unitID))
+end
 -- > returns a Units Name as String
-function getUnitName(UnitDefID)
+function getUnitTypeName(UnitDefID)
     if not UnitDefNames then
         echo("getUnitName: No UnitDefNames");
         return ""

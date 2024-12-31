@@ -25,6 +25,20 @@ dirtemit2 = piece "dirtemit2"
 soundfolder = "sounds/air/copter/"
 rotoscope = piece "rotoscope"
 
+piece("center")
+piece("imgoingdown")
+piece("bady")
+piece("tailrotor")
+piece("tailrotors")
+piece("rotor")
+piece("rotors")
+piece("nightlight")
+piece("turret")
+piece("gun")
+piece("aim1")
+piece("dirtemit1")
+piece("dirtemit2")
+piece("rotoscope")
 
 local boolOnlyOnce = true
 local boolMoving = false
@@ -64,6 +78,7 @@ function rotorsUp()
 
     Sleep(350)
     Hide(rotor)
+
     Hide(tailrotor)
 
 end
