@@ -304,12 +304,14 @@ function addGroundPlaceables()
                     Sleep(1)
                     x, y, z, _, _, _ = Spring.GetUnitPiecePosDir(unitID, randPlaceAbleID)
                     myHeight = Spring.GetGroundHeight(x, z)
-                    heightdifference = math.abs(globalHeightUnit - myHeight)
-                    if myHeight < globalHeightUnit then heightdifference = -heightdifference end
-                    WMove(randPlaceAbleID,y_axis, heightdifference, 0)
-
-                    addToShowTable(randPlaceAbleID)
-                    Show(randPlaceAbleID)    
+                    if myHeight > 0 then
+                        heightdifference = math.abs(globalHeightUnit - myHeight)
+                            if myHeight < globalHeightUnit then heightdifference = -heightdifference end
+                            WMove(randPlaceAbleID,y_axis, heightdifference, 0)
+    
+                        addToShowTable(randPlaceAbleID)
+                        Show(randPlaceAbleID)    
+                    end
                 end 
             
                 groundPiecesToPlace = groundPiecesToPlace -1
@@ -338,6 +340,30 @@ function findLowestPieceInTableFromWithSuggestion(suggestedIndex, Table)
     return lowestFoundKey
 end
 
+local pieceList = Spring.GetUnitPieceList(unitID)
+function pieceToShowLightBlink(pieceToShow)
+    pieceName = pieceList[pieceToShow]
+    if pieceName then
+        lightName = pieceName.."Light"
+        if TablesOfPieceGroups[lightName] then
+            StartThread(lightPost, lightName, math.random(2,5)*500)
+        end
+    end
+end
+
+
+function lightPost(name, blinkTime)
+
+    while true do
+        Show(TablesOfPieceGroups[name][1])
+        Hide(TablesOfPieceGroups[name][2])
+        Sleep(blinkTime)
+        Show(TablesOfPieceGroups[name][2])
+        Hide(TablesOfPieceGroups[name][1])
+        Sleep(blinkTime)
+    end
+end
+
 
 function buildBuilding()
     hideAll(unitID)
@@ -356,12 +382,14 @@ function buildBuilding()
         Show(pieceToShow)
         addToShowTable(pieceToShow)
         showTSubSpins(pieceToShow, TablesOfPieceGroups)
+        pieceToShowLightBlink(pieceToShow)
     else
         pieceToShow = findLowestPieceInTableFromWithSuggestion(hash, ProjectT)
         if Mega[pieceToShow] then     GG.MegaBuildingMax = GG.MegaBuildingMax  +1 end
         Show(pieceToShow)
         addToShowTable(pieceToShow)
         showTSubSpins(pieceToShow, TablesOfPieceGroups)
+        pieceToShowLightBlink(pieceToShow)
     end
     if isDualProjectOrMix then
         pieceToShow = findLowestPieceInTableFromWithSuggestion(hash+ unitID, ProjectT)
@@ -370,6 +398,7 @@ function buildBuilding()
             showTSubSpins(pieceToShow, TablesOfPieceGroups)
             Show(pieceToShow)
             addToShowTable(pieceToShow)
+            pieceToShowLightBlink(pieceToShow)
         end     
     end
 

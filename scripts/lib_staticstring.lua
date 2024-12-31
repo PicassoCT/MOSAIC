@@ -923,13 +923,14 @@ function gossipGenerator(gossipyID, oppossingPartnerID, UnitDefs)
     space = " "
     
     subjects = {
-    "Me", "I", "You", "Us", "We", "They", "All of us", "Mum", "Dad","Society","Family", "Just"}
+    "Me", "I", "You", "Us", "We", "They", "All of us", "Mum", "Dad","Society","Family"}
     
     emoShorts = {
-    "I Love you", "Hate you",  "Oh my god", "So fetch",    "I hate you",    "I'm sorry",    "I miss you",    "I'm proud of you",
-    "You hurt me", "I'm so happy",   "I feel lost",    "You inspire me",    "I'm disappointed",    "I need you",    "I forgive you",
-    "I can't stop thinking about you",    "I'm so angry",    "You complete me",    "I'm scared",    "I trust you",
-    "You betrayed me",    "I'm excited",    "I feel alone" } 
+        "I Love you", "Hate you",  "Oh my god", "So fetch",    "I hate you",    "I'm sorry",    "I miss you",    "I'm proud of you",
+        "You hurt me", "I'm so happy",   "I feel lost",    "You inspire me",    "I'm disappointed",    "I need you",    "I forgive you",
+        "I can't stop thinking about you",    "I'm so angry",    "You complete me",    "I'm scared",    "I trust you",
+        "You betrayed me",    "I'm excited",    "I feel alone" 
+    } 
 
     filler = {  "we are","I swear","um", "uh", "like", "you know", "fat", "freaking", "fuck yeah", "because", "feel me", "so", 
     "actually", "basically", "literally", "I mean", "well", "right", "okay", "you see", "sort of", "kind of", "I guess", " know what I mean", 
@@ -1007,17 +1008,18 @@ function gossipGenerator(gossipyID, oppossingPartnerID, UnitDefs)
         conversation = conversation .. questions[math.random(1, #questions)]..space
     end
 
-    space = " "
-   
-    conversationalRecursionDepth = math.random(1,5)
+    space = " "   
+    conversationalRecursionDepth = math.random(1,3)
     subject = subjects[math.random(1, #subjects)]
+
     if isQuestion then subject = string.lower(subject) end
+
     conversation =  conversation .. subject
     conversation = conversation ..space.. actions[math.random(1,#actions)]
     linebreak = 1
     repeat 
         if string.len(conversation) > linebreak * 32 then
-            conversation =conversation .. "\r"
+            conversation = conversation .. "\r"
             linebreak = linebreak +1
         end
 
@@ -1046,9 +1048,10 @@ function gossipGenerator(gossipyID, oppossingPartnerID, UnitDefs)
             end
             conversation = conversation .. space.. explainer[math.random(1,#explainer)] ..space.. objects[math.random(1,#objects)]
         end
+
         conversationalRecursionDepth = conversationalRecursionDepth -1
- 
     until (conversationalRecursionDepth < 0) 
+
     optionalEndElement = ""
 
     if randChance(35) then
