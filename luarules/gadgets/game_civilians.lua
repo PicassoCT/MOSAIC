@@ -674,6 +674,21 @@ function displayConversationTextAt(idA, idB)
     end
 end
 
+function getUnitNearestTalkableAlly(id)
+    resultUnits = 
+    foreach(getAllNearUnit(id,  GameConfig.generalInteractionDistance, gaiaTeamID  ),
+        function(ad)
+            defID = spGetUnitDefID(ad)
+            if civilianWalkingTypeTable[defID] then
+                return ad
+            end
+        end
+        )
+    if #resultUnits  > 1 then return resultUnits[math.random(1,#resultUnits)] end
+    if #resultUnits == 0 then return resultUnits[1]end
+    return nil
+end
+
 function sozialize(evtID, frame, persPack, startFrame, myID)
 boolDone = false
 
@@ -684,9 +699,9 @@ boolDone = false
   ---ocassionally detour toward the nearest ally or enemy
     if  math.random(0, 42) > 35 and
         civilianWalkingTypeTable[persPack.mydefID] and 
-        persPack.maxTimeChattingInFrames > 150  then          
-            persPack.chatPartnerID = spGetUnitNearestAlly(myID)
-            if persPack.chatPartnerID and civilianWalkingTypeTable[spGetUnitDefID(persPack.chatPartnerID)] then 
+        persPack.maxTimeChattingInFrames > 150  then  
+            persPack.chatPartnerID = getUnitNearestTalkableAlly(myID)
+            if persPack.chatPartnerID then 
                 persPack.boolStartAChat = true
             end
     end
