@@ -1370,7 +1370,7 @@ function composeForces(constantForces, temporaryForces)
     return globalForce
 end
 -- Physics parameters
-local damping = 0.9
+local damping = 0.99
 local dragForceCofficient = 0.5
 local stiffness = 5.0
 local neighborStiffness = 2.0
@@ -1537,7 +1537,7 @@ function setBoneWorldPosition(unitID, bone, parent, targetPos, velocity, unitDir
 
 
     -- the position of the bone relative to its parent
-    echo("Turn piece "..parent.." towards : ("..tx..">"..velocity.x.."/"..ty..">"..velocity.y.."/"..tz..">"..velocity.z..") ")
+    --echo("Turn piece "..parent.." towards : ("..tx..">"..velocity.x.."/"..ty..">"..velocity.y.."/"..tz..">"..velocity.z..") ")
     Turn(parent, x_axis, tx, math.abs(velocity.x))
     Turn(parent, y_axis, ty, math.abs(velocity.y))
     Turn(parent, z_axis, tz, math.abs(velocity.z))

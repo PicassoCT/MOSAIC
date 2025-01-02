@@ -440,10 +440,17 @@ function Spring.UnitScript.Hide(piece)
     local pieceType = type(piece)
     if pieceType ~= "number" then
         local activeUnit = GetActiveUnit()
-        Spring.Echo("Active Unit is of type:"..type(activeUnit))
-        local defID = Spring.GetUnitDefID(activeUnit)
-        local name = UnitDefs[defID].name
-        Spring.Echo("Hide Piece has not a number in "..name.."- got "..pieceType, piece)      
+        local unitType =type(activeUnit)
+        Spring.Echo("Active Unit is of type:".. unitType)
+        if unitType == "table" then
+            for k,v in pairs(activeUnit) do
+                Spring.Echo("Key: "..k.. " -> ".. tostring(v))
+            end
+        else
+            local defID = Spring.GetUnitDefID(activeUnit)
+            local name = UnitDefs[defID].name
+            Spring.Echo("Hide Piece has not a number in "..name.."- got "..pieceType, piece)      
+        end
     end 
    
     return sp_SetPieceVisibility(piece, false)

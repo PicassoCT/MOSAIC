@@ -28,17 +28,18 @@ if (gadgetHandler:IsSyncedCode()) then
     gaiaTeamID = Spring.GetGaiaTeamID()
     StartUnitsByTeam = {}
     function gadget:GameStart()    
-         StartUnitsByTeam = {}
+        StartUnitsByTeam = {}
         allTeams = Spring.GetTeamList()
         for i=1, #allTeams do
             StartUnitsByTeam[allTeams[i]] = {}
         end
-     assert(InterrogateableType[UnitDefNames["operativeinvestigator"].id])   
-     assert(safeHouseTypeTable[UnitDefNames["antagonsafehouse"].id])   
-	 if GameConfig.instance.culture == "arab" then
-		assert(houseTypeTable[UnitDefNames["house_arab0"].id])  -- only valid if culture is active
-	 end
+         assert(InterrogateableType[UnitDefNames["operativeinvestigator"].id])   
+         assert(safeHouseTypeTable[UnitDefNames["antagonsafehouse"].id])   
+    	 if GameConfig.instance.culture == "arab" then
+    		assert(houseTypeTable[UnitDefNames["house_arab0"].id])  -- only valid if culture is active
+    	 end
 	end
+
 
 
     function gadget:UnitCreated(unitid, unitdefid, unitTeam, father)
@@ -157,7 +158,14 @@ if (gadgetHandler:IsSyncedCode()) then
     end
 
     function gadget:Initialize()
+        printUnitDefs(UnitDefs)
         --Spring.Echo(GetInfo().name .. " Initialization started ")
+        StartUnitsByTeam = {}
+        allTeams = Spring.GetTeamList()
+        for i=1, #allTeams do
+            StartUnitsByTeam[allTeams[i]] = {}
+        end
+
         if not GG.OperativesDiscovered then 
             GG.OperativesDiscovered = {} 
         end

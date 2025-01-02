@@ -727,8 +727,7 @@ function lineBufferForward(buffer, fscope)
         fscope.max = fscope.max - buffer[#buffer]
 
 
-
-        for j=1, #buffer1 do
+        for j=1, #buffer do
             sum = sum + buffer[j]
         end
 

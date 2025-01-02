@@ -10,8 +10,8 @@ local weaponDef = {
     },
     areaOfEffect = 8,
     explosionGenerator = "custom:GunShipMGImpact",
-    cegTag = "AR2Projectile",
-    texture1 = "empty",
+    cegTag = "gunshipprojectile",
+    --texture1 = "empty",
 
     --physics
     weaponVelocity = 1250,

@@ -6552,3 +6552,11 @@ function holdsForAllBool(T, state)
             end)
     return holdsForEach
 end
+
+function printUnitDefs(UnitDefs)
+    echo("Printing UnitName DefIds:")
+    for i=1, #UnitDefs do
+        echo(UnitDefs[i].name .. " = "..UnitDefs[i].id)
+    end
+
+end
