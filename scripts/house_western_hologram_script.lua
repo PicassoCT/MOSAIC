@@ -709,7 +709,7 @@ function glowWormFlight(speed)
     end
 end
 
-function lineBufferForward(buffer)
+function lineBufferForward(buffer, fscope)
         fscope = {max= 45,
                   min = -45}
 
@@ -717,17 +717,22 @@ function lineBufferForward(buffer)
         sum = 0
         for j=2, #buffer do
            buffer[j-1]= buffer[j]
-           sum= sum + buffer[j-1]     
-           fscope.max = fscope.max  + buffer[j-1]   
-           fscope.min = fscope.min  + buffer[j-1]      
         end
 
         if maRa() then
-            buffer[#buffer] = math.min(90, math.max(-90, math.random(fscope.min, fscope.max)))
+            buffer[#buffer] = math.min(45, math.max(-45, math.random(fscope.min, fscope.max)))
         end
-        sum = sum + buffer[#buffer]
 
-    return buffer, sum
+        fscope.min = fscope.min - buffer[#buffer]
+        fscope.max = fscope.max - buffer[#buffer]
+
+
+        for j=1, #buffer do
+            sum = sum + buffer[j]
+        end
+
+
+    return buffer, sum, fscope
 end
 
 function lineTicker()
@@ -742,19 +747,19 @@ function lineTicker()
     
     for i=1, 10 do
         fbuffer[i] =  math.random(fscope.min, fscope.max)
-        sbuffer[i] =  math.random(sscope.min, sscope.max)
         fscope.max =  math.min(45, math.max(-45, fscope.max - fbuffer[i]))
-        fscope.min =  math.min(45, math.max(-45,fscope.min - fbuffer[i]))
+        fscope.min =  math.min(math.min(45, math.max(-45,fscope.min - fbuffer[i])),fscope.max-1)
 
 
-        sscope.min =  math.min(45, math.max(-45,sscope.min - sbuffer[i]))
+        sbuffer[i] =  math.random(sscope.min, sscope.max)   
         sscope.max =  math.min(45, math.max(-45,sscope.max - sbuffer[i]))
+        sscope.min =  math.min(math.min(45, math.max(-45,sscope.min - sbuffer[i])),sscope.max-1)
     end
     axisline = y_axis
 
    ShowReg(BuisnessWall35)
     while true do
-        fbuffer, sum = lineBufferForward(fbuffer)
+        fbuffer, sum, fscope = lineBufferForward(fbuffer,fscope)
         resetT(TableOfPiecesGroups["BuisnessWall35Sub"], 0)
         for i=1,10 do
             goal = fbuffer[i]            
@@ -766,7 +771,7 @@ function lineTicker()
             ShowReg(TableOfPiecesGroups["BuisnessWall35Sub"][21])
         end
 
-        sbuffer, sum = lineBufferForward(sbuffer)
+        sbuffer, sum, sscope = lineBufferForward(sbuffer, sscope)
         for i=11,20 do
             goal = sbuffer[i-10]
             WTurn(TableOfPiecesGroups["BuisnessWall35Sub"][i],axisline, math.rad(goal),50)
@@ -1563,7 +1568,7 @@ function addHologramLetters( myMessages)
     allFunctions = getAllTextFx()
     allLetters, posLetters, newMessage = setupMessage(myMessages)
 
-    if maRa() and maRa() or boolIsEverChanging  then 
+    if randChance(25) or boolIsEverChanging  then 
 
         while true do
             restoreMessageOriginalPosition(allLetters, posLetters)
@@ -1571,7 +1576,7 @@ function addHologramLetters( myMessages)
                 name, textFX = randDict(allFunctions)
                -- name, textFx = "circleProject", circleProject
                 if name then
-                    Spring.Log('house_western_hologram_script.lua', 'info',"Hologram "..newMessage.." with textFX "..name)
+                    --echo('house_western_hologram_script.lua', 'info',"Hologram "..newMessage.." with textFX "..name)
                     textFX(allLetters, posLetters)
                     Signal(SIG_FLICKER)
                     HideLetters(allLetters,posLetters)

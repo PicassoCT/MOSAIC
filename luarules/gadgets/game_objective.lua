@@ -33,9 +33,7 @@ if (gadgetHandler:IsSyncedCode()) then
     end
 
     function useMapControlledObjectiveSpawn()
-        name = Game.mapName
-        boolMapControlledSpawn = getManualObjectiveSpawnMapNames(name)      
-        return boolMapControlledSpawn
+        return getManualObjectiveSpawnMapNames(Game.mapName)      
     end
 
     function defaultInit()

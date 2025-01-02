@@ -134,7 +134,7 @@ function getGameConfig()
     return {
         instance = {
             culture = getInstanceCultureOrDefaultToo(), -- "international", "western", "asian", "arabic"
-            Version = "Alpha: 0.918" 
+            Version = "Alpha: 0.920" 
         },
 
         visuals = {
@@ -2141,6 +2141,11 @@ end
                 if ProtagonUnitTypeList[defID] then return "protagon" end
                 if AntagonUnitTypeList[defID] then return "antagon" end
                 return "protagon"
+            end
+
+             function getTeamSideString(teamID)
+                teamID, leader, isDead, isAiTeam, side, allyTeam, incomeMultiplier = Spring.GetTeamInfo(teamID)
+                return side
             end
 
             function getDecalMap(culture)

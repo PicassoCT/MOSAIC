@@ -56,6 +56,17 @@ function getAllEnemyTeams(teamID, boolIncludeGaia)
     end) or {}
 end
 
+
+
+
+function hasFunding(teamID, amount, types)
+    if types == "m" then types = "metal"end
+    if types == "e" then types = "energy"end
+    currentLevel, storage =  Spring.GetTeamResources (teamID, types )
+    return currentLevel >= amount
+end
+
+
 -- > get all AITeams
 function getAITeams()
     teamList = Spring.GetTeamList()
@@ -1215,8 +1226,11 @@ function getUnitSide(unitID)
     return select(1, getTeamSide(teamid))
 end
 
+function getUnitName(unitID)
+    return getUniTypeName(Spring.GetUnitDefID(unitID))
+end
 -- > returns a Units Name as String
-function getUnitName(UnitDefID)
+function getUnitTypeName(UnitDefID)
     if not UnitDefNames then
         echo("getUnitName: No UnitDefNames");
         return ""
@@ -6537,4 +6551,12 @@ function holdsForAllBool(T, state)
                 if id ~= state then holdsForEach = false end 
             end)
     return holdsForEach
+end
+
+function printUnitDefs(UnitDefs)
+    echo("Printing UnitName DefIds:")
+    for i=1, #UnitDefs do
+        echo(UnitDefs[i].name .. " = "..UnitDefs[i].id)
+    end
+
 end

@@ -759,7 +759,7 @@ function gadget:UnitCreated(unitID, unitDefID)
 		
                 local p = {}
                 for _,name in ipairs{...} do
-					--	if not pieces[name] then Spring.Echo("Piece "..name.." not found in unittype: "..getUnitName(unitDefID))end
+					--	if not pieces[name] then Spring.Echo("Piece "..name.." not found in unittype: "..getUnitTypeName(unitDefID))end
                         p[#p+1] = pieces[name] or error("piece not found: " .. tostring(name), 2)
                 end
                 return unpack(p)

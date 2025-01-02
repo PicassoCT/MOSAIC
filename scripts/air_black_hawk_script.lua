@@ -26,6 +26,7 @@ soundfolder = "sounds/air/copter/"
 rotoscope = piece "rotoscope"
 
 
+
 local boolOnlyOnce = true
 local boolMoving = false
 local SIG_ONTHEFLY = 4
@@ -58,14 +59,15 @@ function rotorsUp()
         Show(tailrotors)
         Show(rotors)
     end
-    if isNight() then 
+    if isNight() == true then 
         Show(nightlight)
+    else
+        Hide(nightlight)
     end
 
     Sleep(350)
     Hide(rotor)
     Hide(tailrotor)
-
 end
 
 function rotorsDown()
@@ -88,9 +90,6 @@ function rotorsDown()
         Show(tailrotor)
     end
     Sleep(1000)
-    Turn(center, x_axis, math.rad(-18), 0.25)
-    Move(center, y_axis, -5.5, 2.8)
-
 end
 
 function script.Activate()
@@ -261,10 +260,8 @@ end
 
 boolAir = true
 function script.Create()
-    --test
-    Turn(rotoscope, x_axis, math.rad(18), 0)
-    Spin(rotoscope, y_axis, math.rad(640), 0)
-    --/test
+
+    Hide(rotoscope)
     Hide(dirtemit1)
     Hide(dirtemit2)
     Hide(imgoingdown)

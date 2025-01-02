@@ -553,7 +553,7 @@ function threadStarter()
                         locConditionFunction)
             while boolStartThread == false do Sleep(33) end
         end
-        Sleep(33)
+        Sleep(100)
     end
 end
 

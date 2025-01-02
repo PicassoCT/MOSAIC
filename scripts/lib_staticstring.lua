@@ -791,6 +791,28 @@ function GetBadGuysGroupNames(hash)
     return badGuys[(hash%#badGuys)+1]
 end
 
+function getSafeHouseTeamToolTip(teamID)
+    teamName = string.lower(getTeamSideString(teamID))
+    boolIsProtagon = (teamName == "protagon")
+    if boolIsProtagon then
+        agencyName = GetGoodGuysGroupName(teamID)
+        return agencyName.." base of operation <recruits Agents/ builds upgrades>"
+    else
+        agencyName = GetBadGuysGroupNames(teamID)
+        return agencyName.." base of operation <recruits Agents/ builds upgrades>"
+    end
+
+    echo("Unknown team in getSafeHouseTeamToolTip: "..teamName)
+end
+
+function setSafeHouseTeamName(unitID)
+    teamID = Spring.GetUnitTeam(unitID)
+    newToolTip = getSafeHouseTeamToolTip(teamID)
+    if newToolTip then 
+        Spring.SetUnitTooltip(unitID, newToolTip)
+    end
+end
+
 function getDeadDropLastWords(unitID, killerId )
     teamName, isAntagon = getTeamNameIsAntagon(unitID)
     civilianId = getCivilianIdFromAgent(unitID)  or unitID
@@ -808,7 +830,7 @@ function getDeadDropLastWords(unitID, killerId )
         "Long live ".. teamName,
         "Hey ".. SurName,
         "Et tu brute ? Et tu "..agentName,
-        "The ".. teamName.. " send there regards"
+        "The ".. teamName.. " sends there regards"
     }
 
     return lastWords[math.random(1,#lastWords)], agentName, SurName
@@ -896,16 +918,20 @@ end
 
 function gossipGenerator(gossipyID, oppossingPartnerID, UnitDefs)
 
-
-
     -- Define the subjects, actions, and objects
-    assert(UnitDefs)
     questions = {"Why", "Where", "What", "How", "With", "Who"}
     space = " "
     
     subjects = {
-    "Me", "I", "We", "They", "All of us", "Mum", "Dad","Society","Family", "Just", "Oh my god"}
+    "Me", "I", "You", "Us", "We", "They", "All of us", "Mum", "Dad","Society","Family"}
     
+    emoShorts = {
+        "I Love you", "Hate you",  "Oh my god", "So fetch",    "I hate you",    "I'm sorry",    "I miss you",    "I'm proud of you",
+        "You hurt me", "I'm so happy",   "I feel lost",    "You inspire me",    "I'm disappointed",    "I need you",    "I forgive you",
+        "I can't stop thinking about you",    "I'm so angry",    "You complete me",    "I'm scared",    "I trust you",
+        "You betrayed me",    "I'm excited",    "I feel alone" 
+    } 
+
     filler = {  "we are","I swear","um", "uh", "like", "you know", "fat", "freaking", "fuck yeah", "because", "feel me", "so", 
     "actually", "basically", "literally", "I mean", "well", "right", "okay", "you see", "sort of", "kind of", "I guess", " know what I mean", 
     "to be honest", "frankly", "seriously", "for real", "no duh", "not okay", "seriously", "yadaya", "catch my drift", "right on", "mkay", "fuck",
@@ -941,7 +967,7 @@ function gossipGenerator(gossipyID, oppossingPartnerID, UnitDefs)
         "doctor", "lawyer", "secretary", "salaryslave", "master", "ceo", "boss", "a.i.",  "company", "choom", "roller", "baller", "pornstar", "shit", "start", "end",
         "conspiracy", "secret society", "cells", "agents", "foreign agents", "secret service", "safehouse", "skyrise", "arms race", "icbm", "rocket", "aerosol", "end of the world", "boobs", "bike", "limo", "truck"}
     
-    techBabble = {"[CENSORED]", "[Profanity]", "[GCR]","[Generated Content removed]","...", "[AI Autonegotiation]","[NOT TRANSLATEABLE]", "[UNINTELIGABLE]", "[Sound of Breathing]", "[REDACTED]", "[Encrypted]", "[TranslatorError]", "BURP", "[sobs]", " -"}
+    techBabble = {"[CENSORED]", "[PROFANITY]", "[GCR]","[Generated Content removed]","...", "[AI Autonegotiation]","[NOT TRANSLATEABLE]", "[UNINTELIGABLE]", "[Sound of Breathing]", "[REDACTED]", "[ENCRYPTED]", "[VIRUS]", "[TranslatorError]", "BURP", "[sobs]", " -"}
     
     explainer = {"because of the", "for the", "of course the", "due to the", "well obviously the", "cause of that", "in that", "unblievable", "thorough by", "by the"}
 
@@ -951,8 +977,17 @@ function gossipGenerator(gossipyID, oppossingPartnerID, UnitDefs)
         table.insert(subjects, family)
     end
 
-    isConsumerPragging = randChance(10)
-    if isConsumerism  then
+    if oppossingPartnerID then 
+        oname, ofamily = getDeterministicCultureNames(oppossingPartnerID, UnitDefs)
+        table.insert(subjects, ofamily)
+        table.insert(subjects, oname)
+        if randChance(50) then --reply
+        conversation = name..": "
+        end
+    end
+
+    isConsumerBragging = randChance(10)
+    if isConsumerBragging  then
         ConsumerStarter = {"Today i bought a %s, best quality", "You wont believe the bargain i made with the %s ", "It was on sale and it was only 99$ for %s!",
         "They do not make %s like they used too ", "%s was a total steal", "I can buy a %s for you too.", "Honey, we do not have the money, but i bought a %s!"}
         consumerItem = {"Bread", "Meat", "Salad", "sausage", "shirt", "skirt", "trouser", "implant", "medicine", "fruit", "soylentils", "coat", 
@@ -962,28 +997,29 @@ function gossipGenerator(gossipyID, oppossingPartnerID, UnitDefs)
         return conversation
     end
 
+    isEmoShort = randChance(5)
+    if isEmoShort then
+        return conversation.. emoShorts[math.random(1,#emoShorts)]
+    end
+
+
     isQuestion = randChance(10)
     if (isQuestion) then
         conversation = conversation .. questions[math.random(1, #questions)]..space
     end
 
-    if oppossingPartnerID then 
-        name, family = getDeterministicCultureNames(oppossingPartnerID, UnitDefs)
-        table.insert(subjects, family)
-        table.insert(subjects, name)
-    end
-
-    space = " "
-   
-    conversationalRecursionDepth = math.random(1,5)
+    space = " "   
+    conversationalRecursionDepth = math.random(1,3)
     subject = subjects[math.random(1, #subjects)]
+
     if isQuestion then subject = string.lower(subject) end
+
     conversation =  conversation .. subject
     conversation = conversation ..space.. actions[math.random(1,#actions)]
     linebreak = 1
     repeat 
         if string.len(conversation) > linebreak * 32 then
-            conversation =conversation .. "\r"
+            conversation = conversation .. "\r"
             linebreak = linebreak +1
         end
 
@@ -1012,9 +1048,10 @@ function gossipGenerator(gossipyID, oppossingPartnerID, UnitDefs)
             end
             conversation = conversation .. space.. explainer[math.random(1,#explainer)] ..space.. objects[math.random(1,#objects)]
         end
+
         conversationalRecursionDepth = conversationalRecursionDepth -1
- 
     until (conversationalRecursionDepth < 0) 
+
     optionalEndElement = ""
 
     if randChance(35) then

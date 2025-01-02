@@ -114,7 +114,7 @@ function BoostersReturning()
 
     for i=1, 3 do        
         boosterReturned[i] = false
-       StartThread(landBooster, i, TableOfPiecesGroups["ReturningBooster"][i])
+       StartThread(landBooster, i)
     end
 
     Sleep(1000)
@@ -149,32 +149,30 @@ end
 
 function getPlum(boosterNr)
     if boosterNr == 1 then
-        assertTable( TableOfPiecesGroups[ReturningBooster1ThrusterPlumN])
         return TableOfPiecesGroups[ReturningBooster1ThrusterPlumN]
     end  
     if boosterNr == 2 then
-        assertTable(TableOfPiecesGroups[ReturningBooster2ThrusterPlumN])
         return TableOfPiecesGroups[ReturningBooster2ThrusterPlumN]
     end
     if boosterNr == 3 then
-        assertTable(TableOfPiecesGroups[ReturningBooster3ThrusterPlumN])
         return TableOfPiecesGroups[ReturningBooster3ThrusterPlumN]
     end
     assert(nil, boosterNr .." not real")
 end
 
 
-function landBooster(boosterNr, booster)
+function landBooster(boostNr)
+    local boosterNr = boostNr
     resttime = boosterNr*15000
-    LandCone = TableOfPiecesGroups["LandCone"][boosterNr]
+    local LandCone = TableOfPiecesGroups["LandCone"][boosterNr]
     axis = 2
     Sleep(resttime)
-    plums = getPlum(boosterNr)
+    local plums = getPlum(boosterNr)
     assert(plums)
-    booster = TableOfPiecesGroups[ReturningBoosterN][boosterNr]
+    local booster = TableOfPiecesGroups[ReturningBoosterN][boosterNr]
     assert(booster)
     nextPos = 64000
-    boosterRotator = TableOfPiecesGroups[BoosterRotatorN][boosterNr]
+    local boosterRotator = TableOfPiecesGroups[BoosterRotatorN][boosterNr]
     assert(boosterRotator)
     WMove(booster, axis, nextPos, 0)
     --Turn(boosterRotator, x_axis, math.rad(-5), 0)
@@ -335,10 +333,9 @@ function craneLoadToPlatform()
     ShowRocket()
     openClaw()
     unfoldFuelTowers()
-    Move(RocketCraneBase, z_axis, -4500, 100)
     deployCapsule()
-    Turn(CraneHead, y_axis, math.rad(CraneOutOfTheWayPos), 0.1)
-    WTurn(CraneHead, y_axis, math.rad(CraneOutOfTheWayPos), 0.1)
+    WMove(RocketCraneBase, z_axis, -4500, 100)
+    WTurn(CraneHead, y_axis, math.rad(crawlerRocketPosY), 0.1)
     WMove(RocketCraneBase, z_axis, -4500, 15)
     StartThread(closeDoor, GroundFrontDoorN)
     foldFuelTowers()

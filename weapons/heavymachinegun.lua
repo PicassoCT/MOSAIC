@@ -11,7 +11,7 @@ local weaponDef = {
     areaOfEffect = 8,
     explosionGenerator =  "custom:Ricochet",
     cegTag = "gunprojectile",
-    texture1 = "gunshot",
+    --texture1 = "gunshot",
     avoidFriendly = false,
     --physics
     weaponVelocity = 850,

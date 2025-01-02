@@ -343,8 +343,6 @@ function headAnimationLoop()
     end
 end
 
-
-
 function attachLoot()
     transportID =  Spring.GetUnitIsTransporting(unitID) 
     if not transportID then 
@@ -356,6 +354,15 @@ function attachLoot()
        end
     end
 end
+
+function throwPayloads()
+    if lootID and doesUnitExistAlive(lootID) then Spring.UnitDetach(lootID) end
+    Hide(ShoppingBag)
+    Hide(SittingBaby)
+    Hide(trolley)
+    Hide(Handbag)
+end
+
 
 function bodyBuild()
     hideAll(unitID)
@@ -723,8 +730,10 @@ end
 function wailing()
     Signal(SIG_INTERNAL)
     SetSignalMask(SIG_INTERNAL)
+    throwPayloads()
+
     while wailingTime > 0 do
-        PlayAnimation("UPBODY_HANDSUP", lowerBodyPieces, 1.0)
+        throwArmsUp()
         PlayAnimation("UPBODY_WAILING"..math.random(1,2), lowerBodyPieces, 1.0)
        wailingTime = wailingTime - 1500
         Sleep(100)
@@ -815,6 +824,12 @@ function filmingLocation()
     setCivilianUnitInternalStateMode(unitID, STATE_ENDED)
 end
 
+function throwArmsUp()
+    valr = math.random(70,100)
+    vall = math.random(70,100)
+    Turn(UpArm1, x_axis, math.rad(valr), 50)
+    Turn(UpArm2, x_axis, math.rad(vall), 50)
+end
 
 function fleeEnemy(enemyID)
     Signal(SIG_INTERNAL)
@@ -824,29 +839,17 @@ function fleeEnemy(enemyID)
         setCivilianUnitInternalStateMode(unitID, STATE_ENDED)
         return 
     end  
-    valr = math.random(70,100)
-    vall = math.random(70,100)
-    Turn(UpArm1, x_axis, math.rad(valr), 50)
-    Turn(UpArm2, x_axis, math.rad(vall), 50)
-   -- echo(unitID.." starts fleeing from "..enemyID.." with distance "..distanceUnitToUnit(unitID, enemyID))
-  
+    throwPayloads()
+      
     flightTime =  GameConfig.civilian.MaxFlightTimeMS
-    while doesUnitExistAlive(enemyID) == true and 
-        flightTime > 0 and
-         distanceUnitToUnit(unitID, enemyID) < GameConfig.civilian.PanicRadius do
-
+    while doesUnitExistAlive(enemyID) == true and flightTime > 0 and distanceUnitToUnit(unitID, enemyID) < GameConfig.civilian.PanicRadius do
+        throwArmsUp()
         runAwayFrom(unitID, enemyID, GG.GameConfig.civilian.FleeDistance)
         distribution = math.random(1,10)
-        Sleep(125+distribution)
-        flightTime= flightTime - 125
+        Sleep(125 + distribution)
+        flightTime = flightTime - 125
     end
-  --[[  if  doesUnitExistAlive(enemyID) == false then
-       echo(unitID.." stops fleeing from "..enemyID.. " cause enemy is dead")
-    end   
 
-    if  distanceUnitToUnit(unitID, enemyID) >= GameConfig.civilian.FleeDistance  then
-        echo(unitID.." stops fleeing from "..enemyID.. " cause max distance reached")
-    end  --]]
     setCivilianUnitInternalStateMode(unitID, STATE_ENDED)
 end
 

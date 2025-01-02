@@ -576,7 +576,7 @@ function buildAnimation(buildID)
                 Move(buildspot, z_axis, Plattformheight, math.pi * 15)
             end
         end
-        if getUnitCloaked(unitID) then
+        if not getUnitCloaked(unitID) then
             Spring.PlaySoundFile("sounds/assembly/assemblyworking.wav", 0.5)
         end
         Sleep(10)

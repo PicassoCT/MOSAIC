@@ -39,8 +39,7 @@ local weaponDef = {
     --CylinderTargetting=true,
     avoidFeature = false,
     avoidFriendly = true,
-
-    explosionGenerator=	"custom:330rlexplode",
+    explosionGenerator = "custom:GunShipMGImpact",
     --commandfire=true,
 
     --- -DAMAGE

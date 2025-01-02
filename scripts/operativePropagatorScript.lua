@@ -1370,7 +1370,8 @@ function composeForces(constantForces, temporaryForces)
     return globalForce
 end
 -- Physics parameters
-local damping = 0.999
+local damping = 0.99
+local dragForceCofficient = 0.5
 local stiffness = 5.0
 local neighborStiffness = 2.0
 local restTimeClothMS = 100
@@ -1467,10 +1468,11 @@ function updateCloth(coatMap, unitID, globalForce, perPieceForces)
         for i=1, #coatStripe.children do
             local bone = coatStripe.children[i]
             local parent = ((i > 1) and coatStripe.children[i-1]) or  coatStripe.parent 
-            if bone ~= parent then
+
                 -- Get the current world position of the bone and parent bone
                 local worldPos, worldDir = getBoneWorldPosition(unitID, bone)
-                local posVelocity= posVelocDict[bone]
+                local oldPosVelocity = posVelocDict[bone]
+                local newPosVelocity = oldPosVelocity
 
                 globalForce = addNeighborAsForce(globalForce, worldPos, coatStripe.parent)
                 leftNeighbor, rightNeighbor = getNeighbors( stripIndex + i, stripIndex + 5)
@@ -1479,21 +1481,28 @@ function updateCloth(coatMap, unitID, globalForce, perPieceForces)
                 -- Apply spring force to maintain connectivity with the parent
                 localForce = TransformWorldForceToLocalForce(globalForce,  worldDir)
 
+                if parent == bone then
+					cx, cy, cz = Spring.GetUnitPiecePosDir(unitID, bone)
+					localForce.x = localForce.x - (oldPosVelocity.worldPos.x - cx)*dragForceCofficient
+					localForce.y = localForce.y - (oldPosVelocity.worldPos.y - cy)*dragForceCofficient
+					localForce.z = localForce.z - (oldPosVelocity.worldPos.z - cz)*dragForceCofficient
+                end
+
                 -- Update velocity with damping
-                posVelocity.velocity.x = (posVelocity.velocity.x + localForce.x * deltaTime) * damping
-                posVelocity.velocity.y = (posVelocity.velocity.y + localForce.y * deltaTime) * damping
-                posVelocity.velocity.z = (posVelocity.velocity.z + localForce.z * deltaTime) * damping
+                newPosVelocity.velocity.x = (newPosVelocity.velocity.x + localForce.x * deltaTime) * damping
+                newPosVelocity.velocity.y = (newPosVelocity.velocity.y + localForce.y * deltaTime) * damping
+                newPosVelocity.velocity.z = (newPosVelocity.velocity.z + localForce.z * deltaTime) * damping
 
                 -- Update position
-                posVelocity.worldPos.x = posVelocity.worldPos.x + posVelocity.velocity.x * deltaTime
-                posVelocity.worldPos.y = posVelocity.worldPos.y + posVelocity.velocity.y * deltaTime
-                posVelocity.worldPos.z = posVelocity.worldPos.z + posVelocity.velocity.z * deltaTime
+                newPosVelocity.worldPos.x = newPosVelocity.worldPos.x + newPosVelocity.velocity.x * deltaTime
+                newPosVelocity.worldPos.y = newPosVelocity.worldPos.y + newPosVelocity.velocity.y * deltaTime
+                newPosVelocity.worldPos.z = newPosVelocity.worldPos.z + newPosVelocity.velocity.z * deltaTime
                 
-                posVelocDict[bone] = posVelocity
+                posVelocDict[bone] = newPosVelocity
                 -- Apply the position in local space (relative to parent bone)
 				boolMovedAtLeastOne = true
-                setBoneWorldPosition(unitID, bone, parent, posVelocity.worldPos, posVelocity.velocity)
-            end
+                setBoneWorldPosition(unitID, bone, parent, newPosVelocity.worldPos, newPosVelocity.velocity)
+   
         end
     end
     --echo("Reached moving the bones"..toString(boolMovedAtLeastOne))
@@ -1510,9 +1519,9 @@ function getBoneWorldPosition(unitID, bone)
     return {x=x,y=y,z=z}, {x=dx, y=dy, z=dz}
 end
 
-function setBoneWorldPosition(unitID, bone, parent, targetPos, velocity, unitDir)
+function setBoneWorldPosition(unitID, bone, parent, targetPos, velocity, unitDir, cx, cy, cz)
     px, py, pz = Spring.GetUnitPiecePosDir(unitID, parent)
-    cx, cy, cz = Spring.GetUnitPiecePosDir(unitID, bone)
+
 
     -- Derive the bone position from the local Pos
     tx,ty,tz = px - targetPos.x, py - targetPos.y, pz - targetPos.z
@@ -1525,8 +1534,10 @@ function setBoneWorldPosition(unitID, bone, parent, targetPos, velocity, unitDir
         tx, ty, tz = 0, 0, 0
     end
     tx,ty,tz = tx /norm, ty /norm, tz/norm
+
+
     -- the position of the bone relative to its parent
-   -- echo("Turn piece "..parent.." towards : ", targetPos, velocity)
+    --echo("Turn piece "..parent.." towards : ("..tx..">"..velocity.x.."/"..ty..">"..velocity.y.."/"..tz..">"..velocity.z..") ")
     Turn(parent, x_axis, tx, math.abs(velocity.x))
     Turn(parent, y_axis, ty, math.abs(velocity.y))
     Turn(parent, z_axis, tz, math.abs(velocity.z))
