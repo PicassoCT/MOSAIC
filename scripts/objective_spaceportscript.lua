@@ -164,7 +164,8 @@ function getPlum(boosterNr)
 end
 
 
-function landBooster(boosterNr, booster)
+function landBooster(boostNr)
+    boosterNr = boostNr
     resttime = boosterNr*15000
     LandCone = TableOfPiecesGroups["LandCone"][boosterNr]
     axis = 2
@@ -339,6 +340,7 @@ function craneLoadToPlatform()
     deployCapsule()
     Turn(CraneHead, y_axis, math.rad(CraneOutOfTheWayPos), 0.1)
     WTurn(CraneHead, y_axis, math.rad(CraneOutOfTheWayPos), 0.1)
+    Turn(CraneHead, y_axis, math.rad(crawlerRocketPosY), 0.1)
     WMove(RocketCraneBase, z_axis, -4500, 15)
     StartThread(closeDoor, GroundFrontDoorN)
     foldFuelTowers()

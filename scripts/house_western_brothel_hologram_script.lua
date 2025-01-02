@@ -1158,7 +1158,7 @@ function addHologramLetters( myMessages)
             if not posLetters.boolUpright then
                 name, textFX = randDict(allFunctions)
                 if name then
-                    echo("Hologram "..newMessage.." with textFX "..name)
+                    --echo("Hologram "..newMessage.." with textFX "..name)
                     textFX(allLetters, posLetters)
                     Signal(SIG_FLICKER)
                     HideLetters(allLetters,posLetters)

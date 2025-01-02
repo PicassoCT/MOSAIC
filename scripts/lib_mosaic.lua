@@ -134,7 +134,7 @@ function getGameConfig()
     return {
         instance = {
             culture = getInstanceCultureOrDefaultToo(), -- "international", "western", "asian", "arabic"
-            Version = "Alpha: 0.918" 
+            Version = "Alpha: 0.920" 
         },
 
         visuals = {

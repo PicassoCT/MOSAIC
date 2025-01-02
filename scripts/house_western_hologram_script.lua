@@ -709,7 +709,7 @@ function glowWormFlight(speed)
     end
 end
 
-function lineBufferForward(buffer)
+function lineBufferForward(buffer, fscope)
         fscope = {max= 45,
                   min = -45}
 
@@ -717,17 +717,23 @@ function lineBufferForward(buffer)
         sum = 0
         for j=2, #buffer do
            buffer[j-1]= buffer[j]
-           sum= sum + buffer[j-1]     
-           fscope.max = fscope.max  + buffer[j-1]   
-           fscope.min = fscope.min  + buffer[j-1]      
         end
 
         if maRa() then
             buffer[#buffer] = math.min(45, math.max(-45, math.random(fscope.min, fscope.max)))
         end
-        sum = sum + buffer[#buffer]
 
-    return buffer, sum
+        fscope.min = fscope.min - buffer[#buffer]
+        fscope.max = fscope.max - buffer[#buffer]
+
+
+
+        for j=1, #buffer1 do
+            sum = sum + buffer[j]
+        end
+
+
+    return buffer, sum, fscope
 end
 
 function lineTicker()
@@ -754,7 +760,7 @@ function lineTicker()
 
    ShowReg(BuisnessWall35)
     while true do
-        fbuffer, sum = lineBufferForward(fbuffer)
+        fbuffer, sum, fscope = lineBufferForward(fbuffer,fscope)
         resetT(TableOfPiecesGroups["BuisnessWall35Sub"], 0)
         for i=1,10 do
             goal = fbuffer[i]            
@@ -766,7 +772,7 @@ function lineTicker()
             ShowReg(TableOfPiecesGroups["BuisnessWall35Sub"][21])
         end
 
-        sbuffer, sum = lineBufferForward(sbuffer)
+        sbuffer, sum, sscope = lineBufferForward(sbuffer, sscope)
         for i=11,20 do
             goal = sbuffer[i-10]
             WTurn(TableOfPiecesGroups["BuisnessWall35Sub"][i],axisline, math.rad(goal),50)
@@ -1571,7 +1577,7 @@ function addHologramLetters( myMessages)
                 name, textFX = randDict(allFunctions)
                -- name, textFx = "circleProject", circleProject
                 if name then
-                    echo('house_western_hologram_script.lua', 'info',"Hologram "..newMessage.." with textFX "..name)
+                    --echo('house_western_hologram_script.lua', 'info',"Hologram "..newMessage.." with textFX "..name)
                     textFX(allLetters, posLetters)
                     Signal(SIG_FLICKER)
                     HideLetters(allLetters,posLetters)

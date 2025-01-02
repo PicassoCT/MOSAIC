@@ -94,7 +94,7 @@ end
 
 
 function gadget:UnitDestroyed(unitID, unitDefID, teamID, attackerID)
-    echo("UnitDestroyed:"..unitID.." a "..getUnitTypeName(unitDefID).." by "..toString(attackerID))
+    --echo("UnitDestroyed:"..unitID.." a "..getUnitTypeName(unitDefID).." by "..toString(attackerID))
     -- if building, get all Civilians/Trucks nearby in random range and let them get together near the rubble
     if teamID == gaiaTeamID and attackerID then
         if houseTypeTable[unitDefID] then
