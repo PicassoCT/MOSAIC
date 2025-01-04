@@ -170,6 +170,16 @@ end
 
 forkLiftHasCargo = {}
 
+function isAtEdge(z,x)
+    if z > 5500 or z < -5500 then
+        if x < -650 or x> 650 then
+            return true
+        end
+    end
+    return false
+end
+
+
 function forkLiftOS()
     Sleep(500)
     local forkLifts = TableOfPiecesGroups["Forklift"]
@@ -179,6 +189,7 @@ function forkLiftOS()
             forkLift = forkLifts[selectedForkLift]
             Show(forkLift)
             goalZ= math.random(0, 6000)
+             goalX= math.random(0, 750)*randSign()
 
             if not doorClosed[GroundRearDoorN] then
                 goalZ = goalZ * -1
@@ -190,11 +201,19 @@ function forkLiftOS()
                 Show(TableOfPiecesGroups["ForkLiftCargoUp"][selectedForkLift]) 
                 Hide(TableOfPiecesGroups["ForkLiftCargoDown"][selectedForkLift])
                 Move(TableOfPiecesGroups["ForkLiftCargoDown"][selectedForkLift],y_axis, goalZ, 0)
+                Move(TableOfPiecesGroups["ForkLiftCargoDown"][selectedForkLift],x_axis, goalX, 0)
             else
                 Hide(TableOfPiecesGroups["ForkLiftCargoUp"][selectedForkLift]) 
                 Show(TableOfPiecesGroups["ForkLiftCargoDown"][selectedForkLift])
                 Move(TableOfPiecesGroups["ForkLiftCargoDown"][selectedForkLift],y_axis, goalZ, 0)
+                Move(TableOfPiecesGroups["ForkLiftCargoDown"][selectedForkLift],x_axis, goalX, 0)
             end
+
+            if isAtEdge(goalZ, goalX) then
+                TODO
+            end
+
+
 
             Turn(forkLift,y_axis, randSign()*math.pi*2, 5)
             WMove(forkLift,y_axis, goalZ, 750)
@@ -208,11 +227,11 @@ function forkLiftOS()
                 Hide(TableOfPiecesGroups["ForkLiftCargoDown"][selectedForkLift])
                 forkLiftHasCargo[selectedForkLift] = true
             end
-            
+
             if launchState == "launching" then break end
          
             Turn(forkLift,y_axis, randSign()*math.pi*0.5, 5)
-            goalX= math.random(0, 750)*randSign()
+           
             WMove(forkLift,x_axis, goalX, 750)
         end
         Turn(forkLift,y_axis, randSign()*math.pi*2, 5)
