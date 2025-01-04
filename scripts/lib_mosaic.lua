@@ -260,6 +260,9 @@ function getGameConfig()
         -- Dayproperties
         daylength = 28800, -- in frames
 
+        --Loot 
+        lootCollectionReward = 200,
+
         -- Interrogation
         InterrogationTimeInSeconds = 20,
         InterrogationTimeInFrames = 20 * 30,

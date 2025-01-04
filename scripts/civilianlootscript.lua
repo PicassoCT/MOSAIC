@@ -3,7 +3,7 @@ include "lib_OS.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 --include "lib_Build.lua"
-
+GameConfig = getGameConfig()
 local TablesOfPiecesGroups = {}
 
 center = piece "center"
@@ -40,12 +40,26 @@ function threadStarter()
             while Spring.GetUnitTransporter(unitID) do Sleep(100) end
             selfDestroyDelayedOnDetach()
         end
-    Sleep(100)
+    Sleep(300)
     end
 end
 
 
+local lifeTimeMS= 15000
+local spGetUnitTeam = Spring.GetUnitTeam
+local gaiaTeamID = Spring.GetGaiaTeamID()
+-- Allow for loot collecting
 function selfDestroyDelayedOnDetach()
-    Sleep(15000)
+    while lifeTimeMS > 0 do
+        Sleep(500)
+        lifeTimeMS = lifeTimeMS - 500
+        foreach(getAllNearUnit(unitID, 150),
+            function(id)
+                if gaiaTeamID ~= spGetUnitTeam(id) then
+                    GG.Bank:TransferToTeam(GameConfig.lootCollectionReward, unitID, id, colourBlue)
+                    Spring.DestroyUnit(unitID, false, true)
+                end
+            end)
+    end
     Spring.DestroyUnit(unitID, false, true)
 end
