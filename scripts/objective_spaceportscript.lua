@@ -179,9 +179,23 @@ function isAtEdge(z,x)
     return false
 end
 
+function dropCargo( goalZ, goalX, selectedForkLift )
+    Hide(ableOfPiecesGroups["ForkLiftCargoUp"][selectedForkLift])
+    Show(ableOfPiecesGroups["ForkLiftCargoDown"][selectedForkLift])
+    Move(TableOfPiecesGroups["ForkLiftCargoDown"][selectedForkLift],y_axis, goalZ, 0)
+    Move(TableOfPiecesGroups["ForkLiftCargoDown"][selectedForkLift],x_axis, goalX, 0)
+end
+
+function pickUpCargo(selectedForkLift)
+    Show(ableOfPiecesGroups["ForkLiftCargoUp"][selectedForkLift])
+    Hide(ableOfPiecesGroups["ForkLiftCargoDown"][selectedForkLift])
+end
+
 
 function forkLiftOS()
     Sleep(500)
+    hideT(TableOfPiecesGroups["ForkLiftCargoDown"])
+    hideT(TableOfPiecesGroups["ForkLiftCargoUp"])
     local forkLifts = TableOfPiecesGroups["Forklift"]
     while true do
         while launchState ~= "launching" do
@@ -197,23 +211,12 @@ function forkLiftOS()
             if not doorClosed[GroundFrontDoorN] then
                 goalZ = goalZ 
             end
-            if forkLiftHasCargo[selectedForkLift] then   
-                Show(TableOfPiecesGroups["ForkLiftCargoUp"][selectedForkLift]) 
-                Hide(TableOfPiecesGroups["ForkLiftCargoDown"][selectedForkLift])
-                Move(TableOfPiecesGroups["ForkLiftCargoDown"][selectedForkLift],y_axis, goalZ, 0)
-                Move(TableOfPiecesGroups["ForkLiftCargoDown"][selectedForkLift],x_axis, goalX, 0)
-            else
+            if not forkLiftHasCargo[selectedForkLift] then   
                 Hide(TableOfPiecesGroups["ForkLiftCargoUp"][selectedForkLift]) 
                 Show(TableOfPiecesGroups["ForkLiftCargoDown"][selectedForkLift])
                 Move(TableOfPiecesGroups["ForkLiftCargoDown"][selectedForkLift],y_axis, goalZ, 0)
                 Move(TableOfPiecesGroups["ForkLiftCargoDown"][selectedForkLift],x_axis, goalX, 0)
             end
-
-            if isAtEdge(goalZ, goalX) then
-                TODO
-            end
-
-
 
             Turn(forkLift,y_axis, randSign()*math.pi*2, 5)
             WMove(forkLift,y_axis, goalZ, 750)
@@ -233,6 +236,14 @@ function forkLiftOS()
             Turn(forkLift,y_axis, randSign()*math.pi*0.5, 5)
            
             WMove(forkLift,x_axis, goalX, 750)
+
+            if isAtEdge(goalZ, goalX) then
+                if forkLiftHasCargo[selectedForkLift] then 
+                    dropCargo(goalZ, goalX, selectedForkLift)
+                else
+                    pickUpCargo(selectedForkLift)
+                end
+            end
         end
         Turn(forkLift,y_axis, randSign()*math.pi*2, 5)
         Move(forkLifts[1],x_axis, 0, 750)
