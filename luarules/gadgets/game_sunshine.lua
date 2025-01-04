@@ -39,39 +39,46 @@ if gadgetHandler:IsSyncedCode() then
         return value
     end
 
+
+    assert(GameConfig.instance.culture)
+    assert(getDetermenisticMapHash(Game))
+    local regDayCol = getRegionDayColorBy(GameConfig.instance.culture, getDetermenisticMapHash(Game))
+    echo("regDayCol: r:"..regDayCol.x .. " g: ".. regDayCol.y .. " b:".. regDayCol.z)
+    assert(regDayCol)
+    assert(type(regDayCol)=="table")
+
     -- if you want diffrent colours for your day, modify this table
     sunCol = {}
     -- night
     LengthOfNightDay = 12
     for i = 1, LengthOfNightDay do
-        sunCol[#sunCol + 1] = mixTable(makeVector(54, 72, 126), makeVector(64, 84, 80), math.random(0,100)/100)  
+        sunCol[#sunCol + 1] = mixTable(makeVector(54, 72, 126), makeVector(64, 84, 80), math.random(1,100)/100)  
     end
 
     sunCol[#sunCol + 1] = makeVector(49, 66, 115)
     sunCol[#sunCol + 1] = makeVector(41, 56, 97)
     sunCol[#sunCol + 1] = makeVector(31, 43, 74)
     sunCol[#sunCol + 1] = makeVector(25, 34, 59)
-    sunCol[#sunCol + 1] = makeVector(25, 25, 35)
-    sunCol[#sunCol + 1] = makeVector(75, 18, 25)
+    sunCol[#sunCol + 1] = makeVector(45, 25, 35)
+    sunCol[#sunCol + 1] = makeVector(65, 18, 25)
+
     -- sunrise
     sunCol[#sunCol + 1] = makeVector(88, 28, 0)
     sunCol[#sunCol + 1] = makeVector(120, 39, 0)
     sunCol[#sunCol + 1] = makeVector(156, 51, 0)
     sunCol[#sunCol + 1] = makeVector(175, 57, 0)
-    sunCol[#sunCol + 1] = makeVector(223, 73, 0)
-    sunCol[#sunCol + 1] = makeVector(246, 66, 0)
-    assert(GameConfig.instance.culture)
-    assert(getDetermenisticMapHash(Game))
-    local regionalDayColor = getRegionDayColorBy(GameConfig.instance.culture, getDetermenisticMapHash(Game))
-    assert(regionalDayColor)
-    assert(type(regionalDayColor)=="table")
-    sunCol[#sunCol + 1] = mixTable(regionalDayColor, makeVector(255, 128, 0), 0.33)
-    sunCol[#sunCol + 1] = mixTable(regionalDayColor, makeVector(255, 191, 0), 0.66)
+    sunCol[#sunCol + 1] =  mixTable(regDayCol,makeVector(192, 73, 0), 0.12)
+    sunCol[#sunCol + 1] =  mixTable(regDayCol,makeVector(222, 83, 0), 0.33)
 
-    --noon
-    for i = 1, LengthOfNightDay do
-        sunCol[#sunCol + 1] = regionalDayColor
+    --blend towards day
+    sunCol[#sunCol + 1] = mixTable(regDayCol, makeVector(246, 92, 0), 0.66)
+    sunCol[#sunCol + 1] = mixTable(regDayCol, makeVector(246, 100, 0), 0.88)
+
+    --daytime
+    for i = 1, LengthOfNightDay + 2  do
+        sunCol[#sunCol + 1] = regDayCol
     end
+
     -- zenit
     -- mirrored sunrise aka sunset
     size = #sunCol
@@ -300,7 +307,7 @@ if gadgetHandler:IsSyncedCode() then
 
     -- gets a config and sets the time of day as sun
     function aDay(timeFrame, WholeDay)
-        -- echo(getDayTime(timeFrame%WholeDay, WholeDay))
+        echo("Daytime:"..getDayTime(timeFrame%WholeDay, WholeDay))
         percent = ((timeFrame % (WholeDay)) / (WholeDay))
 
         if math.random(1, 10) > 5 and

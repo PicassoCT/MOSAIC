@@ -28,12 +28,14 @@ ReturningBoosterN = "ReturningBooster"
 BoosterCrawlerN = "CrawlerBooster"
 CrawlerBoosterN = "CrawlerBooster"
 CrawlerBoosterGasRingN = "CrawlerBoosterGasRing"
+CrawlerBoosterRingN = "CrawlerBoosterRing"
 BoosterRotatorN = "BoosterRotator"
 MainStageRocket = piece("MainStageRocket")
 RocketCrawler = piece("RocketCrawler")
 Rocket = piece("Rocket")
 RocketFusionPlume = piece("RocketFusionPlume")
-GroundHeatedGasRing = piece("GroundHeatedGasRing")
+GroundHeatedGasRing1 = piece("GroundHeatedGasRing1")
+GroundHeatedGasRing2 = piece("GroundHeatedGasRing2")
 turbine = piece("turbine")
 turbineCold = piece("turbineCold")
 turbineHot = piece("turbineHot")
@@ -51,6 +53,7 @@ CraneHead = piece("CraneHead")
 RocketCraneBase = piece("RocketCrane")
 CraneRocket = piece("CraneRocket")
 CraneCapsule = piece("CraneCapsule")
+FireTruck = piece("FireTruck1")
 
 myDefID = Spring.GetUnitDefID(unitID)
 function script.HitByWeapon(x, z, weaponDefID, damage)
@@ -59,10 +62,12 @@ function script.Create()
     -- generatepiecesTableAndArrayCode(unitID)
     TableOfPiecesGroups = getPieceTableByNameGroups(false, true)
     hideAll(unitID)
+    Show(FireTruck)
     initialSetup()
     StartThread(launchAnimation)
     StartThread(traffic)
     StartThread(foldFuelTowers)
+    StartThread(forkLiftOS)
 end
 
 function initialSetup()
@@ -91,6 +96,7 @@ function openDoor(name)
         end
     )
     WaitForMoves(TableOfPiecesGroups[name])
+    doorClosed[name] = false
 end
 
 function closeDoor(name)
@@ -102,6 +108,7 @@ function closeDoor(name)
             end
         end
     )  
+     doorClosed[name] = true
 end
 
 
@@ -121,13 +128,13 @@ function BoostersReturning()
     while (holdsForAllBool(boosterReturned, false)) do
         Sleep(1000)
     end
-    closeDoor(GroundRearDoorN)
+
 end
 
 crawlerSpeed = 750
 function boosterArrivedTravelIntoHangar(boosterNr)
 
-    openDoor(GroundRearDoorN)
+
     rest =7000*boosterNr^2 or 10000
     Sleep(rest)
     if boosterNr == 1 or boosterNr == 3 then
@@ -138,6 +145,7 @@ function boosterArrivedTravelIntoHangar(boosterNr)
         WMove(TableOfPiecesGroups[CrawlerBoosterN][boosterNr], x_axis, -19000, crawlerSpeed)
     end
     Sleep(2000)
+    StartThread(UnloadBooster)
     Hide(TableOfPiecesGroups[LandedBoosterN][boosterNr])
     Sleep(3000)
 
@@ -160,8 +168,97 @@ function getPlum(boosterNr)
     assert(nil, boosterNr .." not real")
 end
 
+forkLiftHasCargo = {}
+
+function forkLiftOS()
+    Sleep(500)
+    local forkLifts = TableOfPiecesGroups["Forklift"]
+    while true do
+        while launchState ~= "launching" do
+            selectedForkLift= math.random(1,3)
+            forkLift = forkLifts[selectedForkLift]
+            Show(forkLift)
+            goalZ= math.random(0, 6000)
+
+            if not doorClosed[GroundRearDoorN] then
+                goalZ = goalZ * -1
+            end
+            if not doorClosed[GroundFrontDoorN] then
+                goalZ = goalZ 
+            end
+            if forkLiftHasCargo[selectedForkLift] then   
+                Show(TableOfPiecesGroups["ForkLiftCargoUp"][selectedForkLift]) 
+                Hide(TableOfPiecesGroups["ForkLiftCargoDown"][selectedForkLift])
+                Move(TableOfPiecesGroups["ForkLiftCargoDown"][selectedForkLift],y_axis, goalZ, 0)
+            else
+                Hide(TableOfPiecesGroups["ForkLiftCargoUp"][selectedForkLift]) 
+                Show(TableOfPiecesGroups["ForkLiftCargoDown"][selectedForkLift])
+                Move(TableOfPiecesGroups["ForkLiftCargoDown"][selectedForkLift],y_axis, goalZ, 0)
+            end
+
+            Turn(forkLift,y_axis, randSign()*math.pi*2, 5)
+            WMove(forkLift,y_axis, goalZ, 750)
+            
+            if forkLiftHasCargo[selectedForkLift] then 
+                Hide(TableOfPiecesGroups["ForkLiftCargoUp"][selectedForkLift]) 
+                Show(TableOfPiecesGroups["ForkLiftCargoDown"][selectedForkLift])
+                forkLiftHasCargo[selectedForkLift] = false
+            else
+                Show(TableOfPiecesGroups["ForkLiftCargoUp"][selectedForkLift]) 
+                Hide(TableOfPiecesGroups["ForkLiftCargoDown"][selectedForkLift])
+                forkLiftHasCargo[selectedForkLift] = true
+            end
+            
+            if launchState == "launching" then break end
+         
+            Turn(forkLift,y_axis, randSign()*math.pi*0.5, 5)
+            goalX= math.random(0, 750)*randSign()
+            WMove(forkLift,x_axis, goalX, 750)
+        end
+        Turn(forkLift,y_axis, randSign()*math.pi*2, 5)
+        Move(forkLifts[1],x_axis, 0, 750)
+        Move(forkLifts[2],x_axis, 0, 750)
+        WMove(forkLifts[1],x_axis, 0, 750)
+        WMove(forkLifts[2],x_axis, 0, 750)
+        resetT(forkLifts)
+
+        Sleep(5000)
+    end
+end
+LoadCrane = piece("LoadCrane")
+LoadCraneNight = piece("LoadCraneNight")
+LoadCraneDay = piece("LoadCraneDay")
+PickUpBoosterDay = piece("PickUpBoosterDay")
+PickUpBoosterNight = piece("PickUpBoosterNight")
+
+travelAxis = y_axis
+function PrepareUnloadBooster()
+    Move(LoadCrane, travelAxis, 1000, 0)
+    Hide(PickUpBoosterDay)
+    Hide(PickUpBoosterNight)
+    Hide(LoadCraneDay)
+    Show(LoadCraneNight)
+    WMove(LoadCrane,travelAxis, 500, 100)
+    Hide(LoadCraneNight)
+    Show(LoadCraneDay)
+    WMove(LoadCrane,travelAxis, 0, 100)
+end
+
+function UnloadBooster()
+    Show(PickUpBoosterDay)
+    WMove(LoadCrane, travelAxis, 500, 100)
+    Show(LoadCraneNight)
+    Show(LoadCraneDay)
+    Hide(PickUpBoosterDay)
+    Show(PickUpBoosterNight)
+    WMove(LoadCrane,travelAxis, 1000, 100)
+    Hide(PickUpBoosterDay)
+    PrepareUnloadBooster()
+end
 
 function landBooster(boostNr)
+    openDoor(GroundRearDoorN)
+    StartThread(PrepareUnloadBooster)
     local boosterNr = boostNr
     resttime = boosterNr*15000
     local LandCone = TableOfPiecesGroups["LandCone"][boosterNr]
@@ -184,22 +281,31 @@ function landBooster(boostNr)
         Sleep(1)
         WaitForMoves(booster)
     end
-    Show(LandCone)
-    Show(TableOfPiecesGroups[CrawlerBoosterGasRingN][boosterNr])
+
+   val =math.random(300,500)
+    Spin(TableOfPiecesGroups[CrawlerBoosterRingN][boosterNr], y_axis, math.rad(val)*randSign(), 0)
     Spin(TableOfPiecesGroups[CrawlerBoosterGasRingN][boosterNr], y_axis, math.rad(690), 0)
     showT(plums)
-    Show(LandCone)
+  
     Turn(booster, x_axis, math.rad(0), 0.5)
     Turn(booster, y_axis, math.rad(0), 3)
     for i= 2000, 0, -10 do
-       WMove(booster, axis, i, math.max(i*2, 400))
-
-       spinVal = math.random(40, 120)*randSign()
-       Spin(LandCone, y_axis, math.rad(spinVal))
+        WMove(booster, axis, i, math.max(i*2, 400))
+        spinVal = math.random(40, 120)*randSign()
+        Spin(LandCone, y_axis, math.rad(spinVal))
         for k=1, #plums do
             Move(plums[k], y_axis, math.random(-3,3), 0)
         end
-       spinVal = math.random(40, 120)*randSign()
+        spinVal = math.random(40, 120)*randSign()
+        if (i < 1500) then    Show(LandCone) end
+        if (i < 1000) then 
+            Show(TableOfPiecesGroups[CrawlerBoosterGasRingN][boosterNr]) 
+            Show(TableOfPiecesGroups[CrawlerBoosterRingN][boosterNr]) 
+        end
+        if maRa() then
+           rot = math.random(0,1)*180
+           Turn(TableOfPiecesGroups[CrawlerBoosterRingN][boosterNr], x_axis, math.rad(rot),0)
+        end
        turnT(plums, y_axis, math.rad(spinVal))
        spinT(plums, y_axis, math.rad(spinVal))
        spinVal = math.random(40, 120)*randSign()
@@ -207,12 +313,15 @@ function landBooster(boostNr)
     end  
 
     Hide(TableOfPiecesGroups[CrawlerBoosterGasRingN][boosterNr])
+    
     assert(plums)
     hideT(plums)
     Hide(LandCone)
     Hide(booster)
-    assert(TableOfPiecesGroups[LandedBoosterN])
     Show(TableOfPiecesGroups[LandedBoosterN][boosterNr])
+    Sleep(500)
+    Hide(TableOfPiecesGroups[CrawlerBoosterRingN][boosterNr])
+    assert(TableOfPiecesGroups[LandedBoosterN])
     boosterArrivedTravelIntoHangar(boosterNr)
 end
 
@@ -258,7 +367,8 @@ function plattformFireBloomCleanup()
     )
     Hide(LaunchCone)
     Hide(fireCloud)
-    Hide(GroundHeatedGasRing)
+    Hide(GroundHeatedGasRing1)
+    Hide(GroundHeatedGasRing2)
     hideT(TableOfPiecesGroups["FireFlower"])
 end
 
@@ -288,6 +398,7 @@ function driveOutMainStage()
     WMove(CrawlerMain, x_axis, -6825, 6825 / 30.0)
 end
 
+doorClosed = {}
 function driveBackCrawler()
     WMove(CrawlerMain, x_axis, 0, 6825 / 30.0)
     closeDoor(GroundFrontDoorN)
@@ -375,7 +486,7 @@ rocketPlumage = RocketPlumeN
 
 function launchAnimation()
     while true do
-             if maRa() then
+        if maRa() then
             rocketPlumage = RocketPlumeN
         else
             rocketPlumage = RocketPlumeAN
@@ -409,8 +520,10 @@ function launchAnimation()
             rocketPlumage = RocketPlumeAN
         end
 
-        Show(GroundHeatedGasRing)
-        Spin(GroundHeatedGasRing,y_axis,math.rad(66),0)
+        Show(GroundHeatedGasRing1)
+        Spin(GroundHeatedGasRing1,y_axis,math.rad(66),0)
+        Show(GroundHeatedGasRing2)
+        Spin(GroundHeatedGasRing2,y_axis,math.rad(66)*randSign(),0)
 
         --Lift rocket (rocket is slow and becomes faster)
         liftRocketShowStage(3000, 1500, TableOfPiecesGroups[rocketPlumage][1], math.random(35, 45)*randSign(), 13)
@@ -449,6 +562,7 @@ function launchAnimation()
             Sleep(1000)
             watchDog = watchDog-1000
         end
+        closeDoor(GroundRearDoorN)
         launchState = "prepareForLaunch"
 
         initialSetup()

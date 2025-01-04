@@ -63,7 +63,8 @@ if (gadgetHandler:IsSyncedCode()) then
     function rotateUnitTowardsPoint(id, positionT)
 
         x,y,z = spGetUnitPosition(id)
-        if distance(x,y,z, positionT.x, positionT.y, positionT.z) > 964 then return end --sniperrifle
+        distanceToPoint = distance(x,y,z, positionT.x, positionT.y, positionT.z) 
+        if distanceToPoint > 964 or distanceToPoint < 15  then return end --sniperrifle or to close
         yaw, pitch, roll = spGetUnitRotation(id)
         newPitch = math.pi - math.atan2(x-positionT.x, z-positionT.z) 
         pitchDiff = pitch - newPitch

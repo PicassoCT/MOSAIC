@@ -407,10 +407,18 @@ local function onTresholdCrossWriteToMapTexture()
     end
 end
 
-function widget:Update(dt)   
+local accumulatedDT = 0
+local lastActiveRainSoundDt = 0
+
+function widget:Update(dt)  
+    accumulatedDT = accumulatedDT + dt 
     if boolDebugActive then  
         rainPercent = 1.0
         return 
+    end
+    if rainPercent > 0 and accumulatedDT - lastActiveRainSoundDt > 15.0 then
+        Spring.PlaySoundFile("LuaUi/sounds/weather/rain.ogg", math.min(1.0, 2.0*rainPercent), 'ui')
+        lastActiveRainSoundDt= accumulatedDT
     end
 
     if isRaining() == true   then--isRaining() then
@@ -420,8 +428,6 @@ function widget:Update(dt)
         rainPercent = math.max(0.0, rainPercent - 0.0001)
         --Spring.Echo("Rainvalue:".. rainPercent)
     end
-
-
 end
 
 function widget:Shutdown()
@@ -435,7 +441,6 @@ function widget:Shutdown()
         gl.DeleteShader(rainShader)
     end
 end
-
 
 local function updateUniforms()
     onTresholdCrossWriteToMapTexture()
