@@ -367,7 +367,7 @@ end
 
 function buildBuilding()
     hideAll(unitID)
-    Sleep(unitID%300)
+    Sleep(unitID)
     if GG.MegaBuildingMax > 7 then 
         filterArcoProjectTable()
     end
