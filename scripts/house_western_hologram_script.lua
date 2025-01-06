@@ -710,9 +710,7 @@ function glowWormFlight(speed)
 end
 
 function lineBufferForward(buffer, fscope)
-        fscope = {max= 45,
-                  min = -45}
-
+        fscope = {max= 45, min = -45}
 
         sum = 0
         for j=2, #buffer do
@@ -727,10 +725,11 @@ function lineBufferForward(buffer, fscope)
         fscope.max = fscope.max - buffer[#buffer]
 
 
-        for j=1, #buffer do
+        for j=2, #buffer do
             sum = sum + buffer[j]
         end
 
+        buffer[1] = -sum
 
     return buffer, sum, fscope
 end

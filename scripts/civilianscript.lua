@@ -7,7 +7,8 @@ include "lib_mosaic.lua"
 local Animations = include('animations_civilian_female.lua')
 local signMessages = include('protestSignMessages.lua')
 local peacfulProtestSignMessages = include('PeacefullProtestSignMessages.lua')
-myDefID = Spring.GetUnitDefID(unitID)
+local spGetUnitDefID = Spring.GetUnitDefID
+myDefID = spGetUnitDefID(unitID)
 local TablesOfPiecesGroups = {}
 
 SIG_ANIM = 1
@@ -745,7 +746,7 @@ function alignToPersonNearby()
     Result= foreach(
         getAllNearUnit(unitID, GameConfig.groupChatDistance + 100),
         function(id)
-            if id~=unitID and civilianWalkingTypeTable[Spring.GetUnitDefID] then return id end
+            if id~=unitID and civilianWalkingTypeTable[spGetUnitDefID(id)] then return id end
         end
         )
     if Result and Result[1] then
@@ -765,7 +766,7 @@ function chatting()
    end
 
     repeatCounter = 0
-    while Result and ResultchattingTime > 0 do
+    while chattingTime > 0 do
         if maRa() == true then
             PlayAnimation("UPBODY_NORMAL_TALK", lowerBodyPieces, math.random(10,20)/10)
         else
@@ -1085,7 +1086,7 @@ normalBehavourStateMachine = {
                 Show(MilitiaMask)
                 T = foreach(getAllNearUnit(unitID, 100),
                         function(id)
-                            if TruckTypeTable[Spring.GetUnitDefID(id)] then
+                            if TruckTypeTable[spGetUnitDefID(id)] then
                                 return id
                             end
                         end

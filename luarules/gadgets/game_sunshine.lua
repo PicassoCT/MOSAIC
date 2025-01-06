@@ -307,7 +307,7 @@ if gadgetHandler:IsSyncedCode() then
 
     -- gets a config and sets the time of day as sun
     function aDay(timeFrame, WholeDay)
-        echo("Daytime:"..getDayTime(timeFrame%WholeDay, WholeDay))
+        --echo("Daytime:"..getDayTime(timeFrame%WholeDay, WholeDay))
         percent = ((timeFrame % (WholeDay)) / (WholeDay))
 
         if math.random(1, 10) > 5 and

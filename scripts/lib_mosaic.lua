@@ -152,7 +152,7 @@ function getGameConfig()
         --truck
         truckBreakTimeMinSec= 60,
         truckBreakTimeMaxSec= 5*60,
-        truckHonkLoudness = 0.35,
+        truckHonkLoudness = 0.25,
         chanceOfCivilianSpawningFromTruck = 0.65,
 		emergencyLocationTimeMs = 20 *1000,
 		

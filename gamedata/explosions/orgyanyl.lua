@@ -5,7 +5,7 @@ return {
 	particlesa = {
 			air = true,
 			class = [[CSimpleParticleSystem]],
-			count = 1,
+			count = 3,
 			ground = true,
 			water = true,
 			properties = {
@@ -13,11 +13,11 @@ return {
 				alwaysvisible = true,
 				colormap = [[
 				1 0.5 0.0 0.01225		
-				1 0.5 0.0 0.125	
-				1 0.5 0.0 0.0625
-				1 0.5 0.0 0.125
-				1 0.5 0.0 0.0625
-				1 0.5 0.0 0.125	
+				1 0.5 0.0 0.04125	
+				1 0.5 0.0 0.04125
+				1 0.5 0.0 0.03125
+				1 0.5 0.0 0.0125
+				1 0.5 0.0 0.0125	
 				0 0 0 0.0]],
 				directional = false,
 				
@@ -27,7 +27,7 @@ return {
 				
 				gravity = [[0, -0.3r0.15r-0.15 , 0]],
 				
-				numparticles = 3,
+				numparticles = 1,
 				particlelife = 120,
 				particlelifespread = 65,
 				
@@ -47,7 +47,7 @@ return {
 		particlesb = {
 			air = true,
 			class = [[CSimpleParticleSystem]],
-			count = 1,
+			count = 3,
 			ground = true,
 			water = true,
 			properties = {
@@ -55,11 +55,11 @@ return {
 				alwaysvisible = true,
 				colormap = [[
 				1 0.5 0.0 0.01225		
-				1 0.5 0.0 0.125	
-				1 0.5 0.0 0.0625
-				1 0.5 0.0 0.125
-				1 0.5 0.0 0.0625
-				1 0.5 0.0 0.125	
+				1 0.5 0.0 0.04125	
+				1 0.5 0.0 0.04125
+				1 0.5 0.0 0.03125
+				1 0.5 0.0 0.0125
+				1 0.5 0.0 0.0125	
 				0 0 0 0.0]],
 				directional = false,
 				
@@ -69,7 +69,7 @@ return {
 				
 				gravity = [[0, -0.3r0.15r-0.15 , 0]],
 				
-				numparticles = 3,
+				numparticles = 1,
 				particlelife = 120,
 				particlelifespread = 65,
 				
@@ -89,20 +89,16 @@ return {
 	particlesc = {
 			air = true,
 			class = [[CSimpleParticleSystem]],
-			count = 1,
+			count = 3,
 			ground = true,
 			water = true,
 			properties = {
 				airdrag = 0.75,
-				alwaysvisible = true,
-				colormap = [[
-				1 0.5 0.0 0.01225		
-				1 0.5 0.0 0.125	
-				1 0.5 0.0 0.0625
-				1 0.5 0.0 0.125
-				1 0.5 0.0 0.0625
-				1 0.5 0.0 0.125	
-				0 0 0 0.0]],
+				alwaysvisible = true,	
+		colormap = [[
+                1 0.5 0.0 0.03125 
+                1 0.5 0.0 0.0125
+                1 0.5 0.0 0.0]],
 				directional = false,
 				
 				emitrot = 45,--45
@@ -111,11 +107,11 @@ return {
 				
 				gravity = [[0, -0.3r0.15r-0.15 , 0]],
 				
-				numparticles = 3,
-				particlelife = 120,
+				numparticles = 1,
+				particlelife = 30,
 				particlelifespread = 65,
 				
-				particlesize = 0.15,
+				particlesize = 0.015,
 				particlesizespread = 1.8,
 				
 				particlespeed = 0.35,

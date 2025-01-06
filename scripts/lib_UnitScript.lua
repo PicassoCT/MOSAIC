@@ -4626,7 +4626,7 @@ end
 function deterministicElement(nr, Table)
     if #Table == 1 then return Table[1] end
 
-    return Table[math.random(1, (nr % #Table) + 1)]
+    return Table[(nr % #Table) + 1]
 end
 
 function randT(Table)
@@ -6082,16 +6082,10 @@ function spawnCegAtPiece(unitID, pieceId, cegname, offset, dx, dy, dz,
     end
 
     boolAdd = offset or 10
+    assert(unitID,"lib_UnitScript::Not enough arguments to spawnCegAtPiece")
+    assert(pieceId, "lib_UnitScript::Not enough arguments to spawnCegAtPiece")
+    assert(cegname,"lib_UnitScript::Not enough arguments to spawnCegAtPiece")
 
-    if not unitID then
-        error("lib_UnitScript::Not enough arguments to spawnCegAtPiece")
-    end
-    if not pieceId then
-        error("lib_UnitScript::Not enough arguments to spawnCegAtPiece")
-    end
-    if not cegname then
-        error("lib_UnitScript::Not enough arguments to spawnCegAtPiece")
-    end
     x, y, z, mx, my, mz = Spring.GetUnitPiecePosDir(unitID, pieceId)
     if boolPieceDirectional and boolPieceDirectional == true then
         dx, dy, dz = mx, my, mz

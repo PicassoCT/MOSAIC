@@ -42,8 +42,21 @@ function ShowReg(pieceID)
     updateCheckCache()
 end
 
+function displayPieceTable(T)
+    if type(T) == "number" then  return  pieceID_NameMap[T] end
+
+    concatString = ""
+    for i=1, #T do
+       concatString= concatString.."|".. pieceID_NameMap[T[i]]
+    end
+    return concatString
+
+end
+
+
 function HideReg(pieceID)
     if not pieceID then return end
+    assert(pieceID_NameMap[pieceID], "Not a piece".. displayPieceTable(pieceID))
     Hide(pieceID)  
     --TODO make dictionary for efficiency
     for i=1, #cachedCopy do
@@ -260,7 +273,7 @@ function grid()
             if boolFlip then Turn(theGrid[1], x_axis, math.rad(180), 0) end
             Sleep(33)
             for i= lowVal, upVal do 
-                HideReg(theGrid)
+                hideTReg(theGrid)
                 ShowReg(theGrid[i])
                 Turn(theGrid[i], y_axis, math.rad(i * 90),0)
                 Sleep(33)
@@ -269,7 +282,7 @@ function grid()
                 end
             end
             for i= upVal, lowVal, -1 do 
-                HideReg(theGrid)
+                hideTReg(theGrid)
                 ShowReg(theGrid[i])
                 Turn(theGrid[i], y_axis, math.rad(i * 90),0)
                 Sleep(33)
@@ -364,8 +377,7 @@ function deterministiceSetup()
             ShowReg(logoPiece)
             Spin(logoPiece, y_axis, math.rad(1.2)*randSign(), 0)
             if maRa() then
-                index = getSafeRandom(TableOfPiecesGroups["HoloLogo"])
-                legoPiece = deterministicElement(index, TableOfPiecesGroups["HoloLogo"])
+                legoPiece, index = getSafeRandom(TableOfPiecesGroups["HoloLogo"])
                 if legoPiece then
                 showSubSpins(legoPiece)
                 ShowReg(legoPiece)
@@ -619,7 +631,7 @@ function HoloFlicker(tiles,alttiles)
                                     dist = math.random(100,250)
                                     Move(tile, y_axis,  dist, 25)   
                                     WaitForMoves(tile)
-                                    Hide(tile)
+                                    HideReg(tile)
                                     reset(tile)
                                 end
                                 for k, v in pairs(tiles) do
@@ -659,7 +671,7 @@ function HoloFlicker(tiles,alttiles)
             tileFallingOff = tiles[dice]
             if tileFallingOff then
                 WMove(tileFallingOff,y_axis, -10, 100)
-                Hide(tileFallingOff)
+                HideReg(tileFallingOff)
                 restTime = math.random(1,100)*25000
                 Sleep(restTime)
                 reset(tileFallingOff)

@@ -34,6 +34,8 @@ function script.Create()
 
     GG.UnitHeldByHouseMap[unitID] = T[1]
     StartThread(mortallyDependant, unitID, T[1], 15, false, true)
+    hideAll(unitID)
+    Show(Icon)
 end
 
 function script.Killed(recentDamage, _) 

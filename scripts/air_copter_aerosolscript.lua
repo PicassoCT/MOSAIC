@@ -104,7 +104,6 @@ function aerosolDeployCegs()
         soundIntervall = 0
         while lisUnitFlying(unitID) == true and timeTank > 0 do
             if soundIntervall == 0  then
-                StartThread(PlaySoundByUnitDefID)
                 StartThread(PlaySoundByUnitDefID, myDefID, "sounds/plane/aerosol.wav", math.random(7,10)/10, 900, 3)
             end
             EmitSfx(emitor, 1023 + defIDTypeTankMap[myDefID])

@@ -8,11 +8,11 @@ local TablesOfPiecesGroups = {}
 myDefID = Spring.GetUnitDefID(unitID)
 function script.HitByWeapon(x, z, weaponDefID, damage) end
 
-cegToTestName = "nuclearexplosionbig"
+cegToTestName = {"depressol","tollwutox","orgyanyl","wanderlost"}
 seconds = 3
 
 function script.Create()
-    echo("cegtest unit deployed: Running ceg:"..cegToTestName.." every n seconds:"..seconds)
+    echo("cegtest unit deployed: Running ceg:"..toString(cegToTestName).." every n seconds:"..seconds)
     x,y,z = Spring.GetUnitPosition(unitID)
     echo("{name = \"placeholder\", x = "..x..", z = "..z..", rot = 0, scale = 1.000000}")
     hideAll(unitID)
@@ -22,8 +22,10 @@ function script.Create()
 
  function CegTest()
     while true do
-        Sleep(seconds * 1000)
-        spawnCegAtUnit(unitID, cegToTestName, 0, 25,  0)
+        for i=1, #cegToTestName do
+            Sleep(seconds * 1000)
+            spawnCegAtUnit(unitID, cegToTestName[i], 0, 25,  0)
+        end
         echo("cegtest:Execute")
     end
  end

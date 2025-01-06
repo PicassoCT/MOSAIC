@@ -140,7 +140,7 @@ if (gadgetHandler:IsSyncedCode()) then
     end
 
     function gadget:UnitLeftLos(unitID, unitTeam, allyTeam, unitDefID)
-       Spring.Echo("Unit left LOS "..unitID)
+      -- Spring.Echo("Unit left LOS "..unitID)
         if neonUnitDataTransfer[unitID] then
             neonUnitDataTransfer[unitID] = nil
         end

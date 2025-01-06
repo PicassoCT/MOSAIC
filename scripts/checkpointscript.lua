@@ -85,9 +85,9 @@ function revelioThread()
 					return id
 				 end,
 				 function(id)
+				 	if  not hasFunding(myTeamID, gameConfig.checkPointPropagandaCost, "m") then return end
+				 	
 				 	defID = spGetUnitDefID(id)
-				 	if  not hasFunding(myTeamId, gameConfig.checkPointPropagandaCost, "m") then return end
-
 				 	if houseTypeTable[defID] then return end
 				 
 				 	if defID and civilianTypeTable[defID] then
