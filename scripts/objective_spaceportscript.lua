@@ -23,6 +23,7 @@ FireFlowerN = "FireFlower"
 GroundRearDoorN = "GroundRearDoor"
 GroundFrontDoorN = "GroundFrontDoor"
 CraneHeadClawN = "CraneHeadClaw"
+FireFlowerRotatorN = "FireFLowerRotator"
 BoosterN = "Booster"
 ReturningBoosterN = "ReturningBooster"
 BoosterCrawlerN = "CrawlerBooster"
@@ -63,13 +64,14 @@ function script.Create()
     -- generatepiecesTableAndArrayCode(unitID)
     TableOfPiecesGroups = getPieceTableByNameGroups(false, true)
     hideAll(unitID)
-    Show(FireTruck)
-    initialSetup()
-    StartThread(launchAnimation)
-    StartThread(traffic)
-    StartThread(foldFuelTowers)
-    StartThread(forkLiftOS)
-    StartThread(fireTruckRoundOS)
+    --Show(FireTruck)
+    --initialSetup()
+    --StartThread(launchAnimation)
+    --StartThread(traffic)
+    --StartThread(foldFuelTowers)
+    --StartThread(forkLiftOS)
+    --StartThread(fireTruckRoundOS)
+    StartThread(plattFormFireBloom)
 end
 
 function initialSetup()
@@ -392,27 +394,29 @@ end
 function plattFormFireBloom()
     Show(LaunchCone)
     Move(fireCloud, y_axis, -250, 0)
-    Show(fireCloud)
-    Move(fireCloud, y_axis, 3000, 1200)
+    --Show(fireCloud)
+    --Move(fireCloud, y_axis, 3000, 1200)
 
-    while launchState == "launching" do
+    while launchState == "launching" or true do
+        
         rVal = math.random(300,950) *randSign()
         Spin(fireCloud, y_axis, math.rad(rVal), 0)
         rVal = math.random(50,150) *randSign()
         Spin(LaunchCone, y_axis, math.rad(rVal), 0)
-        shift = 360 / #TableOfPiecesGroups["FireFlower"]
-        for i = 1, #TableOfPiecesGroups["FireFlower"] do
-            cycle = TableOfPiecesGroups["FireFlower"][i]
+        shift = (math.pi*2) / #TableOfPiecesGroups[FireFlowerRotatorN]
+        for i = 1, #TableOfPiecesGroups[FireFlowerN] do
+            rotator = TableOfPiecesGroups[FireFlowerRotatorN][i]
+            cycle = TableOfPiecesGroups[FireFlowerN][i]
+            randoVal= (math.random(-15,15)/360)*math.pi*2.0
+            Turn(rotator, y_axis, math.rad(shift + randoVal), 0)
+            reset(cycle, 0)
+            Turn(cycle,x_axis, math.rad(-90), 270)
             Show(cycle)
-            rotation = math.random(-360,360)
-            Turn(cycle, y_axis, math.rad(rotation), 0)
-            startVal = 90 + randSign() * 90
-            Turn(cycle, x_axis, math.rad(startVal), 360) --reset
-            val =math.random(50,250)*randSign()
-            Spin(cycle, y_axis, val, fireBloomSpeed)
-        end
-        hideT(TableOfPiecesGroups["FireFlower"])
+        end       
         Sleep(3000)
+        WaitForTurns(TableOfPiecesGroups[FireFlowerRotatorN])
+        hideT(TableOfPiecesGroups["FireFlower"])
+        resetT(TableOfPiecesGroups["FireFlower"])
     end
 
 end

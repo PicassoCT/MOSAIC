@@ -397,14 +397,16 @@ function holdSpeach(transition)
 
     sounds = {
         [GameConfig.GameState.normal .. ">" .. GameConfig.GameState.launchleak] = nil,
-        [GameConfig.GameState.launchleak .. ">" .. GameConfig.GameState.anarchy] = "sounds/gamestate/normal_anarchy.ogg",
+        [GameConfig.GameState.launchleak .. ">" .. GameConfig.GameState.anarchy] = {"sounds/gamestate/normal_anarchy1.ogg", "sounds/gamestate/normal_anarchy2.ogg", "sounds/gamestate/normal_anarchy3.ogg"},
         [GameConfig.GameState.anarchy .. ">" .. GameConfig.GameState.postlaunch] = nil,
-        [GameConfig.GameState.anarchy .. ">" ..
-            GameConfig.GameState.pacification] = "sounds/gamestate/anarchy_pacification.ogg",
-        [GameConfig.GameState.pacification .. ">" .. GameConfig.GameState.normal] = nil
+        [GameConfig.GameState.anarchy .. ">" ..GameConfig.GameState.pacification] = {"sounds/gamestate/anarchy_pacification.ogg"},
+        [GameConfig.GameState.pacification .. ">" .. GameConfig.GameState.normal] = {"sounds/gamestate/pacification_normal.ogg"}
     }
     if speaches[transition] then echo(speaches[transition]) end
-    if sounds[transition] then Spring.PlaySoundFile(sounds[transition], 1.0) end
+    if sounds[transition] then
+        selectedOne = (#sounds[transition] > 1 and math.random(1,#sounds[transition])) or 1
+        Spring.PlaySoundFile(sounds[transition][selectedOne], 1.0)
+    end
 
 end
 function gadget:GameFrame(frame)
