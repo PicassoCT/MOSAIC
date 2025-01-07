@@ -3246,8 +3246,12 @@ end
                             allyDistance = math.huge
 
                             local afflicted = GG.AerosolAffectedCivilians or {}
-                            TEnemy= {}
-                            Tally = foreach(
+                            nearestDistance = math.huge
+                            nearestID = nil
+                            Tenemy= {}
+                            Tally = {}
+                            ix,iy,iz = spGetUnitPosition(unitID)
+                            foreach(
                                 getAllNearUnit(unitID, 750),
                                 function(id)
                                     defId = spGetUnitDefID(id)
@@ -3255,39 +3259,30 @@ end
                                 end,
                                 function(id)
                                     if afflicted[id] and GG.TollWutoxAfflicted[id] then
-                                        return id
+                                        Tally[id] = distanceUnitToUnit(id, unitID)
+                                        if Tally[id] < nearestDistance then
+                                            nearestDistance = Tally[id]
+                                            nearestID = id 
+                                        end
                                     else
-                                        TEnemy[#TEnemy+1] = id
+                                        Tenemy[id] = distanceUnitToUnit(id, unitID)
+                                        if Tenemy[id] < nearestDistance then
+                                            nearestDistance = Tenemy[id]
+                                            nearestID = id 
+                                        end
                                     end
                                 end
                                 )
-
-                            if #TEnemy > 1 then
-                                neareEnemy = nil
-                                distanceSoFar = math.huge
-                                foreach(TEnemy,
-                                    function(id)
-                                        enemyDistance = distanceUnitToUnit(unitID, id)
-                                        if enemyDistance < distanceSoFar then
-                                            distanceSoFar = enemyDistance
-                                            neareEnemy = id 
-                                        end
-                                    end)
-
-                                Spring.SetUnitNeutral(unitID, false)
-                                assaultAllNearby(ed) 
-                                Sleep(250)
-                                return currentState
-                                end 
-                            else
-                                if #Tally > 0 then
-                                   ad = getSafeRandom(Tally)
-                                   Command(unitID, "guard", ad )
-                                end       
-                            end
+                            if nearestID then 
+                                if Tenemy[nearestID] then
+                                    Spring.SetUnitNeutral(unitID, false)
+                                    assaultNearby(ed) 
+                                else
+                                    Command(unitID, "guard", nearestID )
+                                end
+                            end               
                            
-                           return currentState
-                            
+                           return currentState                            
                         end,
                         [AerosolTypes.depressol] = function(lastState, currentState, unitID)
                             if currentState == AerosolTypes.depressol then
@@ -3308,15 +3303,13 @@ end
                     return InfluenceStateMachines[typeOfInfluence]
                 end
 
-                function assaultAllNearby(aid)
+                function assaultNearby(aid)
                     enemyDistance = distanceUnitToUnit(aid)
                     if enemyDistance and enemyDistance < 20 then
                         closeCombatAnimation(center, ArmLeft, ArmRight)
                         Spring.AddUnitDamage(aid, 30)
                         spawnCegAtUnit(id, "bloodslay")
-                    else
-                        
-                    else
+                    else                      
                         x,y,z = spGetUnitPosition(aid)
                        Command( aid, "go",{x,y,z}, {"shift"})
                     end

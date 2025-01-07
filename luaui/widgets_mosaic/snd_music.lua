@@ -174,9 +174,9 @@ local function StartTrack(track)
 		-- Spring.Echo(key, val)	
 	-- end
 	firstFade = false
-	if newTrack ~= previousTrack then
-		Spring.Echo("Playing track:".. newTrack)
-	end
+	--if newTrack ~= previousTrack then
+	--	Spring.Echo("Playing track:".. newTrack)
+	--end
 	previousTrack = newTrack
 	
 	-- if (oggInfo.comments.TITLE and oggInfo.comments.TITLE) then

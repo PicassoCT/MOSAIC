@@ -729,7 +729,7 @@ function lineBufferForward(buffer, fscope)
             sum = sum + buffer[j]
         end
 
-        buffer[1] = -sum
+        buffer[1] = 0
 
     return buffer, sum, fscope
 end
