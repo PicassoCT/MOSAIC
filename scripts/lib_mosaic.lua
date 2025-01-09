@@ -579,6 +579,18 @@ end
                     "tankcorpse"
                 }
         return getTypeTable(UnitDefNames, typeTable)        
+    end    
+
+    function getBombTypeTable(UnitDefs)
+        local UnitDefNames = getUnitDefNames(UnitDefs)
+
+                typeTable = {
+                    "ground_turret_ssied",
+                    "air_copter_ssied", 
+                    "ground_truck_ssied"
+
+                }
+        return getTypeTable(UnitDefNames, typeTable)        
     end
 	
 	function registerEmergency(x, z)
@@ -3152,7 +3164,6 @@ end
 
                             return currentState
                         end,
-
                         [AerosolTypes.wanderlost] = function(lastState, currentState, unitID)
                             if currentState == AerosolTypes.wanderlost then
                                 StartThread(lifeTime, unitID,
@@ -3235,13 +3246,14 @@ end
                                 end
                             end
 
-                              if gf % 90 == 0 then
+                            if gf % 90 == 0 then
                                 for i = 1, 3 do
                                     val = (math.random(-100, 100) / 100) * 12
                                     stopSpinT(Spring.GetUnitPieceMap(unitID), i, 30.125)
                                 end
                             end
-
+                            headVal = math.random(-10, 25)
+                            Turn(head,x_axis, math.rad(headVal),3)
                             enemyDistance = math.huge
                             allyDistance = math.huge
 
@@ -3289,14 +3301,37 @@ end
                                 StartThread(lifeTime, unitID,
                                     GG.GameConfig.Aerosols.depressol.VictimLiftime,
                                 false, true)
+                                stunUnit(unitID, 2)
                                 currentState = InfStates.Init
                             end
-                            stunUnit(unitID, 2)
-                            setOverrideAnimationState(eAnimState.standing, eAnimState.wailing,
-                            true, nil, true)
+                      
+                            gf = Spring.GetGameFrame()
+                            if gf % 90 == 0 then
+                            setOverrideAnimationState(eAnimState.standing, eAnimState.wailing,  true, nil, true)
+                                bombTypeTable = getBombTypeTable(UnitDefs)
+                                if currentState == InfStates.Init then
+                                    bombsNearby = foreach(getAllNearUnit(unitID, 512),
+                                                            function(id)
+                                                                defID = spGetUnitDefID(id)
+                                                                if bombTypeTable[defID] then
+                                                                    return id
+                                                                end
+                                                            end
+                                                         )
 
-                            return currentState
-                        end
+                                    if #bombsNearby > 0 then 
+                                        if distanceUnitToUnit(unitID, bombsNearby[1]) < 50 then
+                                            Spring.DestroyUnit(bombsNearby[1], false, true)
+                                            Spring.DestroyUnit(unitID, true, false)
+                                        end
+                                        
+                                        ex,ey,ez = spGetUnitPosition(bombsNearby[1])
+                                        Command(unitID, "go", {x = ex,y = ey,z = ez }, {"shift"})
+                                    end
+                                end
+                            end
+                                return currentState
+                            end
                     }
 
                     assert(InfluenceStateMachines[typeOfInfluence], typeOfInfluence)
