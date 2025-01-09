@@ -106,10 +106,7 @@ function spawnUnit(defID, x, z)
     end
 end
 
-function setUpRefugeeWayPoints(index)
-    if not GG.CivilianEscapePointTable then GG.CivilianEscapePointTable = {} end
-    GG.CivilianEscapePointTable[index] = math.random(1,1000)/1000  
-end
+
 
 function gadget:Initialize()
     for i=1,4 do
@@ -196,19 +193,13 @@ function getRefugeeEntryPoint(index, boolIgnoreObjectives)
 end
 
 indexOffset = 0
-function getRefugeePoint(index)
-    if index == 1 then return 25,  GG.CivilianEscapePointTable[index] * Game.mapSizeZ end
-    if index == 2 then return Game.mapSizeX,  GG.CivilianEscapePointTable[index] * Game.mapSizeZ end
-    if index == 3 then return GG.CivilianEscapePointTable[index] *Game.mapSizeX, 25 end
-    if index == 4 then return GG.CivilianEscapePointTable[index] *Game.mapSizeX, Game.mapSizeZ end
-    Spring.Echo("Unknown EscapePoint")
-end
+
 
 function getMilitaryPoint(index)
     if index == 1 then return 25,  GG.CivilianEscapePointTable[index] * Game.mapSizeZ end
     if index == 2 then return Game.mapSizeX,  GG.CivilianEscapePointTable[index] * Game.mapSizeZ end
-    if index == 3 then return GG.CivilianEscapePointTable[index] *Game.mapSizeX, 25 end
-    if index == 4 then return GG.CivilianEscapePointTable[index] *Game.mapSizeX, Game.mapSizeZ end
+    if index == 3 then return GG.CivilianEscapePointTable[index] * Game.mapSizeX, 25 end
+    if index == 4 then return GG.CivilianEscapePointTable[index] * Game.mapSizeX, Game.mapSizeZ end
     Spring.Echo("Unknown EscapePoint")
 end
 

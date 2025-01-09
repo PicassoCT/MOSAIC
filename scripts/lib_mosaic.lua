@@ -3096,9 +3096,65 @@ end
                 }
             end
 
+            function setUpRefugeeWayPoints(index)
+                if not GG.CivilianEscapePointTable then GG.CivilianEscapePointTable = {} end
+                GG.CivilianEscapePointTable[index] = math.random(1,1000)/1000  
+            end
+
+            function getRefugeePoint(index)
+                if index == 1 then return 25,  GG.CivilianEscapePointTable[index] * Game.mapSizeZ end
+                if index == 2 then return Game.mapSizeX,  GG.CivilianEscapePointTable[index] * Game.mapSizeZ end
+                if index == 3 then return GG.CivilianEscapePointTable[index] * Game.mapSizeX, 25 end
+                if index == 4 then return GG.CivilianEscapePointTable[index] * Game.mapSizeX, Game.mapSizeZ end
+                Spring.Echo("Unknown EscapePoint")
+            end
+
             function isOffenceIcon(UnitDefs, defID)
                 assert(UnitDefs)
                 return UnitDefs[defID].name == "bribeicon" or UnitDefs[defID].name == "cybercrimeicon"
+            end
+
+            function shiverAllAxis(unitID)
+                allPieces = Spring.GetUnitPieceMap(unitID)
+                for i = 1, 3 do
+                    val = math.random(5, 15) 
+                    spinT(allPieces i, val * randSign(), val)
+                end
+            end
+
+          
+            function stopShiver(unitID)
+                for i = 1, 3 do
+                    stopSpinT(Spring.GetUnitPieceMap(unitID), i)
+                end  
+            end
+
+            -- Function to get a point on a spiral
+            -- cx, cy: Center of the spiral
+            -- time: Input time for the spiral's position
+            -- a: Initial radius (controls the tightness of the spiral)
+            -- b: Growth rate of the spiral
+            -- Returns: x, y coordinates of the point
+            function spiralPoint(cx, cy, frame, a, b)
+                local time = frame/30
+                -- Calculate the angle and radius based on time
+                local angle = time -- Angular position (rad/s, assuming time is in seconds)
+                local radius = a + b * time -- Radius grows with time
+
+                -- Convert polar to Cartesian coordinates
+                local x = cx + radius * math.cos(angle)
+                local y = cy + radius * math.sin(angle)
+
+                return x, y
+            end
+
+
+            function setWanderlostMoveGoal(unitID, gf)
+                if not GG.CivilianEscapePointTable  then setUpRefugeeWayPoints( (unitID % 4 ) + 1) end
+                 x,z = getRefugeePoint(unitID)
+                 sx,sz = spiralPoint(x, y, gf, Game.mapSizeX*0.1, 0.125)
+                 Command(unitID, "go", {x=sx, y= 0, z= sz})
+
             end
 
             function getAerosolInfluencedStateMachine(unitID, UnitDefs, typeOfInfluence, center, ArmLeft, ArmRight, Head)
@@ -3110,7 +3166,8 @@ end
                 CivilianTypes = getCivilianTypeTable(UnitDefs)
 
                 InfluenceStateMachines = {
-                    [AerosolTypes.orgyanyl] = function(lastState, currentState, unitID)
+                    [AerosolTypes.orgyanyl] = 
+                    function(lastState, currentState, unitID)
                         if currentState == AerosolTypes.orgyanyl then
                             currentState = InfStates.Init
                         end
@@ -3141,9 +3198,7 @@ end
                         end
 
                         if currentState == InfStates.Outbreak then
-                            for i = 1, 3 do
-                                stopSpinT(Spring.GetUnitPieceMap(unitID), i)
-                            end
+                            stopShiver(unitID)
 
                             showID = createUnitAtUnit(Spring.GetGaiaTeamID(),
                             "civilian_orgy_pair", unitID, 0, 0, 0)
@@ -3178,49 +3233,17 @@ end
                             end
 
                             if currentState == InfStates.Outbreak then
+                                infectWanderlostNearby(GG.GameConfig, AerosolTypes, aerosolAffectableUnits)
                                 gf = Spring.GetGameFrame()					
-								x,y,z = Spring.GetUnitPosition(unitID)
-								
+		
                                 if gf % 30 == 0 then
-                                    randPiece = Spring.GetUnitPieceMap(unitID)
-                                    for i = 1, 3 do
-                                        val = math.random(5, 35) / 100
-                                        spinT(Spring.GetUnitPieceMap(unitID), i, val * randSign(), val, 0.0032)
-                                    end
-
-                                    if maRa() == maRa() then
-                                        boolAssignedOrder = false
-                                        if maRa() then
-                                            civilianDefID = randDict(CivilianTypes)
-                                            gaiaTeamID = Spring.GetGaiaTeamID()
-                                            unitTable  = Spring.GetTeamUnitsByDefs ( gaiaTeamID, civilianDefID)
-                                            if unitTable and #unitTable > 1 then
-                                                UnitToFollow = getSafeRandom(unitTable,unitTable[1]) 
-                                                if unitID > UnitToFollow then
-                                                    Command(unitID, "guard", UnitToFollow )
-                                                    boolAssignedOrder = true
-                                                end
-                                            end
-                                        end
-
-                                        if not boolAssignedOrder then
-                                            f = (Spring.GetGameFrame() %  (GG.GameConfig.Aerosols.wanderlost.VictimLiftime) / GG.GameConfig.Aerosols.wanderlost.VictimLiftime)
-                                            -- spiraling in towards nowhere
-                                            totaldistance = math.max(128, unitID % 900) *
-                                            math.sin(f * 2 * math.pi)
-                                            tx, tz = Rotate(totaldistance, 0, f * math.pi * 9)
-                                            x = x + tx
-                                            z = z + tz
-                                            Command(unitID, "go", {x = x, y = 0, z = z}, {})
-                                        end
-                                    end									
+                                    shiverAllAxis(unitID)
                                 end
 
-                                if gf % 90 == 0 then
-                                    for i = 1, 3 do
-                                        stopSpinT(Spring.GetUnitPieceMap(unitID), i)
-                                    end									
-                                end
+                                if gf % 91 == 0 then
+                                    stopShiver(unitID)
+                                    setWanderlostMoveGoal(unitID, gf)
+                                end                                   
                             end
 
                             return currentState
