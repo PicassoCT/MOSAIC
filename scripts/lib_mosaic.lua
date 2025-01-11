@@ -3102,6 +3102,7 @@ end
             end
 
             function getRefugeePoint(index)
+                if not GG.CivilianEscapePointTable then setUpRefugeeWayPoints(index) end
                 if index == 1 then return 25,  GG.CivilianEscapePointTable[index] * Game.mapSizeZ end
                 if index == 2 then return Game.mapSizeX,  GG.CivilianEscapePointTable[index] * Game.mapSizeZ end
                 if index == 3 then return GG.CivilianEscapePointTable[index] * Game.mapSizeX, 25 end
@@ -3118,7 +3119,7 @@ end
                 allPieces = Spring.GetUnitPieceMap(unitID)
                 for i = 1, 3 do
                     val = math.random(5, 15) 
-                    spinT(allPieces i, val * randSign(), val)
+                    spinT(allPieces, i, val * randSign(), val)
                 end
             end
 
@@ -3136,6 +3137,7 @@ end
             -- b: Growth rate of the spiral
             -- Returns: x, y coordinates of the point
             function spiralPoint(cx, cy, frame, a, b)
+                frame = math.abs(900 - (frame % 900))
                 local time = frame/30
                 -- Calculate the angle and radius based on time
                 local angle = time -- Angular position (rad/s, assuming time is in seconds)
@@ -3150,11 +3152,14 @@ end
 
 
             function setWanderlostMoveGoal(unitID, gf)
-                if not GG.CivilianEscapePointTable  then setUpRefugeeWayPoints( (unitID % 4 ) + 1) end
-                 x,z = getRefugeePoint(unitID)
-                 sx,sz = spiralPoint(x, y, gf, Game.mapSizeX*0.1, 0.125)
-                 Command(unitID, "go", {x=sx, y= 0, z= sz})
+                x, z = getRefugeePoint((unitID% 4)+1)
+                 if GG.innerCityCenter then 
+                    x,z = GG.innerCityCenter.x, GG.innerCityCenter.z 
+                end
+         
 
+                 sx,sz = spiralPoint(x, z, gf, Game.mapSizeX*0.1, 0.125)
+                 Command(unitID, "go", {x=sx, y= 0, z= sz})
             end
 
             function getAerosolInfluencedStateMachine(unitID, UnitDefs, typeOfInfluence, center, ArmLeft, ArmRight, Head)

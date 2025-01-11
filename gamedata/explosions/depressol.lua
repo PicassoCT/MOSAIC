@@ -1,5 +1,30 @@
 return {
     ["depressol"] = {
+        spray = {
+          air                = true,
+          class              = [[CBitmapMuzzleFlame]],
+          count              = 1,
+          ground             = true,
+          underwater         = 1,
+          water              = true,
+          properties = {
+            colormap           = [[
+              1 1  1    .01   
+              0.5 0.5 1 .01     
+              0 0 0 0]],
+            dir                = [[0, 1, 0]],
+            frontoffset        = 0,
+            fronttexture       = [[sprayFront]],
+            length             = 2,
+            sidetexture        = [[spraySide]],
+            size               = 2,
+            sizegrowth         = 1.3,
+            ttl                = 55,
+          },
+        },
+
+
+        
         particles = {
             air = true,
             class = [[CSimpleParticleSystem]],
@@ -10,6 +35,10 @@ return {
                 airdrag = 0.75,
                 alwaysvisible = true,
                 colormap = [[
+                0 0 0 0
+                0 0 0 0
+                0 0 0 0
+                1 1 1 0.04225   
                 0.5 0.5 1 0.03225   
                 0.5 0.5 1 0.03125 
                 0.5 0.5 1 0.04125
@@ -47,9 +76,13 @@ return {
                 airdrag = 0.75,
                 alwaysvisible = true,
                 colormap = [[
-                0.5 0.5 1 0.03225   
+                0 0 0 0
+                0 0 0 0
+                0 0 0 0
+                1 1 1 0.04225   
+                0.5 0.5 1 0.04225   
                 0.5 0.5 1 0.03125 
-                0.5 0.5 1 0.04125
+                0.5 0.5 1 0.02125
                 0.5 0.5 1 0.0125
                 0.5 0.5 1 0.0125 
                 0.5 0 5 0.0]],
@@ -84,7 +117,8 @@ return {
                 airdrag = 0.75,
                 alwaysvisible = true,
                 colormap = [[
-
+                0 0 0 0
+                1 1 1 0.0125
                 0.5 0.5 1 0.03125   
                 0.5 0.5 1 0.0125
                 0.5 0.5 1 0.0]],

@@ -4,6 +4,30 @@ return
 {	
 	["tollwutox"] = 
 	{
+
+        spray = {
+          air                = true,
+          class              = [[CBitmapMuzzleFlame]],
+          count              = 1,
+          ground             = true,
+          underwater         = 1,
+          water              = true,
+          properties = {
+            colormap           = [[
+              1 1  1    .01   
+              1 0.5 0.5 .01     
+              0 0 0 0]],
+            dir                = [[0, 1, 0]],
+            frontoffset        = 0,
+            fronttexture       = [[sprayFront]],
+            length             = 2,
+            sidetexture        = [[spraySide]],
+            size               = 2,
+            sizegrowth         = 1.3,
+            ttl                = 55,
+          },
+        },
+
 		particles = 
 		{
 			air = true,
@@ -16,6 +40,9 @@ return
 				airdrag = 0.75,
 				alwaysvisible = true,
 				colormap = [[
+				0 0 0 0
+				0 0 0 0
+				0 0 0 0
 				1 0.5 0.5 0.03225		
 				1 0.5 0.5 0.03125	
 				1 0.5 0.5 0.04125
@@ -29,7 +56,7 @@ return
 				emitrotspread = 17,--12
 				emitvector = [[0r-0.2r0.2, 0.5r0.5r-0.5, 0r-0.2r0.2]],
 				
-				gravity = [[0, -0.3r0.15r-0.15 , 0]],
+				gravity = [[0, -0.1r0.15r-0.15 , 0]],
 				
 				numparticles = 1,
 				particlelife = 120,
@@ -58,11 +85,14 @@ return
 				airdrag = 0.75,
 				alwaysvisible = true,
 				colormap = [[
-				1 0.5 0.5 0.03225		
-				1 0.5 0.5 0.04125	
+				0 0 0 0
+				0 0 0 0
+				0 0 0 0
+				1 0.5 0.5 0.04225		
+				1 0.5 0.5 0.03125	
 				1 0.5 0.5 0.04125
 				1 0.5 0.5 0.03125
-				1 0.5 0.5 0.0125
+				1 0.5 0.5 0.0225
 				1 0.5 0.5 0.0125	
 				0 0 0 0.0]],
 				directional = false,
@@ -71,7 +101,7 @@ return
 				emitrotspread = 17,--12
 				emitvector = [[0r-0.2r0.2, 0.5r0.5r-0.5, 0r-0.2r0.2]],
 				
-				gravity = [[0, -0.3r0.15r-0.15 , 0]],
+				gravity = [[0, -0.1r0.15r-0.15 , 0]],
 				
 				numparticles = 1,
 				particlelife = 120,
@@ -100,7 +130,9 @@ return
 			{
 				airdrag = 0.75,
 				alwaysvisible = true,
-	colormap = [[
+	colormap = [[	
+				0 0 0 0
+				1 0.5 0.5 0.00525
                 1 0.5 0.5 0.031225   
                 1 0.5 0.5 0.0125
                 1 0.5 0.5 0.0]],
@@ -110,7 +142,7 @@ return
 				emitrotspread = 17,--12
 				emitvector = [[0r-0.2r0.2, 0.5r0.5r-0.5, 0r-0.2r0.2]],
 				
-				gravity = [[0, -0.3r0.15r-0.15 , 0]],
+				gravity = [[0, -0.1r0.15r-0.15 , 0]],
 				
 				numparticles = 1,
 				particlelife = 30,
