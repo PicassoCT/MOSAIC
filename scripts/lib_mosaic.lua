@@ -3102,6 +3102,7 @@ end
             end
 
             function getRefugeePoint(index)
+                if not GG.CivilianEscapePointTable then setUpRefugeeWayPoints(index) end
                 if index == 1 then return 25,  GG.CivilianEscapePointTable[index] * Game.mapSizeZ end
                 if index == 2 then return Game.mapSizeX,  GG.CivilianEscapePointTable[index] * Game.mapSizeZ end
                 if index == 3 then return GG.CivilianEscapePointTable[index] * Game.mapSizeX, 25 end
@@ -3149,13 +3150,14 @@ end
                 return x, y
             end
 
-            function getWanderLostCenter()
-                getC
-            end
-
 
             function setWanderlostMoveGoal(unitID, gf)
-                 x, z = GG.innerCityCenter or getRefugeePoint((unitID% 4)+1)
+                x, z = getRefugeePoint((unitID% 4)+1)
+                 if GG.innerCityCenter then 
+                    x,z = GG.innerCityCenter.x, GG.innerCityCenter.z 
+                end
+         
+
                  sx,sz = spiralPoint(x, z, gf, Game.mapSizeX*0.1, 0.125)
                  Command(unitID, "go", {x=sx, y= 0, z= sz})
             end
