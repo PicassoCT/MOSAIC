@@ -3118,7 +3118,7 @@ end
                 allPieces = Spring.GetUnitPieceMap(unitID)
                 for i = 1, 3 do
                     val = math.random(5, 15) 
-                    spinT(allPieces i, val * randSign(), val)
+                    spinT(allPieces, i, val * randSign(), val)
                 end
             end
 
@@ -3136,7 +3136,7 @@ end
             -- b: Growth rate of the spiral
             -- Returns: x, y coordinates of the point
             function spiralPoint(cx, cy, frame, a, b)
-                frame = math.abs(900 - (frame % 900)))
+                frame = math.abs(900 - (frame % 900))
                 local time = frame/30
                 -- Calculate the angle and radius based on time
                 local angle = time -- Angular position (rad/s, assuming time is in seconds)
@@ -3149,12 +3149,15 @@ end
                 return x, y
             end
 
+            function getWanderLostCenter()
+                getC
+            end
+
 
             function setWanderlostMoveGoal(unitID, gf)
-                 if not GG.WanderLostPoint then GG.WanderLostPoint  = {x= Game.mapSizeX*}
-                 sx,sz = spiralPoint(x, y, gf, Game.mapSizeX*0.1, 0.125)
+                 x, z = GG.innerCityCenter or getRefugeePoint((unitID% 4)+1)
+                 sx,sz = spiralPoint(x, z, gf, Game.mapSizeX*0.1, 0.125)
                  Command(unitID, "go", {x=sx, y= 0, z= sz})
-
             end
 
             function getAerosolInfluencedStateMachine(unitID, UnitDefs, typeOfInfluence, center, ArmLeft, ArmRight, Head)
