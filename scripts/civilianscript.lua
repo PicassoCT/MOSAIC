@@ -708,7 +708,7 @@ function startAerosolBehaviour(extAerosolStateToSet)
 end
 
 function aeroSolStateBehaviour()
-    --Spring.Echo("Civilian "..unitID.. " starting internal aerosol behaviour")
+   -- Spring.Echo("Civilian "..unitID.. " starting internal aerosol behaviour")
     centerCopy= center
     if  spGetUnitDefID(unitID) == UnitDefNames["civilian_arab4"] then
         centerCopy = Head1
@@ -1208,6 +1208,7 @@ function threadStateStarter()
         if boolStartChatting == true then
             boolStartChatting = false
             StartThread(chatting)
+            echo("Starting filming")
         end
 
         if boolStartFleeing == true then
@@ -1229,6 +1230,7 @@ function threadStateStarter()
             boolStartAnarchyBehaviour = false
             StartThread(anarchyBehaviour)
         end
+        --TODO: Hunt revealed antagon agents?
 
          if boolStartAerosolBehaviour == true then
             boolStartAerosolBehaviour = false

@@ -747,7 +747,7 @@ end
 -- > return the Name of a UnitPiece as String
 function getUnitPieceName(unitID, pieceNum)
     pieceList = Spring.GetUnitPieceList(unitID)
-    return pieceList[pieceNum] or "No such Piece"
+    return pieceList[pieceNum] or "No such Piece "..unitID
 end
 
 -- > Returns a Map of Pieces and there Position in World Coords
