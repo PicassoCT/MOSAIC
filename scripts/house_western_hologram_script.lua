@@ -710,7 +710,7 @@ function glowWormFlight(speed)
 end
 
 function lineBufferForward(buffer, fscope)
-        fscope = {max= 45, min = -45}
+        fscope = {max= 10, min = -10}
 
         sum = 0
         for j=2, #buffer do
@@ -718,7 +718,7 @@ function lineBufferForward(buffer, fscope)
         end
 
         if maRa() then
-            buffer[#buffer] = math.min(45, math.max(-45, math.random(fscope.min, fscope.max)))
+            buffer[#buffer] = math.min(10, math.max(-10, math.random(fscope.min, fscope.max)))
         end
 
         fscope.min = fscope.min - buffer[#buffer]
@@ -729,7 +729,7 @@ function lineBufferForward(buffer, fscope)
             sum = sum + buffer[j]
         end
 
-        buffer[1] = 0
+        buffer[#buffer] = 0
 
     return buffer, sum, fscope
 end
@@ -746,8 +746,8 @@ function lineTicker()
     
     for i=1, 10 do
         fbuffer[i] =  math.random(fscope.min, fscope.max)
-        fscope.max =  math.min(45, math.max(-45, fscope.max - fbuffer[i]))
-        fscope.min =  math.min(math.min(45, math.max(-45,fscope.min - fbuffer[i])),fscope.max-1)
+        fscope.max =  math.min(10, math.max(-10, fscope.max - fbuffer[i]))
+        fscope.min =  math.min(math.min(10, math.max(-10,fscope.min - fbuffer[i])),fscope.max-1)
 
 
         sbuffer[i] =  math.random(sscope.min, sscope.max)   
@@ -762,22 +762,22 @@ function lineTicker()
         resetT(TableOfPiecesGroups["BuisnessWall35Sub"], 0)
         for i=1,10 do
             goal = fbuffer[i]            
-            WTurn(TableOfPiecesGroups["BuisnessWall35Sub"][i], axisline, math.rad(goal), 50)
+            WTurn(TableOfPiecesGroups["BuisnessWall35Sub"][i], axisline, math.rad(goal), 0)
             ShowReg(TableOfPiecesGroups["BuisnessWall35Sub"][i])
         end
         if maRa() then
-            Turn(TableOfPiecesGroups["BuisnessWall35Sub"][21], axisline, math.rad(-sum),50)
+            Turn(TableOfPiecesGroups["BuisnessWall35Sub"][21], axisline, math.rad(-sum),0)
             ShowReg(TableOfPiecesGroups["BuisnessWall35Sub"][21])
         end
 
         sbuffer, sum, sscope = lineBufferForward(sbuffer, sscope)
         for i=11,20 do
             goal = sbuffer[i-10]
-            WTurn(TableOfPiecesGroups["BuisnessWall35Sub"][i],axisline, math.rad(goal),50)
+            WTurn(TableOfPiecesGroups["BuisnessWall35Sub"][i],axisline, math.rad(goal),0)
             ShowReg(TableOfPiecesGroups["BuisnessWall35Sub"][i])
         end
         if maRa() then
-            Turn(TableOfPiecesGroups["BuisnessWall35Sub"][22],axisline, math.rad(-sum),50)
+            Turn(TableOfPiecesGroups["BuisnessWall35Sub"][22],axisline, math.rad(-sum),0)
             ShowReg(TableOfPiecesGroups["BuisnessWall35Sub"][22])
         end
 

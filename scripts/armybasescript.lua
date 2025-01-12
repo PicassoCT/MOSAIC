@@ -5,7 +5,7 @@ include "lib_Animation.lua"
 --include "lib_Build.lua"
 
 local TablesOfPiecesGroups = {}
-buildspot = piece"buildspot"
+
 myDefID = Spring.GetUnitDefID(unitID)
 function script.HitByWeapon(x, z, weaponDefID, damage) end
 SIG_BLINK = 2
@@ -55,10 +55,4 @@ function script.StartBuilding() blinkTime = BLINK_ACTIVE; SetUnitValue(COB.INBUI
 
 function script.StopBuilding() blinkTime = BLINK_PASSIVE SetUnitValue(COB.INBUILDSTANCE, 0) end
 
-
- function script.QueryBuildInfo()
-    return buildspot
- end
-
-Spring.SetUnitNanoPieces(unitID, { buildspot })
 

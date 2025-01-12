@@ -178,6 +178,9 @@ function weldingAnimation(set)
         resetT(set.robot2T,1)
         resetT(set.robot3T,1)
         resetT(set.robot4T,1)
+        WaitForMoves(set.finalWorks)
+        reset(set.finalWorks)
+
         workSteps = math.random(7,15)
         for i=1, workSteps do
             for robot=1, #robotTable do
@@ -241,7 +244,7 @@ function weldingAnimation(set)
         Move(set.finalWorks, z_axis, 720, 100)
         WMove(set.finalWorks,y_axis, 600, 100)
         Hide(set.finalWorks)
-        reset(set.finalWorks,0)
+        reset(set.finalWorks)
         Sleep(5000)
         Turn(set.doors[1],x_axis, math.rad(0),1)
         Turn(set.doors[2],x_axis, math.rad(0),1)

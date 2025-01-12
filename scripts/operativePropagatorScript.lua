@@ -212,7 +212,7 @@ function script.Create()
     StartThread(breathing)
     StartThread(transportControl)
     StartThread(cloakIfAIPlayer)
-    StartThread(testAnimation)
+    --StartThread(testAnimation)
 end
 
 function getWindTemporaryForces()
@@ -222,6 +222,7 @@ end
 
 Coat = piece "Coat"
 function trenchCoateAnimation()
+	if true then return end --TODO fix trenchcoat
 	if not TablesOfPiecesGroups["HeadDeco"][7] then return end
 	boolFoundTrenchCoat= false
 	for a=1, #shownPieces do

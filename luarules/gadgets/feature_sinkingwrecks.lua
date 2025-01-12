@@ -16,7 +16,9 @@ end
 local corpsePrideTable = {[FeatureDefNames["bodybag"].id] = true}
 
 if (gadgetHandler:IsSyncedCode()) then
-
+    VFS.Include("scripts/lib_UnitScript.lua")
+    VFS.Include("scripts/lib_mosaic.lua")
+    GameConfig = getGameConfig()
     -- Configuration:
     local SinkEndTime = -35 * 10 -- In frame (10 seconds x 30 frames per seconds)
     local SinkBeginTime = 30 * 10
@@ -35,6 +37,8 @@ if (gadgetHandler:IsSyncedCode()) then
         if isWreck(FeatureID) == true then
             WreckList[#WreckList + 1] = {}
             WreckList[#WreckList] = {id = FeatureID, sinkTime = SinkBeginTime}
+     
+        
         end
     end
 
@@ -67,6 +71,10 @@ if (gadgetHandler:IsSyncedCode()) then
 
                 if WreckList[i].sinkTime < SinkEndTime then
                     boolIKnowThatGuy = true
+                    if math.random(1,100) > 50 and GG.GlobalGameState and GG.GlobalGameState == GameConfig.GameState.normal then
+                        x,y,z = Spring.GetFeaturePosition(WreckList[i].id)
+                        Spring.CreateUnit("memorial", x, 0, z, 1, gaiaTeamID )
+                    end
                 end
             end
 
