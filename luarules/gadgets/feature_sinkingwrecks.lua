@@ -73,7 +73,11 @@ if (gadgetHandler:IsSyncedCode()) then
                     boolIKnowThatGuy = true
                     if math.random(1,100) > 50 and GG.GlobalGameState and GG.GlobalGameState == GameConfig.GameState.normal then
                         x,y,z = Spring.GetFeaturePosition(WreckList[i].id)
-                        Spring.CreateUnit("memorial", x, 0, z, 1, gaiaTeamID )
+                        memorialId = Spring.CreateUnit("memorial", x, 0, z, 1, gaiaTeamID )
+                        if memorialId then
+                            dx,dy,dz = Spring.GetFeatureRotation(WreckList[i].id)
+                            Swprin.SetUnitRotation(memorialId, dx, dy, dz)
+                        end
                     end
                 end
             end
