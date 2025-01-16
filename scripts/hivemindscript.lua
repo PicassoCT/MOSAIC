@@ -6,10 +6,10 @@ include "lib_mosaic.lua"
 local TablesOfPiecesGroups = {}
 GameConfig = getGameConfig()
 
-IntegrationRadius = GameConfig.integrationRadius
-innerLimit = 96
-center = piece "center"
-Icon = piece "Icon"
+local IntegrationRadius = GameConfig.integrationRadius
+local innerLimit = 96
+local center = piece "center"
+local Icon = piece "Icon"
 
 myTeamID = Spring.GetUnitTeam(unitID)
 level = 0
@@ -46,6 +46,7 @@ function integrateNewMembers()
     members = {}
     while true do
         if  membersIntegrated < GameConfig.maxNumberIntegratedIntoHive  then
+              aerosolUnits =   GG.AerosolAffectedCivilians[id] or {}
         foreach(getAllInCircle(x, z, IntegrationRadius), 
             function(id)
                 team = Spring.GetUnitTeam(id)
@@ -55,10 +56,15 @@ function integrateNewMembers()
                 if GG.DisguiseCivilianFor[id] then
                   return GG.DisguiseCivilianFor[id]
                 end
+
+
+
                 return id
             end, 
             function(id)
-                if integrateAbleUnits[Spring.GetUnitDefID(id)] and not isTransport(id) then           
+                defId = Spring.GetUnitDefID(id)
+                if integrateAbleUnits[defId] and not isTransport(id) then      
+                    if aerosolUnits[id] then return nil end     
                     Spring.SetUnitPosition(id, px, py, pz)
                     Spring.DestroyUnit(id, false, true)
                     membersIntegrated = membersIntegrated  + 1

@@ -14,7 +14,7 @@ Bugs:
 - self-revealing of operators
 - recruited civilians kill themselves
 -letter axis wrong  western civilians
-- vannishing safehouses on upgrade
+- vannishing buildings on upgrade if over budget -> 
 
 
 - depends on memory stackoverflow solved due to building model copies 
