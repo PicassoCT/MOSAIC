@@ -3340,7 +3340,7 @@ end
                                 if currentState == InfStates.Init then
                                     bombsNearby = foreach(getAllNearUnit(unitID, 512),
                                                             function(id)
-                                                                defID = spGetUnitDefID(id)
+                                                                defID = Spring.GetUnitDefID(id)
                                                                 if bombTypeTable[defID] then
                                                                     return id
                                                                 end

@@ -20,14 +20,14 @@ return {
             length             = 2,
             sidetexture        = [[spraySide]],
             size               = 2,
-            sizegrowth         = 1.3,
-            ttl                = 55,
+            sizegrowth         = 4.3,
+            ttl                = 15,
           },
         },
 	particlesa = {
 			air = true,
 			class = [[CSimpleParticleSystem]],
-			count = 3,
+			count = 1,
 			ground = true,
 			water = true,
 			properties = {
@@ -38,9 +38,9 @@ return {
 				0 0 0 0
 				0 0 0 0
 				1 1 1 0.01225	
-				1 0.5 0.0 0.01225		
-				1 0.5 0.0 0.04125	
-				1 0.5 0.0 0.03125
+				1 0.5 0.0 0.03225		
+				1 0.5 0.0 0.03125	
+				1 0.5 0.0 0.02125
 				1 0.5 0.0 0.02125
 				1 0.5 0.0 0.0225
 				1 0.5 0.0 0.0125	
@@ -73,7 +73,7 @@ return {
 		particlesb = {
 			air = true,
 			class = [[CSimpleParticleSystem]],
-			count = 3,
+			count = 1,
 			ground = true,
 			water = true,
 			properties = {
@@ -84,7 +84,7 @@ return {
 				0 0 0 0
 				0 0 0 0
 				1 1 1 0.01225		
-				1 0.5 0.0 0.04125	
+				1 0.5 0.0 0.03125	
 				1 0.5 0.0 0.03125
 				1 0.5 0.0 0.02125
 				1 0.5 0.0 0.0125

@@ -166,7 +166,7 @@ function onTheFly()
     local lsin = math.sin
     local lrand = math.random
 
-    StartThread(PlaySoundByUnitDefID, unitdef, soundfolder .. "copterTakeOff.wav", 0.9, 3000, 1)
+    --StartThread(PlaySoundByUnitDefID, unitdef, soundfolder .. "copterTakeOff.wav", 0.9, 3000, 1)
     Sleep(3000)
     SumSini = 0
     boolFlop = true

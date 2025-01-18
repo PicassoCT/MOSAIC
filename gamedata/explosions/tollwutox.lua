@@ -20,11 +20,11 @@ return
             dir                = [[0, 1, 0]],
             frontoffset        = 0,
             fronttexture       = [[sprayFront]],
-            length             = 2,
+            length             = 4,
             sidetexture        = [[spraySide]],
-            size               = 2,
-            sizegrowth         = 1.3,
-            ttl                = 55,
+            size               = 4,
+            sizegrowth         = 4.3,
+            ttl                = 25,
           },
         },
 
@@ -32,7 +32,7 @@ return
 		{
 			air = true,
 			class = [[CSimpleParticleSystem]],
-			count = 3,
+			count = 1,
 			ground = true,
 			water = true,
 			properties = 
@@ -42,8 +42,7 @@ return
 				colormap = [[
 				0 0 0 0
 				0 0 0 0
-				0 0 0 0
-				1 0.5 0.5 0.04225		
+				1 0.5 0.5 0.03225		
 				1 0.5 0.5 0.03125	
 				1 0.5 0.5 0.03125
 				1 0.5 0.5 0.02125
@@ -78,7 +77,7 @@ return
 		particlesb = {
 			air = true,
 			class = [[CSimpleParticleSystem]],
-			count = 3,
+			count = 1,
 			ground = true,
 			water = true,
 			properties = {
@@ -87,8 +86,7 @@ return
 				colormap = [[
 				0 0 0 0
 				0 0 0 0
-				0 0 0 0
-				1 0.5 0.5 0.04225		
+				1 0.5 0.5 0.03225		
 				1 0.5 0.5 0.03125	
 				1 0.5 0.5 0.03125
 				1 0.5 0.5 0.02125
@@ -123,7 +121,7 @@ return
 	droplett = {
 			air = true,
 			class = [[CSimpleParticleSystem]],
-			count = 3,
+			count = 2,
 			ground = true,
 			water = true,
 			properties = 
@@ -153,7 +151,7 @@ return
 				particlespeed = 0.35,
 				particlespeedspread = 0.0004,
 				pos = [[0, 0, 0]],
-				sizeGrowth	= 0.666,
+				sizeGrowth	= 0.3,
 				sizeMod		= 1.0000000006,
 				texture = [[fireSparks]],--
 				useairlos = false			

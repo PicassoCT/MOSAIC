@@ -314,27 +314,39 @@ function UnloadBooster()
 end
 
 function landBooster(boostNr)
-    openDoor(GroundRearDoorN)
-    StartThread(PrepareUnloadBooster)
+      axis = 2
     local boosterNr = boostNr
-    resttime = boosterNr*15000
+    local booster = TableOfPiecesGroups[ReturningBoosterN][boosterNr]
+    reset(booster,0)
+    WaitForMoves(booster)
+    local boosterRotator = TableOfPiecesGroups[BoosterRotatorN][boosterNr]
+    nextPos = 64000
+    WMove(booster, axis, nextPos, 0)
+    WTurn(boosterRotator,1, math.rad(15),0)
+    Turn(boosterRotator, 1, math.rad(0),0.0001)
+
+    StartThread(openDoor, GroundRearDoorN)
+    StartThread(PrepareUnloadBooster)
+
+ 
+
     local LandCone = TableOfPiecesGroups["LandCone"][boosterNr]
-    axis = 2
-    Sleep(resttime)
+  
+
     local plums = getPlum(boosterNr)
     assert(plums)
-    local booster = TableOfPiecesGroups[ReturningBoosterN][boosterNr]
+
     assert(booster)
-    nextPos = 64000
-    local boosterRotator = TableOfPiecesGroups[BoosterRotatorN][boosterNr]
+
+
     assert(boosterRotator)
-    WMove(booster, axis, nextPos, 0)
+    --WMove(booster, axis, nextPos, 0)
     --Turn(boosterRotator, x_axis, math.rad(-5), 0)
     Show(booster)
     --Turn(boosterRotator, x_axis, math.rad(0), 0.001)
    
     for i = nextPos, 2000, -2000 do
-        Move(booster, axis, i, 4000)
+        Move(booster, axis, i, 6000)
         Sleep(1)
         WaitForMoves(booster)
     end
@@ -346,8 +358,9 @@ function landBooster(boostNr)
   
     Turn(booster, x_axis, math.rad(0), 0.5)
     Turn(booster, y_axis, math.rad(0), 3)
+    Turn(boosterRotator, x_axis, math.rad(0),5)
     for i= 2000, 0, -10 do
-        WMove(booster, axis, i, math.max(i*2, 700))
+        WMove(booster, axis, i, math.max(i*3, 1200))
         spinVal = math.random(40, 120)*randSign()
         Spin(LandCone, y_axis, math.rad(spinVal))
         for k=1, #plums do
@@ -381,8 +394,10 @@ function landBooster(boostNr)
     Hide(LandCone)
     Hide(booster)
     Show(TableOfPiecesGroups[LandedBoosterN][boosterNr])
-    Sleep(250)
+
     Hide(TableOfPiecesGroups[CrawlerBoosterRingN][boosterNr])
+    resttime = (boosterNr-1)*15000
+    Sleep(resttime)
     assert(TableOfPiecesGroups[LandedBoosterN])
     boosterArrivedTravelIntoHangar(boosterNr)
 end
@@ -548,6 +563,7 @@ end
 launchState = "prepareForLaunch"
 rocketPlumage = RocketPlumeN
 local GameConfig = getGameConfig()
+upDistance = 58000
 function launchAnimation()
     while true do
         while GG.GlobalGameState == GameConfig.GameState.normal do
@@ -604,7 +620,7 @@ function launchAnimation()
             --Lift Rocket
             plattformFireBloomCleanup()
             liftRocketShowStage(32000, 2000, TableOfPiecesGroups[rocketPlumage][4], math.random(5, 15)*randSign(), 3)
-            liftRocketShowStage(58000, 2000, TableOfPiecesGroups[rocketPlumage][5], math.random(3, 8)*randSign(), 1)
+            liftRocketShowStage(upDistance, 2000, TableOfPiecesGroups[rocketPlumage][5], math.random(3, 8)*randSign(), 1)
             -- Stage4 smoke Spin
             -- Decoupling thrusters
             destroyUnitsNearby()
@@ -616,14 +632,15 @@ function launchAnimation()
             Show(RocketFusionPlume)
             Sleep(500)
             --Fusion Engine kicks in 
-
+            
+            launchState = "recovery"
             WMove(MainStage, y_axis, 92000, 16000)
             Sleep(9000)
             Hide(RocketFusionPlume)
             HideRocket()
             echo("launch complete waiting for return")
             --Moving CrawlerMain back to reassembly
-            launchState = "recovery"
+      
             WMove(RocketCraneBase, z_axis, 0, 15)
             watchDog = 90000
             while (holdsForAllBool(boosterReturned, false) or watchDog > 0) do
