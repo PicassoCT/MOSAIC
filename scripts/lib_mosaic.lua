@@ -3238,7 +3238,7 @@ end
                             end
 
                             if currentState == InfStates.Outbreak then
-                                infectWanderlostNearby(GG.GameConfig, AerosolTypes, aerosolAffectableUnits)
+                                infectWanderlostNearby(GG.GameConfig, AerosolTypes, CivilianTypes)
                                 gf = Spring.GetGameFrame()					
 		
                                 if gf % 30 == 0 then

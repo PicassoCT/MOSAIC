@@ -756,11 +756,10 @@ local function FinishMorph(unitID, morphData)
 
   containingHouseID = getContainingHouse(unitID)
   if not doesUnitExistAlive(containingHouseID) then
+      Spring.Echo("Containing House "..containingHouseID .. " is dead ")
       GG.UnitsToKill:PushKillUnit(unitID, true, false)
       return
   end
-  assert(containingHouseID)
-  assert(doesUnitExistAlive(containingHouseID))
 
   -- DESTROY UNIT, this syntax is for spring 104+ only (parameter #5 does not exist in 103)
   -- selfd = false, reclaim = true, attacker = 0, recycleID = true

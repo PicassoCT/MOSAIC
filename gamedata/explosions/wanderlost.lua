@@ -19,11 +19,11 @@ return {
             dir                = [[0, 1, 0]],
             frontoffset        = 0,
             fronttexture       = [[sprayFront]],
-            length             = 2,
+            length             = 8,
             sidetexture        = [[spraySide]],
-            size               = 2,
-            sizegrowth         = 1.3,
-            ttl                = 55,
+            size               = 8,
+            sizegrowth         = 20,
+            ttl                = 15,
           },
         },
 
@@ -38,8 +38,6 @@ return {
 				airdrag = 0.75,
 				alwaysvisible = true,
 				colormap = [[
-				0 		0    0  0
-				0 		0    0  0
 				0 		0    0  0
 				1 1 1 0.031225	
 				0.25 1 0.25 0.04125	
@@ -82,8 +80,6 @@ return {
 				alwaysvisible = true,
 				colormap = [[
 				0  0  0  0
-				0  0  0  0
-				0  0  0  0
 				1 1  1 0.031225	
 				0.25 1 0.25 0.04125	
 				0.25 1 0.25 0.03125
@@ -125,8 +121,8 @@ return {
 				alwaysvisible = true,
 				colormap = [[
 				0 0 0 0
-				0.25 1 0.25  0.002125
-				0.25 1 0.25  0.00125
+				0.25 1 0.25  0.03125 
+				0.25 1 0.25  0.0125
 				0.25 1 0.25  0.0
                 ]],
 

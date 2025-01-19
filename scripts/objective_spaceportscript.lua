@@ -320,32 +320,24 @@ function landBooster(boostNr)
     reset(booster,0)
     WaitForMoves(booster)
     local boosterRotator = TableOfPiecesGroups[BoosterRotatorN][boosterNr]
-    nextPos = 64000
-    WMove(booster, axis, nextPos, 0)
-    WTurn(boosterRotator,1, math.rad(15),0)
-    Turn(boosterRotator, 1, math.rad(0),0.0001)
-
+    local nextPos = 64000
     StartThread(openDoor, GroundRearDoorN)
     StartThread(PrepareUnloadBooster)
+    WMove(booster, axis, upDistance , 0)
+    WTurn(boosterRotator,1, math.rad(-15),0)
+    Turn(boosterRotator, 1, math.rad(0),0.5)
+    Show(booster)
+    for i=0, math.pi*0.5, 0.1 do
+        val = math.sin(i)
+        target  = upDistance + val * (64000-upDistance)
+        WMove(booster, axis, val ,  math.max(1000,(1- val)*6000))
+    end
 
  
-
     local LandCone = TableOfPiecesGroups["LandCone"][boosterNr]
-  
-
     local plums = getPlum(boosterNr)
-    assert(plums)
-
-    assert(booster)
-
-
-    assert(boosterRotator)
-    --WMove(booster, axis, nextPos, 0)
-    --Turn(boosterRotator, x_axis, math.rad(-5), 0)
-    Show(booster)
-    --Turn(boosterRotator, x_axis, math.rad(0), 0.001)
    
-    for i = nextPos, 2000, -2000 do
+    for i = upDistance, 2000, -2000 do
         Move(booster, axis, i, 6000)
         Sleep(1)
         WaitForMoves(booster)

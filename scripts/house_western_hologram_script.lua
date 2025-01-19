@@ -729,7 +729,7 @@ function lineBufferForward(buffer, fscope)
             sum = sum + buffer[j]
         end
 
-        buffer[#buffer] = 0
+        buffer[1] = 0
 
     return buffer, sum, fscope
 end
@@ -739,10 +739,10 @@ function lineTicker()
     --Spring.Echo("Starting lineTicker at "..getCoordinateString(unitID))
     fbuffer = {}
     sbuffer = {}
-    fscope = {max= 10,
-             min = -10}
-    sscope = {max= 10,
-              min = -10}
+    fscope = {max= 45,
+             min = -45}
+    sscope = {max= 45,
+              min = -45}
     
     for i=1, 10 do
         fbuffer[i] =  math.random(fscope.min, fscope.max)
@@ -751,8 +751,8 @@ function lineTicker()
 
 
         sbuffer[i] =  math.random(sscope.min, sscope.max)   
-        sscope.max =  math.min(45, math.max(-45,sscope.max - sbuffer[i]))
-        sscope.min =  math.min(math.min(45, math.max(-45,sscope.min - sbuffer[i])),sscope.max-1)
+        sscope.max =  math.min(10, math.max(-10,sscope.max - sbuffer[i]))
+        sscope.min =  math.min(math.min(10, math.max(-10,sscope.min - sbuffer[i])),sscope.max-1)
     end
     axisline = y_axis
 
