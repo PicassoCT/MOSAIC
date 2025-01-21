@@ -314,11 +314,9 @@ function UnloadBooster()
 end
 
 function landBooster(boostNr)
-      axis = 2
+    axis = 2
     local boosterNr = boostNr
     local booster = TableOfPiecesGroups[ReturningBoosterN][boosterNr]
-    reset(booster,0)
-    WaitForMoves(booster)
     local boosterRotator = TableOfPiecesGroups[BoosterRotatorN][boosterNr]
     local nextPos = 64000
     StartThread(openDoor, GroundRearDoorN)
@@ -330,9 +328,8 @@ function landBooster(boostNr)
     for i=0, math.pi*0.5, 0.1 do
         val = math.sin(i)
         target  = upDistance + val * (64000-upDistance)
-        WMove(booster, axis, val ,  math.max(1000,(1- val)*6000))
+        WMove(booster, axis, target ,  math.max(1000,(1- val)*6000))
     end
-
  
     local LandCone = TableOfPiecesGroups["LandCone"][boosterNr]
     local plums = getPlum(boosterNr)

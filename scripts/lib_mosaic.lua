@@ -3116,17 +3116,22 @@ end
             end
 
             function shiverAllAxis(unitID)
-                allPieces = Spring.GetUnitPieceMap(unitID)
+                allPieces = Spring.GetUnitPieceList(unitID)
                 for i = 1, 3 do
                     val = math.random(5, 15) 
-                    spinT(allPieces, i, val * randSign(), val)
+                     for p=1, #allPieces do
+                        Spin(p, i, val * randSign(), val) 
+                      end
                 end
             end
 
           
             function stopShiver(unitID)
+                allPieces = Spring.GetUnitPieceList(unitID)
                 for i = 1, 3 do
-                    stopSpinT(Spring.GetUnitPieceMap(unitID), i)
+                    for p=1, #allPieces do
+                        StopSpin(p, i) 
+                    end
                 end  
             end
 
@@ -3180,13 +3185,13 @@ end
                         -- Init
                         if currentState == InfStates.Init then
                             val = math.random(10, 60) / 1000
-                            spinT(Spring.GetUnitPieceMap(unitID), z_axis, val * randSign(), 0000015)
+                            spinT(Spring.GetUnitPieceList(unitID), z_axis, val * randSign(), 0000015)
                             currentState = InfStates.PreOutbreak
                         end
 
                         if currentState == InfStates.PreOutbreak then
                             val = math.random(10, 60) / 1000
-                            spinT(Spring.GetUnitPieceMap(unitID), z_axis, val * randSign(), 0000015)
+                            spinT(Spring.GetUnitPieceList(unitID), z_axis, val * randSign(), 0000015)
 
                             al = Spring.GetUnitNearestAlly(unitID)
                             if al and CivilianTypes[Spring.GetUnitDefID(al)] then
@@ -3268,16 +3273,20 @@ end
                             attackDistance = 35
                             -- random shivers
                             if gf % 30 == 0 and gf % 90 ~= 0 and maRa() then
+                                allPieces = Spring.GetUnitPieceList(unitID)
                                 for i = 1, 3 do
                                     val = (math.random(-100, 100) / 100) * 12
-                                    spinT(Spring.GetUnitPieceMap(unitID), i, math.rad(val), 30.125)
+                                    for p=1, #allPieces do
+                                        Spin(allPieces[p], i, math.rad(val), 30.125) 
+                                    end
+                                   
                                 end
                             end
 
                             if gf % 90 == 0 then
                                 for i = 1, 3 do
                                     val = (math.random(-100, 100) / 100) * 12
-                                    stopSpinT(Spring.GetUnitPieceMap(unitID), i, 30.125)
+                                    stopSpinT(Spring.GetUnitPieceList(unitID), i, 30.125)
                                 end
                             end
                             headVal = math.random(-10, 25)

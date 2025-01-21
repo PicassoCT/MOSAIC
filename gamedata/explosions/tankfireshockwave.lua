@@ -6,10 +6,10 @@ return {
     groundflash = {
       air                = true,
       alwaysvisible      = true,
-      circlealpha        = 0.164,
+      circlealpha        = 0.0164,
       circlegrowth       = 6,
-      flashalpha         = 0.02,
-      flashsize          = 42,
+      flashalpha         = 0.7,
+      flashsize          = 120,
       ground             = true,
       ttl                = 25,
       water              = true,

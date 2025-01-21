@@ -207,7 +207,8 @@ end
 function rainyDayCare()
     westernCivilainDefIDTypeTable = getWesternUnitTypeMap("civilian", UnitDefs)
     if not westernCivilainDefIDTypeTable[myDefID] then return end
-    Umbrella = TablesOfPiecesGroups["Umbrella"][(unitID % #TablesOfPiecesGroups["Umbrella"] )+1]
+    umbrellaIndex = (unitID % #TablesOfPiecesGroups["Umbrella"] )+1
+    Umbrella = TablesOfPiecesGroups["Umbrella"][umbrellaIndex]
     while Umbrella do
         if isRaining() then
             while isRaining() do

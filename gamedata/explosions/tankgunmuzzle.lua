@@ -111,22 +111,7 @@
         useairlos          = false,
       },
     },
-    groundflash = {
-      air                = true,
-      alwaysvisible      = true,
-      circlealpha        = 0.6,
-      circlegrowth       = 6,
-      flashalpha         = 0.9,
-      flashsize          = 120,
-      ground             = true,
-      ttl                = 13,
-      water              = true,
-      color = {
-        [1]  = 1,
-        [2]  = 0.5,
-        [3]  = 0,
-      },
-    },        
+    
      
         bitmapmuzzleflame = {
           air                = true,

@@ -12,15 +12,15 @@ return {
           properties = {
             colormap           = [[
               1 1  1    .01   
-              1 0.5 0   .01     
+              1 0.5 0   .001     
               0 0 0 0]],
-            dir                = [[0, 1, 0]],
-            frontoffset        = 0,
+                dir                = [[0r-0.001r0.001, 1, 0r-0.001r0.001]],
+            frontoffset        = 0.5,
             fronttexture       = [[sprayFront]],
-            length             = 8,
+            length             = -4,
             sidetexture        = [[spraySide]],
-            size               = 8,
-            sizegrowth         = 20,
+            size               = -4,
+            sizegrowth         = 15,
             ttl                = 15,
           },
         },
@@ -129,7 +129,7 @@ return {
 				
 				emitrot = 45,--45
 				emitrotspread = 17,--12
-				emitvector = [[0r-0.2r0.2, 0.5r0.5r-0.5, 0r-0.2r0.2]],
+				emitvector = [[0r-0.5r0.5, 0.5r0.4r-0.5, 0r-0.5r0.5]],
 				
 				gravity = [[0, -0.1r0.15r-0.15 , 0]],
 				
@@ -137,12 +137,12 @@ return {
 				particlelife = 30,
 				particlelifespread = 65,
 				
-				particlesize = 0.015,
+				particlesize = 0.15,
 				particlesizespread = 1.8,
 				
 				particlespeed = 0.35,
 				particlespeedspread = 0.0004,
-				pos = [[0, 0, 0]],
+				pos = [[0r-3.0r3.0, 0, 0r-3.0r3.0]],
 				sizeGrowth	= 0.666,
 				sizeMod		= 1.0000000006,
 				texture = [[fireSparks]],--

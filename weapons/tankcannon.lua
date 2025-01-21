@@ -8,7 +8,7 @@ local weaponDef = {
         default = 1500,
         HeavyArmor = 1000,
     },
-    areaOfEffect = 22,
+    areaOfEffect = 50,
     --physics
     weaponVelocity = 2900,
     reloadtime = 5,

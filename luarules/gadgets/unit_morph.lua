@@ -756,8 +756,8 @@ local function FinishMorph(unitID, morphData)
 
   containingHouseID = getContainingHouse(unitID)
   if not doesUnitExistAlive(containingHouseID) then
-      Spring.Echo("Containing House "..containingHouseID .. " is dead ")
-      GG.UnitsToKill:PushKillUnit(unitID, true, false)
+      Spring.Echo(unitID .." containing House "..containingHouseID .. " is dead ")
+      --GG.UnitsToKill:PushKillUnit(unitID, true, false)
       return
   end
 
