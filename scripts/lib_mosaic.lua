@@ -3097,12 +3097,12 @@ end
             end
 
             function setUpRefugeeWayPoints(index)
-                if not GG.CivilianEscapePointTable then GG.CivilianEscapePointTable = {} end
                 GG.CivilianEscapePointTable[index] = math.random(1,1000)/1000  
             end
 
             function getRefugeePoint(index)
-                if not GG.CivilianEscapePointTable then setUpRefugeeWayPoints(index) end
+                if not GG.CivilianEscapePointTable then GG.CivilianEscapePointTable then GG.CivilianEscapePointTable = {} end
+                if not  GG.CivilianEscapePointTable[index]  then setUpRefugeeWayPoints(index) end
                 if index == 1 then return 25,  GG.CivilianEscapePointTable[index] * Game.mapSizeZ end
                 if index == 2 then return Game.mapSizeX,  GG.CivilianEscapePointTable[index] * Game.mapSizeZ end
                 if index == 3 then return GG.CivilianEscapePointTable[index] * Game.mapSizeX, 25 end
@@ -3158,7 +3158,7 @@ end
 
             function setWanderlostMoveGoal(unitID, gf)
                 x, z = getRefugeePoint((unitID% 4)+1)
-                 if GG.innerCityCenter then 
+                if GG.innerCityCenter then 
                     x,z = GG.innerCityCenter.x, GG.innerCityCenter.z 
                 end
          
@@ -3246,14 +3246,9 @@ end
                                 infectWanderlostNearby(GG.GameConfig, AerosolTypes, CivilianTypes)
                                 gf = Spring.GetGameFrame()					
 		
-                                if gf % 30 == 0 then
-                                    shiverAllAxis(unitID)
-                                end
-
-                                if gf % 91 == 0 then
-                                    stopShiver(unitID)
-                                    setWanderlostMoveGoal(unitID, gf)
-                                end                                   
+                                if gf % 90 == 0 then
+                                   spasm(unitID, math.random(22/90, 90), math.random(1,3))
+                                end                                 
                             end
 
                             return currentState

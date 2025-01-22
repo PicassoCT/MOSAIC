@@ -4,20 +4,19 @@ return {
   ["tankfireshockwave"] = {
   
     groundflash = {
-      air                = true,
+      class = [[CSimpleGroundFlash]],
+      count = 1,
+      ground = true,
+      water = true,
       alwaysvisible      = true,
-      circlealpha        = 0.0164,
-      circlegrowth       = 6,
-      flashalpha         = 0.7,
-      flashsize          = 120,
-      ground             = true,
-      ttl                = 25,
-      water              = true,
-      color = {
-        [1]  = 0.9,
-        [2]  = 0.2,
-        [3]  = 0,
-      },
+
+     properties = {
+                colormap = [[0.9 0.2 0.0 0.5   1.0 0.3 0 0.01]],
+                size = 66,
+                sizegrowth = 0.012,
+                texture = [[groundflash]],
+                ttl = 47
+            }
     }
   }
 }
