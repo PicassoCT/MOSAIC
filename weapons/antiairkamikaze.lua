@@ -16,9 +16,9 @@ local weaponDef = {
     ImpulseBoost = 1.2,
     ImpulseFactor = 3,
     damage = {
-        default = 100,
+        default = 500,
     },
-    areaOfEffect = 10,
+    areaOfEffect = 5,
     craterMult = 0,
     lineOfSight = true,
     soundHit = "weapons/ssied/explode.ogg",

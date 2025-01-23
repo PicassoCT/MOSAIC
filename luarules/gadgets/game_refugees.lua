@@ -203,6 +203,11 @@ function getMilitaryPoint(index)
     Spring.Echo("Unknown EscapePoint")
 end
 
+function setUpRefugeeWayPoints(index)
+    if not GG.CivilianEscapePointTable then GG.CivilianEscapePointTable = {} end
+     GG.CivilianEscapePointTable[index] = math.random(1,1000)/1000  
+end
+
 
 local escapeeHash = getDetermenisticMapHash(Game)
 local rStuck = {}

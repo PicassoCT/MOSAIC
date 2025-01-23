@@ -3096,13 +3096,10 @@ end
                 }
             end
 
-            function setUpRefugeeWayPoints(index)
-                GG.CivilianEscapePointTable[index] = math.random(1,1000)/1000  
-            end
 
             function getRefugeePoint(index)
-                if not GG.CivilianEscapePointTable then GG.CivilianEscapePointTable then GG.CivilianEscapePointTable = {} end
-                if not  GG.CivilianEscapePointTable[index]  then setUpRefugeeWayPoints(index) end
+                if not GG.CivilianEscapePointTable then  GG.CivilianEscapePointTable = {} end
+                if not  GG.CivilianEscapePointTable[index]  then  GG.CivilianEscapePointTable[index] = math.random(1,1000)/1000   end
                 if index == 1 then return 25,  GG.CivilianEscapePointTable[index] * Game.mapSizeZ end
                 if index == 2 then return Game.mapSizeX,  GG.CivilianEscapePointTable[index] * Game.mapSizeZ end
                 if index == 3 then return GG.CivilianEscapePointTable[index] * Game.mapSizeX, 25 end
