@@ -37,37 +37,40 @@ function getFirstShopName(firstName)
     products.D = products.D + " " + products[secondLetter]
 
     local broducts = {
-        A = "Adult Entertainment",
-        B = "Bunkers",
-        C = "Corpse Dispossal",
-        D = "Drones",
-        E = "Energy Cells",
-        F = "Fuel",
-        G = "Gadgets",
-        H = "Hazmat Suits",
-        I = "Infotrade",
-        J = "Jewel Surgery",
-        K = "Kinetic Weapons",
-        L = "Life Extensions",
-        M = "Methamphetamins",
-        N = "Neuralink Install",
-        O = "Oxygen",
-        P = "Protective Gear",
-        Q = "Quarantine Tests",
-        R = "Radiation Mitigation",
-        S = "Skinjobs",
-        T = "Tactical Tools",
-        U = "Underwear ",
-        V = "Vaccine Serums",
-        W = "Water Purifiers",
-        X = "Xtreme Sports",
-        Y = "YouPorn Emporium",
-        Z = "Zero Neuro Pearls"
+        A = {"Adult Entertainment", "Appsassins", "Analtoyss"},
+        B = {"Bunkers", "Bombs", "BDSM"} ,
+        C = {"Corpse Dispossal", "Cannibalist" }
+        D = {"Drones","Disinformation", "Dildos"}
+        E = {"Energy Cells", "Emergency Rations"}
+        F = {"Fuel", "Fireprotection"}
+        G = {"Gadgets", "Gangsters"}
+        H = {"Hazmat Suits"}
+        I = {"Infotrade",}
+        J = {"Jewel Surgery",}
+        K = {"Kinetic Weapons",}
+        L = {"Life Extensions",}
+        M = {"Methamphetamins",}
+        N = {"Neuralink Install",}
+        O = {"Oxygen",}
+        P = {"Protective Gear",}
+        Q = {"Quarantine Tests",}
+        R = {"Radiation Mitigation",}
+        S = {"Skinjobs",}
+        T = {"Tactical Tools",}
+        U = {"Underwear ","Universal Basic Income"}
+        V = {"Vaccine Serums",}
+        W = {"Water Purifiers",}
+        X = {"Xtreme Sports",}
+        Y = {"YouPorn Emporium",}
+        Z = {"Zero Neuro Pearls"}
     }
     
     -- Get the product corresponding to the first letter
     local product = products[firstLetter] or "Products"
-    if maRa() then product = broducts[firstLetter] end
+    if maRa() then
+        index = string.byte(secondLetter % #broducts[firstLetter]) +1
+        product = broducts[firstLetter][index] 
+    end
     -- Concatenate the first name and the product with the shop name
     local shopName = firstName .. "'s " .. product
     
