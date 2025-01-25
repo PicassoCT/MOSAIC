@@ -36,33 +36,33 @@ function getFirstShopName(firstName)
     }
     products.D = products.D + " " + products[secondLetter]
 
-    local broducts = {
-        A = {"Adult Entertainment", "Appsassins", "Analtoyss"},
-        B = {"Bunkers", "Bombs", "BDSM"} ,
-        C = {"Corpse Dispossal", "Cannibalist" }
-        D = {"Drones","Disinformation", "Dildos"}
-        E = {"Energy Cells", "Emergency Rations"}
-        F = {"Fuel", "Fireprotection"}
-        G = {"Gadgets", "Gangsters"}
-        H = {"Hazmat Suits"}
-        I = {"Infotrade",}
-        J = {"Jewel Surgery",}
-        K = {"Kinetic Weapons",}
-        L = {"Life Extensions",}
-        M = {"Methamphetamins",}
-        N = {"Neuralink Install",}
-        O = {"Oxygen",}
-        P = {"Protective Gear",}
-        Q = {"Quarantine Tests",}
-        R = {"Radiation Mitigation",}
-        S = {"Skinjobs",}
-        T = {"Tactical Tools",}
-        U = {"Underwear ","Universal Basic Income"}
-        V = {"Vaccine Serums",}
-        W = {"Water Purifiers",}
-        X = {"Xtreme Sports",}
-        Y = {"YouPorn Emporium",}
-        Z = {"Zero Neuro Pearls"}
+    local broducts = {       
+        A = {"Adult Entertainment", "Appsassins", "Anal Toyz", "Artificial Animals", "Augment Surgeons"},
+        B = {"Bunkers", "Bombs", "BDSM", "BadBets", "Blacklight Bazaar", "Biohackers Anonymous"},
+        C = {"Corpse Dispossal", "Cannibalist", "Cybernetics", "Cryo Coffins", "Clone Customizers"},
+        D = {"Drones", "Disinformation", "Dildos", "Dream Dealers", "Dead Drop Safes"},
+        E = {"Energy Cells", "Emergency Rations", "Exoskeletons", "Euphoria Injectors"},
+        F = {"Fuel", "Fire Insurrance", "Flesh Weavers", "Fission Pods"},
+        G = {"Gadgets", "Gangbangs", "Gangstaswag", "Grave Roboticists", "Genetic Hackers"},
+        H = {"Hazmat Suits", "Hentai", "Hackz", "Hollow Happiness", "Hyperdrugs"},
+        I = {"Infotrade", "Infernal Orgies", "Illegal Implants", "Insomnia Clinics", "Identity Changers"},
+        J = {"Jewel Surgery", "Jaded", "Juvenation Chambers", "Junkyards"},
+        K = {"Kinetic Weapons", "Killer4Hire", "Kryostasis Modules", "Knife Emporiums"},
+        L = {"Life Extensions", "Lingerie", "Lottery", "Limbsmiths", "Liquid Shadows"},
+        M = {"Methamphetamins", "Memory Markets", "Mind Augmentation Labs"},
+        N = {"NeuralKink Install", "NanoTechs", "Nightmare Busters"},
+        O = {"Oxygen", "Orchidsap", "Organ Forges", "Overdrive Enhancers", "Oldworld Archives"},
+        P = {"Protective Gear", "Penetraitors", "Plasma Blades", "Psychotropic Vendors"},
+        Q = {"Quarantine Tests", "Quantum Encryptors", "Quick Kill Armory"},
+        R = {"Radiation Mitigation", "Robo-Pets", "Reactor Repairs", "Rapture Pods"},
+        S = {"Skinjobs", "Slaves", "Synthetic Skins", "Silicon Sanctuaries"},
+        T = {"Tactical Tools", "Toxin Filters", "Time Dilation Dealers"},
+        U = {"Underwear", "Universal Basic Income", "Underground Labs", "Untraceable Couriers"},
+        V = {"Vaccine Serums", "Virtual Reality Escapes", "Void Traders"},
+        W = {"Water Purifiers", "Weaponized Drones", "Wasteland Gear"},
+        X = {"Xtreme Sports", "Xeno Adoptions", "X-Ray Mods"},
+        Y = {"YouPorn Emporium", "Yield Modifiers", "Yakuza Services"},
+        Z = {"Zero Neuro Pearls", "Ziggurat Architects", "Zenith Solutions"}
     }
     
     -- Get the product corresponding to the first letter

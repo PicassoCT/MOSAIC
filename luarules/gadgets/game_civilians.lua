@@ -474,7 +474,6 @@ function spawnAMobileCivilianUnit(defID, x, z, startID, goalID)
     end
 end
 
-
 function setUpRefugeeWayPoints()
     if not GG.CivilianEscapePointTable then GG.CivilianEscapePointTable = {} end
     for i = 1,4 do 

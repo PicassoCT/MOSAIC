@@ -126,7 +126,7 @@ if (gadgetHandler:IsSyncedCode()) then
         uTeamID = Spring.GetUnitTeam(UnitID)
 
         if objectiveTypes[uDefID] and GG.Objectives[UnitID] and uTeamID == gaiaTeamID then
-            iconID = Spring.CreateUnit ("destroyedobjectiveicon", Objectives[UnitID].x,Objectives[UnitID].y,Objectives[UnitID].z,0, gaiaTeamID)
+            iconID = Spring.CreateUnit ("destroyedobjectiveicon", GG.Objectives[UnitID].x,GG.Objectives[UnitID].y, GG.Objectives[UnitID].z,0, gaiaTeamID)
             GG.DeadObjectives[iconID] = {}
             GG.DeadObjectives[iconID].x =  GG.Objectives[UnitID].x
             GG.DeadObjectives[iconID].y =  GG.Objectives[UnitID].y

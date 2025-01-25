@@ -106,7 +106,7 @@ function houseAttach()
         end
 
         if boolJustOnce == true then
-            echo("Attach House "..houseID .." and make safehouse "..unitID. .." mortally dependent" )
+            echo("Attach House "..houseID .." and make safehouse "..unitID.." mortally dependent" )
             containingHouseID = houseID
 
             GG.houseHasSafeHouseTable[houseID] = unitID
