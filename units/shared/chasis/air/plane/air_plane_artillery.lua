@@ -1,16 +1,16 @@
 local AIR_ARTILLERY = AIRCRAFT:New{
 
-	name = "Birds of Infamy",
-	Description = "rocket drone",
+	name = "Bird of Phlegethon",
+	Description = "Glide Bomb / Loitering Ammonition",
 	objectName = "air_plane_rocket.dae",
 	script = "airplaneartilleryscript.lua",
 	buildPic = "air_sniper.png",
 	iconType = "air_sniper",
 	--floater = true,
 	--cost
-	buildCostMetal = 750,
-	buildCostEnergy = 1000,
-	buildTime =  2*60,
+	buildCostMetal = 150,
+	buildCostEnergy = 500,
+	buildTime =  30,
 	--Health
 	maxDamage = 500,
 	idleAutoHeal = 0,
@@ -66,7 +66,7 @@ local AIR_ARTILLERY = AIRCRAFT:New{
 	  },
 
 	weapons={	
-			[1]={name  = "s16rocket",
+			[1]={name  = "birdofinfamyglidebomb",
 				onlyTargetCategory = [[GROUND]],
 				turret= false
 			},		

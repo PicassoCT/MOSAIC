@@ -3096,7 +3096,6 @@ end
                 }
             end
 
-
             function getRefugeePoint(index)
                 if not GG.CivilianEscapePointTable then  GG.CivilianEscapePointTable = {} end
                 if not  GG.CivilianEscapePointTable[index]  then  GG.CivilianEscapePointTable[index] = math.random(1,1000)/1000   end

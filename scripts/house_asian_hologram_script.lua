@@ -186,40 +186,40 @@ function flapWing(wingPiece, signum, speedUp, speedDown)
 end
 
 function showButterflys()
-     for i=1, #TableOfPiecesGroups["Butterfly"] do
+    for i = 1, #TableOfPiecesGroups["Butterfly"] do
         butterfly = TableOfPiecesGroups["Butterfly"][i]
         showHide(butterfly)
-            for k=1, 2 do
-                wing = piece("Butterfly"..i.."wing"..k)
-               showHide(wing)
-            end
-        end 
-    end
+        for k = 1, 2 do
+            wing = piece("Butterfly"..i.."wing"..k)
+           showHide(wing)
+        end
+    end 
 end
 
+
 function hideButterflys()
-     for i=1, #TableOfPiecesGroups["Butterfly"] do
+    for i=1, #TableOfPiecesGroups["Butterfly"] do
         butterfly = TableOfPiecesGroups["Butterfly"][i]
         showHide(butterfly, true)
-            for k=1, 2 do
-                wing = piece("Butterfly"..i.."wing"..k)
-               showHide(wing, true)
-            end
-        end 
-    end
+        for k=1, 2 do
+            wing = piece("Butterfly"..i.."wing"..k)
+           showHide(wing, true)
+        end
+    end 
 end
+
 
 function resetButterflys()
 
    hideButterflys()
     val= math.random(5,15)
     Spin(ButterflyRotator,y_axis, math.rad(val),0)
+
     resetT(TableOfPiecesGroups["Butterfly"])
     for i=1, #TableOfPiecesGroups["Butterfly"] do
         butterfly = TableOfPiecesGroups["Butterfly"][i]
-        rotated = i * 33
-        Turn(butterfly, x_axis, math.rad(rotated), 0)
-        Show(butterfly)
+        rotated = (i * 33)+ math.random(-5, 10)
+        Turn(butterfly, y_axis, math.rad(rotated), 0)        
         outValue = math.random(10, 500)
         Move(butterfly, x_axis, outValue, math.random(1,10)/10)
         upValue = math.random(900,3500)
