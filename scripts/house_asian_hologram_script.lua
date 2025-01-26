@@ -229,14 +229,14 @@ function butterflyExplosion()
 
         for i=1, #TableOfPiecesGroups["Butterfly"] do
             butterfly = TableOfPiecesGroups["Butterfly"][i]
-            if randChance(15) then                
+            if randChance(75) then                
                 for k=1, 2 do
                     wing = piece("Butterfly"..i.."wing"..k)
                     StartThread(flapWing, wing, -1^k, 60, 25)
                 end
             end 
         end
-
+        Spring.Echo("butterflyExplosion")
         Sleep(5000)
     end
 end

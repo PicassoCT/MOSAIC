@@ -323,7 +323,7 @@ function landBooster(boostNr)
     StartThread(PrepareUnloadBooster)
     WMove(booster, axis, upDistance , 0)
     WTurn(boosterRotator,1, math.rad(-15),0)
-    Turn(boosterRotator, 1, math.rad(0),0.5)
+    Turn(boosterRotator, 1, math.rad(0),0.0125)
     Show(booster)
     for i=0, math.pi*0.5, 0.1 do
         val = math.sin(i)
