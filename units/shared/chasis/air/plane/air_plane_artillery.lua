@@ -2,7 +2,7 @@ local AIR_ARTILLERY = AIRCRAFT:New{
 
 	name = "Bird of Phlegethon",
 	Description = "Glide Bomb / Loitering Ammonition",
-	objectName = "air_plane_rocket.dae",
+	objectName = "air_plane_artillery.dae",
 	script = "airplaneartilleryscript.lua",
 	buildPic = "air_sniper.png",
 	iconType = "air_sniper",

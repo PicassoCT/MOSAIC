@@ -691,7 +691,7 @@ end
 function sozialize(evtID, frame, persPack, startFrame, myID)
 boolDone = false
 
-    if isTrackedPerson(myID) and persPack.chatPartnerID then
+    if persPack.chatPartnerID then
         displayConversationTextAt(myID, persPack.chatPartnerID)
     end
 

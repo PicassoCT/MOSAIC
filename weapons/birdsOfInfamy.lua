@@ -25,9 +25,9 @@ local weaponDef = {
 	avoidGround = true,
 	
 	--flight behaviour
-	startVelocity  = 600,
+	startVelocity  = 0,
 	trajectoryHeight = 1.0 ,
-	flightTime = 7.5 ,
+	flightTime = 150.5 ,
 	weaponVelocity = 2050,
 	weaponAcceleration = 150,
 

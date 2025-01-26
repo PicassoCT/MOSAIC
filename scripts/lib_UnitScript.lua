@@ -4348,9 +4348,10 @@ function echoEnter(state)
 end
 
 function echoLoc(unitID, ...)
+    arg = {...}
     local x,y,z =Spring.GetUnitPosition(unitID)
-    message =  "at ( x:"..x.." y:"..y.." z:"..z..")"
-    echo(message, ...)
+    arg[#arg+1] =  "at ( x:"..x.." y:"..y.." z:"..z..")"
+    echo(arg)
 
 end
 
