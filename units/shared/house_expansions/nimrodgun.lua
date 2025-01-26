@@ -72,7 +72,8 @@ showNanoFrame= true,
 	{
 		"satellitescan",
 		"satelliteanti",
-		"satellitegodrod"
+		"satellitegodrod",
+		"air_plane_artillery"
 	},
 	
 	fireState= 1,
