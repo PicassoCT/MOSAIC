@@ -24,7 +24,6 @@ local percent=0
 hours, minutes, seconds, percent = getDayTime()
 
 
-
 function hashMaRa()
     return getLocationHash(unitID) % 2 == 0
 end
@@ -710,27 +709,23 @@ function glowWormFlight(speed)
 end
 
 function lineBufferForward(buffer, fscope)
-        fscope = {max= 10, min = -10}
-
-        sum = 0
-        for j=2, #buffer do
-           buffer[j-1]= buffer[j]
-        end
-
-        if maRa() then
-            buffer[#buffer] = math.min(10, math.max(-10, math.random(fscope.min, fscope.max)))
-        end
-
-        fscope.min = fscope.min - buffer[#buffer]
-        fscope.max = fscope.max - buffer[#buffer]
 
 
-        for j=2, #buffer do
-            sum = sum + buffer[j]
-        end
+    sum = 0
+    for i=1, 10 do
+        buffer[i] =  math.random(fscope.min, fscope.max)
+        fscope.max =  math.min(10, math.max(-10, fscope.max - buffer[i]))
+        fscope.min =  math.min(math.min(10, math.max(-10,fscope.min - buffer[i])),fscope.max-1)
+    end
 
-        buffer[1] = 0
+    fscope.min = fscope.min - buffer[#buffer]
+    fscope.max = fscope.max - buffer[#buffer]
 
+    for j=2, #buffer do
+        sum = sum + buffer[j]
+    end
+
+    buffer[1] = 0
     return buffer, sum, fscope
 end
 

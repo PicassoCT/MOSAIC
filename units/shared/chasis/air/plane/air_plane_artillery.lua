@@ -1,7 +1,7 @@
 local AIR_ARTILLERY = AIRCRAFT:New{
 
 	name = "Icarus Gliderbomb",
-	Description = "Glide Bomb / Loitering Ammonition",
+	Description = "Burnging the angles of orc fell/ Loitering Ammonition",
 	objectName = "air_plane_artillery.dae",
 	script = "airplaneartilleryscript.lua",
 	buildPic = "air_sniper.png",

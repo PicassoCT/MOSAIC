@@ -24,6 +24,7 @@ local weaponDef = {
 	avoidFeature = true,
 	avoidGround = true,
 	
+	alwaysVisible = true,
 	--flight behaviour
 	startVelocity  = 0,
 	trajectoryHeight = 1.0 ,

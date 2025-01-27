@@ -15,7 +15,7 @@ function script.Create()
     StartThread(revealUnfold)
 end
 
-Projectile = piece("Projectile")
+
 Cartdrige = piece("Cartdrige")
 Base = piece("Base")
 Eye = piece("Eye")
@@ -27,13 +27,15 @@ Wing2Sub1 = piece("Wing2Sub1")
 
 function revealUnfold()
     hideAll(unitID)
+    setUnitNeverLand(unitID)
     showT(TablesOfPiecesGroups["Sabot"])
     Show(Cartdrige)
     waitTillComplete(unitID)
+    Spring.AddUnitImpulse(unitID, 0, 10.0, 0)
     Sleep(100)
     Hide(Cartdrige)
     hideT(TablesOfPiecesGroups["Sabot"])
-    explodeT(TablesOfPiecesGroups["Sabot"])
+    explodeT(TablesOfPiecesGroups["Sabot"], SFX.FALL)
     showT(TablesOfPiecesGroups["TailRotor"])
     Show(Base)
     Show(Eye)
@@ -79,10 +81,24 @@ end
 function script.QueryWeapon1() 
     return Base 
 end
-
-
+local spGetGameFrame = Spring.GetGameFrame
+local spGetUnitWeaponTarget = Spring.GetUnitWeaponTarget
+local spGetUnitPosition = Spring.GetUnitPosition
+lastFrame = spGetGameFrame()
 function script.AimWeapon1(Heading, pitch)
-    return true
+    if spGetGameFrame() - lastFrame > 10 then
+        lastFrame = spGetGameFrame()
+        x,y,z = spGetUnitPosition(unitID)
+       targetType, isUserTarget, coordinates = spGetUnitWeaponTarget(  unitID,  1 )
+       if targetType == 2 then
+         if distance(x,z, coordinates[1], coordinates[3]) < 25 then
+            return true
+         else
+            return false
+         end
+       end
+   end
+  return false
 end
 
 function script.FireWeapon1()
