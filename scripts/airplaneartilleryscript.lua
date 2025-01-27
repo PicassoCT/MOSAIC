@@ -82,12 +82,12 @@ end
 
 
 function script.AimWeapon1(Heading, pitch)
-    resetT(TablesOfPiecesGroups["Wing"],45)
-    WaitForTurns(TablesOfPiecesGroups["Wing"])
     return true
 end
 
 function script.FireWeapon1()
+    resetT(TablesOfPiecesGroups["Wing"],180)
+    WaitForTurns(TablesOfPiecesGroups["Wing"])
     Spring.DestroyUnit(unitID, true, false)
     return true
 end
