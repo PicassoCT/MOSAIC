@@ -1,6 +1,6 @@
 local AIR_ARTILLERY = AIRCRAFT:New{
 
-	name = "Bird of Phlegethon",
+	name = "Icarus Gliderbomb",
 	Description = "Glide Bomb / Loitering Ammonition",
 	objectName = "air_plane_artillery.dae",
 	script = "airplaneartilleryscript.lua",
@@ -66,7 +66,7 @@ local AIR_ARTILLERY = AIRCRAFT:New{
 	  },
 
 	weapons={	
-			[1]={name  = "birdofinfamyglidebomb",
+			[1]={name  = "icarusglidebomb",
 				onlyTargetCategory = [[GROUND]],
 				turret= false
 			},		
