@@ -1,5 +1,5 @@
 --- http://springrts.com/wiki/Weapon_Variables#Cannon_.28Plasma.29_Visuals
-local weaponName = "birdofinfamyglidebomb" --
+local weaponName = "icarusglidebomb" --
 local weaponDef = {
     name = "Glidebomb",
     weaponType = [[MissileLauncher]],
