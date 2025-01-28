@@ -87,7 +87,6 @@ local scriptEnv = {
 local spGetUnitTeam = Spring.GetUnitTeam
 local myTeamID = spGetUnitTeam(unitID)
 local gaiaTeamID = Spring.GetGaiaTeamID()
-local spGetUnitWeaponTarget = Spring.GetUnitWeaponTarget
 local spGetUnitPosition = Spring.GetUnitPosition
 local loc_doesUnitExistAlive = doesUnitExistAlive
 GameConfig = getGameConfig()
@@ -97,7 +96,7 @@ local civilianWalkingTypeTable = getCultureUnitModelTypes(
 
 
 
-eAnimState = getCivilianAnimationStates()
+local eAnimState = getCivilianAnimationStates()
 local upperBodyPieces = {
     [Head1] = Head1,
     [LowArm1] = LowArm1,

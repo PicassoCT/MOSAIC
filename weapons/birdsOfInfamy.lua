@@ -15,7 +15,7 @@ local weaponDef = {
 	canAttackGround = true,
 	canManualFire = true,
 	--aiming behaviour
-	range = 512 + 64,
+	range = 1024 + 512+ 64,
 	turnRate = 4096,
 	turret = true,
 	tracks = false,
@@ -33,8 +33,8 @@ local weaponDef = {
 	weaponAcceleration = 150,
 
 	--impact behaviour
-	impulseBoost  = 0,
-	impulseFactor = 0.4,
+	impulseBoost  = 1,
+	impulseFactor = 1.4,
     areaOfEffect = 128,
     fireStarter  = 50.0,
  	

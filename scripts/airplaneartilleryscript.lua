@@ -9,7 +9,6 @@ function script.HitByWeapon(x, z, weaponDefID, damage) end
 
 
 function script.Create()
-    echo(UnitDefs[myDefID].name.."has placeholder script called")
     -- generatepiecesTableAndArrayCode(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     StartThread(revealUnfold)
@@ -31,18 +30,17 @@ function revealUnfold()
     showT(TablesOfPiecesGroups["Sabot"])
     Show(Cartdrige)
     waitTillComplete(unitID)
-    Spring.AddUnitImpulse(unitID, 0, 10.0, 0)
-    Sleep(100)
+    Spring.AddUnitImpulse(unitID, 0, 100.0, 0)
+    moveT(TablesOfPiecesGroups["Sabot"],y_axis, -100, 200)
+    Sleep(500)
     Hide(Cartdrige)
     hideT(TablesOfPiecesGroups["Sabot"])
-    explodeT(TablesOfPiecesGroups["Sabot"], SFX.FALL)
+    hideT(TablesOfPiecesGroups["Sabot"], SFX.FALL)
     showT(TablesOfPiecesGroups["TailRotor"])
     Show(Base)
     Show(Eye)
     Turn(Tail, y_axis, math.rad(90), 15)
     Show(Tail)
-    Show(Wing1)
-    Show(Wing2)
     showT(TablesOfPiecesGroups["Wing"])
     Move(Wing1Sub1, y_axis, 50, 0)
     Move(Wing2Sub1, y_axis, 50, 0)
@@ -90,15 +88,17 @@ function script.AimWeapon1(Heading, pitch)
         lastFrame = spGetGameFrame()
         x,y,z = spGetUnitPosition(unitID)
        targetType, isUserTarget, coordinates = spGetUnitWeaponTarget(  unitID,  1 )
-       if targetType == 2 then
-         if distance(x,z, coordinates[1], coordinates[3]) < 25 then
-            return true
-         else
-            return false
-         end
-       end
-   end
-  return false
+       if targetType and targetType ~= 3 then
+            if targetType  == 1 then
+                    coordinates[1], _, coordinates[3] = Spring.GetUnitPosition(unitID)
+            end
+
+            if distance(x,0, z, coordinates[1], 0, coordinates[3]) < 25 then
+                   return true
+            end            
+        end
+    end
+    return false
 end
 
 function script.FireWeapon1()

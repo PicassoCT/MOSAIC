@@ -5,57 +5,55 @@ include "lib_Animation.lua"
 include "lib_debug.lua"
 --include "lib_Build.lua"
 
-TableOfPiecesGroups = {}
+local TableOfPiecesGroups = {}
 
-ReturningBooster1ThrusterPlumN = "ReturningBooster1ThrusterPlum"
-ReturningBooster2ThrusterPlumN = "ReturningBooster2ThrusterPlum"
-ReturningBooster3ThrusterPlumN = "ReturningBooster3ThrusterPlum"
+local ReturningBooster1ThrusterPlumN = "ReturningBooster1ThrusterPlum"
+local ReturningBooster2ThrusterPlumN = "ReturningBooster2ThrusterPlum"
+local ReturningBooster3ThrusterPlumN = "ReturningBooster3ThrusterPlum"
+local CapsuleRocket = piece "CapsuleRocket"
 
-CapsuleRocket = piece "CapsuleRocket"
+local BoosterN = "Booster"
+local RocketThrustPillarN = "RocketThrustPillar"
+local FusionLandingGearN = "FusionLandingGear"
+local LandedBoosterN = "LandedBooster"
+local RocketPlumeN = "RocketPlume"
+local RocketPlumeAN = "RocketPlumeA"
+local FireFlowerN = "FireFlower"
+local GroundRearDoorN = "GroundRearDoor"
+local GroundFrontDoorN = "GroundFrontDoor"
+local CraneHeadClawN = "CraneHeadClaw"
+local FireFlowerRotatorN = "FireFlowerRotator"
+local BoosterN = "Booster"
+local ReturningBoosterN = "ReturningBooster"
+local BoosterCrawlerN = "CrawlerBooster"
+local CrawlerBoosterN = "CrawlerBooster"
+local CrawlerBoosterGasRingN = "CrawlerBoosterGasRing"
+local CrawlerBoosterRingN = "CrawlerBoosterRing"
+local BoosterRotatorN = "BoosterRotator"
+local MainStageRocket = piece("MainStageRocket")
+local RocketCrawler = piece("RocketCrawler")
+local Rocket = piece("Rocket")
+local RocketFusionPlume = piece("RocketFusionPlume")
+local GroundHeatedGasRing1 = piece("GroundHeatedGasRing1")
+local GroundHeatedGasRing2 = piece("GroundHeatedGasRing2")
+local turbine = piece("turbine")
+local turbineCold = piece("turbineCold")
+local turbineHot = piece("turbineHot")
+local fireCloud = piece("GroundGases")
+local LaunchCone = piece("LaunchCone")
 
-BoosterN = "Booster"
-RocketThrustPillarN = "RocketThrustPillar"
-FusionLandingGearN = "FusionLandingGear"
-LandedBoosterN = "LandedBooster"
-RocketPlumeN = "RocketPlume"
-RocketPlumeAN = "RocketPlumeA"
-FireFlowerN = "FireFlower"
-GroundRearDoorN = "GroundRearDoor"
-GroundFrontDoorN = "GroundFrontDoor"
-CraneHeadClawN = "CraneHeadClaw"
-FireFlowerRotatorN = "FireFlowerRotator"
-BoosterN = "Booster"
-ReturningBoosterN = "ReturningBooster"
-BoosterCrawlerN = "CrawlerBooster"
-CrawlerBoosterN = "CrawlerBooster"
-CrawlerBoosterGasRingN = "CrawlerBoosterGasRing"
-CrawlerBoosterRingN = "CrawlerBoosterRing"
-BoosterRotatorN = "BoosterRotator"
-MainStageRocket = piece("MainStageRocket")
-RocketCrawler = piece("RocketCrawler")
-Rocket = piece("Rocket")
-RocketFusionPlume = piece("RocketFusionPlume")
-GroundHeatedGasRing1 = piece("GroundHeatedGasRing1")
-GroundHeatedGasRing2 = piece("GroundHeatedGasRing2")
-turbine = piece("turbine")
-turbineCold = piece("turbineCold")
-turbineHot = piece("turbineHot")
-fireCloud = piece("GroundGases")
-LaunchCone = piece("LaunchCone")
-
-SpaceHarbour = piece("SpaceHarbour")
-CapsuleCrane = piece("CapsuleCrane")
-
-CrawlerMain = piece("CrawlerMain")
-LaunchCone = piece("LaunchCone")
-Rocket = piece("Rocket")
-MainStage = piece("MainStage")
-CraneHead = piece("CraneHead")
-RocketCraneBase = piece("RocketCrane")
-CraneRocket = piece("CraneRocket")
-CraneCapsule = piece("CraneCapsule")
-FireTruckRotator = piece("FireTruckRotator")
-FireTruck = piece("FireTruck")
+local SpaceHarbour = piece("SpaceHarbour")
+local CapsuleCrane = piece("CapsuleCrane")
+local CrawlerMain = piece("CrawlerMain")
+local LaunchCone = piece("LaunchCone")
+local Rocket = piece("Rocket")
+local MainStage = piece("MainStage")
+local CraneHead = piece("CraneHead")
+local RocketCraneBase = piece("RocketCrane")
+local CraneRocket = piece("CraneRocket")
+local CraneCapsule = piece("CraneCapsule")
+local FireTruckRotator = piece("FireTruckRotator")
+local FireTruck = piece("FireTruck")
 
 myDefID = Spring.GetUnitDefID(unitID)
 function script.HitByWeapon(x, z, weaponDefID, damage)

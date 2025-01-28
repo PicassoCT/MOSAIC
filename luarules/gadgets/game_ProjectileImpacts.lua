@@ -176,7 +176,7 @@ if (gadgetHandler:IsSyncedCode()) then
         end 
 
         --detect the target
-        rangeLeft = persPack.lifeTimeCounter * weaponDefNames["hedgehog"].range
+        rangeLeft = persPack.lifeTimeCounter * WeaponDefNames["hedgehog"].range
         shortestTargetID= nil
         shortestTargetDistance = math.huge
         foreach(
