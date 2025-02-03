@@ -35,7 +35,7 @@ local AIR_ARTILLERY = AIRCRAFT:New{
 	MaxVelocity = 2.5,
 	MaxWaterDepth = 0,
 	MovementClass = "AIRUNIT",
-
+ 
 	nanocolor=[[0.20 0.411 0.611]],
 	sightDistance = 400,
 	CanFly   = true,

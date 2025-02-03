@@ -13,8 +13,11 @@ projectile = piece "projectile"
 Icon2 = piece "Icon2"
 local SIG_AIM_ORBITAL = 1
 GameConfig = getGameConfig()
+local spGetUnitDefID = Spring.GetUnitDefID
 local houseTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture,
                                                 "house", UnitDefs)
+
+local hologramTypeTable = getHologramTypes(UnitDefs)
 
 if not GG.UnitHeldByHouseMap then GG.UnitHeldByHouseMap = {} end
 
@@ -52,21 +55,38 @@ function modeChangeOS()
                 goToFireMode()
             end
             boolBuilding = false
-
         end
         Sleep(100)
     end
 end
 
+function shiverHologramsNearby()
+    foreach(getAllNearUnit(unitID, 512),
+            function(id)
+                defId = spGetUnitDefID(id)
+                if hologramTypeTable[defId] then
+                    return id
+                end
+            end,
+            function (id)
+                genericCallUnitFunctionPassArgs(id, "setTimeOutExternal", 3000)
+            end
+        )
+end
+
 function goToSpaceMode()
     WTurn(turret, x_axis, math.rad(-90), math.pi)
     Move(slider, z_axis, -350, 50)
-
 end
 
 function goToFireMode()
+    spawnCegNearUnitGround(unitID, "railgunshine",0,0,45)
+    spawnCegNearUnitGround(unitID, "railgunshine",0,0,10)
     WMove(slider, z_axis, 0, 50)
+    spawnCegNearUnitGround(unitID, "railgunshine",0,0, 65)
+    spawnCegNearUnitGround(unitID, "railgunshine",0,0, 35)
     WTurn(turret, x_axis, math.rad(0), math.pi)
+    shiverHologramsNearby()
 end
 
 --- -aimining & fire weapon
@@ -76,7 +96,6 @@ function script.QueryWeapon1() return projectile end
 
 boolOrbitalRailGunAiming = false
 function script.AimWeapon1(Heading, pitch)
-    -- aiming animation: instantly turn the gun towards the enemy
     if boolBuilding == true then return false end
     if boolOrbitalRailGunAiming == true then return false end
 
@@ -87,7 +106,8 @@ function script.AimWeapon1(Heading, pitch)
 end
 
 function script.FireWeapon1() 
-    spawnCegNearUnitGround(unitID, "railgunshine")
+    shiverHologramsNearby()
+    spawnCegNearUnitGround(unitID, "railgunshine", 0, 0, 10)
     return true 
 end
 
@@ -115,13 +135,16 @@ function script.AimWeapon2(Heading, pitch)
 end
 
 function script.FireWeapon2() 
-    spawnCegNearUnitGround(unitID, "railgunshine")
-return true 
+    shiverHologramsNearby()
+    spawnCegNearUnitGround(unitID, "railgunshine", 0, 0, 10)
+    return true 
 end
 
 function script.StartBuilding() end
 
-function script.StopBuilding() end
+function script.StopBuilding() 
+    --spawnCegNearUnitGround(unitID, "railgunshine")
+end
 function script.Activate()
     SetUnitValue(COB.YARD_OPEN, 1)
     SetUnitValue(COB.BUGGER_OFF, 1)

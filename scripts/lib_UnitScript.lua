@@ -6132,13 +6132,14 @@ function spawnCegAtPieceGround(unitID, pieceId, cegname, offset, dx, dy, dz)
     end
 end
 
-function spawnCegNearUnitGround(unitID, cegname, ox, oz) 
+function spawnCegNearUnitGround(unitID, cegname, ox, oz, oy) 
     dx, dy, dz = 0,1,0
     ox = ox or 0
     oz = oz or 0
+    oy = oy or 0
     x, y, z = Spring.GetUnitPosition(unitID)
     y= Spring.GetGroundHeight(x + ox ,z + oz )
-    Spring.SpawnCEG(cegname, x +ox   , y , z+oz  , dx, dy, dz, 50, 0)
+    Spring.SpawnCEG(cegname, x +ox   , y +oy , z+oz  , dx, dy, dz, 50, 0)
 end
 
 

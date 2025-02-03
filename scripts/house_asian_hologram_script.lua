@@ -174,24 +174,29 @@ function restartHologram()
         StartThread(sakuraTree)
     end
 
-    if randChance(5) or true then
+    if randChance(5)  then
         StartThread(butterflyExplosion)
     end
 end
 
-function flapWing(wingPiece, signum, speedUp, speedDown)
-    WTurn(wingPiece, z_axis, math.rad(15)*signum, speedUp)
-    WTurn(wingPiece, z_axis, math.rad(5)*signum*-1, speedDown)
-    Turn(wingPiece, z_axis, math.rad(0), speedDown)
+function flapWing(wingPiece, wingPiece2, speedUp, speedDown)
+    Turn(wingPiece, x_axis, math.rad(-35), speedUp)
+    WTurn(wingPiece2, x_axis, math.rad(35), speedUp)
+
+    Turn(wingPiece, x_axis, math.rad(-10), speedDown)
+    WTurn(wingPiece2, x_axis, math.rad(10), speedDown)
+    
+    Turn(wingPiece,x_axis, math.rad(0), speedDown)
+    WTurn(wingPiece2,x_axis, math.rad(0), speedDown)
 end
 
 function showButterflys()
     for i = 1, #TableOfPiecesGroups["Butterfly"] do
         butterfly = TableOfPiecesGroups["Butterfly"][i]
-        showHide(butterfly)
+        ShowReg(butterfly)
         for k = 1, 2 do
             wing = piece("Butterfly"..i.."wing"..k)
-           showHide(wing)
+           ShowReg(wing)
         end
     end 
 end
@@ -200,17 +205,16 @@ end
 function hideButterflys()
     for i=1, #TableOfPiecesGroups["Butterfly"] do
         butterfly = TableOfPiecesGroups["Butterfly"][i]
-        showHide(butterfly, true)
+        HideReg(butterfly)
         for k=1, 2 do
             wing = piece("Butterfly"..i.."wing"..k)
-           showHide(wing, true)
+           HideReg(wing)
         end
     end 
 end
 
 
 function resetButterflys()
-
    hideButterflys()
     val= math.random(5,15)
     Spin(ButterflyRotator,y_axis, math.rad(val),0)
@@ -218,12 +222,13 @@ function resetButterflys()
     resetT(TableOfPiecesGroups["Butterfly"])
     for i=1, #TableOfPiecesGroups["Butterfly"] do
         butterfly = TableOfPiecesGroups["Butterfly"][i]
+        val = math.random(1,360)
+        Turn(butterfly, y_axis, math.rad(val) ,0)
         rotated = (i * 33)+ math.random(-5, 10)
-        Turn(butterfly, y_axis, math.rad(rotated), 0)        
-        outValue = math.random(10, 500)
-        Move(butterfly, x_axis, outValue, math.random(1,10)/10)
-        upValue = math.random(900,3500)
-        Move(butterfly, y_axis, upValue, math.random(1,10))
+        outValue = math.random(250, 3500)
+        Move(butterfly, x_axis, outValue, 10)
+        upValue = math.random(1000,19500)
+        Move(butterfly, y_axis, upValue, math.random(10,100))
     end
    showButterflys()
 end
@@ -237,12 +242,12 @@ function butterflyExplosion()
         end
 
         for i=1, #TableOfPiecesGroups["Butterfly"] do
-            butterfly = TableOfPiecesGroups["Butterfly"][i]
             if randChance(75)  then                
-                for k=1, 2 do
-                    wing = piece("Butterfly"..i.."wing"..k)
-                    StartThread(flapWing, wing, -1^k, 60, 25)
-                end
+                wing1= ("Butterfly"..i.."wing"..1)
+                wing2= ("Butterfly"..i.."wing"..2)
+                assert(wing1)
+                assert(wing2)
+                StartThread(flapWing, piece(wing1), piece(wing2),  1, 2)
             end 
         end
        -- echoLoc(unitID,"butterflyExplosion at")
@@ -556,23 +561,43 @@ function showHoloWall()
     --showT(TableOfPiecesGroups["HoloTile"],index * step, (index+1) * step)
 end
 
+local fiveMinutes = 5 * 60 * 1000
+local fiveSecondsInFrames = 5 * 30
 function checkForBlackOut()
     while true do
-        if  GG.BlackOutDeactivationTime and  GG.BlackOutDeactivationTime[unitID] then
-            if GG.BlackOutDeactivationTime[unitID] > (spGetGameFrame() - 5*30) then
-                Signal(SIG_HOLO)
-                Sleep(500)
-                hideAllReg(unitID)
-                restTime = 5*60*1000
-                Sleep(restTime)
-                deployHologram()
-                GG.BlackOutDeactivationTime[unitID] = nil
-            end
+        timeOutActive, timeoutTimeMs =checkSetTimeOutConditions()
+        if timeOutActive then 
+            Signal(SIG_HOLO)
+            Sleep(500)
+            hideAllReg(unitID)
+            Sleep(timeoutTimeMs)
+            deployHologram()
+            GG.BlackOutDeactivationTime[unitID] = nil     
+            boolExternalTimeOutActive = false       
         end
     Sleep(1000)
     end
 end
 
+function setTimeOutExternal(timeoutMs)
+    boolExternalTimeOutActive = true
+    storedExternalTimeOut = timeoutMs
+end
+
+boolExternalTimeOutActive = false
+storedExternalTimeOut = 0
+function checkSetTimeOutConditions()
+    timeoutMs = 0
+    if  GG.BlackOutDeactivationTime and  GG.BlackOutDeactivationTime[unitID] then
+        return true, fiveMinutes
+    end
+
+    if boolExternalTimeOutActive == true then 
+        return true, storedExternalTimeOut
+    end
+
+    return false, 0
+end
 
 function fadeIn(piecesTable, rest)
     hideTReg(piecesTable)

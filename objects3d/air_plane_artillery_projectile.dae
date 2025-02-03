@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1">
-  <asset><contributor><author></author><authoring_tool>FBX COLLADA exporter</authoring_tool><comments></comments></contributor><created>2025-01-27T21:00:51Z</created><keywords></keywords><modified>2025-01-27T21:00:51Z</modified><revision></revision><subject></subject><title></title><unit meter="0.025400" name="centimeter"></unit><up_axis>Y_UP</up_axis></asset>
+  <asset><contributor><author></author><authoring_tool>FBX COLLADA exporter</authoring_tool><comments></comments></contributor><created>2025-01-29T19:04:53Z</created><keywords></keywords><modified>2025-01-29T19:04:53Z</modified><revision></revision><subject></subject><title></title><unit meter="0.025400" name="centimeter"></unit><up_axis>Y_UP</up_axis></asset>
   <library_images>
     <image id="Map #0-image" name="Map #0"><init_from>file://Z:\Mosaic.sdd\unittextures\component_atlas_diffuse.dds</init_from></image>
   </library_images>
@@ -4490,24 +4490,24 @@
 0.654947 0.148527
 0.649360 0.148527
 0.647314 0.139071
-0.554968 0.854870
-0.505943 0.876671
-0.505943 0.985019
-0.554968 0.985019
-0.554968 0.854870
-0.554968 0.985019
-0.554968 0.854870
-0.505943 0.876671
-0.505943 0.985019
-0.554968 0.985019
-0.554968 0.854870
-0.554968 0.985019
-0.592651 0.840726
-0.592651 0.985019
-0.592651 0.985019
-0.592651 0.840726
-0.592651 0.985019
-0.592651 0.840726
+0.656492 0.092878
+0.629087 0.105636
+0.629087 0.169043
+0.656492 0.169043
+0.656492 0.092878
+0.656492 0.169043
+0.656492 0.092878
+0.629087 0.105636
+0.629087 0.169043
+0.656492 0.169043
+0.656492 0.092878
+0.656492 0.169043
+0.677557 0.084601
+0.677557 0.169043
+0.677557 0.169043
+0.677557 0.084601
+0.677557 0.169043
+0.677557 0.084601
 0.646515 0.665799
 0.660778 0.661925
 0.671219 0.651343

@@ -24,39 +24,55 @@ Wing2 = piece("Wing2")
 Wing1Sub1 = piece("Wing1Sub1")
 Wing2Sub1 = piece("Wing2Sub1")
 
+function moveOnUp()
+    Spring.MoveCtrl.Enable(unitID)
+    x,y,z = Spring.GetUnitPosition(unitID)
+    moveT(TablesOfPiecesGroups["Sabot"],y_axis, -1000, 200)
+    spinRand(TablesOfPiecesGroups["Sabot"][1], 15, 50)
+    spinRand(TablesOfPiecesGroups["Sabot"][2], 15, 50)
+    speed =250
+    for i=1, 2048, speed do
+        Spring.MoveCtrl.SetPosition(unitID, x, y+i, z)
+        if i > 1700 then
+            speed = math.max(50, speed*0.97)
+        end
+        Sleep(33)
+    end
+    hideT(TablesOfPiecesGroups["Sabot"])
+    Spring.MoveCtrl.Disable(unitID)
+end
+
 function revealUnfold()
     hideAll(unitID)
     setUnitNeverLand(unitID)
     showT(TablesOfPiecesGroups["Sabot"])
     Show(Cartdrige)
     waitTillComplete(unitID)
-    Spring.AddUnitImpulse(unitID, 0, 100.0, 0)
-    moveT(TablesOfPiecesGroups["Sabot"],y_axis, -100, 200)
+    moveOnUp()
+
     Sleep(500)
     Hide(Cartdrige)
-    hideT(TablesOfPiecesGroups["Sabot"])
-    hideT(TablesOfPiecesGroups["Sabot"], SFX.FALL)
+
     showT(TablesOfPiecesGroups["TailRotor"])
     Show(Base)
     Show(Eye)
     Turn(Tail, y_axis, math.rad(90), 15)
     Show(Tail)
     showT(TablesOfPiecesGroups["Wing"])
-    Move(Wing1Sub1, y_axis, 50, 0)
-    Move(Wing2Sub1, y_axis, 50, 0)
+    Move(Wing1Sub1, y_axis, 326, 0)
+    Move(Wing2Sub1, y_axis, 326, 0)
     Turn(Base, x_axis, math.rad(90), 15)
-    Turn(Wing1, z_axis, math.rad(90), 15)
-    Turn(Wing2, z_axis, math.rad(-90), 15)
+    Turn(Base, z_axis, math.rad(90), 15)
+    Turn(Wing1, x_axis, math.rad(-80), 15)
+    Turn(Wing2, x_axis, math.rad(80), 15)
     Show(Wing1Sub1)
     Show(Wing2Sub1)
-    reset(Wing1Sub1,15)
-    reset(Wing2Sub1,15)
+    reset(Wing1Sub1,100)
+    reset(Wing2Sub1,100)
     spinT(TablesOfPiecesGroups["TailRotor"], y_axis, math.rad(42))
 end
 
 function script.Killed(recentDamage, _)
-
-    -- createCorpseCUnitGeneric(recentDamage)
     return 1
 end
 
