@@ -359,32 +359,33 @@ function archProject(allLetters, posLetters)
 end
 
 
-
 function cubeProject(allLetters, posLetters)
     cubeSize = math.ceil(math.sqrt(#allLetters))
     index = 1
-
-        for x=1, cubeSize do
-            for z=1, cubeSize do
-                if allLetters[index] then
-                    pID = allLetters[index]
-                    Move(pID,x_axis, x*sizeSpacingLetter, 0)
-                    Move(pID,z_axis, z* sizeSpacingLetter, 0)
-                    ShowReg(pID)
+       
+        for x=1, 2*cubeSize do
+            z=1
+            if allLetters[index] then
+                pID = allLetters[index]
+            end
+            if x > cubeSize then
+                z = x - cubeSize
+                x = cubeSize
+                if pID then
+                    Turn(pID, y_axis, math.rad(90), 0)
                 end
+            end
+
+            if pID then
+                Move(pID,x_axis, x*sizeSpacingLetter, 0)
+                Move(pID,z_axis, z* sizeSpacingLetter, 0)
+                ShowReg(pID)
+            else
                 index = index +1
             end            
-        end
-    
-
-    foreach(allLetters,
-        function(id)
-            for i=1,3 do
-                Move(id,i, posLetters[id][i], 100)
-            end
-            Sleep(150)
-        end)
-    Sleep(15000)
+        
+    end
+    Sleep(35000)
     hideTReg(allLetters) 
 end
 
@@ -426,8 +427,7 @@ function SwarmLetters(allLetters, posLetters)
             
             ShowReg(id)
         end)
-    WaitForMoves(allLetters)
-    Sleep(2000)
+    Sleep(35000)
 end
 
 
