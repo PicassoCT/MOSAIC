@@ -4347,14 +4347,11 @@ function echoEnter(state)
     Spring.Echo("Enter: "..state)
 end
 
-function echoLoc(unitID, ...)
-    arg = {...}
+
+function location(unitID)
     local x,y,z =Spring.GetUnitPosition(unitID)
-    arg[#arg+1] =  "at ( x:"..x.." y:"..y.." z:"..z..")"
-    echo(arg)
-
+    return " at( x:"..x.." y:"..y.." z:"..z..")"
 end
-
 
 boolBurst= false
 -- > echos out strings

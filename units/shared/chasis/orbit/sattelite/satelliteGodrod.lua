@@ -16,7 +16,7 @@ local satteliteGodrod = Satellite:New{
 	script 					= "satellitegodscript.lua",
 	objectName        		= "SatGodRod.dae",
 
-	alwaysupright = true,
+	upright  = true,
 	upright= true,
 	canAttack = true,
 	canLand = false,

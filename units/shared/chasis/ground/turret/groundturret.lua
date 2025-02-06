@@ -92,7 +92,7 @@ local groundturretmg =  Turret:New{
 	maxDamage = 2500,
 	idleAutoHeal = 0,
 	--Movement
-	alwaysUpright=false,
+	--upright =false,
 	fireState=1,
 	pushResistant = true,
 	FootprintX = 1,

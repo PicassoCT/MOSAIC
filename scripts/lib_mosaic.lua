@@ -677,6 +677,15 @@ end
             [UnitDefNames["hijacksatelliteicon"].id] = true,
             [UnitDefNames["ecmicon"].id] = true,
         }
+    end      
+
+    function getECMSpecialSFXIconTypes(UnitDefs)
+        local UnitDefNames = getUnitDefNames(UnitDefs)
+        return {
+            [UnitDefNames["ecmicon"].id] = true,
+            [UnitDefNames["bribeicon"].id] = true,
+            
+        }
     end  
 
     function getIconTypes(UnitDefs)

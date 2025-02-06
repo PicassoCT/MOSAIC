@@ -12,7 +12,7 @@ local DeadDropIcon =
     TurnRate = 0,
     MaxVelocity = 0,
     --
-    alwaysUpright = true,
+    upright  = true,
     name = "Dead Drop",
     description = "Contains the secrets of a betrayed operative. Drive over to collect",
     levelGround = false,
@@ -52,7 +52,7 @@ local HiJackSatteliteIcon =
     TurnRate = 0,
     MaxVelocity = 0,
     --
-    alwaysUpright = true,
+    upright  = true,
     name = "Hijack Sattelite Icon",
     description = "",
     levelGround = false,
@@ -90,7 +90,7 @@ local DestroyedObjective =
     TurnRate = 0,
     MaxVelocity = 0,
     --
-    alwaysUpright = true,
+    upright  = true,
     name = "Destroyed Objective",
     description = "",
     levelGround = false,
@@ -129,7 +129,7 @@ local DoubleAgent =
     TurnRate = 0,
     MaxVelocity = 0,
     --
-    alwaysUpright = true,
+    upright  = true,
     name = "DoubleAgent",
     description = "Decloak to turn sides",
     levelGround = false,
@@ -171,10 +171,10 @@ local ElectronicCounterMeasureIcon =
     Acceleration = 0.1,
     BrakeRate = 1.0,
     TurnRate = 90000,
-    MaxVelocity = 1.0,
+    MaxVelocity = 66.6,
     MovementClass = "VEHICLE",
     --
-    alwaysUpright = true,
+    upright  = true,
     name = "Electronic Counter Measure",
     description = "Destroys a software entity of the enemy",
     levelGround = false,
@@ -222,7 +222,7 @@ local RevealDoubleAgentsIcon =
     TurnRate = 0,
     MaxVelocity = 0,
     --
-    alwaysUpright = true,
+    upright  = true,
     name = "Reveal DoubleAgents",
     description = "Force a Double Agent in your ranks to reveal",
     levelGround = false,
@@ -548,8 +548,8 @@ local BribeIcon =
     MovementClass = "VEHICLE",
     CanFly   = true,
     useSmoothMesh = true,
-    alwaysUpright = true,
-    alwaysupright = true,
+    upright  = true,
+    upright  = true,
     --
     description = "Bribe police to go to this location ",
     levelGround = false,
@@ -588,11 +588,11 @@ local SocialEngineering =
     BrakeRate = 1.0,
     TurnRate = 90000,
     MaxVelocity = 1.0,
-    alwaysupright = true,
+    upright  = true,
     MovementClass = "VEHICLE",
     CanFly   = true,
     useSmoothMesh = true,
-    alwaysUpright = true,
+    upright  = true,
     buildTime =    60, --seconds
     --
     description = "Engineer a social movement/ protest",
@@ -631,11 +631,10 @@ local BlackOutIcon =
     BrakeRate = 1.0,
     TurnRate = 90000,
     MaxVelocity = 1.0,
-    alwaysupright = true,
+    upright  = true,
     MovementClass = "VEHICLE",
     CanFly   = true,
     useSmoothMesh = true,
-    alwaysUpright = true,
     buildTime =    120, --seconds
     --
     description = "Prevents commands in area",

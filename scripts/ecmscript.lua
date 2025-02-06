@@ -9,6 +9,7 @@ TablesOfPiecesGroups = {}
 myDefID = Spring.GetUnitDefID(unitID)
 myTeamID = Spring.GetUnitTeam(unitID)
 local ecmIconTypes = getECMIconTypes(UnitDefs)
+local ecmIconSfxTypes = getECMSpecialSFXIconTypes(UnitDefs)
 local stunnableUnitTypes = getStunnedInBlackOutUnitTypes(UnitDefs)
 function script.HitByWeapon(x, z, weaponDefID, damage) end
 GameConfig= getGameConfig()
@@ -34,14 +35,23 @@ function eatECMcon()
 				if stunnableUnitTypes[defID] then
 					stunUnit(unitID, 0.5)
 				end
+
                 if ecmIconTypes[defID] then
-                    return id
-                end
-            end,
-            function (id)
-                if Spring.GetUnitTeam(id) ~= myTeamID then
-                    Explode(center,  SFX.SHATTER)
-                    Spring.DestroyUnit(id, false, true)
+                    if Spring.GetUnitTeam(id) ~= myTeamID then
+                        name = UnitDefs[defID].name 
+                        if name == "ecmicon" then
+                            Spring.DestroyUnit(id, false, true)
+                            Spring.DestroyUnit(unitID, false, true)
+                            return
+                        end
+
+                        if name == "bribeicon" then
+                            Spring.DestroyUnit(id, false, true)
+                            GG.Bank:TransferToTeam( 350, myTeam, unitID)
+                            return
+                        end
+                      Spring.DestroyUnit(id, false, true)
+                    end
                 end
             end
             )

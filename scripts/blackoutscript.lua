@@ -108,7 +108,6 @@ function blackOutCycle()
 end
 
 function script.Killed(recentDamage, _)
-    Explode(center, SFX.SHATTER)
     foreach(blackOuttedUnits_OriginalState,
             function (id)
                 if id then

@@ -8,10 +8,9 @@ local CloseCombatArena =
     explodeAs = "none",
 
     --
-    alwaysUpright = true,
+    upright  = true,
     name = "Fight - target to break up",
     levelGround = false,
-    alwaysupright= false,
     Acceleration = 0.05,
     BrakeRate = 0.3,
     TurnRate = 300,

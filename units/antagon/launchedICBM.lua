@@ -17,7 +17,7 @@ local LaunchedICBM = Rocket:New{
 	description = " the end",
 	iconType = "launcher",
 	ActivateWhenBuilt=1,
-	alwaysupright = true,
+	upright  = true,
 
 
 	
