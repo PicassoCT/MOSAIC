@@ -223,23 +223,15 @@ function achromaticShivering(allLetters, posLetters, TableOfPiecesGroups)
         for i=1, string.len(posLetters.myMessage) do
             letter =  string.sub(posLetters.myMessage, i, i)              
                                  
-            if posLetters[letter]then
                 for n = 1, #posLetters.TriLetters[letter] do
                     Spring.Echo("Active achromaticShivering")
                     letterSub = posLetters.TriLetters[letter][n]        
                     ShowReg(letterSub)                          
-                    if posLetters[letter][1] then                        
-                        WMove(letterSub, 1, posLetters[letter][1] + shiverIntervallX, 0)  
-                    end     
-                    if posLetters[letter][2] then                        
-                        WMove(letterSub, 2, posLetters[letter][2] + shiverIntervallY, 0)       
-                    end
-                    if posLetters[letter][3] then                        
-                        WMove(letterSub, 3, posLetters[letter][3] + shiverIntervallZ, 0)       
-                    end
-                end                        
-            end                        
                                       
+                    WMove(letterSub, 1, (i* sizeSpacingLetter)+ shiverIntervallX, 0)  
+                    WMove(letterSub, y_axis, shiverIntervallY, 0)  
+                    WMove(letterSub, z_axis,  shiverIntervallZ, 0)   
+                end                                           
         end                            
     Sleep(250)
     timeOut = timeOut - 250
