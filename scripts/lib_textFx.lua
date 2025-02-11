@@ -190,7 +190,7 @@ function fireWorksProjectTextFx(allLetters, posLetters)
     -- for downwards outwards circle
     for i= 100, 250, 50 do
         fallFactor = math.ceil(i/25)
-        circleProject(allLetters, posLetters, i, true, true)
+        circleProject(allLetters, posLetters, i/100, true, true)
         foreach(allLetters,
             function(id)
                 Move(id, spindropAxis, highPoint - fallFactor * sizeDownLetter , 150)
@@ -211,40 +211,41 @@ end
 
 
 --Produces a Holographic Sign made of several letters that shiver into different directions 
-function achromaticShivering(allLetters, posLetters)
-    if posLetters.IsThreeLetter then
-        usedLetters = {}
-        timeOut = math.random(10,25) * 1000
-        while timeOut > 0 do
-              letterIndex = 0
-              foreach(message,
-                function(letter)
-                    usedLetters[letter] = letter
-                    letterIndex= letterIndex +1
-                        if letter and posLetters.IsThreeLetter[letter] then                                 
-                            for ax=1,3 do
-                                for n = 1, #posLetters.IsThreeLetter[letter] do
-                                    letterSub = osLetters.IsThreeLetter[letter][n]
-                                    if (not usedLetters[letterSub]) then
-                                        WMove(letterSub, ax, posLetters[letter][ax], 0)
-                                        ShowReg(letterSub)
-                                        shiverIntervall = math.random(50, 250)* randSign()
-                                        Move(letterSub, ax, posLetters[letter][ax]+ shiverIntervall, 250)
-                                    end
-                                end
-                                WMove(letter, ax, posLetters[letter][ax], 0)
-                                shiverIntervall = math.random(50, 250)* randSign()
-                                Move(letter, ax, posLetters[letter][ax]+ shiverIntervall, 250)
-                            end
-                        end    
-                    end
-                )  
+function achromaticShivering(allLetters, posLetters, TableOfPiecesGroups)
     
-            Sleep(250)
-            timeOut = timeOut - 250
-        end
-        hideResetAllLetters()
+    Spring.Echo("Deployed achromaticShivering")
+    timeOut = math.random(10,25) * 1000
+    while timeOut > 0 do
+
+        shiverIntervallX = (math.random(0, 25)/25)*sizeSpacingLetter* randSign()
+        shiverIntervallY = (math.random(0, 25)/25)*sizeSpacingLetter* randSign()
+        shiverIntervallZ = (math.random(0, 25)/25)*sizeSpacingLetter* randSign()
+        for i=1, string.len(posLetters.myMessage) do
+            letter =  string.sub(posLetters.myMessage, i, i)              
+                                 
+            if posLetters[letter]then
+                for n = 1, #posLetters.TriLetters[letter] do
+                    Spring.Echo("Active achromaticShivering")
+                    letterSub = posLetters.TriLetters[letter][n]        
+                    ShowReg(letterSub)                          
+                    if posLetters[letter][1] then                        
+                        WMove(letterSub, 1, posLetters[letter][1] + shiverIntervallX, 0)  
+                    end     
+                    if posLetters[letter][2] then                        
+                        WMove(letterSub, 2, posLetters[letter][2] + shiverIntervallY, 0)       
+                    end
+                    if posLetters[letter][3] then                        
+                        WMove(letterSub, 3, posLetters[letter][3] + shiverIntervallZ, 0)       
+                    end
+                end                        
+            end                        
+                                      
+        end                            
+    Sleep(250)
+    timeOut = timeOut - 250
     end
+    Sleep(timeOut)
+    hideResetAllLetters()    
 end
 
 function ringProject(allLetters, posLetters)
@@ -278,13 +279,13 @@ function ringProject(allLetters, posLetters)
 end
 
 
-function circleProject(allLetters, posLetters, extRadius, boolDoNotRest, boolDoNotReset)
+function circleProject(allLetters, posLetters, extRadiusFactor, boolDoNotRest, boolDoNotReset)
     circumference = string.len(posLetters.myMessage) * sizeSpacingLetter *2.0
     radius = circumference / (2 * math.pi)
 
     if extRadius  ~= nil then      
-        radius = extRadius  
-        circumference = extRadius * (2 * math.pi)
+        radius = radius * extRadius  
+        circumference = radius * (2 * math.pi)
     end 
     radiant = (math.pi *2)/(count(allLetters)*2.0)
     hideTReg(allLetters)
@@ -300,17 +301,22 @@ function circleProject(allLetters, posLetters, extRadius, boolDoNotRest, boolDoN
         local xr = radius * math.cos(radiantVal)
         local zr = radius * math.sin(radiantVal)
 
-        Move(pID,x_axis, xr, 10)
-        Move(pID,z_axis, zr,    10)
+        Move(pID,x_axis, xr, 100)
+        Move(pID,z_axis, zr, 100)
         Turn(pID,y_axis, math.pi + radiantVal, 0)
         i = i +1
         if posLetters.spacing[i + 1] == " " then
             i = i + 1
         end
-        end)    
-    if not boolDoNotRest then
+        end)
+
+        foreach(allLetters,  
+        function(id)
+            WaitForMoves(id)
+        end)
+
         Sleep(15000)
-    end
+
     hideTReg(allLetters) 
 end
 
@@ -360,31 +366,24 @@ end
 
 
 function cubeProject(allLetters, posLetters)
-    cubeSize = math.ceil(math.sqrt(#allLetters))
+    cubeSize  = #allLetters*0.5
     index = 1
        
         for x=1, 2*cubeSize do
             z=1
             if allLetters[index] then
                 pID = allLetters[index]
-            end
-            if x > cubeSize then
-                z = x - cubeSize
-                x = cubeSize
-                if pID then
+                  if x > cubeSize then
+                    z = x - cubeSize
+                    x = cubeSize
                     Turn(pID, y_axis, math.rad(90), 0)
-                end
-            end
-
-            if pID then
+                  end
                 Move(pID,x_axis, x*sizeSpacingLetter, 0)
                 Move(pID,z_axis, z* sizeSpacingLetter, 0)
                 ShowReg(pID)
-            else
-                index = index +1
-            end            
-        
-    end
+            end
+            index = index +1
+        end
     Sleep(35000)
     hideTReg(allLetters) 
 end
@@ -554,25 +553,25 @@ end
 
 function getAllTextFx()
 return {
-        ["SinusLetter"]   = SinusLetter, 
-        ["CrossLetters"]  =  CrossLetters, 
-        ["HideLetters"]   = HideLetters,
-        ["SpinLetters"]   = SpinLetters, 
-        ["SwarmLetters"]  =  SwarmLetters, 
-        ["SpiralUpwards"] =   SpiralUpwards, 
-        ["randomFLickerLetters"] =   randomFLickerLetters, 
-        ["syncToFrontLetters"]=    syncToFrontLetters, 
-        ["consoleLetters"] =   consoleLetters, 
-        ["dnaHelix"]   = dnaHelix, 
-        ["circleProject"]  =  circleProject,
-        ["ringProject"]  =  ringProject,
-        ["cubeProject"]  =  cubeProject,
-        ["spiralProject"]  =  spiralProject,
-        ["matrixTextFx"]  =  matrixTextFx,
-        ["fireWorksProjectTextFx"] = fireWorksProjectTextFx,
-        ["waterFallProject"] = waterFallProject,
-        ["personalProject"] = personalProject,
-        ["archProject"] = archProject,
+        --["SinusLetter"]   = SinusLetter, 
+        --["CrossLetters"]  =  CrossLetters, 
+        --["HideLetters"]   = HideLetters,
+        --["SpinLetters"]   = SpinLetters, 
+        --["SwarmLetters"]  =  SwarmLetters, 
+        --["SpiralUpwards"] =   SpiralUpwards, 
+        --["randomFLickerLetters"] =   randomFLickerLetters, 
+        --["syncToFrontLetters"]=    syncToFrontLetters, 
+        --["consoleLetters"] =   consoleLetters, 
+        --["dnaHelix"]   = dnaHelix, 
+        --["circleProject"]  =  circleProject,
+        --["ringProject"]  =  ringProject,
+        --["cubeProject"]  =  cubeProject,
+        --["spiralProject"]  =  spiralProject,
+        --["matrixTextFx"]  =  matrixTextFx,
+        --["fireWorksProjectTextFx"] = fireWorksProjectTextFx,
+        --["waterFallProject"] = waterFallProject,
+        --["personalProject"] = personalProject,
+        --["archProject"] = archProject,
         ["achromaticShivering"] = achromaticShivering
 
         }

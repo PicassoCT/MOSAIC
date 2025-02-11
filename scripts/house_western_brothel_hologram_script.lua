@@ -928,6 +928,8 @@ function delayedFlickerSingleLetter(letterPiece)
     end
 end
 
+
+
 function setupMessage(myMessages)
     boolHighlightFirstLetter = math.random(1,100) < 10
     hideResetAllLetters()
@@ -970,9 +972,8 @@ function setupMessage(myMessages)
     allLetters = {} 
     posLetters = {}   
     posLetters.myMessage = myMessage
-    if stringlength < 12 and maRa() then
-        posLetters.IsThreeLetter= {}
-    end 
+    posLetters.TriLetters= getAllLetters(TableOfPiecesGroups)
+    
     posLetters.spacing = {}
     posLetters.boolUpright = boolUpright
 
@@ -990,9 +991,7 @@ function setupMessage(myMessages)
 
             if boolContinue == true and TableOfPiecesGroups[letter] and lettercounter[letter] and TableOfPiecesGroups[letter][lettercounter[letter]] then
                 local letterName = TableOfPiecesGroups[letter][(lettercounter[letter] % #TableOfPiecesGroups[letter]) + 1 ] 
-                if posLetters.IsThreeLetter then
-                    posLetters.IsThreeLetter[letterName] = TableOfPiecesGroups[letter]
-                end
+      
 
                 --Highlight first
                 if boolHighlightFirstLetter and boolFirstHighlight then
@@ -1159,7 +1158,7 @@ function addHologramLetters( myMessages)
                 name, textFX = randDict(allFunctions)
                 if name then
                     --echo("Hologram "..newMessage.." with textFX "..name)
-                    textFX(allLetters, posLetters)
+                    textFX(allLetters, posLetters, TableOfPiecesGroups)
                     Signal(SIG_FLICKER)
                     HideLetters(allLetters,posLetters)
                 end

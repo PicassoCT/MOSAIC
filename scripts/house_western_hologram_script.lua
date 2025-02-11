@@ -1320,9 +1320,7 @@ function setupMessage(myMessages)
     allLetters = {} 
     posLetters = {}   
     posLetters.myMessage = myMessage
-    if stringlength < 12 and maRa() then
-        posLetters.IsThreeLetter= {}
-    end 
+    posLetters.TriLetters= getAllLetters(TableOfPiecesGroups)
     posLetters.spacing = {}
     posLetters.boolUpright = boolUpright
 
@@ -1340,10 +1338,6 @@ function setupMessage(myMessages)
 
             if boolContinue == true and TableOfPiecesGroups[letter] and lettercounter[letter] and TableOfPiecesGroups[letter][lettercounter[letter]] then
                 local letterName = TableOfPiecesGroups[letter][(lettercounter[letter] % #TableOfPiecesGroups[letter]) + 1 ] 
-                if posLetters.IsThreeLetter then
-                    posLetters.IsThreeLetter[letterName] = TableOfPiecesGroups[letter]
-                end
-
                 --Highlight first
                 if boolHighlightFirstLetter and boolFirstHighlight then
                     boolFirstHighlight =false
@@ -1570,8 +1564,8 @@ function addHologramLetters( myMessages)
                 name, textFX = randDict(allFunctions)
                -- name, textFx = "circleProject", circleProject
                 if name then
-                    echo("Hologram "..newMessage.." with textFX "..name.. location(unitID))
-                    textFX(allLetters, posLetters)
+                    echo("Hologram "..newMessage.." with textFX "..name..locationstring(unitID))
+                    textFX(allLetters, posLetters, TableOfPiecesGroups)
                     Signal(SIG_FLICKER)
                     HideLetters(allLetters,posLetters)
                 end

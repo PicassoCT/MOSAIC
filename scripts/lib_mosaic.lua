@@ -1933,6 +1933,18 @@ end
                 return getTypeTable(UnitDefNames, typeTable)
             end
 
+            function getAllLetters(TableOfPiecesGroups)
+                local result = {}
+                local allLetters = "ABCDEFGHIKLMNOPQRSTUVXYZ"
+                for i=1, string.len(allLetters) do
+                    local letter = string.sub(allLetters, i, i)
+                    if TableOfPiecesGroups[letter] then
+                        result[letter] = TableOfPiecesGroups[letter]
+                    end
+                end
+                return result
+            end
+
             function genericCallUnitFunctionPassArgs(unitID, NameOfFunction, arg)
                 env = Spring.UnitScript.GetScriptEnv(unitID)
                 if env and env[NameOfFunction] then

@@ -4348,7 +4348,7 @@ function echoEnter(state)
 end
 
 
-function location(unitID)
+function locationstring(unitID)
     local x,y,z =Spring.GetUnitPosition(unitID)
     return " at( x:"..x.." y:"..y.." z:"..z..")"
 end
