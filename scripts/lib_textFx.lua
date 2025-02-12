@@ -217,21 +217,21 @@ function achromaticShivering(allLetters, posLetters, TableOfPiecesGroups)
     timeOut = math.random(10,25) * 1000
     while timeOut > 0 do
 
-        shiverIntervallX = (math.random(0, 25)/25)*sizeSpacingLetter* randSign()
-        shiverIntervallY = (math.random(0, 25)/25)*sizeSpacingLetter* randSign()
-        shiverIntervallZ = (math.random(0, 25)/25)*sizeSpacingLetter* randSign()
+        shiverIntervallY = (math.random(0, 50)/100)*sizeSpacingLetter* randSign()
+        shiverIntervallX = 0
+        shiverIntervallZ = (math.random(0, 50)/100)*sizeSpacingLetter* randSign()
         for i=1, string.len(posLetters.myMessage) do
-            letter =  string.sub(posLetters.myMessage, i, i)              
-                                 
-                for n = 1, #posLetters.TriLetters[letter] do
-                    Spring.Echo("Active achromaticShivering")
-                    letterSub = posLetters.TriLetters[letter][n]        
-                    ShowReg(letterSub)                          
-                                      
-                    WMove(letterSub, 1, (i* sizeSpacingLetter)+ shiverIntervallX, 0)  
-                    WMove(letterSub, y_axis, shiverIntervallY, 0)  
-                    WMove(letterSub, z_axis,  shiverIntervallZ, 0)   
-                end                                           
+            letter =  string.upper(string.sub(posLetters.myMessage, i, i))
+            Spring.Echo("Active achromaticShivering")   
+            if posLetters.TriLetters[letter] then    
+            for n = 1, #posLetters.TriLetters[letter] do
+                letterSub = posLetters.TriLetters[letter][n]        
+                ShowReg(letterSub)                          
+                WMove(letterSub, 1, shiverIntervallX, 0)                  
+                WMove(letterSub, 2, (i* sizeSpacingLetter)+ shiverIntervallY, 0)                  
+                WMove(letterSub, 3, shiverIntervallZ, 0)   
+            end                                                       
+            end                                                       
         end                            
     Sleep(250)
     timeOut = timeOut - 250
