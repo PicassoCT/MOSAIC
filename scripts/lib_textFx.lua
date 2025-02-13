@@ -208,28 +208,40 @@ function waitAllLetters(allLetters)
             end)
 end
 
-
+function messageUniqueLettered(message)
+    bucket= {}
+    for i=1, string.len(message) do
+        letter =  string.upper(string.sub(posLetters.myMessage, i, i))
+        if not bucket[letter] then 
+            bucket[letter]= true 
+        else
+            return false
+        end
+    end
+    return true
+end
 
 --Produces a Holographic Sign made of several letters that shiver into different directions 
 function achromaticShivering(allLetters, posLetters, TableOfPiecesGroups)
-    
-    Spring.Echo("Deployed achromaticShivering")
+    if messageUniqueLettered(posLetters.myMessage) == false then return end
     timeOut = math.random(10,25) * 1000
+    dim = math.random(5, 50)
     while timeOut > 0 do
 
-        shiverIntervallY = (math.random(0, 50)/100)*sizeSpacingLetter* randSign()
+        shiverIntervallY = (math.random(0, dim)/100)*sizeSpacingLetter* randSign()
         shiverIntervallX = 0
-        shiverIntervallZ = (math.random(0, 50)/100)*sizeSpacingLetter* randSign()
+        shiverIntervallZ = (math.random(0, dim)/100)*sizeSpacingLetter* randSign()
         for i=1, string.len(posLetters.myMessage) do
             letter =  string.upper(string.sub(posLetters.myMessage, i, i))
-            Spring.Echo("Active achromaticShivering")   
             if posLetters.TriLetters[letter] then    
             for n = 1, #posLetters.TriLetters[letter] do
                 letterSub = posLetters.TriLetters[letter][n]        
-                ShowReg(letterSub)                          
-                WMove(letterSub, 1, shiverIntervallX, 0)                  
-                WMove(letterSub, 2, (i* sizeSpacingLetter)+ shiverIntervallY, 0)                  
-                WMove(letterSub, 3, shiverIntervallZ, 0)   
+                ShowReg(letterSub)         
+                WMove(letterSub, 2, (i* sizeSpacingLetter)+ shiverIntervallY, 0)                       
+                if n> 1 then
+                    WMove(letterSub, 1, shiverIntervallX, 0)                              
+                    WMove(letterSub, 3, shiverIntervallZ, 0)   
+                end
             end                                                       
             end                                                       
         end                            
@@ -312,9 +324,10 @@ function circleProject(allLetters, posLetters, extRadiusFactor, boolDoNotRest, b
     hideTReg(allLetters) 
 end
 
-function personalProject(allLetters, posLetters)
+function   personalProject(allLetters, posLetters)
     local spGetUnitDefID = Spring.GetUnitDefID
-    civiliansNearby = foreach(getAllNearUnit(unitID, 300),
+    civilianTypeTable = getCivilianTypeTable(UnitDefs)
+    civiliansNearby = foreach(getAllNearUnit(posLetters.unitID, 900),
                             function(id)
                                 defID = spGetUnitDefID(id)
                                 if civilianTypeTable[defID] then
@@ -329,10 +342,9 @@ function personalProject(allLetters, posLetters)
         civilian = getSafeRandom(civiliansNearby, civiliansNearby[1])
       
         timeCounter= math.random(10, 20) * 1000
-
+        ux,uy,uz = Spring.GetUnitPosition(posLetters.unitID)
         while timeCounter > 0 and doesUnitExistAlive(civilianID) do
-            tx,ty,tz= Spring.GetUnitPosition(civilian)
-            ux,uy,uz = Spring.GetUnitPosition(unitID)
+            tx,ty,tz= Spring.GetUnitPosition(civilian)           
             direction = getAngleFromCoordinates(tx-ux, tz- uz)
             Turn(textSpinner, spindropAxis, direction, 0)
             Sleep(1000)
@@ -355,6 +367,67 @@ function archProject(allLetters, posLetters)
         Sleep(35000)
     end
 end
+
+
+function getShapeByMessage(message)
+return  control_points = {
+        {x = 0, y = 0},
+        {x = 100, y = 50},
+        {x = 200, y = 100},
+        {x = 300, y = 50},
+        {x = 400, y = 0}
+    }
+end
+
+function catmull_rom_spline(p0, p1, p2, p3, t)
+    local t2 = t * t
+    local t3 = t2 * t
+
+    local a = -0.5 * t3 + t2 - 0.5 * t
+    local b = 1.5 * t3 - 2.5 * t2 + 1.0
+    local c = -1.5 * t3 + 2.0 * t2 + 0.5 * t
+    local d = 0.5 * t3 - 0.5 * t2
+
+    return a * p0 + b * p1 + c * p2 + d * p3
+end
+
+
+-- Function to generate interpolated points along the spline
+function generate_spline_positions(message)
+    num_samples = count(message)
+    control_points = getShapeByMessage(message)
+    local positions = {}
+    local num_segments = #control_points - 3  -- Catmull-Rom requires at least 4 points
+
+    for i = 1, num_segments do
+        local p0 = control_points[i]
+        local p1 = control_points[i + 1]
+        local p2 = control_points[i + 2]
+        local p3 = control_points[i + 3]
+
+        for j = 0, num_samples do
+            local t = j / num_samples
+            local x = catmull_rom_spline(p0.x, p1.x, p2.x, p3.x, t)
+            local y = catmull_rom_spline(p0.y, p1.y, p2.y, p3.y, t)
+            table.insert(positions, {x = x, y = y})
+        end
+    end
+
+    return positions
+end
+
+
+function splineShapeFollowing(allLetters, posLetters)
+    positions = generate_spline_positions(message, control_points)
+    index = 0
+    foreach(allLetters,
+        function(pID)
+            index = index +1
+            Move(pID,x_axis, positions[index].x * sizeSpacingLetter, 0)
+            Move(pID,z_axis, positions[index].y * sizeSpacingLetter, 0)
+        end)   
+end
+
 
 
 function cubeProject(allLetters, posLetters)
@@ -562,9 +635,10 @@ return {
         --["matrixTextFx"]  =  matrixTextFx,
         --["fireWorksProjectTextFx"] = fireWorksProjectTextFx,
         --["waterFallProject"] = waterFallProject,
-        --["personalProject"] = personalProject,
+        ["personalProject"] = personalProject,
         --["archProject"] = archProject,
-        ["achromaticShivering"] = achromaticShivering
+       -- ["achromaticShivering"] = achromaticShivering
+        ["splineShapeFollowing"] = splineShapeFollowing
 
         }
 end

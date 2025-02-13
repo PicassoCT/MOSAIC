@@ -1319,6 +1319,7 @@ function setupMessage(myMessages)
 
     allLetters = {} 
     posLetters = {}   
+    posLetters.unitID = unitID
     posLetters.myMessage = myMessage
     posLetters.TriLetters= getAllLetters(TableOfPiecesGroups)
     posLetters.spacing = {}
