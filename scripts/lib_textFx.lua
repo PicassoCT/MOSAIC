@@ -370,13 +370,24 @@ end
 
 
 function getShapeByMessage(message)
-return  control_points = {
-        {x = 0, y = 0},
-        {x = 100, y = 50},
-        {x = 200, y = 100},
-        {x = 300, y = 50},
-        {x = 400, y = 0}
+    local factor = math.sqrt(count(message)) * sizeSpacingLetter
+     
+    local control_points = {
+        {x = 0, y =  0 },
+        {x = 0, y =  1},
+        {x = 1, y =  1},
+        {x = 0, y =  1},
+        {x = -0.5, y =  0.5},
+        {x = 0, y =  0}
     }
+    for i=1, #control_points do
+        if control_points[i] and control_points.x then
+            control_points[i].x = control_points[i].x * factor
+            control_points[i].y = control_points[i].y * factor
+        end
+    end
+
+    return control_points
 end
 
 function catmull_rom_spline(p0, p1, p2, p3, t)
@@ -393,20 +404,21 @@ end
 
 
 -- Function to generate interpolated points along the spline
-function generate_spline_positions(message)
-    num_samples = count(message)
-    control_points = getShapeByMessage(message)
+function generate_spline_positions(message, control_points, timeMs)
+    frame = ((Spring.GetGameFrame() / 30) * 1000) % timeMs
+    num_samples = count(message) + 1
+
     local positions = {}
     local num_segments = #control_points - 3  -- Catmull-Rom requires at least 4 points
-
+    local element = 1/num_samples
     for i = 1, num_segments do
-        local p0 = control_points[i]
-        local p1 = control_points[i + 1]
-        local p2 = control_points[i + 2]
-        local p3 = control_points[i + 3]
+        local p0 = control_points[(i%num_segments+1)]
+        local p1 = control_points[((i+1) %num_segments+1)]
+        local p2 = control_points[((i +2)%num_segments+1)]
+        local p3 = control_points[((i+3) %num_segments+1)]
 
         for j = 0, num_samples do
-            local t = j / num_samples
+            local t = (((element*frame) + j) / num_samples)
             local x = catmull_rom_spline(p0.x, p1.x, p2.x, p3.x, t)
             local y = catmull_rom_spline(p0.y, p1.y, p2.y, p3.y, t)
             table.insert(positions, {x = x, y = y})
@@ -418,14 +430,22 @@ end
 
 
 function splineShapeFollowing(allLetters, posLetters)
-    positions = generate_spline_positions(message, control_points)
-    index = 0
-    foreach(allLetters,
-        function(pID)
-            index = index +1
-            Move(pID,x_axis, positions[index].x * sizeSpacingLetter, 0)
-            Move(pID,z_axis, positions[index].y * sizeSpacingLetter, 0)
-        end)   
+    times= 15000
+    control_points = getShapeByMessage(message)
+    while times > 0 do
+        positions = generate_spline_positions(message, control_points, 5000)
+        index = 0
+        foreach(allLetters,
+            function(pID)
+                index = index +1
+                ShowReg(pID)
+                Move(pID,x_axis, positions[(index% #positions) + 1].x * sizeSpacingLetter, 0)
+                Move(pID,z_axis, positions[(index % #positions) + 1].y * sizeSpacingLetter, 0)
+            end) 
+        Sleep(250)
+        times= times -250
+    end  
+    hideResetAllLetters()    
 end
 
 
@@ -635,7 +655,7 @@ return {
         --["matrixTextFx"]  =  matrixTextFx,
         --["fireWorksProjectTextFx"] = fireWorksProjectTextFx,
         --["waterFallProject"] = waterFallProject,
-        ["personalProject"] = personalProject,
+        --["personalProject"] = personalProject,
         --["archProject"] = archProject,
        -- ["achromaticShivering"] = achromaticShivering
         ["splineShapeFollowing"] = splineShapeFollowing
