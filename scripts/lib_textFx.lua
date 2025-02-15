@@ -368,22 +368,131 @@ function archProject(allLetters, posLetters)
     end
 end
 
+function getSpiral()
+    local helix_points = {}
+    local num_turns = 5        -- Number of loops
+    local step = 0.1           -- Angular step size
+    local radius = 10          -- Radius of the helix
+    local height_per_turn = 2  -- Height gain per full loop
+
+    for theta = 0, num_turns * math.pi * 2, step do
+        local x = radius * math.cos(theta)
+        local y = radius * math.sin(theta)
+        local z = height_per_turn * theta / (2 * math.pi)  -- Height proportional to angle
+        table.insert(helix_points, {x = x, y = y, z = z})
+    end
+    return helix_points
+end
+
+function getRandomShapeByMessageHash(hash)
+        allShapes = -- TODO switch to beziercurves 
+
+        { 
+            {-- arrow
+                {x = 0,    y =  0 },
+                {x = 0,    y =  1},
+                {x = 1,    y =  1},
+                {x = 0,    y =  1},
+                {x = -0.5, y =  0.5},
+                {x = 0,    y =  0}
+            },
+            --rectangle
+            {
+                   {x = -1, y =  1}, 
+                   {x = 1,  y =  1}, 
+                   {x = 1,  y =  -1}, 
+                   {x = -1, y =  -1}, 
+                   {x = -1, y =  1}, 
+            },
+            --  starshaped
+            {
+                {x = 0, y = -1},    
+                {x = 0.38, y = -0.38},    
+                {x = 1.0, y = 0},     
+                {x = 0.38, y = 0.38},     
+                {x = 0, y = 1.0},    
+                {x = -0.38, y = 0.38},   
+                {x = -1.0, y = 0},   
+                {x = -0.38, y = -0.38},  
+                {x = 0, y = -1} 
+            },
+            -- zigzag wave
+            {
+                {x = 0, y = 0}, 
+                {x = 1, y = 1}, 
+                {x = -1, y = 2}, 
+                {x = 1, y = 3}, 
+                {x = -1, y = 4}, 
+                {x = 1, y = 5}, 
+            }, -- heartshaped
+            {
+                {x = 0, y = -100/100},  
+                {x = 50/100, y = -50/100},    
+                {x = 100/100, y = 0},     
+                {x = 50/100, y = 75/100},     
+                {x = 0, y = 100/100},    
+                {x = -50/100, y = 75/100},    
+                {x = -100/100, y = 0},    
+                {x = -50/100, y = -50/100},   
+                {x = 0, y = -100/100}     
+            }, -- wine glass shaped
+            {
+                {x = 0.5000, y = 0.0000},   -- Top center of the bowl
+                {x = 0.9167, y = 0.1000},   -- Right curve of the bowl
+                {x = 1.0000, y = 0.2500},   -- Bottom right of the bowl
+                {x = 0.6667, y = 0.5000},   -- Neck of the glass (narrowing point)
+                {x = 0.6667, y = 0.7500},   -- Start of the stem (right side)
+                {x = 0.5833, y = 1.0000},   -- Bottom of the stem (right side)
+                {x = 0.4167, y = 1.0000},   -- Bottom of the stem (left side)
+                {x = 0.3333, y = 0.7500},   -- Start of the stem (left side)
+                {x = 0.3333, y = 0.5000},   -- Neck of the glass (left side)
+                {x = 0.0000, y = 0.2500},   -- Bottom left of the bowl
+                {x = 0.0833, y = 0.1000},   -- Left curve of the bowl
+                {x = 0.5000, y = 0.0000}   
+            }
+    }
+    
+    -- add spiral shape
+    local spiral_points = {}
+    local num_turns = 5     -- Number of loops
+    local step = 0.1        -- Angular step size
+
+    for theta = 0, num_turns * math.pi * 2, step do
+        local r = 10 + 5 * theta  -- Adjust the coefficients to change the shape
+        local x = r * math.cos(theta)
+        local y = r * math.sin(theta)
+        table.insert(spiral_points, {x = x, y = y})
+    end
+
+    allShapes[#allShapes +1] = spiral_points
+    
+    -- add infinity point
+    local infinity_points = {}
+    local a = 50          -- Controls the size of the loops
+    local step = 0.1      -- Angular step size
+
+    for t = -math.pi, math.pi, step do
+        local x = a * math.sin(t)
+        local y = a * math.sin(t) * math.cos(t)
+        table.insert(infinity_points, {x = x, y = y})
+    end
+
+    allShapes[#allShapes + 1] = getSpiral()
+
+    return allShapes[(hash % #allShapes) +1]
+end
 
 function getShapeByMessage(message)
     local factor = math.sqrt(count(message)) * sizeSpacingLetter
-     
-    local control_points = {
-        {x = 0, y =  0 },
-        {x = 0, y =  1},
-        {x = 1, y =  1},
-        {x = 0, y =  1},
-        {x = -0.5, y =  0.5},
-        {x = 0, y =  0}
-    }
+    control_points = getRandomShapeByMessageHash(count(message))
+    
     for i=1, #control_points do
         if control_points[i] and control_points.x then
             control_points[i].x = control_points[i].x * factor
             control_points[i].y = control_points[i].y * factor
+            if control_points[i].z then
+                control_points[i].z = control_points[i].z * factor
+            end            
         end
     end
 
@@ -421,7 +530,11 @@ function generate_spline_positions(message, control_points, timeMs)
             local t = (((element*frame) + j) / num_samples)
             local x = catmull_rom_spline(p0.x, p1.x, p2.x, p3.x, t)
             local y = catmull_rom_spline(p0.y, p1.y, p2.y, p3.y, t)
-            table.insert(positions, {x = x, y = y})
+            local z  = 0
+            if p0.z then
+                 z = catmull_rom_spline(p0.z, p1.z, p2.z, p3.z, t)
+            end
+            table.insert(positions, {x = x, y = y, z = z})
         end
     end
 
@@ -441,6 +554,9 @@ function splineShapeFollowing(allLetters, posLetters)
                 ShowReg(pID)
                 Move(pID,x_axis, positions[(index% #positions) + 1].x * sizeSpacingLetter, 0)
                 Move(pID,z_axis, positions[(index % #positions) + 1].y * sizeSpacingLetter, 0)
+                if positions[(index % #positions) + 1].z then
+                    Move(pID,y_axis, positions[(index % #positions) + 1].z * sizeSpacingLetter, 0)
+                end
             end) 
         Sleep(250)
         times= times -250
