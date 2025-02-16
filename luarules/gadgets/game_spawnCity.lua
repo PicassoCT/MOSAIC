@@ -16,6 +16,7 @@ local boolDebug = false
 VFS.Include("scripts/lib_UnitScript.lua")
 VFS.Include("scripts/lib_mosaic.lua")
 VFS.Include("scripts/lib_staticstring.lua")
+local buisnessNeonSigns =  include("scripts/buissnesNamesNeonLogos.lua")
 
 local GameConfig = getGameConfig()
 --if not Game.version then Game.version = GameConfig.instance.Version end
@@ -48,6 +49,8 @@ local TruckTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture,
                                                 "truck", UnitDefs)
 local houseTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture,
                                                 "house", UnitDefs)
+
+local houseTypeLimitationsTable = getHouseTypeLimitations(UnitDefs)
 local houeArabicDefID = UnitDefNames["house_arab0"].id
 
 if GameConfig.instance.culture == "arab" then
@@ -63,10 +66,6 @@ local gaiaTeamID = Spring.GetGaiaTeamID()
 
 local boolHasCityCenter = false 
 local boolCachedMapManualPlacementResult = nil
-
-
-
-
 
 allreadyRegistredBuilding = {}
 function registerManuallyPlacedHouses()      
@@ -254,7 +253,7 @@ function fillGapsWithInnerCityBlocks(cursorl, buildingType, BuildingPlaceT)
 									orgPosZ + offsz * innerCityDim.z,
 									true)
 						if houseID then
-                           setHouseStreetNameTooltip(houseID, (cursor.x*2) + offsx, (cursor.z*2) + offsz, Game, true)
+                           setHouseStreetNameTooltip(houseID, (cursor.x*2) + offsx, (cursor.z*2) + offsz, Game, true, UnitDefs, buisnessNeonSigns)
 						end
                 end
             end    
@@ -282,6 +281,22 @@ function mirrorCursor(cursor, cx, cz)
     return {x = cx + x, z = cz + z}
 end
 
+function getBuildingTypeWithinLimits()
+     buildingType = randDict(houseTypeTable)
+    if houseTypeLimitationsTable[buildingType] then
+        if houseTypeLimitationsTable[buildingType] > 0 then
+            houseTypeLimitationsTable[buildingType] = houseTypeLimitationsTable[buildingType] -1 
+            return buildingType
+        else
+            houseTypeTable[buildingType] = nil
+            return randDict(houseTypeTable)
+        end
+    else
+        return buildingType
+    end
+
+
+end
 -- spawns intial buildings
 function fromMapCenterOutwards(BuildingPlaceT, startx, startz)
     local finiteSteps = GameConfig.maxIterationSteps
@@ -308,10 +323,11 @@ function fromMapCenterOutwards(BuildingPlaceT, startx, startz)
             dimX,dimZ = houseStreetDim.x, houseStreetDim.z
 
             if BuildingPlaceT[cursor.x][cursor.z] == true and  isOnRoad(cursor) == false then
-                buildingType = randDict(houseTypeTable)
+                buildingType = getBuildingTypeWithinLimits()
+               
                 houseID = spawnBuilding(buildingType, cursor.x * dimX, cursor.z * dimZ, boolNearCityCenter)
 				if houseID then
-					setHouseStreetNameTooltip(houseID, cursor.x*2 , cursor.z*2, Game)
+					setHouseStreetNameTooltip(houseID, cursor.x*2 , cursor.z*2, Game, false, UnitDefs, buisnessNeonSigns)
 
 					numberOfBuildings = numberOfBuildings - 1
 					BuildingPlaceT[cursor.x][cursor.z] = false
@@ -326,7 +342,7 @@ function fromMapCenterOutwards(BuildingPlaceT, startx, startz)
                 buildingType = randDict(houseTypeTable)
                 houseID = spawnBuilding(buildingType, mirror.x * dimX, mirror.z * dimZ, boolMirrorNearCityCenter)
                 if houseID then
-					setHouseStreetNameTooltip(houseID, mirror.x*2 , mirror.z*2, Game)
+					setHouseStreetNameTooltip(houseID, mirror.x*2 , mirror.z*2, Game, false, UnitDefs, buisnessNeonSigns)
 					--echo("Placed Single Mirror")
 					numberOfBuildings = numberOfBuildings - 1
 					BuildingPlaceT[mirror.x][mirror.z] = false
@@ -384,7 +400,7 @@ function placeThreeByThreeBlockAroundCursor(cursor, numberOfBuildings,  Building
                                           tmpCursor.z * houseStreetDim.z, boolNearCityCenter)
 							if houseID then
 								numberOfBuildings = numberOfBuildings - 1
-								setHouseStreetNameTooltip(houseID, nameCursor.x , nameCursor.z, Game, true)
+								setHouseStreetNameTooltip(houseID, nameCursor.x , nameCursor.z, Game, true, UnitDefs, buisnessNeonSigns)
 								if boolNearCityCenter == true then
 									fillGapsWithInnerCityBlocks({x=tmpCursor.x, z=tmpCursor.z}, buildingType, BuildingPlaceT)
 								end

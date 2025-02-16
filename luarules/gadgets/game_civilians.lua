@@ -666,9 +666,10 @@ function travelInWarTimes(evtID, frame, persPack, startFrame, myID)
 end
 
 function displayConversationTextAt(idA, idB)
-    assert(UnitDefs)
+--[[    echo("isTRackedPerson "..toString(doesUnitExistAlive(idA)).." and "..toString(doesUnitExistAlive(idB)))--]]
     if isTrackedPerson(idA) or isTrackedPerson(idB) then
         gossipMessage = gossipGenerator(idA, idB, UnitDefs)
+       --[[ echo("Displaying conversation between "..toString(idA).." and "..toString(idB))--]]
         SendToUnsynced("DisplaytAtUnit", idA, gaiaTeamID, gossipMessage, 0.75, 0.75, 0.75, 0.25)
     end
 end
@@ -689,17 +690,18 @@ function getUnitNearestTalkableAlly(id)
 end
 
 function sozialize(evtID, frame, persPack, startFrame, myID)
-boolDone = false
-
-    if persPack.chatPartnerID then
+    boolDone = false
+    if persPack.chatPartnerID ~= nil then
         displayConversationTextAt(myID, persPack.chatPartnerID)
     end
 
   ---ocassionally detour toward the nearest ally or enemy
-    if  math.random(0, 42) > 35 and
+    if math.random(0, 42) > 35 and
         civilianWalkingTypeTable[persPack.mydefID] and 
         persPack.maxTimeChattingInFrames > 150  then  
+           --[[ echo("Soizialize with partnerID ")--]]
             persPack.chatPartnerID = getUnitNearestTalkableAlly(myID)
+            displayConversationTextAt(myID, persPack.chatPartnerID)
             if persPack.chatPartnerID then 
                 persPack.boolStartAChat = true
             end
@@ -708,7 +710,7 @@ boolDone = false
     if persPack.boolStartAChat == true then
         if (persPack.maxTimeChattingInFrames <= 0 ) or 
             not persPack.chatPartnerID or
-             not doesUnitExistAlive(persPack.chatPartnerID) then
+            not doesUnitExistAlive(persPack.chatPartnerID) then
                 persPack.boolStartAChat = false
                 persPack = moveToLocation(myID, persPack, {}, true)
             return true, frame + math.random(15,30), persPack

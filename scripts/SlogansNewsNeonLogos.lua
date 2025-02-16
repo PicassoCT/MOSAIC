@@ -32,6 +32,7 @@ return {
  "Citizens Brace for ANTAGON Assault",
  "Pandemic Ravages <cityname>",
  "ANTAGON suspected of Biological Warfare",
+ "You can be a monster. It pays handsomely",
  "Corruption Scandal Rocks <cityname>",
  "ANTAGON Operatives Exposed",
  "<cityname> Grapples with Air Pollution Crisis",
