@@ -494,6 +494,76 @@ function moveJumpScare(id)
     HideReg(id)
 end
 
+function getRandomPixel()
+    if maRa() then return TableOfPiecesGroups["R"][math.random(1,32)]end
+    if maRa() then return TableOfPiecesGroups["G"][math.random(1,32)]end
+    if maRa() then return TableOfPiecesGroups["B"][math.random(1,32)]end
+    return nil
+end
+
+scale = 2500
+total = math.sqrt(32)
+mid = (total/2)*scale
+pixelSize = 50
+function getPixelEffect()
+    effects = {
+        function () -- random coloured cube
+       
+            for x=1, total do
+                for y=1, total do
+                    for z= 1 total do
+                        randomPixel = getRandomPixel()
+                        if randomPixel then
+                            Move(randomPixel,x_axis, (x*scale)- mid, 0)
+                            Move(randomPixel,y_axis, (y*scale), 0)
+                            Move(randomPixel,y_axis, (z*scale)- mid, 0)
+                            ShowReg(randomPixel)
+                        end
+                    end
+                end
+            end
+        end,
+        function() -- pixel line error
+            direction = math.random(1,3)
+
+            for i=1, 32 do
+                randomPixel = getRandomPixel()
+                for k=1,3 do
+                    if randomPixel then
+                        if k ~= direction then
+                            Move(randomPixel,direction, (i*pixelSize), 0)
+                        else
+                            Move(randomPixel,k, otherValues[k], 0)
+                        end
+                        ShowReg(randomPixel)
+                    end
+                end
+            end
+        end,
+        function () -- chase the rain 
+             if isRaining(hours) then
+
+
+             end
+        end
+    }
+
+end
+
+
+function pixelArt()
+    while true do
+        pixelEffect = getPixelEffect()
+        pixelEffect()
+        restVal= math.random(5,15)*1000
+        Sleep(restVal)
+        hideTReg(TableOfPiecesGroups["R"])
+        hideTReg(TableOfPiecesGroups["G"])
+        hideTReg(TableOfPiecesGroups["B"])
+        Sleep(250)
+    end
+end
+
 function HoloGrams()
     Signal(SIG_HOLO)
     SetSignalMask(SIG_HOLO)

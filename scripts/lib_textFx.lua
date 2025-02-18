@@ -532,7 +532,7 @@ function generate_spline_positions(message, control_points, timeMs)
             local y = catmull_rom_spline(p0.y, p1.y, p2.y, p3.y, t)
             local z  = 0
             if p0.z then
-                 z = catmull_rom_spline(p0.z, p1.z, p2.z, p3.z, t)
+                z = catmull_rom_spline(p0.z, p1.z, p2.z, p3.z, t)
             end
             table.insert(positions, {x = x, y = y, z = z})
         end
@@ -540,7 +540,6 @@ function generate_spline_positions(message, control_points, timeMs)
 
     return positions
 end
-
 
 function splineShapeFollowing(allLetters, posLetters)
     times= 15000
