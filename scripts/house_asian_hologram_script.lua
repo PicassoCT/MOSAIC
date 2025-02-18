@@ -177,6 +177,10 @@ function restartHologram()
     if randChance(5)  then
         StartThread(butterflyExplosion)
     end
+
+    if randChance(33) then
+        StartThread(pixelArt)
+    end
 end
 
 function flapWing(wingPiece, wingPiece2, speedUp, speedDown)
@@ -506,12 +510,11 @@ total = math.sqrt(32)
 mid = (total/2)*scale
 pixelSize = 50
 function getPixelEffect()
-    effects = {
-        function () -- random coloured cube
-       
+    local effects = {
+        function () -- random coloured cube       
             for x=1, total do
                 for y=1, total do
-                    for z= 1 total do
+                    for z= 1, total do
                         randomPixel = getRandomPixel()
                         if randomPixel then
                             Move(randomPixel,x_axis, (x*scale)- mid, 0)
@@ -525,7 +528,8 @@ function getPixelEffect()
         end,
         function() -- pixel line error
             direction = math.random(1,3)
-
+            otherValues = {}
+            for x=1,3 do otherValues[x] = scale*(math.random(-10,10)/10) end
             for i=1, 32 do
                 randomPixel = getRandomPixel()
                 for k=1,3 do
@@ -542,17 +546,28 @@ function getPixelEffect()
         end,
         function () -- chase the rain 
              if isRaining(hours) then
+                for i=1,#cachedCopy do 
+                    cachedPiece = cachedCopy[i]
+                    pieceInfo = Spring.GetUnitPieceInfo(unitID, cachedPiece) 
+                    randomPixel= getRandomPixel()
+                    for p=1,math.random(2,32) do                 
+                        x = getRandomArgument(pieceInfo.min.x, pieceInfo.max.x)
+                        y = getRandomArgument(pieceInfo.min.y, pieceInfo.max.y)
+                        z = getRandomArgument(pieceInfo.min.z, pieceInfo.max.z)
+                        movePieceToPiece(unitID, randomPixel, cachedPiece, 0, {x=x, y=y, z=z})
+                    end
 
-
-             end
-        end
+                    end
+                end
+        end   
     }
-
+    return effects[math.random(1,#effects)]
 end
 
 
 function pixelArt()
     while true do
+        echo("PixelArt active at"..locationstring(unitID))
         pixelEffect = getPixelEffect()
         pixelEffect()
         restVal= math.random(5,15)*1000
@@ -560,7 +575,8 @@ function pixelArt()
         hideTReg(TableOfPiecesGroups["R"])
         hideTReg(TableOfPiecesGroups["G"])
         hideTReg(TableOfPiecesGroups["B"])
-        Sleep(250)
+        restVal= math.random(5,15)*1000
+        Sleep(restVal)
     end
 end
 

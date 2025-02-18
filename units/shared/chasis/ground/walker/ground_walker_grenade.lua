@@ -14,7 +14,7 @@ local ground_walker_grenade = Walker:New{
 	acceleration = 0.7,
 	brakeRate = 0.1,
 	turninplace		= true,
-
+	sightDistance = 300,
 	reclaimable=false,
 	Builder = false,
 	CanAttack = true,

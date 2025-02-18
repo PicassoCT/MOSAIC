@@ -1220,6 +1220,7 @@ function getunitHeight(UnitId)
     return y
 end
 
+
 -- > Returns a Units side as string
 function getUnitSide(unitID)
     teamid = Spring.GetUnitTeam(unitID)
@@ -1713,6 +1714,11 @@ function getGroundMapTable(Resolution, HandedInFunction)
         end
     end
     return ReT
+end
+
+function getRandomArgument(...)
+    arg = {...};
+    return getSafeRandom(arg, arg[1])
 end
 
 -- >Generalized map foreaching Function

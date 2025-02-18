@@ -316,7 +316,7 @@ else -- UNSYNCED
     local spWorldToScreenCoords = Spring.WorldToScreenCoords
     local glText = gl.Text
     local glColor = gl.Color
-    local DrawForFrames = 1 * 30
+    local DrawForFrames = 2 * 30
     local Unit_StartFrame_Message = {}
     local UID_Location_Message = {}
     local gaiaTeamID = Spring.GetGaiaTeamID()

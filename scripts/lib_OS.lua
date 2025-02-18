@@ -1033,6 +1033,8 @@ function headingChangeDetector(unitID,  boolTurnLeft, boolTurning, boolDebugPrin
     end
 end
 
+
+
 function spawnCegCyclicAtUnitPiece(unitID, pieceID, cegname, delay)
     while true do
         Sleep(delay)

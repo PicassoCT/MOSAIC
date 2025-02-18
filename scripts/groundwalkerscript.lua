@@ -121,6 +121,37 @@ center = piece "center"
 aimpiece = piece "center"
 boolTurnLeft = false
 boolTurning = false
+boolUpdateRequestFlag = false
+
+function ManualTriggeredHeadingChangeDetector()
+    TurnCount = 0
+    headingOfOld = Spring.GetUnitHeading(unitID)
+    while true do
+        Sleep(250)
+        while boolManualUpdate == false do
+            Sleep(15)
+        end
+        boolManualUpdate = false
+        tempHead = Spring.GetUnitHeading(unitID)
+        Spring.Echo("Current Heading"..tempHead) 
+        if tempHead ~= headingOfOld then
+            boolManualUpdate= true
+            TurnCount = TurnCount + 1
+            if TurnCount > 2 then
+                boolManualUpdate = false
+                boolTurning = true
+            end
+        else
+            TurnCount = 0
+            boolTurning = false
+        end
+        if tempHead ~= nil then
+            boolTurnLeft = headingOfOld > tempHead
+            headingOfOld = tempHead
+        end
+    end
+end
+
 
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
@@ -128,7 +159,7 @@ function script.Create()
     Hide(aimrot)
     Hide(emitfire)
     StartThread(walkAnimationLoop)
-    StartThread(headingChangeDetector, unitID, boolTurnLeft, boolTurning, true)
+    StartThread(ManualTriggeredHeadingChangeDetector, unitID, boolTurnLeft, boolTurning, boolUpdateRequestFlag)
     StartThread(resetHeadingIfNotAiming)
 
 end
@@ -370,6 +401,8 @@ function script.AimWeapon1(Heading, pitch)
     boolAiming = true
     boolPrioritizeGround = true
     if boolWalking == true then
+        boolUpdateRequestFlag = true
+        while boolUpdateRequestFlag == true do Sleep(100) end
         if boolTurning == true then
             if boolTurnLeft == true then
                 PlayAnimation("SIDEWALK_RIGHT", nil, 2.0)

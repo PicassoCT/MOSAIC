@@ -14,6 +14,7 @@ local ground_walker_mg = Walker:New{
 	turnRate			= 900,
 	acceleration = 0.7,
 	brakeRate = 0.1,
+	sightDistance = 300,
 	turninplace		= true,
 	reclaimable=false,
 	Builder = false,
