@@ -1268,6 +1268,14 @@ end
                 return result
             end
 
+            function getHouseTypeLimitations(UnitDefs)
+                UnitDefNames = getUnitDefNames(UnitDefs)
+                LimitedHouseTypes = {
+                    [UnitDefNames["house_asian1"].id] = 10
+                }
+                return LimitedHouseTypes
+            end
+
             function getWesternUnitTypeMap(typeName, UnitDefs)
                 return getCultureUnitModelTypes("western", typeName, UnitDefs)
             end
@@ -3029,10 +3037,12 @@ end
         houseTypeTable = getHouseTypeTable(UnitDefs, culture)
         local PositionTable = {}
 
-        foreach(Spring.GetAllUnits(), function(id)
+        foreach(Spring.GetAllUnits(),
+         function(id)
             defID = Spring.GetUnitDefID(id)
             if houseTypeTable[defID] then return id end
-        end, function(id)
+        end, 
+        function(id)
             x, y, z = Spring.GetUnitPosition(id)
             PositionTable[#PositionTable + 1] = {x = x, y = y, z = z}
         end)

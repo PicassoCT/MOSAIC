@@ -1008,8 +1008,6 @@ function vtolLoop(unitID, plane, restTimeMs, timeBetweenFlightsMs, factor)
     end
 end
 
-
-
 function headingChangeDetector(unitID,  boolTurnLeft, boolTurning, boolDebugPrintDiff)
     assert(unitID)
     TurnCount = 0

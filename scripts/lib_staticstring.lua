@@ -98,7 +98,7 @@ function getHouseShopName(id,  buisnessNamesTable, UnitDefs)
 	end
 end
 
-function setHouseStreetNameTooltip(id, detailXHash, detailZHash, Game, boolInnerCityBlock)
+function setHouseStreetNameTooltip(id, detailXHash, detailZHash, Game, boolInnerCityBlock, UnitDefs, buisnessNamesTable)
 
     region = getRegionByCulture(GG.GameConfig.instance.culture, getDetermenisticMapHash(Game))
     if not GG.StreetNameDict then
@@ -493,7 +493,31 @@ function setHouseStreetNameTooltip(id, detailXHash, detailZHash, Game, boolInner
         GG.StreetNameDict[name] = 0
     end
     GG.StreetNameDict[name] = GG.StreetNameDict[name] + 1
-    Spring.SetUnitTooltip(id, "Housing Block - "..name .. "." .. GG.StreetNameDict[name].. " "..addition)
+    Spring.SetUnitTooltip(id, HouseDescriptor(id, detailXHash + detailZHash, UnitDefs,buisnessNamesTable).." - "..name .. "." .. GG.StreetNameDict[name].. " "..addition)
+end
+
+
+function HouseDescriptor(id, hash,UnitDefs, buisnessNamesTable)
+    
+    if hash % 2 == 0 then
+        houseShopName = getHouseShopName(id,  buisnessNamesTable, UnitDefs)
+        if houseShopName then return houseShopName end
+    end
+
+    blockType = {
+        "Housing Block",
+        "PreWar House",
+        "Breshnevka",        
+        "Belle Epoche Building",
+        "Oligarchy Era House",
+        "PreCollapse House",
+        "CivilWarReconstruction",
+        "AutoFabricated Housing",
+        "Restorated Building",
+        "Retro Reprint"
+    }
+    
+    return blockType[(hash % #blockType) +1]
 end
 
 

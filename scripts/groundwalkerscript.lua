@@ -128,7 +128,7 @@ function script.Create()
     Hide(aimrot)
     Hide(emitfire)
     StartThread(walkAnimationLoop)
-    StartThread(headingChangeDetector, 0.1, unitID, boolTurnLeft, boolTurning, true)
+    StartThread(headingChangeDetector, unitID, boolTurnLeft, boolTurning, true)
     StartThread(resetHeadingIfNotAiming)
 
 end
@@ -370,15 +370,15 @@ function script.AimWeapon1(Heading, pitch)
     boolAiming = true
     boolPrioritizeGround = true
     if boolWalking == true then
-        --[[if boolTurning == true then
+        if boolTurning == true then
             if boolTurnLeft == true then
-             PlayAnimation("SIDEWALK_RIGHT", nil, 2.0)
+                PlayAnimation("SIDEWALK_RIGHT", nil, 2.0)
             else
                  PlayAnimation("SIDEWALK_LEFT", nil, 2.0)
             end
-        else--]]
+        else
             PlayAnimation("RUNNING", nil, 4.0)
-        --[[end--]]
+        end
     end
 
     WTurn(aimrot, y_axis, Heading, math.pi)
