@@ -137,8 +137,14 @@ function blink()
     end
 end
 
+
 function comingAndGoing()
     while true do
+        repeat 
+            if not GG.AirPortSemaphore then GG.AirPortSemaphore = unitID end
+            Sleep(3000)
+        until (GG.AirPortSemaphore == unitID)
+
         arrival()
         for i = 1, 2 do
             touchDownTime = math.random(8, 18)
@@ -146,6 +152,7 @@ function comingAndGoing()
         end
         ferryingGoods()
         departure()
+        GG.AirPortSemaphore = nil
     end
 end
 

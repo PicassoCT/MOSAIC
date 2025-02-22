@@ -531,7 +531,7 @@ end
 RainCenter = piece("RainCenter")
 function holoGramRain()
     Sleep(100)
-    speed = math.pi * 2000
+    local speed = math.pi * 2000
     if unitID % 3 == 0 then
         StartThread(glowWormFlight, 5.0)
     end

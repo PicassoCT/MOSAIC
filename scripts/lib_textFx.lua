@@ -552,9 +552,9 @@ function splineShapeFollowing(allLetters, posLetters)
                 index = index +1
                 ShowReg(pID)
                 Move(pID,x_axis, positions[(index% #positions) + 1].x * sizeSpacingLetter, 0)
-                Move(pID,z_axis, positions[(index % #positions) + 1].y * sizeSpacingLetter, 0)
-                if positions[(index % #positions) + 1].z then
-                    Move(pID,y_axis, positions[(index % #positions) + 1].z * sizeSpacingLetter, 0)
+                Move(pID,z_axis, positions[(index % #positions) + 1].z * sizeSpacingLetter, 0)
+                if positions[(index % #positions) + 1].y then
+                    Move(pID, y_axis, positions[(index % #positions) + 1].y * sizeSpacingLetter, 0)
                 end
             end) 
         Sleep(250)

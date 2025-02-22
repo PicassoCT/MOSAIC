@@ -777,7 +777,6 @@ function stuckDetection(evtID, frame, persPack, startFrame, myID, x, y, z)
     end 
 
     if distance(x, y, z, persPack.currPos.x, persPack.currPos.y, persPack.currPos.z) < GameConfig.minimalMoveDistanceElseStuck then
-      --  Spring.Echo("Unit "..myID.. "is stuck with counter".. persPack.stuckCounter)
         persPack.stuckCounter = persPack.stuckCounter + 1
     else
         persPack.currPos = {x = x, y = y, z = z}
@@ -785,7 +784,8 @@ function stuckDetection(evtID, frame, persPack, startFrame, myID, x, y, z)
     end
 
     -- if stuck move towards the next goal
-    if persPack.stuckCounter > 8 then
+    if persPack.stuckCounter > 7 then
+                Spring.Echo("Help me stepbro im stuck  "..myID.. " at ".. persPack.stuckCounter)
         if persPack.goalIndex <=  #persPack.goalList then
             persPack.goalIndex = math.min(persPack.goalIndex + 1, #persPack.goalList)
             persPack = moveToLocation(myID, persPack, {})

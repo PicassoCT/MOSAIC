@@ -498,17 +498,39 @@ function moveJumpScare(id)
     HideReg(id)
 end
 
+local scale = 2500
+local total = math.sqrt(36)
+local mid = (total/2)*scale
+local pixelSize = 64
+local colT = {"R","G", "B"}
+
 function getRandomPixel()
-    if maRa() then return TableOfPiecesGroups["R"][math.random(1,32)]end
-    if maRa() then return TableOfPiecesGroups["G"][math.random(1,32)]end
-    if maRa() then return TableOfPiecesGroups["B"][math.random(1,32)]end
-    return nil
+    colSelect = colT[math.random(1,3)]
+    colSelectPieces = TableOfPiecesGroups[colSelect]
+    return colSelectPieces[math.random(1,#colSelectPieces)]
 end
 
-scale = 2500
-total = math.sqrt(32)
-mid = (total/2)*scale
-pixelSize = 50
+function RainDrop(pieces, delayMS, speed)
+    if not pieceID then return end
+    maxDistance = 4000
+    downAxis = 2
+    Sleep(delayMS)
+    x,z = math.random(30,maxDistance)*randSign(), math.random(30,maxDistance)*randSign()
+    y = math.sqrt((maxDistance-x)^2 + (maxDistance-z)^2)
+    local pieceID = pieces[1]
+    for i=1, #pieces do
+        local pieceID = pieces[i]
+        Move(pieceID, 1, x, 0)
+        Move(pieceID, 3, z, 0)
+        Move(pieceID, downAxis, y + (i*pixelSize), 0)
+        Move(pieceID, downAxis, 0, speed)
+        ShowReg(pieceID)
+    --Spin(pieceID, downAxis, math.rad(42),0)
+    end
+    WMove(pieceID, downAxis, 0, speed)
+    HideReg(pieceID)
+end
+
 function getPixelEffect()
     local effects = {
         function () -- random coloured cube       
@@ -519,7 +541,7 @@ function getPixelEffect()
                         if randomPixel then
                             Move(randomPixel,x_axis, (x*scale)- mid, 0)
                             Move(randomPixel,y_axis, (y*scale), 0)
-                            Move(randomPixel,y_axis, (z*scale)- mid, 0)
+                            Move(randomPixel,z_axis, (z*scale)- mid, 0)
                             ShowReg(randomPixel)
                         end
                     end
@@ -545,21 +567,30 @@ function getPixelEffect()
             end
         end,
         function () -- chase the rain 
-             if isRaining(hours) then
-                for i=1,#cachedCopy do 
-                    cachedPiece = cachedCopy[i]
-                    pieceInfo = Spring.GetUnitPieceInfo(unitID, cachedPiece) 
-                    randomPixel= getRandomPixel()
-                    for p=1,math.random(2,32) do                 
-                        x = getRandomArgument(pieceInfo.min.x, pieceInfo.max.x)
-                        y = getRandomArgument(pieceInfo.min.y, pieceInfo.max.y)
-                        z = getRandomArgument(pieceInfo.min.z, pieceInfo.max.z)
-                        movePieceToPiece(unitID, randomPixel, cachedPiece, 0, {x=x, y=y, z=z})
-                    end
+             while isRaining(hours) do
+              
+                color = colT[math.random(1,3)]
+                    
+                local delayMS = math.random(1,5)*1000
 
-                    end
+                RainDrop(TableOfPiecesGroups[color], delayMS, math.pi * 2000)
+                Sleep(100)
+            end
+        end   ,
+        function()-- cached copy artifacts
+            for i=1,#cachedCopy do 
+                cachedPiece = cachedCopy[i]
+                pieceInfo = Spring.GetUnitPieceInfo(unitID, cachedPiece) 
+                randomPixel= getRandomPixel()
+                for p=1,math.random(2,32) do                 
+                    x = getRandomArgument(pieceInfo.min[1], pieceInfo.max[1])
+                    y = getRandomArgument(pieceInfo.min[2], pieceInfo.max[2])
+                    z = getRandomArgument(pieceInfo.min[3], pieceInfo.max[3])
+                    movePieceToPiece(unitID, randomPixel, cachedPiece, 0, {x=x, y=y, z=z})
                 end
-        end   
+
+            end
+        end
     }
     return effects[math.random(1,#effects)]
 end
@@ -576,7 +607,8 @@ function pixelArt()
         hideTReg(TableOfPiecesGroups["G"])
         hideTReg(TableOfPiecesGroups["B"])
         restVal= math.random(5,15)*1000
-        Sleep(restVal)
+       -- Sleep(restVal)
+       Sleep(150)
     end
 end
 
