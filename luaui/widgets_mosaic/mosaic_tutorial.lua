@@ -46,7 +46,7 @@ local silentPlaceHolder="Placeholder"
 local boolTutorialActive= Spring.GetConfigInt("mosaic_startupcounter", 0) < 1 or boolDebug
 local OperativePropagatorDefID = getDefID("operativepropagator")
 local OperativeInvestigatorDefID = getDefID("operativeinvestigator")
-local raidIconDefID = getDefID("raidicon")
+local raidIconDefID = getDefID("icon_raid")
 local mySide = "No valid side assigned"
 local operativeAssetDefID = getDefID("operativeasset")
 
@@ -258,7 +258,7 @@ general = {
 		time = 3000,
 		text =  "\a|Nimrod \n Orbital Railgun and satellite factory"
 	},
-	[getDefID("raidicon")] = 
+	[getDefID("icon_raid")] = 
 	{	--This is the Raid Interface
 		--Both sides place there teams, the round ends and who aims at who, decides who is stills standing.
 		--Capturing the objective gives your team another member in the next round

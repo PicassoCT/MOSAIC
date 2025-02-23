@@ -61,7 +61,7 @@ local OperativePropagator = Human:New{
 
 		"spycam",
 		"air_copter_scoutlett",			
-		"cybercrimeicon",
+		"icon_cybercrime",
 
 		"air_parachut",
 		"stealvehicleicon",		

@@ -55,11 +55,11 @@ local Hivemind = Building:New{
 	buildoptions = 
 	{
 		"informationpayload",
-		"socialengineeringicon",
-		"blackouticon",
-		"cybercrimeicon",
-		"bribeicon",
-		"ecmicon"
+		"icon_socialengineering",
+		"icon_blackout",
+		"icon_cybercrime",
+		"icon_bribe",
+		"icon_emc"
 	},
 
 	customparams = {
@@ -125,12 +125,12 @@ local AICore = Building:New{
 	category = [[GROUND BUILDING RAIDABLE]],
 	buildoptions = 
 	{		
-		"socialengineeringicon",
+		"icon_socialengineering",
 		"revealdoubleagent",	
-		"hijacksatelliteicon",	
-		"blackouticon",	
-		"bribeicon",
-		"ecmicon"
+		"icon_hijacksatellite",	
+		"icon_blackout",	
+		"icon_bribe",
+		"icon_emc"
 	},
 	
 }

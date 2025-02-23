@@ -279,7 +279,7 @@ function script.Killed(recentDamage, _)
             if name == "informationpayload" then
                 --create social engineering and anarchy
                 for i=1, 3 do 
-                   id=  createUnitAtUnit(gaiaTeamID, "socialengineeringicon", unitID)
+                   id=  createUnitAtUnit(gaiaTeamID, "icon_socialengineering", unitID)
                    Command(id, "go",{x= x + math.random(512,1024)*randSign(), y= y, z= z + math.random(512,1024)*randSign()})
                 end
                 GG.SetGameStateTo = GameConfig.GameState.anarchy -- instigate chaos (add random social engineering)

@@ -767,7 +767,7 @@ function snychronizedSocialEvents(evtID, frame, persPack, startFrame, myID)
     return false, nil, persPack
 end  
 
-
+local metaStuckDetection = {}
 function stuckDetection(evtID, frame, persPack, startFrame, myID, x, y, z)
 
     boolDone = false
@@ -785,14 +785,19 @@ function stuckDetection(evtID, frame, persPack, startFrame, myID, x, y, z)
 
     -- if stuck move towards the next goal
     if persPack.stuckCounter > 7 then
-                Spring.Echo("Help me stepbro im stuck  "..myID.. " at ".. persPack.stuckCounter)
-        if persPack.goalIndex <=  #persPack.goalList then
+        if not metaStuckDetection[myID] then metaStuckDetection[myID] = 0 end
+        metaStuckDetection[myID] = metaStuckDetection[myID] +1
+
+        if persPack.goalIndex <=  #persPack.goalList and metaStuckDetection[myID] < 3 then
             persPack.goalIndex = math.min(persPack.goalIndex + 1, #persPack.goalList)
             persPack = moveToLocation(myID, persPack, {})
             persPack.stuckCounter = 0
+            --Spring.Echo(myID.." :Help me stepbro im stuck and will goto a different place at " .. locationstring(myID))
             return true, frame + math.random(15,35), persPack
         else --reassign new route
+            Spring.Echo(myID.." :Help me stepbro im fucked at " .. locationstring(myID))
             Spring.DestroyUnit(myID, false, true)
+            metaStuckDetection[myID] = nil
             return true, nil, persPack
         end
     end

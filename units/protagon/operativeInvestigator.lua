@@ -65,7 +65,7 @@ local OperativeInvestigator = Human:New{
 
 		"stealvehicleicon",
 		"recruitcivilian",
-		"cybercrimeicon"
+		"icon_cybercrime"
 	},
 
 	customParams = {

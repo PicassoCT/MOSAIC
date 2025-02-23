@@ -19,7 +19,7 @@ local protagonUnits = {
    	"ground_turret_ssied",
 		"air_parachut",
 		"ground_stickybomb",
-		"bribeicon"
+		"icon_bribe"
   },
   operativeinvestigator =
   {

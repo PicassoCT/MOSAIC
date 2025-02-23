@@ -39,13 +39,13 @@ function eatECMcon()
                 if ecmIconTypes[defID] then
                     if Spring.GetUnitTeam(id) ~= myTeamID then
                         name = UnitDefs[defID].name 
-                        if name == "ecmicon" then
+                        if name == "icon_emc" then
                             Spring.DestroyUnit(id, false, true)
                             Spring.DestroyUnit(unitID, false, true)
                             return
                         end
 
-                        if name == "bribeicon" then
+                        if name == "icon_bribe" then
                             Spring.DestroyUnit(id, false, true)
                             GG.Bank:TransferToTeam( 350, myTeam, unitID)
                             return
@@ -93,6 +93,9 @@ function showParticles()
             StartThread(moveParticle,TablesOfPiecesGroups["Data"][dice], distance, 7500*speedfactor)
             Sleep(30)
         end
+        if randChance(5) then
+            spawnCegAtUnit(unitID, "orangematrix", math.random(-10,10), math.random(-10,10), math.random(-10,10))
+        end
     end
 end
 
@@ -117,6 +120,8 @@ function hoverAboveGrounds( distanceToHover, step, boolTurnTowardsGoal)
                         elseif gx > x then
                              x = x +step
                         end
+
+                StartThread(showParticles)
                 onMoveCounter = onMoveCounter + 1
               end
               if math.abs(gz - z) > 10 then
@@ -125,53 +130,35 @@ function hoverAboveGrounds( distanceToHover, step, boolTurnTowardsGoal)
                 elseif gz > z then
                      z = z +step
                 end
-                onMoveCounter = onMoveCounter +1
               end
             end
         else
               onMoveCounter = onMoveCounter-1
         end
 
-        if onMoveCounter > 0 and boolAlreadyStarted == false then
-            boolAlreadyStarted = true
-            StartThread(showParticles)
-        end
 
-        if onMoveCounter <=  0 and boolAlreadyStarted == true then
-            boolAlreadyStarted = false
+        if onMoveCounter <=  0  then
             Signal(SIG_PARTICLE)
             hideT(TablesOfPiecesGroups["Data"])
         end
 
-        if boolTurnTowardsGoal then
-            _,orgRot,_ = Spring.GetUnitRotation(unitID ) 
-            rot = math.atan2(orgx-x, -(orgz-z))
-            rot = mix(rot, orgRot, 0.95)
-            Spring.MoveCtrl.SetRotation(unitID, 0,rot,0)
-        end
-        
+        _,orgRot,_ = Spring.GetUnitRotation(unitID ) 
+        rot = math.atan2(orgx-x, -(orgz-z))
+        rot = mix(rot, orgRot, 0.95)
+        Spring.MoveCtrl.SetRotation(unitID, 0,rot,0)
+
         gh = spGetGroundHeight(x,z)
         Spring.MoveCtrl.SetPosition(unitID, x, math.max(0,gh) + distanceToHover, z)
         Sleep(29)
     end
 end
 
-function particleEmit()
-    Signal(SIG_SFX)
-    SetSignalMask(SIG_SFX)
-    while true do
-        spawnCegAtUnit(unitID, "orangematrix", math.random(-10,10), math.random(-10,10), math.random(-10,10))
-        delay = math.random(250, 10000)
-        Sleep(delay)
-    end
-end
+
 
 function script.StartMoving() 
-    StartThread(particleEmit)
 end
 
 function script.StopMoving() 
-    Signal(SIG_SFX)
 end
 
 function script.Activate() return 1 end

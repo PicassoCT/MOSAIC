@@ -18,7 +18,7 @@ local antagonUnits = {
    	"ground_turret_ssied",
 		"air_parachut",
 		"ground_stickybomb",
-		"bribeicon"
+		"icon_bribe"
   },
 
   operativepropagator =
@@ -27,7 +27,7 @@ local antagonUnits = {
 		"air_parachut",
 		"antagonsafehouse",
 		"air_copter_ssied",	
-		"bribeicon",
+		"icon_bribe",
 		"barricade"
   },
 

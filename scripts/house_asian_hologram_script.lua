@@ -178,7 +178,7 @@ function restartHologram()
         StartThread(butterflyExplosion)
     end
 
-    if randChance(33) then
+    if randChance(10) then
         StartThread(pixelArt)
     end
 end
@@ -598,17 +598,16 @@ end
 
 function pixelArt()
     while true do
-        echo("PixelArt active at"..locationstring(unitID))
+       -- echo("PixelArt active at"..locationstring(unitID))
         pixelEffect = getPixelEffect()
         pixelEffect()
-        restVal= math.random(5,15)*1000
+        restVal= math.random(1,5)*250
         Sleep(restVal)
         hideTReg(TableOfPiecesGroups["R"])
         hideTReg(TableOfPiecesGroups["G"])
         hideTReg(TableOfPiecesGroups["B"])
-        restVal= math.random(5,15)*1000
-       -- Sleep(restVal)
-       Sleep(150)
+        restVal= math.random(1,15)*1000
+       Sleep(restVal)
     end
 end
 

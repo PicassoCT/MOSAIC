@@ -17,7 +17,7 @@ gadget.minBuildRequirementProtagon = {
 	["operativeasset"] = 1,
 	["recruitcivilian"] = 1,
 	["stealvehicleicon"] = 1,
-	["cybercrimeicon"] = 1
+	["icon_cybercrime"] = 1
 }
 
 gadget.minBuildRequirementAntagon = {
@@ -30,7 +30,7 @@ gadget.minBuildRequirementAntagon = {
 	["operativeasset"] = 1,
 	["recruitcivilian"] = 1,
 	["stealvehicleicon"] = 1,
-	["cybercrimeicon"] = 1
+	["icon_cybercrime"] = 1
 }
 
 -- Format: factory = { "unit to build 1", "unit to build 2", ... }
@@ -150,7 +150,7 @@ gadget.baseBuilders = UnitSet{
 gadget.flags = UnitSet{
 	"house_arab0",
 	"house_western0",
-	"raidicon",
+	"icon_raid",
 	"recruitcivilian"
 }
 

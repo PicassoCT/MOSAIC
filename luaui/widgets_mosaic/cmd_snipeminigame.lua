@@ -27,7 +27,7 @@ local oldValues = {x= 0, z = 0}
 function widget:Initialize()
 
     for k, v in pairs(UnitDefs) do
-        if v.name == "raidicon" then
+        if v.name == "icon_raid" then
             raidIconDefID = k
         end
 
@@ -37,7 +37,7 @@ function widget:Initialize()
     end
 
     for k, v in pairs(UnitDefs) do
-        if v.name == "raidicon" then
+        if v.name == "icon_raid" then
             raidIconDefID = k
         end
     end
@@ -64,7 +64,7 @@ end
 local raidIcon
 
 for id, def in pairs(UnitDefs) do
-    if def.name == "raidicon" then
+    if def.name == "icon_raid" then
         raidIcon = id
     end
 end
@@ -84,7 +84,7 @@ function widget:MousePress(x, y, button)
      --Spring.Echo("cmd_snipeminigame:", targType, unitID)
 
     if targType == "unit" then
-        --does not trace down to raidicon - selects house instead.. even with house set to unselect
+        --does not trace down to icon_raid - selects house instead.. even with house set to unselect
         local defID = Spring.GetUnitDefID(unitID) 
 
 		if houseTypeTable[defID] or  defID == raidIconDefID then

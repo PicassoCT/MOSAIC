@@ -69,7 +69,7 @@ effectUnitDefs = {
 	emcion ={
 		{class='Ribbon', options={color={.6,.1,0.2,1}, width=150.5, piece="center", onActive=false}},
 	},
-	blackouticon ={
+	icon_blackout ={
 		{class='Ribbon', options={color={.6,.1,0.2,1}, width=150.5, piece="center", onActive=false}},
 	},
 }

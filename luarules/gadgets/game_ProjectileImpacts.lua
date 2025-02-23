@@ -942,7 +942,7 @@ if (gadgetHandler:IsSyncedCode()) then
                                              damage, paralyzer, weaponDefID,
                                              attackerID, attackerDefID,
                                              attackerTeam, 
-                                             "raidicon", 
+                                             "icon_raid", 
                                              houseID)
             return damage
         end

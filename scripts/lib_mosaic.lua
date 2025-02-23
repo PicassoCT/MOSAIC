@@ -669,21 +669,21 @@ end
     function getECMIconTypes(UnitDefs)
         local UnitDefNames = getUnitDefNames(UnitDefs)
         return {
-            [UnitDefNames["bribeicon"].id] = true,
-            [UnitDefNames["socialengineeringicon"].id] = true,
-            [UnitDefNames["cybercrimeicon"].id] = true,       
+            [UnitDefNames["icon_bribe"].id] = true,
+            [UnitDefNames["icon_socialengineering"].id] = true,
+            [UnitDefNames["icon_cybercrime"].id] = true,       
             [UnitDefNames["deaddropicon"].id] = true,
-            [UnitDefNames["blackouticon"].id] = true,
-            [UnitDefNames["hijacksatelliteicon"].id] = true,
-            [UnitDefNames["ecmicon"].id] = true,
+            [UnitDefNames["icon_blackout"].id] = true,
+            [UnitDefNames["icon_hijacksatellite"].id] = true,
+            [UnitDefNames["icon_emc"].id] = true,
         }
     end      
 
     function getECMSpecialSFXIconTypes(UnitDefs)
         local UnitDefNames = getUnitDefNames(UnitDefs)
         return {
-            [UnitDefNames["ecmicon"].id] = true,
-            [UnitDefNames["bribeicon"].id] = true,
+            [UnitDefNames["icon_emc"].id] = true,
+            [UnitDefNames["icon_bribe"].id] = true,
             
         }
     end  
@@ -691,13 +691,13 @@ end
     function getIconTypes(UnitDefs)
         local UnitDefNames = getUnitDefNames(UnitDefs)
         return {
-            [UnitDefNames["raidicon"].id] = true,
+            [UnitDefNames["icon_raid"].id] = true,
             [UnitDefNames["doubleagent"].id] = true,
             [UnitDefNames["interrogationicon"].id] = true,
             [UnitDefNames["recruitcivilian"].id] = true,
-            [UnitDefNames["bribeicon"].id] = true,
-            [UnitDefNames["socialengineeringicon"].id] = true,
-            [UnitDefNames["cybercrimeicon"].id] = true,
+            [UnitDefNames["icon_bribe"].id] = true,
+            [UnitDefNames["icon_socialengineering"].id] = true,
+            [UnitDefNames["icon_cybercrime"].id] = true,
             [UnitDefNames["launcherstep"].id] = true,
             [UnitDefNames["destroyedobjectiveicon"].id] = true,
             [UnitDefNames["biopayload"].id] = true,
@@ -706,9 +706,9 @@ end
             [UnitDefNames["physicspayload"].id] = true,
             [UnitDefNames["deaddropicon"].id] = true,
             [UnitDefNames["stealvehicleicon"].id] = true,
-            [UnitDefNames["blackouticon"].id] = true,
-            [UnitDefNames["hijacksatelliteicon"].id] = true,
-            [UnitDefNames["ecmicon"].id] = true,
+            [UnitDefNames["icon_blackout"].id] = true,
+            [UnitDefNames["icon_hijacksatellite"].id] = true,
+            [UnitDefNames["icon_emc"].id] = true,
           --[[  [UnitDefNames["advertising_blimp_hologram"].id] = true,           
             [UnitDefNames["house_western_hologram_buisness"].id] = true,           
             [UnitDefNames["house_western_hologram_casino"].id] = true,           
@@ -1773,7 +1773,7 @@ end
                 assert(UnitDefs)
                 GameConfig = getGameConfig()
                 local UnitDefNames = getUnitDefNames(UnitDefs)
-                typeTable = {"raidicon", "snipeicon", "objectiveicon","raidiconbaseplate"}
+                typeTable = {"icon_raid", "snipeicon", "objectiveicon","raidiconbaseplate"}
 
                 return getTypeTable(UnitDefNames, typeTable)
             end
@@ -3139,7 +3139,7 @@ end
 
             function isOffenceIcon(UnitDefs, defID)
                 assert(UnitDefs)
-                return UnitDefs[defID].name == "bribeicon" or UnitDefs[defID].name == "cybercrimeicon"
+                return UnitDefs[defID].name == "icon_bribe" or UnitDefs[defID].name == "icon_cybercrime"
             end
 
             function shiverAllAxis(unitID)

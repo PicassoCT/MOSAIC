@@ -81,7 +81,7 @@ local OperativeAsset = Human:New{
 	buildoptions = {
 		"ground_turret_ssied",
 		"ground_stickybomb",
-		"bribeicon",
+		"icon_bribe",
 		"stealvehicleicon",
 		"air_parachut",
 		"air_copter_scoutlett"

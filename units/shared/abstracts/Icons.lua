@@ -349,7 +349,7 @@ local RaidIcon =
     script = "raidiconscript.lua",
     objectName = "RaidIcon.dae",
     buildPic = "raidicon.png",
-    iconType = "raidicon",
+    iconType = "icon_raid",
     ActivateWhenBuilt = 1,
     onoffable = true,
     activatewhenbuilt = true,
@@ -699,22 +699,22 @@ local CyberCrime =
 return lowerkeys(
     {
         --Temp
-        ["hijacksatelliteicon"] = HiJackSatteliteIcon:New(),
-        ["ecmicon"] = ElectronicCounterMeasureIcon:New(),
+        ["icon_hijacksatellite"] = HiJackSatteliteIcon:New(),
+        ["icon_emc"] = ElectronicCounterMeasureIcon:New(),
         ["revealdoubleagent"] = RevealDoubleAgentsIcon:New(),
         ["doubleagent"] = DoubleAgent:New(),
         ["interrogationicon"] = InterrogationIcon:New(),
         ["stealvehicleicon"] = StealVehicle:New(),
-        ["raidicon"] = RaidIcon:New(),
+        ["icon_raid"] = RaidIcon:New(),
         ["raidiconbaseplate"] = RaidIconBasePlate:New(),
         ["recruitcivilian"] = RecruitCivilian:New(),
         ["snipeicon"] = SnipeIcon:New(),
-        ["bribeicon"] = BribeIcon:New(),
-        ["socialengineeringicon"] = SocialEngineering:New(),
+        ["icon_bribe"] = BribeIcon:New(),
+        ["icon_socialengineering"] = SocialEngineering:New(),
         ["objectiveicon"] = ObjectiveIcon:New(),
-        ["cybercrimeicon"] = CyberCrime:New(),
+        ["icon_cybercrime"] = CyberCrime:New(),
         ["destroyedobjectiveicon"] = DestroyedObjective:New(),
         ["deaddropicon"] = DeadDropIcon:New(),
-        ["blackouticon"] = BlackOutIcon:New()
+        ["icon_blackout"] = BlackOutIcon:New()
     }
 )

@@ -16,7 +16,7 @@ if (gadgetHandler:IsSyncedCode()) then
     VFS.Include("scripts/lib_mosaic.lua")
 
     -- variables
-    local raidIconDefID = UnitDefNames["raidicon"].id
+    local raidIconDefID = UnitDefNames["icon_raid"].id
     local snipeIconDefID = UnitDefNames["snipeicon"].id
     local objectiveDefID = UnitDefNames["objectiveicon"].id
     local allRunningRaidRounds = {}
