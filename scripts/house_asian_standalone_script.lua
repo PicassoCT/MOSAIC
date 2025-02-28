@@ -364,14 +364,30 @@ function lightPost(name, blinkTime)
     end
 end
 
+traverseDistance = 100
+maxSlope = 0.6
+function CanIGetHigh(px, pz)
+    for tx = px, traverseDistance, px - (3*traverseDistance) do
+
+        gh = Spring.GetGroundHeight(tx,pz)
+        if gh >= 0 then return false end
+
+        dx,dy, dz, slope = Spring.GetGroundNormal(tx, pz)
+        if slope < maxSlope then return false end
+
+    end
+    return true
+end
+
 
 function buildBuilding()
     hideAll(unitID)
     Sleep(unitID)
-    if GG.MegaBuildingMax > 7 then 
+    px, py, pz = spGetUnitPosition(unitID)
+    if not CanIGetHigh(px,pz) or GG.MegaBuildingMax > 7 then
         filterArcoProjectTable()
     end
-    px, py, pz = Spring.GetUnitPosition(unitID)
+
     isArcology = (isNearCityCenter(px, pz, GameConfig) or isMapControlledBuildingPlacement()) and getDermenisticChance(unitID, 20)
                     
     hash = getDetermenisticMapHash(Game) + getDeterministicUnitHash(unitID )
