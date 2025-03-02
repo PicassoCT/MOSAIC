@@ -13,7 +13,7 @@ local objective_spaceport_land = Building:New{
 	levelground				= true,
 	FootprintX = 8,
 	FootprintZ = 8,
-	script 					= "objective_spaceportscript.lua",
+	script 				= "objective_spaceportscript.lua",
 	objectName       	= "objective_spaceport.dae",
 
 	
@@ -33,6 +33,13 @@ local objective_spaceport_land = Building:New{
 		helptext			= "Civilian Building",
 		baseclass			= "Building", -- TODO: hacks
     },
+     sfxtypes = {
+				explosiongenerators = {
+					   "custom:volcanolightsmall",--1024
+					   "custom:flames",
+					   "custom:glowsmoke",
+					},
+	},
 	
 	buildoptions = 
 	{

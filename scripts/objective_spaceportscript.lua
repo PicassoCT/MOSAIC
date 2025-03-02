@@ -311,6 +311,13 @@ function UnloadBooster()
     PrepareUnloadBooster()
 end
 
+function lightUpPad(cone, lengthOfTimeMs)
+    for w = 1, lengthOfTimeMs, 300 do
+        EmitSfx(cone,1024)
+        Sleep(300)
+    end
+end
+
 function landBooster(boostNr)
     axis = 2
     local boosterNr = boostNr
@@ -336,12 +343,16 @@ function landBooster(boostNr)
         Move(booster, axis, i, 6000)
         Sleep(1)
         WaitForMoves(booster)
+        if i <= 4000 then
+            showT(plums)
+        end
     end
+    StartThread(lightUpPad, LandCone, 6000)
 
-   val =math.random(300,500)
+    val =math.random(300,500)
     Spin(TableOfPiecesGroups[CrawlerBoosterRingN][boosterNr], y_axis, math.rad(val)*randSign(), 0)
     Spin(TableOfPiecesGroups[CrawlerBoosterGasRingN][boosterNr], y_axis, math.rad(690), 0)
-    showT(plums)
+
   
     Turn(booster, x_axis, math.rad(0), 0.5)
     Turn(booster, y_axis, math.rad(0), 3)

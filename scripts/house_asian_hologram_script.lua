@@ -23,7 +23,7 @@ function clock()
         Sleep(1000)
     end
 end
-
+--rror: [string "scripts/house_asian_hologram_script.lua"]:462: bad argument #1 to 'Spin' (number expected, got nil)
 function updateCheckCache()
   local frame = Spring.GetGameFrame()
   if frame ~= lastFrame then 
@@ -178,7 +178,7 @@ function restartHologram()
         StartThread(butterflyExplosion)
     end
 
-    if randChance(10) then
+    if randChance(10) or GG.GlobalGameState ~= GameConfig.GameState.normal then
         StartThread(pixelArt)
     end
 end
@@ -457,18 +457,20 @@ function deterministiceSetup()
         
         if randChance(75) then
             logoPiece = deterministicElement( getDeterministicRandom(getLocationHash(unitID), #TableOfPiecesGroups["HoloLogo"]), TableOfPiecesGroups["HoloLogo"])
-            showSubSpins(logoPiece)
-            ShowReg(logoPiece)
-            Spin(logoPiece, y_axis, math.rad(1.2)*randSign(), 0)
-            if maRa() then
-                legoPiece, index = getSafeRandom(TableOfPiecesGroups["HoloLogo"])
-                if legoPiece then
-                showSubSpins(legoPiece)
-                ShowReg(legoPiece)
-                Spin(legoPiece, y_axis, math.rad(1.2)*randSign(), 0)
-                else
-                    echo("No HologLogo for "..index)
-                    assert(false)
+            if logoPiece then
+                showSubSpins(logoPiece)
+                ShowReg(logoPiece)
+                Spin(logoPiece, y_axis, math.rad(1.2)*randSign(), 0)
+                if maRa() then
+                    legoPiece, index = getSafeRandom(TableOfPiecesGroups["HoloLogo"])
+                    if legoPiece then
+                    showSubSpins(legoPiece)
+                    ShowReg(legoPiece)
+                    Spin(legoPiece, y_axis, math.rad(1.2)*randSign(), 0)
+                    else
+                        echo("No HologLogo for "..index)
+                        assert(false)
+                    end
                 end
             end
         end

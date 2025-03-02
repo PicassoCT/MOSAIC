@@ -215,32 +215,44 @@ function filterArcoProjectTable()
                     end)
 end
 
+if not GG.MegaBuildingMax then GG.MegaBuildingMax = 0 end
 
-function getPieceIdNameInMap(name)
 
-   
+megaHeightDefinition = 2500
+function fillMegaTable()
+    foreach(TablesOfPieceGroups["Arcology"],
+        function(id)
+            pieceInfo = Spring.GetUnitPieceInfo ( unitID, id) 
+            dim = {
+                x= pieceInfo.max[1] - pieceInfo.min[1],
+                y= pieceInfo.max[1] - pieceInfo.min[1],
+                z= pieceInfo.max[1] - pieceInfo.min[1],
+
+            }
+          --  echo(pieceInfo.name .. " is mega")
+           -- echo(pieceInfo)
+            if pieceInfo.max[3] > megaHeightDefinition then
+                Mega[id] = true
+            end
+        end
+        )
+
+    foreach(TablesOfPieceGroups["Project"],
+        function(id)
+            pieceInfo = Spring.GetUnitPieceInfo ( unitID, id) 
+           -- echo(pieceInfo.name .. " is mega")
+            --echo(pieceInfo)
+            if pieceInfo.max[3] > megaHeightDefinition then
+                Mega[id] = true
+            end
+        end
+        )
 end
+
 local pieceName_pieceNr = Spring.GetUnitPieceMap (unitID)
 function script.Create()
     TablesOfPieceGroups = getPieceTableByNameGroups(false, true)
-    Mega = {
-        [pieceName_pieceNr["Arcology1"]] = true,
-        [pieceName_pieceNr["Arcology2"]] = true,
-        [pieceName_pieceNr["Arcology3"]] = true,
-        [pieceName_pieceNr["Arcology5"]] = true,
-        [pieceName_pieceNr["Arcology7"]] = true,
-        [pieceName_pieceNr["Arcology8"]] = true,
-        [pieceName_pieceNr["Arcology9"]] = true,
-        [pieceName_pieceNr["Arcology10"]] = true,
-        [pieceName_pieceNr["Arcology11"]] = true,
-        [pieceName_pieceNr["Project1"]] = true,
-        [pieceName_pieceNr["Project2"]] = true,
-        [pieceName_pieceNr["Project6"]] = true,
-        [pieceName_pieceNr["Project9"]] = true,
-        [pieceName_pieceNr["Project11"]] = true,
-
-    }
-    if not GG.MegaBuildingMax then GG.MegaBuildingMax = 0 end
+    fillMegaTable()
     ArcoT = TablesOfPieceGroups["Arcology"]
     ProjectT = TablesOfPieceGroups["Project"]
   
@@ -367,15 +379,18 @@ end
 traverseDistance = 100
 maxSlope = 0.6
 function CanIGetHigh(px, pz)
+    boolOptOut = true
     for tx = px, traverseDistance, px - (3*traverseDistance) do
 
         gh = Spring.GetGroundHeight(tx,pz)
-        if gh >= 0 then return false end
+        if gh >= 0 then
+          return false
+        end
 
         dx,dy, dz, slope = Spring.GetGroundNormal(tx, pz)
-        if slope < maxSlope then return false end
-
-    end
+        if slope < maxSlope then 
+            return false end
+        end
     return true
 end
 
@@ -383,7 +398,8 @@ end
 function buildBuilding()
     hideAll(unitID)
     Sleep(unitID)
-    px, py, pz = spGetUnitPosition(unitID)
+    px, py, pz = Spring.GetUnitPosition(unitID)
+    echo("Building "..unitID.." CanIGetHigh ".. toString(CanIGetHigh(px,pz)))
     if not CanIGetHigh(px,pz) or GG.MegaBuildingMax > 7 then
         filterArcoProjectTable()
     end
