@@ -3,12 +3,14 @@ include "lib_OS.lua"
 include "lib_mosaic.lua"
 include "lib_UnitScript.lua"
 
-TablesOfPieceGroups = {}
-myDefID = Spring.GetUnitDefID(unitID)
-GameConfig = getGameConfig()
-factor = 35
-heightoffset = 90   
-rotationOffset = 90
+local TablesOfPieceGroups = {}
+local boolDebug = false
+local myDefID = Spring.GetUnitDefID(unitID)
+local GameConfig = getGameConfig()
+local factor = 35
+local heightoffset = 90   
+local rotationOffset = 90
+local gaiaTeamID = Spring.GetGaiaTeamID()
 local pieceNr_pieceName =Spring.GetUnitPieceList ( unitID ) 
 local pieceName_pieceNr = Spring.GetUnitPieceMap (unitID)
 
@@ -17,7 +19,6 @@ local cubeDim = {
     heigth = factor * 14.44 + heightoffset,
     roofHeigth = 50
 }
-
 
 function setArcologyProjectsName(id, isArcology)
     px, py, pz = Spring.GetUnitPosition(id)
@@ -203,7 +204,7 @@ isArcology = false
 
 
 
-function filterArcoProjectTable()
+function filterOutMegaBuilding()
     ArcoT =  foreach(TablesOfPieceGroups["Arcology"], 
                     function (id)
                         if not Mega[id] then return id end
@@ -218,7 +219,7 @@ end
 if not GG.MegaBuildingMax then GG.MegaBuildingMax = 0 end
 
 
-megaHeightDefinition = 2500
+megaHeightDefinition = 3200
 function fillMegaTable()
     foreach(TablesOfPieceGroups["Arcology"],
         function(id)
@@ -377,21 +378,20 @@ function lightPost(name, blinkTime)
 end
 
 traverseDistance = 100
-maxSlope = 0.6
-function CanIGetHigh(px, pz)
-    boolOptOut = true
-    for tx = px, traverseDistance, px - (3*traverseDistance) do
+maxSlope = 0.1
+function ViewShadowGameRelevant(px, pz)
+    for tz = pz -traverseDistance*2,  pz - (4*traverseDistance),  -traverseDistance  do 
+        gh = Spring.GetGroundHeight(px, tz)
+        dx,dy, dz, slope = Spring.GetGroundNormal(px, tz)
+        if gh and gh > 0 and slope and slope > maxSlope then
+          if boolDebug then  GG.UnitsToSpawn:PushCreateUnit("bad_decal", px, 0, tz, 0, gaiaTeamID) end
+            return true 
+        else
+            if boolDebug then GG.UnitsToSpawn:PushCreateUnit("good_decal", px, 0, tz, 0, gaiaTeamID) end
+        end   
+    end
 
-        gh = Spring.GetGroundHeight(tx,pz)
-        if gh >= 0 then
-          return false
-        end
-
-        dx,dy, dz, slope = Spring.GetGroundNormal(tx, pz)
-        if slope < maxSlope then 
-            return false end
-        end
-    return true
+    return false
 end
 
 
@@ -399,9 +399,9 @@ function buildBuilding()
     hideAll(unitID)
     Sleep(unitID)
     px, py, pz = Spring.GetUnitPosition(unitID)
-    echo("Building "..unitID.." CanIGetHigh ".. toString(CanIGetHigh(px,pz)))
-    if not CanIGetHigh(px,pz) or GG.MegaBuildingMax > 7 then
-        filterArcoProjectTable()
+    echo("Building "..unitID.." ViewShadowGameRelevant ".. toString(ViewShadowGameRelevant(px,pz)))
+    if not ViewShadowGameRelevant(px,pz) or GG.MegaBuildingMax > 7 then
+        filterOutMegaBuilding()
     end
 
     isArcology = (isNearCityCenter(px, pz, GameConfig) or isMapControlledBuildingPlacement()) and getDermenisticChance(unitID, 20)
