@@ -944,7 +944,7 @@ function startRevealedUnitsChatEventStream(idA, idB)
 end
 
 function gossipGenerator(gossipyID, oppossingPartnerID, UnitDefs)
-    Spring.Echo("Running Gossip generator")
+    --Spring.Echo("Running Gossip generator")
     -- Define the subjects, actions, and objects
     questions = {"Why", "Where", "What", "How", "With", "Who"}
     space = " "

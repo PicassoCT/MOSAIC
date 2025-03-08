@@ -795,7 +795,7 @@ function stuckDetection(evtID, frame, persPack, startFrame, myID, x, y, z)
             --Spring.Echo(myID.." :Help me stepbro im stuck and will goto a different place at " .. locationstring(myID))
             return true, frame + math.random(15,35), persPack
         else --reassign new route
-            Spring.Echo(myID.." :Help me stepbro im fucked at " .. locationstring(myID))
+            --Spring.Echo(myID.." :Help me stepbro im fucked at " .. locationstring(myID))
             Spring.DestroyUnit(myID, false, true)
             metaStuckDetection[myID] = nil
             return true, nil, persPack

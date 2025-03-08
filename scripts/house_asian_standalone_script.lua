@@ -219,20 +219,20 @@ end
 if not GG.MegaBuildingMax then GG.MegaBuildingMax = 0 end
 
 
-megaHeightDefinition = 3200
+megaHeightDefinition = 2500
 function fillMegaTable()
     foreach(TablesOfPieceGroups["Arcology"],
         function(id)
             pieceInfo = Spring.GetUnitPieceInfo ( unitID, id) 
             dim = {
                 x= pieceInfo.max[1] - pieceInfo.min[1],
-                y= pieceInfo.max[1] - pieceInfo.min[1],
-                z= pieceInfo.max[1] - pieceInfo.min[1],
+                y= pieceInfo.max[2] - pieceInfo.min[2],
+                z= pieceInfo.max[3] - pieceInfo.min[3],
 
             }
           --  echo(pieceInfo.name .. " is mega")
            -- echo(pieceInfo)
-            if pieceInfo.max[3] > megaHeightDefinition then
+            if dim.z > megaHeightDefinition then
                 Mega[id] = true
             end
         end
@@ -341,11 +341,10 @@ function findLowestPieceInTableFromWithSuggestion(suggestedIndex, Table)
                 GG.GlobalPieceCounterArcology[v] = 0
             end
         end
-  
 
     lowestFoundKey, lowestFoundValue = suggestedPieceId, math.huge
     for k,v in pairs(GG.GlobalPieceCounterArcology ) do
-        if v < lowestFoundValue then
+        if k and v and GG.GlobalPieceCounterArcology[k] and v < lowestFoundValue then
             lowestFoundKey, lowestFoundValue = k, v
         end
     end
@@ -377,21 +376,31 @@ function lightPost(name, blinkTime)
     end
 end
 
-traverseDistance = 100
-maxSlope = 0.1
+traverseDistance = 75
+maxSlope = 0.15
 function ViewShadowGameRelevant(px, pz)
-    for tz = pz -traverseDistance*2,  pz - (4*traverseDistance),  -traverseDistance  do 
+    counter = 0
+    orgHeight = Spring.GetGroundHeight(px,pz)
+    step = -traverseDistance
+    for tz = pz -traverseDistance,  pz - (4*traverseDistance), step  do 
         gh = Spring.GetGroundHeight(px, tz)
         dx,dy, dz, slope = Spring.GetGroundNormal(px, tz)
-        if gh and gh > 0 and slope and slope > maxSlope then
-          if boolDebug then  GG.UnitsToSpawn:PushCreateUnit("bad_decal", px, 0, tz, 0, gaiaTeamID) end
-            return true 
+        --echo(unitID.." at slope: "..slope.. " and gh:"..gh)
+        if orgHeight > gh then
+            step = -125
         else
+            step = -75
+        end
+        if gh and gh > 0 and slope and slope < maxSlope then
+            counter = counter+1
             if boolDebug then GG.UnitsToSpawn:PushCreateUnit("good_decal", px, 0, tz, 0, gaiaTeamID) end
+        else
+            counter = counter-1
+            if boolDebug then GG.UnitsToSpawn:PushCreateUnit("bad_decal", px, 0, tz, 0, gaiaTeamID) end
         end   
     end
 
-    return false
+    return counter  < 0
 end
 
 
@@ -400,7 +409,7 @@ function buildBuilding()
     Sleep(unitID)
     px, py, pz = Spring.GetUnitPosition(unitID)
     echo("Building "..unitID.." ViewShadowGameRelevant ".. toString(ViewShadowGameRelevant(px,pz)))
-    if not ViewShadowGameRelevant(px,pz) or GG.MegaBuildingMax > 7 then
+    if  ViewShadowGameRelevant(px,pz) or GG.MegaBuildingMax > 7 then
         filterOutMegaBuilding()
     end
 
