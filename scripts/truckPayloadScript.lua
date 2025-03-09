@@ -30,10 +30,17 @@ busPieces = {}
 function setPayLoadDescription(payLoadPieceId)
 	pieceID_Content =
 	{
+		pieceID_Content[TablesOfPiecesGroups["container"] [1]]	= "Shipping Container",
+		pieceID_Content[TablesOfPiecesGroups["container"] [2]]	= "Construction site spoil",
+		pieceID_Content[TablesOfPiecesGroups["container"] [3]]	= "TODO",
+		pieceID_Content[TablesOfPiecesGroups["container"] [16]]	= "Concrete Transport",
+
 	}
 
 	for i=1, #TablesOfPiecesGroups["container"] do
-		pieceID_Content[TablesOfPiecesGroups["container"] [i]] = "TODO_DefaultPayloadDescription"
+		if not pieceID_Content[TablesOfPiecesGroups["container"] [i]] then
+			pieceID_Content[TablesOfPiecesGroups["container"] [i]] = "TODO_DefaultPayloadDescription"
+		end
 	end
 
 	payLoad = pieceID_Content[payLoadPieceId]
