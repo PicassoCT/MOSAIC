@@ -26,14 +26,27 @@ boolIsFireTruckOrEMT = false
 displayedPiece = center
 busPieces = {}
 
+function getMeatName(id)
+	meats = {"Seitan", "Cow", "Chicken", "Pig", "Soylentils", "Tofu", "Mystery", }
+	return meats[(id % #meats) +1]
+end
+
+function getStreetName(id)
+	
+end
+
+function getBusName(id)
+	busName = {"Matatu", "Taxi", "Bus", "Greyhound", "Oldsmobile", "Minibus"}
+	return busName[(id % #busName) +1].. " to ".. getStreetName(id)
+end
 
 function setPayLoadDescription(payLoadPieceId)
 	pieceID_Content =
 	{
 		pieceID_Content[TablesOfPiecesGroups["container"] [1]]	= "Shipping Container",
 		pieceID_Content[TablesOfPiecesGroups["container"] [2]]	= "Construction site spoil",
-		pieceID_Content[TablesOfPiecesGroups["container"] [3]]	= "TODO",
-		pieceID_Content[TablesOfPiecesGroups["container"] [16]]	= "Concrete Transport",
+		pieceID_Content[TablesOfPiecesGroups["container"] [3]]	= getMeatName(unitID) + " Meat (certified fresh)",
+		pieceID_Content[TablesOfPiecesGroups["container"] [16]]	= "Concrete Mixer",
 
 	}
 
