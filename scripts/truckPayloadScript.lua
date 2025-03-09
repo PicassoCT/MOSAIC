@@ -27,6 +27,48 @@ displayedPiece = center
 busPieces = {}
 
 
+function setPayLoadDescription(payLoadPieceId)
+	pieceID_Content =
+	{
+	}
+
+	for i=1, #TablesOfPiecesGroups["container"] do
+		pieceID_Content[TablesOfPiecesGroups["container"] [i]] = "TODO_DefaultPayloadDescription"
+	end
+
+	payLoad = pieceID_Content[payLoadPieceId]
+	illegalPayloads =
+	{
+		"Anti-Matter",
+		"Amphetamines",
+		"biotech",
+		"Counterfeit clothing",
+		"Explosives",
+		"Heroin",
+		"Opiates",
+		"Khat",
+		"Information",
+		"Immigrants",
+		"Illicit AI",
+		"Homespun chips",
+		"Neuralnetwork pearls",
+		"BackUps",
+		"Mercenaries",
+		"Infiltration teams",
+		"Sexworkers",
+		"Open source software",
+		"Neophytes",
+		"Weapons",
+		"Uranium",
+		"Refugees"
+	}
+
+	if unitID % 3 == 0 then
+		payLoad = payLoad .. " smuggling: ["..illegalPayloads[(unitID % #illegalPayloads) + 1] .." ]"
+	end
+	Spring.SetUnitTooltip(unitID, payload)
+end
+
 function script.Create()
     -- generatepiecesTableAndArrayCode(unitID)
     Spring.SetUnitNeutral(unitID,true)
@@ -55,6 +97,7 @@ function script.Create()
         end
     else
       displayedPiece =  showOnePiece(TablesOfPiecesGroups["container"])
+      setPayLoadDescription(displayedPiece)
 	  if (displayedPiece == fireTruck or displayedPiece == EMT) then StartThread(FireTruckEmergencyBehaviour) end
 	  if displayedPiece == GarbageTruck then StartThread(GarbageTruckBehaviour) end
 	  if busPieces[displayedPiece] then
