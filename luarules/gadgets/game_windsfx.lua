@@ -28,7 +28,7 @@ local windLimit = Game.windMax*0.75
 function getRandomPiece(unitID)
         assertNum(unitID)
         list = spGetUnitPieceList(unitID) 
-        return  math.random(1,#list)
+        if list then return  math.random(1,#list) else return nil end
 end
 local smokeSwirls = {}
 local boolAnySmokeSwirlActive = true

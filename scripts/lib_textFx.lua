@@ -544,6 +544,8 @@ end
 function splineShapeFollowing(allLetters, posLetters)
     times= 15000
     control_points = getShapeByMessage(message)
+    positions = generate_spline_positions(message, control_points, 5000)
+   -- echo("Positions: Spline", positions)
     while times > 0 do
         positions = generate_spline_positions(message, control_points, 5000)
         index = 0
@@ -551,10 +553,10 @@ function splineShapeFollowing(allLetters, posLetters)
             function(pID)
                 index = index +1
                 ShowReg(pID)
-                Move(pID,x_axis, positions[(index% #positions) + 1].x * sizeSpacingLetter, 0)
-                Move(pID,z_axis, positions[(index % #positions) + 1].z * sizeSpacingLetter, 0)
+                Move(pID,x_axis, positions[(index% #positions) + 1].x/1000 * sizeSpacingLetter, 0)
+                Move(pID,z_axis, positions[(index % #positions) + 1].z/1000 * sizeSpacingLetter, 0)
                 if positions[(index % #positions) + 1].y then
-                    Move(pID, y_axis, positions[(index % #positions) + 1].y * sizeSpacingLetter, 0)
+                    Move(pID, y_axis, positions[(index % #positions) + 1].y/1000 * sizeSpacingLetter, 0)
                 end
             end) 
         Sleep(250)

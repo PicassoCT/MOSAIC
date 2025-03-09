@@ -5532,6 +5532,9 @@ end
 -- > Play a soundfile only by unittype
 function PlaySoundByUnitDefID(unitdef, soundfile, loudness, Time,
                               nrOfUnitsParallel, predelay)
+    assert(unitdef)
+    assert(nrOfUnitsParallel)
+
     if not unitdef then return false end
     if predelay and predelay > 0 then Sleep(predelay) end
 

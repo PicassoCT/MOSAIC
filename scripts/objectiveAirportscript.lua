@@ -140,6 +140,7 @@ end
 
 function comingAndGoing()
     while true do
+        while GG.GlobalGameState == GameConfig.GameState.normal do
         repeat 
             if not GG.AirPortSemaphore then GG.AirPortSemaphore = unitID end
             Sleep(3000)
@@ -153,6 +154,8 @@ function comingAndGoing()
         ferryingGoods()
         departure()
         GG.AirPortSemaphore = nil
+        end
+        Sleep(5000)
     end
 end
 

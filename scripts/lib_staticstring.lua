@@ -515,9 +515,10 @@ function HouseDescriptor(id, hash,UnitDefs, buisnessNamesTable)
         "AutoFabricated Housing",
         "Restorated Building",
         "Retro Reprint",
-	"Social Hoising",
-	"TerraFoam",
-	"Abandoned Investment"
+	    "Social Housing",
+	    "TerraFoam",
+	    "Abandoned Investment",
+        "Leashold"
     }
     
     return blockType[(hash % #blockType) +1]
