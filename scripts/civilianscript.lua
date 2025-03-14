@@ -1006,6 +1006,21 @@ local locBoolInstantOverride
 local locConditionFunction
 local boolStartThread = false
 
+function attachToTruckNearby()
+    T = foreach(getAllNearUnit(unitID, 100),
+                        function(id)
+                            if TruckTypeTable[spGetUnitDefID(id)] then
+                                return id
+                            end
+                        end
+                        )
+                if T and #T > 0 then
+                    assert(T[1])
+                    assert(type(T[1])=="number")
+                    Spring.UnitAttach (T[1], unitID, getPieceNrByName(T[1], "attachPoint") )
+                end
+    end
+
 
 function tacticalAnarchy()
 
@@ -1076,33 +1091,21 @@ normalBehavourStateMachine = {
                 StartThread(attachLoot)
             end
 
-            bodyConfig.boolArmed = (math.random(1, 100) >
-                                       GameConfig.chanceCivilianArmsItselfInHundred)
+            bodyConfig.boolArmed = (math.random(1, 100) > GameConfig.chanceCivilianArmsItselfInHundred)
                 Hide(ShoppingBag)
                 Hide(Handbag)
                 Hide(cofee)
-            if bodyConfig.boolArmed == true and maRa() then
+            if bodyConfig.boolArmed == true then
                 Show(myGun)
                 Show(MilitiaMask)
-                T = foreach(getAllNearUnit(unitID, 100),
-                        function(id)
-                            if TruckTypeTable[spGetUnitDefID(id)] then
-                                return id
-                            end
-                        end
-                        )
-                if T and #T > 0 then
-                    assert(T[1])
-                    assert(type(T[1])=="number")
-                    Spring.UnitAttach (T[1], unitID, getPieceNrByName(T[1], "attachPoint") )
+                if maRa()  then
+                    attachToTruckNearby()
                 end
             else
                 bodyConfig.boolProtest = (math.random(1, 10) > 5)
                 if bodyConfig.boolProtest == true then
                     playerName = getRandomPlayerName()
-                    makeProtestSign(8, 3, 34, 62, signMessages[math.random(1,
-                                                                           #signMessages)],
-                                    playerName)
+                    makeProtestSign(8, 3, 34, 62, signMessages[math.random(1,#signMessages)],playerName)
                     Show(MilitiaMask)
                     Show(molotow)
                     setOverrideAnimationState(eAnimState.protest, eAnimState.walking, false)

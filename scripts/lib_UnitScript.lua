@@ -2643,6 +2643,10 @@ function count(T)
     return index
 end
 
+function safeIndex(index, tables)
+    return (index % #tables)+1
+end
+
 function getNthElementT(T, nth)
     local index = 0
     for k, v in pairs(T) do
