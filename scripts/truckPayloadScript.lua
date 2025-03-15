@@ -128,6 +128,8 @@ function setPayLoadDescription(payLoadPieceId)
 		end
 	end
 
+	if not pieceID_Content[payLoadPieceId] then echo("No payload defined for :" ..toString(getPieceName(unitID, payLoadPieceId))); return "Error" end
+
 	payLoad = pieceID_Content[payLoadPieceId]
 	illegalPayloads =
 	{

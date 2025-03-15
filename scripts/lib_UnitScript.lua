@@ -521,6 +521,11 @@ function getRoot(unitID)
     end
 end
 
+function getPieceName(unitID, pieceID)
+        pieceInfo = Spring.GetUnitPieceInfo(unitID, pieceID)
+        return pieceInfo.name
+end
+
 function removeFeaturesInCircle(px, pz, radius)
     foreach(Spring.GetFeaturesInCylinder(px,pz, radius),
         function(id)

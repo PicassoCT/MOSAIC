@@ -334,7 +334,7 @@ end
 
 function findLowestPieceInTableFromWithSuggestion(suggestedIndex, Table)
     suggestedPieceId =  Table[suggestedIndex]
-    assert(suggestedPieceId, suggestedIndex)
+    
     if not GG.GlobalPieceCounterArcology then  GG.GlobalPieceCounterArcology = {} end
         
         for k,v in pairs(Table) do
@@ -417,17 +417,20 @@ function buildBuilding()
 
     isArcology = (isNearCityCenter(px, pz, GameConfig) or isMapControlledBuildingPlacement()) and getDermenisticChance(unitID, 20)
                     
-    hash = getDetermenisticMapHash(Game) + getDeterministicUnitHash(unitID )
+    unitHash = getDeterministicUnitHash(unitID )
+    mapHash = getDetermenisticMapHash(Game)
+    echo("Standalone hash"..toString(unitHash).. "/ "..toString(mapHash))
+    hash = math.ceil(unitHash + mapHash)
     isDualProjectOrMix = randChance(10)
     if isArcology  then
-        pieceToShow = findLowestPieceInTableFromWithSuggestion( (math.ceil(hash) % #ArcoT) + 1, ArcoT)
+        pieceToShow = findLowestPieceInTableFromWithSuggestion( (hash % count(ArcoT)) + 1, ArcoT)
         if Mega[pieceToShow] then     GG.MegaBuildingMax = GG.MegaBuildingMax  +1 end
         Show(pieceToShow)
         addToShowTable(pieceToShow)
         showTSubSpins(pieceToShow, TablesOfPieceGroups)
         pieceToShowLightBlink(pieceToShow)
     else
-        pieceToShow = findLowestPieceInTableFromWithSuggestion((math.ceil(hash) % #ProjectT) + 1, ProjectT)
+        pieceToShow = findLowestPieceInTableFromWithSuggestion((hash % count(ProjectT)) + 1, ProjectT)
         if Mega[pieceToShow] then     GG.MegaBuildingMax = GG.MegaBuildingMax  +1 end
         Show(pieceToShow)
         addToShowTable(pieceToShow)
@@ -435,7 +438,7 @@ function buildBuilding()
         pieceToShowLightBlink(pieceToShow)
     end
     if isDualProjectOrMix then
-        pieceToShow = findLowestPieceInTableFromWithSuggestion((math.ceil(hash + unitID) % #ProjectT) + 1 , ProjectT)
+        pieceToShow = findLowestPieceInTableFromWithSuggestion((hash  % count(ProjectT)) + 1 , ProjectT)
         
         if not Mega[pieceToShow] then
             showTSubSpins(pieceToShow, TablesOfPieceGroups)
