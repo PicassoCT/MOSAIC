@@ -16,7 +16,7 @@ local pieceName_pieceNr = Spring.GetUnitPieceMap (unitID)
 
 local cubeDim = {
     length = factor * 22,
-    heigth = factor * 14.44 + heightoffset,
+z    heigth = factor * 14.44 + heightoffset,
     roofHeigth = 50
 }
 
@@ -333,15 +333,15 @@ function addGroundPlaceables()
 end
 
 function findLowestPieceInTableFromWithSuggestion(suggestedIndex, Table)
-    suggestedPieceId =  Table[suggestedIndex]
-    
+    suggestedPieceId =  Table[suggestedIndex] or Table[math.random(1,#Table)]
+    assert(suggestedPieceId)
     if not GG.GlobalPieceCounterArcology then  GG.GlobalPieceCounterArcology = {} end
         
-        for k,v in pairs(Table) do
-            if not  GG.GlobalPieceCounterArcology[v] then
-                GG.GlobalPieceCounterArcology[v] = 0
-            end
+    for k,v in pairs(Table) do
+        if not  GG.GlobalPieceCounterArcology[v] then
+           GG.GlobalPieceCounterArcology[v] = 0
         end
+    end
 
     lowestFoundKey, lowestFoundValue = suggestedPieceId, math.huge
     for k,v in pairs(GG.GlobalPieceCounterArcology ) do
@@ -349,7 +349,7 @@ function findLowestPieceInTableFromWithSuggestion(suggestedIndex, Table)
             lowestFoundKey, lowestFoundValue = k, v
         end
     end
-
+    assert(GG.GlobalPieceCounterArcology[lowestFoundKey])
     GG.GlobalPieceCounterArcology[lowestFoundKey] = GG.GlobalPieceCounterArcology[lowestFoundKey] +1
     return lowestFoundKey
 end
