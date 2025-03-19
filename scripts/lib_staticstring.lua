@@ -508,6 +508,7 @@ function HouseDescriptor(id, hash,UnitDefs, buisnessNamesTable)
         "Housing Block",
         "PreWar House",
         "Breshnevka",        
+        "Khrushovka",
         "Belle Epoche Building",
         "Oligarchy Era House",
         "PreCollapse House",
@@ -518,7 +519,12 @@ function HouseDescriptor(id, hash,UnitDefs, buisnessNamesTable)
 	    "Social Housing",
 	    "TerraFoam",
 	    "Abandoned Investment",
-        "Leashold"
+        "Leasehold",
+        "Privat Property",
+        "[Data Entry Removed]",
+        "[GovDB]ResidenceLookUp failed: No such Building",
+        "PreFlood Replica",
+        "Prefabricated Housing"
     }
     
     return blockType[(hash % #blockType) +1]
