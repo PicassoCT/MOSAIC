@@ -884,26 +884,30 @@ function travellFunction(evtID, frame, persPack, startFrame)
     --  only apply if Unit is still alive
     local myID = persPack.unitID
 
+
     boolDone, retFrame, persPack, x,y,z, hp = travelInitialization(evtID, frame, persPack, startFrame, myID)
-    if boolDone == true then return retFrame,persPack end
-
-    boolDone, retFrame, persPack = unitInternalLogic(evtID, frame, persPack, startFrame, myID)
-    if boolDone == true then return retFrame,persPack end
-
-   boolDone, retFrame, persPack = snychronizedSocialEvents(evtID, frame, persPack, startFrame, myID)
-    if boolDone == true then return retFrame,persPack end    
-
-    boolDone, retFrame, persPack = sozialize(evtID, frame, persPack, startFrame, myID)
     if boolDone == true then return retFrame,persPack end
 
     boolDone, retFrame, persPack = stuckDetection(evtID, frame, persPack, startFrame, myID, x, y, z)
     if boolDone == true then return retFrame,persPack end
 
-    if GG.GlobalGameState ~= GameConfig.GameState.normal or persPack.boolTraumatized then
-        boolDone, retFrame, persPack = travelInWarTimes(evtID, frame, persPack, startFrame, myID)
+    boolDone, retFrame, persPack = unitInternalLogic(evtID, frame, persPack, startFrame, myID)
+    if boolDone == true then return retFrame,persPack end
+
+
+    if GG.GlobalGameState == GameConfig.GameState.normal and not persPack.boolTraumatized then
+
+        boolDone, retFrame, persPack = snychronizedSocialEvents(evtID, frame, persPack, startFrame, myID)
+        if boolDone == true then return retFrame,persPack end    
+
+        boolDone, retFrame, persPack = sozialize(evtID, frame, persPack, startFrame, myID)
         if boolDone == true then return retFrame,persPack end
-    else
+
         boolDone, retFrame, persPack = travelInPeaceTimes(evtID, frame, persPack, startFrame, myID)
+        if boolDone == true then return retFrame,persPack end
+
+    else
+        boolDone, retFrame, persPack = travelInWarTimes(evtID, frame, persPack, startFrame, myID)
         if boolDone == true then return retFrame,persPack end
     end
 

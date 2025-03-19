@@ -16,7 +16,7 @@ local pieceName_pieceNr = Spring.GetUnitPieceMap (unitID)
 
 local cubeDim = {
     length = factor * 22,
-    heigth = factor * 14.44 + heightoffset,
+z    heigth = factor * 14.44 + heightoffset,
     roofHeigth = 50
 }
 
@@ -333,21 +333,23 @@ function addGroundPlaceables()
 end
 
 function findLowestPieceInTableFromWithSuggestion(suggestedIndex, Table)
-    suggestedPieceId =  Table[suggestedIndex]
+    suggestedPieceId =  Table[suggestedIndex] or Table[math.random(1,#Table)]
+    assert(suggestedPieceId)
     if not GG.GlobalPieceCounterArcology then  GG.GlobalPieceCounterArcology = {} end
         
-        for k,v in pairs(Table) do
-            if not  GG.GlobalPieceCounterArcology[v] then
-                GG.GlobalPieceCounterArcology[v] = 0
-            end
+    for k,v in pairs(Table) do
+        if not  GG.GlobalPieceCounterArcology[v] then
+           GG.GlobalPieceCounterArcology[v] = 0
         end
+    end
 
     lowestFoundKey, lowestFoundValue = suggestedPieceId, math.huge
     for k,v in pairs(GG.GlobalPieceCounterArcology ) do
-        if k and v and GG.GlobalPieceCounterArcology[k] and v < lowestFoundValue then
+        if k and v and GG.GlobalPieceCounterArcology[k] and v < lowestFoundValue then --TODO fix me
             lowestFoundKey, lowestFoundValue = k, v
         end
     end
+    assert(GG.GlobalPieceCounterArcology[lowestFoundKey])
     GG.GlobalPieceCounterArcology[lowestFoundKey] = GG.GlobalPieceCounterArcology[lowestFoundKey] +1
     return lowestFoundKey
 end
@@ -415,17 +417,20 @@ function buildBuilding()
 
     isArcology = (isNearCityCenter(px, pz, GameConfig) or isMapControlledBuildingPlacement()) and getDermenisticChance(unitID, 20)
                     
-    hash = getDetermenisticMapHash(Game) + getDeterministicUnitHash(unitID )
+    unitHash = getDeterministicUnitHash(unitID )
+    mapHash = getDetermenisticMapHash(Game)
+    echo("Standalone hash"..toString(unitHash).. "/ "..toString(mapHash))
+    hash = math.ceil(unitHash + mapHash)
     isDualProjectOrMix = randChance(10)
     if isArcology  then
-        pieceToShow = findLowestPieceInTableFromWithSuggestion(hash, ArcoT)
+        pieceToShow = findLowestPieceInTableFromWithSuggestion( (hash % count(ArcoT)) + 1, ArcoT)
         if Mega[pieceToShow] then     GG.MegaBuildingMax = GG.MegaBuildingMax  +1 end
         Show(pieceToShow)
         addToShowTable(pieceToShow)
         showTSubSpins(pieceToShow, TablesOfPieceGroups)
         pieceToShowLightBlink(pieceToShow)
     else
-        pieceToShow = findLowestPieceInTableFromWithSuggestion(hash, ProjectT)
+        pieceToShow = findLowestPieceInTableFromWithSuggestion((hash % count(ProjectT)) + 1, ProjectT)
         if Mega[pieceToShow] then     GG.MegaBuildingMax = GG.MegaBuildingMax  +1 end
         Show(pieceToShow)
         addToShowTable(pieceToShow)
@@ -433,7 +438,7 @@ function buildBuilding()
         pieceToShowLightBlink(pieceToShow)
     end
     if isDualProjectOrMix then
-        pieceToShow = findLowestPieceInTableFromWithSuggestion(hash+ unitID, ProjectT)
+        pieceToShow = findLowestPieceInTableFromWithSuggestion((hash  % count(ProjectT)) + 1 , ProjectT)
         
         if not Mega[pieceToShow] then
             showTSubSpins(pieceToShow, TablesOfPieceGroups)

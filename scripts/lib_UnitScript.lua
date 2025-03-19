@@ -521,6 +521,11 @@ function getRoot(unitID)
     end
 end
 
+function getPieceName(unitID, pieceID)
+        pieceInfo = Spring.GetUnitPieceInfo(unitID, pieceID)
+        return pieceInfo.name
+end
+
 function removeFeaturesInCircle(px, pz, radius)
     foreach(Spring.GetFeaturesInCylinder(px,pz, radius),
         function(id)
@@ -2641,6 +2646,10 @@ function count(T)
     local index = 0
     for k, v in pairs(T) do if v then index = index + 1 end end
     return index
+end
+
+function safeIndex(index, tables)
+    return (index % #tables)+1
 end
 
 function getNthElementT(T, nth)
