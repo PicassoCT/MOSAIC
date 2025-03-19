@@ -13,10 +13,16 @@ local rotationOffset = 90
 local gaiaTeamID = Spring.GetGaiaTeamID()
 local pieceNr_pieceName =Spring.GetUnitPieceList ( unitID ) 
 local pieceName_pieceNr = Spring.GetUnitPieceMap (unitID)
-
+local pieceToShow = nil
+local toShowDict = {}
+local ToShowTable = {}
+local ArcoT= {}
+local ProjectT = {}
+local Mega = {}
+local isArcology = false
 local cubeDim = {
     length = factor * 22,
-z    heigth = factor * 14.44 + heightoffset,
+    heigth = factor * 14.44 + heightoffset,
     roofHeigth = 50
 }
 
@@ -188,21 +194,17 @@ function setArcologyProjectsName(id, isArcology)
 end
 
 
-pieceToShow = nil
-toShowDict = {}
-ToShowTable = {}
 
 function addToShowTable(element)
     ToShowTable[#ToShowTable + 1] = element
     toShowDict[element] = true
 end
 
-ArcoT= {}
-ProjectT = {}
-Mega = {}
-isArcology = false
 
-
+function initilization()
+    ArcoT =  TablesOfPieceGroups["Arcology"]
+    ProjectT =  TablesOfPieceGroups["Project"]
+end
 
 function filterOutMegaBuilding()
     ArcoT =  foreach(TablesOfPieceGroups["Arcology"], 
@@ -333,7 +335,7 @@ function addGroundPlaceables()
 end
 
 function findLowestPieceInTableFromWithSuggestion(suggestedIndex, Table)
-    suggestedPieceId =  Table[suggestedIndex] or Table[math.random(1,#Table)]
+    suggestedPieceId =  Table[suggestedIndex] 
     assert(suggestedPieceId)
     if not GG.GlobalPieceCounterArcology then  GG.GlobalPieceCounterArcology = {} end
         
@@ -349,8 +351,9 @@ function findLowestPieceInTableFromWithSuggestion(suggestedIndex, Table)
             lowestFoundKey, lowestFoundValue = k, v
         end
     end
-    assert(GG.GlobalPieceCounterArcology[lowestFoundKey])
+
     GG.GlobalPieceCounterArcology[lowestFoundKey] = GG.GlobalPieceCounterArcology[lowestFoundKey] +1
+    assert(lowestFoundKey)
     return lowestFoundKey
 end
 
@@ -409,6 +412,7 @@ end
 function buildBuilding()
     hideAll(unitID)
     Sleep(unitID)
+    initilization()
     px, py, pz = Spring.GetUnitPosition(unitID)
     echo("Building "..unitID.." ViewShadowGameRelevant ".. toString(ViewShadowGameRelevant(px,pz)))
     if  ViewShadowGameRelevant(px,pz) or GG.MegaBuildingMax > 7 then
