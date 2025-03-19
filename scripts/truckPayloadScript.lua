@@ -131,7 +131,7 @@ function setPayLoadDescription(payLoadPieceId)
 	if not pieceID_Content[payLoadPieceId] then echo("No payload defined for :" ..toString(getPieceName(unitID, payLoadPieceId))); return "Error" end
 
 	payLoad = pieceID_Content[payLoadPieceId]
-	assert(payLoad)
+	assert(payLoad, payLoadPieceId)
 	illegalPayloads =
 	{
 		"Anti-Matter",
@@ -157,12 +157,12 @@ function setPayLoadDescription(payLoadPieceId)
 		"Uranium",
 		"Refugees"
 	}
-        assert(payLoad)
+	assert(illegalPayloads[(unitID % #illegalPayloads) + 1] )
 	if unitID % 3 == 0 then
 		payLoad = payLoad .. " smuggling: ["..illegalPayloads[(unitID % #illegalPayloads) + 1] .." ]"
 	end
-	assert(payLoad)
-	Spring.SetUnitTooltip(unitID, payload)
+
+	Spring.SetUnitTooltip(unitID, payLoad)
 	return payLoad
 end
 

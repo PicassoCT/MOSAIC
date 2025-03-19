@@ -146,6 +146,7 @@ function getGameConfig()
         numberOfPersons = math.ceil(75 * GG.unitFactor),
         nightCivilianReductionFactor = 0.125,
         anarchyCarReductionFactor = 0.25,
+        MegaBuildingMax= 12,
 
         LoadDistributionMax = 5,
 

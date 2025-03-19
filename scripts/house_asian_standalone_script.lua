@@ -335,25 +335,25 @@ function addGroundPlaceables()
 end
 
 function findLowestPieceInTableFromWithSuggestion(suggestedIndex, Table)
-    suggestedPieceId =  Table[suggestedIndex] 
-    assert(suggestedPieceId)
-    if not GG.GlobalPieceCounterArcology then  GG.GlobalPieceCounterArcology = {} end
-        
+
+    if not GG.GlobalPieceCounterArcology then GG.GlobalPieceCounterArcology = {} end
+    suggestedPiece =  getNthDictElement(Table, suggestedIndex)
+
     for k,v in pairs(Table) do
         if not  GG.GlobalPieceCounterArcology[v] then
            GG.GlobalPieceCounterArcology[v] = 0
         end
     end
 
-    lowestFoundKey, lowestFoundValue = suggestedPieceId, math.huge
+    lowestFoundKey, lowestFoundValue = suggestedPiece, math.huge
     for k,v in pairs(GG.GlobalPieceCounterArcology ) do
         if k and v and GG.GlobalPieceCounterArcology[k] and v < lowestFoundValue then --TODO fix me
             lowestFoundKey, lowestFoundValue = k, v
         end
     end
-
+    if not GG.GlobalPieceCounterArcology[lowestFoundKey] then GG.GlobalPieceCounterArcology[lowestFoundKey] = 0 end
     GG.GlobalPieceCounterArcology[lowestFoundKey] = GG.GlobalPieceCounterArcology[lowestFoundKey] +1
-    assert(lowestFoundKey)
+
     return lowestFoundKey
 end
 
@@ -415,7 +415,7 @@ function buildBuilding()
     initilization()
     px, py, pz = Spring.GetUnitPosition(unitID)
     echo("Building "..unitID.." ViewShadowGameRelevant ".. toString(ViewShadowGameRelevant(px,pz)))
-    if  ViewShadowGameRelevant(px,pz) or GG.MegaBuildingMax > 7 then
+    if  ViewShadowGameRelevant(px,pz) or GG.MegaBuildingMax > GameConfig.MegaBuildingMax then
         filterOutMegaBuilding()
     end
 
