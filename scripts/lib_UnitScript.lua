@@ -4531,7 +4531,7 @@ end
 function getDeterministicUnitHash(unitID )
     defID = Spring.GetUnitDefID(unitID)
     x,y,z = Spring.GetUnitPosition(unitID)
-    return (x - y) + defID
+    return math.ceil(x) + math.ceil(y) + math.ceil(z) + defID
 end
 
 

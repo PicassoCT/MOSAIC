@@ -826,10 +826,10 @@ function filmingLocation()
 end
 
 function throwArmsUp()
-    valr = math.random(70,100)
-    vall = math.random(70,100)
-    Turn(UpArm1, x_axis, math.rad(valr), 50)
-    Turn(UpArm2, x_axis, math.rad(vall), 50)
+    valr = math.random(80,115)
+    vall = math.random(80,115)*-1
+    Turn(UpArm1, z_axis, math.rad(valr), 50)
+    Turn(UpArm2, z_axis, math.rad(vall), 50)
 end
 
 function fleeEnemy(enemyID)

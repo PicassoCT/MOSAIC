@@ -384,189 +384,6 @@ function getSpiral()
     return helix_points
 end
 
-function getRandomShapeByMessageHash(hash)
-        allShapes = -- TODO switch to beziercurves 
-
-        { 
-            {-- arrow
-                {x = 0,    y =  0 },
-                {x = 0,    y =  1},
-                {x = 1,    y =  1},
-                {x = 0,    y =  1},
-                {x = -0.5, y =  0.5},
-                {x = 0,    y =  0}
-            },
-            --rectangle
-            {
-                   {x = -1, y =  1}, 
-                   {x = 1,  y =  1}, 
-                   {x = 1,  y =  -1}, 
-                   {x = -1, y =  -1}, 
-                   {x = -1, y =  1}, 
-            },
-            --  starshaped
-            {
-                {x = 0, y = -1},    
-                {x = 0.38, y = -0.38},    
-                {x = 1.0, y = 0},     
-                {x = 0.38, y = 0.38},     
-                {x = 0, y = 1.0},    
-                {x = -0.38, y = 0.38},   
-                {x = -1.0, y = 0},   
-                {x = -0.38, y = -0.38},  
-                {x = 0, y = -1} 
-            },
-            -- zigzag wave
-            {
-                {x = 0, y = 0}, 
-                {x = 1, y = 1}, 
-                {x = -1, y = 2}, 
-                {x = 1, y = 3}, 
-                {x = -1, y = 4}, 
-                {x = 1, y = 5}, 
-            }, -- heartshaped
-            {
-                {x = 0, y = -100/100},  
-                {x = 50/100, y = -50/100},    
-                {x = 100/100, y = 0},     
-                {x = 50/100, y = 75/100},     
-                {x = 0, y = 100/100},    
-                {x = -50/100, y = 75/100},    
-                {x = -100/100, y = 0},    
-                {x = -50/100, y = -50/100},   
-                {x = 0, y = -100/100}     
-            }, -- wine glass shaped
-            {
-                {x = 0.5000, y = 0.0000},   -- Top center of the bowl
-                {x = 0.9167, y = 0.1000},   -- Right curve of the bowl
-                {x = 1.0000, y = 0.2500},   -- Bottom right of the bowl
-                {x = 0.6667, y = 0.5000},   -- Neck of the glass (narrowing point)
-                {x = 0.6667, y = 0.7500},   -- Start of the stem (right side)
-                {x = 0.5833, y = 1.0000},   -- Bottom of the stem (right side)
-                {x = 0.4167, y = 1.0000},   -- Bottom of the stem (left side)
-                {x = 0.3333, y = 0.7500},   -- Start of the stem (left side)
-                {x = 0.3333, y = 0.5000},   -- Neck of the glass (left side)
-                {x = 0.0000, y = 0.2500},   -- Bottom left of the bowl
-                {x = 0.0833, y = 0.1000},   -- Left curve of the bowl
-                {x = 0.5000, y = 0.0000}   
-            }
-    }
-    
-    -- add spiral shape
-    local spiral_points = {}
-    local num_turns = 5     -- Number of loops
-    local step = 0.1        -- Angular step size
-
-    for theta = 0, num_turns * math.pi * 2, step do
-        local r = 10 + 5 * theta  -- Adjust the coefficients to change the shape
-        local x = r * math.cos(theta)
-        local y = r * math.sin(theta)
-        table.insert(spiral_points, {x = x, y = y})
-    end
-
-    allShapes[#allShapes +1] = spiral_points
-    
-    -- add infinity point
-    local infinity_points = {}
-    local a = 50          -- Controls the size of the loops
-    local step = 0.1      -- Angular step size
-
-    for t = -math.pi, math.pi, step do
-        local x = a * math.sin(t)
-        local y = a * math.sin(t) * math.cos(t)
-        table.insert(infinity_points, {x = x, y = y})
-    end
-
-    allShapes[#allShapes + 1] = getSpiral()
-
-    return allShapes[(hash % #allShapes) +1]
-end
-
-function getShapeByMessage(message)
-    local factor = math.sqrt(count(message)) * sizeSpacingLetter
-    control_points = getRandomShapeByMessageHash(count(message))
-    
-    for i=1, #control_points do
-        if control_points[i] and control_points.x then
-            control_points[i].x = control_points[i].x * factor
-            control_points[i].y = control_points[i].y * factor
-            if control_points[i].z then
-                control_points[i].z = control_points[i].z * factor
-            end            
-        end
-    end
-
-    return control_points
-end
-
-function catmull_rom_spline(p0, p1, p2, p3, t)
-    local t2 = t * t
-    local t3 = t2 * t
-
-    local a = -0.5 * t3 + t2 - 0.5 * t
-    local b = 1.5 * t3 - 2.5 * t2 + 1.0
-    local c = -1.5 * t3 + 2.0 * t2 + 0.5 * t
-    local d = 0.5 * t3 - 0.5 * t2
-
-    return a * p0 + b * p1 + c * p2 + d * p3
-end
-
-
--- Function to generate interpolated points along the spline
-function generate_spline_positions(message, control_points, timeMs)
-    frame = ((Spring.GetGameFrame() / 30) * 1000) % timeMs
-    num_samples = count(message) + 1
-
-    local positions = {}
-    local num_segments = #control_points - 3  -- Catmull-Rom requires at least 4 points
-    local element = 1/num_samples
-    for i = 1, num_segments do
-        local p0 = control_points[(i%num_segments+1)]
-        local p1 = control_points[((i+1) %num_segments+1)]
-        local p2 = control_points[((i +2)%num_segments+1)]
-        local p3 = control_points[((i+3) %num_segments+1)]
-
-        for j = 0, num_samples do
-            local t = (((element*frame) + j) / num_samples)
-            local x = catmull_rom_spline(p0.x, p1.x, p2.x, p3.x, t)
-            local y = catmull_rom_spline(p0.y, p1.y, p2.y, p3.y, t)
-            local z  = 0
-            if p0.z then
-                z = catmull_rom_spline(p0.z, p1.z, p2.z, p3.z, t)
-            end
-            table.insert(positions, {x = x, y = y, z = z})
-        end
-    end
-
-    return positions
-end
-
-function splineShapeFollowing(allLetters, posLetters)
-    times= 15000
-    control_points = getShapeByMessage(message)
-    positions = generate_spline_positions(message, control_points, 5000)
-   -- echo("Positions: Spline", positions)
-    while times > 0 do
-        positions = generate_spline_positions(message, control_points, 5000)
-        index = 0
-        foreach(allLetters,
-            function(pID)
-                index = index +1
-                ShowReg(pID)
-                Move(pID,x_axis, positions[(index% #positions) + 1].x/1000 * sizeSpacingLetter, 0)
-                Move(pID,z_axis, positions[(index % #positions) + 1].z/1000 * sizeSpacingLetter, 0)
-                if positions[(index % #positions) + 1].y then
-                    Move(pID, y_axis, positions[(index % #positions) + 1].y/1000 * sizeSpacingLetter, 0)
-                end
-            end) 
-        Sleep(250)
-        times= times -250
-    end  
-    hideResetAllLetters()    
-end
-
-
-
 function cubeProject(allLetters, posLetters)
     cubeSize  = #allLetters*0.5
     index = 1
@@ -755,27 +572,27 @@ end
 
 function getAllTextFx()
 return {
-        --["SinusLetter"]   = SinusLetter, 
-        --["CrossLetters"]  =  CrossLetters, 
-        --["HideLetters"]   = HideLetters,
-        --["SpinLetters"]   = SpinLetters, 
-        --["SwarmLetters"]  =  SwarmLetters, 
-        --["SpiralUpwards"] =   SpiralUpwards, 
-        --["randomFLickerLetters"] =   randomFLickerLetters, 
-        --["syncToFrontLetters"]=    syncToFrontLetters, 
-        --["consoleLetters"] =   consoleLetters, 
-        --["dnaHelix"]   = dnaHelix, 
-        --["circleProject"]  =  circleProject,
-        --["ringProject"]  =  ringProject,
-        --["cubeProject"]  =  cubeProject,
-        --["spiralProject"]  =  spiralProject,
-        --["matrixTextFx"]  =  matrixTextFx,
-        --["fireWorksProjectTextFx"] = fireWorksProjectTextFx,
-        --["waterFallProject"] = waterFallProject,
-        --["personalProject"] = personalProject,
-        --["archProject"] = archProject,
-        -- ["achromaticShivering"] = achromaticShivering
-        ["splineShapeFollowing"] = splineShapeFollowing
+        ["SinusLetter"]   = SinusLetter, 
+        ["CrossLetters"]  =  CrossLetters, 
+        ["HideLetters"]   = HideLetters,
+        ["SpinLetters"]   = SpinLetters, 
+        ["SwarmLetters"]  =  SwarmLetters, 
+        ["SpiralUpwards"] =   SpiralUpwards, 
+        ["randomFLickerLetters"] =   randomFLickerLetters, 
+        ["syncToFrontLetters"]=    syncToFrontLetters, 
+        ["consoleLetters"] =   consoleLetters, 
+        ["dnaHelix"]   = dnaHelix, 
+        ["circleProject"]  =  circleProject,
+        ["ringProject"]  =  ringProject,
+        ["cubeProject"]  =  cubeProject,
+        ["spiralProject"]  =  spiralProject,
+        ["matrixTextFx"]  =  matrixTextFx,
+        ["fireWorksProjectTextFx"] = fireWorksProjectTextFx,
+        ["waterFallProject"] = waterFallProject,
+        ["personalProject"] = personalProject,
+        ["archProject"] = archProject,
+        ["achromaticShivering"] = achromaticShivering
+        --["splineShapeFollowing"] = splineShapeFollowing
 
         }
 end

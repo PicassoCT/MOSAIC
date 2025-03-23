@@ -216,12 +216,16 @@ function filterOutMegaBuilding()
                     function (id)
                         if not Mega[id] then return id end
                     end)
+
+    ProjectT[#ProjectT +1] = TablesOfPieceGroups["Project"][3]
+    ProjectT[#ProjectT +1] = TablesOfPieceGroups["Project"][4]
+    ProjectT[#ProjectT +1] = TablesOfPieceGroups["Project"][5]
 end
 
 if not GG.MegaBuildingMax then GG.MegaBuildingMax = 0 end
 
 
-megaHeightDefinition = 2500
+megaHeightDefinition = 2700
 function fillMegaTable()
     foreach(TablesOfPieceGroups["Arcology"],
         function(id)
@@ -232,8 +236,7 @@ function fillMegaTable()
                 z= pieceInfo.max[3] - pieceInfo.min[3],
 
             }
-          --  echo(pieceInfo.name .. " is mega")
-           -- echo(pieceInfo)
+
             if dim.z > megaHeightDefinition then
                 Mega[id] = true
             end
@@ -243,9 +246,13 @@ function fillMegaTable()
     foreach(TablesOfPieceGroups["Project"],
         function(id)
             pieceInfo = Spring.GetUnitPieceInfo ( unitID, id) 
-           -- echo(pieceInfo.name .. " is mega")
-            --echo(pieceInfo)
-            if pieceInfo.max[3] > megaHeightDefinition then
+            dim = {
+                x= pieceInfo.max[1] - pieceInfo.min[1],
+                y= pieceInfo.max[2] - pieceInfo.min[2],
+                z= pieceInfo.max[3] - pieceInfo.min[3],
+
+            }
+             if dim.z > megaHeightDefinition then
                 Mega[id] = true
             end
         end
@@ -334,11 +341,12 @@ function addGroundPlaceables()
     end
 end
 
+if not GG.GlobalPieceCounterArcology then GG.GlobalPieceCounterArcology = {} end
+
 function findLowestPieceInTableFromWithSuggestion(suggestedIndex, Table)
-
-    if not GG.GlobalPieceCounterArcology then GG.GlobalPieceCounterArcology = {} end
+    echo(Table)
     suggestedPiece =  getNthDictElement(Table, suggestedIndex)
-
+    assert(suggestedPiece, toString(suggestedIndex).." "..toString(Table))
     for k,v in pairs(Table) do
         if not  GG.GlobalPieceCounterArcology[v] then
            GG.GlobalPieceCounterArcology[v] = 0
@@ -351,8 +359,9 @@ function findLowestPieceInTableFromWithSuggestion(suggestedIndex, Table)
             lowestFoundKey, lowestFoundValue = k, v
         end
     end
+
     if not GG.GlobalPieceCounterArcology[lowestFoundKey] then GG.GlobalPieceCounterArcology[lowestFoundKey] = 0 end
-    GG.GlobalPieceCounterArcology[lowestFoundKey] = GG.GlobalPieceCounterArcology[lowestFoundKey] +1
+    GG.GlobalPieceCounterArcology[lowestFoundKey] = GG.GlobalPieceCounterArcology[lowestFoundKey] + 1
 
     return lowestFoundKey
 end
@@ -418,13 +427,16 @@ function buildBuilding()
     if  ViewShadowGameRelevant(px,pz) or GG.MegaBuildingMax > GameConfig.MegaBuildingMax then
         filterOutMegaBuilding()
     end
+    assert(count(ArcoT) > 1)
+    assert(count(ProjectT) > 1)
 
     isArcology = (isNearCityCenter(px, pz, GameConfig) or isMapControlledBuildingPlacement()) and getDermenisticChance(unitID, 20)
                     
     unitHash = getDeterministicUnitHash(unitID )
     mapHash = getDetermenisticMapHash(Game)
-    echo("Standalone hash"..toString(unitHash).. "/ "..toString(mapHash))
-    hash = math.ceil(unitHash + mapHash)
+    
+    hash = math.ceil(unitHash) + math.ceil(mapHash)
+    echo("Standalone hash"..toString(unitHash).. "/ "..toString(mapHash).."/"..toString(hash))
     isDualProjectOrMix = randChance(10)
     if isArcology  then
         pieceToShow = findLowestPieceInTableFromWithSuggestion( (hash % count(ArcoT)) + 1, ArcoT)
