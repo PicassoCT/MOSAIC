@@ -1565,7 +1565,7 @@ function addHologramLetters( myMessages)
                 name, textFX = randDict(allFunctions)
                -- name, textFx = "circleProject", circleProject
                 if name then
-                    echo("Hologram "..newMessage.." with textFX "..name..locationstring(unitID))
+--                    echo("Hologram "..newMessage.." with textFX "..name..locationstring(unitID))
                     textFX(allLetters, posLetters, TableOfPiecesGroups)
                     Signal(SIG_FLICKER)
                     HideLetters(allLetters,posLetters)

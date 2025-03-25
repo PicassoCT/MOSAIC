@@ -423,7 +423,7 @@ function buildBuilding()
     Sleep(unitID)
     initilization()
     px, py, pz = Spring.GetUnitPosition(unitID)
-    echo("Building "..unitID.." ViewShadowGameRelevant ".. toString(ViewShadowGameRelevant(px,pz)))
+    --echo("Building "..unitID.." ViewShadowGameRelevant ".. toString(ViewShadowGameRelevant(px,pz)))
     if  ViewShadowGameRelevant(px,pz) or GG.MegaBuildingMax > GameConfig.MegaBuildingMax then
         filterOutMegaBuilding()
     end
@@ -436,7 +436,7 @@ function buildBuilding()
     mapHash = getDetermenisticMapHash(Game)
     
     hash = math.ceil(unitHash) + math.ceil(mapHash)
-    echo("Standalone hash"..toString(unitHash).. "/ "..toString(mapHash).."/"..toString(hash))
+    --echo("Standalone hash"..toString(unitHash).. "/ "..toString(mapHash).."/"..toString(hash))
     isDualProjectOrMix = randChance(10)
     if isArcology  then
         pieceToShow = findLowestPieceInTableFromWithSuggestion( (hash % count(ArcoT)) + 1, ArcoT)
