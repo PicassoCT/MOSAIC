@@ -300,6 +300,10 @@ if (gadgetHandler:IsSyncedCode()) then
     end
 
     function gadget:Explosion(weaponDefID, px, py, pz, AttackerID, projectileID)
+        if birdSwarmCounter > 0 then
+
+        end
+
         if explosionFunc[weaponDefID] then explosionFunc[weaponDefID](weaponDefID, px, py, pz, AttackerID, projectileID) 
             return true
         end
@@ -1083,9 +1087,7 @@ if (gadgetHandler:IsSyncedCode()) then
                 end
             end)
         end
-
     end
-
 
     function handleFleeingCivilians(n)
         flightFunction = function(evtID, frame, persPack, startFrame)
