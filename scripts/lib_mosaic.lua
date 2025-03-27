@@ -1647,7 +1647,8 @@ end
             function getWildLifeTypes(UnitDefs)
                 local UnitDefNames = getUnitDefNames(UnitDefs)
                 return {
---                    [UnitDefNames["birdswarm"].id] = "air"
+                    [UnitDefNames["gullswarm"].id] = "air"
+                    [UnitDefNames["ravenswarm"].id] = "air"
                 }            
             end
 
@@ -1841,7 +1842,8 @@ end
             function getAnimalTypeTables(UnitDefs)
                 UnitDefNames = getUnitDefNames(UnitDefs)
                 typeTable = {
---                            "birdswarm"
+                            "gullswarm"
+                            "raveswarm"
                             }
 
                 return getTypeTable(UnitDefNames, typeTable)

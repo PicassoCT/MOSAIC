@@ -1,34 +1,45 @@
 --most simple unit script
 --allows the unit to be created & killed
-include "lib_caeserea.lua"
 
 center= piece"center"
-eagle= piece"eagle"
-eaglePiece= nil
+
+
 TablesOfPiecesGroups = {}
 --> returns a randomized Signum
 function randSign()
     if math.random(0, 1) == 1 then return 1 else return -1 end
 end
+
 visiblePieces= {}
 function script.Create()
-TablesOfPiecesGroups = makePiecesTablesByNameGroups(false, true)
-    Turn(center, 2, math.rad(unitID*math.pi))
+    TablesOfPiecesGroups = makePiecesTablesByNameGroups(false, true)
     Spin(center,2,math.rad(42),0)
-    Move(center,2,150,0)
-    StartThread(circleAltering) 
+    Move(center,2,buildingHeighth,0)
+
+    boolIsGull = UnitDefs[myDefID].name == "gullswarm"
     StartThread(moveControl)    
     hideT(TablesOfPiecesGroups["Gull"])
     boolAtLeastOne = true
-    for k,v in pairs(TablesOfPiecesGroups["Gull"]) do
-        Spin(v, y_axis, math.rad(42)* (-1)^k)
-        if boolAtLeastOne or math.random(0,1)== 1 then
-            visiblePieces[#visiblePieces +1] = v
-            Show(v)
-            boolAtLeastOne = false
+    if boolIsGull then
+        for k,v in pairs(TablesOfPiecesGroups["Gull"]) do
+            Spin(v, y_axis, math.rad(42)* (-1)^k)
+            if boolAtLeastOne or math.random(0,1)== 1 then
+                visiblePieces[#visiblePieces +1] = v
+                Show(v)
+                boolAtLeastOne = false
+            end
+        end
+        else
+        for k,v in pairs(TablesOfPiecesGroups["Gull"]) do
+            Spin(v, y_axis, math.rad(42)* (-1)^k)
+            if boolAtLeastOne or math.random(0,1)== 1 then
+                visiblePieces[#visiblePieces +1] = v
+                Show(v)
+                boolAtLeastOne = false
+            end
         end
     end
-
+    Spring.SetUnitAlwaysVisible(unitID, true)
     Spring.SetUnitNoSelect(unitID,true)
 end
 
@@ -43,12 +54,14 @@ end
 
 function moveControl()
 Spring.MoveCtrl.Enable(unitID,true)
-xsignum= randSign()
-zsignum= randSign()
-x,y,z=Spring.GetUnitPosition(unitID)
+    xsignum= randSign()
+    zsignum= randSign()
+    x,y,z=Spring.GetUnitPosition(unitID)
+    upValue= 0
     while true do
-     Spring.MoveCtrl.SetPosition(unitID, x +timeBasedOffset()*xsignum, y+ 100 ,z +timeBasedOffset()*zsignum)
-    Sleep(100)
+     Spring.MoveCtrl.SetPosition(unitID, x +timeBasedOffset()*xsignum, y+ upValue ,z +timeBasedOffset()*zsignum)
+     upValue = math.min(100, upValue +0.1)
+     Sleep(100)
     end
 
 end
@@ -64,37 +77,9 @@ local function getDayTime(frame)
     return hours, minutes, seconds, percent 
 end
 
---TODO: Add looking out for the sound of shots
 
-local function isMorningOrEvening(frame)
-    local hours, _, _, percent = getDayTime(frame)         
-    return (hours > 17 and hours < 20) or (hours > 5 and hours < 8), percent
-end
 
-function circleAltering()
-    value=150
-    sign= -1
-    while true do
-        rand= math.random(25,100)
-        value=value+ sign
-        Move(center,2,value,1)
-        if value < 150 or value > 400 then sign= sign *-1 end
-        Move(eagle,x_axis,rand,3)
-        Sleep(50000)
-        if isMorningOrEvening(Spring.GetGameFrame()) or shotNearby > 0 then
-            for k,v in pairs(visiblePieces) do
-                Show(v)
-            end
-            while (isMorningOrEvening(Spring.GetGameFrame())) or shotNearby >0  do
-                Sleep(5000)
-                shotNearby = shotNearby-5000
-            end
-            for k,v in pairs(visiblePieces) do
-             Hide(v)
-            end
-        end
-    end
-end
+
 
 function script.Killed(recentDamage, maxHealth)
     
