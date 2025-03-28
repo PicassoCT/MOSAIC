@@ -498,6 +498,24 @@ end
     return getTypeTable(UnitDefNames, typeTable)
     end
 
+ function GetLoudLongRangeWeaponTypes(WeaponDefs)
+     nameOfGun={
+        "javelinrocket",
+	"mortar",
+	"orbitalrailgun",
+	"railgun",
+	"sniperrifle ",
+	"tankcannon"
+	}
+        longRangeLoudWeaponTypes ={}
+	for defId,def in pairs(WeaponDefs) do
+	  if nameOfGun[def.name] then
+		longRangeLoudWeaponTypes[defId] = def.name
+		end
+	end
+	return longRangeLoudWeaponTypes
+ end
+
   function getLaunchablePayloadTypes(UnitDefs)
     local UnitDefNames = getUnitDefNames(UnitDefs)
 
