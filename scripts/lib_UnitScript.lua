@@ -1648,7 +1648,6 @@ function smoothTerrainInRange(ox, oz, totalWidth, smoothRange)
           )
   end
 
-
 -- > This function foreach result of Spring.PathRequest() to say whether target is reachable or not
 function IsTargetReachable(moveID, ox, oy, oz, tx, ty, tz, radius)
     local result, lastcoordinate, waypoints

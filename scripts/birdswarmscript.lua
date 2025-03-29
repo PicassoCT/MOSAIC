@@ -41,6 +41,7 @@ function script.Create()
     end
     Spring.SetUnitAlwaysVisible(unitID, true)
     Spring.SetUnitNoSelect(unitID,true)
+    StartThread(lifeTime, unitID, 30000, true, false)
 end
 
 shotNearby= 0
