@@ -498,7 +498,8 @@ end
     return getTypeTable(UnitDefNames, typeTable)
     end
 
- function GetLoudLongRangeWeaponTypes(WeaponDefs)
+ function getLoudLongRangeWeaponTypes(WeaponDefs)
+    assert(WeaponDefs)
      nameOfGun={
         "javelinrocket",
 	"mortar",
@@ -507,11 +508,11 @@ end
 	"sniperrifle ",
 	"tankcannon"
 	}
-        longRangeLoudWeaponTypes ={}
+    longRangeLoudWeaponTypes ={}
 	for defId,def in pairs(WeaponDefs) do
-	  if nameOfGun[def.name] then
+	   if nameOfGun[def.name] then
 		longRangeLoudWeaponTypes[defId] = def.name
-		end
+	   end
 	end
 	return longRangeLoudWeaponTypes
  end

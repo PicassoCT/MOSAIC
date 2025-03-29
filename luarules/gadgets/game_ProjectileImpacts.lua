@@ -23,7 +23,7 @@ if (gadgetHandler:IsSyncedCode()) then
     local civilianWalkingTypeTable = getCultureUnitModelTypes(
                                          GameConfig.instance.culture,
                                          "civilian", UnitDefs)
-    local loudLongRangeWeaponDefId = GetLoudLongRangeWeaponTypes(WeaponDefs)
+    local loudLongRangeWeaponTypes = getLoudLongRangeWeaponTypes(WeaponDefs)
     
     local isCloseCombatCapabaleType = getCloseCombatAbleTypes(UnitDefs)
     local houseTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture,
@@ -1056,14 +1056,14 @@ if (gadgetHandler:IsSyncedCode()) then
     end    
 
     function updateInterrogatedStatus(unitID, boolInterrogatedExternally)
-
-    env = Spring.UnitScript.GetScriptEnv(unitID)
+        env = Spring.UnitScript.GetScriptEnv(unitID)
         if env and env.setBoolInterrogatedExternally then
             Spring.UnitScript.CallAsUnit(unitID,  env.setBoolInterrogatedExternally, boolInterrogatedExternally)
         end
     end
 
     local NewUnitsInPanic = {}
+
     function gadget:ProjectileCreated(proID, proOwnerID, projWeaponDefID)
 
         if ProjectileCreatedFunc[projWeaponDefID] then 
@@ -1077,16 +1077,58 @@ if (gadgetHandler:IsSyncedCode()) then
 
         if panicWeapons[projWeaponDefID] then
             foreach(getAllNearUnit(proOwnerID,
-                                   panicWeapons[projWeaponDefID].range),
+                                   panicWeapons[projWeaponDefID].range,
+                                   GaiaTeamID),
                     function(id)
-                if spGetUnitTeam(id) == GaiaTeamID and
-                    not GG.DisguiseCivilianFor[id] and
-                    civilianWalkingTypeTable[spGetUnitDefID(id)] and
-                    not GG.AerosolAffectedCivilians[id] then
-                        startInternalBehaviourOfState(id,"startFleeing", proOwnerID)
-                    return id
-                end
+                        if  civilianWalkingTypeTable[spGetUnitDefID(id)] and
+                            GG.GlobalGameState == "normal" and
+                            not GG.DisguiseCivilianFor[id] and                       
+                            not GG.AerosolAffectedCivilians[id] then
+                                startInternalBehaviourOfState(id,"startFleeing", proOwnerID)
+                                echo("Send fleeing by panic weapons fired ")
+                            return id
+                        end
             end)
+        end
+        if loudLongRangeWeaponTypes[projWeaponDefID] then
+            distToOwner = math.huge
+            nearest = proOwnerID
+            gameFrame = spGetGameFrame()
+            allUnitsNearby = foreach(  getAllNearUnit(proID, 1024, gaiaTeamID),
+                        function(id)
+                            defID= spGetUnitDefID(id)
+                            if civilianBuildingTypes[defID]then
+                                return id
+                            end
+                        end,
+                        function(id)
+                            if not civilianBuildingBirdTimer[id] then return id end
+                            if civilianBuildingBirdTimer[id].frame < gameFrame + coolDownTimerCrowsInFramethen then return id end
+                        end,
+                        function(id)
+                            newDistance= distUnitToUnit(id, projOwnerID) 
+                            if newDistance < distToOwner then
+                                nearest = id
+                                distToOwner= newDistance
+                            end
+                        end
+                        )
+            if nearest ~= projOwnerID then
+                civilianBuildingBirdTimer[nearest] = {frame = gameFrame, boolIsAtSea = isBuildingNearSea(nearest)}
+                if civilianBuildingBirdTimer[nearest].boolIsAtSea then
+                    createUnitAtUnit(gaiaTeamID, "gullswarm", nearest)
+                else
+                    createUnitAtUnit(gaiaTeamID, "ravenswarm", nearest)
+                end
+            end
+        end
+    end
+    coolDownTimerCrowsInFrame = 8*60*30
+    civilianBuildingBirdTimer = {}
+
+    function DeActivateLoudLongRangeWeaponDefs (boolActivate)
+        for k,v in pairs(loudLongRangeWeaponTypes) do
+            Script.SetWatchWeapon(k, boolActivate)  
         end
     end
 
@@ -1182,6 +1224,17 @@ if (gadgetHandler:IsSyncedCode()) then
         if targetTypeInt == PROJECTILE then
             px, py, pz = Spring.GetProjectilePosition(target)
             return px, py, pz, targetTypeInt, target
+        end
+    end
+end
+
+oldGameState= "normal"
+function gadget:GameFrame(frame)
+    if frame % 90 == 0 then
+        local gameState = GG.GlobalGameState 
+        if oldGameState ~= gameState then
+            DeActivateLoudLongRangeWeaponDefs(gameState == "normal" )
+            oldGameState = gameState
         end
     end
 end
