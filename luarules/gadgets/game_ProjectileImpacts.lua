@@ -1097,7 +1097,7 @@ if (gadgetHandler:IsSyncedCode()) then
             allUnitsNearby = foreach(  getAllNearUnit(proID, 1024, gaiaTeamID),
                         function(id)
                             defID= spGetUnitDefID(id)
-                            if civilianBuildingTypes[defID]then
+                            if houseTypeTable[defID]then
                                 return id
                             end
                         end,
@@ -1125,6 +1125,13 @@ if (gadgetHandler:IsSyncedCode()) then
     end
     coolDownTimerCrowsInFrame = 8*60*30
     civilianBuildingBirdTimer = {}
+
+    function isBuildingNearSea(buildingId)
+        x,y,z = spGetUnitPosition(buildingId)
+        TestAreaDimension = 768
+        min, max = getExtremasInArea(x -TestAreaDimension, z-TestAreaDimension, x +TestAreaDimension, z+ TestAreaDimension, (TestAreaDimension*2)/3)
+        return min <= 1 and max < 50
+    end
 
     function DeActivateLoudLongRangeWeaponDefs (boolActivate)
         for k,v in pairs(loudLongRangeWeaponTypes) do
