@@ -11,49 +11,29 @@ local trainAxis = x_axis
 local maxDistanceTrain = 120000
 local trainspeed = 9000
 center = piece"center"
+rail1 = piece"rail1"
+rail2 = piece"rail2"
+sub1 = piece"sub1"
+sub2 = piece"sub2"
 
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
-    hideT(TablesOfPiecesGroups["Tunnel1_"])
-    hideT(TablesOfPiecesGroups["Tunnel2_"])
+    hideAll(unitID)
     StartThread(setup)
 end
 
 function setup()
     Sleep(10)
-    hideT(TablesOfPiecesGroups["Rail"])
-    hideT(TablesOfPiecesGroups["Endstation"])
     StartThread(trainLoop, 1)
     StartThread(trainLoop, 2)
-    rVal = math.random(0,360)
+    rVal = math.random(0, 360)
     WTurn(center, y_axis, math.rad(rVal),0)
-     if validTrackPart( TablesOfPiecesGroups["Rail"][13], TablesOfPiecesGroups["Sub"][1]) then Show(TablesOfPiecesGroups["Endstation"][1]) end
-     if validTrackPart( TablesOfPiecesGroups["Rail"][24], TablesOfPiecesGroups["Sub"][2]) then Show(TablesOfPiecesGroups["Endstation"][2]) end
-
-      StartThread(showRail,1, 12)
-      StartThread(showRail,14, 23)
-
-    StartThread(deployTunnels, 1)
-    StartThread(deployTunnels, 2)
-  
+    StartThread(deployTrack, -1 , rail1,  TablesOfPiecesGroups["Rail1Sub"] , sub1)
+    StartThread(deployTrack, 1 , rail2,  TablesOfPiecesGroups["Rail2Sub"] , sub2)
 
 end
 
-function showRail(start, ends)
 
-        local xMax = Game.mapSizeX 
-        local zMax = Game.mapSizeZ 
-    for i=start, ends do 
-        id =TablesOfPiecesGroups["Rail"][i]
-
-        x,_,z = Spring.GetUnitPiecePosDir(unitID, id)
-        if (not x or not z or  x  <= 0 or x >= xMax or z <= 0 or z >= zMax) then
-            return id
-        end
-
-            Show(id)
-    end
-end
 
 function validTrackPart( EndPiece, DetectorPiece)
     Hide(DetectorPiece)
@@ -87,33 +67,34 @@ local boolOldState = false
 
     tunnelMultiple = 5
 
-function deployTunnels(nr)
+function deployTunnels(nr, tunnelTable)
     boolOldState = false
     Sleep(nr)
-detectionPiece = piece("TunnelDetection"..nr) 
-tunnelIndex = 1
-local xMax = Game.mapSizeX 
-local zMax = Game.mapSizeZ 
-Hide(detectionPiece)
-    for distanceTunnel = maxDistanceTrain, -1*maxDistanceTrain, -32 do
-    	WMove(detectionPiece,trainAxis, distanceTunnel, 0)
-    	boolAboveGround,x, z = isPieceAboveGround(unitID, detectionPiece, 0)
-        if not (not x or not z or  x  <= 0 or x >= xMax or z <= 0 or z >= zMax) then
-        --Spring.Echo("Checking tunnel "..nr.." for"..distanceTunnel)
-        	if detectRisingEdge(boolAboveGround) or detectFallingEdge(boolAboveGround) then
-        		tunnelIndexPiece = piece("Tunnel"..nr.."_"..tunnelIndex)
-        		if tunnelIndexPiece then
-            		WMove(tunnelIndexPiece, trainAxis, distanceTunnel, 0)
-            		Show(tunnelIndexPiece)
-                    tunnelIndex = tunnelIndex + 1
-                    if tunnelIndex >= 6 then
-                     return 
-                    end
-        		end
-        	end
+
+    detectionPiece = piece("TunnelDetection"..nr) 
+    tunnelIndex = 1
+    local xMax = Game.mapSizeX 
+    local zMax = Game.mapSizeZ 
+    Hide(detectionPiece)
+        for distanceTunnel = maxDistanceTrain, -1*maxDistanceTrain, -32 do
+        	WMove(detectionPiece,trainAxis, distanceTunnel, 0)
+        	boolAboveGround,x, z = isPieceAboveGround(unitID, detectionPiece, 0)
+            if not (not x or not z or  x  <= 0 or x >= xMax or z <= 0 or z >= zMax) then
+            --Spring.Echo("Checking tunnel "..nr.." for"..distanceTunnel)
+            	if detectRisingEdge(boolAboveGround) or detectFallingEdge(boolAboveGround) then
+            		tunnelIndexPiece = tunnelTable[tunnelIndex]
+            		if tunnelIndexPiece then
+                		WMove(tunnelIndexPiece, trainAxis, distanceTunnel, 0)
+                		Show(tunnelIndexPiece)
+                        tunnelIndex = tunnelIndex + 1
+                        if tunnelIndex > #tunnelTable then
+                         return 
+                        end
+            		end
+            	end
+            end
+        	boolOldState = boolAboveGround
         end
-    	boolOldState = boolAboveGround
-    end
 end
 
 function buildTrain(nr)

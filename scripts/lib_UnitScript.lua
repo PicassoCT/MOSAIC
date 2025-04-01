@@ -1756,10 +1756,10 @@ end
 -- ======================================================================================
 -- Section: Syntax additions and Tableoperations
 -- ======================================================================================
-function getSubRangeTable(T, min, max)
-    subT={}
+function takeTableSubRange(T, min, max)
+    local subT = {}
     for i=min,max do
-        subT[#subT+1]= T[i]
+        subT[#subT+1] = T[i]
     end
     return subT
 end

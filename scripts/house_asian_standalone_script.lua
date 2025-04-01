@@ -31,7 +31,7 @@ function setArcologyProjectsName(id, isArcology)
 
     local names = {
         "Mega Haven",
-        " Skybound Complex",
+        "Skybound Complex",
         "Giga Gardens",
         " Horizon Sprawl",
         "Echelon Tower",
