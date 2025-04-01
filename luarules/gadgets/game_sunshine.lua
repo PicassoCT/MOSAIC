@@ -43,7 +43,7 @@ if gadgetHandler:IsSyncedCode() then
     assert(GameConfig.instance.culture)
     assert(getDetermenisticMapHash(Game))
     local regDayCol = getRegionDayColorBy(GameConfig.instance.culture, getDetermenisticMapHash(Game))
-    echo("regDayCol: r:"..regDayCol.x .. " g: ".. regDayCol.y .. " b:".. regDayCol.z)
+    echo("Regional Day Colors: r:"..regDayCol.x .. " g: ".. regDayCol.y .. " b:".. regDayCol.z)
     assert(regDayCol)
     assert(type(regDayCol)=="table")
 
@@ -67,12 +67,12 @@ if gadgetHandler:IsSyncedCode() then
     sunCol[#sunCol + 1] = makeVector(120, 39, 0)
     sunCol[#sunCol + 1] = makeVector(156, 51, 0)
     sunCol[#sunCol + 1] = makeVector(175, 57, 0)
-    sunCol[#sunCol + 1] =  mixTable(regDayCol,makeVector(192, 73, 0), 0.12)
-    sunCol[#sunCol + 1] =  mixTable(regDayCol,makeVector(222, 83, 0), 0.33)
+    sunCol[#sunCol + 1] =  mixclampTable(regDayCol,makeVector(192, 73, 0), 0.12)
+    sunCol[#sunCol + 1] =  mixclampTable(regDayCol,makeVector(222, 83, 0), 0.33)
 
     --blend towards day
-    sunCol[#sunCol + 1] = mixTable(regDayCol, makeVector(246, 92, 0), 0.66)
-    sunCol[#sunCol + 1] = mixTable(regDayCol, makeVector(246, 100, 0), 0.88)
+    sunCol[#sunCol + 1] = mixclampTable(regDayCol, makeVector(246, 92, 0), 0.66)
+    sunCol[#sunCol + 1] = mixclampTable(regDayCol, makeVector(246, 100, 0), 0.88)
 
     --daytime
     for i = 1, LengthOfNightDay + 2  do

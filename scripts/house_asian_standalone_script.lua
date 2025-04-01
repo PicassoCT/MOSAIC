@@ -344,7 +344,6 @@ end
 if not GG.GlobalPieceCounterArcology then GG.GlobalPieceCounterArcology = {} end
 
 function findLowestPieceInTableFromWithSuggestion(suggestedIndex, Table)
-    echo(Table)
     suggestedPiece =  getNthDictElement(Table, suggestedIndex)
     assert(suggestedPiece, toString(suggestedIndex).." "..toString(Table))
     for k,v in pairs(Table) do

@@ -82,7 +82,8 @@ if (gadgetHandler:IsSyncedCode()) then
                 pieceToAttachTo =  getEnvironmentAttachToRooftopPiece(unitToAttachTo, vec_position, vec_direction)        
                 if pieceToAttachTo then 
 					--[[Spring.Echo("Rightclick->RecvLuaMsg:setEnvironmentAttachToRooftop")--]]
-                    setEnvironmentAttachToRooftop(unitSelected, unitToAttachTo, pieceToAttachTo)            
+                    setEnvironmentAttachToRooftop(unitSelected, unitToAttachTo, pieceToAttachTo)       
+                    Command(unitSelected, "stop")     
                 end
             end
         end

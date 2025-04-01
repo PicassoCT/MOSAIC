@@ -1,5 +1,10 @@
 
 return {
+"Come BACK",
+"WELCOME TO OUR REALITY",
+"DO YOU MISS ME",
+"ALL IS CONNECTED",
+"GOOD VIBES",
 "Hosaka Corporation",
 "Asahi Optical",
 "Mitsubishi Genetech",
@@ -655,6 +660,7 @@ return {
 "Septic thanks",
 "Sesame Seeds",
 "lets order the vindaloo",
-"Bodymod Impro"
+"Bodymod Impro",
+"INTESTINAL VILLAN AG"
 }
 

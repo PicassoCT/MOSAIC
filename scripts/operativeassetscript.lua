@@ -275,7 +275,7 @@ function transportControl()
     waitTillComplete(unitID)
     while true do
         if isTransported(unitID) == true then
-            transporterdefID = spGetUnitDefID(Spring.GetUnitTransporter(unitID))
+            transporterdefID = Spring.GetUnitDefID(Spring.GetUnitTransporter(unitID))
 
             if  motorBikeTypeTable[transporterdefID] then boolTransportedNoFiring = true end
 
@@ -845,13 +845,18 @@ function onRoof()
     --echo("operative: on Roof")
     boolHasMoveCommand = getUnitMoveGoal(unitID, 1)
     boolVisiblyForced= true
-    while not boolHasMoveCommand do
+    while not boolHasMoveCommand  do
         Sleep(15)
        boolHasMoveCommand = getUnitMoveGoal(unitID, 1)
     end
     boolVisiblyForced = false
-    Spring.UnitDetach(unitID)
-    --echo("operative: off Roof")
+    transporter = Spring.GetUnitTransporter(unitID)
+    if transporter then
+        transporterDefID = Spring.GetUnitDefID(transporter)
+        if climbAbleHouseTypeTable[transporterDefID] then
+            Spring.UnitDetach(unitID)
+        end
+    end
     boolOnRoof= false
 end
 

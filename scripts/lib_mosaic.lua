@@ -170,7 +170,7 @@ function getGameConfig()
         allyWaySizeZ = 25,
         bonusFirstUnitMoney_S = 12,
         maxParallelIdleAnimations = 20,
-        SniperAttachMaxDistance = 256,
+        SniperAttachMaxDistance = 128,
         agentConfig = {
             recruitmentRange = 60,
             raidWeaponDownTimeInSeconds = 60,
@@ -1666,7 +1666,7 @@ end
             function getWildLifeTypes(UnitDefs)
                 local UnitDefNames = getUnitDefNames(UnitDefs)
                 return {
-                    [UnitDefNames["gullswarm"].id] = "air"
+                    [UnitDefNames["gullswarm"].id] = "air",
                     [UnitDefNames["ravenswarm"].id] = "air"
                 }            
             end
@@ -1861,7 +1861,7 @@ end
             function getAnimalTypeTables(UnitDefs)
                 UnitDefNames = getUnitDefNames(UnitDefs)
                 typeTable = {
-                            "gullswarm"
+                            "gullswarm",
                             "raveswarm"
                             }
 

@@ -506,7 +506,7 @@ function closeClaw()
 end
 
 function craneLoadToPlatform()
-    echoEnter("craneLoadToPlatform")
+--    echoEnter("craneLoadToPlatform")
     openClaw()
     WTurn(CraneHead, y_axis, math.rad(crawlerRocketPosY), 0.1)
     closeClaw()

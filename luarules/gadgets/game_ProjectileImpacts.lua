@@ -301,10 +301,7 @@ if (gadgetHandler:IsSyncedCode()) then
     end
 
     function gadget:Explosion(weaponDefID, px, py, pz, AttackerID, projectileID)
-        if birdSwarmCounter > 0 then
-
-        end
-
+ 
         if explosionFunc[weaponDefID] then explosionFunc[weaponDefID](weaponDefID, px, py, pz, AttackerID, projectileID) 
             return true
         end
@@ -1133,12 +1130,6 @@ if (gadgetHandler:IsSyncedCode()) then
         return min <= 1 and max < 50
     end
 
-    function DeActivateLoudLongRangeWeaponDefs (boolActivate)
-        for k,v in pairs(loudLongRangeWeaponTypes) do
-            Script.SetWatchWeapon(k, boolActivate)  
-        end
-    end
-
     function handleFleeingCivilians(n)
         flightFunction = function(evtID, frame, persPack, startFrame)
             -- Setup
@@ -1233,15 +1224,24 @@ if (gadgetHandler:IsSyncedCode()) then
             return px, py, pz, targetTypeInt, target
         end
     end
-end
 
-oldGameState= "normal"
-function gadget:GameFrame(frame)
-    if frame % 90 == 0 then
-        local gameState = GG.GlobalGameState 
-        if oldGameState ~= gameState then
-            DeActivateLoudLongRangeWeaponDefs(gameState == "normal" )
-            oldGameState = gameState
+    oldGameState= "normal"
+    function DeActivateLoudLongRangeWeaponDefs (boolActivate)
+        for k,v in pairs(loudLongRangeWeaponTypes) do
+            Script.SetWatchWeapon(k, boolActivate)  
         end
     end
+
+    function gadget:GameFrame(frame)
+        if frame % 90 == 0 then
+            local gameState = GG.GlobalGameState 
+            if oldGameState ~= gameState then
+                DeActivateLoudLongRangeWeaponDefs(gameState == "normal" )
+                oldGameState = gameState
+            end
+        end
+    end
+
+
 end
+
