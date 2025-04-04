@@ -22,18 +22,49 @@ function script.Create()
     StartThread(setup)
 end
 
+countUp= 0
+
 function setup()
     Sleep(10)
     StartThread(trainLoop, 1)
     StartThread(trainLoop, 2)
     rVal = math.random(0, 360)
     WTurn(center, y_axis, math.rad(rVal),0)
-    StartThread(deployTrack, -1 , rail1,  TablesOfPiecesGroups["Rail1Sub"] , sub1)
-    StartThread(deployTrack, 1 , rail2,  TablesOfPiecesGroups["Rail2Sub"] , sub2)
-
+    StartThread(deployTrack, -1 , rail1,  TablesOfPiecesGroups["Rail1Sub"] , sub1, EndPoint1)
+    StartThread(deployTrack, 1 , rail2,  TablesOfPiecesGroups["Rail2Sub"] , sub2, EndPoint2)
+    StartThread(trainLoop)
 end
 
+function deployTrack( directionSign, railP, Pillars, detectorPiece, endPoint)
+    upValue = 25
+    lastValue = upVal*directionSign
+    WTurn(railP, x_axis, math.rad(upVal*directionSign), 0)
+    boolValidStart = validTrackPart(endPoint, DetectorPiece)
+    assert(boolValidStart)
+    Hide(endPoint)
 
+    for i= upVal*directionSign, upValue, -1* directionSign do
+       WTurn(railP, x_axis, math.rad(i), 0)
+       boolAboveGround = validTrackPart(endPoint, DetectorPiece)
+       if not boolAboveGround then 
+            endvalue =i - (1*directionSign)
+            WTurn(railP, x_axis, math.rad(endvalue), 0)
+            WTurn(endPoint, x_axis, math.rad(-endvalue), 0)
+            foreach(Pillars,
+                    function(id)
+                        Show(id)
+                        WTurn(id, x_axis, math.rad(-endvalue), 0)
+                    end
+                    )
+            Show(endPoint)
+            break
+       end
+       Sleep(1)
+       lastValue = i
+    end
+    Show(railP)
+    countUp= countUp +1
+end
 
 function validTrackPart( EndPiece, DetectorPiece)
     Hide(DetectorPiece)
@@ -67,30 +98,37 @@ local boolOldState = false
 
     tunnelMultiple = 5
 
-function deployTunnels(nr, tunnelTable)
+function deployTunnel(tunnelTable, tunnelIndex, distanceTunnel)
+    tunnelIndexPiece = tunnelTable[tunnelIndex]
+                    if tunnelIndexPiece then
+                        WMove(tunnelIndexPiece, trainAxis, distanceTunnel, 0)
+                        Show(tunnelIndexPiece)
+                        tunnelIndex = tunnelIndex + 1
+                    end
+    return tunnelIndex, tunnelIndex > #tunnelTable
+end
+
+function deployTunnels(nr, dirSign)
     boolOldState = false
     Sleep(nr)
+    tunnelTableA= TablesOfPiecesGroups["Tunnel"..nr.."_"]
+    tunnelTableB= TablesOfPiecesGroups["Tunnel"..nr.."_"]
 
     detectionPiece = piece("TunnelDetection"..nr) 
-    tunnelIndex = 1
+    tunnelIndexA = 1
+    tunnelIndexB = 1
     local xMax = Game.mapSizeX 
     local zMax = Game.mapSizeZ 
     Hide(detectionPiece)
-        for distanceTunnel = maxDistanceTrain, -1*maxDistanceTrain, -32 do
+        for distanceTunnel = 0, maxDistanceTrain* dirSign, 32* dirSign do
         	WMove(detectionPiece,trainAxis, distanceTunnel, 0)
         	boolAboveGround,x, z = isPieceAboveGround(unitID, detectionPiece, 0)
             if not (not x or not z or  x  <= 0 or x >= xMax or z <= 0 or z >= zMax) then
             --Spring.Echo("Checking tunnel "..nr.." for"..distanceTunnel)
             	if detectRisingEdge(boolAboveGround) or detectFallingEdge(boolAboveGround) then
-            		tunnelIndexPiece = tunnelTable[tunnelIndex]
-            		if tunnelIndexPiece then
-                		WMove(tunnelIndexPiece, trainAxis, distanceTunnel, 0)
-                		Show(tunnelIndexPiece)
-                        tunnelIndex = tunnelIndex + 1
-                        if tunnelIndex > #tunnelTable then
-                         return 
-                        end
-            		end
+                    tunnelIndeA, boolOutOfTunnel = deployTunnel(tunnelTableA, tunnelIndexA, distanceTunnel)
+                    tunnelIndexB, boolOutOfTunnel = deployTunnel(tunnelTableB, tunnelIndexB, distanceTunnel)
+                    if boolOutOfTunnel  then return end                    
             	end
             end
         	boolOldState = boolAboveGround
@@ -99,59 +137,54 @@ end
 
 function buildTrain(nr)
     assert(TablesOfPiecesGroups["Train"][nr],nr)
-	Show(TablesOfPiecesGroups["Train"][nr])
-    indexStart, indexStop =1, 2
-    if nr ==1 then 
-        indexStart = 1
-        indexStop = 4
-    elseif nr == 2 then
-        indexStart = 5
-        indexStop = 8
-    end
-
-    for i=indexStart,indexStop do
-        if maRa() == true then 
-            Show(TablesOfPiecesGroups["Container"][i])
-        end
-    end
-
+    Show(TablesOfPiecesGroups["Train"][nr])
+    showT(TablesOfPiecesGroups["Train"..nr.."sub"])
+    return TablesOfPiecesGroups["Train"][nr]
 end
 
 function hideTrain(nr)
     assert(TablesOfPiecesGroups["Train"][nr],nr)
 	Hide(TablesOfPiecesGroups["Train"][nr])
-        indexStart, indexStop =1, 2
-    if nr ==1 then 
-        indexStart = 1
-        indexStop = 4
-    elseif nr == 2 then
-        indexStart = 5
-        indexStop = 8
-    end
+    reset(TablesOfPiecesGroups["Train"][nr], 0)
+    hideT(TablesOfPiecesGroups["Train"..nr.."sub"])        
+end
 
-    for i=indexStart,indexStop do        
-        Hide(TablesOfPiecesGroups["Container"][i])
+function forth(direction)
+    while true do        
+        train = buildTrain(3)
+        WMove(train, trainAxis, maxDistanceTrain*direction, 0)
+        WMove(train, trainAxis, 0, trainspeed)    
+        breakTime = math.random(0,10)*1000
+        Sleep(breakTime)
+        hideTrain(3)
+        train = buildTrain(1)
+        WMove(train, trainAxis, maxDistanceTrain*direction*-1, trainspeed)
+        hideTrain(1)
     end
 end
 
-function trainLoop(nr)
-	rSleepValue = math.random(1,100)*100
-	Sleep(rSleepValue)
-	local train = piece("Train"..nr)
+function forth(direction)
+    while true do        
+        train = buildTrain(2)
+        WMove(train, trainAxis,  maxDistanceTrain*direction*-1, 0)
+        WMove(train, trainAxis, 0, trainspeed)    
+        breakTime = math.random(0,10)*1000
+        Sleep(breakTime)
+        hideTrain(2)
+        train = buildTrain(4)
+        WMove(train, trainAxis,maxDistanceTrain*direction, trainspeed)
+        hideTrain(4)
+    end
+end
 
-	while true do
-        direction = randSign()
-        WMove(train, trainAxis, maxDistanceTrain*direction, 0)
-		buildTrain(nr)
-		WMove(train, trainAxis, 0, trainspeed)
-		breakTime = math.random(0,10)*1000
-		Sleep(breakTime)
-        buildTrain(nr)
-    	WMove(train, trainAxis, maxDistanceTrain*direction*-1, trainspeed)
-        hideTrain(nr)
-		betweenInterval = math.random(0,3)*60*1000+1
-		Sleep(betweenInterval)
-	end
+
+function trainLoop()
+    while (countUp < 2) do Sleep(100) end
+    deployTunnels(1, 1)    
+    deployTunnels(3, -1)   
+    direction = randSign()
+	StartThread(back, direction)
+    StartThread(forth, direction)
 end
 
 

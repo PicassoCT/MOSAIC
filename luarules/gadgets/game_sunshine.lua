@@ -44,8 +44,6 @@ if gadgetHandler:IsSyncedCode() then
     assert(getDetermenisticMapHash(Game))
     local regDayCol = getRegionDayColorBy(GameConfig.instance.culture, getDetermenisticMapHash(Game))
     echo("Regional Day Colors: r:"..regDayCol.x .. " g: ".. regDayCol.y .. " b:".. regDayCol.z)
-    assert(regDayCol)
-    assert(type(regDayCol)=="table")
 
     -- if you want diffrent colours for your day, modify this table
     sunCol = {}
@@ -107,6 +105,7 @@ if gadgetHandler:IsSyncedCode() then
             a = 0.5
         }
     end
+    echo("Suncolor: "..toString(sunCol))
 
     -- Various Atmosphere and Sun setting getters
     local function getDefaultConfg(rgba)

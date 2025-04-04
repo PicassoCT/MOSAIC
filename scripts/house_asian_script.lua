@@ -430,7 +430,7 @@ function initAllPieces()
                     movePiece =  piece("ID_l100_Industrial_RoofBlock4Sub3")    ,
                     stamp1 = piece("ID_l100_Industrial_RoofBlock4Sub1"),
                     stamp2 =  piece("ID_l100_Industrial_RoofBlock4Sub2"),
-                    moltenPiecesT = getSubRangeTable(TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock4Sub"], 3, #TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock4Sub"])         
+                    moltenPiecesT = takeTableSubRange(TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock4Sub"], 3, #TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock4Sub"])         
                     },
                 }
             },    
@@ -460,7 +460,7 @@ function initAllPieces()
                 grabPiece = piece("ID_l100_Industrial_RoofBlock2Sub9"),
                 pickedPiece = piece("ID_l100_Industrial_RoofBlock2Grab"),
                 lavaContainer = TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock2Sub"][10],
-                moltenPiecesT = getSubRangeTable(TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock2Sub"], 1, 8) 
+                moltenPiecesT = takeTableSubRange(TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock2Sub"], 1, 8) 
                 }
             }
         },
@@ -473,11 +473,11 @@ function initAllPieces()
                 elevator = TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock1Sub"][25],
                 rawWorks = TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock1Sub"][26],
                 finalWorks = TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock1Sub"][27],
-                doors = getSubRangeTable(TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock1Sub"], 28, 29),
-                robot1T = getSubRangeTable(TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock1Sub"], 1, 6), 
-                robot2T = getSubRangeTable(TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock1Sub"], 7, 12), 
-                robot3T = getSubRangeTable(TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock1Sub"], 13, 18), 
-                robot4T = getSubRangeTable(TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock1Sub"], 19, 24) 
+                doors = takeTableSubRange(TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock1Sub"], 28, 29),
+                robot1T = takeTableSubRange(TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock1Sub"], 1, 6), 
+                robot2T = takeTableSubRange(TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock1Sub"], 7, 12), 
+                robot3T = takeTableSubRange(TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock1Sub"], 13, 18), 
+                robot4T = takeTableSubRange(TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock1Sub"], 19, 24) 
                 }
             }
         }
