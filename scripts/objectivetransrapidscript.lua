@@ -1,8 +1,8 @@
-include "createCorpse.lua"
+hiinclude "createCorpse.lua"
 include "lib_OS.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
---include "lib_Build.lua"
+
 
 local TablesOfPiecesGroups = {}
 
@@ -143,15 +143,15 @@ end
 function buildTrain(nr)
     assert(TablesOfPiecesGroups["Train"][nr],nr)
     Show(TablesOfPiecesGroups["Train"][nr])
-    showT(TablesOfPiecesGroups["Train"..nr.."sub"])
+    showT(TablesOfPiecesGroups["Train"..nr.."Sub"])
     return TablesOfPiecesGroups["Train"][nr]
 end
 
 function hideTrain(nr)
     assert(TablesOfPiecesGroups["Train"][nr],nr)
-	Hide(TablesOfPiecesGroups["Train"][nr])
+    Hide(TablesOfPiecesGroups["Train"][nr])
     reset(TablesOfPiecesGroups["Train"][nr], 0)
-    hideT(TablesOfPiecesGroups["Train"..nr.."sub"])        
+    hideT(TablesOfPiecesGroups["Train"..nr.."Sub"])        
 end
 
 function forth(direction)
@@ -182,16 +182,14 @@ function forth(direction)
     end
 end
 
-
 function trainLoop()
     while (countUp < 2) do Sleep(100) end
     deployTunnels(1, 1)    
     deployTunnels(3, -1)   
     direction = randSign()
-	StartThread(back, direction)
+    StartThread(back, direction)
     StartThread(forth, direction)
 end
-
 
 function script.Killed(recentDamage, _)
     return 1
