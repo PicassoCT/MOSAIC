@@ -11,10 +11,10 @@ local trainAxis = x_axis
 local maxDistanceTrain = 120000
 local trainspeed = 9000
 center = piece"center"
-rail1 = piece"rail1"
-rail2 = piece"rail2"
-sub1 = piece"sub1"
-sub2 = piece"sub2"
+rail1 = piece"Rail1"
+rail2 = piece"Rail2"
+sub1 = piece"Sub1"
+sub2 = piece"Sub2"
 
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
