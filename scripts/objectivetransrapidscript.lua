@@ -33,6 +33,11 @@ function setup()
     StartThread(deployTrack, -1 , rail1,  TablesOfPiecesGroups["Rail1Sub"] , sub1, EndPoint1)
     StartThread(deployTrack, 1 , rail2,  TablesOfPiecesGroups["Rail2Sub"] , sub2, EndPoint2)
     StartThread(trainLoop)
+    foreach(TableOfPiecesGroups["Add"],
+            function(id)
+                if maRa() then Show(id) end
+            end
+            )
 end
 
 function deployTrack( directionSign, railP, Pillars, detectorPiece, endPoint)
