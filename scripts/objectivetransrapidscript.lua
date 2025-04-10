@@ -142,15 +142,12 @@ function deployTunnel(tunnelTable, tunnelIndex, distanceTunnel)
     return tunnelIndex, tunnelIndex > #tunnelTable
 end
 
-function deployTunnels(nr, dirSign)
+--
+function deployTunnels(detectionPiece, dirSign, tunnelTable)
     boolOldState = false
     Sleep(nr)
-    tunnelTableA= TablesOfPiecesGroups["Tunnel"..nr.."_"]
-    tunnelTableB= TablesOfPiecesGroups["Tunnel"..nr.."_"]
 
-    detectionPiece = piece("TunnelDetection"..nr) 
-    tunnelIndexA = 1
-    tunnelIndexB = 1
+    tunnelIndex = 1
     local xMax = Game.mapSizeX 
     local zMax = Game.mapSizeZ 
     Hide(detectionPiece)
@@ -160,8 +157,7 @@ function deployTunnels(nr, dirSign)
             if not (not x or not z or  x  <= 0 or x >= xMax or z <= 0 or z >= zMax) then
             --Spring.Echo("Checking tunnel "..nr.." for"..distanceTunnel)
             	if detectRisingEdge(boolAboveGround) or detectFallingEdge(boolAboveGround) then
-                    tunnelIndeA, boolOutOfTunnel = deployTunnel(tunnelTableA, tunnelIndexA, distanceTunnel)
-                    tunnelIndexB, boolOutOfTunnel = deployTunnel(tunnelTableB, tunnelIndexB, distanceTunnel)
+                    tunnelIndex, boolOutOfTunnel = deployTunnel(tunnelTable, tunnelIndex, distanceTunnel)
                     if boolOutOfTunnel  then return end                    
             	end
             end
@@ -212,9 +208,9 @@ function forth(direction)
 end
 
 function trainLoop()
-    while (semaphore < 2) do Sleep(100) end
-    deployTunnels(1, 1)    
-    deployTunnels(3, -1)   
+    while (countUp < 2) do Sleep(100) end
+    deployTunnels(piece("TunnelDetectionPlus") , 1, TableOfPiecesGroups["Tunnel_Plus"])    
+    deployTunnels(piece("TunnelDetectionMinus") , -1, TableOfPiecesGroups["Tunnel_Minus"])   
     direction = randSign()
     StartThread(back, direction)
     StartThread(forth, direction)
