@@ -1,4 +1,4 @@
-hiinclude "createCorpse.lua"
+include "createCorpse.lua"
 include "lib_OS.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
@@ -15,6 +15,7 @@ rail1 = piece"Rail1"
 rail2 = piece"Rail2"
 sub1 = piece"Sub1"
 sub2 = piece"Sub2"
+gaiaTeamId = Spring.GetGaiaTeamID()
 
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
@@ -22,64 +23,92 @@ function script.Create()
     StartThread(setup)
 end
 
-countUp= 0
+semaphore= 0
+
+function airPortConnection()
+    x,y,z =Spring.GetUnitPosition(unitID)
+    airPortDefId = UnitDefNames["objective_airport"].id
+    allAirPorts = Spring.GetTeamUnitsByDefs ( gaiaTeamId, airPortDefId)
+    if count(allAirPorts) > 0 then
+        ax,ay,az = Spring.GetUnitPosition(allAirPorts[1])
+        rDeg = math.atan2(x-ax,z-az)
+        ninetyDeg = math.pi/2
+        WTurn(center, y_axis, rDeg + ninetyDeg ,0)
+        echo("objective_transrapid is airport connected")
+    else
+        rVal = math.random(0, 360)
+        WTurn(center, y_axis, math.rad(rVal),0)
+    end
+end
+
 
 function setup()
+    airPortConnection()
     Sleep(10)
+    Show(center)
     StartThread(trainLoop, 1)
     StartThread(trainLoop, 2)
-    rVal = math.random(0, 360)
-    WTurn(center, y_axis, math.rad(rVal),0)
-    StartThread(deployTrack, -1 , rail1,  TablesOfPiecesGroups["Rail1Sub"] , sub1, EndPoint1)
-    StartThread(deployTrack, 1 , rail2,  TablesOfPiecesGroups["Rail2Sub"] , sub2, EndPoint2)
+
+ 
+    StartThread(deployTrack, 25, -25,  rail1,  TablesOfPiecesGroups["Rail1Sub"] , sub1, EndPoint1)
+    StartThread(deployTrack, 25, -25,  rail2,  TablesOfPiecesGroups["Rail2Sub"] , sub2, EndPoint2)
     StartThread(trainLoop)
-    foreach(TableOfPiecesGroups["Add"],
+    foreach(TablesOfPiecesGroups["Add"],
             function(id)
                 if maRa() then Show(id) end
             end
             )
 end
 
-function deployTrack( directionSign, railP, Pillars, detectorPiece, endPoint)
-    upValue = 25
-    lastValue = upVal*directionSign
-    WTurn(railP, x_axis, math.rad(upVal*directionSign), 0)
-    boolValidStart = validTrackPart(endPoint, DetectorPiece)
-    assert(boolValidStart)
-    Hide(endPoint)
 
-    for i= upVal*directionSign, upValue, -1* directionSign do
-       WTurn(railP, x_axis, math.rad(i), 0)
-       boolAboveGround = validTrackPart(endPoint, DetectorPiece)
-       if not boolAboveGround then 
-            endvalue =i - (1*directionSign)
-            WTurn(railP, x_axis, math.rad(endvalue), 0)
-            WTurn(endPoint, x_axis, math.rad(-endvalue), 0)
+function deployTrack( upStart, downEnd, railP, Pillars, detectorPiece, endPoint)
+    assert(railP)
+    upValue = 25
+
+    upDownAxis =  z_axis
+    smallestDiffYet = math.huge
+    degDiff = 0
+    WTurn(railP, upDownAxis, math.rad(upStart), 0)
+    Hide(endPoint)
+    Hide(detectionPiece)
+    Show(railP)
+    for i= upStart, downEnd, -1 do
+       WTurn(railP, upDownAxis, math.rad(i), 0)
+       boolIsVisible, diff = isStationVisible(endPoint, detectorPiece)
+       if boolIsVisible and  diff >= 0 and diff < smallestDiffYet then
+        smallestDiffYet = diff
+        degDiff = i
+       end
+   end
+    WTurn(railP, upDownAxis, math.rad(degDiff), 0)
+    boolIsVisible, diff = isStationVisible(endPoint, detectorPiece)
+    if boolIsVisible then             
+            WTurn(endPoint, upDownAxis, math.rad(-degDiff), 0)
             foreach(Pillars,
                     function(id)
                         Show(id)
-                        WTurn(id, x_axis, math.rad(-endvalue), 0)
+                        WTurn(id, upDownAxis, math.rad(-degDiff), 0)
                     end
                     )
             Show(endPoint)
-            break
-       end
-       Sleep(1)
-       lastValue = i
     end
-    Show(railP)
-    countUp= countUp +1
+
+    semaphore= semaphore +1
 end
 
-function validTrackPart( EndPiece, DetectorPiece)
-    Hide(DetectorPiece)
-    Hide(EndPiece)
-    x,y,z = Spring.GetUnitPiecePosDir(unitID, DetectorPiece)
+function isAboveGround(pieceName)
+    x,y,z = Spring.GetUnitPiecePosDir(unitID, pieceName)
     gh = Spring.GetGroundHeight(x,z)
+    boolUnderground =  gh + 10 > y or gh < 0
+    return boolUnderground, x,y,z
+end
 
-    boolUnderground =  gh +10 > y
+
+function isStationVisible( EndPiece, DetectorPiece)
+    boolUnderground,x,y,z =  isAboveGround(DetectorPiece)
+    groundHeight = Spring.GetGroundHeight(x,z)
     boolOutsideMap = (x > Game.mapSizeX or x <= 0) or  (z > Game.mapSizeZ or z <= 0)
-    return boolUnderground or boolOutsideMap
+    return boolUnderground or boolOutsideMap, y - groundHeight
 end
 
 local boolOldState = false
@@ -183,7 +212,7 @@ function forth(direction)
 end
 
 function trainLoop()
-    while (countUp < 2) do Sleep(100) end
+    while (semaphore < 2) do Sleep(100) end
     deployTunnels(1, 1)    
     deployTunnels(3, -1)   
     direction = randSign()

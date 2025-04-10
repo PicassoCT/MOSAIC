@@ -6282,18 +6282,8 @@ function frameToS(frames) return (frames / 30); end
 
 function assertArguments(...)
     local arg = {...}
-    arg.n = #arg
-
-    for i = 1, arg.n, 2 do
-        local expected = arg[i]
-        local actual = arg[i + 1]
-        assert((type(expected) == type(actual)),
-               "Arg:" .. i .. " :Types not compatible, expected " ..
-                   type(expected) .. " got " .. type(actual))
-        assert((type(expected) == type(actual)),
-               "Arg:" .. i .. " :Value not as expected" .. toString(expected) ..
-                   " got " .. toString(actual))
-        assert(expected == actual)
+    for i, v in ipairs(args) do
+        assert(v ~= nil, string.format("Argument #%d is nil", i))
     end
 end
 

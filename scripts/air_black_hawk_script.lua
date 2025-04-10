@@ -25,8 +25,7 @@ dirtemit2 = piece "dirtemit2"
 soundfolder = "sounds/air/copter/"
 rotoscope = piece "rotoscope"
 
-
-
+local myDefIDd = Spring.GetUnitDefID(unitID)
 local boolOnlyOnce = true
 local boolMoving = false
 local SIG_ONTHEFLY = 4
@@ -123,13 +122,13 @@ function landed()
     local spPlaySound = Spring.PlaySoundFile
     local lrand = math.random
     local lceil = math.ceil
-    StartThread(PlaySoundByUnitDefID, unitdef, soundfolder .. "copterlanding.wav", 0.9, 3000, 1)
+    StartThread(PlaySoundByUnitDefID, myDefIDd, soundfolder .. "copterlanding.wav", 0.9, 3000, 1)
     Sleep(4000)
 
     while RepEated > 0 do
         RepEated = RepEated - 1
         w = lrand(0.5, 0.65)
-        StartThread(PlaySoundByUnitDefID, unitdef, soundfolder .. "copterlanded.wav", w, 3000, 1)
+        StartThread(PlaySoundByUnitDefID, myDefIDd, soundfolder .. "copterlanded.wav", w, 3000, 1)
         rest = lceil(lrand(1900, 2400))
 
         for i = 1, rest, 100 do
@@ -151,14 +150,14 @@ end
 
 function flyBySound()
     if maRa() == true then
-        PlaySoundByUnitDefID(unitdef, soundfolder .. "copterflyby.wav", 0.7, 5000, 1)
+        PlaySoundByUnitDefID(myDefIDd, soundfolder .. "copterflyby.wav", 0.7, 5000, 1)
 
     else
-        PlaySoundByUnitDefID(unitdef, soundfolder .. "copterflyby2.wav", 0.7, 5000, 1)
+        PlaySoundByUnitDefID(myDefIDd, soundfolder .. "copterflyby2.wav", 0.7, 5000, 1)
     end
 end
 
-unitdef = Spring.GetUnitDefID(unitID)
+
 function onTheFly()
     SetSignalMask(SIG_FLY)
     Sleep(300)
@@ -166,7 +165,7 @@ function onTheFly()
     local lsin = math.sin
     local lrand = math.random
 
-    --StartThread(PlaySoundByUnitDefID, unitdef, soundfolder .. "copterTakeOff.wav", 0.9, 3000, 1)
+    --StartThread(PlaySoundByUnitDefID, myDefIDd, soundfolder .. "copterTakeOff.wav", 0.9, 3000, 1)
     Sleep(3000)
     SumSini = 0
     boolFlop = true
