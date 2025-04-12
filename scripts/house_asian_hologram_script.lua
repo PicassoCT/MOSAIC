@@ -505,9 +505,13 @@ local total = math.sqrt(36)
 local mid = (total/2)*scale
 local pixelSize = 64
 local colT = {"R","G", "B"}
+function getRandomColor()
+    return colT[math.random(1,3)]
+end
+
 
 function getRandomPixel()
-    colSelect = colT[math.random(1,3)]
+    colSelect = getRandomColor()
     colSelectPieces = TableOfPiecesGroups[colSelect]
     return colSelectPieces[math.random(1,#colSelectPieces)]
 end
@@ -533,6 +537,22 @@ function RainDrop(pieces, delayMS, speed)
     HideReg(pieceID)
 end
 
+function getRandomTimeFormla()
+    formulas = {
+        function(x,y, time, step)
+            return math.sin(time) *math.atan2(x,y)
+        end,
+        function(x,y, time, step)
+            return math.cos(time) *math.atan2(x,y)
+        end,
+        
+
+    }
+
+
+    return formulas[math.random(1,#formulas)]
+end
+
 function getPixelEffect()
     local effects = {
         function () -- random coloured cube       
@@ -548,6 +568,30 @@ function getPixelEffect()
                         end
                     end
                 end
+            end
+        end,
+        function() -- plane of pixelart
+            time = math.random(10,35)* 1000
+            randomColA = getRandomColor()
+            total = math.ceil(math.sqrt(#TableOfPiecesGroups[colSelect]))
+            timeFormula = getRandomTimeFormla()
+            interPolationStep = 125
+            while (time > 0 ) do
+                for pxIndex = 1, #TableOfPiecesGroups[colSelect] do
+                    px = TableOfPiecesGroups[colSelect][pxIndex]
+                    for x=1, total do
+                        for y=1, total do
+                                    Move(px, x_axis, (x * scale) - mid, 0)
+                                    Move(px, y_axis, (y * scale), 0)
+                                    Move(randomPixel,z_axis, timeFormula(x, y, time, interPolationStep), 0)
+                                    ShowReg(px)
+                                end
+                            end
+                        end
+                    end
+                end
+                Sleep(interPolationStep)
+                time = time - interPolationStep
             end
         end,
         function() -- pixel line error
