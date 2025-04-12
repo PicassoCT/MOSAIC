@@ -215,8 +215,8 @@ end
 
 function trainLoop()
     while (semaphore < 2) do Sleep(100) end
-    deployTunnels(piece("TunnelDetectionPlus") , 1, TablesOfPiecesGroups["Tunnel_Plus"])    
-    deployTunnels(piece("TunnelDetectionMinus") , -1, TablesOfPiecesGroups["Tunnel_Minus"])   
+    deployTunnels(piece("TunnelDetectionPlus") , 1, TablesOfPiecesGroups["TunnelPlus"])    
+    deployTunnels(piece("TunnelDetectionMinus") , -1, TablesOfPiecesGroups["TunnelMinus"])   
     direction = randSign()
     StartThread(back, direction)
     StartThread(forth, direction)
