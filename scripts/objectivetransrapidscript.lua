@@ -33,6 +33,7 @@ function airPortConnection()
         ax,ay,az = Spring.GetUnitPosition(allAirPorts[1])
         rDeg = math.atan2(x-ax,z-az)
         ninetyDeg = math.pi/2
+        assert(center)
         WTurn(center, y_axis, rDeg + ninetyDeg ,0)
         echo("objective_transrapid is airport connected")
     else
@@ -50,8 +51,8 @@ function setup()
     StartThread(trainLoop, 2)
 
  
-    StartThread(deployTrack, 25, -25,  rail1,  TablesOfPiecesGroups["Rail1Sub"] , sub1, EndPoint1)
-    StartThread(deployTrack, 25, -25,  rail2,  TablesOfPiecesGroups["Rail2Sub"] , sub2, EndPoint2)
+    StartThread(deployTrack, 25, -25,  rail1,  TablesOfPiecesGroups["Rail1Sub"] , sub1, piece("EndPoint1"))
+    StartThread(deployTrack, 25, -25,  rail2,  TablesOfPiecesGroups["Rail2Sub"] , sub2, piece("EndPoint2"))
     StartThread(trainLoop)
     foreach(TablesOfPiecesGroups["Add"],
             function(id)
@@ -60,14 +61,17 @@ function setup()
             )
 end
 
-
 function deployTrack( upStart, downEnd, railP, Pillars, detectorPiece, endPoint)
     assert(railP)
+    assert(detectorPiece)
+    assert(endPoint)
+    assert(Pillars)
     upValue = 25
 
     upDownAxis =  z_axis
     smallestDiffYet = math.huge
     degDiff = 0
+    assert(railP)
     WTurn(railP, upDownAxis, math.rad(upStart), 0)
     Hide(endPoint)
     Hide(detectionPiece)
@@ -82,12 +86,16 @@ function deployTrack( upStart, downEnd, railP, Pillars, detectorPiece, endPoint)
    end
     WTurn(railP, upDownAxis, math.rad(degDiff), 0)
     boolIsVisible, diff = isStationVisible(endPoint, detectorPiece)
-    if boolIsVisible then             
+    if boolIsVisible then     
+               
             WTurn(endPoint, upDownAxis, math.rad(-degDiff), 0)
             foreach(Pillars,
                     function(id)
                         Show(id)
-                        WTurn(id, upDownAxis, math.rad(-degDiff), 0)
+                        assert(id)
+                        if id then
+                            WTurn(id, upDownAxis, math.rad(-degDiff), 0)
+                        end
                     end
                     )
             Show(endPoint)
@@ -145,7 +153,7 @@ end
 --
 function deployTunnels(detectionPiece, dirSign, tunnelTable)
     boolOldState = false
-    Sleep(nr)
+    Sleep(50)
 
     tunnelIndex = 1
     local xMax = Game.mapSizeX 
@@ -158,7 +166,7 @@ function deployTunnels(detectionPiece, dirSign, tunnelTable)
             --Spring.Echo("Checking tunnel "..nr.." for"..distanceTunnel)
             	if detectRisingEdge(boolAboveGround) or detectFallingEdge(boolAboveGround) then
                     tunnelIndex, boolOutOfTunnel = deployTunnel(tunnelTable, tunnelIndex, distanceTunnel)
-                    if boolOutOfTunnel  then return end                    
+                    if boolOutOfTunnel then return end                    
             	end
             end
         	boolOldState = boolAboveGround
@@ -166,14 +174,12 @@ function deployTunnels(detectionPiece, dirSign, tunnelTable)
 end
 
 function buildTrain(nr)
-    assert(TablesOfPiecesGroups["Train"][nr],nr)
     Show(TablesOfPiecesGroups["Train"][nr])
     showT(TablesOfPiecesGroups["Train"..nr.."Sub"])
     return TablesOfPiecesGroups["Train"][nr]
 end
 
 function hideTrain(nr)
-    assert(TablesOfPiecesGroups["Train"][nr],nr)
     Hide(TablesOfPiecesGroups["Train"][nr])
     reset(TablesOfPiecesGroups["Train"][nr], 0)
     hideT(TablesOfPiecesGroups["Train"..nr.."Sub"])        
@@ -193,7 +199,7 @@ function forth(direction)
     end
 end
 
-function forth(direction)
+function back(direction)
     while true do        
         train = buildTrain(2)
         WMove(train, trainAxis,  maxDistanceTrain*direction*-1, 0)
@@ -208,9 +214,9 @@ function forth(direction)
 end
 
 function trainLoop()
-    while (countUp < 2) do Sleep(100) end
-    deployTunnels(piece("TunnelDetectionPlus") , 1, TableOfPiecesGroups["Tunnel_Plus"])    
-    deployTunnels(piece("TunnelDetectionMinus") , -1, TableOfPiecesGroups["Tunnel_Minus"])   
+    while (semaphore < 2) do Sleep(100) end
+    deployTunnels(piece("TunnelDetectionPlus") , 1, TablesOfPiecesGroups["Tunnel_Plus"])    
+    deployTunnels(piece("TunnelDetectionMinus") , -1, TablesOfPiecesGroups["Tunnel_Minus"])   
     direction = randSign()
     StartThread(back, direction)
     StartThread(forth, direction)

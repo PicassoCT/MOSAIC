@@ -102,7 +102,7 @@ function setArcologyProjectsName(id, isArcology)
             "Privacy assured, limited daylight",
             "Thriving community, curated interactions only",
             "Rediscover nature, in holographic parks",
-            "Sector 7 lockdown after rogue anti-socials",
+            "Sector "..math.random(1,10).." lockdown after rogue anti-socials",
             "Neon District curfew extended again",
             "Unlicensed clones found in Sublevel 5",
             "Black Market implants spike in sales",
