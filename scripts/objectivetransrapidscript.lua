@@ -154,7 +154,8 @@ end
 function deployTunnels(detectionPiece, dirSign, tunnelTable)
     boolOldState = false
     Sleep(50)
-
+    Hide(detectionPiece)
+    hideT(tunnelTable)
     tunnelIndex = 1
     local xMax = Game.mapSizeX 
     local zMax = Game.mapSizeZ 
