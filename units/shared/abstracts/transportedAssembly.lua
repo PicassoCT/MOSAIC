@@ -49,8 +49,7 @@ local unitDef = {
         --ground    
         "ground_turret_mg", "ground_turret_antiarmor", "ground_turret_ssied",
         "ground_walker_mg", "ground_walker_grenade", "brehmerwall",
-        "ground_turret_cm_airstrike", "ground_turret_cm_transport", "ground_turret_cm_antiarmor",
-        "ground_turret_hedgehog"
+        "ground_turret_cm_airstrike", "ground_turret_cm_transport", "ground_turret_cm_antiarmor"
     },
     usebuildinggrounddecal = false,
     Category = [[NOTARGET]],
