@@ -2341,7 +2341,7 @@ function getCoordinateString(unitID)
 
 end
 
-function placeElevators(TablesOfPiecesGroups, elevatorHeight, nrLevels)
+function placeElevators(TablesOfPiecesGroups, elevatorHeight, nrLevels, toShowDict)
     foreach(TablesOfPiecesGroups["Cabin"],
         function(id)
             if toShowDict[id] then

@@ -4,7 +4,7 @@ include "lib_mosaic.lua"
 include "lib_UnitScript.lua"
 
 local TablesOfPieceGroups = {}
-local boolDebug = false
+local boolDebug = true
 local myDefID = Spring.GetUnitDefID(unitID)
 local GameConfig = getGameConfig()
 local factor = 35
@@ -327,9 +327,8 @@ function addGroundPlaceables()
                     x, y, z, _, _, _ = Spring.GetUnitPiecePosDir(unitID, randPlaceAbleID)
                     myHeight = Spring.GetGroundHeight(x, z)
                     if myHeight > 0 then
-                        heightdifference = math.abs(globalHeightUnit - myHeight)
-                            if myHeight < globalHeightUnit then heightdifference = -heightdifference end
-                            WMove(randPlaceAbleID,y_axis, heightdifference, 0)
+                        heightdifference =  myHeight -globalHeightUnit
+                        WMove(randPlaceAbleID,y_axis, heightdifference, 0)
     
                         addToShowTable(randPlaceAbleID)
                         Show(randPlaceAbleID)    
@@ -472,7 +471,7 @@ function buildBuilding()
     end
     setArcologyProjectsName(unitID, isArcology)
     if toShowDict[TablesOfPieceGroups["Arcology"][8]] then
-            StartThread(placeElevators, TablesOfPieceGroups, 200, 20)
+            StartThread(placeElevators, TablesOfPieceGroups, 200, 20, toShowDict)
     end
     boolDoneShowing = true
     showHouse()

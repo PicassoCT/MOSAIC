@@ -537,16 +537,57 @@ function RainDrop(pieces, delayMS, speed)
     HideReg(pieceID)
 end
 
-function getRandomTimeFormla()
+function getRandomTimeZAxisFormula()
     formulas = {
-        function(x,y, time, step)
-            return math.sin(time) *math.atan2(x,y)
+        function(x, y, time, tScale) -- rings going outwards
+            return (math.sqrt(x^2 + y^2) / math.sin(time)) * tScale
         end,
-        function(x,y, time, step)
-            return math.cos(time) *math.atan2(x,y)
+        function(x, y, time, tScale) -- radial ripple wave
+            local dist = math.sqrt(x^2 + y^2)
+            return math.sin(dist - time * 2) * tScale
         end,
-        
-
+        function(x, y, time, tScale) -- checkerboard wave
+            return math.sin(x * 0.5 + time) * math.cos(y * 0.5 + time) * tScale
+        end,
+        function(x, y, time, tScale) -- spiraling vortex
+            local angle = math.atan2(y, x)
+            local radius = math.sqrt(x^2 + y^2)
+            return math.sin(radius + time + angle) * tScale
+        end,
+        function(x, y, time, tScale) -- sphere popping up
+            local radius = 5
+            local dist = math.sqrt(x^2 + y^2)
+            if dist <= radius then
+                return math.sin(time) * (1 - dist / radius)^2 * tScale * 2
+            else
+                return 0
+            end
+        end,
+        function(x, y, time, tScale) -- cube rising and falling
+            local size = 6
+            if math.abs(x) <= size and math.abs(y) <= size then
+                return math.abs(math.sin(time)) * tScale * 2
+            else
+                return 0
+            end
+        end,
+        function(x, y, time, tScale) -- simple face pattern
+            local z = 0
+            -- Head circle
+            local dist = math.sqrt(x^2 + y^2)
+            if dist < 6 then
+                z = z + math.sin(time) * 0.2 * tScale
+            end
+            -- Eyes
+            if (x > -3 and x < -1 and y > 1 and y < 3) or (x > 1 and x < 3 and y > 1 and y < 3) then
+                z = z + math.sin(time * 2) * 0.5 * tScale
+            end
+            -- Mouth
+            if x > -2 and x < 2 and y > -3 and y < -2 then
+                z = z - math.sin(time * 3) * 0.3 * tScale
+            end
+            return z
+        end
     }
 
 
@@ -574,22 +615,21 @@ function getPixelEffect()
             time = math.random(10,35)* 1000
             randomColA = getRandomColor()
             total = math.ceil(math.sqrt(#TableOfPiecesGroups[colSelect]))
-            timeFormula = getRandomTimeFormla()
+            timeFormula = getRandomTimeZAxisFormula()
             interPolationStep = 125
+            tScale = 25
             while (time > 0 ) do
                 for pxIndex = 1, #TableOfPiecesGroups[colSelect] do
                     px = TableOfPiecesGroups[colSelect][pxIndex]
                     for x=1, total do
                         for y=1, total do
-                                    Move(px, x_axis, (x * scale) - mid, 0)
-                                    Move(px, y_axis, (y * scale), 0)
-                                    Move(randomPixel,z_axis, timeFormula(x, y, time, interPolationStep), 0)
-                                    ShowReg(px)
-                                end
-                            end
+                            Move(px, x_axis, (x * tScale) - mid, 0)
+                            Move(px, y_axis, (y * tScale), 0)
+                            Move(randomPixel,z_axis, timeFormula(x - total*0.5, y - total*0.5, time, tScale), 0)
+                            ShowReg(px)
                         end
                     end
-                end
+                end           
                 Sleep(interPolationStep)
                 time = time - interPolationStep
             end

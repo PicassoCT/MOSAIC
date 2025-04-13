@@ -3,14 +3,13 @@
 function getFirstShopName(firstName)
    -- Get the first letter of the first name
     local firstLetter = firstName:sub(1, 1):upper()
-    local secondLetter = firstName:sub(2, 1):upper()
-    
+    local secondLetter = firstName:sub(2, 2):upper()
+
     -- Example more generic products for each letter
-    local products = {
+    products = {
         A = "Art",
         B = "Bakery",
-        C = "Crafts",
-        D = "Designer",
+        C = "Crafts",      
         E = "Essentials",
         F = "Fashion",
         G = "Goods",
@@ -34,9 +33,9 @@ function getFirstShopName(firstName)
         Y = "Yarns",
         Z = "Zest"
     }
-    products.D = products.D + " " + products[secondLetter]
+    products.D = "Designer " .. products[secondLetter]
 
-    local broducts = {       
+    broducts = {       
         A = {"Adult Entertainment", "Appsassins", "Anal Toyz", "Artificial Animals", "Augment Surgeons"},
         B = {"Bunkers", "Bombs", "BDSM", "BadBets", "Blacklight Bazaar", "Biohackers Anonymous"},
         C = {"Corpse Dispossal", "Cannibalist", "Cybernetics", "Cryo Coffins", "Clone Customizers"},
@@ -68,7 +67,7 @@ function getFirstShopName(firstName)
     -- Get the product corresponding to the first letter
     local product = products[firstLetter] or "Products"
     if maRa() then
-        index = string.byte(secondLetter % #broducts[firstLetter]) +1
+        index = (string.byte(secondLetter) % #broducts[firstLetter]) +1
         product = broducts[firstLetter][index] 
     end
     -- Concatenate the first name and the product with the shop name
@@ -82,11 +81,13 @@ function getHouseShopName(id,  buisnessNamesTable, UnitDefs)
     houseHasShop = hash > 75   
 	if houseHasShop then
         x,y, z = Spring.GetUnitPosition(id)
+        local houseStreetDim = {}
         local gameConfig = GG.GameConfig
-        isLocalShop = (hash % 3 == 0) and not isNearCityCenter(x * gameConfig.houseStreetDim.x, z* gameConfig.houseStreetDim.z, gameConfig)
+        houseStreetDim.x, houseStreetDim.y, houseStreetDim.z = gameConfig.houseSizeX + gameConfig.allyWaySizeX, gameConfig.houseSizeY, gameConfig.houseSizeZ + gameConfig.allyWaySizeZ
+        isLocalShop = (hash % 3 == 0) and not isNearCityCenter(x * houseStreetDim.x, z* houseStreetDim.z, gameConfig)
 		if isLocalShop then
             --ownerId = 
-            first, sur =  getDeterministicCultureNames(id+ math.random(1,3000), UnitDefs, GG.GameConfig.instance.culture, true)
+            first, sur =  getDeterministicCultureNames(id+ math.random(1,3000), UnitDefs, gameConfig.instance.culture, true)
 		    if maRa() then
                 return getFirstShopName(first)
             else

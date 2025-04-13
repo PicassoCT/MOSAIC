@@ -105,7 +105,7 @@ if gadgetHandler:IsSyncedCode() then
             a = 0.5
         }
     end
-    echo("Suncolor: "..toString(sunCol))
+    --echo("Suncolor: "..toString(sunCol))
 
     -- Various Atmosphere and Sun setting getters
     local function getDefaultConfg(rgba)
