@@ -4,7 +4,7 @@ include "lib_mosaic.lua"
 include "lib_UnitScript.lua"
 
 local TablesOfPieceGroups = {}
-local boolDebug = true
+local boolDebug = false
 local myDefID = Spring.GetUnitDefID(unitID)
 local GameConfig = getGameConfig()
 local factor = 35
@@ -412,7 +412,7 @@ function ViewShadowGameRelevant(px, pz)
         end   
     end
 
-    return counter  < 0
+    return counter  > 0
 end
 
 
