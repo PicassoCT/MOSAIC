@@ -626,7 +626,7 @@ end
     --function gadget:DrawWorld(deferredPass, drawReflection, drawRefraction)
     function gadget:DrawWorld()
         RenderAllNeonUnits()
-        RenderBlurApplyBlur()
+        --RenderBlurApplyBlur()
     end
 
     function gadget:Shutdown()
