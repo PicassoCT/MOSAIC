@@ -14,6 +14,7 @@ end
 if (not gadgetHandler:IsSyncedCode()) then return false end
 
 VFS.Include("scripts/lib_UnitScript.lua")
+VFS.Include("scripts/lib_debug.lua")
 VFS.Include("scripts/lib_mosaic.lua")
 VFS.Include("scripts/lib_staticstring.lua")
 
@@ -216,6 +217,7 @@ end
 function checkReSpawnPopulation()
     counter = 0
     toDeleteTable = {}
+    assert(type(GG.CivilianTable) == "table")
     for id, data in pairs(GG.CivilianTable) do
         if id and civilianWalkingTypeTable[data.defID] then
             if doesUnitExistAlive(id) == true then
@@ -289,6 +291,7 @@ end
 function checkReSpawnTraffic()
     counter = 0
     toDeleteTable = {}
+    assert(type(GG.CivilianTable) == "table")
     for id, data in pairs(GG.CivilianTable) do
         if id and TruckTypeTable[data.defID] then
             if doesUnitExistAlive(id) == true then
@@ -309,6 +312,7 @@ function checkReSpawnTraffic()
             x, _, z, startNode = getRandomSpawnNode()
             if startNode then
                 goalNode = RouteTabel[startNode][math.random(1, #RouteTabel[startNode])]
+                assertTable(TruckTypeTable)
                 TruckType = randDict(TruckTypeTable)
                 id = spawnAMobileCivilianUnit(TruckType, x, z, startNode, goalNode)
                 if id  then
@@ -318,6 +322,7 @@ function checkReSpawnTraffic()
             end
         end
     else
+        assertTable(TruckTypeTable)
         decimateArrivedCivilians(absDistance( getNumberOfUnitsAtTime(GameConfig.numberOfVehicles), counter), TruckTypeTable)
     end
 end
@@ -985,7 +990,7 @@ function decimateArrivedCivilians(nrToDecimate, typeTable)
     nrToDecimate = math.floor(nrToDecimate)
     -- echo("Decimation called"..nrToDecimate)
     if nrToDecimate <= 0 then return end
-
+    assertTable(GG.UnitArrivedAtTarget)
     for id, bArrived in pairs(GG.UnitArrivedAtTarget) do
         if id and GG.CivilianTable[id] and
             doesUnitExistAlive(GG.CivilianTable[id].startID) == true and
