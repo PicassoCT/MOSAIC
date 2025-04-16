@@ -9,7 +9,8 @@ function getFirstShopName(firstName)
     products = {
         A = "Art",
         B = "Bakery",
-        C = "Crafts",      
+        C = "Crafts",    
+        D = "Designer",
         E = "Essentials",
         F = "Fashion",
         G = "Goods",
@@ -33,7 +34,11 @@ function getFirstShopName(firstName)
         Y = "Yarns",
         Z = "Zest"
     }
-    products.D = "Designer " .. products[secondLetter]
+    if products[secondLetter] then
+        products.D = "Designer " .. products[secondLetter]
+    else
+        echo("Not an alphabet letter " .. secondLetter)
+    end
 
     broducts = {       
         A = {"Adult Entertainment", "Appsassins", "Anal Toyz", "Artificial Animals", "Augment Surgeons"},
