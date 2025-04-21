@@ -21,9 +21,21 @@ function script.Create()
        StartThread(buildBuilding)
 end
 
+local RoofTopPieces ={}
+function registerRooftopSubPieces(pieceToShow)
+    name = pieceNr_pieceName[pieceToShow].."Roof"
+    if TablesOfPiecesGroups[name] then
+        for nr,id in pairs(TablesOfPieceGroups[name]) do
+            RoofTopPieces[#RoofTopPieces +1] = id
+        end
+    end
+end
+
+
 function buildBuilding()
   hideAll(unitID)
   Show(Icon)
+  registerRooftopSubPieces(piece("House"))
   Sleep(9000)
   showHouse()
 end
@@ -60,4 +72,9 @@ function script.Deactivate() return 0 end
 -- end
 
 -- Spring.SetUnitNanoPieces(unitID, { center })
+
+function traceRayRooftop(  vector_position, vector_direction)
+    return  GetRayIntersectPiecesPosition(unitID, RoofTopPieces, vector_position, vector_direction)
+end
+
 

@@ -30,9 +30,7 @@ if (gadgetHandler:IsSyncedCode()) then
     local spSetUnitRotation = Spring.SetUnitRotation
     
     function getEnvironmentAttachToRooftopPiece(buildingID, vector_position, vec_direction)
-        --[[Spring.Echo("Rightclick->RecvLuaMsg:getEnvironmentAttachToRooftopPiece")--]]
         env = Spring.UnitScript.GetScriptEnv(buildingID)
-
         if env and env.traceRayRooftop then
            pieceID= Spring.UnitScript.CallAsUnit(buildingID, 
                                                  env.traceRayRooftop,
