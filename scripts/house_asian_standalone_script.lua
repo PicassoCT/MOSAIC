@@ -79,6 +79,9 @@ function setArcologyProjectsName(id, isArcology)
         "Todos Santos"
     }
     local descriptions = {}
+    boolDoneShowing = false
+    boolHouseHidden = false
+    Icon = piece("Icon")
 
     if not isArcology then
         descriptions = {
@@ -393,8 +396,9 @@ end
 
 function buildBuilding()
     hideAll(unitID)
-    Sleep(unitID)
+    StartThread(buildAnimation)
     initilization()
+    Sleep(9000)
     px, py, pz = Spring.GetUnitPosition(unitID)
     --echo("Building "..unitID.." ViewShadowGameRelevant ".. toString(ViewShadowGameRelevant(px,pz)))
     if  ViewShadowGameRelevant(px,pz, boolDebug) or GG.MegaBuildingMax > GameConfig.MegaBuildingMax then
@@ -462,6 +466,14 @@ end
 function hideHouse()
     boolHouseHidden = true
     hideT(ToShowTable)
+end
+
+function buildAnimation()
+   
+    Show(Icon)
+    while boolDoneShowing == false do Sleep(100) end
+    Hide(Icon)
+    showT(ToShowTable)   
 end
 
 function script.Killed(recentDamage, _)

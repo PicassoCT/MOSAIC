@@ -79,16 +79,15 @@ local AntagonSafeHouse = Building:New{
 		"ground_turret_sniper",
 		"ground_walker_grenade",
 
-		"ground_turret_hedgehog",
-		"civilian_truck_ssied",
-		"ground_truck_assembly",
-
 		"air_copter_antiarmor",
 		"air_copter_ssied",
 		"air_copter_scoutlett",
-			
+
+
+		"potemkinpayload",
+		"civilian_truck_ssied",
+		"ground_truck_assembly",			
 	
-		"potemkinpayload"
 		--Described in morphdefs
 		--propagandaserver
 		--nimrod

@@ -1616,7 +1616,6 @@ function buildAnimation()
     Show(Icon)
     while boolDoneShowing == false do Sleep(100) end
     Hide(Icon)
-    while boolDoneShowing == false do Sleep(100) end
     showT(ToShowTable)   
 end
 

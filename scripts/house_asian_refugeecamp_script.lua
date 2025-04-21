@@ -1,16 +1,16 @@
 include "createCorpse.lua"
-include "lib_OS.lua"
+include "lib_mosaic.lua"
 include "lib_UnitScript.lua"
-include "lib_Animation.lua"
---include "lib_Build.lua"
+
 
 TablesOfPiecesGroups = {}
 myDefID = Spring.GetUnitDefID(unitID)
+Icon = piece("Icon")
+ToShowTable = {piece("House")}
 function script.HitByWeapon(x, z, weaponDefID, damage) end
-
+boolHouseHidden = false
 
 function script.Create()
-    echo(UnitDefs[myDefID].name.."has placeholder script called")
     -- generatepiecesTableAndArrayCode(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     -- Spring.MoveCtrl.Enable(unitID,true)
@@ -18,7 +18,24 @@ function script.Create()
     -- Spring.MoveCtrl.SetPosition(unitID, x,y+500,z)
     -- StartThread(AnimationTest)
     x,y,z = Spring.GetUnitPosition(unitID)
-    echo("{name = \"placeholder\", x = "..x..", z = "..z..", rot = 0, scale = 1.000000}")
+       StartThread(buildBuilding)
+end
+
+function buildBuilding()
+  hideAll(unitID)
+  Show(Icon)
+  Sleep(9000)
+  showHouse()
+end
+
+function showHouse()
+    boolHouseHidden = false
+    showT(ToShowTable)
+end
+
+function hideHouse()
+    boolHouseHidden = true
+    hideT(ToShowTable)
 end
 
 
