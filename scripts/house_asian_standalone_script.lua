@@ -26,6 +26,16 @@ local cubeDim = {
     roofHeigth = 50
 }
 
+local RoofTopPieces ={}
+function registerRooftopSubPieces(pieceToShow)
+    name = pieceNr_pieceName[pieceToShow].."Roof"
+    if TablesOfPieceGroups[name] then
+        for nr,id in pairs(TablesOfPieceGroups[name]) do
+            RoofTopPieces[#RoofTopPieces +1] = id
+        end
+    end
+end
+
 function setArcologyProjectsName(id, isArcology)
     px, py, pz = Spring.GetUnitPosition(id)
 
@@ -421,6 +431,7 @@ function buildBuilding()
         Show(pieceToShow)
         addToShowTable(pieceToShow)
         showTSubSpins(pieceToShow, TablesOfPieceGroups)
+        registerRooftopSubPieces(pieceToShow)
         pieceToShowLightBlink(pieceToShow)
     else
         pieceToShow = findLowestPieceInTableFromWithSuggestion((hash % count(ProjectT)) + 1, ProjectT)
@@ -428,6 +439,7 @@ function buildBuilding()
         Show(pieceToShow)
         addToShowTable(pieceToShow)
         showTSubSpins(pieceToShow, TablesOfPieceGroups)
+        registerRooftopSubPieces(pieceToShow)
         pieceToShowLightBlink(pieceToShow)
     end
     if isDualProjectOrMix then
@@ -436,6 +448,7 @@ function buildBuilding()
         if not Mega[pieceToShow] then
             showTSubSpins(pieceToShow, TablesOfPieceGroups)
             Show(pieceToShow)
+            registerRooftopSubPieces(pieceToShow)
             addToShowTable(pieceToShow)
             pieceToShowLightBlink(pieceToShow)
         end     
@@ -492,4 +505,8 @@ end
 
 function script.Deactivate()
     return 0
+end
+
+function traceRayRooftop(  vector_position, vector_direction)
+    return  GetRayIntersectPiecesPosition(unitID, RoofTopPieces, vector_position, vector_direction)
 end
