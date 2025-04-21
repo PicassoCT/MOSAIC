@@ -228,8 +228,6 @@ function checkReSpawnPopulation()
         end
     end
 
-
-
     for id, data in pairs(toDeleteTable) do GG.CivilianTable[id] = nil end
 
     if counter < getNumberOfUnitsAtTime(GameConfig.numberOfPersons) then
@@ -239,13 +237,17 @@ function checkReSpawnPopulation()
 
         for i = 1, stepSpawn do
             x, _, z, startNode = getRandomSpawnNode()
+            assert(x > 0 and x < Game.mapSizeX, x)
+            assert(z > 0 and z < Game.mapSizeZ, z)
             if x and startNode then
                 goalNode = RouteTabel[startNode][math.random(1, #RouteTabel[startNode])]
                 civilianType = randDict(civilianWalkingTypeTable)
         		if GG.BusesTable  and #GG.BusesTable > 0 and randChance(10) then
                     busId = randDict(GG.BusesTable)
                     if doesUnitExistAlive(busId) then
-        			    x,_,z = spGetUnitPosition(busId)
+        	   	        x,_,z = spGetUnitPosition(busId)
+                        assert(x > 0 and x < Game.mapSizeX, x)
+                        assert(z > 0 and z < Game.mapSizeZ, z)
                     end
         		end
                 id = spawnAMobileCivilianUnit(civilianType, x, z, startNode,
@@ -261,8 +263,10 @@ end
 
 function attachPayload(payLoadID, id)
     if payLoadID then
-       Spring.SetUnitAlwaysVisible(payLoadID,true)
+
+       Spring.SetUnitAlwaysVisible(payLoadID, true)
        pieceMap = Spring.GetUnitPieceMap(id)
+
        assert(pieceMap["attachPoint"], "Truck has no attachpoint")
        Spring.UnitAttach(id, payLoadID, pieceMap["attachPoint"])
        return payLoadID
@@ -275,8 +279,9 @@ function loadTruck(id, loadType)
     if loadableTruckType[spGetUnitDefID(id)] then
         --Spring.Echo("createUnitAtUnit ".."game_civilians.lua")     
         payLoadID = createUnitAtUnit(gaiaTeamID, loadType, id)
-
-        return attachPayload(payLoadID, id)
+        if payLoadID then
+            return attachPayload(payLoadID, id)
+        end
     end
 end
 
@@ -284,14 +289,16 @@ function loadRefugee(id, loadType)
     if refugeeableTruckType[spGetUnitDefID(id)] then
         --Spring.Echo("createUnitAtUnit ".."game_civilians.lua")   
         payLoadID = createUnitAtUnit(gaiaTeamID, loadType, id)
-        return attachPayload(payLoadID, id)
+        if payLoadID then 
+            return attachPayload(payLoadID, id)
+        end
     end
 end
 
 function checkReSpawnTraffic()
     counter = 0
     toDeleteTable = {}
-    assert(type(GG.CivilianTable) == "table")
+
     for id, data in pairs(GG.CivilianTable) do
         if id and TruckTypeTable[data.defID] then
             if doesUnitExistAlive(id) == true then
@@ -303,11 +310,10 @@ function checkReSpawnTraffic()
     end
 
     for id, data in pairs(toDeleteTable) do GG.CivilianTable[id] = nil end
-
     if counter < getNumberOfUnitsAtTime(GameConfig.numberOfVehicles) then
         local stepSpawn = math.min(GameConfig.LoadDistributionMax,
                                    GameConfig.numberOfVehicles - counter)
-        -- echo(counter.. " of "..GameConfig.numberOfVehicles .." vehicles spawned")		
+        -- echo(counter.. " of "..GameConfig.numberOfVehicles .." vehicles spawned")
         for i = 1, stepSpawn do
             x, _, z, startNode = getRandomSpawnNode()
             if startNode then
@@ -317,7 +323,7 @@ function checkReSpawnTraffic()
                 id = spawnAMobileCivilianUnit(TruckType, x, z, startNode, goalNode)
                 if id  then
                   --  echo("calling truck loading")
-                    loadTruck(id, "truckpayload") 
+                    loadTruck(id, "truckpayload")
                 end
             end
         end
@@ -614,9 +620,9 @@ function travelInWarTimes(evtID, frame, persPack, startFrame, myID)
      if maRa() == true and isGoalWarzone(persPack) and not persPack.boolRefugee then 
         if refugeeableTruckType[spGetUnitDefID(myID)] then
             persPack.boolRefugee = true 
-            payloadID = loadTruck(myID, "truckpayloadrefugee")
-
             Spring.SetUnitTooltip(myID, "Refugee from ".. getCountryByCulture(GameConfig.instance.culture ,getDetermenisticMapHash(Game) + math.random(0,1)*randSign()))
+            payloadID = loadTruck(myID, "truckpayloadrefugee")
+         
             if payloadID then
                 civiliansNearby = foreach(getAllNearUnit(myID, 128),
                                 function (id)

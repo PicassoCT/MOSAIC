@@ -1249,7 +1249,7 @@ end
                     ["civilian"] = {name = "civilian_western", range = 2},
                     ["truck"] = {name = "truck_western", range = 4}},        
                 ["asian"] = {
-                    ["house"] = {name = "house_asian", range = 1},
+                    ["house"] = {name = "house_asian", range = 3},
                     ["civilian"] = {name = "civilian_arab", range = 4},
                     ["truck"] = {name = "truck_western", range = 4}}
                 }
@@ -3049,8 +3049,7 @@ end
             x, y, z = Spring.GetUnitPosition(id)
             PositionTable[#PositionTable + 1] = {x = x, y = y, z = z}
         end)
-        assert(#PositionTable > 0)
-
+        
         -- PositionTable= shuffleT(PositionTable)
         local midPoints = {}
         -- calculate midpoints
@@ -3954,4 +3953,31 @@ function getCivilianIdFromAgent(idA)
             end
         end
         return nil
+end
+
+function ViewShadowGameRelevant(px, pz, boolDebug)
+    traverseDistance = 75
+    maxSlope = 0.15
+    counter = 0
+    orgHeight = Spring.GetGroundHeight(px,pz)
+    step = -traverseDistance
+    for tz = pz -traverseDistance,  pz - (4*traverseDistance), step  do 
+        gh = Spring.GetGroundHeight(px, tz)
+        dx,dy, dz, slope = Spring.GetGroundNormal(px, tz)
+        --echo(unitID.." at slope: "..slope.. " and gh:"..gh)
+        if orgHeight > gh then
+            step = -125
+        else
+            step = -75
+        end
+        if gh and gh > 0 and slope and slope < maxSlope then
+            counter = counter+1
+            if boolDebug then GG.UnitsToSpawn:PushCreateUnit("good_decal", px, 0, tz, 0, gaiaTeamID) end
+        else
+            counter = counter-1
+            if boolDebug then GG.UnitsToSpawn:PushCreateUnit("bad_decal", px, 0, tz, 0, gaiaTeamID) end
+        end   
+    end
+
+    return counter  > 0
 end

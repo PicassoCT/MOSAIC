@@ -72,7 +72,13 @@ function getFirstShopName(firstName)
     -- Get the product corresponding to the first letter
     local product = products[firstLetter] or "Products"
     if maRa() then
-        index = (string.byte(secondLetter) % #broducts[firstLetter]) +1
+        assert(secondLetter)
+        assert(firstLetter)
+        assert(firstLetter)
+        assert(broducts)
+        assert(broducts[firstLetter])
+        index = (string.byte(secondLetter) % (#broducts[firstLetter])) +1
+        assert(broducts[firstLetter][index])
         product = broducts[firstLetter][index] 
     end
     -- Concatenate the first name and the product with the shop name

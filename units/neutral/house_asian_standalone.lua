@@ -48,8 +48,16 @@ local house_asian_standalone = Building:New{
 
 }
 
+local house_asian_refugeecamp = house_asian_standalone:New()
+house_asian_refugeecamp.objectName = "house_asian2.dae"
+house_asian_refugeecamp.script = "house_asian_refugeecamp_script.lua"
+
+["house_asian2"] = house_asian_standalone:New()
+
 return lowerkeys({
 	--Temp
 	["house_asian1"] = house_asian_standalone:New()
+	["house_asian2"] = house_asian_refugeecamp,
+	["house_asian3"] = house_asian_standalone:New(),
 	
 })

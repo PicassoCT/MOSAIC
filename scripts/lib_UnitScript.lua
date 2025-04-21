@@ -914,10 +914,7 @@ end
 function createUnitAtUnit(teamID, typeID, otherID, ox, oy, oz, orientation, parentID)
     if not typeID or not teamID then return end
     if isUnitAlive(otherID) == false then return end
-    locOrientation = orientation 
-    if not orientation then 
-     locOrientation = math.random(0,3)
-    end
+    locOrientation = orientation or math.random(0,3)
  
     ox, oy, oz = ox or 0, oy or 0, oz or 0
     x, y, z, _, _, _ = Spring.GetUnitPosition(otherID)

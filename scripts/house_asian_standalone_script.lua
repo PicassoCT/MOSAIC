@@ -388,32 +388,7 @@ function lightPost(name, blinkTime)
     end
 end
 
-traverseDistance = 75
-maxSlope = 0.15
-function ViewShadowGameRelevant(px, pz)
-    counter = 0
-    orgHeight = Spring.GetGroundHeight(px,pz)
-    step = -traverseDistance
-    for tz = pz -traverseDistance,  pz - (4*traverseDistance), step  do 
-        gh = Spring.GetGroundHeight(px, tz)
-        dx,dy, dz, slope = Spring.GetGroundNormal(px, tz)
-        --echo(unitID.." at slope: "..slope.. " and gh:"..gh)
-        if orgHeight > gh then
-            step = -125
-        else
-            step = -75
-        end
-        if gh and gh > 0 and slope and slope < maxSlope then
-            counter = counter+1
-            if boolDebug then GG.UnitsToSpawn:PushCreateUnit("good_decal", px, 0, tz, 0, gaiaTeamID) end
-        else
-            counter = counter-1
-            if boolDebug then GG.UnitsToSpawn:PushCreateUnit("bad_decal", px, 0, tz, 0, gaiaTeamID) end
-        end   
-    end
 
-    return counter  > 0
-end
 
 
 function buildBuilding()
@@ -422,7 +397,7 @@ function buildBuilding()
     initilization()
     px, py, pz = Spring.GetUnitPosition(unitID)
     --echo("Building "..unitID.." ViewShadowGameRelevant ".. toString(ViewShadowGameRelevant(px,pz)))
-    if  ViewShadowGameRelevant(px,pz) or GG.MegaBuildingMax > GameConfig.MegaBuildingMax then
+    if  ViewShadowGameRelevant(px,pz, boolDebug) or GG.MegaBuildingMax > GameConfig.MegaBuildingMax then
         filterOutMegaBuilding()
     end
     assert(count(ArcoT) > 1)

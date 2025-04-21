@@ -4,6 +4,7 @@ include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 include "lib_debug.lua"
 
+local ToShowTable = {}
 IDGroupsDirection = { 
     "u", --upright
     "l"} -- lengthwise
@@ -19,6 +20,17 @@ pieceLimits = {
 }
 pieceCyclicOSTable = {}
 hideDuringDayPieceNames= {}
+largeRoofPieceDecoPieces = {
+    [piece("Office_Industrial_Pod_BaseDeco6")]   = true,
+    [piece("Office_Industrial_Pod_BaseDeco007")] = true,
+    [piece("Office_Industrial_Pod_BaseDeco04")]  = true,
+    [piece("Office_Industrial_Pod_BaseDeco008")]  = true,
+}
+
+function filterOutToShowTableElements( element)
+    if boolVieShadowGameRelevant and largeRoofPieceDecoPieces[element] then return true end
+    return false
+end
 
 local spGetUnitPosition = Spring.GetUnitPosition
 local boolContinousFundamental = maRa() == maRa()
@@ -96,11 +108,12 @@ materialChoiceTable = {"pod", "industrial", "trad", "office"}
 materialChoiceTableReverse = {pod= 1, industrial = 2, trad=3, office=4}
 vtolDeco= {}
 gx, gy, gz = spGetUnitPosition(unitID)
+boolVieShadowGameRelevant = ViewShadowGameRelevant(gx,gy)
 geoHash = (gx - (gx - math.floor(gx))) + (gy - (gy - math.floor(gy))) + (gz - (gz - math.floor(gz)))
 -- Spring.Echo("House geohash:"..geoHash)
 if geoHash % 3 == 1 then decoChances = supriseChances end
 centerP = {x = (cubeDim.length / 2) * 5, z = (cubeDim.length / 2) * 5}
-ToShowTable = {}
+
 
 local _x_axis = 1
 local _y_axis = 2
@@ -1039,7 +1052,8 @@ function addToShowTable(element, indeX, indeY, addition, xLoc, zLoc)
     assert(element)
     assert(pieceID_NameMap[element])
 	--lecho("Piece placed:"..toString(pieceID_NameMap[element]).." at ("..toString(indeX).."/"..toString(indeY)..") ".."("..toString(xLoc).."/"..toString(zLoc)..")".. toString(addition))
-	ToShowTable[#ToShowTable + 1] = element	
+	if filterOutToShowTableElements(element) then return end
+    ToShowTable[#ToShowTable + 1] = element	
 	toShowDict[element] = true
 end	
 
@@ -1603,9 +1617,7 @@ function buildAnimation()
     while boolDoneShowing == false do Sleep(100) end
     Hide(Icon)
     while boolDoneShowing == false do Sleep(100) end
-    showT(ToShowTable)
-	    
-
+    showT(ToShowTable)   
 end
 
 function addGroundPlaceables()
