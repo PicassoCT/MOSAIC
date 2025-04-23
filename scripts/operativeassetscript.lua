@@ -277,9 +277,10 @@ function transportControl()
         if isTransported(unitID) == true then
             transporterdefID = Spring.GetUnitDefID(Spring.GetUnitTransporter(unitID))
 
-            if  motorBikeTypeTable[transporterdefID] then boolTransportedNoFiring = true end
-
-            setOverrideAnimationState(eAnimState.slaved, eAnimState.riding, true, nil, function() return isTransported(unitID) end,    false)     
+            if  motorBikeTypeTable[transporterdefID] then
+                boolTransportedNoFiring = true 
+                setOverrideAnimationState(eAnimState.slaved, eAnimState.riding, true, nil, function() return isTransported(unitID) end,    false)     
+            end
                
             while isTransported(unitID) == true do    
                 Sleep(100)
@@ -842,7 +843,7 @@ end
 function onRoof()
     Signal(SIG_ROOF_TOP)
     SetSignalMask(SIG_ROOF_TOP)
-    --echo("operative: on Roof")
+    echo("operative: on Roof")
     boolHasMoveCommand = getUnitMoveGoal(unitID, 1)
     boolVisiblyForced= true
     while not boolHasMoveCommand  do

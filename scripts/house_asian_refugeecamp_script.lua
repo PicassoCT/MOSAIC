@@ -3,10 +3,11 @@ include "lib_mosaic.lua"
 include "lib_UnitScript.lua"
 
 
-TablesOfPiecesGroups = {}
+local TablesOfPiecesGroups = {}
+local pieceNr_pieceName =Spring.GetUnitPieceList ( unitID ) 
 myDefID = Spring.GetUnitDefID(unitID)
 Icon = piece("Icon")
-ToShowTable = {piece("House")}
+local ToShowTable = {piece("House")}
 function script.HitByWeapon(x, z, weaponDefID, damage) end
 boolHouseHidden = false
 
@@ -25,7 +26,7 @@ local RoofTopPieces ={}
 function registerRooftopSubPieces(pieceToShow)
     name = pieceNr_pieceName[pieceToShow].."Roof"
     if TablesOfPiecesGroups[name] then
-        for nr,id in pairs(TablesOfPieceGroups[name]) do
+        for nr,id in pairs(TablesOfPiecesGroups[name]) do
             RoofTopPieces[#RoofTopPieces +1] = id
         end
     end
@@ -43,6 +44,7 @@ end
 function showHouse()
     boolHouseHidden = false
     showT(ToShowTable)
+    Hide(Icon)
 end
 
 function hideHouse()

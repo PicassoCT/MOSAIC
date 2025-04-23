@@ -25,7 +25,7 @@ local center = piece('center');
 local Feet1 = piece('Feet1');
 local Feet2 = piece('Feet2');
 local Head1 = piece('Head1');
-local MilitiaMask = piece('MilitiaMask');
+local MilitiaMask = nil
 local LowArm1 = piece('LowArm1');
 local LowArm2 = piece('LowArm2');
 local LowLeg1 = piece('LowLeg1');
@@ -164,7 +164,8 @@ function script.Create()
 
     Move(root, y_axis, -3, 0)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
-
+    MilitiaMask = TablesOfPiecesGroups["MilitiaMask"][math.random(1,#TablesOfPiecesGroups["MilitiaMask"])]
+    if maRa() and MilitiaMask then Show(MilitiaMask) end
     if #gunsTable > 1 then myGun = gunsTable[math.random(1,#gunsTable)] else myGun = gunsTable[1] end
     makeWeaponsTable(myGun)
     StartThread(turnDetector)

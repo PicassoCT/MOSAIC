@@ -20,6 +20,8 @@ local ArcoT= {}
 local ProjectT = {}
 local Mega = {}
 local isArcology = false
+local isProject = UnitDefs[myDefID].name =="Project"
+local Icon = piece("Icon")
 local cubeDim = {
     length = factor * 22,
     heigth = factor * 14.44 + heightoffset,
@@ -275,6 +277,7 @@ end
 local pieceName_pieceNr = Spring.GetUnitPieceMap (unitID)
 function script.Create()
     TablesOfPieceGroups = getPieceTableByNameGroups(false, true)
+    Show(Icon)
     fillMegaTable()
     ArcoT = TablesOfPieceGroups["Arcology"]
     ProjectT = TablesOfPieceGroups["Project"]
@@ -332,8 +335,8 @@ function addGroundPlaceables()
 
                 randPlaceAbleID = getSafeRandom(placeAbles)         
                 if randPlaceAbleID  then
-                    opx= math.random(cubeDim.length*4, cubeDim.length*7)*randSign()
-                    opz= math.random(cubeDim.length*4, cubeDim.length*7)*randSign()
+                    opx= math.random(cubeDim.length * 4, cubeDim.length * 7) * randSign()
+                    opz= math.random(cubeDim.length * 4, cubeDim.length * 7) * randSign()
                     WMove(randPlaceAbleID,x_axis, opz, 0)
                     WMove(randPlaceAbleID,z_axis, opx, 0)
                     Sleep(1)
@@ -388,7 +391,6 @@ function pieceToShowLightBlink(pieceToShow)
     end
 end
 
-
 function lightPost(name, blinkTime)
 
     while true do
@@ -401,23 +403,24 @@ function lightPost(name, blinkTime)
     end
 end
 
-
-
-
+boolBuildingShadowIsGameRelevant = false
 function buildBuilding()
     hideAll(unitID)
+    Show(Icon)
     StartThread(buildAnimation)
     initilization()
     Sleep(9000)
     px, py, pz = Spring.GetUnitPosition(unitID)
+    boolBuildingShadowIsGameRelevant = ViewShadowGameRelevant(px,pz, boolDebug) or GG.MegaBuildingMax > GameConfig.MegaBuildingMax 
     --echo("Building "..unitID.." ViewShadowGameRelevant ".. toString(ViewShadowGameRelevant(px,pz)))
-    if  ViewShadowGameRelevant(px,pz, boolDebug) or GG.MegaBuildingMax > GameConfig.MegaBuildingMax then
+    if  boolBuildingShadowIsGameRelevant then
         filterOutMegaBuilding()
     end
     assert(count(ArcoT) > 1)
     assert(count(ProjectT) > 1)
 
-    isArcology = (isNearCityCenter(px, pz, GameConfig) or isMapControlledBuildingPlacement()) and getDermenisticChance(unitID, 20)
+    isArcology = (isNearCityCenter(px, pz, GameConfig) or isMapControlledBuildingPlacement()) and getDermenisticChance(unitID, 20) 
+    isArcology = isArcology and not isProject
                     
     unitHash = getDeterministicUnitHash(unitID )
     mapHash = getDetermenisticMapHash(Game)
@@ -466,6 +469,7 @@ function buildBuilding()
             StartThread(placeElevators, TablesOfPieceGroups, 200, 20, toShowDict)
     end
     boolDoneShowing = true
+    Hide(Icon)
     showHouse()
     return
 end

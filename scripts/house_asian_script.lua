@@ -23,8 +23,7 @@ hideDuringDayPieceNames= {}
 largeRoofPieceDecoPieces = {
     [piece("Office_Industrial_Pod_BaseDeco6")]   = true,
     [piece("Office_Industrial_Pod_BaseDeco007")] = true,
-    [piece("Office_Industrial_Pod_BaseDeco04")]  = true,
-    [piece("Office_Industrial_Pod_BaseDeco008")]  = true,
+    [piece("Office_Industrial_Pod_BaseDeco04")]  = true
 }
 
 function filterOutToShowTableElements( element)
@@ -164,7 +163,7 @@ function isWithinPieceLimits(pieceID)
     if not GG.house_asian_pieces_used[name] then GG.house_asian_pieces_used[name]  = 0 end
 
     if GG.house_asian_pieces_used[name] < pieceLimits[name] then
-        GG.house_asian_pieces_used[name] = GG.house_asian_pieces_used[name] +1
+        GG.house_asian_pieces_used[name] = GG.house_asian_pieces_used[name] + 1
         return true
     end
     return false
@@ -301,7 +300,6 @@ function oilrigAnimation(set)
         Turn(jack2, z_axis, math.rad(0),math.rad(28)/2)  
         Move(piston1,y_axis, 0, 5)      
         Move(piston2,y_axis, 0, 5)
-
         Sleep(2000)
     end
 end
@@ -363,7 +361,6 @@ function factoryAnimation( set)
             WTurn(spinPiece, y_axis, math.rad(270), 1)
             WTurn(spinPiece, y_axis, math.rad(360), 1)
 		end
-
 	Sleep(500)
 	end
 end
@@ -389,6 +386,7 @@ function stampMill(set)
     preStamped = {mPs[3-offset],mPs[4-offset],mPs[6-offset],mPs[7-offset],mPs[9-offset], mPs[10-offset]} --3,4,6,11,8, 12
     postStamped={mPs[3-offset],mPs[5-offset],mPs[6-offset],mPs[8-offset], mPs[9-offset]}--3,5,10, 8, 12
     while true do
+
         hideT(preStamped)
         showT(postStamped)
             --Move(mPs[10-offset], x_axis, 10, 1)       

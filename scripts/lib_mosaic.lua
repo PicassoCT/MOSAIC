@@ -182,6 +182,8 @@ function getGameConfig()
             Defender = {StartPoints = 4}
                         },
 
+        parallelBuildingAnimationsActive = 25,                
+
         -- ObjectiveRewardRate
 
         Objectives = {
@@ -1812,7 +1814,7 @@ end
 
                 UnitDefNames = getUnitDefNames(UnitDefs)
                 typeTable = {
-                    "house_western0", "house_arab0"
+                    "house_western0", "house_arab0", "house_asian0", "house_asian1", "house_asian2"
                 }
 
                 return getTypeTable(UnitDefNames, typeTable)

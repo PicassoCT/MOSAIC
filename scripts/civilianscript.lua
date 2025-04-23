@@ -1,5 +1,4 @@
 include "createCorpse.lua"
-include "lib_OS.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 include "lib_mosaic.lua"
@@ -25,7 +24,7 @@ local center = piece('center');
 local Feet1 = piece('Feet1');
 local Feet2 = piece('Feet2');
 local Head1 = piece('Head1');
-local MilitiaMask = piece('MilitiaMask');
+local MilitiaMask = nil
 local LowArm1 = piece('LowArm1');
 local LowArm2 = piece('LowArm2');
 local LowLeg1 = piece('LowLeg1');
@@ -163,7 +162,12 @@ function script.Create()
    
     Move(root, y_axis, -3, 0)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
-    
+    if not TablesOfPiecesGroups["MilitiaMask"] then
+        MilitiaMask = piece("MilitiaMask")
+    else
+        MilitiaMask = TablesOfPiecesGroups["MilitiaMask"][math.random(1,#TablesOfPiecesGroups["MilitiaMask"])]
+    end
+    if maRa() and MilitiaMask then Show(MilitiaMask) end
     if map["cofee"] then
         cofee = piece('cofee')
     else
@@ -204,8 +208,7 @@ function script.Create()
 end
 
 function rainyDayCare()
-    westernCivilainDefIDTypeTable = getWesternUnitTypeMap("civilian", UnitDefs)
-    if not westernCivilainDefIDTypeTable[myDefID] then return end
+    if not TablesOfPiecesGroups["Umbrella"] then return end
     umbrellaIndex = (unitID % #TablesOfPiecesGroups["Umbrella"] )+1
     Umbrella = TablesOfPiecesGroups["Umbrella"][umbrellaIndex]
     while Umbrella do

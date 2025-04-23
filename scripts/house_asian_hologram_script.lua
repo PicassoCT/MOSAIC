@@ -614,13 +614,13 @@ function getPixelEffect()
         function() -- plane of pixelart
             time = math.random(10,35)* 1000
             randomColA = getRandomColor()
-            total = math.ceil(math.sqrt(#TableOfPiecesGroups[colSelect]))
+            total = math.ceil(math.sqrt(#TableOfPiecesGroups[randomColA]))
             timeFormula = getRandomTimeZAxisFormula()
             interPolationStep = 125
             tScale = 25
             while (time > 0 ) do
-                for pxIndex = 1, #TableOfPiecesGroups[colSelect] do
-                    px = TableOfPiecesGroups[colSelect][pxIndex]
+                for pxIndex = 1, #TableOfPiecesGroups[randomColA] do
+                    px = TableOfPiecesGroups[randomColA][pxIndex]
                     for x=1, total do
                         for y=1, total do
                             Move(px, x_axis, (x * tScale) - mid, 0)
