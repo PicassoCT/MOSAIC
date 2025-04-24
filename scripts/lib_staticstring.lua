@@ -76,7 +76,7 @@ function getFirstShopName(firstName)
         assert(firstLetter)
         assert(firstLetter)
         assert(broducts)
-        assert(broducts[firstLetter])
+        if not broducts[firstLetter] then return "NoName Shop" end
         index = (string.byte(secondLetter) % (#broducts[firstLetter])) +1
         assert(broducts[firstLetter][index])
         product = broducts[firstLetter][index] 

@@ -32,7 +32,8 @@ local spGetUnitDefID = Spring.GetUnitDefID
 local UnitDefNames = getUnitDefNames(UnitDefs)
 
 local scrapHeapTypeTable = getBuildingScrapHeapTypeTable(UnitDefs)
- GG.TimeDelayedRespawn = {}
+local ruinTypeTable = getBuildingRuinTypeTable(UnitDefs)
+GG.TimeDelayedRespawn = {}
 local BuildingWithWaitingRespawn = {}
 
 GG.BuildingTable = {} -- [BuildingUnitID] = {routeID, stationIndex}
@@ -80,9 +81,9 @@ function registerManuallyPlacedHouses()
             function(id)
                 allreadyRegistredBuilding[id] = true
                 spSetUnitAlwaysVisible(id, true)
-                setCityBuildingBlocking(id)
-
+                setCityBuildingBlocking(id)                
                 x,y,z = Spring.GetUnitPosition(id)
+                setHouseStreetNameTooltip(id, x , z, Game, false, UnitDefs, buisnessNeonSigns)
                 GG.BuildingTable[id] = {x = x, z = z }
                 counter = counter + 1
             end
@@ -282,7 +283,7 @@ function mirrorCursor(cursor, cx, cz)
 end
 
 function getBuildingTypeWithinLimits()
-     buildingType = randDict(houseTypeTable)
+    buildingType = randDict(houseTypeTable)
     if houseTypeLimitationsTable[buildingType] then
         if houseTypeLimitationsTable[buildingType] > 0 then
             houseTypeLimitationsTable[buildingType] = houseTypeLimitationsTable[buildingType] -1 
@@ -294,9 +295,16 @@ function getBuildingTypeWithinLimits()
     else
         return buildingType
     end
-
-
 end
+
+maxMapSize = math.max(Game.mapSizeX, Game.mapSizeZ)
+function overrideRuinByChance(buildingTypeId, distanceToCityCenter)
+    if randChance((distanceToCityCenter/maxMapSize)*100) and maRa() then 
+       return UnitDefNames["house_ruin"].id
+    end
+    return buildingTypeId
+end
+
 -- spawns intial buildings
 function fromMapCenterOutwards(BuildingPlaceT, startx, startz)
     local finiteSteps = GameConfig.maxIterationSteps
@@ -309,8 +317,9 @@ function fromMapCenterOutwards(BuildingPlaceT, startx, startz)
         finiteSteps = finiteSteps - 1
 
         dice = math.floor(math.random(5, 31) / 10)
-        boolNearCityCenter = isNearCityCenter(cursor.x * houseStreetDim.x, cursor.z*houseStreetDim.z, GameConfig)
-        boolMirrorNearCityCenter = isNearCityCenter(mirror.x * houseStreetDim.x, mirror.z*houseStreetDim.z, GameConfig)
+
+        boolNearCityCenter, distanceToCityCenter = isNearCityCenter(cursor.x * houseStreetDim.x, cursor.z*houseStreetDim.z, GameConfig)
+        boolMirrorNearCityCenter, mirrorDistanceToCityCenter = isNearCityCenter(mirror.x * houseStreetDim.x, mirror.z*houseStreetDim.z, GameConfig)
 
         if dice == 1 or (dice == 0 and GameConfig.instance.culture == "arabic")then -- 1 random walk into a direction doing nothing
             cursor = randomWalk(cursor)
@@ -324,6 +333,7 @@ function fromMapCenterOutwards(BuildingPlaceT, startx, startz)
 
             if BuildingPlaceT[cursor.x][cursor.z] == true and  isOnRoad(cursor) == false then
                 buildingType = getBuildingTypeWithinLimits()
+                buildingType = overrideRuinByChance(buildingType, distanceToCityCenter)
                
                 houseID = spawnBuilding(buildingType, cursor.x * dimX, cursor.z * dimZ, boolNearCityCenter)
 				if houseID then
@@ -340,6 +350,7 @@ function fromMapCenterOutwards(BuildingPlaceT, startx, startz)
 
             if boolFirstPlaced == true and BuildingPlaceT[mirror.x][mirror.z] == true and isOnRoad(mirror) == false then
                 buildingType = randDict(houseTypeTable)
+                buildingType = overrideRuinByChance(buildingType, mirrorDistanceToCityCenter)
                 houseID = spawnBuilding(buildingType, mirror.x * dimX, mirror.z * dimZ, boolMirrorNearCityCenter)
                 if houseID then
 					setHouseStreetNameTooltip(houseID, mirror.x*2 , mirror.z*2, Game, false, UnitDefs, buisnessNeonSigns)
@@ -371,10 +382,10 @@ function fromMapCenterOutwards(BuildingPlaceT, startx, startz)
 
 
             numberOfBuildings, BuildingPlaceT =  placeThreeByThreeBlockAroundCursor(cursor, numberOfBuildings,
-                                                   BuildingPlaceT, boolNearCityCenter)
+                                                   BuildingPlaceT, boolNearCityCenter, distanceToCityCenter)
 
             numberOfBuildings, BuildingPlaceT =  placeThreeByThreeBlockAroundCursor(mirror, numberOfBuildings,
-                                                   BuildingPlaceT, boolMirrorNearCityCenter)
+                                                   BuildingPlaceT, boolMirrorNearCityCenter, distanceToCityCenter)
         end
     end
 end
@@ -383,7 +394,7 @@ function checkCursorInnerCityFree(cursor)
     return BuildingPlaceT[cursor.x][cursor.z] and BuildingPlaceT[cursor.x +1][cursor.z] and BuildingPlaceT[cursor.x ][cursor.z+1]and BuildingPlaceT[cursor.x +1 ][cursor.z +1]
 end
 
-function placeThreeByThreeBlockAroundCursor(cursor, numberOfBuildings,  BuildingPlaceT, boolNearCityCenter)
+function placeThreeByThreeBlockAroundCursor(cursor, numberOfBuildings,  BuildingPlaceT, boolNearCityCenter, distanceToCityCenter)
     buildingType = randDict(houseTypeTable)
 
         for offx = -1, 1, 1 do
@@ -392,8 +403,9 @@ function placeThreeByThreeBlockAroundCursor(cursor, numberOfBuildings,  Building
                     if BuildingPlaceT[cursor.x + offx][cursor.z + offz] then
                         local tmpCursor = {x =cursor.x + offx, z = cursor.z + offz}
                         local nameCursor = {x =(cursor.x*2) + offx, z =(cursor.z*2) + offz}
-                        tmpCursor = clampCursor(tmpCursor)                      
-                        buildingType = randDict(houseTypeTable)
+                        tmpCursor = clampCursor(tmpCursor)  
+                        buildingType = randDict(houseTypeTable)                    
+                        buildingType = overrideRuinByChance(buildingType, distanceToCityCenter)
                         if BuildingPlaceT[tmpCursor.x] and BuildingPlaceT[tmpCursor.x][tmpCursor.z] and BuildingPlaceT[tmpCursor.x][tmpCursor.z] == true then
                             houseID = spawnBuilding(buildingType,
                                           tmpCursor.x * houseStreetDim.x,

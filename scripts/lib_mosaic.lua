@@ -586,7 +586,18 @@ end
         local UnitDefNames = getUnitDefNames(UnitDefs)
 
                 typeTable = {
-                    "gcscrapheap"                   
+                    "gcscrapheap",                   
+                    "house_ruin"                   
+                }
+                
+        return getTypeTable(UnitDefNames, typeTable)          
+    end
+
+    function getBuildingRuinTypeTable(UnitDefs)
+        local UnitDefNames = getUnitDefNames(UnitDefs)
+
+                typeTable = {            
+                    "house_ruin"                   
                 }
                 
         return getTypeTable(UnitDefNames, typeTable)          
@@ -879,7 +890,7 @@ end
     function isNearCityCenter(x,z, GameConfig)
         if not x or not GG.innerCityCenter or not GG.innerCityCenter.x then return false, math.huge, math.huge end
         distanceToCityCenter = distance(x, 0, z, GG.innerCityCenter.x, 0,  GG.innerCityCenter.z) 
-        return distanceToCityCenter < GameConfig.innerCitySize, distanceToCityCenter, distanceToCityCenter/GameConfig.innerCitySize
+        return distanceToCityCenter < GameConfig.innerCitySize, distanceToCityCenter, distanceToCityCenter/GameConfig.innerCitySize, distanceToCityCenter
     end
 
     function getDeterministicRotationOffsetForDistrict(districtID, cultureDeviation, xDiv1000, zDiv1000)
