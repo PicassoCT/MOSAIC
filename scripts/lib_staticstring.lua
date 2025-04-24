@@ -147,8 +147,8 @@ function setHouseStreetNameTooltip(id, detailXHash, detailZHash, Game, boolInner
                 "MacMansion Road",
                 "Woolworth alley",
                 "Buy N Large Ring",
-                "Wallmartstreet"
-            },
+                "Wallmartstreet",
+                },
             Europe = {
                 "Deichstraße",
                 "Prinzregentenstraße",
@@ -273,7 +273,8 @@ function setHouseStreetNameTooltip(id, detailXHash, detailZHash, Game, boolInner
                 "moi avenue",
                 "Jidka Sodonka",
                 "W21ka Nofeembar",
-                "Jidka Waxaracadde"
+                "Jidka Waxaracadde",
+                Doctorstreet
             },
             MiddleEast = {
                 "Tunisiastreet",
@@ -329,6 +330,7 @@ function setHouseStreetNameTooltip(id, detailXHash, detailZHash, Game, boolInner
                 "HaMasger Street",
                 "HaYarkon Street",
                 Highway,
+                Doctorstreet,
                 "Ibn Gabirol Street",
                 "Jerusalem Boulevard",
                 "Kaplan Street",
@@ -447,7 +449,8 @@ function setHouseStreetNameTooltip(id, detailXHash, detailZHash, Game, boolInner
                 "Avenida Pueyrredón",
                 "Paseo de la Republica",
                 "Avenida Roque Sáenz Peña",
-                "Avenida Santa Fe"
+                "Avenida Santa Fe",
+                Doctorstreet
             },
             SouthEastAsia = {
                 "Jianshe Road",
@@ -459,7 +462,8 @@ function setHouseStreetNameTooltip(id, detailXHash, detailZHash, Game, boolInner
                 "Binghe Road",
                 "Youai Road",
                 "Huzhu Road",
-                "Zhongyuan Road"
+                "Zhongyuan Road",
+                Doctorstreet
             },
             International = {
                 "Main Street",
@@ -481,7 +485,8 @@ function setHouseStreetNameTooltip(id, detailXHash, detailZHash, Game, boolInner
                 "Central Avenue",
                 "High Street",
                 "Broad Avenue",
-                "Green Street"
+                "Green Street", 
+                Doctorstreet
             }
         }
     end
