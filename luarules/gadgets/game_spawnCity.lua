@@ -69,12 +69,13 @@ local boolHasCityCenter = false
 local boolCachedMapManualPlacementResult = nil
 
 allreadyRegistredBuilding = {}
-function registerManuallyPlacedHouses()      
+function registerManuallyPlacedHouses(frame)   
+    echo("Manual registering placed houses called " ..frame)   
     counter = 0
     foreach(Spring.GetAllUnits(),
             function(id)
                 defID = spGetUnitDefID(id)
-                if houseTypeTable[defID] and not allreadyRegistredBuilding[id]then
+                if houseTypeTable[defID] and  allreadyRegistredBuilding[id] == nil then
                     return id
                 end
             end,
@@ -83,7 +84,7 @@ function registerManuallyPlacedHouses()
                 spSetUnitAlwaysVisible(id, true)
                 setCityBuildingBlocking(id)                
                 x,y,z = Spring.GetUnitPosition(id)
-                setHouseStreetNameTooltip(id, x , z, Game, false, UnitDefs, buisnessNeonSigns)
+                setHouseStreetNameTooltip(id, x * 2.0 , z * 2.0, Game, false, UnitDefs, buisnessNeonSigns)
                 GG.BuildingTable[id] = {x = x, z = z }
                 counter = counter + 1
             end
@@ -445,15 +446,15 @@ function spawnInitialHouses(frame)
             regenerateRoutesTable()
             --echo("spawnInitialHouses: Default Initialization completed")
         else
-
-           registeredUnits = registerManuallyPlacedHouses() 
-           --echo("Registering Units manually" ..registeredUnits.." and "..toString(GG.MapCompletedBuildingPlacement))
-           boolAtLeastOneManualPlacement = boolAtLeastOneManualPlacement or  registeredUnits > 0
-           boolInitialized = (boolAtLeastOneManualPlacement and Spring.GetGameFrame() > originalGameFrame and registeredUnits == 0)
-           if boolInitialized == false then return end
+           echo("ManualPlacementInitialization::Starting")
+           if boolInitialized == true then return end
+           registeredUnits = registerManuallyPlacedHouses(frame ) 
+           echo("ManualPlacementInitialization::Registering Units manually" ..registeredUnits.." and "..toString(GG.MapCompletedBuildingPlacement))
+           boolInitializationPreqrequisitsFullfiled = (registeredUnits > 0 and Spring.GetGameFrame() > originalGameFrame )
            GG.CitySpawnComplete = true
            regenerateRoutesTable()
-           --echo("spawnInitialHouses: Manual Placement Initialization completed")
+           boolInitialized = true
+           echo("ManualPlacementInitialization::Completed")
         end
     end
 end
