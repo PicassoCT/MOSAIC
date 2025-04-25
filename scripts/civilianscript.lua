@@ -93,6 +93,8 @@ local civilianWalkingTypeTable = getCultureUnitModelTypes(
                                      GameConfig.instance.culture, "civilian",
                                      UnitDefs)
 
+
+
 local eAnimState = getCivilianAnimationStates()
 local upperBodyPieces = {
     [Head1] = Head1,
@@ -899,10 +901,7 @@ end
 -- -Collapsing, Shivering, Coiling Up
 
 function setupAnimation()
-    local myUnitName = UnitDefs[myDefID].name
-    result = GetSharedOneTimeResult(myUnitName)
-    if result then Animations = result; return end
-    
+
     local switchAxis = function(axis)
         if axis == z_axis then return y_axis end
         if axis == y_axis then return z_axis end
@@ -936,8 +935,6 @@ function setupAnimation()
             end
         end
     end
-    SetSharedOneTimeResult(myUnitName, Animations)
-
 end
 
 local animCmd = {['turn'] = Turn, ['move'] = Move};
