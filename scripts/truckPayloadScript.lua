@@ -32,8 +32,8 @@ function getMeatName(id)
 end
 
 function getStreetName(id)
-	if GG.StreetNameDict then
-		streetNumber = count(GG.StreetNameDict)
+	if GG.UsedStreetNameCounterDict then
+		streetNumber = count(GG.UsedStreetNameCounterDict)
 		key, value = getNthElementT((id %streetNumber) +1)
 		return key
 	end

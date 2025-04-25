@@ -148,7 +148,7 @@ function turnTrailerLoop()
                 if boolTurnLeft then
                     headRad = -math.pi + math.atan2(dz, dx)
                 else
-                    headRad = -math.atan2(dx, dz)
+                    headRad = math.pi - math.atan2(dx, dz)
                 end
                 Turn(PayloadCenter,y_axis, headRad, 1)
                 lastOrientation = headRad

@@ -130,8 +130,7 @@ catatonicBodyPieces[UpBody] = UpBody
 -- equipmentname: cellphone, shoppingbags, crates, baby, cigarett, food, stick, demonstrator sign, molotow cocktail
 
 local boolWalking = false
-local boolTurning = false
-local boolTurnLeft = false
+
 local boolDecoupled = false
 local boolAiming = false
 
@@ -168,8 +167,6 @@ function script.Create()
     if maRa() and MilitiaMask then Show(MilitiaMask) end
     if #gunsTable > 1 then myGun = gunsTable[math.random(1,#gunsTable)] else myGun = gunsTable[1] end
     makeWeaponsTable(myGun)
-    StartThread(turnDetector)
-
     variousBodyConfigs()
 
     bodyConfig.boolArmed = false 

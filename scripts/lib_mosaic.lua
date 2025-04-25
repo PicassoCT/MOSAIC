@@ -148,7 +148,7 @@ function getGameConfig()
         anarchyCarReductionFactor = 0.25,
         MegaBuildingMax= 12,
 
-        LoadDistributionMax = 5,
+        LoadDistributionMax = 3,
 
         --truck
         truckBreakTimeMinSec= 60,
@@ -2328,7 +2328,10 @@ end
 				return hours > 19 and hours < 6
 			end
 			
-			
+                    function getPrayDurationInFrames()
+                        return math.ceil(0.030 * GG.GameConfig.daylength)
+                    end
+			         
 
                     function isPrayerTime()
                         hours, minutes, seconds, percent = getDayTime()

@@ -83,8 +83,10 @@ function registerManuallyPlacedHouses(frame)
                 allreadyRegistredBuilding[id] = true
                 spSetUnitAlwaysVisible(id, true)
                 setCityBuildingBlocking(id)                
-                x,y,z = Spring.GetUnitPosition(id)
-                setHouseStreetNameTooltip(id, x * 2.0 , z * 2.0, Game, false, UnitDefs, buisnessNeonSigns)
+                x,y,z = spGetUnitPosition(id)
+                assert(x)
+                assert(z)
+                setHouseStreetNameTooltip(id, x  , z , Game, false, UnitDefs, buisnessNeonSigns)
                 GG.BuildingTable[id] = {x = x, z = z }
                 counter = counter + 1
             end
@@ -583,15 +585,12 @@ function countDownRespawnHouses(framesToSubstract)
 end
 
 function gadget:GameFrame(frame)
-    if not boolDebug then
-        if boolInitialized == false then
-            spawnInitialHouses(frame)
-        elseif boolInitialized == true and frame > 0 and frame % 5 == 0 then
-            countDownRespawnHouses(5)
-            checkReSpawnHouses()
-        end
-    else
-        
+
+    if boolInitialized == false then
+        spawnInitialHouses(frame)
+    elseif boolInitialized == true and frame > 0 and frame % 5 == 0 then
+        countDownRespawnHouses(5)
+        checkReSpawnHouses()
     end
 end
 

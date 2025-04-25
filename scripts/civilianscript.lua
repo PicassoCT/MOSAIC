@@ -128,8 +128,6 @@ catatonicBodyPieces[UpBody] = UpBody
 -- equipmentname: cellphone, shoppingbags, crates, baby, cigarett, food, stick, demonstrator sign, molotow cocktail
 
 local boolWalking = false
-local boolTurning = false
-local boolTurnLeft = false
 local boolDecoupled = false
 local boolAiming = false
 
@@ -178,7 +176,6 @@ function script.Create()
 
     if #gunsTable > 1 then myGun = gunsTable[math.random(1,#gunsTable)] else myGun = gunsTable[1] end
     makeWeaponsTable(myGun)
-    StartThread(turnDetector)
 
     variousBodyConfigs()
 
@@ -215,11 +212,11 @@ function rainyDayCare()
         if isRaining() then
             while isRaining() do
                 Show(Umbrella)
-                Sleep(5000)
+                Sleep(15000)
             end
             Hide(Umbrella)
         end
-        Sleep(5000)
+        Sleep(10000)
     end
 end
 
@@ -918,17 +915,23 @@ function setupAnimation()
             local commands = keyframe.commands;
             for k, command in pairs(commands) do
                 if command.p and type(command.p) == "string" then
-                    command.p = map[command.p]
+                    if not  map[command.p] then                        
+                        commands[k] = nil                        
+                    else
+                        command.p = map[command.p]
+
+                        if (command.c == "move") then
+                            local adjusted = command.t - (offsets[command.p][command.a]);
+                            Animations[a][i]['commands'][k].t =
+                                command.t - (offsets[command.p][command.a]);
+                        end
+
+                        Animations[a][i]['commands'][k].a = switchAxis(command.a)        
+                    end
                 end
                 -- commands are described in (c)ommand,(p)iece,(a)xis,(t)arget,(s)peed format
                 -- the t attribute needs to be adjusted for move commands from blender's absolute values
-                if (command.c == "move") then
-                    local adjusted = command.t - (offsets[command.p][command.a]);
-                    Animations[a][i]['commands'][k].t =
-                        command.t - (offsets[command.p][command.a]);
-                end
-
-                Animations[a][i]['commands'][k].a = switchAxis(command.a)
+                
             end
         end
     end

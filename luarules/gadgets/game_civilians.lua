@@ -98,6 +98,7 @@ function startInternalBehaviourOfState(unitID, name, ...)
     end
 end
 
+civilianStandStillTimeMap = {}
 function makePasserBysLook(unitID)
     ux, uy, uz = spGetUnitPosition(unitID)
     foreach(getInCircle(unitID, GameConfig.civilian.InterestRadius, gaiaTeamID),
@@ -114,12 +115,16 @@ function makePasserBysLook(unitID)
                          math.random(25, 50) * randSign()
             Command(id, "go", {x = ux + offx, y = uy, z = uz + offz}, {})
             -- TODO Set Behaviour filming
-            startInternalBehaviourOfState(id, "startFilmLocation", ux,uy,uz, math.random(5000,15000))
+            filmingDuration = math.random(5000,15000)
+            civilianStandStillTimeMap[unitID] = filmingDuration
+            startInternalBehaviourOfState(id, "startFilmLocation", ux,uy,uz, filmingDuration)
         elseif math.random(0, 100) > GameConfig.inHundredChanceOfDisasterWailing then
             offx, offz = math.random(0, 10) * randSign(),
                          math.random(0, 10) * randSign()
             Command(id, "go", {x = ux + offx, y = uy, z = uz + offz}, {})
-            startInternalBehaviourOfState(id, "startWailing", math.random(5000,25000))
+            wailDuration = math.random(5000,25000)
+            civilianStandStillTimeMap[unitID] = wailDuration
+            startInternalBehaviourOfState(id, "startWailing",wailDuration)
        end
     end)
 end
@@ -199,6 +204,7 @@ function spawnInitialPopulation(frame)
 end
 
 function getRandomSpawnNode()
+
     startNode = randT(RouteTabel)
     
     attempts = 0
@@ -217,7 +223,7 @@ end
 function checkReSpawnPopulation()
     counter = 0
     toDeleteTable = {}
-    assert(type(GG.CivilianTable) == "table")
+    assertTable(G.CivilianTable)
     for id, data in pairs(GG.CivilianTable) do
         if id and civilianWalkingTypeTable[data.defID] then
             if doesUnitExistAlive(id) == true then
@@ -227,14 +233,14 @@ function checkReSpawnPopulation()
             end
         end
     end
-
+    assertTable(toDeleteTable)
     for id, data in pairs(toDeleteTable) do GG.CivilianTable[id] = nil end
 
     if counter < getNumberOfUnitsAtTime(GameConfig.numberOfPersons) then
         local stepSpawn = math.min(GameConfig.numberOfPersons - counter,
                                    GameConfig.LoadDistributionMax)
         -- echo(counter.. " of "..GameConfig.numberOfPersons .." persons spawned")		
-
+        assertType(RouteTabel, "table")
         for i = 1, stepSpawn do
             x, _, z, startNode = getRandomSpawnNode()
             assert(x > 0 and x < Game.mapSizeX, x)
@@ -298,17 +304,19 @@ end
 function checkReSpawnTraffic()
     counter = 0
     toDeleteTable = {}
-
-    for id, data in pairs(GG.CivilianTable) do
-        if id and TruckTypeTable[data.defID] then
-            if doesUnitExistAlive(id) == true then
-                counter = counter + 1
-            else
-                toDeleteTable[id] = true
+    if GG.CivilianTable then
+        assertTable( GG.CivilianTable)
+        for id, data in pairs(GG.CivilianTable) do
+            if id and TruckTypeTable[data.defID] then
+                if doesUnitExistAlive(id) == true then
+                    counter = counter + 1
+                else
+                    toDeleteTable[id] = true
+                end
             end
         end
     end
-
+    assertTable(toDeleteTable)
     for id, data in pairs(toDeleteTable) do GG.CivilianTable[id] = nil end
     if counter < getNumberOfUnitsAtTime(GameConfig.numberOfVehicles) then
         local stepSpawn = math.min(GameConfig.LoadDistributionMax,
@@ -408,7 +416,7 @@ function regenerateRoutesTable()
     local newRouteTabel = {}
     TruckType = randDict(TruckTypeTable)
     assert(TruckType)
-    assert(GG.BuildingTable)
+    assertType(GG.BuildingTable, "table")
     if #GG.BuildingTable > 0 then RouteTabel = newRouteTabel; return end
     for thisBuildingID, data in pairs(GG.BuildingTable) do -- [BuildingUnitID] = {x=x, z=z} 
         newRouteTabel[thisBuildingID] = {}
@@ -462,6 +470,7 @@ function spawnAMobileCivilianUnit(defID, x, z, startID, goalID)
         and civilianWalkingTypeTable[defID] 
         and  GG.UnitArrivedAtTarget 
         and # GG.UnitArrivedAtTarget > 0 then
+        assertTable(GG.UnitArrivedAtTarget)
         for id, boolArrived in pairs(GG.UnitArrivedAtTarget) do
            conditionalEcho(boolDebugCivilians, "Spawned civilian near truck "..id)
             if boolArrived == true and GG.CivilianTable[id].defID and TruckTypeTable[GG.CivilianTable[id].defID] then
@@ -715,10 +724,11 @@ function sozialize(evtID, frame, persPack, startFrame, myID)
             displayConversationTextAt(myID, persPack.chatPartnerID)
             if persPack.chatPartnerID then 
                 persPack.boolStartAChat = true
+                persPack.stuckCounterDeactivate = (persPack.stuckCounterDeactivate or 0) + persPack.maxTimeChattingInFrames
             end
     end
 
-    if persPack.boolStartAChat == true then
+    if persPack.boolStartAChat == true then -- end a chat
         if (persPack.maxTimeChattingInFrames <= 0 ) or 
             not persPack.chatPartnerID or
             not doesUnitExistAlive(persPack.chatPartnerID) then
@@ -765,12 +775,14 @@ end
 function snychronizedSocialEvents(evtID, frame, persPack, startFrame, myID)
     if  maRa()==true and isPrayerTime() then
         Command(myID, "stop")
+        persPack.stuckCounterDeactivate = (persPack.stuckCounterDeactivate or 0) + getPrayDurationInFrames()
         startInternalBehaviourOfState(myID, "startPraying")
         return true, frame + 30, persPack   
     end 
 
 	if GG.SocialEngineeredPeople and GG.SocialEngineeredPeople[myID] and GG.SocialEngineers[GG.SocialEngineeredPeople[myID]] then 
 		Command(myID, "stop")
+        persPack.stuckCounterDeactivate = (persPack.stuckCounterDeactivate or 0) +  (GameConfig.socialEngineerLifetimeMs/1000)*30
         startInternalBehaviourOfState(myID, "startPeacefullProtest", GG.SocialEngineeredPeople[myID])
 		return true, frame + 30, persPack   
 	end
@@ -779,9 +791,20 @@ function snychronizedSocialEvents(evtID, frame, persPack, startFrame, myID)
 end  
 
 local metaStuckDetection = {}
+function resetStuckDetection(myID, persPack)
+    persPack.stuckCounter = 0
+    metaStuckDetection[myID] = -2
+    return persPack
+end
 function stuckDetection(evtID, frame, persPack, startFrame, myID, x, y, z)
 
     boolDone = false
+
+    if persPack.stuckCounterDeactivate and persPack.stuckCounterDeactivate  > 0 then
+        persPack = resetStuckDetection(myID, persPack) 
+        persPack.stuckCounterDeactivate = persPack.stuckCounterDeactivate - (persPack.LastStepFrame)
+        return boolDone, nil, persPack
+    end
 
     if persPack.boolStartAChat and persPack.boolStartAChat == true then 
     return boolDone, nil, persPack
@@ -795,7 +818,7 @@ function stuckDetection(evtID, frame, persPack, startFrame, myID, x, y, z)
     end
 
     -- if stuck move towards the next goal
-    if persPack.stuckCounter > 7 then
+    if persPack.stuckCounter > 12 then
         if not metaStuckDetection[myID] then metaStuckDetection[myID] = 0 end
         metaStuckDetection[myID] = metaStuckDetection[myID] +1
 
@@ -891,38 +914,45 @@ function unitInternalLogic(evtID, frame, persPack, startFrame, myID)
     return false, nil, persPack
 end
 
+function packStep(persPack, nextFrame, currentFrame)
+    if nextFrame then
+        persPack.LastStepFrame = (nextFrame - currentFrame)
+    end
+    return persPack
+end
+
 function travellFunction(evtID, frame, persPack, startFrame)
     --  only apply if Unit is still alive
     local myID = persPack.unitID
 
-
     boolDone, retFrame, persPack, x,y,z, hp = travelInitialization(evtID, frame, persPack, startFrame, myID)
-    if boolDone == true then return retFrame,persPack end
+    if boolDone == true then return retFrame,packStep(persPack, retFrame, frame) end
 
     boolDone, retFrame, persPack = stuckDetection(evtID, frame, persPack, startFrame, myID, x, y, z)
-    if boolDone == true then return retFrame,persPack end
+    if boolDone == true then return retFrame,packStep(persPack, retFrame, frame) end
 
     boolDone, retFrame, persPack = unitInternalLogic(evtID, frame, persPack, startFrame, myID)
-    if boolDone == true then return retFrame,persPack end
+    if boolDone == true then return retFrame,packStep(persPack, retFrame, frame) end
 
 
     if GG.GlobalGameState == GameConfig.GameState.normal and not persPack.boolTraumatized then
 
         boolDone, retFrame, persPack = snychronizedSocialEvents(evtID, frame, persPack, startFrame, myID)
-        if boolDone == true then return retFrame,persPack end    
+        if boolDone == true then return retFrame,packStep(persPack, retFrame, frame) end    
 
         boolDone, retFrame, persPack = sozialize(evtID, frame, persPack, startFrame, myID)
-        if boolDone == true then return retFrame,persPack end
+        if boolDone == true then return retFrame,packStep(persPack, retFrame, frame) end
 
         boolDone, retFrame, persPack = travelInPeaceTimes(evtID, frame, persPack, startFrame, myID)
-        if boolDone == true then return retFrame,persPack end
+        if boolDone == true then return retFrame,packStep(persPack, retFrame, frame) end
 
     else
         boolDone, retFrame, persPack = travelInWarTimes(evtID, frame, persPack, startFrame, myID)
-        if boolDone == true then return retFrame,persPack end
+        if boolDone == true then return retFrame,packStep(persPack, retFrame, frame) end
     end
 
-    return frame + math.random(60, 90), persPack
+    retFrame = frame + math.random(60, 90)
+    return retFrame, packStep(persPack, retFrame, frame)
 end
 
 -----------------------------------------------------------------------------------------------------------------------
@@ -981,12 +1011,16 @@ end
 function testClampRoute(Route, defID) return Route end
 
 function issueArrivedUnitsCommands()
+    assertTable(GG.UnitArrivedAtTarget)
     for id, bArrived in pairs(GG.UnitArrivedAtTarget) do
-        if id and GG.CivilianTable[id] and
-            doesUnitExistAlive(GG.CivilianTable[id].startID) == true and
+        if id and GG.CivilianTable[id] then
+
+
+            if doesUnitExistAlive(GG.CivilianTable[id].startID) == true and
             doesUnitExistAlive(id) then
             giveWaypointsToUnit(id, GG.CivilianTable[id].defID,
                                 GG.CivilianTable[id].startID)
+            end
         end
     end
     GG.UnitArrivedAtTarget = {}
@@ -1015,8 +1049,8 @@ function decimateArrivedCivilians(nrToDecimate, typeTable)
 end
 
 function gadget:GameFrame(frame)
-    if boolInitialized == false then
-        --echo("Intialization GameFrame")
+
+    if boolInitialized == false then       
         spawnInitialPopulation(frame)
     elseif boolInitialized == true and frame > 0 and frame % 5 == 0 then
                -- Check number of Units	
