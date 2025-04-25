@@ -111,10 +111,13 @@ function getHouseShopName(id,  buisnessNamesTable, UnitDefs)
 end
 
 function setHouseStreetNameTooltip(id, detailXHash, detailZHash, Game, boolInnerCityBlock, UnitDefs, buisnessNamesTable)
+    detailXHash = math.floor(detailXHash)
+    detailZHash = math.floor(detailZHash)
 
     region = getRegionByCulture(GG.GameConfig.instance.culture, getDetermenisticMapHash(Game))
-    if not GG.StreetNameDict then
-        GG.StreetNameDict = {}
+    assert(region)
+    if not GG.UsedStreetNameCounterDict then
+        GG.UsedStreetNameCounterDict = {}
     end
 
     addition = addition or ""
@@ -499,18 +502,21 @@ function setHouseStreetNameTooltip(id, detailXHash, detailZHash, Game, boolInner
     end
 
     if isCrossway((detailXHash%4)+1, (detailZHash %4) +1, boolInnerCityBlock) then
-        name = Streetnames[region][(detailXHash % #Streetnames[region]) + 1]
+       
+        name = Streetnames[region][(detailXHash % (#Streetnames[region])) + 1]
+
         --name ="(Querstrasse:x="..detailXHash.."/z="..detailZHash..")"
     else
-        name = Streetnames[region][(detailZHash % #Streetnames[region]) + 1]
+       
+        name = Streetnames[region][(detailZHash % (#Streetnames[region])) + 1] 
         --name ="(Laengstrasse:x="..detailXHash.."/z="..detailZHash..")"
     end
 
-    if not GG.StreetNameDict[name] then
-        GG.StreetNameDict[name] = 0
+    if nil == GG.UsedStreetNameCounterDict[name] then
+        GG.UsedStreetNameCounterDict[name] = 0
     end
-    GG.StreetNameDict[name] = GG.StreetNameDict[name] + 1
-    Spring.SetUnitTooltip(id, HouseDescriptor(id, detailXHash + detailZHash, UnitDefs,buisnessNamesTable).." - "..name .. "." .. GG.StreetNameDict[name].. " "..addition)
+    GG.UsedStreetNameCounterDict[name] = GG.UsedStreetNameCounterDict[name] + 1
+    Spring.SetUnitTooltip(id, HouseDescriptor(id, detailXHash + detailZHash, UnitDefs,buisnessNamesTable).." - "..name .. "." .. GG.UsedStreetNameCounterDict[name].. " "..addition)
 end
 
 

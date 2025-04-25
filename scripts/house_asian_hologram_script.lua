@@ -626,7 +626,7 @@ function getPixelEffect()
                         for y=1, total do
                             Move(px, x_axis, (x * tScale) - mid, 0)
                             Move(px, y_axis, (y * tScale), 0)
-                            Move(randomPixel,z_axis, timeFormula(x - total*0.5, y - total*0.5, time, tScale), 0)
+                            Move(px, z_axis, timeFormula(x - total*0.5, y - total*0.5, time, tScale), 0)
                             ShowReg(px)
                         end
                     end

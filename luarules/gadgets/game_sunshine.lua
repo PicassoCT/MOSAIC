@@ -363,11 +363,10 @@ if gadgetHandler:IsSyncedCode() then
                      EVERY_NTH_FRAME
     DUSK_FRAME = math.ceil((DAYLENGTH / EVERY_NTH_FRAME) * 0.75) *
                      EVERY_NTH_FRAME
-    HALF_DAY_OFFSET = DAYLENGTH * 0.5
+    local HALF_DAY_OFFSET = DAYLENGTH * 0.5
     -- set the sun
     function gadget:GameFrame(n)
         if n % EVERY_NTH_FRAME == 0 then
-
             aDay(n + HALF_DAY_OFFSET, DAYLENGTH)
         end
         setSunArc(n + HALF_DAY_OFFSET)

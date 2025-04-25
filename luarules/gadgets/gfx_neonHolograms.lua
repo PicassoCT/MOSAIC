@@ -515,7 +515,7 @@ end
     for i=1,#UnitDefs do
         if holoNameTypeIDMap[UnitDefs[i].name] ~= nil then
             holoDefIDTypeIDMap[UnitDefs[i].id] = holoNameTypeIDMap[UnitDefs[i].name] 
-            Spring.Echo("gfx_neonHolograms.lua: Defined hologram types for "..UnitDefs[i].name.." as ".. holoNameTypeIDMap[UnitDefs[i].name] )
+            --Spring.Echo("gfx_neonHolograms.lua: Defined hologram types for "..UnitDefs[i].name.." as ".. holoNameTypeIDMap[UnitDefs[i].name] )
         end
         if UnitDefs[i].name == "house_western_hologram" then
             holoDefID =  UnitDefs[i].id

@@ -35,7 +35,7 @@ function airPortConnection()
         ninetyDeg = math.pi/2
         assert(center)
         WTurn(center, y_axis, rDeg + ninetyDeg ,0)
-        echo("objective_transrapid is airport connected")
+       -- echo("objective_transrapid is airport connected")
     else
         rVal = math.random(0, 360)
         WTurn(center, y_axis, math.rad(rVal),0)
