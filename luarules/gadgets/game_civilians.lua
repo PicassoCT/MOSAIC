@@ -223,7 +223,7 @@ end
 function checkReSpawnPopulation()
     counter = 0
     toDeleteTable = {}
-    assertTable(G.CivilianTable)
+    assertTable(GG.CivilianTable)
     for id, data in pairs(GG.CivilianTable) do
         if id and civilianWalkingTypeTable[data.defID] then
             if doesUnitExistAlive(id) == true then

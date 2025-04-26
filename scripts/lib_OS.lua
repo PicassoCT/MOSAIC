@@ -784,9 +784,14 @@ end
 
 function SetSharedOneTimeResult(key,  data)
     if not GG.SharedResult then GG.SharedResult = {} end
-    if  not GG.SharedResult[key] then
+    if not GG.SharedResult[key] then
        GG.SharedResult[key] = data
     end 
+end
+
+function GetSharedOneTimeResult(key)
+    if not GG.SharedResult then GG.SharedResult = {} end
+    return GG.SharedResult[key]
 end
 
 function GetSetSharedOneTimeResult(key, calcDataFunction)
