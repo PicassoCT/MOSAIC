@@ -6,8 +6,6 @@ include "lib_Animation.lua"
 
 local TablesOfPiecesGroups = {}
 
-
-local myDefID = Spring.GetUnitDefID(unitID)
 local myTeamID = Spring.GetUnitTeam(unitID)
 local GameConfig = getGameConfig()
 local center = piece "TurretBase"

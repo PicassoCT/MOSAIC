@@ -5,7 +5,7 @@ include "lib_Animation.lua"
 --include "lib_Build.lua"
 
 local TablesOfPiecesGroups = {}
-myDefID = Spring.GetUnitDefID(unitID)
+
 satelliteTypeTable = getSatteliteTypes(UnitDefs)
 myTeam = Spring.GetUnitTeam(unitID)
 center = piece("center")

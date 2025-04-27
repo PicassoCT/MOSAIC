@@ -8,9 +8,8 @@ TablesOfPiecesGroups = {}
 
 center = piece "center"
 attachPoint = piece "attachPoint"
-myDefID = Spring.GetUnitDefID(unitID)
 TruckTypeTable = getTruckTypeTable(UnitDefs)
-boolIsCivilianTruck = (TruckTypeTable[myDefID] == nil)
+boolIsCivilianTruck = (TruckTypeTable[unitDefID] == nil)
 GameConfig = getGameConfig()
 boolIsCivilianUnit = Spring.GetUnitTeam(unitID) == Spring.GetGaiaTeamID()
 
@@ -177,7 +176,7 @@ function delayedSirens()
                                     math.pi))
         if boolLoudnessOverrideActive == true then loudness = 1.0 end
         if isInActionInterval(Spring.GetGameFrame()) == true then
-            StartThread(PlaySoundByUnitDefID, myDefID,
+            StartThread(PlaySoundByUnitDefID, unitDefID,
                         "sounds/civilian/police/siren" .. sirenDice .. ".ogg", 0.9,
                         50, 2)
         end

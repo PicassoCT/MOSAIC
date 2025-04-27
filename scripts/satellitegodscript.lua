@@ -16,7 +16,7 @@ GodRod = piece "GodRod"
 AimPiece = piece "AimPiece"
 NumberOfRods = 3
 myTeamID = Spring.GetUnitTeam(unitID)
-myDefID = Spring.GetUnitDefID(unitID)
+
 function script.Create()
     --Spring.Echo("Satellite godrod created")
 
@@ -139,7 +139,7 @@ function dropGodRodAt(unitID, x,y,z)
        projectileID =  Spring.SpawnProjectile(impactorWeaponDefID,ImpactorParameter)
        if projectileID then       
             Sleep(3000)
-           StartThread(PlaySoundByUnitDefID,myDefID, "sounds/weapons/godrod/impactor.wav", 1.0, GameConfig.Satellite.GodRodTimeToImpactInMs, 5)
+           StartThread(PlaySoundByUnitDefID, unitDefID, "sounds/weapons/godrod/impactor.wav", 1.0, GameConfig.Satellite.GodRodTimeToImpactInMs, 5)
         end
    end
 

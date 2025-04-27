@@ -3,7 +3,6 @@ include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 include "lib_mosaic.lua"
 
-local myDefID = Spring.GetUnitDefID(unitID)
 local TablesOfPiecesGroups = {}
 
 SIG_PISTOL = 1
@@ -13,7 +12,7 @@ SIG_DELAYEDRECLOAK = 8
 SIG_STAB = 16
 SIG_AIM = 32
 deg_1 = 3.141592653589793 / 180.0
-local isInvestigator = myDefID == UnitDefNames["operativeinvestigator"].id
+local isInvestigator = unitDefID == UnitDefNames["operativeinvestigator"].id
 local Animations = {}
 local axisSign ={
 	[x_axis]=1,
@@ -53,7 +52,7 @@ local FoldtopFolded= piece'FoldtopFolded'
 local spGetUnitWeaponTarget = Spring.GetUnitWeaponTarget
 local GameConfig = getGameConfig()
 local civilianWalkingTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "civilian", UnitDefs)
-civilianSortedBySexTable = getCivlianDisguiseBySexTypeTable(UnitDefs, getOperatorSex(UnitDefs, myDefID))
+civilianSortedBySexTable = getCivlianDisguiseBySexTypeTable(UnitDefs, getOperatorSex(UnitDefs, unitDefID))
 local disguiseDefID = randT(civilianSortedBySexTable)
 local mySpeedReductionCloaked = GameConfig.investigatorCloakedSpeedReduction
 local spGetUnitTeam = Spring.GetUnitTeam

@@ -6,12 +6,11 @@ include "lib_mosaic.lua"
 
 TablesOfPiecesGroups = {}
 
-myDefID = Spring.GetUnitDefID(unitID)
 
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     StartThread(animation)
-         StartThread(PlaySoundByUnitDefID, myDefID,
+         StartThread(PlaySoundByUnitDefID, unitDefID,
                             "sounds/icons/launchstepsiren.ogg", 1,
                             500, 2)
 end

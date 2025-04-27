@@ -16,7 +16,6 @@ SIG_INTERNAL = 4
 center = piece "center"
 attachPoint = piece "attachPoint"
 
-myDefID = Spring.GetUnitDefID(unitID)
 myTeamID = Spring.GetUnitTeam(unitID)
 boolGaiaUnit = myTeamID == Spring.GetGaiaTeamID()
 
@@ -31,9 +30,9 @@ function setCivilianUnitInternalStateMode(unitID, State)
      GG.CivilianUnitInternalLogicActive[unitID] = State 
  end
 
-boolIsCivilianTruck = (truckTypeTable[myDefID] ~= nil)
-boolIsPoliceTruck = myDefID == UnitDefNames["policetruck"].id
-myLoadOutType = LoadOutTypes[myDefID]
+boolIsCivilianTruck = (truckTypeTable[unitDefID] ~= nil)
+boolIsPoliceTruck = unitDefID == UnitDefNames["policetruck"].id
+myLoadOutType = LoadOutTypes[unitDefID]
 local loadOutUnitID
 
 
@@ -74,7 +73,7 @@ function showAndTell()
     showAll(unitID)
     Hide(center)
 
-    if UnitDefs[myDefID].name == "truck_western2" then --WeyMo
+    if UnitDefs[unitDefID].name == "truck_western2" then --WeyMo
         hideT(TablesOfPiecesGroups["Logo"])
         showOneOrAll(TablesOfPiecesGroups["Logo"])
 end
@@ -98,11 +97,11 @@ function script.Create()
     if boolIsCivilianTruck == false then StartThread(loadLoadOutLoop) end
     if boolIsCivilianTruck == true then assingCivilianTruckRegistration(unitID, Game, GameConfig.instance.culture) end
 
-    if UnitDefs[myDefID].name == "polictruck" then
+    if UnitDefs[unitDefID].name == "polictruck" then
         StartThread(theySeeMeRollin)
     end 
 
-    if UnitDefs[myDefID].name == "truck_western1" then
+    if UnitDefs[unitDefID].name == "truck_western1" then
         StartThread(showLamboWindow)
     end
     generatepiecesTableAndArrayCode(unitID)
@@ -307,7 +306,7 @@ function honkIfHorny()
     SetSignalMask(SIG_HONK)
     Sleep(250)
     if math.random(0,100) > 80 and boolIsCivilianTruck == true and isRushHour() == true then
-        StartThread(PlaySoundByUnitDefID, myDefID, "sounds/car/honk"..math.random(1,7)..".ogg", GameConfig.truckHonkLoudness, 1000, 1)
+        StartThread(PlaySoundByUnitDefID, unitDefID, "sounds/car/honk"..math.random(1,7)..".ogg", GameConfig.truckHonkLoudness, 1000, 1)
     end
 end
 

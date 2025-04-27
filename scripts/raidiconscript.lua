@@ -323,7 +323,7 @@ function getRoundProgressBar() return counter end
 
 function setRoundProgressBar(value) counter = value end
 
-upgradeTypeTable = getSafeHouseUpgradeTypeTable(UnitDefs, myDefID)
+upgradeTypeTable = getSafeHouseUpgradeTypeTable(UnitDefs, unitDefID)
 safeHouseTypeTable = getSafeHouseTypeTable(UnitDefs)
 raidIconTypeTable = getRaidIconTypeTable(UnitDefs)
 operativeTypeTable = getOperativeTypeTable(UnitDefs)

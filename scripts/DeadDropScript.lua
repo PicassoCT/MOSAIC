@@ -13,7 +13,7 @@ return damage
 end
 local spGetUnitTeam = Spring.GetUnitTeam
 local spGetUnitDefID = Spring.GetUnitDefID
-local myDefID = spGetUnitDefID(unitID)
+
 center = piece"center"
 
 function script.Create()

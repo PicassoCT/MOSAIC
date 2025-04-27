@@ -18,7 +18,7 @@ Civilian = piece"Civilian"
 motorBikeLoadableTypeTable = getMotorBikeLoadableTypes(UnitDefs)
 truckTypeTable = getTruckTypeTable(UnitDefs)
 Seat = piece "Seat"
-myDefID = Spring.GetUnitDefID(unitID)
+
 myTeamID = Spring.GetUnitTeam(unitID)
 boolGaiaUnit = myTeamID == Spring.GetGaiaTeamID()
 
@@ -36,8 +36,8 @@ function setCivilianUnitInternalStateMode(unitID, State)
      
      GG.CivilianUnitInternalLogicActive[unitID] = State 
  end
-boolIsCivilianTruck = (truckTypeTable[myDefID] ~= nil)
-boolIsPoliceTruck = myDefID == UnitDefNames["policetruck"].id
+boolIsCivilianTruck = (truckTypeTable[unitDefID] ~= nil)
+boolIsPoliceTruck = unitDefID == UnitDefNames["policetruck"].id
  
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false)
@@ -205,7 +205,7 @@ function honkIfHorny()
     SetSignalMask(SIG_HONK)
     Sleep(250)
     if math.random(0,100) > 80 and boolIsCivilianTruck == true and isRushHour() == true then
-        StartThread(PlaySoundByUnitDefID, myDefID, "sounds/car/honk"..math.random(1,7)..".ogg", GameConfig.truckHonkLoudness, 1000, 1)
+        StartThread(PlaySoundByUnitDefID, unitDefID, "sounds/car/honk"..math.random(1,7)..".ogg", GameConfig.truckHonkLoudness, 1000, 1)
     end
 end
 

@@ -2676,6 +2676,7 @@ function randDict(Dict)
 
     index = 1
     anyKey = 1
+  
     for k, v in pairs(Dict) do
         anyKey = k
         if index == randElement and k and v then return k, v end

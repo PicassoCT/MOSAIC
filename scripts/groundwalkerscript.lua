@@ -4,12 +4,12 @@ include "lib_Animation.lua"
 
 local Animations = include('animations_ground_walker.lua')
 include "lib_mosaic.lua"
-myDefID = Spring.GetUnitDefID(unitID)
+
 local TablesOfPiecesGroups = {}
 
 local Muzzle
 local boolIsMgGroundWalker = false
-if myDefID == UnitDefNames["ground_walker_mg"].id then
+if unitDefID == UnitDefNames["ground_walker_mg"].id then
     Muzzle = piece "Muzzle"
     boolIsMgGroundWalker = true
 end
@@ -206,7 +206,7 @@ boolForward = true
 boolGotIdleTokken = false
 function walkAnimationLoop()
     waitTillComplete(unitID)
-    StartThread(PlaySoundByUnitDefID, myDefID, "sounds/walker/boot.wav",1.0, 1000, 1)
+    StartThread(PlaySoundByUnitDefID, unitDefID, "sounds/walker/boot.wav",1.0, 1000, 1)
     Landing()
 
     while true do
@@ -458,7 +458,7 @@ end
 boolWalking = false
 function script.StartMoving(boolReverse)
     boolForward =  (boolReverse == 0)
-    StartThread(PlaySoundByUnitDefID, myDefID, "sounds/walker/servo"..math.random(1,7)..".ogg", 0.75, 3000, 2)
+    StartThread(PlaySoundByUnitDefID, unitDefID, "sounds/walker/servo"..math.random(1,7)..".ogg", 0.75, 3000, 2)
     boolWalking = true 
 end
 

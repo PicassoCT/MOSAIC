@@ -6,12 +6,12 @@ include "lib_Animation.lua"
 
 local TablesOfPiecesGroups = {}
 
-myDefID = Spring.GetUnitDefID(unitID)
+
 function script.HitByWeapon(x, z, weaponDefID, damage) end
 SIG_BLINK = 2
 
 function script.Create()
-    --echo(UnitDefs[myDefID].name.."has placeholder script called")
+    --echo(UnitDefs[unitDefID].name.."has placeholder script called")
     -- generatepiecesTableAndArrayCode(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     x,y,z = Spring.GetUnitPosition(unitID)

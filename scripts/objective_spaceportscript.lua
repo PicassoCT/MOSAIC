@@ -55,7 +55,7 @@ local CraneCapsule = piece("CraneCapsule")
 local FireTruckRotator = piece("FireTruckRotator")
 local FireTruck = piece("FireTruck")
 
-myDefID = Spring.GetUnitDefID(unitID)
+
 function script.HitByWeapon(x, z, weaponDefID, damage)
 end
 function script.Create()

@@ -9,7 +9,7 @@ local TablesOfPiecesGroups = {}
 function script.HitByWeapon(x, z, weaponDefID, damage) end
 chemTrails = getChemTrailTypes()
 aerosoltype = chemTrails.wanderlost
-myDefID = Spring.GetUnitDefID(unitID)
+
 SIG_AEROSOL_DEPLOY = 1
 emitor = piece "emitor"
 center = piece "center"
@@ -50,8 +50,8 @@ end
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     hideT(TablesOfPiecesGroups["Tank"])
-    Show(TablesOfPiecesGroups["Tank"][colCode(UnitDefs[myDefID].name)])
-    timeTank = GG.GameConfig.Aerosols[AerosolUnitDefIDMap[myDefID]]
+    Show(TablesOfPiecesGroups["Tank"][colCode(UnitDefs[unitDefID].name)])
+    timeTank = GG.GameConfig.Aerosols[AerosolUnitDefIDMap[unitDefID]]
                    .sprayTimePerUnitInMs
     StartThread(aerosolDeployCegs)
     Hide(emitor)
@@ -104,9 +104,9 @@ function aerosolDeployCegs()
         soundIntervall = 0
         while lisUnitFlying(unitID) == true and timeTank > 0 do
             if soundIntervall == 0  then
-                StartThread(PlaySoundByUnitDefID, myDefID, "sounds/plane/aerosol.wav", math.random(7,10)/10, 900, 3)
+                StartThread(PlaySoundByUnitDefID, unitDefID, "sounds/plane/aerosol.wav", math.random(7,10)/10, 900, 3)
             end
-            EmitSfx(emitor, 1023 + defIDTypeTankMap[myDefID])
+            EmitSfx(emitor, 1023 + defIDTypeTankMap[unitDefID])
             Sleep(100)
             spinRand(emitor, -90, 90, 0.5)
             timeTank = timeTank - 100
@@ -127,7 +127,7 @@ local GameConfig = getGameConfig()
 aerosolAffectableUnits = getChemTrailInfluencedTypes(UnitDefs)
 local alreadyChecked = {}
 if not GG.AerosolAffectedCivilians then    GG.AerosolAffectedCivilians = {}    end
-aerosolTypeOfUnit = AerosolUnitDefIDMap[myDefID]
+aerosolTypeOfUnit = AerosolUnitDefIDMap[unitDefID]
 assert(aerosolTypeOfUnit)
 assert(type(aerosolTypeOfUnit)=="string")
 

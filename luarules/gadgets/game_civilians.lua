@@ -269,12 +269,13 @@ end
 
 function attachPayload(payLoadID, id)
     if payLoadID then
-
+        echo("checkReSpawnTraffic2.65")
        Spring.SetUnitAlwaysVisible(payLoadID, true)
        pieceMap = Spring.GetUnitPieceMap(id)
 
-       assert(pieceMap["attachPoint"], "Truck has no attachpoint")
+       assert(type(pieceMap["attachPoint"]) == "number", "Truck has no attachpoint")
        Spring.UnitAttach(id, payLoadID, pieceMap["attachPoint"])
+
        return payLoadID
     else
         Spring.Echo("Not a valid payload")
@@ -282,10 +283,14 @@ function attachPayload(payLoadID, id)
 end
 
 function loadTruck(id, loadType)
+            echo("checkReSpawnTraffic2.61")
     if loadableTruckType[spGetUnitDefID(id)] then
+                echo("checkReSpawnTraffic2.62")
         --Spring.Echo("createUnitAtUnit ".."game_civilians.lua")     
         payLoadID = createUnitAtUnit(gaiaTeamID, loadType, id)
+                echo("checkReSpawnTraffic2.63")
         if payLoadID then
+                    echo("checkReSpawnTraffic2.64")
             return attachPayload(payLoadID, id)
         end
     end
@@ -302,6 +307,7 @@ function loadRefugee(id, loadType)
 end
 
 function checkReSpawnTraffic()
+    echo("checkReSpawnTraffic1")
     counter = 0
     toDeleteTable = {}
     if GG.CivilianTable then
@@ -316,29 +322,40 @@ function checkReSpawnTraffic()
             end
         end
     end
+    echo("checkReSpawnTraffic2")
     assertTable(toDeleteTable)
     for id, data in pairs(toDeleteTable) do GG.CivilianTable[id] = nil end
+      echo("checkReSpawnTraffic2.1")
     if counter < getNumberOfUnitsAtTime(GameConfig.numberOfVehicles) then
         local stepSpawn = math.min(GameConfig.LoadDistributionMax,
                                    GameConfig.numberOfVehicles - counter)
+        echo("checkReSpawnTraffic2.2")
         -- echo(counter.. " of "..GameConfig.numberOfVehicles .." vehicles spawned")
         for i = 1, stepSpawn do
+            echo("checkReSpawnTraffic2.3")
             x, _, z, startNode = getRandomSpawnNode()
             if startNode then
+                echo("checkReSpawnTraffic2.4")
                 goalNode = RouteTabel[startNode][math.random(1, #RouteTabel[startNode])]
                 assertTable(TruckTypeTable)
                 TruckType = randDict(TruckTypeTable)
+                echo("checkReSpawnTraffic2.5")
                 id = spawnAMobileCivilianUnit(TruckType, x, z, startNode, goalNode)
                 if id  then
                   --  echo("calling truck loading")
+                    echo("checkReSpawnTraffic2.6")
                     loadTruck(id, "truckpayload")
+                      echo("checkReSpawnTraffic2.7")
                 end
             end
         end
     else
+        echo("checkReSpawnTraffic2.8")
         assertTable(TruckTypeTable)
         decimateArrivedCivilians(absDistance( getNumberOfUnitsAtTime(GameConfig.numberOfVehicles), counter), TruckTypeTable)
+          echo("checkReSpawnTraffic2.9")
     end
+    echo("checkReSpawnTraffic3")
 end
 
 function getNumberOfUnitsAtTime(value)
@@ -724,7 +741,7 @@ function sozialize(evtID, frame, persPack, startFrame, myID)
             displayConversationTextAt(myID, persPack.chatPartnerID)
             if persPack.chatPartnerID then 
                 persPack.boolStartAChat = true
-                persPack.stuckCounterDeactivate = (persPack.stuckCounterDeactivate or 0) + persPack.maxTimeChattingInFrames
+                persPack.boolDeactivateStuckDetection = true             
             end
     end
 
@@ -733,6 +750,7 @@ function sozialize(evtID, frame, persPack, startFrame, myID)
             not persPack.chatPartnerID or
             not doesUnitExistAlive(persPack.chatPartnerID) then
                 persPack.boolStartAChat = false
+                persPack.boolDeactivateStuckDetection = false
                 persPack = moveToLocation(myID, persPack, {}, true)
             return true, frame + math.random(15,30), persPack
         end
@@ -775,14 +793,14 @@ end
 function snychronizedSocialEvents(evtID, frame, persPack, startFrame, myID)
     if  maRa()==true and isPrayerTime() then
         Command(myID, "stop")
-        persPack.stuckCounterDeactivate = (persPack.stuckCounterDeactivate or 0) + getPrayDurationInFrames()
+        persPack.deactivateStuckDetectionValue = -50       
         startInternalBehaviourOfState(myID, "startPraying")
         return true, frame + 30, persPack   
     end 
 
 	if GG.SocialEngineeredPeople and GG.SocialEngineeredPeople[myID] and GG.SocialEngineers[GG.SocialEngineeredPeople[myID]] then 
 		Command(myID, "stop")
-        persPack.stuckCounterDeactivate = (persPack.stuckCounterDeactivate or 0) +  (GameConfig.socialEngineerLifetimeMs/1000)*30
+        persPack.deactivateStuckDetectionValue = -100 
         startInternalBehaviourOfState(myID, "startPeacefullProtest", GG.SocialEngineeredPeople[myID])
 		return true, frame + 30, persPack   
 	end
@@ -791,18 +809,22 @@ function snychronizedSocialEvents(evtID, frame, persPack, startFrame, myID)
 end  
 
 local metaStuckDetection = {}
-function resetStuckDetection(myID, persPack)
-    persPack.stuckCounter = 0
-    metaStuckDetection[myID] = -2
+function resetStuckDetection(myID, persPack, waitValue)
+    persPack.stuckCounter = waitValue
+    metaStuckDetection[myID] = 0
     return persPack
 end
 function stuckDetection(evtID, frame, persPack, startFrame, myID, x, y, z)
 
     boolDone = false
 
-    if persPack.stuckCounterDeactivate and persPack.stuckCounterDeactivate  > 0 then
-        persPack = resetStuckDetection(myID, persPack) 
-        persPack.stuckCounterDeactivate = persPack.stuckCounterDeactivate - (persPack.LastStepFrame)
+    if persPack.boolDeactivateStuckDetection then
+        return boolDone, nil, persPack
+    end
+
+    if persPack.deactivateStuckDetectionValue and persPack.deactivateStuckDetectionValue ~= 0 then
+        persPack = resetStuckDetection(myID, persPack, persPack.deactivateStuckDetectionValue)
+        persPack.deactivateStuckDetectionValue = 0
         return boolDone, nil, persPack
     end
 

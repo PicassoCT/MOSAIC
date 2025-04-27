@@ -11,11 +11,11 @@ containingHouseID = nil
 local gaiaTeamID = Spring.GetGaiaTeamID()
 local spGetUnitDefID = Spring.GetUnitDefID
 local spGetUnitTeam = Spring.GetUnitTeam
-local myDefID = spGetUnitDefID(unitID)
+
 local myTeamID = Spring.GetUnitTeam(unitID)
 local spGetUnitPosition = Spring.GetUnitPosition
 local houseTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "house", UnitDefs)
-local safeHouseUpgradeTypeTable = getSafeHouseUpgradeTypeTable(UnitDefs, myDefID)
+local safeHouseUpgradeTypeTable = getSafeHouseUpgradeTypeTable(UnitDefs, unitDefID)
 local safeHouseTypeTable = getSafeHouseTypeTable(UnitDefs)
 local operativeTypeTable = getOperativeTypeTable(UnitDefs)
 function script.HitByWeapon(x, z, weaponDefID, damage) return damage;end

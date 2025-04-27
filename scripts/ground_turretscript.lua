@@ -7,7 +7,7 @@ include "lib_Animation.lua"
 local TablesOfPiecesGroups = {}
 
 function script.HitByWeapon(x, z, weaponDefID, damage) end
-local myDefID = Spring.GetUnitDefID(unitID)
+
 local myTeamID = Spring.GetUnitTeam(unitID)
 local GameConfig = getGameConfig()
 local center = piece "center"
@@ -19,7 +19,7 @@ local groundFeetSensors = {}
 local SIG_GUARDMODE = 1
 local boolDroneInterceptSaturated = false
 local cruiseMissileProjectileType =  getCruiseMissileProjectileTypes(WeaponDefs)
-local boolIsSniper = (UnitDefs[myDefID].name == "ground_turret_sniper")
+local boolIsSniper = (UnitDefs[unitDefID].name == "ground_turret_sniper")
 
 function script.Create()
     generatepiecesTableAndArrayCode(unitID)
@@ -134,7 +134,7 @@ function droneDefense()
                 end
             end
             if boolPlayGunSound == true then
-                StartThread(PlaySoundByUnitDefID, myDefID, "sounds/weapons/machinegun/salvo.ogg", 1.0, 5000, 2)
+                StartThread(PlaySoundByUnitDefID, unitDefID, "sounds/weapons/machinegun/salvo.ogg", 1.0, 5000, 2)
             end
             Sleep(250)
         end
@@ -297,7 +297,7 @@ end
 
 function script.FireWeapon1()
     StartThread(fireFlowers, 15)
-    StartThread(PlaySoundByUnitDefID, myDefID,
+    StartThread(PlaySoundByUnitDefID, unitDefID,
     "sounds/weapons/machinegun/salvo.ogg", 1.0, 5000, 2)
     boolGroundAiming = false
     StartThread(guardSwivelTurret)
@@ -323,7 +323,7 @@ end
 
 function script.FireWeapon2()
     StartThread(fireFlowers, 15)
-    StartThread(PlaySoundByUnitDefID, myDefID,
+    StartThread(PlaySoundByUnitDefID, unitDefID,
     "sounds/weapons/machinegun/salvo2.ogg", 1.0, 5000, 1)
     StartThread(guardSwivelTurret)
     return true

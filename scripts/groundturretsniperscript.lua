@@ -7,7 +7,7 @@ include "lib_Animation.lua"
 local TablesOfPiecesGroups = {}
 
 function script.HitByWeapon(x, z, weaponDefID, damage) end
-local myDefID = Spring.GetUnitDefID(unitID)
+
 local myTeamID = Spring.GetUnitTeam(unitID)
 local GameConfig = getGameConfig()
 local center = piece "center"

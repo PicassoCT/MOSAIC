@@ -3,7 +3,6 @@ include "lib_UnitScript.lua"
 
 
 local TablesOfPiecesGroups = {}
-myDefID = Spring.GetUnitDefID(unitID)
 
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)

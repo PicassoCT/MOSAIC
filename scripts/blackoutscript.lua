@@ -5,7 +5,7 @@ include "lib_mosaic.lua"
 
 GameConfig = getGameConfig()
 local TablesOfPiecesGroups = {}
-myDefID = Spring.GetUnitDefID(unitID)
+
 gaiaTeamID = Spring.GetGaiaTeamID()
 myTeamID = Spring.GetUnitTeam(unitID)
 stunnedInBlackOutUnitType = getStunnedInBlackOutUnitTypes(UnitDefs)

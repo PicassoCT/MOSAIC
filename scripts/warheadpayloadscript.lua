@@ -97,9 +97,8 @@ function createCrater(x,y,z,defID)
 end
 
 function mightyBadaBoom(lastAttackerTeam)
-myDefID = Spring.GetUnitDefID(unitID)
 
-if UnitDefs[myDefID].name == "physicspayload" then
+if UnitDefs[unitDefID].name == "physicspayload" then
  	x,y,z = Spring.GetUnitPosition(unitID)
 
 	             Spring.SetProjectileAlwaysVisible (id, true)
@@ -109,7 +108,7 @@ if UnitDefs[myDefID].name == "physicspayload" then
 	             x, y, z = Spring.GetUnitPosition(unitID)
 				Spring.SpawnCeg("nukeshroom", x ,y + 10, z )
 				Spring.SpawnCeg("nuclearexplosionbig", x ,y + 100, z )
-	             createCrater(x,y,z, myDefID)
+	             createCrater(x,y,z, unitDefID)
 	             for i=1, GameConfig.visuals.falloutParticlesMax do 
 	            	valx = math.random(-768, 768)
 	            	valz =  math.random(-768, 768)
@@ -134,7 +133,7 @@ if UnitDefs[myDefID].name == "physicspayload" then
 
 end
 
-if UnitDefs[myDefID].name == "biopayload" then
+if UnitDefs[unitDefID].name == "biopayload" then
 	local AerosolTypes = getChemTrailTypes()
 
  	foreach(getAllNearUnit(unitID, GameConfig.payloadDestructionRange), 
@@ -153,7 +152,7 @@ if UnitDefs[myDefID].name == "biopayload" then
                         end)
 end
 
-if UnitDefs[myDefID].name == "informationpayload" then
+if UnitDefs[unitDefID].name == "informationpayload" then
 	
  	foreach(Spring.GetAllUnits(),
                         function(id)
@@ -195,7 +194,7 @@ end
 
 local spGetUnitTeam = Spring.GetUnitTeam
 local spGetUnitDefID = Spring.GetUnitDefID
-local myDefID = spGetUnitDefID(unitID)
+
 RepairDefuseRod = piece"RepairDefuseRod"
 HereBeDragons = piece"HereBeDragons"
 
@@ -209,7 +208,7 @@ function script.Create()
      StartThread(defuseStateMachine)
      hideT(TablesOfPiecesGroups["ProgressBars"])
      hideT(TablesOfPiecesGroups["BaseRotor"])
-     StartThread(PlaySoundByUnitDefID, myDefID,
+     StartThread(PlaySoundByUnitDefID, unitDefID,
                             "sounds/icons/warhead_created.ogg", 1,
                             500, 2)
      if boolIsAITeam then StartThread(moveAItoLauncher) end
@@ -428,7 +427,7 @@ defuseStatesMachine = {
 						displayProgressBar( persPack.defuseTimeMs)
 						if  not persPack.soundStart and persPack.defuseTimeMs < 12000  then
 							persPack.soundStart = true
-					        StartThread(PlaySoundByUnitDefID, myDefID, "sounds/icons/warhead_defusal"..math.random(1,2)..".ogg", 1,  25000, 2)
+					        StartThread(PlaySoundByUnitDefID, unitDefID, "sounds/icons/warhead_defusal"..math.random(1,2)..".ogg", 1,  25000, 2)
 						end
 
 						if persPack.defuseTimeMs <= 0 then --"defused"

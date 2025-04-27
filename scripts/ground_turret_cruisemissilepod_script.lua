@@ -25,8 +25,8 @@ if not Pod then
              " has no Pod")
 end
 rocketPiece = piece("rocketPiece")
-myDefID = Spring.GetUnitDefID(unitID)
-boolIsTransportPod = UnitDefs[myDefID].name == "ground_turret_cm_transport"
+
+boolIsTransportPod = UnitDefs[unitDefID].name == "ground_turret_cm_transport"
 DefIDPieceMapFold = {
     [UnitDefNames["ground_turret_cm_airstrike"].id] = piece("cm_airstrike_fold"),
     [UnitDefNames["ground_turret_cm_transport"].id] = piece("cm_turret_ssied_fold"),
@@ -41,14 +41,14 @@ DefIDPieceMap = {
 
 
 function showHideDependantOnType(boolFolded)
-    assert(DefIDPieceMap[myDefID])
-    assert(DefIDPieceMapFold[myDefID])
-    Hide(DefIDPieceMap[myDefID])
-    Hide(DefIDPieceMapFold[myDefID])
+    assert(DefIDPieceMap[unitDefID])
+    assert(DefIDPieceMapFold[unitDefID])
+    Hide(DefIDPieceMap[unitDefID])
+    Hide(DefIDPieceMapFold[unitDefID])
     if boolFolded then
-        Show(DefIDPieceMapFold[myDefID])
+        Show(DefIDPieceMapFold[unitDefID])
     else
-        Show(DefIDPieceMap[myDefID])
+        Show(DefIDPieceMap[unitDefID])
     end
 end
 

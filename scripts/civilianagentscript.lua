@@ -8,7 +8,7 @@ include "lib_mosaic.lua"
 local Animations = include('animations_civilian_female.lua')
 local signMessages = include('protestSignMessages.lua')
 include "lib_mosaic.lua"
-myDefID = Spring.GetUnitDefID(unitID)
+
 local TablesOfPiecesGroups = {}
 
 SIG_ANIM = 1
@@ -156,7 +156,7 @@ end
 orgHousePosTable = {}
 
 rpgCarryingTypeTable = getRPGCarryingCivilianTypes(UnitDefs)
-myName = UnitDefs[myDefID].name
+myName = UnitDefs[unitDefID].name
 local myGun = ak47
 
 function script.Create()
@@ -174,7 +174,7 @@ function script.Create()
     bodyConfig.boolWounded = false
     bodyConfig.boolInfluenced = false
     bodyConfig.boolCoverWalk = false
-    bodyConfig.boolRPGCarrying = rpgCarryingTypeTable[myDefID] ~= nil 
+    bodyConfig.boolRPGCarrying = rpgCarryingTypeTable[unitDefID] ~= nil 
     home.x, home.y, home.z = Spring.GetUnitPosition(unitID)
     bodyBuild()
 

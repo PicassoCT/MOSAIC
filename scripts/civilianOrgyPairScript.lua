@@ -8,7 +8,7 @@ include "lib_mosaic.lua"
 local TablesOfPiecesGroups = {}
 local spGetUnitDefID = Spring.GetUnitDefID
 local spGetUnitPosition = Spring.GetUnitPosition
-local myDefID = spGetUnitDefID(unitID)
+
 
 -- local Scene = piece("Scene")
 local center = piece("center")
@@ -498,7 +498,7 @@ function creepingTowardsOneAnother()
         foreach(getAllNearUnit(unitID, 500),
                 function(id)
                     defID = spGetUnitDefID(id)
-                    if defID == myDefID then
+                    if defID == unitDefID then
                         dis = distanceUnitToUnit(unitID, id)
                         if dis < lowestDistance then 
                             lowestDistance = dis

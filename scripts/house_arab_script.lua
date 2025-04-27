@@ -6,7 +6,7 @@ include "lib_Animation.lua"
 include "lib_mosaic.lua"
 LevelPieces = {}
 
-local myDefID = Spring.GetUnitDefID(unitID)
+
 local spGetGroundHeight = Spring.GetGroundHeight
 local TablesOfPiecesGroups = {}
 gridOffset =  {}
@@ -362,7 +362,7 @@ function decorateCity()
     housesNearby = 0
     foreach(getAllInCircle(x,z, 560), --400 * 1.4
         function(id)
-            if Spring.GetUnitDefID(id) == myDefID and id ~= unitID then
+            if Spring.GetUnitDefID(id) == unitDefID and id ~= unitID then
                 housesNearby = housesNearby +1
             end
         end
@@ -975,7 +975,7 @@ function buildAnimation()
 
         return
     end
-    StartThread(PlaySoundByUnitDefID, myDefID, "sounds/gCrubbleHeap/construction/construction"..math.random(1,7)..".ogg", 1.0, 20000, 3, 0)
+    StartThread(PlaySoundByUnitDefID, unitDefID, "sounds/gCrubbleHeap/construction/construction"..math.random(1,7)..".ogg", 1.0, 20000, 3, 0)
     local builT = TablesOfPiecesGroups["Build"]
     axis = _y_axis
     for i = 1, 3 do WMove(builT[i], axis, i * -cubeDim.heigth * 2, 0) end

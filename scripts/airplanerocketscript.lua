@@ -5,7 +5,7 @@ include "lib_Animation.lua"
 --include "lib_Build.lua"
 include "lib_mosaic.lua"
 
-local myDefID = Spring.GetUnitDefID(unitID)
+
 local TablesOfPiecesGroups = {}
 SIG_RELOAD =1
 SIG_FOLD =2
@@ -77,7 +77,7 @@ function headingSoundSurveilance()
         end
 
         if accumulator > 4 then
-            StartThread(PlaySoundByUnitDefID, myDefID, "sounds/plane/drone.ogg", 1.0, 5000, 1)
+            StartThread(PlaySoundByUnitDefID, unitDefID, "sounds/plane/drone.ogg", 1.0, 5000, 1)
         end
         oldHeading = heading
     end
@@ -127,7 +127,7 @@ function reloadRoutine()
     Signal(SIG_RELOAD)
     boolTargetLaserActive= false
     WTurn(RocketPod,z_axis, math.rad(0),1)
-    StartThread(PlaySoundByUnitDefID, myDefID, "sounds/plane/eagle.wav", 1.0, 5000, 1)
+    StartThread(PlaySoundByUnitDefID, unitDefID, "sounds/plane/eagle.wav", 1.0, 5000, 1)
     Sleep(60000)
     counter = #TablesOfPiecesGroups["Rocket"]
     WTurn(RocketPod,z_axis, math.rad(-90),1)

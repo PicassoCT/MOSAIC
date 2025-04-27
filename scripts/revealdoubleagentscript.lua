@@ -4,7 +4,7 @@ include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 --include "lib_Build.lua"
 
-myDefID = Spring.GetUnitDefID(unitID)
+
 myTeamID = Spring.GetUnitTeam(unitID)
 function script.HitByWeapon(x, z, weaponDefID, damage) end
 

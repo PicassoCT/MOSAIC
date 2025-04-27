@@ -5,7 +5,7 @@ include "lib_Animation.lua"
 include "lib_mosaic.lua"
 
 local TablesOfPiecesGroups = {}
-local myDefID = Spring.GetUnitDefID(unitID)
+
 local myTeamID = Spring.GetUnitTeam(unitID)
 local gaiaTeamID = Spring.GetGaiaTeamID()
 local GameConfig = getGameConfig()
@@ -18,7 +18,7 @@ HoloCenter = piece("HoloCenter")
 function defineMaxSoundFiles() 
     fileList = VFS.DirList(advertisingFilePath, "advertisement*.ogg")
     maxSoundFiles = math.max(maxSoundFiles,  #fileList)
-    Spring.Echo("maxSoundFiles: "..maxSoundFiles)
+--    Spring.Echo("maxSoundFiles: "..maxSoundFiles)
 end
 
 function showOne(T, bNotDelayd)
@@ -53,7 +53,7 @@ end
 
 function script.Create()
     defineMaxSoundFiles()
-    --echo(UnitDefs[myDefID].name.."has placeholder script called")
+    --echo(UnitDefs[unitDefID].name.."has placeholder script called")
     Spring.SetUnitAlwaysVisible(unitID, true)
     setUnitActive(unitID, false)
     setUnitActive(unitID, true)
@@ -89,7 +89,7 @@ function advertisingLoop()
             soundFile = "sounds/advertising/blimp.ogg"
             loudness= math.random(5,9)/10
         end
-        StartThread(PlaySoundByUnitDefID, myDefID, soundFile, loudness, 20000, 2)
+        StartThread(PlaySoundByUnitDefID, unitDefID, soundFile, loudness, 20000, 2)
         minimum, maximum = 5*60*1000, 10*60*1000
         restTime = math.random(minimum, maximum)
         halfRestTime = math.ceil(restTime/2)

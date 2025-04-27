@@ -11,7 +11,7 @@ function script.HitByWeapon(x, z, weaponDefID, damage) end
 fireTruck = piece("container031")
 EMT = piece("container032")
 GarbageTruck = piece("container39")
-myDefID = Spring.GetUnitDefID(unitID)
+
 myTeamID = Spring.GetUnitTeam(unitID)
 gaiaTeamID = Spring.GetGaiaTeamID()
 
@@ -182,7 +182,7 @@ function script.Create()
     busPieces[TablesOfPiecesGroups["container"][33]] = TablesOfPiecesGroups["container"][33]
     hideAll(unitID)
 
-    if myDefID == UnitDefNames["truckpayloadrefugee"].id then
+    if unitDefID == UnitDefNames["truckpayloadrefugee"].id then
         showOnePiece(TablesOfPiecesGroups["RefugeePayload"])
         if randChance(10) then
         	StartThread(delayedAttachCivilianLoot)

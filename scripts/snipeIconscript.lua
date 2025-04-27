@@ -4,7 +4,7 @@ include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 --include "lib_Build.lua"
 
-local myDefID = UnitDefNames["snipeicon"].id
+
 local myTeam = Spring.GetUnitTeam(unitID)
 local myParent = nil
 TablesOfPiecesGroups = {}
@@ -62,7 +62,7 @@ function getUnitsInTriangle()
 
     return foreach(getAllInCircle(x, z, maxRange, unitID), -- all units in range
                    function(id) -- all units of defID
-        if Spring.GetUnitDefID(id) == myDefID then return id end
+        if Spring.GetUnitDefID(id) == unitDefID then return id end
     end, function(id) -- all Units In Triangle
         px, py, pz = Spring.GetUnitPosition(id)
         if pointWithinTriangle(worldPos[1].x, worldPos[1].z, worldPos[2].x,

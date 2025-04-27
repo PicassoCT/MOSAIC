@@ -12,7 +12,6 @@ function script.HitByWeapon(x, z, weaponDefID, damage) end
 center = piece "center"
 gun = piece "gun"
 EmitPiece = piece "EmitPiece"
-myDefID = Spring.GetUnitDefID(unitID)
 
 function script.Create()
     generatepiecesTableAndArrayCode(unitID)
@@ -57,9 +56,9 @@ function startMovement()
     WTurn(center, y_axis, math.rad(180), 360)
     boolAlreadyMoving = true
     if maRa() == true then
-     StartThread(PlaySoundByUnitDefID, myDefID, "sounds/plane/droneSteer.ogg", 1.0, 5000, 1)
+     StartThread(PlaySoundByUnitDefID, unitDefID, "sounds/plane/droneSteer.ogg", 1.0, 5000, 1)
      else
-    StartThread(PlaySoundByUnitDefID, myDefID, "sounds/plane/drone2.ogg", 1.0, 5000, 1)
+    StartThread(PlaySoundByUnitDefID, unitDefID, "sounds/plane/drone2.ogg", 1.0, 5000, 1)
      end
 end
 

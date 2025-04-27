@@ -5,7 +5,7 @@ include "lib_UnitScript.lua"
 
 local TablesOfPiecesGroups = {}
 local pieceNr_pieceName =Spring.GetUnitPieceList ( unitID ) 
-myDefID = Spring.GetUnitDefID(unitID)
+
 Icon = piece("Icon")
 local ToShowTable = {piece("House")}
 function script.HitByWeapon(x, z, weaponDefID, damage) end

@@ -10,7 +10,7 @@ function script.HitByWeapon(x, z, weaponDefID, damage) end
 
 GameConfig = getGameConfig()
 local spGetUnitDefID = Spring.GetUnitDefID
-local myDefID = spGetUnitDefID(unitID)
+
 center = piece "center"
 Icon = piece "Icon"
 Packed = piece "Packed"
@@ -83,7 +83,7 @@ function doDamageCyclic()
         foreach(getAllNearUnitSpherical(unitID, SatelliteShrapnellDistance),
                 function(id) 
                     defID = spGetUnitDefID(id)
-                    if id ~= unitID and defID ~= myDefID then 
+                    if id ~= unitID and defID ~= unitDefID then 
                         return id end 
                 end,
                 function(id)

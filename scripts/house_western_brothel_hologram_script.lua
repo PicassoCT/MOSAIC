@@ -5,10 +5,10 @@ include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 
 
-myDefID = Spring.GetUnitDefID(unitID)
-local boolIsCasino    = UnitDefNames["house_western_hologram_casino"].id == myDefID
-local boolIsBrothel   = UnitDefNames["house_western_hologram_brothel"].id == myDefID
-local boolIsBuisness  = UnitDefNames["house_western_hologram_buisness"].id == myDefID 
+
+local boolIsCasino    = UnitDefNames["house_western_hologram_casino"].id == unitDefID
+local boolIsBrothel   = UnitDefNames["house_western_hologram_brothel"].id == unitDefID
+local boolIsBuisness  = UnitDefNames["house_western_hologram_buisness"].id == unitDefID 
 
 local creditNeonSigns =  include('creditNamesNeonLogos.lua')
 local brothelNamesNeonSigns = include('brothelNamesNeonLogos.lua')
@@ -595,7 +595,7 @@ function holoGramNightTimes( name, axisToRotateAround, max)
     alreadyShowing = {}
     while true do
         if ( (hours > 17 or hours < 7) or boolDebugHologram) and isANormalDay() then
-        StartThread(PlaySoundByUnitDefID, myDefID, "sounds/advertising/hologramnoise.ogg", 0.25, 25000, 1)
+        StartThread(PlaySoundByUnitDefID, unitDefID, "sounds/advertising/hologramnoise.ogg", 0.25, 25000, 1)
             showTellDict= {}
             hcounter = math.random(3, 6)
             assert(#TableOfPiecesGroups[name] > 0, name)

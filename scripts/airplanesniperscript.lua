@@ -5,7 +5,6 @@ include "lib_Animation.lua"
 --include "lib_Build.lua"
 include "lib_mosaic.lua"
 
-local myDefID = Spring.GetUnitDefID(unitID)
 local TablesOfPiecesGroups = {}
 
 function script.HitByWeapon(x, z, weaponDefID, damage) end
@@ -49,7 +48,7 @@ function headingSoundSurveilance()
         end
 
         if accumulator > 4 then
-            StartThread(PlaySoundByUnitDefID, myDefID, "sounds/plane/drone.ogg", 1.0, 5000, 1)
+            StartThread(PlaySoundByUnitDefID, unitDefID, "sounds/plane/drone.ogg", 1.0, 5000, 1)
         end
         oldHeading = heading
     end

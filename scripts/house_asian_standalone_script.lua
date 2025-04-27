@@ -5,7 +5,7 @@ include "lib_UnitScript.lua"
 
 local TablesOfPieceGroups = {}
 local boolDebug = false
-local myDefID = Spring.GetUnitDefID(unitID)
+
 local GameConfig = getGameConfig()
 local factor = 35
 local heightoffset = 90   
@@ -20,7 +20,7 @@ local ArcoT= {}
 local ProjectT = {}
 local Mega = {}
 local isArcology = false
-local isProject = UnitDefs[myDefID].name =="Project"
+local isProject = UnitDefs[unitDefID].name =="Project"
 local Icon = piece("Icon")
 local cubeDim = {
     length = factor * 22,

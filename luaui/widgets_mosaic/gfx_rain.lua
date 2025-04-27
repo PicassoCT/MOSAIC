@@ -341,7 +341,7 @@ local function getDetermenisticHash()
     accumulated = accumulated + Game.mapSizeZ
     return accumulated
 end
-
+local boolIsMapNameOverride = false
 local function isMapNameRainyOverride(mapName)
     local map = string.lower(mapName)
     local ManualBuildingPlacement = {}        
@@ -355,7 +355,7 @@ local function isMapNameRainyOverride(mapName)
 end
 
 local function isRainyArea()
-    return getDetermenisticHash() % 2 == 0 or  isMapNameRainyOverride(Game.mapName)
+    return getDetermenisticHash() % 2 == 0 or boolIsMapNameOverride 
 end
 
 local function getDayTime()
@@ -540,7 +540,11 @@ function widget:Initialize()
     if (not gl.RenderToTexture) then --super bad graphic driver
         return
     end
-
+    boolIsMapNameOverride = isMapNameRainyOverride(Game.mapName)
+    if not isRainyArea() then
+       Spring.Echo("Is not a rainy area:"..tostring(boolRainyArea))
+        widgetHandler:RemoveWidget(self)
+    end
     lastFrametime = Spring.GetTimer()
     startOsClock = os.clock()
     init()
@@ -590,7 +594,6 @@ function widget:GameFrame()
     --Spring.Echo("Time:"..hours..":"..minutes..":"..seconds)
     --Spring.Echo("Sunpos:"..sunPos[1]..":"..sunPos[2]..":"..sunPos[3])
     --Spring.Echo("Sunposition:", sunPos[1], sunPos[2], sunPos[3]) 
-    local dynLightPosString = Spring.GetGameRulesParam("dynamic_lights")
 end
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------

@@ -148,7 +148,7 @@ function getGameConfig()
         anarchyCarReductionFactor = 0.25,
         MegaBuildingMax= 12,
 
-        LoadDistributionMax = 3,
+        LoadDistributionMax = 5,
 
         --truck
         truckBreakTimeMinSec= 60,
@@ -1856,7 +1856,7 @@ end
                 UnitDefNames = getUnitDefNames(UnitDefs)
                 typeTable = {
                             "gullswarm",
-                            "raveswarm"
+                            "ravenswarm"
                             }
 
                 return getTypeTable(UnitDefNames, typeTable)

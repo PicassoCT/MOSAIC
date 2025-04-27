@@ -5,12 +5,11 @@ include "lib_Animation.lua"
 --include "lib_Build.lua"
 
 TablesOfPiecesGroups = {}
-myDefID = Spring.GetUnitDefID(unitID)
 function script.HitByWeapon(x, z, weaponDefID, damage) end
 
 
 function script.Create()
-    echo(UnitDefs[myDefID].name.."has placeholder script called")
+    echo(UnitDefs[unitDefID].name.."has placeholder script called")
     -- generatepiecesTableAndArrayCode(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     -- Spring.MoveCtrl.Enable(unitID,true)

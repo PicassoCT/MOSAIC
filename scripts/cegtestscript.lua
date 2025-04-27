@@ -5,7 +5,7 @@ include "lib_Animation.lua"
 --include "lib_Build.lua"
 
 local TablesOfPiecesGroups = {}
-myDefID = Spring.GetUnitDefID(unitID)
+
 function script.HitByWeapon(x, z, weaponDefID, damage) end
 
 cegToTestName = {"depressol","tollwutox","orgyanyl","wanderlost"}

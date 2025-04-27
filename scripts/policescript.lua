@@ -25,7 +25,7 @@ local Shield = piece"Shield"
 local Visor = piece"Visor"
 
 TablesOfPiecesGroups = {}
-myDefID = Spring.GetUnitDefID(unitID)
+
 function script.HitByWeapon(x, z, weaponDefID, damage) end
 
 function showRiotCop()

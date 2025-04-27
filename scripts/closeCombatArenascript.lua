@@ -91,7 +91,7 @@ function fightAnimation()
     Move(move2, z_axis, -5, 0)
     twoZeroOffset = -400
     while true do 
-        StartThread(PlaySoundByUnitDefID, myDefID, "sounds/cqb/cqb"..math.random(1,4)..".ogg", 1.0, 22000, 1)
+        StartThread(PlaySoundByUnitDefID, unitDefID, "sounds/cqb/cqb"..math.random(1,4)..".ogg", 1.0, 22000, 1)
         initiative = math.random(1, 2)
         initivativeSign = -1
         StopSpin(arena, z_axis, 0.1)

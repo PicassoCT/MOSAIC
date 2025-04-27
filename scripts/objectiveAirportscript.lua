@@ -7,7 +7,7 @@ include "lib_mosaic.lua"
 local TablesOfPiecesGroups = {}
 Airport = piece "Airport"
 statusTable = {}
-myDefID = Spring.GetUnitDefID(unitID)
+
 JourneyPoint = piece "JourneyPoint"
 PlanePositionTurnAxis = 3
 PlanePositionMoveAxis = 2
@@ -31,13 +31,13 @@ function playDepartureGong(offset)
     if percent % 0.25 < 0.1 and not isNight() then
         maphash = getMapHash(5) + 1
         name = "sounds/objective/airport_departure"..maphash..".ogg"
-        StartThread(PlaySoundByUnitDefID, myDefID, name , 0.125, 500, 2)
+        StartThread(PlaySoundByUnitDefID, unitDefID, name , 0.125, 500, 2)
     end
 end
 
 function playAircraftSounds()
     if not isNight() then
-        StartThread(PlaySoundByUnitDefID, myDefID, "sounds/objective/airport_arrivaldeparture.ogg", 1.0, 120000, 1)
+        StartThread(PlaySoundByUnitDefID, unitDefID, "sounds/objective/airport_arrivaldeparture.ogg", 1.0, 120000, 1)
     end
 end
 

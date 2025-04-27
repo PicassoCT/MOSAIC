@@ -6,7 +6,7 @@ include "lib_Animation.lua"
 center = piece("center")
 
 TablesOfPiecesGroups = {}
-myDefID = Spring.GetUnitDefID(unitID)
+
 myTeamID = Spring.GetUnitTeam(unitID)
 local ecmIconTypes = getECMIconTypes(UnitDefs)
 local ecmIconSfxTypes = getECMSpecialSFXIconTypes(UnitDefs)

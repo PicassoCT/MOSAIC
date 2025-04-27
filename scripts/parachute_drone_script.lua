@@ -12,7 +12,6 @@ function script.HitByWeapon(x, z, weaponDefID, damage) end
 boolStationary = true
 center = piece "center"
 EmitPiece = piece "EmitPiece"
-myDefID = Spring.GetUnitDefID(unitID)
 
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)

@@ -11,7 +11,6 @@ aimpiece = piece "Turret1"
 Cannon1 = piece "Cannon1"
 emitfire = aimpiece
 
-myDefID = Spring.GetUnitDefID(unitID)
 myTeamID = Spring.GetUnitTeam(unitID)
 gaiaTeamID = Spring.GetGaiaTeamID()
 

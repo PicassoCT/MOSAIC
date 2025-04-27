@@ -4,7 +4,6 @@ include "lib_UnitScript.lua"
 include "lib_debug.lua"
 
 local TablesOfPiecesGroups = {}
-myDefID = Spring.GetUnitDefID(unitID)
 function script.HitByWeapon(x, z, weaponDefID, damage) end
 Aimspot = piece("Aimspot")
 

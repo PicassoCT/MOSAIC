@@ -17,7 +17,7 @@ attachPoint = piece("attachPoint")
 colDetectPiece = piece("Truck1")
 TruckCenter = center
 PayloadCenter = piece("PayloadCenter")
-myDefID = Spring.GetUnitDefID(unitID)
+
 myTeamID = Spring.GetUnitTeam(unitID)
 boolGaiaUnit = myTeamID == Spring.GetGaiaTeamID()
 DetectPiece = piece"DetectPiece"
@@ -271,8 +271,8 @@ end
 
 local spGetUnitDefID = Spring.GetUnitDefID
 function collideWithPersonOnFoot()
-    massOfTruck = UnitDefs[myDefID].mass or 90000
-    maxSpeedOfTruck = UnitDefs[myDefID].maxVelocity or 2.81
+    massOfTruck = UnitDefs[unitDefID].mass or 90000
+    maxSpeedOfTruck = UnitDefs[unitDefID].maxVelocity or 2.81
     cx,cy,cz = Spring.GetUnitPiecePosDir(unitID, colDetectPiece)
     foreach(getAllInCircle(cx,cz, 50, unitID),
         function (id)
@@ -318,7 +318,7 @@ function honkIfHorny()
     SetSignalMask(SIG_HONK)
     Sleep(250)
     if math.random(0,100) > 80 and boolIsCivilianTruck == true and isRushHour() == true then
-        StartThread(PlaySoundByUnitDefID, myDefID, "sounds/car/honk"..math.random(1,7)..".ogg", GameConfig.truckHonkLoudness, 1000, 1)
+        StartThread(PlaySoundByUnitDefID, unitDefID, "sounds/car/honk"..math.random(1,7)..".ogg", GameConfig.truckHonkLoudness, 1000, 1)
     end
 end
 

@@ -7,7 +7,7 @@ local Animations = include('animations_civilian_female.lua')
 local signMessages = include('protestSignMessages.lua')
 local peacfulProtestSignMessages = include('PeacefullProtestSignMessages.lua')
 local spGetUnitDefID = Spring.GetUnitDefID
-myDefID = spGetUnitDefID(unitID)
+
 local TablesOfPiecesGroups = {}
 
 SIG_ANIM = 1
@@ -52,7 +52,7 @@ local map = Spring.GetUnitPieceMap(unitID);
 gunsTable =  {}
 gunsTable[#gunsTable+1] = ak47
 local walkMotionExcludeTable = {}
-if UnitDefs[myDefID].name == "civilian_western0" then
+if UnitDefs[unitDefID].name == "civilian_western0" then
     gunsTable[#gunsTable + 1 ] = piece('Pistol')
     walkMotionExcludeTable[ShoppingBag]=ShoppingBag
     walkMotionExcludeTable[Handbag]=Handbag
@@ -153,7 +153,7 @@ end
 orgHousePosTable = {}
 
 rpgCarryingTypeTable = getRPGCarryingCivilianTypes(UnitDefs)
-myName = UnitDefs[myDefID].name
+myName = UnitDefs[unitDefID].name
 local myGun = ak47
 UnitPieces = Spring.GetUnitPieceMap(unitID)
 function script.Create()
@@ -184,7 +184,7 @@ function script.Create()
     bodyConfig.boolWounded = false
     bodyConfig.boolInfluenced = false
     bodyConfig.boolCoverWalk = false
-    bodyConfig.boolRPGCarrying = rpgCarryingTypeTable[myDefID] ~= nil 
+    bodyConfig.boolRPGCarrying = rpgCarryingTypeTable[unitDefID] ~= nil 
     home.x, home.y, home.z = Spring.GetUnitPosition(unitID)
     bodyBuild()
 

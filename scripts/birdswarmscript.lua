@@ -16,7 +16,7 @@ function script.Create()
     Spin(center,2,math.rad(42),0)
     Move(center,2,buildingHeighth,0)
 
-    boolIsGull = UnitDefs[myDefID].name == "gullswarm"
+    boolIsGull = UnitDefs[unitDefID].name == "gullswarm"
     StartThread(moveControl)    
     hideT(TablesOfPiecesGroups["Gull"])
     boolAtLeastOne = true

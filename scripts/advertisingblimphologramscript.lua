@@ -5,7 +5,7 @@ include "lib_Animation.lua"
 include "lib_mosaic.lua"
 
 local TablesOfPiecesGroups = {}
-myDefID = Spring.GetUnitDefID(unitID)
+
 gaiaTeamID = Spring.GetGaiaTeamID()
 BrothelSpin= piece("BrothelSpin")
 CasinoSpin= piece("CasinoSpin")
@@ -127,7 +127,7 @@ end
 
 
 function script.Create()
-    --echo(UnitDefs[myDefID].name.."has placeholder script called")
+    --echo(UnitDefs[unitDefID].name.."has placeholder script called")
     Spring.SetUnitAlwaysVisible(unitID, true)
     Spring.SetUnitNoSelect(unitID, true)
     Spring.SetUnitBlocking(unitID, false)

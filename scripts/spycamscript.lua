@@ -3,7 +3,7 @@ include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 
 TablesOfPiecesGroups = {}
-myDefID = Spring.GetUnitDefID(unitID)
+
 
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)

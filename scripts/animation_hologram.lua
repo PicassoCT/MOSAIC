@@ -1316,12 +1316,12 @@ function gestiKulieren()
     end
 end
 
-myDefID = Spring.GetUnitDefID(unitID)
+
 function onTheMove()
 	for k=1, 5 do
 
         if k==1 then
-            StartThread(PlaySoundByUnitDefID,myDefID, "sounds/tiglil/tgdance.wav", 0.75, 3000, 1, 0)
+            StartThread(PlaySoundByUnitDefID,unitDefID, "sounds/tiglil/tgdance.wav", 0.75, 3000, 1, 0)
         end
 
         if math.random(0, 1) ==1 then
