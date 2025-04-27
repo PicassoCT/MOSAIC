@@ -824,6 +824,11 @@ function gadget:UnitCreated(unitID, unitDefID, unitTeamID, parentID)
     end
 end
 
+local memory_tracker = {
+    tracked_tables = {},
+    history_depth = 3 -- how many past measurements to check for constant growth
+}
+
 function gadget:GameFrame()
     local n = sp_GetGameFrame()
     local zzz = sleepers[n]
@@ -851,8 +856,113 @@ function gadget:GameFrame()
             PopActiveUnitID()
         end
     end
+    if bool_GadgetDebug then
+        --memory_tracker:track("GG", GG)
+    end
 end
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
+-- Helper to deep-size a table
+local function sizeof(obj, seen)
+    if type(obj) ~= "table" then
+        return 0
+    end
+    seen = seen or {}
+    if seen[obj] then
+        return 0
+    end
+    seen[obj] = true
+
+    local size = 0
+    for k, v in pairs(obj) do
+        size = size + sizeof(k, seen)
+        size = size + sizeof(v, seen)
+    end
+
+    size = size + 40 -- base table overhead
+    return size
+end
+
+-- Helper: get size breakdown per key
+local function sizeof_keys(tbl)
+    local sizes = {}
+    for k, v in pairs(tbl) do
+        if type(v) == "table" then
+            sizes[k] = sizeof(v)
+        else
+            sizes[k] = 0
+        end
+    end
+    return sizes
+end
+
+-- Check if measurements are constantly growing
+local function is_constantly_increasing(history)
+    for i = 2, #history do
+        if history[i] <= history[i-1] then
+            return false
+        end
+    end
+    return true
+end
+
+function memory_tracker:track(name, tbl)
+    local current_size = sizeof(tbl)
+    local info = self.tracked_tables[name]
+
+    if not info then
+        info = { history = {}, last_sizes = {} }
+        self.tracked_tables[name] = info
+    end
+
+    table.insert(info.history, current_size)
+    if #info.history > self.history_depth then
+        table.remove(info.history, 1)
+    end
+
+    -- Only act if we have enough history
+    if #info.history == self.history_depth then
+        if is_constantly_increasing(info.history) then
+            Spring.Echo(string.format("[ALERT] %s is constantly growing!", name))
+            Spring.Echo( string.format("  Previous sizes: %s", table.concat(info.history, " -> ")))
+            Spring.Echo( string.format("  Current total size: %d bytes", current_size))
+
+            -- Try to find the growing part
+            local current_key_sizes = sizeof_keys(tbl)
+            local last_key_sizes = info.last_sizes
+            local biggest_growth = nil
+            local biggest_growth_amount = -math.huge
+            for k, sz in pairs(current_key_sizes) do
+                local last_sz = last_key_sizes[k] or 0
+                local growth = sz - last_sz
+                if growth > biggest_growth_amount then
+                    biggest_growth = k
+                    biggest_growth_amount = growth
+                end
+            end
+
+            if biggest_growth then
+                Spring.Echo(string.format("  Most suspicious growth: key '%s' (+%d bytes)", tostring(biggest_growth), biggest_growth_amount))
+            else
+                Spring.Echo("  No suspicious growth detected at key level.")
+            end
+        end
+    end
+
+    -- Update last key sizes
+    info.last_sizes = sizeof_keys(tbl)
+end
+
+function memory_tracker:untrack(name)
+    self.tracked_tables[name] = nil
+end
+
+function memory_tracker:list()
+    Spring.Echo("Currently tracked tables:")
+    for name, info in pairs(self.tracked_tables) do
+        local latest = info.history[#info.history] or 0
+        Spring.Echo(string.format("  %s -> %d bytes", name, latest))
+    end
+end
