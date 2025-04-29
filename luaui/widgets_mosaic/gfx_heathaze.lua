@@ -22,14 +22,45 @@ local heatHazeStrength = 0.0
 local depthTexture = "$map_gbuffer_zvaltex"
 local normalTexture = "$map_gbuffer_normtex"
 local noiseTexture = ":l:luaui/images/noisetextures/rgbnoise.png"
+local boolIsMapNameOverride = false
+local boolRainyArea = false
+
+
+local function isRainyArea()
+    return getDetermenisticHash() % 2 == 0 or boolIsMapNameOverride 
+end
 
 local function getDayTime()
     local morningOffset = (DAYLENGTH / 2)
     local Frame = (Spring.GetGameFrame() + morningOffset) % DAYLENGTH
-    return Frame / DAYLENGTH
+    local percent = Frame / DAYLENGTH
+    local hours = math.floor((Frame / DAYLENGTH) * 24)
+    local minutes = math.ceil((((Frame / DAYLENGTH) * 24) - hours) * 60)
+    local seconds = 60 - ((24 * 60 * 60 - (hours * 60 * 60) - (minutes * 60)) % 60)
+    return hours, minutes, seconds, percent
 end
 
-local function calculateHeatHazeStrength(timePercent)
+local function isRaining()   
+
+    if boolRainyArea == nil then
+        boolRainyArea = isRainyArea()        
+        Spring.Echo("Is rainy area:"..tostring(boolRainyArea))
+    end
+
+    if boolRainyArea == false then
+        return false
+    end
+
+    local gameFrames = Spring.GetGameFrame()
+    local dayNr = gameFrames / DAYLENGTH
+
+    return dayNr % 3 < 1.0 and (hours > 18 or hours < 7)
+end
+
+local function calculateHeatHazeStrength()
+    local _,_,_, timePercent = getDayTime()
+    if isRaining() then return 0.0 end
+
     if timePercent < 0.25 then
         return math.max(0, (timePercent - 0.15) * 10.0)
     elseif timePercent < 0.75 then
@@ -39,13 +70,27 @@ local function calculateHeatHazeStrength(timePercent)
     end
 end
 
-local function getHeatHazeActive()
-
+local function getHeatHazeActive(mapName)
+    return string.find(map, "mosaic_lastdayofdubai_v" )
 end
 
+local function isMapNameRainyOverride(mapName)
+    local map = string.lower(mapName)
+    local ManualBuildingPlacement = {}        
+        ManualBuildingPlacement[1] = "mosaic_lastdayofdubai_v"
+
+      for i=1, #ManualBuildingPlacement do
+        if string.find(map, ManualBuildingPlacement[i] ) then return true end
+    end
+    return false
+end
+
+
+
 function widget:Initialize()
+    boolIsMapNameOverride = isMapNameRainyOverride(Game.mapName)
     Spring.Echo("HeatHaze: Starting")
-    local isHeatHazeActive = getHeatHazeActive()
+    local isHeatHazeActive = getHeatHazeActive(Game.mapName)
     if not isHeatHazeActive then
         Spring.Echo("Not a heathaze map")
         widgetHandler:RemoveWidget(self)
@@ -81,8 +126,8 @@ function widget:Shutdown()
 end
 
 function widget:Update()
-    local timePercent = getDayTime()
-    heatHazeStrength = calculateHeatHazeStrength(timePercent)
+
+    heatHazeStrength = calculateHeatHazeStrength()
 end
 
 function widget:DrawScreenEffects()

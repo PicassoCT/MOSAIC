@@ -33,7 +33,7 @@ void main()
 
     float distortionStrength = heatHazeStrength * depthFactor * viewAngleFactor;
 
-    uv += noiseSample * 0.01 * distortionStrength;
+    uv += noiseSample * 0.01 * distortionStrength; //+ sin(time)
 
     vec4 finalColor = texture2D(tex0, uv);
     gl_FragColor = finalColor;
