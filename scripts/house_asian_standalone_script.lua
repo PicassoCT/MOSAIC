@@ -205,7 +205,7 @@ function setArcologyProjectsName(id, isArcology)
     end
         name = names[(math.floor(px + py)% #names) +1] 
         description = descriptions[(math.floor(px + py + pz)% #descriptions) + 1] 
-        Spring.SetUnitTooltip(id,  name .. ":" .. description )
+        Spring.SetUnitTooltip(id,  name .. ": " .. description )
 end
 
 

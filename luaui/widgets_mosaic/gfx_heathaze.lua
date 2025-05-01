@@ -6,7 +6,7 @@ function widget:GetInfo()
         author = "Picasso & ChatGPT",
         date = "2025",
         license = "GPL3",
-        layer = -5,
+        layer = -11,
         enabled = true,
         hidden = false
     }
@@ -14,10 +14,10 @@ end
 
 local heatShader
 local vsx, vsy = Spring.GetViewGeometry()
-local shaderFilePath = "luaui/widget_map/shaders/"
+local shaderFilePath = "luaui/widgets_mosaic/shaders/"
 local noisetextureFilePath = ":l:luaui/images/noisetextures/rgbnoise.png"
 local DAYLENGTH = 28800
-
+local screenTex = nil
 local heatHazeStrength = 0.0
 local depthTexture = "$map_gbuffer_zvaltex"
 local normalTexture = "$map_gbuffer_normtex"
@@ -43,8 +43,7 @@ end
 local function isRaining()   
 
     if boolRainyArea == nil then
-        boolRainyArea = isRainyArea()        
-        Spring.Echo("Is rainy area:"..tostring(boolRainyArea))
+        boolRainyArea = isRainyArea()       
     end
 
     if boolRainyArea == false then
@@ -58,20 +57,22 @@ local function isRaining()
 end
 
 local function calculateHeatHazeStrength()
-    local _,_,_, timePercent = getDayTime()
-    if isRaining() then return 0.0 end
 
-    if timePercent < 0.25 then
-        return math.max(0, (timePercent - 0.15) * 10.0)
+    local hours,minutes,_, timePercent = getDayTime()
+    local boolIsRaining = isRaining() 
+    if boolIsRaining == true then return 0.0,hours, minutes end
+
+    if timePercent < 0.35 then
+        return math.max(0, (timePercent - 0.25) * 10.0),hours, minutes
     elseif timePercent < 0.75 then
-        return 1.0
+        return 1.0 ,hours, minutes
     else
-        return math.max(0, 1.0 - (timePercent - 0.75) * 4.0)
+        return math.max(0, 1.0 - (timePercent - 0.75) * 6.0)  ,hours, minutes
     end
 end
 
 local function getHeatHazeActive(mapName)
-    return string.find(map, "mosaic_lastdayofdubai_v" )
+    return string.find(string.lower(mapName), "mosaic_lastdayofdubai_v" )
 end
 
 local function isMapNameRainyOverride(mapName)
@@ -85,6 +86,18 @@ local function isMapNameRainyOverride(mapName)
     return false
 end
 
+function widget:ViewResize() --TODO test/assert
+        vsx, vsy, vpx, vpy = Spring.GetViewGeometry()
+
+        screenTex= gl.CreateTexture(vsx,vsy, {
+            target = target,
+            min_filter = GL.LINEAR,
+            mag_filter = GL.LINEAR,
+            wrap_s   = GL.CLAMP_TO_EDGE,
+            wrap_t   = GL.CLAMP_TO_EDGE,
+          })
+
+    end
 
 
 function widget:Initialize()
@@ -95,15 +108,22 @@ function widget:Initialize()
         Spring.Echo("Not a heathaze map")
         widgetHandler:RemoveWidget(self)
     end
+
+
     local fragShader = VFS.LoadFile(shaderFilePath .. "heatShader.frag")
     local vertShader = VFS.LoadFile(shaderFilePath .. "heatShader.vert")
     heatShader = gl.CreateShader({
         fragment = fragShader,
         vertex = vertShader,
+        textures = {
+            [0] = screenTex
+        },
+
         uniformInt = {
             depthTex = 1,
             noiseTex = 2,
-        },
+            screenTex = 3
+        },        
         uniformFloat = {
             viewPortSize = {vsx, vsy},
         },
@@ -114,8 +134,10 @@ function widget:Initialize()
     })
     if not heatShader then
         Spring.Echo("HeatHaze: Shader failed to compile!")
+        Spring.Echo(gl.GetShaderLog())
         widgetHandler:RemoveWidget(self)
     end
+    widget:ViewResize()
     Spring.Echo("HeatHaze: Initalization Completed")
 end
 
@@ -126,8 +148,9 @@ function widget:Shutdown()
 end
 
 function widget:Update()
-
-    heatHazeStrength = calculateHeatHazeStrength()
+    local hours, minutes = 0,0
+    heatHazeStrength, hours, minutes = calculateHeatHazeStrength()
+    Spring.Echo("Heathaze value:"..hours..":"..minutes..": "..heatHazeStrength)
 end
 
 function widget:DrawScreenEffects()
@@ -137,11 +160,15 @@ function widget:DrawScreenEffects()
     gl.Uniform(gl.GetUniformLocation(heatShader, "heatHazeStrength"), heatHazeStrength)
     gl.Uniform(gl.GetUniformLocation(heatShader, "time"), Spring.GetGameSeconds())
     gl.Uniform(gl.GetUniformLocation(heatShader, "viewPortSize"), vsx, vsy)
+    gl.CopyToTexture(screenTex, 0, 0, 0, 0, vsx, vsy) 
 
     gl.Texture(1, depthTexture)
     gl.Texture(2, noiseTexture)
+
+
     gl.TexRect(0, vsy, vsx, 0)
     gl.Texture(1, false)
     gl.Texture(2, false)
+    gl.Texture(3, false)
     gl.UseShader(0)
 end

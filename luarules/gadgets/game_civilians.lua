@@ -269,7 +269,7 @@ end
 
 function attachPayload(payLoadID, id)
     if payLoadID then
-        echo("checkReSpawnTraffic2.65")
+        --echo("checkReSpawnTraffic2.65")
        Spring.SetUnitAlwaysVisible(payLoadID, true)
        pieceMap = Spring.GetUnitPieceMap(id)
 
@@ -283,14 +283,14 @@ function attachPayload(payLoadID, id)
 end
 
 function loadTruck(id, loadType)
-            echo("checkReSpawnTraffic2.61")
+            --echo("checkReSpawnTraffic2.61")
     if loadableTruckType[spGetUnitDefID(id)] then
-                echo("checkReSpawnTraffic2.62")
+                --echo("checkReSpawnTraffic2.62")
         --Spring.Echo("createUnitAtUnit ".."game_civilians.lua")     
         payLoadID = createUnitAtUnit(gaiaTeamID, loadType, id)
-                echo("checkReSpawnTraffic2.63")
+                --echo("checkReSpawnTraffic2.63")
         if payLoadID then
-                    echo("checkReSpawnTraffic2.64")
+                    --echo("checkReSpawnTraffic2.64")
             return attachPayload(payLoadID, id)
         end
     end
@@ -307,7 +307,7 @@ function loadRefugee(id, loadType)
 end
 
 function checkReSpawnTraffic()
-    echo("checkReSpawnTraffic1")
+    --echo("checkReSpawnTraffic1")
     counter = 0
     toDeleteTable = {}
     if GG.CivilianTable then
@@ -322,40 +322,40 @@ function checkReSpawnTraffic()
             end
         end
     end
-    echo("checkReSpawnTraffic2")
+    --echo("checkReSpawnTraffic2")
     assertTable(toDeleteTable)
     for id, data in pairs(toDeleteTable) do GG.CivilianTable[id] = nil end
-      echo("checkReSpawnTraffic2.1")
+      --echo("checkReSpawnTraffic2.1")
     if counter < getNumberOfUnitsAtTime(GameConfig.numberOfVehicles) then
         local stepSpawn = math.min(GameConfig.LoadDistributionMax,
                                    GameConfig.numberOfVehicles - counter)
-        echo("checkReSpawnTraffic2.2")
+        --echo("checkReSpawnTraffic2.2")
         -- echo(counter.. " of "..GameConfig.numberOfVehicles .." vehicles spawned")
         for i = 1, stepSpawn do
-            echo("checkReSpawnTraffic2.3")
+            --echo("checkReSpawnTraffic2.3")
             x, _, z, startNode = getRandomSpawnNode()
             if startNode then
-                echo("checkReSpawnTraffic2.4")
+                --echo("checkReSpawnTraffic2.4")
                 goalNode = RouteTabel[startNode][math.random(1, #RouteTabel[startNode])]
                 assertTable(TruckTypeTable)
                 TruckType = randDict(TruckTypeTable)
-                echo("checkReSpawnTraffic2.5")
+                --echo("checkReSpawnTraffic2.5")
                 id = spawnAMobileCivilianUnit(TruckType, x, z, startNode, goalNode)
                 if id  then
                   --  echo("calling truck loading")
-                    echo("checkReSpawnTraffic2.6")
+                    --echo("checkReSpawnTraffic2.6")
                     loadTruck(id, "truckpayload")
-                      echo("checkReSpawnTraffic2.7")
+                      --echo("checkReSpawnTraffic2.7")
                 end
             end
         end
     else
-        echo("checkReSpawnTraffic2.8")
+        --echo("checkReSpawnTraffic2.8")
         assertTable(TruckTypeTable)
         decimateArrivedCivilians(absDistance( getNumberOfUnitsAtTime(GameConfig.numberOfVehicles), counter), TruckTypeTable)
-          echo("checkReSpawnTraffic2.9")
+          --echo("checkReSpawnTraffic2.9")
     end
-    echo("checkReSpawnTraffic3")
+    --echo("checkReSpawnTraffic3")
 end
 
 function getNumberOfUnitsAtTime(value)
