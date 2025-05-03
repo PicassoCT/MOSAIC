@@ -416,8 +416,13 @@ function widget:Update(dt)
         rainPercent = 1.0
         return 
     end
-    if rainPercent > 0 and accumulatedDT - lastActiveRainSoundDt > 15.0 then
-        Spring.PlaySoundFile("LuaUi/sounds/weather/rain.ogg", math.min(1.0, 2.0*rainPercent), 'ui')
+    if rainPercent > 0 and accumulatedDT - lastActiveRainSoundDt > 5.0 then
+        if math.random(0,1) == 1 then
+            local randThunderIndex = math.random(1,6)
+            local pathToThunder = "LuaUi/sounds/weather/thunder/thunder"..randThunderIndex..".ogg"
+            Spring.PlaySoundFile(pathToThunder, math.min(1.0, (2.0 * rainPercent)+ 0.1), 'ui')
+        end
+        Spring.PlaySoundFile("LuaUi/sounds/weather/rain.ogg", math.min(1.0, 2.0 * rainPercent), 'ui')
         lastActiveRainSoundDt= accumulatedDT
     end
 

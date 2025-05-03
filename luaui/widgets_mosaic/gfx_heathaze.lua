@@ -147,10 +147,9 @@ function widget:Shutdown()
     end
 end
 
-function widget:Update()
-    local hours, minutes = 0,0
-    heatHazeStrength, hours, minutes = calculateHeatHazeStrength()
-    Spring.Echo("Heathaze value:"..hours..":"..minutes..": "..heatHazeStrength)
+function widget:Update()    
+    heatHazeStrength = calculateHeatHazeStrength()
+    --Spring.Echo("Heathaze value:"..hours..":"..minutes..": "..heatHazeStrength)
 end
 
 function widget:DrawScreenEffects()
