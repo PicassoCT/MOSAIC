@@ -6,7 +6,7 @@ function widget:GetInfo()
         author = "Picasso & ChatGPT",
         date = "2025",
         license = "GPL3",
-        layer = -11,
+        layer = -math.huge,
         enabled = true,
         hidden = false
     }
@@ -24,7 +24,12 @@ local normalTexture = "$map_gbuffer_normtex"
 local noiseTexture = ":l:luaui/images/noisetextures/rgbnoise.png"
 local boolIsMapNameOverride = false
 local boolRainyArea = false
-
+local glRenderToTexture      = gl.RenderToTexture
+local glTexture = gl.Texture
+local glUniform = gl.Uniform
+local glCopyToTexture = gl.CopyToTexture
+local glUseShader = gl.UseShader
+local glTexRect = gl.TexRect
 
 local function isRainyArea()
     return getDetermenisticHash() % 2 == 0 or boolIsMapNameOverride 
@@ -154,20 +159,20 @@ end
 
 function widget:DrawScreenEffects()
     if not heatShader then return end
-    gl.UseShader(heatShader)
+    glUseShader(heatShader)
 
-    gl.Uniform(gl.GetUniformLocation(heatShader, "heatHazeStrength"), heatHazeStrength)
-    gl.Uniform(gl.GetUniformLocation(heatShader, "time"), Spring.GetGameSeconds())
-    gl.Uniform(gl.GetUniformLocation(heatShader, "viewPortSize"), vsx, vsy)
-    gl.CopyToTexture(screenTex, 0, 0, 0, 0, vsx, vsy) 
+    glUniform(gl.GetUniformLocation(heatShader, "heatHazeStrength"), heatHazeStrength)
+    glUniform(gl.GetUniformLocation(heatShader, "time"), Spring.GetGameSeconds())
+    glUniform(gl.GetUniformLocation(heatShader, "viewPortSize"), vsx, vsy)
+    glCopyToTexture(screenTex, 0, 0, 0, 0, vsx, vsy) 
 
-    gl.Texture(1, depthTexture)
-    gl.Texture(2, noiseTexture)
+    glTexture(1, depthTexture)
+    glTexture(2, noiseTexture)
 
 
-    gl.TexRect(0, vsy, vsx, 0)
-    gl.Texture(1, false)
-    gl.Texture(2, false)
-    gl.Texture(3, false)
-    gl.UseShader(0)
+    glTexRect(0, vsy, vsx, 0)
+    glTexture(1, false)
+    glTexture(2, false)
+    glTexture(3, false)
+    glUseShader(0)
 end
