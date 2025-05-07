@@ -2,7 +2,7 @@ include "createCorpse.lua"
 include "lib_OS.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
-
+include "lib_debug.lua"
 
 local TablesOfPiecesGroups = {}
 
@@ -182,7 +182,7 @@ end
 
 function hideTrain(nr)
     Hide(TablesOfPiecesGroups["Train"][nr])
-    reset(TablesOfPiecesGroups["Train"][nr], 0)
+    reset(TablesOfPiecesGroups["Train"][nr], 0)    
     hideT(TablesOfPiecesGroups["Train"..nr.."Sub"])        
 end
 
@@ -215,9 +215,17 @@ function back(direction)
 end
 
 function trainLoop()
+    tunnelDetectionPlus = piece("TunnelDetectionPlus")
+    assertNum(tunnelDetectionPlus)
+    tunnelDetectionMinus = piece("TunnelDetectionMinus")
+    assertNum(tunnelDetectionMinus)
+    tunnelPlus =  TablesOfPiecesGroups["TunnelPlus"]
+    assertTable(tunnelPlus)
+    tunnelMinus =  TablesOfPiecesGroups["TunnelMinus"]
+    assertTable(tunnelMinus)
     while (semaphore < 2) do Sleep(100) end
-    deployTunnels(piece("TunnelDetectionPlus") , 1, TablesOfPiecesGroups["TunnelPlus"])    
-    deployTunnels(piece("TunnelDetectionMinus") , -1, TablesOfPiecesGroups["TunnelMinus"])   
+    deployTunnels(tunnelDetectionPlus , 1, tunnelPlus)    
+    deployTunnels(tunnelDetectionMinus, -1, tunnelMinus)   
     direction = randSign()
     StartThread(back, direction)
     StartThread(forth, direction)
