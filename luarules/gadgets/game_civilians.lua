@@ -791,9 +791,9 @@ end
 
 
 function snychronizedSocialEvents(evtID, frame, persPack, startFrame, myID)
-    if  maRa()==true and isPrayerTime() then
+    if  maRa() and isPrayerTime() and civilianWalkingTypeTable[persPack.mydefID] then
         Command(myID, "stop")
-        persPack.deactivateStuckDetectionValue = -50       
+        persPack.deactivateStuckDetectionValue = -200       
         startInternalBehaviourOfState(myID, "startPraying")
         return true, frame + 30, persPack   
     end 
