@@ -1207,6 +1207,7 @@ function threadStateStarter()
     while true do
         if boolStartFilming == true then
             boolStartFilming = false
+            echo("Starting filming at location "..locationstring(unitID))
             StartThread(filmingLocation)
         end
         if boolStartWailing == true then
@@ -1217,7 +1218,7 @@ function threadStateStarter()
         if boolStartChatting == true then
             boolStartChatting = false
             StartThread(chatting)
-            echo("Starting filming")
+            echo("Starting chatting at location "..locationstring(unitID))
         end
 
         if boolStartFleeing == true then
