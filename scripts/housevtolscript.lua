@@ -6,7 +6,17 @@ include "lib_Animation.lua"
 
 TablesOfPiecesGroups = {}
 
-function script.HitByWeapon(x, z, weaponDefID, damage) end
+function script.HitByWeapon(x, z, weaponDefID, damage)
+    hp = Spring.GetUnitHealth(unitID)
+    if hp and hp - damage < 0 then
+        Spring.SetUnitCrashing(unitID, true)
+        SetUnitValue(COB.CRASHING, 1)
+        Spring.SetUnitNeutral(unitID, true)
+        Spring.SetUnitNoSelect(unitID, true)
+        return 0
+    end
+    return damage
+ end
 
 
 function script.Create()
