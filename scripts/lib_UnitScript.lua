@@ -2360,6 +2360,8 @@ function showT(l_tableName, l_lowLimit, l_upLimit, l_delay)
         return
     end
 
+    if type(l_tableName) ~= "table" then Spring.Echo("Not a valid table in "..getUnitName(unitID)); return end
+
     if l_lowLimit and l_upLimit then
         for i = l_lowLimit, l_upLimit, 1 do
             if l_tableName[i] then Show(l_tableName[i]) end
