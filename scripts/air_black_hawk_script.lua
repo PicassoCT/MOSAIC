@@ -2,39 +2,51 @@ include "createCorpse.lua"
 include "lib_OS.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
-include "lib_Build.lua"
+
 
 
 center = piece "center"
+assert(center)
 imgoingdown = piece "imgoingdown"
+assert(imgoingdown)
 bady = piece "bady"
+assert(bady)
 tailrotor = piece "tailrotor"
+assert(tailrotor)
 tailrotors = piece "tailrotors"
+assert(tailrotors)
 
 rotor = piece "rotor"
+assert(rotor)
+
 rotors = piece "rotors"
+assert(rotors)
+
 nightlight = piece "rotors"
 turret = piece "turrret"
+assert(turret)
 gun = piece "gun001"
+assert(gun)
 aim1 = piece "aim1"
+assert(aim1)
 
 dirtemit1 = piece "dirtemit1"
+assert(dirtemit1)
 dirtemit2 = piece "dirtemit2"
-
+assert(dirtemit2)
 
 soundfolder = "sounds/air/copter/"
 rotoscope = piece "rotoscope"
-
+assert(rotoscope)
 
 local boolOnlyOnce = true
 local boolMoving = false
-local SIG_ONTHEFLY = 4
-local SIG_BUILD = 2
-local SIG_LANDED = 8
-local SIG_HOVER = 16
-local SIG_FLY = 32
-local SIG_WAITING = 64
-SIG_RESET = 128
+local SIG_LANDED = 1
+local SIG_FLY = 2
+local SIG_UP = 4
+local SIG_Down = 8
+
+
 
 local buildProgress = 1
 local boolShortStop = false
@@ -112,12 +124,9 @@ flyinggrass = 1026
 blackerthensmoke = 1027
 rlexplode = 1028
 
-
-
 RepEated = 2
 function landed()
     SetSignalMask(SIG_LANDED)
-
     Sleep(350)
     local spPlaySound = Spring.PlaySoundFile
     local lrand = math.random
@@ -132,21 +141,10 @@ function landed()
         rest = lceil(lrand(1900, 2400))
 
         for i = 1, rest, 100 do
-            dx = lrand(1, 6)
-            if boolAir == true then
-                if dx == 3 then
-                    --EmitSfx(dirtemit1, chopperdirt)
-                    --EmitSfx(dirtemit2, chopperdirt)
-                else
-                  --  EmitSfx(dirtemit2, flyinggrass)
-                  --  EmitSfx(dirtemit2, chopperdirt)
-                end
-            end
             Sleep(100)
         end
     end
 end
-
 
 function flyBySound()
     if maRa() == true then
@@ -156,7 +154,6 @@ function flyBySound()
         PlaySoundByUnitDefID(unitDefID, soundfolder .. "copterflyby2.wav", 0.7, 5000, 1)
     end
 end
-
 
 function onTheFly()
     SetSignalMask(SIG_FLY)
@@ -170,12 +167,6 @@ function onTheFly()
     SumSini = 0
     boolFlop = true
 end
-
-
-
-
-
-
 
 boolLongStopStarted = false
 boolLongFlightStarted = false
@@ -208,16 +199,11 @@ function moveStateCheck()
                 StartThread(landed)
             end
         end
-
-
         Sleep(500)
     end
 end
 
-
-
 function script.StartMoving()
-
     --windGet()
     if boolOnlyOnce == true then
         boolOnlyOnce = false
@@ -229,8 +215,6 @@ function script.StartMoving()
 end
 
 function script.StopMoving()
-
-
     boolMoving = false
     boolShortStop = false
 end
@@ -242,8 +226,6 @@ function script.HitByWeapon(x, z, weaponDefID, damage)
         boolYouOnlyDieOnce = true
         StartThread(emitSmoke)
         EmitSfx(bady, rlexplode)
-
-
         EmitSfx(bady, rlexplode)
         Spin(imgoingdown, y_axis, math.rad(-250), 0.01)
         EmitSfx(bady, rlexplode)
