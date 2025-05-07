@@ -636,7 +636,7 @@ function launchAnimation()
             Sleep(9000)
             Hide(RocketFusionPlume)
             HideRocket()
-            echo("launch complete waiting for return")
+--            echo("launch complete waiting for return")
             --Moving CrawlerMain back to reassembly
       
             WMove(RocketCraneBase, z_axis, 0, 15)
