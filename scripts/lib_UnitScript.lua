@@ -913,15 +913,16 @@ end
 -- > Create a Unit at another Unit
 function createUnitAtUnit(teamID, typeID, otherID, ox, oy, oz, orientation, parentID)
     if not typeID or not teamID then return end
-    if isUnitAlive(otherID) == false then return end
+    if doesUnitExistAlive(otherID) == false then return end
+    if parentID ~= nil then assert(doesUnitExistAlive(parentID)) end
     locOrientation = orientation or math.random(0,3)
  
     ox, oy, oz = ox or 0, oy or 0, oz or 0
     x, y, z, _, _, _ = Spring.GetUnitPosition(otherID)
 
     assert(typeID, " typeID is not of valid type for a unit is "..toString(typeID))
-    types = type(typeID)    
-    assert(types=="string" or types == "number", "not a valid type for unittype got ".. types .. " instead")
+    --types = type(typeID)    
+    --assert(types=="string" or types == "number", "not a valid type for unittype got ".. types .. " instead")
     --Delme DebugCode
     if parentID then
         return Spring.CreateUnit(typeID, x + ox, y + oy, z + oz, locOrientation, teamID, false, false, parentID)
@@ -2646,6 +2647,17 @@ function count(T)
     return index
 end
 
+
+function compress(T)
+    local newTable = {}
+    for k,v in pairs(T) do
+        if v then
+            newTable[k] = v
+        end
+    end
+    return newTable
+end
+
 function safeIndex(index, tables)
     return (index % #tables)+1
 end
@@ -4086,7 +4098,8 @@ function getMapHash(modulus)
 
   accumulated = accumulated + Game.mapSizeX
   accumulated = accumulated + Game.mapSizeZ
-  return accumulated % modulus
+  if not modulus then modulus = accumulated + 1 end
+  return math.ceil(accumulated) % modulus
 end
 
 function get_line_intersection(p0_x, p0_y, p1_x, p1_y, p2_x, p2_y, p3_x, p3_y)

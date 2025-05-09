@@ -132,6 +132,7 @@ end
 function gadget:UnitDestroyed(unitID, unitDefID, teamID, attackerID)
 	if GG.BusesTable[unitID] then
 	   GG.BusesTable[unitID] =  nil
+       GG.BusesTable = compress(GG.BusesTable)
 	end
     -- if building, get all Civilians/Trucks nearby in random range and let them get together near the rubble
     if teamID == gaiaTeamID and attackerID then
@@ -243,8 +244,8 @@ function checkReSpawnPopulation()
         assertType(RouteTabel, "table")
         for i = 1, stepSpawn do
             x, _, z, startNode = getRandomSpawnNode()
-            assert(x > 0 and x < Game.mapSizeX, x)
-            assert(z > 0 and z < Game.mapSizeZ, z)
+            --assert(x > 0 and x < Game.mapSizeX, x)
+            --assert(z > 0 and z < Game.mapSizeZ, z)
             if x and startNode then
                 goalNode = RouteTabel[startNode][math.random(1, #RouteTabel[startNode])]
                 civilianType = randDict(civilianWalkingTypeTable)
@@ -252,14 +253,14 @@ function checkReSpawnPopulation()
                     busId = randDict(GG.BusesTable)
                     if doesUnitExistAlive(busId) then
         	   	        x,_,z = spGetUnitPosition(busId)
-                        assert(x > 0 and x < Game.mapSizeX, x)
-                        assert(z > 0 and z < Game.mapSizeZ, z)
+                        --assert(x > 0 and x < Game.mapSizeX, x)
+                        --assert(z > 0 and z < Game.mapSizeZ, z)
                     end
         		end
-                id = spawnAMobileCivilianUnit(civilianType, x, z, startNode,
-                                              goalNode)
+
+               id = spawnAMobileCivilianUnit(civilianType, x, z, startNode, goalNode)
             else
-               -- echo("Found no startnode")
+               echo("game_civilans: Found no startnode")
             end
         end
     else -- decimate arrived cvilians who are not DisguiseCivilianFor
@@ -269,7 +270,7 @@ end
 
 function attachPayload(payLoadID, id)
     if payLoadID then
-        --echo("checkReSpawnTraffic2.65")
+        echo("checkReSpawnTraffic2.65")
        Spring.SetUnitAlwaysVisible(payLoadID, true)
        pieceMap = Spring.GetUnitPieceMap(id)
 
@@ -283,14 +284,14 @@ function attachPayload(payLoadID, id)
 end
 
 function loadTruck(id, loadType)
-            --echo("checkReSpawnTraffic2.61")
+            echo("checkReSpawnTraffic2.61")
     if loadableTruckType[spGetUnitDefID(id)] then
-                --echo("checkReSpawnTraffic2.62")
+        echo("checkReSpawnTraffic2.62")
         --Spring.Echo("createUnitAtUnit ".."game_civilians.lua")     
         payLoadID = createUnitAtUnit(gaiaTeamID, loadType, id)
-                --echo("checkReSpawnTraffic2.63")
+        echo("checkReSpawnTraffic2.63")
         if payLoadID then
-                    --echo("checkReSpawnTraffic2.64")
+            echo("checkReSpawnTraffic2.64")
             return attachPayload(payLoadID, id)
         end
     end
@@ -311,7 +312,7 @@ function checkReSpawnTraffic()
     counter = 0
     toDeleteTable = {}
     if GG.CivilianTable then
-        assertTable( GG.CivilianTable)
+        assertTable(GG.CivilianTable)
         for id, data in pairs(GG.CivilianTable) do
             if id and TruckTypeTable[data.defID] then
                 if doesUnitExistAlive(id) == true then
@@ -339,13 +340,13 @@ function checkReSpawnTraffic()
                 goalNode = RouteTabel[startNode][math.random(1, #RouteTabel[startNode])]
                 assertTable(TruckTypeTable)
                 TruckType = randDict(TruckTypeTable)
-                --echo("checkReSpawnTraffic2.5")
+                echo("checkReSpawnTraffic2.5")
                 id = spawnAMobileCivilianUnit(TruckType, x, z, startNode, goalNode)
                 if id  then
                   --  echo("calling truck loading")
-                    --echo("checkReSpawnTraffic2.6")
+                    echo("checkReSpawnTraffic2.6")
                     loadTruck(id, "truckpayload")
-                      --echo("checkReSpawnTraffic2.7")
+                      echo("checkReSpawnTraffic2.7")
                 end
             end
         end
@@ -486,8 +487,8 @@ function spawnAMobileCivilianUnit(defID, x, z, startID, goalID)
     if (math.random(0,100)/100) > chanceOfCivilianSpawningFromTruck 
         and civilianWalkingTypeTable[defID] 
         and  GG.UnitArrivedAtTarget 
-        and # GG.UnitArrivedAtTarget > 0 then
-        assertTable(GG.UnitArrivedAtTarget)
+        and #GG.UnitArrivedAtTarget > 0 then
+
         for id, boolArrived in pairs(GG.UnitArrivedAtTarget) do
            conditionalEcho(boolDebugCivilians, "Spawned civilian near truck "..id)
             if boolArrived == true and GG.CivilianTable[id].defID and TruckTypeTable[GG.CivilianTable[id].defID] then
@@ -1053,6 +1054,7 @@ function decimateArrivedCivilians(nrToDecimate, typeTable)
     -- echo("Decimation called"..nrToDecimate)
     if nrToDecimate <= 0 then return end
     assertTable(GG.UnitArrivedAtTarget)
+    newUnitsArrivedAtTarget = {}
     for id, bArrived in pairs(GG.UnitArrivedAtTarget) do
         if id and GG.CivilianTable[id] and
             doesUnitExistAlive(GG.CivilianTable[id].startID) == true and

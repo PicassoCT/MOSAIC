@@ -83,8 +83,6 @@ function showAndTell()
     Hide(BusBack2)
     Hide(DetectPiece)
 
-
-
     hideT(TablesOfPiecesGroups["Truck"])
     hideT(TablesOfPiecesGroups["Cabin"])
     hideT(TablesOfPiecesGroups["BusDeco"])
@@ -121,8 +119,9 @@ function showAndTell()
     end
 
 end
- boolTurnLeft = false
- boolTurning = false
+
+boolTurnLeft = false
+boolTurning = false
 
 function turnTrailerLoop()
     local spGetUnitPiecePosDir = Spring.GetUnitPiecePosDir
@@ -269,24 +268,7 @@ end
         return vec
     end
 
-local spGetUnitDefID = Spring.GetUnitDefID
-function collideWithPersonOnFoot()
-    massOfTruck = UnitDefs[unitDefID].mass or 90000
-    maxSpeedOfTruck = UnitDefs[unitDefID].maxVelocity or 2.81
-    cx,cy,cz = Spring.GetUnitPiecePosDir(unitID, colDetectPiece)
-    foreach(getAllInCircle(cx,cz, 50, unitID),
-        function (id)
-            personDefId = spGetUnitDefID(id)
-            if  not civilianWalkingTypeTable[personDefId] then 
-                return id
-            end 
-            massOfCivilian =  UnitDefs[personDefId].mass or 900
-            px,py,pz = Spring.GetUnitPosition(id)
-            v= normalizeVector{x= px-ox, y= py-oy, z = pz-oz}
-            Impulsefaktor = (massOfTruck /maxSpeedOfTruck) * (1/massOfCivilian)
-            Spring.AddUnitImpulse(id,Impulsefaktor*v.x,Impulsefaktor* v.y,Impulsefaktor* v.z)
-        end)
-end
+
 
 ox,oy, oz = 0,0,0
 function monitorMoving()
@@ -301,7 +283,6 @@ function monitorMoving()
                 boolMoving = true
             else
                 boolMoving = false
-                StartThread(collideWithPersonOnFoot)
             end    
         Sleep(125)    
     end

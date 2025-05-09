@@ -29,15 +29,15 @@ end
 function playDepartureGong(offset)
     hours, minutes, seconds, percent = getDayTime()     
     if percent % 0.25 < 0.1 and not isNight() then
-        maphash = getMapHash(5) + 1
+        maphash = getMapHash(6) + 1
         name = "sounds/objective/airport_departure"..maphash..".ogg"
-        StartThread(PlaySoundByUnitDefID, unitDefID, name , 0.125, 500, 2)
+        StartThread(PlaySoundByUnitDefID, unitDefID, name , 0.1, maphash*1000, 1)
     end
 end
 
 function playAircraftSounds()
     if not isNight() then
-        StartThread(PlaySoundByUnitDefID, unitDefID, "sounds/objective/airport_arrivaldeparture.ogg", 1.0, 120000, 1)
+        StartThread(PlaySoundByUnitDefID, unitDefID, "sounds/objective/airport_arrivaldeparture.ogg", 0.1, 120000, 1)
     end
 end
 

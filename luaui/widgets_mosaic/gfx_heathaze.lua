@@ -30,6 +30,10 @@ local glUniform = gl.Uniform
 local glCopyToTexture = gl.CopyToTexture
 local glUseShader = gl.UseShader
 local glTexRect = gl.TexRect
+local heatHazeStrengthLocation = nil
+local heatShaderTimeLocation = nil
+local heatHazeViewPortSizeLocation = nil
+
 
 local function isRainyArea()
     return getDetermenisticHash() % 2 == 0 or boolIsMapNameOverride 
@@ -144,6 +148,9 @@ function widget:Initialize()
     end
     widget:ViewResize()
     Spring.Echo("HeatHaze: Initalization Completed")
+    heatHazeStrengthLocation = gl.GetUniformLocation(heatShader, "heatHazeStrength")
+    heatShaderTimeLocation = gl.GetUniformLocation(heatShader, "time")
+    heatHazeViewPortSizeLocation = gl.GetUniformLocation(heatShader, "viewPortSize")
 end
 
 function widget:Shutdown()
@@ -161,14 +168,13 @@ function widget:DrawScreenEffects()
     if not heatShader then return end
     glUseShader(heatShader)
 
-    glUniform(gl.GetUniformLocation(heatShader, "heatHazeStrength"), heatHazeStrength)
-    glUniform(gl.GetUniformLocation(heatShader, "time"), Spring.GetGameSeconds())
-    glUniform(gl.GetUniformLocation(heatShader, "viewPortSize"), vsx, vsy)
+    glUniform( heatHazeStrengthLocation,, heatHazeStrength)
+    glUniform(heatShaderTimeLocation, Spring.GetGameSeconds())
+    glUniform(heatHazeViewPortSizeLocation, vsx, vsy)
     glCopyToTexture(screenTex, 0, 0, 0, 0, vsx, vsy) 
 
     glTexture(1, depthTexture)
     glTexture(2, noiseTexture)
-
 
     glTexRect(0, vsy, vsx, 0)
     glTexture(1, false)
