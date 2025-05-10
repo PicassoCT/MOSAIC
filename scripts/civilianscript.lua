@@ -7,6 +7,7 @@ local Animations = include('animations_civilian_female.lua')
 local signMessages = include('protestSignMessages.lua')
 local peacfulProtestSignMessages = include('PeacefullProtestSignMessages.lua')
 local spGetUnitDefID = Spring.GetUnitDefID
+local spGetUnitIsTransporting = Spring.GetUnitIsTransporting
 
 local TablesOfPiecesGroups = {}
 
@@ -204,13 +205,19 @@ function script.Create()
     StartThread(rainyDayCare)
 end
 
+function umbrellaCondition(boolSunUmbrella)
+    return isANormalDay() and (isRaining() or boolSunUmbrella and not isNight())
+end
+
 function rainyDayCare()
     if not TablesOfPiecesGroups["Umbrella"] then return end
     umbrellaIndex = (unitID % #TablesOfPiecesGroups["Umbrella"] )+1
-    Umbrella = TablesOfPiecesGroups["Umbrella"][umbrellaIndex]
+    local Umbrella = TablesOfPiecesGroups["Umbrella"][umbrellaIndex]
+    local boolSunUmbrella = randChance(10)
+
     while Umbrella do
-        if isRaining() then
-            while isRaining() do
+        if umbrellaCondition(boolSunUmbrella) then
+            while umbrellaCondition(boolSunUmbrella) do
                 Show(Umbrella)
                 Sleep(15000)
             end
@@ -516,9 +523,10 @@ lowerBodyAnimations = {
 
 accumulatedTimeInSeconds = 5
 
+
 function script.HitByWeapon(x, z, weaponDefID, damage)
-    if Spring.GetUnitIsTransporting(unitID) then
-        transportID = Spring.GetUnitIsTransporting(unitID)
+    transportID = spGetUnitIsTransporting(unitID)
+    if  transportID then --if holds loot        
         Spring.UnitDetach(transportID)
     end
     clampedDamage = math.max(math.min(damage, 10), 35)
@@ -528,10 +536,12 @@ function script.HitByWeapon(x, z, weaponDefID, damage)
     bodyConfig.boolLoaded = false
     bodyConfig.boolWounded = true
     if damage > 10 and randChance(10) then
-     bloodyHell= {"bloodspray", "bloodslay"}
-     StartThread(spawnCegAtPiece, unitID, Head, bloodyHell[math.random(1,2)])
+        echo("Damage to civilian drawing blood at "..locationstring(unitID))
+        bloodyHell= {"bloodspray", "bloodslay"}
+        StartThread(spawnCegAtPiece, unitID, Head, bloodyHell[math.random(1,2)])
     end
     bodyBuild()
+    --Set coverwalk or wounded walk
     StartThread(setAnimationState, getWalkingState(), getWalkingState())
     damagedCoolDown = damagedCoolDown + (damage )
 end
@@ -1909,8 +1919,8 @@ function allowTarget(weaponID)
 end
 
 function dropLoot()
-    if Spring.GetUnitIsTransporting(unitID) then
-        transportID = Spring.GetUnitIsTransporting(unitID)
+    if spGetUnitIsTransporting(unitID) then
+        transportID = spGetUnitIsTransporting(unitID)
         Spring.UnitDetach(transportID)
     end
 end
