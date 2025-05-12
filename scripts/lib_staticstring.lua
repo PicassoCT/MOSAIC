@@ -892,8 +892,9 @@ function getDeadDropLastWords(unitID, killerId )
         "Et tu brute ? Et tu "..agentName,
         "The ".. teamName.. " sends there regards"
     }
-
-    return lastWords[math.random(1,#lastWords)], agentName, SurName
+    local DeadDropLastWords =lastWords[math.random(1,#lastWords)]
+    echo(DeadDropLastWords.." at ".. locationstring(unitID))
+    return DeadDropLastWords, agentName, SurName
 end
 
 function GetGoodGuysGroupName(hash)
@@ -1020,16 +1021,18 @@ function gossipGenerator(gossipyID, oppossingPartnerID, UnitDefs)
 
     objects = {
         "family", "me", "situation", "car", "house", "city", "money", "expenses", "government", "faith", "lipstick", "arcology",
-        "mother", "father", "bread", "veggies", "meat", "beer", "market",    "drugs", "booze", "problem", "flat", 
-        "gambler", "ghetto", "community", "highrise", "family", "crime", "hope", "implants",     "drone", "music", 
-        "party", "gang", "market", "shop", "truck", "weather", "sunset", "streets", "gun", "suka", "BLYAT", "motherfucker", 
+        "mother", "father", "bread", "veggies", "meat", "beer", "market",    "drugs", "booze", "problem", "flat", "jawhe", "allah",
+        "gambler", "ghetto", "community", "highrise", "family", "crime", "hope", "implants",     "drone", "music", "zion", "ganja",
+        "party", "gang", "market", "shop", "truck", "weather", "sunset", "streets", "gun", "suka", "blyat", "motherfucker", 
         "bastard",  "prison", "promotion", "career", "job", "office", "restaurant", "sneakers", "brand", "camera", "organs",
-        "doctor", "lawyer", "secretary", "salaryslave", "master", "ceo", "boss", "a.i.",  "company", "choom", "roller", "baller", "pornstar", "shit", "start", "end",
-        "conspiracy", "secret society", "cells", "agents", "foreign agents", "secret service", "safehouse", "skyrise", "arms race", "icbm", "rocket", "aerosol", "end of the world", "boobs", "bike", "limo", "truck"}
+        "doctor", "lawyer", "secretary", "salaryslave", "master", "ceo", "boss", "a.i.", "company", "choom", "roller", "baller", "pornstar", "shit", "start", "end",
+        "conspiracy", "secret society", "cells", "agents", "foreign agents", "secret service", "mukbarat", "safehouse", "skyrise",
+         "arms race", "icbm", "rocket", "aerosol", "end of the world", "boobs", "bike", "limo", "truck"}
     
     techBabble = {"[CENSORED]", "[PROFANITY]", "[GCR]","[Generated Content removed]","...", "[AI Autonegotiation]","[NOT TRANSLATEABLE]", "[UNINTELIGABLE]", "[Sound of Breathing]", "[REDACTED]", "[ENCRYPTED]", "[VIRUS]", "[TranslatorError]", "BURP", "[sobs]", " -"}
     
-    explainer = {"because of the", "for the", "of course the", "due to the", "well obviously the", "cause of that", "in that", "unblievable", "thorough by", "by the"}
+    explainer = {"because of the", "for the", "of course the", "due to the", "well obviously the", 
+                 "cause of that", "in that", "unblievable", "thorough by", "by the"}
 
    if gossipyID then
         name, family = getDeterministicCultureNames(gossipyID, UnitDefs)

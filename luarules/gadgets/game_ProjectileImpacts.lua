@@ -1041,7 +1041,7 @@ if (gadgetHandler:IsSyncedCode()) then
 
     function isBuildingNearSea(buildingId)
         x,y,z = spGetUnitPosition(buildingId)
-        TestAreaDimension = 768
+        local TestAreaDimension = 768
         min, max = getExtremasInArea(x -TestAreaDimension, z-TestAreaDimension, x +TestAreaDimension, z+ TestAreaDimension, (TestAreaDimension*2)/3)
         return min <= 1 and max < 50
     end
@@ -1157,7 +1157,5 @@ if (gadgetHandler:IsSyncedCode()) then
             end
         end
     end
-
-
 end
 

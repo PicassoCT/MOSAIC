@@ -18,7 +18,7 @@ if (gadgetHandler:IsSyncedCode()) then
     local spGetUnitPosition = Spring.GetUnitPosition
     local spGetUnitDefID = Spring.GetUnitDefID
     local spGetUnitTeam = Spring.GetUnitTeam
-    boolLocalDebugActive = false
+    local boolLocalDebugActive = false
 
     InterrogateableType =  getInterrogateAbleTypeTable(UnitDefs)
      operativeTypeTable = getOperativeTypeTable(UnitDefs)
@@ -39,8 +39,6 @@ if (gadgetHandler:IsSyncedCode()) then
     		assert(houseTypeTable[UnitDefNames["house_arab0"].id])  -- only valid if culture is active
     	 end
 	end
-
-
 
     function gadget:UnitCreated(unitid, unitdefid, unitTeam, father)
         if operativeTypeTable[unitdefid] and StartUnitsByTeam and #StartUnitsByTeam[unitTeam] == 0 then
@@ -115,14 +113,14 @@ if (gadgetHandler:IsSyncedCode()) then
        maxdistance = 0
        hx,hy,hz = Spring.GetUnitPosition(randHouse)
        midpos= {x = hx, y = hy, z = hz}
+        local a = {}
+        local b = {}
 
        for id in pairs(AllOperatives) do
             for ad in pairs(AllOperatives) do
                 if id ~= ad and spGetUnitTeam(id) ~= spGetUnitTeam(ad) then
                     if distanceUnitToUnit(id,ad) > maxdistance then
-                        a = {}
-                        b = {}
-                        maxdistance =  distanceUnitToUnit(id,ad) 
+                                                maxdistance =  distanceUnitToUnit(id,ad) 
                         a.x,a.y,a.z = spGetUnitPosition(id)
                         b.x,b.y,b.z = spGetUnitPosition(ad)
                         if a.x and b.x then
