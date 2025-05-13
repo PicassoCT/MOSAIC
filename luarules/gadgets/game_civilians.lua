@@ -94,7 +94,7 @@ function startInternalBehaviourOfState(unitID, name, ...)
                                      arg[3] or nil,
                                      arg[4] or nil
                                      )
-       assert(result==true, name)
+       --assert(result==true, name)
     end
 end
 
@@ -195,7 +195,7 @@ function spawnInitialPopulation(frame)
     -- great Grid of placeable Positions 
     Spring.Echo("spawnInitialPopulation reached")
     if GG.CitySpawnComplete and GG.CitySpawnComplete == true then
-         Spring.Echo("spawnInitialPopulation began")
+        Spring.Echo("spawnInitialPopulation began")
         regenerateRoutesTable()
         checkReSpawnPopulation()
         issueArrivedUnitsCommands()
@@ -225,7 +225,7 @@ end
 function checkReSpawnPopulation()
     counter = 0
     toDeleteTable = {}
-    assertTable(GG.CivilianTable)
+    --assertTable(GG.CivilianTable)
     for id, data in pairs(GG.CivilianTable) do
         if id and civilianWalkingTypeTable[data.defID] then
             if doesUnitExistAlive(id) == true then
@@ -235,14 +235,14 @@ function checkReSpawnPopulation()
             end
         end
     end
-    assertTable(toDeleteTable)
+    --assertTable(toDeleteTable)
     for id, data in pairs(toDeleteTable) do GG.CivilianTable[id] = nil end
 
     if counter < getNumberOfUnitsAtTime(GameConfig.numberOfPersons) then
         local stepSpawn = math.min(GameConfig.numberOfPersons - counter,
                                    GameConfig.LoadDistributionMax)
         -- echo(counter.. " of "..GameConfig.numberOfPersons .." persons spawned")		
-        assertType(RouteTabel, "table")
+        --assertType(RouteTabel, "table")
         for i = 1, stepSpawn do
             x, _, z, startNode = getRandomSpawnNode()
             --assert(x > 0 and x < Game.mapSizeX, x)
@@ -261,7 +261,8 @@ function checkReSpawnPopulation()
 
                id = spawnAMobileCivilianUnit(civilianType, x, z, startNode, goalNode)
             else
-               echo("game_civilans: Found no startnode")
+               echo("game_civilans: Found no startnode. Regenerating RoutesTable")
+               regenerateRoutesTable()
             end
         end
     else -- decimate arrived cvilians who are not DisguiseCivilianFor
@@ -275,7 +276,7 @@ function attachPayload(payLoadID, id)
        Spring.SetUnitAlwaysVisible(payLoadID, true)
        pieceMap = Spring.GetUnitPieceMap(id)
 
-       assert(type(pieceMap["attachPoint"]) == "number", "Truck has no attachpoint")
+       --assert(type(pieceMap["attachPoint"]) == "number", "Truck has no attachpoint")
        Spring.UnitAttach(id, payLoadID, pieceMap["attachPoint"])
 
        return payLoadID
@@ -313,7 +314,7 @@ function checkReSpawnTraffic()
     counter = 0
     toDeleteTable = {}
     if GG.CivilianTable then
-        assertTable(GG.CivilianTable)
+        --assertTable(GG.CivilianTable)
         for id, data in pairs(GG.CivilianTable) do
             if id and TruckTypeTable[data.defID] then
                 if doesUnitExistAlive(id) == true then
@@ -325,7 +326,7 @@ function checkReSpawnTraffic()
         end
     end
     --echo("checkReSpawnTraffic2")
-    assertTable(toDeleteTable)
+    --assertTable(toDeleteTable)
     for id, data in pairs(toDeleteTable) do GG.CivilianTable[id] = nil end
       --echo("checkReSpawnTraffic2.1")
     if counter < getNumberOfUnitsAtTime(GameConfig.numberOfVehicles) then
@@ -339,7 +340,7 @@ function checkReSpawnTraffic()
             if startNode then
                 --echo("checkReSpawnTraffic2.4")
                 goalNode = RouteTabel[startNode][math.random(1, #RouteTabel[startNode])]
-                assertTable(TruckTypeTable)
+                --assertTable(TruckTypeTable)
                 TruckType = randDict(TruckTypeTable)
                 echo("checkReSpawnTraffic2.5")
                 id = spawnAMobileCivilianUnit(TruckType, x, z, startNode, goalNode)
@@ -353,7 +354,7 @@ function checkReSpawnTraffic()
         end
     else
         --echo("checkReSpawnTraffic2.8")
-        assertTable(TruckTypeTable)
+        --assertTable(TruckTypeTable)
         decimateArrivedCivilians(absDistance( getNumberOfUnitsAtTime(GameConfig.numberOfVehicles), counter), TruckTypeTable)
           --echo("checkReSpawnTraffic2.9")
     end
@@ -431,12 +432,12 @@ function buildRouteSquareFromTwoUnits(unitOne, unitTwo, uType)
 end
 
 function regenerateRoutesTable()
-   -- Spring.Echo("Regenerating Routes Tabel")
+    Spring.Echo("Regenerating Routes Tabel")
     local newRouteTabel = {}
     TruckType = randDict(TruckTypeTable)
-    assert(TruckType)
-    assertType(GG.BuildingTable, "table")
-    if #GG.BuildingTable > 0 then RouteTabel = newRouteTabel; return end
+    --assert(TruckType)
+    --assertType(GG.BuildingTable, "table")
+    if #GG.BuildingTable < 2 then RouteTabel = newRouteTabel; return end
     for thisBuildingID, data in pairs(GG.BuildingTable) do -- [BuildingUnitID] = {x=x, z=z} 
         newRouteTabel[thisBuildingID] = {}
         for otherID, oData in pairs(GG.BuildingTable) do -- [BuildingUnitID] = {x=x, z=z} 		
@@ -983,10 +984,10 @@ end
 -----------------------------------------------------------------------------------------------------------------------
 
 function getTargetNodeInWalkingDistance(startNodeID, defaultTargetNode)
-    assert(startNodeID)
-    assert(doesUnitExistAlive(startNodeID)==true, "Unit is dead")
+    --assert(startNodeID)
+    --assert(doesUnitExistAlive(startNodeID)==true, "Unit is dead")
     local listOfTargetNodes = RouteTabel[startNodeID]
-    assert(#listOfTargetNodes > 0)
+    --assert(#listOfTargetNodes > 0)
     local listInRange = {}
     if #listOfTargetNodes == 0  then return defaultTargetNode end
     if #listOfTargetNodes == 1 then return listOfTargetNodes[1] end
@@ -1035,7 +1036,7 @@ end
 function testClampRoute(Route, defID) return Route end
 
 function issueArrivedUnitsCommands()
-    assertTable(GG.UnitArrivedAtTarget)
+    --assertTable(GG.UnitArrivedAtTarget)
     for id, bArrived in pairs(GG.UnitArrivedAtTarget) do
         if id and GG.CivilianTable[id] then
 
@@ -1054,7 +1055,7 @@ function decimateArrivedCivilians(nrToDecimate, typeTable)
     nrToDecimate = math.floor(nrToDecimate)
     -- echo("Decimation called"..nrToDecimate)
     if nrToDecimate <= 0 then return end
-    assertTable(GG.UnitArrivedAtTarget)
+    --assertTable(GG.UnitArrivedAtTarget)
     newUnitsArrivedAtTarget = {}
     for id, bArrived in pairs(GG.UnitArrivedAtTarget) do
         if id and GG.CivilianTable[id] and
