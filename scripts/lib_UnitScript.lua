@@ -920,7 +920,7 @@ function createUnitAtUnit(teamID, typeID, otherID, ox, oy, oz, orientation, pare
     ox, oy, oz = ox or 0, oy or 0, oz or 0
     x, y, z, _, _, _ = Spring.GetUnitPosition(otherID)
 
-    assert(typeID, " typeID is not of valid type for a unit is "..toString(typeID))
+    assert(typeID, " typeID is not of valid type for a unit is "..typeID)
     --types = type(typeID)    
     --assert(types=="string" or types == "number", "not a valid type for unittype got ".. types .. " instead")
     --Delme DebugCode

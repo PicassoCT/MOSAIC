@@ -168,7 +168,7 @@ function widget:DrawScreenEffects()
     if not heatShader then return end
     glUseShader(heatShader)
 
-    glUniform( heatHazeStrengthLocation,, heatHazeStrength)
+    glUniform( heatHazeStrengthLocation, heatHazeStrength)
     glUniform(heatShaderTimeLocation, Spring.GetGameSeconds())
     glUniform(heatHazeViewPortSizeLocation, vsx, vsy)
     glCopyToTexture(screenTex, 0, 0, 0, 0, vsx, vsy) 
