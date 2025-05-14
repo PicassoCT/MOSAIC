@@ -379,9 +379,8 @@ local function updateUniforms()
     local eyePos = {spGetCameraPosition()}
     glUniform(uniformEyePos,eyePos[1],eyePos[2], eyePos[3] )
     local eyeDir = {spGetCameraDirection()}
-    glUniform(unformEyeDir,eyeDir[1], eyeDir[2], eyeDir[3] )
-
-
+    
+    glUniform(unformEyeDir,eyeDir[1], eyeDir[2], eyeDir[3] )    
     glUniform(uniformSunColor, sunCol[1], sunCol[2], sunCol[3]);
     glUniform(uniformSkyColor, skyCol[1], skyCol[2], skyCol[3]);
     glUniform(uniformSunPos, sunPos[1], sunPos[2], sunPos[3]);
@@ -410,9 +409,9 @@ end
 local function cleanUp()    
     glResetState()
     glUseShader(0)
-    --for i=0, dephtCopyTexIndex do
-    --    gl.Texture(i, false)
-    --end
+    for i=0, dephtCopyTexIndex do
+        gl.Texture(i, false)
+    end
     glBlending(true)
 end
 
@@ -451,6 +450,7 @@ local function DrawNeonLightsToFbo()
     cleanUp()    
 end
 
+--only used for debug purposes
 function widget:DrawScreenEffects()
     glBlending(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA) 
     glTexture(0, neonLightcanvastex)
