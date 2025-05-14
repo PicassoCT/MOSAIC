@@ -891,7 +891,6 @@ function getProjectilesAroundUnit(unitID, dist)
 
 function copyUnit(id, teamID, fatherID)
     ox, oy, oz = ox or 0, oy or 0, oz or 0
-    Spring.Echo("createUnitAtUnit ".."lib_UnitScript.lua:1430") 
     copyID = createUnitAtUnit(teamID, Spring.GetUnitDefID(id), id, ox, oy, oz)
     transferUnitStatusToUnit(id, copyID)
     transferOrders(id, copyID)

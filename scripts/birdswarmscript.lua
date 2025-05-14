@@ -1,18 +1,15 @@
---most simple unit script
---allows the unit to be created & killed
-
+include "lib_UnitScript.lua"
+include "lib_Animation.lua"
 center= piece"center"
 
 
 TablesOfPiecesGroups = {}
 --> returns a randomized Signum
-function randSign()
-    if math.random(0, 1) == 1 then return 1 else return -1 end
-end
+
 
 visiblePieces= {}
 function script.Create()
-    TablesOfPiecesGroups = makePiecesTablesByNameGroups(false, true)
+    TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     Spin(center,2,math.rad(42),0)
     Move(center,2,buildingHeighth,0)
 

@@ -37,7 +37,7 @@ if (gadgetHandler:IsSyncedCode()) then
     end
 
     function defaultInit()
-    mapCenter = {x = Game.mapSizeX / 2, z = Game.mapSizeZ / 2}
+        mapCenter = {x = Game.mapSizeX / 2, z = Game.mapSizeZ / 2}
 
         oz = math.min(Game.mapSizeX, Game.mapSizeZ) - math.random(500, 1000)
         ox = Game.mapSizeX / 2
@@ -115,7 +115,7 @@ if (gadgetHandler:IsSyncedCode()) then
         if objectiveTypes[uDefID] and Spring.GetUnitTeam(UnitID) == gaiaTeamID  then
             x, y, z = Spring.GetUnitPosition(UnitID)
             GG.Objectives[UnitID] = {x = x, y = y, z = z, uid= UnitID, defID = uDefID, boolProProtagon = getProProtagon(count(Objectives)) }
-            assert(GG.Objectives[UnitID].defID)
+            --assert(GG.Objectives[UnitID].defID)
             setProConDescription(UnitID, GG.Objectives[UnitID].boolProProtagon)
             Spring.SetUnitAlwaysVisible(UnitID, true)
         end
@@ -133,8 +133,8 @@ if (gadgetHandler:IsSyncedCode()) then
             GG.DeadObjectives[iconID].z =  GG.Objectives[UnitID].z
             GG.DeadObjectives[iconID].uid =  iconID
             GG.DeadObjectives[iconID].defID =  GG.Objectives[UnitID].defID
-            assert(Objectives[UnitID].defID)
-            assert(GG.DeadObjectives[iconID].defID)
+            --assert(Objectives[UnitID].defID)
+            --assert(GG.DeadObjectives[iconID].defID)
             GG.DeadObjectives[iconID].boolProProtagon =  not GG.Objectives[UnitID].boolProProtagon
 
             setDeadDescription(iconID,   GG.DeadObjectives[iconID].boolProProtagon)
@@ -155,10 +155,10 @@ if (gadgetHandler:IsSyncedCode()) then
         end
     end
 
-    colourRed = {r = 255, g = 0, b = 0}
-    colourBlue = {r = 0, g = 0, b = 255}
-    antagonT = getAllTeamsOfType("antagon", UnitDefs)
-    protagonT = getAllTeamsOfType("protagon", UnitDefs)
+    local colourRed = {r = 255, g = 0, b = 0}
+    local colourBlue = {r = 0, g = 0, b = 255}
+    local antagonT = getAllTeamsOfType("antagon", UnitDefs)
+    local protagonT = getAllTeamsOfType("protagon", UnitDefs)
     function gadget:GameFrame(f)
         if boolInit == true then onBoolInit(); return; end
 

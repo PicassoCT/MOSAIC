@@ -1141,7 +1141,7 @@ if (gadgetHandler:IsSyncedCode()) then
         end
     end
 
-    oldGameState= "normal"
+    local oldGameState= "normal"
     function DeActivateLoudLongRangeWeaponDefs (boolActivate)
         for k,v in pairs(loudLongRangeWeaponTypes) do
             Script.SetWatchWeapon(k, boolActivate)  

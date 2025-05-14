@@ -166,6 +166,11 @@ end
 
 function widget:DrawScreenEffects()
     if not heatShader then return end
+    local _, _, isPaused = Spring.GetGameSpeed()
+    if isPaused then
+       return
+    end
+
     glUseShader(heatShader)
 
     glUniform( heatHazeStrengthLocation, heatHazeStrength)

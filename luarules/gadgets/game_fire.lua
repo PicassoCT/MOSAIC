@@ -39,20 +39,20 @@ if (gadgetHandler:IsSyncedCode()) then
             local onFireUpInHere = GG.OnFire
             --- -Spring.Echo("Gfire:Test")
             -- disDance=math.ceil(math.random(60,170))
-            for i = 1, table.getn(GG.OnFire), 1 do
+            for i = 1, table.getn(onFireUpInHere), 1 do
                 --check if not nil
-                if GG.OnFire[i] then
-                    if GG.OnFire[i][UnitID] then
-                        if GG.OnFire[i][Heat] >= 0 then
-                            GG.OnFire[i][Heat] = GG.OnFire[i][Heat] - disDance
+                if onFireUpInHere[i] then
+                    if onFireUpInHere[i][UnitID] then
+                        if onFireUpInHere[i][Heat] >= 0 then
+                            onFireUpInHere[i][Heat] = onFireUpInHere[i][Heat] - disDance
 
-                            if not GG.OnFire[i].DontPanic then GG.OnFire[i].DontPanic = (isPanicAble[Spring.GetUnitDefID(GG.OnFire[i][UnitID])] ~= nil) end
-                            if spIsUnitDead(GG.OnFire[i][UnitID]) == false then
+                            if not onFireUpInHere[i].DontPanic then onFireUpInHere[i].DontPanic = (isPanicAble[Spring.GetUnitDefID(onFireUpInHere[i][UnitID])] ~= nil) end
+                            if spIsUnitDead(onFireUpInHere[i][UnitID]) == false then
 
-                                x, y, z = spGetPosition(GG.OnFire[i][UnitID])
-                                if GG.OnFire[i].DontPanic == true then
-                                    Spring.SetUnitNoSelect(GG.OnFire[i][UnitID], true)
-                                    Spring.SetUnitMoveGoal(GG.OnFire[i][UnitID], x + math.random(-20, 20), y, z + math.random(-20, 20))
+                                x, y, z = spGetPosition(onFireUpInHere[i][UnitID])
+                                if onFireUpInHere[i].DontPanic == true then
+                                    Spring.SetUnitNoSelect(onFireUpInHere[i][UnitID], true)
+                                    Spring.SetUnitMoveGoal(onFireUpInHere[i][UnitID], x + math.random(-20, 20), y, z + math.random(-20, 20))
                                 end
                                 additional = math.random(3, 9)
                                 addx = math.random(0, 4)
@@ -65,16 +65,17 @@ if (gadgetHandler:IsSyncedCode()) then
                                 if frame % 3 == 0 then
                                     spSpawnCEG("vortflames", x + addx * xd, y + additional, z + addz * zd, 0, 1, 0, 50, 0)
                                 end
-                                spAddUnitDamage(GG.OnFire[i][UnitID], fireDamagePerFrame)
+                                spAddUnitDamage(onFireUpInHere[i][UnitID], fireDamagePerFrame)
                             end
                         else
-                            Spring.SetUnitNoSelect(GG.OnFire[i][UnitID], false)
+                            Spring.SetUnitNoSelect(onFireUpInHere[i][UnitID], false)
                             setCivilianUnitInternalStateMode(UnitID, STATE_ENDED)
-                            GG.OnFire[i][UnitID] = nil
+                            onFireUpInHere[i][UnitID] = nil
                         end
                     end
                 end
             end
+            GG.OnFire = onFireUpInHere
         end
 
         if frame % 5000 == 0 and GG.OnFire ~= nil then

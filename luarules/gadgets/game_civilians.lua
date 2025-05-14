@@ -48,7 +48,7 @@ GG.BusesTable = {}
 GG.CivilianTable = {} -- [id ] ={ defID, startNodeID }
 GG.UnitArrivedAtTarget = {} -- [id] = true UnitID -- Units report back once they reach this target
 
-local RouteTabel = {} -- Every start has a subtable of reachable nodes 	
+RouteTabel = {} -- Every start has a subtable of reachable nodes 	
 local boolInitialized = false
 
 local TruckTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture,
@@ -261,7 +261,7 @@ function checkReSpawnPopulation()
 
                id = spawnAMobileCivilianUnit(civilianType, x, z, startNode, goalNode)
             else
-               echo("game_civilans: Found no startnode. Regenerating RoutesTable")
+               echo("game_civilans: Found no startnode.")
                regenerateRoutesTable()
             end
         end
@@ -437,12 +437,14 @@ function regenerateRoutesTable()
     TruckType = randDict(TruckTypeTable)
     --assert(TruckType)
     --assertType(GG.BuildingTable, "table")
-    if #GG.BuildingTable < 2 then RouteTabel = newRouteTabel; return end
+    echo("regenerateRoutesTable0")
+    if count(GG.BuildingTable) < 2 then echo("regenerateRoutesTable no buildings"); RouteTabel = newRouteTabel; return end
     for thisBuildingID, data in pairs(GG.BuildingTable) do -- [BuildingUnitID] = {x=x, z=z} 
+        echo("regenerateRoutesTable1")
         newRouteTabel[thisBuildingID] = {}
         for otherID, oData in pairs(GG.BuildingTable) do -- [BuildingUnitID] = {x=x, z=z} 		
-            if thisBuildingID ~= otherID and
-                isRouteTraversable(TruckType, thisBuildingID, otherID) then
+            if thisBuildingID ~= otherID and isRouteTraversable(TruckType, thisBuildingID, otherID) then
+                echo("regenerateRoutesTable2")
                 newRouteTabel[thisBuildingID][#newRouteTabel[thisBuildingID] + 1] = otherID
             end
         end
