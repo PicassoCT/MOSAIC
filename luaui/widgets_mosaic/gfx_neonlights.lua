@@ -15,7 +15,7 @@ end
 --------------------------------------------------------------------------------
 
 -- > debugEchoT(
-local boolDebugActive = false  --TODODO
+local boolDebugActive = true  --TODODO
 local neonLightShader = nil
 
 --------------------------------------------------------------------------------
@@ -68,6 +68,7 @@ local glUniformMatrix        = gl.UniformMatrix
 local glUseShader            = gl.UseShader
 local glVertex               = gl.Vertex
 local glTranslate            = gl.Translate
+local glOrtho                = gl.Ortho
 local spGetCameraPosition    = Spring.GetCameraPosition
 local spGetCameraVectors     = Spring.GetCameraVectors
 local spGetWind              = Spring.GetWind
@@ -427,75 +428,137 @@ local function prepareTextures()
 
     glCopyToTexture(screentex, 0, 0, 0, 0, vsx, vsy)
     glCopyToTexture(depthCopyTex, 0, 0, vpx, vpy, vsx, vsy)
-
 end
 
 local function DrawNeonLightsToFbo()
-    local _, _, isPaused = Spring.GetGameSpeed()
-    if isPaused then
-       local timerNow = Spring.GetTimer()
-       pausedTime = pausedTime + Spring.DiffTimers(timerNow, lastFrametime)       
-       return
-    end
-
-    lastFrametime = Spring.GetTimer()
     prepareTextures()
     glUseShader(neonLightShader)
     updateUniforms()
 
     glRenderToTexture(neonLightcanvastex, renderToTextureFunc);
-    local osClock = os.clock()
-    local timePassed = osClock - prevOsClock
-    prevOsClock = osClock  
+   
     cleanUp()    
 end
 
---only used for debug purposes
+
 function widget:DrawScreenEffects()
-    glBlending(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA) 
-    glTexture(0, neonLightcanvastex)
-    glTexRect(0, vsy, vsx, 0)
-    glTexture(0, false);
+    if boolDebugActive then
+        glBlending(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA) 
+        glTexture(0, neonLightcanvastex)
+        glTexRect(0, vsy, vsx, 0)
+        glTexture(0, false);
+    end
 end
 
 function widget:Initialize()
     if (not gl.RenderToTexture) then --super bad graphic driver
         return
     end
-
-    lastFrametime = Spring.GetTimer()
-    startOsClock = os.clock()
     init()
     widget:ViewResize()
 
 end
 
-local function cameraIsUnchanged()
-    local newCamPos = {spGetCameraPosition()}
-    local newCamDir = {spGetCameraDirection()}
-        if newCamPos ~= eyePos then return false end
+function GetTopDownCamera()
+  local camState = Spring.GetCameraState()
+  local viewSizeX, viewSizeY = gl.GetViewSizes()
+  local viewMatrix = gl.GetMatrixData("view")
+  local projMatrix = gl.GetMatrixData("proj")
 
-        if  newCamDir ~= eyeDir then return false end
-        return true
-    end
+  -- Get 8 NDC corners of the camera frustum
+  local ndcCorners = {
+    {-1, -1, -1}, {1, -1, -1},
+    {-1,  1, -1}, {1,  1, -1},
+    {-1, -1,  1}, {1, -1,  1},
+    {-1,  1,  1}, {1,  1,  1},
+  }
+
+  local function UnProjectNDC(x, y, z)
+    -- Convert NDC [-1,1] to window coordinates
+    local winX = (x * 0.5 + 0.5) * viewSizeX
+    local winY = (y * 0.5 + 0.5) * viewSizeY
+    return gl.UnProject(winX, winY, (z * 0.5 + 0.5))
+  end
+
+  -- Unproject frustum corners
+  local worldCorners = {}
+  for _, ndc in ipairs(ndcCorners) do
+    local wx, wy, wz = UnProjectNDC(ndc[1], ndc[2], ndc[3])
+    table.insert(worldCorners, {x = wx, y = wy, z = wz})
+  end
+
+  -- Compute AABB
+  local minX, minY, minZ = math.huge, math.huge, math.huge
+  local maxX, maxY, maxZ = -math.huge, -math.huge, -math.huge
+  for _, p in ipairs(worldCorners) do
+    minX = math.min(minX, p.x)
+    minY = math.min(minY, p.y)
+    minZ = math.min(minZ, p.z)
+    maxX = math.max(maxX, p.x)
+    maxY = math.max(maxY, p.y)
+    maxZ = math.max(maxZ, p.z)
+  end
+
+  local centerX = (minX + maxX) * 0.5
+  local centerZ = (minZ + maxZ) * 0.5
+  local width = maxX - minX
+  local depth = maxZ - minZ
+  local heightAbove = maxY - minY + 100  -- buffer
+
+  -- Extract yaw from original camera
+  local dx, dz = camState.dir[1], camState.dir[3]
+  local yaw = math.atan2(dx, dz)
+
+  local ortho = {
+            width = width,
+            height = depth,
+            near = 0.1,
+            far = heightAbove * 2,
+        }
+
+  -- Construct new top-down camera state
+  local topDownCam = {
+    name = "pos",  -- use positional camera
+    mode = 0,      -- absolute position
+    px = centerX,
+    py = maxY + heightAbove,
+    pz = centerZ,
+    dx = 0,
+    dy = -1,
+    dz = 0,
+    ry = 0,
+    rx = 0,
+    rz = 0,
+    fov = 45,
+    height = 0,
+    oldHeight = 0,
+    flipped = false,
+    angle = yaw,
+    dist = 0,
+  }
+
+  return topDownCam, ortho
+end
+
+local orgCamState = nil
+local function  restoreCameraPosDir()
+    Spring.SetCameraState(orgCamState)
+end
+
+local function setCameraOrthogonal()
+    orgCamState = Spring.GetCameraState   
+    local camera, ortho = computeTopDownCamera(orgCam)
+    local orthoCamState = {}
+    Spring.SetCameraState(orthoCamState) 
+    gl.Ortho(ortho.width, ortho,height, ortho.near, ortho.far)
+end
 
 function widget:DrawWorld()
-
-    local _, _, isPaused = Spring.GetGameSpeed()
-    if isPaused and cameraIsUnchanged()then
-       local currentTime = Spring.GetTimer() 
-       pausedTime = pausedTime + Spring.DiffTimers(currentTime, lastFrametime)
-       return
-    end
-
-    lastFrametime = Spring.GetTimer()
+    setCameraOrthogonal()
     glBlending(false)
     DrawNeonLightsToFbo()
-    glBlending(true)
-
-    local osClock = os.clock()
-    local timePassed = osClock - prevOsClock
-    prevOsClock = osClock        
+    glBlending(true) 
+    restoreCameraPosDir()
 end
 
 
