@@ -235,13 +235,11 @@ end
 widget:ViewResize()
 
 local function init()
-    startTimer = Spring.GetTimer()
     Spring.Echo("gfx_neonLight:Initialize")
     -- abort if not enabled
     widgetHandler:UpdateCallIn("Update")  
     errorOutIfNotInitialized(glCreateShader, "no shader support")
 
-    --https://www.shadertoy.com/view/wd2GDG inspiration
     local fragmentShader =  VFS.LoadFile(shaderFilePath .. "neonLightShader.frag") 
     local vertexShader = VFS.LoadFile(shaderFilePath .. "neonLightShader.vert") 
     
@@ -264,7 +262,6 @@ local function init()
             uniform = {
                 timePercent = 0,
                 neonLightPercent= 0,
-                time = diffTime,
                 scale = 0,
             },
             uniformFloat = {
@@ -351,10 +348,17 @@ end
 
 local accumulatedDT = 0
 
+local function dayPercentToNeonPercent(dayPercent)
+    if dayPercent <= 0.25 then return (1 - dayPercent/0.25) end
+    if dayPercent >= 0.75 then return  (1 - dayPercent/0.75) end
+
+    return 0.0
+end
+
 function widget:Update(dt)  
     accumulatedDT = accumulatedDT + dt 
     local _,_,_,percent = getDayTime()
-    neonLightPercent = percent     
+    neonLightPercent = dayPercentToNeonPercent(percent)     
 end
 
 function widget:Shutdown()
@@ -363,16 +367,12 @@ function widget:Shutdown()
         glDeleteTexture(screentex or "")
     end
 
-    if rainShader then
-        gl.DeleteShader(rainShader)
+    if neonLightShader then
+        gl.DeleteShader(neonLightShader)
     end
 end
 
 local function updateUniforms()
-    onTresholdCrossWriteToMapTexture()
-    diffTime = Spring.DiffTimers(lastFrametime, startTimer) 
-    diffTime = diffTime - pausedTime
-    --Spring.Echo("Time passed:"..diffTime)
     glUniform(rainPercentLoc, rainPercent)
     glUniform(timePercentLoc, timePercent)
     glUniform(uniformViewPortSize, vsx, vsy )
@@ -411,7 +411,7 @@ local function cleanUp()
     glResetState()
     glUseShader(0)
     for i=0, dephtCopyTexIndex do
-        gl.Texture(i, false)
+        glTexture(i, false)
     end
     glBlending(true)
 end
@@ -546,11 +546,35 @@ local function  restoreCameraPosDir()
 end
 
 local function setCameraOrthogonal()
-    orgCamState = Spring.GetCameraState   
+    --TODO Optimize towards https://developer.download.nvidia.com/SDK/10.5/opengl/src/cascaded_shadow_maps/doc/cascaded_shadow_maps.pdf
+    orgCamState = Spring.GetCameraState() 
     local camera, ortho = computeTopDownCamera(orgCam)
-    local orthoCamState = {}
-    Spring.SetCameraState(orthoCamState) 
+    Spring.SetCameraState(camera) 
     gl.Ortho(ortho.width, ortho,height, ortho.near, ortho.far)
+end
+
+function widget:DrawUnits()
+   setCameraOrthogonal()
+
+    renderToTextureShader:ActivateWith(
+    function()  
+   --render NeonUnits to mask
+     for unitID, neonHoloParts in pairs(neonUnitTables) do
+        for  _, pieceID in ipairs(neonHoloParts)do
+                          glPushPopMatrix( 
+                            function()
+                                glUnitMultMatrix(unitID)
+                                glUnitPieceMultMatrix(unitID, pieceID)
+                                glUnitPiece(unitID, pieceID)
+                            end)
+        end
+    end
+ end
+     )
+
+
+
+   restoreCameraPosDir()
 end
 
 function widget:DrawWorld()
