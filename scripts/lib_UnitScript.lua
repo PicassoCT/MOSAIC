@@ -911,18 +911,15 @@ end
 
 -- > Create a Unit at another Unit
 function createUnitAtUnit(teamID, typeID, otherID, ox, oy, oz, orientation, parentID)
+    assert(typeID, " typeID is not of valid type for a unit is nil")
     if not typeID or not teamID then return end
-    if doesUnitExistAlive(otherID) == false then return end
-    if parentID ~= nil then assert(doesUnitExistAlive(parentID)) end
+    if doesUnitExistAlive(otherID) == false then return nil end
+      ox, oy, oz = ox or 0, oy or 0, oz or 0
     locOrientation = orientation or math.random(0,3)
- 
-    ox, oy, oz = ox or 0, oy or 0, oz or 0
+    if parentID ~= nil then assert(doesUnitExistAlive(parentID)) end
+    
     x, y, z, _, _, _ = Spring.GetUnitPosition(otherID)
 
-    assert(typeID, " typeID is not of valid type for a unit is "..typeID)
-    --types = type(typeID)    
-    --assert(types=="string" or types == "number", "not a valid type for unittype got ".. types .. " instead")
-    --Delme DebugCode
     if parentID then
         return Spring.CreateUnit(typeID, x + ox, y + oy, z + oz, locOrientation, teamID, false, false, parentID)
     else

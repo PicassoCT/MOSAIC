@@ -70,7 +70,7 @@ assert(civilianWalkingTypeTable)
 assert(count(civilianWalkingTypeTable) > 0)
 
 local loadableTruckType = getLoadAbleTruckTypes(UnitDefs, GameConfig.instance.culture)
-echo("Loadable TruckTypes: ".. toString(loadableTruckType))
+--echo("Loadable TruckTypes: ".. toString(loadableTruckType))
 local refugeeableTruckType = getRefugeeAbleTruckTypes(UnitDefs, TruckTypeTable, GameConfig.instance.culture)
 local gaiaTeamID = Spring.GetGaiaTeamID() 
 local OpimizationFleeing = {accumulatedCivilianDamage = 0}
@@ -241,7 +241,7 @@ function checkReSpawnPopulation()
     if counter < getNumberOfUnitsAtTime(GameConfig.numberOfPersons) then
         local stepSpawn = math.min(GameConfig.numberOfPersons - counter,
                                    GameConfig.LoadDistributionMax)
-        -- echo(counter.. " of "..GameConfig.numberOfPersons .." persons spawned")		
+        -- --echo(counter.. " of "..GameConfig.numberOfPersons .." persons spawned")		
         --assertType(RouteTabel, "table")
         for i = 1, stepSpawn do
             x, _, z, startNode = getRandomSpawnNode()
@@ -261,7 +261,7 @@ function checkReSpawnPopulation()
 
                id = spawnAMobileCivilianUnit(civilianType, x, z, startNode, goalNode)
             else
-               echo("game_civilans: Found no startnode.")
+               --echo("game_civilans: Found no startnode.")
                regenerateRoutesTable()
             end
         end
@@ -272,7 +272,7 @@ end
 
 function attachPayload(payLoadID, id)
     if payLoadID then
-        echo("checkReSpawnTraffic2.65")
+        --echo("checkReSpawnTraffic2.65")
        Spring.SetUnitAlwaysVisible(payLoadID, true)
        pieceMap = Spring.GetUnitPieceMap(id)
 
@@ -286,14 +286,14 @@ function attachPayload(payLoadID, id)
 end
 
 function loadTruck(id, loadType)
-            echo("checkReSpawnTraffic2.61")
+            --echo("checkReSpawnTraffic2.61")
     if loadableTruckType[spGetUnitDefID(id)] then
-        echo("checkReSpawnTraffic2.62")
+        --echo("checkReSpawnTraffic2.62")
         --Spring.Echo("createUnitAtUnit ".."game_civilians.lua")     
         payLoadID = createUnitAtUnit(gaiaTeamID, loadType, id)
-        echo("checkReSpawnTraffic2.63")
+        --echo("checkReSpawnTraffic2.63")
         if payLoadID then
-            echo("checkReSpawnTraffic2.64")
+            --echo("checkReSpawnTraffic2.64")
             return attachPayload(payLoadID, id)
         end
     end
@@ -310,7 +310,7 @@ function loadRefugee(id, loadType)
 end
 
 function checkReSpawnTraffic()
-    --echo("checkReSpawnTraffic1")
+    ----echo("checkReSpawnTraffic1")
     counter = 0
     toDeleteTable = {}
     if GG.CivilianTable then
@@ -325,40 +325,40 @@ function checkReSpawnTraffic()
             end
         end
     end
-    --echo("checkReSpawnTraffic2")
+    ----echo("checkReSpawnTraffic2")
     --assertTable(toDeleteTable)
     for id, data in pairs(toDeleteTable) do GG.CivilianTable[id] = nil end
-      --echo("checkReSpawnTraffic2.1")
+      ----echo("checkReSpawnTraffic2.1")
     if counter < getNumberOfUnitsAtTime(GameConfig.numberOfVehicles) then
         local stepSpawn = math.min(GameConfig.LoadDistributionMax,
                                    GameConfig.numberOfVehicles - counter)
-        --echo("checkReSpawnTraffic2.2")
-        -- echo(counter.. " of "..GameConfig.numberOfVehicles .." vehicles spawned")
+        ----echo("checkReSpawnTraffic2.2")
+        -- --echo(counter.. " of "..GameConfig.numberOfVehicles .." vehicles spawned")
         for i = 1, stepSpawn do
-            --echo("checkReSpawnTraffic2.3")
+            ----echo("checkReSpawnTraffic2.3")
             x, _, z, startNode = getRandomSpawnNode()
             if startNode then
-                --echo("checkReSpawnTraffic2.4")
+                ----echo("checkReSpawnTraffic2.4")
                 goalNode = RouteTabel[startNode][math.random(1, #RouteTabel[startNode])]
                 --assertTable(TruckTypeTable)
                 TruckType = randDict(TruckTypeTable)
-                echo("checkReSpawnTraffic2.5")
+                --echo("checkReSpawnTraffic2.5")
                 id = spawnAMobileCivilianUnit(TruckType, x, z, startNode, goalNode)
                 if id  then
-                  --  echo("calling truck loading")
-                    echo("checkReSpawnTraffic2.6")
+                  --  --echo("calling truck loading")
+                    --echo("checkReSpawnTraffic2.6")
                     loadTruck(id, "truckpayload")
-                      echo("checkReSpawnTraffic2.7")
+                      --echo("checkReSpawnTraffic2.7")
                 end
             end
         end
     else
-        --echo("checkReSpawnTraffic2.8")
+        ----echo("checkReSpawnTraffic2.8")
         --assertTable(TruckTypeTable)
         decimateArrivedCivilians(absDistance( getNumberOfUnitsAtTime(GameConfig.numberOfVehicles), counter), TruckTypeTable)
-          --echo("checkReSpawnTraffic2.9")
+          ----echo("checkReSpawnTraffic2.9")
     end
-    --echo("checkReSpawnTraffic3")
+    ----echo("checkReSpawnTraffic3")
 end
 
 function getNumberOfUnitsAtTime(value)
@@ -369,7 +369,7 @@ function getNumberOfUnitsAtTime(value)
         mixValue = math.sin(piValue)
     end
     blendedFactor = mix(1, GameConfig.nightCivilianReductionFactor, mixValue)
-    --		echo("Time:"..h..":"..m.." %:"..pTime.."->"..blendedFactor)
+    --		--echo("Time:"..h..":"..m.." %:"..pTime.."->"..blendedFactor)
     return value * blendedFactor
 end
 
@@ -437,14 +437,18 @@ function regenerateRoutesTable()
     TruckType = randDict(TruckTypeTable)
     --assert(TruckType)
     --assertType(GG.BuildingTable, "table")
-    echo("regenerateRoutesTable0")
-    if count(GG.BuildingTable) < 2 then echo("regenerateRoutesTable no buildings"); RouteTabel = newRouteTabel; return end
+    --echo("regenerateRoutesTable0")
+    if count(GG.BuildingTable) < 2 then 
+        echo("regenerateRoutesTable no buildings");
+        RouteTabel = newRouteTabel; 
+        return 
+    end
     for thisBuildingID, data in pairs(GG.BuildingTable) do -- [BuildingUnitID] = {x=x, z=z} 
-        echo("regenerateRoutesTable1")
+        --echo("regenerateRoutesTable1")
         newRouteTabel[thisBuildingID] = {}
         for otherID, oData in pairs(GG.BuildingTable) do -- [BuildingUnitID] = {x=x, z=z} 		
             if thisBuildingID ~= otherID and isRouteTraversable(TruckType, thisBuildingID, otherID) then
-                echo("regenerateRoutesTable2")
+                --echo("regenerateRoutesTable2")
                 newRouteTabel[thisBuildingID][#newRouteTabel[thisBuildingID] + 1] = otherID
             end
         end
@@ -470,8 +474,7 @@ function getCultureDependentDiretion(culture)
 
 function spawnUnit(defID, x, z)
     if not x then
-        echo("Spawning unit of typ " .. UnitDefs[defID].name ..
-                 " with no coords")
+        --echo("Spawning unit of typ " .. UnitDefs[defID].name ..                 " with no coords")
     end
     
     dir = getCultureDependentDiretion(GameConfig.instance.culture)
@@ -639,7 +642,7 @@ end
 
 function isGoalWarzone(persPack)
     dangerNormalized= GG.DamageHeatMap:getDangerAtLocation(persPack.goalList[persPack.goalIndex].x,persPack.goalList[persPack.goalIndex].z)
-    --echo("Is Goal Warzone: danger normalized"..dangerNormalized.. " Heatmap Normalization Value "..GG.DamageHeatMap.normalizationValue)
+    ----echo("Is Goal Warzone: danger normalized"..dangerNormalized.. " Heatmap Normalization Value "..GG.DamageHeatMap.normalizationValue)
 
     boolGoalIsWarzone = dangerNormalized > GameConfig.warzoneValueNormalized and GG.DamageHeatMap.normalizationValue > 5000
     return boolGoalIsWarzone
@@ -708,10 +711,10 @@ function travelInWarTimes(evtID, frame, persPack, startFrame, myID)
 end
 
 function displayConversationTextAt(idA, idB)
---[[    echo("isTRackedPerson "..toString(doesUnitExistAlive(idA)).." and "..toString(doesUnitExistAlive(idB)))--]]
+--[[    --echo("isTRackedPerson "..toString(doesUnitExistAlive(idA)).." and "..toString(doesUnitExistAlive(idB)))--]]
     if isTrackedPerson(idA) or isTrackedPerson(idB) then
         gossipMessage = gossipGenerator(idA, idB, UnitDefs)
-       --[[ echo("Displaying conversation between "..toString(idA).." and "..toString(idB))--]]
+       --[[ --echo("Displaying conversation between "..toString(idA).." and "..toString(idB))--]]
         SendToUnsynced("DisplaytAtUnit", idA, gaiaTeamID, gossipMessage, 0.75, 0.75, 0.75, 0.25)
     end
 end
@@ -741,7 +744,7 @@ function sozialize(evtID, frame, persPack, startFrame, myID)
     if math.random(0, 42) > 35 and
         civilianWalkingTypeTable[persPack.mydefID] and 
         persPack.maxTimeChattingInFrames > 150  then  
-           --[[ echo("Soizialize with partnerID ")--]]
+           --[[ --echo("Soizialize with partnerID ")--]]
             persPack.chatPartnerID = getUnitNearestTalkableAlly(myID)
             displayConversationTextAt(myID, persPack.chatPartnerID)
             if persPack.chatPartnerID then 
@@ -869,7 +872,7 @@ end
 function moveToLocation(myID, persPack, param, boolOverrideStuckCounter)
  -- only re-issue commands if not moving for a time - prevents repathing frame drop of 15 fps
     if persPack.stuckCounter > 1 or boolOverrideStuckCounter then
-        --echo("Givin go Command to "..myID.." goto"..persPack.goalList[persPack.goalIndex].x..","..persPack.goalList[persPack.goalIndex].y..","..persPack.goalList[persPack.goalIndex].z)
+        ----echo("Givin go Command to "..myID.." goto"..persPack.goalList[persPack.goalIndex].x..","..persPack.goalList[persPack.goalIndex].y..","..persPack.goalList[persPack.goalIndex].z)
         local params = param or {}
 
         Command(myID, "go", {
@@ -887,7 +890,7 @@ function travelInPeaceTimes(evtID, frame, persPack, startFrame, myID)
     if  persPack.isTruck == true and persPack.hasBreaks == true then
         if  persPack.Break.startFrame < frame and 
             frame < persPack.Break.startFrame + persPack.Break.lengthFrames  then
-            --echo(myID.." is on a break for "..((persPack.Break.startFrame + persPack.Break.lengthFrames -frame)/30).." seconds")
+            ----echo(myID.." is on a break for "..((persPack.Break.startFrame + persPack.Break.lengthFrames -frame)/30).." seconds")
             --Just stand there like a idiot
             return boolDone, nil, persPack
         end
@@ -1055,7 +1058,7 @@ end
 
 function decimateArrivedCivilians(nrToDecimate, typeTable)
     nrToDecimate = math.floor(nrToDecimate)
-    -- echo("Decimation called"..nrToDecimate)
+    -- --echo("Decimation called"..nrToDecimate)
     if nrToDecimate <= 0 then return end
     --assertTable(GG.UnitArrivedAtTarget)
     newUnitsArrivedAtTarget = {}
@@ -1066,7 +1069,7 @@ function decimateArrivedCivilians(nrToDecimate, typeTable)
             GG.DisguiseCivilianFor[id] == nil and
             typeTable[GG.CivilianTable[id].defID] then
             spDestroyUnit(id, false, true)
-            --echo("Killing Unit:"..id)
+            ----echo("Killing Unit:"..id)
             if doesUnitExistAlive(id) == false then
                 GG.UnitArrivedAtTarget[id] = nil
                 nrToDecimate = nrToDecimate - 1
