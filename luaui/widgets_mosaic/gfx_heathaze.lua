@@ -6,7 +6,7 @@ function widget:GetInfo()
         author = "Picasso & ChatGPT",
         date = "2025",
         license = "GPL3",
-        layer = -math.huge,
+        layer = math.huge,
         enabled = true,
         hidden = false
     }
@@ -66,7 +66,7 @@ local function isRaining()
 end
 
 local function calculateHeatHazeStrength()
-
+    if true then return 1.0 end
     local hours,minutes,_, timePercent = getDayTime()
     local boolIsRaining = isRaining() 
     if boolIsRaining == true then return 0.0,hours, minutes end
@@ -129,9 +129,10 @@ function widget:Initialize()
         },
 
         uniformInt = {
+            screenTex = 0,
             depthTex = 1,
             noiseTex = 2,
-            screenTex = 3
+            
         },        
         uniformFloat = {
             viewPortSize = {vsx, vsy},
@@ -156,12 +157,14 @@ end
 function widget:Shutdown()
     if heatShader then
         gl.DeleteShader(heatShader)
+        glTexture(0, false)
+        glTexture(1, false)
+        glTexture(2, false)
     end
 end
 
 function widget:Update()    
     heatHazeStrength = calculateHeatHazeStrength()
-    --Spring.Echo("Heathaze value:"..hours..":"..minutes..": "..heatHazeStrength)
 end
 
 function widget:DrawScreenEffects()
@@ -172,12 +175,10 @@ function widget:DrawScreenEffects()
     end
 
     glUseShader(heatShader)
-
     glUniform( heatHazeStrengthLocation, heatHazeStrength)
     glUniform(heatShaderTimeLocation, Spring.GetGameSeconds())
     glUniform(heatHazeViewPortSizeLocation, vsx, vsy)
     glCopyToTexture(screenTex, 0, 0, 0, 0, vsx, vsy) 
-
     glTexture(1, depthTexture)
     glTexture(2, noiseTexture)
 
