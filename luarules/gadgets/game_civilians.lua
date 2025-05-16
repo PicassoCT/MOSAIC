@@ -753,8 +753,8 @@ function sozialize(evtID, frame, persPack, startFrame, myID)
             end
     end
 
-    if persPack.boolStartAChat == true then -- end a chat
-        if (persPack.maxTimeChattingInFrames <= 0 ) or 
+    if persPack.boolStartAChat == true then 
+        if (persPack.maxTimeChattingInFrames <= 0 ) or -- end a chat
             not persPack.chatPartnerID or
             not doesUnitExistAlive(persPack.chatPartnerID) then
                 persPack.boolStartAChat = false

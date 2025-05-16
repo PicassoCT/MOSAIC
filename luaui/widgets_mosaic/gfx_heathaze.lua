@@ -66,7 +66,6 @@ local function isRaining()
 end
 
 local function calculateHeatHazeStrength()
-    if true then return 1.0 end
     local hours,minutes,_, timePercent = getDayTime()
     local boolIsRaining = isRaining() 
     if boolIsRaining == true then return 0.0,hours, minutes end

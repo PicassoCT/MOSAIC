@@ -2690,8 +2690,28 @@ function getRegionByCulture(culture, hash)
   end
 end
 
+function isMapDefinedColor()
+ if string.find(string.lower(Game.mapName), "dubai") then
+    return true
+ end
+ return false
+end
+
+function getMapDefinedColor()
+    lowerMapName = string.lower(Game.mapName)
+    if string.find(lowerMapName, "dubai") then
+       return makeVector(255, 240, 150) 
+    end
+    return makeVector(0, 255, 0) 
+end
+
+
 function getRegionDayColorBy(culture, hash)
   Spring.Echo("getRegionDayColor for culture: "..culture)
+  if isMapDefinedColor() then 
+    return getMapDefinedColor()
+  end
+
   if culture == "arabic" then
     if hash % 3 == 0 then
       return makeVector(252, 247, 156)--"MiddleEast"

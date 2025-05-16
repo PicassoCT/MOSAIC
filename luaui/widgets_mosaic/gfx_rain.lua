@@ -416,7 +416,7 @@ function widget:Update(dt)
         rainPercent = 1.0
         return 
     end
-    if rainPercent > 0 and accumulatedDT - lastActiveRainSoundDt > 5.0 then
+    if rainPercent > 0.25 and accumulatedDT - lastActiveRainSoundDt > 5.0 then
         if math.random(0,1) == 1 then
             local randThunderIndex = math.random(1,6)
             local pathToThunder = "LuaUi/sounds/weather/thunder/thunder"..randThunderIndex..".ogg"

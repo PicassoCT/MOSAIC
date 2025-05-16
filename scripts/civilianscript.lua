@@ -782,6 +782,7 @@ function chatting()
         else
             PlayAnimation("UPBODY_AGGRO_TALK", lowerBodyPieces, math.random(10,30)/10)
         end     
+        
 
        headVal = math.random(-20,20)
        if maRa() == maRa() then
@@ -807,7 +808,8 @@ function chatting()
        headVal = clamp(-20, headVal, 20)
        Turn(Head1,y_axis,math.rad(headVal),1.5)
        WaitForTurns(Head1)
-       chattingTime = chattingTime - 1500
+
+       chattingTime = chattingTime - 500
        repeatCounter = repeatCounter + 1
         Sleep(100)
         if repeatCounter % 2 == 0 then
@@ -817,8 +819,9 @@ function chatting()
             end  
         end  
     end
-        playUpperBodyIdleAnimation()
-        resetT(TablesOfPiecesGroups["UpArm"], math.pi, false, true)
+    Spring.Echo("civilian "..unitID.. " chat has ended")
+    playUpperBodyIdleAnimation()
+    resetT(TablesOfPiecesGroups["UpArm"], math.pi, false, true)
     setCivilianUnitInternalStateMode(unitID, STATE_ENDED)
 end
 
@@ -1228,7 +1231,7 @@ function threadStateStarter()
         if boolStartChatting == true then
             boolStartChatting = false
             StartThread(chatting)
-            echo("Starting chatting at location "..locationstring(unitID))
+            echo("Starting chatting at location "..locationstring(unitID).." for ".. chattingTime.. " ms")
         end
 
         if boolStartFleeing == true then
