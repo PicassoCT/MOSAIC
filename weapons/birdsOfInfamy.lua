@@ -13,13 +13,12 @@ local weaponDef = {
 	--orders behaviour
 	--commandFire  = true,	
 	canAttackGround = true,
-	canManualFire = true,
+
 	--aiming behaviour
 	range = 1024 + 512+ 64,
 	turnRate = 4096,
 	turret = true,
 	tracks = false,
-	castshadow = true,
 	predictBoost = 1.0,
 	avoidFeature = true,
 	avoidGround = true,

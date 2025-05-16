@@ -78,7 +78,6 @@ if (gadgetHandler:IsSyncedCode()) then
         end
     end
 
-
     local allNeonUnits= {}
     local neonUnitDataTransfer = {}
     function registerUnitIfHolo(unitID, unitDefID)
@@ -91,7 +90,6 @@ if (gadgetHandler:IsSyncedCode()) then
             local emptyTable = {}
             local stringToSend = ""
 
-   
             allNeonUnits[#allNeonUnits + 1]= unitID
            -- SendToUnsynced("setUnitNeonLuaDraw", unitID, unitDefID)
         end
@@ -454,7 +452,7 @@ end
 		InitializeTextures()
 		gadget:ViewResize(vsx, vsy)
         gadgetHandler:AddSyncAction("setUnitNeonLuaDraw", setUnitNeonLuaDraw)
-        gadgetHandler:AddSyncAction("unsetUnitNeonLuaDraw", resetUnitNeonLuaDraw)
+        gadgetHandler:AddSyncAction("unsetUnitNeonLuaDraw", unsetUnitNeonLuaDraw) --TODO debug
 		frameGameStart = Spring.GetGameFrame()+1
 
         neonHologramShader = LuaShader({

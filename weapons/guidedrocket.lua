@@ -19,7 +19,7 @@ local weaponDef = {
 	turnRate = 4096,
 	turret = true,
 	tracks = true,
-	castshadow = false,
+
 	predictBoost = 1.0,
 	avoidFeature = true,
 	avoidGround = true,

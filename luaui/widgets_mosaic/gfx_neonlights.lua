@@ -147,13 +147,44 @@ local emitmaptexIndex       = 7
 local emitunittexIndex      = 8
 local eyePos = {spGetCameraPosition()}
 local eyeDir = {spGetCameraDirection()}
+local neonUnitTables = {}
+local UnitUnitDefIDMap = {}
+local counterNeonUnits = 0
 
+local function splitToNumberedArray(msg)
+        local message = msg..'|'
+        local t = {}
+        for e in string.gmatch(message,'([^%|]+)%|') do
+            local pieceID =  tonumber(e)
+            table.insert(t, pieceID )            
+        end
+        return t
+    end
+
+local function setUnitNeonLuaDraw(callname, unitID, unitDefID, listOfVisibleUnitPiecesString)
+        Spring.Echo("setUnitNeonLuaDraw called")
+        Spring.UnitRendering.SetUnitLuaDraw(unitID, false)
+
+        local piecesTable = splitToNumberedArray(listOfVisibleUnitPiecesString)
+        neonUnitTables[unitID] =  piecesTable
+        UnitUnitDefIDMap[unitID] = unitDefID
+        counterNeonUnits = counterNeonUnits + 1
+    end 
+
+local function unsetUnitNeonLuaDraw(callname, unitID)
+        Spring.Echo("unsetUnitNeonLuaDraw called")
+        neonUnitTables[unitID] = nil
+        UnitUnitDefIDMap[unitID] = nil
+        counterNeonUnits= counterNeonUnits - 1
+    end  
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 local function errorOutIfNotInitialized(value, name)
     if value == nil then
         Spring.Echo("No "..name.." - aborting")
+        widgetHandler.RemoveSyncAction("setUnitNeonLuaDraw")
+        widgetHandler.RemoveSyncAction("unsetUnitNeonLuaDraw")
         widgetHandler:RemoveWidget(self)
     end
 end
@@ -234,8 +265,8 @@ end
 
 widget:ViewResize()
 
-local function init()
-    Spring.Echo("gfx_neonLight:Initialize")
+local function initNeonLightShader()
+   Spring.Echo("gfx_neonLight:Initialize")
     -- abort if not enabled
     widgetHandler:UpdateCallIn("Update")  
     errorOutIfNotInitialized(glCreateShader, "no shader support")
@@ -304,6 +335,13 @@ local function init()
     Spring.Echo("gfx_neonLight:Initialize ended")
 end
 
+
+local function init()
+    initNeonLightShader()
+    widgetHandler:AddSyncAction("setUnitNeonLuaDraw", setUnitNeonLuaDraw)
+    widgetHandler:AddSyncAction("unsetUnitNeonLuaDraw", unsetUnitNeonLuaDraw)
+end
+
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 local function getDetermenisticHash()
@@ -345,7 +383,6 @@ local function split(self, delimiter)
   return result
 end
 
-
 local accumulatedDT = 0
 
 local function dayPercentToNeonPercent(dayPercent)
@@ -370,6 +407,8 @@ function widget:Shutdown()
     if neonLightShader then
         gl.DeleteShader(neonLightShader)
     end
+    widgetHandler.RemoveSyncAction("setUnitNeonLuaDraw")
+    widgetHandler.RemoveSyncAction("unsetUnitNeonLuaDraw")
 end
 
 local function updateUniforms()

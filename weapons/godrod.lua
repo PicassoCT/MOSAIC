@@ -42,7 +42,6 @@ local weaponDef = {
 	model = "GodRod.s3o",
 	explosionScar = true, 
  	cegTag = "impactor",
- 	noFriendlyCollide = true,
 	cameraShake =1.0,
     explosionGenerator = "custom:missile_explosion",
     --soundStart = "weapons/godrod/impactor.ogg"

@@ -70,7 +70,7 @@ local boolCachedMapManualPlacementResult = nil
 
 allreadyRegistredBuilding = {}
 function registerManuallyPlacedHouses(frame)   
-    echo("Manual registering placed houses called " ..frame)   
+    --echo("Manual registering placed houses called " ..frame)   
     counter = 0
     foreach(Spring.GetAllUnits(),
             function(id)
@@ -84,8 +84,8 @@ function registerManuallyPlacedHouses(frame)
                 spSetUnitAlwaysVisible(id, true)
                 setCityBuildingBlocking(id)                
                 x,y,z = spGetUnitPosition(id)
-                assert(x)
-                assert(z)
+                --assert(x)
+                --assert(z)
                 setHouseStreetNameTooltip(id, x  , z , Game, false, UnitDefs, buisnessNeonSigns)
                 GG.BuildingTable[id] = {x = x, z = z }
                 counter = counter + 1
