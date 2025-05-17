@@ -3,8 +3,6 @@ include "lib_OS.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 
-
-
 center = piece "center"
 assert(center)
 imgoingdown = piece "imgoingdown"
@@ -256,7 +254,6 @@ function script.Create()
     else
         Hide(tailrotor)
         Hide(tailrotors)
-        Hide(rotorhub)
         Hide(rotor)
         Hide(rotors)
 
@@ -278,7 +275,6 @@ function script.Killed()
     return 0
 end
 
-
 function script.AimFromWeapon1()
     return aim1
 end
@@ -286,8 +282,6 @@ end
 function script.QueryWeapon1()
     return aim1
 end
-
-
 
 function script.AimWeapon1(heading, pitch)
     if math.deg(pitch) < 0 then return false end
@@ -298,9 +292,7 @@ function script.AimWeapon1(heading, pitch)
     return true
 end
 
-
 function script.FireWeapon1()
-
     for i = 1, 11, 1 do
         EmitSfx(aim1, choppermuzzle)
         Sleep(142)

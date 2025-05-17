@@ -8,10 +8,11 @@ TablesOfPiecesGroups = {}
 
 
 visiblePieces= {}
+spinAxis = z_axis
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
-    Spin(center,2,math.rad(42),0)
-    Move(center,2,buildingHeighth,0)
+    Spin(center,spinAxis,math.rad(42),0)
+    Move(center,y_axis,buildingHeighth,0)
 
     boolIsGull = UnitDefs[unitDefID].name == "gullswarm"
     StartThread(moveControl)    
@@ -19,7 +20,7 @@ function script.Create()
     boolAtLeastOne = true
     if boolIsGull then
         for k,v in pairs(TablesOfPiecesGroups["Gull"]) do
-            Spin(v, y_axis, math.rad(42)* (-1)^k)
+            Spin(v, spinAxis, math.rad(42)* (-1)^k)
             if boolAtLeastOne or math.random(0,1)== 1 then
                 visiblePieces[#visiblePieces +1] = v
                 Show(v)
@@ -28,7 +29,7 @@ function script.Create()
         end
         else
         for k,v in pairs(TablesOfPiecesGroups["Gull"]) do
-            Spin(v, y_axis, math.rad(42)* (-1)^k)
+            Spin(v, spinAxis, math.rad(42)* (-1)^k)
             if boolAtLeastOne or math.random(0,1)== 1 then
                 visiblePieces[#visiblePieces +1] = v
                 Show(v)
