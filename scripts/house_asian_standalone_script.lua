@@ -277,7 +277,7 @@ end
 local pieceName_pieceNr = Spring.GetUnitPieceMap (unitID)
 function script.Create()
     TablesOfPieceGroups = getPieceTableByNameGroups(false, true)
-    Show(Icon)
+
     fillMegaTable()
     ArcoT = TablesOfPieceGroups["Arcology"]
     ProjectT = TablesOfPieceGroups["Project"]
@@ -469,8 +469,8 @@ function buildBuilding()
             StartThread(placeElevators, TablesOfPieceGroups, 200, 20, toShowDict)
     end
     boolDoneShowing = true
-    Hide(Icon)
     showHouse()
+    Hide(Icon)
     return
 end
 boolHouseHidden = false
@@ -486,10 +486,7 @@ function hideHouse()
 end
 
 function buildAnimation()
-   
-    Show(Icon)
     while boolDoneShowing == false do Sleep(100) end
-    Hide(Icon)
     showT(ToShowTable)   
 end
 
