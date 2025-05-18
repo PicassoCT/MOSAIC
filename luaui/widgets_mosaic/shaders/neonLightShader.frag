@@ -71,7 +71,6 @@ uniform vec3 sunPos;
 uniform vec3 skyCol;
 
 uniform vec2 viewPortSize;
-uniform vec3 cityCenter;
 uniform mat4 viewProjectionInv;
 uniform mat4 viewProjection;
 uniform mat4 projection;
