@@ -128,6 +128,8 @@ if (gadgetHandler:IsSyncedCode()) then
 
     local cachedUnitPieces = {}
     local oldneonUnitDataTransfer = {}
+    local broadcastAllNeonUnitsPieces = "GameRules_BroadcastNeonPieces"
+    local collectedStrings  = {}
     function gadget:GameFrame(frame)
 		if frame > frameGameStart then           
             if count(neonUnitDataTransfer) > 0 then
@@ -140,7 +142,8 @@ if (gadgetHandler:IsSyncedCode()) then
                            -- printUnitPiecesVisible(id, VisibleUnitPieces[id]) 
                             local serializedStringToSend = serializePiecesTableTostring(VisibleUnitPieces[id])
                             cachedUnitPieces[id] = VisibleUnitPieces[id]
-        					SendToUnsynced("setUnitNeonLuaDraw", id, defID, serializedStringToSend )              
+        					SendToUnsynced("setUnitNeonLuaDraw", id, defID, serializedStringToSend )   
+                            collectedStrings[#collectedStrings + 1] = serializedStringToSend                                     
         				end
         			end 
                     for id, defID in pairs(oldneonUnitDataTransfer) do
@@ -148,8 +151,11 @@ if (gadgetHandler:IsSyncedCode()) then
                             SendToUnsynced("unsetUnitNeonLuaDraw", id)       
                         end
                     end
-                    oldneonUnitDataTransfer = neonUnitDataTransfer      
-                end      
+                    oldneonUnitDataTransfer = neonUnitDataTransfer    
+                    local neonUnitsStringified = table.concat(collectedStrings, "|") 
+                    Spring.SetGameRulesParam (broadcastAllNeonUnitsPieces, neonUnitsStringified)       
+                end    
+
             end
 		end
     end
