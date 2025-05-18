@@ -12,8 +12,6 @@ function gadget:GetInfo()
     }
 end
 
-
-
 if (gadgetHandler:IsSyncedCode()) then
     
     VFS.Include("scripts/lib_mosaic.lua")    
@@ -36,8 +34,6 @@ if (gadgetHandler:IsSyncedCode()) then
     -- Texture back to resolution
     -- read back and add_alpha to texture
     
-
-
     function gadget:PlayerChanged(playerID)
         if Spring.GetMyAllyTeamID then
             myAllyTeamID = Spring.GetMyAllyTeamID()

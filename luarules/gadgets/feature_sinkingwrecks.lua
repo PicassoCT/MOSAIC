@@ -19,6 +19,7 @@ if (gadgetHandler:IsSyncedCode()) then
     VFS.Include("scripts/lib_UnitScript.lua")
     VFS.Include("scripts/lib_mosaic.lua")
     GameConfig = getGameConfig()
+    gaiaTeamID = Spring.GetGaiaTeamID()
     -- Configuration:
     local SinkEndTime = -35 * 10 -- In frame (10 seconds x 30 frames per seconds)
     local SinkBeginTime = 30 * 10
@@ -76,7 +77,7 @@ if (gadgetHandler:IsSyncedCode()) then
                         memorialId = Spring.CreateUnit("memorial", x, 0, z, 1, gaiaTeamID )
                         if memorialId then
                             dx,dy,dz = Spring.GetFeatureRotation(WreckList[i].id)
-                            Swprin.SetUnitRotation(memorialId, dx, dy, dz)
+                            Spring.SetUnitRotation(memorialId, dx, dy, dz)
                         end
                     end
                 end

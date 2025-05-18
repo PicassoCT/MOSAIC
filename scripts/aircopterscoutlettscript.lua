@@ -28,7 +28,7 @@ function lifeSpan()
     SetSignalMask(SIG_LIFETIME)
     Signal(SIG_LIFETIME)
     Sleep(500)
-    StartThread(PlaySoundByUnitDefID, "sounds/air/drone.ogg", 0.5, 5000, 1)
+    StartThread(PlaySoundByUnitDefID, unitDefID, "sounds/air/drone.ogg", 0.5, 5000, 1)
     while lifeTimeMS >0 do
         Sleep(1000)
         lifeTimeMS = lifeTimeMS -1000

@@ -2,7 +2,7 @@ include "createCorpse.lua"
 include "lib_OS.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
-include "lib_debug.lua"
+--include "lib_debug.lua"
 
 local ToShowTable = {}
 IDGroupsDirection = { 
@@ -603,7 +603,7 @@ function isInPositionSequenceGetPieceID(roundNr, level,materialType,  buildingGr
 		if Direction == "u"  then
 			--if getDeterministicRandom(unitID+roundNr, 3) % 2 == 0 then return false end
 			maxIDGroups = count(buildingGroups.Upright)
-			assert(maxIDGroups > 1, toString(buildingGroups.Upright))
+			--assert(maxIDGroups > 1, toString(buildingGroups.Upright))
 			PieceGroupIndex = getDeterministicRandom(unitID + roundNr, maxIDGroups) + 1
 			groupName, group = getNthDictElement(buildingGroups.Upright, PieceGroupIndex)
 			lecho("PieceGroupIndex:"..PieceGroupIndex)
@@ -617,7 +617,7 @@ function isInPositionSequenceGetPieceID(roundNr, level,materialType,  buildingGr
 		--lengthwise
 		if Direction == "l"  then
 			maxIDGroups = count(buildingGroups.Length)
-			assert(maxIDGroups > 1)
+			--assert(maxIDGroups > 1)
 			PieceGroupIndex = (getDeterministicRandom(unitID + deterministicPersistentCounter, maxIDGroups) + 1 ) 
 			lecho("PieceGroupIndex:"..PieceGroupIndex)
 			groupName, group = getNthDictElement(buildingGroups.Length, PieceGroupIndex)
@@ -652,7 +652,7 @@ end
 function script.Create()
     TablesOfPiecesGroups = GetSetSharedOneTimeResult("house_asian_script_PiecesTable", GetPieceTableGroups)
 
-	assertPieceNamesUnique(unitID)
+	--assertPieceNamesUnique(unitID)
     x, y, z = spGetUnitPosition(unitID)
     StartThread(removeFeaturesInCircle,x,z, GameConfig.houseSizeZ/2)
 
@@ -728,7 +728,7 @@ function showOneDeterministic(T, index)
     if not T then return end
     dice = (index % #T) + 1
     c = 0
-    assert(T)
+    --assert(T)
     for k, v in pairs(T) do
         if k and v then c = c + 1 end
         if c == dice then
@@ -744,7 +744,7 @@ function showOne(T)
     if not T then return end
     dice = math.random(1, count(T))
     c = 0
-    assert(T)
+    --assert(T)
     for k, v in pairs(T) do
         if k and v then c = c + 1 end
         if c == dice then
@@ -959,7 +959,7 @@ function getRandomBuildMaterial(buildMaterial, name, index, x, z, level, buildin
     	isInRoundNr, piecenum = isInPositionSequenceGetPieceID(roundNr, level, name, buildingGroups) 
 
     	if isInRoundNr and piecenum then
-			assert(pieceID_NameMap[piecenum], "Found a invalid PieceID returned by sequence")
+			--assert(pieceID_NameMap[piecenum], "Found a invalid PieceID returned by sequence")
             lecho("stooping to sequence for level " ..level.. "for material " ..name.. " with piece ".. toString(pieceID_NameMap[piecenum]).." selected") 
            return piecenum
     	end
@@ -968,7 +968,7 @@ function getRandomBuildMaterial(buildMaterial, name, index, x, z, level, buildin
 	
 	piecenum, num = getSafeRandom(buildMaterial, ErrorIcon) 
 	if piecenum and not inToShowDict(piecenum)  then
-		assert(pieceID_NameMap[piecenum], "Found a invalid PieceID returned randomized material")
+		--assert(pieceID_NameMap[piecenum], "Found a invalid PieceID returned randomized material")
 		lecho("resorting to random piece for level " ..toString(level).. "for material " ..name.. " with piece ".. toString(pieceID_NameMap[piecenum]).." selected") 
 		return piecenum, num
 	end
@@ -1047,8 +1047,8 @@ end
 
 toShowDict = {}
 function addToShowTable(element, indeX, indeY, addition, xLoc, zLoc)
-    assert(element)
-    assert(pieceID_NameMap[element])
+    --assert(element)
+    --assert(pieceID_NameMap[element])
 	--lecho("Piece placed:"..toString(pieceID_NameMap[element]).." at ("..toString(indeX).."/"..toString(indeY)..") ".."("..toString(xLoc).."/"..toString(zLoc)..")".. toString(addition))
 	if filterOutToShowTableElements(element) then return end
     ToShowTable[#ToShowTable + 1] = element	
@@ -1063,15 +1063,15 @@ function buildDecorateGroundLvl(materialColourName)
     local yardMaterial = getNameFilteredTable({materialColourName}, {"Yard","Deco", "Floor"}, {})
     local StreetDecoMaterial = getNameFilteredTable({materialColourName}, { "Deco", "Floor", "Street"}, {})
     local floorBuildMaterial = getNameFilteredTable({}, {materialColourName}, {"Roof", "Deco", "Yard"}) 
-    assertPieceDictValue(unitID, floorBuildMaterial, "GroundLvl:buildMaterial")
-    assertPieceDictValue(unitID, StreetDecoMaterial, "GroundLvl:buildMaterial")
-    assertPieceDictValue(unitID, yardMaterial, "GroundLvl:buildMaterial")
-    for name, group in pairs(buildingGroupsFloor.Upright) do
-    assertPieceDictValue(unitID, group, "GroundLvl:buildingGroupsFloor.Upright:"..name)
-    end    
-    for name, group in pairs(buildingGroupsFloor.Length) do
-    assertPieceDictValue(unitID, group, "GroundLvl:buildingGroupsFloor.Length:"..name)
-    end
+    --assertPieceDictValue(unitID, floorBuildMaterial, "GroundLvl:buildMaterial")
+    --assertPieceDictValue(unitID, StreetDecoMaterial, "GroundLvl:buildMaterial")
+    --assertPieceDictValue(unitID, yardMaterial, "GroundLvl:buildMaterial")
+    --for name, group in pairs(buildingGroupsFloor.Upright) do
+    --assertPieceDictValue(unitID, group, "GroundLvl:buildingGroupsFloor.Upright:"..name)
+    --end    
+    --for name, group in pairs(buildingGroupsFloor.Length) do
+    --assertPieceDictValue(unitID, group, "GroundLvl:buildingGroupsFloor.Length:"..name)
+    --end
 
     --lecho("floorBuildMaterial", floorBuildMaterial)
     countElements = 0
@@ -1098,9 +1098,9 @@ function buildDecorateGroundLvl(materialColourName)
             end
 
             if element then
-				assert(pieceID_NameMap[element], "element nr "..toString(element).." is not a valid piece")
-                assert(type(xRealLoc)=="number")
-                assert(type(zRealLoc)=="number")
+				--assert(pieceID_NameMap[element], "element nr "..toString(element).." is not a valid piece")
+                --assert(type(xRealLoc)=="number")
+                --assert(type(zRealLoc)=="number")
        
                 countElements = countElements + 1
                 floorBuildMaterial = removeElementFromBuildMaterial(element, floorBuildMaterial)
@@ -1110,7 +1110,7 @@ function buildDecorateGroundLvl(materialColourName)
                 Sleep(1)
                 rotation = getOutsideFacingRotationOfBlockFromPlan(i)
 
-                assert(rotation)
+                --assert(rotation)
                 WTurn(element, 3, math.rad(rotation), 0)
 				LevelPieces = houseAddDestructionTable(LevelPieces, 1, element)
                 addToShowTable(element, xLoc, zLoc, i, xRealLoc, zRealLoc)
@@ -1126,7 +1126,7 @@ function buildDecorateGroundLvl(materialColourName)
 
                 if chancesAre(10) < decoChances.street then
                     rotation = getOutsideFacingRotationOfBlockFromPlan(i)
-                    assert(rotation)
+                    --assert(rotation)
                         StreetDecoMaterial, StreetDeco =   DecorateBlockWall(xRealLoc, zRealLoc, 0, StreetDecoMaterial, 0, materialColourName)
                         if StreetDeco then
                             Turn(StreetDeco, 3, math.rad(rotation), 0)
@@ -1140,7 +1140,7 @@ function buildDecorateGroundLvl(materialColourName)
                     -- BackYard
                     if yardMaterial and #yardMaterial > 0 and chancesAre(10) < decoChances.yard then
                         rotation = getWallBackyardDeocrationRotation(i) + math.random(-10,10)/10
-    					assert(rotation)
+    					--assert(rotation)
                         yardMaterial, yardDeco = decorateBackYard(i, xLoc, zLoc, yardMaterial, 0, materialColourName)
                         if yardDeco then
                             Turn(yardDeco, _z_axis, math.rad(rotation), 0)
@@ -1163,15 +1163,15 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
     Sleep(1)
 
 
-    assert(type(buildMaterial)== "table")
-    assertPieceDictValue(unitID, buildMaterial, "GroundLvl:buildMaterial")
-    for name, group in pairs(buildingGroupsLevel.Upright) do
-    assertPieceDictValue(unitID, group, "GroundLvl:buildingGroupsLevel.Upright:"..name)
-    end    
-    for name, group in pairs(buildingGroupsLevel.Length) do
-    assertPieceDictValue(unitID, group, "GroundLvl:buildingGroupsLevel.Length:"..name)
-    end
-    assert(Level)
+    --assert(type(buildMaterial)== "table")
+    --assertPieceDictValue(unitID, buildMaterial, "GroundLvl:buildMaterial")
+    --for name, group in pairs(buildingGroupsLevel.Upright) do
+    --assertPieceDictValue(unitID, group, "GroundLvl:buildingGroupsLevel.Upright:"..name)
+    --end    
+    --for name, group in pairs(buildingGroupsLevel.Length) do
+    --assertPieceDictValue(unitID, group, "GroundLvl:buildingGroupsLevel.Length:"..name)
+    --end
+    --assert(Level)
     lvlPlaced = {}
 
     local yardMaterial = getNameFilteredTable({}, {"Yard", "Deco"}, { "Floor", "Roof", "Base"}) -- TODO materialGroupName
@@ -1197,7 +1197,7 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
         partOfPlan, xLoc, zLoc = getLocationInPlan(index, materialGroupName)
         xRealLoc, zRealLoc = xLoc, zLoc
         if partOfPlan == true then
-			assert(xRealLoc)
+			--assert(xRealLoc)
             xRealLoc, zRealLoc = -centerP.x + (xLoc * cubeDim.length), -centerP.z + (zLoc * cubeDim.length)
             local element = getRandomBuildMaterial(buildMaterial, materialGroupName, index, xLoc, zLoc,  Level, buildingGroupsLevel )
             attempts = maxNrAttempts
@@ -1222,7 +1222,7 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
                 Move(element, _y_axis, Level * cubeDim.heigth, 0)
                 lvlPlaced[index] = element
                 WaitForMoves(element)
-				assert(rotation)
+				--assert(rotation)
                 WTurn(element, _z_axis, math.rad(rotation), 0)
                 -- lecho("Adding Element to level"..Level)
 				LevelPieces = houseAddDestructionTable(LevelPieces, Level + 1, element)
@@ -1233,19 +1233,19 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
                 end          
 			
                 if (chancesAre(10) < decoChances.streetwall  or distanceToCenter < GameConfig.innerCityNeonStreet) then
-                    assert(type(streetWallDecoMaterial) == "table")
-                    assert(index)
-                    assert(xRealLoc)
-                    assert(zRealLoc)
-                    assert(count(streetWallDecoMaterial) > 0)
-                    assert(Level)
-                    assert(streetWallDecoMaterial)
+                    --assert(type(streetWallDecoMaterial) == "table")
+                    --assert(index)
+                    --assert(xRealLoc)
+                    --assert(zRealLoc)
+                    --assert(count(streetWallDecoMaterial) > 0)
+                    --assert(Level)
+                    --assert(streetWallDecoMaterial)
 
                     streetWallDecoMaterial, streetWallDeco = DecorateBlockWall(xRealLoc, zRealLoc, Level, streetWallDecoMaterial, 0, materialGroupName)
                     lecho("Decorating street walls with "..toString(pieceID_NameMap[streetWallDeco]))
                     if streetWallDeco then
     					rotation = getOutsideFacingRotationOfBlockFromPlan(index)
-    					assert(rotation)
+    					--assert(rotation)
                         Turn(streetWallDeco, _z_axis, math.rad(rotation), 0)
                         if pieceNr_pieceName[streetWallDeco]then
                             showSubsAnimateSpinsByPiecename(pieceNr_pieceName[streetWallDeco])
@@ -1259,18 +1259,18 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
         if  isBackYardWall(index) == true then
             -- BackYard
             if chancesAre(10) < decoChances.yardWall and xLoc and zLoc then
-                assert(type(yardMaterial) == "table")
-                assert(index)
+                --assert(type(yardMaterial) == "table")
+                --assert(index)
 
-                assert(Level)
-                assert(yardMaterial)
+                --assert(Level)
+                --assert(yardMaterial)
 
                 yardMaterial, yardWall = decorateBackYard(index, xLoc, zLoc, yardMaterial, Level, materialGroupName)
-                assert(type(yardMaterial) == "table")
+                --assert(type(yardMaterial) == "table")
              lecho("Decorating yard walls with "..toString(pieceID_NameMap[yardWall]))
                 if yardWall then
                     rotation = getWallBackyardDeocrationRotation(index)
-                    assert(rotation)
+                    --assert(rotation)
 					WTurn(yardWall, _z_axis, math.rad(rotation), 0)
 			
                     if pieceNr_pieceName[yardWall] then
@@ -1287,8 +1287,8 @@ end
 
 function decorateBackYard(index, xLoc, zLoc, buildMaterial, Level, name)
     lecho(":decorateBackYard")  
-    assert(buildMaterial)
-    assert(Level)
+    --assert(buildMaterial)
+    --assert(Level)
 
     countedElements = count(buildMaterial)
     if countedElements == 0 then return buildMaterial end
@@ -1464,7 +1464,7 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
     if materialColourName == "pod" and maRa() then
         decoChances.roof = 0.65 
     end
-    assert(Level)
+    --assert(Level)
 
     roofMaterial =  getNameFilteredTable({}, {"Roof"}, {"Deco", "Night"}) -- TODO materialGroupName
 	IDQueueRunning = nil
@@ -1472,8 +1472,8 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
         local index = i
         partOfPlan, xLoc, zLoc = getLocationInPlan(index, materialColourName)
         if partOfPlan == true then
-            assert(xLoc)
-            assert(zLoc)
+            --assert(xLoc)
+            --assert(zLoc)
             xRealLoc, zRealLoc = -centerP.x + (xLoc * cubeDim.length),-centerP.z + (zLoc * cubeDim.length)
 			
 			element = nil

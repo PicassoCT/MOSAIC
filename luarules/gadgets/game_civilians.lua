@@ -746,8 +746,7 @@ function sozialize(evtID, frame, persPack, startFrame, myID)
         persPack.maxTimeChattingInFrames > 150  then  
            --[[ --echo("Soizialize with partnerID ")--]]
             persPack.chatPartnerID = getUnitNearestTalkableAlly(myID)
-            displayConversationTextAt(myID, persPack.chatPartnerID)
-            if persPack.chatPartnerID then 
+            if persPack.chatPartnerID then                 
                 persPack.boolStartAChat = true
                 persPack.boolDeactivateStuckDetection = true             
             end
@@ -784,7 +783,7 @@ function sozialize(evtID, frame, persPack, startFrame, myID)
             --stop and chat 
             Command(myID, "stop")
             Command(partnerID, "stop")
-
+            displayConversationTextAt(myID, partnerID)
             timeChattingInFrames =math.random(GameConfig.minConversationLengthFrames,
                                        GameConfig.maxConversationLengthFrames)
             startInternalBehaviourOfState(myID, "startChatting", timeChattingInFrames*33)

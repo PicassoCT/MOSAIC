@@ -1,5 +1,5 @@
 include "lib_UnitScript.lua"
-include "lib_Animation.lua"
+
 center= piece"center"
 
 
@@ -8,11 +8,12 @@ TablesOfPiecesGroups = {}
 
 
 visiblePieces= {}
-spinAxis = z_axis
+spinAxis = y_axis
+buildingHeigth = 
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
-    Spin(center,spinAxis,math.rad(42),0)
-    Move(center,y_axis,buildingHeighth,0)
+    --Spin(center,spinAxis,math.rad(42),0)
+    Move(center,y_axis, buildingHeigth,0)
 
     boolIsGull = UnitDefs[unitDefID].name == "gullswarm"
     StartThread(moveControl)    
@@ -20,7 +21,7 @@ function script.Create()
     boolAtLeastOne = true
     if boolIsGull then
         for k,v in pairs(TablesOfPiecesGroups["Gull"]) do
-            Spin(v, spinAxis, math.rad(42)* (-1)^k)
+            Spin(v, spinAxis, math.rad(42)* (-1)^(k+1))
             if boolAtLeastOne or math.random(0,1)== 1 then
                 visiblePieces[#visiblePieces +1] = v
                 Show(v)
@@ -29,7 +30,7 @@ function script.Create()
         end
         else
         for k,v in pairs(TablesOfPiecesGroups["Gull"]) do
-            Spin(v, spinAxis, math.rad(42)* (-1)^k)
+            Spin(v, spinAxis, math.rad(42)* (-1)^(k+1))
             if boolAtLeastOne or math.random(0,1)== 1 then
                 visiblePieces[#visiblePieces +1] = v
                 Show(v)
