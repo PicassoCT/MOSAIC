@@ -9,7 +9,7 @@ TablesOfPiecesGroups = {}
 
 visiblePieces= {}
 spinAxis = y_axis
-buildingHeigth = 
+buildingHeigth = 200
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     --Spin(center,spinAxis,math.rad(42),0)

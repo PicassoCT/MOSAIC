@@ -437,7 +437,7 @@ if (gadgetHandler:IsSyncedCode()) then
                 
                 -- check if the icon is still there
                 if not persPack.IconID then
-                  
+                    --(teamID, typeID, otherID, ox, oy, oz, orientation, parentID)
                     persPack.IconID = createUnitAtUnit(
                                           spGetUnitTeam(persPack.interrogatorID),--teamID
                                           iconUnitTypeName, --typeID
