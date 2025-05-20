@@ -132,6 +132,7 @@ local ignoredUnitDefs = {
 [UnitDefNames["teargascloud"].id]= true,
 [UnitDefNames["trashbin"].id]= true,
 [UnitDefNames["civilian_orgy_pair"].id]= true,
+[UnitDefNames["animated_hologram"].id]= true,
 [UnitDefNames["house_western_hologram_casino"].id]= true,
 [UnitDefNames["house_western_hologram_brothel"].id]= true,
 [UnitDefNames["house_western_hologram_buisness"].id]= true,

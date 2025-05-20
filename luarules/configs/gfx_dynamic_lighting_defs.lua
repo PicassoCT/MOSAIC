@@ -37,7 +37,7 @@ local copyLightDefs = {
 local dynLightDefs = {
 	["MOSAIC"] = {
 		buildingLightDefs = {
-			["house_western_hologram_casino"] = {
+		--[[	["house_western_hologram_casino"] = {
 				buildingLightDef = {
 					diffuseColors      		= {{0.66, 0.34, 0.025}, {0.34, 0.66,  0.025},  {0.34,   0.025, 0.66 }},
 					diffuseColor 			= {0.66, 0.025, 0.34},
@@ -83,7 +83,7 @@ local dynLightDefs = {
 					priority          	= 2 * 10,
 					sinusPulseMs      	= 5000,
 					ignoreLOS         	= true,
-				},
+				},--]]
 			},
 		},
 		weaponLightDefs = {

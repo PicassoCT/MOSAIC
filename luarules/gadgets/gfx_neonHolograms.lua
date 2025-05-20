@@ -509,6 +509,7 @@ end
         ["house_western_hologram_brothel"]  =   2,
         ["house_western_hologram_buisness"] =   3,
         ["house_asian_hologram_buisness"] =     4,
+        ["animated_hologram"] =                 4,
     }
 
     local holoDefID = nil
