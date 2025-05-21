@@ -1,11 +1,13 @@
 include "lib_UnitScript.lua"
 
-TablesOfPiecesGroups = {}
+local TablesOfPiecesGroups = {}
 function script.HitByWeapon(x, z, weaponDefID, damage)
 end
-
+Frame = piece("Frame")
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
+    Show(Frame)
+
     StartThread(flickerAnimation)
 end
 
@@ -22,8 +24,8 @@ snippetStarts= {
 [385] = { endsat= 385 + 5,  jumpsto = {385, 1}},
 [390] = { endsat= 390 + 5,  jumpsto = {390, 1}},
 [395] = { endsat= 395 + 5,  jumpsto = {395, 1}},
-[405] = { endsat= 400 + 5,  jumpsto = {400, 1}},
-[425] = { endsat= 405 + 20,  jumpsto = {405, 1}},
+[400] = { endsat= 400 + 5,  jumpsto = {400, 1}},
+[405] = { endsat= 405 + 409,  jumpsto = {405, 1}},
 }
 
 endIndex= 1

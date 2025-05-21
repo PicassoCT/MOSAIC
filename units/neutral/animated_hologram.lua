@@ -13,7 +13,6 @@ local animated_hologram = Abstract:New{
 	
 
 	customparams = {	
-		normaltex = "unittextures/animated_hologram_diffuse.dds",
 		helptext			= "Civilian Building",
 		baseclass			= "Abstract", -- TODO: hacks
     },

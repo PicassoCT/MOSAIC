@@ -1,4 +1,5 @@
 include "lib_UnitScript.lua"
+include "lib_OS.lua"
 
 center= piece"center"
 
@@ -18,10 +19,13 @@ function script.Create()
     boolIsGull = UnitDefs[unitDefID].name == "gullswarm"
     StartThread(moveControl)    
     hideT(TablesOfPiecesGroups["Gull"])
+    hideT(TablesOfPiecesGroups["Raven"])
+    name = "Gull"
+    if boolIsGull == false then  name = "Raven" end
     boolAtLeastOne = true
     if boolIsGull then
-        for k,v in pairs(TablesOfPiecesGroups["Gull"]) do
-            Spin(v, spinAxis, math.rad(42)* (-1)^(k+1))
+        for k,v in pairs(TablesOfPiecesGroups[name]) do
+            Spin(v, spinAxis, math.rad(22)* (-1)^(k))
             if boolAtLeastOne or math.random(0,1)== 1 then
                 visiblePieces[#visiblePieces +1] = v
                 Show(v)
@@ -29,8 +33,8 @@ function script.Create()
             end
         end
         else
-        for k,v in pairs(TablesOfPiecesGroups["Gull"]) do
-            Spin(v, spinAxis, math.rad(42)* (-1)^(k+1))
+        for k,v in pairs(TablesOfPiecesGroups[name]) do
+            Spin(v, spinAxis, math.rad(22)* (-1)^(k))
             if boolAtLeastOne or math.random(0,1)== 1 then
                 visiblePieces[#visiblePieces +1] = v
                 Show(v)
