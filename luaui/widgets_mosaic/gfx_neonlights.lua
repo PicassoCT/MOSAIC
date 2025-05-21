@@ -6,11 +6,13 @@ function widget:GetInfo()
         date = "2023",
         license = "GNU GPL, v2 or later",
         layer = -9,
-        enabled = true, --  loaded by default?
+        enabled = false, --  loaded by default?
         hidden = false
     }
 end
-
+--Documentation: 
+--https://www.youtube.com/watch?v=3so7xdZHKxw
+--https://www.shadertoy.com/view/mlSfRD
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
@@ -79,6 +81,9 @@ local eyex,eyey,eyez         = 0,0,0
 
 
 --------------------------------------------------------------------------------
+--Constants
+local broadcastAllNeonUnitsPieces = "GameRules_BroadcastNeonPieces"
+--------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 -- Variables
 local pausedTime = 0
@@ -93,7 +98,7 @@ local neonLightcanvastex = nil
 local depthCopyTex= nil
 local startOsClock
 
-local cityCenterLoc
+
 
 local shaderLightSources = {} --TODO Needs a transfer function from worldspace to screenspace / Scrap the whole idea?
 local canvasneonLightTextureID = 0
@@ -297,7 +302,6 @@ local function initNeonLightShader()
             },
             uniformFloat = {
                 viewPortSize = {vsx, vsy},
-                cityCenter  = {0,0,0},
                 sunCol    = {0,0,0},
                 skyCol    = {0,0,0},
                 sunPos      = {0,0,1},
@@ -319,7 +323,7 @@ local function initNeonLightShader()
     timePercentLoc                  = glGetUniformLocation(neonLightShader, "timePercent")
     neonLightPercentLoc                  = glGetUniformLocation(neonLightShader, "neonLightPercent")
     uniformViewPortSize             = glGetUniformLocation(neonLightShader, "viewPortSize")
-    cityCenterLoc                   = glGetUniformLocation(neonLightShader, "cityCenter")
+
     uniformTime                     = glGetUniformLocation(neonLightShader, "time")
     uniformEyePos                   = glGetUniformLocation(neonLightShader, "eyePos")
     unformEyeDir                    = glGetUniformLocation(neonLightShader, "eyeDir")
@@ -402,6 +406,9 @@ function widget:Shutdown()
     if glDeleteTexture then
         glDeleteTexture(depthtex or "")
         glDeleteTexture(screentex or "")
+        glDeleteTexture(neonLightcanvastex or "")
+        glDeleteTexture(normaltex or "")
+        glDeleteTexture(normalunittex or "")
     end
 
     if neonLightShader then

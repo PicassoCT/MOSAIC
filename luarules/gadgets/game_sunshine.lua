@@ -189,13 +189,14 @@ if gadgetHandler:IsSyncedCode() then
     function setSunArc(daytimeFrames)
         
         local dayPercent = (daytimeFrames % DAYLENGTH) /DAYLENGTH
-        if dayPercent < 0.25 or dayPercent > 0.75 then 
-            --night and thus moon rollover
+        if dayPercent < 0.25 or dayPercent > 0.75 then   --night and thus moon rollover          
+            --[[
             if dayPercent < 0.25  then
                 dayPercent = 0.25 + dayPercent -- 0.25 - 0.5
             else
                 dayPercent = dayPercent -0.25 -- 0.5 -0.75
             end
+            ]]
         end 
         dayPercent = (dayPercent - 0.25) * 2.0
 

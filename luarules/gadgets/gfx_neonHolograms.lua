@@ -7,12 +7,10 @@ function gadget:GetInfo()
         license = "GPL3",
         layer = -12,
         version = 1,
-        enabled = true,
+        enabled = false,
         hidden = true,
     }
 end
-
-
 
 if (gadgetHandler:IsSyncedCode()) then
     
@@ -36,8 +34,6 @@ if (gadgetHandler:IsSyncedCode()) then
     -- Texture back to resolution
     -- read back and add_alpha to texture
     
-
-
     function gadget:PlayerChanged(playerID)
         if Spring.GetMyAllyTeamID then
             myAllyTeamID = Spring.GetMyAllyTeamID()
@@ -128,6 +124,8 @@ if (gadgetHandler:IsSyncedCode()) then
 
     local cachedUnitPieces = {}
     local oldneonUnitDataTransfer = {}
+    local broadcastAllNeonUnitsPieces = "GameRules_BroadcastNeonPieces"
+    local collectedStrings  = {}
     function gadget:GameFrame(frame)
 		if frame > frameGameStart then           
             if count(neonUnitDataTransfer) > 0 then
@@ -140,7 +138,8 @@ if (gadgetHandler:IsSyncedCode()) then
                            -- printUnitPiecesVisible(id, VisibleUnitPieces[id]) 
                             local serializedStringToSend = serializePiecesTableTostring(VisibleUnitPieces[id])
                             cachedUnitPieces[id] = VisibleUnitPieces[id]
-        					SendToUnsynced("setUnitNeonLuaDraw", id, defID, serializedStringToSend )              
+        					SendToUnsynced("setUnitNeonLuaDraw", id, defID, serializedStringToSend )   
+                            collectedStrings[#collectedStrings + 1] = serializedStringToSend                                     
         				end
         			end 
                     for id, defID in pairs(oldneonUnitDataTransfer) do
@@ -148,8 +147,11 @@ if (gadgetHandler:IsSyncedCode()) then
                             SendToUnsynced("unsetUnitNeonLuaDraw", id)       
                         end
                     end
-                    oldneonUnitDataTransfer = neonUnitDataTransfer      
-                end      
+                    oldneonUnitDataTransfer = neonUnitDataTransfer    
+                    local neonUnitsStringified = table.concat(collectedStrings, "|") 
+                    Spring.SetGameRulesParam (broadcastAllNeonUnitsPieces, neonUnitsStringified)       
+                end    
+
             end
 		end
     end
@@ -507,6 +509,7 @@ end
         ["house_western_hologram_brothel"]  =   2,
         ["house_western_hologram_buisness"] =   3,
         ["house_asian_hologram_buisness"] =     4,
+        ["animated_hologram"] =                 4,
     }
 
     local holoDefID = nil

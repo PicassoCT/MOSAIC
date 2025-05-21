@@ -155,10 +155,7 @@ end
 
 function widget:Shutdown()
     if heatShader then
-        gl.DeleteShader(heatShader)
-        glTexture(0, false)
-        glTexture(1, false)
-        glTexture(2, false)
+        gl.DeleteShader(heatShader)        
     end
 end
 

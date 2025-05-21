@@ -745,7 +745,8 @@ end
           --[[  [UnitDefNames["advertising_blimp_hologram"].id] = true,           
             [UnitDefNames["house_western_hologram_buisness"].id] = true,           
             [UnitDefNames["house_western_hologram_casino"].id] = true,           
-            [UnitDefNames["house_western_hologram_brothel"].id] = true,           --]]
+            [UnitDefNames["house_western_hologram_brothel"].id] = true,          
+            [UnitDefNames["animated_hologram"].id] = true,           --]]
         }
     end  
 
@@ -772,6 +773,7 @@ end
                     [UnitDefNames["house_western_hologram_casino"].id] = true,           
                     [UnitDefNames["house_western_hologram_brothel"].id] = true,           
                     [UnitDefNames["house_asian_hologram_buisness"].id] = true,           
+                    [UnitDefNames["animated_hologram"].id] = true,           
                 }
     end  
 

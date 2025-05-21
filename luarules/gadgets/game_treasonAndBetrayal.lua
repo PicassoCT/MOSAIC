@@ -156,7 +156,7 @@ if (gadgetHandler:IsSyncedCode()) then
     end
 
     function gadget:Initialize()
-        printUnitDefs(UnitDefs)
+        --printUnitDefs(UnitDefs)
         --Spring.Echo(GetInfo().name .. " Initialization started ")
         StartUnitsByTeam = {}
         allTeams = Spring.GetTeamList()

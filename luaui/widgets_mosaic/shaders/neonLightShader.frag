@@ -71,7 +71,6 @@ uniform vec3 sunPos;
 uniform vec3 skyCol;
 
 uniform vec2 viewPortSize;
-uniform vec3 cityCenter;
 uniform mat4 viewProjectionInv;
 uniform mat4 viewProjection;
 uniform mat4 projection;
@@ -138,11 +137,7 @@ bool  NormalIsOnUnit = false;
 bool NormalIsWaterPuddle = false;
 bool NormalIsSky = false;
 
-//TODO https://www.cs.columbia.edu/cg/normalmap/normalmap.pdf
-float extractRoughnessFromNormal(vec3 x)
-{
-return (x.x + x.y + x.z)/3.0;
-}
+
 
 vec4 screen(vec4 a, vec4 b)
 {
@@ -229,15 +224,10 @@ bool isAbsInIntervallAround(float value, float targetValue, float intervall)
 {
     return abs(value) +intervall >= abs(targetValue) && abs(value) - intervall <= abs(targetValue);
 }
+
 float deterministicFactor(vec2 val)
 {
     return mod((abs(val.x) + abs(val.y))/2.0, 1.0);
-}
-
-vec4 getDeterministicColorOffset(vec2 position)
-{ 
-    float randomFactor = deterministicFactor(position);
-    return mix(OFFSET_COL_MIN, OFFSET_COL_MAX, randomFactor);
 }
 
 float getDayPercent()
@@ -252,110 +242,6 @@ float getDayPercent()
     }
 }
 
-float getRandomFactor(vec2 factor)
-{
-    return texture2D(noisetex, factor).r;
-}
-
-vec4 getVectorColor(vec3 vector){
-    vec4 result  = mix(RED,  BLACK, vector.y);
-    result.a = 0.75;
-    return result;
-}
-
-float GetUpwardnessFactorOfVector(vec3 vectorToCompare)
-{
-    float vector=  dot(normalize(vectorToCompare), upwardVector);
-    return (vector+1.0);
-}
-
-vec3 SobelNormalFromScreen(vec2 uvx)
-{
-    if (!NormalIsWaterPuddle) return BLACK.rgb;
-   
-    // Sample the surrounding pixels
-    float left = texture2D(screentex, uvx - vec2(1.0 / viewPortSize.x, 0)).r;
-    float right = texture2D(screentex, uvx + vec2(1.0 / viewPortSize.x, 0)).r;
-    float top = texture2D(screentex, uvx + vec2(0, 1.0 / viewPortSize.y)).r;
-    float bottom = texture2D(screentex, uvx - vec2(0, 1.0 / viewPortSize.y)).r;
-
-    // Calculate the gradients using Sobel operator
-    float dX = (right - left) * 0.5;
-    float dY = (top - bottom) * 0.5;
-
-    // Normalize the gradients and create a normal vector
-    vec3 normal = normalize(vec3(dX, dY, 1.0));
-
-    return normal;
-    // Convert the normal from [-1,1] to [0,1] range
-    //normal = normal * 0.5 + 0.5;
-}
-
-vec4 GetDeterministicRainColor( vec2 uvx)
-{
-    vec4 rainHighDayColor;
-    vec4 rainHighNightColor;
-    vec4 outsideCityRainDayCol;
-    vec4 outsideCityRainNightCol;
-
-    //basically rain deeper down needs to be slightly darker
-    float darkenFactor = mix(0.85, 1.0, uvx.y/viewPortSize.y);
-    float depthOfDropFactor = min(1.0, uvx.y/ viewPortSize.y);
-
-    // Night
-    rainHighNightColor =  vec4(sunCol, 1.0) * NIGHT_RAIN_HIGH_COL;
-    outsideCityRainNightCol = mix(rainHighNightColor, NIGHT_RAIN_DARK_COL, depthOfDropFactor);
-    outsideCityRainNightCol.rgb *= darkenFactor;
-    ;
-    
-    //Day
-    rainHighDayColor =  vec4(sunCol, 1.0) * DAY_RAIN_HIGH_COL;
-    outsideCityRainDayCol = mix(rainHighDayColor, DAY_RAIN_DARK_COL, depthOfDropFactor);
-    outsideCityRainDayCol.rgb *= darkenFactor;
-
-    return mix(outsideCityRainDayCol, outsideCityRainNightCol, getDayPercent()  );
-}
-
-bool IsInGridPoint(vec3 pos, float size, float space)
-{
-    return ((mod(pos.x, space) < size) &&   (mod(pos.y, space) < size)  && (mod(pos.z, space) < size)) ;
-}
-
-//REFLECTIONMARCH  
-float getZoomFactor()
-{
-    return max(1.0, eyePos.y / 128.0);
-}
-
-vec4 GetGroundPondRainRipples(vec2 groundUVs) 
-{   
-    float zoomFactor = getZoomFactor();
-    float f = noise(  zoomFactor * 64.0 * uv, 0.6125); 
-    vec3 normal = vec3(-dFdx(f), -dFdy(f), 0.5) + 0.5;
-    float avgVal= (normal.x+normal.y+normal.z)/3.0;
-    return vec4(vec3(avgVal), 0.75);
-    float dotProduct = max(dot(normal, sunDir), 0.0);
-    return vec4(vec3(dotProduct), 0.75);
-}
-
-bool getRivuletMask(vec3 normalAtPos)
-{
-    float treshold = 0.01;
-    if ((abs(normalAtPos.x) < treshold || abs(normalAtPos.y) < treshold || abs(normalAtPos.z) < treshold)) return false;
-
-    vec2 rivUv = normalAtPos.xz;
-    rivUv.x +=  0.125 *  sin(time*0.01)* cos(time*0.021);
-    rivUv.y +=  0.125 * cos((time)*0.01) *sin(time*0.042);
-
-    float sinX = sin(rivUv.x);
-    float cosX = cos(rivUv.x);
-    float sizeIntervall = 0.25* (0.25 + abs(0.25*sin(time*0.0125)));
-
-return( isAbsInIntervallAround(sinX, rivUv.y, sizeIntervall) ||
-        isAbsInIntervallAround(cosX, rivUv.y, sizeIntervall) || 
-        isAbsInIntervallAround( 1/sinX, rivUv.y, sizeIntervall) ||  
-        isAbsInIntervallAround( 1/cosX, rivUv.y, sizeIntervall));
-}
 /////////////////////////////////////////////////////////////////////////////////////////////
 // Plastic Shrink Wrap  //
 #define OFFSET_X 1
@@ -390,224 +276,8 @@ vec3 GetGroundVertexNormal(vec2 theUV, out bool IsOnGround, out bool IsOnUnit, o
 }
 
 
-vec3 sampleNormal(const int x, const int y, in vec2 fragCoord)
-{
-    vec2 ouv = (uv + vec2(x, y)) / viewPortSize.xy;
-    bool IsOnGround = false;
-    bool IsOnUnit = false;
-    bool IsWaterPuddle = false;
-    bool IsSky = false;
-    vec3 normal = GetGroundVertexNormal(ouv,  IsOnGround, IsOnUnit, IsWaterPuddle, IsSky);
-    if (IsOnGround || IsOnUnit) return normal.rgb;
-    return NONE.rgb;
-}
-
-float luminance(vec3 c)
-{
-    return dot(c, vec3(.2126, .7152, .0722));
-}
-
-vec3 GetNormals(in vec2 fragCoord)
-{
-    float R = abs(luminance(sampleNormal( OFFSET_X,0, fragCoord)));
-    float L = abs(luminance(sampleNormal(-OFFSET_X,0, fragCoord)));
-    float D = abs(luminance(sampleNormal(0, OFFSET_Y, fragCoord)));
-    float U = abs(luminance(sampleNormal(0,-OFFSET_Y, fragCoord)));
-                 
-    float X = (L-R) * .5;
-    float Y = (U-D) * .5;
-
-    return normalize(vec3(X, Y, 1. / DEPTH));
-}
-
-vec4 GetShrinkWrappedSheen(vec3 pixelWorldPos)
-{
-    vec3 n = GetNormals(uv);
-    //Add screen normals to add detail
-    n =  n+ SobelNormalFromScreen(uv);
-    detailNormals = n;
-    vec3 actualSunPos = sunPos*8192.0;
-    vec3 color = vertexNormal * dot(n, normalize(actualSunPos - pixelWorldPos));
-    float e = 64.;
-    color += pow(clamp(dot(normalize(reflect(actualSunPos - pixelWorldPos, n)), 
-                       normalize(pixelWorldPos - eyePos)), 0., 1.), e); 
-
-    float greyValue = 0.2989* color.r + 0.5870* color.g + 0.1140 *color.b;
-    return vec4(vec3(greyValue * skyCol), 1);
-}
-
- 
-const vec2 SAMPLE_OFFSETS[4] = vec2[4](
-    vec2(1.0, 0.0),  // Right
-    vec2(-1.0, 0.0), // Left
-    vec2(0.0, 1.0),  // Up
-    vec2(0.0, -1.0)  // Down
-);
-//viewspacedirectional offset vectors
-
-void findAlignedOffsets(vec2 direction, out vec2 alignedOffset[2]) 
-{
-    // Initialize variables to hold the most aligned offsets
-    float maxDotProduct1 = -1.0;
-    float maxDotProduct2 = -1.0;
-
-    // Iterate through each offset in the array
-    for (int i = 0; i < 4; ++i) {
-        // Calculate the dot product of the given vector and the current offset
-        float dotProduct = dot(normalize(direction), normalize(SAMPLE_OFFSETS[i]));
-
-        // Check if the dot product is greater than the previous maximums
-        if (dotProduct > maxDotProduct1) {
-            // Shift previous maximum to second maximum
-            alignedOffset[1] = alignedOffset[0];
-            maxDotProduct2 = maxDotProduct1;
-
-            // Update first maximum
-            alignedOffset[0] = SAMPLE_OFFSETS[i];
-            maxDotProduct1 = dotProduct;
-        } else if (dotProduct > maxDotProduct2) {
-            // Update second maximum
-            alignedOffset[1] = SAMPLE_OFFSETS[i];
-            maxDotProduct2 = dotProduct;
-        }
-    }
-}
-
-vec4 rayMarchForReflection(vec3 reflectionPosition, vec3 reflectDir)
-{
-
-    const float DepthCheckBias = 0.000125;//0.000125;;
-    int loops = 16;
-    // The Current Position in 3D
-    vec3 curPos = reflectionPosition;
-    vec2 HalfPixel = vec2(1.0 / viewPortSize.x, 1.0/ viewPortSize.y)* PI * 4.0;//(eyePos.z/2048.0)*PI; 
-    
-    // The Current UV
-    vec3 curUV = vec3(0.);
-     
-    // The Current Length
-    float curLength = 0.5; 
-
-    for (int i = 0; i < loops; i++)
-    {
-        // Update the Current Position of the Ray in world
-        curPos = reflectionPosition + reflectDir * curLength ;
-        // Get the UV Coordinates of the current Ray
-        curUV = GetUVAtPosInView(curPos);
-        // The Depth of the Current Pixel
-        float curDepth = texture2D(dephtCopyTex, curUV.xy).r;
-
-        //Sobelsample at cursor to close uvholes
-        for (int j = 0; j < 4; j++)
-        {
-            if (abs(curUV.z - curDepth) < DepthCheckBias)
-            {
-                bool IsOnGround = false;
-                bool IsOnUnit = false;
-                bool IsPuddle = false;
-                bool IsSky = false;
-           
-                vec3 normal = GetGroundVertexNormal(curUV.xy,  IsOnGround,  IsOnUnit, IsPuddle, IsSky);
-                //Detect the sky and avoid reflecting rooftops
-                if (IsSky ) {return vec4(skyCol, 0.5);} //not mirrored on the ground
-               
-                //return GREEN;
-               return texture2D(screentex, curUV.xy) ;
-            }
-            curDepth = texture2D(dephtCopyTex, curUV.xy + SAMPLE_OFFSETS[j].xy * HalfPixel).r;
-        }
-
-        // Get the New Position and Vector
-        curLength = length(reflectionPosition - GetWorldPosAtUV(curUV.xy, curDepth ));        
-    }
-    return NONE;
-    //return NONE; //No reflection
-}
-
-vec4 getReflection(vec3 reflectionPosition)
-{
-    if (!NormalIsWaterPuddle) return NONE;
-
-    if (getRandomFactor(reflectionPosition.xz /512.0) < rainPercent) //Puddles
-    {
-        // Calculate reflection direction
-        vec3 viewDir = normalize(gl_FragCoord.xyz - (eyePos)); // Calculate view direction
-            
-        // Assuming ground is flat, normal is (0,1,0)
-        vec3 reflectDir = reflect(viewDir, vertexNormal); // Calculate reflection direction
-        //return vec4(reflectDir, 1.0); //TODO: Remove debug for gfx debugging
-
-        return rayMarchForReflection(reflectionPosition ,  reflectDir);
-        
-    }   
-    return NONE;
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////////
-float calculateLightReflectionFactor();
-
-vec4 paintRainSky(vec2 rotatedUV)
-{
-        vec2 scale = vec2(8.0, 4.0);
-        vec2 rainUv = vec2(rotatedUV *scale);
-        
-        rainUv.y = -1.0 * rainUv.y - (time + eyePos.y ) * 0.125; 
-        vec4 rainColor = texture2D(noisetex , rainUv);
-        vec3 rainRGB = GetDeterministicRainColor(rainUv.xy).rgb;
-        float rainAlpha = rainPercent*(1.0-rainColor.r*0.5)* (0.225 + 0.05*absinthTime());
-    float sunlightReflectionFactor = calculateLightReflectionFactor();
-    if (sunlightReflectionFactor > 0.1) 
-    {
-        return vec4(mix( sunCol.rgb, rainRGB.rgb, sunlightReflectionFactor), max(rainAlpha, sunlightReflectionFactor));
-    }else
-    {
-        return vec4(rainRGB, rainAlpha);
-    }
-}
-
-vec4 GetGroundReflectionRipples(vec3 pixelPos)
-{
-    bool rivuletRunning = false;
-    float groundMixFactor = 1.0;
-    if (!NormalIsWaterPuddle) 
-    {
-        //rivulets
-        if (!(vertexNormal.g  > 0.95)) return  paintRainSky(sourceRotatedUV);
-
-        rivuletRunning = getRivuletMask(vertexNormal); //TODO get ground coord 
-        if (!rivuletRunning) return  paintRainSky(sourceRotatedUV);
-
-        groundMixFactor= (abs(vertexNormal.r) + abs(vertexNormal.g) + abs(vertexNormal.b))/1.73205;
-    }
-
-    vec4 workingColorLayer = MIRRORED_REFLECTION_FACTOR * BLUE;
-    workingColorLayer = screen(workingColorLayer,  GetShrinkWrappedSheen(pixelPos));
-    //Masked blend in for ReflectionColor TODO Test & Optimize
-    workingColorLayer = dodge(workingColorLayer, getReflection(worldPos));  //, !(reflectionColor == NONE)
-    workingColorLayer = dodge(workingColorLayer, ADD_POND_RIPPLE_FACTOR * GetGroundPondRainRipples(pixelPos.xz));
-    
-    vec4 maskedColor = mix( NONE,
-                            workingColorLayer,
-                            mix(groundMixFactor, extractRoughnessFromNormal(detailNormals), (0.9-rainPercent)+absinthTime()*0.1));
-
-    //clamp alpha
-    maskedColor.a = max(0.15, min(0.25, maskedColor.a));
-    
-    return maskedColor;
-}
 
 ///////////////////////////////////FOG ///////////////////////////////////////////////////////////
-vec4 GetGroundReflection(in vec3 start, in vec3 end)
-{   
-    float l = length(end - start);
-    const float numsteps = MAX_DEPTH_RESOLUTION;
-    const float tstep = 1. / numsteps;
-
-    vec4 accumulatedColor = NONE;
-    accumulatedColor = GetGroundReflectionRipples(end);
-
-    return accumulatedColor;
-}
 
 bool IntersectBox(in Ray r, in AABB aabb, out float t0, out float t1)
 {
@@ -622,64 +292,6 @@ bool IntersectBox(in Ray r, in AABB aabb, out float t0, out float t1)
     t1 = min(t.x, t.y);
     //return (t0 <= t1) && (t1 >= 0.);
     return (abs(t0) <= t1);
-}
-
-float getAvgValueCol(vec4 col)
-{
-    return sqrt(col.r*col.r + col.g * col.g + col.r * col.r);
-}
-
-float generate_wave(float period) {
-    float frequency = 1.0 / period; // Calculate frequency
-    float phase = sin(2 * PI * frequency * time); // Calculate phase using sine function
-    return 0.5 * (1 + phase); // Scale and shift the sine wave to be between 0 and 1
-}
-
-float calculateLightReflectionFactor() 
-{
-    // Normalize the input vectors
-    vec3 vSun = normalize(sunPos);
-    vec3 vEye = normalize(eyeDir);
-    
-    // Calculate the angle between the sun direction and the eye direction
-    float angleCos = dot(vSun, vEye);
-    
-    // Ensure the angleCos is within the range [-1, 1] to avoid numerical errors
-    angleCos = clamp(angleCos, -1.0, 1.0);
-    
-    // Calculate the reflection coefficient using the angle between the vectors
-    float reflection = pow(angleCos, 4.0); // Adjust the exponent as needed
-    
-    // Clamp the reflection value between 0 and 1
-    reflection = clamp(reflection, 0.0, 1.0);
-    
-    return reflection;
-}
-
-vec4 getDroplettTexture(vec2 rotatedUV, float rainspeed, float timeOffset)
-{
-    rotatedUV.y = -1.0 * rotatedUV.y - (time + timeOffset) * rainspeed; 
-    float scaleDownFactor = ((mod(time + timeOffset, sixSeconds)/sixSeconds)*0.9)+ 0.1;
-    rotatedUV = rotatedUV * scaleDownFactor;
-    vec4 rainColor = texture2D(rainDroplettTex, rotatedUV);
-    rainColor = vec4(1.0 - rainColor.r);
-    vec4 resultColor = rainColor * GetDeterministicRainColor(rotatedUV.xy);
-    resultColor.a = mix(0, resultColor.a, generate_wave(sixSeconds));
-    float sunlightReflectionFactor = calculateLightReflectionFactor();
-    if (sunlightReflectionFactor > 0.1) 
-    {
-        return vec4(mix( sunCol.rgb, resultColor.rgb, sunlightReflectionFactor), max(resultColor.a, sunlightReflectionFactor)) ;
-    }
-
-    return resultColor;
-}
-
-vec4 getRainTexture(vec2 rainUv, float rainspeed, float timeOffset)
-{
-    rainUv.y = -1.0 * rainUv.y - (time + timeOffset) * rainspeed; 
-    vec4 rainColor = texture2D(raintex , rainUv);
-    vec4 resultColor = vec4(vec3(1.0 - rainColor.r), abs(1.0 - rainColor.r));
-    return resultColor;
 }
 
 vec2 getRoatedUV()
@@ -699,29 +311,6 @@ vec2 getRoatedUV()
     vec3 rotatedUV = (rotationMatrix * vec3(uv, 0.0)) ;
     return rotatedUV.xy;
 }
-
-vec4 drawShrinkingDroplets(vec2 roatedUV, float rainspeed)
-{
-    vec4 droplettTex = getDroplettTexture(roatedUV * DROPLETT_SCALE, rainspeed, eyePos.y);
-    droplettTex += getDroplettTexture(roatedUV * DROPLETT_SCALE, rainspeed, eyePos.y + sixSeconds/2.0);
-    return droplettTex;
-}
-
-vec4 drawRainInSpainOnPlane( vec2 rotatedUV, float rainspeed)
-{
-    vec2 scale = vec2(8.0, 4.0);
-    vec4 raindropColor = getRainTexture(rotatedUV.xy * scale, rainspeed, eyePos.y);
-    vec4 finalColor =vec4(raindropColor.rgb, raindropColor.a)  * GetDeterministicRainColor(rotatedUV.xy);
-    float sunlightReflectionFactor = calculateLightReflectionFactor();
-    finalColor.a *= 2.0;
-    if (sunlightReflectionFactor > 0.1) 
-    {
-        return mix( vec4(sunCol, finalColor.a), finalColor, sunlightReflectionFactor);
-    }
-    return  finalColor; 
-}
-
-
 
 void main(void)
 {
@@ -761,34 +350,6 @@ void main(void)
     vec3 endPos   = r.Dir * t2 + eyePos;
     pixelDir = normalize(startPos - endPos);
 
-    if (NormalIsSky)
-    {
-        gl_FragColor = paintRainSky(sourceRotatedUV);         
-        return;
-    }
-
-    //gl_FragColor = getReflection(worldPos);
-    //gl_FragColor = lind(depthAtPixel.rrrr);
-    //return;
-
-    vec4 accumulatedLightColorRayDownward = GetGroundReflection(startPos,  endPos); // should be eyepos + eyepos *offset*vector for deter
-
-    float upwardnessFactor = 0.0;
-    upwardnessFactor = GetUpwardnessFactorOfVector(eyeDir); //[0..1] 1 being up orthogonal to ground and upwards
-
-
     
-    //TODO, should pulsate depending on look vector due to the dropletss
-
-    
-    accumulatedLightColorRayDownward = mix( screen(accumulatedLightColorRayDownward, drawRainInSpainOnPlane(sourceRotatedUV, 3.0)), 
-                                            screen(accumulatedLightColorRayDownward, drawShrinkingDroplets(sourceRotatedUV, 0.03)),
-                                            1.0-upwardnessFactor 
-                                            ) ;
-    
-    gl_FragColor = mix(NONE, accumulatedLightColorRayDownward, rainPercent);
-
-    //vec4 upWardrainColor = origColor;
-    //https://www.youtube.com/watch?v=W0_zQ-WdxH4
-
+    gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
 }

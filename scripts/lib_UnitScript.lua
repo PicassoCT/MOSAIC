@@ -916,7 +916,7 @@ function createUnitAtUnit(teamID, typeID, otherID, ox, oy, oz, orientation, pare
     if doesUnitExistAlive(otherID) == false then return nil end
       ox, oy, oz = ox or 0, oy or 0, oz or 0
     locOrientation = orientation or math.random(0,3)
-    if parentID ~= nil then assert(doesUnitExistAlive(parentID)) end
+    if parentID then assert(doesUnitExistAlive(parentID), parentID.. " is not alive") end
     
     x, y, z, _, _, _ = Spring.GetUnitPosition(otherID)
 
