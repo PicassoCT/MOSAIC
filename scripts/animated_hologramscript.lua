@@ -50,15 +50,20 @@ end
 function loopsReptitionsJumps(index)
     if index == endIndex then
         if maRa() then
+           if maRa() then Sleep(3000) end
            startIndex = getSafeRandom(jumpsto, jumpsto[1])
            if snippetStarts[startIndex] then 
                 jumpsto = snippetStarts[startIndex].jumpsto
+                endIndex = snippetStarts[startIndex].endsat
                 return startIndex
            end          
         end
     end
     newIndex = (index % #TablesOfPiecesGroups["Flicker"]) +1
-    jumpsto = snippetStarts[newIndex].jumpsto
+    if snippetStarts[newIndex] then 
+        jumpsto = snippetStarts[newIndex].jumpsto
+        endIndex = snippetStarts[newIndex].endsat
+    end
     return newIndex
 end
 

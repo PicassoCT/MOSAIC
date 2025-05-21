@@ -35,57 +35,6 @@ local copyLightDefs = {
 }
 
 local dynLightDefs = {
-	["MOSAIC"] = {
-		buildingLightDefs = {
-		--[[	["house_western_hologram_casino"] = {
-				buildingLightDef = {
-					diffuseColors      		= {{0.66, 0.34, 0.025}, {0.34, 0.66,  0.025},  {0.34,   0.025, 0.66 }},
-					diffuseColor 			= {0.66, 0.025, 0.34},
-					customOffsetUnitIDMs 	=  1.5,
-					radius            		= 700.0,
-					priority          		= 2 * 10,
-					ttl  			  		= 270,
-					sinusPulseMs      		= 5000,
-					ignoreLOS         		= true,
-				},
-			},
-			["house_western_hologram_buisness"] = {
-				buildingLightDef = {
-					diffuseColors      		= {{0.66, 0.34, 0.025}, {0.34, 0.66,  0.025},  {0.34,   0.025, 0.66 }},
-					diffuseColor 			= {0.66, 0.025, 0.34},
-					customOffsetUnitIDMs 	=  1.5,
-					radius            		= 700.0,
-					timeToLive		  		= 270,
-					priority          		= 2 * 10,
-					sinusPulseMs      		= 5000,
-					ignoreLOS         		= true,
-				},
-			},
-			["house_western_hologram_brothel"] = {
-				buildingLightDef = {
-					diffuseColors      		= {{0.66, 0.34, 0.025}, {0.77, 0.44,  0.25},  {0.66,   0.25, 0.44 }},
-					diffuseColor 			= {0.66, 0.025, 0.34},
-					customOffsetUnitIDMs 	=  1.5,
-					radius            		= 700.0,
-					ttl  			  		= 270,
-					priority          		= 2 * 10,
-					sinusPulseMs      		= 5000,
-					ignoreLOS         		= true,
-				},
-			},			
-			["house_asian_hologram_buisness"] = {
-				buildingLightDef = {
-					diffuseColors      	= {{0.66, 0.34, 0.025}, {0.77, 0.44,  0.25},  {0.66,   0.25, 0.44 }},
-					diffuseColor 		= {0.66, 0.025, 0.34},
-					customOffsetUnitIDMs =  1.5,
-					radius            	= 700.0,
-					ttl  			  	= 270,
-					priority          	= 2 * 10,
-					sinusPulseMs      	= 5000,
-					ignoreLOS         	= true,
-				},--]]
-			},
-		},
 		weaponLightDefs = {
 			-- Arm & Core Commander (dgun) projectiles
 			-- NOTE:
@@ -205,20 +154,8 @@ local dynLightDefs = {
 	},
 }
 
-for key, value in pairs(dynLightDefs.MOSAIC.buildingLightDefs) do
-	local specularColors = {}
-	for i=1, #value.buildingLightDef.diffuseColors do
-		local color = value.buildingLightDef.diffuseColors[i]
-		specularColors[i] = {color[1]*holoRgbSpecMults[1], color[2]*holoRgbSpecMults[2], color[3]*holoRgbSpecMults[3]}
-	end
-	dynLightDefs.MOSAIC.buildingLightDefs[key].specularColors = specularColors
-	dynLightDefs.MOSAIC.buildingLightDefs[key].specularColor = specularColors[1]
-end
 
 local modLightDefs = dynLightDefs[Game.gameShortName]
-assert(Game.gameShortName == "MOSAIC",Game.gameShortName)
-assert(copyLightDefs["MOSAIC"])
-assert(copyLightDefs[Game.gameShortName])
 local modCopyDefs = copyLightDefs[Game.gameShortName]
 
 -- insert copy-definitions for each light that has one
