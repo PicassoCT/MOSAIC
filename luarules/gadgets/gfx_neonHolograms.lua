@@ -91,20 +91,6 @@ if (gadgetHandler:IsSyncedCode()) then
         end
     end
 
-    local function transferDynamicLights(unitIDTable)
-        local totalMessage = ""
-        for i=1, #unitIDTable do
-            local x,y,z = Spring.GetUnitPosition(unitIDTable[i])
-            if x ~= nil then
-            ---pos.xyz, light.rgb, light strength TODO missing
-            local full = 1.0
-            local empty = 0.0
-            totalMessage = x.."/"..y.."/"..z.."/"..full.."/"..empty.."/"..empty.."/5.0"
-            Spring.SetGameRulesParam("dynamic_lights", totalMessage)
-            end
-        end
-      
-    end
     local function serializePiecesTableTostring(t)
         local result = ""
         for i=1, #t do
@@ -131,25 +117,23 @@ if (gadgetHandler:IsSyncedCode()) then
             if count(neonUnitDataTransfer) > 0 then
                 local VisibleUnitPieces = GG.VisibleUnitPieces   
                 if VisibleUnitPieces then
-        			for id, defID in pairs(neonUnitDataTransfer) do
-                        --DELME       
+        			for id, defID in pairs(neonUnitDataTransfer) do     
                         -- echo(HEAD().." Start:Sending Neon Hologram unit data:"..toString(VisibleUnitPieces[id] ))
         				if id and defID and VisibleUnitPieces[id] and VisibleUnitPieces[id] ~= cachedUnitPieces[id] then
-                           -- printUnitPiecesVisible(id, VisibleUnitPieces[id]) 
                             local serializedStringToSend = serializePiecesTableTostring(VisibleUnitPieces[id])
                             cachedUnitPieces[id] = VisibleUnitPieces[id]
         					SendToUnsynced("setUnitNeonLuaDraw", id, defID, serializedStringToSend )   
-                            collectedStrings[#collectedStrings + 1] = serializedStringToSend                                     
+                            --collectedStrings[#collectedStrings + 1] = serializedStringToSend                                     
         				end
         			end 
-                    for id, defID in pairs(oldneonUnitDataTransfer) do
-                        if not neonUnitDataTransfer[id] then
-                            SendToUnsynced("unsetUnitNeonLuaDraw", id)       
-                        end
-                    end
-                    oldneonUnitDataTransfer = neonUnitDataTransfer    
-                    local neonUnitsStringified = table.concat(collectedStrings, "|") 
-                    Spring.SetGameRulesParam (broadcastAllNeonUnitsPieces, neonUnitsStringified)       
+                    --for id, defID in pairs(oldneonUnitDataTransfer) do
+                    --    if not neonUnitDataTransfer[id] then
+                    --        SendToUnsynced("unsetUnitNeonLuaDraw", id)       
+                    --    end
+                    --end
+                    --oldneonUnitDataTransfer = neonUnitDataTransfer    
+                    --local neonUnitsStringified = table.concat(collectedStrings, "|") 
+                    --Spring.SetGameRulesParam (broadcastAllNeonUnitsPieces, neonUnitsStringified)       
                 end    
 
             end
