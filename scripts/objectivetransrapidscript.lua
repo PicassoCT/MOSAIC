@@ -2,7 +2,7 @@ include "createCorpse.lua"
 include "lib_OS.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
-include "lib_debug.lua"
+include "lib_mosaic.lua"
 
 local TablesOfPiecesGroups = {}
 
@@ -42,6 +42,7 @@ function airPortConnection()
     end
 end
 
+allAnimatedAddPositions = {"EndPoint1", "EndPoint2", "center"}
 
 function setup()
     airPortConnection()
@@ -59,19 +60,24 @@ function setup()
                 if maRa() then Show(id) end
             end
             )
+
+    foreach(allAnimatedAddPositions,
+            function(name)
+                hostPiece = piece(name)
+                if maRa() then
+                    StartThread(moveCtrlHologramToUnitPiece, unitID, "animated_hologram", hostPiece, hostPiece, 350 )
+                end
+            end)
+
 end
 
 function deployTrack( upStart, downEnd, railP, Pillars, detectorPiece, endPoint)
-    assert(railP)
-    assert(detectorPiece)
-    assert(endPoint)
-    assert(Pillars)
     upValue = 25
 
     upDownAxis =  z_axis
     smallestDiffYet = math.huge
     degDiff = 0
-    assert(railP)
+
     WTurn(railP, upDownAxis, math.rad(upStart), 0)
     Hide(endPoint)
     Hide(detectionPiece)
@@ -92,7 +98,6 @@ function deployTrack( upStart, downEnd, railP, Pillars, detectorPiece, endPoint)
             foreach(Pillars,
                     function(id)
                         Show(id)
-                        assert(id)
                         if id then
                             WTurn(id, upDownAxis, math.rad(-degDiff), 0)
                         end
@@ -216,13 +221,13 @@ end
 
 function trainLoop()
     tunnelDetectionPlus = piece("TunnelDetectionPlus")
-    assertNum(tunnelDetectionPlus)
+    --assertNum(tunnelDetectionPlus)
     tunnelDetectionMinus = piece("TunnelDetectionMinus")
-    assertNum(tunnelDetectionMinus)
+    --assertNum(tunnelDetectionMinus)
     tunnelPlus =  TablesOfPiecesGroups["TunnelPlus"]
-    assertTable(tunnelPlus)
+    --assertTable(tunnelPlus)
     tunnelMinus =  TablesOfPiecesGroups["TunnelMinus"]
-    assertTable(tunnelMinus)
+    --assertTable(tunnelMinus)
     while (semaphore < 2) do Sleep(100) end
     deployTunnels(tunnelDetectionPlus , 1, tunnelPlus)    
     deployTunnels(tunnelDetectionMinus, -1, tunnelMinus)   

@@ -5,6 +5,9 @@ function script.HitByWeapon(x, z, weaponDefID, damage)
 end
 Frame = piece("Frame")
 function script.Create()
+    Spring.SetUnitAlwaysVisible(unitID, true)
+    Spring.SetUnitNoSelect(unitID, true)
+    Spring.SetUnitBlocking(unitID, false)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     Show(Frame)
 
