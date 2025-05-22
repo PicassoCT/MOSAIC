@@ -700,11 +700,7 @@ function HoloGrams()
             StartThread(moveCtrlHologramToUnitPiece, unitID, "house_western_hologram_brothel", hostPiece, decoPieceUsedOrientation[hostPiece],holoHeightOffset )
         else 
             if contains(ToShowTable, hostPiece) == true then 
-               if randChance(75) then
-                    StartThread(moveCtrlHologramToUnitPiece, unitID, "house_western_hologram_casino", hostPiece, decoPieceUsedOrientation[hostPiece], holoHeightOffset )
-                else
-                    StartThread(moveCtrlHologramToUnitPiece, unitID, "animated_hologram", hostPiece, decoPieceUsedOrientation[hostPiece], holoHeightOffset )
-                end
+                StartThread(moveCtrlHologramToUnitPiece, unitID, "house_western_hologram_casino", hostPiece, decoPieceUsedOrientation[hostPiece], holoHeightOffset )
             end
         end
     end  
