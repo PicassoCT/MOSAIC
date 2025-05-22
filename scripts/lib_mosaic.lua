@@ -811,7 +811,7 @@ end
     
         Spring.MoveCtrl.Enable(id, true)
         px, py, pz = Spring.GetUnitPiecePosDir(parentID, pieceID)
-        if minHeight then
+        if heightOffset then
             py = py + heightOffset
         end
         --echo("Moving hologram "..id.." to ("..px.."/"..py.."/"..pz..")")
