@@ -1,12 +1,12 @@
 function gadget:GetInfo()
     return {
         name = "Neon Hologram Rendering ",
-        desc = " ",
+        desc = "Renders transparent holograms ",
         author = "Picasso",
         date = "3rd of May 2010",
         license = "GPL3",
         layer = -12,
-        version = 1,
+        version = 2,
         enabled = false,
         hidden = true,
     }
@@ -148,6 +148,7 @@ if (gadgetHandler:IsSyncedCode()) then
     assert(unitDefID)
     assert(UnitDefs[unitDefID])
         if neonHologramTypeTable[unitDefID] then
+            --Never called
            -- if boolOverride or  myTeam and CallAsTeam(myTeam, Spring.IsUnitVisible, unitID, nil, false) then
                 neonUnitDataTransfer[unitID] = unitDefID
            -- end
@@ -156,6 +157,7 @@ if (gadgetHandler:IsSyncedCode()) then
 
     function gadget:UnitLeftLos(unitID, unitTeam, allyTeam, unitDefID)
         if neonHologramTypeTable[unitDefID] then
+            --Never called
             --if  boolOverride or  (myTeam and not CallAsTeam(myTeam, Spring.IsUnitVisible, unitID, nil, false)) then
                     neonUnitDataTransfer[unitID] = nil
            -- end
@@ -287,7 +289,14 @@ end
 --Glow Reflection etc.
 --Execution of the shader
     function gadget:ViewResize() --TODO test/assert
+        Spring.Echo("View Resize event")
     	vsx, vsy, vpx, vpy = Spring.GetViewGeometry()
+        if screentex ~= nil then 
+            glDeleteTexture(screentex)
+        end
+        if afterglowbuffertex ~= nil then
+            glDeleteTexture(afterglowbuffertex)
+        end
 
         screentex= glCreateTexture(vsx,vsy, {
             target = target,

@@ -42,7 +42,7 @@ function airPortConnection()
     end
 end
 
-allAnimatedAddPositions = {"Add018", "Add01", "center"}
+allAnimatedAddPositions = {"Add018", "Add01"}
 
 function setup()
     airPortConnection()
@@ -64,7 +64,7 @@ function setup()
     foreach(allAnimatedAddPositions,
             function(name)
                     hostPiece = piece(name)
-                    StartThread(moveCtrlHologramToUnitPiece, unitID, "animated_hologram", hostPiece, hostPiece, 100 )
+                    StartThread(moveCtrlHologramToUnitPiece, unitID, "animated_hologram", hostPiece, hostPiece, 10 )
             end)
 
 end

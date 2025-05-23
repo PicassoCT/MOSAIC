@@ -9,9 +9,6 @@ local animated_hologram = Abstract:New{
 	script 				= "animated_hologramscript.lua",
 	objectName       	= "animated_hologram.dae",
 
-	
-	
-
 	customparams = {	
 		helptext			= "Civilian Building",
 		baseclass			= "Abstract", -- TODO: hacks

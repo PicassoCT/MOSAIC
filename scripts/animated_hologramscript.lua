@@ -15,7 +15,7 @@ function script.Create()
 end
 
 snippetStarts= {
-[1] = { endsat= 70,  jumpsto = {35}},
+[1] = { endsat= 70,  jumpsto = {35, 400}},
 [70] = { endsat= 140,  jumpsto = {105, 125, 1}},
 [140] = { endsat= 175,  jumpsto = {140, 155, 70}},
 [175] = { endsat= 175 + 35,  jumpsto = {175, 140}},
@@ -51,18 +51,19 @@ function flickerAnimation()
 end
 
 function loopsReptitionsJumps(index)
+    newIndex = (index % #TablesOfPiecesGroups["Flicker"]) +1
     if index == endIndex then
         if maRa() then
            if maRa() then Sleep(3000) end
-           startIndex = getSafeRandom(jumpsto, jumpsto[1])
-           if snippetStarts[startIndex] then 
-                jumpsto = snippetStarts[startIndex].jumpsto
-                endIndex = snippetStarts[startIndex].endsat
-                return startIndex
+           newIndex = getSafeRandom(jumpsto, jumpsto[1])
+           if snippetStarts[newIndex] then 
+                jumpsto = snippetStarts[newIndex].jumpsto
+                endIndex = snippetStarts[newIndex].endsat
+                return newIndex
            end          
         end
     end
-    newIndex = (index % #TablesOfPiecesGroups["Flicker"]) +1
+
     if snippetStarts[newIndex] then 
         jumpsto = snippetStarts[newIndex].jumpsto
         endIndex = snippetStarts[newIndex].endsat
