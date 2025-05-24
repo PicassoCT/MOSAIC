@@ -1,17 +1,120 @@
 include "lib_UnitScript.lua"
 
 local TablesOfPiecesGroups = {}
-function script.HitByWeapon(x, z, weaponDefID, damage)
-end
-Frame = piece("Frame")
+local pieceID_NameMap = Spring.GetUnitPieceList(unitID)
+local cachedCopy ={}
+local Frame = piece("Frame")
+
 function script.Create()
     Spring.SetUnitAlwaysVisible(unitID, true)
     Spring.SetUnitNoSelect(unitID, true)
     Spring.SetUnitBlocking(unitID, false)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
-    hideAll(unitID)
+    hideAllReg(unitID)
 
     StartThread(flickerAnimation)
+end
+
+function updateCheckCache()
+  local frame = Spring.GetGameFrame()
+  if frame ~= lastFrame then 
+    if not GG.VisibleUnitPieces then GG.VisibleUnitPieces = {} end
+    if GG.VisibleUnitPieces[unitID] ~= cachedCopy then
+        GG.VisibleUnitPieces[unitID] = cachedCopy
+        lastFrame = frame
+    end
+  end
+end
+
+function ShowReg(pieceID)
+    if not pieceID then return end
+    Show(pieceID)
+    table.insert(cachedCopy, pieceID)
+    updateCheckCache()
+end
+
+function displayPieceTable(T)
+    if type(T) == "number" then  return  pieceID_NameMap[T] end
+
+    concatString = ""
+    for i=1, #T do
+       concatString= concatString.."|".. pieceID_NameMap[T[i]]
+    end
+    return concatString
+
+end
+
+
+function HideReg(pieceID)
+    if not pieceID then return end
+    assert(pieceID_NameMap[pieceID], "Not a piece".. displayPieceTable(pieceID))
+    Hide(pieceID)  
+    --TODO make dictionary for efficiency
+    for i=1, #cachedCopy do
+        if cachedCopy[i] == pieceID then
+            table.remove(cachedCopy, i)
+            break
+        end
+    end
+    updateCheckCache()
+end
+
+-- > Hide all Pieces of a Unit
+function hideAllReg()
+    pieceMap = Spring.GetUnitPieceMap(unitID)
+    for k, v in pairs(pieceMap) do HideReg(v) end
+end
+
+-- > Hides a PiecesTable, 
+function hideTReg(l_tableName, l_lowLimit, l_upLimit, l_delay)
+    if not l_tableName then return end
+    --assert( type(l_tableName) == "table" , UnitDefs[Spring.GetUnitDefID(unitID)].name.." has invalid hideT")
+    boolDebugActive =  (lib_boolDebug == true and l_lowLimit and type(l_lowLimit) ~= "string")
+
+    if l_lowLimit and l_upLimit then
+        for i = l_upLimit, l_lowLimit, -1 do
+            if l_tableName[i] then
+                HideReg(l_tableName[i])
+            elseif boolDebugActive == true then
+                echo("In HideT, table " .. l_lowLimit ..
+                         " contains a empty entry")
+            end
+
+            if l_delay and l_delay > 0 then Sleep(l_delay) end
+        end
+
+    else
+        for i = 1, table.getn(l_tableName), 1 do
+            if l_tableName[i] then
+                HideReg(l_tableName[i])
+            elseif boolDebugActive == true then
+                echo("In HideT, table " .. l_lowLimit .. " contains a empty entry")
+            end
+        end
+    end
+end
+
+-- >Shows a Pieces Table
+function showTReg(l_tableName, l_lowLimit, l_upLimit, l_delay)
+    if not l_tableName then
+        Spring.Echo("No table given as argument for showT")
+        assert(false)
+        return
+    end
+
+    if l_lowLimit and l_upLimit then
+        for i = l_lowLimit, l_upLimit, 1 do
+            if l_tableName[i] then ShowReg(l_tableName[i]) end
+            if l_delay and l_delay > 0 then Sleep(l_delay) end
+        end
+
+    else
+        for k,v in pairs(l_tableName)do
+            if v then
+                ShowReg(v)
+            end
+        end
+    end
 end
 
 local snippetStarts= 
@@ -40,9 +143,9 @@ function frameRotation()
             Turn(Frame, y_axis, math.rad(rot*180),0)
             rot = math.random(0,1)
             Turn(Frame, x_axis, math.rad(rot*180),0)
-            Show(Frame)
+            ShowReg(Frame)
         else
-            Hide(Frame)
+            HideReg(Frame)
         end
 end
 
@@ -56,10 +159,10 @@ function flickerAnimation()
     while true do
         frameRotation()
         currentPiece = TablesOfPiecesGroups["Flicker"][index]
-        Hide(currentPiece)
+        HideReg(currentPiece)
         index = loopsReptitionsJumps(index)
         currentPiece = TablesOfPiecesGroups["Flicker"][index]
-        Show(currentPiece)
+        ShowReg(currentPiece)
         varSpeed= math.random(40, 160)
         Sleep(varSpeed)
     end
