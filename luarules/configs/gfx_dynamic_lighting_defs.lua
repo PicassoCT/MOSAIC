@@ -151,8 +151,8 @@ local dynLightDefs = {
 			},
 
 		},
-	},
-}
+	}
+
 
 
 local modLightDefs = dynLightDefs[Game.gameShortName]

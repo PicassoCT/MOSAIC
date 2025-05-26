@@ -122,7 +122,7 @@ if (gadgetHandler:IsSyncedCode()) then
         				if id and defID and VisibleUnitPieces[id] and VisibleUnitPieces[id] ~= cachedUnitPieces[id] then
                             local serializedStringToSend = serializePiecesTableTostring(VisibleUnitPieces[id])
                             cachedUnitPieces[id] = VisibleUnitPieces[id]
-        					SendToUnsynced("setUnitNeonLuaDraw", id, defID, serializedStringToSend )   
+        					SendToUnsynced("setUnitNeonLuaDraw", id, defID, serializedStringToSend)   
                             --collectedStrings[#collectedStrings + 1] = serializedStringToSend                                     
         				end
         			end 
@@ -134,8 +134,7 @@ if (gadgetHandler:IsSyncedCode()) then
                     --oldneonUnitDataTransfer = neonUnitDataTransfer    
                     --local neonUnitsStringified = table.concat(collectedStrings, "|") 
                     --Spring.SetGameRulesParam (broadcastAllNeonUnitsPieces, neonUnitsStringified)       
-                end    
-
+                end   
             end
 		end
     end
@@ -145,12 +144,11 @@ if (gadgetHandler:IsSyncedCode()) then
     end
 
    function gadget:UnitEnteredLos(unitID, unitTeam, allyTeam, unitDefID)
-    assert(unitDefID)
-    assert(UnitDefs[unitDefID])
         if neonHologramTypeTable[unitDefID] then
             --Never called
            -- if boolOverride or  myTeam and CallAsTeam(myTeam, Spring.IsUnitVisible, unitID, nil, false) then
-                neonUnitDataTransfer[unitID] = unitDefID
+            echo("UnitEnteredLos:"..unitID)
+            neonUnitDataTransfer[unitID] = unitDefID
            -- end
         end
     end
@@ -159,7 +157,8 @@ if (gadgetHandler:IsSyncedCode()) then
         if neonHologramTypeTable[unitDefID] then
             --Never called
             --if  boolOverride or  (myTeam and not CallAsTeam(myTeam, Spring.IsUnitVisible, unitID, nil, false)) then
-                    neonUnitDataTransfer[unitID] = nil
+            echo("UnitLeftLos:"..unitID)
+            neonUnitDataTransfer[unitID] = nil
            -- end
         end
     end
@@ -241,6 +240,7 @@ else -- unsynced
     local sunChanged = false
     local spGetUnitDefID = Spring.GetUnitDefID
     local spGetUnitPosition = Spring.GetUnitPosition
+    local spIsUnitInView = Spring.IsUnitInView
     local screentex = nil
     local afterglowbuffertex = nil
     local UnitUnitDefIDMap = {}
@@ -502,7 +502,7 @@ end
         ["house_western_hologram_brothel"]  =   2,
         ["house_western_hologram_buisness"] =   3,
         ["house_asian_hologram_buisness"] =     4,
-        ["animated_hologram"] =                 4,
+        ["animated_hologram"] =                 3,
     }
 
     local holoDefID = nil
@@ -546,35 +546,37 @@ end
                 --variables
 
                 for unitID, neonHoloParts in pairs(neonUnitTables) do
-                    neonHologramShader:SetUniformInt("typeDefID", typeDefID)
-                    --local unitDefID = spGetUnitDefId(unitID)
-                    local unitDefID = UnitUnitDefIDMap[unitID]
-                    glTexture(0, string.format("%%%d:0", unitDefID))
-                    glTexture(1, string.format("%%%d:1", unitDefID))
-                    neonHologramShader:SetUniformInt("typeDefID",  holoDefIDTypeIDMap[unitDefID])
-                    local x,y,z = spGetUnitPosition(unitID)
-                    neonHologramShader:SetUniformFloatArray("unitCenterPosition", {x, y, z})
-                     local timePercentOffset = (timepercent + (unitID/DAYLENGTH))%1.0
-                    neonHologramShader:SetUniformFloat("timepercent",  timePercentOffset)
-                    neonHologramShader:SetUniformFloat("time", timeSeconds + unitID)
+                    if spIsUnitInView (unitID) then
+                        neonHologramShader:SetUniformInt("typeDefID", typeDefID)
+                        --local unitDefID = spGetUnitDefId(unitID)
+                        local unitDefID = UnitUnitDefIDMap[unitID]
+                        glTexture(0, string.format("%%%d:0", unitDefID))
+                        glTexture(1, string.format("%%%d:1", unitDefID))
+                        neonHologramShader:SetUniformInt("typeDefID",  holoDefIDTypeIDMap[unitDefID])
+                        local x,y,z = spGetUnitPosition(unitID)
+                        neonHologramShader:SetUniformFloatArray("unitCenterPosition", {x, y, z})
+                         local timePercentOffset = (timepercent + (unitID/DAYLENGTH))%1.0
+                        neonHologramShader:SetUniformFloat("timepercent",  timePercentOffset)
+                        neonHologramShader:SetUniformFloat("time", timeSeconds + unitID)
 
-                    glCulling(GL_FRONT)
-                    for  _, pieceID in ipairs(neonHoloParts)do
+                        glCulling(GL_FRONT)
+                        for  _, pieceID in ipairs(neonHoloParts)do
 
-                      glPushPopMatrix( function()
-                            glUnitMultMatrix(unitID)
-                            glUnitPieceMultMatrix(unitID, pieceID)
-                            glUnitPiece(unitID, pieceID)
-                        end)
-                    end
-                       
-                    glCulling(GL_BACK)
-                    for _,pieceID in ipairs(neonHoloParts)do
-                      glPushPopMatrix( function()
-                            glUnitMultMatrix(unitID)
-                            glUnitPieceMultMatrix(unitID, pieceID)
-                            glUnitPiece(unitID, pieceID)
-                        end)
+                          glPushPopMatrix( function()
+                                glUnitMultMatrix(unitID)
+                                glUnitPieceMultMatrix(unitID, pieceID)
+                                glUnitPiece(unitID, pieceID)
+                            end)
+                        end
+                           
+                        glCulling(GL_BACK)
+                        for _,pieceID in ipairs(neonHoloParts)do
+                          glPushPopMatrix( function()
+                                glUnitMultMatrix(unitID)
+                                glUnitPieceMultMatrix(unitID, pieceID)
+                                glUnitPiece(unitID, pieceID)
+                            end)
+                        end
                     end
                 end  
 
