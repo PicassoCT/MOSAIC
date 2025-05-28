@@ -503,7 +503,7 @@ end
         ["house_western_hologram_brothel"]  =   2,
         ["house_western_hologram_buisness"] =   3,
         ["house_asian_hologram_buisness"] =     4,
-        ["animated_hologram"] =                 3,
+     -- ["animated_hologram"] =                 3,
     }
 
     local holoDefID = nil
@@ -516,8 +516,6 @@ end
             holoDefID =  UnitDefs[i].id
         end
     end       
-
-
 
     local function RenderAllNeonUnits()
 
