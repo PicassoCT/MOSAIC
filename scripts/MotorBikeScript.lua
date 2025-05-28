@@ -4,30 +4,34 @@ include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 include "lib_mosaic.lua"
 
-TablesOfPiecesGroups = {}
-GameConfig = getGameConfig()
+local TablesOfPiecesGroups = {}
+local GameConfig = getGameConfig()
 SIG_ORDERTRANFER = 1
 SIG_HONK = 2
 SIG_INTERNAL = 4
 SIG_STOP = 8
 SIG_Kill = 16
 
-center = piece "center"
-attachPoint = piece"attachPoint"
-Civilian = piece"Civilian"
-motorBikeLoadableTypeTable = getMotorBikeLoadableTypes(UnitDefs)
-truckTypeTable = getTruckTypeTable(UnitDefs)
-Seat = piece "Seat"
+local center = piece "center"
+local attachPoint = piece"attachPoint"
+local Civilian = piece"Civilian"
+local motorBikeLoadableTypeTable = getMotorBikeLoadableTypes(UnitDefs)
+local truckTypeTable = getTruckTypeTable(UnitDefs)
+local Seat = piece "Seat"
 
 myTeamID = Spring.GetUnitTeam(unitID)
-boolGaiaUnit = myTeamID == Spring.GetGaiaTeamID()
+local boolGaiaUnit = myTeamID == Spring.GetGaiaTeamID()
+local boolIsDelivery = randChance(66)
+local myDeliverySymbolIndex = nil
+local boolDeliveryOnGuy = false
+local myDeliverySymbol = nil
+local activeWheels = {}
+local passenger = nil
+local bikeType = math.random(1,3)
+local SteerParts = {}
+local Signum = -1
+local LeanFactor = 1.0
 
-activeWheels = {}
-passenger = nil
-bikeType = math.random(1,3)
- SteerParts = {}
- Signum = -1
-LeanFactor = 1.0
 
 STATE_STARTED = "STARTED"
 STATE_ENDED = "ENDED"
@@ -41,9 +45,15 @@ boolIsPoliceTruck = unitDefID == UnitDefNames["policetruck"].id
  
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false)
+    myDeliverySymbolIndex = math.random(1,#TablesOfPiecesGroups["Delivery"])
+    boolDeliveryOnGuy = myDeliverySymbolIndex % 2 == 1
+    myDeliverySymbol = TablesOfPiecesGroups["Delivery"][myDeliverySymbolIndex]
     hideAll(unitID)
     Show(TablesOfPiecesGroups["Bike"][bikeType])
     Show(TablesOfPiecesGroups["Steering"][bikeType])
+    if boolIsDelivery and not boolDeliveryOnGuy then
+        Show(myDeliverySymbol)
+    end
     assert(TablesOfPiecesGroups["Steering"][bikeType])
     if boolGaiaUnit then   Show(Civilian)   end
 
@@ -156,6 +166,7 @@ function updateSteering()
     while true do
         if boolMoving == true and boolTurning == true then
            if boolGaiaUnit then
+                Show(myDeliverySymbol)
                 Show(Civilian)
            end
            if boolTurnLeft == true then

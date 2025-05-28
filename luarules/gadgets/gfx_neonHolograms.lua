@@ -115,6 +115,7 @@ if (gadgetHandler:IsSyncedCode()) then
     function gadget:GameFrame(frame)
 		if frame > frameGameStart then           
             if count(neonUnitDataTransfer) > 0 then
+                echo("gadget:GameFrame:gfx_neonHolograms.lua "..frame)
                 local VisibleUnitPieces = GG.VisibleUnitPieces   
                 if VisibleUnitPieces then
         			for id, defID in pairs(neonUnitDataTransfer) do     
