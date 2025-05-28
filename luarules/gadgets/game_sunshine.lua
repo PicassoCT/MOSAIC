@@ -221,7 +221,7 @@ if gadgetHandler:IsSyncedCode() then
 
         -- Normalize the vector
         local resultVec = normalizeVector(resultVec)
---        Spring.Echo(getDayTime(daytimeFrames, DAYLENGTH).."REG:"..REGIONAL_MAX_ALTITUDE.." -> ("..resultVec.x.."/"..resultVec.y .."/"..resultVec.z..")")
+--        Spring.Echo(getDayTimeString(daytimeFrames, DAYLENGTH).."REG:"..REGIONAL_MAX_ALTITUDE.." -> ("..resultVec.x.."/"..resultVec.y .."/"..resultVec.z..")")
         Spring.SetSunDirection(resultVec.x, resultVec.y, resultVec.z)
     end
 
@@ -293,8 +293,10 @@ if gadgetHandler:IsSyncedCode() then
         -- Spring.SetAtmosphere ({fogStart = c.fogStart, fogEnd =c.fogEnd, fogColor = {c.fogColor[1], c.fogColor[2], c.fogColor[3], c.fogColor[4]}})
     end
 
+
+
     -- Creates a DayString
-    function getDayTime(now, total)
+    function getDayTimeString(now, total)
         Frame = now % total
         percent = Frame / DAYLENGTH
         hours = math.floor((Frame / DAYLENGTH) * 24)
@@ -317,7 +319,7 @@ if gadgetHandler:IsSyncedCode() then
 
     -- gets a config and sets the time of day as sun
     function aDay(timeFrame, WholeDay)
-        --echo("Daytime:"..getDayTime(timeFrame%WholeDay, WholeDay))
+        --echo("Daytime:"..getDayTimeString(timeFrame%WholeDay, WholeDay))
         percent = ((timeFrame % (WholeDay)) / (WholeDay))
 
         if math.random(1, 10) > 5 and
