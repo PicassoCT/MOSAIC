@@ -74,6 +74,7 @@ if (gadgetHandler:IsSyncedCode()) then
         end
     end
 
+    local allNeonUnits= {}
     local neonUnitDataTransfer = {}
     function registerUnitIfHolo(unitID, unitDefID)
          if neonHologramTypeTable[unitDefID] then
@@ -82,6 +83,11 @@ if (gadgetHandler:IsSyncedCode()) then
                -- local drawMask = SO_OPAQUE_FLAG + SO_ALPHAF_FLAG + SO_REFLEC_FLAG  + SO_REFRAC_FLAG + SO_DRICON_FLAG 
                -- Spring.SetUnitEngineDrawMask(unitID, drawMask)
             end
+            local emptyTable = {}
+            local stringToSend = ""
+
+            allNeonUnits[#allNeonUnits + 1]= unitID
+           -- SendToUnsynced("setUnitNeonLuaDraw", unitID, unitDefID)
         end
     end
 
@@ -145,18 +151,33 @@ if (gadgetHandler:IsSyncedCode()) then
 
    function gadget:UnitEnteredLos(unitID, unitTeam, allyTeam, unitDefID)
         if neonHologramTypeTable[unitDefID] then
+            --Never called
+           -- if boolOverride or  myTeam and CallAsTeam(myTeam, Spring.IsUnitVisible, unitID, nil, false) then
+            echo("UnitEnteredLos:"..unitID)
             neonUnitDataTransfer[unitID] = unitDefID
+           -- end
+        end
+    end
+
+    function gadget:UnitLeftLos(unitID, unitTeam, allyTeam, unitDefID)
+        if neonHologramTypeTable[unitDefID] then
+            --Never called
+            --if  boolOverride or  (myTeam and not CallAsTeam(myTeam, Spring.IsUnitVisible, unitID, nil, false)) then
+            echo("UnitLeftLos:"..unitID)
+            neonUnitDataTransfer[unitID] = nil
+           -- end
         end
     end
 
     function gadget:UnitDestroyed(unitID, unitDefID)
         if neonHologramTypeTable[unitDefID] then
-            neonUnitDataTransfer[unitID] = nil
-            cachedUnitPieces[unitID] = nil
-            SendToUnsynced("unsetUnitNeonLuaDraw", unitID)
+            for i=#allNeonUnits, 1, -1 do
+                if allNeonUnits[i] == unitID then
+                    table.remove(allNeonUnits, i)
+                end
+            end
         end
     end
-
 
 else -- unsynced
     local DAYLENGTH                 = 28800
