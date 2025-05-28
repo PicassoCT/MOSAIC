@@ -13,6 +13,7 @@ end
 --Documentation: 
 --https://www.youtube.com/watch?v=3so7xdZHKxw
 --https://www.shadertoy.com/view/mlSfRD
+--TODO transfer the baking to neonlights that already has the pieces setup
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
@@ -600,26 +601,22 @@ local function setCameraOrthogonal()
 end
 
 function widget:DrawUnits()
-   setCameraOrthogonal()
-
     renderToTextureShader:ActivateWith(
     function()  
    --render NeonUnits to mask
-     for unitID, neonHoloParts in pairs(neonUnitTables) do
-        for  _, pieceID in ipairs(neonHoloParts)do
-                          glPushPopMatrix( 
-                            function()
-                                glUnitMultMatrix(unitID)
-                                glUnitPieceMultMatrix(unitID, pieceID)
-                                glUnitPiece(unitID, pieceID)
-                            end)
+        for unitID, neonHoloParts in pairs(neonUnitTables) do
+            for  _, pieceID in ipairs(neonHoloParts)do
+              glPushPopMatrix( 
+                function()
+                    glUnitMultMatrix(unitID)
+                    glUnitPieceMultMatrix(unitID, pieceID)
+                    glUnitPiece(unitID, pieceID)
+                end)
+            end
         end
-    end
- end
-     )
-
-
-
+    setCameraOrthogonal()
+    end)
+    
    restoreCameraPosDir()
 end
 

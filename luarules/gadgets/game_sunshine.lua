@@ -305,6 +305,16 @@ if gadgetHandler:IsSyncedCode() then
         return hours .. ":" .. minutes
     end
 
+    local dampenFactor = 1.0
+    function dampenSunColorIfRaining(rgba)
+        if isRaining() then
+            dampenFactor = math.max(0.25, dampenFactor -0.01)
+        else
+            dampenFactor = math.min(1.0, dampenFactor + 0.01)
+        end
+        return {r= rgba.r * dampenFactor, g = rgba.g * dampenFactor, b = rgba.b* dampenFactor, a= rgba.a}
+    end
+
     -- gets a config and sets the time of day as sun
     function aDay(timeFrame, WholeDay)
         --echo("Daytime:"..getDayTime(timeFrame%WholeDay, WholeDay))
@@ -344,7 +354,7 @@ if gadgetHandler:IsSyncedCode() then
         config.unitSpecularColor = {rgba.r, rgba.g, rgba.b}
         rgba = getspecularExponent(percent)
         config.specularExponent = rgba.a
-        rgba = getsunColor(percent)
+        rgba = dampenSunColorIfRaining(getsunColor(percent))
         config.sunColor = {rgba.r, rgba.g, rgba.b, rgba.a}
         rgba = getskyColor(percent)
         config.skyColor = {rgba.r, rgba.g, rgba.b, rgba.a}
