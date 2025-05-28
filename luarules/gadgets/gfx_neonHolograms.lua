@@ -126,6 +126,10 @@ if (gadgetHandler:IsSyncedCode()) then
         					SendToUnsynced("setUnitNeonLuaDraw", id, defID, serializedStringToSend)   
                             --collectedStrings[#collectedStrings + 1] = serializedStringToSend                                     
         				end
+
+                        if not spIsUnitInView(id) then
+                            SendToUnsynced("unsetUnitNeonLuaDraw", id)   
+                        end
         			end 
                     --for id, defID in pairs(oldneonUnitDataTransfer) do
                     --    if not neonUnitDataTransfer[id] then
@@ -137,6 +141,7 @@ if (gadgetHandler:IsSyncedCode()) then
                     --Spring.SetGameRulesParam (broadcastAllNeonUnitsPieces, neonUnitsStringified)       
                 end   
             end
+            echo("gadget:GameFrame:End:gfx_neonHolograms.lua "..frame)
 		end
     end
 
@@ -451,6 +456,11 @@ end
         gadgetHandler:AddSyncAction("unsetUnitNeonLuaDraw", unsetUnitNeonLuaDraw) --TODO debug
 		frameGameStart = Spring.GetGameFrame()+1
 
+        if blurtex ~= nil then glDeleteTexture(blurtex) end
+        if blurtex2 ~= nil then glDeleteTexture(blurtex2) end
+        if screencopy ~= nil then glDeleteTexture(screencopy) end
+
+
         neonHologramShader = LuaShader({
             vertex =   neoVertexShaderFirstPass, --defaultVertexShader
             fragment = neoFragmentShaderFirstPass,--defaultFragmentShader
@@ -545,7 +555,7 @@ end
                 --variables
 
                 for unitID, neonHoloParts in pairs(neonUnitTables) do
-                    if spIsUnitInView (unitID) then
+                    --if spIsUnitInView (unitID) then
                         neonHologramShader:SetUniformInt("typeDefID", typeDefID)
                         --local unitDefID = spGetUnitDefId(unitID)
                         local unitDefID = UnitUnitDefIDMap[unitID]
@@ -576,7 +586,7 @@ end
                                 glUnitPiece(unitID, pieceID)
                             end)
                         end
-                    end
+                    --end
                 end  
 
 
