@@ -203,11 +203,11 @@ end
 include ("tigLilAnimation.lua")
 include("lib_textFx.lua")
 local function tiglLilLoop()
-    if unitID % 5 ~= 0 then return end
+    if unitID % 3 ~= 0 then return end
     if not GG.TiglilHoloTable then GG.TiglilHoloTable = {} end
-    if count(GG.TiglilHoloTable) > 3 and not GG.TiglilHoloTable[unitID]  then  return end
-
-    GG.TiglilHoloTable[unitID] = unitID
+    if not GG.TiglilHoloTable[unitDefID] then GG.TiglilHoloTable[unitDefID] = 0 end
+    if count(GG.TiglilHoloTable[unitDefID]) > 3  then  return end
+    GG.TiglilHoloTable[unitDefID][unitID] = unitID
 
     while true do
         if (hours > 20 or hours < 6) then
