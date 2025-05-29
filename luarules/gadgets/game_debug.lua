@@ -6,7 +6,7 @@ function gadget:GetInfo()
         date = "Sep. 2022",
         license = "GNU GPL, v2 or later",
         layer = 1,
-        enabled = true
+        enabled = false
     }
 end
 
@@ -14,7 +14,7 @@ if (gadgetHandler:IsSyncedCode()) then
     VFS.Include("scripts/lib_OS.lua")
     VFS.Include("scripts/lib_UnitScript.lua")
     VFS.Include("scripts/lib_Animation.lua")
-   -- VFS.Include("scripts/lib_Build.lua")
+    VFS.Include("scripts/lib_debug.lua")
     VFS.Include("scripts/lib_mosaic.lua")
 
     --Optimization

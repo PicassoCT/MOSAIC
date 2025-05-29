@@ -64,7 +64,7 @@ function setup()
     foreach(allAnimatedAddPositions,
             function(name)
                     hostPiece = piece(name)
-                    StartThread(moveCtrlHologramToUnitPiece, unitID, "animated_hologram", hostPiece, hostPiece, 10 )
+                    StartThread(moveCtrlHologramToUnitPiece, unitID, "animated_hologram", hostPiece, hostPiece, 0 )
             end)
 
 end
