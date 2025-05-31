@@ -26,7 +26,7 @@ local function playMusicFile()
 	end
 end
 
-local advertisementFiles = VFS.DirList("sounds/music/advertising/", "*.ogg")
+local advertisementFiles = VFS.DirList("sounds/advertising/", "*.ogg")
 local function playAdvertisementFile()
 	if (#advertisementFiles > 0) then
 		index=math.random(1,#advertisementFiles)

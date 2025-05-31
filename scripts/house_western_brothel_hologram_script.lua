@@ -200,6 +200,7 @@ include ("tigLilAnimation.lua")
 include("lib_textFx.lua")
 
 local function tiglLilLoop()
+    echo("Reaching brothel tiglil")
     if unitID % 3 ~= 0 then return end
     if not GG.TiglilHoloTable then GG.TiglilHoloTable = {} end
     if not GG.TiglilHoloTable[unitDefID] then GG.TiglilHoloTable[unitDefID] = 0 end
@@ -209,18 +210,20 @@ local function tiglLilLoop()
 
     while true do
         if (hours > 20 or hours < 6) then
-            assert(dancingTiglil)
-            assert(technoAnimations)
-            assert(idleAnimations)
+            if maRa() then
+                skimpy = piece("skimpy")
+                ShowReg(skimpy)
+            end
+
             StartThread(dancingTiglil, idleAnimations)
 
             while  (hours > 20 or hours < 6) do
                 Sleep(3000)
             end
             Signal(SIG_TIGLIL)
-            Hide(tlpole)
-            Hide(tldrum)
-            Hide(tlflute)
+            HideReg(tlpole)
+            HideReg(tldrum)
+            HideReg(tlflute)
             hideTReg(TableOfPiecesGroups["GlowStick"])
             hideTReg(tigLilHoloPices)
         end
