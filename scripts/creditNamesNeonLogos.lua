@@ -1,5 +1,6 @@
 
 return {
+"destructo",
 "ves sergey",
 "jk",
 "Beherith",
