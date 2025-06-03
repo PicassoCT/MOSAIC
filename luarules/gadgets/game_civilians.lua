@@ -730,7 +730,7 @@ function getUnitNearestTalkableAlly(id)
         end
         )
     if #resultUnits  > 1 then return resultUnits[math.random(1,#resultUnits)] end
-    if #resultUnits == 0 then return resultUnits[1]end
+    if #resultUnits == 0 then return resultUnits[1] end
     return nil
 end
 
@@ -747,7 +747,7 @@ function sozialize(evtID, frame, persPack, startFrame, myID)
            --[[ --echo("Soizialize with partnerID ")--]]
             persPack.chatPartnerID = getUnitNearestTalkableAlly(myID)
             if persPack.chatPartnerID then                
-                echo(myId.." starting a chat with "..persPack.chatPartnerID.. " at "..locationstring(myId)) 
+                echo(myID.." starting a chat with "..persPack.chatPartnerID.. " at "..locationstring(myID)) 
                 persPack.boolStartAChat = true
                 persPack.boolDeactivateStuckDetection = true             
             end
@@ -757,7 +757,7 @@ function sozialize(evtID, frame, persPack, startFrame, myID)
         if (persPack.maxTimeChattingInFrames <= 0 ) or -- end a chat
             not persPack.chatPartnerID or
             not doesUnitExistAlive(persPack.chatPartnerID) then
-                echo(myId.." chat has ended")
+                echo(myID.." chat has ended")
                 persPack.boolStartAChat = false
                 persPack.boolDeactivateStuckDetection = false
                 persPack = moveToLocation(myID, persPack, {}, true)
@@ -772,7 +772,7 @@ function sozialize(evtID, frame, persPack, startFrame, myID)
     if persPack.boolStartAChat == true then
         local partnerID = persPack.chatPartnerID 
         if partnerID and distanceUnitToUnit(myID, partnerID) > GameConfig.generalInteractionDistance then
-            echo(myId.." moving to chat ")
+            echo(myID.." moving to chat ")
              px, py, pz = spGetUnitPosition(partnerID)
             Command(myID, "go", {x = px, y = py, z = pz}, {})
             Command(partnerID, "go", {
@@ -784,7 +784,7 @@ function sozialize(evtID, frame, persPack, startFrame, myID)
             return true, frame + 30 , persPack        
         else 
             --stop and chat 
-             echo(myId.." chatting at "..locationstring(unitID))
+             echo(myID.." chatting at "..locationstring(unitID))
             Command(myID, "stop")
             Command(partnerID, "stop")
             displayConversationTextAt(myID, partnerID)

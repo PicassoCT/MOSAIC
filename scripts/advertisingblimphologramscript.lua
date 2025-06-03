@@ -30,6 +30,14 @@ local tllegUpR = piece "tllegUpR"
 local tlpole = piece "tlpole"
 local tlflute = piece "tlflute"
 local spGetGameFrame = Spring.GetGameFrame
+local buisnessLogo = nil
+local brothelFlickerGroup = nil
+local CasinoflickerGroup = nil
+local JoyFlickerGroup = nil
+SIG_TIGLIL = 2
+SIG_GESTE = 4
+SIG_TALKHEAD = 8
+
 DirectionArcPoint = piece "DirectionArcPoint"
 BallArcPoint = piece "BallArcPoint"
 handr = piece "handr"
@@ -55,6 +63,19 @@ tigLilHoloPices = {
     handl,
     ball
 }
+local hours  =0
+local minutes=0
+local seconds=0
+local percent=0
+hours, minutes, seconds, percent = getDayTime()
+
+function clock()
+    while true do
+        hours, minutes, seconds, percent = getDayTime()
+        Sleep(10000)
+    end
+end
+
 
 function updateCheckCache()
   local frame = Spring.GetGameFrame()
@@ -165,18 +186,12 @@ function showOneOrNone(T)
     end
 end
 
+
 --VFS.Include("scripts/lib_textFx.lua")
 include ("tigLilAnimation.lua")
 include("lib_textFx.lua")
 
 local function tiglLilLoop()
-    echo("Reaching brothel tiglil")
-    if unitID % 3 ~= 0 then return end
-    if not GG.TiglilHoloTable then GG.TiglilHoloTable = {} end
-    if not GG.TiglilHoloTable[unitDefID] then GG.TiglilHoloTable[unitDefID] = 0 end
-    if count(GG.TiglilHoloTable[unitDefID]) > 3  then  return end
-
-    GG.TiglilHoloTable[unitDefID][unitID] = unitID
 
     while true do
         if (hours > 20 or hours < 6) then
@@ -194,7 +209,7 @@ local function tiglLilLoop()
             HideReg(tlpole)
             HideReg(tldrum)
             HideReg(tlflute)
-            hideTReg(TableOfPiecesGroups["GlowStick"])
+            hideTReg(TablesOfPiecesGroups["GlowStick"])
             hideTReg(tigLilHoloPices)
         end
         Sleep(9000)
@@ -204,8 +219,8 @@ end
 function dancingTiglil(animations, boolTechno)
     SetSignalMask(SIG_TIGLIL)
     if boolTechno then
-        showOne(TableOfPiecesGroups["GlowStick"])
-        showOne(TableOfPiecesGroups["GlowStick"])
+        showOne(TablesOfPiecesGroups["GlowStick"])
+        showOne(TablesOfPiecesGroups["GlowStick"])
     end
 
     while (hours > 20 or hours < 6) do
@@ -285,13 +300,13 @@ end
 
 function dropCoinsOrMoney(boolIsMoney)
     if boolIsMoney then
-       chipsDropping(TableOfPiecesGroups["Money"], maRa())
+       chipsDropping(TablesOfPiecesGroups["Money"], maRa())
     end
 
     if maRa()then
-        chipsDropping(TableOfPiecesGroups["CasinoChip"], maRa())
+        chipsDropping(TablesOfPiecesGroups["CasinoChip"], maRa())
     else
-        chipsDropping(TableOfPiecesGroups["Money"], maRa())
+        chipsDropping(TablesOfPiecesGroups["Money"], maRa())
     end
 end
 
@@ -340,13 +355,10 @@ function hideAllReg()
     for k, v in pairs(pieceMap) do HideReg(v) end
 end
 
-local buisnessLogo = nil
-local brothelFlickerGroup = nil
-local CasinoflickerGroup = nil
-local JoyFlickerGroup = nil
+
 
 function HoloGrams()    
-    
+    StartThread(clock)
     buisnessLogo = TablesOfPiecesGroups["buisness_holo"]
     brothelFlickerGroup = TablesOfPiecesGroups["BrothelFlicker"]
     CasinoflickerGroup = TablesOfPiecesGroups["CasinoFlicker"]
@@ -386,8 +398,6 @@ function JoyAnimation()
     JoySpinOrigin = TablesOfPiecesGroups["JoySpin"][1]
 
     while true do
-
-        hours, minutes, seconds, percent = getDayTime()
         if boolDebugScript or (hours > 17 or hours < 7) then
             Spin(JoySpinOrigin, z_axis, math.rad(17*3), 0)
             ShowReg(JoySpinOrigin)
@@ -432,7 +442,6 @@ function flickerScript(flickerGroup,  errorDrift, timeoutMs, maxInterval, boolDa
         hideTReg(fGroup)
         --assertRangeConsistency(fGroup, "flickerGroup")
         Sleep(500)
-        hours, minutes, seconds, percent = getDayTime()
         if boolDebugScript or (hours > 17 or hours < 7) then
             toShowTableT= {}
             for x=1,math.random(1,3) do

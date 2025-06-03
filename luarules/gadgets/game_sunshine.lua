@@ -322,15 +322,15 @@ if gadgetHandler:IsSyncedCode() then
         --echo("Daytime:"..getDayTimeString(timeFrame%WholeDay, WholeDay))
         percent = ((timeFrame % (WholeDay)) / (WholeDay))
 
-        if math.random(1, 10) > 5 and
-            (timeFrame == DAWN_FRAME or timeFrame == DUSK_FRAME) and
-            (GameConfig.instance.culture == "arabic" or
-            GameConfig.instance.culture == "international")
-             then
-            Spring.PlaySoundFile("sounds/civilian/arabic/callToPrayer" ..
-                                     math.random(1, 3) .. ".ogg", 0.9)
-        end
+        if math.random(1, 10) > 5 and (timeFrame == DAWN_FRAME or timeFrame == DUSK_FRAME) then
 
+            if (GameConfig.instance.culture == "arabic") then    
+            Spring.PlaySoundFile("sounds/civilian/arabic/callToPrayer" .. math.random(1, 6) .. ".ogg", 0.9)
+            end
+            if (GameConfig.instance.culture == "international") then    
+            Spring.PlaySoundFile("sounds/civilian/international/callToPrayer" .. math.random(1, 5) .. ".ogg", 0.9)
+            end
+        end
         config = getDefaultConfg({r = 0.5, g = 0.5, b = 0.5, a = 0.5})
         -- if GG.SunConfig and GG.SunConfig[1] then
         -- config= GG.SunConfig[1]

@@ -42,9 +42,13 @@ end
 
 function addon.DrawLoadScreen()
 	local loadProgress = SG.GetLoadProgress()
-	if loadProgress > nextProgressStep then
-		nextProgressStep = nextProgressStep + 0.30
+	if nextProgressStep == 0 then
+		nextProgressStep = nextProgressStep + 0.35
 		playMusicFile()
+		return
+	end
+	if loadProgress > nextProgressStep then
+		nextProgressStep = nextProgressStep + 0.35
 		playAdvertisementFile()
 	end
 end
