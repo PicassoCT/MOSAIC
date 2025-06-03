@@ -13,6 +13,7 @@ end
 --Documentation: 
 --https://www.youtube.com/watch?v=3so7xdZHKxw
 --https://www.shadertoy.com/view/mlSfRD
+--https://www.shadertoy.com/view/X3XfRM
 --TODO transfer the baking to neonlights that already has the pieces setup
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -83,7 +84,6 @@ local eyex,eyey,eyez         = 0,0,0
 
 --------------------------------------------------------------------------------
 --Constants
-local broadcastAllNeonUnitsPieces = "GameRules_BroadcastNeonPieces"
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 -- Variables
@@ -168,7 +168,7 @@ local function splitToNumberedArray(msg)
     end
 
 local function setUnitNeonLuaDraw(callname, unitID, unitDefID, listOfVisibleUnitPiecesString)
-        Spring.Echo("setUnitNeonLuaDraw called")
+        Spring.Echo("Unsynced:SetUnitNeonLuaDraw called")
         Spring.UnitRendering.SetUnitLuaDraw(unitID, false)
 
         local piecesTable = splitToNumberedArray(listOfVisibleUnitPiecesString)
@@ -178,7 +178,7 @@ local function setUnitNeonLuaDraw(callname, unitID, unitDefID, listOfVisibleUnit
     end 
 
 local function unsetUnitNeonLuaDraw(callname, unitID)
-        Spring.Echo("unsetUnitNeonLuaDraw called")
+        Spring.Echo("Unsynced:UnsetUnitNeonLuaDraw called")
         neonUnitTables[unitID] = nil
         UnitUnitDefIDMap[unitID] = nil
         counterNeonUnits= counterNeonUnits - 1
@@ -442,8 +442,6 @@ end
         screentex = 2,
         normaltex = 3,
         normalunittex= 4,
-        raincanvastex = 5,
-
 ]]
 
 local function cleanUp()    
