@@ -11,7 +11,7 @@ function script.Create()
     Spring.SetUnitBlocking(unitID, false)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     hideAllReg(unitID)
-
+    ShowReg(Frame)
     StartThread(flickerAnimation)
 end
 
@@ -137,19 +137,6 @@ local snippetStarts=
 local endIndex= snippetStarts[1].endsat
 local jumpsto = snippetStarts[1].jumpsto
 
-function frameRotation()
-       if maRa() then
-            rot = math.random(0,1)
-            Turn(Frame, y_axis, math.rad(rot*180),0)
-            rot = math.random(0,1)
-            Turn(Frame, x_axis, math.rad(rot*180),0)
-            ShowReg(Frame)
-        else
-            HideReg(Frame)
-        end
-end
-
-
 function flickerAnimation()
     local index = 1
     local lastPiece = TablesOfPiecesGroups["Flicker"][index]
@@ -157,7 +144,6 @@ function flickerAnimation()
     Show(currentPiece)
     Sleep(125)
     while true do
-        frameRotation()
         currentPiece = TablesOfPiecesGroups["Flicker"][index]
         HideReg(currentPiece)
         index = loopsReptitionsJumps(index)

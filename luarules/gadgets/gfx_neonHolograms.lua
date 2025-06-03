@@ -74,6 +74,7 @@ if (gadgetHandler:IsSyncedCode()) then
         end
     end
 
+    local allNeonUnits= {}
     local neonUnitDataTransfer = {}
     function registerUnitIfHolo(unitID, unitDefID)
          if neonHologramTypeTable[unitDefID] then
@@ -82,6 +83,11 @@ if (gadgetHandler:IsSyncedCode()) then
                -- local drawMask = SO_OPAQUE_FLAG + SO_ALPHAF_FLAG + SO_REFLEC_FLAG  + SO_REFRAC_FLAG + SO_DRICON_FLAG 
                -- Spring.SetUnitEngineDrawMask(unitID, drawMask)
             end
+            local emptyTable = {}
+            local stringToSend = ""
+
+            allNeonUnits[#allNeonUnits + 1]= unitID
+           -- SendToUnsynced("setUnitNeonLuaDraw", unitID, unitDefID)
         end
     end
 
@@ -109,7 +115,7 @@ if (gadgetHandler:IsSyncedCode()) then
     function gadget:GameFrame(frame)
 		if frame > frameGameStart then           
             if count(neonUnitDataTransfer) > 0 then
-                echo("gadget:GameFrame:gfx_neonHolograms.lua "..frame)
+                --echo("gadget:GameFrame:gfx_neonHolograms.lua "..frame)
                 local VisibleUnitPieces = GG.VisibleUnitPieces   
                 if VisibleUnitPieces then
         			for id, defID in pairs(neonUnitDataTransfer) do     
@@ -117,25 +123,11 @@ if (gadgetHandler:IsSyncedCode()) then
         				if id and defID and VisibleUnitPieces[id] and VisibleUnitPieces[id] ~= cachedUnitPieces[id] then
                             local serializedStringToSend = serializePiecesTableTostring(VisibleUnitPieces[id])
                             cachedUnitPieces[id] = VisibleUnitPieces[id]
-        					SendToUnsynced("setUnitNeonLuaDraw", id, defID, serializedStringToSend)   
-                            --collectedStrings[#collectedStrings + 1] = serializedStringToSend                                     
+        					SendToUnsynced("setUnitNeonLuaDraw", id, defID, serializedStringToSend)                                 
         				end
-
-                        if not spIsUnitInView(id) then
-                            SendToUnsynced("unsetUnitNeonLuaDraw", id)   
-                        end
         			end 
-                    --for id, defID in pairs(oldneonUnitDataTransfer) do
-                    --    if not neonUnitDataTransfer[id] then
-                    --        SendToUnsynced("unsetUnitNeonLuaDraw", id)       
-                    --    end
-                    --end
-                    --oldneonUnitDataTransfer = neonUnitDataTransfer    
-                    --local neonUnitsStringified = table.concat(collectedStrings, "|") 
-                    --Spring.SetGameRulesParam (broadcastAllNeonUnitsPieces, neonUnitsStringified)       
                 end   
             end
-            echo("gadget:GameFrame:End:gfx_neonHolograms.lua "..frame)
 		end
     end
 
@@ -149,14 +141,22 @@ if (gadgetHandler:IsSyncedCode()) then
         end
     end
 
-    function gadget:UnitDestroyed(unitID, unitDefID)
+    function gadget:UnitLeftLos(unitID, unitTeam, allyTeam, unitDefID)
         if neonHologramTypeTable[unitDefID] then
             neonUnitDataTransfer[unitID] = nil
-            cachedUnitPieces[unitID] = nil
-            SendToUnsynced("unsetUnitNeonLuaDraw", unitID)
         end
     end
 
+    function gadget:UnitDestroyed(unitID, unitDefID)
+        if neonHologramTypeTable[unitDefID] then
+            neonUnitDataTransfer[unitID] = nil
+            for i=#allNeonUnits, 1, -1 do
+                if allNeonUnits[i] == unitID then
+                    table.remove(allNeonUnits, i)
+                end
+            end
+        end
+    end
 
 else -- unsynced
     local DAYLENGTH                 = 28800
@@ -482,7 +482,7 @@ end
             return 
         end
        
-       initializeBlurShader(vsx, vsy)
+       --initializeBlurShader(vsx, vsy)
        Spring.Echo("NeonShader:: did compile")
     end
 
@@ -534,7 +534,7 @@ end
                 --variables
 
                 for unitID, neonHoloParts in pairs(neonUnitTables) do
-                    --if spIsUnitInView (unitID) then
+                    if spIsUnitInView(unitID) then
                         neonHologramShader:SetUniformInt("typeDefID", typeDefID)
                         --local unitDefID = spGetUnitDefId(unitID)
                         local unitDefID = UnitUnitDefIDMap[unitID]
@@ -565,7 +565,7 @@ end
                                 glUnitPiece(unitID, pieceID)
                             end)
                         end
-                    --end
+                    end
                 end  
 
 
