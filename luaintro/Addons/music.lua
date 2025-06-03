@@ -26,7 +26,7 @@ local function playMusicFile()
 	end
 end
 
-local advertisementFiles = VFS.DirList("sounds/music/advertising/", "*.ogg")
+local advertisementFiles = VFS.DirList("sounds/advertising/", "*.ogg")
 local function playAdvertisementFile()
 	if (#advertisementFiles > 0) then
 		index=math.random(1,#advertisementFiles)
@@ -37,13 +37,18 @@ end
 local nextProgressStep = 0
 
 function addon.Initialize()
-    playMusicFile()
+
 end
 
 function addon.DrawLoadScreen()
 	local loadProgress = SG.GetLoadProgress()
+	if nextProgressStep == 0 then
+		nextProgressStep = nextProgressStep + 0.35
+		playMusicFile()
+		return
+	end
 	if loadProgress > nextProgressStep then
-		nextProgressStep = nextProgressStep + 0.30
+		nextProgressStep = nextProgressStep + 0.35
 		playAdvertisementFile()
 	end
 end

@@ -730,7 +730,7 @@ function getUnitNearestTalkableAlly(id)
         end
         )
     if #resultUnits  > 1 then return resultUnits[math.random(1,#resultUnits)] end
-    if #resultUnits == 0 then return resultUnits[1]end
+    if #resultUnits == 0 then return resultUnits[1] end
     return nil
 end
 
@@ -741,12 +741,13 @@ function sozialize(evtID, frame, persPack, startFrame, myID)
     end
 
   ---ocassionally detour toward the nearest ally or enemy
-    if math.random(0, 42) > 35 and
+    if randChance(80) and
         civilianWalkingTypeTable[persPack.mydefID] and 
         persPack.maxTimeChattingInFrames > 150  then  
            --[[ --echo("Soizialize with partnerID ")--]]
             persPack.chatPartnerID = getUnitNearestTalkableAlly(myID)
-            if persPack.chatPartnerID then                 
+            if persPack.chatPartnerID then                
+                echo(myID.." starting a chat with "..persPack.chatPartnerID.. " at "..locationstring(myID)) 
                 persPack.boolStartAChat = true
                 persPack.boolDeactivateStuckDetection = true             
             end
@@ -756,6 +757,7 @@ function sozialize(evtID, frame, persPack, startFrame, myID)
         if (persPack.maxTimeChattingInFrames <= 0 ) or -- end a chat
             not persPack.chatPartnerID or
             not doesUnitExistAlive(persPack.chatPartnerID) then
+                echo(myID.." chat has ended")
                 persPack.boolStartAChat = false
                 persPack.boolDeactivateStuckDetection = false
                 persPack = moveToLocation(myID, persPack, {}, true)
@@ -770,6 +772,7 @@ function sozialize(evtID, frame, persPack, startFrame, myID)
     if persPack.boolStartAChat == true then
         local partnerID = persPack.chatPartnerID 
         if partnerID and distanceUnitToUnit(myID, partnerID) > GameConfig.generalInteractionDistance then
+            echo(myID.." moving to chat ")
              px, py, pz = spGetUnitPosition(partnerID)
             Command(myID, "go", {x = px, y = py, z = pz}, {})
             Command(partnerID, "go", {
@@ -781,6 +784,7 @@ function sozialize(evtID, frame, persPack, startFrame, myID)
             return true, frame + 30 , persPack        
         else 
             --stop and chat 
+             echo(myID.." chatting at "..locationstring(unitID))
             Command(myID, "stop")
             Command(partnerID, "stop")
             displayConversationTextAt(myID, partnerID)
@@ -802,14 +806,14 @@ function snychronizedSocialEvents(evtID, frame, persPack, startFrame, myID)
         Command(myID, "stop")
         persPack.deactivateStuckDetectionValue = -200       
         startInternalBehaviourOfState(myID, "startPraying")
-        return true, frame + 30, persPack   
+        return true, frame + 200, persPack   
     end 
 
 	if GG.SocialEngineeredPeople and GG.SocialEngineeredPeople[myID] and GG.SocialEngineers[GG.SocialEngineeredPeople[myID]] then 
 		Command(myID, "stop")
         persPack.deactivateStuckDetectionValue = -100 
         startInternalBehaviourOfState(myID, "startPeacefullProtest", GG.SocialEngineeredPeople[myID])
-		return true, frame + 30, persPack   
+		return true, frame + 100, persPack   
 	end
 	   
     return false, nil, persPack

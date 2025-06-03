@@ -14,6 +14,68 @@ JoyRide = piece("JoyRide")
 local boolDebugScript = false
 local lastFrame = Spring.GetGameFrame()
 local cachedCopy = {}
+local tldrum = piece "tldrum"
+local dancepivot = piece "dancepivot"
+local deathpivot = piece "deathpivot"
+local tigLil = piece "tigLil"
+local tlHead = piece "tlHead"
+local tlhairup = piece "tlhairup"
+local tlhairdown = piece "tlhairdown"
+local tlarm = piece "tlarm"
+local tlarmr = piece "tlarmr"
+local tllegUp = piece "tllegUp"
+local tllegLow = piece "tllegLow"
+local tllegLowR = piece "tllegLowR"
+local tllegUpR = piece "tllegUpR"
+local tlpole = piece "tlpole"
+local tlflute = piece "tlflute"
+local spGetGameFrame = Spring.GetGameFrame
+local buisnessLogo = nil
+local brothelFlickerGroup = nil
+local CasinoflickerGroup = nil
+local JoyFlickerGroup = nil
+SIG_TIGLIL = 2
+SIG_GESTE = 4
+SIG_TALKHEAD = 8
+
+DirectionArcPoint = piece "DirectionArcPoint"
+BallArcPoint = piece "BallArcPoint"
+handr = piece "handr"
+handl = piece "handl"
+ball = piece "ball"
+tigLilHoloPices = {
+    tldrum ,
+    dancepivot, 
+    deathpivot ,
+    tigLil ,
+    tlHead ,
+    tlhairup, 
+    tlhairdown ,
+    tlarm,
+    tlarmr, 
+    tllegUp,
+    tllegLow, 
+    tllegLowR, 
+    tllegUpR ,
+    tlpole ,
+    tlflute,
+    handr,
+    handl,
+    ball
+}
+local hours  =0
+local minutes=0
+local seconds=0
+local percent=0
+hours, minutes, seconds, percent = getDayTime()
+
+function clock()
+    while true do
+        hours, minutes, seconds, percent = getDayTime()
+        Sleep(10000)
+    end
+end
+
 
 function updateCheckCache()
   local frame = Spring.GetGameFrame()
@@ -125,6 +187,156 @@ function showOneOrNone(T)
 end
 
 
+--VFS.Include("scripts/lib_textFx.lua")
+include ("tigLilAnimation.lua")
+include("lib_textFx.lua")
+
+local function tiglLilLoop()
+
+    while true do
+        if (hours > 20 or hours < 6) then
+            if maRa() then
+                skimpy = piece("skimpy")
+                ShowReg(skimpy)
+            end
+
+            StartThread(dancingTiglil, idleAnimations)
+
+            while  (hours > 20 or hours < 6) do
+                Sleep(3000)
+            end
+            Signal(SIG_TIGLIL)
+            HideReg(tlpole)
+            HideReg(tldrum)
+            HideReg(tlflute)
+            hideTReg(TablesOfPiecesGroups["GlowStick"])
+            hideTReg(tigLilHoloPices)
+        end
+        Sleep(9000)
+    end
+end
+
+function dancingTiglil(animations, boolTechno)
+    SetSignalMask(SIG_TIGLIL)
+    if boolTechno then
+        showOne(TablesOfPiecesGroups["GlowStick"])
+        showOne(TablesOfPiecesGroups["GlowStick"])
+    end
+
+    while (hours > 20 or hours < 6) do
+        TigLilSetup()
+        Signal(SIG_GESTE)
+        Signal(SIG_TALKHEAD)
+        rest = math.random(512, 4096)
+        Sleep(rest)
+        animations[math.random(1,#animations)]()
+    end
+end
+
+function joyStart()
+    StartThread(flickerScript, JoyFlickerGroup, 5, 250, 4, true)
+    StartThread(JoyAnimation)
+end
+
+function showLogo(buisnessLogo)
+    while true do
+        logo = buisnessLogo[math.random(1, #buisnessLogo)]
+        ShowReg(logo)
+        Sleep(15000)
+        HideReg(logo)
+    end
+end
+
+function chipsDropping(chips, boolReverse)
+   
+    while true do
+        if (hours > 20 or hours < 6)  then
+            for i=1, #chips do
+                local chip= chips[i]
+                reset(chip)
+                val= math.random(15, 55)*randSign()
+                Spin(chip, x_axis, math.rad(val),0)
+                val= math.random(15, 55)*randSign()
+                Spin(chip, z_axis, math.rad(val),0)
+                ShowReg(chip)
+                randX = math.random(0, 1500)*randSign()
+                randY = math.random(0, 1500)*randSign()
+                randZ = math.random(0, 1500)*randSign()
+                downDirection = math.random(15000, 29000) * randSign()
+                mP(chip, randX, randY, randZ, 100)
+            end
+            Sleep(2000)
+            for i=1, #chips do
+                local chip= chips[i]
+                Move(chip, math.random(1,3), downDirection, 300)
+            end
+            Sleep(15000)
+            if boolReverse then
+                for i=1, #chips do
+                    local chip= chips[i]
+                    reset(chip, 300)
+                end
+                Sleep(15000)
+            end
+            for i=1, #chips do
+                HideReg(chips[i])
+            end
+        end
+        Sleep(1000)
+    end
+end
+
+function theSlammer()
+    Show(SlammPiece)
+    Show(Slammer)
+    while true do
+        Turn(Slammer,x_axis, math.rad(-5), 5)
+        WMove(SlammPiece,z_axis, -5, 15)
+        Turn(Slammer,x_axis, math.rad(0), 15)
+        WMove(SlammPiece,z_axis, 0, 3)
+        Sleep(1000)
+    end
+end
+
+function dropCoinsOrMoney(boolIsMoney)
+    if boolIsMoney then
+       chipsDropping(TablesOfPiecesGroups["Money"], maRa())
+    end
+
+    if maRa()then
+        chipsDropping(TablesOfPiecesGroups["CasinoChip"], maRa())
+    else
+        chipsDropping(TablesOfPiecesGroups["Money"], maRa())
+    end
+end
+
+
+variousFunctions = {
+    [1] = function ()
+        echo("brothelFlicker function")
+        StartThread(flickerScript, brothelFlickerGroup, 5, 250, 4, true)
+        StartThread(theSlammer)
+    end,
+    [2] = function ()
+        echo("showLogo function")
+        StartThread(showLogo, buisnessLogo)
+    end,    
+    [3] = function () 
+        echo("joyStart function")
+        StartThread(joyStart)
+    end,
+    [4] = function () --tiglil
+        echo("tiglLilLoop function")
+        StartThread(tiglLilLoop)
+        StartThread(dropCoinsOrMoney, true)
+    end,
+    [5] = function ()
+        echo("casino function")
+        StartThread(flickerScript, CasinoflickerGroup, 5, 250, 4, true)
+        StartThread(dropCoinsOrMoney)
+    end,
+}
+
 
 function script.Create()
     --echo(UnitDefs[unitDefID].name.."has placeholder script called")
@@ -138,32 +350,40 @@ function script.Create()
 
 end
 
+function hideAllReg()
+    pieceMap = Spring.GetUnitPieceMap(unitID)
+    for k, v in pairs(pieceMap) do HideReg(v) end
+end
+
+
+
 function HoloGrams()    
-    local brothelFlickerGroup = TablesOfPiecesGroups["BrothelFlicker"]
-    local CasinoflickerGroup = TablesOfPiecesGroups["CasinoFlicker"]
-    local JoyFlickerGroup = {}
+    StartThread(clock)
+    buisnessLogo = TablesOfPiecesGroups["buisness_holo"]
+    brothelFlickerGroup = TablesOfPiecesGroups["BrothelFlicker"]
+    CasinoflickerGroup = TablesOfPiecesGroups["CasinoFlicker"]
+    JoyFlickerGroup = {}
 
     JoyFlickerGroup[#JoyFlickerGroup+1] = Joy
     JoyFlickerGroup[#JoyFlickerGroup+1] = JoyRide
-    hideTReg(brothelFlickerGroup)
-    hideTReg(CasinoflickerGroup)
-    hideTReg(JoyFlickerGroup)
-    hideTReg(TablesOfPiecesGroups["JoySpin"])
+    hideAllReg()
 
     Sleep(15000)
     --sexxxy time
     px,py,pz = Spring.GetUnitPosition(unitID)
     if maRa() then
-        StartThread(flickerScript, brothelFlickerGroup, 5, 250, 4, true)
+        variousFunctions[math.random(1,#variousFunctions)]()
     else
-        StartThread(flickerScript, JoyFlickerGroup, 5, 250, 4, true)
-        StartThread(JoyAnimation)
+       indexA = math.random(1,#variousFunctions)
+       variousFunctions[indexA]()
+       indexB =(indexA % #variousFunctions) +1
+       variousFunctions[indexB]()
     end
     offset= 70
     val = math.random(5, 12)*randSign()
     Move(BrothelSpin, z_axis, -offset,0)
     Spin(BrothelSpin, z_axis, math.rad(val), 0.1)
-    StartThread(flickerScript, CasinoflickerGroup, 5, 250, 4, true)
+
     val = math.random(5, 12)*randSign()
     Move(CasinoSpin, z_axis, -offset,0)
     Spin(CasinoSpin, z_axis,  math.rad(val), 0.1)
@@ -178,8 +398,6 @@ function JoyAnimation()
     JoySpinOrigin = TablesOfPiecesGroups["JoySpin"][1]
 
     while true do
-
-        hours, minutes, seconds, percent = getDayTime()
         if boolDebugScript or (hours > 17 or hours < 7) then
             Spin(JoySpinOrigin, z_axis, math.rad(17*3), 0)
             ShowReg(JoySpinOrigin)
@@ -224,7 +442,6 @@ function flickerScript(flickerGroup,  errorDrift, timeoutMs, maxInterval, boolDa
         hideTReg(fGroup)
         --assertRangeConsistency(fGroup, "flickerGroup")
         Sleep(500)
-        hours, minutes, seconds, percent = getDayTime()
         if boolDebugScript or (hours > 17 or hours < 7) then
             toShowTableT= {}
             for x=1,math.random(1,3) do
