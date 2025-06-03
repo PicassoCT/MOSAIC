@@ -19,7 +19,7 @@ end
 
 -- > debugEchoT(
 local boolDebugActive = true  --TODODO
-local neonLightShader = nil
+local topDownRadianceCascadeShader = nil
 
 --------------------------------------------------------------------------------
 --------------------------Configuration Components -----------------------------
@@ -198,14 +198,6 @@ end
 function widget:ViewResize()
     vsx, vsy = gl.GetViewSizes()
 
-  --[[  if (modelDepthTex ~= nil ) then
-        glDeleteTexture(modelDepthTex)
-    end
-
-    if (mapDepthTex ~= nil ) then
-        glDeleteTexture(mapDepthTex)
-    end--]]
-
     if (screentex ~= nil  ) then
         glDeleteTexture(screentex)
     end     
@@ -271,26 +263,26 @@ end
 
 widget:ViewResize()
 
-local function initNeonLightShader()
+local function inittopDownRadianceCascadeShader()
    Spring.Echo("gfx_neonLight:Initialize")
     -- abort if not enabled
     widgetHandler:UpdateCallIn("Update")  
     errorOutIfNotInitialized(glCreateShader, "no shader support")
 
-    local fragmentShader =  VFS.LoadFile(shaderFilePath .. "neonLightShader.frag") 
-    local vertexShader = VFS.LoadFile(shaderFilePath .. "neonLightShader.vert") 
+    local fragmentShader =  VFS.LoadFile(shaderFilePath .. "topDownNeonLightRadianceCascadeShader.frag") 
+    local vertexShader = VFS.LoadFile(shaderFilePath .. "topDownNeonLightRadianceCascadeShader.vert") 
     
     local uniformInt = {
-        modelDepthTex = modelDepthTexIndex,
-        mapDepthTex = mapDepthTexIndex,
-        screentex = screentexIndex,
-        normaltex = normaltexIndex,
-        normalunittex= normalunittexIndex,      
+        modelDepthTex = modelDepthTexIndex, -- needed to calculate the 3dish shadows
+        mapDepthTex = mapDepthTexIndex,     -- needed to calculate the mapDept for shadows
+        screentex = screentexIndex,         -- the  background picture - mostly for debug purposes
+        normaltex = normaltexIndex,         -- normal maptex 
+        normalunittex= normalunittexIndex,  -- normal unittex    
         neonLightcanvastex = neonLightcanvastexIndex,
         dephtCopyTex = dephtCopyTexIndex
     }
 
-    neonLightShader =
+    topDownRadianceCascadeShader =
         glCreateShader(
         {
             fragment = fragmentShader,
@@ -312,7 +304,7 @@ local function initNeonLightShader()
         }
     )
 
-    if (neonLightShader == nil) then
+    if (topDownRadianceCascadeShader == nil) then
         Spring.Echo("gfx_neonLight:Initialize] particle shader compilation failed")
         Spring.Echo(glGetShaderLog())
         widgetHandler:RemoveWidget(self)
@@ -321,28 +313,28 @@ local function initNeonLightShader()
         Spring.Echo("gfx_neonLight: Shader compiled: ")
     end
 
-    timePercentLoc                  = glGetUniformLocation(neonLightShader, "timePercent")
-    neonLightPercentLoc                  = glGetUniformLocation(neonLightShader, "neonLightPercent")
-    uniformViewPortSize             = glGetUniformLocation(neonLightShader, "viewPortSize")
+    timePercentLoc                  = glGetUniformLocation(topDownRadianceCascadeShader, "timePercent")
+    neonLightPercentLoc                  = glGetUniformLocation(topDownRadianceCascadeShader, "neonLightPercent")
+    uniformViewPortSize             = glGetUniformLocation(topDownRadianceCascadeShader, "viewPortSize")
 
-    uniformTime                     = glGetUniformLocation(neonLightShader, "time")
-    uniformEyePos                   = glGetUniformLocation(neonLightShader, "eyePos")
-    unformEyeDir                    = glGetUniformLocation(neonLightShader, "eyeDir")
+    uniformTime                     = glGetUniformLocation(topDownRadianceCascadeShader, "time")
+    uniformEyePos                   = glGetUniformLocation(topDownRadianceCascadeShader, "eyePos")
+    unformEyeDir                    = glGetUniformLocation(topDownRadianceCascadeShader, "eyeDir")
 
-    uniformViewPrjInv               = glGetUniformLocation(neonLightShader, 'viewProjectionInv')
-    uniformViewInv                  = glGetUniformLocation(neonLightShader, 'viewInv')
-    uniformViewMatrix               = glGetUniformLocation(neonLightShader, 'viewMatrix')
-    uniformViewProjection           = glGetUniformLocation(neonLightShader, 'viewProjection')
-    uniformProjection               = glGetUniformLocation(neonLightShader, 'projection')
-    uniformSunColor                 = glGetUniformLocation(neonLightShader, 'sunCol')
-    uniformSkyColor                 = glGetUniformLocation(neonLightShader, 'skyCol')
-    uniformSunPos                   = glGetUniformLocation(neonLightShader, 'sunPos')
+    uniformViewPrjInv               = glGetUniformLocation(topDownRadianceCascadeShader, 'viewProjectionInv')
+    uniformViewInv                  = glGetUniformLocation(topDownRadianceCascadeShader, 'viewInv')
+    uniformViewMatrix               = glGetUniformLocation(topDownRadianceCascadeShader, 'viewMatrix')
+    uniformViewProjection           = glGetUniformLocation(topDownRadianceCascadeShader, 'viewProjection')
+    uniformProjection               = glGetUniformLocation(topDownRadianceCascadeShader, 'projection')
+    uniformSunColor                 = glGetUniformLocation(topDownRadianceCascadeShader, 'sunCol')
+    uniformSkyColor                 = glGetUniformLocation(topDownRadianceCascadeShader, 'skyCol')
+    uniformSunPos                   = glGetUniformLocation(topDownRadianceCascadeShader, 'sunPos')
     Spring.Echo("gfx_neonLight:Initialize ended")
 end
 
 
 local function init()
-    initNeonLightShader()
+    inittopDownRadianceCascadeShader()
     widgetHandler:AddSyncAction("setUnitNeonLuaDraw", setUnitNeonLuaDraw)
     widgetHandler:AddSyncAction("unsetUnitNeonLuaDraw", unsetUnitNeonLuaDraw)
 end
@@ -412,8 +404,8 @@ function widget:Shutdown()
         glDeleteTexture(normalunittex or "")
     end
 
-    if neonLightShader then
-        gl.DeleteShader(neonLightShader)
+    if topDownRadianceCascadeShader then
+        gl.DeleteShader(topDownRadianceCascadeShader)
     end
     widgetHandler.RemoveSyncAction("setUnitNeonLuaDraw")
     widgetHandler.RemoveSyncAction("unsetUnitNeonLuaDraw")
@@ -479,7 +471,7 @@ end
 
 local function DrawNeonLightsToFbo()
     prepareTextures()
-    glUseShader(neonLightShader)
+    glUseShader(topDownRadianceCascadeShader)
     updateUniforms()
 
     glRenderToTexture(neonLightcanvastex, renderToTextureFunc);
@@ -499,6 +491,7 @@ end
 
 function widget:Initialize()
     if (not gl.RenderToTexture) then --super bad graphic driver
+        Spring.Echo("gfx_neonLight: Im tired boss, tired of companies beeing ugly to devs, i wanna go home! Quitting!")
         return
     end
     init()
@@ -597,7 +590,7 @@ local function setCameraOrthogonal()
     orgCamState = Spring.GetCameraState() 
     local camera, ortho = computeTopDownCamera(orgCam)
     Spring.SetCameraState(camera) 
-    gl.Ortho(ortho.width, ortho,height, ortho.near, ortho.far)
+    glOrtho(ortho.width, ortho,height, ortho.near, ortho.far)
 end
 
 function widget:DrawUnits()
@@ -621,11 +614,9 @@ function widget:DrawUnits()
 end
 
 function widget:DrawWorld()
-    setCameraOrthogonal()
     glBlending(false)
     DrawNeonLightsToFbo()
     glBlending(true) 
-    restoreCameraPosDir()
 end
 
 
