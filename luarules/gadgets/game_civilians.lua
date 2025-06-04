@@ -216,7 +216,7 @@ function getRandomSpawnNode()
         attempts = attempts + 1
     end
     if not startNode then return nil end
-
+    if type(startNode) ~= "number" then echo("StartNode is not a numb :",startNode) end
     x, y, z = spGetUnitPosition(startNode)
 
     return x, y, z, startNode
