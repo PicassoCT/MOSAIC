@@ -91,11 +91,6 @@ if (gadgetHandler:IsSyncedCode()) then
         end
     end
 
-    local function serializePiecesTableTostring(t)
-        local result = string.join(t,"|")
-        return result
-    end
-
     local function printUnitPiecesVisible(id, piecesTable)
         local stringResult = "Debug: gfx_neonHologram: Unit:"..id
         local pieceNameMap = Spring.GetUnitPieceList(id)
@@ -119,7 +114,7 @@ if (gadgetHandler:IsSyncedCode()) then
                         -- echo(HEAD().." Start:Sending Neon Hologram unit data:"..toString(VisibleUnitPieces[id] ))
         				if id and defID and VisibleUnitPieces[id] and VisibleUnitPieces[id] ~= cachedUnitPieces[id] then
                             cachedUnitPieces[id] = VisibleUnitPieces[id]
-        					SendToUnsynced("setUnitNeonLuaDraw", id, defID, table.unpack(VisibleUnitPieces[id]))                                 
+        					SendToUnsynced("setUnitNeonLuaDraw", id, defID, unpack(VisibleUnitPieces[id]))                                 
         				end
         			end 
                 end   
@@ -299,16 +294,6 @@ end
 
     local counterNeonUnits = 0
     local neonHoloParts= {}
-
-    local function splitToNumberedArray(msg)
-        local message = msg..'|'
-        local t = {}
-        for e in string.gmatch(message,'([^%|]+)%|') do
-            local pieceID =  tonumber(e)
-            table.insert(t, pieceID )            
-        end
-        return t
-    end
 
     local function setUnitNeonLuaDraw(callname, unitID, unitDefID, ...)
         local piecesTable = {...}
@@ -536,7 +521,7 @@ end
                         glTexture(1, string.format("%%%d:1", unitDefID))
                         neonHologramShader:SetUniformInt("typeDefID",  holoDefIDTypeIDMap[unitDefID])
                         local x,y,z = spGetUnitPosition(unitID)
-                        neonHologramShader:setuniformfloat("unitCenterPosition", x, y, z)
+                        neonHologramShader:SetUniformFloat("unitCenterPosition", x, y, z)
                          local timePercentOffset = (timepercent + (unitID/DAYLENGTH))%1.0
                         neonHologramShader:SetUniformFloat("timepercent",  timePercentOffset)
                         neonHologramShader:SetUniformFloat("time", timeSeconds + unitID)
