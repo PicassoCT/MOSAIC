@@ -56,6 +56,27 @@ check_file_type() {
   else
     echo "ℹ️  Unknown extension: $file (type: $mimetype)"
   fi
+
+# If it's an audio file, check mono/stereo
+case "$mimetype" in  audio/*)
+    if command -v ffprobe >/dev/null 2>&1; then
+      channels=$(ffprobe -v error -select_streams a:0 -show_entries stream=channels \
+        -of default=noprint_wrappers=1:nokey=1 "$file" 2>/dev/null)
+      if [ "$channels" -eq 1 ]; then
+        echo "🔊 Mono audio: $file"
+      elif [ "$channels" -eq 2 ]; then
+        echo "🔊 Stereo audio: $file"
+      elif [ -n "$channels" ]; then
+        echo "🎧 $channels-channel audio: $file"
+      else
+        echo "⚠️  Could not determine channels: $file"
+      fi
+    else
+      echo "⚠️  ffprobe not found, cannot check audio channels for: $file"
+    fi
+    ;;
+esac
+
 }
 
 # Traverse files

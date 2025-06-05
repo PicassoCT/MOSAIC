@@ -190,6 +190,7 @@ else -- unsynced
     local glUnitMultMatrix          = gl.UnitMultMatrix
     local glUnitPieceMultMatrix     = gl.UnitPieceMultMatrix
     local glUnitPiece               = gl.UnitPiece
+
     local glTexture                 = gl.Texture
     local glUnitShapeTextures       = gl.UnitShapeTextures
     local glCopyToTexture           = gl.CopyToTexture
@@ -440,7 +441,7 @@ end
                 normaltex = 2,
                 reflecttex = 3,
                 screentex = 4,
-                typeDefID = 0
+                typeDefID = 5
             },
             uniformFloat = {
               viewPortSize = {vsx, vsy},                 
@@ -471,7 +472,8 @@ end
         ["house_western_hologram_brothel"]  =   2,
         ["house_western_hologram_buisness"] =   3,
         ["house_asian_hologram_buisness"] =     4,
-     -- ["animated_hologram"] =                 3,
+        ["advertising_blimp_hologram"] =        4,
+
     }
 
     local holoDefID = nil
@@ -479,9 +481,6 @@ end
         if holoNameTypeIDMap[UnitDefs[i].name] ~= nil then
             holoDefIDTypeIDMap[UnitDefs[i].id] = holoNameTypeIDMap[UnitDefs[i].name] 
             --Spring.Echo("gfx_neonHolograms.lua: Defined hologram types for "..UnitDefs[i].name.." as ".. holoNameTypeIDMap[UnitDefs[i].name] )
-        end
-        if UnitDefs[i].name == "house_western_hologram" then
-            holoDefID =  UnitDefs[i].id
         end
     end       
 
@@ -513,37 +512,44 @@ end
                 --variables
 
                 for unitID, neonHoloParts in pairs(neonUnitTables) do
-                    if spIsUnitInView(unitID) then
-                        neonHologramShader:SetUniformInt("typeDefID", typeDefID)
-                        --local unitDefID = spGetUnitDefId(unitID)
-                        local unitDefID = UnitUnitDefIDMap[unitID]
-                        glTexture(0, string.format("%%%d:0", unitDefID))
-                        glTexture(1, string.format("%%%d:1", unitDefID))
-                        neonHologramShader:SetUniformInt("typeDefID",  holoDefIDTypeIDMap[unitDefID])
+                    if spIsUnitInView(unitID) then --draw only visible units
                         local x,y,z = spGetUnitPosition(unitID)
-                        neonHologramShader:SetUniformFloat("unitCenterPosition", x, y, z)
-                         local timePercentOffset = (timepercent + (unitID/DAYLENGTH))%1.0
-                        neonHologramShader:SetUniformFloat("timepercent",  timePercentOffset)
-                        neonHologramShader:SetUniformFloat("time", timeSeconds + unitID)
+                        local unitDefID = UnitUnitDefIDMap[unitID]
+                        local timePercentOffset = (timepercent + (unitID/DAYLENGTH))%1.0
+                        --local distToCam = math.sqrt((cx-x)^2 * (cy -y)^2 + (cz-z)^2)
+                        --if distToCam < 3000 then
+                            glTexture(0, string.format("%%%d:0", unitDefID))
+                            glTexture(1, string.format("%%%d:1", unitDefID))
+                            neonHologramShader:SetUniformInt("typeDefID",  holoDefIDTypeIDMap[unitDefID])                        
+                            neonHologramShader:SetUniformFloat("unitCenterPosition", x, y, z)                       
+                            neonHologramShader:SetUniformFloat("timepercent",  timePercentOffset)
+                            neonHologramShader:SetUniformFloat("time", timeSeconds + unitID)
 
-                        glCulling(GL_FRONT)
-                        for  _, pieceID in ipairs(neonHoloParts)do
+                            glCulling(GL_FRONT)
+                            for  _, pieceID in ipairs(neonHoloParts)do
 
-                          glPushPopMatrix( function()
-                                glUnitMultMatrix(unitID)
-                                glUnitPieceMultMatrix(unitID, pieceID)
-                                glUnitPiece(unitID, pieceID)
-                            end)
-                        end
-                           
-                        glCulling(GL_BACK)
-                        for _,pieceID in ipairs(neonHoloParts)do
-                          glPushPopMatrix( function()
-                                glUnitMultMatrix(unitID)
-                                glUnitPieceMultMatrix(unitID, pieceID)
-                                glUnitPiece(unitID, pieceID)
-                            end)
-                        end
+                              glPushPopMatrix( function()
+                                    glUnitMultMatrix(unitID)
+                                    glUnitPieceMultMatrix(unitID, pieceID)
+                                    glUnitPiece(unitID, pieceID)
+                                end)
+                            end
+                               
+                            glCulling(GL_BACK)
+                            for _,pieceID in ipairs(neonHoloParts)do
+                              glPushPopMatrix( function()
+                                    glUnitMultMatrix(unitID)
+                                    glUnitPieceMultMatrix(unitID, pieceID)
+                                    glUnitPiece(unitID, pieceID)
+                                end)
+                            end
+                        --[[else --do a traditional transparent draw
+                            glDepthMask(false)
+                                glBlending(GL_SRC_ALPHA, GL_ONE)
+                                glUnitRaw(unitID, true)
+                                glBlending(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+                           glDepthMask(true)
+                        end]]
                     end
                 end  
 
