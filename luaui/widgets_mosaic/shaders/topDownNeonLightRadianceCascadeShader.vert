@@ -19,6 +19,4 @@ void main() {
     vWorldPos = worldPos.xyz;
     vNormal = mat3(uModel) * aNormal;
     vUV = aUV;
-
-    gl_Position = uProjection * uView * worldPos;
 }
