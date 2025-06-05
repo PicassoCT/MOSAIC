@@ -102,8 +102,6 @@ if (gadgetHandler:IsSyncedCode()) then
 
     local cachedUnitPieces = {}
     local oldneonUnitDataTransfer = {}
-    local broadcastAllNeonUnitsPieces = "GameRules_BroadcastNeonPieces"
-    local collectedStrings  = {}
     function gadget:GameFrame(frame)
 		if frame > frameGameStart then           
             if count(neonUnitDataTransfer) > 0 then
@@ -405,6 +403,13 @@ end
             wrap_t = GL.CLAMP,
             fbo = true,
           })
+    end
+
+    function gadget:GameFrame(frame)
+        if Script.LuaUI('RecieveAllNeonUnitsPieces') then
+            local message = Script.LuaUI.RecieveAllNeonUnitsPieces(neonUnitTables)
+            Spring.SendMessage(message)
+        end
     end
  
     local boolActivated = false

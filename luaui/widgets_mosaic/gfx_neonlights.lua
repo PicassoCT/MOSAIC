@@ -157,30 +157,13 @@ local neonUnitTables = {}
 local UnitUnitDefIDMap = {}
 local counterNeonUnits = 0
 
-local function setUnitNeonLuaDraw(callname, unitID, unitDefID, ...)
-        Spring.Echo("Unsynced:SetUnitNeonLuaDraw called")
-        Spring.UnitRendering.SetUnitLuaDraw(unitID, false)
 
-        local piecesTable = {...}
-        neonUnitTables[unitID] =  piecesTable
-        UnitUnitDefIDMap[unitID] = unitDefID
-        counterNeonUnits = counterNeonUnits + 1
-    end 
-
-local function unsetUnitNeonLuaDraw(callname, unitID)
-        Spring.Echo("Unsynced:UnsetUnitNeonLuaDraw called")
-        neonUnitTables[unitID] = nil
-        UnitUnitDefIDMap[unitID] = nil
-        counterNeonUnits= counterNeonUnits - 1
-    end  
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 local function errorOutIfNotInitialized(value, name)
     if value == nil then
         Spring.Echo("No "..name.." - aborting")
-        widgetHandler.RemoveSyncAction("setUnitNeonLuaDraw")
-        widgetHandler.RemoveSyncAction("unsetUnitNeonLuaDraw")
         widgetHandler:RemoveWidget(self)
     end
 end
@@ -325,8 +308,6 @@ end
 
 local function init()
     inittopDownRadianceCascadeShader()
-    widgetHandler:AddSyncAction("setUnitNeonLuaDraw", setUnitNeonLuaDraw)
-    widgetHandler:AddSyncAction("unsetUnitNeonLuaDraw", unsetUnitNeonLuaDraw)
 end
 
 --------------------------------------------------------------------------------
@@ -397,8 +378,6 @@ function widget:Shutdown()
     if topDownRadianceCascadeShader then
         gl.DeleteShader(topDownRadianceCascadeShader)
     end
-    widgetHandler.RemoveSyncAction("setUnitNeonLuaDraw")
-    widgetHandler.RemoveSyncAction("unsetUnitNeonLuaDraw")
 end
 
 local function updateUniforms()
@@ -477,6 +456,10 @@ function widget:DrawScreenEffects()
     end
 end
 
+local function recieveNeonHoloLightPiecesByUnit(unitPiecesTable)
+    neonUnitTables =unitPiecesTable
+end
+
 function widget:Initialize()
     if (not gl.RenderToTexture) then --super bad graphic driver
         Spring.Echo("gfx_neonLights: Im tired boss, tired of companies beeing ugly to devs, i wanna go home! Quitting!")
@@ -484,6 +467,7 @@ function widget:Initialize()
     end
     init()
     widget:ViewResize()
+    widgetHandler:RegisterGlobal('RecieveAllNeonUnitsPieces', recieveNeonHoloLightPiecesByUnit)
 
 end
 
