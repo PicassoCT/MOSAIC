@@ -91,14 +91,6 @@ if (gadgetHandler:IsSyncedCode()) then
         end
     end
 
-    local function serializePiecesTableTostring(t)
-        local result = ""
-        for i=1, #t do
-            result = result.."|"..t[i]
-        end
-        return result
-    end
-
     local function printUnitPiecesVisible(id, piecesTable)
         local stringResult = "Debug: gfx_neonHologram: Unit:"..id
         local pieceNameMap = Spring.GetUnitPieceList(id)
@@ -121,9 +113,8 @@ if (gadgetHandler:IsSyncedCode()) then
         			for id, defID in pairs(neonUnitDataTransfer) do     
                         -- echo(HEAD().." Start:Sending Neon Hologram unit data:"..toString(VisibleUnitPieces[id] ))
         				if id and defID and VisibleUnitPieces[id] and VisibleUnitPieces[id] ~= cachedUnitPieces[id] then
-                            local serializedStringToSend = serializePiecesTableTostring(VisibleUnitPieces[id])
                             cachedUnitPieces[id] = VisibleUnitPieces[id]
-        					SendToUnsynced("setUnitNeonLuaDraw", id, defID, serializedStringToSend)                                 
+        					SendToUnsynced("setUnitNeonLuaDraw", id, defID, unpack(VisibleUnitPieces[id]))                                 
         				end
         			end 
                 end   
@@ -199,6 +190,7 @@ else -- unsynced
     local glUnitMultMatrix          = gl.UnitMultMatrix
     local glUnitPieceMultMatrix     = gl.UnitPieceMultMatrix
     local glUnitPiece               = gl.UnitPiece
+
     local glTexture                 = gl.Texture
     local glUnitShapeTextures       = gl.UnitShapeTextures
     local glCopyToTexture           = gl.CopyToTexture
@@ -304,21 +296,9 @@ end
     local counterNeonUnits = 0
     local neonHoloParts= {}
 
-    local function splitToNumberedArray(msg)
-        local message = msg..'|'
-        local t = {}
-        for e in string.gmatch(message,'([^%|]+)%|') do
-            local pieceID =  tonumber(e)
-            table.insert(t, pieceID )            
-        end
-        return t
-    end
-
-    local function setUnitNeonLuaDraw(callname, unitID, unitDefID, listOfVisibleUnitPiecesString)
-
+    local function setUnitNeonLuaDraw(callname, unitID, unitDefID, ...)
+        local piecesTable = {...}
         Spring.UnitRendering.SetUnitLuaDraw(unitID, false)
-
-        local piecesTable = splitToNumberedArray(listOfVisibleUnitPiecesString)
         neonUnitTables[unitID] =  piecesTable
         UnitUnitDefIDMap[unitID] = unitDefID
         counterNeonUnits = counterNeonUnits + 1
@@ -461,7 +441,7 @@ end
                 normaltex = 2,
                 reflecttex = 3,
                 screentex = 4,
-                typeDefID = 0
+                typeDefID = 5
             },
             uniformFloat = {
               viewPortSize = {vsx, vsy},                 
@@ -492,7 +472,8 @@ end
         ["house_western_hologram_brothel"]  =   2,
         ["house_western_hologram_buisness"] =   3,
         ["house_asian_hologram_buisness"] =     4,
-     -- ["animated_hologram"] =                 3,
+        ["advertising_blimp_hologram"] =        4,
+
     }
 
     local holoDefID = nil
@@ -500,9 +481,6 @@ end
         if holoNameTypeIDMap[UnitDefs[i].name] ~= nil then
             holoDefIDTypeIDMap[UnitDefs[i].id] = holoNameTypeIDMap[UnitDefs[i].name] 
             --Spring.Echo("gfx_neonHolograms.lua: Defined hologram types for "..UnitDefs[i].name.." as ".. holoNameTypeIDMap[UnitDefs[i].name] )
-        end
-        if UnitDefs[i].name == "house_western_hologram" then
-            holoDefID =  UnitDefs[i].id
         end
     end       
 
@@ -534,37 +512,44 @@ end
                 --variables
 
                 for unitID, neonHoloParts in pairs(neonUnitTables) do
-                    if spIsUnitInView(unitID) then
-                        neonHologramShader:SetUniformInt("typeDefID", typeDefID)
-                        --local unitDefID = spGetUnitDefId(unitID)
-                        local unitDefID = UnitUnitDefIDMap[unitID]
-                        glTexture(0, string.format("%%%d:0", unitDefID))
-                        glTexture(1, string.format("%%%d:1", unitDefID))
-                        neonHologramShader:SetUniformInt("typeDefID",  holoDefIDTypeIDMap[unitDefID])
+                    if spIsUnitInView(unitID) then --draw only visible units
                         local x,y,z = spGetUnitPosition(unitID)
-                        neonHologramShader:SetUniformFloatArray("unitCenterPosition", {x, y, z})
-                         local timePercentOffset = (timepercent + (unitID/DAYLENGTH))%1.0
-                        neonHologramShader:SetUniformFloat("timepercent",  timePercentOffset)
-                        neonHologramShader:SetUniformFloat("time", timeSeconds + unitID)
+                        local unitDefID = UnitUnitDefIDMap[unitID]
+                        local timePercentOffset = (timepercent + (unitID/DAYLENGTH))%1.0
+                        --local distToCam = math.sqrt((cx-x)^2 * (cy -y)^2 + (cz-z)^2)
+                        --if distToCam < 3000 then
+                            glTexture(0, string.format("%%%d:0", unitDefID))
+                            glTexture(1, string.format("%%%d:1", unitDefID))
+                            neonHologramShader:SetUniformInt("typeDefID",  holoDefIDTypeIDMap[unitDefID])                        
+                            neonHologramShader:SetUniformFloat("unitCenterPosition", x, y, z)                       
+                            neonHologramShader:SetUniformFloat("timepercent",  timePercentOffset)
+                            neonHologramShader:SetUniformFloat("time", timeSeconds + unitID)
 
-                        glCulling(GL_FRONT)
-                        for  _, pieceID in ipairs(neonHoloParts)do
+                            glCulling(GL_FRONT)
+                            for  _, pieceID in ipairs(neonHoloParts)do
 
-                          glPushPopMatrix( function()
-                                glUnitMultMatrix(unitID)
-                                glUnitPieceMultMatrix(unitID, pieceID)
-                                glUnitPiece(unitID, pieceID)
-                            end)
-                        end
-                           
-                        glCulling(GL_BACK)
-                        for _,pieceID in ipairs(neonHoloParts)do
-                          glPushPopMatrix( function()
-                                glUnitMultMatrix(unitID)
-                                glUnitPieceMultMatrix(unitID, pieceID)
-                                glUnitPiece(unitID, pieceID)
-                            end)
-                        end
+                              glPushPopMatrix( function()
+                                    glUnitMultMatrix(unitID)
+                                    glUnitPieceMultMatrix(unitID, pieceID)
+                                    glUnitPiece(unitID, pieceID)
+                                end)
+                            end
+                               
+                            glCulling(GL_BACK)
+                            for _,pieceID in ipairs(neonHoloParts)do
+                              glPushPopMatrix( function()
+                                    glUnitMultMatrix(unitID)
+                                    glUnitPieceMultMatrix(unitID, pieceID)
+                                    glUnitPiece(unitID, pieceID)
+                                end)
+                            end
+                        --[[else --do a traditional transparent draw
+                            glDepthMask(false)
+                                glBlending(GL_SRC_ALPHA, GL_ONE)
+                                glUnitRaw(unitID, true)
+                                glBlending(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+                           glDepthMask(true)
+                        end]]
                     end
                 end  
 

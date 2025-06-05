@@ -224,7 +224,7 @@ function widget:ViewResize()
         }
     )
     errorOutIfNotInitialized(raincanvastex, "raincanvastex not existing")
-    Spring.Echo("RaincanvastexIndex:".. raincanvastex)
+--    Spring.Echo("RaincanvastexIndex:".. raincanvastex)
     local commonTexOpts = {
         target = GL_TEXTURE_2D,
         border = false,

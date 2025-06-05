@@ -1,6 +1,6 @@
 function widget:GetInfo()
     return {
-        name = "Neonlights",
+        name = "NeonLight Radiance Cascade",
         desc = "Produces a topdown fbo neonlightmap of the city in cameraview via radiance cascade",
         author = "Picasso",
         date = "2023",
@@ -157,21 +157,11 @@ local neonUnitTables = {}
 local UnitUnitDefIDMap = {}
 local counterNeonUnits = 0
 
-local function splitToNumberedArray(msg)
-        local message = msg..'|'
-        local t = {}
-        for e in string.gmatch(message,'([^%|]+)%|') do
-            local pieceID =  tonumber(e)
-            table.insert(t, pieceID )            
-        end
-        return t
-    end
-
-local function setUnitNeonLuaDraw(callname, unitID, unitDefID, listOfVisibleUnitPiecesString)
+local function setUnitNeonLuaDraw(callname, unitID, unitDefID, ...)
         Spring.Echo("Unsynced:SetUnitNeonLuaDraw called")
         Spring.UnitRendering.SetUnitLuaDraw(unitID, false)
 
-        local piecesTable = splitToNumberedArray(listOfVisibleUnitPiecesString)
+        local piecesTable = {...}
         neonUnitTables[unitID] =  piecesTable
         UnitUnitDefIDMap[unitID] = unitDefID
         counterNeonUnits = counterNeonUnits + 1
@@ -489,7 +479,7 @@ end
 
 function widget:Initialize()
     if (not gl.RenderToTexture) then --super bad graphic driver
-        Spring.Echo("gfx_neonLight: Im tired boss, tired of companies beeing ugly to devs, i wanna go home! Quitting!")
+        Spring.Echo("gfx_neonLights: Im tired boss, tired of companies beeing ugly to devs, i wanna go home! Quitting!")
         return
     end
     init()
@@ -606,15 +596,24 @@ function widget:DrawUnits()
             end
         end
     setCameraOrthogonal()
+    DrawNeonLightsToFbo()
     end)
     
    restoreCameraPosDir()
 end
 
-function widget:DrawWorld()
-    glBlending(false)
-    DrawNeonLightsToFbo()
-    glBlending(true) 
+function widget:DrawScreenEffects()
+    if not debugDisplayShader then return end
+    local _, _, isPaused = Spring.GetGameSpeed()
+    if isPaused then
+       return
+    end
+
+    glUseShader(debugDisplayShader)   
+    glTexture(1, neonLightcanvastex)
+    glTexRect(0, vsy, vsx, 0)
+    glTexture(1, false)
+    glUseShader(0)
 end
 
 

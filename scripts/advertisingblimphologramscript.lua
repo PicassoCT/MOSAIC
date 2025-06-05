@@ -29,6 +29,7 @@ local tllegLowR = piece "tllegLowR"
 local tllegUpR = piece "tllegUpR"
 local tlpole = piece "tlpole"
 local tlflute = piece "tlflute"
+local idleAnimations = {}
 local spGetGameFrame = Spring.GetGameFrame
 local buisnessLogo = nil
 local brothelFlickerGroup = nil
@@ -191,6 +192,25 @@ end
 include ("tigLilAnimation.lua")
 include("lib_textFx.lua")
 
+idleAnimations[#idleAnimations +1] = idle_stance
+idleAnimations[#idleAnimations +1] = idle_stance2
+idleAnimations[#idleAnimations +1] = idle_stance3
+idleAnimations[#idleAnimations +1] = idle_stance4
+idleAnimations[#idleAnimations +1] = idle_stance5
+idleAnimations[#idleAnimations +1] = idle_stance6
+idleAnimations[#idleAnimations +1] = idle_stance7
+idleAnimations[#idleAnimations +1] = idle_stance8
+idleAnimations[#idleAnimations +1] = idle_stance9
+idleAnimations[#idleAnimations +1] = idle_stance_10
+idleAnimations[#idleAnimations +1] = idle_stance11
+idleAnimations[#idleAnimations +1] = idle_stance_12
+idleAnimations[#idleAnimations +1] = idle_stance13
+idleAnimations[#idleAnimations +1] = idle_stance14
+idleAnimations[#idleAnimations +1] = idle_stance15
+idleAnimations[#idleAnimations +1] = idle_playBall
+idleAnimations[#idleAnimations +1] = idle_stance18
+idleAnimations[#idleAnimations +1] = idle_stance17
+idleAnimations[#idleAnimations +1] = strikeAPose
 local function tiglLilLoop()
 
     while true do
@@ -430,8 +450,6 @@ function JoyAnimation()
         Sleep(10)
     end
 end
-
-
 
 function flickerScript(flickerGroup,  errorDrift, timeoutMs, maxInterval, boolDayLightSavings)
     assert(flickerGroup)

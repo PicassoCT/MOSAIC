@@ -9,9 +9,6 @@ local house_western_hologram = Abstract:New{
 	script 				= "house_western_hologram_script.lua",
 	objectName       	= "house_western_hologram.dae",
 
-	
-	
-
 	customparams = {	
 		normaltex = "unittextures/house_europe_normal.dds",
 		helptext			= "Civilian Building",
@@ -20,7 +17,7 @@ local house_western_hologram = Abstract:New{
 	
 	usepiececollisionvolumes = false,
 	collisionVolumeType = "box",
-	collisionvolumescales = "130 60 130",
+	collisionvolumescales = "130 600 130",
 	collisionVolumeOffsets  = {0.0, 30.0,  0.0},
 	category = [[NOTARGET ABSTRACT]],
 
@@ -48,7 +45,7 @@ local house_western_hologram_brothel = Abstract:New{
 	
 	usepiececollisionvolumes = false,
 	collisionVolumeType = "box",
-	collisionvolumescales = "130 60 130",
+	collisionvolumescales = "130 600 130",
 	collisionVolumeOffsets  = {0.0, 30.0,  0.0},
 	category = [[NOTARGET ABSTRACT]],
 
