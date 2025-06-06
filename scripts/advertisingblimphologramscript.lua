@@ -9,7 +9,9 @@ local TablesOfPiecesGroups = {}
 gaiaTeamID = Spring.GetGaiaTeamID()
 BrothelSpin= piece("BrothelSpin")
 CasinoSpin= piece("CasinoSpin")
-Joy = piece("Joy")
+Joy = piece("Joy1")
+JoyZoom = piece("Joy2")
+JoyZoomArm = piece("Joy2Arm")
 JoyRide = piece("JoyRide")
 local boolDebugScript = false
 local lastFrame = Spring.GetGameFrame()
@@ -215,24 +217,28 @@ local function tiglLilLoop()
 
     while true do
         if (hours > 20 or hours < 6) then
-            if maRa() then
-                skimpy = piece("skimpy")
-                ShowReg(skimpy)
-            end
+        
 
             StartThread(dancingTiglil, idleAnimations)
 
             while  (hours > 20 or hours < 6) do
-                Sleep(3000)
+                Sleep(3000)               
             end
+
             Signal(SIG_TIGLIL)
+            HideReg(skimpy)
             HideReg(tlpole)
             HideReg(tldrum)
             HideReg(tlflute)
             hideTReg(TablesOfPiecesGroups["GlowStick"])
             hideTReg(tigLilHoloPices)
+            
         end
-        Sleep(9000)
+        while(hourse < 20 ) do
+                showLogo()
+                Sleep(5000)
+            end
+        Sleep(3000)
     end
 end
 
@@ -241,6 +247,10 @@ function dancingTiglil(animations, boolTechno)
     if boolTechno then
         showOne(TablesOfPiecesGroups["GlowStick"])
         showOne(TablesOfPiecesGroups["GlowStick"])
+    end
+    if maRa() then
+        skimpy = piece("skimpy")
+        ShowReg(skimpy)
     end
 
     while (hours > 20 or hours < 6) do
@@ -307,8 +317,10 @@ function chipsDropping(chips, boolReverse)
 end
 
 function theSlammer()
-    Show(SlammPiece)
-    Show(Slammer)
+    Slammer = piece("Slammer")
+    SlammPiece = piece("SlamPiece")
+    ShowReg(SlammPiece)
+    ShowReg(Slammer)
     while true do
         Turn(Slammer,x_axis, math.rad(-5), 5)
         WMove(SlammPiece,z_axis, -5, 15)
@@ -385,6 +397,8 @@ function HoloGrams()
     JoyFlickerGroup = {}
 
     JoyFlickerGroup[#JoyFlickerGroup+1] = Joy
+    JoyFlickerGroup[#JoyFlickerGroup+1] = JoyZoom
+    JoyFlickerGroup[#JoyFlickerGroup+1] = JoyZoomArm
     JoyFlickerGroup[#JoyFlickerGroup+1] = JoyRide
     hideAllReg()
 
@@ -409,6 +423,25 @@ function HoloGrams()
     Spin(CasinoSpin, z_axis,  math.rad(val), 0.1)
 end
 
+local GameConfig = getGameConfig()
+local civilianWalkingTypeTable = getCultureUnitModelTypes(  GameConfig.instance.culture, "civilian", UnitDefs)
+
+function joyToTheWorld()
+    lowest = math.huge
+    lowestID = nil
+    foreach(getAllOfTypeNearUnit(unitID, civilianWalkingTypeTable, 1024),
+        function(id)
+            candidateDistance = distancePosToUnit(mx,my,mz, id)
+            if candidateDistance < lowest then
+                lowest = candidateDistance
+                lowestID = id
+            end
+        end)
+    if lowestID then 
+        turnUnitPieceToUnit(unitID, Joy, lowestID, 15)
+    end
+end
+
 
 
 function JoyAnimation()
@@ -418,7 +451,12 @@ function JoyAnimation()
     JoySpinOrigin = TablesOfPiecesGroups["JoySpin"][1]
 
     while true do
+        Hide(JoyZoom)
+        Hide(JoyZoomArm)
+        Hide(Joy)
         if boolDebugScript or (hours > 17 or hours < 7) then
+            if maRa() then ShowReg(JoyZoom); ShowReg(JoyZoomArm); else ShowReg(Joy) end
+            joyToTheWorld()
             Spin(JoySpinOrigin, z_axis, math.rad(17*3), 0)
             ShowReg(JoySpinOrigin)
             Sleep(2000)

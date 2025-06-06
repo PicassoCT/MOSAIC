@@ -842,6 +842,14 @@ function moveUnitToUnit(id, target, ox, oy, oz)
     return false
 end
 
+function turnUnitPieceToUnit(id, p, target, speed)
+    ix, iy, iz = Spring.GetUnitPosition(id)
+    x, y, z = Spring.GetUnitPosition(target)
+    rotation = math.atan2(ix-x, iz-z)
+    Turn(p, y_axis, rotation, speed)    
+end
+
+
 function moveCtrlUnitToUnit(id, target)
     Spring.MoveCtrl.Enable(id, true)
     x, y, z = Spring.GetUnitPosition(target)
@@ -2637,6 +2645,7 @@ end
 
 -- > Counts the number of elements in a dictionary
 function count(T)
+    assert(type(T) == "table")
     if not T then return 0 end
     local index = 0
     for k, v in pairs(T) do if v then index = index + 1 end end
@@ -2662,7 +2671,7 @@ function getNthElementT(T, nth)
     local index = 0
     for k, v in pairs(T) do
         if v then index = index + 1 end
-        if index == nth then return k, v1 end
+        if index == nth then return k, v end
     end
 end
 
@@ -3816,6 +3825,12 @@ function distanceOfUnitToPoint(ud, x, y, z)
     px, py, pz = Spring.GetUnitPosition(ud)
     ux, uy, uz = px - x, py - y, pz - z
     return math.sqrt(ux ^ 2 + uy ^ 2 + uz ^ 2), px, py, pz
+end
+
+-- >returns the Distance between two units
+function distancePosToUnit(xa,ya,za , idB)
+      xb, yb, zb = Spring.GetUnitPosition(idB)
+    return math.sqrt((xa-xb)^2 + (ya-yb)^2 + (za-zb)^2)
 end
 
 -- >returns the Distance between two units
