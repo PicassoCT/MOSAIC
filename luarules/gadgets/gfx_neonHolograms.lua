@@ -102,8 +102,6 @@ if (gadgetHandler:IsSyncedCode()) then
 
     local cachedUnitPieces = {}
     local oldneonUnitDataTransfer = {}
-    local broadcastAllNeonUnitsPieces = "GameRules_BroadcastNeonPieces"
-    local collectedStrings  = {}
     function gadget:GameFrame(frame)
 		if frame > frameGameStart then           
             if count(neonUnitDataTransfer) > 0 then
@@ -406,6 +404,13 @@ end
             fbo = true,
           })
     end
+
+    function gadget:GameFrame(frame)
+        if Script.LuaUI('RecieveAllNeonUnitsPieces') then
+            local message = Script.LuaUI.RecieveAllNeonUnitsPieces(neonUnitTables)
+            Spring.SendMessage(message)
+        end
+    end
  
     local boolActivated = false
     function gadget:Initialize() 
@@ -471,8 +476,8 @@ end
         ["house_western_hologram_casino"]   =   1,
         ["house_western_hologram_brothel"]  =   2,
         ["house_western_hologram_buisness"] =   3,
-        ["house_asian_hologram_buisness"] =     4,
-        ["advertising_blimp_hologram"] =        4,
+        ["house_asian_hologram_buisness"] =     3,
+        ["advertising_blimp_hologram"] =        3,
 
     }
 

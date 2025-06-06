@@ -1,4 +1,4 @@
-#version 300 es
+#version 150 compatibility  
 precision highp float;
 
 in vec3 vWorldPos;

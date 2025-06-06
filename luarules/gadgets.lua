@@ -50,7 +50,9 @@ local function mynext(...)
     return i, v
 end
 
+
 pairs = function(...)
+    if type(...) ~= "table" then return "hontonk" end
     if SendToUnsynced then
         local n, s, i = origPairs(...)
         return mynext, s, i

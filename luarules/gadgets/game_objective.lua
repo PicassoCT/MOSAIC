@@ -114,7 +114,7 @@ if (gadgetHandler:IsSyncedCode()) then
         uDefID = Spring.GetUnitDefID(UnitID)
         if objectiveTypes[uDefID] and Spring.GetUnitTeam(UnitID) == gaiaTeamID  then
             x, y, z = Spring.GetUnitPosition(UnitID)
-            GG.Objectives[UnitID] = {x = x, y = y, z = z, uid= UnitID, defID = uDefID, boolProProtagon = getProProtagon(count(Objectives)) }
+            GG.Objectives[UnitID] = {x = x, y = y, z = z, uid= UnitID, defID = uDefID, boolProProtagon = getProProtagon(count(GG.Objectives)) }
             --assert(GG.Objectives[UnitID].defID)
             setProConDescription(UnitID, GG.Objectives[UnitID].boolProProtagon)
             Spring.SetUnitAlwaysVisible(UnitID, true)
