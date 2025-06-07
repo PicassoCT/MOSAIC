@@ -91,15 +91,14 @@ local pausedTime = 0
 local lastFrametime = Spring.GetTimer()
 local mapDepthTex = nil
 local modelDepthTex = nil
-
 local screentex = nil
 local normaltex = nil
 local normalunittex = nil
 local neonLightcanvastex = nil
+local cubesamplertex = nil
 local depthCopyTex= nil
+
 local startOsClock
-
-
 
 local shaderLightSources = {} --TODO Needs a transfer function from worldspace to screenspace / Scrap the whole idea?
 local canvasneonLightTextureID = 0
@@ -145,7 +144,7 @@ local mapDepthTexIndex      = 1
 local screentexIndex        = 2
 local normaltexIndex        = 3
 local normalunittexIndex    = 4
-local neonLightcanvastexIndex = 5
+local neonPiecesInputTextureIndex = 5
 
 
 local dephtCopyTexIndex     = 6
@@ -200,6 +199,21 @@ function widget:ViewResize()
     )
     errorOutIfNotInitialized(screentex, "screentex not existing")       
 
+    neonPiecesInputFbo = TODO_CreateFbo
+    cubesamplertex =
+        glCreateTexture(
+        vsx,
+        vsy,
+        {
+        min_filter = GL.LINEAR, 
+        mag_filter = GL.LINEAR,
+        wrap_s = GL.CLAMP_TO_EDGE, 
+        wrap_t = GL.CLAMP_TO_EDGE,
+        }
+    )
+    errorOutIfNotInitialized(cubesamplertex, "cubesamplertex not existing")       
+    
+
     neonLightcanvastex =
         gl.CreateTexture(
         vsx,
@@ -213,7 +227,7 @@ function widget:ViewResize()
         }
     )
     errorOutIfNotInitialized(neonLightcanvastex, "neonLightcanvastex not existing")
-    Spring.Echo("neonLightcanvastexIndex:".. neonLightcanvastex)
+    Spring.Echo("neonPiecesInputTextureIndex:".. neonLightcanvastex)
     local commonTexOpts = {
         target = GL_TEXTURE_2D,
         border = false,
@@ -251,7 +265,7 @@ local function inittopDownRadianceCascadeShader()
         screentex = screentexIndex,         -- the  background picture - mostly for debug purposes
         normaltex = normaltexIndex,         -- normal maptex 
         normalunittex= normalunittexIndex,  -- normal unittex    
-        neonLightcanvastex = neonLightcanvastexIndex,
+        neonLightcanvastex = neonPiecesInputTextureIndex,
         dephtCopyTex = dephtCopyTexIndex
     }
 
@@ -557,12 +571,13 @@ local function  restoreCameraPosDir()
     Spring.SetCameraState(orgCamState)
 end
 
-local function setCameraOrthogonal()
+local function renderCameraOrthogonal()
     --TODO Optimize towards https://developer.download.nvidia.com/SDK/10.5/opengl/src/cascaded_shadow_maps/doc/cascaded_shadow_maps.pdf
     orgCamState = Spring.GetCameraState() 
     local camera, ortho = computeTopDownCamera(orgCam)
     Spring.SetCameraState(camera) 
-    glOrtho(ortho.width, ortho,height, ortho.near, ortho.far)
+    glOrtho(ortho.width, ortho,height, ortho.near, ortho.far) --> https://github.com/beyond-all-reason/Beyond-All-Reason/blob/8e6f934ab10e549f17438061eb6e1d4e267d995e/luarules/gadgets/unit_icongenerator.lua#L669
+    gl.RenderToTexture()
 end
 
 function widget:DrawUnits()
@@ -579,7 +594,7 @@ function widget:DrawUnits()
                 end)
             end
         end
-    setCameraOrthogonal()
+    gl.ActiveFBO(neonPiecesInputFbo, renderCameraOrthogonal)
     DrawNeonLightsToFbo()
     end)
     
