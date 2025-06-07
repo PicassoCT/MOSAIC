@@ -34,7 +34,6 @@ local text_spin = piece("text_spin")
 local brothel_spin = piece("brothel_spin")
 local JLantern = piece("JLantern")
 local idleAnimations = {}
-local technoAnimations = {}
 
 local tldrum = piece "tldrum"
 local dancepivot = piece "dancepivot"
@@ -203,7 +202,7 @@ local function tiglLilLoop()
     echo("Reaching brothel tiglil")
     if unitID % 3 ~= 0 then return end
     if not GG.TiglilHoloTable then GG.TiglilHoloTable = {} end
-    if not GG.TiglilHoloTable[unitDefID] then GG.TiglilHoloTable[unitDefID] = 0 end
+    if not GG.TiglilHoloTable[unitDefID] then GG.TiglilHoloTable[unitDefID] = {} end
     if count(GG.TiglilHoloTable[unitDefID]) > 3  then  return end
 
     GG.TiglilHoloTable[unitDefID][unitID] = unitID
@@ -1096,8 +1095,6 @@ function addJHologramLetters()
     end
 end
 
-
-
 idleAnimations[#idleAnimations +1] = idle_stance
 idleAnimations[#idleAnimations +1] = idle_stance2
 idleAnimations[#idleAnimations +1] = idle_stance3
@@ -1118,9 +1115,6 @@ idleAnimations[#idleAnimations +1] = idle_stance18
 idleAnimations[#idleAnimations +1] = idle_stance17
 idleAnimations[#idleAnimations +1] = strikeAPose
 
-technoAnimations[#technoAnimations +1] = strikeAPose
-technoAnimations[#technoAnimations +1] = idle_stance_10
-technoAnimations[#technoAnimations +1] = idle_stance
                 
 
 function waterFallProject(allLetters, posLetters)

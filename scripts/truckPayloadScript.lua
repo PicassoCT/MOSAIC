@@ -34,7 +34,7 @@ end
 function getStreetName(id)
 	if GG.UsedStreetNameCounterDict then
 		streetNumber = count(GG.UsedStreetNameCounterDict)
-		key, value = getNthElementT((id %streetNumber) +1)
+		key, value = getNthElementT(GG.UsedStreetNameCounterDict, (id % streetNumber) +1)
 		return key
 	end
 	return "Mainstreet"	

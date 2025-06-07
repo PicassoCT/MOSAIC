@@ -1,5 +1,6 @@
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
+include "lib_mosaic.lua"
 --include "lib_Build.lua"
 
 local TablesOfPiecesGroups = {}

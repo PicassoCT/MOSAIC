@@ -2645,7 +2645,7 @@ end
 
 -- > Counts the number of elements in a dictionary
 function count(T)
-    assert(type(T) == "table")
+    --if(type(T) ~= "table") then return "debugme" end
     if not T then return 0 end
     local index = 0
     for k, v in pairs(T) do if v then index = index + 1 end end
@@ -2668,6 +2668,7 @@ function safeIndex(index, tables)
 end
 
 function getNthElementT(T, nth)
+    if type(T) ~= "table" then echo(T); return "debugme", "debugme" end
     local index = 0
     for k, v in pairs(T) do
         if v then index = index + 1 end
@@ -5906,16 +5907,31 @@ function isTransported(unitID)
     return (transporterID ~= nil)
 end
 
+function trackEchoCallCountPerFrame(name)
+    if not GG.CallCountEcho then GG.CallCountEcho = {} end
+    if not GG.CallCountEcho[name] then GG.CallCountEcho[name] = {} end
+    currentFrame = Spring.GetGameFrame()
+    if not GG.CallCountEcho[name][currentFrame] then 
+        GG.CallCountEcho[name][currentFrame] = 1; 
+        previousFrame = currentFrame -1 
+        --if GG.CallCountEcho[name][previousFrame] then
+        --    Spring.Echo(name.." Called in Frame:"..previousFrame..": "..GG.CallCountEcho[name][previousFrame] )
+        --end
+    else
+        GG.CallCountEcho[name][currentFrame] = GG.CallCountEcho[name][currentFrame] +1
+        if GG.CallCountEcho[name][currentFrame] > 20 then
+            Spring.Echo(name.." Called in Frame:"..currentFrame..": "..GG.CallCountEcho[name][currentFrame] )
+        end
+    end
+end
 
 
 -- >Generic Simple Commands
 function Command(id, command, tarGet, option)
     assert(id)
     assert(type(id) == "number", id)
-
-    defID= Spring.GetUnitDefID(id)
-    assert(defID)
-    assert(command ~= nil, UnitDefs[defID].name.." has invalid Command executed on it")
+    assert(command ~= nil, UnitDefs[Spring.GetUnitDefID(id)].name.." has invalid Command executed on it")
+    trackEchoCallCountPerFrame("Command")
     local target = tarGet
 
     option = option  or {}

@@ -205,7 +205,7 @@ include("lib_textFx.lua")
 local function tiglLilLoop()
     if unitID % 3 ~= 0 then return end
     if not GG.TiglilHoloTable then GG.TiglilHoloTable = {} end
-    if not GG.TiglilHoloTable[unitDefID] then GG.TiglilHoloTable[unitDefID] = 0 end
+    if not GG.TiglilHoloTable[unitDefID] then GG.TiglilHoloTable[unitDefID] = {} end
     if count(GG.TiglilHoloTable[unitDefID]) > 3  then  return end
     GG.TiglilHoloTable[unitDefID][unitID] = unitID
 

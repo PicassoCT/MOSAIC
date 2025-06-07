@@ -234,7 +234,7 @@ local function tiglLilLoop()
             hideTReg(tigLilHoloPices)
             
         end
-        while(hourse < 20 ) do
+        while(hours < 20 ) do
                 showLogo()
                 Sleep(5000)
             end
@@ -268,7 +268,8 @@ function joyStart()
     StartThread(JoyAnimation)
 end
 
-function showLogo(buisnessLogo)
+function showLogo()
+    Sleep(100)
     while true do
         logo = buisnessLogo[math.random(1, #buisnessLogo)]
         ShowReg(logo)
@@ -322,11 +323,11 @@ function theSlammer()
     ShowReg(SlammPiece)
     ShowReg(Slammer)
     while true do
-        Turn(Slammer,x_axis, math.rad(-5), 5)
-        WMove(SlammPiece,z_axis, -5, 15)
-        Turn(Slammer,x_axis, math.rad(0), 15)
-        WMove(SlammPiece,z_axis, 0, 3)
-        Sleep(1000)
+        Turn(Slammer,z_axis, math.rad(-10), 5)
+        WMove(SlammPiece,z_axis, -50, 150)
+        Turn(Slammer,z_axis, math.rad(0), 15)
+        WMove(SlammPiece,z_axis, 0, 50)
+        Sleep(500)
     end
 end
 
@@ -351,7 +352,7 @@ variousFunctions = {
     end,
     [2] = function ()
         echo("showLogo function")
-        StartThread(showLogo, buisnessLogo)
+        StartThread(showLogo)
     end,    
     [3] = function () 
         echo("joyStart function")
