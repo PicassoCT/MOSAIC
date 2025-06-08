@@ -932,6 +932,8 @@ function transitionToUncloaked()
     return "decloaked"
 end
 
+
+
 function setWantCloak(boolWantCloak)
     if boolWantCloak == true then
         SetUnitValue(COB.WANT_CLOAK, 1)
@@ -961,8 +963,8 @@ function OperativesDiscovered()
     return false
 end
 
-currentState = "cloaked"
-previousState = currentState
+currentCloakState = "cloaked"
+previousState = currentCloakState
 boolRecloakOnceDone = false
 function cloakLoop()
     local cloakStateMachine = {
@@ -1034,16 +1036,16 @@ function cloakLoop()
     showHideIcon(true)
 
     while true do
-        currentState = cloakStateMachine[currentState]()
-        --	if currentState ~= previousState then echoState() end
-        previousState = currentState
+        currentCloakState = cloakStateMachine[currentCloakState]()
+        --	if currentCloakState ~= previousState then echoState() end
+        previousState = currentCloakState
         Sleep(100)
     end
 end
 
 function echoState()
     echo("============================================")
-    echo("State: " .. currentState)
+    echo("State: " .. currentCloakState)
     echo("boolCloakRequest: " .. toString(getWantCloak()))
     echo("boolIsBuilding: " .. toString(boolIsBuilding))
     echo("boolFireForcedVisible: " .. toString(boolFireForcedVisible))

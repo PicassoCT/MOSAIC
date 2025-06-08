@@ -62,6 +62,7 @@ if (gadgetHandler:IsSyncedCode()) then
     local OneSecondFrames = 30
     function rotateUnitTowardsPoint(id, positionT)
 
+
         x,y,z = spGetUnitPosition(id)
         distanceToPoint = distance(x,y,z, positionT.x, positionT.y, positionT.z) 
         if distanceToPoint > 964 or distanceToPoint < 15  then return end --sniperrifle or to close
@@ -83,6 +84,9 @@ if (gadgetHandler:IsSyncedCode()) then
             env = Spring.UnitScript.GetScriptEnv(id)
             if env and env.setOverrideAnimationState then
                 Spring.UnitScript.CallAsUnit(id, env.externalAimFunction, positionT, internalPitch)
+                if setWantCloak then
+                    Spring.UnitScript.CallAsUnit(id, env.setWantCloak, false)
+                end                   
             end      
         end   
 

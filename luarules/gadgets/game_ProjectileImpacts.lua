@@ -637,14 +637,14 @@ if (gadgetHandler:IsSyncedCode()) then
 
                 -- check if the icon is still there
                 if not persPack.IconID then
-                    --conditionalEcho(boolDebugProjectile,"createUnitAtUnit ".."game_ProjectileImpacts.lua")      
+                    --conditionalEcho(boolDebugProjectile,"createUnitAtUnit ".."game_ProjectileImpacts.lua")   
+                    --teamID, typeID, otherID, ox, oy, oz, orientation, parentID)   
                     persPack.IconID = createUnitAtUnit(
                                           spGetUnitTeam(persPack.interrogatorID),
                                           iconUnitTypeName, 
                                           persPack.unitID,
                                           0, 0, 0,
-                                          nil,
-                                          1)                         
+                                          0)                         
                     
                     if not persPack.IconID then
                           --conditionalEcho(boolDebugProjectile,"Creating InterrogationIcon failed")

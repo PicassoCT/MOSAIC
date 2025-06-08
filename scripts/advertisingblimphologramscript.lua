@@ -430,6 +430,7 @@ local civilianWalkingTypeTable = getCultureUnitModelTypes(  GameConfig.instance.
 function joyToTheWorld()
     lowest = math.huge
     lowestID = nil
+    mx,my,mz = Spring.GetUnitPosition(unitID)
     foreach(getAllOfTypeNearUnit(unitID, civilianWalkingTypeTable, 1024),
         function(id)
             candidateDistance = distancePosToUnit(mx,my,mz, id)
@@ -452,9 +453,9 @@ function JoyAnimation()
     JoySpinOrigin = TablesOfPiecesGroups["JoySpin"][1]
 
     while true do
-        Hide(JoyZoom)
-        Hide(JoyZoomArm)
-        Hide(Joy)
+        HideReg(JoyZoom)
+        HideReg(JoyZoomArm)
+        HideReg(Joy)
         if boolDebugScript or (hours > 17 or hours < 7) then
             if maRa() then ShowReg(JoyZoom); ShowReg(JoyZoomArm); else ShowReg(Joy) end
             joyToTheWorld()

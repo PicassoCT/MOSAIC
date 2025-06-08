@@ -936,8 +936,8 @@ function OperativesDiscovered()
 return false
 end
 
-local currentState = "decloaked"
-previousState = currentState
+local currentCloakState = "decloaked"
+previousState = currentCloakState
 boolRecloakOnceDone = false
 function cloakLoop()
 	local cloakStateMachine = {
@@ -999,16 +999,16 @@ function cloakLoop()
 	showHideIcon(false)
 
 	while true do  
-		currentState = cloakStateMachine[currentState]()
-		--if currentState ~= previousState then echoState() end
-		previousState = currentState
+		currentCloakState = cloakStateMachine[currentCloakState]()
+		--if currentCloakState ~= previousState then echoState() end
+		previousState = currentCloakState
 		Sleep(100)
 	end
 end
 
 function echoState()
 	echo("============================================")
-	echo("State: "..currentState)
+	echo("State: "..currentCloakState)
 	echo("boolCloakRequest: ".. toString(getWantCloak()))
 	echo("boolIsBuilding: "..toString(boolIsBuilding))
 	echo("boolFireForcedVisible: "..toString(boolFireForcedVisible))
@@ -1075,7 +1075,7 @@ function raidAimFunction(weaponID, heading, pitch, targetType, isUserTarget, tar
 			return false
 		end
 	end
-	return  currentState == "decloaked"
+	return  currentCloakState == "decloaked"
 end
 
 function pistolAimFunction(weaponID, heading, pitch, targetType, isUserTarget, targetID)
