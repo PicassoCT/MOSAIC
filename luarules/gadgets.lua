@@ -816,7 +816,10 @@ function gadgetHandler:Shutdown()
 end
 
 function gadgetHandler:GameFrame(frameNum)
-    for _, g in ipairs(self.GameFrameList) do g:GameFrame(frameNum) end
+    for _, g in ipairs(self.GameFrameList) do 
+        Spring.Echo("CallGameFrame:"..g:GetInfo().name)
+        g:GameFrame(frameNum) 
+    end
     return
 end
 

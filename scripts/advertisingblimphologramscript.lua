@@ -31,6 +31,7 @@ local tllegLowR = piece "tllegLowR"
 local tllegUpR = piece "tllegUpR"
 local tlpole = piece "tlpole"
 local tlflute = piece "tlflute"
+local BuisnessSpin = piece "BuisnessSpin"
 local idleAnimations = {}
 local spGetGameFrame = Spring.GetGameFrame
 local buisnessLogo = nil
@@ -270,12 +271,15 @@ end
 
 function showLogo()
     Sleep(100)
-    while true do
-        logo = buisnessLogo[math.random(1, #buisnessLogo)]
-        ShowReg(logo)
-        Sleep(15000)
-        HideReg(logo)
-    end
+        for i=1, math.random(3, 9) do            
+            logo = buisnessLogo[math.random(1, #buisnessLogo)]
+            val =math.random(5,22)*randSign()
+            Spin(logo,y_axis, math.rad(val),0)
+            ShowReg(logo)
+            Sleep(1000)
+        end
+        Sleep(5000)
+        hideTReg(buisnessLogo)
 end
 
 function chipsDropping(chips, boolReverse)
@@ -380,6 +384,7 @@ function script.Create()
      StartThread(HoloGrams)
      HideReg(BrothelSpin)
      HideReg(CasinoSpin)
+     HideReg(BuisnessSpin)
 
 end
 
@@ -387,8 +392,6 @@ function hideAllReg()
     pieceMap = Spring.GetUnitPieceMap(unitID)
     for k, v in pairs(pieceMap) do HideReg(v) end
 end
-
-
 
 function HoloGrams()    
     StartThread(clock)
@@ -419,9 +422,11 @@ function HoloGrams()
     Move(BrothelSpin, z_axis, -offset,0)
     Spin(BrothelSpin, z_axis, math.rad(val), 0.1)
 
-    val = math.random(5, 12)*randSign()
     Move(CasinoSpin, z_axis, -offset,0)
     Spin(CasinoSpin, z_axis,  math.rad(val), 0.1)
+    
+    val = math.random(5, 12)*randSign()
+    Spin(BuisnessSpin, z_axis,  math.rad(val), 0.1)
 end
 
 local GameConfig = getGameConfig()
