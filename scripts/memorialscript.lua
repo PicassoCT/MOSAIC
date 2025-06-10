@@ -64,7 +64,7 @@ end
 
 bioHazardPole = piece("BiohazardWarn")
 maxIndex = 4
-sizeOfField= 50
+sizeOfField= 60
 candleGrid = makeTable(false, maxIndex, maxIndex)
 function buildMemorial()
     attempts = 0
@@ -115,7 +115,6 @@ function buildMemorial()
     if UnitDefs[Spring.GetUnitDefID(unitID)].name == "biohazardmemorial" then
         Show(bioHazardPole)
         StartThread(waveBioHazardFlag)
-    else
-        StartThread(lifeTime, unitID,  6 * 60 * 1000, true, false)
     end
+    StartThread(lifeTime, unitID,  6 * 60 * 1000, true, false)
 end

@@ -817,7 +817,8 @@ end
 
 function gadgetHandler:GameFrame(frameNum)
     for _, g in ipairs(self.GameFrameList) do 
-        Spring.Echo("CallGameFrame:"..g:GetInfo().name)
+        --local name = g.ghInfo.name or "UNKNOWN NAME"
+        --Spring.Echo("CallGameFrame:"..name)
         g:GameFrame(frameNum) 
     end
     return
