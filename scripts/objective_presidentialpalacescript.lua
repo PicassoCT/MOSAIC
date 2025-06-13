@@ -34,7 +34,9 @@ function script.Create()
 end
 
 function crisisModeWatcher()
+
 	while true do
+		Sleep(1000)
 		if GG.GlobalGameState ~= "normal" then
 			hideT(TablesOfPiecesGroups["Limo"])
 			Show(Gate)

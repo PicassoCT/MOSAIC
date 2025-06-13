@@ -55,5 +55,5 @@ local objective_presidentialpalace_land = Building:New{
 
 return lowerkeys({
 	--Temp
-	["objective_presidentialalace"] = objective_presidentialpalace_land:New()	
+	["objective_presidentialpalace"] = objective_presidentialpalace_land:New()	
 })
