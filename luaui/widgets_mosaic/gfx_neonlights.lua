@@ -6,7 +6,7 @@ function widget:GetInfo()
         date = "2023",
         license = "GNU GPL, v2 or later",
         layer = -9,
-        enabled = false, --  loaded by default?
+        enabled = true, --  loaded by default?
         hidden = false
     }
 end
@@ -472,6 +472,7 @@ end
 
 local function recieveNeonHoloLightPiecesByUnit(unitPiecesTable)
     neonUnitTables =unitPiecesTable
+    --Spring.Echo("Recieved recieveNeonHoloLightPiecesByUnit")
 end
 
 function widget:Initialize()

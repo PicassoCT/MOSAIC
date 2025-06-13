@@ -408,7 +408,6 @@ end
     function gadget:GameFrame(frame)
         if Script.LuaUI('RecieveAllNeonUnitsPieces') then
             local message = Script.LuaUI.RecieveAllNeonUnitsPieces(neonUnitTables)
-            Spring.SendMessage(message)
         end
     end
  

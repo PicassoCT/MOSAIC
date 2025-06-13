@@ -807,8 +807,8 @@ end
 function gadgetHandler:Shutdown()
     Spring.Echo("Start gadgetHandler:Shutdown")
     for _, g in ipairs(self.ShutdownList) do
-        local name = g.ghInfo.name or "UNKNOWN NAME"
-        Spring.Echo("Shutdown - " .. name)
+        --local name = g.ghInfo.name or "UNKNOWN NAME"
+        --Spring.Echo("Shutdown - " .. name)
         g:Shutdown()
     end
     Spring.Echo("End gadgetHandler:Shutdown")
