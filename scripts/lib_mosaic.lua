@@ -695,7 +695,8 @@ end
             [UnitDefNames["objective_combatoutpost"].id] = "land",
             [UnitDefNames["objective_transrapid"].id] = "land",
             [UnitDefNames["objective_airport"].id] = "land",
-            [UnitDefNames["objective_pumpstation"].id] = "land"
+            [UnitDefNames["objective_pumpstation"].id] = "land",
+            [UnitDefNames["objective_presidentialpalace"].id] = "land"
         }
     end
 
@@ -1095,7 +1096,8 @@ end
                     
                     "objective_westhemhq"  ,
                     "objective_combatoutpost" ,
-                    "objective_pumpstation"
+                    "objective_pumpstation",
+                    "objective_presidentialpalace"
 
                 }
             return getTypeTable( getUnitDefNames(UnitDefs), typeTable)

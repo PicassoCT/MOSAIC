@@ -29,7 +29,7 @@ local objective_spaceport_land = Building:New{
 	                    
 
 	customparams = {	
-		normaltex = "unittextures/component_atlas_normal.dds",
+		normaltex = "unittextures/house_europe_normal.dds",
 		helptext			= "Civilian Building",
 		baseclass			= "Building", -- TODO: hacks
     },

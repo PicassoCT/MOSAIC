@@ -416,8 +416,22 @@ function shapeSymmetry()
     end
 end
 
-function showSubSpins(pieceID)
+
+function showSubs(pieceID)
    local pieceName = getUnitPieceName(unitID, pieceID)
+   subSpinPieceName = pieceName.."Sub"    
+   if TableOfPiecesGroups[subSpinPieceName] then  
+    hideTReg(TableOfPiecesGroups[subSpinPieceName] )              
+    for i=1, #TableOfPiecesGroups[subSpinPieceName] do
+        subPiece = TableOfPiecesGroups[subSpinPieceName][i]
+        ShowReg(spinPiece)
+    end
+   end
+end
+
+function showSpins(pieceID)
+   local pieceName = getUnitPieceName(unitID, pieceID)
+   showSubs(piecID)
    subSpinPieceName = pieceName.."Spin"    
    if TableOfPiecesGroups[subSpinPieceName] then  
     hideTReg(TableOfPiecesGroups[subSpinPieceName] )              
@@ -458,13 +472,13 @@ function deterministiceSetup()
         if randChance(75) then
             logoPiece = deterministicElement( getDeterministicRandom(getLocationHash(unitID), #TableOfPiecesGroups["HoloLogo"]), TableOfPiecesGroups["HoloLogo"])
             if logoPiece then
-                showSubSpins(logoPiece)
+                showSpins(logoPiece)
                 ShowReg(logoPiece)
                 Spin(logoPiece, y_axis, math.rad(1.2)*randSign(), 0)
                 if maRa() then
                     legoPiece, index = getSafeRandom(TableOfPiecesGroups["HoloLogo"])
                     if legoPiece then
-                    showSubSpins(legoPiece)
+                    showSpins(legoPiece)
                     ShowReg(legoPiece)
                     Spin(legoPiece, y_axis, math.rad(1.2)*randSign(), 0)
                     else
