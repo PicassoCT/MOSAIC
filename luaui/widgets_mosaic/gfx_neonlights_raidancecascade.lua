@@ -15,6 +15,55 @@ end
 --https://www.shadertoy.com/view/mlSfRD
 --https://www.shadertoy.com/view/X3XfRM
 --TODO transfer the baking to neonlights that already has the pieces setup
+--[[
+                            [ Scene Top-Down View ]
++---------------------------------------------------------------+
+|                                                               |
+|                    City / Map Geometry                        |
+|      +-------------+    +-------------+    +-------------+    |
+|      |  Building A |    |  Building B |    |  Building C |    |
+|      +-------------+    +-------------+    +-------------+    |
+|                                                               |
+|                  Terrain / Ground Mesh                         |
+|                                                               |
++---------------------------------------------------------------+
+
+
+                     [ Rendering Pipeline Flow ]
+
++----------------+         +-----------------+         +----------------------+
+|  Geometry Pass | ---->   | Depth / Normal   | ---->   | Neon Light Shader    |
+|  (Draw city    |         | Textures         |         | (apply neon light    |
+|   meshes)      |         | (G-buffer)       |         |  on top-down canvas) |
++----------------+         +-----------------+         +----------------------+
+                                                              |
+                                                              v
+                          +-----------------------------+
+                          | Neon Light Canvas Texture   |
+                          | (2D Top-down projection     |
+                          |  with blended neon lights)  |
+                          +-----------------------------+
+                                                              |
+                                                              v
+                  +--------------------------------------------+
+                  | Final Composition Pass                     |
+                  | (Combine neon light canvas with scene      |
+                  |  using blending — possibly additive/mul)   |
+                  +--------------------------------------------+
+                                                              |
+                                                              v
+                  +--------------------------------------------+
+                  |              Final Framebuffer              |
+                  |           (Displayed on screen)             |
+                  +--------------------------------------------+
+
+
+               [ Key Data Flow in the Widget ]
+
+  Depth Texture -->  normaltex   -->  neonLightcanvastex  -->  Final Output
+
+
+]]
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
@@ -95,7 +144,7 @@ local screentex = nil
 local normaltex = nil
 local normalunittex = nil
 local neonLightcanvastex = nil
-local cubesamplertex = nil
+local radianceCascadeCubeSampler = nil
 local depthCopyTex= nil
 
 local startOsClock
@@ -199,11 +248,25 @@ function widget:ViewResize()
     )
     errorOutIfNotInitialized(screentex, "screentex not existing")       
 
-    neonPiecesInputFbo = TODO_CreateFbo
-    cubesamplertex =
-        glCreateTexture(
-        vsx,
+neonPiecesInputFbo =  
+    glCreateTexture (  
+        vsx, 
         vsy,
+        {
+            min_filter = GL.LINEAR,
+            mag_filter = GL.LINEAR,
+            wrap_s = GL.CLAMP_TO_EDGE,
+            wrap_t = GL.CLAMP_TO_EDGE,
+            fbo = true
+        }
+        )
+    errorOutIfNotInitialized(neonPiecesInputFbo, "neon pieces input fbo not existing")       
+  
+
+    radianceCascadeCubeSampler =
+        glCreateTexture(
+        4096,
+        4096,
         {
         min_filter = GL.LINEAR, 
         mag_filter = GL.LINEAR,
@@ -211,8 +274,7 @@ function widget:ViewResize()
         wrap_t = GL.CLAMP_TO_EDGE,
         }
     )
-    errorOutIfNotInitialized(cubesamplertex, "cubesamplertex not existing")       
-    
+    errorOutIfNotInitialized(radianceCascadeCubeSampler, "radiance cascade sampler not existing")       
 
     neonLightcanvastex =
         gl.CreateTexture(
@@ -227,7 +289,7 @@ function widget:ViewResize()
         }
     )
     errorOutIfNotInitialized(neonLightcanvastex, "neonLightcanvastex not existing")
-    Spring.Echo("neonPiecesInputTextureIndex:".. neonLightcanvastex)
+
     local commonTexOpts = {
         target = GL_TEXTURE_2D,
         border = false,
@@ -239,11 +301,11 @@ function widget:ViewResize()
     }
     commonTexOpts.format = GL_RGB8_SNORM
 
-    normaltex = glCreateTexture(vsx, vsy, commonTexOpts)
-    errorOutIfNotInitialized(normaltex, "normaltex not existing")   
+    --normaltex = glCreateTexture(vsx, vsy, commonTexOpts)
+    --errorOutIfNotInitialized(normaltex, "normaltex not existing")   
     
-    normalunittex = glCreateTexture(vsx, vsy, commonTexOpts)
-    errorOutIfNotInitialized(normalunittex, "normalunittex not existing")   
+    --normalunittex = glCreateTexture(vsx, vsy, commonTexOpts)
+    --errorOutIfNotInitialized(normalunittex, "normalunittex not existing")   
 
     widgetHandler:UpdateCallIn("DrawScreenEffects")
 end
@@ -251,7 +313,7 @@ end
 widget:ViewResize()
 
 local function inittopDownRadianceCascadeShader()
-   Spring.Echo("gfx_neonLight:Initialize")
+   Spring.Echo("gfx_neonlight_radiancecascade:Initialize")
     -- abort if not enabled
     widgetHandler:UpdateCallIn("Update")  
     errorOutIfNotInitialized(glCreateShader, "no shader support")
@@ -292,16 +354,16 @@ local function inittopDownRadianceCascadeShader()
     )
 
     if (topDownRadianceCascadeShader == nil) then
-        Spring.Echo("gfx_neonLight:Initialize] particle shader compilation failed")
+        Spring.Echo("gfx_neonlight_radiancecascade:Initialize] particle shader compilation failed")
         Spring.Echo(glGetShaderLog())
         widgetHandler:RemoveWidget(self)
         return
     else
-        Spring.Echo("gfx_neonLight: Shader compiled: ")
+        Spring.Echo("gfx_neonlight_radiancecascade: Shader compiled: ")
     end
 
     timePercentLoc                  = glGetUniformLocation(topDownRadianceCascadeShader, "timePercent")
-    neonLightPercentLoc                  = glGetUniformLocation(topDownRadianceCascadeShader, "neonLightPercent")
+    neonLightPercentLoc             = glGetUniformLocation(topDownRadianceCascadeShader, "neonLightPercent")
     uniformViewPortSize             = glGetUniformLocation(topDownRadianceCascadeShader, "viewPortSize")
 
     uniformTime                     = glGetUniformLocation(topDownRadianceCascadeShader, "time")
@@ -316,7 +378,7 @@ local function inittopDownRadianceCascadeShader()
     uniformSunColor                 = glGetUniformLocation(topDownRadianceCascadeShader, 'sunCol')
     uniformSkyColor                 = glGetUniformLocation(topDownRadianceCascadeShader, 'skyCol')
     uniformSunPos                   = glGetUniformLocation(topDownRadianceCascadeShader, 'sunPos')
-    Spring.Echo("gfx_neonLight:Initialize ended")
+    Spring.Echo("gfx_neonlight_radiancecascade:Initialize ended")
 end
 
 
@@ -477,7 +539,7 @@ end
 
 function widget:Initialize()
     if (not gl.RenderToTexture) then --super bad graphic driver
-        Spring.Echo("gfx_neonLights: Im tired boss, tired of companies beeing ugly to devs, i wanna go home! Quitting!")
+        Spring.Echo("gfx_neonlight_radiancecascades: Im tired boss, tired of companies beeing ugly to devs, i wanna go home! Quitting!")
         return
     end
     init()

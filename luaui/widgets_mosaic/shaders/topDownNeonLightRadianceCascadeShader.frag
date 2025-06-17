@@ -12,6 +12,7 @@ uniform vec3 uLightDir; // Directional light (top-down sun/moon)
 uniform sampler2D uDepthMap; // Depth texture for cascading
 uniform sampler2D uRadianceMap; // Blurred scene texture for indirect light
 uniform sampler2D uEmissionMap; // Emissive neon glow map
+uniform samplerCube radianceCascade;
 
 float getDepthShadow(vec3 worldPos) {
     float sceneDepth = texture(uDepthMap, vUV).r;

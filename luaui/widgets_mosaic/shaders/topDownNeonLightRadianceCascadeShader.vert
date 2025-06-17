@@ -4,6 +4,7 @@
 uniform mat4 uModel;
 uniform mat4 uView;
 uniform mat4 uProjection;
+uniform samplerCube radianceCascade;
 
 out vec3 vWorldPos;
 out vec3 vNormal;
