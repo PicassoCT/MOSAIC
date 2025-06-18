@@ -10,13 +10,14 @@ function widget:GetInfo()
         hidden = false
     }
 end
---Documentation: 
+
+--[[
+--Examples:
 --https://www.youtube.com/watch?v=3so7xdZHKxw
 --https://www.shadertoy.com/view/mlSfRD
 --https://www.shadertoy.com/view/X3XfRM
---TODO transfer the baking to neonlights that already has the pieces setup
---[[
-                            [ Scene Top-Down View ]
+--Documentation: 
+                            [ Scene Orthogonal Top-Down View ]
 +---------------------------------------------------------------+
 |                                                               |
 |                    City / Map Geometry                        |
@@ -24,7 +25,7 @@ end
 |      |  Building A |    |  Building B |    |  Building C |    |
 |      +-------------+    +-------------+    +-------------+    |
 |                                                               |
-|                  Terrain / Ground Mesh                         |
+|                  Terrain / Ground Mesh                        |
 |                                                               |
 +---------------------------------------------------------------+
 
@@ -32,17 +33,17 @@ end
                      [ Rendering Pipeline Flow ]
 
 +----------------+         +-----------------+         +----------------------+
-|  Geometry Pass | ---->   | Depth / Normal   | ---->   | Neon Light Shader    |
-|  (Draw city    |         | Textures         |         | (apply neon light    |
-|   meshes)      |         | (G-buffer)       |         |  on top-down canvas) |
+|  Geometry Pass | ---->   | Depth / Normal  | ---->  | Neon Light Shader    |
+|  (Draw city    |         | Textures        |        | (apply neon light    |
+|   meshes)      |         | (G-buffer)      |        |  on top-down canvas) |
 +----------------+         +-----------------+         +----------------------+
                                                               |
                                                               v
-                          +-----------------------------+
-                          | Neon Light Canvas Texture   |
-                          | (2D Top-down projection     |
-                          |  with blended neon lights)  |
-                          +-----------------------------+
+                                     +-----------------------------+
+                                     | Neon Light Canvas Texture   |
+                                     | (2D Top-down projection     |
+                                     |  with blended neon lights)  |
+                                     +-----------------------------+
                                                               |
                                                               v
                   +--------------------------------------------+
@@ -53,16 +54,14 @@ end
                                                               |
                                                               v
                   +--------------------------------------------+
-                  |              Final Framebuffer              |
-                  |           (Displayed on screen)             |
+                  |              Final Framebuffer             |
+                  |           (Displayed on screen)            |
                   +--------------------------------------------+
 
 
                [ Key Data Flow in the Widget ]
 
   Depth Texture -->  normaltex   -->  neonLightcanvastex  -->  Final Output
-
-
 ]]
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -70,6 +69,7 @@ end
 -- > debugEchoT(
 local boolDebugActive = true  --TODODO
 local topDownRadianceCascadeShader = nil
+local mapLightMapToPerspectiveShader = nil
 
 --------------------------------------------------------------------------------
 --------------------------Configuration Components -----------------------------
@@ -94,6 +94,7 @@ local glColorMask            = gl.ColorMask
 local glCopyToTexture        = gl.CopyToTexture
 local glCreateList           = gl.CreateList
 local glCreateShader         = gl.CreateShader
+local glCreateFBO            = gl.CreateFBO
 local glCreateTexture        = gl.CreateTexture
 local glDeleteShader         = gl.DeleteShader
 local glDeleteTexture        = gl.DeleteTexture
@@ -122,12 +123,14 @@ local glUseShader            = gl.UseShader
 local glVertex               = gl.Vertex
 local glTranslate            = gl.Translate
 local glOrtho                = gl.Ortho
+
 local spGetCameraPosition    = Spring.GetCameraPosition
 local spGetCameraVectors     = Spring.GetCameraVectors
 local spGetWind              = Spring.GetWind
 local time                   = Spring.GetGameSeconds
 local spGetDrawFrame         = Spring.GetDrawFrame
 local spGetCameraDirection   = Spring.GetCameraDirection
+
 local eyex,eyey,eyez         = 0,0,0
 
 
@@ -180,30 +183,30 @@ local sunCol = {0,0,0}
 local skyCol = {0,0,0}
 local sunPos = {0.0,0.0, 1.0}
 
-local uniformSunColor
-local uniformSkyColor
-local uniformSunPos
-local uniformEyePos
-local unformEyeDirection
-local uniformProjection
-local uniformTime
-local uniformViewPortSize
-local modelDepthTexIndex    = 0
-local mapDepthTexIndex      = 1
-local screentexIndex        = 2
-local normaltexIndex        = 3
-local normalunittexIndex    = 4
-local neonPiecesInputTextureIndex = 5
+local uniform_topDown_SunColor
+local uniform_topDown_SkyColor
+local uniform_topDown_SunPos
+local uniform_topDown_EyePos
+local uniform_topDown_EyeDirection
+local uniform_topDown_Projection
+local uniform_topDown_Time
+local uniform_topDown_ViewPortSize
+local modelDepthTexIndex            = 0
+local mapDepthTexIndex              = 1
+local screentexIndex                = 2
+local normaltexIndex                = 3
+local normalunittexIndex            = 4
+local neonPiecesInputTextureIndex   = 5
 
-
-local dephtCopyTexIndex     = 6
-local emitmaptexIndex       = 7
-local emitunittexIndex      = 8
+local dephtCopyTexIndex             = 6
+local emitmaptexIndex               = 7
+local emitunittexIndex              = 8
 local eyePos = {spGetCameraPosition()}
 local eyeDir = {spGetCameraDirection()}
 local neonUnitTables = {}
 local UnitUnitDefIDMap = {}
 local counterNeonUnits = 0
+local shaderName = "gfx_neonlights_radiancecascade"
 
 
 
@@ -211,7 +214,7 @@ local counterNeonUnits = 0
 --------------------------------------------------------------------------------
 local function errorOutIfNotInitialized(value, name)
     if value == nil then
-        Spring.Echo("No "..name.." - aborting")
+        Spring.Echo(shaderName..": No "..name.." - aborting")
         widgetHandler:RemoveWidget(self)
     end
 end
@@ -248,10 +251,10 @@ function widget:ViewResize()
     )
     errorOutIfNotInitialized(screentex, "screentex not existing")       
 
-neonPiecesInputFbo =  
+    neonPiecesInputFbo =  
     glCreateTexture (  
-        vsx, 
-        vsy,
+        4096, 
+        4096,
         {
             min_filter = GL.LINEAR,
             mag_filter = GL.LINEAR,
@@ -300,23 +303,50 @@ neonPiecesInputFbo =
         wrap_t = GL.CLAMP_TO_EDGE,
     }
     commonTexOpts.format = GL_RGB8_SNORM
-
-    --normaltex = glCreateTexture(vsx, vsy, commonTexOpts)
-    --errorOutIfNotInitialized(normaltex, "normaltex not existing")   
-    
-    --normalunittex = glCreateTexture(vsx, vsy, commonTexOpts)
-    --errorOutIfNotInitialized(normalunittex, "normalunittex not existing")   
-
     widgetHandler:UpdateCallIn("DrawScreenEffects")
 end
 
 widget:ViewResize()
+local function initMapTopDownToPerspectiveLightShader()
+   Spring.Echo("gfx_neonlight_radiancecascade:initMapTopDownToPerspectiveLightShader")
+    local fragmentShader =  VFS.LoadFile(shaderFilePath .. "mapTopDownToPerspectiveLightShader.frag") 
+    local vertexShader = VFS.LoadFile(shaderFilePath .. "mapTopDownToPerspectiveLightShader.vert") 
+    local uniformInt = {
+        modelDepthTex = modelDepthTexIndex, -- needed to calculate the 3dish shadows
+    }
+    --[[
+    uniform sampler2D neonLightTex;
+    uniform sampler2D depthTex;
 
-local function inittopDownRadianceCascadeShader()
-   Spring.Echo("gfx_neonlight_radiancecascade:Initialize")
+    uniform vec2 worldMin;
+    uniform vec2 worldMax;
+    uniform mat4 invProjView;
+    in vec2 screenUV;
+    ]]
+
+    mapLightMapToPerspectiveShader =
+        glCreateShader(
+        {
+            fragment = fragmentShader,
+            vertex = vertexShader,
+            uniformInt = uniformInt,
+            uniform = {
+                timePercent = 0,
+                neonLightPercent= 0,
+                scale = 0,
+            },
+            uniformFloat = {
+                viewPortSize = {vsx, vsy},
+                worldMin    = {0,0},
+                worldMax    = {0,0,0},
+              
+            }
+        }
+    )
+end
+local function initTopDownRadianceCascadeShader()
+   Spring.Echo("gfx_neonlight_radiancecascade:initTopDownRadianceCascadeShader")
     -- abort if not enabled
-    widgetHandler:UpdateCallIn("Update")  
-    errorOutIfNotInitialized(glCreateShader, "no shader support")
 
     local fragmentShader =  VFS.LoadFile(shaderFilePath .. "topDownNeonLightRadianceCascadeShader.frag") 
     local vertexShader = VFS.LoadFile(shaderFilePath .. "topDownNeonLightRadianceCascadeShader.vert") 
@@ -364,26 +394,35 @@ local function inittopDownRadianceCascadeShader()
 
     timePercentLoc                  = glGetUniformLocation(topDownRadianceCascadeShader, "timePercent")
     neonLightPercentLoc             = glGetUniformLocation(topDownRadianceCascadeShader, "neonLightPercent")
-    uniformViewPortSize             = glGetUniformLocation(topDownRadianceCascadeShader, "viewPortSize")
-
-    uniformTime                     = glGetUniformLocation(topDownRadianceCascadeShader, "time")
-    uniformEyePos                   = glGetUniformLocation(topDownRadianceCascadeShader, "eyePos")
-    unformEyeDir                    = glGetUniformLocation(topDownRadianceCascadeShader, "eyeDir")
-
-    uniformViewPrjInv               = glGetUniformLocation(topDownRadianceCascadeShader, 'viewProjectionInv')
-    uniformViewInv                  = glGetUniformLocation(topDownRadianceCascadeShader, 'viewInv')
-    uniformViewMatrix               = glGetUniformLocation(topDownRadianceCascadeShader, 'viewMatrix')
-    uniformViewProjection           = glGetUniformLocation(topDownRadianceCascadeShader, 'viewProjection')
-    uniformProjection               = glGetUniformLocation(topDownRadianceCascadeShader, 'projection')
-    uniformSunColor                 = glGetUniformLocation(topDownRadianceCascadeShader, 'sunCol')
-    uniformSkyColor                 = glGetUniformLocation(topDownRadianceCascadeShader, 'skyCol')
-    uniformSunPos                   = glGetUniformLocation(topDownRadianceCascadeShader, 'sunPos')
+    uniform_topDown_ViewPortSize             = glGetUniformLocation(topDownRadianceCascadeShader, "viewPortSize")
+    uniform_topDown_Time                     = glGetUniformLocation(topDownRadianceCascadeShader, "time")
+    uniform_topDown_EyePos                   = glGetUniformLocation(topDownRadianceCascadeShader, "eyePos")
+    unformE_topDown_yeDir                    = glGetUniformLocation(topDownRadianceCascadeShader, "eyeDir")
+    uniform_topDown_ViewPrjInv               = glGetUniformLocation(topDownRadianceCascadeShader, 'viewProjectionInv')
+    uniform_topDown_ViewInv                  = glGetUniformLocation(topDownRadianceCascadeShader, 'viewInv')
+    uniform_topDown_ViewMatrix               = glGetUniformLocation(topDownRadianceCascadeShader, 'viewMatrix')
+    uniform_topDown_ViewProjection           = glGetUniformLocation(topDownRadianceCascadeShader, 'viewProjection')
+    uniform_topDown_Projection               = glGetUniformLocation(topDownRadianceCascadeShader, 'projection')
+    uniform_topDown_SunColor                 = glGetUniformLocation(topDownRadianceCascadeShader, 'sunCol')
+    uniform_topDown_SkyColor                 = glGetUniformLocation(topDownRadianceCascadeShader, 'skyCol')
+    uniform_topDown_SunPos                   = glGetUniformLocation(topDownRadianceCascadeShader, 'sunPos')
     Spring.Echo("gfx_neonlight_radiancecascade:Initialize ended")
 end
 
 
 local function init()
-    inittopDownRadianceCascadeShader()
+    widgetHandler:UpdateCallIn("Update")  
+    errorOutIfNotInitialized(glCreateShader, "no shader support")
+    errorOutIfNotInitialized(glCreateFBO, "no fbo support")
+
+
+    local headless = Spring.GetConfigInt("Headless", 0) > 0
+    if headless then
+        Spring.Echo(shaderName.. "running in Headless mode")
+        return
+    end
+    initTopDownRadianceCascadeShader()
+    initMapTopDownToPerspectiveLightShader()
 end
 
 --------------------------------------------------------------------------------
@@ -402,7 +441,6 @@ local function getDetermenisticHash()
     return accumulated
 end
 
-
 local function getDayTime()
     local morningOffset = (DAYLENGTH / 2)
     local Frame = (Spring.GetGameFrame() + morningOffset) % DAYLENGTH
@@ -411,20 +449,6 @@ local function getDayTime()
     local minutes = math.ceil((((Frame / DAYLENGTH) * 24) - hours) * 60)
     local seconds = 60 - ((24 * 60 * 60 - (hours * 60 * 60) - (minutes * 60)) % 60)
     return hours, minutes, seconds, percent
-end
-
-local function split(self, delimiter)
-  local result = { }
-  local from  = 1
-
-  local delim_from, delim_to = string.find( self, delimiter, from  )
-  while delim_from do
-    table.insert( result, string.sub( self, from , delim_from-1 ) )
-    from  = delim_to + 1
-    delim_from, delim_to = string.find( self, delimiter, from  )
-  end
-  table.insert( result, string.sub( self, from  ) )
-  return result
 end
 
 local accumulatedDT = 0
@@ -456,25 +480,25 @@ function widget:Shutdown()
     end
 end
 
-local function updateUniforms()
+local function updatedTopDownUniforms()
     glUniform(rainPercentLoc, rainPercent)
     glUniform(timePercentLoc, timePercent)
-    glUniform(uniformViewPortSize, vsx, vsy )
-    glUniform(uniformTime, diffTime )
+    glUniform(uniform_topDown_ViewPortSize, vsx, vsy )
+    glUniform(uniform_topDown_Time, diffTime )
     local eyePos = {spGetCameraPosition()}
-    glUniform(uniformEyePos,eyePos[1],eyePos[2], eyePos[3] )
+    glUniform(uniform_topDown_EyePos,eyePos[1],eyePos[2], eyePos[3] )
     local eyeDir = {spGetCameraDirection()}
     
-    glUniform(unformEyeDir,eyeDir[1], eyeDir[2], eyeDir[3] )    
-    glUniform(uniformSunColor, sunCol[1], sunCol[2], sunCol[3]);
-    glUniform(uniformSkyColor, skyCol[1], skyCol[2], skyCol[3]);
-    glUniform(uniformSunPos, sunPos[1], sunPos[2], sunPos[3]);
+    glUniform(uniform_topDown_EyeDir,eyeDir[1], eyeDir[2], eyeDir[3] )    
+    glUniform(uniform_topDown_SunColor, sunCol[1], sunCol[2], sunCol[3]);
+    glUniform(uniform_topDown_SkyColor, skyCol[1], skyCol[2], skyCol[3]);
+    glUniform(uniform_topDown_SunPos, sunPos[1], sunPos[2], sunPos[3]);
 
-    glUniformMatrix(uniformViewPrjInv     , "viewprojectioninverse")
-    glUniformMatrix(uniformViewInv        , "viewinverse")
-    glUniformMatrix(uniformViewProjection , "viewprojection")
-    glUniformMatrix(uniformViewMatrix     , "view")
-    glUniformMatrix(uniformProjection     , "projection")
+    glUniformMatrix(uniform_topDown_ViewPrjInv     , "viewprojectioninverse")
+    glUniformMatrix(uniform_topDown_ViewInv        , "viewinverse")
+    glUniformMatrix(uniform_topDown_ViewProjection , "viewprojection")
+    glUniformMatrix(uniform_topDown_ViewMatrix     , "view")
+    glUniformMatrix(uniform_topDown_Projection     , "projection")
 
 end
 
@@ -515,19 +539,37 @@ end
 local function DrawNeonLightsToFbo()
     prepareTextures()
     glUseShader(topDownRadianceCascadeShader)
-    updateUniforms()
-
+    updatedTopDownUniforms()
     glRenderToTexture(neonLightcanvastex, renderToTextureFunc);
    
     cleanUp()    
 end
 
+local function updateLgihtMapUniforms()
+    glUniform(finalShader, "neonLightTex", 0)
+    glUniform(finalShader, "depthTex", 1)
+    glUniform(finalShader, "worldMin", worldMinX, worldMinZ)
+    glUniform(finalShader, "worldMax", worldMaxX, worldMaxZ)
+    glUniform(finalShader, "invProjView", invProjViewMatrix)
+end
+
+local function DrawNeonLightMapIntoScene()
+    glTexture(1, "$depthtex2") -- or your scene depth tex!
+        glUseShader()
+                glTexRect(0, vsy, vsx, 0)
+end
 
 function widget:DrawScreenEffects()
-    if boolDebugActive then
-        glBlending(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA) 
+        glBlending(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
         glTexture(0, neonLightcanvastex)
+    if boolDebugActive then
         glTexRect(0, vsy, vsx, 0)
+        glTexture(0, false);
+    else
+        updateLgihtMapUniforms()
+        DrawNeonLightMapIntoScene()
+        glTexRect(0, vsy, vsx, 0)
+        glUseShader(0)
         glTexture(0, false);
     end
 end
@@ -663,21 +705,6 @@ function widget:DrawUnits()
     
    restoreCameraPosDir()
 end
-
-function widget:DrawScreenEffects()
-    if not debugDisplayShader then return end
-    local _, _, isPaused = Spring.GetGameSpeed()
-    if isPaused then
-       return
-    end
-
-    glUseShader(debugDisplayShader)   
-    glTexture(1, neonLightcanvastex)
-    glTexRect(0, vsy, vsx, 0)
-    glTexture(1, false)
-    glUseShader(0)
-end
-
 
 function widget:GameFrame()
     hours,minutes,seconds, timePercent = getDayTime()
