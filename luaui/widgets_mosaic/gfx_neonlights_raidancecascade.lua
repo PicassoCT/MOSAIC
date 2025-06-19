@@ -17,26 +17,33 @@ end
 --https://www.shadertoy.com/view/mlSfRD
 --https://www.shadertoy.com/view/X3XfRM
 --Documentation: 
+
+-- To avoid having light seep through buildings, the topdown rendered computes a viewshade.
+   For this the perspective camera becomes a light, reaching or not reaching a position on the depth mask.
+   If the position is shaded - the computed radiance cascade map is not trasnfered into the final picture rendered into the FBO
+   by the orthogonal camera. The viewshade is computed from the camera forward in rays, that early out.
+
                             [ Scene Orthogonal Top-Down View ]
-+---------------------------------------------------------------+
-|                                                               |
-|                    City / Map Geometry                        |
-|      +-------------+    +-------------+    +-------------+    |
-|      |  Building A |    |  Building B |    |  Building C |    |
-|      +-------------+    +-------------+    +-------------+    |
-|                                                               |
-|                  Terrain / Ground Mesh                        |
-|                                                               |
-+---------------------------------------------------------------+
+     +---------------------------------------------------------------+
+     |/                  City / Map Geometry                         |
+     /                     _____               _____                 |
+_00_/|      +-------------+     +-------------+     +-------------+  |
+|  | |      |             |View |             |View |             |  |
+|__| |      |  Building A |Shade|  Building B |Shade|  Building C |  |
+    \|      +-------------+_____+-------------+_____+-------------+  |
+     \                                                               |
+     |\                Terrain / Ground Mesh                         |
+     | \                                                             |
+     +---------------------------------------------------------------+
 
 
                      [ Rendering Pipeline Flow ]
 
-+----------------+         +-----------------+         +----------------------+
++----------------+         +-----------------+        +----------------------+
 |  Geometry Pass | ---->   | Depth / Normal  | ---->  | Neon Light Shader    |
 |  (Draw city    |         | Textures        |        | (apply neon light    |
 |   meshes)      |         | (G-buffer)      |        |  on top-down canvas) |
-+----------------+         +-----------------+         +----------------------+
++----------------+         +-----------------+        +----------------------+
                                                               |
                                                               v
                                      +-----------------------------+
@@ -212,9 +219,9 @@ local shaderName = "gfx_neonlights_radiancecascade"
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
-local function errorOutIfNotInitialized(value, name)
+local function errorOutIfNotInitialized(value, message)
     if value == nil then
-        Spring.Echo(shaderName..": No "..name.." - aborting")
+        Spring.Echo(shaderName..": "..message .." - aborting initialization of ".. shaderName)
         widgetHandler:RemoveWidget(self)
     end
 end
@@ -414,7 +421,6 @@ local function init()
     widgetHandler:UpdateCallIn("Update")  
     errorOutIfNotInitialized(glCreateShader, "no shader support")
     errorOutIfNotInitialized(glCreateFBO, "no fbo support")
-
 
     local headless = Spring.GetConfigInt("Headless", 0) > 0
     if headless then

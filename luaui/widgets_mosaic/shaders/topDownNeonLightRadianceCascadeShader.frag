@@ -14,10 +14,50 @@ uniform sampler2D uRadianceMap; // Blurred scene texture for indirect light
 uniform sampler2D uEmissionMap; // Emissive neon glow map
 uniform samplerCube radianceCascade;
 
+#define NEAR_RAY_RESOLUTION 0.1f
+#define FAR_RAY_RESOLUTION  0.5f
+
+
 float getDepthShadow(vec3 worldPos) {
     float sceneDepth = texture(uDepthMap, vUV).r;
     float currentDepth = length(worldPos - uCameraPos) / 100.0;
     return currentDepth > sceneDepth + 0.005 ? 0.5 : 1.0; // Soft shadow
+}
+
+//Resolution decreases away from camera till min resolution
+int inViewShadowFromCamera(vec3 worldPos)
+{
+  const int steps = 64;  // or use your RAY_STEP_SAMPLING
+    vec3 dir = worldPos - uCameraPos;
+    
+    for (int i = 0; i < steps; i++)
+    {
+        float t = float(i) / float(steps - 1);
+        vec3 samplePosWorld = uCameraPos + dir * t;
+
+        // Project to clip space
+        vec4 clipPos = uProjectionMatrix * uViewMatrix * vec4(samplePosWorld, 1.0);
+        clipPos /= clipPos.w;
+
+        // Convert to screen UVs [0, 1]
+        vec2 uv = clipPos.xy * 0.5 + 0.5;
+
+        // Skip if outside screen (optional)
+        if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) continue;
+
+        // Get scene depth (0..1)
+        float sceneDepth = texture(uDepthMap, uv).r;
+
+        // Get current point depth (0..1)
+        float pointDepth = clipPos.z * 0.5 + 0.5;
+
+        // Compare with bias to avoid precision issues
+        if (pointDepth > sceneDepth + 0.001)
+        {
+            return 0;  // Occluded
+        }
+    }
+    return 1;  // Visible
 }
 
 /*
