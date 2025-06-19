@@ -33,7 +33,7 @@ _00_/|      +-------------+     +-------------+     +-------------+  |
     \|      +-------------+_____+-------------+_____+-------------+  |
      \                                                               |
      |\                Terrain / Ground Mesh                         |
-     | \                                                             |
+     |                                                               |
      +---------------------------------------------------------------+
 
 
@@ -287,7 +287,7 @@ function widget:ViewResize()
     errorOutIfNotInitialized(radianceCascadeCubeSampler, "radiance cascade sampler not existing")       
 
     neonLightcanvastex =
-        gl.CreateTexture(
+        glCreateTexture(
         vsx,
         vsy,
         {
@@ -319,7 +319,8 @@ local function initMapTopDownToPerspectiveLightShader()
     local fragmentShader =  VFS.LoadFile(shaderFilePath .. "mapTopDownToPerspectiveLightShader.frag") 
     local vertexShader = VFS.LoadFile(shaderFilePath .. "mapTopDownToPerspectiveLightShader.vert") 
     local uniformInt = {
-        modelDepthTex = modelDepthTexIndex, -- needed to calculate the 3dish shadows
+        modelDepthTex = 0, -- needed to calculate the 3dish shadows
+        radianceCascadeTex = 1,
     }
     --[[
     uniform sampler2D neonLightTex;
