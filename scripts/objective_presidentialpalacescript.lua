@@ -123,7 +123,7 @@ function showSeveral(T)
     if not T then return end
     ToShow= {}
         for num, val in pairs(T) do 
-  			if detRandom.random() == 1 then
+  			if detRandom.random_range(0,1) == 1 then
 			   ToShow[#ToShow +1] = val
   			end
   		end
