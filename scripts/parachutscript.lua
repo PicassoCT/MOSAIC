@@ -22,58 +22,20 @@ function script.Create()
     Spring.MoveCtrl.Enable(unitID, true)
     Spring.SetUnitNoSelect(unitID, true)
     Spring.SetUnitAlwaysVisible(unitID, true)
-    -- StartThread(AnimationTest)
-    hideT(TablesOfPiecesGroups["Fract"])
+    --StartThread(AnimationTest)
+    hideT(TablesOfPiecesGroups["Rotator"])
     StartThread(fallingDown)
     StartThread(detectStationary)
     Show(center)
     assert(infantry)
     Hide(infantry)
     Hide(step)
-
-    foreach(TablesOfPiecesGroups["Rotator"],
-            function(id) 
-                StartThread(randShow, id) 
-            end
-            )
 end
 
 upDownAxis= 1
-function turnDownAndUp(id, rVal, downValue, downSpeed, upValue, upSpeed)
-    Turn(id, upAxisRotation, math.rad(rVal),0)    
-    Turn(id, upDownAxis, math.rad(downValue),downSpeed)
-    WaitForTurns(id)
-    Show(id)
-    Turn(id, upDownAxis, math.rad(upValue),upSpeed)
-end
-
 SignAge= 1
 
-function randShow(id)
-    standardSpeed = math.pi / 10
-    upAxisRotation = 3
 
-    while true do
-        rVal = math.random(1, 360)
-        Show(id)
-        if boolStationary == true then
-            turnDownAndUp( id, rVal, math.random(-15, -10),0, math.random(0, 10), standardSpeed)
-        else
-           
-            if true then 
-                turnDownAndUp(id, rVal, math.random(-90, -45),0, math.random(-5, 0), standardSpeed)
-            else
-                timinRadMins = ((Spring.GetGameFrame()/30/60) % 1.0)*2 * math.pi
-                axeVal = (45 + math.sin(timinRadMins)*45)*-1
-                turnDownAndUp( id,rVal, axeVal, 0, math.random(-5, 0), standardSpeed)
-            end
-        end
-        
-        WaitForTurns(id)
-        Hide(id)
-        reset(id)
-    end
-end
 
 x, y, z = Spring.GetUnitPosition(unitID)
 boolStationary = false
@@ -94,14 +56,24 @@ function detectStationary()
                 if accumulatedNonMovementTime > 5000 then
                     dropRate = stationaryDropRate
                     boolStationary = true
+                    foreach(TablesOfPiecesGroups["DownWardSpiral"],
+                        function(id)
+                            val = math.random(1,360)
+                            Turn(id, y_axis, math.rad(val),0)
+                            Show(id)
+                            directions = math.random(15, 35)
+                            Spin(id,y_axis,math.rad(directions),0)
+                        end)
                 else
                     dropRate = travellingDropRate
                     boolStationary = false
+                    hideT(TablesOfPiecesGroups["DownWardSpiral"])
                 end
             else
                 accumulatedNonMovementTime = 0
                 dropRate = travellingDropRate
                 boolStationary = false
+                hideT(TablesOfPiecesGroups["DownWardSpiral"])
             end
         end
     end
@@ -109,11 +81,13 @@ end
 
 local passengerID = unitID
 operativeTypeTable = getOperativeTypeTable(Unitdefs)
-
+boolDebug = false
 function fallingDown()
     waitTillComplete(unitID)
     Sleep(1)
+    showT(TablesOfPiecesGroups["Cord"])
     if not GG.ParachutPassengers then GG.ParachutPassengers = {} end 
+
 
     transporting = Spring.GetUnitIsTransporting(unitID)
     if not GG.ParachutPassengers[unitID] then
@@ -131,6 +105,8 @@ function fallingDown()
     end
 
     while not GG.ParachutPassengers[unitID] do Sleep(10) end
+    StartThread(Strandanimation)
+    while boolDebug do 
     -- debug code
     passengerID = GG.ParachutPassengers[unitID].id
     passengerDefID = Spring.GetUnitDefID(passengerID)
@@ -152,6 +128,14 @@ function fallingDown()
         Spring.MoveCtrl.SetPosition(unitID, x + xOff, y - dropRate, z + zOff)
         Sleep(1)
     end
+    for i=2,#TablesOfPiecesGroups["Cord"] do
+        WMove(TablesOfPiecesGroups["Cord"][i], 2 , i*-15, 900)
+    end
+    --Debug
+    if boolDebug then
+        Spring.MoveCtrl.SetPosition(unitID, x , y +500, z )
+    end
+    end
 
     Spring.UnitDetach(passengerID)
     Spring.DestroyUnit(unitID, false, true)
@@ -165,29 +149,34 @@ function pieceOrder(i)
     return 0
 end
 
+local semaphore = {}
+function strandMotion(index,strand, yValue, xStart, xEndValue, speed)
+    semaphore[index] = true  
+    Turn(strand, x_axis, math.rad(xStart), 0)
+    Turn(strand, y_axis, math.rad(yValue), 0)
+    Show(strand)
+    WTurn(strand, x_axis, math.rad(xEndValue), speed)
+    Hide(strand)
+    semaphore[index] = nil
+end
+
 function sinusWaveThread(start, ends)
-    local Fract = TablesOfPiecesGroups["Fract"]
+    local Fract = TablesOfPiecesGroups["Rotator"]
 
     while true do
         -- one animation cycle
-        sintime = ((Spring.GetGameFrame() % 300) / 300) * 2 * math.pi
-        base = math.abs(math.sin(sintime) * 45)
-        costime = ((Spring.GetGameFrame() % 600) / 600) * 2 * math.pi
+        sintime = ((Spring.GetGameFrame() % 300) / 300)
+        
         for i = start, ends do
-            if Fract[i] then
-                locTimeOffset = (math.pi) / 2 -- 5seconds  divided by 4 depth
-                if i % 15 ~= 1 then base = 0 end
+            local strand = Fract[i]
+            circleVal = ((i - start)+1) * (360/(ends- start)) + math.random(-5,5)
 
-                pOrder = pieceOrder(i % 15)
-                wavetime = costime + (locTimeOffset * pOrder)
-                wave = math.cos(wavetime) * 42
-                rVal = math.random(-6, 6)
-                speed = math.abs(base + wave + rVal) / 100
-
-                Turn(Fract[i], x_axis, math.rad(base + wave + rVal), speed)
+            if not semaphore[i] then
+                startValue =  math.random(15,30)
+                endValue = -15
+                StartThread(strandMotion, i, strand, circleVal, startValue,endValue, 1 )               
             end
         end
-
         Sleep(100)
     end
 end
@@ -200,30 +189,12 @@ function Fibonacci_tail_call(n)
     return inner(n, 0, 1)
 end
 
-function AnimationTest()
-    local Fract = TablesOfPiecesGroups["Fract"]
-    for i = 1, #Fract, 15 do
-        degToTurn = (360 / (#Fract / 15)) * (i - 1)
-        ndegree = math.random(10, 80)
-        Turn(Fract[i], y_axis, math.rad(degToTurn), 0)
-    end
-
+function Strandanimation()
+    local Fract = TablesOfPiecesGroups["Rotator"]
     for i = 1, #Fract do
-        if i % 15 == 1 then StartThread(sinusWaveThread, i, i + 15) end
-    end
-
-    while true do
-        -- resetAll(unitID)
-        Sleep(3000)
-        gameFrame = Spring.GetGameFrame()
-        for i = 1, #Fract, 15 do
-            degToTurn = (360 / (#Fract / 15)) * (i - 1)
-            ndegree = math.random(10, 80)
-            Turn(Fract[i], y_axis, math.rad(degToTurn), math.pi)
+        if i % 15 == 1 and Fract[i] and Fract[i+15] then
+            StartThread(sinusWaveThread, i, i + 15) 
         end
-
-        WaitForTurns(Fract)
-        Sleep(10)
     end
 end
 

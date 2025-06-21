@@ -25,7 +25,7 @@ end
 function script.Create()
     --echo(UnitDefs[unitDefID].name.."has placeholder script called")
     Spring.SetUnitAlwaysVisible(unitID, true)
-    Spring.SetUnitNoSelect(unitID, true)
+    --Spring.SetUnitNoSelect(unitID, true)
     Spring.SetUnitBlocking(unitID, false)
     hideAll(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
@@ -33,18 +33,32 @@ function script.Create()
     StartThread(crisisModeWatcher)
 end
 
-function crisisModeWatcher()
+Wire = piece("Wire")
 
+function crisisModeWatcher()
+    BodyGuards = TablesOfPiecesGroups["BodyGuard"]
 	while true do
 		Sleep(1000)
 		if GG.GlobalGameState ~= "normal" then
 			hideT(TablesOfPiecesGroups["Limo"])
 			Show(Gate)
+            Show(Wire)
+          
+            addToShowTable(showSeveral(BodyGuards))
+            showT(BodyGuards)
 
 			while GG.GlobalGameState ~= "normal" do
 				Sleep(3000)
+                foreach(BodyGuards,
+                function(id)
+                    Show(id)
+                    val = math.random(2,7)*randSign()
+                    Spin(id,y_axis, math.rad(val), 0)
+                end)
 			end
 			Hide(Gate)
+            Hide(Wire)
+            hideT(BodyGuards)
 			foreach(
 				toShowTable,
 				function(id)
@@ -61,9 +75,40 @@ function addToShowTable(pieceID)
 	toShowTable[#toShowTable +1]= pieceID
 end
 
+-- Create a deterministic PRNG
+local function create_rng(seed)
+    -- Constants for LCG (Numerical Recipes)
+    local a = 1664525
+    local c = 1013904223
+    local m = 2^32
+
+    local state = seed or 1
+
+    -- Returns a "random" float between 0 and 1
+    local function random()
+        state = (a * state + c) % m
+        return state / m
+    end
+
+    -- Returns a random integer between min and max (inclusive)
+    local function random_range(min, max)
+        min = min or 0
+        max = max or 1
+        return math.floor(random() * (max - min + 1)) + min
+    end
+
+    return {
+        random = random,
+        random_range = random_range,
+    }
+end
+
+detRandom = create_rng(getBuildingTypeHash(unitID, 42))
+
+
 function showOne(T, bNotDelayd)
     if not T then return end
-    dice = math.random(1, count(T))
+    dice = detRandom.random_range(1, count(T))
     c = 0
     for k, v in pairs(T) do
         if k and v then c = c + 1 end
@@ -78,7 +123,7 @@ function showSeveral(T)
     if not T then return end
     ToShow= {}
         for num, val in pairs(T) do 
-  			if math.random(0,1) == 1 then
+  			if detRandom.random() == 1 then
 			   ToShow[#ToShow +1] = val
   			end
   		end
@@ -87,7 +132,7 @@ function showSeveral(T)
   		toShowTable[#toShowTable +1] = ToShow[i]
   		Show(ToShow[i])
   	end
-  	return 
+  	return ToShow
 end
 
 Gockelsockel = piece("BaseSub2")
@@ -97,10 +142,10 @@ Gate = piece("Gate")
 function buildShowUnit()
 	addToShowTable(Base)	
 	addToShowTable(Flag)
-	showSeveral("BaseSub")
-	if maRa() then
-		if  isInTable(TablesOfPiecesGroups["BaseSub"], Gockelsockel) then
-			addToShowTable(showOne(TablesOfPiecesGroups["statue"]))
+	baseSubs= showSeveral(TablesOfPiecesGroups["BaseSub"])
+	if detRandom.random() == 1 then
+		if  isInTable(baseSubs, Gockelsockel) then
+			addToShowTable(showOne(TablesOfPiecesGroups["Statue"]))
 		end
 	end
 	addToShowTable(showOne(TablesOfPiecesGroups["Street"]))

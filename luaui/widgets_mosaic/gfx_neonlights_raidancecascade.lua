@@ -6,12 +6,23 @@ function widget:GetInfo()
         date = "2023",
         license = "GNU GPL, v2 or later",
         layer = -9,
-        enabled = true, --  loaded by default?
+        enabled = false, --  loaded by default?
         hidden = false
     }
 end
 
 --[[
+Current bug:
+t=00:01:05.289879][f=-000001] gfx_neonlight_radiancecascade:Initialize] particle shader compilation failed
+[t=00:01:05.289990][f=-000001] 0(14) : error C1503: undefined variable "aPosition"
+0(16) : error C1503: undefined variable "aNormal"
+0(17) : error C1503: undefined variable "aUV"
+
+[t=00:01:05.291031][f=-000001] gfx_neonlight_radiancecascade:initMapTopDownToPerspectiveLightShader
+[t=00:01:05.342990][f=-000001] Loading widget from mod:   Highlight Selected Units  <gui_highlight_selectedunits.lua> ...
+[t=00:01:05.344170][f=-000001] Reloaded cmdcolors from file: cmdcolors.tmp
+[t=00:01:05.345080][f=-000001] Loading widget from mod:   Cloak Fire State 2  <unit_cloakfirestate2.lua> ...
+
 --Examples:
 --https://www.youtube.com/watch?v=3so7xdZHKxw
 --https://www.shadertoy.com/view/mlSfRD
@@ -317,7 +328,7 @@ widget:ViewResize()
 local function initMapTopDownToPerspectiveLightShader()
    Spring.Echo("gfx_neonlight_radiancecascade:initMapTopDownToPerspectiveLightShader")
     local fragmentShader =  VFS.LoadFile(shaderFilePath .. "mapTopDownToPerspectiveLightShader.frag") 
-    local vertexShader = VFS.LoadFile(shaderFilePath .. "mapTopDownToPerspectiveLightShader.vert") 
+    local vertexShader = VFS.LoadFile(shaderFilePath .. "identity.vert.glsl") 
     local uniformInt = {
         modelDepthTex = 0, -- needed to calculate the 3dish shadows
         radianceCascadeTex = 1,
@@ -357,7 +368,7 @@ local function initTopDownRadianceCascadeShader()
     -- abort if not enabled
 
     local fragmentShader =  VFS.LoadFile(shaderFilePath .. "topDownNeonLightRadianceCascadeShader.frag") 
-    local vertexShader = VFS.LoadFile(shaderFilePath .. "topDownNeonLightRadianceCascadeShader.vert") 
+    local vertexShader = VFS.LoadFile(shaderFilePath .. "identity.vert.glsl") 
     
     local uniformInt = {
         modelDepthTex = modelDepthTexIndex, -- needed to calculate the 3dish shadows
