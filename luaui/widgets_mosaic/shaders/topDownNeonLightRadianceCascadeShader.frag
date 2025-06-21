@@ -5,9 +5,8 @@ in vec3 vWorldPos;
 in vec3 vNormal;
 in vec2 vUV;
 
-out vec4 fragColor;
 
-uniform vec3 uCameraPos;
+uniform vec3 eyePos;
 uniform vec3 uLightDir; // Directional light (top-down sun/moon)
 uniform sampler2D uDepthMap; // Depth texture for cascading
 uniform sampler2D uRadianceMap; // Blurred scene texture for indirect light
@@ -19,7 +18,7 @@ uniform samplerCube radianceCascade;
 
 float getDepthShadow(vec3 worldPos) {
     float sceneDepth = texture(uDepthMap, vUV).r;
-    float currentDepth = length(worldPos - uCameraPos) / 100.0;
+    float currentDepth = length(worldPos - eyePos) / 100.0;
     return currentDepth > sceneDepth + 0.005 ? 0.5 : 1.0; // Soft shadow
 }
 
@@ -27,12 +26,12 @@ float getDepthShadow(vec3 worldPos) {
 int inViewShadowFromCamera(vec3 worldPos)
 {
   const int steps = 32;  // or use your RAY_STEP_SAMPLING
-    vec3 dir = worldPos - uCameraPos;
+    vec3 dir = worldPos - eyePos;
     
     for (int i = 0; i < steps; i++)
     {
         float t = float(i) / float(steps - 1);
-        vec3 samplePosWorld = uCameraPos + dir * t;
+        vec3 samplePosWorld = eyePos + dir * t;
 
         // Project to clip space
         vec4 clipPos = uProjectionMatrix * uViewMatrix * vec4(samplePosWorld, 1.0);
@@ -128,7 +127,7 @@ void main() {
 
     vec3 N = normalize(vNormal);
     vec3 L = normalize(-uLightDir);
-    vec3 V = normalize(uCameraPos - vWorldPos);
+    vec3 V = normalize(eyePos - vWorldPos);
     vec3 R = reflect(-L, N);
 
     // Diffuse and specular lighting

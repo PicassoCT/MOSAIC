@@ -2,14 +2,12 @@
 
 uniform sampler2D radianceCascadeTex;
 uniform sampler2D depthTex;
-
 uniform vec2 worldMin;
 uniform vec2 worldMax;
 uniform mat4 invProjView;
 
 in vec2 screenUV;
 
-out vec4 fragColor;
 
 vec2 intersectAABB(vec2 ro, vec2 rd, vec2 a, vec2 b) {
     // Return the two intersection t-values for the intersection between a ray

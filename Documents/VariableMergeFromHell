@@ -1,0 +1,36 @@
+mapTopDownToPerspectiveLightshader.frag input
+
+uniform sampler2D radianceCascadeTex;
+uniform sampler2D depthTex;
+uniform vec2 worldMin;
+uniform vec2 worldMax;
+uniform mat4 invProjView;
+in vec2 screenUV;
+
+topDownNeonLightRadianceCascadeShader.frag input
+
+in vec3 vWorldPos;
+in vec3 vNormal;
+in vec2 vUV;
+
+uniform sampler2D uRadianceMap; // Blurred scene texture for indirect light
+uniform sampler2D uEmissionMap; // Emissive neon glow map
+uniform samplerCube radianceCascade;
+
+uniform vec3 eyePos; 
+uniform vec3 eyeDir; 
+uniform vec3 uLightDir; // Directional light (top-down sun/moon) sunPos - worldPos
+uniform sampler2D uDepthMap; // Depth texture for cascading
+
+uniform float neonLightPercent;
+uniform vec2 viewPortSize; //TODO
+
+
+uniform_topDown_EyePos                   = glGetUniformLocation(topDownRadianceCascadeShader, "eyePos")
+unformE_topDown_yeDir                    = glGetUniformLocation(topDownRadianceCascadeShader, "eyeDir")
+uniform_topDown_ViewPrjInv               = glGetUniformLocation(topDownRadianceCascadeShader, 'viewProjectionInv')
+uniform_topDown_ViewInv                  = glGetUniformLocation(topDownRadianceCascadeShader, 'viewInv')
+uniform_topDown_ViewMatrix               = glGetUniformLocation(topDownRadianceCascadeShader, 'viewMatrix')
+uniform_topDown_ViewProjection           = glGetUniformLocation(topDownRadianceCascadeShader, 'viewProjection')
+uniform_topDown_Projection               = glGetUniformLocation(topDownRadianceCascadeShader, 'projection')
+uniform_topDown_SunDir                   = glGetUniformLocation(topDownRadianceCascadeShader, 'uLightDir')
