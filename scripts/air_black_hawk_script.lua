@@ -44,6 +44,11 @@ local SIG_FLY = 2
 local SIG_UP = 4
 local SIG_Down = 8
 
+function HideAssert(piece)
+    assert(piece)
+    Hide(piece)
+end
+
 
 
 local buildProgress = 1
@@ -71,27 +76,27 @@ function rotorsUp()
     if isNight() == true then 
         Show(nightlight)
     else
-        Hide(nightlight)
+        HideAssert(nightlight)
     end
 
     Sleep(350)
-    Hide(rotor)
-    Hide(tailrotor)
+    HideAssert(rotor)
+    HideAssert(tailrotor)
 end
 
 function rotorsDown()
     SetSignalMask(SIG_Down)
 
-    Hide(nightlight)
+    HideAssert(nightlight)
     Sleep(600)
     --Spring.Echo("Imlanding-Copterscript")
     Spin(tailrotor, x_axis, math.rad(-190), 0.001)
     Spin(rotor, y_axis, math.rad(-190), 0.001)
     Spin(nightlight, y_axis, math.rad(190), 0.001)
     Sleep(350)
-    Hide(tailrotors)
+    HideAssert(tailrotors)
 
-    Hide(rotors)
+    HideAssert(rotors)
     StopSpin(rotors, y_axis, 0)
     StopSpin(tailrotors, x_axis, 0.01)
     if boolAir == true then
@@ -240,25 +245,25 @@ end
 boolAir = true
 function script.Create()
 
-    Hide(rotoscope)
-    Hide(dirtemit1)
-    Hide(dirtemit2)
-    Hide(imgoingdown)
+    HideAssert(rotoscope)
+    HideAssert(dirtemit1)
+    HideAssert(dirtemit2)
+    HideAssert(imgoingdown)
 
     if Game.windMax <= 1 then boolAir = false end
     --check boolAir
-    Hide(aim1)
+    HideAssert(aim1)
     if boolAir == true then
-        Hide(rotors)
-        Hide(tailrotors)
+        HideAssert(rotors)
+        HideAssert(tailrotors)
     else
-        Hide(tailrotor)
-        Hide(tailrotors)
-        Hide(rotor)
-        Hide(rotors)
+        HideAssert(tailrotor)
+        HideAssert(tailrotors)
+        HideAssert(rotor)
+        HideAssert(rotors)
 
     end
-    Hide(aim2)
+    HideAssert(aim2)
 end
 
 function emitSmoke()

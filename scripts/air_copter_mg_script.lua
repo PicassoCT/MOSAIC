@@ -13,6 +13,8 @@ center = piece "center"
 gun = piece "gun"
 EmitPiece = piece "EmitPiece"
 
+
+
 function script.Create()
     generatepiecesTableAndArrayCode(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)

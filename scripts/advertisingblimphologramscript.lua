@@ -103,6 +103,7 @@ function ShowReg(pieceID)
 end
 
 function HideReg(pieceID)
+    assert(pieceID)
     Hide(pieceID)  
     cachedCopy[pieceID] = nil
     updateCheckCache()
@@ -113,7 +114,11 @@ function hideAllReg(id)
     if not unitID then unitID = id end
 
     pieceMap = Spring.GetUnitPieceMap(unitID)
-    for k, v in pairs(pieceMap) do HideReg(v) end
+    for k, v in pairs(pieceMap) do 
+        if v then
+            HideReg(v) 
+        end
+    end
 end
 
 -- > Hides a PiecesTable, 

@@ -464,7 +464,10 @@ function Spring.UnitScript.Show(piece)
 
     if bool_GadgetDebug == true and piece and type(piece) ~= "number" and
        type(piece) ~= "function" then
-       Spring.Echo("PieceNumber not a number " .. piece .. " - got " ..type(piece) .. " with value " .. piece .. " instead")
+        local activeUnit = GetActiveUnit()
+        local defID = Spring.GetUnitDefID(activeUnit.unitID)
+        Spring.Echo("Invalid PieceNumber in show in  "..UnitDefs[defID].name)
+        Spring.Echo("PieceNumber not a number " .. piece .. " - got " ..type(piece) .. " with value " .. piece .. " instead")
     end
     if bool_GadgetDebug == true and (not piece) then
        error("Error: Piece  not handed as argument", 2)
