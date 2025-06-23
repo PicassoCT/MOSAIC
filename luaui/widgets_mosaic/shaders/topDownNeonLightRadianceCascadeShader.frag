@@ -136,11 +136,7 @@ vec3 calculateRadianceCascade()
 }
 
 void main() {
-    if (inViewShadowFromCamera(vWorldPos)) //Early out if not visible
-    {
-        gl_FragColor = BLACK;
-        return ;
-    }
+
 
     vec3 N = normalize(vNormal);
     vec3 L = normalize(-uLightDir);
@@ -168,5 +164,10 @@ void main() {
     color += emission * 1.5;             // glow
     color *= shadow;                     // apply depth shadow
 
+    if (inViewShadowFromCamera(vWorldPos)) //Early out if not visible
+    {
+        gl_FragColor = BLACK;
+        return ;
+    }
     gl_FragColor = vec4(color, 1.0);
 }
