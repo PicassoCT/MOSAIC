@@ -593,7 +593,7 @@ function getCivilianSex(id, UnitDefs)
 end
 
 
- function getDeterministicCultureNames( id, UnitDefs, culture, boolIDOverride)
+ function getDeterministicCultureNames( id, UnitDefs, culture, boolIDOverride, boolNoUnknown)
       
         if not culture then 
             culture = getInstanceCultureOrDefaultToo() 
@@ -710,9 +710,12 @@ end
             names.international = GG.NameCacheInternational
           end
 
-    if id % 100 == 42 then return "[Illegal ID]", "DB:Inconsistency error" end
+    if id % 100 == 42 and not boolNoUnknown then return "[Illegal ID]", "DB:Inconsistency error" end
 
     surName = "[Illegal ID]"
+    if boolNoUnknown then
+        surName = "John"
+    end
 
     if sex == "male" then
         surHash =  (id % #names[culture].surm) + 1
@@ -726,6 +729,7 @@ end
     
     familyHash =  (id % #names[culture].family) + 1
     familyName =  names[culture].family[familyHash]
+
     return surName, familyName
 end
 
