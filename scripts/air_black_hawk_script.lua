@@ -44,17 +44,14 @@ local SIG_FLY = 2
 local SIG_UP = 4
 local SIG_Down = 8
 
-function HideAssert(piece)
-    assert(piece)
+function HideAssert(piece, name)
+    --assert(piece, name)
     Hide(piece)
 end
-
-
 
 local buildProgress = 1
 local boolShortStop = false
 local boolLongStop = false
-
 
 function rotorsUp()
     Sleep(200)
@@ -76,27 +73,27 @@ function rotorsUp()
     if isNight() == true then 
         Show(nightlight)
     else
-        HideAssert(nightlight)
+        HideAssert(nightlight, "nightlight")
     end
 
     Sleep(350)
-    HideAssert(rotor)
-    HideAssert(tailrotor)
+    HideAssert(rotor, "rotor")
+    HideAssert(tailrotor, "tailrotor")
 end
 
 function rotorsDown()
     SetSignalMask(SIG_Down)
 
-    HideAssert(nightlight)
+    HideAssert(nightlight, "nightlight")
     Sleep(600)
     --Spring.Echo("Imlanding-Copterscript")
     Spin(tailrotor, x_axis, math.rad(-190), 0.001)
     Spin(rotor, y_axis, math.rad(-190), 0.001)
     Spin(nightlight, y_axis, math.rad(190), 0.001)
     Sleep(350)
-    HideAssert(tailrotors)
+    HideAssert(tailrotors, "tailrotors")
 
-    HideAssert(rotors)
+    HideAssert(rotors, "rotors")
     StopSpin(rotors, y_axis, 0)
     StopSpin(tailrotors, x_axis, 0.01)
     if boolAir == true then
@@ -245,25 +242,25 @@ end
 boolAir = true
 function script.Create()
 
-    HideAssert(rotoscope)
-    HideAssert(dirtemit1)
-    HideAssert(dirtemit2)
-    HideAssert(imgoingdown)
+    HideAssert(rotoscope, "rotoscope")
+    HideAssert(dirtemit1, "dirtemit1")
+    HideAssert(dirtemit2, "dirtemit2")
+    HideAssert(imgoingdown, "imgoingdown")
 
     if Game.windMax <= 1 then boolAir = false end
     --check boolAir
-    HideAssert(aim1)
+    HideAssert(aim1,"aim1")
     if boolAir == true then
-        HideAssert(rotors)
-        HideAssert(tailrotors)
+        HideAssert(rotors, "rotors")
+        HideAssert(tailrotors, "tailrotors")
     else
-        HideAssert(tailrotor)
-        HideAssert(tailrotors)
-        HideAssert(rotor)
-        HideAssert(rotors)
+        HideAssert(tailrotor,"tailrotor")
+        HideAssert(tailrotors,"tailrotors")
+        HideAssert(rotor, "ROTOR")
+        HideAssert(rotors, "ROTORs")
 
     end
-    HideAssert(aim2)
+    --HideAssert(aim2, "aim2")
 end
 
 function emitSmoke()
