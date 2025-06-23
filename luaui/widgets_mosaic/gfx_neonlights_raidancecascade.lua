@@ -18,11 +18,21 @@ end
 --https://www.shadertoy.com/view/mlSfRD
 --https://www.shadertoy.com/view/X3XfRM
 --Documentation: 
+--The algo:
+    A: Orthogonal Topdown shader
+        0) From ortho camera produce a depthmap Render a topdownview of all Neonsigns, lightsources in the size of cameraviewWidth x Scenedepth
+            -> produces neonPiecesInputFbo
+        1) Transfer this data, in radiance cascade computationshader - into a 2d radiance cascade sampler texture 
+            -> gets/transfers radiance cascade Samplecube 
+        2) Calculate a lighttexture from the radiance cascade to 2nd FBO : TODO buffer size: cameraviewWidth x Scenedepth 
+        3) Calculate viewshade from the scene camera in world via heightmap traceRay. If it can not be seen- it remains in the radiancecascade, 
+           but is not rendered into the lightmap 
 
--- To avoid having light seep through buildings, the topdown rendered computes a viewshade.
-   For this the perspective camera becomes a light, reaching or not reaching a position on the depth mask.
-   If the position is shaded - the computed radiance cascade map is not trasnfered into the final picture rendered into the FBO
-   by the orthogonal camera. The viewshade is computed from the camera forward in rays, that early out.
+    B: Perspective scene Lookup shader
+        4) From the scene camera - lookup the pixel mapping to topdown 2nd FBO
+        5) Apply the looked up value by addition (its light after all)
+        6) Blur if needed
+
 
                             [ Scene Orthogonal Top-Down View ]
      +---------------------------------------------------------------+
@@ -687,6 +697,7 @@ local function renderCameraOrthogonal()
     orgCamState = Spring.GetCameraState() 
     local camera, ortho = computeTopDownCamera(orgCam)
     Spring.SetCameraState(camera) 
+    -- A: Orthogonal Topdown shader: 0) From ortho camera produce a depthmap Render a topdownview of all Neonsigns, lightsources in the size of cameraviewWidth x Scenedepth
     glOrtho(ortho.width, ortho,height, ortho.near, ortho.far) --> https://github.com/beyond-all-reason/Beyond-All-Reason/blob/8e6f934ab10e549f17438061eb6e1d4e267d995e/luarules/gadgets/unit_icongenerator.lua#L669
     gl.RenderToTexture()
 end

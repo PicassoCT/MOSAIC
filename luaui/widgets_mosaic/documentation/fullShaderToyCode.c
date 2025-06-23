@@ -278,7 +278,7 @@ void mainCubemap(out vec4 fragColor, vec2 fragCoord, vec3 fragRO, vec3 fragRD) {
 
 
 
-/*Bfufer  B*/
+/*Buffer  B*/
 
 // This buffer draws the SDF:
 // .r stores signed distance

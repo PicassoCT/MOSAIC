@@ -6,8 +6,12 @@ uniform samplerCube radianceCascade;
 uniform vec2 worldMin;
 uniform vec2 worldMax;
 uniform mat4 invProjView;
+uniform vec3 sunColor;
+uniform vec3 skyColor;
 
 in vec2 screenUV;
+
+#define RED vec4(1.0,0,0,1.0)
 
 // Spatial resolution of cascade 0
 const ivec2 c_sRes = ivec2(320, 180);
@@ -106,14 +110,13 @@ vec3 integrateSkyRadiance_(vec2 angle) {
     // Sky integral formula taken from
     // Analytic Direct Illumination - Mathis
     // https://www.shadertoy.com/view/NttSW7
-    const vec3 SkyColor = vec3(0.2,0.5,1.);
-    const vec3 SunColor = vec3(1.,0.7,0.1)*10.;
+    const vec3 lSunColor = SunColor *10.;
     const float SunA = 2.0;
     const float SunS = 64.0;
     const float SSunS = sqrt(SunS);
     const float ISSunS = 1./SSunS;
     vec3 SI = SkyColor*(a1-a0-0.5*(cos(a1)-cos(a0)));
-    SI += SunColor*(atan(SSunS*(SunA-a0))-atan(SSunS*(SunA-a1)))*ISSunS;
+    SI += lSunColor*(atan(SSunS*(SunA-a0))-atan(SSunS*(SunA-a1)))*ISSunS;
     return SI / 6.0;
 }
 
@@ -133,7 +136,7 @@ float smoothDist(int cascadeIndex)
     return float(1 << cascadeIndex);
 }
 
-void mainCubemap(out vec4 fragColor, vec2 fragCoord, vec3 fragRO, vec3 fragRD) {
+vec4 mainCubemap( vec2 fragCoord, vec3 fragRO, vec3 fragRD) {
     // Calculate the index for this cubemap texel
     int face;
     
@@ -226,12 +229,11 @@ void mainCubemap(out vec4 fragColor, vec2 fragCoord, vec3 fragRO, vec3 fragRD) {
                 si.a *= S.a;
             }
         }
-        
         s += si;
     }
     
     s /= float(nDirs / cn_dRes);
-    fragColor = s;
+    return s;
 }
 
 
@@ -248,8 +250,9 @@ void main() {
     lightUV.x = (worldPos.x - worldMin.x) / (worldMax.x - worldMin.x);
     lightUV.y = (worldPos.z - worldMin.y) / (worldMax.y - worldMin.y);
 
-    vec4 lightColor = texture(radianceCascade, lightUV);
+    vec4 lightColor =    mainCubemap(lightUV);
 
     // Combine with scene color — here simply output light:
-    fragColor = lightColor;
+    gl_FragColor = lightColor;
+    gl_FragColor = RED;
 }
