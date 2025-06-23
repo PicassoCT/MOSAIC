@@ -605,7 +605,7 @@ end
                 sex = "female"
             end
         else
-            sex =getCivilianSex(id, UnitDefs)
+            sex = getCivilianSex(id, UnitDefs)
         end
 
             names = {
