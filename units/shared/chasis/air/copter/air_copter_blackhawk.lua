@@ -5,7 +5,7 @@ local blackHawk = VTOL:New{
     Description = "attack helicopter that can transport personal",
     objectName = "air_copter_blackhawk.dae",
     script = "air_black_hawk_script.lua",
-    buildPic = "chunterchopper.png",
+    --buildPic = "chunterchopper.png",
     --cost
     buildCostMetal = 260,
     buildCostEnergy = 130,

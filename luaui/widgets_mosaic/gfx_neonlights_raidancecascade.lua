@@ -6,7 +6,7 @@ function widget:GetInfo()
         date = "2023",
         license = "GNU GPL, v2 or later",
         layer = -9,
-        enabled = false, --  loaded by default?
+        enabled = true, --  loaded by default?
         hidden = false
     }
 end
@@ -215,8 +215,7 @@ local neonUnitTables = {}
 local UnitUnitDefIDMap = {}
 local counterNeonUnits = 0
 local shaderName = "gfx_neonlights_radiancecascade"
-
-
+local DAYLENGTH  = 28800
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -492,6 +491,7 @@ local function updateTopDownRadianceCascadeUniforms()
     glUniform(uniform_topDown_SunColor, sunCol[1], sunCol[2], sunCol[3])
     glUniform(uniform_topDown_SkyColor, skyCol[1], skyCol[2], skyCol[3])
     glUniform(uniform_topDown_SunPos, sunPos[1], sunPos[2], sunPos[3])
+
 
     -- Optional matrices, update if you have correct matrices ready
     if uniform_topDown_ViewPrjInv then

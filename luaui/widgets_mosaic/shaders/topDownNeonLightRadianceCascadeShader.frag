@@ -9,12 +9,30 @@ in vec2 vUV;
 uniform vec3 eyePos;
 uniform vec3 uLightDir; // Directional light (top-down sun/moon)
 uniform sampler2D uDepthMap; // Depth texture for cascading
-uniform sampler2D uRadianceMap; // Blurred scene texture for indirect light
-uniform sampler2D uEmissionMap; // Emissive neon glow map
+uniform sampler2D uEmissionMap; // Input: Emissive neon glow map
 uniform samplerCube radianceCascade;
+uniform mat4 viewprojectioninverse;
+uniform mat4 viewinverse;
+uniform mat4 viewprojection;
+uniform mat4 projection;
+uniform vec2  viewPortSize;
+
+// Spatial resolution of cascade 0
+const ivec2 c_sRes = ivec2(320, 180);
+// Number of directions in cascade 0
+const int c_dRes = 16;
+// Number of cascades all together
+const int nCascades = 4;
+
+// Length of ray interval for cascade 0 (measured in pixels)
+const float c_intervalLength = 7.0;
+
+// Length of transition area between cascade 0 and cascade 1
+const float c_smoothDistScale = 10.0;
+
 
 #define BLACK vec4(0.0, 0.0,0.0, 0.0)
-
+#define PI (3.14159265359f)
 
 float getDepthShadow(vec3 worldPos) {
     float sceneDepth = texture(uDepthMap, vUV).r;
@@ -23,7 +41,7 @@ float getDepthShadow(vec3 worldPos) {
 }
 
 //Resolution decreases away from camera till min resolution
-int inViewShadowFromCamera(vec3 worldPos)
+bool inViewShadowFromCamera(vec3 worldPos)
 {
   const int steps = 32;  // or use your RAY_STEP_SAMPLING
     vec3 dir = worldPos - eyePos;
@@ -34,7 +52,7 @@ int inViewShadowFromCamera(vec3 worldPos)
         vec3 samplePosWorld = eyePos + dir * t;
 
         // Project to clip space
-        vec4 clipPos = uProjectionMatrix * uViewMatrix * vec4(samplePosWorld, 1.0);
+        vec4 clipPos = viewprojection * vec4(samplePosWorld, 1.0);
         clipPos /= clipPos.w;
 
         // Convert to screen UVs [0, 1]
@@ -52,10 +70,10 @@ int inViewShadowFromCamera(vec3 worldPos)
         // Compare with bias to avoid precision issues
         if (pointDepth > sceneDepth + 0.001)
         {
-            return 1;  // Occluded
+            return true;  // Occluded
         }
     }
-    return 0;  // Visible
+    return false;  // Visible
 }
 
 
@@ -100,11 +118,10 @@ vec4 cascadeFetch(samplerCube cascadeTex, int n, ivec2 p, int d) {
 
 
 
-vec4 calculateRadianceCascade()
+vec3 calculateRadianceCascade()
 {
-    screenRes = iResolution.xy;
-    ivec2 cubemapRes = textureSize(iChannel0, 0);
-    vec2 p = fragCoord / iResolution.xy * vec2(c_sRes);
+    ivec2 cubemapRes = textureSize(uEmissionMap, 0);
+    vec2 p = gl_FragCoord.xy / viewPortSize.xy * vec2(c_sRes);
     ivec2 q = ivec2(round(p)) - 1;
     vec2 w = p - vec2(q) - 0.5;
     ivec2 h = ivec2(1, 0);
@@ -115,13 +132,13 @@ vec4 calculateRadianceCascade()
     vec3 fluence = mix(mix(S0, S1, w.x), mix(S2, S3, w.x), w.y).rgb * 2.0 * PI;
 
     // Tonemap
-    return = vec4(1.0 - 1.0 / pow(1.0 + fluence, vec3(2.5)), 1.0);
+    return vec3(1.0 - 1.0 / pow(1.0 + fluence, vec3(2.5)));
 }
 
 void main() {
     if (inViewShadowFromCamera(vWorldPos)) //Early out if not visible
     {
-        fragColor = BLACK;
+        gl_FragColor = BLACK;
         return ;
     }
 
@@ -151,5 +168,5 @@ void main() {
     color += emission * 1.5;             // glow
     color *= shadow;                     // apply depth shadow
 
-    fragColor = vec4(color, 1.0);
+    gl_FragColor = vec4(color, 1.0);
 }

@@ -1,12 +1,26 @@
 #version 150 compatibility
 
-uniform sampler2D radianceCascadeTex;
+
 uniform sampler2D depthTex;
+uniform samplerCube radianceCascade;
 uniform vec2 worldMin;
 uniform vec2 worldMax;
 uniform mat4 invProjView;
 
 in vec2 screenUV;
+
+// Spatial resolution of cascade 0
+const ivec2 c_sRes = ivec2(320, 180);
+// Number of directions in cascade 0
+const int c_dRes = 16;
+// Number of cascades all together
+const int nCascades = 4;
+
+// Length of ray interval for cascade 0 (measured in pixels)
+const float c_intervalLength = 7.0;
+
+// Length of transition area between cascade 0 and cascade 1
+const float c_smoothDistScale = 10.0;
 
 
 vec2 intersectAABB(vec2 ro, vec2 rd, vec2 a, vec2 b) {
@@ -203,10 +217,10 @@ void mainCubemap(out vec4 fragColor, vec2 fragCoord, vec3 fragRO, vec3 fragRD) {
                 ivec2 q = ivec2(round(pf)) - 1;
                 vec2 w = pf - vec2(q) - 0.5;
                 ivec2 h = ivec2(1, 0);
-                vec4 S0 = cascadeFetch(iChannel0, n + 1, q + h.yy, j);
-                vec4 S1 = cascadeFetch(iChannel0, n + 1, q + h.xy, j);
-                vec4 S2 = cascadeFetch(iChannel0, n + 1, q + h.yx, j);
-                vec4 S3 = cascadeFetch(iChannel0, n + 1, q + h.xx, j);
+                vec4 S0 = cascadeFetch(radianceCascade, n + 1, q + h.yy, j);
+                vec4 S1 = cascadeFetch(radianceCascade, n + 1, q + h.xy, j);
+                vec4 S2 = cascadeFetch(radianceCascade, n + 1, q + h.yx, j);
+                vec4 S3 = cascadeFetch(radianceCascade, n + 1, q + h.xx, j);
                 vec4 S = mix(mix(S0, S1, w.x), mix(S2, S3, w.x), w.y);
                 si.rgb += si.a * S.rgb;
                 si.a *= S.a;
@@ -234,7 +248,7 @@ void main() {
     lightUV.x = (worldPos.x - worldMin.x) / (worldMax.x - worldMin.x);
     lightUV.y = (worldPos.z - worldMin.y) / (worldMax.y - worldMin.y);
 
-    vec4 lightColor = texture(radianceCascadeTex, lightUV);
+    vec4 lightColor = texture(radianceCascade, lightUV);
 
     // Combine with scene color — here simply output light:
     fragColor = lightColor;

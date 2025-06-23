@@ -34,7 +34,6 @@ So for every event there is only a basic package needed - a function, a persista
 if (gadgetHandler:IsSyncedCode()) then
     local Events = {}
     local EventStreamID = 0
-
     local function DeactivateEvent(self, evtID)
         boolRemovedFunction = false
 
@@ -73,6 +72,7 @@ if (gadgetHandler:IsSyncedCode()) then
         }
     end
     if GG.EventStreamDeactivate == nil then GG.EventStreamDeactivate = {} end
+
 
     function gadget:GameFrame(frame)
         if Events[frame] then

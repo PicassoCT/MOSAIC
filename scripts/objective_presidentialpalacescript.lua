@@ -2,12 +2,38 @@ include "createCorpse.lua"
 include "lib_OS.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
+include "lib_staticstring.lua"
 include "lib_mosaic.lua"
 
 
 
 toShowTable = {}
 TablesOfPiecesGroups = {}
+mapHash = getDetermenisticMapHash(Game)
+
+-- Create a deterministic PRNG
+
+    -- Constants for LCG (Numerical Recipes)
+local a = 1664525
+local c = 1013904223
+local m = 2^32
+
+local state = mapHash
+
+-- Returns a "random" float between 0 and 1
+local function random()
+    state = (a * state + c) % m
+    return state / m
+end
+
+-- Returns a random integer between min and max (inclusive)
+local function random_range(min, max)
+    min = min or 0
+    max = max or 1
+    return math.floor(random() * (max - min + 1)) + min
+end
+
+ 
 
 function showSubs(pieceID)
    local pieceName = getUnitPieceName(unitID, pieceID)
@@ -72,6 +98,13 @@ function crisisModeWatcher()
 		Sleep(5000)
 	end
 end
+function addToShowTables(tables)
+    for i=1,#tables do
+        addToShowTable(tables[i])
+    end
+    return tables
+end
+
 
 function addToShowTable(pieceID)
 	Show(pieceID)
@@ -79,40 +112,11 @@ function addToShowTable(pieceID)
     return pieceID
 end
 
--- Create a deterministic PRNG
-local function create_rng(seed)
-    -- Constants for LCG (Numerical Recipes)
-    local a = 1664525
-    local c = 1013904223
-    local m = 2^32
-
-    local state = seed or 1
-
-    -- Returns a "random" float between 0 and 1
-    local function random()
-        state = (a * state + c) % m
-        return state / m
-    end
-
-    -- Returns a random integer between min and max (inclusive)
-    local function random_range(min, max)
-        min = min or 0
-        max = max or 1
-        return math.floor(random() * (max - min + 1)) + min
-    end
-
-    return {
-        random = random,
-        random_range = random_range,
-    }
-end
-mapHash = getDetermenisticMapHash(Game)
-detRandom = create_rng(mapHash)
 
 function generateRidiculousTitle()
     GameConfig = getGameConfig()
     country = getCountryByCulture(GameConfig.instance.culture ,mapHash)
-    hash = getDetermenisticMapHash(Game)
+
     -- Tables of possible title components
     local honorifics = {
         "His Excellency", "Her Excellency", "The Glorious", "The Eternal", "Most Serene", "Supreme", "Omnipotent", "Grand", "Transcendent", "Illustrious", "Beloved by billions"
@@ -138,22 +142,21 @@ function generateRidiculousTitle()
         "Light of the People", "Bringer of Glory", "Conqueror of the Ages", "Architect of the Future", "Pillar of Civilization", "Beacon of Humanity", "Guardian of Eternal Peace"
     }
     
-    -- Seed RNG based on hash (for repeatable results)
-    local seed = create_rng(hash)
 
     -- Generate the title
     local title = table.concat({
-        honorifics[seed.random_range(1,#honorifics)],
-        leadershipTitles[seed.random_range(1,#leadershipTitles)],
-        divineTitles[seed.random_range(1,#divineTitles)],
-        academicTitles[seed.random_range(1,#academicTitles)],
-        militaryTitles[seed.random_range(1,#militaryTitles)],
-        poeticSuffixes[seed.random_range(1,#poeticSuffixes)]
+        honorifics[random_range(1,#honorifics)],
+        leadershipTitles[random_range(1,#leadershipTitles)],
+        divineTitles[random_range(1,#divineTitles)],
+        academicTitles[random_range(1,#academicTitles)],
+        militaryTitles[random_range(1,#militaryTitles)],
+        poeticSuffixes[random_range(1,#poeticSuffixes)]
     }, ", ")
     
     -- Add the "name" part
+    local individualName, surName = getDeterministicCultureNames(unitID, UnitDefs, GameConfig.instance.culture, true)
     local nameParts = {"I", "the Great", "Magnificent", "Invincible", "Unifier of " .. country, "the Wise", "Vanquisher of Enemies"}
-    local name = "— " .. (country .. " Supreme Sovereign " .. nameParts[seed.random_range(1,#nameParts)])
+    local name = "— " .. (country .. " Supreme Sovereign " .. nameParts[random_range(1,#nameParts)]).." "..individualName.." "..surName
     
     return title .. " " .. name
 end
@@ -163,7 +166,7 @@ end
 
 function showOne(T, bNotDelayd)
     if not T then return end
-    dice = detRandom.random_range(1, count(T))
+    dice = random_range(1, count(T))
     c = 0
     for k, v in pairs(T) do
         if k and v then c = c + 1 end
@@ -177,11 +180,11 @@ end
 function showSeveral(T)
     if not T then return end
     ToShow= {}
-        for num, val in pairs(T) do 
-  			if detRandom.random_range() == 1 then
-			   ToShow[#ToShow +1] = val
-  			end
-  		end
+    for num, val in pairs(T) do 
+		if random_range() == 1 then
+		   ToShow[#ToShow +1] = val
+		end
+	end
 
   	for i=1, #ToShow do
   		toShowTable[#toShowTable +1] = ToShow[i]
@@ -199,17 +202,17 @@ function buildShowUnit()
 	addToShowTable(Base)	
 	addToShowTable(Flag)
 	baseSubs= showSeveral(TablesOfPiecesGroups["BaseSub"])
-	if detRandom.random_range() == 1 then
-		if  isInTable(baseSubs, Gockelsockel) then
-		  statue =	addToShowTable(showOne(TablesOfPiecesGroups["Statue"]))
-		end
+    addToShowTables(baseSubs)
+	if  isInTable(baseSubs, Gockelsockel) then
+	  statue = addToShowTable(showOne(TablesOfPiecesGroups["Statue"]))
 	end
+
 	addToShowTable(showOne(TablesOfPiecesGroups["Street"]))
 	addToShowTable(showOne(TablesOfPiecesGroups["Park"]))
 	addToShowTable(showOne(TablesOfPiecesGroups["Post1Flag"]))
 	addToShowTable(showOne(TablesOfPiecesGroups["Post2Flag"]))
 	addToShowTable(showOne(TablesOfPiecesGroups["Post3Flag"]))
 	addToShowTable(showOne(TablesOfPiecesGroups["Palast"]))
-	showSeveral(TablesOfPiecesGroups["PalastDeco"])
-	showSeveral(TablesOfPiecesGroups["Limo"])
+	addToShowTables(showSeveral(TablesOfPiecesGroups["PalastDeco"]))
+	addToShowTables(showSeveral(TablesOfPiecesGroups["Limo"]))
 end
