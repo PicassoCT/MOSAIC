@@ -2,6 +2,7 @@
 
 
 uniform sampler2D depthTex;
+uniform sampler2D neonLightTex;
 uniform samplerCube radianceCascade;
 
 unform vec2 viewPortSize;
