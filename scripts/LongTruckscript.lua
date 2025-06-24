@@ -73,6 +73,8 @@ end
 
 BusBack1 = piece("BusBack1")
 BusBack2 = piece("BusBack2")
+LimoTruck= piece("Truck5")
+LimoCabin= piece("LimoCabin")
 
 function showAndTell()
     Hide(attachPoint)
@@ -82,7 +84,10 @@ function showAndTell()
     Hide(BusBack1)
     Hide(BusBack2)
     Hide(DetectPiece)
+    Hide(LimoCabin)
+    Hide(LimoTruck)
 
+    hideT(TablesOfPiecesGroups["LimoWheel"])
     hideT(TablesOfPiecesGroups["Truck"])
     hideT(TablesOfPiecesGroups["Cabin"])
     hideT(TablesOfPiecesGroups["BusDeco"])
@@ -110,6 +115,13 @@ function showAndTell()
             showOne(TablesOfPiecesGroups["BusDeco"])
             showOne(TablesOfPiecesGroups["BusDeco"])
             showOne(TablesOfPiecesGroups["BusStationName"])
+            return
+        end
+
+        if myTruck == LimoTruck then
+            Show(LimoCabin)
+            hideT(TablesOfPiecesGroups["Wheel"])
+            showT(TablesOfPiecesGroups["LimoWheel"])
             return
         end
     end
@@ -292,6 +304,7 @@ boolMoving = false
 function script.StartMoving()    
     Signal(SIG_HONK)
     spinT(TablesOfPiecesGroups["Wheel"], x_axis, 260, 0.3)
+    spinT(TablesOfPiecesGroups["LimoWheel"], x_axis, 260, 0.3)
 end
 
 function honkIfHorny()
@@ -305,6 +318,7 @@ end
 
 function script.StopMoving() 
     stopSpinT(TablesOfPiecesGroups["Wheel"], x_axis, 3) 
+    stopSpinT(TablesOfPiecesGroups["LimoWheel"], x_axis, 3) 
     StartThread(honkIfHorny)
 
 end

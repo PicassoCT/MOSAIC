@@ -4,7 +4,7 @@ include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 --include "lib_Build.lua"
 
-local TablesOfPiecesGroups = {}
+TablesOfPiecesGroups = {}
 
 function script.HitByWeapon(x, z, weaponDefID, damage) end
 
@@ -22,14 +22,13 @@ function script.Create()
     Spring.MoveCtrl.Enable(unitID, true)
     Spring.SetUnitNoSelect(unitID, true)
     Spring.SetUnitAlwaysVisible(unitID, true)
-    --StartThread(AnimationTest)
     hideT(TablesOfPiecesGroups["Rotator"])
     StartThread(fallingDown)
     StartThread(detectStationary)
     Show(center)
     assert(infantry)
     Hide(infantry)
-    Hide(step)
+    Hide(step) 
 end
 
 upDownAxis= 1
@@ -62,18 +61,26 @@ function detectStationary()
                             Turn(id, y_axis, math.rad(val),0)
                             Show(id)
                             directions = math.random(15, 35)
-                            Spin(id,y_axis,math.rad(directions),0)
+                            Spin(id,y_axis,math.rad(directions), 0.1)
                         end)
                 else
                     dropRate = travellingDropRate
                     boolStationary = false
-                    hideT(TablesOfPiecesGroups["DownWardSpiral"])
+                    foreach(TablesOfPiecesGroups["DownWardSpiral"],
+                        function(id)
+                            Hide(id)                            
+                            StopSpin(id,y_axis)
+                        end)
                 end
             else
                 accumulatedNonMovementTime = 0
                 dropRate = travellingDropRate
                 boolStationary = false
-                hideT(TablesOfPiecesGroups["DownWardSpiral"])
+                foreach(TablesOfPiecesGroups["DownWardSpiral"],
+                        function(id)
+                            Hide(id)                            
+                            StopSpin(id,y_axis)
+                        end)
             end
         end
     end
@@ -81,7 +88,7 @@ end
 
 local passengerID = unitID
 operativeTypeTable = getOperativeTypeTable(Unitdefs)
-boolDebug = false
+
 function fallingDown()
     waitTillComplete(unitID)
     Sleep(1)
@@ -106,8 +113,7 @@ function fallingDown()
 
     while not GG.ParachutPassengers[unitID] do Sleep(10) end
     StartThread(Strandanimation)
-    while boolDebug do 
-    -- debug code
+
     passengerID = GG.ParachutPassengers[unitID].id
     passengerDefID = Spring.GetUnitDefID(passengerID)
     if operativeTypeTable[passengerDefID] and Spring.GetUnitIsCloaked(passengerID) then Show(infantry) end
@@ -131,11 +137,7 @@ function fallingDown()
     for i=2,#TablesOfPiecesGroups["Cord"] do
         WMove(TablesOfPiecesGroups["Cord"][i], 2 , i*-15, 900)
     end
-    --Debug
-    if boolDebug then
-        Spring.MoveCtrl.SetPosition(unitID, x , y +500, z )
-    end
-    end
+
 
     Spring.UnitDetach(passengerID)
     Spring.DestroyUnit(unitID, false, true)

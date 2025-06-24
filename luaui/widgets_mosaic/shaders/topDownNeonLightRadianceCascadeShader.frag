@@ -5,17 +5,23 @@ in vec3 vWorldPos;
 in vec3 vNormal;
 in vec2 vUV;
 
-
-uniform vec3 eyePos;
-uniform vec3 uLightDir; // Directional light (top-down sun/moon)
-uniform sampler2D uDepthMap; // Depth texture for cascading
-uniform sampler2D uEmissionMap; // Input: Emissive neon glow map
-uniform samplerCube radianceCascade;
-uniform mat4 viewprojectioninverse;
-uniform mat4 viewinverse;
-uniform mat4 viewprojection;
-uniform mat4 projection;
+uniform float neonLightPercent;
 uniform vec2  viewPortSize;
+uniform vec3 eyePos;
+uniform vec3 eyeDir;
+uniform vec3 eyeDir;
+uniform vec3 sunCol;
+uniform vec3 sunPos; //uLightDir
+uniform mat4 viewProjectionInv;
+
+uniform mat4 viewProjection;
+uniform mat4 viewInverse;
+uniform mat4 viewProjection;
+uniform mat4 projection;
+
+uniform sampler2D depthTex; // Depth texture for cascading
+uniform sampler2D neonLightTex; // Input: Emissive neon glow map
+uniform samplerCube radianceCascade;
 
 // Spatial resolution of cascade 0
 const ivec2 c_sRes = ivec2(320, 180);
@@ -35,7 +41,7 @@ const float c_smoothDistScale = 10.0;
 #define PI (3.14159265359f)
 
 float getDepthShadow(vec3 worldPos) {
-    float sceneDepth = texture(uDepthMap, vUV).r;
+    float sceneDepth = texture(depthTex, vUV).r;
     float currentDepth = length(worldPos - eyePos) / 100.0;
     return currentDepth > sceneDepth + 0.005 ? 0.5 : 1.0; // Soft shadow
 }
@@ -52,7 +58,7 @@ bool inViewShadowFromCamera(vec3 worldPos)
         vec3 samplePosWorld = eyePos + dir * t;
 
         // Project to clip space
-        vec4 clipPos = viewprojection * vec4(samplePosWorld, 1.0);
+        vec4 clipPos = viewProjection * vec4(samplePosWorld, 1.0);
         clipPos /= clipPos.w;
 
         // Convert to screen UVs [0, 1]
@@ -62,7 +68,7 @@ bool inViewShadowFromCamera(vec3 worldPos)
         if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) continue;
 
         // Get scene depth (0..1)
-        float sceneDepth = texture(uDepthMap, uv).r;
+        float sceneDepth = texture(depthTex, uv).r;
 
         // Get current point depth (0..1)
         float pointDepth = clipPos.z * 0.5 + 0.5;
@@ -120,7 +126,7 @@ vec4 cascadeFetch(samplerCube cascadeTex, int n, ivec2 p, int d) {
 
 vec3 calculateRadianceCascade()
 {
-    ivec2 cubemapRes = textureSize(uEmissionMap, 0);
+    ivec2 cubemapRes = textureSize(neonLightTex, 0);
     vec2 p = gl_FragCoord.xy / viewPortSize.xy * vec2(c_sRes);
     ivec2 q = ivec2(round(p)) - 1;
     vec2 w = p - vec2(q) - 0.5;
@@ -139,7 +145,7 @@ void main() {
 
 
     vec3 N = normalize(vNormal);
-    vec3 L = normalize(-uLightDir);
+    vec3 L = normalize(-sunPos);
     vec3 V = normalize(eyePos - vWorldPos);
     vec3 R = reflect(-L, N);
 
@@ -154,7 +160,7 @@ void main() {
     vec3 radiance = calculateRadianceCascade();
 
     // Neon emission map
-    vec3 emission = texture(uEmissionMap, vUV).rgb;
+    vec3 emission = texture(neonLightTex, vUV).rgb;
 
     // Final color calculation
     vec3 color = vec3(0.05, 0.05, 0.08); // ambient base

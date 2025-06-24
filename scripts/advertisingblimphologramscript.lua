@@ -11,7 +11,7 @@ BrothelSpin= piece("BrothelSpin")
 CasinoSpin= piece("CasinoSpin")
 Joy = piece("Joy1")
 JoyZoom = piece("Joy2")
-JoyZoomArm = piece("Joy2Arm")
+ 
 JoyRide = piece("JoyRide")
 local boolDebugScript = false
 local lastFrame = Spring.GetGameFrame()
@@ -97,13 +97,14 @@ function updateCheckCache()
 end
 
 function ShowReg(pieceID)
+    if not pieceID then return end
     Show(pieceID)
     cachedCopy[pieceID] = pieceID
     updateCheckCache()
 end
 
 function HideReg(pieceID)
-    assert(pieceID)
+    if not pieceID then return end
     Hide(pieceID)  
     cachedCopy[pieceID] = nil
     updateCheckCache()
@@ -407,7 +408,6 @@ function HoloGrams()
 
     JoyFlickerGroup[#JoyFlickerGroup+1] = Joy
     JoyFlickerGroup[#JoyFlickerGroup+1] = JoyZoom
-    JoyFlickerGroup[#JoyFlickerGroup+1] = JoyZoomArm
     JoyFlickerGroup[#JoyFlickerGroup+1] = JoyRide
     hideAllReg()
 
@@ -464,10 +464,9 @@ function JoyAnimation()
 
     while true do
         HideReg(JoyZoom)
-        HideReg(JoyZoomArm)
         HideReg(Joy)
         if boolDebugScript or (hours > 17 or hours < 7) then
-            if maRa() then ShowReg(JoyZoom); ShowReg(JoyZoomArm); else ShowReg(Joy) end
+            if maRa() then ShowReg(JoyZoom); else ShowReg(Joy) end
             joyToTheWorld()
             Spin(JoySpinOrigin, z_axis, math.rad(17*3), 0)
             ShowReg(JoySpinOrigin)

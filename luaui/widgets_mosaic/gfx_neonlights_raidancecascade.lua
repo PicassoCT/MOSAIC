@@ -209,6 +209,14 @@ local uniform_topDown_EyeDirection
 local uniform_topDown_Projection
 local uniform_topDown_Time
 local uniform_topDown_ViewPortSize
+
+local uniform_mapPerspective_ViewPortSize 
+local uniform_mapPerspective_InvProjView  
+local uniform_mapPerspective_sunColor     
+local uniform_mapPerspective_skyColor     
+local uniform_mapPerspective_worldMin     
+local uniform_mapPerspective_worldMax     
+
 local modelDepthTexIndex            = 0
 local mapDepthTexIndex              = 1
 local screentexIndex                = 2
@@ -324,8 +332,8 @@ function widget:ViewResize()
 end
 
 widget:ViewResize()
-local function initMapTopDownToPerspectiveLightShader()
-   Spring.Echo("gfx_neonlight_radiancecascade:initMapTopDownToPerspectiveLightShader")
+local function initMapToPerspectiveLightShader()
+   Spring.Echo("gfx_neonlight_radiancecascade:initMapToPerspectiveLightShader")
     local fragmentShader =  VFS.LoadFile(shaderFilePath .. "mapTopDownToPerspectiveLightShader.frag") 
     local vertexShader = VFS.LoadFile(shaderFilePath .. "identity.vert.glsl") 
     local uniformInt = {
@@ -357,11 +365,19 @@ local function initMapTopDownToPerspectiveLightShader()
                 viewPortSize = {vsx, vsy},
                 worldMin    = {0,0},
                 worldMax    = {0,0,0},
-              
+                sunColor = sunCol,
+                skyColor = skyCol,              
             }
         }
     )
+    --uniform sampler2D depthTex;
+    --uniform samplerCube radianceCascade;
+    uniform_mapPerspective_ViewPortSize = glGetUniformLocation(mapLightMapToPerspectiveShader, "viewPortSize")
+    uniform_mapPerspective_InvProjView  = glGetUniformLocation(mapLightMapToPerspectiveShader, "invProjView")
+    uniform_mapPerspective_worldMin     = glGetUniformLocation(mapLightMapToPerspectiveShader, "worldMin")
+    uniform_mapPerspective_worldMax     = glGetUniformLocation(mapLightMapToPerspectiveShader, "worldMax")
 end
+
 local function initTopDownRadianceCascadeShader()
     Spring.Echo("gfx_neonlight_radiancecascade: initTopDownRadianceCascadeShader")
 
@@ -410,7 +426,6 @@ local function initTopDownRadianceCascadeShader()
     uniform_topDown_EyePos      = glGetUniformLocation(topDownRadianceCascadeShader, "eyePos")
     uniform_topDown_EyeDir      = glGetUniformLocation(topDownRadianceCascadeShader, "eyeDir")
     uniform_topDown_SunColor    = glGetUniformLocation(topDownRadianceCascadeShader, "sunCol")
-    uniform_topDown_SkyColor    = glGetUniformLocation(topDownRadianceCascadeShader, "skyCol")
     uniform_topDown_SunPos      = glGetUniformLocation(topDownRadianceCascadeShader, "sunPos")
 
     -- Optional matrix uniforms
@@ -418,6 +433,12 @@ local function initTopDownRadianceCascadeShader()
     uniform_topDown_ViewInv     = glGetUniformLocation(topDownRadianceCascadeShader, "viewInv")
     uniform_topDown_ViewProjection = glGetUniformLocation(topDownRadianceCascadeShader, "viewProjection")
     uniform_topDown_Projection  = glGetUniformLocation(topDownRadianceCascadeShader, "projection")
+    
+    
+    --uniform sampler2D uDepthMap; // Depth texture for cascading
+    --uniform sampler2D uEmissionMap; // Input: Emissive neon glow map
+    --uniform samplerCube radianceCascade;
+
     Spring.Echo(shaderName .. ": Radiance Cascade Shader initialized")
 end
 
@@ -432,7 +453,7 @@ local function init()
         return
     end
     initTopDownRadianceCascadeShader()
-    initMapTopDownToPerspectiveLightShader()
+    initMapToPerspectiveLightShader()
 end
 
 --------------------------------------------------------------------------------
@@ -553,6 +574,20 @@ local function prepareTextures()
     glCopyToTexture(depthCopyTex, 0, 0, vpx, vpy, vsx, vsy)
 end
 
+local function updatedTopDownUniforms()
+    glUniform(topDownRadianceCascadeShader, "neonLightTex", 0)
+    glUniform(topDownRadianceCascadeShader, "depthTex", 1)
+    glUniform(topDownRadianceCascadeShader, "radianceCascade", 2)
+
+    glUniform(topDownRadianceCascadeShader, "viewPortSize", viewSizeX, viewSizeY)
+    glUniform(topDownRadianceCascadeShader, "invProjView", invProjViewMatrix)
+    glUniform(topDownRadianceCascadeShader, "sunColor",  sunCol)
+    glUniform(topDownRadianceCascadeShader, "skyColor",  skyCol)
+    glUniform(topDownRadianceCascadeShader, "worldMin", todoX, todoMinZ)
+    glUniform(topDownRadianceCascadeShader, "worldMax", todoMaxX, todoMaxZ)
+
+end
+
 local function DrawNeonLightsToFbo()
     prepareTextures()
     glUseShader(topDownRadianceCascadeShader)
@@ -565,9 +600,15 @@ end
 local function updatePerspectiveShaderUniforms()
     glUniform(mapLightMapToPerspectiveShader, "neonLightTex", 0)
     glUniform(mapLightMapToPerspectiveShader, "depthTex", 1)
-    glUniform(mapLightMapToPerspectiveShader, "worldMin", worldMinX, worldMinZ)
-    glUniform(mapLightMapToPerspectiveShader, "worldMax", worldMaxX, worldMaxZ)
+    glUniform(mapLightMapToPerspectiveShader, "radianceCascade", 2)
+
     glUniform(mapLightMapToPerspectiveShader, "invProjView", invProjViewMatrix)
+    glUniform(mapLightMapToPerspectiveShader, "viewProjection", invProjViewMatrix)
+    glUniform(mapLightMapToPerspectiveShader, "viewInverse", invProjViewMatrix)
+    glUniform(mapLightMapToPerspectiveShader, "projection", todo)
+    glUniform(mapLightMapToPerspectiveShader, "worldMin", todo, todo)
+    glUniform(mapLightMapToPerspectiveShader, "worldMax", todo, todo)
+
 end
 local function DrawNeonLightMapIntoScene()
     glTexture(1, "$depthtex2") -- or your scene depth tex!
@@ -703,7 +744,7 @@ local function renderCameraOrthogonal()
 end
 
 function widget:DrawUnits()
-    renderToTextureShader:ActivateWith(
+    topDownRadianceCascadeShader:ActivateWith(
     function()  
    --render NeonUnits to mask
         for unitID, neonHoloParts in pairs(neonUnitTables) do
@@ -728,7 +769,6 @@ function widget:GameFrame()
     sunCol = {gl.GetAtmosphere("sunColor")}
     skyCol = {gl.GetAtmosphere("skyColor")}
     sunPos = {gl.GetSun('pos')}
-
     eyePos = {spGetCameraPosition()}
     eyeDir = {spGetCameraDirection()}     
 end

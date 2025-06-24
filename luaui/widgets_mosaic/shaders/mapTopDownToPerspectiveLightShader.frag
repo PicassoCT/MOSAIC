@@ -3,13 +3,14 @@
 
 uniform sampler2D depthTex;
 uniform samplerCube radianceCascade;
-uniform vec2 worldMin;
-uniform vec2 worldMax;
+
+unform vec2 viewPortSize;
 uniform mat4 invProjView;
 uniform vec3 sunColor;
 uniform vec3 skyColor;
+uniform vec2 worldMin;
+uniform vec2 worldMax;
 
-in vec2 screenUV;
 
 #define RED vec4(1.0,0,0,1.0)
 
@@ -238,10 +239,10 @@ vec4 mainCubemap( vec2 fragCoord, vec3 fragRO, vec3 fragRD) {
 
 
 void main() {
-    float depth = texture(depthTex, screenUV).r;
+    float depth = texture(depthTex, gl_FragCoord).r;
 
     // Reconstruct world position:
-    vec4 ndc = vec4(screenUV * 2.0 - 1.0, depth * 2.0 - 1.0, 1.0);
+    vec4 ndc = vec4(gl_FragCoord * 2.0 - 1.0, depth * 2.0 - 1.0, 1.0);
     vec4 worldPos4 = invProjView * ndc;
     vec3 worldPos = worldPos4.xyz / worldPos4.w;
 

@@ -10,6 +10,7 @@ include "lib_mosaic.lua"
 toShowTable = {}
 TablesOfPiecesGroups = {}
 mapHash = getDetermenisticMapHash(Game)
+unitHash = getDeterministicUnitHash(unitID)
 
 -- Create a deterministic PRNG
 
@@ -18,7 +19,7 @@ local a = 1664525
 local c = 1013904223
 local m = 2^32
 
-local state = mapHash
+local state = mapHash + unitHash
 
 -- Returns a "random" float between 0 and 1
 local function random()
