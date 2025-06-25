@@ -75,7 +75,8 @@ Let there be light.
 
 
 How to play:
-1) Download and install https://springlobby.springrts.com/
+
+1) Download and install (https://github.com/skynet-gh/skylobby/releases)
 2) In the lobby donwload the game:mosaic:stable archive
 3) Join a server, select a map
 4) Choose a side or spectate
