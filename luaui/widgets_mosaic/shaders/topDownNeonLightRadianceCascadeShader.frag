@@ -123,6 +123,8 @@ vec4 cascadeFetch(samplerCube cascadeTex, int n, ivec2 p, int d) {
     return cubemapFetch(cascadeTex, i, ivec2(x, y));
 }
 
+//Cube sampling cascade computation
+
 // Spatial resolution of cascade 0
 const ivec2 c_sRes = ivec2(320, 180);
 // Number of directions in cascade 0
@@ -346,8 +348,9 @@ vec4 mainCubemap( vec2 fragCoord, vec3 fragRO, vec3 fragRD) {
     return s;
 }
 
+//========================================================================================================================================================================
 
-vec3 calculateRadianceCascade()
+vec3 fetchRadianceCascade()
 {
     ivec2 cubemapRes = textureSize(inputNeonLightTex, 0);
     vec2 p = gl_FragCoord.xy / viewPortSize.xy * vec2(c_sRes);
@@ -380,7 +383,7 @@ void main() {
     float shadow = getDepthShadow(vWorldPos);
 
     // Radiance cascading (blurred GI-like effect)
-    vec3 radiance = calculateRadianceCascade();
+    vec3 radiance = fetchRadianceCascade();
 
     // Neon emission map
     vec3 emission = texture(inputNeonLightTex, vUV).rgb;
