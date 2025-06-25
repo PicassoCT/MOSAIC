@@ -19,7 +19,31 @@ uniform mat4 viewProjection;
 uniform mat4 viewInverse;
 uniform mat4 viewProjection;
 uniform mat4 projection;
+/*
+Fix me: ...
+[t=00:01:17.360460][f=-000001] gfx_neonlight_radiancecascade: initTopDownRadianceCascadeShader
+[t=00:01:17.392235][f=-000001] gfx_neonlights_radiancecascade: Radiance Cascade Perspective Shader failed to compile
+[t=00:01:17.392347][f=-000001] 0(12) : error C1038: declaration of "eyeDir" conflicts with previous declaration at 0(11)
+0(20) : error C1038: declaration of "viewProjection" conflicts with previous declaration at 0(18)
+0(129) : error C1038: declaration of "c_sRes" conflicts with previous declaration at 0(28)
+0(131) : error C1038: declaration of "c_dRes" conflicts with previous declaration at 0(30)
+0(133) : error C1038: declaration of "nCascades" conflicts with previous declaration at 0(32)
+0(136) : error C1038: declaration of "c_intervalLength" conflicts with previous declaration at 0(35)
+0(139) : error C1038: declaration of "c_smoothDistScale" conflicts with previous declaration at 0(38)
+0(156) : error C1503: undefined variable "screenRes"
+0(156) : error C1503: undefined variable "iChannel1"
+0(159) : error C1503: undefined variable "screenRes"
+0(178) : error C1503: undefined variable "sdDrawing"
+0(178) : error C1503: undefined variable "iChannel1"
+0(201) : error C1503: undefined variable "sampleDrawing"
+0(210) : error C1503: undefined variable "sampleDrawing"
+0(225) : error C1503: undefined variable "SunCol"
+0(264) : error C1503: undefined variable "iResolution"
+0(265) : error C1503: undefined variable "iResolution"
+0(273) : error C1016: expression type incompatible with function return type
+0(376) : error C1103: too few parameters in function call
 
+*/
 uniform sampler2D depthTex; // Depth texture for cascading
 uniform sampler2D inputNeonLightTex; // Input: Emissive neon glow map
 uniform samplerCube radianceCascade;
