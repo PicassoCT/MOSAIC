@@ -28,10 +28,16 @@ end
         3) Calculate viewshade from the scene camera in world via heightmap traceRay. If it can not be seen- it remains in the radiancecascade, 
            but is not rendered into the lightmap 
 
+        Artifacts: 
+        -Updated Radiance cascade sampeler   
+        -Orthogonal TopDownOutput Picture
+
     B: Perspective scene Lookup shader
         4) From the scene camera - lookup the pixel mapping to topdown 2nd FBO
         5) Apply the looked up value by addition (its light after all)
         6) Blur if needed
+        Artifacts:
+        - Light on Groundsurfaces to apply from perspective
 
 
                             [ Scene Orthogonal Top-Down View ]
