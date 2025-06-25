@@ -29,15 +29,14 @@ end
            but is not rendered into the lightmap 
 
         Artifacts: 
-        -Updated Radiance cascade sampeler   
-        -Orthogonal TopDownOutput Picture
+        -> Updated Radiance cascade sampeler   
+        -> Orthogonal TopDownOutput Picture
 
     B: Perspective scene Lookup shader
         4) From the scene camera - lookup the pixel mapping to topdown 2nd FBO
         5) Apply the looked up value by addition (its light after all)
         6) Blur if needed
-        Artifacts:
-        - Light on Groundsurfaces to apply from perspective
+        Artifacts -> Light on Groundsurfaces to apply from perspective
 
 
                             [ Scene Orthogonal Top-Down View ]
