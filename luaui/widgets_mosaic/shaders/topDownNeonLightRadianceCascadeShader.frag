@@ -170,6 +170,7 @@ void main() {
     color += emission * 1.5;             // glow
     color *= shadow;                     // apply depth shadow
 
+
     if (inViewShadowFromCamera(vWorldPos)) //Early out if not visible
     {
         gl_FragColor = BLACK;

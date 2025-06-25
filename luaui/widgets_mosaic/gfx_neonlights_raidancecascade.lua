@@ -340,15 +340,6 @@ local function initMapToPerspectiveLightShader()
         modelDepthTex = 0, -- needed to calculate the 3dish shadows
         radianceCascadeTex = 1,
     }
-    --[[
-    uniform sampler2D neonLightTex;
-    uniform sampler2D depthTex;
-
-    uniform vec2 worldMin;
-    uniform vec2 worldMax;
-    uniform mat4 invProjView;
-    in vec2 screenUV;
-    ]]
 
     mapLightMapToPerspectiveShader =
         glCreateShader(
@@ -370,8 +361,13 @@ local function initMapToPerspectiveLightShader()
             }
         }
     )
-    --uniform sampler2D depthTex;
-    --uniform samplerCube radianceCascade;
+    if not mapLightMapToPerspectiveShader then
+        Spring.Echo(shaderName..": Radiance Cascade TopDown Shader failed to compile")
+        Spring.Echo(glGetShaderLog())
+        widgetHandler:RemoveWidget(self)
+        return
+    end
+
     uniform_mapPerspective_ViewPortSize = glGetUniformLocation(mapLightMapToPerspectiveShader, "viewPortSize")
     uniform_mapPerspective_InvProjView  = glGetUniformLocation(mapLightMapToPerspectiveShader, "invProjView")
     uniform_mapPerspective_worldMin     = glGetUniformLocation(mapLightMapToPerspectiveShader, "worldMin")
@@ -413,7 +409,7 @@ local function initTopDownRadianceCascadeShader()
     })
 
     if not topDownRadianceCascadeShader then
-        Spring.Echo(shaderName .. ": Radiance Cascade Shader failed to compile")
+        Spring.Echo(shaderName .. ": Radiance Cascade Perspective Shader failed to compile")
         Spring.Echo(glGetShaderLog())
         widgetHandler:RemoveWidget(self)
         return
