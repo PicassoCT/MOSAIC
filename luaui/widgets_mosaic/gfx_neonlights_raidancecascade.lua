@@ -22,10 +22,11 @@ end
     A: Orthogonal Topdown shader
         0) From ortho camera produce a depthmap Render a topdownview of all Neonsigns, lightsources in the size of cameraviewWidth x Scenedepth
             -> produces neonPiecesInputFbo
-        1) Transfer this data, in radiance cascade computationshader - into a 2d radiance cascade sampler texture 
+        1) Convert the neonlights into a SDF field
+        2) Transfer this data, in radiance cascade computationshader - into a 2d radiance cascade sampler texture 
             -> gets/transfers radiance cascade Samplecube 
-        2) Calculate a lighttexture from the radiance cascade to 2nd FBO : TODO buffer size: cameraviewWidth x Scenedepth 
-        3) Calculate viewshade from the scene camera in world via heightmap traceRay. If it can not be seen- it remains in the radiancecascade, 
+        3) Calculate a lighttexture from the radiance cascade to 2nd FBO : TODO buffer size: cameraviewWidth x Scenedepth 
+        4) Calculate viewshade from the scene camera in world via heightmap traceRay. If it can not be seen- it remains in the radiancecascade, 
            but is not rendered into the lightmap 
 
         Artifacts: 
@@ -33,9 +34,9 @@ end
         -> Orthogonal TopDownOutput Picture
 
     B: Perspective scene Lookup shader
-        4) From the scene camera - lookup the pixel mapping to topdown 2nd FBO
-        5) Apply the looked up value by addition (its light after all)
-        6) Blur if needed
+        1) From the scene camera - lookup the pixel mapping to topdown 2nd FBO
+        2) Apply the looked up value by addition (its light after all)
+        3) Blur if needed
         Artifacts -> Light on Groundsurfaces to apply from perspective
 
 

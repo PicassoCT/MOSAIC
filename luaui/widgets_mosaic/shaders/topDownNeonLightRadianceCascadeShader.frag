@@ -13,26 +13,17 @@ uniform vec3 eyeDir;
 uniform vec3 sunCol;
 uniform vec3 skyCol;
 uniform vec3 sunPos; //uLightDir
-uniform mat4 viewProjectionInv;
 
+uniform mat4 viewProjectionInv;
 uniform mat4 viewProjection;
 uniform mat4 viewInverse;
-uniform mat4 viewProjection;
 uniform mat4 projection;
 /*
 Fix me: ...
 [t=00:01:17.360460][f=-000001] gfx_neonlight_radiancecascade: initTopDownRadianceCascadeShader
 [t=00:01:17.392235][f=-000001] gfx_neonlights_radiancecascade: Radiance Cascade Perspective Shader failed to compile
 [t=00:01:17.392347][f=-000001] 0(12) : error C1038: declaration of "eyeDir" conflicts with previous declaration at 0(11)
-0(20) : error C1038: declaration of "viewProjection" conflicts with previous declaration at 0(18)
-0(129) : error C1038: declaration of "c_sRes" conflicts with previous declaration at 0(28)
-0(131) : error C1038: declaration of "c_dRes" conflicts with previous declaration at 0(30)
-0(133) : error C1038: declaration of "nCascades" conflicts with previous declaration at 0(32)
-0(136) : error C1038: declaration of "c_intervalLength" conflicts with previous declaration at 0(35)
-0(139) : error C1038: declaration of "c_smoothDistScale" conflicts with previous declaration at 0(38)
-0(156) : error C1503: undefined variable "screenRes"
-0(156) : error C1503: undefined variable "iChannel1"
-0(159) : error C1503: undefined variable "screenRes"
+
 0(178) : error C1503: undefined variable "sdDrawing"
 0(178) : error C1503: undefined variable "iChannel1"
 0(201) : error C1503: undefined variable "sampleDrawing"
@@ -64,6 +55,11 @@ const float c_smoothDistScale = 10.0;
 
 #define BLACK vec4(0.0, 0.0,0.0, 0.0)
 #define PI (3.14159265359f)
+
+float sdDrawing(sampler2D drawingTex, vec2 P) {
+    // Return the signed distance for the drawing at P
+    return sampleDrawing(drawingTex, P).r;
+}
 
 float getDepthShadow(vec3 worldPos) {
     float sceneDepth = texture(depthTex, vUV).r;
@@ -149,18 +145,7 @@ vec4 cascadeFetch(samplerCube cascadeTex, int n, ivec2 p, int d) {
 
 //Cube sampling cascade computation
 
-// Spatial resolution of cascade 0
-const ivec2 c_sRes = ivec2(320, 180);
-// Number of directions in cascade 0
-const int c_dRes = 16;
-// Number of cascades all together
-const int nCascades = 4;
 
-// Length of ray interval for cascade 0 (measured in pixels)
-const float c_intervalLength = 7.0;
-
-// Length of transition area between cascade 0 and cascade 1
-const float c_smoothDistScale = 10.0;
 
 
 vec2 intersectAABB(vec2 ro, vec2 rd, vec2 a, vec2 b) {
@@ -177,7 +162,7 @@ vec2 intersectAABB(vec2 ro, vec2 rd, vec2 a, vec2 b) {
 float intersect(vec2 ro, vec2 rd, float tMax) {
     // Return the intersection t-value for the intersection between a ray and
     // the SDF drawing from Buffer B
-    screenRes = vec2(textureSize(iChannel1, 0));
+    vec2 screenRes = vec2(textureSize(depthTex, 0));
     float tOffset = 0.0;
     // First clip the ray to the screen rectangle
     vec2 tAABB = intersectAABB(ro, rd, vec2(0.0001), screenRes - 0.0001);
@@ -199,7 +184,7 @@ float intersect(vec2 ro, vec2 rd, float tMax) {
     float t = 0.0;
 
     for (int i = 0; i < 100; i++) {
-        float d = sdDrawing(iChannel1, ro + rd * t);
+        float d = sdDrawing(inputNeonLightTex, ro + rd * t);
         t += abs(d);
 
         if (t >= tMax) {
