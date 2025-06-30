@@ -395,6 +395,8 @@ end
 
 local function initJumpFloodSdfShader()
     local texSize = 256
+    local fragmentShader = VFS.LoadFile(shaderFilePath .. "jumpfloodsdf/.frag") 
+    local vertexShader   = VFS.LoadFile(shaderFilePath .. "jumpfloodsdf/.vert.glsl") 
 
     seedTex = gl.CreateTexture(texSize, texSize, {
       format = GL.RG32F,
@@ -419,7 +421,8 @@ local function initTopDownRadianceCascadeShader()
         normaltex        = normaltexIndex,
         normalunittex    = normalunittexIndex,
         neonLightcanvastex = neonPiecesInputTextureIndex,
-        dephtCopyTex     = dephtCopyTexIndex
+        dephtCopyTex     = dephtCopyTexIndex,
+        sdfTex          = sdfTexIndex
     }
 
     topDownRadianceCascadeShader = glCreateShader({
@@ -584,6 +587,7 @@ local function prepareTextures()
     glTexture(screentexIndex, screentex)
     glTexture(normaltexIndex,"$map_gbuffer_normtex")
     glTexture(normalunittexIndex,"$model_gbuffer_normtex")
+    glTexture(sdfTexIndex, sdfTex)
 
     glCopyToTexture(screentex, 0, 0, 0, 0, vsx, vsy)
     glCopyToTexture(depthCopyTex, 0, 0, vpx, vpy, vsx, vsy)
@@ -627,8 +631,8 @@ local function updatePerspectiveShaderUniforms()
 end
 local function DrawNeonLightMapIntoScene()
     glTexture(1, "$depthtex2") -- or your scene depth tex!
-        glUseShader()
-                glTexRect(0, vsy, vsx, 0)
+    glUseShader()
+    glTexRect(0, vsy, vsx, 0)
 end
 
 function widget:DrawScreenEffects()
@@ -759,8 +763,43 @@ local function renderCameraOrthogonal()
 end
 
 function widget:DrawUnits()
-    --TODO Compute SDF via JumpFlood Algo
+  --TODO Integrate
+  -- 1. Seed
+  gl.RenderToTexture(seedTex, function()
+    seedShader:Activate()
+    -- assume glow mask is bound to texture unit 0
+    seedShader:SetUniform("u_texSize", texSize, texSize)
+    gl.Texture(0, seedTex)
+    gl.TexRect(-1, -1, 1, 1, false, true)
+    gl.Texture(0, false)
+    seedShader:Deactivate()
+  end)
 
+  -- 2. Jump Flooding
+  local src, dst = pingTex, pongTex
+  for i = log2TexSize, 0, -1 do
+    local jump = 2^i
+    gl.RenderToTexture(dst, function()
+      jfaShader:Activate()
+      jfaShader:SetUniform("u_texSize", texSize, texSize)
+      jfaShader:SetUniform("u_jump", jump)
+      gl.Texture(0, src)
+      gl.TexRect(-1, -1, 1, 1, false, true)
+      gl.Texture(0, false)
+      jfaShader:Deactivate()
+    end)
+    src, dst = dst, src
+  end
+
+  -- 3. Distance Field
+  gl.RenderToTexture(sdfTex, function()
+    distShader:Activate()
+    distShader:SetUniform("u_texSize", texSize, texSize)
+    gl.Texture(0, src)
+    gl.TexRect(-1, -1, 1, 1, false, true)
+    gl.Texture(0, false)
+    distShader:Deactivate()
+  end)
 
     topDownRadianceCascadeShader:ActivateWith(
     function()  
