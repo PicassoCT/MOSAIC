@@ -1,0 +1,87 @@
+function widget:GetInfo()
+  return {
+    name = "JFA SDF Glow",
+    desc = "Generates SDF from glowing pieces using Jump Flooding",
+    author = "OpenAI",
+    version = "1.0",
+    layer = 1,
+    enabled = true
+  }
+end
+
+local texSize = 256
+local texParams = {
+  format = GL.RG32F,
+  min_filter = GL.NEAREST,
+  mag_filter = GL.NEAREST,
+}
+
+local seedTex, pingTex, pongTex, sdfTex
+local seedShader, jfaShader, distShader, displayShader
+local log2TexSize = math.floor(math.log(texSize) / math.log(2))
+
+function widget:Initialize()
+  seedTex = gl.CreateTexture(texSize, texSize, texParams)
+  pingTex = gl.CreateTexture(texSize, texSize, texParams)
+  pongTex = gl.CreateTexture(texSize, texSize, texParams)
+  sdfTex  = gl.CreateTexture(texSize, texSize, { format = GL.R32F })
+
+  seedShader = LuaShader({ vertex = "shaders/seed.glsl", fragment = "shaders/seed.glsl" }, "seedShader")
+  jfaShader  = LuaShader({ vertex = "shaders/jfa.glsl", fragment = "shaders/jfa.glsl" }, "jfaShader")
+  distShader = LuaShader({ vertex = "shaders/distance.glsl", fragment = "shaders/distance.glsl" }, "distShader")
+  displayShader = LuaShader({ vertex = "shaders/display.glsl", fragment = "shaders/display.glsl" }, "displayShader")
+  seedShader:Initialize()
+  jfaShader:Initialize()
+  distShader:Initialize()
+  displayShader:Initialize()
+end
+
+function widget:DrawWorld()
+  -- Example: render glowing parts to FBO for binary mask (omitted, depends on your game)
+end
+
+function widget:DrawScreen()
+  -- 1. Seed
+  gl.RenderToTexture(seedTex, function()
+    seedShader:Activate()
+    -- assume glow mask is bound to texture unit 0
+    seedShader:SetUniform("u_texSize", texSize, texSize)
+    gl.Texture(0, seedTex)
+    gl.TexRect(-1, -1, 1, 1, false, true)
+    gl.Texture(0, false)
+    seedShader:Deactivate()
+  end)
+
+  -- 2. Jump Flooding
+  local src, dst = pingTex, pongTex
+  for i = log2TexSize, 0, -1 do
+    local jump = 2^i
+    gl.RenderToTexture(dst, function()
+      jfaShader:Activate()
+      jfaShader:SetUniform("u_texSize", texSize, texSize)
+      jfaShader:SetUniform("u_jump", jump)
+      gl.Texture(0, src)
+      gl.TexRect(-1, -1, 1, 1, false, true)
+      gl.Texture(0, false)
+      jfaShader:Deactivate()
+    end)
+    src, dst = dst, src
+  end
+
+  -- 3. Distance Field
+  gl.RenderToTexture(sdfTex, function()
+    distShader:Activate()
+    distShader:SetUniform("u_texSize", texSize, texSize)
+    gl.Texture(0, src)
+    gl.TexRect(-1, -1, 1, 1, false, true)
+    gl.Texture(0, false)
+    distShader:Deactivate()
+  end)
+
+  -- 4. Visualize SDF
+  displayShader:Activate()
+  gl.Texture(0, sdfTex)
+  gl.TexRect(0.7, 0.7, 1.0, 1.0, false, true)
+  gl.Texture(0, false)
+  displayShader:Deactivate()
+end

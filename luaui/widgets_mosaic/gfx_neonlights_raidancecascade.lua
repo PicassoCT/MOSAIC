@@ -238,6 +238,12 @@ local neonUnitTables = {}
 local UnitUnitDefIDMap = {}
 local counterNeonUnits = 0
 local shaderName = "gfx_neonlights_radiancecascade"
+
+local seedTex 
+local pingTex 
+local pongTex 
+local sdfTex  
+
 local DAYLENGTH  = 28800
 
 --------------------------------------------------------------------------------
@@ -385,6 +391,19 @@ local function initMapToPerspectiveLightShader()
     uniform_mapPerspective_InvProjView  = glGetUniformLocation(mapLightMapToPerspectiveShader, "invProjView")
     uniform_mapPerspective_worldMin     = glGetUniformLocation(mapLightMapToPerspectiveShader, "worldMin")
     uniform_mapPerspective_worldMax     = glGetUniformLocation(mapLightMapToPerspectiveShader, "worldMax")
+end
+
+local function initJumpFloodSdfShader()
+    local texSize = 256
+
+    seedTex = gl.CreateTexture(texSize, texSize, {
+      format = GL.RG32F,
+      min_filter = GL_NEAREST,
+      mag_filter = GL_NEAREST,
+    })
+    pingTex = gl.CreateTexture(texSize, texSize, { ... })
+    pongTex = gl.CreateTexture(texSize, texSize, { ... })
+    sdfTex  = gl.CreateTexture(texSize, texSize, { format = GL.R32F })
 end
 
 local function initTopDownRadianceCascadeShader()
@@ -740,6 +759,9 @@ local function renderCameraOrthogonal()
 end
 
 function widget:DrawUnits()
+    --TODO Compute SDF via JumpFlood Algo
+
+
     topDownRadianceCascadeShader:ActivateWith(
     function()  
    --render NeonUnits to mask
