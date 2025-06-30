@@ -181,6 +181,9 @@ function widget:ViewResize()
     if (mapDepthTex ~= nil ) then
         glDeleteTexture(mapDepthTex)
     end--]]
+    if (raincanvastex ~= nil  ) then
+        glDeleteTexture(raincanvastex)
+    end     
 
     if (screentex ~= nil  ) then
         glDeleteTexture(screentex)
@@ -212,7 +215,7 @@ function widget:ViewResize()
     errorOutIfNotInitialized(screentex, "screentex not existing")       
 
     raincanvastex =
-        gl.CreateTexture(
+        glCreateTexture(
         vsx,
         vsy,
         {
@@ -351,7 +354,6 @@ local function isMapNameRainyOverride(mapName)
         if string.find(map, ManualBuildingPlacement[i] ) then return true end
     end
     return false
-
 end
 
 local function isRainyArea()
@@ -440,6 +442,7 @@ function widget:Shutdown()
         glDeleteTexture(depthtex or "")
         glDeleteTexture(rainDroplettex or "")
         glDeleteTexture(screentex or "")
+        glDeleteTexture(raincanvastex or "")
     end
 
     if rainShader then
@@ -492,9 +495,6 @@ end
 local function cleanUp()    
     glResetState()
     glUseShader(0)
-    --for i=0, dephtCopyTexIndex do
-    --    gl.Texture(i, false)
-    --end
     glBlending(true)
 end
 
@@ -549,12 +549,12 @@ function widget:Initialize()
     if not isRainyArea() then
        Spring.Echo("Is not a rainy area:"..tostring(boolRainyArea))
         widgetHandler:RemoveWidget(self)
+        return
     end
     lastFrametime = Spring.GetTimer()
     startOsClock = os.clock()
     init()
     widget:ViewResize()
-
 end
 
 local function cameraIsUnchanged()
@@ -567,7 +567,6 @@ local function cameraIsUnchanged()
     end
 
 function widget:DrawWorld()
-
     local _, _, isPaused = Spring.GetGameSpeed()
     if isPaused and cameraIsUnchanged()then
        local currentTime = Spring.GetTimer() 
@@ -576,11 +575,9 @@ function widget:DrawWorld()
     end
 
     lastFrametime = Spring.GetTimer()
-    --glPushMatrix()
     glBlending(false)
     DrawRain()
     glBlending(true)
-    --glPopMatrix()
 
     local osClock = os.clock()
     local timePassed = osClock - prevOsClock
@@ -596,9 +593,6 @@ function widget:GameFrame()
 
     eyePos = {spGetCameraPosition()}
     eyeDir =  {spGetCameraDirection()} 
-    --Spring.Echo("Time:"..hours..":"..minutes..":"..seconds)
-    --Spring.Echo("Sunpos:"..sunPos[1]..":"..sunPos[2]..":"..sunPos[3])
-    --Spring.Echo("Sunposition:", sunPos[1], sunPos[2], sunPos[3]) 
 end
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------

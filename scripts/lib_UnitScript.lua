@@ -1235,7 +1235,7 @@ function getUnitSide(unitID)
 end
 
 function getUnitName(unitID)
-    return getUniTypeName(Spring.GetUnitDefID(unitID))
+    return getUnitTypeName(Spring.GetUnitDefID(unitID))
 end
 -- > returns a Units Name as String
 function getUnitTypeName(UnitDefID)

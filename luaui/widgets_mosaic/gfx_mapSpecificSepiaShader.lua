@@ -5,16 +5,18 @@ function widget:GetInfo()
         author = "ChatGPT",
         date = "2025-06-28",
         license = "MIT",
-        layer = math.huge,
+        layer = 0,
         enabled = true,
     }
 end
 
 -- CONFIGURATION
-local TARGET_MAPS = {"dubai"}
+local TARGET_MAPS = {}
+TARGET_MAPS[#TARGET_MAPS +1] = "mosaic_lastdayofdubai_v"
+TARGET_MAPS[#TARGET_MAPS +1] = "tabula"
 local DAYLENGTH             = 28800
+local morningOffset = (DAYLENGTH / 2)
 local function getDayTime()
-    local morningOffset = (DAYLENGTH / 2)
     local Frame = (Spring.GetGameFrame() + morningOffset) % DAYLENGTH
     local percent = Frame / DAYLENGTH
     local hours = math.floor((Frame / DAYLENGTH) * 24)
@@ -25,10 +27,7 @@ end
 
 -- Shader variables
 local sepiaShader
-local screenShader
-
--- FBO and texture
-local fbo, tex
+local sepiaRenderTexture = nil
 
 local glCreateShader = gl.CreateShader
 local glUseShader = gl.UseShader
@@ -36,12 +35,14 @@ local glDeleteShader = gl.DeleteShader
 local glTexture = gl.Texture
 local glTexRect = gl.TexRect
 local glBlending = gl.Blending
+local glRenderToTexture = gl.RenderToTexture
 local glUniformInt = gl.UniformInt
 local glUniform = gl.Uniform
 local glUniformMatrix = gl.UniformMatrix
 local sepiaMax = 0.75
 local sepiaUniformIntensity
 local sepiaIntensity = sepiaMax -- change this dynamically as needed (0.0 to 1.0)
+local vsx,vsy
 
 local function CreateSepiaShader()
     local shader = gl.CreateShader({
@@ -74,18 +75,47 @@ local function CreateSepiaShader()
         uniformInt = {
             tex0 = 0,
         },
+        uniformFloat = {
+            intensity = 0.0
+        }
     })
 
     return shader
 end
 
-function widget:Initialize()
-    for i=1, #TARGET_MAPS do
-        if string.find(string.lower(Game.mapName), TARGET_MAPS[i]) then
-            widgetHandler:RemoveWidget(self)
-            return
-        end
 
+function widget:ViewResize()
+    vsx, vsy = gl.GetViewSizes()
+    sepiaRenderTexture =
+        gl.CreateTexture(
+        vsx,
+        vsy,
+        {
+        min_filter = GL.LINEAR, 
+        mag_filter = GL.LINEAR,
+        wrap_s = GL.CLAMP_TO_EDGE, 
+        wrap_t = GL.CLAMP_TO_EDGE,
+        }
+    )
+
+    sepiaUniformIntensity = gl.GetUniformLocation(sepiaShader, "intensity")
+end
+
+function widget:Initialize()
+    vsx, vsy = gl.GetViewSizes()
+    local boolWidgetActive = false
+    for i=1, #TARGET_MAPS do
+        local mapNameToSearch = string.lower(Game.mapName)
+        local keyword=  TARGET_MAPS[i]
+        if string.find(mapNameToSearch, keyword) then
+            boolWidgetActive = true           
+        end
+    end
+    
+    if boolWidgetActive == false then
+        Spring.Echo("Sepia shader is not active")
+        widgetHandler:RemoveWidget(self)
+        return
     end
 
     sepiaShader = CreateSepiaShader()
@@ -96,8 +126,10 @@ function widget:Initialize()
         return
     end
 
-    sepiaUniformIntensity = gl.GetUniformLocation(sepiaShader, "intensity")
+    widget:ViewResize()
+   
 end
+
 
 function widget:Shutdown()
     if sepiaShader then gl.DeleteShader(sepiaShader) end
@@ -112,13 +144,23 @@ function widget:Update(dt)
     end
 end
 
-function widget:DrawScreenEffects()
-    gl.UseShader(sepiaShader)
-    if sepiaUniformIntensity then
-        gl.Uniform(sepiaUniformIntensity, sepiaIntensity)
-    end
-    gl.Texture(0, "$framebuffer")
-    gl.TexRect(-1, -1, 1, 1)
-    gl.Texture(0, false)
-    gl.UseShader(0)
+local function renderToTextureFunc()
+    glTexRect(-1, -1, 1, 1, 0, 0, 1, 1)
 end
+
+function widget:DrawScreenEffects()
+    glUseShader(sepiaShader)
+    if sepiaUniformIntensity then
+        glUniform(sepiaUniformIntensity, sepiaIntensity)
+    end
+    if sepiaRenderTexture then
+        glRenderToTexture(sepiaRenderTexture, renderToTextureFunc)
+        glTexture(0, sepiaRenderTexture)
+        glTexRect(0, vsy, vsx, 0)
+    end    
+    glTexture(0, false)
+    glUseShader(0)
+end
+
+
+

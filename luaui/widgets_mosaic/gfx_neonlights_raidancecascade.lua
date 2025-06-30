@@ -20,9 +20,8 @@ end
 --Documentation: 
 --The algo:
     A: Orthogonal Topdown shader
-        0) From ortho camera produce a depthmap Render a topdownview of all Neonsigns, lightsources in the size of cameraviewWidth x Scenedepth
+        1) From ortho camera produce a depthmap Render a topdownview of all Neonsigns, lightsources in the size of cameraviewWidth x Scenedepth
             -> produces neonPiecesInputFbo
-        1) Convert the neonlights into a SDF field
         2) Transfer this data, in radiance cascade computationshader - into a 2d radiance cascade sampler texture 
             -> gets/transfers radiance cascade Samplecube 
         3) Calculate a lighttexture from the radiance cascade to 2nd FBO : TODO buffer size: cameraviewWidth x Scenedepth 
@@ -259,7 +258,15 @@ function widget:ViewResize()
 
     if (depthCopyTex ~= nil  ) then
         glDeleteTexture(depthCopyTex)
-    end   
+    end     
+
+    if (neonPiecesInputFbo ~= nil  ) then
+        glDeleteTexture(neonPiecesInputFbo)
+    end
+
+    if (radianceCascadeCubeSampler ~= nil  ) then
+        glDeleteTexture(radianceCascadeCubeSampler)
+    end     
 
     depthCopyTex =   gl.CreateTexture(vsx,vsy, {
         target = GL_TEXTURE_2D,
@@ -501,15 +508,11 @@ end
 
 function widget:Shutdown()
     if glDeleteTexture then
-        glDeleteTexture(depthtex or "")
+        glDeleteTexture(depthCopyTex or "")
         glDeleteTexture(screentex or "")
-        glDeleteTexture(neonLightcanvastex or "")
-        glDeleteTexture(normaltex or "")
+        glDeleteTexture(neonPiecesInputFbo or "")
+        glDeleteTexture(radianceCascadeCubeSampler or "")
         glDeleteTexture(normalunittex or "")
-    end
-
-    if topDownRadianceCascadeShader then
-        gl.DeleteShader(topDownRadianceCascadeShader)
     end
 end
 
@@ -525,20 +528,11 @@ local function updateTopDownRadianceCascadeUniforms()
     glUniform(uniform_topDown_SkyColor, skyCol[1], skyCol[2], skyCol[3])
     glUniform(uniform_topDown_SunPos, sunPos[1], sunPos[2], sunPos[3])
 
-
     -- Optional matrices, update if you have correct matrices ready
-    if uniform_topDown_ViewPrjInv then
-        glUniformMatrix(uniform_topDown_ViewPrjInv, "viewprojectioninverse")
-    end
-    if uniform_topDown_ViewInv then
-        glUniformMatrix(uniform_topDown_ViewInv, "viewinverse")
-    end
-    if uniform_topDown_ViewProjection then
-        glUniformMatrix(uniform_topDown_ViewProjection, "viewprojection")
-    end
-    if uniform_topDown_Projection then
-        glUniformMatrix(uniform_topDown_Projection, "projection")
-    end
+    glUniformMatrix(uniform_topDown_ViewPrjInv, "viewprojectioninverse")
+    glUniformMatrix(uniform_topDown_ViewInv, "viewinverse")
+    glUniformMatrix(uniform_topDown_ViewProjection, "viewprojection")
+    glUniformMatrix(uniform_topDown_Projection, "projection")
 end
 
 

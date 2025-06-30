@@ -89,7 +89,7 @@ function advertisingLoop()
             soundFile = "sounds/advertising/blimp.ogg"
             loudness= math.random(5,9)/10
         end
-        StartThread(PlaySoundByUnitDefID, unitDefID, soundFile, loudness, 20000, 2)
+        StartThread(PlaySoundByUnitDefID, unitDefID, soundFile, loudness, 30000, 1)
         minimum, maximum = 5*60*1000, 10*60*1000
         restTime = math.random(minimum, maximum)
         halfRestTime = math.ceil(restTime/2)
