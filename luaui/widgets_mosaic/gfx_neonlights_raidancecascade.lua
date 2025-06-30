@@ -172,6 +172,10 @@ local normalunittex = nil
 local neonLightcanvastex = nil
 local radianceCascadeCubeSampler = nil
 local depthCopyTex= nil
+local seedTex = nil
+local pingTex = nil
+local pongTex = nil
+local sdfTex  = nil
 
 local startOsClock
 
@@ -230,20 +234,25 @@ local normalunittexIndex            = 4
 local neonPiecesInputTextureIndex   = 5
 
 local dephtCopyTexIndex             = 6
-local emitmaptexIndex               = 7
-local emitunittexIndex              = 8
+local sdfTexIndex                   = 7
+
 local eyePos = {spGetCameraPosition()}
 local eyeDir = {spGetCameraDirection()}
 local neonUnitTables = {}
 local UnitUnitDefIDMap = {}
 local counterNeonUnits = 0
 local shaderName = "gfx_neonlights_radiancecascade"
-
-local seedTex 
-local pingTex 
-local pongTex 
-local sdfTex  
-
+local sdfTexSize = 256
+local sdfTexParams = {
+  format = GL.RG32F,
+  min_filter = GL.NEAREST,
+  mag_filter = GL.NEAREST,
+}
+-- Here we go, the size, where you ask yourself, why do i do so much boilerplate and dont use frameworks.Foo
+local luaShaderDir = "luaui/widgets_mosaic/include/"
+local LuaShader = VFS.Include(luaShaderDir.."LuaShader.lua")
+assert(LuaShader)
+--
 local DAYLENGTH  = 28800
 
 --------------------------------------------------------------------------------
@@ -394,18 +403,23 @@ local function initMapToPerspectiveLightShader()
 end
 
 local function initJumpFloodSdfShader()
-    local texSize = 256
+
     local fragmentShader = VFS.LoadFile(shaderFilePath .. "jumpfloodsdf/.frag") 
     local vertexShader   = VFS.LoadFile(shaderFilePath .. "jumpfloodsdf/.vert.glsl") 
 
-    seedTex = gl.CreateTexture(texSize, texSize, {
-      format = GL.RG32F,
-      min_filter = GL_NEAREST,
-      mag_filter = GL_NEAREST,
-    })
-    pingTex = gl.CreateTexture(texSize, texSize, { ... })
-    pongTex = gl.CreateTexture(texSize, texSize, { ... })
-    sdfTex  = gl.CreateTexture(texSize, texSize, { format = GL.R32F })
+
+  seedShader = LuaShader({ vertex = "shaders/seed.glsl", fragment = "shaders/seed.glsl" }, "seedShader")
+  jfaShader  = LuaShader({ vertex = "shaders/jfa.glsl", fragment = "shaders/jfa.glsl" }, "jfaShader")
+  distShader = LuaShader({ vertex = "shaders/distance.glsl", fragment = "shaders/distance.glsl" }, "distShader")
+  displayShader = LuaShader({ vertex = "shaders/display.glsl", fragment = "shaders/display.glsl" }, "displayShader")
+  seedShader:Initialize()
+  jfaShader:Initialize()
+  distShader:Initialize()
+
+    seedTex = gl.CreateTexture(sdfTexSize, sdfTexSize, sdfTexParams)
+    pingTex = gl.CreateTexture(sdfTexSize, sdfTexSize, { ... })
+    pongTex = gl.CreateTexture(sdfTexSize, sdfTexSize, { ... })
+    sdfTex  = gl.CreateTexture(sdfTexSize, sdfTexSize, { format = GL.R32F })
 end
 
 local function initTopDownRadianceCascadeShader()
@@ -535,6 +549,10 @@ function widget:Shutdown()
         glDeleteTexture(neonPiecesInputFbo or "")
         glDeleteTexture(radianceCascadeCubeSampler or "")
         glDeleteTexture(normalunittex or "")
+        glDeleteTexture(seedTex or "")
+        glDeleteTexture(pingTex or "")
+        glDeleteTexture(pongTex or "")
+        glDeleteTexture(sdfTex or "")
     end
 end
 
@@ -768,7 +786,7 @@ function widget:DrawUnits()
   gl.RenderToTexture(seedTex, function()
     seedShader:Activate()
     -- assume glow mask is bound to texture unit 0
-    seedShader:SetUniform("u_texSize", texSize, texSize)
+    seedShader:SetUniform("u_texSize", sdfTexSize, sdfTexSize)
     gl.Texture(0, seedTex)
     gl.TexRect(-1, -1, 1, 1, false, true)
     gl.Texture(0, false)
@@ -781,7 +799,7 @@ function widget:DrawUnits()
     local jump = 2^i
     gl.RenderToTexture(dst, function()
       jfaShader:Activate()
-      jfaShader:SetUniform("u_texSize", texSize, texSize)
+      jfaShader:SetUniform("u_texSize", sdfTexSize, sdfTexSize)
       jfaShader:SetUniform("u_jump", jump)
       gl.Texture(0, src)
       gl.TexRect(-1, -1, 1, 1, false, true)
@@ -794,7 +812,7 @@ function widget:DrawUnits()
   -- 3. Distance Field
   gl.RenderToTexture(sdfTex, function()
     distShader:Activate()
-    distShader:SetUniform("u_texSize", texSize, texSize)
+    distShader:SetUniform("u_texSize", sdfTexSize, sdfTexSize)
     gl.Texture(0, src)
     gl.TexRect(-1, -1, 1, 1, false, true)
     gl.Texture(0, false)
