@@ -406,7 +406,7 @@ local function initJumpFloodSdfShader()
 
     local fragmentShader = VFS.LoadFile(shaderFilePath .. "jumpfloodsdf/.frag") 
     local vertexShader   = VFS.LoadFile(shaderFilePath .. "jumpfloodsdf/.vert.glsl") 
-
+    local placeholderTable = {}
 
   seedShader = LuaShader({ vertex = "shaders/seed.glsl", fragment = "shaders/seed.glsl" }, "seedShader")
   jfaShader  = LuaShader({ vertex = "shaders/jfa.glsl", fragment = "shaders/jfa.glsl" }, "jfaShader")
@@ -417,8 +417,8 @@ local function initJumpFloodSdfShader()
   distShader:Initialize()
 
     seedTex = gl.CreateTexture(sdfTexSize, sdfTexSize, sdfTexParams)
-    pingTex = gl.CreateTexture(sdfTexSize, sdfTexSize, { ... })
-    pongTex = gl.CreateTexture(sdfTexSize, sdfTexSize, { ... })
+    pingTex = gl.CreateTexture(sdfTexSize, sdfTexSize, placeholderTable)
+    pongTex = gl.CreateTexture(sdfTexSize, sdfTexSize, placeholderTable)
     sdfTex  = gl.CreateTexture(sdfTexSize, sdfTexSize, { format = GL.R32F })
 end
 
@@ -618,8 +618,8 @@ local function updatedTopDownUniforms()
 
     glUniform(topDownRadianceCascadeShader, "viewPortSize", viewSizeX, viewSizeY)
     glUniform(topDownRadianceCascadeShader, "invProjView", invProjViewMatrix)
-    glUniform(topDownRadianceCascadeShader, "sunColor",  sunCol)
-    glUniform(topDownRadianceCascadeShader, "skyColor",  skyCol)
+    glUniform(topDownRadianceCascadeShader, "sunCol",  sunCol)
+    glUniform(topDownRadianceCascadeShader, "skyCol",  skyCol)
     glUniform(topDownRadianceCascadeShader, "worldMin", todoX, todoMinZ)
     glUniform(topDownRadianceCascadeShader, "worldMax", todoMaxX, todoMaxZ)
 
@@ -674,7 +674,7 @@ local function recieveNeonHoloLightPiecesByUnit(unitPiecesTable)
 end
 
 function widget:Initialize()
-    if (not gl.RenderToTexture) then --super bad graphic driver
+    if (not glRenderToTexture) then --super bad graphic driver
         Spring.Echo("gfx_neonlight_radiancecascades: Im tired boss, tired of companies beeing ugly to devs, i wanna go home! Quitting!")
         return
     end
@@ -777,13 +777,13 @@ local function renderCameraOrthogonal()
     Spring.SetCameraState(camera) 
     -- A: Orthogonal Topdown shader: 0) From ortho camera produce a depthmap Render a topdownview of all Neonsigns, lightsources in the size of cameraviewWidth x Scenedepth
     glOrtho(ortho.width, ortho,height, ortho.near, ortho.far) --> https://github.com/beyond-all-reason/Beyond-All-Reason/blob/8e6f934ab10e549f17438061eb6e1d4e267d995e/luarules/gadgets/unit_icongenerator.lua#L669
-    gl.RenderToTexture()
+    glRenderToTexture(neonPiecesInputFbo)
 end
-
+local log2TexSize = math.floor(math.log(sdfTexSize) / math.log(2))
 function widget:DrawUnits()
   --TODO Integrate
   -- 1. Seed
-  gl.RenderToTexture(seedTex, function()
+  glRenderToTexture(seedTex, function()
     seedShader:Activate()
     -- assume glow mask is bound to texture unit 0
     seedShader:SetUniform("u_texSize", sdfTexSize, sdfTexSize)
@@ -797,7 +797,7 @@ function widget:DrawUnits()
   local src, dst = pingTex, pongTex
   for i = log2TexSize, 0, -1 do
     local jump = 2^i
-    gl.RenderToTexture(dst, function()
+    glRenderToTexture(dst, function()
       jfaShader:Activate()
       jfaShader:SetUniform("u_texSize", sdfTexSize, sdfTexSize)
       jfaShader:SetUniform("u_jump", jump)
@@ -810,7 +810,7 @@ function widget:DrawUnits()
   end
 
   -- 3. Distance Field
-  gl.RenderToTexture(sdfTex, function()
+  glRenderToTexture(sdfTex, function()
     distShader:Activate()
     distShader:SetUniform("u_texSize", sdfTexSize, sdfTexSize)
     gl.Texture(0, src)

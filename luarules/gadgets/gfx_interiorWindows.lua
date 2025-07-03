@@ -207,7 +207,7 @@ else -- unsynced
     local uniformSkyColor
     local uniformSunPos
     local uniformEyePos
-    local unformEyeDirection
+    local uniformEyeDir
     local uniformProjection
     local uniformTime
     local uniformViewPortSize
@@ -408,7 +408,7 @@ end
         cityCenterLoc                   = glGetUniformLocation(WindowShader, "cityCenter")
         uniformTime                     = glGetUniformLocation(WindowShader, "time")
         uniformEyePos                   = glGetUniformLocation(WindowShader, "eyePos")
-        unformEyeDir                    = glGetUniformLocation(WindowShader, "eyeDir")
+        uniformEyeDir                    = glGetUniformLocation(WindowShader, "eyeDir")
 
         uniformViewPrjInv               = glGetUniformLocation(WindowShader, 'viewProjectionInv')
         uniformViewInv                  = glGetUniformLocation(WindowShader, 'viewInv')
@@ -519,7 +519,7 @@ end
         local eyePos = {spGetCameraPosition()}
         glUniform(uniformEyePos,eyePos[1],eyePos[2], eyePos[3] )
         local eyeDir = {spGetCameraDirection()}
-        glUniform(unformEyeDir,eyeDir[1], eyeDir[2], eyeDir[3] )
+        glUniform(uniformEyeDir,eyeDir[1], eyeDir[2], eyeDir[3] )
 
 
         glUniform(uniformSunColor, sunCol[1], sunCol[2], sunCol[3]);

@@ -696,7 +696,9 @@ end
             [UnitDefNames["objective_transrapid"].id] = "land",
             [UnitDefNames["objective_airport"].id] = "land",
             [UnitDefNames["objective_pumpstation"].id] = "land",
-            [UnitDefNames["objective_presidentialpalace"].id] = "land"
+            [UnitDefNames["objective_presidentialpalace"].id] = "land",
+            [UnitDefNames["objective_oilrig"].id] = "land",
+            [UnitDefNames["objective_oilrig_sea"].id] = "water",
         }
     end
 

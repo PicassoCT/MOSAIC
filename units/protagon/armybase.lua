@@ -3,8 +3,8 @@ local ArmyBase = Building:New{
 		corpse				= "",
 		maxDamage           = 500,
 		mass                = 500,
-		buildCostEnergy     = 5000,
-		buildCostMetal      = 2500,
+		buildCostEnergy     = 15000,
+		buildCostMetal      = 15000,
 		explodeAs			= "none",
 
 		workerTime			= 1.0,

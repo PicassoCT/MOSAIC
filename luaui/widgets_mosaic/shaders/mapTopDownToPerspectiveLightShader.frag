@@ -15,7 +15,7 @@ uniform vec2 worldMax;
 
 
 void main() {
-    float depth = texture(depthTex, gl_FragCoord).r;
+    float depth = texture(depthTex, gl_FragCoord.xy).r;
 
     // Reconstruct world position:
     vec4 ndc = vec4(gl_FragCoord * 2.0 - 1.0, s * 2.0 - 1.0, 1.0);

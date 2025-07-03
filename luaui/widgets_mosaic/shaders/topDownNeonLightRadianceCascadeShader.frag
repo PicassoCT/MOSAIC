@@ -9,7 +9,6 @@ uniform float neonLightPercent;
 uniform vec2  viewPortSize;
 uniform vec3 eyePos; //The scene eyePos
 uniform vec3 eyeDir;
-uniform vec3 eyeDir;
 uniform vec3 sunCol;
 uniform vec3 skyCol;
 uniform vec3 sunPos; //uLightDir
