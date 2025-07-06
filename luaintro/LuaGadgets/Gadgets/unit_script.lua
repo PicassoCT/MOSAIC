@@ -851,6 +851,7 @@ function gadget:UnitCreated(unitID, unitDefID)
 end
 
 
+
 function gadget:GameFrame()
         local n = sp_GetGameFrame()
         local zzz = sleepers[n]
@@ -872,7 +873,7 @@ function gadget:GameFrame()
                         local unitID = sleeper.unitID
 
                         zzz[#zzz] = nil
-
+                      
                         PushActiveUnitID(unitID)
 						sp_CallAsUnit(unitID, WakeUp, sleeper)
                         PopActiveUnitID()

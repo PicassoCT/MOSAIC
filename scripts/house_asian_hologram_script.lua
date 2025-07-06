@@ -23,7 +23,8 @@ function clock()
         Sleep(1000)
     end
 end
---rror: [string "scripts/house_asian_hologram_script.lua"]:462: bad argument #1 to 'Spin' (number expected, got nil)
+
+--Error: [string "scripts/house_asian_hologram_script.lua"]:462: bad argument #1 to 'Spin' (number expected, got nil)
 function updateCheckCache()
   local frame = Spring.GetGameFrame()
   if frame ~= lastFrame then 
@@ -50,9 +51,7 @@ function displayPieceTable(T)
        concatString= concatString.."|".. pieceID_NameMap[T[i]]
     end
     return concatString
-
 end
-
 
 function HideReg(pieceID)
     if not pieceID then return end
@@ -263,12 +262,12 @@ function throwPetal(chip, interval)
     if maRa() then      
         Sleep(interval)
     end 
-    sakuraValues=   GG.Sakura
+    sakuraValues =  GG.Sakura
     reset(chip)
-    val= math.random(15, 55)*randSign()
-    Spin(chip, x_axis, math.rad(val),0)
-    val= math.random(15, 55)*randSign()
-    Spin(chip, z_axis, math.rad(val),0)
+    val = math.random(15, 55)*randSign()
+    Spin(chip, x_axis, math.rad(val), 0)
+    val = math.random(15, 55)*randSign()
+    Spin(chip, z_axis, math.rad(val), 0)
     ShowReg(chip)
 
     randX = math.random(150, 1500) *sakuraValues.dirx
@@ -306,30 +305,27 @@ function sakuraTree()
     end
 
     while true do
-        if  (hours > 16 or hours < 8)  then
+        if (hours > 16 or hours < 8)  then
             ShowReg(sakura)
-            while  (hours > 16 or hours < 8)  do
+            while (hours > 16 or hours < 8)  do
                 setSakuraValue()
                 restTime = math.random(15,20)*1000   
                 interval = math.ceil(restTime/24)
                 for i=1, 12 do    
                     chip= piece("Petal"..i)
                     StartThread(throwPetal, chip, math.random(1,12)*interval)  
-                 end
-                 Sleep(restTime)
+                end
+                Sleep(restTime)
             end
 
             foreach(chips,
                 function(chip)
                     WaitForMoves(chip)
                     HideReg(chip)
-                end)
-            
+                end)            
             HideReg(sakura)               
         end
         Sleep(1000)
-
-
     end
 end
 
@@ -610,7 +606,26 @@ end
 
 function getPixelEffect()
     local effects = {
-        function () -- random coloured cube       
+        function()-- cube grid
+            tScale = 25
+            total = math.sqrt(math.floor(count(TableOfPiecesGroups["R"]) * 1.33))
+            for x=1, total do
+                for y=1, total do                    
+                    for z= 1, total do
+                        if not (x % 2 == 0 and y % 2== 0 and z % 2 == 0) then
+                            randomPixel = getRandomPixel()
+                            Move(randomPixel,x_axis, (x*tScale), 0)
+                            Move(randomPixel,y_axis, (y*tScale), 0)
+                            Move(randomPixel,z_axis, (z*tScale), 0)
+                        end
+                    end
+                end
+            end     
+        end,
+        function () -- random coloured cube      
+            randomColA = getRandomColor()
+            assert(TableOfPiecesGroups[randomColA], randomColA )
+            total = math.ceil(math.sqrt(count(TableOfPiecesGroups[randomColA]))) 
             for x=1, total do
                 for y=1, total do
                     for z= 1, total do

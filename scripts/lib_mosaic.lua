@@ -3660,7 +3660,15 @@ end
             return false
         end
 
-     
+function getInternalModulesHouse(myID)
+    if not GG.houseHasSafeHouseTable then return nil end
+    for houseID, safeHouseID in pairs(GG.houseHasSafeHouseTable) do
+        if safeHouseID == myID then
+            return houseID
+        end
+    end
+end
+  
 
 function getIdleTokken()
     if not GG.CurrentIdleNr then GG.CurrentIdleNr = 0 end

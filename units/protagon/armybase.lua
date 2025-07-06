@@ -21,12 +21,12 @@ local ArmyBase = Building:New{
 		levelGround 		= false,
 		blocking 			= false,
 		showNanoSpray 		= false,
-		showNanoFrame		= false,
+		showNanoFrame		= true,
 		script 				= "armybasescript.lua",
 		objectName        	= "armybase.dae",
 
 		name 				= "Armybase",
-		description 		= " local allied armed forces",
+		description 		= " recruits armed local forces",
 		buildPic			= "assembly.png",
 		canCloak 			= false,
 		canMove 		 	= true,
@@ -50,12 +50,14 @@ local ArmyBase = Building:New{
 	
 		buildoptions = 
 		{
-			"ground_tank_day",		
+			"ground_tank_night",		
 			"ground_truck_mg", 	
 			"ground_truck_antiarmor", 
 			"ground_truck_mortar", 
 			"ground_truck_rocket",		
-			"air_copter_blackhawk"
+			"air_copter_blackhawk",
+			"air_plane_rocket",
+			"air_plane_sniper"
 		},
 
 	

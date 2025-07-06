@@ -14,24 +14,56 @@ function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     StartThread(blinkLights)
     StartThread(ammoCrate)
+    StartThread(hideHouse)
     Hide(buildspot)
 end
-BLINK_PASSIVE = 2000
-BLINK_ACTIVE = 1250
-blinkTime= 2000
 
+function hideHouse()
+    waitTillComplete(unitID)
+    Sleep(100)
+    myHouseID = getInternalModulesHouse(unitID)
+    if myHouseID then return end
+    env = Spring.UnitScript.GetScriptEnv(myHouseID)
+    if env and env.hideHouse then
+        Spring.UnitScript.CallAsUnit(myHouseID, env.hideHouse)
+    end
+end
+
+
+BLINK_ACTIVE = 1250
+blinkTime= 500
+Race1 = piece("Race1")
+Race2 = piece("Race002")
+racerSize = 500
 function blinkLights()
     Signal(SIG_BLINK)
     SetSignalMask(SIG_BLINK)
+    k= 0
+    n = 0
     while true do
-        if boolBuilding == true then
-            showT(TablesOfPiecesGroups["lightsOn"])
-            hideT(TablesOfPiecesGroups["lightsOff"])
-            Sleep(blinkTime)
-            hideT(TablesOfPiecesGroups["lightsOn"])
-            showT(TablesOfPiecesGroups["lightsOff"])
-        end
-        Sleep(blinkTime)
+            showT(TablesOfPiecesGroups["LightOn"], 1, 3)
+            hideT(TablesOfPiecesGroups["LightOff"],1, 3)
+            for i=4, # TablesOfPiecesGroups["LightOn"] do
+                k = (k+1) % 13
+                n = 13 + (n+1) % 13
+                Move(Race1, x_axis, k * racerSize, 0)
+                Move(Race2, x_axis, n * racerSize, 0)
+                Hide(TablesOfPiecesGroups["LightOn"][i])
+                Show(TablesOfPiecesGroups["LightOff"][i])
+                Sleep(600)
+            end
+
+            hideT(TablesOfPiecesGroups["LightOn"],1,3)
+            showT(TablesOfPiecesGroups["LightOff"],1,3)
+            for i=4, # TablesOfPiecesGroups["LightOn"] do
+                k = (k+1) % 13
+                n = 13 + (n+1) % 13
+                Move(Race1, x_axis, k * racerSize, 0)
+                Move(Race2, x_axis, n * racerSize, 0)
+                Show(TablesOfPiecesGroups["LightOn"][i])
+                Hide(TablesOfPiecesGroups["LightOff"][i])
+                Sleep(600)
+            end
     end
 end
 

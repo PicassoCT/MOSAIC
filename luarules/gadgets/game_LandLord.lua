@@ -1,8 +1,3 @@
-
--- TODO: fix parting Code for 16 pieces -- also distribute maploading over same period --integrate mapparts created
-
-
-
 --- - file: Land_Lord.lua
 -- brief: spawns start unit and sets storage levels
 -- author: Andrea Piras
@@ -15,12 +10,12 @@
 function gadget:GetInfo()
     return {
         name = "LandLord ",
-        desc = "Recives the terraFormInformation. applies the actuall terraforming, informs Units about the currentWaterLevelOffset",
+        desc = "Provides a terraforming api for other widgets/gadgets/units",
         author = "PicassoCT",
         date = "7 b.Creation",
         license = "GNU GPL, v2 its goes in all fields",
         layer = 0,
-        enabled = true -- loaded by default?
+        enabled = false -- loaded by default?
     }
 end
 

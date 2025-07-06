@@ -817,8 +817,7 @@ end
 
 function gadgetHandler:GameFrame(frameNum)
     for _, g in ipairs(self.GameFrameList) do 
-        --local name = g.ghInfo.name or "UNKNOWN NAME"
-        --Spring.Echo(frameNum..":"..name)
+        --Spring.Echo((g.ghInfo.name or "UNKNOWN NAME")..":"..frameNum)
         g:GameFrame(frameNum) 
     end
     return

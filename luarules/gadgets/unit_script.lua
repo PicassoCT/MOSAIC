@@ -853,7 +853,7 @@ function gadget:GameFrame()
             local unitID = sleeper.unitID
 
             zzz[#zzz] = nil
-
+            Spring.Echo("Entering Unit of type "..UnitDefs[Spring.GetUnitDefID(unitID)].name)
             PushActiveUnitID(unitID)
             sp_CallAsUnit(unitID, WakeUp, sleeper)
             PopActiveUnitID()
