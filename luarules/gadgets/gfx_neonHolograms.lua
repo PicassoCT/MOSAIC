@@ -80,13 +80,6 @@ if (gadgetHandler:IsSyncedCode()) then
     function registerUnitIfHolo(unitID, unitDefID)
          if neonHologramTypeTable[unitDefID] then
             Spring.SetUnitNoDraw(unitID, true)
-            if engineVersion >= 105.0 and  Spring.SetUnitEngineDrawMask then
-               -- local drawMask = SO_OPAQUE_FLAG + SO_ALPHAF_FLAG + SO_REFLEC_FLAG  + SO_REFRAC_FLAG + SO_DRICON_FLAG 
-               -- Spring.SetUnitEngineDrawMask(unitID, drawMask)
-            end
-            local emptyTable = {}
-            local stringToSend = ""
-
             allNeonUnits[#allNeonUnits + 1]= unitID
            -- SendToUnsynced("setUnitNeonLuaDraw", unitID, unitDefID)
         end

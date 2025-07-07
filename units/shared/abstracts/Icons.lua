@@ -53,8 +53,8 @@ local HiJackSatteliteIcon =
     MaxVelocity = 0,
     --
     upright  = true,
-    name = "Hijack Sattelite Icon",
-    description = "",
+    name = "Satellite Override",
+    description = "hijacks a satellite",
     levelGround = false,
     CanAttack = false,
     CanGuard = false,
@@ -131,7 +131,7 @@ local DoubleAgent =
     --
     upright  = true,
     name = "DoubleAgent",
-    description = "Decloak to turn sides",
+    description = "switches as Double Agent to your side by decloaking",
     levelGround = false,
     CanAttack = false,
     CanGuard = false,
@@ -224,7 +224,7 @@ local RevealDoubleAgentsIcon =
     --
     upright  = true,
     name = "Reveal DoubleAgents",
-    description = "Force a Double Agent in your ranks to reveal",
+    description = "forces double-agents to switch team",
     levelGround = false,
     CanAttack = false,
     CanGuard = false,
@@ -240,8 +240,9 @@ local RevealDoubleAgentsIcon =
     cloakCostMoving = 0.0001,
     sightDistance = 50,
     minCloakDistance = 0,
+    activatewhenbuilt = false,
     initCloaked = true,
-    onOffable = false,
+    onOffable = true,
     decloakOnFire = false,
 
     customparams = {
@@ -551,7 +552,7 @@ local BribeIcon =
     upright  = true,
     upright  = true,
     --
-    description = "Bribe police to go to this location ",
+    description = "Bribe police to investigate this location instead",
     levelGround = false,
     CanAttack = false,
     CanGuard = false,
@@ -595,7 +596,7 @@ local SocialEngineering =
     upright  = true,
     buildTime =    60, --seconds
     --
-    description = "Engineer a social movement/ protest",
+    description = "Social network agitator created protest",
     levelGround = false,
     CanAttack = false,
     CanGuard = false,
@@ -672,11 +673,11 @@ local CyberCrime =
     buildingMask = 8,
 
     --
-    description = " earn crypto for the cause via illicit means. Crime does pay.",
+    description = " earns crypto for you. Crime does pay.",
     levelGround = false,
     CanAttack = false,
     CanGuard = false,
-    name = "Cybercrime",
+    name = "Botnet Node",
     CanMove = true,
     CanPatrol = true,
     CanStop = true,

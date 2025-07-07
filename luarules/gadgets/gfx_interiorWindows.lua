@@ -17,7 +17,7 @@ if (gadgetHandler:IsSyncedCode()) then
     
     VFS.Include("scripts/lib_mosaic.lua")    
     VFS.Include("scripts/lib_UnitScript.lua")    
-
+    GG.ManualRenderedBuildingWithWindowsVisiblePieces = {}
     local frameGameStart = Spring.GetGameFrame()     
     local myAllyTeamID = 0
     local myTeam = nil
@@ -91,38 +91,18 @@ if (gadgetHandler:IsSyncedCode()) then
         end
     end
 
- 
-    local function serializePiecesTableTostring(t)
-        local result = ""
-        for i=1, #t do
-            result = result.."|"..t[i]
-        end
-        return result
-    end
-
-
     local cachedUnitPieces = {}
-    local oldWindowUnitDataTransfer = {}
     function gadget:GameFrame(frame)
 		if frame > frameGameStart then           
             if count(WindowUnitDataTransfer) > 0 then
-                local VisibleUnitPieces = GG.VisibleUnitPieces   
+                local VisibleUnitPieces = GG.ManualRenderedBuildingWithWindowsVisiblePieces   
                 if VisibleUnitPieces then
         			for id, value in pairs(WindowUnitDataTransfer) do
-                        --DELME       
-                        -- echo(HEAD().." Start:Sending Window  unit data:"..toString(VisibleUnitPieces[id] ))
         				if id and value and VisibleUnitPieces[id] and VisibleUnitPieces[id] ~= cachedUnitPieces[id] then
-                            local serializedStringToSend = serializePiecesTableTostring(VisibleUnitPieces[value])
                             cachedUnitPieces[id] = VisibleUnitPieces[value]
-        					SendToUnsynced("setUnitWindowLuaDraw", id, spGetUnitDefID(id), serializedStringToSend )              
+        					SendToUnsynced("setUnitWindowLuaDraw", id, spGetUnitDefID(id), unpack(VisibleUnitPieces[id]))              
         				end
         			end 
-                    for id, value in pairs(oldWindowUnitDataTransfer) do
-                        if not WindowUnitDataTransfer[id] then
-                            SendToUnsynced("unsetUnitWindowLuaDraw", id)       
-                        end
-                    end
-                    oldWindowUnitDataTransfer = WindowUnitDataTransfer      
                 end      
             end
 		end

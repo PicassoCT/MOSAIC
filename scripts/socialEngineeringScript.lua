@@ -112,7 +112,12 @@ function socialEngineeringPosWriteUp()
 end
 
 function script.Killed(recentDamage, _)
-	GG.SocialEngineers[unitID] = nil
+	for k,v in pairs(GG.SocialEngineeredPeople[id]) do
+		if v == unitID then
+			GG.SocialEngineers[v] = nil
+		end
+	end
+	
 	Explode(center,  SFX.SHATTER)
 	Explode(Rotor,  SFX.SHATTER)
     -- createCorpseCUnitGeneric(recentDamage)

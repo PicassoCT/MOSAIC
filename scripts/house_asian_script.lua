@@ -721,6 +721,7 @@ end
 
 function script.Killed(recentDamage, _)
 	houseDestroyWithDestructionTable(LevelPieces, 9.81, unitID)
+    GG.ManualRenderedBuildingWithWindowsVisiblePieces[unitID]= nil
     return 1
 end
 
@@ -1052,7 +1053,7 @@ function addToShowTable(element, indeX, indeY, addition, xLoc, zLoc)
 	--lecho("Piece placed:"..toString(pieceID_NameMap[element]).." at ("..toString(indeX).."/"..toString(indeY)..") ".."("..toString(xLoc).."/"..toString(zLoc)..")".. toString(addition))
 	if filterOutToShowTableElements(element) then return end
     ToShowTable[#ToShowTable + 1] = element	
-	toShowDict[element] = true
+	toShowDict[element] = element
 end	
 
 --Problem is sometimes pieces are shown- allocated that should be shown in place ?
@@ -1614,7 +1615,8 @@ function buildAnimation()
     Show(Icon)
     while boolDoneShowing == false do Sleep(100) end
     Hide(Icon)
-    showT(ToShowTable)   
+    showHouse() 
+    GG.ManualRenderedBuildingWithWindowsVisiblePieces[unitID] = toShowDict
 end
 
 function addGroundPlaceables()
