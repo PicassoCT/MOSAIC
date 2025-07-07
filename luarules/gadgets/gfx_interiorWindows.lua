@@ -30,6 +30,7 @@ if (gadgetHandler:IsSyncedCode()) then
 	local SO_SHTRAN_FLAG = 32
 	local SO_DRICON_FLAG = 128
     local boolOverride = true
+
     
     function gadget:PlayerChanged(playerID)
         if Spring.GetMyAllyTeamID then

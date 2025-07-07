@@ -15,7 +15,7 @@ JoyZoom = piece("Joy2")
 JoyRide = piece("JoyRide")
 local boolDebugScript = false
 local lastFrame = Spring.GetGameFrame()
-local cachedCopy = {}
+local cachedCopyDict = {}
 local tldrum = piece "tldrum"
 local dancepivot = piece "dancepivot"
 local deathpivot = piece "deathpivot"
@@ -80,33 +80,27 @@ function clock()
     end
 end
 
-
 function updateCheckCache()
   local frame = Spring.GetGameFrame()
-  if frame ~= lastFrame then 
-    if not GG.VisibleUnitPieces then GG.VisibleUnitPieces = {} end
-        cachedTable = {}
-        for k,v in pairs(cachedCopy) do
-            if v then 
-                table.insert(cachedTable, v)
-            end
+    if frame ~= lastFrame then 
+        if GG.VisibleUnitPieces[unitID] ~= cachedCopyDict then    
+            GG.VisibleUnitPieces[unitID] = cachedCopyDict
+            lastFrame = frame
         end
-    GG.VisibleUnitPieces[unitID] = cachedTable
-    lastFrame = frame
-  end
+    end
 end
 
 function ShowReg(pieceID)
     if not pieceID then return end
     Show(pieceID)
-    cachedCopy[pieceID] = pieceID
+    cachedCopyDict[pieceID] = pieceID
     updateCheckCache()
 end
 
 function HideReg(pieceID)
     if not pieceID then return end
     Hide(pieceID)  
-    cachedCopy[pieceID] = nil
+    cachedCopyDict[pieceID] = nil
     updateCheckCache()
 end
 

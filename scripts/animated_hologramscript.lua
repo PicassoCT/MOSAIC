@@ -2,7 +2,7 @@ include "lib_UnitScript.lua"
 
 local TablesOfPiecesGroups = {}
 local pieceID_NameMap = Spring.GetUnitPieceList(unitID)
-local cachedCopy ={}
+local cachedCopyDict ={}
 local Frame = piece("Frame")
 
 function script.Create()
@@ -19,8 +19,8 @@ function updateCheckCache()
   local frame = Spring.GetGameFrame()
   if frame ~= lastFrame then 
     if not GG.VisibleUnitPieces then GG.VisibleUnitPieces = {} end
-    if GG.VisibleUnitPieces[unitID] ~= cachedCopy then
-        GG.VisibleUnitPieces[unitID] = cachedCopy
+    if GG.VisibleUnitPieces[unitID] ~= cachedCopyDict then
+        GG.VisibleUnitPieces[unitID] = cachedCopyDict
         lastFrame = frame
     end
   end
@@ -29,7 +29,7 @@ end
 function ShowReg(pieceID)
     if not pieceID then return end
     Show(pieceID)
-    table.insert(cachedCopy, pieceID)
+    cachedCopyDict[pieceID] = pieceID
     updateCheckCache()
 end
 
@@ -50,12 +50,7 @@ function HideReg(pieceID)
     assert(pieceID_NameMap[pieceID], "Not a piece".. displayPieceTable(pieceID))
     Hide(pieceID)  
     --TODO make dictionary for efficiency
-    for i=1, #cachedCopy do
-        if cachedCopy[i] == pieceID then
-            table.remove(cachedCopy, i)
-            break
-        end
-    end
+    cachedCopyDict[pieceID] = nil
     updateCheckCache()
 end
 

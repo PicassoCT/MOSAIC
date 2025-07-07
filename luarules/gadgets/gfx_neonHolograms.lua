@@ -16,7 +16,8 @@ if (gadgetHandler:IsSyncedCode()) then
     
     VFS.Include("scripts/lib_mosaic.lua")    
     VFS.Include("scripts/lib_UnitScript.lua")    
-
+    if not GG.VisibleUnitPieces then GG.VisibleUnitPieces = {} end
+    
     local frameGameStart = Spring.GetGameFrame()     
     local myAllyTeamID = 0
     local myTeam = nil
@@ -112,7 +113,7 @@ if (gadgetHandler:IsSyncedCode()) then
                         -- echo(HEAD().." Start:Sending Neon Hologram unit data:"..toString(VisibleUnitPieces[id] ))
         				if id and defID and VisibleUnitPieces[id] and VisibleUnitPieces[id] ~= cachedUnitPieces[id] then
                             cachedUnitPieces[id] = VisibleUnitPieces[id]
-        					SendToUnsynced("setUnitNeonLuaDraw", id, defID, unpack(VisibleUnitPieces[id]))                                 
+        					SendToUnsynced("setUnitNeonLuaDraw", id, defID, unpack(VisibleUnitPieces[id],1, ))                                 
         				end
         			end 
                 end   
