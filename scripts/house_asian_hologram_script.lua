@@ -11,6 +11,7 @@ local percent=0
 local GameConfig = getGameConfig()
 local pieceID_NameMap = Spring.GetUnitPieceList(unitID)
 local cachedCopyDict ={}
+local oldCachedCopyDict ={}
 local lastFrame = Spring.GetGameFrame()
 TableOfPiecesGroups = {}
 local crossRotatePiece1 =  piece("HoloSpin72")
@@ -27,13 +28,13 @@ end
 --Error: [string "scripts/house_asian_hologram_script.lua"]:462: bad argument #1 to 'Spin' (number expected, got nil)
 function updateCheckCache()
   local frame = Spring.GetGameFrame()
-  if frame ~= lastFrame then 
-    if not GG.VisibleUnitPieces then GG.VisibleUnitPieces = {} end
-    if GG.VisibleUnitPieces[unitID] ~= cachedCopyDict then
-        GG.VisibleUnitPieces[unitID] = cachedCopyDict
-        lastFrame = frame
+    if frame ~= lastFrame then   
+        if oldCachedCopyDict ~= cachedCopyDict then
+            oldCachedCopyDict = cachedCopyDict      
+            GG.VisibleUnitPieces[unitID] = dictToTable(cachedCopyDict)
+            lastFrame = frame
+        end
     end
-  end
 end
 
 function ShowReg(pieceID)
@@ -55,7 +56,7 @@ end
 
 function HideReg(pieceID)
     if not pieceID then return end
-    assert(pieceID_NameMap[pieceID], "Not a piece".. displayPieceTable(pieceID))
+    --assert(pieceID_NameMap[pieceID], "Not a piece".. displayPieceTable(pieceID))
     Hide(pieceID)  
     --TODO make dictionary for efficiency
     cachedCopyDict[pieceID] = nil
@@ -689,15 +690,17 @@ function getPixelEffect()
             end
         end   ,
         function()-- cached copy artifacts
-            for i=1,#cachedCopy do 
-                cachedPiece = cachedCopy[i]
-                pieceInfo = Spring.GetUnitPieceInfo(unitID, cachedPiece) 
-                randomPixel= getRandomPixel()
-                for p=1,math.random(2,32) do                 
-                    x = getRandomArgument(pieceInfo.min[1], pieceInfo.max[1])
-                    y = getRandomArgument(pieceInfo.min[2], pieceInfo.max[2])
-                    z = getRandomArgument(pieceInfo.min[3], pieceInfo.max[3])
-                    movePieceToPiece(unitID, randomPixel, cachedPiece, 0, {x=x, y=y, z=z})
+            for k, v in pairs(cachedPieceDict) do
+                if v then
+                    cachedPiece = v 
+                    pieceInfo = Spring.GetUnitPieceInfo(unitID, cachedPiece) 
+                    randomPixel= getRandomPixel()
+                    for p=1,math.random(2,32) do                 
+                        x = getRandomArgument(pieceInfo.min[1], pieceInfo.max[1])
+                        y = getRandomArgument(pieceInfo.min[2], pieceInfo.max[2])
+                        z = getRandomArgument(pieceInfo.min[3], pieceInfo.max[3])
+                        movePieceToPiece(unitID, randomPixel, cachedPiece, 0, {x=x, y=y, z=z})
+                    end
                 end
 
             end

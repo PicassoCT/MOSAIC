@@ -1982,8 +1982,8 @@ function mergeTables(...)
 end
 
 function dictToTable(dict)
-    num = 1
-    T = {}
+    local num = 1
+    local T = {}
     for k, v in pairs(dict) do
         if v then
             T[num] = k
@@ -1991,7 +1991,6 @@ function dictToTable(dict)
         end
     end
     return T
-
 end
 
 function TableMergeTable(TA, TB)

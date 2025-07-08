@@ -34,7 +34,7 @@ BLINK_ACTIVE = 1250
 blinkTime= 500
 Race1 = piece("Race1")
 Race2 = piece("Race002")
-racerSize = 500
+racerSize = 275
 function blinkLights()
     Signal(SIG_BLINK)
     SetSignalMask(SIG_BLINK)
@@ -45,7 +45,7 @@ function blinkLights()
             hideT(TablesOfPiecesGroups["LightOff"],1, 3)
             for i=4, # TablesOfPiecesGroups["LightOn"] do
                 k = (k+1) % 13
-                n = 13 + (n+1) % 13
+                n = (n+1) % 13
                 Move(Race1, x_axis, k * racerSize, 0)
                 Move(Race2, x_axis, n * racerSize, 0)
                 Hide(TablesOfPiecesGroups["LightOn"][i])
@@ -57,7 +57,7 @@ function blinkLights()
             showT(TablesOfPiecesGroups["LightOff"],1,3)
             for i=4, # TablesOfPiecesGroups["LightOn"] do
                 k = (k+1) % 13
-                n = 13 + (n+1) % 13
+                n = (n+1) % 13
                 Move(Race1, x_axis, k * racerSize, 0)
                 Move(Race2, x_axis, n * racerSize, 0)
                 Show(TablesOfPiecesGroups["LightOn"][i])
