@@ -3,6 +3,7 @@ include "lib_UnitScript.lua"
 local TablesOfPiecesGroups = {}
 local pieceID_NameMap = Spring.GetUnitPieceList(unitID)
 local cachedCopyDict ={}
+local oldCachedCopyDict ={}
 local Frame = piece("Frame")
 
 function script.Create()
@@ -17,13 +18,13 @@ end
 
 function updateCheckCache()
   local frame = Spring.GetGameFrame()
-  if frame ~= lastFrame then 
-    if not GG.VisibleUnitPieces then GG.VisibleUnitPieces = {} end
-    if GG.VisibleUnitPieces[unitID] ~= cachedCopyDict then
-        GG.VisibleUnitPieces[unitID] = cachedCopyDict
-        lastFrame = frame
+    if frame ~= lastFrame then   
+        if oldCachedCopyDict ~= cachedCopyDict then
+            oldCachedCopyDict = cachedCopyDict      
+            GG.VisibleUnitPieces[unitID] = dictToTable(cachedCopyDict)
+            lastFrame = frame
+        end
     end
-  end
 end
 
 function ShowReg(pieceID)

@@ -101,6 +101,16 @@ if (gadgetHandler:IsSyncedCode()) then
         echo(stringResult)
     end
 
+    local function sparse_len(t)
+        local max = 0
+        for k, _ in pairs(t) do
+            if type(k) == "number" and k > max then
+                max = k
+            end
+        end
+        return max
+    end
+
     local cachedUnitPieces = {}
     local oldneonUnitDataTransfer = {}
     function gadget:GameFrame(frame)
@@ -110,10 +120,11 @@ if (gadgetHandler:IsSyncedCode()) then
                 local VisibleUnitPieces = GG.VisibleUnitPieces   
                 if VisibleUnitPieces then
         			for id, defID in pairs(neonUnitDataTransfer) do     
+                        local thisVisibleUnitPieces = VisibleUnitPieces[id]
                         -- echo(HEAD().." Start:Sending Neon Hologram unit data:"..toString(VisibleUnitPieces[id] ))
-        				if id and defID and VisibleUnitPieces[id] and VisibleUnitPieces[id] ~= cachedUnitPieces[id] then
-                            cachedUnitPieces[id] = VisibleUnitPieces[id]
-        					SendToUnsynced("setUnitNeonLuaDraw", id, defID, unpack(VisibleUnitPieces[id] ))                                 
+        				if id and defID and thisVisibleUnitPieces and thisVisibleUnitPieces ~= cachedUnitPieces[id] then
+                            cachedUnitPieces[id] = thisVisibleUnitPieces
+        					SendToUnsynced("setUnitNeonLuaDraw", id, defID, unpack(thisVisibleUnitPieces))                                 
         				end
         			end 
                 end   

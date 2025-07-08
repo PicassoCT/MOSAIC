@@ -16,6 +16,7 @@ JoyRide = piece("JoyRide")
 local boolDebugScript = false
 local lastFrame = Spring.GetGameFrame()
 local cachedCopyDict = {}
+local oldCachedCopyDict = {}
 local tldrum = piece "tldrum"
 local dancepivot = piece "dancepivot"
 local deathpivot = piece "deathpivot"
@@ -82,9 +83,10 @@ end
 
 function updateCheckCache()
   local frame = Spring.GetGameFrame()
-    if frame ~= lastFrame then 
-        if GG.VisibleUnitPieces[unitID] ~= cachedCopyDict then    
-            GG.VisibleUnitPieces[unitID] = cachedCopyDict
+    if frame ~= lastFrame then   
+        if oldCachedCopyDict ~= cachedCopyDict then
+            oldCachedCopyDict = cachedCopyDict      
+            GG.VisibleUnitPieces[unitID] = dictToTable(cachedCopyDict)
             lastFrame = frame
         end
     end

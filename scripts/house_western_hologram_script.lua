@@ -107,14 +107,18 @@ local SIG_FLICKER= 256
 local GameConfig = getGameConfig()
 local pieceID_NameMap = Spring.GetUnitPieceList(unitID)
 local cachedCopyDict ={}
+local oldCachedCopyDict ={}
 local lastFrame = Spring.GetGameFrame()
 
 function updateCheckCache()
   local frame = Spring.GetGameFrame()
-  if frame ~= lastFrame then 
-    GG.VisibleUnitPieces[unitID] = cachedCopyDict
-    lastFrame = frame
-  end
+    if frame ~= lastFrame then   
+        if oldCachedCopyDict ~= cachedCopyDict then
+            oldCachedCopyDict = cachedCopyDict      
+            GG.VisibleUnitPieces[unitID] = dictToTable(cachedCopyDict)
+            lastFrame = frame
+        end
+    end
 end
 
 function ShowReg(pieceID)
