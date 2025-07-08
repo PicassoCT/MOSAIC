@@ -689,8 +689,9 @@ function getPixelEffect()
             end
         end   ,
         function()-- cached copy artifacts
-            for i=1,#cachedCopy do 
-                cachedPiece = cachedCopy[i]
+            for k, v in pairs(cachedPieceDict)
+                if v then
+                cachedPiece = v 
                 pieceInfo = Spring.GetUnitPieceInfo(unitID, cachedPiece) 
                 randomPixel= getRandomPixel()
                 for p=1,math.random(2,32) do                 
@@ -698,6 +699,7 @@ function getPixelEffect()
                     y = getRandomArgument(pieceInfo.min[2], pieceInfo.max[2])
                     z = getRandomArgument(pieceInfo.min[3], pieceInfo.max[3])
                     movePieceToPiece(unitID, randomPixel, cachedPiece, 0, {x=x, y=y, z=z})
+                end
                 end
 
             end

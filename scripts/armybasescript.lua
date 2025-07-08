@@ -34,7 +34,7 @@ BLINK_ACTIVE = 1250
 blinkTime= 500
 Race1 = piece("Race1")
 Race2 = piece("Race002")
-racerSize = 240
+racerSize = 255
 function blinkLights()
     Signal(SIG_BLINK)
     SetSignalMask(SIG_BLINK)
