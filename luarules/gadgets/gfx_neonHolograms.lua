@@ -30,10 +30,42 @@ if (gadgetHandler:IsSyncedCode()) then
 	local SO_SHTRAN_FLAG = 32
 	local SO_DRICON_FLAG = 128
     local boolOverride = true
-
+    local DAYLENGTH             = 28800
     -- TODO: Add bloomstage - write to low level aphabitmask
     -- Texture back to resolution
     -- read back and add_alpha to texture
+
+
+local function isRainyArea()
+    return getDetermenisticHash() % 2 == 0 or boolIsMapNameOverride 
+end
+
+local function getDayTime()
+    local morningOffset = (DAYLENGTH / 2)
+    local Frame = (Spring.GetGameFrame() + morningOffset) % DAYLENGTH
+    local percent = Frame / DAYLENGTH
+    local hours = math.floor((Frame / DAYLENGTH) * 24)
+    local minutes = math.ceil((((Frame / DAYLENGTH) * 24) - hours) * 60)
+    local seconds = 60 - ((24 * 60 * 60 - (hours * 60 * 60) - (minutes * 60)) % 60)
+    return hours, minutes, seconds, percent
+end
+
+local function isRaining()   
+
+    if boolRainyArea == nil then
+        boolRainyArea = isRainyArea()        
+        Spring.Echo("Is rainy area:"..tostring(boolRainyArea))
+    end
+
+    if boolRainyArea == false then
+        return false
+    end
+
+    local gameFrames = Spring.GetGameFrame()
+    local dayNr = gameFrames / DAYLENGTH
+
+    return dayNr % 3 < 1.0 and (hours > 18 or hours < 7)
+end
     
     function gadget:PlayerChanged(playerID)
         if Spring.GetMyAllyTeamID then
@@ -377,43 +409,23 @@ end
       }
   ]]
 
-    local function initializeBlurShader(vsx, vsy)
-          blurShader = gl.CreateShader({
-            fragment =  blurShader,
-            uniformInt = 
-            {
-              tex0 = 0
-            }
-          })
-
-          if (blurShader == nil) then
-            Spring.Log(gadget:GetInfo().name, LOG.ERROR, "blurShader: shader error: "..gl.GetShaderLog())
-            return false
-          end
-        local ivsx, ivsy = math.floor(vsx/quality), math.floor(vsy/quality)
-        screencopy = gl.CreateTexture(vsx, vsy, {
-            border = false,
-            min_filter = GL.NEAREST,
-            mag_filter = GL.NEAREST,
-          })
-          blurtex = gl.CreateTexture(ivsx, ivsy, {
-            border = false,
-            wrap_s = GL.CLAMP,
-            wrap_t = GL.CLAMP,
-            fbo = true,
-          })
-          blurtex2 = gl.CreateTexture(ivsx, ivsy, {
-            border = false,
-            wrap_s = GL.CLAMP,
-            wrap_t = GL.CLAMP,
-            fbo = true,
-          })
+ local function updateRainPercent()
+    if isRaining() == true   then--isRaining() then
+        rainPercent = math.min(1.0, rainPercent + 0.0002)
+        --Spring.Echo("Rainvalue:".. rainPercent)
+    else
+        rainPercent = math.max(0.0, rainPercent - 0.0001)
+        --Spring.Echo("Rainvalue:".. rainPercent)
     end
+
+  end
+
 
     function gadget:GameFrame(frame)
         if Script.LuaUI('RecieveAllNeonUnitsPieces') then
             local message = Script.LuaUI.RecieveAllNeonUnitsPieces(neonUnitTables)
         end
+        updateRainPercent()
     end
  
     local boolActivated = false
@@ -443,6 +455,7 @@ end
             uniform = {
                 time =  Spring.GetGameSeconds(),
                 timepercent = 0.5
+                rainPercent= 0,
             },     
             uniformInt = {
                 tex1 = 0,
@@ -470,8 +483,7 @@ end
             gadgetHandler:RemoveGadget(self)
             return 
         end
-       
-       --initializeBlurShader(vsx, vsy)
+
        Spring.Echo("NeonShader:: did compile")
     end
 
@@ -516,6 +528,7 @@ end
                 local cx,cy,cz  = Spring.GetCameraPosition()
                 local timeSeconds = Spring.GetGameSeconds()
                 local _,_,_, timepercent = getDayTime()
+ 
 
                 glBlending(GL_SRC_ALPHA, GL_ONE)
                 --variables
@@ -533,6 +546,7 @@ end
                             neonHologramShader:SetUniformFloat("unitCenterPosition", x, y, z)                       
                             neonHologramShader:SetUniformFloat("timepercent",  timePercentOffset)
                             neonHologramShader:SetUniformFloat("time", timeSeconds + unitID)
+                            neonHologramShader:SetUniformFloat("rainPercent", rainPercent)
 
                             glCulling(GL_FRONT)
                             for  _, pieceID in ipairs(neonHoloParts)do

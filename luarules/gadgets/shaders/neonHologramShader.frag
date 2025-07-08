@@ -24,6 +24,7 @@
 
     uniform float time;
     uniform float timepercent;
+    uniform float rainPercent;
     uniform vec2 viewPortSize;
 
     uniform vec3 unitCenterPosition;
@@ -143,6 +144,28 @@
         return col;
     }
 
+    float random(float x) 
+    {    
+        return fract(sin(x * 12.9898) * 43758.5453);
+    }
+
+    // Generates a soft glowing line
+    float lineGlow(float y, float center, float width)
+    {
+        float d = abs(y - center);
+        return exp(-d * width);
+    }
+
+
+    // Sparkle effect (twinkle over time)
+    float sparkle(float y, float dropY, float t)
+    {
+        float dist = abs(y - dropY);
+        float pulse = sin(t * 40.0 + dropY * 10.0) * 0.5 + 0.5;
+        return exp(-dist * 60.0) * pulse;
+    }
+
+
     void main() 
 	{	
     
@@ -177,12 +200,51 @@
         colWithBorderGlow.rgb = applyColorAberation(colWithBorderGlow.rgb);
 
         gl_FragColor = colWithBorderGlow;
-        
         //This gives the holograms a sort of "afterglow", leaving behind a trail of fading previous pictures
         //similar to a very bright lightsource shining on retina leaving afterimages
-        //Is storing for pieces anyway TODO find out write to framebuffer object syntax
-        //sampler2D(afterglowbuffertex, gl_FragCoord, gl_FragColor);
         
-            
+        if (rainPercent < 0.80)
+        {
+            //a sort of matrix rain effect with a brightly shining raindrop and a dark trail of "blocked light"
+            vec2 uv = pixelCoord;
+            uv.y = 1.0 - uv.y;
+
+            // Config
+            float columns = 80.0;
+            float fallSpeed = 4.0;      // Controls vertical speed
+            float shimmerFreq = 40.0;   // How fast it sparkles
+            float trailFade = 15.0;     // How long the trail glows
+            float recoverySpeed = 3.0;  // How fast it fades back
+
+            // Which column we're in
+            float col = floor(uv.x * columns);
+            float colOffset = col / columns;
+
+            // Drop "wave" — sine over time and vertical pos
+            float wave = sin(time * fallSpeed - uv.y * 10.0 + colOffset * 6.2831);
+
+            // Sparkling glow when wave > 0
+            float glow = 0.0;
+            if (wave > 0.0) {
+                float dropGlow = exp(-wave * trailFade);
+                float shimmer = sin((time + uv.y * 5.0) * shimmerFreq) * 0.5 + 0.5;
+                glow = dropGlow * shimmer;
+            }
+
+            // Recovery phase: when wave < 0
+            float alphaRecovery = 0.0;
+            if (wave < 0.0) {
+                alphaRecovery = 1.0 - exp(wave * recoverySpeed);
+            }
+
+            // Final alpha: bright when glowing, then fades out, then fades back in
+            float alpha = glow * 1.0 + alphaRecovery * 0.5;
+
+            // Glow color
+            vec3 color = colWithBorderGlow.rgb* glow;
+
+            // Glow intensity
+            gl_FragColor = vec4(color, alpha);
+        }      
 	}
 
