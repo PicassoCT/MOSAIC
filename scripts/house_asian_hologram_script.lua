@@ -55,7 +55,7 @@ end
 
 function HideReg(pieceID)
     if not pieceID then return end
-    assert(pieceID_NameMap[pieceID], "Not a piece".. displayPieceTable(pieceID))
+    --assert(pieceID_NameMap[pieceID], "Not a piece".. displayPieceTable(pieceID))
     Hide(pieceID)  
     --TODO make dictionary for efficiency
     cachedCopyDict[pieceID] = nil
