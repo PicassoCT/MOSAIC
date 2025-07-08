@@ -102,20 +102,14 @@ local SIG_TIGLIL = 128
 local SIG_FLICKER= 256
 local GameConfig = getGameConfig()
 local pieceID_NameMap = Spring.GetUnitPieceList(unitID)
-local cachedCopy ={}
+local cachedCopyDict ={}
 local lastFrame = Spring.GetGameFrame()
 
 function updateCheckCache()
   local frame = Spring.GetGameFrame()
   if frame ~= lastFrame then 
     if not GG.VisibleUnitPieces then GG.VisibleUnitPieces = {} end
-        cachedTable = {}
-        for k,v in pairs(cachedCopy) do
-            if v then 
-                table.insert(cachedTable, v)
-            end
-        end
-    GG.VisibleUnitPieces[unitID] = cachedTable
+    GG.VisibleUnitPieces[unitID] = cachedCopyDict
     lastFrame = frame
   end
 end
@@ -123,7 +117,7 @@ end
 function ShowReg(pieceID)
     if not pieceID then return end
     Show(pieceID)
-    cachedCopy[pieceID] = pieceID
+    cachedCopyDict[pieceID] = pieceID
     updateCheckCache()
 end
 
@@ -132,7 +126,7 @@ function HideReg(pieceID)
     
     Hide(pieceID)  
     --TODO make dictionary for efficiency
-    cachedCopy[pieceID] = nil
+    cachedCopyDict[pieceID] = nil
     updateCheckCache()
 end
 
