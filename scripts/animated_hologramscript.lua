@@ -5,7 +5,7 @@ local pieceID_NameMap = Spring.GetUnitPieceList(unitID)
 local cachedCopyDict ={}
 local oldCachedCopyDict ={}
 local Frame = piece("Frame")
-
+if not  GG.VisibleUnitPieces then  GG.VisibleUnitPieces= {} end
 function script.Create()
     Spring.SetUnitAlwaysVisible(unitID, true)
     Spring.SetUnitNoSelect(unitID, true)

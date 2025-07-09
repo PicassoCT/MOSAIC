@@ -690,9 +690,8 @@ function getPixelEffect()
             end
         end   ,
         function()-- cached copy artifacts
-            for k, v in pairs(cachedPieceDict) do
-                if v then
-                    cachedPiece = v 
+            for k, cachedPiece in pairs(cachedCopyDict) do
+                if cachedPiece then
                     pieceInfo = Spring.GetUnitPieceInfo(unitID, cachedPiece) 
                     randomPixel= getRandomPixel()
                     for p=1,math.random(2,32) do                 

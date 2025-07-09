@@ -109,6 +109,7 @@ local pieceID_NameMap = Spring.GetUnitPieceList(unitID)
 local cachedCopyDict ={}
 local oldCachedCopyDict ={}
 local lastFrame = Spring.GetGameFrame()
+if not  GG.VisibleUnitPieces then  GG.VisibleUnitPieces= {} end
 
 function updateCheckCache()
   local frame = Spring.GetGameFrame()

@@ -72,6 +72,7 @@ local hours  =0
 local minutes=0
 local seconds=0
 local percent=0
+if not  GG.VisibleUnitPieces then  GG.VisibleUnitPieces= {} end
 hours, minutes, seconds, percent = getDayTime()
 
 function clock()

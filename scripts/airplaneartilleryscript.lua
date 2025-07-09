@@ -103,10 +103,13 @@ function script.AimWeapon1(Heading, pitch)
     if spGetGameFrame() - lastFrame > 10 then
         lastFrame = spGetGameFrame()
         x,y,z = spGetUnitPosition(unitID)
-       targetType, isUserTarget, coordinates = spGetUnitWeaponTarget(  unitID,  1 )
+        coordinates = {}
+       targetType, isUserTarget, values = spGetUnitWeaponTarget(  unitID,  1 )
        if targetType and targetType ~= 3 then
             if targetType  == 1 then
-                    coordinates[1], _, coordinates[3] = Spring.GetUnitPosition(unitID)
+                coordinates[1], _, coordinates[3] = Spring.GetUnitPosition(values)
+            else
+                coordinates = values
             end
 
             if distance(x,0, z, coordinates[1], 0, coordinates[3]) < 25 then

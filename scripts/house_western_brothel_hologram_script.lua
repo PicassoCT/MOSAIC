@@ -51,7 +51,7 @@ local tllegUpR = piece "tllegUpR"
 local tlpole = piece "tlpole"
 local tlflute = piece "tlflute"
 local spGetGameFrame = Spring.GetGameFrame
-
+if not  GG.VisibleUnitPieces then  GG.VisibleUnitPieces= {} end
 boolIsRestaurant = false
 textSpinner =  piece("text_spin")
 DirectionArcPoint = piece "DirectionArcPoint"

@@ -15,7 +15,7 @@ directionToGo = math.random(0, 360)
 SIG_PLANE = 1
 boolCircling = false
 boolCirclingDone = false
-distanceUp = 80000
+distanceUp = 45000
 ferryFreeTable = {}
 ferryTurnAxis = 3
 gaiaTeamID = Spring.GetGaiaTeamID()
@@ -193,8 +193,6 @@ function turnPlaneAround()
     boolCirclingDone = false
     dockedShuttleCount = 6
     while boolCircling == true do
-        showT(TablesOfPiecesGroups["Transit"], 1, math.min(math.max(2,dockedShuttleCount),#TablesOfPiecesGroups["Transit"]))
-
          ferryGoRound = math.random(3, 5)
          ferryGoDownCount = math.random(3, 5)
          dockedShuttleCount = dockedShuttleCount + ferryGoRound - ferryGoDownCount
@@ -259,7 +257,6 @@ TailStrike = piece("TailStrike")
 
 function hidePlane()
     hideT(TablesOfPiecesGroups["MainBirdBody"])
-    hideT(TablesOfPiecesGroups["Transit"])
     Hide(RightWing)
     Hide(LeftWing)
     Hide(TailStrike)
@@ -270,7 +267,6 @@ function showPlane()
     Show(LeftWing)
     Show(TailStrike)
     showOne(TablesOfPiecesGroups["MainBirdBody"])
-    hideT(TablesOfPiecesGroups["Transit"])
 end
 
 function ferryGoUp(selectedFerryNr, times)
@@ -281,12 +277,14 @@ function ferryGoUp(selectedFerryNr, times)
         return
     end
     ferryFreeTable[selectedFerryNr] = true
+    awayValue = math.random(15,45)*randSign()
 
     local ferry = TablesOfPiecesGroups["Shuttle"][selectedFerryNr]
     local engine = TablesOfPiecesGroups["Engine"][selectedFerryNr]
     reset(ferry)
     Show(ferry)
     Show(engine)
+    WTurn(TablesOfPiecesGroups["Gateway"][selectedFerryNr],y_axis, math.rad(awayValue), 5)
     speed = distanceUp / (times / 1000)
     val = math.random(-5, 5)
     Turn(engine, x_axis, math.rad(val), 0.125)
@@ -305,7 +303,7 @@ function ferryGoUp(selectedFerryNr, times)
     ferryFreeTable[selectedFerryNr] = false
 end
 
-ferryUpAxis = 3
+ferryUpAxis = 2
 function ferryGoDown(selectedFerryNr, times)
     if not ferryFreeTable[selectedFerryNr] then
         ferryFreeTable[selectedFerryNr] = false
@@ -330,14 +328,14 @@ function ferryGoDown(selectedFerryNr, times)
     rval = math.random(250, 750) * randSign()
     Move(ferry, 1, rval, 0)
     rval = math.random(250, 750) * randSign()
-    Move(ferry, 2, rval, 0)
+    Move(ferry, 3, rval, 0)
 
     Show(ferry)
     Show(engine)
     speed = distanceUp / (times / 1000)
     Turn(ferry, ferryTurnAxis, math.rad(0), 0.25)
     Move(ferry, 1, 0, speed)
-    Move(ferry, 2, 0, speed)
+    Move(ferry, 3, 0, speed)
     val = math.random(-5, 5)
     Turn(engine, x_axis, math.rad(val), 0.125)
     WMove(ferry, ferryUpAxis, distanceUp * 0.2, speed)
@@ -347,6 +345,8 @@ function ferryGoDown(selectedFerryNr, times)
     WMove(ferry, ferryUpAxis, 0, speed * 0.25)
     WaitForMoves(ferry)
     Turn(engine, x_axis, math.rad(0), 0.125)
+    WTurn(TablesOfPiecesGroups["Gateway"][selectedFerryNr], y_axis, math.rad(0), 5)
+
     ferryFreeTable[selectedFerryNr] = false
 end
 
@@ -382,7 +382,6 @@ function departure()
         touchDownTime = math.random(8, 18)
         StartThread(ferryGoDown, math.random(1, #TablesOfPiecesGroups["Shuttle"]), touchDownTime * 1000)
     end
-    hideT(TablesOfPiecesGroups["Transit"])
 
     minutes = math.random(3, 6) * 60 * 1000
     Sleep(minutes)
