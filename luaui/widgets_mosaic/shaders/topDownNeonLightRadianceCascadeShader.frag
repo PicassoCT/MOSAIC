@@ -19,9 +19,6 @@ uniform mat4 viewInverse;
 uniform mat4 projection;
 /*
 Fix me: ...
-0(233) : error C1059: non constant expression in initialization
-0(272) : error C1503: undefined variable "iResolution"
-0(273) : error C1503: undefined variable "iResolution"
 0(281) : error C1016: expression type incompatible with function return type
 0(384) : error C1103: too few parameters in function call
 
@@ -266,8 +263,8 @@ vec4 mainCubemap( vec2 fragCoord, vec3 fragRO, vec3 fragRD) {
     }
     
     int i =
-        int(fragCoord.x) + int(iResolution.x) *
-        (int(fragCoord.y) + int(iResolution.y) * face);
+        int(fragCoord.x) + int(viewPortSize.x) *
+        (int(fragCoord.y) + int(viewPortSize.y) * face);
     // Figure out which cascade this pixel is in
     vec2 screenRes = vec2(textureSize(inputNeonLightTex, 0));
     int c_size =
