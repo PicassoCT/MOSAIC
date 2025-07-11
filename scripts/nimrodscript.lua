@@ -43,7 +43,8 @@ producedUnits = {}
 function script.HitByWeapon(x, z, weaponDefID, damage) end
 
 function modeChangeOS()
-    goToFireMode()
+    Move(slider, z_axis, 0, 50)
+    Turn(turret, x_axis, math.rad(0), math.pi)
     while true do
         buildID = Spring.GetUnitIsBuilding(unitID)
         if buildID then
