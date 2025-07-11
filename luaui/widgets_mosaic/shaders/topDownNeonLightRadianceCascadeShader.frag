@@ -19,20 +19,20 @@ uniform mat4 viewInverse;
 uniform mat4 projection;
 /*
 Fix me: ...
-[t=00:01:17.360460][f=-000001] gfx_neonlight_radiancecascade: initTopDownRadianceCascadeShader
-[t=00:01:17.392235][f=-000001] gfx_neonlights_radiancecascade: Radiance Cascade Perspective Shader failed to compile
-[t=00:01:17.392347][f=-000001] 0(12) : error C1038: declaration of "eyeDir" conflicts with previous declaration at 0(11)
+[t=00:01:00.285369][f=-000001] 0(60) : error C1503: undefined variable "sampleDrawing"
+0(209) : error C1503: undefined variable "sampleDrawing"
+0(218) : error C1503: undefined variable "sampleDrawing"
+0(233) : error C1059: non constant expression in initialization
+0(272) : error C1503: undefined variable "iResolution"
+0(273) : error C1503: undefined variable "iResolution"
+0(281) : error C1016: expression type incompatible with function return type
+0(384) : error C1103: too few parameters in function call
 
-0(178) : error C1503: undefined variable "sdDrawing"
-0(178) : error C1503: undefined variable "iChannel1"
-0(201) : error C1503: undefined variable "sampleDrawing"
-0(210) : error C1503: undefined variable "sampleDrawing"
-0(225) : error C1503: undefined variable "SunCol"
-0(264) : error C1503: undefined variable "iResolution"
-0(265) : error C1503: undefined variable "iResolution"
-0(273) : error C1016: expression type incompatible with function return type
-0(376) : error C1103: too few parameters in function call
-
+[t=00:01:00.285770][f=-000001] gfx_neonlight_radiancecascade:initMapToPerspectiveLightShader
+[t=00:01:00.316341][f=-000001] gfx_neonlights_radiancecascade: Radiance Cascade TopDown Shader failed to compile
+[t=00:01:00.316384][f=-000001] 0(21) : error C1503: undefined variable "s"
+0(21) : error C1068: too much data in type constructor
+0(30) : error C1115: unable to find compatible overloaded function "texture(vec2, vec2)"
 */
 uniform sampler2D depthTex; // Depth texture for cascading
 uniform sampler2D inputNeonLightTex; // Input: Emissive neon glow map
@@ -230,7 +230,7 @@ vec3 integrateSkyRadiance_(vec2 angle) {
     // Sky integral formula taken from
     // Analytic Direct Illumination - Mathis
     // https://www.shadertoy.com/view/NttSW7
-    const vec3 lSunColor = SunCol *10.;
+    const vec3 lSunColor = sunCol *10.;
     const float SunA = 2.0;
     const float SunS = 64.0;
     const float SSunS = sqrt(SunS);
