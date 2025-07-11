@@ -19,9 +19,6 @@ uniform mat4 viewInverse;
 uniform mat4 projection;
 /*
 Fix me: ...
-[t=00:01:00.285369][f=-000001] 0(60) : error C1503: undefined variable "sampleDrawing"
-0(209) : error C1503: undefined variable "sampleDrawing"
-0(218) : error C1503: undefined variable "sampleDrawing"
 0(233) : error C1059: non constant expression in initialization
 0(272) : error C1503: undefined variable "iResolution"
 0(273) : error C1503: undefined variable "iResolution"
@@ -57,7 +54,7 @@ const float c_smoothDistScale = 10.0;
 
 float sdDrawing(sampler2D drawingTex, vec2 P) {
     // Return the signed distance for the drawing at P
-    return sampleDrawing(drawingTex, P).r;
+    return texture2D(drawingTex, P).r;
 }
 
 float getDepthShadow(vec3 worldPos) {
@@ -206,7 +203,7 @@ struct RayHit
 
 RayHit radiance(vec2 ro, vec2 rd, float tMax) {
     // Returns the radiance and visibility term for a ray
-    vec4 p = sampleDrawing(inputNeonLightTex, ro);
+    vec4 p = texture2D(inputNeonLightTex, ro);
     float t = 0.0f;
     if (p.r > 0.0) {
         t = intersect(ro, rd, tMax);
@@ -215,7 +212,7 @@ RayHit radiance(vec2 ro, vec2 rd, float tMax) {
             return RayHit(vec4(0.0, 0.0, 0.0, 1.0), 1e5f);
         }
 
-        p = sampleDrawing(inputNeonLightTex, ro + rd * t);
+        p = texture2D(inputNeonLightTex, ro + rd * t);
     }
 
     return RayHit(vec4(p.gba, 0.0), t);
