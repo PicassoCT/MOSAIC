@@ -58,7 +58,7 @@ local AIR_ROCKET = AIRCRAFT:New{
 
 
 	Category = [[AIR]],
-	noChaseCategory = "GROUND BUILDING AIR",
+	noChaseCategory = "ABSTRACT",
 
 	  customParams = {
 	  	baseclass = "vtol",
