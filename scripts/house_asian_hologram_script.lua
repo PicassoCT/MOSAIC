@@ -27,7 +27,7 @@ end
 
 --Error: [string "scripts/house_asian_hologram_script.lua"]:462: bad argument #1 to 'Spin' (number expected, got nil)
 function updateCheckCache()
-  local frame = Spring.GetGameFrame()
+    local frame = Spring.GetGameFrame()
     if frame ~= lastFrame then   
         if oldCachedCopyDict ~= cachedCopyDict then
             oldCachedCopyDict = cachedCopyDict      
