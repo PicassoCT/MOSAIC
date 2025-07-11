@@ -52,11 +52,12 @@ end
 
 
 pairs = function(...)
-    ---if type(...) ~= "table" then Spring.Echo(...); return "hontonk" end
     if SendToUnsynced then
+        --if type(...) ~= "table" then assert(nil, "Not a table")end
         local n, s, i = origPairs(...)
         return mynext, s, i
     else
+        --if type(...) ~= "table" then assert(nil, "Not a table")end
         local n, s, i = origPairs(...)
         return next, s, i
     end
