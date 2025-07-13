@@ -1,6 +1,6 @@
 include "lib_OS.lua"
-include "lib_textFx.lua"
 include "lib_mosaic.lua"
+include "lib_textFx.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 

@@ -27,7 +27,7 @@ void main() {
     lightUV.x = (worldPos.x - worldMin.x) / (worldMax.x - worldMin.x);
     lightUV.y = (worldPos.z - worldMin.y) / (worldMax.y - worldMin.y);
 
-    vec4 lightColor =  texture(lightUV,lightUV);
+    vec4 lightColor =  texture(neonLightTex, lightUV);
 
     // Combine with scene color — here simply output light:
     gl_FragColor = lightColor;

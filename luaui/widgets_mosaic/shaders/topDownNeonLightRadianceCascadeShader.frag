@@ -18,13 +18,10 @@ uniform mat4 viewProjection;
 uniform mat4 viewInverse;
 uniform mat4 projection;
 /*
-Fix me: ...
-0(281) : error C1016: expression type incompatible with function return type
-0(384) : error C1103: too few parameters in function call
-
-[t=00:01:00.285770][f=-000001] gfx_neonlight_radiancecascade:initMapToPerspectiveLightShader
-[t=00:01:00.316341][f=-000001] gfx_neonlights_radiancecascade: Radiance Cascade TopDown Shader failed to compile
-[t=00:01:00.316384][f=-000001] 0(21) : error C1503: undefined variable "s"
+0(378) : error C1103: too few parameters in function call
+[t=00:01:05.924481][f=-000001] gfx_neonlight_radiancecascade:initMapToPerspectiveLightShader
+[t=00:01:05.938205][f=-000001] gfx_neonlights_radiancecascade: Radiance Cascade TopDown Shader failed to compile
+[t=00:01:05.938259][f=-000001] 0(21) : error C1503: undefined variable "s"
 0(21) : error C1068: too much data in type constructor
 0(30) : error C1115: unable to find compatible overloaded function "texture(vec2, vec2)"
 */
@@ -374,8 +371,8 @@ void main() {
     vec3 L = normalize(-sunPos);
     vec3 V = normalize(eyePos - vWorldPos);
     vec3 R = reflect(-L, N);
-
-    mainCubemap();
+    
+    mainCubemap( gl_FragCoord.xy, N-L, V-R);
 
     // Diffuse and specular lighting
     float diff = max(dot(N, L), 0.0);
@@ -388,7 +385,7 @@ void main() {
     vec3 radiance = fetchRadianceCascade();
 
     // Neon emission map
-    vec3 emission = texture(inputNeonLightTex, vUV).rgb;
+    vec3 emission = texture2D(inputNeonLightTex, vUV).rgb;
 
     // Final color calculation
     vec3 color = vec3(0.05, 0.05, 0.08); // ambient base

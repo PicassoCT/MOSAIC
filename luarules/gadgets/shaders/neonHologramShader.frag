@@ -170,7 +170,7 @@
 	{	
     
 		//our original texcoord for this fragment
-		vec2 uv =  gl_FragCoord.xy / viewPortSize;    
+		vec2 uv =  gl_FragCoord.xy;    
 		
 		//the amount to blur, i.e. how far off center to sample from 
 		//1.0 -> blur by one pixel
@@ -202,23 +202,25 @@
         gl_FragColor = colWithBorderGlow;
         //This gives the holograms a sort of "afterglow", leaving behind a trail of fading previous pictures
         //similar to a very bright lightsource shining on retina leaving afterimages
-        
-        if (rainPercent < 0.80)
+        gl_FragColor = RED;
+        if (true)//(rainPercent < 0.80)
         {
             //a sort of matrix rain effect with a brightly shining raindrop and a dark trail of "blocked light"
             vec2 uv = pixelCoord;
             uv.y = 1.0 - uv.y;
 
             // Config
-            float columns = 80.0;
+            float columns = 4096.0;
             float fallSpeed = 4.0;      // Controls vertical speed
             float shimmerFreq = 40.0;   // How fast it sparkles
-            float trailFade = 15.0;     // How long the trail glows
-            float recoverySpeed = 3.0;  // How fast it fades back
+            float trailFade = 256.0;     // How long the trail glows
+            float recoverySpeed = 30.0;  // How fast it fades back
 
             // Which column we're in
             float col = floor(uv.x * columns);
-            float colOffset = col / columns;
+            float colOffset = random(uv.x);
+
+            if (int(col) % 2 == 0) return;
 
             // Drop "wave" — sine over time and vertical pos
             float wave = sin(time * fallSpeed - uv.y * 10.0 + colOffset * 6.2831);
@@ -238,7 +240,7 @@
             }
 
             // Final alpha: bright when glowing, then fades out, then fades back in
-            float alpha = glow * 1.0 + alphaRecovery * 0.5;
+            float alpha = glow  + alphaRecovery * 0.5;
 
             // Glow color
             vec3 color = colWithBorderGlow.rgb* glow;
@@ -246,5 +248,6 @@
             // Glow intensity
             gl_FragColor = vec4(color, alpha);
         }      
+
 	}
 

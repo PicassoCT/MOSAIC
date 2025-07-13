@@ -16,23 +16,28 @@ end
 function script.Killed(recentDamage, _)
     return 1
 end
-
-function script.StartMoving() 
-    WTurn(Canopy, x_axis, math.rad(0), 15)
+function landReady()
+    WTurn(Canopy, x_axis, math.rad(0), 5)
     Show(bodyFly)
     Hide(bodyLand)
     Hide(Canopy)
+end
+function script.StartMoving() 
+    StartThread(landReady)
 end
 
 bodyLand = piece("bodyLand")
 bodyFly = piece("bodyFly")
 Canopy = piece("Canopy")
 RocketPod = piece("RocketPod")
-function script.StopMoving() 
+function startReady()
     Show(Canopy)
     Hide(bodyFly)
     Show(bodyLand)
-    Turn(Canopy, x_axis, math.rad(50), 15)
+    Turn(Canopy, x_axis, math.rad(-50), 5)
+    end
+function script.StopMoving() 
+    StartThread(startReady)
 end
 
 function script.Activate() return 1 end

@@ -458,7 +458,7 @@ local function initTopDownRadianceCascadeShader()
     })
 
     if not topDownRadianceCascadeShader then
-        Spring.Echo(shaderName .. ": Radiance Cascade Perspective Shader failed to compile")
+        Spring.Echo(shaderName .. ": Radiance Cascade Topdown Shader failed to compile")
         Spring.Echo(glGetShaderLog())
         widgetHandler:RemoveWidget(self)
         return

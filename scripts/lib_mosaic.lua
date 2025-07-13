@@ -775,8 +775,7 @@ end
                     [UnitDefNames["house_western_hologram_buisness"].id] = true,           
                     [UnitDefNames["house_western_hologram_casino"].id] = true,           
                     [UnitDefNames["house_western_hologram_brothel"].id] = true,           
-                    [UnitDefNames["house_asian_hologram_buisness"].id] = true,           
-                    --[UnitDefNames["animated_hologram"].id] = true,           
+                    [UnitDefNames["house_asian_hologram_buisness"].id] = true      
                 }
     end  
 
@@ -3052,7 +3051,13 @@ end
 
 
     function getSpawnedMilitaryUnitTypeTable()
-        return  {"ground_truck_mg", "ground_tank_night","ground_truck_rocket","ground_truck_antiarmor","air_copter_blackhawk"}
+        return  {
+            "ground_truck_mg", 
+            "ground_tank_day",
+            "ground_truck_rocket",
+            "ground_truck_antiarmor",
+            "air_copter_blackhawk"
+            }
     end
 
     function delayedKillProjectile(id, timeInMS)            

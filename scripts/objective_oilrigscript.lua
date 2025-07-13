@@ -132,10 +132,11 @@ end
         Move(Slide, Slideaxis, 0, 128)
         WTurn(RobotArm, ArmAxis, math.rad(0), 2.5)
         if boolPlace then
-            Hide(TransportedPipe)
+           
             Show(TablesOfPiecesGroups["Pipe"][index])
             Sleep(500)
             WMove(Slide, Slideaxis, -50, 128)
+            Hide(TransportedPipe)
             WMove(Drill, y_axis, 0, 30)
             DrillMovement(boolPlace, index)
         else
