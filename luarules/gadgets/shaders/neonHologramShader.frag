@@ -38,6 +38,7 @@
         vec3 normal;
         vec3 sphericalNormal;
         vec2 orgColUv;
+        vec2 vUV;
         };
 
     //GLOBAL VARIABLES/////    //////////////////////    //////////////////////    //////////////////////
@@ -206,7 +207,7 @@
         if (true)//(rainPercent < 0.80)
         {
             //a sort of matrix rain effect with a brightly shining raindrop and a dark trail of "blocked light"
-            vec2 uv = pixelCoord;
+            vec2 uv = vUV;
             uv.y = 1.0 - uv.y;
 
             // Config
@@ -220,7 +221,8 @@
             float col = floor(uv.x * columns);
             float colOffset = random(uv.x);
 
-            if (int(col) % 2 == 0) return;
+            float active = step(0.8, random(col));
+            if (active > 0.0) return;
 
             // Drop "wave" — sine over time and vertical pos
             float wave = sin(time * fallSpeed - uv.y * 10.0 + colOffset * 6.2831);

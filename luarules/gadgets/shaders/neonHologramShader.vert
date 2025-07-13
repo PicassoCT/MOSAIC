@@ -18,6 +18,8 @@
     uniform vec3 unitCenterPosition;
     uniform int typeDefID;
 
+    attribute vec2 aUV
+
    const float PI = 3.1415926535897932384626433832795;
 
     // Variables passed from vertex to fragment shader
@@ -27,6 +29,7 @@
             vec3 normal;
             vec3 sphericalNormal;
             vec2 orgColUv;
+            vec2 vUV;
         };
 
 float shiver(float posy, float scalar, float size)
@@ -60,6 +63,7 @@ void main()
 
     normal = gl_NormalMatrix * gl_Normal;
     orgColUv = gl_MultiTexCoord0.xy;
+    vUV = aUV;
 	//TODO Loads of dead code, no idea how this worked? 
 	//Calculate the world position of the vertex
     //vPixelPositionWorld =  (  gl_ModelViewMatrix * vec4(gl_Vertex.xyz ,0)).xyz;
