@@ -18,7 +18,6 @@
     uniform vec3 unitCenterPosition;
     uniform int typeDefID;
 
-    attribute vec2 aUV
 
    const float PI = 3.1415926535897932384626433832795;
 
@@ -29,7 +28,7 @@
             vec3 normal;
             vec3 sphericalNormal;
             vec2 orgColUv;
-            vec2 vUV;
+            vec3 vVertexPos;
         };
 
 float shiver(float posy, float scalar, float size)
@@ -63,14 +62,14 @@ void main()
 
     normal = gl_NormalMatrix * gl_Normal;
     orgColUv = gl_MultiTexCoord0.xy;
-    vUV = aUV;
+
 	//TODO Loads of dead code, no idea how this worked? 
 	//Calculate the world position of the vertex
     //vPixelPositionWorld =  (  gl_ModelViewMatrix * vec4(gl_Vertex.xyz ,0)).xyz;
 
 	//Calculate the world Vertex Position ? Operation Order wrong?
     vec4 worldVertPos = gl_ModelViewMatrixInverseTranspose * (gl_ModelViewMatrix * gl_Vertex);
-    
+    vVertexPos =gl_Vertex.xyz;
     vec3 posCopy = gl_Vertex.xyz;
     //We shiver the polygons to the side ocassionally in ripples
     if (mod(time, 45.0) < 9.0)

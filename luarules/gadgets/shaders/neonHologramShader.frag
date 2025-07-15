@@ -7,6 +7,7 @@
     #define BLUE vec4(0.0, 0.0,1.0, 0.5)
     #define NONE vec4(0.)
     #define PI 3.14159f
+    #define Y_NORMAL_CUTOFFVALUE 0.995
 
     #define CASINO 1
     #define BROTHEL 2
@@ -38,7 +39,7 @@
         vec3 normal;
         vec3 sphericalNormal;
         vec2 orgColUv;
-        vec2 vUV;
+        vec3 vVertexPos;
         };
 
     //GLOBAL VARIABLES/////    //////////////////////    //////////////////////    //////////////////////
@@ -207,22 +208,49 @@
         if (true)//(rainPercent < 0.80)
         {
             //a sort of matrix rain effect with a brightly shining raindrop and a dark trail of "blocked light"
-            vec2 uv = vUV;
-            uv.y = 1.0 - uv.y;
+            float pixelPillarSize = 100.0;
+            vec3 uvw = mod(vVertexPos.xyz / pixelPillarSize, 1.0);
+            uvw.y = 1.0 - uvw.y;
 
-            // Config
-            float columns = 4096.0;
+            //we are talking about a pixelpillar- the rooftop, depends on the status beeing above or below- if below
+            gl_FragColor.rgb = normal;
+            //we calcuates
+
+            return;
+            if (normal.g < Y_NORMAL_CUTOFFVALUE )
+            {
+                gl_FragColor = getPixelRainSideOfColumn(uvw);
+            }
+            else
+            {
+                gl_FragColor = getPixelRainTopOfColumn(uvw);
+            }            
+        }     
+	}
+
+
+    vec4 getPixelRainTopOfColumn()
+    {
+
+    }
+
+    vec4 getPixelRainSideOfColumn(vec3 uvw)
+    {
+        vec2 uv = uvw.xy;
+        // Config
+            float columns = 80.0;
+            float columwidth= 5.0;
             float fallSpeed = 4.0;      // Controls vertical speed
             float shimmerFreq = 40.0;   // How fast it sparkles
             float trailFade = 256.0;     // How long the trail glows
             float recoverySpeed = 30.0;  // How fast it fades back
 
             // Which column we're in
-            float col = floor(uv.x * columns);
-            float colOffset = random(uv.x);
+            float col = floor((uv.x/columwidth) * columns);
+            float colOffset = random(floor(uv.x/10.0));
 
-            float active = step(0.8, random(col));
-            if (active > 0.0) return;
+            // float active = step(0.8, random(vVertexPos.z));
+            // if (active < 1.0) return;
 
             // Drop "wave" — sine over time and vertical pos
             float wave = sin(time * fallSpeed - uv.y * 10.0 + colOffset * 6.2831);
@@ -248,8 +276,6 @@
             vec3 color = colWithBorderGlow.rgb* glow;
 
             // Glow intensity
-            gl_FragColor = vec4(color, alpha);
-        }      
-
-	}
+            return vec4(color, min(0.5,alpha));
+    }
 
