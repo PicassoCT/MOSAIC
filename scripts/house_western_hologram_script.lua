@@ -217,9 +217,7 @@ local function tiglLilLoop()
             else
                 StartThread(dancingTiglil, idleAnimations)
             end
-            while  (hours > 20 or hours < 6) do
-                Sleep(30000)
-            end
+            waitTillDay()
             Signal(SIG_TIGLIL)
             Hide(tlpole)
             Hide(tldrum)
@@ -227,7 +225,8 @@ local function tiglLilLoop()
             hideTReg(TableOfPiecesGroups["GlowStick"])
             hideTReg(tigLilHoloPices)
         end
-        Sleep(9000)
+        waitTillNight()
+        Sleep(1000)
     end
 end
 

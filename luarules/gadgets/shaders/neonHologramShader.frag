@@ -228,22 +228,40 @@
         }     
 	}
 
+    float columwidth= 5.0;
+    float halfSize = columwidth*0.5;
+    float columns = 80.0;
+    float fallSpeed = 4.0;      // Controls vertical speed
+    float shimmerFreq = 40.0;   // How fast it sparkles
+    float trailFade = 256.0;     // How long the trail glows
+    float recoverySpeed = 30.0;  // How fast it fades back
 
-    vec4 getPixelRainTopOfColumn()
-    {
-
+    float GetRainDropWaveAt(float heightValue){
+        return sin(time * fallSpeed - heightValue * 10.0 + colOffset * 6.2831);
     }
 
-    vec4 getPixelRainSideOfColumn(vec3 uvw)
+    vec4 getPixelRainTopOfColumn(vec3 uvw, vec4 originalColor)
+    {
+        vec2 v_uv = uvw.xz;
+        float wave = GetRainDropWaveAt(uv.y);
+        float glow = exp(-wave * trailFade);
+        //determinate high effect
+        float col = floor((uv.x/columwidth) * columns);
+        float row = floor((uv.z/columwidth) * columns);
+        vec2 u_center = vec2(col * columwidth +  halfSize  , row * columwidth + halfSize);
+        vec2 minEdge = u_center - halfSize;
+        vec2 maxEdge = u_center + halfSize;
+
+        // Create mask: 1 inside rect, 0 outside
+        float inRect = step(minEdge.x, v_uv.x) * step(v_uv.x, maxEdge.x) * step(minEdge.y, v_uv.y) * step(v_uv.y, maxEdge.y);
+
+        fragColor = vec4(originalColor * glow, inRect);  // Render to alpha only
+    }
+
+    vec4 getPixelRainSideOfColumn(vec3 uvw, vec4 originalColor)
     {
         vec2 uv = uvw.xy;
         // Config
-            float columns = 80.0;
-            float columwidth= 5.0;
-            float fallSpeed = 4.0;      // Controls vertical speed
-            float shimmerFreq = 40.0;   // How fast it sparkles
-            float trailFade = 256.0;     // How long the trail glows
-            float recoverySpeed = 30.0;  // How fast it fades back
 
             // Which column we're in
             float col = floor((uv.x/columwidth) * columns);
@@ -253,7 +271,7 @@
             // if (active < 1.0) return;
 
             // Drop "wave" — sine over time and vertical pos
-            float wave = sin(time * fallSpeed - uv.y * 10.0 + colOffset * 6.2831);
+            float wave = GetRainDropWaveAt(uv.y);
 
             // Sparkling glow when wave > 0
             float glow = 0.0;
@@ -273,7 +291,7 @@
             float alpha = glow  + alphaRecovery * 0.5;
 
             // Glow color
-            vec3 color = colWithBorderGlow.rgb* glow;
+            vec3 color = originalColor.rgb* glow;
 
             // Glow intensity
             return vec4(color, min(0.5,alpha));

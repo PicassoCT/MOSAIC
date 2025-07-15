@@ -305,6 +305,11 @@ function showOneDeterministic(T, index)
     end
 end
 
+function showOneOrNone(T)
+    if maRa() then return end
+    showOne(T)
+end
+
 function showOne(T)
     if not T then
         return
@@ -321,6 +326,13 @@ function showOne(T)
             return v
         end
     end
+end
+
+
+function showSubs(pieceGroupName)
+    local subName = pieceGroupName .. "Sub"
+  --  Spring.Echo("SubGroupName "..subName)
+    showOneOrNone(TablesOfPieceGroups[subName])
 end
 
 function addGroundPlaceables()
@@ -345,7 +357,7 @@ function addGroundPlaceables()
                     if myHeight > 0 then
                         heightdifference =  myHeight -globalHeightUnit
                         WMove(randPlaceAbleID,y_axis, heightdifference, 0)
-    
+                        showSubs(pieceNr_pieceName[randPlaceAbleID])   
                         addToShowTable(randPlaceAbleID)
                         Show(randPlaceAbleID)    
                     end

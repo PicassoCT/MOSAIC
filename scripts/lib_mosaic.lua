@@ -2328,6 +2328,44 @@ end
 
             end
 			
+            function waitTillDay()
+                local hours, minutes, seconds, percent = getDayTime()
+                local dayStartPercent = 6 / 24  -- 6:00 AM
+                local dayEndPercent = 20 / 24   -- 8:00 PM
+                local waitPercent = 0
+
+                if percent >= dayStartPercent and percent < dayEndPercent then
+                    return 
+                end
+
+                if percent < dayStartPercent then
+                    waitPercent = dayStartPercent - percent
+                else
+                    waitPercent = 1 - percent + dayStartPercent  -- wait till next day's 6:00
+                end
+
+                local waitFrames = waitPercent * GG.GameConfig.daylength
+                local waitMilliseconds = math.ceil(waitFrames / 30) * 1000  -- Assuming 30 frames per second
+                Sleep(waitMilliseconds)                
+            end
+
+            function waitTillNight()
+                local hours, minutes, seconds, percent = getDayTime()
+                local nightStartPercent = 20 / 24   -- 8:00 PM
+                local nightEndPercent = 6 / 24      -- 6:00 AM (next day)
+
+                -- Early out: it's already night
+                if percent >= nightStartPercent or percent < nightEndPercent then
+                    return 
+                end
+
+                local waitPercent = nightStartPercent - percent
+                local waitFrames = waitPercent * GG.GameConfig.daylength
+                local waitMilliseconds = math.ceil(waitFrames / 30) * 1000  -- Assuming 30 FPS
+                Sleep(waitMilliseconds)
+            end
+
+
 			function isNight()
                 hours, minutes, seconds, percent = getDayTime()			
 				return hours > 19 and hours < 6

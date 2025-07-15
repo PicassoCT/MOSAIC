@@ -225,9 +225,7 @@ local function tiglLilLoop()
 
             StartThread(dancingTiglil, idleAnimations)
 
-            while  (hours > 20 or hours < 6) do
-                Sleep(3000)               
-            end
+            waitTillDay()
 
             Signal(SIG_TIGLIL)
             HideReg(skimpy)
@@ -238,10 +236,7 @@ local function tiglLilLoop()
             hideTReg(tigLilHoloPices)
             
         end
-        while(hours < 20 ) do
-                showLogo()
-                Sleep(5000)
-            end
+        waitTillNight()
         Sleep(3000)
     end
 end
@@ -320,6 +315,7 @@ function chipsDropping(chips, boolReverse)
                 HideReg(chips[i])
             end
         end
+        waitTillNight()
         Sleep(1000)
     end
 end

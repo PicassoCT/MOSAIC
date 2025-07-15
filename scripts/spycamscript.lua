@@ -17,16 +17,14 @@ function ShowHideDayTime()
     NightCupola = piece("NightCupola")
     Sleep(250)
     while true do
-        hours, minutes, seconds, percent = getDayTime()
-        if hours < 7 or hours > 19 then
+        waitTillNight()
             Hide(DayCupola)
             Show(NightCupola)
-            Sleep(1000)
-        else
+        Sleep(1000)
+        waitTillDay()
             Show(DayCupola)
             Hide(NightCupola)
-            Sleep(25000)
-        end
+        Sleep(1000)
     end
 end
 
