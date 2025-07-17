@@ -86,13 +86,6 @@ _00_/|      +-------------+     +-------------+     +-------------+  |
 
   Depth Texture -->  normaltex   -->  neonLightcanvastex  -->  Final Output
 
-  [t=00:00:29.519197][f=-000001] 0(224) : error C1059: non constant expression in initialization
-0(272) : error C1016: expression type incompatible with function return type
-
-[t=00:00:29.519643][f=-000001] gfx_neonlight_radiancecascade:initMapToPerspectiveLightShader
-[t=00:00:29.520374][f=-000001] gfx_neonlights_radiancecascade: Radiance Cascade TopDown Shader failed to compile
-[t=00:00:29.520401][f=-000001] 0(21) : error C1503: undefined variable "s"
-0(21) : error C1068: too much data in type constructor
 ]]
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -857,3 +850,12 @@ function widget:GameFrame()
 end
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
+--[[
+  [t=00:00:29.519197][f=-000001] 0(224) : error C1059: non constant expression in initialization
+0(272) : error C1016: expression type incompatible with function return type
+
+[t=00:00:29.519643][f=-000001] gfx_neonlight_radiancecascade:initMapToPerspectiveLightShader
+[t=00:00:29.520374][f=-000001] gfx_neonlights_radiancecascade: Radiance Cascade TopDown Shader failed to compile
+[t=00:00:29.520401][f=-000001] 0(21) : error C1503: undefined variable "s"
+0(21) : error C1068: too much data in type constructor
+]]

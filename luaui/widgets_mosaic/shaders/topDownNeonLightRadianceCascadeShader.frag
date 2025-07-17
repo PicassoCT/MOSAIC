@@ -17,14 +17,7 @@ uniform mat4 viewProjectionInv;
 uniform mat4 viewProjection;
 uniform mat4 viewInverse;
 uniform mat4 projection;
-/*
-0(378) : error C1103: too few parameters in function call
-[t=00:01:05.924481][f=-000001] gfx_neonlight_radiancecascade:initMapToPerspectiveLightShader
-[t=00:01:05.938205][f=-000001] gfx_neonlights_radiancecascade: Radiance Cascade TopDown Shader failed to compile
-[t=00:01:05.938259][f=-000001] 0(21) : error C1503: undefined variable "s"
-0(21) : error C1068: too much data in type constructor
-0(30) : error C1115: unable to find compatible overloaded function "texture(vec2, vec2)"
-*/
+
 uniform sampler2D depthTex; // Depth texture for cascading
 uniform sampler2D inputNeonLightTex; // Input: Emissive neon glow map
 uniform samplerCube radianceCascade;
@@ -221,7 +214,7 @@ vec3 integrateSkyRadiance_(vec2 angle) {
     // Sky integral formula taken from
     // Analytic Direct Illumination - Mathis
     // https://www.shadertoy.com/view/NttSW7
-    const vec3 lSunColor = sunCol *10.;
+    const vec3 lSunColor = vec3(sunCol * 10);
     const float SunA = 2.0;
     const float SunS = 64.0;
     const float SSunS = sqrt(SunS);
@@ -247,105 +240,124 @@ float smoothDist(int cascadeIndex)
     return float(1 << cascadeIndex);
 }
 
-vec4 mainCubemap( vec2 fragCoord, vec3 fragRO, vec3 fragRD) {
-    // Calculate the index for this cubemap texel
-    int face;
-    
-    if (abs(fragRD.x) > abs(fragRD.y) && abs(fragRD.x) > abs(fragRD.z)) {
-        face = fragRD.x > 0.0 ? 0 : 1;
-    } else if (abs(fragRD.y) > abs(fragRD.z)) {
-        face = fragRD.y > 0.0 ? 2 : 3;
+vec4 mainCubemap(vec2 fragCoord, vec3 rayOrigin, vec3 rayDirection) {
+    // Determine cubemap face based on dominant direction axis
+    int cubemapFaceIndex;
+    if (abs(rayDirection.x) > abs(rayDirection.y) && abs(rayDirection.x) > abs(rayDirection.z)) {
+        cubemapFaceIndex = rayDirection.x > 0.0 ? 0 : 1;
+    } else if (abs(rayDirection.y) > abs(rayDirection.z)) {
+        cubemapFaceIndex = rayDirection.y > 0.0 ? 2 : 3;
     } else {
-        face = fragRD.z > 0.0 ? 4 : 5;
+        cubemapFaceIndex = rayDirection.z > 0.0 ? 4 : 5;
     }
-    
-    int i =
-        int(fragCoord.x) + int(viewPortSize.x) *
-        (int(fragCoord.y) + int(viewPortSize.y) * face);
-    // Figure out which cascade this pixel is in
-    vec2 screenRes = vec2(textureSize(inputNeonLightTex, 0));
-    int c_size =
-        c_sRes.x * c_sRes.y +
-        c_sRes.x * c_sRes.y * c_dRes * (nCascades - 1) / 4;    
-    
-    if (i >= c_size) {
-        return;
+
+    // Linear index into the cubemap based on screen coordinates and face
+    int globalPixelIndex = int(fragCoord.x) + int(viewPortSize.x) *
+                          (int(fragCoord.y) + int(viewPortSize.y) * cubemapFaceIndex);
+
+    // Compute size of the full cascaded texture
+    vec2 screenResolution = vec2(textureSize(inputNeonLightTex, 0));
+    int fullCascadeSize = c_sRes.x * c_sRes.y + 
+                          (c_sRes.x * c_sRes.y * c_dRes * (nCascades - 1)) / 4;
+
+    // If out of bounds, skip processing
+    if (globalPixelIndex >= fullCascadeSize) {
+        return vec4(0.0);
     }
-    
-    int n = i < c_sRes.x * c_sRes.y ? 0 : int(
-        (4.0 * float(i) / float(c_sRes.x * c_sRes.y) - 4.0) / float(c_dRes)
-        + 1.0
+
+    // Determine which cascade this pixel belongs to
+    int cascadeIndex = globalPixelIndex < c_sRes.x * c_sRes.y ? 0 : int(
+        (4.0 * float(globalPixelIndex) / float(c_sRes.x * c_sRes.y) - 4.0) / float(c_dRes) + 1.0
     );
-    // Figure out this pixel's index within its own cascade
-    int j = i - (n > 0
-        ? c_sRes.x * c_sRes.y + (c_sRes.x * c_sRes.y * c_dRes * (n - 1)) / 4
+
+    // Pixel index within its own cascade
+    int localPixelIndex = globalPixelIndex - (cascadeIndex > 0
+        ? c_sRes.x * c_sRes.y + (c_sRes.x * c_sRes.y * c_dRes * (cascadeIndex - 1)) / 4
         : 0);
-    // Calculate this cascades spatial and directional resolution
-    ivec2 cn_sRes = c_sRes >> n;
-    int cn_dRes = n == 0 ? 1 : c_dRes << 2 * (n - 1);
-    // Calculate this pixel's direction and position indices
-    int d = j % cn_dRes;
-    j /= cn_dRes;
-    ivec2 p = ivec2(j % cn_sRes.x, 0);
-    j /= cn_sRes.x;
-    p.y = j;
-    int nDirs = c_dRes << 2 * n;
-    // Calculate this pixel's ray interval
-    vec2 ro = (vec2(p) + 0.5) / vec2(cn_sRes) * screenRes;
-    float c0_intervalLength = 
-        length(screenRes) * 4.0 / (float(1 << 2 * nCascades) - 1.0);
-    float t1 = c_intervalLength;
-    float tMin = n == 0 ? 0.0 : t1 * float(1 << 2 * (n - 1));
-    float tMax = t1 * float(1 << 2 * n);
-    vec4 s = vec4(0.0);
-    
-    // Calculate radiance intervals and merge with above cascade
-    for (int i = 0; i < nDirs / cn_dRes; ++i) {
-        int j = 4 * d + i;
-        float angle = (float(j) + 0.5) / float(nDirs) * 2.0 * PI;
-        vec2 rd = vec2(cos(angle), sin(angle));
-        float sMin = smoothDist(n) * c_smoothDistScale;
-        float sMax = smoothDist(n + 1) * c_smoothDistScale;
-        
-        float tMinSmoothed = tMin - sMin * 0.5f;
-        float tMaxSmoothed = tMax + sMax * 0.5f;
-        
-        float tMinClamped = max(0.0f, tMinSmoothed);
-        
-        RayHit hit = radiance(ro + rd * tMinClamped, rd, tMaxSmoothed - tMinClamped);
-        vec4 empty_radiance = vec4(0.0f, 0.0f, 0.0f, 1.0f);
-        hit.radiance = mix(hit.radiance, empty_radiance, 1.0f - clamp((tMinClamped - tMinSmoothed + hit.dist) / sMin, 0.0f, 1.0f));
-        hit.radiance = mix(hit.radiance, empty_radiance, clamp(((tMinClamped + hit.dist) - (tMaxSmoothed)) / sMax + 1.0f, 0.0f, 1.0f));
-        vec4 si = hit.radiance;
-        // If the visibility term is non-zero
-        if (si.a != 0.0) {
-            if (n == nCascades - 1) {
-                // If we are the top-level cascade, then there's no other
-                // cascade to merge with, so instead merge with the sky radiance
-                vec2 angle = vec2(j, j + 1) / float(nDirs) * 2.0 * PI;
-                si.rgb += 0.0f*integrateSkyRadiance(angle) / (angle.y - angle.x);
+
+    // Resolution for current cascade
+    ivec2 cascadeResolution = c_sRes >> cascadeIndex;
+    int directionalResolution = cascadeIndex == 0 ? 1 : c_dRes << (2 * (cascadeIndex - 1));
+
+    // Compute spatial and directional indices
+    int directionIndex = localPixelIndex % directionalResolution;
+    localPixelIndex /= directionalResolution;
+
+    ivec2 positionIndex;
+    positionIndex.x = localPixelIndex % cascadeResolution.x;
+    localPixelIndex /= cascadeResolution.x;
+    positionIndex.y = localPixelIndex;
+
+    int totalDirections = c_dRes << (2 * cascadeIndex);
+
+    // Compute ray origin from pixel position
+    vec2 cascadeTexelCoord = (vec2(positionIndex) + 0.5) / vec2(cascadeResolution);
+    vec2 cascadeRayOrigin = cascadeTexelCoord * screenResolution;
+
+    // Compute ray interval bounds
+    float cascadeIntervalLength = length(screenResolution) * 4.0 / (float(1 << (2 * nCascades)) - 1.0);
+    float tMax = cascadeIntervalLength * float(1 << (2 * cascadeIndex));
+    float tMin = (cascadeIndex == 0) ? 0.0 : cascadeIntervalLength * float(1 << (2 * (cascadeIndex - 1)));
+
+    vec4 accumulatedRadiance = vec4(0.0);
+
+    // Loop over direction bins
+    for (int i = 0; i < totalDirections / directionalResolution; ++i) {
+        int directionSampleIndex = 4 * directionIndex + i;
+
+        float angle = (float(directionSampleIndex) + 0.5) / float(totalDirections) * 2.0 * PI;
+        vec2 rayDir2D = vec2(cos(angle), sin(angle));
+
+        float smoothMin = smoothDist(cascadeIndex) * c_smoothDistScale;
+        float smoothMax = smoothDist(cascadeIndex + 1) * c_smoothDistScale;
+
+        float smoothedMinT = tMin - 0.5 * smoothMin;
+        float smoothedMaxT = tMax + 0.5 * smoothMax;
+        float clampedMinT = max(0.0f, smoothedMinT);
+
+        // Trace the ray
+        RayHit hit = radiance(cascadeRayOrigin + rayDir2D * clampedMinT, rayDir2D, smoothedMaxT - clampedMinT);
+
+        // Apply smoothing fade based on distance
+        vec4 emptyRadiance = vec4(0.0, 0.0, 0.0, 1.0);
+        hit.radiance = mix(hit.radiance, emptyRadiance, 1.0 - clamp((clampedMinT - smoothedMinT + hit.dist) / smoothMin, 0.0, 1.0));
+        hit.radiance = mix(hit.radiance, emptyRadiance, clamp(((clampedMinT + hit.dist) - smoothedMaxT) / smoothMax + 1.0, 0.0, 1.0));
+
+        vec4 radianceContribution = hit.radiance;
+
+        // Accumulate contribution from above cascade or sky
+        if (radianceContribution.a != 0.0) {
+            if (cascadeIndex == nCascades - 1) {
+                // Final cascade: merge with sky
+                vec2 skyAngle = vec2(directionSampleIndex, directionSampleIndex + 1) / float(totalDirections) * 2.0 * PI;
+                radianceContribution.rgb += 0.0 * integrateSkyRadiance(skyAngle) / (skyAngle.y - skyAngle.x);
             } else {
-                // Otherwise, find the radiance coming from the above cascade in
-                // this direction by interpolating the above cascades
-                vec2 pf = (vec2(p) + 0.5) / 2.0;
-                ivec2 q = ivec2(round(pf)) - 1;
-                vec2 w = pf - vec2(q) - 0.5;
-                ivec2 h = ivec2(1, 0);
-                vec4 S0 = cascadeFetch(radianceCascade, n + 1, q + h.yy, j);
-                vec4 S1 = cascadeFetch(radianceCascade, n + 1, q + h.xy, j);
-                vec4 S2 = cascadeFetch(radianceCascade, n + 1, q + h.yx, j);
-                vec4 S3 = cascadeFetch(radianceCascade, n + 1, q + h.xx, j);
-                vec4 S = mix(mix(S0, S1, w.x), mix(S2, S3, w.x), w.y);
-                si.rgb += si.a * S.rgb;
-                si.a *= S.a;
+                // Interpolate from higher-level cascade
+                vec2 parentCoord = (vec2(positionIndex) + 0.5) / 2.0;
+                ivec2 parentBase = ivec2(round(parentCoord)) - 1;
+                vec2 weight = parentCoord - vec2(parentBase) - 0.5;
+                ivec2 offset = ivec2(1, 0);
+
+                vec4 s0 = cascadeFetch(radianceCascade, cascadeIndex + 1, parentBase + offset.yy, directionSampleIndex);
+                vec4 s1 = cascadeFetch(radianceCascade, cascadeIndex + 1, parentBase + offset.xy, directionSampleIndex);
+                vec4 s2 = cascadeFetch(radianceCascade, cascadeIndex + 1, parentBase + offset.yx, directionSampleIndex);
+                vec4 s3 = cascadeFetch(radianceCascade, cascadeIndex + 1, parentBase + offset.xx, directionSampleIndex);
+
+                vec4 interpolated = mix(mix(s0, s1, weight.x), mix(s2, s3, weight.x), weight.y);
+
+                radianceContribution.rgb += radianceContribution.a * interpolated.rgb;
+                radianceContribution.a *= interpolated.a;
             }
         }
-        s += si;
+
+        accumulatedRadiance += radianceContribution;
     }
-    
-    s /= float(nDirs / cn_dRes);
-    return s;
+
+    // Average the accumulated radiance over all direction samples
+    accumulatedRadiance /= float(totalDirections / directionalResolution);
+    return accumulatedRadiance;
 }
+
 
 //========================================================================================================================================================================
 
@@ -366,7 +378,14 @@ vec3 fetchRadianceCascade()
     return vec3(1.0 - 1.0 / pow(1.0 + fluence, vec3(2.5)));
 }
 
-void main() {
+void main() 
+{
+    if (inViewShadowFromCamera(vWorldPos)) //Early out if not visible
+    {
+        gl_FragColor = BLACK;
+        return ;
+    }
+
     vec3 N = normalize(vNormal);
     vec3 L = normalize(-sunPos);
     vec3 V = normalize(eyePos - vWorldPos);
@@ -395,11 +414,5 @@ void main() {
     color += emission * 1.5;             // glow
     color *= shadow;                     // apply depth shadow
 
-
-    if (inViewShadowFromCamera(vWorldPos)) //Early out if not visible
-    {
-        gl_FragColor = BLACK;
-        return ;
-    }
     gl_FragColor = vec4(color, 1.0);
 }
