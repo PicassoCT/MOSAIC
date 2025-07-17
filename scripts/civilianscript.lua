@@ -526,6 +526,7 @@ accumulatedTimeInSeconds = 5
 
 function script.HitByWeapon(x, z, weaponDefID, damage)
     transportID = spGetUnitIsTransporting(unitID)
+    GG.CurrentlyChatting[unitID] = nil
     if  transportID then --if holds loot        
         Spring.UnitDetach(transportID)
     end
@@ -819,6 +820,7 @@ function chatting()
             end  
         end  
     end
+    GG.CurrentlyChatting[unitID] = nil
     Spring.Echo("civilian "..unitID.. " chat has ended")
     playUpperBodyIdleAnimation()
     resetT(TablesOfPiecesGroups["UpArm"], math.pi, false, true)
@@ -1929,6 +1931,7 @@ function dropLoot()
 end
 
 function script.Killed(recentDamage, _)
+    GG.CurrentlyChatting[unitID] = nil
     setSpeedEnv(unitID, 0)
     dropLoot()
     val = 5*randSign()

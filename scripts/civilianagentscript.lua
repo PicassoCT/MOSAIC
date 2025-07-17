@@ -408,7 +408,7 @@ lowerBodyAnimations = {
 
 accumulatedTimeInSeconds = 0
 function script.HitByWeapon(x, z, weaponDefID, damage)
-
+    GG.CurrentlyChatting[unitID] = nil
     clampedDamage = math.max(math.min(damage, 10), 35)
     StartThread(delayedWoundedWalkAfterCover, clampedDamage)
     accumulatedTimeInSeconds = accumulatedTimeInSeconds + clampedDamage
@@ -605,8 +605,10 @@ function chatting()
        chattingTime = chattingTime - 1500
         Sleep(100)
     end
-        playUpperBodyIdleAnimation()
-        resetT(TablesOfPiecesGroups["UpArm"], math.pi, false, true)
+
+    GG.CurrentlyChatting[unitID] = nil
+    playUpperBodyIdleAnimation()
+    resetT(TablesOfPiecesGroups["UpArm"], math.pi, false, true)
     setCivilianUnitInternalStateMode(unitID, STATE_ENDED)
 end
 
@@ -1657,6 +1659,7 @@ end
 
 
 function script.Killed(recentDamage, _)
+    GG.CurrentlyChatting[unitID] = nil
     --createCorpseCUnitGeneric(recentDamage)
     return 1
 end

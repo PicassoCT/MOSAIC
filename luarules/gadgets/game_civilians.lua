@@ -47,8 +47,9 @@ local closeCombatArenaDefID = UnitDefNames["closecombatarena"].id
 GG.BusesTable = {}
 GG.CivilianTable = {} -- [id ] ={ defID, startNodeID }
 GG.UnitArrivedAtTarget = {} -- [id] = true UnitID -- Units report back once they reach this target
+GG.CurrentlyChatting = {}
 
-RouteTabel = {} -- Every start has a subtable of reachable nodes 	
+local RouteTabel = {} -- Every start has a subtable of reachable nodes 	
 local boolInitialized = false
 
 local TruckTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture,
@@ -771,7 +772,8 @@ function sozialize(evtID, frame, persPack, startFrame, myID)
 
     if persPack.boolStartAChat == true then
         local partnerID = persPack.chatPartnerID 
-        if partnerID and distanceUnitToUnit(myID, partnerID) > GameConfig.generalInteractionDistance then
+        if partnerID and
+            distanceUnitToUnit(myID, partnerID) > GameConfig.generalInteractionDistance then
             echo(myID.." moving to chat ")
              px, py, pz = spGetUnitPosition(partnerID)
             Command(myID, "go", {x = px, y = py, z = pz}, {})
@@ -788,16 +790,23 @@ function sozialize(evtID, frame, persPack, startFrame, myID)
             Command(myID, "stop")
             Command(partnerID, "stop")
             displayConversationTextAt(myID, partnerID)
-            timeChattingInFrames =math.random(GameConfig.minConversationLengthFrames,
-                                       GameConfig.maxConversationLengthFrames)
+            timeChattingInFrames =math.max(persPack.maxTimeChattingInFrames  ,
+                                        math.random(GameConfig.minConversationLengthFrames,
+                                       GameConfig.maxConversationLengthFrames))
             startInternalBehaviourOfState(myID, "startChatting", timeChattingInFrames*33)
             startInternalBehaviourOfState(partnerID, "startChatting", timeChattingInFrames*33)
+            registerChatting(myID, partnerID)
             persPack.maxTimeChattingInFrames  = 0
             return true, frame + timeChattingInFrames, persPack
         end
     end  
     return boolDone, nil, persPack
 end  
+
+function registerChatting(aId, bId)
+    GG.CurrentlyChatting[aId] = true
+    GG.CurrentlyChatting[bId] = true
+end
 
 
 
@@ -960,6 +969,8 @@ function travellFunction(evtID, frame, persPack, startFrame)
 
     boolDone, retFrame, persPack, x,y,z, hp = travelInitialization(evtID, frame, persPack, startFrame, myID)
     if boolDone == true then return retFrame,packStep(persPack, retFrame, frame) end
+
+    if GG.CurrentlyChatting[myID] then return retFrame,packStep(persPack, retFrame, frame) end
 
     boolDone, retFrame, persPack = stuckDetection(evtID, frame, persPack, startFrame, myID, x, y, z)
     if boolDone == true then return retFrame,packStep(persPack, retFrame, frame) end
