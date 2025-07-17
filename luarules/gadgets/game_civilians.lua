@@ -808,8 +808,6 @@ function registerChatting(aId, bId)
     GG.CurrentlyChatting[bId] = true
 end
 
-
-
 function snychronizedSocialEvents(evtID, frame, persPack, startFrame, myID)
     if  maRa() and isPrayerTime() and civilianWalkingTypeTable[persPack.mydefID] then
         Command(myID, "stop")
