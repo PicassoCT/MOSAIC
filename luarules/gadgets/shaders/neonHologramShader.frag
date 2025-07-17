@@ -167,6 +167,75 @@
         return exp(-dist * 60.0) * pulse;
     }
 
+    const float columwidth= 5.0;
+    float halfSize = columwidth*0.5;
+    const float columns = 80.0;
+    const float fallSpeed = 4.0;      // Controls vertical speed
+    const float shimmerFreq = 40.0;   // How fast it sparkles
+    const float trailFade = 256.0;     // How long the trail glows
+    const float recoverySpeed = 30.0;  // How fast it fades back
+
+    float GetRainDropWaveAt(float heightValue, float colOffset){
+        return sin(time * fallSpeed - heightValue * 10.0 + colOffset * 6.2831);
+    }
+
+    vec4 getPixelRainTopOfColumn(vec3 uvw, vec4 originalColor)
+    {
+        vec2 v_uv = uvw.xz;
+        float colOffset = random(floor(uvw.x/10.0));
+        float wave = GetRainDropWaveAt(uvw.y, colOffset);
+        float glow = exp(-wave * trailFade);
+        //determinate high effect
+        float col = floor((v_uv.x/columwidth) * columns);
+        float row = floor((v_uv.y/columwidth) * columns);
+        vec2 u_center = vec2(col * columwidth +  halfSize  , row * columwidth + halfSize);
+        vec2 minEdge = u_center - halfSize;
+        vec2 maxEdge = u_center + halfSize;
+
+        // Create mask: 1 inside rect, 0 outside
+        float inRect = step(minEdge.x, v_uv.x) * step(v_uv.x, maxEdge.x) * step(minEdge.y, v_uv.y) * step(v_uv.y, maxEdge.y);
+
+        return vec4(originalColor.rgb * glow, inRect);  // Render to alpha only
+    }
+
+    vec4 getPixelRainSideOfColumn(vec3 uvw, vec4 originalColor)
+    {
+        vec2 uv = uvw.xy;
+        // Config
+
+            // Which column we're in
+            float col = floor((uv.x/columwidth) * columns);
+            float colOffset = random(floor(uv.x/10.0));
+
+            // float active = step(0.8, random(vVertexPos.z));
+            // if (active < 1.0) return;
+
+            // Drop "wave" — sine over time and vertical pos
+            float wave = GetRainDropWaveAt(uv.y, colOffset);
+
+            // Sparkling glow when wave > 0
+            float glow = 0.0;
+            if (wave > 0.0) {
+                float dropGlow = exp(-wave * trailFade);
+                float shimmer = sin((time + uv.y * 5.0) * shimmerFreq) * 0.5 + 0.5;
+                glow = dropGlow * shimmer;
+            }
+
+            // Recovery phase: when wave < 0
+            float alphaRecovery = 0.0;
+            if (wave < 0.0) {
+                alphaRecovery = 1.0 - exp(wave * recoverySpeed);
+            }
+
+            // Final alpha: bright when glowing, then fades out, then fades back in
+            float alpha = glow  + alphaRecovery * 0.5;
+
+            // Glow color
+            vec3 color = originalColor.rgb* glow;
+
+            // Glow intensity
+            return vec4(color, min(0.5,alpha));
+    }
 
     void main() 
 	{	
@@ -219,81 +288,18 @@
             return;
             if (normal.g < Y_NORMAL_CUTOFFVALUE )
             {
-                gl_FragColor = getPixelRainSideOfColumn(uvw);
+                gl_FragColor = getPixelRainSideOfColumn(uvw, RED);
             }
             else
             {
-                gl_FragColor = getPixelRainTopOfColumn(uvw);
+                gl_FragColor = getPixelRainTopOfColumn(uvw, GREEN);
             }            
         }     
 	}
 
-    float columwidth= 5.0;
-    float halfSize = columwidth*0.5;
-    float columns = 80.0;
-    float fallSpeed = 4.0;      // Controls vertical speed
-    float shimmerFreq = 40.0;   // How fast it sparkles
-    float trailFade = 256.0;     // How long the trail glows
-    float recoverySpeed = 30.0;  // How fast it fades back
-
-    float GetRainDropWaveAt(float heightValue){
-        return sin(time * fallSpeed - heightValue * 10.0 + colOffset * 6.2831);
-    }
-
-    vec4 getPixelRainTopOfColumn(vec3 uvw, vec4 originalColor)
-    {
-        vec2 v_uv = uvw.xz;
-        float wave = GetRainDropWaveAt(uv.y);
-        float glow = exp(-wave * trailFade);
-        //determinate high effect
-        float col = floor((uv.x/columwidth) * columns);
-        float row = floor((uv.z/columwidth) * columns);
-        vec2 u_center = vec2(col * columwidth +  halfSize  , row * columwidth + halfSize);
-        vec2 minEdge = u_center - halfSize;
-        vec2 maxEdge = u_center + halfSize;
-
-        // Create mask: 1 inside rect, 0 outside
-        float inRect = step(minEdge.x, v_uv.x) * step(v_uv.x, maxEdge.x) * step(minEdge.y, v_uv.y) * step(v_uv.y, maxEdge.y);
-
-        fragColor = vec4(originalColor * glow, inRect);  // Render to alpha only
-    }
-
-    vec4 getPixelRainSideOfColumn(vec3 uvw, vec4 originalColor)
-    {
-        vec2 uv = uvw.xy;
-        // Config
-
-            // Which column we're in
-            float col = floor((uv.x/columwidth) * columns);
-            float colOffset = random(floor(uv.x/10.0));
-
-            // float active = step(0.8, random(vVertexPos.z));
-            // if (active < 1.0) return;
-
-            // Drop "wave" — sine over time and vertical pos
-            float wave = GetRainDropWaveAt(uv.y);
-
-            // Sparkling glow when wave > 0
-            float glow = 0.0;
-            if (wave > 0.0) {
-                float dropGlow = exp(-wave * trailFade);
-                float shimmer = sin((time + uv.y * 5.0) * shimmerFreq) * 0.5 + 0.5;
-                glow = dropGlow * shimmer;
-            }
-
-            // Recovery phase: when wave < 0
-            float alphaRecovery = 0.0;
-            if (wave < 0.0) {
-                alphaRecovery = 1.0 - exp(wave * recoverySpeed);
-            }
-
-            // Final alpha: bright when glowing, then fades out, then fades back in
-            float alpha = glow  + alphaRecovery * 0.5;
-
-            // Glow color
-            vec3 color = originalColor.rgb* glow;
-
-            // Glow intensity
-            return vec4(color, min(0.5,alpha));
-    }
-
+/*
+0(20185) : error C1503: undefined variable "uv"
+0(20190) : error C1031: swizzle mask element not present in operand "z"
+0(20190) : error C1068: array index out of bounds
+0(20198) : error C1068: too much data in type constructor
+*/
