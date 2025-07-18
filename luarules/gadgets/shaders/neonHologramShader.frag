@@ -179,6 +179,12 @@
         return sin(time * fallSpeed - heightValue * 10.0 + colOffset * 6.2831);
     }
 
+    function debugGetCheckerBoardAlpha(vec2 uv, float alpha)
+    {
+        if (uv.x < 0.5 || uv.y < 0.5) return 1.0;
+        return alpha;
+    }
+
     vec4 getPixelRainTopOfColumn(vec3 uvw, vec4 originalColor)
     {
         vec2 v_uv = uvw.xz;
@@ -195,7 +201,7 @@
         // Create mask: 1 inside rect, 0 outside
         float inRect = step(minEdge.x, v_uv.x) * step(v_uv.x, maxEdge.x) * step(minEdge.y, v_uv.y) * step(v_uv.y, maxEdge.y);
 
-        return vec4(originalColor.rgb * glow, inRect);  // Render to alpha only
+        return vec4(originalColor.rgb * glow, debugGetCheckerBoardAlpha(v_uv, inRect));  // Render to alpha only
     }
 
     vec4 getPixelRainSideOfColumn(vec3 uvw, vec4 originalColor)
@@ -234,7 +240,7 @@
             vec3 color = originalColor.rgb* glow;
 
             // Glow intensity
-            return vec4(color, min(0.5,alpha));
+            return vec4(color, min(0.5, debugGetCheckerBoardAlpha(uv, alpha)));
     }
 
     void main() 
@@ -297,9 +303,32 @@
         }     
 	}
 
+
 /*
-0(20185) : error C1503: undefined variable "uv"
-0(20190) : error C1031: swizzle mask element not present in operand "z"
-0(20190) : error C1068: array index out of bounds
-0(20198) : error C1068: too much data in type constructor
+0(20182) : error C0000: syntax error, unexpected '(', expecting "::" at token "("
+0(20191) : error C1503: undefined variable "uvw"
+0(20192) : error C1503: undefined variable "uvw"
+0(20195) : error C1503: undefined variable "v_uv"
+0(20196) : error C1503: undefined variable "v_uv"
+0(20202) : error C1503: undefined variable "v_uv"
+0(20202) : error C1503: undefined variable "v_uv"
+0(20202) : error C1503: undefined variable "v_uv"
+0(20202) : error C1503: undefined variable "v_uv"
+0(20204) : error C0000: syntax error, unexpected reserved word "return" at token "return"
+0(20213) : error C1503: undefined variable "uv"
+0(20213) : error C1038: declaration of "col" conflicts with previous declaration at 0(20195)
+0(20214) : error C1503: undefined variable "uv"
+0(20214) : error C1038: declaration of "colOffset" conflicts with previous declaration at 0(20191)
+0(20220) : error C1503: undefined variable "uv"
+0(20220) : error C1038: declaration of "wave" conflicts with previous declaration at 0(20192)
+0(20223) : error C1038: declaration of "glow" conflicts with previous declaration at 0(20193)
+0(20224) : error C0000: syntax error, unexpected reserved word "if" at token "if"
+0(20226) : error C1503: undefined variable "uv"
+0(20227) : error C0000: syntax error, unexpected '=', expecting "::" at token "="
+0(20240) : error C1503: undefined variable "originalColor"
+0(20243) : error C0000: syntax error, unexpected reserved word "return" at token "return"
+0(20264) : error C0000: syntax error, unexpected '=', expecting "::" at token "="
+0(20275) : error C0000: syntax error, unexpected '.', expecting "::" at token "."
+0(20287) : error C1503: undefined variable "pixelPillarSize"
+0(20288) : error C0000: syntax error, unexpected '.', expecting "::" at token "."
 */
