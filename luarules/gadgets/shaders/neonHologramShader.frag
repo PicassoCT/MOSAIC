@@ -179,7 +179,7 @@
         return sin(time * fallSpeed - heightValue * 10.0 + colOffset * 6.2831);
     }
 
-    function debugGetCheckerBoardAlpha(vec2 uv, float alpha)
+    float debugGetCheckerBoardAlpha(vec2 uv, float alpha)
     {
         if (uv.x < 0.5 || uv.y < 0.5) return 1.0;
         return alpha;
