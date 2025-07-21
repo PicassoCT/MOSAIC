@@ -479,21 +479,23 @@ end
 function pray()
     Signal(SIG_INTERNAL)
     SetSignalMask(SIG_INTERNAL)
-    prayTime= 12000
+    prayTime = 12000
     setSpeedEnv(unitID, 0.0)
-    interpolation= 0.1
+    interpolation = 0.1
     orgRotation = Spring.GetUnitRotation(unitID)
     while prayTime > 0 do
+        startTime = Spring.GetGameFrame()
         PlayAnimation("UPBODY_PRAY", lowerBodyPieces, 1.0)         
         WaitForTurns(upperBodyPieces)
         if not GG.PrayerRotationRad then 
             val = math.random(0,360)
             GG.PrayerRotationRad =  math.rad(val)
-         end
-          targetRotation = mix( GG.PrayerRotationRad, orgRotation,interpolation)
-         Spring.SetUnitRotation(unitID, 0, targetRotation, 0)
-         interpolation = math.min(1.0,interpolation + 0.1)
-        prayTime = prayTime - 500
+        end
+        targetRotation = mix( GG.PrayerRotationRad, orgRotation,interpolation)
+        Spring.SetUnitRotation(unitID, 0, targetRotation, 0)
+        interpolation = math.min(1.0,interpolation + 0.1)
+        totalTimeMs =  math.ceil((Spring.GetGameFrame() -startTime )/30)*1000 + 500
+        prayTime = prayTime - totalTimeMs
         WaitForTurns(upperBodyPieces)
         WaitForTurns(lowerBodyPieces)
         Sleep(500)

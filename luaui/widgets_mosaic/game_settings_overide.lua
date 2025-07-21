@@ -17,7 +17,7 @@ end
 
 local systemPreMosaicStart = {}
 local userConfigMosaic = { 
-                         HangTimeout = {name = "HangTimeout", value = 303, type="int" },
+                         HangTimeout = {name = "HangTimeout", value = 900, type="int" },
                          MaxTextureAtlasSizeX = {name = "MaxTextureAtlasSizeX", value = 4096, type="int" },
                          MaxTextureAtlasSizeY = {name = "MaxTextureAtlasSizeY", value = 2048, type="int" },
                          MaxTextureAtlasSizeZ = {name = "MaxTextureAtlasSizeZ", value = 4096, type="int" },

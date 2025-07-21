@@ -549,16 +549,16 @@ end
 
 STATE_STARTED = "STARTED"
 STATE_ENDED = "ENDED"
-function setCivilianUnitInternalStateMode(unitID, State)
+function setCivilianUnitInternalStateMode(unitID, State, name)
      if not GG.CivilianUnitInternalLogicActive then GG.CivilianUnitInternalLogicActive = {} end
-     
+     echo(unitID.."civilian internal logic "..State.." "..(name or "unknown"))
      GG.CivilianUnitInternalLogicActive[unitID] = State 
  end
 
 filmLocation = {}
 boolStartFilming = false
 function startFilmLocation(ux, uy, uz, time)
-    setCivilianUnitInternalStateMode(unitID, STATE_STARTED)
+    setCivilianUnitInternalStateMode(unitID, STATE_STARTED, "filming")
     filmLocation.x=ux
     filmLocation.y=uy
     filmLocation.z=uz
@@ -570,7 +570,7 @@ end
 wailingTime = 0
 boolStartWailing = false
 function startWailing(time)
-    setCivilianUnitInternalStateMode(unitID, STATE_STARTED)
+    setCivilianUnitInternalStateMode(unitID, STATE_STARTED, "wailing")
     wailingTime = time
     boolStartWailing = true
     return true
@@ -579,7 +579,7 @@ end
 chattingTime = 0
 boolStartChatting = false
 function startChatting(time)
-    setCivilianUnitInternalStateMode(unitID, STATE_STARTED)
+    setCivilianUnitInternalStateMode(unitID, STATE_STARTED, "talk")
     chattingTime = time
     boolStartChatting = true
     return true
@@ -590,7 +590,7 @@ boolStartFleeing = false
 function startFleeing(enemyID)
     attackerID = enemyID
 --    echo("Start fleeing called in civilian")
-    setCivilianUnitInternalStateMode(unitID, STATE_STARTED)
+    setCivilianUnitInternalStateMode(unitID, STATE_STARTED, "fleeing")
     boolStartFleeing = true
     return true
 end
@@ -598,7 +598,7 @@ end
 boolStartPeaceFullProtest = false
 socialEngineerID = nil
 function startPeacefullProtest( id)
-    setCivilianUnitInternalStateMode(unitID, STATE_STARTED)
+    setCivilianUnitInternalStateMode(unitID, STATE_STARTED, "protest")
 	socialEngineerID= id
     boolStartPeaceFullProtest = true
     return true
@@ -629,13 +629,13 @@ function peacefullProtest()
 	GG.SocialEngineeredPeople[unitID] = nil
     resetT(upperBodyPieces,2.0, false, true)
 	hideProtestSign()
-    setCivilianUnitInternalStateMode(unitID, STATE_ENDED)
+    setCivilianUnitInternalStateMode(unitID, STATE_ENDED, "protest")
 end
 
 
 boolStartPraying = false
 function startPraying()
-    setCivilianUnitInternalStateMode(unitID, STATE_STARTED)
+    setCivilianUnitInternalStateMode(unitID, STATE_STARTED, "pray")
     boolStartPraying = true
     return true
 end
@@ -649,6 +649,7 @@ function pray()
     interpolation= 0.1
     orgRotation = Spring.GetUnitRotation(unitID)
     while prayTime > 0 do
+        startTime = Spring.GetGameFrame()
         PlayAnimation("UPBODY_PRAY", lowerBodyPieces, 1.0)         
         WaitForTurns(upperBodyPieces)
         if not GG.PrayerRotationRad then 
@@ -658,7 +659,8 @@ function pray()
          targetRotation = mix( GG.PrayerRotationRad, orgRotation,interpolation)
          Spring.SetUnitRotation(unitID, 0, targetRotation, 0)
          interpolation = math.min(1.0,interpolation + 0.1)
-        prayTime = prayTime - 500
+        totalTimeMs =  math.ceil((Spring.GetGameFrame() - startTime) /30)*1000 + 500
+        prayTime = prayTime - totalTimeMs
         WaitForTurns(upperBodyPieces)
         WaitForTurns(lowerBodyPieces)
         Sleep(500)
@@ -666,12 +668,12 @@ function pray()
     setSpeedEnv(unitID, NORMAL_WALK_SPEED)
     resetT(upperBodyPieces,2.0, false, true)
     Move(center,z_axis, 0, 2500)
-    setCivilianUnitInternalStateMode(unitID, STATE_ENDED)
+    setCivilianUnitInternalStateMode(unitID, STATE_ENDED, "pray")
 end
 
 boolStartAnarchyBehaviour = false
 function startAnarchyBehaviour()
-    setCivilianUnitInternalStateMode(unitID, STATE_STARTED)
+    setCivilianUnitInternalStateMode(unitID, STATE_STARTED, "anarchy")
     boolStartAnarchyBehaviour = true
     return true
 end
@@ -694,7 +696,7 @@ function anarchyBehaviour()
         Sleep(250)
     end
 
-    setCivilianUnitInternalStateMode(unitID, STATE_ENDED)
+    setCivilianUnitInternalStateMode(unitID, STATE_ENDED, "anarchy")
 end
 
 function haveSexTimeDelayed()
@@ -715,7 +717,7 @@ aeroSolType = "undefinedAerosolState"
 function startAerosolBehaviour(extAerosolStateToSet)
     boolStartAerosolBehaviour= true
     aeroSolType = extAerosolStateToSet
-    setCivilianUnitInternalStateMode(unitID, STATE_STARTED)
+    setCivilianUnitInternalStateMode(unitID, STATE_STARTED, "aerosol")
 end
 
 function aeroSolStateBehaviour()
@@ -750,7 +752,7 @@ function wailing()
        wailingTime = wailingTime - 1500
         Sleep(100)
     end
-    setCivilianUnitInternalStateMode(unitID, STATE_ENDED)
+    setCivilianUnitInternalStateMode(unitID, STATE_ENDED ,"wailing")
 end
 
 function alignToPersonNearby()
@@ -764,6 +766,7 @@ function alignToPersonNearby()
         Command(unitID,"go",  Result[1], {})
         return true
     end
+    echo("Civilian "..unitID.." trying to chat is not aligned to nearby person")
     return false
 end
 
@@ -772,7 +775,7 @@ function chatting()
     SetSignalMask(SIG_INTERNAL)
 
    if not alignToPersonNearby() then
-        setCivilianUnitInternalStateMode(unitID, STATE_ENDED)
+        setCivilianUnitInternalStateMode(unitID, STATE_ENDED, "talk")
         return
    end
 
@@ -815,7 +818,7 @@ function chatting()
         Sleep(100)
         if repeatCounter % 2 == 0 then
             if not alignToPersonNearby() then
-                setCivilianUnitInternalStateMode(unitID, STATE_ENDED)
+                setCivilianUnitInternalStateMode(unitID, STATE_ENDED, "talk")
                 return
             end  
         end  
@@ -824,7 +827,7 @@ function chatting()
     Spring.Echo("civilian "..unitID.. " chat has ended")
     playUpperBodyIdleAnimation()
     resetT(TablesOfPiecesGroups["UpArm"], math.pi, false, true)
-    setCivilianUnitInternalStateMode(unitID, STATE_ENDED)
+    setCivilianUnitInternalStateMode(unitID, STATE_ENDED, "talk")
 end
 
 function filmingLocation()
@@ -837,7 +840,7 @@ function filmingLocation()
         setUnitRotationToPoint(unitID, filmLocation.x, filmLocation.y, filmLocation.z)
         Sleep(100)
     end
-    setCivilianUnitInternalStateMode(unitID, STATE_ENDED)
+    setCivilianUnitInternalStateMode(unitID, STATE_ENDED, "filming")
 end
 
 function throwArmsUp()
@@ -852,7 +855,7 @@ function fleeEnemy(enemyID)
     SetSignalMask(SIG_INTERNAL)
     --echo("Actually fleeing a enemy")
     if not enemyID then 
-        setCivilianUnitInternalStateMode(unitID, STATE_ENDED)
+        setCivilianUnitInternalStateMode(unitID, STATE_ENDED, "fleeing")
         return 
     end  
     throwPayloads()
@@ -866,7 +869,7 @@ function fleeEnemy(enemyID)
         flightTime = flightTime - 125
     end
 
-    setCivilianUnitInternalStateMode(unitID, STATE_ENDED)
+    setCivilianUnitInternalStateMode(unitID, STATE_ENDED, "fleeing")
 end
 
 function delayedWoundedWalkAfterCover(timeInSeconds)

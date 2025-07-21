@@ -9,6 +9,7 @@
     #define PI 3.14159f
     #define Y_NORMAL_CUTOFFVALUE 0.995
 
+
     #define CASINO 1
     #define BROTHEL 2
     #define BUISNESS 3
@@ -168,7 +169,8 @@
     }
 
     const float columwidth= 5.0;
-    float halfSize = columwidth*0.5;
+    float halfSize = (columwidth * 0.40);
+    const float pixelPillarSize = 100.0;
     const float columns = 80.0;
     const float fallSpeed = 4.0;      // Controls vertical speed
     const float shimmerFreq = 40.0;   // How fast it sparkles
@@ -185,47 +187,20 @@
         return alpha;
     }
 
-    vec4 getPixelRainTopOfColumn(vec3 uvw, vec4 originalColor)
+    float getGlow(float wave, float time, float height)
     {
-        vec2 v_uv = uvw.xz;
-        float colOffset = random(floor(uvw.x/10.0));
-        float wave = GetRainDropWaveAt(uvw.y, colOffset);
-        float glow = exp(-wave * trailFade);
-        //determinate high effect
-        float col = floor((v_uv.x/columwidth) * columns);
-        float row = floor((v_uv.y/columwidth) * columns);
-        vec2 u_center = vec2(col * columwidth +  halfSize  , row * columwidth + halfSize);
-        vec2 minEdge = u_center - halfSize;
-        vec2 maxEdge = u_center + halfSize;
-
-        // Create mask: 1 inside rect, 0 outside
-        float inRect = step(minEdge.x, v_uv.x) * step(v_uv.x, maxEdge.x) * step(minEdge.y, v_uv.y) * step(v_uv.y, maxEdge.y);
-
-        return vec4(originalColor.rgb * glow, debugGetCheckerBoardAlpha(v_uv, inRect));  // Render to alpha only
+        float glow = 0.0;
+        if (wave > 0.0) {
+            float dropGlow = exp(-wave * trailFade);
+            float shimmer = sin((time + height * 5.0) * shimmerFreq) * 0.5 + 0.5;
+            glow = dropGlow * shimmer;
+        }
+        return glow;
     }
 
-    vec4 getPixelRainSideOfColumn(vec3 uvw, vec4 originalColor)
-    {
-        vec2 uv = uvw.xy;
-        // Config
-
-            // Which column we're in
-            float col = floor((uv.x/columwidth) * columns);
-            float colOffset = random(floor(uv.x/10.0));
-
-            // float active = step(0.8, random(vVertexPos.z));
-            // if (active < 1.0) return;
-
-            // Drop "wave" — sine over time and vertical pos
-            float wave = GetRainDropWaveAt(uv.y, colOffset);
-
-            // Sparkling glow when wave > 0
-            float glow = 0.0;
-            if (wave > 0.0) {
-                float dropGlow = exp(-wave * trailFade);
-                float shimmer = sin((time + uv.y * 5.0) * shimmerFreq) * 0.5 + 0.5;
-                glow = dropGlow * shimmer;
-            }
+    float getAlpha(float height, float wave){
+       // Sparkling glow when wave > 0          
+            float glow = getGlow(wave, time, height);
 
             // Recovery phase: when wave < 0
             float alphaRecovery = 0.0;
@@ -234,18 +209,54 @@
             }
 
             // Final alpha: bright when glowing, then fades out, then fades back in
-            float alpha = glow  + alphaRecovery * 0.5;
+            return glow  + alphaRecovery * 0.5;
+    }
 
-            // Glow color
-            vec3 color = originalColor.rgb* glow;
+    vec4 getPixelRainTopOfColumn(vec3 vertexPos, vec4 originalColor, vec3 normal)
+    {
+        vec2 v_uv = vertexPos.xz;
+        float colOffset = random(floor(vertexPos.x/10.0));
+        float wave = GetRainDropWaveAt(vertexPos.x , colOffset);
+        float glow = exp(-wave * trailFade);
+        //determinate high effect
+        float col = floor((v_uv.x/columwidth) * columns);
+        float row = floor((v_uv.y/columwidth) * columns);
+        vec2 u_center = vec2(col * columwidth + halfSize, row * columwidth + halfSize);
+        vec2 minEdge = u_center - halfSize;
+        vec2 maxEdge = u_center + halfSize;
 
-            // Glow intensity
-            return vec4(color, min(0.5, debugGetCheckerBoardAlpha(uv, alpha)));
+        // Create mask: 1 inside rect, 0 outside
+        float inRect = step(minEdge.x, v_uv.x) * step(v_uv.x, maxEdge.x) * step(minEdge.y, v_uv.y) * step(v_uv.y, maxEdge.y);
+
+        return vec4(originalColor.rgb * glow, inRect);// getAlpha(v_uv.x, wave));  // Render to alpha only
+    }
+
+    vec4 getPixelRainSideOfColumn(vec3 vertexPos, vec4 originalColor)
+    {
+        vec2 uv = vertexPos.xy;
+
+        // Which column we're in
+        float col = floor((uv.x/columwidth) * columns);
+        float colOffset = random(floor(uv.x/10.0));
+
+        // float active = step(0.8, random(vVertexPos.z));
+        // if (active < 1.0) return;
+
+        // Drop "wave" — sine over time and vertical pos
+        float wave = GetRainDropWaveAt(uv.y, colOffset);
+        float glow = 0.0;
+        glow = getGlow(wave, time, vertexPos.y);
+
+        float alpha = getAlpha( uv.y, wave);
+        // Glow color
+        vec3 color = originalColor.rgb* glow;
+
+        // Glow intensity
+        return vec4(color, min(0.5, debugGetCheckerBoardAlpha(uv, alpha)));
     }
 
     void main() 
-	{	
-    
+	{	    
 		//our original texcoord for this fragment
 		vec2 uv =  gl_FragCoord.xy;    
 		
@@ -276,59 +287,31 @@
 
         colWithBorderGlow.rgb = applyColorAberation(colWithBorderGlow.rgb);
 
-        gl_FragColor = colWithBorderGlow;
+        //gl_FragColor = colWithBorderGlow;
         //This gives the holograms a sort of "afterglow", leaving behind a trail of fading previous pictures
         //similar to a very bright lightsource shining on retina leaving afterimages
-        gl_FragColor = RED;
+        //gl_FragColor = vec4(normal.rgb, 1.0);
+        //return;
         if (true)//(rainPercent < 0.80)
         {
             //a sort of matrix rain effect with a brightly shining raindrop and a dark trail of "blocked light"
-            float pixelPillarSize = 100.0;
-            vec3 uvw = mod(vVertexPos.xyz / pixelPillarSize, 1.0);
-            uvw.y = 1.0 - uvw.y;
+   
+            vec3 vertexPos = vec3(vVertexPos.xyz / pixelPillarSize);         
 
             //we are talking about a pixelpillar- the rooftop, depends on the status beeing above or below- if below
-            gl_FragColor.rgb = normal;
+            //gl_FragColor.rgb = normal;
             //we calcuates
 
-            return;
+            //return;
             if (normal.g < Y_NORMAL_CUTOFFVALUE )
             {
-                gl_FragColor = getPixelRainSideOfColumn(uvw, RED);
+                gl_FragColor = RED; //getPixelRainSideOfColumn(vertexPos, vec4(normal.rgb, 1.0), normal);
+                gl_FragColor.a= 1.0;
             }
             else
             {
-                gl_FragColor = getPixelRainTopOfColumn(uvw, GREEN);
+                gl_FragColor = getPixelRainTopOfColumn(vertexPos, colWithBorderGlow,normal);
+                gl_FragColor.a= 1.0;
             }            
         }     
 	}
-
-
-/*
-0(20182) : error C0000: syntax error, unexpected '(', expecting "::" at token "("
-0(20191) : error C1503: undefined variable "uvw"
-0(20192) : error C1503: undefined variable "uvw"
-0(20195) : error C1503: undefined variable "v_uv"
-0(20196) : error C1503: undefined variable "v_uv"
-0(20202) : error C1503: undefined variable "v_uv"
-0(20202) : error C1503: undefined variable "v_uv"
-0(20202) : error C1503: undefined variable "v_uv"
-0(20202) : error C1503: undefined variable "v_uv"
-0(20204) : error C0000: syntax error, unexpected reserved word "return" at token "return"
-0(20213) : error C1503: undefined variable "uv"
-0(20213) : error C1038: declaration of "col" conflicts with previous declaration at 0(20195)
-0(20214) : error C1503: undefined variable "uv"
-0(20214) : error C1038: declaration of "colOffset" conflicts with previous declaration at 0(20191)
-0(20220) : error C1503: undefined variable "uv"
-0(20220) : error C1038: declaration of "wave" conflicts with previous declaration at 0(20192)
-0(20223) : error C1038: declaration of "glow" conflicts with previous declaration at 0(20193)
-0(20224) : error C0000: syntax error, unexpected reserved word "if" at token "if"
-0(20226) : error C1503: undefined variable "uv"
-0(20227) : error C0000: syntax error, unexpected '=', expecting "::" at token "="
-0(20240) : error C1503: undefined variable "originalColor"
-0(20243) : error C0000: syntax error, unexpected reserved word "return" at token "return"
-0(20264) : error C0000: syntax error, unexpected '=', expecting "::" at token "="
-0(20275) : error C0000: syntax error, unexpected '.', expecting "::" at token "."
-0(20287) : error C1503: undefined variable "pixelPillarSize"
-0(20288) : error C0000: syntax error, unexpected '.', expecting "::" at token "."
-*/
