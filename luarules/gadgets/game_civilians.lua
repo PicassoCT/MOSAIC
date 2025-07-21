@@ -803,10 +803,6 @@ function sozialize(evtID, frame, persPack, startFrame, myID)
     return boolDone, nil, persPack
 end  
 
-function registerChatting(aId, bId)
-    GG.CurrentlyChatting[aId] = true
-    GG.CurrentlyChatting[bId] = true
-end
 
 function snychronizedSocialEvents(evtID, frame, persPack, startFrame, myID)
     if  maRa() and isPrayerTime() and civilianWalkingTypeTable[persPack.mydefID] then
@@ -968,14 +964,11 @@ function travellFunction(evtID, frame, persPack, startFrame)
     boolDone, retFrame, persPack, x,y,z, hp = travelInitialization(evtID, frame, persPack, startFrame, myID)
     if boolDone == true then return retFrame,packStep(persPack, retFrame, frame) end
 
-    if GG.CurrentlyChatting[myID] then return retFrame,packStep(persPack, retFrame, frame) end
-
-    boolDone, retFrame, persPack = stuckDetection(evtID, frame, persPack, startFrame, myID, x, y, z)
-    if boolDone == true then return retFrame,packStep(persPack, retFrame, frame) end
-
     boolDone, retFrame, persPack = unitInternalLogic(evtID, frame, persPack, startFrame, myID)
     if boolDone == true then return retFrame,packStep(persPack, retFrame, frame) end
 
+    boolDone, retFrame, persPack = stuckDetection(evtID, frame, persPack, startFrame, myID, x, y, z)
+    if boolDone == true then return retFrame,packStep(persPack, retFrame, frame) end
 
     if GG.GlobalGameState == GameConfig.GameState.normal and not persPack.boolTraumatized then
 
