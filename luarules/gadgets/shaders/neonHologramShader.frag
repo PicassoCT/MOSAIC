@@ -212,10 +212,15 @@
             return glow  + alphaRecovery * 0.5;
     }
 
+    float getColOffset(vec3 vertexPos)
+    {
+         return random(floor(vertexPos.x/10.0 + vertexPos.z/10.0));
+    }
+
     vec4 getPixelRainTopOfColumn(vec3 vertexPos, vec4 originalColor, vec3 normal)
     {
-        vec2 v_uv = vertexPos.xz;
-        float colOffset = random(floor(vertexPos.x/10.0));
+        vec2 v_uv = vec2(vertexPos.xz);
+        float colOffset = getColOffset(vertexPos);
         float wave = GetRainDropWaveAt(vertexPos.x , colOffset);
         float glow = exp(-wave * trailFade);
         //determinate high effect
@@ -237,7 +242,7 @@
 
         // Which column we're in
         float col = floor((uv.x/columwidth) * columns);
-        float colOffset = random(floor(uv.x/10.0));
+        float colOffset = getColOffset(vertexPos);
 
         // float active = step(0.8, random(vVertexPos.z));
         // if (active < 1.0) return;
@@ -290,8 +295,8 @@
         //gl_FragColor = colWithBorderGlow;
         //This gives the holograms a sort of "afterglow", leaving behind a trail of fading previous pictures
         //similar to a very bright lightsource shining on retina leaving afterimages
-        //gl_FragColor = vec4(normal.rgb, 1.0);
-        //return;
+        gl_FragColor = vec4(hyNormal, 1.0);
+        return;
         if (true)//(rainPercent < 0.80)
         {
             //a sort of matrix rain effect with a brightly shining raindrop and a dark trail of "blocked light"
@@ -303,14 +308,14 @@
             //we calcuates
 
             //return;
-            if (normal.g < Y_NORMAL_CUTOFFVALUE )
+            if (sphericalNormal.g < Y_NORMAL_CUTOFFVALUE )
             {
                 gl_FragColor = RED; //getPixelRainSideOfColumn(vertexPos, vec4(normal.rgb, 1.0), normal);
                 gl_FragColor.a= 1.0;
             }
             else
             {
-                gl_FragColor = getPixelRainTopOfColumn(vertexPos, colWithBorderGlow,normal);
+                gl_FragColor = getPixelRainTopOfColumn(vertexPos, colWithBorderGlow, normal);
                 gl_FragColor.a= 1.0;
             }            
         }     
