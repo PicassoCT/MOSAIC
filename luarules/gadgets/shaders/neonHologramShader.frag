@@ -49,6 +49,11 @@
     vec2 pixelCoord;
 
     //////////////////////    //////////////////////    //////////////////////    //////////////////////
+    bool isActive(vec2 colRowId, float rainPercent)
+    {
+        float modulator = ceil(( 1 / rainPercent ) * 10.0);
+        return floor(mod(colRowId.x + colRowId.y, modulator) == 0;
+    }
 
     float getLightPercentageFactorByTime()
     {
