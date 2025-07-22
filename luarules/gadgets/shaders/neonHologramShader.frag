@@ -198,7 +198,8 @@
         return glow;
     }
 
-    float getAlpha(float height, float wave){
+    float getAlpha(float height, float wave)
+    {
        // Sparkling glow when wave > 0          
             float glow = getGlow(wave, time, height);
 
@@ -219,7 +220,7 @@
 
     vec4 getPixelRainTopOfColumn(vec3 vertexPos, vec4 originalColor, vec3 normal)
     {
-        vec2 v_uv = vec2(vertexPos.xz);
+        vec2 v_uv = mod(vertexPos.xz, 1.0);
         float colOffset = getColOffset(vertexPos);
         float wave = GetRainDropWaveAt(vertexPos.x , colOffset);
         float glow = exp(-wave * trailFade);
@@ -292,11 +293,10 @@
 
         colWithBorderGlow.rgb = applyColorAberation(colWithBorderGlow.rgb);
 
-        //gl_FragColor = colWithBorderGlow;
+
         //This gives the holograms a sort of "afterglow", leaving behind a trail of fading previous pictures
         //similar to a very bright lightsource shining on retina leaving afterimages
-        gl_FragColor = vec4(hyNormal, 1.0);
-        return;
+
         if (true)//(rainPercent < 0.80)
         {
             //a sort of matrix rain effect with a brightly shining raindrop and a dark trail of "blocked light"
@@ -305,18 +305,17 @@
 
             //we are talking about a pixelpillar- the rooftop, depends on the status beeing above or below- if below
             //gl_FragColor.rgb = normal;
+            //return;
             //we calcuates
 
-            //return;
-            if (sphericalNormal.g < Y_NORMAL_CUTOFFVALUE )
+    
+            if (normal.g < Y_NORMAL_CUTOFFVALUE )
             {
-                gl_FragColor = RED; //getPixelRainSideOfColumn(vertexPos, vec4(normal.rgb, 1.0), normal);
-                gl_FragColor.a= 1.0;
+                gl_FragColor = getPixelRainSideOfColumn(vertexPos, colWithBorderGlow, normal);
             }
             else
             {
                 gl_FragColor = getPixelRainTopOfColumn(vertexPos, colWithBorderGlow, normal);
-                gl_FragColor.a= 1.0;
             }            
         }     
 	}
