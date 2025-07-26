@@ -5,6 +5,7 @@
     #define RED vec4(1.0, 0.0,0.0, 0.5)
     #define GREEN vec4(0.0, 1.0,0.0, 0.5)
     #define BLUE vec4(0.0, 0.0,1.0, 0.5)
+    #define WHITE vec4(1.0)
     #define NONE vec4(0.)
     #define PI 3.14159f
     #define Y_NORMAL_CUTOFFVALUE 0.995
@@ -49,10 +50,10 @@
     vec2 pixelCoord;
 
     //////////////////////    //////////////////////    //////////////////////    //////////////////////
-    bool isActive(vec2 colRowId, float rainPercent)
+    bool isActive(vec2 colRowId, float rainPercentage)
     {
-        float modulator = ceil(( 1 / rainPercent ) * 10.0);
-        return floor(mod(colRowId.x + colRowId.y, modulator) == 0;
+        float modulator = ceil(( 1 / rainPercentage ) * 10.0);
+        return floor(mod(colRowId.x + colRowId.y, modulator)) == 0;
     }
 
     float getLightPercentageFactorByTime()
@@ -157,33 +158,30 @@
         return fract(sin(x * 12.9898) * 43758.5453);
     }
 
-    // Generates a soft glowing line
-    float lineGlow(float y, float center, float width)
-    {
-        float d = abs(y - center);
-        return exp(-d * width);
-    }
 
 
-    // Sparkle effect (twinkle over time)
-    float sparkle(float y, float dropY, float t)
-    {
-        float dist = abs(y - dropY);
-        float pulse = sin(t * 40.0 + dropY * 10.0) * 0.5 + 0.5;
-        return exp(-dist * 60.0) * pulse;
-    }
 
-    const float columwidth= 5.0;
-    float halfSize = (columwidth * 0.40);
-    const float pixelPillarSize = 100.0;
-    const float columns = 80.0;
-    const float fallSpeed = 4.0;      // Controls vertical speed
-    const float shimmerFreq = 40.0;   // How fast it sparkles
-    const float trailFade = 256.0;     // How long the trail glows
+    const float columnWidth= 0.05;
+    float halfSize = (columnWidth/2.);
+    //const float pixelPillarSize = 100.0;
+
+    const float fallSpeed = 3.0;      // Controls vertical speed
+    const float shimmerFreq = 32.0;   // How fast it sparkles
+    const float trailFade = 512.0;     // How long the trail glows
     const float recoverySpeed = 30.0;  // How fast it fades back
+    const float rainDropScale = 2.0;
 
+    bool isActive(float value, float rainPercentage)
+    {
+        float modolu = float(ceil(abs( rainPercentage) * 10.0));
+        return floor(mod(value, modolu)) == 0.0;
+    }
     float GetRainDropWaveAt(float heightValue, float colOffset){
-        return sin(time * fallSpeed - heightValue * 10.0 + colOffset * 6.2831);
+        return sin(time * fallSpeed - heightValue * rainDropScale  + colOffset * 6.2831);
+    }
+
+    float GetDropCenterYPosition(float heightValue, float colOffset){
+        return time * fallSpeed - heightValue * rainDropScale  + colOffset * 6.2831;
     }
 
     float debugGetCheckerBoardAlpha(vec2 uv, float alpha)
@@ -218,53 +216,144 @@
             return glow  + alphaRecovery * 0.5;
     }
 
+    vec2 getColRowIdentifier(vec3 vertexPos)
+    {
+        return vec2(floor(vertexPos.x/columnWidth), floor(vertexPos.z/columnWidth));
+    }
+
     float getColOffset(vec3 vertexPos)
     {
-         return random(floor(vertexPos.x/10.0 + vertexPos.z/10.0));
+        vec2 colRow = getColRowIdentifier(vertexPos);
+        float v = dot(colRow * colRow.x, vec2(cos(colRow.y), sin(colRow.x))) * 43758.5453 ;
+         return random(v);
+    }
+
+    vec4 applyAlphaMask(float sinVal, vec4 col)
+    {
+        return col;
+        if (sinVal <= 0.) return col;
+        col.a = col.a * sinVal;
+        return col;
+    }
+
+    vec4 applyColorShift(float sinVal, float glow, vec4 col, bool inDrop, vec3 dropColor)
+    {
+        if (sinVal > 0.)
+        {
+            if (inDrop) return vec4(dropColor, 1.0);
+            
+            col.rgb = mix(col.rgb*col.rgb, col.rgb,  sinVal);
+            return applyAlphaMask(sinVal, col);
+            
+        }
+        
+        col.rgb = mix(col.rgb, vec4(1.).rgb + col.rgb * glow, sinVal +1.);
+        
+        return applyAlphaMask(sinVal, col);
     }
 
     vec4 getPixelRainTopOfColumn(vec3 vertexPos, vec4 originalColor, vec3 normal)
     {
-        vec2 v_uv = mod(vertexPos.xz, 1.0);
+        vec2 v_uv = vertexPos.xz;
         float colOffset = getColOffset(vertexPos);
-        float wave = GetRainDropWaveAt(vertexPos.x , colOffset);
-        float glow = exp(-wave * trailFade);
+        float wave = GetRainDropWaveAt(vertexPos.y, colOffset);
+        float glow = exp(wave * trailFade);
         //determinate high effect
-        float col = floor((v_uv.x/columwidth) * columns);
-        float row = floor((v_uv.y/columwidth) * columns);
-        vec2 u_center = vec2(col * columwidth + halfSize, row * columwidth + halfSize);
-        vec2 minEdge = u_center - halfSize;
-        vec2 maxEdge = u_center + halfSize;
+        vec2 colRow = getColRowIdentifier(vertexPos);
+        float sum = float(colRow.x + colRow.y);
+        if (isActive(sum, rainPercent))
+        {
+            return originalColor;
+        }
+        
+        float col = colRow.x;
+        float row = colRow.y;
+        vec2 u_center = vec2(col * columnWidth + halfSize, row * columnWidth + halfSize);
+        vec2 minEdge = u_center - halfSize*0.95;
+        vec2 maxEdge = u_center + halfSize*0.95;
 
         // Create mask: 1 inside rect, 0 outside
-        float inRect = step(minEdge.x, v_uv.x) * step(v_uv.x, maxEdge.x) * step(minEdge.y, v_uv.y) * step(v_uv.y, maxEdge.y);
+        float u_radius= 0.1;  // Glow softness in UV units
+        vec2 d = abs(v_uv - u_center);
 
-        return vec4(originalColor.rgb * glow, inRect);// getAlpha(v_uv.x, wave));  // Render to alpha only
+        // Fade out edges using smoothstep
+        float glowX = 1. - smoothstep(0.0, u_radius, d.x);
+        float glowY = 1. - smoothstep(0.0, u_radius, d.y);
+        float alpha = glowX * glowY;
+                
+        float inRect = step(minEdge.x, v_uv.x) * step(v_uv.x, maxEdge.x) * step(minEdge.y, v_uv.y) * step(v_uv.y, maxEdge.y);
+        
+        return applyColorShift(wave, glow, vec4(originalColor.rgb, mix(0.,alpha,inRect)), false, vec3(0.));
     }
 
-    vec4 getPixelRainSideOfColumn(vec3 vertexPos, vec4 originalColor)
+    vec3 iridescentColor(float angleFactor)
     {
+        // You can tweak this function for different rainbow styles
+        float intensity = pow(1.0 - angleFactor, 2.0);
+        float r = sin(2.0 * 3.1415 * intensity + 0.0) * 0.5 + 0.5;
+        float g = sin(2.0 * 3.1415 * intensity + 2.0) * 0.5 + 0.5;
+        float b = sin(2.0 * 3.1415 * intensity + 4.0) * 0.5 + 0.5;
+        return vec3(r, g, b);
+    }
+
+    vec3 getDropColor(float wave, float dis, vec4 originalColor, vec3 normal)
+    {
+        return    mix(
+                    iridescentColor(time + wave)/3.0 + originalColor.rgb,
+                    WHITE.rgb,//originalColor.rgb ,
+
+                    dis);
+    }
+
+    vec4 getPixelRainSideOfColumn(vec3 vertexPos, vec4 originalColor, vec3 normal)
+    {
+        vertexPos.y = 1.0 - vertexPos.y;
         vec2 uv = vertexPos.xy;
 
         // Which column we're in
-        float col = floor((uv.x/columwidth) * columns);
+        vec2 colRow = getColRowIdentifier(vertexPos);
+        float col = colRow.x;
+        float row = colRow.y;
+        vec2 u_center = vec2(col * columnWidth + halfSize, row * columnWidth + halfSize);
         float colOffset = getColOffset(vertexPos);
-
-        // float active = step(0.8, random(vVertexPos.z));
-        // if (active < 1.0) return;
+        float sum = float(colRow.x + colRow.y);
+        if (isActive(sum, rainPercent))
+        {
+            return originalColor;
+        }
 
         // Drop "wave" — sine over time and vertical pos
         float wave = GetRainDropWaveAt(uv.y, colOffset);
-        float glow = 0.0;
-        glow = getGlow(wave, time, vertexPos.y);
+        float glow =  getGlow(wave, time, vertexPos.y);
 
-        float alpha = getAlpha( uv.y, wave);
         // Glow color
-        vec3 color = originalColor.rgb* glow;
-
+        vec3 color = originalColor.rgb* glow;        
+        vec2 dropCenter = u_center.xy;
+        dropCenter.y +=  colOffset;//GetDropCenterYPosition(u_center.y, colOffset);// + time*;
+        float disDropCenter = distance(u_center.xy, vertexPos.xy); //mix(0., 1., sin((wave/0.1)*3.1415));
+        bool inDrop =  wave > -0.1 && wave <0.1;//disDropCenter < halfSize &&
+                     
         // Glow intensity
-        return vec4(color, min(0.5, debugGetCheckerBoardAlpha(uv, alpha)));
+         return 
+         applyColorShift(   wave, 
+                            glow, 
+                            originalColor,
+                            inDrop,
+                            getDropColor(wave, disDropCenter, originalColor, normal)
+                         );
     }
+
+    float interpolate(float value, float stepValue, float range)
+    {
+    float position = value - (stepValue);
+    if (position < -range) return 0.;
+    if (position > range) return 1.;
+
+    position +=  range;
+    return position/(2.*range);
+    }
+
+
 
     void main() 
 	{	    
@@ -297,30 +386,18 @@
         colWithBorderGlow.rgb *= getLightPercentageFactorByTime();
 
         colWithBorderGlow.rgb = applyColorAberation(colWithBorderGlow.rgb);
-
+        gl_FragColor = colWithBorderGlow;
 
         //This gives the holograms a sort of "afterglow", leaving behind a trail of fading previous pictures
         //similar to a very bright lightsource shining on retina leaving afterimages
 
-        if (true)//(rainPercent < 0.80)
+        if (true)//(rainPercent > 0.5)
         {
-            //a sort of matrix rain effect with a brightly shining raindrop and a dark trail of "blocked light"
-   
-            vec3 vertexPos = vec3(vVertexPos.xyz / pixelPillarSize);         
-
-            //we are talking about a pixelpillar- the rooftop, depends on the status beeing above or below- if below
-            //gl_FragColor.rgb = normal;
-            //return;
-            //we calcuates
-
-    
-            if (normal.g < Y_NORMAL_CUTOFFVALUE )
-            {
-                gl_FragColor = getPixelRainSideOfColumn(vertexPos, colWithBorderGlow, normal);
-            }
-            else
-            {
-                gl_FragColor = getPixelRainTopOfColumn(vertexPos, colWithBorderGlow, normal);
-            }            
+         gl_FragColor = mix(
+            getPixelRainSideOfColumn(vPixelPositionWorld, colWithBorderGlow, sphericalNormal),
+            getPixelRainTopOfColumn(vPixelPositionWorld, colWithBorderGlow , sphericalNormal),
+            interpolate(sphericalNormal.g, Y_NORMAL_CUTOFFVALUE, 0.1)
+            );  
+         gl_FragColor.a = min(gl_FragColor.a, colWithBorderGlow.a );
         }     
 	}
