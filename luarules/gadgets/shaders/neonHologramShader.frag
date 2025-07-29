@@ -32,7 +32,7 @@
 
     uniform vec3 unitCenterPosition;
    // uniform vec3 vCamPositionWorld;
-
+    float rainPercentage;
     uniform int typeDefID;
     // Varyings passed from the vertex shader
     in Data {
@@ -50,7 +50,7 @@
     vec2 pixelCoord;
 
     //////////////////////    //////////////////////    //////////////////////    //////////////////////
-    bool isActive(vec2 colRowId, float rainPercentage)
+    bool isActive(vec2 colRowId)
     {
         float modulator = ceil(( 1 / rainPercentage ) * 10.0);
         return floor(mod(colRowId.x + colRowId.y, modulator)) == 0;
@@ -171,7 +171,7 @@
     const float recoverySpeed = 30.0;  // How fast it fades back
     const float rainDropScale = 2.0;
 
-    bool isActive(float value, float rainPercentage)
+    bool isActive(float value)
     {
         float modolu = float(ceil(abs( rainPercentage) * 10.0));
         return floor(mod(value, modolu)) == 0.0;
@@ -261,7 +261,7 @@
         //determinate high effect
         vec2 colRow = getColRowIdentifier(vertexPos);
         float sum = float(colRow.x + colRow.y);
-        if (isActive(sum, rainPercent))
+        if (isActive(sum))
         {
             return originalColor;
         }
@@ -317,7 +317,7 @@
         vec2 u_center = vec2(col * columnWidth + halfSize, row * columnWidth + halfSize);
         float colOffset = getColOffset(vertexPos);
         float sum = float(colRow.x + colRow.y);
-        if (isActive(sum, rainPercent))
+        if (isActive(sum))
         {
             return originalColor;
         }
@@ -358,7 +358,8 @@
     void main() 
 	{	    
 		//our original texcoord for this fragment
-		vec2 uv =  gl_FragCoord.xy;    
+		vec2 uv =  gl_FragCoord.xy;   
+        rainPercentage = rainPercent; 
 		
 		//the amount to blur, i.e. how far off center to sample from 
 		//1.0 -> blur by one pixel
@@ -393,11 +394,11 @@
 
         if (true)//(rainPercent > 0.5)
         {
+
          gl_FragColor = mix(
-            getPixelRainSideOfColumn(vPixelPositionWorld, colWithBorderGlow, sphericalNormal),
-            getPixelRainTopOfColumn(vPixelPositionWorld, colWithBorderGlow , sphericalNormal),
-            interpolate(sphericalNormal.g, Y_NORMAL_CUTOFFVALUE, 0.1)
+            getPixelRainSideOfColumn(vPixelPositionWorld, colWithBorderGlow, normal),
+            getPixelRainTopOfColumn(vPixelPositionWorld, colWithBorderGlow , normal),
+            interpolate(normal.g, Y_NORMAL_CUTOFFVALUE, 0.1)
             );  
-         gl_FragColor.a = min(gl_FragColor.a, colWithBorderGlow.a );
         }     
 	}
