@@ -795,7 +795,6 @@ function sozialize(evtID, frame, persPack, startFrame, myID)
                                        GameConfig.maxConversationLengthFrames))
             startInternalBehaviourOfState(myID, "startChatting", timeChattingInFrames*33)
             startInternalBehaviourOfState(partnerID, "startChatting", timeChattingInFrames*33)
-            registerChatting(myID, partnerID)
             persPack.maxTimeChattingInFrames  = 0
             return true, frame + timeChattingInFrames, persPack
         end
