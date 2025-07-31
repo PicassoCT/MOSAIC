@@ -926,15 +926,21 @@ function travelInPeaceTimes(evtID, frame, persPack, startFrame, myID)
     return boolDone, nil, persPack
 end
 
+CivilianInternalDebugStateStartTabel = {}
+
 function unitInternalLogic(evtID, frame, persPack, startFrame, myID)
     if not GG.CivilianUnitInternalLogicActive then GG.CivilianUnitInternalLogicActive = {} end
 
     if GG.CivilianUnitInternalLogicActive[myID] then
         if GG.CivilianUnitInternalLogicActive[myID] == "STARTED" then
+            if not CivilianInternalDebugStateStartTabel[myID] then  CivilianInternalDebugStateStartTabel[myID] = Spring.GetGameFrame()  end
+            
             return true, frame + 15, persPack
         end
 
         if GG.CivilianUnitInternalLogicActive[myID] == "ENDED" then
+            durationFrames = Spring.GetGameFrame() - CivilianInternalDebugStateStartTabel[myID] 
+            echo(myID .. "internal state lasted" .. (durationFrames/30) .."ms")
             Command(myID, "go", {
                 x = math.ceil(persPack.goalList[persPack.goalIndex].x),
                 y = math.ceil(persPack.goalList[persPack.goalIndex].y),
