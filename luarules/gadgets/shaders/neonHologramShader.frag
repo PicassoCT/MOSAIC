@@ -396,8 +396,8 @@
         {
 
          gl_FragColor = mix(
-            getPixelRainSideOfColumn(vPixelPositionWorld, GREEN, normal),
-            getPixelRainTopOfColumn(vPixelPositionWorld, RED , normal),
+            getPixelRainSideOfColumn(vPixelPositionWorld, GREEN, hyNormal),
+            getPixelRainTopOfColumn(vPixelPositionWorld, RED , hyNormal),
             interpolate(normal.g, Y_NORMAL_CUTOFFVALUE, 0.1)
             );  
         }     
