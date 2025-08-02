@@ -48,6 +48,7 @@ GG.BusesTable = {}
 GG.CivilianTable = {} -- [id ] ={ defID, startNodeID }
 GG.UnitArrivedAtTarget = {} -- [id] = true UnitID -- Units report back once they reach this target
 GG.CurrentlyChatting = {}
+GG.CivilianUnitInternalLogicActive = {} -- {string state, string behaviour}
 
 local RouteTabel = {} -- Every start has a subtable of reachable nodes 	
 local boolInitialized = false
@@ -929,18 +930,18 @@ end
 CivilianInternalDebugStateStartTabel = {}
 
 function unitInternalLogic(evtID, frame, persPack, startFrame, myID)
-    if not GG.CivilianUnitInternalLogicActive then GG.CivilianUnitInternalLogicActive = {} end
+
 
     if GG.CivilianUnitInternalLogicActive[myID] then
-        if GG.CivilianUnitInternalLogicActive[myID] == "STARTED" then
+        if GG.CivilianUnitInternalLogicActive[myID].state == GameConfig.STATE_STARTED then
             if not CivilianInternalDebugStateStartTabel[myID] then  CivilianInternalDebugStateStartTabel[myID] = Spring.GetGameFrame()  end
             
             return true, frame + 15, persPack
         end
 
-        if GG.CivilianUnitInternalLogicActive[myID] == "ENDED" then
-            durationFrames = Spring.GetGameFrame() - CivilianInternalDebugStateStartTabel[myID] 
-            echo(myID .. "internal state lasted" .. (durationFrames/30) .."ms")
+        if GG.CivilianUnitInternalLogicActive[myID].state == GameConfig.STATE_STARTED then
+            durationFrames = Spring.GetGameFrame() - CivilianInternalDebugStateStartTabel[myID]
+            echo(myID .. "internal state ".. CivilianUnitInternalLogicActive[myID].behaviour .." lasted" .. (durationFrames/30) .." ms")
             Command(myID, "go", {
                 x = math.ceil(persPack.goalList[persPack.goalIndex].x),
                 y = math.ceil(persPack.goalList[persPack.goalIndex].y),

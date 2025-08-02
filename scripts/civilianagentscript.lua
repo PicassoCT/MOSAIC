@@ -420,18 +420,12 @@ function script.HitByWeapon(x, z, weaponDefID, damage)
     damagedCoolDown = damagedCoolDown + (damage )
 end
 
-STATE_STARTED = "STARTED"
-STATE_ENDED = "ENDED"
-function setCivilianUnitInternalStateMode(unitID, State)
-     if not GG.CivilianUnitInternalLogicActive then GG.CivilianUnitInternalLogicActive = {} end
-     
-     GG.CivilianUnitInternalLogicActive[unitID] = State 
- end
+
 
 filmLocation = {}
 boolStartFilming = false
 function startFilmLocation(ux, uy, uz, time)
-    setCivilianUnitInternalStateMode(unitID, STATE_STARTED)
+    setCivilianUnitInternalStateMode(unitID, STATE_STARTED, "filming")
     filmLocation.x=ux
     filmLocation.y=uy
     filmLocation.z=uz
@@ -443,7 +437,7 @@ end
 wailingTime = 0
 boolStartWailing = false
 function startWailing(time)
-    setCivilianUnitInternalStateMode(unitID, STATE_STARTED)
+    setCivilianUnitInternalStateMode(unitID, STATE_STARTED, "wailing")
     wailingTime = time
     boolStartWailing = true
     return true
@@ -452,7 +446,7 @@ end
 chattingTime = 0
 boolStartChatting = false
 function startChatting(time)
-    setCivilianUnitInternalStateMode(unitID, STATE_STARTED)
+    setCivilianUnitInternalStateMode(unitID, STATE_STARTED, "chatting")
     chattingTime = time
     boolStartChatting = true
     return true
@@ -463,14 +457,14 @@ boolStartFleeing = false
 function startFleeing(enemyID)
     assert(enemyID)
     attackerID = enemyID
-    setCivilianUnitInternalStateMode(unitID, STATE_STARTED)
+    setCivilianUnitInternalStateMode(unitID, STATE_STARTED, "fleeing")
     boolStartFleeing = true
     return true
 end
 
 boolStartPraying = false
 function startPraying()
-    setCivilianUnitInternalStateMode(unitID, STATE_STARTED)
+    setCivilianUnitInternalStateMode(unitID, STATE_STARTED, "praying")
     boolStartPraying = true
     return true
 end

@@ -85,7 +85,12 @@ _00_/|      +-------------+     +-------------+     +-------------+  |
                [ Key Data Flow in the Widget ]
 
   Depth Texture -->  normaltex   -->  neonLightcanvastex  -->  Final Output
+[t=00:00:38.662024][f=-000001] 0(217) : error C1059: non constant expression in initialization
 
+[t=00:00:38.662657][f=-000001] gfx_neonlight_radiancecascade:initMapToPerspectiveLightShader
+[t=00:00:38.663630][f=-000001] gfx_neonlights_radiancecascade: Radiance Cascade TopDown Shader failed to compile
+[t=00:00:38.663675][f=-000001] 0(21) : error C1503: undefined variable "s"
+0(21) : error C1068: too much data in type constructor
 ]]
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------

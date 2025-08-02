@@ -547,8 +547,7 @@ function script.HitByWeapon(x, z, weaponDefID, damage)
     damagedCoolDown = damagedCoolDown + (damage )
 end
 
-STATE_STARTED = "STARTED"
-STATE_ENDED = "ENDED"
+
 function setCivilianUnitInternalStateMode(unitID, State, name)
      if not GG.CivilianUnitInternalLogicActive then GG.CivilianUnitInternalLogicActive = {} end
      echo(unitID.."civilian internal logic "..State.." "..(name or "unknown"))
@@ -558,7 +557,7 @@ function setCivilianUnitInternalStateMode(unitID, State, name)
 filmLocation = {}
 boolStartFilming = false
 function startFilmLocation(ux, uy, uz, time)
-    setCivilianUnitInternalStateMode(unitID, STATE_STARTED, "filming")
+    setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_STARTED, "filming")
     filmLocation.x=ux
     filmLocation.y=uy
     filmLocation.z=uz
@@ -570,7 +569,7 @@ end
 wailingTime = 0
 boolStartWailing = false
 function startWailing(time)
-    setCivilianUnitInternalStateMode(unitID, STATE_STARTED, "wailing")
+    setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_STARTED, "wailing")
     wailingTime = time
     boolStartWailing = true
     return true
@@ -579,7 +578,7 @@ end
 chattingTime = 0
 boolStartChatting = false
 function startChatting(time)
-    setCivilianUnitInternalStateMode(unitID, STATE_STARTED, "talk")
+    setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_STARTED, "talk")
     chattingTime = time
     boolStartChatting = true
     return true
@@ -590,7 +589,7 @@ boolStartFleeing = false
 function startFleeing(enemyID)
     attackerID = enemyID
 --    echo("Start fleeing called in civilian")
-    setCivilianUnitInternalStateMode(unitID, STATE_STARTED, "fleeing")
+    setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_STARTED, "fleeing")
     boolStartFleeing = true
     return true
 end
@@ -598,7 +597,7 @@ end
 boolStartPeaceFullProtest = false
 socialEngineerID = nil
 function startPeacefullProtest( id)
-    setCivilianUnitInternalStateMode(unitID, STATE_STARTED, "protest")
+    setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_STARTED, "protest")
 	socialEngineerID= id
     boolStartPeaceFullProtest = true
     return true

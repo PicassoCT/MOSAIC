@@ -140,6 +140,8 @@ function getGameConfig()
         visuals = {
             falloutParticlesMax = 128
         },
+        STATE_STARTED = "STARTED",
+        STATE_ENDED = "ENDED",
 
         numberOfBuildings = math.ceil(150 * GG.unitFactor),
         numberOfVehicles = math.ceil(60 * GG.unitFactor),
@@ -3677,9 +3679,12 @@ end
             return heighestPoint - ghb
         end
 
-        function setCivilianUnitInternalStateMode(unitID, State)
+        function setCivilianUnitInternalStateMode(unitID, State, behaviour)
             if not GG.CivilianUnitInternalLogicActive then GG.CivilianUnitInternalLogicActive = {} end
-            GG.CivilianUnitInternalLogicActive[unitID] = State
+            if GG.CivilianUnitInternalLogicActive[unitID].behaviour then 
+                echo("Overriding internal state".. GG.CivilianUnitInternalLogicActive[unitID].behaviour .. " with ".. behaviour or "no behavour name") 
+            end
+            GG.CivilianUnitInternalLogicActive[unitID] = {state = state, behaviour = behaviour or "no behavour name"} 
         end
 
 

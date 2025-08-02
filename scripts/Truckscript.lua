@@ -22,13 +22,6 @@ boolGaiaUnit = myTeamID == Spring.GetGaiaTeamID()
 local truckTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture,
                                                 "truck", UnitDefs)
 
-STATE_STARTED = "STARTED"
-STATE_ENDED = "ENDED"
-function setCivilianUnitInternalStateMode(unitID, State)
-     if not GG.CivilianUnitInternalLogicActive then GG.CivilianUnitInternalLogicActive = {} end
-     
-     GG.CivilianUnitInternalLogicActive[unitID] = State 
- end
 
 boolIsCivilianTruck = (truckTypeTable[unitDefID] ~= nil)
 boolIsPoliceTruck = unitDefID == UnitDefNames["policetruck"].id
@@ -242,8 +235,9 @@ end
 function fleeEnemy(enemyID)
     Signal(SIG_INTERNAL)
     SetSignalMask(SIG_INTERNAL)
+    setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_STARTED, "fleeing")
     if not enemyID then 
-        setCivilianUnitInternalStateMode(unitID, STATE_ENDED)
+        setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_ENDED, "fleeing")
         return 
     end
 
@@ -252,14 +246,13 @@ function fleeEnemy(enemyID)
         Sleep(500)
     end
 
-    setCivilianUnitInternalStateMode(unitID, STATE_ENDED)
+    setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_ENDED, "fleeings")
 end
 
 attackerID = 0
 boolStartFleeing = false 
 function startFleeing(attackerID)
     if not attackerID then return end
-    setCivilianUnitInternalStateMode(unitID, STATE_STARTED)
     boolStartFleeing = true
 end
 
