@@ -252,7 +252,7 @@
         return applyAlphaMask(sinVal, col);
     }
 
-    vec4 getPixelRainTopOfColumn(vec3 vertexPos, vec4 originalColor, vec3 normal)
+    vec4 getPixelRainTopOfColumn(vec3 vertexPos, vec4 originalColor)
     {
         vec2 v_uv = vertexPos.xz;
         float colOffset = getColOffset(vertexPos);
@@ -269,11 +269,11 @@
         float col = colRow.x;
         float row = colRow.y;
         vec2 u_center = vec2(col * columnWidth + halfSize, row * columnWidth + halfSize);
-        vec2 minEdge = u_center - halfSize*0.95;
-        vec2 maxEdge = u_center + halfSize*0.95;
+        vec2 minEdge = u_center - halfSize * 0.95;
+        vec2 maxEdge = u_center + halfSize * 0.95;
 
         // Create mask: 1 inside rect, 0 outside
-        float u_radius= 0.1;  // Glow softness in UV units
+        float u_radius = 0.1;  // Glow softness in UV units
         vec2 d = abs(v_uv - u_center);
 
         // Fade out edges using smoothstep
@@ -283,7 +283,8 @@
                 
         float inRect = step(minEdge.x, v_uv.x) * step(v_uv.x, maxEdge.x) * step(minEdge.y, v_uv.y) * step(v_uv.y, maxEdge.y);
         
-        return applyColorShift(wave, glow, vec4(originalColor.rgb, mix(0.,alpha,inRect)), false, vec3(0.));
+        return applyColorShift(wave, glow, vec4(originalColor.rgb, 
+            mix(0.,alpha,inRect)), false, vec3(0.));
     }
 
     vec3 iridescentColor(float angleFactor)
@@ -305,7 +306,7 @@
                     dis);
     }
 
-    vec4 getPixelRainSideOfColumn(vec3 vertexPos, vec4 originalColor, vec3 normal)
+    vec4 getPixelRainSideOfColumn(vec3 vertexPos, vec4 originalColor)
     {
         vertexPos.y = 1.0 - vertexPos.y;
         vec2 uv = vertexPos.xy;
@@ -396,9 +397,9 @@
         {
 
          gl_FragColor = mix(
-            getPixelRainSideOfColumn(vPixelPositionWorld, GREEN, hyNormal),
-            getPixelRainTopOfColumn(vPixelPositionWorld, RED , hyNormal),
+            getPixelRainSideOfColumn(gl_Position.xyz, GREEN ),
+            getPixelRainTopOfColumn(gl_Position.xyz, RED),
             interpolate(normal.g, Y_NORMAL_CUTOFFVALUE, 0.1)
             );  
-        }     
+         }     
 	}
