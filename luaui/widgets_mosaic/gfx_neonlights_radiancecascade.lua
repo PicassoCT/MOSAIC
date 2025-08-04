@@ -855,12 +855,3 @@ function widget:GameFrame()
 end
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
---[[
-[t=00:01:02.354529][f=-000001] 0(217) : error C1059: non constant expression in initialization
-
-[t=00:01:02.355887][f=-000001] gfx_neonlight_radiancecascade:initMapToPerspectiveLightShader
-[t=00:01:02.369867][f=-000001] gfx_neonlights_radiancecascade: Radiance Cascade TopDown Shader failed to compile
-[t=00:01:02.369986][f=-000001] 0(21) : error C1503: undefined variable "s"
-0(21) : error C1068: too much data in type constructor
-
-]]

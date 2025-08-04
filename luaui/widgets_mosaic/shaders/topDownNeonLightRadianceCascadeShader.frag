@@ -5,6 +5,9 @@ in vec3 vWorldPos;
 in vec3 vNormal;
 in vec2 vUV;
 
+#define WHATEVER 0
+#define HELP 1
+
 uniform float neonLightPercent;
 uniform vec2  viewPortSize;
 uniform vec3 eyePos; //The scene eyePos
@@ -214,11 +217,12 @@ vec3 integrateSkyRadiance_(vec2 angle) {
     // Sky integral formula taken from
     // Analytic Direct Illumination - Mathis
     // https://www.shadertoy.com/view/NttSW7
-    const vec3 lSunColor = vec3(sunCol * 10);
+    
     const float SunA = 2.0;
     const float SunS = 64.0;
     const float SSunS = sqrt(SunS);
     const float ISSunS = 1./SSunS;
+    vec3 lSunColor = vec3(sunCol * 10);
     vec3 SI = skyCol*(a1-a0-0.5*(cos(a1)-cos(a0)));
     SI += lSunColor*(atan(SSunS*(SunA-a0))-atan(SSunS*(SunA-a1)))*ISSunS;
     return SI / 6.0;
