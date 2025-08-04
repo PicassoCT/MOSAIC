@@ -425,7 +425,7 @@ end
 filmLocation = {}
 boolStartFilming = false
 function startFilmLocation(ux, uy, uz, time)
-    setCivilianUnitInternalStateMode(unitID, STATE_STARTED, "filming")
+    setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_STARTED, "filming")
     filmLocation.x=ux
     filmLocation.y=uy
     filmLocation.z=uz
@@ -437,7 +437,7 @@ end
 wailingTime = 0
 boolStartWailing = false
 function startWailing(time)
-    setCivilianUnitInternalStateMode(unitID, STATE_STARTED, "wailing")
+    setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_STARTED, "wailing")
     wailingTime = time
     boolStartWailing = true
     return true
@@ -446,7 +446,7 @@ end
 chattingTime = 0
 boolStartChatting = false
 function startChatting(time)
-    setCivilianUnitInternalStateMode(unitID, STATE_STARTED, "chatting")
+    setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_STARTED, "chatting")
     chattingTime = time
     boolStartChatting = true
     return true
@@ -457,14 +457,14 @@ boolStartFleeing = false
 function startFleeing(enemyID)
     assert(enemyID)
     attackerID = enemyID
-    setCivilianUnitInternalStateMode(unitID, STATE_STARTED, "fleeing")
+    setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_STARTED, "fleeing")
     boolStartFleeing = true
     return true
 end
 
 boolStartPraying = false
 function startPraying()
-    setCivilianUnitInternalStateMode(unitID, STATE_STARTED, "praying")
+    setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_STARTED, "praying")
     boolStartPraying = true
     return true
 end
@@ -497,12 +497,12 @@ function pray()
     setSpeedEnv(unitID, NORMAL_WALK_SPEED)
     resetT(upperBodyPieces,2.0, false, true)
     Move(center,z_axis, 0, 2500)
-    setCivilianUnitInternalStateMode(unitID, STATE_ENDED)
+    setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_ENDED, "praying")
 end
 
 boolStartAnarchyBehaviour = false
 function startAnarchyBehaviour()
-    setCivilianUnitInternalStateMode(unitID, STATE_STARTED)
+    setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_STARTED, "anarchy")
     boolStartAnarchyBehaviour = true
     return true
 end
@@ -525,7 +525,7 @@ function anarchyBehaviour()
         Sleep(250)
     end
 
-    setCivilianUnitInternalStateMode(unitID, STATE_ENDED)
+    setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_ENDED, "anarchy")
 end
 
 function haveSexTimeDelayed()
@@ -546,7 +546,7 @@ aeroSolType = "undefinedAerosolState"
 function startAerosolBehaviour(extAerosolStateToSet)
     boolStartAerosolBehaviour= true
     aeroSolType = extAerosolStateToSet
-    setCivilianUnitInternalStateMode(unitID, STATE_STARTED)
+    setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_STARTED, "aeroSolStateBehaviour")
 end
 
 function aeroSolStateBehaviour()
@@ -573,7 +573,7 @@ function wailing()
        wailingTime = wailingTime - 1500
         Sleep(100)
     end
-    setCivilianUnitInternalStateMode(unitID, STATE_ENDED)
+    setCivilianUnitInternalStateMode(unitID,GameConfig.STATE_ENDED, "wailing")
 end
 
 function chatting()
@@ -605,7 +605,7 @@ function chatting()
     GG.CurrentlyChatting[unitID] = nil
     playUpperBodyIdleAnimation()
     resetT(TablesOfPiecesGroups["UpArm"], math.pi, false, true)
-    setCivilianUnitInternalStateMode(unitID, STATE_ENDED)
+    setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_ENDED,"chatting")
 end
 
 function filmingLocation()
@@ -618,14 +618,14 @@ function filmingLocation()
         setUnitRotationToPoint(unitID, filmLocation.x, filmLocation.y, filmLocation.z)
         Sleep(100)
     end
-    setCivilianUnitInternalStateMode(unitID, STATE_ENDED)
+    setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_ENDED, "filming")
 end
 
 function fleeEnemy(enemyID)
     Signal(SIG_INTERNAL)
     SetSignalMask(SIG_INTERNAL)
     if not enemyID then 
-        setCivilianUnitInternalStateMode(unitID, STATE_ENDED)
+        setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_ENDED, "flee")
         return 
     end  
    -- echo(unitID.." starts fleeing from "..enemyID.." with distance "..distanceUnitToUnit(unitID, enemyID))
@@ -641,7 +641,7 @@ function fleeEnemy(enemyID)
         flightTime= flightTime - 125
     end
 
-    setCivilianUnitInternalStateMode(unitID, STATE_ENDED)
+    setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_ENDED, "flee")
 end
 
 function delayedWoundedWalkAfterCover(timeInSeconds)
