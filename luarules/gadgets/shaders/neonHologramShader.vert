@@ -24,6 +24,7 @@
     // Variables passed from vertex to fragment shader
     out Data {      
             vec2 vSphericalUVs;
+            vec2 vCubicUVs;
             vec3 vPixelPositionWorld;
             vec3 normal;
             vec3 sphericalNormal;
@@ -57,6 +58,31 @@ void CreateSphericalUVs(vec3 worldPosition)
     vSphericalUVs.y = latitude / PI;
 }
 
+void CreateCubicUVs(vec3 absPos)
+{
+    int axis;
+    if (absPos.x > absPos.y && absPos.x > absPos.z) {
+        axis = 0;
+    } else if (absPos.y > absPos.z) {
+        axis = 1;
+    } else {
+        axis = 2;
+    }
+
+    // Project position onto a plane perpendicular to the given axis
+    // and remap to [0, 1]
+
+    if (axis == 0) { // X-major (YZ plane)
+        vCubicUVs.xy = pos.zy;
+    } else if (axis == 1) { // Y-major (XZ plane)
+        vCubicUVs.xy = pos.xz;
+    } else { // Z-major (XY plane)
+        vCubicUVs.xy = pos.xy;
+    }
+
+    vCubicUVs=  vCubicUVs * 0.5 + 0.5; // Map from [-1,1] to [0,1]
+}
+
 void main() 
 {
 
@@ -79,4 +105,5 @@ void main()
 	gl_Position = gl_ModelViewProjectionMatrix * vec4(posCopy.x, posCopy.y, posCopy.z, 1.0);
     vPixelPositionWorld = gl_Position.xyz;
     CreateSphericalUVs(gl_Position.xyz);
+    CreateCubicUVs(gl_Position.xyz);
 }

@@ -161,11 +161,11 @@
 
 
 
-    const float columnWidth= 0.05;
+    float columnWidth= 0.5;//max(0.1,abs(sin(time)));//0.05;
     float halfSize = (columnWidth/2.);
     //const float pixelPillarSize = 100.0;
 
-    const float fallSpeed = 3.0;      // Controls vertical speed
+    const float fallSpeed = 6.0;      // Controls vertical speed
     const float shimmerFreq = 32.0;   // How fast it sparkles
     const float trailFade = 512.0;     // How long the trail glows
     const float recoverySpeed = 30.0;  // How fast it fades back

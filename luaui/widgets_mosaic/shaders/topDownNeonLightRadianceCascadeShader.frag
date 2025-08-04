@@ -5,8 +5,7 @@ in vec3 vWorldPos;
 in vec3 vNormal;
 in vec2 vUV;
 
-#define WHATEVER 0
-#define HELP 1
+
 
 uniform float neonLightPercent;
 uniform vec2  viewPortSize;
