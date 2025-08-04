@@ -37,6 +37,7 @@
     // Varyings passed from the vertex shader
     in Data {
         vec2 vSphericalUVs;
+        vec2 vCubicUVs;
         vec3 vPixelPositionWorld;
         vec3 normal;
         vec3 sphericalNormal;
@@ -252,9 +253,8 @@
         return applyAlphaMask(sinVal, col);
     }
 
-    vec4 getPixelRainTopOfColumn(vec3 vertexPos, vec4 originalColor)
+    vec4 getPixelRainTopOfColumn(vec2 v_uv, vec4 originalColor)
     {
-        vec2 v_uv = vertexPos.xz;
         float colOffset = getColOffset(vertexPos);
         float wave = GetRainDropWaveAt(vertexPos.y, colOffset);
         float glow = exp(wave * trailFade);
@@ -306,11 +306,10 @@
                     dis);
     }
 
-    vec4 getPixelRainSideOfColumn(vec3 vertexPos, vec4 originalColor)
+    vec4 getPixelRainSideOfColumn(vec2 v_uv, vec4 originalColor)
     {
-        vertexPos.y = 1.0 - vertexPos.y;
-        vec2 uv = vertexPos.xy;
-
+        v_uv.y = 1.0 - v_uv.y;
+  
         // Which column we're in
         vec2 colRow = getColRowIdentifier(vertexPos);
         float col = colRow.x;
@@ -324,7 +323,7 @@
         }
 
         // Drop "wave" — sine over time and vertical pos
-        float wave = GetRainDropWaveAt(uv.y, colOffset);
+        float wave = GetRainDropWaveAt(v_uv.y, colOffset);
         float glow =  getGlow(wave, time, vertexPos.y);
 
         // Glow color
@@ -397,8 +396,8 @@
         {
 
          gl_FragColor = mix(
-            getPixelRainSideOfColumn(vPixelPositionWorld.xyz, GREEN ),
-            getPixelRainTopOfColumn(vPixelPositionWorld.xyz, RED),
+            getPixelRainSideOfColumn(vCubicUVs, GREEN ),
+            getPixelRainTopOfColumn(vCubicUVs, RED),
             interpolate(normal.g, Y_NORMAL_CUTOFFVALUE, 0.1)
             );  
          }     
