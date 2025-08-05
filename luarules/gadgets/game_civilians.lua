@@ -538,7 +538,6 @@ function gadget:Initialize()
     GG.AerosolAffectedCivilians = {}
     GG.UnitArrivedAtTarget = {}
     GG.TravelFunctionRegistry= {}
-    GameConfig = getGameConfig()
     Spring.SetGameRulesParam ( "culture",GameConfig.instance.culture ) 
     startFrame = Spring.GetGameFrame() + 30*5
     setUpRefugeeWayPoints()

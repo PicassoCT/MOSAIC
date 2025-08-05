@@ -4,25 +4,23 @@ include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 --include "lib_Build.lua"
 include "lib_mosaic.lua"
-TablesOfPiecesGroups = {}
-
-LoadOutTypes = getTruckLoadOutTypeTable()
+local TablesOfPiecesGroups = {}
 
 SIG_ORDERTRANFER = 1
 SIG_HONK = 2
 SIG_INTERNAL = 4
 
-center = piece("center")
-attachPoint = piece("attachPoint")
-colDetectPiece = piece("Truck1")
-TruckCenter = center
-PayloadCenter = piece("PayloadCenter")
+local center = piece("center")
+local attachPoint = piece("attachPoint")
+local colDetectPiece = piece("Truck1")
+local TruckCenter = center
+local PayloadCenter = piece("PayloadCenter")
 
-myTeamID = Spring.GetUnitTeam(unitID)
-boolGaiaUnit = myTeamID == Spring.GetGaiaTeamID()
-DetectPiece = piece"DetectPiece"
-GameConfig = getGameConfig()
-civilianWalkingTypeTable = getCultureUnitModelTypes(
+local myTeamID = Spring.GetUnitTeam(unitID)
+local boolGaiaUnit = myTeamID == Spring.GetGaiaTeamID()
+local DetectPiece = piece"DetectPiece"
+local GameConfig = getGameConfig()
+local civilianWalkingTypeTable = getCultureUnitModelTypes(
                                      GameConfig.instance.culture, "civilian",
                                      UnitDefs)
 

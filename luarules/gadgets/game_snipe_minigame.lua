@@ -34,8 +34,7 @@ if (gadgetHandler:IsSyncedCode()) then
     local spDestroyUnit = Spring.DestroyUnit
     local postRoundTimeInSeconds = 15
     local safeHouseTypeTable = getSafeHouseTypeTable(UnitDefs)
-
-    GameConfig = getGameConfig()
+    local GameConfig = getGameConfig()
     function alwaysShowUnit(id, observerTeam)
         -- transferUnitTeam(id, gaiaTeamID)
         showUnit(id)

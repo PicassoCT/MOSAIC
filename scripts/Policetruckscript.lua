@@ -4,14 +4,14 @@ include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 include "lib_mosaic.lua"
 include "lib_debug.lua"
-TablesOfPiecesGroups = {}
+local TablesOfPiecesGroups = {}
 
-center = piece "center"
-attachPoint = piece "attachPoint"
-TruckTypeTable = getTruckTypeTable(UnitDefs)
-boolIsCivilianTruck = (TruckTypeTable[unitDefID] == nil)
-GameConfig = getGameConfig()
-boolIsCivilianUnit = Spring.GetUnitTeam(unitID) == Spring.GetGaiaTeamID()
+local center = piece "center"
+local attachPoint = piece "attachPoint"
+local TruckTypeTable = getTruckTypeTable(UnitDefs)
+local boolIsCivilianTruck = (TruckTypeTable[unitDefID] == nil)
+local GameConfig = getGameConfig()
+local boolIsCivilianUnit = Spring.GetUnitTeam(unitID) == Spring.GetGaiaTeamID()
 
 SIG_LOUDNESOVERRIDE = 2
 

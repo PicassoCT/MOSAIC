@@ -23,8 +23,8 @@ if (gadgetHandler:IsSyncedCode()) then
     startTestAfterSeconds = 5
     --Optimization
     gaiaTeamID = Spring.GetGaiaTeamID()
-    GameConfig = getGameConfig()
-    houseTypeTable = getCultureUnitModelNames_Dict_DefIDName(GameConfig.instance.culture, "house", UnitDefs)
+    local GameConfig = getGameConfig()
+    local houseTypeTable = getCultureUnitModelNames_Dict_DefIDName(GameConfig.instance.culture, "house", UnitDefs)
 
     function gadget:Initialize()
         initalizeInheritanceManagement()

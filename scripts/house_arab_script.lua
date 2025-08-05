@@ -59,7 +59,7 @@ center = piece "center"
 pericodicRotationYPieces = {}
 pericodicMovingZPieces = {}
 spinYPieces = {}
-GameConfig = getGameConfig()
+local GameConfig = getGameConfig()
 
 function timeOfDay()
 

@@ -561,7 +561,6 @@ function gadget:Initialize()
     if not  GG.innerCityCenter then  GG.innerCityCenter = {} end
 
     GG.CitySpawnComplete = false
-    GameConfig = getGameConfig()
     Spring.SetGameRulesParam ( "culture",GameConfig.instance.culture ) 
     --killAllUnitsAtGamestart()
 originalGameFrame = Spring.GetGameFrame()

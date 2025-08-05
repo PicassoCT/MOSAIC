@@ -17,7 +17,7 @@ if gadgetHandler:IsSyncedCode() then
     VFS.Include("scripts/lib_mosaic.lua")
     VFS.Include("scripts/lib_UnitScript.lua")
     VFS.Include("scripts/lib_Type.lua")
-    GameConfig = getGameConfig()
+    local GameConfig = getGameConfig()
 
     local DAYLENGTH = GameConfig.daylength
     local EVERY_NTH_FRAME = 32

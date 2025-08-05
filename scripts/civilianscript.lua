@@ -89,7 +89,7 @@ local myTeamID = spGetUnitTeam(unitID)
 local gaiaTeamID = Spring.GetGaiaTeamID()
 local spGetUnitPosition = Spring.GetUnitPosition
 local loc_doesUnitExistAlive = doesUnitExistAlive
-GameConfig = getGameConfig()
+local GameConfig = getGameConfig()
 local civilianWalkingTypeTable = getCultureUnitModelTypes(
                                      GameConfig.instance.culture, "civilian",
                                      UnitDefs)

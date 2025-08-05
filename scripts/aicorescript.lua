@@ -5,7 +5,7 @@ include "lib_Animation.lua"
 include "lib_mosaic.lua"
 
 local TablesOfPiecesGroups = {}
-GameConfig = getGameConfig()
+local GameConfig = getGameConfig()
 
 IntegrationRadius = GameConfig.integrationRadius
 TIME_MAX = GameConfig.maxNumberIntegratedIntoHive * 1000

@@ -3,7 +3,7 @@ include "lib_OS.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 --include "lib_Build.lua"
-GameConfig = getGameConfig()
+local GameConfig = getGameConfig()
 local TablesOfPiecesGroups = {}
 
 center = piece "center"

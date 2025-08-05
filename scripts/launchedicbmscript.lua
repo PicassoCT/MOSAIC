@@ -5,7 +5,7 @@ include "lib_Animation.lua"
 include "lib_Build.lua"
 --Changes
 TablesOfPiecesGroups = {}
-gameConfig = getGameConfig()
+local gameConfig = getGameConfig()
 
 function script.Create()
     generatepiecesTableAndArrayCode(unitID)

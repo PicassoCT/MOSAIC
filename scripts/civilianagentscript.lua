@@ -10,7 +10,7 @@ local signMessages = include('protestSignMessages.lua')
 include "lib_mosaic.lua"
 
 local TablesOfPiecesGroups = {}
-
+local GameConfig = getGameConfig()
 SIG_ANIM = 1
 SIG_UP = 2
 SIG_LOW = 4
@@ -90,7 +90,7 @@ local myTeamID = spGetUnitTeam(unitID)
 local gaiaTeamID = Spring.GetGaiaTeamID()
 local spGetUnitWeaponTarget = Spring.GetUnitWeaponTarget
 local loc_doesUnitExistAlive = doesUnitExistAlive
-GameConfig = getGameConfig()
+
 local civilianWalkingTypeTable = getCultureUnitModelTypes(
                                      GameConfig.instance.culture, "civilian",
                                      UnitDefs)

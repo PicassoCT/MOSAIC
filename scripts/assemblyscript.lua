@@ -14,7 +14,7 @@ myTeamID = Spring.GetUnitTeam(unitID)
 MaxPlattformHeigth = 750
 Icon = piece"Icon"
 
-GameConfig = getGameConfig()
+local GameConfig = getGameConfig()
 local houseTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture,
                                                 "house", UnitDefs)
 SIG_BUILD = 1

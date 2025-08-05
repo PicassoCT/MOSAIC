@@ -24,7 +24,6 @@
     // Variables passed from vertex to fragment shader
     out Data {      
             vec2 vSphericalUVs;
-            vec2 vCubicUVs;
             vec3 vPixelPositionWorld;
             vec3 normal;
             vec3 sphericalNormal;
@@ -58,52 +57,26 @@ void CreateSphericalUVs(vec3 worldPosition)
     vSphericalUVs.y = latitude / PI;
 }
 
-void CreateCubicUVs(vec3 absPos)
-{
-    int axis;
-    if (absPos.x > absPos.y && absPos.x > absPos.z) {
-        axis = 0;
-    } else if (absPos.y > absPos.z) {
-        axis = 1;
-    } else {
-        axis = 2;
-    }
-
-    // Project position onto a plane perpendicular to the given axis
-    // and remap to [0, 1]
-
-    if (axis == 0) { // X-major (YZ plane)
-        vCubicUVs.xy = absPos.zy;
-    } else if (axis == 1) { // Y-major (XZ plane)
-        vCubicUVs.xy = absPos.xz;
-    } else { // Z-major (XY plane)
-        vCubicUVs.xy = absPos.xy;
-    }
-
-    vCubicUVs=  vCubicUVs * 0.5 + 0.5; // Map from [-1,1] to [0,1]
-}
-
 void main() 
 {
 
     normal = gl_NormalMatrix * gl_Normal;
     orgColUv = gl_MultiTexCoord0.xy;
 
-	//TODO Loads of dead code, no idea how this worked? 
-	//Calculate the world position of the vertex
+    //TODO Loads of dead code, no idea how this worked? 
+    //Calculate the world position of the vertex
     //vPixelPositionWorld =  (  gl_ModelViewMatrix * vec4(gl_Vertex.xyz ,0)).xyz;
 
-	//Calculate the world Vertex Position ? Operation Order wrong?
+    //Calculate the world Vertex Position ? Operation Order wrong?
     vec4 worldVertPos = gl_ModelViewMatrixInverseTranspose * (gl_ModelViewMatrix * gl_Vertex);
     vVertexPos =gl_Vertex.xyz;
     vec3 posCopy = gl_Vertex.xyz;
     //We shiver the polygons to the side ocassionally in ripples
     if (mod(time, 45.0) < 9.0)
     {
-	   posCopy.y = posCopy.y +  (shiver(posCopy.y, 0.5, 0.95));
+       posCopy.y = posCopy.y +  (shiver(posCopy.y, 0.5, 0.95));
     }
-	gl_Position = gl_ModelViewProjectionMatrix * vec4(posCopy.x, posCopy.y, posCopy.z, 1.0);
+    gl_Position = gl_ModelViewProjectionMatrix * vec4(posCopy.x, posCopy.y, posCopy.z, 1.0);
     vPixelPositionWorld = gl_Position.xyz;
     CreateSphericalUVs(gl_Position.xyz);
-    CreateCubicUVs(gl_Position.xyz);
 }

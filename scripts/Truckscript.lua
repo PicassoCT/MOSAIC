@@ -6,9 +6,9 @@ include "lib_Animation.lua"
 include "lib_mosaic.lua"
 local TablesOfPiecesGroups = {}
 
-LoadOutTypes = getTruckLoadOutTypeTable()
-NotTruckLoadableUnitType = getNotTruckLoadableTypeTable(UnitDefs)
-GameConfig = getGameConfig()
+local LoadOutTypes = getTruckLoadOutTypeTable()
+local NotTruckLoadableUnitType = getNotTruckLoadableTypeTable(UnitDefs)
+local GameConfig = getGameConfig()
 SIG_ORDERTRANFER = 1
 SIG_HONK = 2
 SIG_INTERNAL = 4

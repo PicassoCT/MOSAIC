@@ -349,25 +349,25 @@ end
 
 variousFunctions = {
     [1] = function ()
-        echo("brothelFlicker function")
+    --      echo("brothelFlicker function")
         StartThread(flickerScript, brothelFlickerGroup, 5, 250, 4, true)
         StartThread(theSlammer)
     end,
     [2] = function ()
-        echo("showLogo function")
+    --  echo("showLogo function")
         StartThread(showLogo)
     end,    
     [3] = function () 
-        echo("joyStart function")
+    --    echo("joyStart function")
         StartThread(joyStart)
     end,
     [4] = function () --tiglil
-        echo("tiglLilLoop function")
+    --    echo("tiglLilLoop function")
         StartThread(tiglLilLoop)
         StartThread(dropCoinsOrMoney, true)
     end,
     [5] = function ()
-        echo("casino function")
+    --    echo("casino function")
         StartThread(flickerScript, CasinoflickerGroup, 5, 250, 4, true)
         StartThread(dropCoinsOrMoney)
     end,

@@ -4,7 +4,7 @@ include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 
 local spGetUnitPosition = Spring.GetUnitPosition
-
+local GameConfig = getGameConfig()
 local grafitiMessages =  include('grafitiMessages.lua')
 
 function getScriptName() return "house_western_script.lua::" end
@@ -79,7 +79,7 @@ BasePillars = piece "BasePillar"
 pericodicRotationYPieces = {}
 pericodicMovingZPieces = {}
 
-GameConfig = getGameConfig()
+
 
 function timeOfDay()
     WholeDay = GameConfig.daylength

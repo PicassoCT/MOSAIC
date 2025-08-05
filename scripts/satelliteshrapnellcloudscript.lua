@@ -8,7 +8,7 @@ local TablesOfPiecesGroups = {}
 
 function script.HitByWeapon(x, z, weaponDefID, damage) end
 
-GameConfig = getGameConfig()
+local GameConfig = getGameConfig()
 local spGetUnitDefID = Spring.GetUnitDefID
 
 center = piece "center"

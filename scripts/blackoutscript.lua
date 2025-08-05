@@ -3,7 +3,7 @@ include "lib_OS.lua"
 include "lib_UnitScript.lua"
 include "lib_mosaic.lua"
 
-GameConfig = getGameConfig()
+local GameConfig = getGameConfig()
 local TablesOfPiecesGroups = {}
 
 gaiaTeamID = Spring.GetGaiaTeamID()
