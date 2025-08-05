@@ -73,11 +73,11 @@ void CreateCubicUVs(vec3 absPos)
     // and remap to [0, 1]
 
     if (axis == 0) { // X-major (YZ plane)
-        vCubicUVs.xy = pos.zy;
+        vCubicUVs.xy = absPos.zy;
     } else if (axis == 1) { // Y-major (XZ plane)
-        vCubicUVs.xy = pos.xz;
+        vCubicUVs.xy = absPos.xz;
     } else { // Z-major (XY plane)
-        vCubicUVs.xy = pos.xy;
+        vCubicUVs.xy = absPos.xy;
     }
 
     vCubicUVs=  vCubicUVs * 0.5 + 0.5; // Map from [-1,1] to [0,1]

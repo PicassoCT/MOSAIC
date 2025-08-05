@@ -396,7 +396,7 @@ local function initMapToPerspectiveLightShader()
         }
     )
     if not mapLightMapToPerspectiveShader then
-        Spring.Echo(shaderName..": Radiance Cascade TopDown Shader failed to compile")
+        Spring.Echo(shaderName..": Radiance Cascade map TopDown Shader failed to compile")
         Spring.Echo(glGetShaderLog())
         widgetHandler:RemoveWidget(self)
         return

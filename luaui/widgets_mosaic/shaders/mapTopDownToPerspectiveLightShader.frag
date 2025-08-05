@@ -18,7 +18,7 @@ void main() {
     float depth = texture(depthTex, gl_FragCoord.xy).r;
 
     // Reconstruct world position:
-    vec4 ndc = vec4(gl_FragCoord * 2.0 - 1.0, s * 2.0 - 1.0, 1.0);
+    vec4 ndc = vec4(gl_FragCoord.xy * 2.0 - 1.0, depth * 2.0 - 1.0, 1.0);
     vec4 worldPos4 = invProjView * ndc;
     vec3 worldPos = worldPos4.xyz / worldPos4.w;
 
@@ -31,5 +31,4 @@ void main() {
 
     // Combine with scene color — here simply output light:
     gl_FragColor = lightColor;
-    gl_FragColor = RED;
 }

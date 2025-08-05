@@ -45,38 +45,41 @@ in Data {
   vec3 vVertexPos;
 };
 
-// GLOBAL VARIABLES/////    //////////////////////    //////////////////////
-// //////////////////////
-
+// GLOBAL VARIABLES ========================================================
 float radius = 16.0;
 vec2 pixelCoord;
 
-//////////////////////    //////////////////////    //////////////////////
-/////////////////////////
-bool isActive(vec2 colRowId) {
+//==========================================================================
+
+bool isActive(vec2 colRowId) 
+{
   float modulator = ceil((1 / rainPercentage) * 10.0);
   return floor(mod(colRowId.x + colRowId.y, modulator)) == 0;
 }
 
-float getLightPercentageFactorByTime() {
+float getLightPercentageFactorByTime() 
+{
   return mix(0.35, 0.75, (1 + sin(timepercent * 2 * PI)) * 0.5);
 }
 
 float getSineWave(float posOffset,
                   float posOffsetScale,
                   float time,
-                  float timeSpeedScale) {
+                  float timeSpeedScale) 
+{
   return sin((posOffset * posOffsetScale) + time * timeSpeedScale);
 }
 
 float getCosineWave(float posOffset,
                     float posOffsetScale,
                     float time,
-                    float timeSpeedScale) {
+                    float timeSpeedScale) 
+{
   return cos((posOffset * posOffsetScale) + time * timeSpeedScale);
 }
 
-float cubicTransparency(vec2 position) {
+float cubicTransparency(vec2 position) 
+{
   float cubeSize = 2.0;
   if (mod(position.x, cubeSize) < 0.5 || mod(position.y, cubeSize) < 0.5) {
     return abs(0.35 + abs(sin(time)) * 0.5) * getLightPercentageFactorByTime();
@@ -87,30 +90,36 @@ float cubicTransparency(vec2 position) {
 bool isCornerCase(vec2 uvCoord,
                   float effectStart,
                   float effectEnd,
-                  float glowSize) {
+                  float glowSize) 
+{
   if (uvCoord.x > effectStart && uvCoord.x < effectStart + glowSize &&
-      uvCoord.y > effectStart && uvCoord.y < effectStart + glowSize) {
+      uvCoord.y > effectStart && uvCoord.y < effectStart + glowSize) 
+  {
     return true;
   }
 
   if (uvCoord.x > effectEnd - glowSize && uvCoord.x < effectEnd &&
-      uvCoord.y > effectStart && uvCoord.y < effectStart + glowSize) {
-    return true;
+      uvCoord.y > effectStart && uvCoord.y < effectStart + glowSize)
+  {
+  return true;
   }
 
   if (uvCoord.x > effectEnd - glowSize && uvCoord.x < effectEnd &&
-      uvCoord.y > effectEnd - glowSize && uvCoord.y < effectEnd) {
+      uvCoord.y > effectEnd - glowSize && uvCoord.y < effectEnd) 
+  {
     return true;
   }
 
   if (uvCoord.x > effectStart && uvCoord.x < effectStart + glowSize &&
-      uvCoord.y > effectEnd - glowSize && uvCoord.y < effectEnd) {
+      uvCoord.y > effectEnd - glowSize && uvCoord.y < effectEnd) 
+  {
     return true;
   }
   return false;
 }
 
-float GetHologramTransparency() {
+float GetHologramTransparency() 
+{
   float sfactor = 4.0;  // scaling factor position
   float hologramTransparency = 0.0;
   float baseInterferenceRipples = max(
