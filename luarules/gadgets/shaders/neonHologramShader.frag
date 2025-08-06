@@ -44,6 +44,16 @@
         vec3 vVertexPos;
         };
 
+    const float columnWidth= 0.5;
+    float halfSize = (columnWidth/2.);
+    //const float pixelPillarSize = 100.0;
+
+    const float fallSpeed = 3.0;      // Controls vertical speed
+    const float shimmerFreq = 32.0;   // How fast it sparkles
+    const float trailFade = 512.0;     // How long the trail glows
+    const float recoverySpeed = 30.0;  // How fast it fades back
+    const float rainDropScale = 2.0;
+
     //GLOBAL VARIABLES/////    //////////////////////    //////////////////////    //////////////////////
 
     float radius = 16.0;
@@ -161,15 +171,7 @@
 
 
 
-    const float columnWidth= 0.05;
-    float halfSize = (columnWidth/2.);
-    //const float pixelPillarSize = 100.0;
 
-    const float fallSpeed = 3.0;      // Controls vertical speed
-    const float shimmerFreq = 32.0;   // How fast it sparkles
-    const float trailFade = 512.0;     // How long the trail glows
-    const float recoverySpeed = 30.0;  // How fast it fades back
-    const float rainDropScale = 2.0;
 
     bool isActive(float value)
     {
@@ -283,8 +285,11 @@
                 
         float inRect = step(minEdge.x, v_uv.x) * step(v_uv.x, maxEdge.x) * step(minEdge.y, v_uv.y) * step(v_uv.y, maxEdge.y);
         
-        return applyColorShift(wave, glow, vec4(originalColor.rgb, 
-            mix(0.,alpha,inRect)), false, vec3(0.));
+        return applyColorShift(
+           wave,
+           glow,
+           vec4(originalColor.rgb, 
+           mix(0.,alpha,inRect)), false, vec3(0.));
     }
 
     vec3 iridescentColor(float angleFactor)
@@ -340,7 +345,7 @@
                             glow, 
                             originalColor,
                             inDrop,
-                            getDropColor(wave, disDropCenter, originalColor, normal)
+                            getDropColor(wave, disDropCenter, originalColor, sphericalNormal)
                          );
     }
 
@@ -399,7 +404,8 @@
          gl_FragColor = mix(
             getPixelRainSideOfColumn(vPixelPositionWorld.xyz, GREEN ),
             getPixelRainTopOfColumn(vPixelPositionWorld.xyz, RED),
-            interpolate(normal.g, Y_NORMAL_CUTOFFVALUE, 0.1)
+            interpolate(normalize(normal).g, Y_NORMAL_CUTOFFVALUE, 0.1)
             );  
+       
          }     
 	}
