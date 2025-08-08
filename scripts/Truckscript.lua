@@ -13,19 +13,16 @@ SIG_ORDERTRANFER = 1
 SIG_HONK = 2
 SIG_INTERNAL = 4
 
-center = piece "center"
-attachPoint = piece "attachPoint"
-
-myTeamID = Spring.GetUnitTeam(unitID)
-boolGaiaUnit = myTeamID == Spring.GetGaiaTeamID()
+local center = piece "center"
+local attachPoint = piece "attachPoint"
+local myTeamID = Spring.GetUnitTeam(unitID)
+local boolGaiaUnit = myTeamID == Spring.GetGaiaTeamID()
 
 local truckTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture,
                                                 "truck", UnitDefs)
-
-
-boolIsCivilianTruck = (truckTypeTable[unitDefID] ~= nil)
-boolIsPoliceTruck = unitDefID == UnitDefNames["policetruck"].id
-myLoadOutType = LoadOutTypes[unitDefID]
+local boolIsCivilianTruck = (truckTypeTable[unitDefID] ~= nil)
+local boolIsPoliceTruck = unitDefID == UnitDefNames["policetruck"].id
+local myLoadOutType = LoadOutTypes[unitDefID]
 local loadOutUnitID
 
 

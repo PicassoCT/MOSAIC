@@ -8,7 +8,7 @@
     #define WHITE vec4(1.0)
     #define NONE vec4(0.)
     #define PI 3.14159f
-    #define Y_NORMAL_CUTOFFVALUE 0.995
+    #define Y_NORMAL_CUTOFFVALUE 0.75
 
 
     #define CASINO 1
@@ -349,14 +349,12 @@
                          );
     }
 
-    float interpolate(float value, float stepValue, float range)
-    {
-    float position = value - (stepValue);
-    if (position < -range) return 0.;
-    if (position > range) return 1.;
 
-    position +=  range;
-    return position/(2.*range);
+
+    float verticalAlignment(vec3 normal, float bound) {
+        float upness = abs(normalize(normal).y);
+
+        return smoothstep(bound - 0.05, bound + 0.05, upness);
     }
 
 
@@ -400,12 +398,12 @@
 
         if (true)//(rainPercent > 0.5)
         {
-
-         gl_FragColor = mix(
+          //gl_FragColor =  getPixelRainTopOfColumn(vPixelPositionWorld.xyz, RED);
+          gl_FragColor = mix(
             getPixelRainSideOfColumn(vPixelPositionWorld.xyz, GREEN ),
             getPixelRainTopOfColumn(vPixelPositionWorld.xyz, RED),
-            interpolate(normalize(normal).g, Y_NORMAL_CUTOFFVALUE, 0.1)
+            verticalAlignment(normal, Y_NORMAL_CUTOFFVALUE)
             );  
-       
+
          }     
 	}
