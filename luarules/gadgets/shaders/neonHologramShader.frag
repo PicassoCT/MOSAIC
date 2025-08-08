@@ -10,13 +10,12 @@
     #define PI 3.14159f
     #define Y_NORMAL_CUTOFFVALUE 0.5
 
-
     #define CASINO 1
     #define BROTHEL 2
     #define BUISNESS 3
     #define ASIAN 4
 
-    //////////////////////    //////////////////////    //////////////////////    //////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////
     //declare uniforms
     uniform sampler2D tex1;
     uniform sampler2D tex2;
@@ -31,7 +30,7 @@
     uniform vec2 viewPortSize;
 
     uniform vec3 unitCenterPosition;
-   // uniform vec3 vCamPositionWorld;
+   
     float rainPercentage;
     uniform int typeDefID;
     // Varyings passed from the vertex shader
@@ -48,11 +47,11 @@
     float halfSize = (columnWidth/2.);
     //const float pixelPillarSize = 100.0;
 
-    const float fallSpeed = 3.0;      // Controls vertical speed
+    const float fallSpeed = 15.0;      // Controls vertical speed
     const float shimmerFreq = 32.0;   // How fast it sparkles
     const float trailFade = 512.0;     // How long the trail glows
     const float recoverySpeed = 30.0;  // How fast it fades back
-    const float rainDropScale = 2.0;
+    const float rainDropScale = 32.0;
 
     //GLOBAL VARIABLES/////    //////////////////////    //////////////////////    //////////////////////
 
@@ -396,12 +395,11 @@
         //This gives the holograms a sort of "afterglow", leaving behind a trail of fading previous pictures
         //similar to a very bright lightsource shining on retina leaving afterimages
 
-        if (true)//(rainPercent > 0.5)
+        if (true)//(rainPercent > 0.25)
         {
-          //gl_FragColor =  getPixelRainTopOfColumn(vPixelPositionWorld.xyz, RED);
           gl_FragColor = mix(
-             getPixelRainSideOfColumn(vPixelPositionWorld.xyz, GREEN ),
-            getPixelRainTopOfColumn(vPixelPositionWorld.xyz, RED),           
+            getPixelRainSideOfColumn(vPixelPositionWorld.xyz, colWithBorderGlow),
+            getPixelRainTopOfColumn(vPixelPositionWorld.xyz, colWithBorderGlow),           
             verticalAlignment(normal, Y_NORMAL_CUTOFFVALUE)
             );  
 
