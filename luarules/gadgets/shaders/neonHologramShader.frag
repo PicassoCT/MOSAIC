@@ -8,7 +8,7 @@
     #define WHITE vec4(1.0)
     #define NONE vec4(0.)
     #define PI 3.14159f
-    #define Y_NORMAL_CUTOFFVALUE 0.75
+    #define Y_NORMAL_CUTOFFVALUE 0.5
 
 
     #define CASINO 1
@@ -400,8 +400,8 @@
         {
           //gl_FragColor =  getPixelRainTopOfColumn(vPixelPositionWorld.xyz, RED);
           gl_FragColor = mix(
-            getPixelRainSideOfColumn(vPixelPositionWorld.xyz, GREEN ),
-            getPixelRainTopOfColumn(vPixelPositionWorld.xyz, RED),
+             getPixelRainSideOfColumn(vPixelPositionWorld.xyz, GREEN ),
+            getPixelRainTopOfColumn(vPixelPositionWorld.xyz, RED),           
             verticalAlignment(normal, Y_NORMAL_CUTOFFVALUE)
             );  
 
