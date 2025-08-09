@@ -2,8 +2,8 @@
     #line 20002
     //Fragmentshader
     // Set the precision for data types used in this shader
-    #define RED vec4(1.0, 0.0,0.0, 0.5)
-    #define GREEN vec4(0.0, 1.0,0.0, 0.5)
+    #define RED vec4(1.0, 0.0,0.0, 1.0)
+    #define GREEN vec4(0.0, 1.0,0.0, 1.0)
     #define BLUE vec4(0.0, 0.0,1.0, 0.5)
     #define WHITE vec4(1.0)
     #define NONE vec4(0.)
@@ -37,13 +37,14 @@
     in Data {
         vec2 vSphericalUVs;
         vec3 vPixelPositionWorld;
+        vec3 worldNormal;
         vec3 normal;
         vec3 sphericalNormal;
         vec2 orgColUv;
         vec3 vVertexPos;
         };
 
-    const float columnWidth= 0.5;
+    const float columnWidth= 2;
     float halfSize = (columnWidth/2.);
     //const float pixelPillarSize = 100.0;
 
@@ -274,7 +275,7 @@
         vec2 maxEdge = u_center + halfSize * 0.95;
 
         // Create mask: 1 inside rect, 0 outside
-        float u_radius = 0.1;  // Glow softness in UV units
+        float u_radius = columnWidth *0.75;  // Glow softness in UV units
         vec2 d = abs(v_uv - u_center);
 
         // Fade out edges using smoothstep
@@ -351,9 +352,10 @@
 
 
     float verticalAlignment(vec3 normal, float bound) {
-        float upness = abs(normalize(normal).y);
-
-        return smoothstep(bound - 0.05, bound + 0.05, upness);
+        float upness = abs(normalize(normal).b);
+        if (upness <= bound -0.05) return 0;
+        if (upness >= bound +0.05) return 1.0;
+        return mix(0.0, 1.0, abs(upness - bound + 0.05)/ 0.1);
     }
 
 
@@ -394,13 +396,16 @@
 
         //This gives the holograms a sort of "afterglow", leaving behind a trail of fading previous pictures
         //similar to a very bright lightsource shining on retina leaving afterimages
+        
 
+        //gl_FragColor = vec4(worldNormal, 1.0);
+        //return;
         if (true)//(rainPercent > 0.25)
         {
           gl_FragColor = mix(
-            getPixelRainSideOfColumn(vPixelPositionWorld.xyz, colWithBorderGlow),
-            getPixelRainTopOfColumn(vPixelPositionWorld.xyz, colWithBorderGlow),           
-            verticalAlignment(normal, Y_NORMAL_CUTOFFVALUE)
+             getPixelRainSideOfColumn(vPixelPositionWorld.xyz, colWithBorderGlow),            
+            getPixelRainTopOfColumn(vPixelPositionWorld.xyz, colWithBorderGlow),                      
+            verticalAlignment(worldNormal, Y_NORMAL_CUTOFFVALUE)
             );  
 
          }     

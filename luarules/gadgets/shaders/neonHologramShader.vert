@@ -25,6 +25,7 @@
     out Data {      
             vec2 vSphericalUVs;
             vec3 vPixelPositionWorld;
+            vec3 worldNormal;
             vec3 normal;
             vec3 sphericalNormal;
             vec2 orgColUv;
@@ -59,7 +60,7 @@ void CreateSphericalUVs(vec3 worldPosition)
 
 void main() 
 {
-
+    worldNormal = normalize(gl_Normal);
     normal = gl_NormalMatrix * gl_Normal;
     orgColUv = gl_MultiTexCoord0.xy;
 
