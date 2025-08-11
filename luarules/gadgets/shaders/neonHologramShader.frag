@@ -165,7 +165,9 @@
 
     float random(float x) 
     {    
-        return fract(sin(x * 12.9898) * 43758.5453);
+        float posSum = unitCenterPosition.x + unitCenterPosition.y + x;
+
+        fract(sin(posSum * 12.9898) * 43758.5453);
     }
 
 
@@ -364,7 +366,7 @@
 	{	    
 		//our original texcoord for this fragment
 		vec2 uv =  gl_FragCoord.xy;   
-        rainPercentage = rainPercent; 
+    rainPercentage = rainPercent; 
 		
 		//the amount to blur, i.e. how far off center to sample from 
 		//1.0 -> blur by one pixel
@@ -378,35 +380,30 @@
 		float vstep = 1.0;
 			
 		//apply blurring, using a 9-tap filter with predefined gaussian weights
-        pixelCoord = gl_FragCoord.xy / viewPortSize;   
+    pixelCoord = gl_FragCoord.xy / viewPortSize;   
 
-        //build hybrid normals
-	    vec3 hyNormal = normalize(mix(normalize(normal), sphericalNormal, 0.5));
-		float averageShadow = (hyNormal.x*hyNormal.x + hyNormal.y*hyNormal.y + hyNormal.z+hyNormal.z)/PI;   
+    //build hybrid normals
+    vec3 hyNormal = normalize(mix(normalize(normal), sphericalNormal, 0.5));
+    float averageShadow = (hyNormal.x*hyNormal.x + hyNormal.y*hyNormal.y + hyNormal.z+hyNormal.z)/PI;   
 
-        float hologramTransparency = GetHologramTransparency(); 
-        
-        vec4 orgCol = texture(tex1, orgColUv); 
-        vec4 colWithBorderGlow = vec4(orgCol.rgb + orgCol.rgb * (1.0-averageShadow) , hologramTransparency); //
-        
-        colWithBorderGlow.rgb *= getLightPercentageFactorByTime();
+    float hologramTransparency = GetHologramTransparency(); 
 
-        colWithBorderGlow.rgb = applyColorAberation(colWithBorderGlow.rgb);
-        gl_FragColor = colWithBorderGlow;
+    vec4 orgCol = texture(tex1, orgColUv); 
+    vec4 colWithBorderGlow = vec4(orgCol.rgb + orgCol.rgb * (1.0 - averageShadow) , hologramTransparency); //
 
-        //This gives the holograms a sort of "afterglow", leaving behind a trail of fading previous pictures
-        //similar to a very bright lightsource shining on retina leaving afterimages
-        
+    colWithBorderGlow.rgb *= getLightPercentageFactorByTime();
 
-        //gl_FragColor = vec4(worldNormal, 1.0);
-        //return;
-        if (true)//(rainPercent > 0.25)
-        {
-          gl_FragColor = mix(
-             getPixelRainSideOfColumn(vPixelPositionWorld.xyz, colWithBorderGlow),            
-            getPixelRainTopOfColumn(vPixelPositionWorld.xyz, colWithBorderGlow),                      
-            verticalAlignment(worldNormal, Y_NORMAL_CUTOFFVALUE)
-            );  
+    colWithBorderGlow.rgb = applyColorAberation(colWithBorderGlow.rgb);
+    gl_FragColor = colWithBorderGlow;
 
-         }     
+    //This gives the holograms a sort of "afterglow", leaving behind a trail of fading previous pictures
+    //similar to a very bright lightsource shining on retina leaving afterimages
+    if (rainPercent > 0.25)
+    {
+      gl_FragColor = mix(
+         getPixelRainSideOfColumn(vPixelPositionWorld.xyz, colWithBorderGlow),            
+        getPixelRainTopOfColumn(vPixelPositionWorld.xyz, colWithBorderGlow),                      
+        verticalAlignment(worldNormal, Y_NORMAL_CUTOFFVALUE)
+        ); 
+     }     
 	}
