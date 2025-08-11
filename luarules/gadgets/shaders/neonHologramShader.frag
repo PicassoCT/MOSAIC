@@ -167,7 +167,7 @@
     {    
         float posSum = unitCenterPosition.x + unitCenterPosition.y + x;
 
-        fract(sin(posSum * 12.9898) * 43758.5453);
+        return fract(sin(posSum * 12.9898) * 43758.5453);
     }
 
 

@@ -547,12 +547,12 @@ function script.HitByWeapon(x, z, weaponDefID, damage)
     damagedCoolDown = damagedCoolDown + (damage )
 end
 
-
+local boolDebugActive = GG.BoolDebug or false
 function setCivilianUnitInternalStateMode(unitID, State, name)
      assert(State)
      assert(name)
      if not GG.CivilianUnitInternalLogicActive then GG.CivilianUnitInternalLogicActive = {} end
-     echo(unitID.."civilian internal logic "..State.." "..(name or "unknown"))
+     conditionalEcho(boolDebugActive, unitID.."civilian internal logic "..State.." "..(name or "unknown"))
      GG.CivilianUnitInternalLogicActive[unitID] = State 
  end
 
