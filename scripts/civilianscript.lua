@@ -537,7 +537,7 @@ function script.HitByWeapon(x, z, weaponDefID, damage)
     bodyConfig.boolLoaded = false
     bodyConfig.boolWounded = true
     if damage > 10 and randChance(10) then
-        echo("Damage to civilian drawing blood at "..locationstring(unitID))
+        conditionalEcho(boolDebugActive, "Damage to civilian drawing blood at "..locationstring(unitID))
         bloodyHell= {"bloodspray", "bloodslay"}
         StartThread(spawnCegAtPiece, unitID, Head, bloodyHell[math.random(1,2)])
     end
@@ -767,7 +767,7 @@ function alignToPersonNearby()
         Command(unitID,"go",  Result[1], {})
         return true
     end
-    echo("Civilian "..unitID.." trying to chat is not aligned to nearby person")
+    conditionalEcho(boolDebugActive,"Civilian "..unitID.." trying to chat is not aligned to nearby person")
     return false
 end
 
@@ -805,7 +805,7 @@ function chatting()
                 mx,my,mz = spGetUnitPosition(unitID)
                 _,myRotation,_ = Spring.GetUnitRotation(unitID)
                 headVal = math.deg(myRotation -(math.atan2(x-mx, z-mz)))
-                echo(unitID.." looking at ".. lookAtHim.." with ".. headVal)
+                conditionalEcho(boolDebugActive, unitID.." looking at ".. lookAtHim.." with ".. headVal)
             end
 
        end
@@ -825,7 +825,7 @@ function chatting()
         end  
     end
     GG.CurrentlyChatting[unitID] = nil
-    Spring.Echo("civilian "..unitID.. " chat has ended")
+    conditionalEcho(boolDebugActive, "civilian "..unitID.. " chat has ended")
     playUpperBodyIdleAnimation()
     resetT(TablesOfPiecesGroups["UpArm"], math.pi, false, true)
     setCivilianUnitInternalStateMode(unitID, STATE_ENDED, "talk")
@@ -1226,7 +1226,7 @@ function threadStateStarter()
     while true do
         if boolStartFilming == true then
             boolStartFilming = false
-            echo("Starting filming at location "..locationstring(unitID))
+            conditionalEcho(boolDebugActive,"Starting filming at location "..locationstring(unitID))
             StartThread(filmingLocation)
         end
         if boolStartWailing == true then
@@ -1237,7 +1237,7 @@ function threadStateStarter()
         if boolStartChatting == true then
             boolStartChatting = false
             StartThread(chatting)
-            echo("Starting chatting at location "..locationstring(unitID).." for ".. chattingTime.. " ms")
+            conditionalEcho(boolDebugActive, "Starting chatting at location "..locationstring(unitID).." for ".. chattingTime.. " ms")
         end
 
         if boolStartFleeing == true then
