@@ -398,12 +398,12 @@
 
     //This gives the holograms a sort of "afterglow", leaving behind a trail of fading previous pictures
     //similar to a very bright lightsource shining on retina leaving afterimages
-    if (rainPercent > 0.25)
-    {
-      gl_FragColor = mix(
-         getPixelRainSideOfColumn(vPixelPositionWorld.xyz, colWithBorderGlow),            
-        getPixelRainTopOfColumn(vPixelPositionWorld.xyz, colWithBorderGlow),                      
-        verticalAlignment(worldNormal, Y_NORMAL_CUTOFFVALUE)
-        ); 
-     }     
+    //if (rainPercent > 0.25)
+    //{
+    //  gl_FragColor = mix(
+    //     getPixelRainSideOfColumn(vPixelPositionWorld.xyz, colWithBorderGlow),            
+    //    getPixelRainTopOfColumn(vPixelPositionWorld.xyz, colWithBorderGlow),                      
+    //    verticalAlignment(worldNormal, Y_NORMAL_CUTOFFVALUE)
+    //    ); 
+    // }     
 	}
