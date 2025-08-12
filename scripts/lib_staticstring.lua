@@ -20,7 +20,7 @@ function getFirstShopName(firstName)
         K = "Knick-knacks",
         L = "Luxury",
         M = "Meats",
-        N = "Novelties",
+        N = "NAS-TEA",
         O = "Outfits",
         P = "Pets",
         Q = "Quality",
