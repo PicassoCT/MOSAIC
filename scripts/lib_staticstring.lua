@@ -553,6 +553,188 @@ function HouseDescriptor(id, hash,UnitDefs, buisnessNamesTable)
     return blockType[(hash % #blockType) +1]
 end
 
+function getShizoBabbleRant(lines)
+    local worries = {
+      "financial stability",
+      "losing a job",
+      "not having enough savings",
+      "retirement planning",
+      "paying off debt",
+      "affording healthcare",
+      "cost of education",
+      "housing costs",
+      "unexpected expenses",
+      "inflation and rising prices",
+      "personal health issues",
+      "the health of family members",
+      "developing chronic illness",
+      "mental health struggles",
+      "weight and body image",
+      "aging and losing independence",
+      "accidents or injuries",
+      "access to proper healthcare",
+      "pandemic or epidemic outbreaks",
+      "sleep problems",
+      "relationship conflicts",
+      "marriage stability",
+      "divorce or breakup",
+      "loneliness",
+      "family expectations",
+      "children’s future",
+      "parenting struggles",
+      "social rejection",
+      "friendships fading",
+      "not finding a partner",
+      "career growth",
+      "job performance",
+      "lack of recognition at work",
+      "work–life balance",
+      "office politics",
+      "changing careers",
+      "not being skilled enough",
+      "public speaking",
+      "meeting deadlines",
+      "job interviews",
+      "safety and crime",
+      "natural disasters",
+      "political instability",
+      "war or terrorism",
+      "climate change",
+      "losing important documents",
+      "travel safety",
+      "online privacy and data theft",
+      "technology replacing jobs",
+      "the uncertainty of the future"
+    }
+
+    local theories = {
+      "the Illuminati quietly steering world events",
+      "a looming New World Order",
+      "chemtrails tweaking the populace",
+      "5G towers whispering mind-control signals",
+      "HAARP nudging the weather like a thermostat",
+      "the Earth being flat and maps being lies",
+      "the moon landing staged on a soundstage",
+      "reptilian shapeshifters smiling on TV",
+      "engineered storms disguised as ‘natural’ disasters",
+      "crisis actors choreographing the nightly news",
+      "a shadowy Deep State pulling the strings",
+      "the Mandela Effect rewriting our memories",
+      "time travelers patching the timeline on weekends",
+      "the Philadelphia Experiment tearing little rips in space",
+      "CERN opening portals to who-knows-where",
+      "a hollow Earth with VIP parking inside",
+      "a Bigfoot cover-up bigger than Bigfoot",
+      "UFO reverse-engineering hidden in plain sight",
+      "ancient aliens building all the monuments",
+      "suppressed free energy gathering dust in a vault",
+      "fluoridation as a compliance cocktail",
+      "microchips lurking in everyday jabs and gadgets",
+      "a planned global currency reset by a cabal",
+      "MK-inspired media psyops on loop",
+      "psychic warfare and remote viewing think tanks",
+      "Bermuda Triangle field tests gone wrong",
+      "UFOs rebranded as weather balloons (again)",
+      "pharma burying simple natural cures",
+      "Templar-level secret societies swapping passwords",
+      "numerology codes steering the stock market",
+      "crop circles as memo pads from beyond",
+      "staged pandemics as levers of control",
+      "leaders replaced by deepfake doubles",
+      "a creeping global social credit grid",
+      "smart fridges moonlighting as spies",
+      "a simulation run by bored elites",
+      "an AI overlord already calling the shots",
+      "ancient underground cities beneath our feet",
+      "food additives tuned for docility",
+      "mind-reading satellites orbiting overhead",
+      "archaeology timelines quietly airbrushed",
+      "secret bases on the far side of the Moon",
+      "Antarctica cordoned off for hidden stuff",
+      "weather insurance schemes profiting on storms",
+      "‘ghost frequencies’ nudging public mood",
+      "celebrity occult parties with odd dress codes",
+      "tunnels under cities connecting everything",
+      "lottery numbers being gently steered",
+      "cloud seeding as a cash machine",
+      "directed-energy beams starting suspicious fires"
+    }
+
+    -- Utility: shallow copy + Fisher–Yates shuffle
+    local function shuffled(t)
+      local c = {}
+      for i = 1, #t do c[i] = t[i] end
+      for i = #c, 2, 1 do
+        local j = math.random(i)
+        c[i], c[j] = c[j], c[i]
+      end
+      return c
+    end
+
+    local openers = {
+      "Listen, it all connects:",
+      "You ever notice the pattern?",
+      "Okay, so here’s what they don’t want you to map out:",
+      "Call me wild, but the dots line up:",
+      "I did the math on a napkin and—boom—",
+      "They might call me crazy but -"
+    }
+
+    local links = {
+      "which obviously loops back to",
+      "and that’s precisely why it’s tied to",
+      "and if you trace the paperwork, you hit",
+      "which the headlines ‘forget’ to mention is part of",
+      "and the timing always exposes",
+      "and every breadcrumb points straight at",
+      "so of course it intersects with",
+      "and the pattern screams",
+      "is obviously in on it with",
+      "and did you ever notice how that rhymes with"
+    }
+
+    local pivots = {
+      "Then it gets weirder:",
+      "But wait—there’s a twist:",
+      "Here’s the kicker:",
+      "And just when you think you’ve got it:",
+      "Naturally, the rabbit hole deepens:"
+    }
+
+    -- Create shuffled copies so every run feels fresh
+    local W = shuffled(worries)
+    local T = shuffled(theories)
+
+    -- Builder
+    local parts = {}
+    parts[#parts+1] = openers[math.random(#openers)] .. " "
+
+    -- Start with the first pair
+    parts[#parts+1] = ("I’m worried about %s, %s %s. "):format(
+      W[1],
+      links[math.random(#links)],
+      T[1]
+    )
+
+    -- Chain the rest, weaving previous -> next
+    for i = 2, math.min(#W, #T) do
+      -- sprinkle pivots occasionally
+      if i % 5 == 0 then
+        parts[#parts+1] = pivots[math.random(#pivots)] .. " "
+      end
+      parts[#parts+1] = ("Then %s connects to %s, %s %s.  "):format(
+        W[i-1],
+        W[i],
+        links[math.random(#links)],
+        T[i]
+      )
+    end
+    parts = {unpack(parts, 1, math.min(lines, #parts))}
+    -- Grand “ta-da”
+    parts[#parts+1] = ("So yeah, by the time you see the whole picture - its all connected."):format(math.min(#W, #T))
+
+    return parts
+end
 
 function setIndividualCivilianName(id, culture, UnitDefs)
     name, family = getDeterministicCultureNames( id,UnitDefs , culture )
@@ -1067,6 +1249,13 @@ function gossipGenerator(gossipyID, oppossingPartnerID, UnitDefs)
     isEmoShort = randChance(5)
     if isEmoShort then
         return conversation.. emoShorts[math.random(1,#emoShorts)]
+    end
+
+    isParanoid = randChance(1)
+    if isParanoid then
+        paranoidRantTable = getShizoBabbleRant(math.random(3,42))
+        return conversation..table.concat(paranoidRantTable, "\n", 1, #paranoidRantTable)
+
     end
 
 
