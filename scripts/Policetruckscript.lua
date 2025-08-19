@@ -41,8 +41,12 @@ function spawnRiotPolice()
                         end
                         end
                         )
+            if #T > 0 then
                 Command(policeOfficerID, "attack", getSafeRandom(T, unitID))
-                Sleep(1000)  
+            else
+                Command(policeOfficerID, "guard", unitID)
+            end
+            Sleep(10000)  
          end
     end
 end

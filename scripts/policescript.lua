@@ -3,7 +3,7 @@ include "lib_OS.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 include "lib_mosaic.lua"
-
+--riotpolice
 local Animations = include('animations_police.lua')
 local GameConfig = getGameConfig()
 local center = piece"center"
@@ -24,15 +24,17 @@ local Head = piece"Head"
 local Shield = piece"Shield"
 local Visor = piece"Visor"
 
-TablesOfPiecesGroups = {}
+local TablesOfPiecesGroups = {}
 
 function script.HitByWeapon(x, z, weaponDefID, damage) end
 
 function showRiotCop()
-  Show(Visor)
-  Show(BeatDown)
-  Show(Shield)
-  Turn(Visor,x_axis, math.rad(90), 15)
+    Show(Visor)
+    Show(BeatDown)
+    Show(Shield)
+    if maRa() then
+      Turn(Visor,x_axis, math.rad(90), 15)
+    end
 end
 
 function showCop()
@@ -46,12 +48,13 @@ function script.Create()
     setupAnimation()
     hideT(TablesOfPiecesGroups["Riot-Face_"])
     showOnePiece(TablesOfPiecesGroups["Riot-Face_"], math.random(1,100))
-    Hide(RiotShield)
+    Hide(Shield)
     Hide(center)
     Hide(Visor)
     Hide(BeatDown)
     showRiotCop()
     StartThread(lifeTime, unitID, timeTotal  - 5000 -1000, false, true)
+    Spring.SetUnitTooltip(unitID, "Riotpolice: Id "..unitID)
 end
 
 function setupAnimation()
@@ -65,15 +68,13 @@ function setupAnimation()
     local offsets = constructSkeleton(unitID, center, {0, 0, 0});
 
     for a, anim in pairs(Animations) do
-        echo("Setting up animation "..a)
+       -- echo("Setting up animation "..a)
         for i, keyframe in pairs(anim) do
             local commands = keyframe.commands;
             for k, command in pairs(commands) do
 
                 if command.p and type(command.p) == "string" then
-                    if not map[command.p] then
-                        echo("Piecemap does not contain ".. command.p )
-                    else
+                    if  map[command.p] then
                         command.p = map[command.p]
                     end
                 end
@@ -104,6 +105,7 @@ function PlayAnimation(animname, piecesToFilterOutTable, speed)
     assert(Animations[animname], "No animation with name ")
     local anim = Animations[animname];
     local randoffset
+    startFrame = Spring.GetGameFrame()
     for i = 1, #anim do
         local commands = anim[i].commands;
         for j = 1, #commands do
@@ -135,6 +137,7 @@ function PlayAnimation(animname, piecesToFilterOutTable, speed)
             Sleep(t * 33 * math.abs(1 / speedFactor)); -- sleep works on milliseconds
         end
     end
+    return Spring.GetGameFrame() - startFrame
 end
 
 function constructSkeleton(unit, piece, offset)
@@ -164,6 +167,7 @@ end
 
 function script.Killed(recentDamage, _)
     PlayAnimation("FULLBODY_DEATH")
+    Sleep(100)
     return 1
 end
 
@@ -230,10 +234,9 @@ function script.QueryWeapon1() return BeatDown end
 function script.AimWeapon1(Heading, pitch) return true end
 
 function script.FireWeapon1()
-  Signal(SIG_ANIMATION)
-  PlayAnimation("FULLBODY_BEATDOWN",{},math.random(80,150)/50)
-  return true 
-
+    Signal(SIG_ANIMATION)
+    PlayAnimation("FULLBODY_BEATDOWN",{},math.random(80,150)/50)
+    return true 
 end
 
 
