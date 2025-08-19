@@ -117,16 +117,14 @@ function makePasserBysLook(unitID)
                          math.random(25, 50) * randSign()
             Command(id, "go", {x = ux + offx, y = uy, z = uz + offz}, {})
             -- TODO Set Behaviour filming
-            filmingDuration = math.random(5000,15000)
-            civilianStandStillTimeMap[unitID] = filmingDuration
-            startInternalBehaviourOfState(id, "startFilmLocation", ux,uy,uz, filmingDuration)
+            filmingDurationMs = math.random(5000,15000)
+            startInternalBehaviourOfState(id, "startFilmLocation", ux,uy,uz, filmingDurationMs)
         elseif math.random(0, 100) > GameConfig.inHundredChanceOfDisasterWailing then
             offx, offz = math.random(0, 10) * randSign(),
                          math.random(0, 10) * randSign()
             Command(id, "go", {x = ux + offx, y = uy, z = uz + offz}, {})
-            wailDuration = math.random(5000,25000)
-            civilianStandStillTimeMap[unitID] = wailDuration
-            startInternalBehaviourOfState(id, "startWailing",wailDuration)
+            wailDurationMs = math.random(5000,25000)            
+            startInternalBehaviourOfState(id, "startWailing",wailDurationMs)
        end
     end)
 end
