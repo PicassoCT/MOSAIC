@@ -100,7 +100,7 @@ function startInternalBehaviourOfState(unitID, name, ...)
     end
 end
 
-civilianStandStillTimeMap = {}
+
 function makePasserBysLook(unitID)
     ux, uy, uz = spGetUnitPosition(unitID)
     foreach(getInCircle(unitID, GameConfig.civilian.InterestRadius, gaiaTeamID),
@@ -117,16 +117,14 @@ function makePasserBysLook(unitID)
                          math.random(25, 50) * randSign()
             Command(id, "go", {x = ux + offx, y = uy, z = uz + offz}, {})
             -- TODO Set Behaviour filming
-            filmingDuration = math.random(5000,15000)
-            civilianStandStillTimeMap[unitID] = filmingDuration
-            startInternalBehaviourOfState(id, "startFilmLocation", ux,uy,uz, filmingDuration)
+            filmingDurationMs = math.random(5000,15000)
+            startInternalBehaviourOfState(id, "startFilmLocation", ux,uy,uz, filmingDurationMs)
         elseif math.random(0, 100) > GameConfig.inHundredChanceOfDisasterWailing then
             offx, offz = math.random(0, 10) * randSign(),
                          math.random(0, 10) * randSign()
             Command(id, "go", {x = ux + offx, y = uy, z = uz + offz}, {})
-            wailDuration = math.random(5000,25000)
-            civilianStandStillTimeMap[unitID] = wailDuration
-            startInternalBehaviourOfState(id, "startWailing",wailDuration)
+            wailDurationMs = math.random(5000,25000)
+            startInternalBehaviourOfState(id, "startWailing",wailDurationMs)
        end
     end)
 end
@@ -806,16 +804,16 @@ end
 function snychronizedSocialEvents(evtID, frame, persPack, startFrame, myID)
     if  maRa() and isPrayerTime() and civilianWalkingTypeTable[persPack.mydefID] then
         Command(myID, "stop")
-        persPack.deactivateStuckDetectionValue = -200       
+        persPack.deactivateStuckDetectionValue = -20       
         startInternalBehaviourOfState(myID, "startPraying")
-        return true, frame + 200, persPack   
+        return true, frame + 1, persPack   
     end 
 
 	if GG.SocialEngineeredPeople and GG.SocialEngineeredPeople[myID] and GG.SocialEngineers[GG.SocialEngineeredPeople[myID]] then 
 		Command(myID, "stop")
-        persPack.deactivateStuckDetectionValue = -100 
+       persPack.deactivateStuckDetectionValue = -10 
         startInternalBehaviourOfState(myID, "startPeacefullProtest", GG.SocialEngineeredPeople[myID])
-		return true, frame + 100, persPack   
+		return true, frame + 1, persPack   
 	end
 	   
     return false, nil, persPack
