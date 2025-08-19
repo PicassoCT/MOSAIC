@@ -50,6 +50,7 @@ if (gadgetHandler:IsSyncedCode()) then
 
 
     local neonHologramTypeTable = getHologramTypes(UnitDefs)
+    local neonHologramTypeNames = getHologramTypeNames(UnitDefs)
     local engineVersion = getEngineVersion()
 
     -- set minimun engine version
@@ -81,6 +82,7 @@ if (gadgetHandler:IsSyncedCode()) then
          if neonHologramTypeTable[unitDefID] then
             Spring.SetUnitNoDraw(unitID, true)
             allNeonUnits[#allNeonUnits + 1]= unitID
+            Spring.Echo("Registering neon unit "..unitID.. " of type "..neonHologramTypeNames[unitDefID])
            -- SendToUnsynced("setUnitNeonLuaDraw", unitID, unitDefID)
         end
     end
@@ -504,7 +506,7 @@ end
     local holoDefIDTypeIDMap = {}
     holoNameTypeIDMap = {
         ["house_western_hologram_casino"]   =   1,
-                ["house_western_hologram_brothel"]  =   2,
+        ["house_western_hologram_brothel"]  =   2,
         ["house_western_hologram_buisness"] =   3,
         ["house_asian_hologram_buisness"] =     4,
         ["advertising_blimp_hologram"] =        3,
