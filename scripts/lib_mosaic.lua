@@ -1,7 +1,7 @@
 -- ===================================================================================================================
 -- Game Configuration
  GG.unitFactor = 0.80
- GameVersion = "Alpha: 0.926"  
+ GameVersion = "Alpha: 0.927"  
  function setUnitFactor(modOptions)
     GG.unitFactor = modOptions.unitfactor or 0.8
  end
@@ -781,6 +781,16 @@ end
                 }
     end  
 
+    function getHologramTypeNames(UnitDefs)
+        local UnitDefNames = getUnitDefNames(UnitDefs)
+        return {
+                    [UnitDefNames["advertising_blimp_hologram"].id] = "advertising_blimp_hologram",           
+                    [UnitDefNames["house_western_hologram_buisness"].id] = "house_western_hologram_buisness",           
+                    [UnitDefNames["house_western_hologram_casino"].id] = "house_western_hologram_casino",           
+                    [UnitDefNames["house_western_hologram_brothel"].id] = "house_western_hologram_brothel",           
+                    [UnitDefNames["house_asian_hologram_buisness"].id] = "house_asian_hologram_buisness"      
+                }
+    end  
     function attachHologramToUnitPiece(unitID, holoDefID, pieceID)
         id = createUnitAtUnit(Spring.GetUnitTeam(unitID), holoDefID, unitID)
         Spring.UnitAttach(id,unitID, pieceID)
