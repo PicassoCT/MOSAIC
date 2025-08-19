@@ -90,6 +90,7 @@ local spGetUnitTeam = Spring.GetUnitTeam
 local myTeamID = spGetUnitTeam(unitID)
 local gaiaTeamID = Spring.GetGaiaTeamID()
 local spGetUnitPosition = Spring.GetUnitPosition
+local spGetGameFrame = Spring.GetGameFrame
 local loc_doesUnitExistAlive = doesUnitExistAlive
 local GameConfig = getGameConfig()
 local civilianWalkingTypeTable = getCultureUnitModelTypes(
@@ -646,13 +647,13 @@ end
 function pray()
     Signal(SIG_INTERNAL)
     SetSignalMask(SIG_INTERNAL)
-    prayTime= 12000
+    local prayTime= frameToMs(getPrayDurationInFrames())
     setSpeedEnv(unitID, 0.0)
     interpolation= 0.1
     orgRotation = Spring.GetUnitRotation(unitID)
     while prayTime > 0 do
-        startTime = Spring.GetGameFrame()
-        PlayAnimation("UPBODY_PRAY", lowerBodyPieces, 1.0)         
+        
+        durationFrames = PlayAnimation("UPBODY_PRAY", lowerBodyPieces, 1.0)         
         WaitForTurns(upperBodyPieces)
         if not GG.PrayerRotationRad then 
             val = math.random(0,360)
@@ -661,8 +662,7 @@ function pray()
          targetRotation = mix( GG.PrayerRotationRad, orgRotation,interpolation)
          Spring.SetUnitRotation(unitID, 0, targetRotation, 0)
          interpolation = math.min(1.0,interpolation + 0.1)
-        totalTimeMs =  math.ceil((Spring.GetGameFrame() - startTime) /30)*1000 + 500
-        prayTime = prayTime - totalTimeMs
+        prayTime = prayTime - frameToMs(durationFrames) -500
         WaitForTurns(upperBodyPieces)
         WaitForTurns(lowerBodyPieces)
         Sleep(500)
@@ -750,8 +750,8 @@ function wailing()
 
     while wailingTime > 0 do
         throwArmsUp()
-        PlayAnimation("UPBODY_WAILING"..math.random(1,2), lowerBodyPieces, 1.0)
-       wailingTime = wailingTime - 1500
+        duration = PlayAnimation("UPBODY_WAILING"..math.random(1,2), lowerBodyPieces, 1.0)
+       wailingTime = wailingTime - frameToMs(duration)
         Sleep(100)
     end
     setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_ENDED ,"wailing")
@@ -837,8 +837,10 @@ function filmingLocation()
     SetSignalMask(SIG_INTERNAL)
     Show(cellphone1)
     while filmLocation.time > 0 do
+        startTime = Spring.GetGameFrame()
         PlayAnimation("UPBODY_FILMING", lowerBodyPieces, 1.0)
-        filmLocation.time = filmLocation.time - 2000
+        durationMs = (Spring.GetGameFrame() - startTime) *33
+        filmLocation.time = filmLocation.time - durationMs
         setUnitRotationToPoint(unitID, filmLocation.x, filmLocation.y, filmLocation.z)
         Sleep(100)
     end
@@ -968,6 +970,7 @@ function PlayAnimation(animname, piecesToFilterOutTable, speed)
     assert(type(animname) == "string",
            "Animname is not string " .. toString(animname))
     assert(Animations[animname], "No animation with name ")
+    local startTime = spGetGameFrame()
 
     local anim = Animations[animname];
     local randoffset
@@ -999,6 +1002,7 @@ function PlayAnimation(animname, piecesToFilterOutTable, speed)
             Sleep(t * 33 * math.abs(1 / speedFactor)); -- sleep works on milliseconds
         end
     end
+    return spGetGameFrame() - startTime
 end
 
 function constructSkeleton(unit, piece, offset)

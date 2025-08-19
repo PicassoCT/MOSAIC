@@ -7,7 +7,7 @@ include "lib_mosaic.lua"
 
 local Animations = include('animations_civilian_female.lua')
 local signMessages = include('protestSignMessages.lua')
-include "lib_mosaic.lua"
+
 
 local TablesOfPiecesGroups = {}
 local GameConfig = getGameConfig()
@@ -88,6 +88,7 @@ local scriptEnv = {
 local spGetUnitTeam = Spring.GetUnitTeam
 local myTeamID = spGetUnitTeam(unitID)
 local gaiaTeamID = Spring.GetGaiaTeamID()
+local spGetGameFrame = Spring.GetGameFrame
 local spGetUnitWeaponTarget = Spring.GetUnitWeaponTarget
 local loc_doesUnitExistAlive = doesUnitExistAlive
 
@@ -130,7 +131,6 @@ catatonicBodyPieces[UpBody] = UpBody
 -- equipmentname: cellphone, shoppingbags, crates, baby, cigarett, food, stick, demonstrator sign, molotow cocktail
 
 local boolWalking = false
-
 local boolDecoupled = false
 local boolAiming = false
 
@@ -319,14 +319,12 @@ function bodyBuild()
 end
 
 function hideAllProps()
-
     Hide(MilitiaMask)
     Hide(ak47)
     hideT(TablesOfPiecesGroups["Weapons"])
     Hide(molotow)
     bodyConfig.boolLoaded = false
     bodyConfig.boolWounded = false
-
     hideT(TablesOfPiecesGroups["cellphone"])
     Hide(cofee)
     Hide(cigarett)
@@ -446,7 +444,7 @@ end
 chattingTime = 0
 boolStartChatting = false
 function startChatting(time)
-    setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_STARTED, "chatting")
+    setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_STARTED, "talk")
     chattingTime = time
     boolStartChatting = true
     return true
@@ -464,7 +462,7 @@ end
 
 boolStartPraying = false
 function startPraying()
-    setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_STARTED, "praying")
+    setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_STARTED, "pray")
     boolStartPraying = true
     return true
 end
@@ -473,13 +471,13 @@ end
 function pray()
     Signal(SIG_INTERNAL)
     SetSignalMask(SIG_INTERNAL)
-    prayTime = 12000
+    local prayTime= frameToMs(getPrayDurationInFrames())
     setSpeedEnv(unitID, 0.0)
     interpolation = 0.1
     orgRotation = Spring.GetUnitRotation(unitID)
     while prayTime > 0 do
-        startTime = Spring.GetGameFrame()
-        PlayAnimation("UPBODY_PRAY", lowerBodyPieces, 1.0)         
+        
+        durationFrames = PlayAnimation("UPBODY_PRAY", lowerBodyPieces, 1.0)         
         WaitForTurns(upperBodyPieces)
         if not GG.PrayerRotationRad then 
             val = math.random(0,360)
@@ -488,8 +486,7 @@ function pray()
         targetRotation = mix( GG.PrayerRotationRad, orgRotation,interpolation)
         Spring.SetUnitRotation(unitID, 0, targetRotation, 0)
         interpolation = math.min(1.0,interpolation + 0.1)
-        totalTimeMs =  math.ceil((Spring.GetGameFrame() -startTime )/30)*1000 + 500
-        prayTime = prayTime - totalTimeMs
+        prayTime = prayTime - frameToMs(durationFrames) -500
         WaitForTurns(upperBodyPieces)
         WaitForTurns(lowerBodyPieces)
         Sleep(500)
@@ -497,7 +494,7 @@ function pray()
     setSpeedEnv(unitID, NORMAL_WALK_SPEED)
     resetT(upperBodyPieces,2.0, false, true)
     Move(center,z_axis, 0, 2500)
-    setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_ENDED, "praying")
+    setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_ENDED, "pray")
 end
 
 boolStartAnarchyBehaviour = false
@@ -546,7 +543,7 @@ aeroSolType = "undefinedAerosolState"
 function startAerosolBehaviour(extAerosolStateToSet)
     boolStartAerosolBehaviour= true
     aeroSolType = extAerosolStateToSet
-    setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_STARTED, "aeroSolStateBehaviour")
+    setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_STARTED, "aerosol")
 end
 
 function aeroSolStateBehaviour()
@@ -568,9 +565,9 @@ function wailing()
     Signal(SIG_INTERNAL)
     SetSignalMask(SIG_INTERNAL)
     while wailingTime > 0 do
-        PlayAnimation("UPBODY_HANDSUP", lowerBodyPieces, 1.0)
-        PlayAnimation("UPBODY_WAILING"..math.random(1,2), lowerBodyPieces, 1.0)
-       wailingTime = wailingTime - 1500
+        durationA = PlayAnimation("UPBODY_HANDSUP", lowerBodyPieces, 1.0)
+        durationB = PlayAnimation("UPBODY_WAILING"..math.random(1,2), lowerBodyPieces, 1.0)
+       wailingTime = wailingTime - frameToMs(math.max(durationA, durationB))
         Sleep(100)
     end
     setCivilianUnitInternalStateMode(unitID,GameConfig.STATE_ENDED, "wailing")
@@ -730,6 +727,7 @@ function PlayAnimation(animname, piecesToFilterOutTable, speed)
     assert(type(animname) == "string",
            "Animname is not string " .. toString(animname))
     assert(Animations[animname], "No animation with name ")
+    local startTime = spGetGameFrame()
 
     local anim = Animations[animname];
     local randoffset
@@ -761,6 +759,7 @@ function PlayAnimation(animname, piecesToFilterOutTable, speed)
             Sleep(t * 33 * math.abs(1 / speedFactor)); -- sleep works on milliseconds
         end
     end
+    return spGetGameFrame() - startTime
 end
 
 function constructSkeleton(unit, piece, offset)

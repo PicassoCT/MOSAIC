@@ -4672,6 +4672,14 @@ function seedRandom()
 
 end
 
+function frameToMs(frame)
+    return frame*33
+end
+
+function MsToFrame(timeMs)
+    return math.ceil(timeMs/33)
+end
+
 -- > Execute Random Function in Table
 function randTableFunc(Table)
     Table = shuffleT(Table)

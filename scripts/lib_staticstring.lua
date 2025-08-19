@@ -731,7 +731,7 @@ function getShizoBabbleRant(lines)
     end
     parts = {unpack(parts, 1, math.min(lines, #parts))}
     -- Grand “ta-da”
-    parts[#parts+1] = ("So yeah, by the time you see the whole picture - its all connected."):format(math.min(#W, #T))
+    parts[#parts+1] = ("So yeah, by the time you zoom out - its all connected."):format(math.min(#W, #T))
 
     return parts
 end
