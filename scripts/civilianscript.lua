@@ -3,6 +3,8 @@ include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 include "lib_mosaic.lua"
 
+
+local boolDebugActive = GG.BoolDebug or true
 local Animations = include('animations_civilian_female.lua')
 local signMessages = include('protestSignMessages.lua')
 local peacfulProtestSignMessages = include('PeacefullProtestSignMessages.lua')
@@ -547,7 +549,6 @@ function script.HitByWeapon(x, z, weaponDefID, damage)
     damagedCoolDown = damagedCoolDown + (damage )
 end
 
-local boolDebugActive = GG.BoolDebug or false
 function setCivilianUnitInternalStateMode(unitID, State, name)
      assert(State)
      assert(name)
