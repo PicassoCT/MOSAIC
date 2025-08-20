@@ -2,7 +2,7 @@
 local MotorBike = Truck:New{
 	buildtime= 30,
 	name = "Civilian Vehicle",
-	description = "electric motorbike",
+	description = "bike",
 	corpse				= "",
 	maxDamage = 250,
 			buildPic = "truck.png",

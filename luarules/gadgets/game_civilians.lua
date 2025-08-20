@@ -47,7 +47,6 @@ local closeCombatArenaDefID = UnitDefNames["closecombatarena"].id
 GG.BusesTable = {}
 GG.CivilianTable = {} -- [id ] ={ defID, startNodeID }
 GG.UnitArrivedAtTarget = {} -- [id] = true UnitID -- Units report back once they reach this target
-GG.CurrentlyChatting = {}
 GG.CivilianUnitInternalLogicActive = {} -- {string state, string behaviour}
 
 local RouteTabel = {} -- Every start has a subtable of reachable nodes 	
@@ -80,6 +79,11 @@ local chanceOfCivilianSpawningFromTruck = GameConfig.chanceOfCivilianSpawningFro
 
 
 function startInternalBehaviourOfState(unitID, name, ...)
+     if not GG.CivilianUnitInternalLogicActive then GG.CivilianUnitInternalLogicActive = {} end
+     if GG.CivilianUnitInternalLogicActive[unitID] and GG.CivilianUnitInternalLogicActive[unitID].state == GameConfig.STATE_STARTED then
+        return
+     end
+
     local arg = arg;
     if (not arg) then
         arg = {...};
@@ -791,8 +795,8 @@ function sozialize(evtID, frame, persPack, startFrame, myID)
             timeChattingInFrames =math.max(persPack.maxTimeChattingInFrames  ,
                                         math.random(GameConfig.minConversationLengthFrames,
                                        GameConfig.maxConversationLengthFrames))
-            startInternalBehaviourOfState(myID, "startChatting", timeChattingInFrames*33)
-            startInternalBehaviourOfState(partnerID, "startChatting", timeChattingInFrames*33)
+            startInternalBehaviourOfState(myID, "startChatting", timeChattingInFrames*33, partnerID)
+            startInternalBehaviourOfState(partnerID, "startChatting", timeChattingInFrames*33, myId)
             persPack.maxTimeChattingInFrames  = 0
             return true, frame + timeChattingInFrames, persPack
         end
@@ -936,7 +940,7 @@ function unitInternalLogic(evtID, frame, persPack, startFrame, myID)
             return true, frame + 15, persPack
         end
 
-        if GG.CivilianUnitInternalLogicActive[myID].state == GameConfig.STATE_STARTED then
+        if GG.CivilianUnitInternalLogicActive[myID].state == GameConfig.STATE_ENDED then
             durationFrames = Spring.GetGameFrame() - CivilianInternalDebugStateStartTabel[myID]
             echo(myID .. "internal state ".. CivilianUnitInternalLogicActive[myID].behaviour .." lasted" .. (durationFrames/30) .." ms")
             Command(myID, "go", {

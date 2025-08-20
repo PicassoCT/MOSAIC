@@ -110,7 +110,6 @@
 
     float GetHologramTransparency() 
     { 
-        if (true) return 1.0; //ToDoDo DelMe Debugcode
         float sfactor = 4.0; //scaling factor position
         float hologramTransparency = 0.0;
         float baseInterferenceRipples   =   max(min(0.35 + sin(time)*0.1, 0.75), //0.25

@@ -100,13 +100,13 @@ end
 
     heightOfPipe = 350
     function DrillMovement(boolDrillDown, index)
-        reverseIndex = clampPipes(#TablesOfPiecesGroups["Pipe"] - index, TablesOfPiecesGroups["Pipe"])
+        
         Spin(Drill, y_axis, math.rad(42), 0.1)
         if boolDrillDown then
-            Show(TablesOfPiecesGroups["Pipe"][reverseIndex])    
+            Show(TablesOfPiecesGroups["Pipe"][index])    
             Move(Drill, y_axis, -heightOfPipe, 30)      
         else
-            WMove(Drill, y_axis, 0, 0)
+            WMove(Drill, y_axis, -heightOfPipe, 30)
         end
 
         Move(HeadPipe, y_axis, -heightOfPipe*index, 30) 
@@ -131,12 +131,11 @@ end
         Turn(Rotor, x_axis, math.rad(0),1.0)
         Move(Slide, Slideaxis, 0, 128)
         WTurn(RobotArm, ArmAxis, math.rad(0), 2.5)
-        if boolPlace then
-           
-            Show(TablesOfPiecesGroups["Pipe"][index])
+        if boolPlace then          
             Sleep(500)
             WMove(Slide, Slideaxis, -50, 128)
             Hide(TransportedPipe)
+            Show(TablesOfPiecesGroups["Pipe"][index])
             WMove(Drill, y_axis, 0, 30)
             DrillMovement(boolPlace, index)
         else
@@ -145,15 +144,18 @@ end
             WMove(Slide, Slideaxis, -400, 128)           
         end
     end
+
+    doDrill = true
+    doRetractPipes = fale
     
     function drillDown(index)
-        toPipeStorage(true)
-        toDrill(true, index)
+        toPipeStorage(doDrill)
+        toDrill(doDrill, index)
     end
 
     function retractDrill(index)
-        toDrill(false, index)
-        toPipeStorage(false)
+        toDrill(doRetractPipes, index)
+        toPipeStorage(doRetractPipes)
     end
 
 boolDrillDown = true
@@ -184,9 +186,10 @@ function drillAnimation()
             for i =1, #TablesOfPiecesGroups["Pipe"] do
                 retractDrill(i)                
             end
-        end    
+        end   
+        Sleep(25000) 
         boolDrillDown = not boolDrillDown
-        Sleep(1000)
+
     end
 end
 

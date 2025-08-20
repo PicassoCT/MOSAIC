@@ -27,7 +27,7 @@ local boolDeliveryOnGuy = false
 local myDeliverySymbol = nil
 local activeWheels = {}
 local passenger = nil
-local bikeType = math.random(1,3)
+local bikeType = nil
 local SteerParts = {}
 local Signum = -1
 local LeanFactor = 1.0
@@ -38,6 +38,7 @@ boolIsPoliceTruck = unitDefID == UnitDefNames["policetruck"].id
  
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false)
+    bikeType = math.random(1, #TablesOfPiecesGroups["Bike"])
     myDeliverySymbolIndex = math.random(1,#TablesOfPiecesGroups["Delivery"])
     boolDeliveryOnGuy = myDeliverySymbolIndex % 2 == 1
     myDeliverySymbol = TablesOfPiecesGroups["Delivery"][myDeliverySymbolIndex]
@@ -74,6 +75,11 @@ function script.Create()
         SteerParts[#SteerParts +1 ]= piece("SteeringAddition3")
         assert(piece("SteeringAddition3"))
         Show(piece("SteeringAddition3"))
+    elseif bikeType == 4 then 
+        Show(TablesOfPiecesGroups["Wheel"][9])
+        Show(TablesOfPiecesGroups["Wheel"][10])
+          activeWheels[#activeWheels+1] = TablesOfPiecesGroups["Wheel"][9]
+          activeWheels[#activeWheels+1] = TablesOfPiecesGroups["Wheel"][10]
     end
     StartThread(updateSteering)
     if not boolGaiaUnit then

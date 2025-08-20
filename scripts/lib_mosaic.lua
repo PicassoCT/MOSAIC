@@ -1,7 +1,7 @@
 -- ===================================================================================================================
 -- Game Configuration
  GG.unitFactor = 0.80
- GameVersion = "Alpha: 0.927"  
+ GameVersion = "Alpha: 0.930"  
  function setUnitFactor(modOptions)
     GG.unitFactor = modOptions.unitfactor or 0.8
  end
@@ -209,10 +209,10 @@ function getGameConfig()
         civilianMaxFlightTimeMS = 300000,
         civilianInterestRadius = 350,
 
-        generalInteractionDistance = 35,
+        generalInteractionDistance = 110,
         minConversationLengthFrames = 15 * 30,
         maxConversationLengthFrames = 120 * 30,
-        groupChatDistance = 150,
+
         inHundredChanceOfInterestInDisaster = 35,
         inHundredChanceOfDisasterWailing = 75,
         mainStreetModulo = 4,

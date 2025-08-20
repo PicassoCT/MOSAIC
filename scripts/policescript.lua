@@ -54,6 +54,7 @@ function script.Create()
     Hide(BeatDown)
     showRiotCop()
     StartThread(lifeTime, unitID, timeTotal  - 5000 -1000, false, true)
+    StartThread(moveAnimation)
     Spring.SetUnitTooltip(unitID, "Riotpolice: Id "..unitID)
 end
 
@@ -170,57 +171,74 @@ function script.Killed(recentDamage, _)
     Sleep(100)
     return 1
 end
-
+SIG_DELAYEDSTART = 1
 SIG_ANIMATION = 2
-function animationLoop(name, speeds)
-  Signal(SIG_ANIMATION)
-  SetSignalMask(SIG_ANIMATION)
-  while true do
-    PlayAnimation(name,{}, speeds)
-    Sleep(1)
-  end
-end
+SIG_DELAYEDSTOP = 4
 
 
-function walkAnimation(speed)
-    Signal(SIG_WALK)
-    SetSignalMask(SIG_WALK)
+boolMoving = false
+function moveAnimation()
+    speed = 2.5
     while true do
-        Turn(UpArm1, z_axis, math.rad(60), speed)
-        Turn(UpArm2, z_axis, math.rad(-60), speed)
+        if boolMoving == true then
+            Turn(Torso, x_axis, math.rad(12), speed)
+            Turn(UpLeg2,z_axis, math.rad(-10), speed)
+            Turn(UpLeg1,z_axis, math.rad(10), speed)
+            backLeg = math.random(20,30)
+            Turn(UpLeg2,x_axis, math.rad(backLeg), speed)
+            Turn(LowLeg2,x_axis, math.rad(backLeg*0.5), speed)
+            forwardLeg = math.random(35,45)*-1
+            Turn(UpLeg1,x_axis, math.rad(forwardLeg), speed)
+            Turn(LowLeg1,x_axis, math.rad(forwardLeg*-0.5), speed)
 
-        valRangeLeft = math.random(35, 45)
-        Turn(UpLeg2,x_axis, math.rad(-valRangeLeft), speed)
-        Turn(LowLeg2,x_axis, math.rad(valRangeLeft *0.6), speed)
-        valRangeRight = math.random(15, 25)
-        Turn(UpLeg1,x_axis, math.rad(valRangeRight), speed)
-        Turn(LowLeg1,x_axis, math.rad(valRangeRight * 0.8), speed)
-        Turn(UpArm1, y_axis, math.rad(30), speed*0.5)
-        Turn(UpArm2, y_axis, math.rad(-30), speed*0.5)
+            Turn(UpArm1, y_axis, math.rad(60), speed)
+            Turn(UpArm2, y_axis, math.rad(-60), speed)
+            Turn(UpArm1, x_axis, math.rad(30), speed*0.5)
+            Turn(UpArm2, x_axis, math.rad(-30), speed*0.5)
 
-        WaitForTurns({ LowLeg1, LowLeg2})
-        Sleep(250)
-        valRangeRight = math.random(35, 45)
-        Turn(UpLeg1,x_axis, math.rad(-valRangeRight), speed)
-        Turn(LowLeg1,x_axis, math.rad(valRangeRight *0.6), speed)
-        valRangeLeft = math.random(15, 25)
-        Turn(UpLeg2,x_axis, math.rad(valRangeLeft), speed)
-        Turn(LowLeg2,x_axis, math.rad(valRangeLeft * 0.8), speed)
-        Turn(UpArm1, y_axis, math.rad(-30), speed*0.5)
-        Turn(UpArm2, y_axis, math.rad(30), speed*0.5)
+            WaitForTurns( LowLeg1, LowLeg2, UpLeg1, UpLeg2)
+            Turn(Torso, x_axis, math.rad(10), speed)
+            backLeg = math.random(20,30)
+            Turn(UpLeg1,x_axis, math.rad(backLeg), speed)
+            Turn(LowLeg1,x_axis, math.rad(backLeg*0.5), speed)
+            forwardLeg = math.random(35,45)*-1
+            Turn(UpLeg2,x_axis, math.rad(forwardLeg), speed)
+            Turn(LowLeg2,x_axis, math.rad(forwardLeg*-0.5), speed)
 
-        WaitForTurns({ LowLeg1, LowLeg2})
+            Turn(UpArm1, y_axis, math.rad(-60), speed)
+            Turn(UpArm2, y_axis, math.rad(60), speed)
+            Turn(UpArm1, x_axis, math.rad(-30), speed*0.5)
+            Turn(UpArm2, x_axis, math.rad(30), speed*0.5)
+
+            WaitForTurns( LowLeg1, LowLeg2, UpLeg1, UpLeg2)
+        else
+            Turn(UpLeg2,z_axis, math.rad(0), speed)
+            Turn(UpLeg1,z_axis, math.rad(0), speed)
+            PlayAnimation("FULLBODY_STANDING_IDLE",{}, math.random(75,100)/100)
+        end
         Sleep(250)
     end
 end
 
+function delayedStart()
+    Signal(SIG_DELAYEDSTOP)
+    SetSignalMask(SIG_DELAYEDSTART)
+    Sleep(500)
+    boolMoving = true
+end
+
 function script.StartMoving() 
-    StartThread(walkAnimation, 60)
+    StartThread(delayedStart)
+end
+function delayedStop()
+    Signal(SIG_DELAYEDSTART)
+    SetSignalMask(SIG_DELAYEDSTOP)
+    Sleep(500)
+    boolMoving = false   
 end
 
 function script.StopMoving() 
-  Signal(SIG_WALK)
-  StartThread(animationLoop, "FULLBODY_STANDING_IDLE",math.random(75,100)/100)
+    StartThread(delayedStop)
 end
 
 function script.Activate() return 1 end

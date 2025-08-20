@@ -4,7 +4,7 @@ include "lib_Animation.lua"
 include "lib_mosaic.lua"
 
 
-local boolDebugActive = GG.BoolDebug or true
+local boolDebugActive = GG.BoolDebug 
 local Animations = include('animations_civilian_female.lua')
 local signMessages = include('protestSignMessages.lua')
 local peacfulProtestSignMessages = include('PeacefullProtestSignMessages.lua')
@@ -523,13 +523,10 @@ lowerBodyAnimations = {
 
 }
 
-
 accumulatedTimeInSeconds = 5
-
-
 function script.HitByWeapon(x, z, weaponDefID, damage)
     transportID = spGetUnitIsTransporting(unitID)
-    GG.CurrentlyChatting[unitID] = nil
+    setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_ENDED, "wounded")
     if  transportID then --if holds loot        
         Spring.UnitDetach(transportID)
     end
@@ -580,10 +577,12 @@ function startWailing(time)
 end
 
 chattingTime = 0
+chatPartner = nil
 boolStartChatting = false
-function startChatting(time)
+function startChatting(time, chatPartner)
     setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_STARTED, "talk")
     chattingTime = time
+    chatPartner = chatPartner
     boolStartChatting = true
     return true
 end
@@ -592,7 +591,6 @@ attackerID = 0
 boolStartFleeing = false 
 function startFleeing(enemyID)
     attackerID = enemyID
---    echo("Start fleeing called in civilian")
     setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_STARTED, "fleeing")
     boolStartFleeing = true
     return true
@@ -635,7 +633,6 @@ function peacefullProtest()
     setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_ENDED, "protest")
 end
 
-
 boolStartPraying = false
 function startPraying()
     setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_STARTED, "pray")
@@ -643,7 +640,6 @@ function startPraying()
     return true
 end
 
---
 function pray()
     Signal(SIG_INTERNAL)
     SetSignalMask(SIG_INTERNAL)
@@ -690,7 +686,6 @@ function anarchyBehaviour()
         StartThread(haveSexTimeDelayed)
         return
     end
-
 
     while GG.GlobalGameState ~= GameConfig.GameState.normal do
         normalBehavourStateMachine[newState](oldBehaviourState, GG.GlobalGameState, unitID)
@@ -757,79 +752,47 @@ function wailing()
     setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_ENDED ,"wailing")
 end
 
-function alignToPersonNearby()
-    Result= foreach(
-        getAllNearUnit(unitID, GameConfig.groupChatDistance + 100),
-        function(id)
-            if id~=unitID and civilianWalkingTypeTable[spGetUnitDefID(id)] then return id end
-        end
-        )
-    if Result and Result[1] then
-        Command(unitID,"go",  Result[1], {})
-        return true
-    end
-    conditionalEcho(boolDebugActive,"Civilian "..unitID.." trying to chat is not aligned to nearby person")
-    return false
-end
-
 function chatting()
     Signal(SIG_INTERNAL)
     SetSignalMask(SIG_INTERNAL)
 
-   if not alignToPersonNearby() then
-        setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_ENDED, "talk")
-        return
-   end
 
-    repeatCounter = 0
-    while chattingTime > 0 do
+    while 
+        chattingTime > 0 and 
+        doesUnitExistAlive(chatPartner) and 
+        distanceUnitToUnit(unitID, chatPartner) < GameConfig.generalInteractionDistance do
+        durationFrames = 0
         if maRa() == true then
-            PlayAnimation("UPBODY_NORMAL_TALK", lowerBodyPieces, math.random(10,20)/10)
+            durationFrames = PlayAnimation("UPBODY_NORMAL_TALK", lowerBodyPieces, math.random(10,20)/10)
         else
-            PlayAnimation("UPBODY_AGGRO_TALK", lowerBodyPieces, math.random(10,30)/10)
+            durationFrames = PlayAnimation("UPBODY_AGGRO_TALK", lowerBodyPieces, math.random(10,30)/10)
         end     
         
 
        headVal = math.random(-20,20)
-       if maRa() == maRa() then
-            T = foreach(getAllNearUnit(unitID, 150, gaiaTeamID),
-                        function(id)
-                            defID = spGetUnitDefID(id)
-                            if civilianWalkingTypeTable[id] then
-                                return id
-                            end
-                        end
-                        )
-            if #T > 1 then
-                lookAtHim = T[math.random(1, #T)]
-                x,y,z = spGetUnitPosition(lookAtHim)
+       if maRa() == maRa()  then
+                if randChance(10)then
+                    Command(unitID, "guard", chatPartner)
+                end
+                x,y,z = spGetUnitPosition(chatPartner)
+                setUnitRotationToPoint(unitID,x,yz)
                 mx,my,mz = spGetUnitPosition(unitID)
                 _,myRotation,_ = Spring.GetUnitRotation(unitID)
                 headVal = math.deg(myRotation -(math.atan2(x-mx, z-mz)))
                 conditionalEcho(boolDebugActive, unitID.." looking at ".. lookAtHim.." with ".. headVal)
-            end
-
        end
 
        headVal = clamp(-20, headVal, 20)
        Turn(Head1,y_axis,math.rad(headVal),1.5)
        WaitForTurns(Head1)
 
-       chattingTime = chattingTime - 500
-       repeatCounter = repeatCounter + 1
-        Sleep(100)
-        if repeatCounter % 2 == 0 then
-            if not alignToPersonNearby() then
-                setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_ENDED, "talk")
-                return
-            end  
-        end  
+       chattingTime = chattingTime - 100 - frameToMs(durationFrames)
+        Sleep(100)       
     end
-    GG.CurrentlyChatting[unitID] = nil
     conditionalEcho(boolDebugActive, "civilian "..unitID.. " chat has ended")
     playUpperBodyIdleAnimation()
     resetT(TablesOfPiecesGroups["UpArm"], math.pi, false, true)
-    setCivilianUnitInternalStateMode(unitID, STATE_ENDED, "talk")
+    setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_ENDED, "talk")
 end
 
 function filmingLocation()
@@ -1940,7 +1903,6 @@ function dropLoot()
 end
 
 function script.Killed(recentDamage, _)
-    GG.CurrentlyChatting[unitID] = nil
     setSpeedEnv(unitID, 0)
     dropLoot()
     val = 5*randSign()

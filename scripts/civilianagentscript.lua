@@ -406,7 +406,6 @@ lowerBodyAnimations = {
 
 accumulatedTimeInSeconds = 0
 function script.HitByWeapon(x, z, weaponDefID, damage)
-    GG.CurrentlyChatting[unitID] = nil
     clampedDamage = math.max(math.min(damage, 10), 35)
     StartThread(delayedWoundedWalkAfterCover, clampedDamage)
     accumulatedTimeInSeconds = accumulatedTimeInSeconds + clampedDamage
@@ -576,33 +575,38 @@ end
 function chatting()
     Signal(SIG_INTERNAL)
     SetSignalMask(SIG_INTERNAL)
-    while chattingTime > 0 do
+    while   
+        chattingTime > 0 and 
+        doesUnitExistAlive(chatPartner) and 
+        distanceUnitToUnit(unitID, chatPartner) < GameConfig.generalInteractionDistance do
+            
+        durationFrames = 0
         if maRa() == true then
-        PlayAnimation("UPBODY_NORMAL_TALK", lowerBodyPieces, math.random(10,20)/10)
+            durationFrames = PlayAnimation("UPBODY_NORMAL_TALK", lowerBodyPieces, math.random(10,20)/10)
         else
-        PlayAnimation("UPBODY_AGGRO_TALK", lowerBodyPieces, math.random(10,30)/10)
+            durationFrames = PlayAnimation("UPBODY_AGGRO_TALK", lowerBodyPieces, math.random(10,30)/10)
+        end     
+        
+        if maRa() == maRa() and chatPartner ~= nil then          
+            x,y,z = spGetUnitPosition(chatPartner)
+            setUnitRotationToPoint(unitID,x,yz)
+            mx,my,mz = spGetUnitPosition(unitID)
+            _,myRotation,_ = Spring.GetUnitRotation(unitID)
+            headVal = math.deg(myRotation -(math.atan2(x-mx, z-mz)))
+            conditionalEcho(boolDebugActive, unitID.." looking at ".. lookAtHim.." with ".. headVal)
        end
-       Result= foreach(
-        getAllNearUnit(unitID, GameConfig.groupChatDistance + 100),
-        function(id)
-            if id~=unitID and civilianWalkingTypeTable[Spring.GetUnitDefID] then return id end
-        end
-        )
 
-       if #Result < 1 then break end
-       headVal = math.random(-20,20)
+       headVal = clamp(-20, headVal, 20)
        Turn(Head1,y_axis,math.rad(headVal),1.5)
        WaitForTurns(Head1)
-       ix,iy,iz = Spring.GetUnitPosition(Result[1])
-       setUnitRotationToPoint(unitID, ix,iy,iz)
-       chattingTime = chattingTime - 1500
+
+       chattingTime = chattingTime - 100- frameToMs(durationFrames)
         Sleep(100)
     end
 
-    GG.CurrentlyChatting[unitID] = nil
     playUpperBodyIdleAnimation()
     resetT(TablesOfPiecesGroups["UpArm"], math.pi, false, true)
-    setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_ENDED,"chatting")
+    setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_ENDED,"talk")
 end
 
 function filmingLocation()
@@ -1654,7 +1658,6 @@ end
 
 
 function script.Killed(recentDamage, _)
-    GG.CurrentlyChatting[unitID] = nil
     --createCorpseCUnitGeneric(recentDamage)
     return 1
 end
