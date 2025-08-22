@@ -1230,9 +1230,6 @@ function gossipGenerator(gossipyID, oppossingPartnerID, UnitDefs)
         oname, ofamily = getDeterministicCultureNames(oppossingPartnerID, UnitDefs)
         table.insert(subjects, ofamily)
         table.insert(subjects, oname)
-        if randChance(50) then --reply
-        conversation = name..": "
-        end
     end
 
     isConsumerBragging = randChance(10)
@@ -1255,7 +1252,6 @@ function gossipGenerator(gossipyID, oppossingPartnerID, UnitDefs)
     if isParanoid then
         paranoidRantTable = getShizoBabbleRant(math.random(3,42))
         return conversation..table.concat(paranoidRantTable, "\n", 1, #paranoidRantTable)
-
     end
 
 
