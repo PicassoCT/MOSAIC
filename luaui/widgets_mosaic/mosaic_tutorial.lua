@@ -9,7 +9,7 @@ function widget:GetInfo()
 		date = "Jul 18, 2009",
 		license = "GNU GPL, v2 or later",
 		layer = 3,
-		enabled = (Spring.GetConfigInt("mosaic_startupcounter",0) < 1 )-- loaded by default?
+		enabled = true-- loaded by default?
 	}
 end
 
@@ -433,9 +433,9 @@ local function PlaySoundAndMarkUnit(defID, exampleUnit)
 		end
 
 		if TutorialInfoTable[mySide][defID].speach then
-			Spring.PlaySoundFile(TutorialInfoTable[mySide][defID].speach,1)
+			Spring.PlaySoundFile(TutorialInfoTable[mySide][defID].speach,1, x, y, z, 0, 0, 0, "ui")
 		elseif TutorialInfoTable.general[defID].speach then
-			Spring.PlaySoundFile(TutorialInfoTable.general[defID].speach,1)
+			Spring.PlaySoundFile(TutorialInfoTable.general[defID].speach,1, x, y, z, 0, 0, 0, "ui")
 		end	
 	end
 end
