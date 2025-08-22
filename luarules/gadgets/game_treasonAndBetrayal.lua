@@ -18,7 +18,7 @@ if (gadgetHandler:IsSyncedCode()) then
     local spGetUnitPosition = Spring.GetUnitPosition
     local spGetUnitDefID = Spring.GetUnitDefID
     local spGetUnitTeam = Spring.GetUnitTeam
-    local boolLocalDebugActive = false
+    local boolDebugActive = GG.BoolDebug 
 
     InterrogateableType =  getInterrogateAbleTypeTable(UnitDefs)
      operativeTypeTable = getOperativeTypeTable(UnitDefs)
@@ -42,7 +42,7 @@ if (gadgetHandler:IsSyncedCode()) then
 
     function gadget:UnitCreated(unitid, unitdefid, unitTeam, father)
         if operativeTypeTable[unitdefid] and StartUnitsByTeam and #StartUnitsByTeam[unitTeam] == 0 then
-            conditionalEcho(boolLocalDebugActive,"Registering Start Unit")
+            conditionalEcho(boolDebugActive,"Registering Start Unit")
             registerParent(unitTeam, unitid)
             StartUnitsByTeam[unitTeam][1] = unitid
             return
@@ -52,17 +52,17 @@ if (gadgetHandler:IsSyncedCode()) then
             --Spring.Echo("InterrogateableType created")
             if father and doesUnitExistAlive(father) then
                 registerChild(unitTeam, father, unitid)
-                conditionalEcho(boolLocalDebugActive,UnitDefs[unitdefid].name .. " created - child of "..father)
+                conditionalEcho(boolDebugActive,UnitDefs[unitdefid].name .. " created - child of "..father)
             else
                 if operativeTypeTable[unitdefid] or safeHouseTypeTable[unitdefid] then
-                    conditionalEcho(boolLocalDebugActive,"Registering random father")
+                    conditionalEcho(boolDebugActive,"Registering random father")
                     -- registering random father
                     local father = nil
                     allUnitsSortedByDefID = Spring.GetTeamUnitsSorted(unitTeam)
  
                     if operativeTypeTable[unitdefid] then
                         for safehouseType, _ in pairs(safeHouseTypeTable) do
-                            conditionalEcho(boolLocalDebugActive,"Iteratted operatives: "..UnitDefs[safehouseType].name)
+                            conditionalEcho(boolDebugActive,"Iteratted operatives: "..UnitDefs[safehouseType].name)
                             local safeHousesOfTeam = allUnitsSortedByDefID[safehouseType]
                             if safeHousesOfTeam then
                                father =  getSafeRandom(safeHousesOfTeam)
@@ -74,7 +74,7 @@ if (gadgetHandler:IsSyncedCode()) then
                         for operatorType, _ in pairs(operativeTypeTable) do
                             local operatorsOfTeam = allUnitsSortedByDefID[operatorType]
                             if operatorsOfTeam then
-                                conditionalEcho(boolLocalDebugActive, operatorsOfTeam)
+                                conditionalEcho(boolDebugActive, operatorsOfTeam)
                                 father = getSafeRandom(operatorsOfTeam)
                                 assert(father)
                                break
@@ -83,7 +83,7 @@ if (gadgetHandler:IsSyncedCode()) then
                     end
                   
                     if father then
-                       conditionalEcho(boolLocalDebugActive,"Fatherless Unit "..unitid.." registered with random parent "..father)
+                       conditionalEcho(boolDebugActive,"Fatherless Unit "..unitid.." registered with random parent "..father)
                        registerChild(unitTeam, father, unitid)
                     end
                 end
