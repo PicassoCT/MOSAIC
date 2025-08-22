@@ -4,7 +4,7 @@ include "lib_Animation.lua"
 include "lib_mosaic.lua"
 
 
-local boolDebugActive = GG.BoolDebug 
+local boolDebugActive = GG.BoolDebug and false
 local Animations = include('animations_civilian_female.lua')
 local signMessages = include('protestSignMessages.lua')
 local peacfulProtestSignMessages = include('PeacefullProtestSignMessages.lua')

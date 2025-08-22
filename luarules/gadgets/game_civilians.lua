@@ -197,15 +197,15 @@ end
 --will not be called with boolInitialized true
 function spawnInitialPopulation(frame)  
     -- great Grid of placeable Positions 
-    Spring.Echo("spawnInitialPopulation reached")
+    --Spring.Echo("spawnInitialPopulation reached")
     if GG.CitySpawnComplete and GG.CitySpawnComplete == true then
-        Spring.Echo("spawnInitialPopulation began")
+        --Spring.Echo("spawnInitialPopulation began")
         regenerateRoutesTable()
         checkReSpawnPopulation()
         issueArrivedUnitsCommands()
 
         boolInitialized = true
-        Spring.Echo("spawnInitialPopulation completed")
+        --Spring.Echo("spawnInitialPopulation completed")
     end
 end
 
