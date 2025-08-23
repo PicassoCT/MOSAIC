@@ -168,7 +168,7 @@ protagon = {
 		-- Channel: Secure: 
 		-- Auto-Information Censoring: Enabled 
 		-- Location: LOCATION
-		time = 8000,
+		time = 18000,
 		text =  "\a|Welcome to MOSAIC \n A spy game of treason and betrayal.\n These markers will guide you in your first game \n The tutorial can be deactivated in the Widgetmanager (Press F11)",
 	},
 	welcome = {
@@ -328,7 +328,7 @@ TutorialInfoTable =	preProcesTutorialInfoTable()
 
 function widget:Initialize()	
 		Spring.SetConfigInt("mosaic_startupcounter", Spring.GetConfigInt("mosaic_startupcounter",0) + 1 )
-		if  Spring.GetConfigInt("mosaic_startupcounter",0) > 1 then widget:Shutdown(); return end
+		if  Spring.GetConfigInt("mosaic_startupcounter",0) > 1 and not boolDebug then widgetHandler:RemoveWidget(self); return end
 
 		local myTeamID= spGetMyTeamID()
 		local playerID = spGetMyPlayerID()
@@ -348,15 +348,9 @@ function widget:Initialize()
 				mySide = "antagon"
 			end
 		end
-		TutorialInfoTable =	preProcesTutorialInfoTable()
-
 		
-
-		startFrame = Spring.GetGameFrame()
+	startFrame = Spring.GetGameFrame()
 end
-
-
-
 
 ---------------------------------------------------------------------------
 -- Code
@@ -402,14 +396,9 @@ local function PlaySoundAndMarkUnit(defID, exampleUnit)
 	end
 end
 
-
-
-
 function widget:Shutdown()
 	Spring.Echo("Deactivated Tutorial - you can reactivate via the Widget-Manager (Press F11)")
 end
-
-local quedInUnits = {}
 
 local function playUnitExplaination()
 	local selectedUnits = spGetSelectedUnits()
@@ -458,10 +447,5 @@ function widget:UnitCreated(unitID, unitDefID)
 			OnAirTillTimeFrame = math.max(OnAirTillTimeFrame,t) + (math.ceil(TutorialInfoTable[raidIconDefID].time  /1000) *30)
 			TutorialInfoTable[raidIconDefID].active = false
 	end
-end
-
-
-function widget:Shutdown()
-	window0:Dispose()	
 end
 
