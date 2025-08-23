@@ -1,4 +1,3 @@
-local boolDebug = true
 
 function widget:GetInfo()
 	return {
@@ -30,6 +29,7 @@ local spGetSelUnits = Spring.GetSelectedUnitsSorted
 local spSelUnitArray = Spring.SelectUnitArray
 local spGetUnitDefID = Spring.GetUnitDefID
 local spPlaySoundFile=Spring.PlaySoundFile
+local boolDebug = false
 
 local 	function getDefID(name)
 	   		for udid, ud in pairs(UnitDefs) do
@@ -55,9 +55,7 @@ local spGetPlayerInfo = Spring.GetPlayerInfo
 local spGetTeamInfo = Spring.GetTeamInfo
 local spGetMyPlayerID = Spring.GetMyPlayerID
 local startFrame = Spring.GetGameFrame()
-local window0
-local panel1
-local Chili
+
 
 local TutorialInfoTable= {
 	antagon = {
@@ -329,8 +327,8 @@ end
 TutorialInfoTable =	preProcesTutorialInfoTable()
 
 function widget:Initialize()	
-		Chili = WG.Chili
 		Spring.SetConfigInt("mosaic_startupcounter", Spring.GetConfigInt("mosaic_startupcounter",0) + 1 )
+		if  Spring.GetConfigInt("mosaic_startupcounter",0) > 1 then widget:Shutdown(); return end
 
 		local myTeamID= spGetMyTeamID()
 		local playerID = spGetMyPlayerID()
@@ -352,43 +350,7 @@ function widget:Initialize()
 		end
 		TutorialInfoTable =	preProcesTutorialInfoTable()
 
-		local cs = {
-			Chili.Button:New{
-				x      = 20,
-				y      = 20,
-				caption = "Abort Tutorial",
-				OnClick = {function(self)
-							self.font:SetColor(0,1,0,1);
-							Spring.SetConfigInt("mosaic_startupcounter", 2)
-							boolTutorialActive = false
-							widgetHandler:RemoveWidget(self)
-							end
-							},
-			}
-		}
-
-		local window01 = Chili.Window:New{
-				caption = "Beginners Tutorial:",
-				x = 200,
-				y = 200,
-				clientWidth  = 150,
-				clientHeight = 50,
-				parent = Chili.Screen0,
-			}
-
-		local panel1 = Chili.StackPanel:New{
-				width = 100,
-				height = 50,
-				--resizeItems = false,
-				x=0, 
-				right=0,
-				y=0, 
-				bottom=0,
-				margin = {10, 10, 10, 10},
-				parent = window01,
-				children = cs,
-			}
-
+		
 
 		startFrame = Spring.GetGameFrame()
 end
@@ -456,8 +418,8 @@ local function playUnitExplaination()
 		for num, id in pairs(selectedUnits) do
 		local defID = spGetUnitDefID(id)
 			if defID and 
-			(TutorialInfoTable[mySide][defID].active and TutorialInfoTable[mySide][defID].active == true) or
- 			(TutorialInfoTable.general[defID].active and TutorialInfoTable.general[defID].active == true)
+			(TutorialInfoTable[mySide] and TutorialInfoTable[mySide][defID] and TutorialInfoTable[mySide][defID].active ) or 
+			(TutorialInfoTable.general[defID] and TutorialInfoTable.general[defID].active )
 			 then
 				PlaySoundAndMarkUnit(defID, id)
 				TutorialInfoTable[mySide][defID].active = false
