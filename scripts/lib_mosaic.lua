@@ -471,6 +471,7 @@ function detectMapControlledPlacementComplete()
                 end)
             GG.MapCompletedBuildingPlacement = true
     end
+    return GG.MapCompletedBuildingPlacement
 end
 
 function isMapControlledBuildingPlacement()

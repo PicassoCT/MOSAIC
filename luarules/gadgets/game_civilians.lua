@@ -750,7 +750,7 @@ function sozialize(evtID, frame, persPack, startFrame, myID)
            --[[ --echo("Soizialize with partnerID ")--]]
             persPack.chatPartnerID = getUnitNearestTalkableAlly(myID)
             if persPack.chatPartnerID then                
-                echo(myID.." starting a chat with "..persPack.chatPartnerID.. " at "..locationstring(myID)) 
+--                echo(myID.." starting a chat with "..persPack.chatPartnerID.. " at "..locationstring(myID)) 
                 persPack.boolStartAChat = true
                 persPack.boolDeactivateStuckDetection = true             
             end
