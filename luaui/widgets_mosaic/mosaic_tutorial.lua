@@ -83,7 +83,7 @@ local TutorialInfoTable= {
 	----BuildUnits
 	[getDefID("operativepropagator")] = 
 	{
-		speach= "sounds/tutorial/operativepropagator.ogg",
+		speach= "sounds/tutorial/antagon/operativepropagator.ogg",
 		active = true,
 		-- This operative, is our way to take hold in this city, form cells and forward the CAUSE. 
 		-- S/he can create safehouses and recruit civilians to our cause.
@@ -109,7 +109,7 @@ local TutorialInfoTable= {
 		--A safehouse can even become the location were we perfect the CAUSE.
 		--But not today, not here. This here is just a start.
 		--Train another operative and then build a propagandasever. It will help us get more funds, more supporters.
-		speach= "sounds/tutorial/antagonsafehouse.ogg",
+		speach= "sounds/tutorial/safehouse.ogg",
 		--
 		boolUponCreation = true,
 		active = true,
@@ -123,7 +123,7 @@ local TutorialInfoTable= {
 		--We are animals, easy to herd, milk and train to fight one another.
 		--Just connect our goal to the tales in there head and they will donate, march and die for us.
 		--If the enemy kills produces collateral, this will amplify what we reap.
-		speach= "sounds/tutorial/antagonpropagandaserver.ogg",
+		speach= "sounds/tutorial/antagon/propagandaserver.ogg",
 		boolUponCreation = true,
 		active = true,
 		time = 5000,
@@ -156,7 +156,7 @@ local TutorialInfoTable= {
 		--Rejoice for this is the moment of reckoning. For all they have murdered,
 		--to end them stepping on us. 
 
-		speach= "sounds/tutorial/launcher.ogg",
+		speach= "sounds/tutorial/antagon/launcher.ogg",
 		active = true,
 		time = 3000,
 		text =  "\a|Launcher\n Used to built a hypersonic ICBM, which fires a exponential weapon"
@@ -199,7 +199,7 @@ protagon = {
 		-- S/he can interrogate civilans suspected of aiding the enemy.
 		-- S/he can raid houses suspected of being safehouses. 
 		-- Build a safehouse inside the city. Upon creation, you will recieve further instructions.
-		speach= "sounds/tutorial/operativeinvestigator.ogg",
+		speach= "sounds/tutorial/protagon/operativeinvestigator.ogg",
 		time = 5000,
 		active = true,
 		text =  "\a|Investigator Operative \n Recruits Agents\n Builds Safehouses \n Raids & Interriogates enemy installations"
@@ -222,7 +222,7 @@ protagon = {
 		--For now train some additional operatives and build a propagandasever. 
 		--It will help us to gain support in the upcoming fight against the radicals.
 		--A word of warning: If the enemy ever raids a safehouse, all personal trained within will be revealed
-		speach= "sounds/tutorial/protagonsafehouse.ogg",
+		speach= "sounds/tutorial/protagon/safehouse.ogg",
 		boolUponCreation = true,
 		active = true,
 		time = 5000,
@@ -233,7 +233,7 @@ protagon = {
 		--It helps to sway public opinion towards us, it also allows us to mine cryptocurrency and buy material.
 		--Any propagandaserver amplifys what we gain or loose.
 		--If the enemy kills somebody innocent or raids the wrong house, we reap what they saw.
-		speach= "sounds/tutorial/propagandaserver.ogg",
+		speach= "sounds/tutorial/protagon/propagandaserver.ogg",
 		boolUponCreation = true,
 		active = true,
 		time = 5000,
@@ -241,7 +241,7 @@ protagon = {
 	},
 	[getDefID("blacksite")] = 
 	{	
-		speach= "sounds/tutorial/protagonblacksite.ogg",
+		speach= "sounds/tutorial/protagon/blacksite.ogg",
 		active = true,
 		time = 3000,
 		text =  "\a|Blacksite\n Builds ▀▀▀▀▀ which can manipulate \nthe beehiveour of civilians.\n Usage of ▀▀▀▀▀▀ is a warcrime.\n Sometimes life without parole may \n be preferable to no life at all."

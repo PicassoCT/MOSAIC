@@ -788,7 +788,7 @@ function sozialize(evtID, frame, persPack, startFrame, myID)
             return true, frame + 30 , persPack        
         else 
             --stop and chat 
-            echo(myID.." chatting at "..locationstring(partnerID))
+--          echo(myID.." chatting at "..locationstring(partnerID))
             Command(myID, "stop")
             Command(partnerID, "stop")
             displayConversationTextAt(myID, partnerID)
