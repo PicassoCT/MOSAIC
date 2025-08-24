@@ -543,7 +543,7 @@ function foldFuelTowers()
     showT(TableOfPiecesGroups["FuelCraneHead"])
     Turn(TableOfPiecesGroups["FuelCrane"][1],z_axis, math.rad(-80), 5.0)
     Turn(TableOfPiecesGroups["FuelCraneHead"][1],z_axis, math.rad(80), 5.0)
-Turn(TableOfPiecesGroups["FuelCrane"][2],x_axis, math.rad(80), 5.0)
+    Turn(TableOfPiecesGroups["FuelCrane"][2],x_axis, math.rad(80), 5.0)
     Turn(TableOfPiecesGroups["FuelCraneHead"][2],x_axis, math.rad(-80), 5.0)
 end
 
@@ -556,7 +556,6 @@ function deployCapsule()
     WMove(CapsuleCrane, x_axis, -5000, 5000 / 10)
 
 end
-
 
 function RandomRocketPlumage()
     if maRa() then
@@ -634,7 +633,7 @@ function launchAnimation()
             StartThread(BoostersReturning)
             --Launchplum sinking back into Final Stage
             StartThread(cloudFallingDown, 
-                TableOfPiecesGroups["cloudMovers"], 
+                TableOfPiecesGroups["rocketScience"], 
                 plumageTable, 
                 TableOfPiecesGroups["RocketPlumeB"] )
             --Slight Slowdown
@@ -665,7 +664,24 @@ function launchAnimation()
     end
 end
 
+function showBubbleSmoke()
+    for i =  1, #TablesOfPiecesGroups["SmokeBubbles"] do
+        smokeRotator = TablesOfPiecesGroups["SmokeBubbleRotators"][i]
+        smokeBubble = TablesOfPiecesGroups["SmokeBubbles"][i]
+        spinRand(smokeBubble, -42, 42, 12)
+        spinRand(smokeRotator, -42, 42, 12)
+        Show (smokeBubble)
+    end
+end
+
+function resetSmokeBubbles()
+    hideT(TablesOfPiecesGroups["SmokeBubbles"])
+    resetT(TablesOfPiecesGroups["SmokeBubbles"])
+    resetT(TablesOfPiecesGroups["SmokeBubbleRotators"])
+end
+
 function cloudFallingDown(cloudMovers, cloudGoingUp, cloudCoolingDown)
+    showBubbleSmoke()
     hideT(TableOfPiecesGroups["FireFlower"])
     Move(Rocket,y_axis, 0, 100)
     for i =  1, #cloudMovers do
@@ -683,6 +699,7 @@ function cloudFallingDown(cloudMovers, cloudGoingUp, cloudCoolingDown)
     StopSpin(turbine, y_axis, 0.0001)
     Sleep(9000)
     Turn(turbine, y_axis, 0, 3)
+    resetSmokeBubbles()
 end
 
 
