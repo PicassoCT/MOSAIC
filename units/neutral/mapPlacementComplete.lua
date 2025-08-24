@@ -4,7 +4,7 @@ local unitDef = {
 	name = "map_placements_complete",
 	Description = "unit communicates by existing",
 	objectName = "placeholder.s3o",
-	script = "placeholder.lua",
+	script = "map_placements_completescript.lua",
 	buildPic = "placeholder.png",
 	levelGround =false,
 	--cost
