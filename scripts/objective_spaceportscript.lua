@@ -557,6 +557,23 @@ function deployCapsule()
 
 end
 
+
+function RandomRocketPlumage()
+    if maRa() then
+        return RocketPlumeN
+    else
+        return RocketPlumeAN
+    end
+end
+
+function getRandomizedPlumageTable()
+    Plumage = {}
+    for i=1, 5 do
+        Plumage[i] = TableOfPiecesGroups[RandomRocketPlumage][i]
+    end
+    return Plumage
+end
+
 --thrusterCloud
 launchState = "prepareForLaunch"
 rocketPlumage = RocketPlumeN
@@ -565,11 +582,8 @@ upDistance = 58000
 function launchAnimation()
     while true do
         while GG.GlobalGameState == GameConfig.GameState.normal do
-            if maRa() then
-                rocketPlumage = RocketPlumeN
-            else
-                rocketPlumage = RocketPlumeAN
-            end
+            
+            plumageTable = getRandomizedPlumageTable()
             --echo("driveOutMainStage")
             driveOutMainStage()
             craneLoadToPlatform()
@@ -591,13 +605,7 @@ function launchAnimation()
                 end
             )
             
-            destroyUnitsNearby()
-
-            if maRa() then
-                rocketPlumage = RocketPlumeN
-            else
-                rocketPlumage = RocketPlumeAN
-            end
+            destroyUnitsNearby()        
 
             Show(GroundHeatedGasRing1)
             Spin(GroundHeatedGasRing1,y_axis,math.rad(66),0)
@@ -606,26 +614,29 @@ function launchAnimation()
             destroyUnitsNearby()
 
             --Lift rocket (rocket is slow and becomes faster)
-            liftRocketShowStage(3000, 1500, TableOfPiecesGroups[rocketPlumage][1], math.random(35, 45)*randSign(), 13)
+            liftRocketShowStage(3000, 1500, plumageTable[1], math.random(35, 45)*randSign(), 13)
             --Lift rocket
-            liftRocketShowStage(12000, 2000, TableOfPiecesGroups[rocketPlumage][2], math.random(20, 30)*randSign(), 11)
+            liftRocketShowStage(12000, 2000, plumageTable[2], math.random(20, 30)*randSign(), 11)
             -- Stage2 smoke Spin
             --Lift Rocket
             -- Stage2 smoke Spin
             --Lift Rocket
-            liftRocketShowStage(18000, 2000, TableOfPiecesGroups[rocketPlumage][3], math.random(10, 20)*randSign(), 5)
+            liftRocketShowStage(18000, 2000, plumageTable[3], math.random(10, 20)*randSign(), 5)
             -- Stage3 smoke Spin
             --Lift Rocket
             plattformFireBloomCleanup()
-            liftRocketShowStage(32000, 2000, TableOfPiecesGroups[rocketPlumage][4], math.random(5, 15)*randSign(), 3)
-            liftRocketShowStage(upDistance, 2000, TableOfPiecesGroups[rocketPlumage][5], math.random(3, 8)*randSign(), 1)
+            liftRocketShowStage(32000, 2000, plumageTable[4], math.random(5, 15)*randSign(), 3)
+            liftRocketShowStage(upDistance, 2000, plumageTable[5], math.random(3, 8)*randSign(), 1)
             -- Stage4 smoke Spin
             -- Decoupling thrusters
             destroyUnitsNearby()
 
             StartThread(BoostersReturning)
             --Launchplum sinking back into Final Stage
-            StartThread(cloudFallingDown)
+            StartThread(cloudFallingDown, 
+                TableOfPiecesGroups["cloudMovers"], 
+                plumageTable, 
+                TableOfPiecesGroups["RocketPlumeB"] )
             --Slight Slowdown
             Show(RocketFusionPlume)
             Sleep(500)
@@ -654,15 +665,17 @@ function launchAnimation()
     end
 end
 
-function cloudFallingDown()
+function cloudFallingDown(cloudMovers, cloudGoingUp, cloudCoolingDown)
     hideT(TableOfPiecesGroups["FireFlower"])
     Move(Rocket,y_axis, 0, 100)
-    for i =  1, #TableOfPiecesGroups[rocketPlumage] do
-        if TableOfPiecesGroups[rocketPlumage][i+1] then
-            Move(TableOfPiecesGroups[rocketPlumage][i+1], y_axis, i*4500, 4500)
+    for i =  1, #cloudMovers do
+        Hide(cloudGoingUp[i])
+        Show(cloudCoolingDown[i])
+        if cloudMovers[i+1] then
+            Move(cloudMovers[i+1], y_axis, i*4500, 4500)
         end
-        WMove(TableOfPiecesGroups[rocketPlumage][i], y_axis, -i*4500, 5500)
-        Hide(TableOfPiecesGroups[rocketPlumage][i])
+        WMove(cloudMovers[i], y_axis, -i*4500, 5500)
+
     end
     Sleep(4000)
     Hide(turbineHot)
