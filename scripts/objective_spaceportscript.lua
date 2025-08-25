@@ -668,8 +668,8 @@ function showBubbleSmoke()
     for i =  1, #TablesOfPiecesGroups["SmokeBubbles"] do
         smokeRotator = TablesOfPiecesGroups["SmokeBubbleRotators"][i]
         smokeBubble = TablesOfPiecesGroups["SmokeBubbles"][i]
-        spinRand(smokeBubble, -42, 42, 12)
-        spinRand(smokeRotator, -42, 42, 12)
+        spinRand(smokeBubble, -180, 180, 12)
+        spinRand(smokeRotator, -180, 180, 12)
         Show (smokeBubble)
     end
 end
