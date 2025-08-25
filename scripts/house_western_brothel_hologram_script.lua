@@ -196,7 +196,7 @@ include ("tigLilAnimation.lua")
 include("lib_textFx.lua")
 
 local function tiglLilLoop()
-    echo("Reaching brothel tiglil")
+--    echo("Reaching brothel tiglil")
     if unitID % 3 ~= 0 then return end
     if not GG.TiglilHoloTable then GG.TiglilHoloTable = {} end
     if not GG.TiglilHoloTable[unitDefID] then GG.TiglilHoloTable[unitDefID] = {} end

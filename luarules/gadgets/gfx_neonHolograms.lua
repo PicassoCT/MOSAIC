@@ -82,7 +82,7 @@ if (gadgetHandler:IsSyncedCode()) then
          if neonHologramTypeTable[unitDefID] then
             Spring.SetUnitNoDraw(unitID, true)
             allNeonUnits[#allNeonUnits + 1]= unitID
-            Spring.Echo("Registering neon unit "..unitID.. " of type "..neonHologramTypeNames[unitDefID])
+--            Spring.Echo("Registering neon unit "..unitID.. " of type "..neonHologramTypeNames[unitDefID])
            -- SendToUnsynced("setUnitNeonLuaDraw", unitID, unitDefID)
         end
     end
@@ -271,7 +271,7 @@ local function isRaining()
 
     if boolRainyArea == nil then
         boolRainyArea = isRainyArea()        
-        Spring.Echo("Is rainy area:"..tostring(boolRainyArea))
+--        Spring.Echo("Is rainy area:"..tostring(boolRainyArea))
     end
 
     if boolRainyArea == false then

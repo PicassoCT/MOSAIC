@@ -33,7 +33,6 @@ function airPortConnection()
         ax,ay,az = Spring.GetUnitPosition(allAirPorts[1])
         rDeg = math.atan2(x-ax,z-az)
         ninetyDeg = math.pi/2
-        assert(center)
         WTurn(center, y_axis, rDeg + ninetyDeg ,0)
        -- echo("objective_transrapid is airport connected")
     else
@@ -78,7 +77,7 @@ function deployTrack( upStart, downEnd, railP, Pillars, detectorPiece, endPoint)
 
     WTurn(railP, upDownAxis, math.rad(upStart), 0)
     Hide(endPoint)
-    Hide(detectionPiece)
+    Hide(detectorPiece)
     Show(railP)
     for i= upStart, downEnd, -1 do
        WTurn(railP, upDownAxis, math.rad(i), 0)

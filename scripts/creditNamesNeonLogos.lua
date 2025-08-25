@@ -1,5 +1,7 @@
 
 return {
+"Jaturo",
+"vrymaa",
 "Kjartan Abel",
 "LiteSaturation",
 "Universfield",
