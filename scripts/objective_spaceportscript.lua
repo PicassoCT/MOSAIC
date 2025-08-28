@@ -322,7 +322,7 @@ function lightUpPad(cone, lengthOfTimeMs)
 end
 
 function showBoosterSmokeRing(nr)
-    boosterSmokeRingHeight = 500
+    boosterSmokeRingHeight = 1500
     downAxis = 2
     reset(TableOfPiecesGroups[CrawlerSmokeRingN][nr])
     Move(TableOfPiecesGroups[CrawlerSmokeRingN][nr], downAxis, -boosterSmokeRingHeight, 0)
@@ -331,13 +331,13 @@ function showBoosterSmokeRing(nr)
     Spin(TableOfPiecesGroups[CrawlerSmokeRingN][nr],y_axis, math.rad(val), 0)
     Spin(TableOfPiecesGroups[CrawlerSmokeRingN][nr],x_axis, math.rad(0.5)*randSign(), 0)
     Spin(TableOfPiecesGroups[CrawlerSmokeRingN][nr],z_axis, math.rad(0.5)*randSign(), 0)
-    WMove(TableOfPiecesGroups[CrawlerSmokeRingN][nr], downAxis, 0, 25)
+    mSyncIn(TableOfPiecesGroups[CrawlerSmokeRingN][nr], 0, 0, 0, 3500)
     Sleep(5000)   
     StopSpin(TableOfPiecesGroups[CrawlerSmokeRingN][nr],x_axis, 0)
     Turn(TableOfPiecesGroups[CrawlerSmokeRingN][nr],x_axis , math.rad(0), 0.5)
     Spin(TableOfPiecesGroups[CrawlerSmokeRingN][nr],z_axis, math.rad(0.5)*randSign(), 0)
     Turn(TableOfPiecesGroups[CrawlerSmokeRingN][nr],z_axis , math.rad(0), 0.5)
-    WMove(TableOfPiecesGroups[CrawlerSmokeRingN][nr], downAxis, -boosterSmokeRingHeight, 0)
+    mSyncIn(TableOfPiecesGroups[CrawlerSmokeRingN][nr], 0, -boosterSmokeRingHeight, 0, 11500)
     Hide(TableOfPiecesGroups[CrawlerSmokeRingN][nr])
 end
 
@@ -373,8 +373,7 @@ function landBooster(boostNr)
         end
     end
     StartThread(lightUpPad, LandCone, 6000)
-    StartThread(showBoosterSmokeRing, boostNr)
-
+   
     val =math.random(300,500)
     Spin(TableOfPiecesGroups[CrawlerBoosterRingN][boosterNr], y_axis, math.rad(val)*randSign(), 0)
     Spin(TableOfPiecesGroups[CrawlerBoosterGasRingN][boosterNr], y_axis, math.rad(690), 0)
@@ -392,7 +391,6 @@ function landBooster(boostNr)
         spinVal = math.random(40, 120)*randSign()
         if (i < 1500) then    Show(LandCone) end
         if (i < 1000) then 
-
             Show(TableOfPiecesGroups[CrawlerBoosterGasRingN][boosterNr]) 
             Show(TableOfPiecesGroups[CrawlerBoosterRingN][boosterNr]) 
         end
@@ -409,6 +407,7 @@ function landBooster(boostNr)
        spinVal = math.random(40, 120)*randSign()
        Spin(LandCone, y_axis, math.rad(spinVal))
     end  
+    StartThread(showBoosterSmokeRing, boostNr)
 
     Hide(TableOfPiecesGroups[CrawlerBoosterGasRingN][boosterNr])
     
