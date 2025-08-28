@@ -6177,8 +6177,8 @@ function spawnCegAtPiece(unitID, pieceId, cegname, offset, dx, dy, dz,
 
     boolAdd = offset or 10
     assert(unitID,"lib_UnitScript::Not enough arguments to spawnCegAtPiece")
-    if not pieceId then echo("lib_UnitScript::Not enough arguments to spawnCegAtPiece at"..getUniTypeName(unitID)) return end
-    if not cegname then echo("lib_UnitScript::Not enough arguments to spawnCegAtPiece at"..getUniTypeName(unitID)) return end
+    if not pieceId then echo("lib_UnitScript::No pieceId argument to spawnCegAtPiece at"..getTypeName(unitID)) return end
+    if not cegname then echo("lib_UnitScript::Not enough arguments to spawnCegAtPiece at"..getTypeName(unitID)) return end
 
     x, y, z, mx, my, mz = Spring.GetUnitPiecePosDir(unitID, pieceId)
     if boolPieceDirectional and boolPieceDirectional == true then
