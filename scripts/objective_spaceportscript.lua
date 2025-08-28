@@ -29,6 +29,7 @@ local BoosterCrawlerN = "CrawlerBooster"
 local CrawlerBoosterN = "CrawlerBooster"
 local CrawlerBoosterGasRingN = "CrawlerBoosterGasRing"
 local CrawlerBoosterRingN = "CrawlerBoosterRing"
+local CrawlerSmokeRingN = "CrawlerSmokeRing"
 local BoosterRotatorN = "BoosterRotator"
 local MainStageRocket = piece("MainStageRocket")
 local RocketCrawler = piece("RocketCrawler")
@@ -196,7 +197,8 @@ end
 function fireTruckRoundOS()
     Show(FireTruck)
     while true do
-        while (holdsForAllBool(boosterReturned, false)) do
+        while (holdsForAllBool(boosterReturned, false)) do 
+            while boolBackDoorOpen == false do Sleep(500) end           
             WMove(FireTruckRotator, y_axis, -3000, 500)
             WTurn(FireTruckRotator, y_axis, math.rad(-33), 0.25)
             restTime = math.random(1,15) * 1000
@@ -207,6 +209,7 @@ function fireTruckRoundOS()
             WTurn(FireTruckRotator, y_axis, math.rad(-180), 0.25)
             WMove(FireTruckRotator, y_axis, 0, 500)
             WTurn(FireTruckRotator, y_axis, math.rad(-181), 0.25)
+            while boolBackDoorOpen == false do Sleep(500) end
             WTurn(FireTruckRotator, y_axis, math.rad(-360), 0.25)
             Turn(FireTruckRotator, y_axis, math.rad(0), 0)
             restTime = math.random(1,15) * 1000
@@ -318,6 +321,27 @@ function lightUpPad(cone, lengthOfTimeMs)
     end
 end
 
+function showBoosterSmokeRing(nr)
+    boosterSmokeRingHeight = 500
+    downAxis = 2
+    reset(TableOfPiecesGroups[CrawlerSmokeRingN][nr])
+    Move(TableOfPiecesGroups[CrawlerSmokeRingN][nr], downAxis, -boosterSmokeRingHeight, 0)
+    val = math.random(42, 80) * randSign()
+    Show(TableOfPiecesGroups[CrawlerSmokeRingN][nr])
+    Spin(TableOfPiecesGroups[CrawlerSmokeRingN][nr],y_axis, math.rad(val), 0)
+    Spin(TableOfPiecesGroups[CrawlerSmokeRingN][nr],x_axis, math.rad(0.5)*randSign(), 0)
+    Spin(TableOfPiecesGroups[CrawlerSmokeRingN][nr],z_axis, math.rad(0.5)*randSign(), 0)
+    WMove(TableOfPiecesGroups[CrawlerSmokeRingN][nr], downAxis, 0, 25)
+    Sleep(5000)   
+    StopSpin(TableOfPiecesGroups[CrawlerSmokeRingN][nr],x_axis, 0)
+    Turn(TableOfPiecesGroups[CrawlerSmokeRingN][nr],x_axis , math.rad(0), 0.5)
+    Spin(TableOfPiecesGroups[CrawlerSmokeRingN][nr],z_axis, math.rad(0.5)*randSign(), 0)
+    Turn(TableOfPiecesGroups[CrawlerSmokeRingN][nr],z_axis , math.rad(0), 0.5)
+    WMove(TableOfPiecesGroups[CrawlerSmokeRingN][nr], downAxis, -boosterSmokeRingHeight, 0)
+    Hide(TableOfPiecesGroups[CrawlerSmokeRingN][nr])
+end
+
+boolBackDoorOpen = false
 function landBooster(boostNr)
     axis = 2
     local boosterNr = boostNr
@@ -325,6 +349,7 @@ function landBooster(boostNr)
     local boosterRotator = TableOfPiecesGroups[BoosterRotatorN][boosterNr]
     local nextPos = 64000
     StartThread(openDoor, GroundRearDoorN)
+    boolBackDoorOpen= true
     StartThread(PrepareUnloadBooster)
     WMove(booster, axis, upDistance , 0)
     WTurn(boosterRotator,1, math.rad(-15),0)
@@ -348,12 +373,12 @@ function landBooster(boostNr)
         end
     end
     StartThread(lightUpPad, LandCone, 6000)
+    StartThread(showBoosterSmokeRing, boostNr)
 
     val =math.random(300,500)
     Spin(TableOfPiecesGroups[CrawlerBoosterRingN][boosterNr], y_axis, math.rad(val)*randSign(), 0)
     Spin(TableOfPiecesGroups[CrawlerBoosterGasRingN][boosterNr], y_axis, math.rad(690), 0)
 
-  
     Turn(booster, x_axis, math.rad(0), 0.5)
     Turn(booster, y_axis, math.rad(0), 3)
     Turn(boosterRotator, x_axis, math.rad(0),5)
@@ -404,6 +429,7 @@ function script.Killed(recentDamage, _)
     return 1
 end
 
+ArenaSmoke = piece("ArenaSmoke")
 function plattFormFireBloom()
     Show(LaunchCone)
     Move(fireCloud, y_axis, -250, 0)
@@ -459,6 +485,9 @@ end
 
 
 function spinUpTurbine()
+    Move(ArenaSmoke, y_axis, -900, 0)
+    Show(ArenaSmoke)
+    Move(ArenaSmoke, y_axis, 0, 25)
     Spin(turbine, y_axis, math.rad(42), 0.1)
     Show(turbineCold)
     Sleep(4000)
@@ -504,7 +533,7 @@ function closeClaw()
     Turn(TableOfPiecesGroups[CraneHeadClawN][4], y_axis, math.rad(0), 1)
     WaitForTurnT(TableOfPiecesGroups[CraneHeadClawN])
 end
-
+rocketCraneBaseSpeed= 200
 function craneLoadToPlatform()
 --    echoEnter("craneLoadToPlatform")
     openClaw()
@@ -519,12 +548,12 @@ function craneLoadToPlatform()
 
     Hide(CraneRocket)   
     ShowRocket()
-    openClaw()
     unfoldFuelTowers()
+    openClaw()
     deployCapsule()
-    WMove(RocketCraneBase, z_axis, -4500, 100)
+    WMove(RocketCraneBase, z_axis, -4500, rocketCraneBaseSpeed)
     WTurn(CraneHead, y_axis, math.rad(crawlerRocketPosY), 0.1)
-    WMove(RocketCraneBase, z_axis, -4500, 15)
+    WMove(RocketCraneBase, z_axis, -4500, rocketCraneBaseSpeed)
     StartThread(closeDoor, GroundFrontDoorN)
     foldFuelTowers()
     closeDoor(GroundFrontDoorN)
@@ -568,7 +597,7 @@ end
 function getRandomizedPlumageTable()
     Plumage = {}
     for i=1, 5 do
-        Plumage[i] = TableOfPiecesGroups[RandomRocketPlumage][i]
+        Plumage[i] = TableOfPiecesGroups[RandomRocketPlumage()][i]
     end
     return Plumage
 end
@@ -579,10 +608,10 @@ rocketPlumage = RocketPlumeN
 local GameConfig = getGameConfig()
 upDistance = 58000
 function launchAnimation()
+    StartThread(vtolLoop)
     while true do
         while GG.GlobalGameState == GameConfig.GameState.normal do
-            
-            plumageTable = getRandomizedPlumageTable()
+            local plumageTable = getRandomizedPlumageTable()
             --echo("driveOutMainStage")
             driveOutMainStage()
             craneLoadToPlatform()
@@ -633,7 +662,7 @@ function launchAnimation()
             StartThread(BoostersReturning)
             --Launchplum sinking back into Final Stage
             StartThread(cloudFallingDown, 
-                TableOfPiecesGroups["rocketScience"], 
+                TableOfPiecesGroups["RocketScience"], 
                 plumageTable, 
                 TableOfPiecesGroups["RocketPlumeB"] )
             --Slight Slowdown
@@ -649,13 +678,16 @@ function launchAnimation()
 --            echo("launch complete waiting for return")
             --Moving CrawlerMain back to reassembly
       
-            WMove(RocketCraneBase, z_axis, 0, 15)
+            WMove(RocketCraneBase, z_axis, 0, rocketCraneBaseSpeed)
+            WTurn(CraneHead, y_axis, math.rad(crawlerRocketPosY), 0.1)
             watchDog = 90000
+
             while (holdsForAllBool(boosterReturned, false) or watchDog > 0) do
                 Sleep(1000)
                 watchDog = watchDog-1000
             end
             closeDoor(GroundRearDoorN)
+            boolBackDoorOpen= false
             launchState = "prepareForLaunch"
 
             initialSetup()
@@ -664,20 +696,59 @@ function launchAnimation()
     end
 end
 
+function vtolLoop()
+    landed = {}
+    while true do
+        while launchState == "prepareForLaunch" or launchState == "recovery" do
+            rando = randDict(TableOfPiecesGroups["VTOL"])
+            if landed[rando] then -- start and hide
+                WMove(rando, y_axis, 1500, 150)
+                xval = math.random(0,250) *randSign()
+                zval = math.random(0,250) *randSign()
+                Move(rando, x_axis, xval, 50)
+                Move(rando, z_axis, zval, 50)
+                WaitForMoves(rando)
+                Hide(rando)
+                landed[rando] = nil
+            else
+                xval = math.random(0,500) *randSign()
+                zval = math.random(0,500) *randSign()
+                Move(rando, x_axis, xval, 0)
+                Move(rando, z_axis, zval, 0)
+                WMove(rando, y_axis, 1500, 0)
+                WaitForMoves(rando)
+                rVal = math.random(0,360)
+                Turn(rando, y_axis, math.rad(rVal),0)
+                Show(rando)
+                Move(rando, x_axis, xval, 50)
+                Move(rando, z_axis, zval, 50)
+                WaitForMoves(rando)
+                Turn(rando, y_axis, math.rad(0),10)
+                WMove(rando, y_axis, 0, 0)         
+                landed[rando] = true -- 
+            end
+            Sleep(100)
+        end
+        Sleep(1000)
+    end
+
+end
+
+
 function showBubbleSmoke()
-    for i =  1, #TablesOfPiecesGroups["SmokeBubbles"] do
-        smokeRotator = TablesOfPiecesGroups["SmokeBubbleRotators"][i]
-        smokeBubble = TablesOfPiecesGroups["SmokeBubbles"][i]
-        spinRand(smokeBubble, -180, 180, 12)
-        spinRand(smokeRotator, -180, 180, 12)
+    for i =  1, #TableOfPiecesGroups["SmokeBubble"] do
+        smokeRotator = TableOfPiecesGroups["SmokeBubbleRotator"][i]
+        smokeBubble = TableOfPiecesGroups["SmokeBubble"][i]
+        spinRand(smokeBubble, -90, 90, 12)
+        spinRand(smokeRotator, -90, 90, 12)
         Show (smokeBubble)
     end
 end
 
 function resetSmokeBubbles()
-    hideT(TablesOfPiecesGroups["SmokeBubbles"])
-    resetT(TablesOfPiecesGroups["SmokeBubbles"])
-    resetT(TablesOfPiecesGroups["SmokeBubbleRotators"])
+    hideT(TableOfPiecesGroups["SmokeBubble"])
+    resetT(TableOfPiecesGroups["SmokeBubble"])
+    resetT(TableOfPiecesGroups["SmokeBubbleRotator"])
 end
 
 function cloudFallingDown(cloudMovers, cloudGoingUp, cloudCoolingDown)
@@ -691,15 +762,18 @@ function cloudFallingDown(cloudMovers, cloudGoingUp, cloudCoolingDown)
             Move(cloudMovers[i+1], y_axis, i*4500, 4500)
         end
         WMove(cloudMovers[i], y_axis, -i*4500, 5500)
-
     end
+    hideT(cloudCoolingDown)
+    resetSmokeBubbles()
+    Move(ArenaSmoke, y_axis, -900, 35)
     Sleep(4000)
     Hide(turbineHot)
     Show(turbineCold)
     StopSpin(turbine, y_axis, 0.0001)
     Sleep(9000)
+    Hide(ArenaSmoke)
     Turn(turbine, y_axis, 0, 3)
-    resetSmokeBubbles()
+
 end
 
 
