@@ -453,9 +453,8 @@ Solaria Aerostrato has you with centralized heating and cooling. Ask your local 
 We all remember that friend or relative, who just couldn't cope with reality at the onset of the warming wars! St.Catatonia hospital and carecenter,
 takes care of the mentally broken floatsome of the warming wars. They are not here, they are gone, beyond repair, but beloved and thus kept around.
 Fed, dry and kept away from the world. Donate to our noble cause, to keep them of the streets and from doing any harm - to themselves or others.
-
-
-[What do they want! The same everybody wants- peace, we just give them what they want and they leave us alone. We are rich, of course everybody can get along! We make an aggreement, sign a contract, everybody wants a world with rules, with laws, otherwise there would be chaos. The strong trampling the weak! Stupid supremacists everywhere! And all before, just a noble strong one, forcing laws upon himself until weak- no, no.. we just dont understand them. They must be like us..]
+[What do they want! The same everybody wants- peace, we just give them what they want and they leave us alone. We are rich, of course everybody can get along! We make an aggreement, sign a contract, everybody wants a world with rules, with laws, otherwise there would be chaos. TThe strong trampling the weak! Stupid supremacists everywhere! hey can have land, they can have money, they just must be like us. 
+And all before, just a noble strong one, forcing laws upon himself until weak- no, no.. we just dont understand them. Hihi..  They must be like us..]
 
 
 
@@ -466,6 +465,12 @@ Have it now, order it with us! Cosa Nosta liga Inc.!
 
 
 
+[t=00:01:34.293347][f=0000232] LuaShader: [Neon Hologram Shader] shader warning(s):
+Attempt to set uniform [viewPortSize], which does not exist in the compiled shader
+Supressing further warning of the same kind
+[t=00:01:34.293420][f=0000232] LuaShader: [Neon Hologram Shader] shader warning(s):
+Attempt to set uniform [rainPercent], which does not exist in the compiled shader
+Supressing further warning of the same kind
 
 
 
