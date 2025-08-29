@@ -28,11 +28,11 @@
     uniform float timepercent;
     uniform float rainPercent;
     uniform vec2 viewPortSize;
-
     uniform vec3 unitCenterPosition;
-   
-    float rainPercentage;
     uniform int typeDefID;
+
+    float rainPercentage;
+
     // Varyings passed from the vertex shader
     in Data {
         vec2 vSphericalUVs;

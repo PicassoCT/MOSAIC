@@ -539,8 +539,8 @@ end
 
                -- neonHologramShader:SetUniformMatrix("viewInvMat", "viewinverse")
                --neonHologramShader:SetUniformFloatArray("vCamPositionWorld", {cx,cy,cz} )
-                neonHologramShader:SetUniformFloatArray("viewPortSize", {vsx, vsy} )
-
+                neonHologramShader:SetUniformFloatArray("viewPortSize", vsx, vsy )
+                neonHologramShader:SetUniformFloat("rainPercent", rainPercent)
                 local cx,cy,cz  = Spring.GetCameraPosition()
                 local timeSeconds = Spring.GetGameSeconds()
                 local _,_,_, timepercent = getDayTime()
@@ -562,8 +562,7 @@ end
                             neonHologramShader:SetUniformFloat("unitCenterPosition", x, y, z)                       
                             neonHologramShader:SetUniformFloat("timepercent",  timePercentOffset)
                             neonHologramShader:SetUniformFloat("time", timeSeconds + unitID)
-                            neonHologramShader:SetUniformFloat("rainPercent", rainPercent)
-
+                    
                             glCulling(GL_FRONT)
                             for  _, pieceID in ipairs(neonHoloParts)do
 
@@ -582,7 +581,7 @@ end
                                     glUnitPiece(unitID, pieceID)
                                 end)
                             end
-                        --[[else --do a traditional transparent draw
+                        --[[else --do a traditional unshaded transparent draw for units in a distance
                             glDepthMask(false)
                                 glBlending(GL_SRC_ALPHA, GL_ONE)
                                 glUnitRaw(unitID, true)

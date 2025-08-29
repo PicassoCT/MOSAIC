@@ -14,7 +14,7 @@
     uniform float time;
     uniform float timepercent;
     uniform vec2 viewPortSize;
-  //  uniform vec3 vCamPositionWorld;
+    uniform float rainPercent;
     uniform vec3 unitCenterPosition;
     uniform int typeDefID;
 
