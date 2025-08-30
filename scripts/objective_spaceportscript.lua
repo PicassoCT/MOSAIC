@@ -696,36 +696,39 @@ function launchAnimation()
 end
 
 function vtolLoop()
-    landed = {}
+    local landed = {}
     while true do
         while launchState == "prepareForLaunch" or launchState == "recovery" do
-            rando = randDict(TableOfPiecesGroups["VTOL"])
-            if landed[rando] then -- start and hide
-                WMove(rando, y_axis, 1500, 150)
-                xval = math.random(0,250) *randSign()
-                zval = math.random(0,250) *randSign()
-                Move(rando, x_axis, xval, 50)
-                Move(rando, z_axis, zval, 50)
-                WaitForMoves(rando)
-                Hide(rando)
-                landed[rando] = nil
-            else
-                xval = math.random(0,500) *randSign()
-                zval = math.random(0,500) *randSign()
-                Move(rando, x_axis, xval, 0)
-                Move(rando, z_axis, zval, 0)
-                WMove(rando, y_axis, 1500, 0)
-                WaitForMoves(rando)
-                rVal = math.random(0,360)
-                Turn(rando, y_axis, math.rad(rVal),0)
-                Show(rando)
-                Move(rando, x_axis, xval, 50)
-                Move(rando, z_axis, zval, 50)
-                WaitForMoves(rando)
-                Turn(rando, y_axis, math.rad(0),10)
-                WMove(rando, y_axis, 0, 0)         
-                landed[rando] = true -- 
-            end
+            local rando = randDict(TableOfPiecesGroups["VTOL"])
+            if rando then
+                if landed[rando] then -- start and hide
+                    Show(rando)
+                    WMove(rando, y_axis, 1500, 150)
+                    xval = math.random(0,250) *randSign()
+                    zval = math.random(0,250) *randSign()
+                    Move(rando, x_axis, xval, 50)
+                    Move(rando, z_axis, zval, 50)
+                    WaitForMoves(rando)
+                    Hide(rando)
+                    landed[rando] = nil
+                else
+                    xval = math.random(0,500) *randSign()
+                    zval = math.random(0,500) *randSign()
+                    Move(rando, x_axis, xval, 0)
+                    Move(rando, z_axis, zval, 0)
+                    WMove(rando, y_axis, 1500, 0)
+                    WaitForMoves(rando)
+                    rVal = math.random(0,360)
+                    Turn(rando, y_axis, math.rad(rVal),0)
+                    Show(rando)
+                    Move(rando, x_axis, xval, 50)
+                    Move(rando, z_axis, zval, 50)
+                    WaitForMoves(rando)
+                    Turn(rando, y_axis, math.rad(0),10)
+                    WMove(rando, y_axis, 0, 0)         
+                    landed[rando] = true -- 
+                end
+        end
             Sleep(100)
         end
         Sleep(1000)
