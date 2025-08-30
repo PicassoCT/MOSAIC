@@ -70,5 +70,7 @@ return {
  "DJmastah",
  "ViraMiller",
  "liezenE",
- "Iain McCurdy"
+ "Iain McCurdy",
+ "Paul Couture",
+ "arnaud coutancier"
 }
