@@ -138,9 +138,15 @@ function HideReg(pieceID)
     updateCheckCache()
 end
 
+function showAllReg()
+    local pieceMap = Spring.GetUnitPieceMap(unitID)
+    for k, v in pairs(pieceMap) do ShowReg(v) end
+end
+
+
 -- > Hide all Pieces of a Unit
 function hideAllReg()
-    pieceMap = Spring.GetUnitPieceMap(unitID)
+    local pieceMap = Spring.GetUnitPieceMap(unitID)
     for k, v in pairs(pieceMap) do HideReg(v) end
 end
 
@@ -366,7 +372,8 @@ function script.Create()
     Spring.SetUnitNoSelect(unitID, true)
     Spring.SetUnitBlocking(unitID, false)
     TableOfPiecesGroups = GetSetSharedOneTimeResult("house_western_hologram_script_PiecesTable", GetPieceTableGroups)
-    restartHologram()
+    showAllReg()
+    --restartHologram()
     StartThread(grid)
     StartThread(emergencyWatcher)
 end
