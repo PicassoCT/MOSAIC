@@ -539,7 +539,7 @@ end
 
                -- neonHologramShader:SetUniformMatrix("viewInvMat", "viewinverse")
                --neonHologramShader:SetUniformFloatArray("vCamPositionWorld", {cx,cy,cz} )
-                neonHologramShader:SetUniformFloatArray("viewPortSize", vsx, vsy )
+                neonHologramShader:SetUniformFloat("viewPortSize", vsx, vsy )
                 neonHologramShader:SetUniformFloat("rainPercent", rainPercent)
                 local cx,cy,cz  = Spring.GetCameraPosition()
                 local timeSeconds = Spring.GetGameSeconds()
