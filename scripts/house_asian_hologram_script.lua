@@ -64,8 +64,14 @@ function HideReg(pieceID)
 end
 
 -- > Hide all Pieces of a Unit
+function showAllReg()
+    local  pieceMap = Spring.GetUnitPieceMap(unitID)
+    for k, v in pairs(pieceMap) do ShowReg(v) end
+end
+
+-- > Hide all Pieces of a Unit
 function hideAllReg()
-    pieceMap = Spring.GetUnitPieceMap(unitID)
+    local pieceMap = Spring.GetUnitPieceMap(unitID)
     for k, v in pairs(pieceMap) do HideReg(v) end
 end
 
