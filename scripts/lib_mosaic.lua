@@ -2384,327 +2384,327 @@ end
 				return hours > 19 and hours < 6
 			end
 			
-                    function getPrayDurationInFrames()
-                        return math.ceil(0.030 * GG.GameConfig.daylength)
-                    end
-			         
+            function getPrayDurationInFrames()
+                return math.ceil(0.030 * GG.GameConfig.daylength)
+            end
+	         
 
-                    function isPrayerTime()
-                        hours, minutes, seconds, percent = getDayTime()
-                        return GG.GameConfig.instance.culture == Cultures.arabic and equal(percent, 0.25, 0.025) or equal(percent, 0.75, 0.025)
-                    end
+            function isPrayerTime()
+                hours, minutes, seconds, percent = getDayTime()
+                return GG.GameConfig.instance.culture == Cultures.arabic and equal(percent, 0.25, 0.025) or equal(percent, 0.75, 0.025)
+            end
 
-                    function getDayTime()
-                        local DAYLENGTH = GG.GameConfig.daylength
-                        morningOffset = (DAYLENGTH / 2)
-                        Frame = (Spring.GetGameFrame() + morningOffset) % DAYLENGTH
-                        percent = Frame / DAYLENGTH
-                        hours = math.floor((Frame / DAYLENGTH) * 24)
-                        minutes = math.ceil((((Frame / DAYLENGTH) * 24) - hours) * 60)
-                        seconds = 60 - ((24 * 60 * 60 - (hours * 60 * 60) - (minutes * 60)) % 60)
-                        return hours, minutes, seconds, percent --= getDayTime()
-                    end
+            function getDayTime()
+                local DAYLENGTH = GG.GameConfig.daylength
+                morningOffset = (DAYLENGTH / 2)
+                Frame = (Spring.GetGameFrame() + morningOffset) % DAYLENGTH
+                percent = Frame / DAYLENGTH
+                hours = math.floor((Frame / DAYLENGTH) * 24)
+                minutes = math.ceil((((Frame / DAYLENGTH) * 24) - hours) * 60)
+                seconds = 60 - ((24 * 60 * 60 - (hours * 60 * 60) - (minutes * 60)) % 60)
+                return hours, minutes, seconds, percent --= getDayTime()
+            end
 
-                    function isRushHour()
-                        hours, minutes, seconds, percent = getDayTime()
+            function isRushHour()
+                hours, minutes, seconds, percent = getDayTime()
 
-                        if hours > 6 and hours < 9 or
-                            hours > 12 and hours < 14 or
-                            hours > 16 and hours < 20 then
-                            return true
-                        end
-                    end
+                if hours > 6 and hours < 9 or
+                    hours > 12 and hours < 14 or
+                    hours > 16 and hours < 20 then
+                    return true
+                end
+            end
 
-                    -- > Creates a Eventstream Event bound to a Unit
-                    function createStreamEvent(unitID, func, framerate, persPack)
-                        persPack.unitID = unitID
-                        persPack.startFrame = Spring.GetGameFrame() + 1
-                        persPack.functionToCall = func
-                        -- echo("Creating Stream Event")
+            -- > Creates a Eventstream Event bound to a Unit
+            function createStreamEvent(unitID, func, framerate, persPack)
+                persPack.unitID = unitID
+                persPack.startFrame = Spring.GetGameFrame() + 1
+                persPack.functionToCall = func
+                -- echo("Creating Stream Event")
 
-                        eventFunction = function(id, frame, persPack)
-                            nextFrame = frame + framerate
-                            if persPack then
-                                if persPack.unitID then
-                                    boolDead = Spring.GetUnitIsDead(persPack.unitID)
+                eventFunction = function(id, frame, persPack)
+                    nextFrame = frame + framerate
+                    if persPack then
+                        if persPack.unitID then
+                            boolDead = Spring.GetUnitIsDead(persPack.unitID)
 
-                                    if boolDead and boolDead == true then
-                                        echo("Aborting eventstream cause unit has died")
-                                        return nil, nil
-                                    end
-
-                                    if not persPack.startFrame then
-                                        persPack.startFrame = frame + 1
-
-                                    end
-
-                                    nextFrame = frame + framerate
-                                end
-                            end
-
-                            boolDoneFor, persPack = persPack.functionToCall(persPack)
-                            if boolDoneFor and boolDoneFor == true then
-                                --echo("Aborting eventstream cause function signalled completness")
-                                return nil
-                            end
-
-                            return nextFrame, persPack
-                        end
-
-                        GG.EventStream:CreateEvent(eventFunction, persPack,
-                        Spring.GetGameFrame() + 1)
-                    end
-
-                        -- > Creates a Eventstream Event bound to a Projectile
-                    function createStreamEventProjectile(projectileID, func, framerate, persPack)
-                        persPack.projectileID = projectileID
-                        persPack.startFrame = Spring.GetGameFrame() + 1
-                        persPack.functionToCall = func
-                        -- echo("Creating Stream Event")
-
-                        eventFunction = function(id, frame, persPack)
-                            nextFrame = frame + framerate
-                            if persPack then
-                                if projectileID then
-                                    targetType = Spring.GetProjectileDefID(projectileID)
-
-                                    if not targetType then
-                                        --echo("Aborting eventstream cause projectile has died")
-                                        return nil, nil
-                                    end
-
-                                    if not persPack.startFrame then
-                                        persPack.startFrame = frame + 1
-
-                                    end
-
-                                    nextFrame = frame + framerate
-                                end
-                            end
-
-                            boolDoneFor, persPack = persPack.functionToCall(persPack)
-                            if boolDoneFor and boolDoneFor == true then
-                           --     echo("Aborting eventstream cause function signalled completness")
-                                return nil
-                            end
-
-                            return nextFrame, persPack
-                        end
-
-                        GG.EventStream:CreateEvent(eventFunction, persPack,
-                        Spring.GetGameFrame() + 1)
-                    end
-
-                    function attachDoubleAgentToUnit(traitorID, teamToTurnTo, boolRecursive)
-                       -- attachingTo = traitorID.." a "..UnitDefs[Spring.GetUnitDefID(traitorID)].name.." of team "..Spring.GetUnitTeam(traitorID).." is now a double agent for team "..teamToTurnTo
-                       -- echo(attachingTo)
-                        if not GG.DoubleAgents then GG.DoubleAgents = {} end
-
-                        hoverAboveFunc = function(persPack)
-                            boolContinue = false
-                            boolEndFunction = true
-
-                            --There can only ever be one
-                            if GG.DoubleAgents[persPack.traitorID] and
-                                GG.DoubleAgents[persPack.traitorID] ~= persPack.iconID then
-                                return boolEndFunction, nil
-                            end
-
-                            if persPack.boolDoneFor then return boolEndFunction, persPack end
-
-                            if doesUnitExistAlive(persPack.traitorID) == false then
-                               -- echo("Double Agent died "..persPack.traitorID)
-                                destroyUnitConditional(persPack.iconID, false, true)
-                                GG.DoubleAgents[persPack.traitorID] = nil
-                                return boolEndFunction, nil
-                            end
-
-                            --wait till traitor is complete
-                            if isUnitComplete(persPack.traitorID) == false then
-                                return boolContinue, persPack
-                            end
-
-                            x, y, z = Spring.GetUnitPosition(persPack.traitorID)
-
-                            if doesUnitExistAlive(persPack.iconID) == false then
---                                Spring.Echo("createUnitAtUnit ".."lib_mosaic.lua:1741") 
-                                persPack.iconID = createUnitAtUnit(persPack.teamToTurnTo, "doubleagent",
-                                    persPack.traitorID, x - 1,
-                                y + persPack.heightAbove, z)
-                                Spring.MoveCtrl.Enable(persPack.iconID)
-                                GG.DoubleAgents[persPack.traitorID] = persPack.iconID
-                                return boolContinue, persPack
-                            end
-
-                            Spring.MoveCtrl.SetPosition(persPack.iconID, x - 1, y + persPack.heightAbove, z)
-                            if isUnitComplete(persPack.traitorID) == false then
-                                return boolContinue, persPack
-                            end
-
-                            --recursive part
-                            if persPack.boolRecursive and persPack.boolRecursive == true then
-                                if not persPack.ListOfBuildUnits then persPack.ListOfBuildUnits = {} end
-                                if not persPack.ListOfCompletedTurnedUnits then persPack.ListOfCompletedTurnedUnits = {} end
-                                buildID = Spring.GetUnitIsBuilding(persPack.traitorID)
-                                if buildID then
-                                    persPack.ListOfBuildUnits[buildID] = buildID
-
-                                    for buildID,_ in pairs(persPack.ListOfBuildUnits) do
-                                        if isUnitComplete(buildID) and not persPack.ListOfCompletedTurnedUnits[buildID] then
-                                            attachDoubleAgentToUnit(buildID, persPack.teamToTurnTo, persPack.boolRecursive)
-                                            persPack.ListOfCompletedTurnedUnits[buildID]= buildID
-                                            persPack.ListOfBuildUnits[buildID]= nil
-                                        end  
-                                    end
-                                end
-                            end
-
-                            boolUnitIsCloaked = Spring.GetUnitIsCloaked(persPack.iconID)
-                            if not persPack.boolCloakedAtLeastOnce then
-                                persPack.boolCloakedAtLeastOnce = boolUnitIsCloaked
-                            end
-
-                            persPack.boolCloakedAtLeastOnce = persPack.boolCloakedAtLeastOnce or boolUnitIsCloaked
-
-                            if persPack.startFrame + 1 < Spring.GetGameFrame() and
-                                persPack.boolCloakedAtLeastOnce == true and
-                                boolUnitIsCloaked == false then
-                                echo("DoubleAgent teamtransfer")
-                                --we copy kill the unit here instead of transfering to another team
-                                --to prevent script incosistencies
-                                copyUnit(persPack.traitorID, persPack.teamToTurnTo)
-                                destroyUnitConditional(persPack.iconID, false, true)
-                                Spring.DestroyUnit(persPack.traitorID, false, true)
-                                persPack.boolDoneFor = true
-                                return boolEndFunction, persPack
-                            end
-
-                            return boolContinue, persPack
-                        end
-
-                        createStreamEvent(traitorID, hoverAboveFunc, 1, {
-                            startFrame = Spring.GetGameFrame(),
-                            teamToTurnTo = teamToTurnTo,
-                            traitorID = traitorID,
-                            heightAbove = GG.GameConfig.doubleAgentHeight,
-                            boolRecursive = boolRecursive
-                        })
-                    end
-
-                    function createRewardEvent(teamid, returnOfInvestmentM, returnOfInvestmentE)
-
-                        returnOfInvestmentM = returnOfInvestmentM or 100
-                        returnOfInvestmentE = returnOfInvestmentE or 100
-
-                        rewarderProcess = function(evtID, frame, persPack, startFrame)
-
-                            Spring.AddTeamResource(persPack.teamId, "metal",
-                                persPack.returnOfInvestmentM /
-                            persPack.rewardCycles)
-                            Spring.AddTeamResource(persPack.teamId, "energy",
-                                persPack.returnOfInvestmentE /
-                            persPack.rewardCycles)
-
-                            persPack.rewardCycleIndex = persPack.rewardCycleIndex + 1
-                            if persPack.rewardCycleIndex > persPack.rewardCycles then
+                            if boolDead and boolDead == true then
+                                echo("Aborting eventstream cause unit has died")
                                 return nil, nil
                             end
 
-                            return frame + 1000, persPack
-                        end
+                            if not persPack.startFrame then
+                                persPack.startFrame = frame + 1
 
-                        persPack = {
-                            teamId = teamid,
-                            returnOfInvestmentM = returnOfInvestmentM,
-                            returnOfInvestmentE = returnOfInvestmentE,
-                            id = unitID,
-                            rewardCycles = 25,
-                            rewardCycleIndex = 0
-                        }
-
-                        GG.EventStream:CreateEvent(rewarderProcess, persPack,
-                        Spring.GetGameFrame() + 1)
-
-                    end
-
-                    -- EventStream Function
-                    function syncDecoyToAgent(evtID, frame, persPack, startFrame)
-                        --only apply if Unit is still alive
-                        if doesUnitExistAlive(persPack.myID) == false then
-                            -- if Unit did not die peacefully - kill the synced unit
-                            if not GG.DiedPeacefully[persPack.myID] then
-                                Spring.DestroyUnit(persPack.syncedID, false, true)
                             end
 
-                            return nil, persPack
-                        end
-
-                        if doesUnitExistAlive(persPack.syncedID) == false then
-                            return nil, persPack
-                        end
-
-                        -- sync Health
-                        transferUnitStatusToUnit(persPack.myID, persPack.syncedID)
-
-                        x, y, z = Spring.GetUnitPosition(persPack.syncedID)
-                        mx, my, mz = Spring.GetUnitPosition(persPack.myID)
-                        if not x then return nil, persPack end
-
-                        if not persPack.oldSyncedPos then
-                            persPack.oldSyncedPos = {x = x, y = y, z = z}
-                        end
-                        -- Test Synced Unit Stopped
-                        agentTransportedByID = Spring.GetUnitTransporter(persPack.syncedID)
-                        -- Transported
-                        if agentTransportedByID and not persPack.boolTransported then
-                            persPack.boolTransported = true
-							pieceMap = Spring.GetUnitPieceMap(agentTransportedByID)
-                            centerPiece = sampleKeyFromDicct(pieceMap, "center", "anchor")
-							Spring.UnitAttach(agentTransportedByID, persPack.myID, centerPiece)		
-                            return frame + 5, persPack
-                        elseif persPack.boolTransported == true and not agentTransportedByID then
-							Spring.UnitDetach(persPack.myID)
-                            persPack.boolTransported = false
-                        end
-
-                        if distance(persPack.oldSyncedPos.x, persPack.oldSyncedPos.y,
-                        persPack.oldSyncedPos.z, x, y, z) < 5 then
-                        -- Unit has stopped, test wether we are near it
-                        if distance(mx, my, mz, x, y, z) < 25 then
-                            Command(persPack.myID, "stop", {}, {})
-                            return frame + 30, persPack
+                            nextFrame = frame + framerate
                         end
                     end
 
-                    -- update old Pos
-                    persPack.oldSyncedPos = {x = x, y = y, z = z}
-
-                    if not persPack.currPos then
-                        persPack.currPos = {x = mx, y = my, z = mz}
-                        persPack.stuckCounter = 0
+                    boolDoneFor, persPack = persPack.functionToCall(persPack)
+                    if boolDoneFor and boolDoneFor == true then
+                        --echo("Aborting eventstream cause function signalled completness")
+                        return nil
                     end
 
-                    if distance(mx, my, mz, persPack.currPos.x, persPack.currPos.y,
-                    persPack.currPos.z) < 50 then
-                    persPack.stuckCounter = persPack.stuckCounter + 1
-                else
-                    persPack.currPos = {x = mx, y = my, z = mz}
-                    persPack.stuckCounter = 0
+                    return nextFrame, persPack
                 end
 
-                if persPack.stuckCounter > 5 then
-                    moveUnitToUnitGrounded(persPack.myID, persPack.syncedID,
-                    math.random(-10, 10), 0, math.random(-10, 10))
-                end
-
-                --is not a build command
-                command = Spring.GetUnitCommands (unitID, 1)
-                if command[1] then
-                    Command(persPack.myID, "go", {x = x, y = y, z = z})
-                end
-
-                return frame + 30, persPack
+                GG.EventStream:CreateEvent(eventFunction, persPack,
+                Spring.GetGameFrame() + 1)
             end
+
+                -- > Creates a Eventstream Event bound to a Projectile
+            function createStreamEventProjectile(projectileID, func, framerate, persPack)
+                persPack.projectileID = projectileID
+                persPack.startFrame = Spring.GetGameFrame() + 1
+                persPack.functionToCall = func
+                -- echo("Creating Stream Event")
+
+                eventFunction = function(id, frame, persPack)
+                    nextFrame = frame + framerate
+                    if persPack then
+                        if projectileID then
+                            targetType = Spring.GetProjectileDefID(projectileID)
+
+                            if not targetType then
+                                --echo("Aborting eventstream cause projectile has died")
+                                return nil, nil
+                            end
+
+                            if not persPack.startFrame then
+                                persPack.startFrame = frame + 1
+
+                            end
+
+                            nextFrame = frame + framerate
+                        end
+                    end
+
+                    boolDoneFor, persPack = persPack.functionToCall(persPack)
+                    if boolDoneFor and boolDoneFor == true then
+                   --     echo("Aborting eventstream cause function signalled completness")
+                        return nil
+                    end
+
+                    return nextFrame, persPack
+                end
+
+                GG.EventStream:CreateEvent(eventFunction, persPack,
+                Spring.GetGameFrame() + 1)
+            end
+
+            function attachDoubleAgentToUnit(traitorID, teamToTurnTo, boolRecursive)
+               -- attachingTo = traitorID.." a "..UnitDefs[Spring.GetUnitDefID(traitorID)].name.." of team "..Spring.GetUnitTeam(traitorID).." is now a double agent for team "..teamToTurnTo
+               -- echo(attachingTo)
+                if not GG.DoubleAgents then GG.DoubleAgents = {} end
+
+                hoverAboveFunc = function(persPack)
+                    boolContinue = false
+                    boolEndFunction = true
+
+                    --There can only ever be one
+                    if GG.DoubleAgents[persPack.traitorID] and
+                        GG.DoubleAgents[persPack.traitorID] ~= persPack.iconID then
+                        return boolEndFunction, nil
+                    end
+
+                    if persPack.boolDoneFor then return boolEndFunction, persPack end
+
+                    if doesUnitExistAlive(persPack.traitorID) == false then
+                       -- echo("Double Agent died "..persPack.traitorID)
+                        destroyUnitConditional(persPack.iconID, false, true)
+                        GG.DoubleAgents[persPack.traitorID] = nil
+                        return boolEndFunction, nil
+                    end
+
+                    --wait till traitor is complete
+                    if isUnitComplete(persPack.traitorID) == false then
+                        return boolContinue, persPack
+                    end
+
+                    x, y, z = Spring.GetUnitPosition(persPack.traitorID)
+
+                    if doesUnitExistAlive(persPack.iconID) == false then
+--                                Spring.Echo("createUnitAtUnit ".."lib_mosaic.lua:1741") 
+                        persPack.iconID = createUnitAtUnit(persPack.teamToTurnTo, "doubleagent",
+                            persPack.traitorID, x - 1,
+                        y + persPack.heightAbove, z)
+                        Spring.MoveCtrl.Enable(persPack.iconID)
+                        GG.DoubleAgents[persPack.traitorID] = persPack.iconID
+                        return boolContinue, persPack
+                    end
+
+                    Spring.MoveCtrl.SetPosition(persPack.iconID, x - 1, y + persPack.heightAbove, z)
+                    if isUnitComplete(persPack.traitorID) == false then
+                        return boolContinue, persPack
+                    end
+
+                    --recursive part
+                    if persPack.boolRecursive and persPack.boolRecursive == true then
+                        if not persPack.ListOfBuildUnits then persPack.ListOfBuildUnits = {} end
+                        if not persPack.ListOfCompletedTurnedUnits then persPack.ListOfCompletedTurnedUnits = {} end
+                        buildID = Spring.GetUnitIsBuilding(persPack.traitorID)
+                        if buildID then
+                            persPack.ListOfBuildUnits[buildID] = buildID
+
+                            for buildID,_ in pairs(persPack.ListOfBuildUnits) do
+                                if isUnitComplete(buildID) and not persPack.ListOfCompletedTurnedUnits[buildID] then
+                                    attachDoubleAgentToUnit(buildID, persPack.teamToTurnTo, persPack.boolRecursive)
+                                    persPack.ListOfCompletedTurnedUnits[buildID]= buildID
+                                    persPack.ListOfBuildUnits[buildID]= nil
+                                end  
+                            end
+                        end
+                    end
+
+                    boolUnitIsCloaked = Spring.GetUnitIsCloaked(persPack.iconID)
+                    if not persPack.boolCloakedAtLeastOnce then
+                        persPack.boolCloakedAtLeastOnce = boolUnitIsCloaked
+                    end
+
+                    persPack.boolCloakedAtLeastOnce = persPack.boolCloakedAtLeastOnce or boolUnitIsCloaked
+
+                    if persPack.startFrame + 1 < Spring.GetGameFrame() and
+                        persPack.boolCloakedAtLeastOnce == true and
+                        boolUnitIsCloaked == false then
+                        echo("DoubleAgent teamtransfer")
+                        --we copy kill the unit here instead of transfering to another team
+                        --to prevent script incosistencies
+                        copyUnit(persPack.traitorID, persPack.teamToTurnTo)
+                        destroyUnitConditional(persPack.iconID, false, true)
+                        Spring.DestroyUnit(persPack.traitorID, false, true)
+                        persPack.boolDoneFor = true
+                        return boolEndFunction, persPack
+                    end
+
+                    return boolContinue, persPack
+                end
+
+                createStreamEvent(traitorID, hoverAboveFunc, 1, {
+                    startFrame = Spring.GetGameFrame(),
+                    teamToTurnTo = teamToTurnTo,
+                    traitorID = traitorID,
+                    heightAbove = GG.GameConfig.doubleAgentHeight,
+                    boolRecursive = boolRecursive
+                })
+            end
+
+            function createRewardEvent(teamid, returnOfInvestmentM, returnOfInvestmentE)
+
+                returnOfInvestmentM = returnOfInvestmentM or 100
+                returnOfInvestmentE = returnOfInvestmentE or 100
+
+                rewarderProcess = function(evtID, frame, persPack, startFrame)
+
+                    Spring.AddTeamResource(persPack.teamId, "metal",
+                        persPack.returnOfInvestmentM /
+                    persPack.rewardCycles)
+                    Spring.AddTeamResource(persPack.teamId, "energy",
+                        persPack.returnOfInvestmentE /
+                    persPack.rewardCycles)
+
+                    persPack.rewardCycleIndex = persPack.rewardCycleIndex + 1
+                    if persPack.rewardCycleIndex > persPack.rewardCycles then
+                        return nil, nil
+                    end
+
+                    return frame + 1000, persPack
+                end
+
+                persPack = {
+                    teamId = teamid,
+                    returnOfInvestmentM = returnOfInvestmentM,
+                    returnOfInvestmentE = returnOfInvestmentE,
+                    id = unitID,
+                    rewardCycles = 25,
+                    rewardCycleIndex = 0
+                }
+
+                GG.EventStream:CreateEvent(rewarderProcess, persPack,
+                Spring.GetGameFrame() + 1)
+
+            end
+
+            -- EventStream Function
+            function syncDecoyToAgent(evtID, frame, persPack, startFrame)
+                --only apply if Unit is still alive
+                if doesUnitExistAlive(persPack.myID) == false then
+                    -- if Unit did not die peacefully - kill the synced unit
+                    if not GG.DiedPeacefully[persPack.myID] then
+                        Spring.DestroyUnit(persPack.syncedID, false, true)
+                    end
+
+                    return nil, persPack
+                end
+
+                if doesUnitExistAlive(persPack.syncedID) == false then
+                    return nil, persPack
+                end
+
+                -- sync Health
+                transferUnitStatusToUnit(persPack.myID, persPack.syncedID)
+
+                x, y, z = Spring.GetUnitPosition(persPack.syncedID)
+                mx, my, mz = Spring.GetUnitPosition(persPack.myID)
+                if not x then return nil, persPack end
+
+                if not persPack.oldSyncedPos then
+                    persPack.oldSyncedPos = {x = x, y = y, z = z}
+                end
+                -- Test Synced Unit Stopped
+                agentTransportedByID = Spring.GetUnitTransporter(persPack.syncedID)
+                -- Transported
+                if agentTransportedByID and not persPack.boolTransported then
+                    persPack.boolTransported = true
+					pieceMap = Spring.GetUnitPieceMap(agentTransportedByID)
+                    centerPiece = sampleKeyFromDicct(pieceMap, "center", "anchor")
+					Spring.UnitAttach(agentTransportedByID, persPack.myID, centerPiece)		
+                    return frame + 5, persPack
+                elseif persPack.boolTransported == true and not agentTransportedByID then
+					Spring.UnitDetach(persPack.myID)
+                    persPack.boolTransported = false
+                end
+
+                if distance(persPack.oldSyncedPos.x, persPack.oldSyncedPos.y,
+                persPack.oldSyncedPos.z, x, y, z) < 5 then
+                -- Unit has stopped, test wether we are near it
+                if distance(mx, my, mz, x, y, z) < 25 then
+                    Command(persPack.myID, "stop", {}, {})
+                    return frame + 30, persPack
+                end
+            end
+
+            -- update old Pos
+            persPack.oldSyncedPos = {x = x, y = y, z = z}
+
+            if not persPack.currPos then
+                persPack.currPos = {x = mx, y = my, z = mz}
+                persPack.stuckCounter = 0
+            end
+
+            if distance(mx, my, mz, persPack.currPos.x, persPack.currPos.y,
+            persPack.currPos.z) < 50 then
+            persPack.stuckCounter = persPack.stuckCounter + 1
+        else
+            persPack.currPos = {x = mx, y = my, z = mz}
+            persPack.stuckCounter = 0
+        end
+
+        if persPack.stuckCounter > 5 then
+            moveUnitToUnitGrounded(persPack.myID, persPack.syncedID,
+            math.random(-10, 10), 0, math.random(-10, 10))
+        end
+
+        --is not a build command
+        command = Spring.GetUnitCommands (unitID, 1)
+        if command[1] then
+            Command(persPack.myID, "go", {x = x, y = y, z = z})
+        end
+
+        return frame + 30, persPack
+    end
 
 function getRegionByCulture(culture, hash)
 

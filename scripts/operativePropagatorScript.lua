@@ -63,7 +63,8 @@ local spGetUnitTeam = Spring.GetUnitTeam
 local myTeamID= spGetUnitTeam(unitID)
 local spGetUnitIsCloaked = Spring.GetUnitIsCloaked
 local spGetUnitDefID = Spring.GetUnitDefID
-
+local spGetUnitPiecePosDir = Spring.GetUnitPiecePosDir
+local spGetUnitPieceDirection = Spring.GetUnitPieceDirection
 local scriptEnv = {
 	center = center,
 	Torso = Torso,
@@ -222,7 +223,7 @@ end
 
 Coat = piece "Coat"
 function trenchCoateAnimation()
-	if true then return end --TODO fix trenchcoat
+	--trenchcoat upper Part existing and active
 	if not TablesOfPiecesGroups["HeadDeco"][7] then return end
 	boolFoundTrenchCoat= false
 	for a=1, #shownPieces do
@@ -230,21 +231,77 @@ function trenchCoateAnimation()
 			boolFoundTrenchCoat= true
 		end
 	end
-	if  boolFoundTrenchCoat == false then return end
+	if  boolFoundTrenchCoat == false then
+		 return 
+	else
+
 	Show(Coat)
 	showT(TablesOfPiecesGroups["CoatBone"])
-	parentBones = {}
-	for i=1, #TablesOfPiecesGroups["CoatBone"], 5 do
-		parentBones[#parentBones+1] = TablesOfPiecesGroups["CoatBone"][i]
 	end
-	simulationCoat = setupCoat(parentBones)
 
+	coatChainsGroups = {}
+	coatBaseRotation = {}
+	for i=1, #TablesOfPiecesGroups["CoatBone"], 5 do
+		local coatGroup = {}
+		for j = i, i+5, 1 do
+			coatGroup[#coatGroup+1] = TablesOfPiecesGroups["CoatBone"][j]
+		end
+
+		ux,uy,uz = Spring.GetUnitPiecePosition ( unitID,  TablesOfPiecesGroups["CoatBone"][i] ) 
+		coatBaseRotation[TablesOfPiecesGroups["CoatBone"][i]] = math.atan2(ux, uz)
+		coatChainsGroups[#coatChainsGroups+1] = coatGroup
+	end
 
 	-- External forces (e.g., wind)
+	_,ay,_  = spGetUnitPiecePosDir(unitID, TablesOfPiecesGroups["CoatBone"][1])
+	_, by,_ =  spGetUnitPiecePosDir(unitID, TablesOfPiecesGroups["CoatBone"][2])
+	local chainPieceLength = math.abs(ay - by)
+	local curveLength = (math.pi*0.5)/5
 
 	while true do
-		updateCloth(simulationCoat)
-		Sleep(100)
+		local wDirX,  wDirY,  wDirZ,  windStrength,  normDirX,  normDirY,  normDirZ  = Spring.GetWind ( )
+		-- unit yaw (use heading; it’s cheap & clear)
+		local unitYaw = Spring.GetUnitHeading(unitID)   * (2*math.pi/65536)
+
+		-- torso forward in world, then torso local yaw = world yaw - unit yaw
+		local tfx, tfy, tfz = spGetUnitPieceDirection(unitID, Torso)
+		local torsoWorldYaw = math.atan2(tfx, tfz)
+		local torsoLocalYaw = torsoWorldYaw - unitYaw
+
+		-- wind world yaw → unit local yaw
+		local windWorldYaw = math.atan2(nwx, nwz)
+		local windUnitYaw  = windWorldYaw - unitYaw
+  		local windTorsoYaw = windUnitYaw - torsoLocalYaw
+		local timeMs = (Spring.GetGameFrame()/30) *1000
+		local windInfluence = windStrength * 0.5
+		--coatSinus
+		for _, chain in pairs(coatChainsGroups) do
+			local chainHead = group[1]
+			for i=1, #chain do	
+				local toTurnPiece = group[i]
+				local cosinus = math.cos(timeMs/(math.pi*1000) + (i-1)*curveLength)
+				-- wind bending (mapped into coat’s local space)
+
+				local bendX = math.sin(windTorsoYaw) * windInfluence
+				local bendZ = math.cos(windTorsoYaw) * windInfluence
+
+				-- scale effect down the chain
+				local stiffness = 1 / i
+				local flutter = cosinus * 5 * stiffness    -- 5 degrees base amplitude
+
+				-- final Euler rotations (degrees -> radians)
+				local rx = bendX * stiffness + flutter
+				local rz = bendZ * stiffness
+
+				-- smooth turning
+				local sx, sy, sz = 2, 2, 2
+				--end
+				Turn(toTurnPiece, x_axis, math.rad(rx), sx)
+				Turn(toTurnPiece, y_axis, math.rad(0), sy)
+				Turn(toTurnPiece, z_axis, math.rad(rz), sz)
+			end
+		end
+		Sleep(100) -- Update Rate every 100 Ms (3 frames)
 	end
 end
 
@@ -1300,124 +1357,6 @@ function showHideIcon(boolShowIcon)
 end
 
 -- Configuration for the trench coat bones
-
-function getNeighbors( pieceNr, coatstripeMaxNr)
-    local leftNeighbor = nil
-    if (pieceNr - coatstripeMaxNr >= 1) then 
-    	leftNeighbor = TablesOfPiecesGroups["CoatBone"][pieceNr - coatstripeMaxNr] 
-    end
-
-    local rightNeighbor = nil
-    if (pieceNr + coatstripeMaxNr <= #TablesOfPiecesGroups["CoatBone"]) then
-     rightNeibor = TablesOfPiecesGroups["CoatBone"][pieceNr + coatstripeMaxNr]
- 	end
-
-    return leftNeighbor, rightNeighbor
-end
-local spGetUnitPiecePosDir = Spring.GetUnitPiecePosDir
-local oldPosDict  = {}
-function getCurrentPiecePos(parent)
-    px,py,pz = spGetUnitPiecePosDir(unitID, parent)
-    return {x = px,y = py, z = pz}
-end
-
-function setupCoat(parentT)
-    hierarchy, root = getPieceHierarchy(unitID)
-    assert(hierarchy[piece("CoatBone1")])
-
-    coatMap = {}
-    for _, parent in pairs(parentT) do 
-    	children = hierarchy[parent] or {}
-        coatMap[#coatMap +1] = {parent = parent, children = children }
-        oldPosDict[parent] = getCurrentPiecePos(parent)
-        if hierarchy[parent]then
-	        for i=1, #hierarchy[parent] do
-	            child = hierarchy[parent][i]
-	    	end
-    	end
-    end
-
-    return coatMap
-end
-
-function normalize (targetDir)
-    local magnitude = math.sqrt(targetDir.x^2 + targetDir.y^2 + targetDir.z^2)
-    if magnitude > 0 then
-        targetDir.x = targetDir.x / magnitude
-        targetDir.y = targetDir.y / magnitude
-        targetDir.z = targetDir.z / magnitude
-    end
-    return targetDir
-end 
-
-function simulateChain(parentDiff, gravity, wind, bone, parent)
-    -- Get the previous and current positions of the bone
-    local prevPos = oldPosDict[bone] or getCurrentPiecePos(bone)
-    local currPos = getCurrentPiecePos(bone)
-
-    -- Calculate velocity based on position difference
-    local velocity = {
-        x = ((currPos.x - prevPos.x) + wind.x * 0.1)*0.98,
-        y = ((currPos.y - prevPos.y) + wind.y * 0.1)*0.98,
-        z = ((currPos.z - prevPos.z) + wind.z * 0.1)*0.98
-    }
-
-    local newPos = currPos
-    newPos.x = newPos.x + velocity.x
-    newPos.y = newPos.y + velocity.y
-    newPos.z = newPos.z + velocity.z
-
-    -- Store the updated position in the dictionary
-    oldPosDict[bone] = newPos
-    --Execution
-	 local targetDir = {
-	        x = currPos.x - newPos.x,
-	        y = currPos.y - newPos.y,
-	        z = currPos.z - newPos.z
-	    }
-    -- Normalize target direction
-	targetDir = normalize(targetDir)
-
-
-    -- Calculate angles for rotation
-    local pitch = math.atan2(targetDir.y, math.sqrt(targetDir.x^2 + targetDir.z^2))
-    local yaw = math.atan2(targetDir.x, targetDir.z)
-
-
-    -- Move the bone to the new position
-    pieceToTurn = parent or bone
-    Turn(pieceToTurn, x_axis, pitch, velocity.x)
-    Turn(pieceToTurn, y_axis, yaw, velocity.z)
-end
-
-local zeroDiff = {x=0,y=0,z=0}
-function updateCloth(coatMap)
-    local boolMovedAtLeastOne = false
-    local gravity = {x = 0, y = 0, z = 0}
-    dirX, dirY, dirZ, strength, normDirX, normDirY, normDirZ = Spring.GetWind()
-    dx,dy,dz = Spring.GetUnitDirection(unitID)
-    local wind = {x = normDirX * strength, y = normDirY * strength, z = normDirZ * strength}
-
-
-    for stripIndex = 1, #coatMap do
-        local coatStripe = coatMap[stripIndex]
-        local parent =   coatStripe.parent 
-        local previousPositionParent = oldPosDict[parent] or getCurrentPiecePos(parent)
-        local currentPositionParent = getCurrentPiecePos(parent)
-        local parentDiff = {x = previousPositionParent.x - currentPositionParent.x, y= previousPositionParent.y - currentPositionParent.y, z = previousPositionParent.z - currentPositionParent.z}
-        for i=1, #coatStripe.children do
-            local bone = coatStripe.children[i]
-            if i == 1 then
-             	simulateChain(parentDiff, gravity, wind, bone)
-	        else
-	        	strength = strength + i + (strength * 0.25 * math.sin(Spring.GetGameSeconds()/10))
-	        	wind = {x = normDirX * strength, y = normDirY * strength, z = normDirZ * strength}
-	         	simulateChain( zeroDiff, gravity, wind, bone, coatStripe.children[i - 1])
-	        end   		
-        end
-        oldPosDict[parent] = currentPositionParent
-    end
-end
 
 
 
