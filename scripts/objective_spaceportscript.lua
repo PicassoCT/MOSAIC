@@ -699,7 +699,7 @@ function vtolLoop()
     local landed = {}
     while true do
         while launchState == "prepareForLaunch" or launchState == "recovery" do
-            local rando = randDict(TableOfPiecesGroups["VTOL"])
+            local _, rando = randDict(TableOfPiecesGroups["VTOL"])
             if rando then
                 if landed[rando] then -- start and hide
                     Show(rando)

@@ -131,11 +131,39 @@ end
 	end
 end
 
+function inverseTurnCoat()
+
+
+end
+
+function SwayCoatWithTorso(remainderRotationRad)
+	-- safety
+	if not TablesOfPiecesGroups["CoatBone"] then return end
+
+	-- scale the effect: coat bones shouldn’t rotate as much as torso
+	local maxInfluence = remainderRotationRad * 0.6
+
+	for _, chain in pairs(coatChainsGroups) do
+		for i = 1, #chain do
+			local toTurnPiece = chain[i]
+
+			-- stiffness scaling: closer to torso = stiffer
+			local stiffness = 1 / i
+			local sway = maxInfluence * stiffness
+
+			-- apply only around Y (side sway)
+			Turn(toTurnPiece, y_axis, sway, 20)
+		end
+	end
+end
+
+
+
 function externalAimFunction(targetPosT, remainderRotationRad)
 	showFireArm()
     Turn(Torso, 3, remainderRotationRad, 55)
    	setOverrideAnimationState(eAnimState.aiming, nil, true, nil, false)
-
+   	SwayCoatWithTorso(remainderRotationRad)
 end
 
 function closeCombatOS()
@@ -222,6 +250,8 @@ function getWindTemporaryForces()
 end
 
 Coat = piece "Coat"
+coatChainsGroups = {}
+coatBaseRotation = {}
 function trenchCoateAnimation()
 	--trenchcoat upper Part existing and active
 	if not TablesOfPiecesGroups["HeadDeco"][7] then return end
@@ -239,8 +269,7 @@ function trenchCoateAnimation()
 	showT(TablesOfPiecesGroups["CoatBone"])
 	end
 
-	coatChainsGroups = {}
-	coatBaseRotation = {}
+
 	for i=1, #TablesOfPiecesGroups["CoatBone"], 5 do
 		local coatGroup = {}
 		for j = i, i+5, 1 do
@@ -256,7 +285,7 @@ function trenchCoateAnimation()
 	_,ay,_  = spGetUnitPiecePosDir(unitID, TablesOfPiecesGroups["CoatBone"][1])
 	_, by,_ =  spGetUnitPiecePosDir(unitID, TablesOfPiecesGroups["CoatBone"][2])
 	local chainPieceLength = math.abs(ay - by)
-	local curveLength = (math.pi*0.5)/5
+	local curveLength = (math.pi)/5
 
 	while true do
 		local wDirX,  wDirY,  wDirZ,  windStrength,  normDirX,  normDirY,  normDirZ  = Spring.GetWind ( )
@@ -269,16 +298,16 @@ function trenchCoateAnimation()
 		local torsoLocalYaw = torsoWorldYaw - unitYaw
 
 		-- wind world yaw → unit local yaw
-		local windWorldYaw = math.atan2(nwx, nwz)
+		local windWorldYaw = math.atan2(normDirX, normDirZ)
 		local windUnitYaw  = windWorldYaw - unitYaw
   		local windTorsoYaw = windUnitYaw - torsoLocalYaw
 		local timeMs = (Spring.GetGameFrame()/30) *1000
 		local windInfluence = windStrength * 0.5
 		--coatSinus
 		for _, chain in pairs(coatChainsGroups) do
-			local chainHead = group[1]
+			local chainHead = chain[1]
 			for i=1, #chain do	
-				local toTurnPiece = group[i]
+				local toTurnPiece = chain[i]
 				local cosinus = math.cos(timeMs/(math.pi*1000) + (i-1)*curveLength)
 				-- wind bending (mapped into coat’s local space)
 

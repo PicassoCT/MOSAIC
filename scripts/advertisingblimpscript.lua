@@ -75,6 +75,12 @@ function advertiseTimeOfDay(hour)
    return true
 end
 
+
+local specials = {
+    buildRunDeterministicAdvertisement,
+    buildRunCandleSpot
+}
+
 function advertisingLoop()
     rest= (math.random(2,5)+(unitID%3))*10000
     Sleep(rest)
@@ -96,7 +102,7 @@ function advertisingLoop()
 
         Sleep(halfRestTime)
         if maRa() then
-            buildRunDeterministicAdvertisement()
+            specials[math.random(1,#specials)](unitID)
         end
         Sleep(halfRestTime)
 

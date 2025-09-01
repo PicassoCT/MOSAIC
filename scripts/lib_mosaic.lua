@@ -3812,6 +3812,46 @@ function buildSoundFilePath(path, fileName, nr)
     return string.format("%s/%s/%s-%02d.ogg", path, fileName, fileName, nr)
 end
 
+function buildRunCandleSpot(unitID)
+    local spPlaySoundFile = Spring.PlaySoundFile
+    if isNight() then
+        waitTillDay()
+    else
+        waitTillNight()
+        waitTillDay()
+    end
+    vigilSouthPath = "sounds/vigil"
+    spPlaySoundFile(vigilSouthPath.."/Prelude_12s.ogg", 1.0)
+    Sleep(12000)      
+    nameFiles = VFS.DirList(vigilSouthPath.."/name", "*.ogg")
+    surnameFiles = VFS.DirList(vigilSouthPath.."/surname", "*.ogg")
+    ageFiles = VFS.DirList(vigilSouthPath.."/age", "*.ogg")
+    countryFiles = VFS.DirList(vigilSouthPath.."/country", "*.ogg")
+
+    
+    nameNr = math.random(3,9)
+    for i=1, nameNr do
+        name = nameFiles[math.random(1,#nameFiles)]
+        spPlaySoundFile(name, 1.0)
+        Sleep(1000)
+
+        surname= surnameFiles[math.random(1,#surnameFiles)]
+        spPlaySoundFile(surname, 1.0)
+        Sleep(1000)
+
+        age= ageFiles[math.random(1,#ageFiles)]
+        spPlaySoundFile(age, 1.0)
+        Sleep(1000)
+
+        country = countryFiles[math.random(1,#countryFiles)]
+        spPlaySoundFile(country, 1.0)
+        Sleep(2000) 
+    end
+
+    Spring.PlaySoundFile(vigilSouthPath.."/Prelude_19s.ogg", 1.0)
+    Sleep(19000)  
+end
+
 function buildRunDeterministicAdvertisement()
     local ListOfMediaAdvertisementFileLength = 
         {

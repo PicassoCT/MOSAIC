@@ -107,6 +107,16 @@ function HideReg(pieceID)
     updateCheckCache()
 end
 
+function showAllReg(id)
+    if not unitID then unitID = id end
+
+    pieceMap = Spring.GetUnitPieceMap(unitID)
+    for k, v in pairs(pieceMap) do 
+        if v then
+            HideReg(v) 
+        end
+    end
+end
 -- > Hide all Pieces of a Unit
 function hideAllReg(id)
     if not unitID then unitID = id end
@@ -380,17 +390,14 @@ function script.Create()
     Spring.SetUnitNoSelect(unitID, true)
     Spring.SetUnitBlocking(unitID, false)
      TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
-     StartThread(HoloGrams)
+    showAllReg()
+     --StartThread(HoloGrams)
      HideReg(BrothelSpin)
      HideReg(CasinoSpin)
      HideReg(BuisnessSpin)
 
 end
 
-function hideAllReg()
-    pieceMap = Spring.GetUnitPieceMap(unitID)
-    for k, v in pairs(pieceMap) do HideReg(v) end
-end
 
 function HoloGrams()    
     StartThread(clock)
