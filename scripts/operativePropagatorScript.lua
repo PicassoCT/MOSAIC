@@ -142,17 +142,26 @@ function SwayCoatWithTorso(remainderRotationRad)
 
 	-- scale the effect: coat bones shouldn’t rotate as much as torso
 	local maxInfluence = remainderRotationRad * 0.6
+	local influence = remainderRotationRad * 0.5
 
 	for _, chain in pairs(coatChainsGroups) do
+		local headBone = chain[1]
+		local baseAngle = coatBaseRotation[headBone] or 0  -- angle around torso ring
+
 		for i = 1, #chain do
 			local toTurnPiece = chain[i]
 
-			-- stiffness scaling: closer to torso = stiffer
-			local stiffness = 1 / i
-			local sway = maxInfluence * stiffness
+			-- stiffness: upper bones move less, lower bones move more
+			local stiffness = i / #chain
 
-			-- apply only around Y (side sway)
-			Turn(toTurnPiece, y_axis, sway, 4)
+			-- project torso yaw into this chain’s tangent direction
+			-- coat wants to lag *opposite* to torso rotation
+			local rx = math.sin(baseAngle) * (-influence) * stiffness
+			local rz = math.cos(baseAngle) * (-influence) * stiffness
+
+			-- apply with some smoothing
+			Turn(toTurnPiece, x_axis, rx, 15)
+			Turn(toTurnPiece, z_axis, rz, 15)
 		end
 	end
 end
