@@ -152,7 +152,7 @@ function SwayCoatWithTorso(remainderRotationRad)
 			local sway = maxInfluence * stiffness
 
 			-- apply only around Y (side sway)
-			Turn(toTurnPiece, y_axis, sway, 20)
+			Turn(toTurnPiece, y_axis, sway, 4)
 		end
 	end
 end
@@ -251,7 +251,7 @@ end
 
 Coat = piece "Coat"
 coatChainsGroups = {}
-coatBaseRotation = {}
+
 function trenchCoateAnimation()
 	--trenchcoat upper Part existing and active
 	if not TablesOfPiecesGroups["HeadDeco"][7] then return end
@@ -269,7 +269,7 @@ function trenchCoateAnimation()
 	showT(TablesOfPiecesGroups["CoatBone"])
 	end
 
-
+	coatBaseRotation = {}
 	for i=1, #TablesOfPiecesGroups["CoatBone"], 5 do
 		local coatGroup = {}
 		for j = i, i+5, 1 do
@@ -280,6 +280,7 @@ function trenchCoateAnimation()
 		coatBaseRotation[TablesOfPiecesGroups["CoatBone"][i]] = math.atan2(ux, uz)
 		coatChainsGroups[#coatChainsGroups+1] = coatGroup
 	end
+
 
 	-- External forces (e.g., wind)
 	_,ay,_  = spGetUnitPiecePosDir(unitID, TablesOfPiecesGroups["CoatBone"][1])
