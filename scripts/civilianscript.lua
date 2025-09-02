@@ -40,7 +40,7 @@ local UpBody = piece('UpBody');
 local UpLeg1 = piece('UpLeg1');
 local UpLeg2 = piece('UpLeg2');
 local cigarett = piece('cigarett');
-local Handbag = piece('Handbag');
+local Handbag = nil
 local SittingBaby = piece('SittingBaby');
 local ak47 = piece('ak47')
 local cofee = nil
@@ -169,6 +169,13 @@ function script.Create()
     else
         MilitiaMask = TablesOfPiecesGroups["MilitiaMask"][math.random(1,#TablesOfPiecesGroups["MilitiaMask"])]
     end
+
+    if TableOfPiecesGroups["HandBag"] then
+        HandBag = TableOfPiecesGroups["HandBag"][math.random(1,#TableOfPiecesGroups["HandBag"])]
+    else
+        HandBag = piece('Handbag')
+    end
+
     if maRa() and MilitiaMask then Show(MilitiaMask) end
     if map["cofee"] then
         cofee = piece('cofee')
