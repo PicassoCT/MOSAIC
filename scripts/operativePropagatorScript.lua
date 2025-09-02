@@ -138,32 +138,8 @@ end
 
 function SwayCoatWithTorso(remainderRotationRad)
 	-- safety
-	if not TablesOfPiecesGroups["CoatBone"] then return end
-
 	-- scale the effect: coat bones shouldn’t rotate as much as torso
-	local maxInfluence = remainderRotationRad * 0.6
-	local influence = remainderRotationRad * 0.5
-
-	for _, chain in pairs(coatChainsGroups) do
-		local headBone = chain[1]
-		local baseAngle = coatBaseRotation[headBone] or 0  -- angle around torso ring
-
-		for i = 1, #chain do
-			local toTurnPiece = chain[i]
-
-			-- stiffness: upper bones move less, lower bones move more
-			local stiffness = i / #chain
-
-			-- project torso yaw into this chain’s tangent direction
-			-- coat wants to lag *opposite* to torso rotation
-			local rx = math.sin(baseAngle) * (-influence) * stiffness
-			local rz = math.cos(baseAngle) * (-influence) * stiffness
-
-			-- apply with some smoothing
-			Turn(toTurnPiece, x_axis, rx, 15)
-			Turn(toTurnPiece, z_axis, rz, 15)
-		end
-	end
+	accumulatedRoatationChange = accumulatedRoatationChange +remainderRotationRad
 end
 
 
@@ -261,6 +237,65 @@ end
 Coat = piece "Coat"
 coatChainsGroups = {}
 
+
+function UpdateCoatAnimation(remainderRotationRad, speed)
+	if not coatChainsGroups then return end
+
+	-- ==== global constants per tick ====
+	local wdx, wdy, wdz, windStrength, nwx, nwy, nwz = Spring.GetWind()
+	local worldWindYaw = math.atan2(nwx, nwz)
+
+	-- torso orientation (so we can align wind to unit facing)
+	local heading = Spring.GetUnitHeading(unitID)     -- 0..65535
+	local unitYaw = heading * (2*math.pi/65536)
+
+	-- wind relative to unit
+	local windLocalYaw = worldWindYaw - unitYaw
+
+	local windFluence = windStrength * 0.5
+	local timeMs = (Spring.GetGameFrame()/30) * 1000
+	local curveLength = (math.pi) / 5
+
+	-- torso sway influence (scaled fraction of remainderRotationRad)
+	local torsoInfluence = remainderRotationRad * 0.5
+
+	-- ==== loop over coat chains ====
+	for _, chain in pairs(coatChainsGroups) do
+		local headBone = chain[1]
+		local baseAngle = coatBaseRotation[headBone] or 0
+
+		for i = 1, #chain do
+			local toTurnPiece = chain[i]
+
+			-- stiffness: bones further down move more
+			local stiffness = i / #chain
+
+			-- === WIND + FLUTTER ===
+			local cosinus = math.cos(timeMs/(math.pi*1000) + (i-1)*curveLength)
+			local windBendX = math.sin(windLocalYaw) * windFluence * stiffness
+			local windBendZ = math.cos(windLocalYaw) * windFluence * stiffness
+			local flutter   = cosinus * 5 * stiffness
+
+			-- === TORSO SWAY ===
+			-- project torso rotation into tangent direction of this coat strip
+			local torsoLagX = math.sin(baseAngle) * (-torsoInfluence) * stiffness
+			local torsoLagZ = math.cos(baseAngle) * (-torsoInfluence) * stiffness
+
+			-- === MERGED RESULT ===
+			local rx = windBendX + torsoLagX + flutter
+			local ry = 0
+			local rz = windBendZ + torsoLagZ
+
+			-- smooth motion
+			Turn(toTurnPiece, 1, math.rad(rx), speed or 2)
+			Turn(toTurnPiece, 2, math.rad(ry), speed or 2)
+			Turn(toTurnPiece, 3, math.rad(rz), speed or 2)
+		end
+	end
+end
+
+accumulatedRoatationChange = 0
+swaySpeed = 2
 function trenchCoateAnimation()
 	--trenchcoat upper Part existing and active
 	if not TablesOfPiecesGroups["HeadDeco"][7] then return end
@@ -298,48 +333,9 @@ function trenchCoateAnimation()
 	local curveLength = (math.pi)/5
 
 	while true do
-		local wDirX,  wDirY,  wDirZ,  windStrength,  normDirX,  normDirY,  normDirZ  = Spring.GetWind ( )
-		-- unit yaw (use heading; it’s cheap & clear)
-		local unitYaw = Spring.GetUnitHeading(unitID)   * (2*math.pi/65536)
-
-		-- torso forward in world, then torso local yaw = world yaw - unit yaw
-		local tfx, tfy, tfz = spGetUnitPieceDirection(unitID, Torso)
-		local torsoWorldYaw = math.atan2(tfx, tfz)
-		local torsoLocalYaw = torsoWorldYaw - unitYaw
-
-		-- wind world yaw → unit local yaw
-		local windWorldYaw = math.atan2(normDirX, normDirZ)
-		local windUnitYaw  = windWorldYaw - unitYaw
-  		local windTorsoYaw = windUnitYaw - torsoLocalYaw
-		local timeMs = (Spring.GetGameFrame()/30) *1000
-		local windInfluence = windStrength * 0.5
-		--coatSinus
-		for _, chain in pairs(coatChainsGroups) do
-			local chainHead = chain[1]
-			for i=1, #chain do	
-				local toTurnPiece = chain[i]
-				local cosinus = math.cos(timeMs/(math.pi*1000) + (i-1)*curveLength)
-				-- wind bending (mapped into coat’s local space)
-
-				local bendX = math.sin(windTorsoYaw) * windInfluence
-				local bendZ = math.cos(windTorsoYaw) * windInfluence
-
-				-- scale effect down the chain
-				local stiffness = 1 / i
-				local flutter = cosinus * 5 * stiffness    -- 5 degrees base amplitude
-
-				-- final Euler rotations (degrees -> radians)
-				local rx = bendX * stiffness + flutter
-				local rz = bendZ * stiffness
-
-				-- smooth turning
-				local sx, sy, sz = 2, 2, 2
-				--end
-				Turn(toTurnPiece, x_axis, math.rad(rx), sx)
-				Turn(toTurnPiece, y_axis, math.rad(0), sy)
-				Turn(toTurnPiece, z_axis, math.rad(rz), sz)
-			end
-		end
+		accumulatedRoatationChange = accumulatedRoatationChange * 0.995
+		swaySpeed = math.max(2, swaySpeed * 0.95)
+		UpdateCoatAnimation(accumulatedRoatationChange, 2)
 		Sleep(100) -- Update Rate every 100 Ms (3 frames)
 	end
 end

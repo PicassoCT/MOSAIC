@@ -3929,7 +3929,7 @@ function buildRunDeterministicAdvertisement()
         }
 
     hash= getDetermenisticHash()
-    assert(hash)
+
     if not GG.DeterministicCounterAdvertisement then  GG.DeterministicCounterAdvertisement  = 0 end
     GG.DeterministicCounterAdvertisement  = (GG.DeterministicCounterAdvertisement % 22) +1 
 
