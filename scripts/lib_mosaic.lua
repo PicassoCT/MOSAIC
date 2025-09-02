@@ -3812,6 +3812,34 @@ function buildSoundFilePath(path, fileName, nr)
     return string.format("%s/%s/%s-%02d.ogg", path, fileName, fileName, nr)
 end
 
+function getRandomSurNameDir()
+    vigilSouthPath = "sounds/vigil"
+    nameFiles = VFS.DirList(vigilSouthPath.."/name", "*.ogg")
+    surnameFiles = VFS.DirList(vigilSouthPath.."/surname", "*.ogg")
+    return nameFiles, surnameFiles
+end
+
+function buildRunProGenicsSpot()
+    folderName = "sounds/khanprogram"
+    Spring.PlaySoundFile(folderName.."/Prelude_2s.ogg", 1.0)
+    Sleep(2000)
+    nameFilePath, surFileNamePath = getRandomSurNameDir()
+    if maRa()then
+         Spring.PlaySoundFile(nameFilePath, 1.0)
+         Sleep(1000)
+         Spring.PlaySoundFile(surFileNamePath, 1.0)
+         Sleep(1000)
+    else
+         Spring.PlaySoundFile(surFileNamePath, 1.0)
+         Sleep(1000)
+         Spring.PlaySoundFile(nameFilePath, 1.0)
+         Sleep(1000)
+    end
+   
+    Spring.PlaySoundFile(folderName.."/Outtro_29s.ogg", 1.0)
+    Sleep(29000)
+end
+
 function buildRunCandleSpot(unitID)
     local spPlaySoundFile = Spring.PlaySoundFile
     if isNight() then
