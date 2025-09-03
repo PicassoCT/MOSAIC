@@ -10,6 +10,9 @@ local signMessages = include('protestSignMessages.lua')
 local peacfulProtestSignMessages = include('PeacefullProtestSignMessages.lua')
 local spGetUnitDefID = Spring.GetUnitDefID
 local spGetUnitIsTransporting = Spring.GetUnitIsTransporting
+local spGetUnitTeam = Spring.GetUnitTeam
+local spGetUnitPosition = Spring.GetUnitPosition
+local spGetGameFrame = Spring.GetGameFrame
 
 local TablesOfPiecesGroups = {}
 
@@ -82,11 +85,10 @@ local scriptEnv = {
     z_axis = z_axis
 }
 
-local spGetUnitTeam = Spring.GetUnitTeam
+
 local myTeamID = spGetUnitTeam(unitID)
 local gaiaTeamID = Spring.GetGaiaTeamID()
-local spGetUnitPosition = Spring.GetUnitPosition
-local spGetGameFrame = Spring.GetGameFrame
+
 local loc_doesUnitExistAlive = doesUnitExistAlive
 local GameConfig = getGameConfig()
 local civilianWalkingTypeTable = getCultureUnitModelTypes(
@@ -133,7 +135,6 @@ local boolAiming = false
 
 home = {}
 
-loadMax = 8
 local damagedCoolDown = 0
 local bodyConfig = {}
 local TruckTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "truck", UnitDefs)
@@ -152,7 +153,6 @@ end
 
 orgHousePosTable = {}
 
-
 function randomMultipleByNameOrDefault(name, index)
     if TableOfPiecesGroups[name] then
         if index then
@@ -166,7 +166,6 @@ function randomMultipleByNameOrDefault(name, index)
 end
 
 rpgCarryingTypeTable = getRPGCarryingCivilianTypes(UnitDefs)
-myName = UnitDefs[unitDefID].name
 local myGun = ak47
 
 
