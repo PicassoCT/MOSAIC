@@ -55,11 +55,7 @@ local map = Spring.GetUnitPieceMap(unitID);
 gunsTable =  {}
 gunsTable[#gunsTable+1] = ak47
 local walkMotionExcludeTable = {}
-if UnitDefs[unitDefID].name == "civilian_western0" then
-    gunsTable[#gunsTable + 1 ] = piece('Pistol')
-    walkMotionExcludeTable[ShoppingBag]=ShoppingBag
-    walkMotionExcludeTable[Handbag]=Handbag
-end
+
 
 local scriptEnv = {
     Handbag = Handbag,
@@ -156,34 +152,39 @@ end
 
 orgHousePosTable = {}
 
+
+function randomMultipleByNameOrDefault(name, index)
+    if TableOfPiecesGroups[name] then
+        if index then
+             return TableOfPiecesGroups[name][index]
+         else
+            return TableOfPiecesGroups[name][math.random(1,#TableOfPiecesGroups[name])]
+        end
+    else
+        return piece(name)
+    end
+end
+
 rpgCarryingTypeTable = getRPGCarryingCivilianTypes(UnitDefs)
 myName = UnitDefs[unitDefID].name
 local myGun = ak47
-UnitPieces = Spring.GetUnitPieceMap(unitID)
+
+
 function script.Create()
-   
     Move(root, y_axis, -3, 0)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
-    if not TablesOfPiecesGroups["MilitiaMask"] then
-        MilitiaMask = piece("MilitiaMask")
-    else
-        MilitiaMask = TablesOfPiecesGroups["MilitiaMask"][math.random(1,#TablesOfPiecesGroups["MilitiaMask"])]
+    HandBag = randomMultipleByNameOrDefault("HandBag")
+    if UnitDefs[unitDefID].name == "civilian_western0" then
+        gunsTable[#gunsTable + 1 ] = piece('Pistol')
+        walkMotionExcludeTable[ShoppingBag]=ShoppingBag
+        walkMotionExcludeTable[Handbag]=Handbag
     end
 
-    if TableOfPiecesGroups["HandBag"] then
-        HandBag = TableOfPiecesGroups["HandBag"][math.random(1,#TableOfPiecesGroups["HandBag"])]
-    else
-        HandBag = piece('Handbag')
-    end
-
+    MilitiaMask = randomMultipleByNameOrDefault("MilitiaMask")
     if maRa() and MilitiaMask then Show(MilitiaMask) end
-    if map["cofee"] then
-        cofee = piece('cofee')
-    else
-        if TablesOfPiecesGroups["cofee"] then
-            cofee = TablesOfPiecesGroups["cofee"][(unitID % #TablesOfPiecesGroups["cofee"])+1] 
-        end
-    end
+
+    --Handbag does not rotate with the pieces, its 
+    cofee = randomMultipleByNameOrDefault("cofee", (unitID % #TablesOfPiecesGroups["cofee"])+1)
 
     if #gunsTable > 1 then myGun = gunsTable[math.random(1,#gunsTable)] else myGun = gunsTable[1] end
     makeWeaponsTable(myGun)
@@ -985,7 +986,6 @@ function constructSkeleton(unit, piece, offset)
     for i = 1, 3 do info.offset[i] = offset[i] + info.offset[i]; end
 
     bones[piece] = info.offset;
-    local map = Spring.GetUnitPieceMap(unit);
     local children = info.children;
 
     if (children) then
