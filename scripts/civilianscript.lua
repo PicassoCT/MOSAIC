@@ -154,11 +154,11 @@ end
 orgHousePosTable = {}
 
 function randomMultipleByNameOrDefault(name, index)
-    if TableOfPiecesGroups[name] then
+    if TablesOfPiecesGroups[name] then
         if index then
-             return TableOfPiecesGroups[name][index]
+             return TablesOfPiecesGroups[name][index]
          else
-            return TableOfPiecesGroups[name][math.random(1,#TableOfPiecesGroups[name])]
+            return TablesOfPiecesGroups[name][math.random(1,#TablesOfPiecesGroups[name])]
         end
     else
         return piece(name)
