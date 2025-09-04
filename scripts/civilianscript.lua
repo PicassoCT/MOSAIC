@@ -61,7 +61,7 @@ local walkMotionExcludeTable = {}
 
 
 local scriptEnv = {
-    Handbag = Handbag,
+    Handbag =  randomMultipleByNameOrDefault("HandBag"),
     trolley = trolley,
     SittingBaby = SittingBaby,
     center = center,
@@ -172,7 +172,7 @@ local myGun = ak47
 function script.Create()
     Move(root, y_axis, -3, 0)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
-    HandBag = randomMultipleByNameOrDefault("HandBag")
+    HandBag = scriptEnv.HandBag
     if UnitDefs[unitDefID].name == "civilian_western0" then
         gunsTable[#gunsTable + 1 ] = piece('Pistol')
         walkMotionExcludeTable[ShoppingBag]=ShoppingBag
@@ -930,7 +930,7 @@ function setupAnimation()
 end
 
 local animCmd = {['turn'] = Turn, ['move'] = Move};
-
+local parentPieceMap = getParentPieceMap(unitID)
 local axisSign = {[x_axis] = 1, [y_axis] = 1, [z_axis] = 1}
 
 function PlayAnimation(animname, piecesToFilterOutTable, speed)
@@ -972,6 +972,11 @@ function PlayAnimation(animname, piecesToFilterOutTable, speed)
             Sleep(t * 33 * math.abs(1 / speedFactor)); -- sleep works on milliseconds
         end
     end
+    --has handbag
+    if bodyConfig.boolHandbag then
+        StartThread(turnPieceTowards, unitID, getDown(), parentPieceMap, Handbag, 15)
+    end
+
     return spGetGameFrame() - startTime
 end
 

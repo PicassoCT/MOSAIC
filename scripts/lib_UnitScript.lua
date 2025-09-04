@@ -417,6 +417,87 @@ function getPiecePosDir(unitID, Peace)
 
 end
 
+function getParentPieceMap(unitID)
+    local pieceMap = Spring.GetUnitPieceMap ( unitID ) 
+    parentPieceMap = {}
+    for k,v in pairs(pieceMap) do
+        info = Spring.GetUnitPieceInfo(unitID, v)
+        parentPieceMap[v] =   info.parent
+    end
+    return parentPieceMap
+end
+
+function normalize(x,y,z)
+    local len = math.sqrt(x*x + y*y + z*z)
+    return x/len, y/len, z/len
+end
+
+function getDown()
+    return {0, -1, 0}
+end
+
+-- extract 3×3 rotation matrix from Spring's 4×4
+local function getPieceRotationMatrix(unitID, piece)
+    local mat = Spring.GetUnitPieceMatrix(unitID, piece) -- 16 numbers
+
+    -- Spring returns column-major (OpenGL-style):  
+    -- [1] [5]  [9] [13]  
+    -- [2] [6] [10] [14]  
+    -- [3] [7] [11] [15]  
+    -- [4] [8] [12] [16]  
+
+    return {
+        {mat[1], mat[5],  mat[9]},   -- X basis
+        {mat[2], mat[6],  mat[10]},  -- Y basis
+        {mat[3], mat[7],  mat[11]},  -- Z basis
+    }
+end
+
+function turnPieceTowards(unitID, vecTowards, parentPieceMap, pieceNr, speed)
+    local function cross(ax,ay,az, bx,by,bz)
+    return ay*bz - az*by,
+           az*bx - ax*bz,
+           ax*by - ay*bx
+    end
+
+    -- Multiply a vector by a 3x3 matrix
+    local function mulMatVec(m, x,y,z)
+        return
+            m[1][1]*x + m[1][2]*y + m[1][3]*z,
+            m[2][1]*x + m[2][2]*y + m[2][3]*z,
+            m[3][1]*x + m[3][2]*y + m[3][3]*z
+    end
+
+    local function mulMatMat(a, b)
+        local m = {{0,0,0},{0,0,0},{0,0,0}}
+        for i=1,3 do
+            for j=1,3 do
+                m[i][j] = a[i][1]*b[1][j] + a[i][2]*b[2][j] + a[i][3]*b[3][j]
+            end
+        end
+        return m
+    end
+
+    local vx, vy, vz = normalize(vecTowards[1], vecTowards[2], vecTowards[3])
+    local mat = {{1,0,0},{0,1,0},{0,0,1}} -- identity
+    local parent = parentPieceMap[pieceNr]
+    while parent do
+        local parentMat = getPieceRotationMatrix(unitID, parent)
+        mat = mulMatMat(mat, parentMat)
+        parent = parentPieceMap[parent]
+    end
+
+        -- transform target into local space
+    local lx,ly,lz = mulMatVec(mat, vx,vy,vz)
+
+    -- convert to Euler
+    local yaw   = math.atan2(lx, lz)
+    local pitch = -math.asin(ly)
+
+    Turn(pieceNr, y_axis, yaw,   speed or 0)
+    Turn(pieceNr, x_axis, pitch,   speed or 0)
+end
+
 -- > creates a hierarchical table of pieces, descending from root
 function getPieceHierarchy(unitID)
     local pieceMap = Spring.GetUnitPieceMap ( unitID ) 
