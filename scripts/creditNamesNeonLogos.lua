@@ -1,5 +1,7 @@
 
 return {
+"skytheguy",
+"qubodup",
 "muzaproduction",
 "IainMcCurdy",
 "Jaturo",

@@ -3859,25 +3859,8 @@ return {
                     ['a'] = z_axis,
                     ['t'] = -0.159935,
                     ['s'] = 0.018162
-                }, {
-                    ['c'] = 'turn',
-                    ['p'] = 'ShoppingBag',
-                    ['a'] = x_axis,
-                    ['t'] = -0.117924,
-                    ['s'] = 1.5448
-                }, {
-                    ['c'] = 'turn',
-                    ['p'] = 'ShoppingBag',
-                    ['a'] = y_axis,
-                    ['t'] = -0.148104 + 0.7853,
-                    ['s'] = 1.046261
-                }, {
-                    ['c'] = 'turn',
-                    ['p'] = 'ShoppingBag',
-                    ['a'] = z_axis,
-                    ['t'] = -1.794599,
-                    ['s'] = 1.384701
-                }, {
+                }, 
+                {
                     ['c'] = 'turn',
                     ['p'] = 'UpArm2',
                     ['a'] = x_axis,
@@ -4023,24 +4006,6 @@ return {
             ['commands'] = {
                 {
                     ['c'] = 'turn',
-                    ['p'] = 'ShoppingBag',
-                    ['a'] = x_axis,
-                    ['t'] = -0.119448,
-                    ['s'] = 0.011434
-                }, {
-                    ['c'] = 'turn',
-                    ['p'] = 'ShoppingBag',
-                    ['a'] = y_axis,
-                    ['t'] = -0.133895 + 0.7853,
-                    ['s'] = 0.106565
-                }, {
-                    ['c'] = 'turn',
-                    ['p'] = 'ShoppingBag',
-                    ['a'] = z_axis,
-                    ['t'] = -1.676702,
-                    ['s'] = 0.884227
-                }, {
-                    ['c'] = 'turn',
                     ['p'] = 'UpArm2',
                     ['a'] = x_axis,
                     ['t'] = -0.107804,
@@ -4085,26 +4050,7 @@ return {
             }
         }, {
             ['time'] = 23,
-            ['commands'] = {
-                {
-                    ['c'] = 'turn',
-                    ['p'] = 'ShoppingBag',
-                    ['a'] = x_axis,
-                    ['t'] = -0.118826,
-                    ['s'] = 0.001166
-                }, {
-                    ['c'] = 'turn',
-                    ['p'] = 'ShoppingBag',
-                    ['a'] = y_axis,
-                    ['t'] = -0.097433 + 0.7853,
-                    ['s'] = 0.068367
-                }, {
-                    ['c'] = 'turn',
-                    ['p'] = 'ShoppingBag',
-                    ['a'] = z_axis,
-                    ['t'] = -1.373211,
-                    ['s'] = 0.569046
-                }
+            ['commands'] = {                
             }
         }, {
             ['time'] = 26,
@@ -4154,26 +4100,7 @@ return {
             }
         }, {['time'] = 33, ['commands'] = {}}, {
             ['time'] = 39,
-            ['commands'] = {
-                {
-                    ['c'] = 'turn',
-                    ['p'] = 'ShoppingBag',
-                    ['a'] = x_axis,
-                    ['t'] = -0.120942,
-                    ['s'] = 0.010576
-                }, {
-                    ['c'] = 'turn',
-                    ['p'] = 'ShoppingBag',
-                    ['a'] = y_axis,
-                    ['t'] = -0.113837 + 0.7853,
-                    ['s'] = 0.082020
-                }, {
-                    ['c'] = 'turn',
-                    ['p'] = 'ShoppingBag',
-                    ['a'] = z_axis,
-                    ['t'] = -1.509792,
-                    ['s'] = 0.682902
-                }
+            ['commands'] = {               
             }
         }, {
             ['time'] = 42,
@@ -4243,28 +4170,12 @@ return {
                     ['a'] = z_axis,
                     ['t'] = -1.507750,
                     ['s'] = 0.017865
-                }, {
-                    ['c'] = 'turn',
-                    ['p'] = 'ShoppingBag',
-                    ['a'] = x_axis,
-                    ['t'] = -0.121193,
-                    ['s'] = 0.000502
-                }, {
-                    ['c'] = 'turn',
-                    ['p'] = 'ShoppingBag',
-                    ['a'] = y_axis,
-                    ['t'] = -0.120347 + 0.7853,
-                    ['s'] = 0.013020
-                }, {
-                    ['c'] = 'turn',
-                    ['p'] = 'ShoppingBag',
-                    ['a'] = z_axis,
-                    ['t'] = -1.563779,
-                    ['s'] = 0.107974
-                }
+                }, 
             }
-        }, {['time'] = 46, ['commands'] = {}},
-        {['time'] = 58, ['commands'] = {}}, {['time'] = 59, ['commands'] = {}},
+        }, 
+        {['time'] = 46, ['commands'] = {}},
+        {['time'] = 58, ['commands'] = {}}, 
+        {['time'] = 59, ['commands'] = {}},
         {['time'] = 60, ['commands'] = {}}
     },
     ['UPBODY_CONSUMPTION'] = {

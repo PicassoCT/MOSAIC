@@ -14,7 +14,7 @@ local spGetUnitTeam = Spring.GetUnitTeam
 local spGetUnitPosition = Spring.GetUnitPosition
 local spGetGameFrame = Spring.GetGameFrame
 
-local TablesOfPiecesGroups = {}
+local TablesOfPiecesGroups =   getPieceTableByNameGroups(false, true)
 
 SIG_ANIM = 1
 SIG_UP = 2
@@ -61,7 +61,7 @@ local walkMotionExcludeTable = {}
 
 
 local scriptEnv = {
-    Handbag =  randomMultipleByNameOrDefault("HandBag"),
+    Handbag =  randomMultipleByNameOrDefault("Handbag"),
     trolley = trolley,
     SittingBaby = SittingBaby,
     center = center,
@@ -149,6 +149,7 @@ function variousBodyConfigs()
     bodyConfig.boolHandbag = (iShoppingConfig == 4)
     bodyConfig.boolLoaded = (iShoppingConfig < 5)
     bodyConfig.boolProtest = GG.GlobalGameState == GameConfig.GameState.anarchy and maRa()
+    setDefaultBodyConfig()
 end
 
 orgHousePosTable = {}
@@ -158,7 +159,11 @@ function randomMultipleByNameOrDefault(name, index)
         if index then
              return TablesOfPiecesGroups[name][index]
          else
-            return TablesOfPiecesGroups[name][math.random(1,#TablesOfPiecesGroups[name])]
+            if maRa() and map[name] then
+                return piece(name)
+            else
+                return TablesOfPiecesGroups[name][math.random(1,#TablesOfPiecesGroups[name])]
+            end
         end
     else
         return piece(name)
@@ -168,10 +173,19 @@ end
 rpgCarryingTypeTable = getRPGCarryingCivilianTypes(UnitDefs)
 local myGun = ak47
 
+function setDefaultBodyConfig()
+   bodyConfig.boolArmed = false 
+    bodyConfig.boolRPGArmed = false
+    bodyConfig.boolWounded = false
+    bodyConfig.boolInfluenced = false
+    bodyConfig.boolCoverWalk = false
+    bodyConfig.boolRPGCarrying = rpgCarryingTypeTable[unitDefID] ~= nil 
+end
+
 
 function script.Create()
     Move(root, y_axis, -3, 0)
-    TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
+  
     HandBag = scriptEnv.HandBag
     if UnitDefs[unitDefID].name == "civilian_western0" then
         gunsTable[#gunsTable + 1 ] = piece('Pistol')
@@ -185,17 +199,11 @@ function script.Create()
     --Handbag does not rotate with the pieces, its 
     cofee = randomMultipleByNameOrDefault("cofee", (unitID % #TablesOfPiecesGroups["cofee"])+1)
 
-    if #gunsTable > 1 then myGun = gunsTable[math.random(1,#gunsTable)] else myGun = gunsTable[1] end
+    myGun = getSafeRandom(gunsTable, gunsTable[1])
     makeWeaponsTable(myGun)
 
     variousBodyConfigs()
-
-    bodyConfig.boolArmed = false 
-    bodyConfig.boolRPGArmed = false
-    bodyConfig.boolWounded = false
-    bodyConfig.boolInfluenced = false
-    bodyConfig.boolCoverWalk = false
-    bodyConfig.boolRPGCarrying = rpgCarryingTypeTable[unitDefID] ~= nil 
+ 
     home.x, home.y, home.z = Spring.GetUnitPosition(unitID)
     bodyBuild()
 
@@ -423,7 +431,7 @@ function bodyBuild()
 
     if bodyConfig.boolLoaded == true and bodyConfig.boolWounded == false then
 
-        if iShoppingConfig == 1 then
+        if carriesShoppingBag() then
             Show(ShoppingBag);
             return
         end
@@ -443,6 +451,10 @@ function bodyBuild()
             return
         end
     end
+end
+
+function carriesShoppingBag()
+    return iShoppingConfig == 1
 end
 
 function hideAllProps()
@@ -936,10 +948,8 @@ local axisSign = {[x_axis] = 1, [y_axis] = 1, [z_axis] = 1}
 function PlayAnimation(animname, piecesToFilterOutTable, speed)
     local speedFactor = speed or 1.0
     if not piecesToFilterOutTable then piecesToFilterOutTable = {} end
-    assert(animname, "animation name is nil")
-    assert(type(animname) == "string",
-           "Animname is not string " .. toString(animname))
-    assert(Animations[animname], "No animation with name ")
+    if carriesShoppingBag() then  StartThread(turnPieceTowards, unitID, getDown(), parentPieceMap, ShoppingBag, 15) end
+
     local startTime = spGetGameFrame()
 
     local anim = Animations[animname];
@@ -973,9 +983,7 @@ function PlayAnimation(animname, piecesToFilterOutTable, speed)
         end
     end
     --has handbag
-    if bodyConfig.boolHandbag then
-        StartThread(turnPieceTowards, unitID, getDown(), parentPieceMap, Handbag, 15)
-    end
+    if bodyConfig.boolHandbag then StartThread(turnPieceTowards, unitID, getDown(), parentPieceMap, Handbag, 15)  end
 
     return spGetGameFrame() - startTime
 end
