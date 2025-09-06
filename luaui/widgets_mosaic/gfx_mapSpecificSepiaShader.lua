@@ -107,15 +107,17 @@ function widget:Initialize()
     for i=1, #TARGET_MAPS do
         local mapNameToSearch = string.lower(Game.mapName)
         local keyword=  TARGET_MAPS[i]
-        if string.find(mapNameToSearch, keyword) then
+        if string.find(mapNameToSearch, keyword) 
             boolWidgetActive = true           
         end
     end
     
-    if boolWidgetActive == false then
+    if boolWidgetActive  then
         Spring.Echo("Sepia shader is not active")
         widgetHandler:RemoveWidget(self)
         return
+    else
+        Spring.Echo("Sepia shader is active")
     end
 
     sepiaShader = CreateSepiaShader()
