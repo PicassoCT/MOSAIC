@@ -149,6 +149,7 @@ function variousBodyConfigs()
     bodyConfig.boolHandbag = (iShoppingConfig == 4)
     bodyConfig.boolLoaded = (iShoppingConfig < 5)
     bodyConfig.boolProtest = GG.GlobalGameState == GameConfig.GameState.anarchy and maRa()
+    bodyConfig.boolHasDeco = maRa()
     setDefaultBodyConfig()
 end
 
@@ -179,6 +180,7 @@ function setDefaultBodyConfig()
     bodyConfig.boolWounded = false
     bodyConfig.boolInfluenced = false
     bodyConfig.boolCoverWalk = false
+
     bodyConfig.boolRPGCarrying = rpgCarryingTypeTable[unitDefID] ~= nil 
 end
 
@@ -403,6 +405,7 @@ function bodyBuild()
     if TablesOfPiecesGroups["Hand"] then showT(TablesOfPiecesGroups["Hand"]) end
     if TablesOfPiecesGroups["Suit"] and not (maRa() == maRa()) then showT(TablesOfPiecesGroups["Suit"]) end
     if TablesOfPiecesGroups["Eye"] then showT(TablesOfPiecesGroups["Eye"]) end
+    if TablesOfPiecesGroups["Deco"] and bodyConfig.boolHasDeco then showOnePiece(TablesOfPiecesGroups["Deco"]) end
 
 
     if math.random(0, 4) > 3 or GG.GlobalGameState ~=  GameConfig.GameState.normal then Show(MilitiaMask) end
@@ -423,14 +426,12 @@ function bodyBuild()
         return
     end
 
-  
     if GG.GlobalGameState == GameConfig.GameState.normal  then
        dropLoot()
     end
  
 
     if bodyConfig.boolLoaded == true and bodyConfig.boolWounded == false then
-
         if carriesShoppingBag() then
             Show(ShoppingBag);
             return
