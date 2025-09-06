@@ -1273,7 +1273,7 @@ end
             translation = {
                 ["arabic"] = {
                     ["house"] = {name = "house_arab", range = 0},
-                    ["civilian"] = {name = "civilian_arab", range = 4},
+                    ["civilian"] = {name = "civilian_arab", range = 5},
                     ["truck"] = {name = "truck_arab", range = 9}},
                 ["western"] = {
                     ["house"] = {name = "house_western", range = 0},
@@ -1281,7 +1281,7 @@ end
                     ["truck"] = {name = "truck_western", range = 4}},        
                 ["asian"] = {
                     ["house"] = {name = "house_asian", range = 3},
-                    ["civilian"] = {name = "civilian_arab", range = 4},
+                    ["civilian"] = {name = "civilian_arab", range = 5},
                     ["truck"] = {name = "truck_western", range = 4}}
                 }
                 assert(translation[cultureName], "no translation for "..cultureName)
@@ -1619,7 +1619,9 @@ end
                     else
                         typeTable = {
                             "civilian_arab0",
-                            "civilian_arab3"
+                            "civilian_arab3",
+                            "civilian_arab4",
+                            "civilian_arab5"
                         }
                     end
                 end
@@ -1650,6 +1652,8 @@ end
                         typeTable = {
                             "civilian_arab0",
                             "civilian_arab3",
+                            "civilian_arab4",
+                            "civilian_arab5",
                             "civilian_western1",
                             "civilian_western2"
                         }
@@ -1668,6 +1672,8 @@ end
                         typeTable = {
                             "civilian_arab0",
                             "civilian_arab3",
+                            "civilian_arab4",
+                            "civilian_arab5",
                             "civilian_western1",
                             "civilian_western2"
                         }

@@ -26,6 +26,7 @@ SIG_MOLOTOW = 64
 SIG_INTERNAL = 128
 SIG_RPG = 256
 
+local map = Spring.GetUnitPieceMap(unitID);
 local function randomMultipleByNameOrDefault(name, index)
     if TablesOfPiecesGroups[name] then
         if index then
@@ -70,7 +71,6 @@ local molotow = piece "molotow"
 local ShoppingBag = piece "ShoppingBag"
 local RPG7
 local RPG7Rocket
-local map = Spring.GetUnitPieceMap(unitID);
 gunsTable =  {}
 gunsTable[#gunsTable+1] = ak47
 local walkMotionExcludeTable = {}
@@ -951,7 +951,6 @@ local axisSign = {[x_axis] = 1, [y_axis] = 1, [z_axis] = 1}
 function PlayAnimation(animname, piecesToFilterOutTable, speed)
     local speedFactor = speed or 1.0
     if not piecesToFilterOutTable then piecesToFilterOutTable = {} end
-    if carriesShoppingBag() then  StartThread(turnPieceTowards, unitID, getDown(), parentPieceMap, ShoppingBag, 15) end
 
     local startTime = spGetGameFrame()
 
@@ -986,6 +985,7 @@ function PlayAnimation(animname, piecesToFilterOutTable, speed)
         end
     end
     --has handbag
+    if carriesShoppingBag() then  StartThread(turnPieceTowards, unitID, getDown(), parentPieceMap, ShoppingBag, 15) end
     if bodyConfig.boolHandbag then StartThread(turnPieceTowards, unitID, getDown(), parentPieceMap, Handbag, 15)  end
 
     return spGetGameFrame() - startTime

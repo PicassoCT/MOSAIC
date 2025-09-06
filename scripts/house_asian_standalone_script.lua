@@ -310,6 +310,15 @@ function showOneOrNone(T)
     showOne(T)
 end
 
+function showNoneOrMany(T)
+    if maRa() then  return showOneOrNon(T) end
+    for k, v in pairs(T) do        
+        if maRa() then
+            addToShowTable(v, "showOne", k)            
+        end
+    end
+end
+
 function showOne(T)
     if not T then
         return
@@ -332,7 +341,7 @@ end
 function showSubs(pieceGroupName)
     local subName = pieceGroupName .. "Sub"
   --  Spring.Echo("SubGroupName "..subName)
-    showOneOrNone(TablesOfPieceGroups[subName])
+    showNoneOrMany(TablesOfPieceGroups[subName])
 end
 
 function addGroundPlaceables()
