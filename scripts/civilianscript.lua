@@ -26,6 +26,22 @@ SIG_MOLOTOW = 64
 SIG_INTERNAL = 128
 SIG_RPG = 256
 
+local function randomMultipleByNameOrDefault(name, index)
+    if TablesOfPiecesGroups[name] then
+        if index then
+             return TablesOfPiecesGroups[name][index]
+         else
+            if maRa() and map[name] then
+                return piece(name)
+            else
+                return TablesOfPiecesGroups[name][math.random(1,#TablesOfPiecesGroups[name])]
+            end
+        end
+    else
+        return piece(name)
+    end
+end
+
 local center = piece('center');
 local Feet1 = piece('Feet1');
 local Feet2 = piece('Feet2');
@@ -43,7 +59,7 @@ local UpBody = piece('UpBody');
 local UpLeg1 = piece('UpLeg1');
 local UpLeg2 = piece('UpLeg2');
 local cigarett = piece('cigarett');
-local Handbag = nil
+local Handbag = randomMultipleByNameOrDefault("Handbag")
 local SittingBaby = piece('SittingBaby');
 local ak47 = piece('ak47')
 local cofee = nil
@@ -59,9 +75,8 @@ gunsTable =  {}
 gunsTable[#gunsTable+1] = ak47
 local walkMotionExcludeTable = {}
 
-
 local scriptEnv = {
-    Handbag =  randomMultipleByNameOrDefault("Handbag"),
+    Handbag =  Handbag,
     trolley = trolley,
     SittingBaby = SittingBaby,
     center = center,
@@ -139,7 +154,7 @@ local damagedCoolDown = 0
 local bodyConfig = {}
 local TruckTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "truck", UnitDefs)
 local NORMAL_WALK_SPEED =  0.65625
-SPRINT_SPEED = 1.0
+local SPRINT_SPEED = 1.0
 
 iShoppingConfig = math.random(0, 8)
 function variousBodyConfigs()
@@ -155,21 +170,7 @@ end
 
 orgHousePosTable = {}
 
-function randomMultipleByNameOrDefault(name, index)
-    if TablesOfPiecesGroups[name] then
-        if index then
-             return TablesOfPiecesGroups[name][index]
-         else
-            if maRa() and map[name] then
-                return piece(name)
-            else
-                return TablesOfPiecesGroups[name][math.random(1,#TablesOfPiecesGroups[name])]
-            end
-        end
-    else
-        return piece(name)
-    end
-end
+
 
 rpgCarryingTypeTable = getRPGCarryingCivilianTypes(UnitDefs)
 local myGun = ak47
@@ -187,19 +188,20 @@ end
 
 function script.Create()
     Move(root, y_axis, -3, 0)
-  
-    HandBag = scriptEnv.HandBag
+
     if UnitDefs[unitDefID].name == "civilian_western0" then
         gunsTable[#gunsTable + 1 ] = piece('Pistol')
         walkMotionExcludeTable[ShoppingBag]=ShoppingBag
-        walkMotionExcludeTable[Handbag]=Handbag
+        if Handbag then
+            walkMotionExcludeTable[Handbag]=Handbag
+        end
     end
 
     MilitiaMask = randomMultipleByNameOrDefault("MilitiaMask")
     if maRa() and MilitiaMask then Show(MilitiaMask) end
 
     --Handbag does not rotate with the pieces, its 
-    cofee = randomMultipleByNameOrDefault("cofee", (unitID % #TablesOfPiecesGroups["cofee"])+1)
+    cofee = randomMultipleByNameOrDefault("cofee")
 
     myGun = getSafeRandom(gunsTable, gunsTable[1])
     makeWeaponsTable(myGun)

@@ -422,7 +422,9 @@ function getParentPieceMap(unitID)
     parentPieceMap = {}
     for k,v in pairs(pieceMap) do
         info = Spring.GetUnitPieceInfo(unitID, v)
-        parentPieceMap[v] =   info.parent
+        if type(info.parent) == "number" then
+            parentPieceMap[v] =   info.parent
+        end
     end
     return parentPieceMap
 end
@@ -481,7 +483,7 @@ function turnPieceTowards(unitID, vecTowards, parentPieceMap, pieceNr, speed)
     local vx, vy, vz = normalize(vecTowards[1], vecTowards[2], vecTowards[3])
     local mat = {{1,0,0},{0,1,0},{0,0,1}} -- identity
     local parent = parentPieceMap[pieceNr]
-    while parent do
+    while parent do        
         local parentMat = getPieceRotationMatrix(unitID, parent)
         mat = mulMatMat(mat, parentMat)
         parent = parentPieceMap[parent]

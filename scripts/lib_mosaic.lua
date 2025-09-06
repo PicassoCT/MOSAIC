@@ -1277,7 +1277,7 @@ end
                     ["truck"] = {name = "truck_arab", range = 9}},
                 ["western"] = {
                     ["house"] = {name = "house_western", range = 0},
-                    ["civilian"] = {name = "civilian_western", range = 2},
+                    ["civilian"] = {name = "civilian_western", range = 3},
                     ["truck"] = {name = "truck_western", range = 4}},        
                 ["asian"] = {
                     ["house"] = {name = "house_asian", range = 3},
@@ -1627,7 +1627,8 @@ end
                 if GameConfig.instance.culture == "western" then
                     if sex == "male" then
                         typeTable = {
-                            "civilian_western0"
+                            "civilian_western0",
+                            "civilian_western3",
                         }
                     else
                         typeTable = {
@@ -1642,7 +1643,8 @@ end
                         typeTable = {
                             "civilian_arab1",
                             "civilian_arab2",
-                            "civilian_western0"
+                            "civilian_western0",
+                            "civilian_western3",
                         }
                     else
                         typeTable = {
@@ -1659,7 +1661,8 @@ end
                         typeTable = {
                             "civilian_arab1",
                             "civilian_arab2",
-                            "civilian_western0"
+                            "civilian_western0",
+                            "civilian_western3",
                         }
                     else
                         typeTable = {
