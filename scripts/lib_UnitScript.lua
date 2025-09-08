@@ -410,6 +410,10 @@ function getPieceChain(hierarchy, startPiece, endPiece)
     return pieceChain
 end
 
+function randNVec()
+    return math.random(-100, 100)/100
+end
+
 function getPiecePosDir(unitID, Peace)
     px, py, pz, dx, dy, dz = Spring.GetUnitPiecePosDir(unitID, Peace)
     return {x = px, y = py, z = pz}, {x = dx, y = dy, z = dz}

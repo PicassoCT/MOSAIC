@@ -192,17 +192,31 @@ function script.Create()
     setupAnimation()
 
     setOverrideAnimationState(eAnimState.standing, eAnimState.standing, true, nil, false)
-
-    StartThread(threadStarter)
-    StartThread(threadStateStarter)
-    StartThread(headAnimationLoop)
-    StartThread(speedControl)
-    StartThread(noCapesControl, LowArm1, LowArm2)
+    StartThread(animationTestLoop)
+    --StartThread(threadStarter)
+    --StartThread(threadStateStarter)
+    --StartThread(headAnimationLoop)
+    --StartThread(speedControl)
+    --StartThread(noCapesControl, LowArm1, LowArm2)
   
     orgHousePosTable = sharedComputationResult("orgHousePosTable",
                                                computeOrgHouseTable, UnitDefs,
                                                math.huge, GameConfig)
     StartThread(rainyDayCare)
+
+end
+
+function animationTestLoop()
+    while true do
+        dx, dz = math.random(-10, 10)/10, math.random(-10, 10)/10 
+        ExplosiveDeath(dx, dz)
+        Sleep(1000)
+        resetAll(unitID)
+        WaitForTurns(upperBodyPieces) 
+        WaitForTurns(lowerBodyPieces)
+        Sleep(1000) 
+    end
+
 end
 
 function umbrellaCondition(boolSunUmbrella)
@@ -525,6 +539,7 @@ lowerBodyAnimations = {
 }
 
 accumulatedTimeInSeconds = 5
+dx,dz = 0,0
 function script.HitByWeapon(x, z, weaponDefID, damage)
     transportID = spGetUnitIsTransporting(unitID)
     setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_ENDED, "wounded")
@@ -1903,17 +1918,68 @@ function dropLoot()
     end
 end
 
+function ExplosiveDeath(dx, dz)
+
+    -- fling body away from explosion
+    Turn(root, y_axis, math.atan2(dx, dz), 0.5) 
+    Spin(UpBody, x_axis, math.random(-10, 10), 15)
+    Spin(UpBody, z_axis, math.random(-10, 10), 15)
+
+    -- arms flailing
+    for i, limb in ipairs({UpArm1, LowArm1, UpArm2, LowArm2}) do
+        Spin(limb, x_axis, math.random(-20, 20), 20)
+    end
+
+    -- legs flailing
+    for i, limb in ipairs({UpLeg1, LowLeg1, Feet1, UpLeg2, LowLeg2, Feet2}) do
+        Spin(limb, x_axis, math.random(-15, 15), 20)
+    end
+
+    Sleep(1200) -- let the ragdoll fling happen for a bit
+
+    -- curl into embryonic position
+    Turn(UpBody, x_axis, math.rad(-40), 1.5)
+    Turn(UpLeg1, x_axis, math.rad(60), 1.5)
+    Turn(UpLeg2, x_axis, math.rad(60), 1.5)
+    Turn(UpArm1, x_axis, math.rad(50), 1.5)
+    Turn(UpArm2, x_axis, math.rad(50), 1.5)
+    Turn(Head1, x_axis, math.rad(20), 1.5)
+
+    Sleep(1000)
+    ragDoll = {
+        UpArm1, LowArm1, UpArm2, LowArm2,
+        UpLeg1, LowLeg1, Feet1,
+        UpLeg2, LowLeg2, Feet2,
+        Head1, UpBody
+    }
+    -- relax into random final pose
+    for _, p in ipairs(ragDoll) do
+        Turn(p, x_axis, math.rad(math.random(-30, 30)), 0.5)
+        Turn(p, z_axis, math.rad(math.random(-20, 20)), 0.5)
+    end
+    WaitForTurns(ragDoll)
+    Sleep(500)
+
+end
+
+
+
 function script.Killed(recentDamage, _)
     setSpeedEnv(unitID, 0)
     dropLoot()
-    val = 5*randSign()
-    Turn(root,y_axis,math.rad(val),0.8)
-    for i=1,3 do
-        turnTableRand(TablesOfPiecesGroups["UpArm"], i, 90, -90, 1.4)
-        turnTableRand(TablesOfPiecesGroups["LowArm"], i, 90, -90, 1.4)
+    _, maxHealth= Spring.GetUnitHealth(unitID)
+    if (recentDamage > (maxHealth / 3)) then
+        ExplosiveDeath(dx or randNVec() , dz or randNVec())
+        return 1 -- signal custom animation handled
+    else
+        val = 5*randSign()
+        Turn(root,y_axis,math.rad(val),0.8)
+        for i=1,3 do
+            turnTableRand(TablesOfPiecesGroups["UpArm"], i, 90, -90, 1.4)
+            turnTableRand(TablesOfPiecesGroups["LowArm"], i, 90, -90, 1.4)
+        end
+        val = 90*randSign()
+        WTurn(root,x_axis, math.rad(val),1.4)
+        return 1
     end
-    val = 90*randSign()
-    WTurn(root,x_axis, math.rad(val),1.4)
-
-    return 1
 end
