@@ -130,7 +130,7 @@ local TruckTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "tr
 local NORMAL_WALK_SPEED =  0.65625
 local SPRINT_SPEED = 1.0
 
-iShoppingConfig = math.random(0, 8)
+iShoppingConfig = math.random(0, 7)
 function variousBodyConfigs()
     bodyConfig.boolShoppingLoaded = (iShoppingConfig <= 1)
     bodyConfig.boolCarrysBaby = (iShoppingConfig == 2)
@@ -144,6 +144,7 @@ end
 
 function externalPickUpHandbag()
     bodyConfig.boolHandbag = true
+    if Handbag then Hide(Handbag) end
     local Handbag = randomMultipleByNameOrDefault("Handbag")
     Show(Handbag)
 end
@@ -413,6 +414,10 @@ function bodyBuild()
  
 
     if bodyConfig.boolLoaded == true and bodyConfig.boolWounded == false then
+        if  randChance(50) and Handbag then
+            Show(Handbag);
+        end
+
         if carriesShoppingBag() then
             Show(ShoppingBag);
             return
@@ -426,12 +431,7 @@ function bodyBuild()
         if iShoppingConfig == 3 then
             Show(trolley);
             return
-        end
-
-        if iShoppingConfig == 4 then
-            Show(Handbag);
-            return
-        end
+        end       
     end
 end
 
