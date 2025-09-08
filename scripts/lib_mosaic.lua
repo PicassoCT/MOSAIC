@@ -1277,7 +1277,7 @@ end
                     ["truck"] = {name = "truck_arab", range = 9}},
                 ["western"] = {
                     ["house"] = {name = "house_western", range = 0},
-                    ["civilian"] = {name = "civilian_western", range = 3},
+                    ["civilian"] = {name = "civilian_western", range = 4},
                     ["truck"] = {name = "truck_western", range = 4}},        
                 ["asian"] = {
                     ["house"] = {name = "house_asian", range = 3},
@@ -1635,7 +1635,8 @@ end
                     else
                         typeTable = {
                           "civilian_western1",
-                          "civilian_western2"
+                          "civilian_western2",
+                          "civilian_western4"
                         }
                     end
                 end        
@@ -1655,7 +1656,8 @@ end
                             "civilian_arab4",
                             "civilian_arab5",
                             "civilian_western1",
-                            "civilian_western2"
+                            "civilian_western2",
+                            "civilian_western4"
                         }
                     end
 

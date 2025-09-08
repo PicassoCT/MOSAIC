@@ -718,6 +718,28 @@ function showHide(id, bShow)
     end
 end
 
+
+function showAllSubsSpinsOfPiece(T, pieceGroupName, nr)
+    if not nr then 
+        lecho("Subpiece nr not given")
+        return 
+    end
+    local subName = pieceGroupName .. nr .. "Sub"
+    showT(T[subName])
+
+    local spinName = pieceGroupName .. nr .. "Spin"
+    showT(T[spinName])
+   
+    direction = math.random(40,160) * randSign()
+
+    if T[spinName] then
+        for i=1,#T[spinName] do
+            Spin(T[spinName][i] , y_axis, math.rad(direction), math.pi)
+        end
+    end
+end
+
+
 function showOneOfTable(pieceList)
     nrID = piece(getSafeRandom(pieceList,pieceList[1]))
     Show(nrID)
@@ -2329,7 +2351,7 @@ function showOnePiece(T, hash)
         if k and v then c = c + 1 end
         if c == dice then
                 Show(v)
-                return v
+                return v, k
         end
     end
 end

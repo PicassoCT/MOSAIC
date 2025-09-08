@@ -311,7 +311,7 @@ function showOneOrNone(T)
 end
 
 function showNoneOrMany(T)
-    if maRa() then  return showOneOrNon(T) end
+    if maRa() then  return showOneOrNone(T) end
     for k, v in pairs(T) do        
         if maRa() then
             addToShowTable(v, "showOne", k)            

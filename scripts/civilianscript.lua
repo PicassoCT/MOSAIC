@@ -15,18 +15,19 @@ local spGetUnitPosition = Spring.GetUnitPosition
 local spGetGameFrame = Spring.GetGameFrame
 
 local TablesOfPiecesGroups =   getPieceTableByNameGroups(false, true)
-
-SIG_ANIM = 1
-SIG_UP = 2
-SIG_LOW = 4
-SIG_COVER_WALK = 8
-SIG_BEHAVIOUR_STATE_MACHINE = 16
-SIG_PISTOL = 32
-SIG_MOLOTOW = 64
-SIG_INTERNAL = 128
-SIG_RPG = 256
-
 local map = Spring.GetUnitPieceMap(unitID);
+
+local SIG_ANIM = 1
+local SIG_UP = 2
+local SIG_LOW = 4
+local SIG_COVER_WALK = 8
+local SIG_BEHAVIOUR_STATE_MACHINE = 16
+local SIG_PISTOL = 32
+local SIG_MOLOTOW = 64
+local SIG_INTERNAL = 128
+local SIG_RPG = 256
+
+
 local function randomMultipleByNameOrDefault(name, index)
     if TablesOfPiecesGroups[name] then
         if index then
@@ -74,33 +75,6 @@ local RPG7Rocket
 gunsTable =  {}
 gunsTable[#gunsTable+1] = ak47
 local walkMotionExcludeTable = {}
-
-local scriptEnv = {
-    Handbag =  Handbag,
-    trolley = trolley,
-    SittingBaby = SittingBaby,
-    center = center,
-    Feet1 = Feet1,
-    Feet2 = Feet2,
-    Head1 = Head1,
-    LowArm1 = LowArm1,
-    LowArm2 = LowArm2,
-    LowLeg1 = LowLeg1,
-    LowLeg2 = LowLeg2,
-    cigarett = cigarett,
-    cofee = cofee,
-    root = root,
-    UpArm1 = UpArm1,
-    UpArm2 = UpArm2,
-    UpBody = UpBody,
-    UpLeg1 = UpLeg1,
-    UpLeg2 = UpLeg2,
-    x_axis = x_axis,
-    y_axis = y_axis,
-    z_axis = z_axis
-}
-
-
 local myTeamID = spGetUnitTeam(unitID)
 local gaiaTeamID = Spring.GetGaiaTeamID()
 
@@ -168,11 +142,14 @@ function variousBodyConfigs()
     setDefaultBodyConfig()
 end
 
+function externalPickUpHandbag()
+    bodyConfig.boolHandbag = true
+    local Handbag = randomMultipleByNameOrDefault("Handbag")
+    Show(Handbag)
+end
+
 orgHousePosTable = {}
 
-
-
-rpgCarryingTypeTable = getRPGCarryingCivilianTypes(UnitDefs)
 local myGun = ak47
 
 function setDefaultBodyConfig()
@@ -181,7 +158,7 @@ function setDefaultBodyConfig()
     bodyConfig.boolWounded = false
     bodyConfig.boolInfluenced = false
     bodyConfig.boolCoverWalk = false
-
+    rpgCarryingTypeTable = getRPGCarryingCivilianTypes(UnitDefs)
     bodyConfig.boolRPGCarrying = rpgCarryingTypeTable[unitDefID] ~= nil 
 end
 
@@ -407,8 +384,10 @@ function bodyBuild()
     if TablesOfPiecesGroups["Hand"] then showT(TablesOfPiecesGroups["Hand"]) end
     if TablesOfPiecesGroups["Suit"] and not (maRa() == maRa()) then showT(TablesOfPiecesGroups["Suit"]) end
     if TablesOfPiecesGroups["Eye"] then showT(TablesOfPiecesGroups["Eye"]) end
-    if TablesOfPiecesGroups["Deco"] and bodyConfig.boolHasDeco then showOnePiece(TablesOfPiecesGroups["Deco"]) end
-
+    if TablesOfPiecesGroups["Deco"] and bodyConfig.boolHasDeco then 
+        decoPiece, index= showOnePiece(TablesOfPiecesGroups["Deco"], unitID)       
+        showAllSubsSpinsOfPiece(TablesOfPiecesGroups, "Deco", index)
+    end
 
     if math.random(0, 4) > 3 or GG.GlobalGameState ~=  GameConfig.GameState.normal then Show(MilitiaMask) end
 

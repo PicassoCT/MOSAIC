@@ -104,6 +104,14 @@ function startInternalBehaviourOfState(unitID, name, ...)
     end
 end
 
+function callInternalFunction(uitID, name)
+    env = Spring.UnitScript.GetScriptEnv(unitID)
+
+    if env and env[name] then
+       return Spring.UnitScript.CallAsUnit(unitID, 
+                                     env[name]                                     )
+    end
+end
 
 function makePasserBysLook(unitID)
     ux, uy, uz = spGetUnitPosition(unitID)
@@ -439,9 +447,7 @@ function regenerateRoutesTable()
     Spring.Echo("Regenerating Routes Tabel")
     local newRouteTabel = {}
     TruckType = randDict(TruckTypeTable)
-    --assert(TruckType)
-    --assertType(GG.BuildingTable, "table")
-    --echo("regenerateRoutesTable0")
+
     if count(GG.BuildingTable) < 2 then 
         echo("regenerateRoutesTable no buildings");
         RouteTabel = newRouteTabel; 
@@ -918,6 +924,11 @@ function travelInPeaceTimes(evtID, frame, persPack, startFrame, myID)
         
         persPack.goalIndex = persPack.goalIndex + 1
         if persPack.goalIndex > #persPack.goalList then
+            if civilianWalkingTypeTable[persPack.mydefID] then
+                if maRa() then
+                    callInternalFunction(myID, "externalPickUpHandbag")                  
+                end
+            end
             GG.UnitArrivedAtTarget[myID] = true
             return true, nil, persPack
         else
