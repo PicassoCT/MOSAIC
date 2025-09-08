@@ -411,10 +411,8 @@ function getPieceChain(hierarchy, startPiece, endPiece)
 end
 
 function getPiecePosDir(unitID, Peace)
-
     px, py, pz, dx, dy, dz = Spring.GetUnitPiecePosDir(unitID, Peace)
     return {x = px, y = py, z = pz}, {x = dx, y = dy, z = dz}
-
 end
 
 function getParentPieceMap(unitID)
