@@ -576,7 +576,7 @@ local function Bloom()
 		glTexture(2, false)
 		glTexture(3, false)
 	brightShader:Deactivate()
-
+	--TODO Draw HoloPieces SelfIluminated
 	if not debugBrightShader then
 		if presets[preset].blurPasses > 0 then
 			blurShader:Activate()
