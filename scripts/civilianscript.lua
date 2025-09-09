@@ -1919,31 +1919,40 @@ function dropLoot()
 end
 
 function ExplosiveDeath(dx, dz)
-
+    _x_axis =1
+    _y_axis =2
+    _z_axis = 3
     -- fling body away from explosion
-    Turn(root, y_axis, math.atan2(dx, dz), 0.5) 
-    Spin(UpBody, x_axis, math.random(-10, 10), 15)
-    Spin(UpBody, z_axis, math.random(-10, 10), 15)
+    Turn(root, _y_axis, math.atan2(dx, dz), 0.5) 
+    Spin(UpBody, _x_axis, math.random(-10, 10), 15)
+    Spin(UpBody, _z_axis, math.random(-10, 10), 15)
 
     -- arms flailing
     for i, limb in ipairs({UpArm1, LowArm1, UpArm2, LowArm2}) do
-        Spin(limb, x_axis, math.random(-20, 20), 20)
+        Spin(limb, _x_axis, math.random(-20, 20), 20)
     end
 
     -- legs flailing
     for i, limb in ipairs({UpLeg1, LowLeg1, Feet1, UpLeg2, LowLeg2, Feet2}) do
-        Spin(limb, x_axis, math.random(-15, 15), 20)
+        Spin(limb, _x_axis, math.random(-15, 15), 20)
     end
-
+    Turn(root,x_axis, math.rad(90),10)
     Sleep(1200) -- let the ragdoll fling happen for a bit
-
+  -- arms flailing
+    stopAllSpins(unitID, 15)
     -- curl into embryonic position
-    Turn(UpBody, x_axis, math.rad(-40), 1.5)
-    Turn(UpLeg1, x_axis, math.rad(60), 1.5)
-    Turn(UpLeg2, x_axis, math.rad(60), 1.5)
-    Turn(UpArm1, x_axis, math.rad(50), 1.5)
-    Turn(UpArm2, x_axis, math.rad(50), 1.5)
-    Turn(Head1, x_axis, math.rad(20), 1.5)
+    Turn(UpBody, _x_axis, math.rad(20), 1.5)
+    Turn(UpLeg1, _x_axis, math.rad(-60), 1.5)
+    
+    Turn(UpLeg2, _x_axis, math.rad(-60), 1.5)
+    Turn(LowLeg1, _x_axis, math.rad(40), 1.5)
+
+    Turn(UpLeg2, _x_axis, math.rad(-60), 1.5)
+    Turn(LowLeg2, _x_axis, math.rad(40), 1.5)
+  
+    Turn(UpArm1, _x_axis, math.rad(-50), 1.5)
+    Turn(UpArm2, _x_axis, math.rad(-50), 1.5)
+    Turn(Head1,  _x_axis, math.rad(30), 1.5)
 
     Sleep(1000)
     ragDoll = {
@@ -1954,13 +1963,14 @@ function ExplosiveDeath(dx, dz)
     }
     -- relax into random final pose
     for _, p in ipairs(ragDoll) do
-        Turn(p, x_axis, math.rad(math.random(-30, 30)), 0.5)
-        Turn(p, z_axis, math.rad(math.random(-20, 20)), 0.5)
+        Turn(p, _x_axis, math.rad(math.random(-30, 30)), 0.5)
+        Turn(p, _z_axis, math.rad(math.random(-20, 20)), 0.5)
     end
     WaitForTurns(ragDoll)
     Sleep(500)
 
 end
+
 
 
 

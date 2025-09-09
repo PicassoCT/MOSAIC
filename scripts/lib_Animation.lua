@@ -725,6 +725,15 @@ function stopSpinsT(arg, speed)
     end
 end
 
+
+-- > Stops Spinning Table
+function stopAllSpins(unitID, speed)
+    for k,v in pairs(Spring.GetUnitPieceMap(unitID)) do
+        StopSpin(k, 1, speed)
+        StopSpin(k, 2, speed)
+        StopSpin(k, 3, speed)
+    end
+end
 -- >Moves a UnitPiece to Position in Unitspace at speed
 function MovePieceToPos(piecename, X, Y, Z, speed, boolWaitForIt)
 

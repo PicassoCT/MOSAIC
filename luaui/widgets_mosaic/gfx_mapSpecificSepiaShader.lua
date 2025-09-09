@@ -107,7 +107,7 @@ function widget:Initialize()
     for i=1, #TARGET_MAPS do
         local mapNameToSearch = string.lower(Game.mapName)
         local keyword=  TARGET_MAPS[i]
-        if string.find(mapNameToSearch, keyword) 
+        if string.find(mapNameToSearch, keyword) then
             boolWidgetActive = true           
         end
     end
@@ -127,9 +127,7 @@ function widget:Initialize()
         widgetHandler:RemoveWidget(self)
         return
     end
-
-    widget:ViewResize()
-   
+    widget:ViewResize() 
 end
 
 

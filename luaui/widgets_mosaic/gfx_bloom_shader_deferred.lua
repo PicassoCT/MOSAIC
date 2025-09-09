@@ -1,6 +1,6 @@
 local isPotatoGpu = false
-local gpuMem = (Platform.gpuMemorySize and Platform.gpuMemorySize or 1000) / 1000
-if Platform ~= nil and Platform.gpuVendor == 'Intel' then
+local gpuMem = Platform and (Platform.gpuMemorySize and Platform.gpuMemorySize or 1000) / 1000
+if Platform and Platform.gpuVendor == 'Intel' then
 	isPotatoGpu = true
 end
 if gpuMem and gpuMem > 0 and gpuMem < 1800 then

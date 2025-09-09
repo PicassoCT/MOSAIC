@@ -3834,7 +3834,8 @@ function buildRunProGenicsSpot()
     folderName = "sounds/khanprogram"
     Spring.PlaySoundFile(folderName.."/Prelude_2s.ogg", 1.0)
     Sleep(2000)
-    nameFilePath, surFileNamePath = getRandomSurNameDir()
+    nameFilePaths, surFileNamePaths = getRandomSurNameDir()
+    nameFilePath, surFileNamePath = getSafeRandom(nameFilePaths,nameFilePaths[1]),getSafeRandom(surFileNamePaths,surFileNamePaths[1])
     if maRa()then
          Spring.PlaySoundFile(nameFilePath, 1.0)
          Sleep(1000)
