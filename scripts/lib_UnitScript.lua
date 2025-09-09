@@ -727,14 +727,14 @@ function showAllSubsSpinsOfPiece(T, pieceGroupName, nr)
         return 
     end
     local subName = pieceGroupName .. nr .. "Sub"
-    showT(T[subName])
+    if T[subName] then 
+        showT(T[subName])
+    end
 
     local spinName = pieceGroupName .. nr .. "Spin"
-    showT(T[spinName])
-   
-    direction = math.random(40,160) * randSign()
-
     if T[spinName] then
+        showT(T[spinName])
+        direction = math.random(40,160) * randSign()
         for i=1,#T[spinName] do
             Spin(T[spinName][i] , y_axis, math.rad(direction), math.pi)
         end
@@ -2467,7 +2467,7 @@ end
 -- >Shows a Pieces Table
 function showT(l_tableName, l_lowLimit, l_upLimit, l_delay)
     if not l_tableName then
-        Spring.Echo("No table given as argument for showT")
+        Spring.Echo("No table given as argument for showT in "..getUnitName(unitID))
         assert(l_tableName)
         return
     end

@@ -1,4 +1,7 @@
 local isPotatoGpu = false
+if not Platform then
+	Spring.Echo("Unable to detect Platform abstraction in gfx_bloom_shader_deferred.lua. Defaulting to allow")
+end
 local gpuMem = Platform and (Platform.gpuMemorySize and Platform.gpuMemorySize or 1000) / 1000
 if Platform and Platform.gpuVendor == 'Intel' then
 	isPotatoGpu = true
@@ -7,6 +10,8 @@ if gpuMem and gpuMem > 0 and gpuMem < 1800 then
 	isPotatoGpu = true
 end
 
+local LUASHADER_DIR = "modules/graphics/"
+local LuaShader = VFS.Include(LUASHADER_DIR .. "LuaShader.lua")
 
 if isPotatoGpu then
 	Spring.Echo("Error: No deffered Bloom for potatoe cpus. Goodbye")
@@ -75,7 +80,6 @@ local rectVAO = nil
 
 local combineShader = nil
 
-local LuaShader = gl.LuaShader
 local InstanceVBOTable = gl.InstanceVBOTable
 
 local glGetSun = gl.GetSun

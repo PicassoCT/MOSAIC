@@ -12,7 +12,7 @@ end
 
 -- CONFIGURATION
 local TARGET_MAPS = {}
-TARGET_MAPS[#TARGET_MAPS +1] = "mosaic_lastdayofdubai_v"
+TARGET_MAPS[#TARGET_MAPS +1] = "lastdayofdubai"
 TARGET_MAPS[#TARGET_MAPS +1] = "tabula"
 local DAYLENGTH             = 28800
 local morningOffset = (DAYLENGTH / 2)
@@ -106,7 +106,7 @@ function widget:Initialize()
     local boolWidgetActive = false
     for i=1, #TARGET_MAPS do
         local mapNameToSearch = string.lower(Game.mapName)
-        local keyword=  TARGET_MAPS[i]
+        local keyword =  TARGET_MAPS[i]
         if string.find(mapNameToSearch, keyword) then
             boolWidgetActive = true           
         end

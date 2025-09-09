@@ -192,12 +192,12 @@ function script.Create()
     setupAnimation()
 
     setOverrideAnimationState(eAnimState.standing, eAnimState.standing, true, nil, false)
-    StartThread(animationTestLoop)
-    --StartThread(threadStarter)
-    --StartThread(threadStateStarter)
-    --StartThread(headAnimationLoop)
-    --StartThread(speedControl)
-    --StartThread(noCapesControl, LowArm1, LowArm2)
+    --StartThread(animationTestLoop)
+    StartThread(threadStarter)
+    StartThread(threadStateStarter)
+    StartThread(headAnimationLoop)
+    StartThread(speedControl)
+    StartThread(noCapesControl, LowArm1, LowArm2)
   
     orgHousePosTable = sharedComputationResult("orgHousePosTable",
                                                computeOrgHouseTable, UnitDefs,
@@ -816,9 +816,7 @@ function filmingLocation()
     SetSignalMask(SIG_INTERNAL)
     Show(cellphone1)
     while filmLocation.time > 0 do
-        startTime = Spring.GetGameFrame()
-        PlayAnimation("UPBODY_FILMING", lowerBodyPieces, 1.0)
-        durationMs = (Spring.GetGameFrame() - startTime) *33
+        durationMs = frameToMs(PlayAnimation("UPBODY_FILMING", lowerBodyPieces, 1.0))
         filmLocation.time = filmLocation.time - durationMs
         setUnitRotationToPoint(unitID, filmLocation.x, filmLocation.y, filmLocation.z)
         Sleep(100)
@@ -946,7 +944,7 @@ function PlayAnimation(animname, piecesToFilterOutTable, speed)
     local speedFactor = speed or 1.0
     if not piecesToFilterOutTable then piecesToFilterOutTable = {} end
 
-    local startTime = spGetGameFrame()
+    local startTimeFrame = spGetGameFrame()
 
     local anim = Animations[animname];
     local randoffset
@@ -982,7 +980,7 @@ function PlayAnimation(animname, piecesToFilterOutTable, speed)
     if carriesShoppingBag() then  StartThread(turnPieceTowards, unitID, getDown(), parentPieceMap, ShoppingBag, 15) end
     if bodyConfig.boolHandbag then StartThread(turnPieceTowards, unitID, getDown(), parentPieceMap, Handbag, 15)  end
 
-    return spGetGameFrame() - startTime
+    return spGetGameFrame() - startTimeFrame
 end
 
 function constructSkeleton(unit, piece, offset)
@@ -1941,10 +1939,10 @@ function ExplosiveDeath(dx, dz)
   -- arms flailing
     stopAllSpins(unitID, 15)
     -- curl into embryonic position
+    Turn(Head1,  _x_axis, math.rad(30), 1.5)
     Turn(UpBody, _x_axis, math.rad(20), 1.5)
-    Turn(UpLeg1, _x_axis, math.rad(-60), 1.5)
     
-    Turn(UpLeg2, _x_axis, math.rad(-60), 1.5)
+    Turn(UpLeg1, _x_axis, math.rad(-60), 1.5)
     Turn(LowLeg1, _x_axis, math.rad(40), 1.5)
 
     Turn(UpLeg2, _x_axis, math.rad(-60), 1.5)
@@ -1952,7 +1950,7 @@ function ExplosiveDeath(dx, dz)
   
     Turn(UpArm1, _x_axis, math.rad(-50), 1.5)
     Turn(UpArm2, _x_axis, math.rad(-50), 1.5)
-    Turn(Head1,  _x_axis, math.rad(30), 1.5)
+  
 
     Sleep(1000)
     ragDoll = {
@@ -1978,6 +1976,7 @@ function script.Killed(recentDamage, _)
     setSpeedEnv(unitID, 0)
     dropLoot()
     _, maxHealth= Spring.GetUnitHealth(unitID)
+    Spring.Echo("Unit civilian got final damage ".. (recentDamage/maxHealth).." %")
     if (recentDamage > (maxHealth / 3)) then
         ExplosiveDeath(dx or randNVec() , dz or randNVec())
         return 1 -- signal custom animation handled
