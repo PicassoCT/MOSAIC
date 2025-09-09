@@ -559,6 +559,7 @@ local function Bloom()
 	gl.Culling(true)
 
 	brightShader:Activate()
+	Spring.Echo("TODO: Insert Hologram Bloom from Hologram Buffer!")
 	brightShader:SetUniform("illuminationThreshold", illumThreshold)
 	brightShader:SetUniform("fragGlowAmplifier", glowAmplifier)
 		--brightShader:SetUniform("time", df)
