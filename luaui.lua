@@ -16,8 +16,9 @@ LUAUI_DIRNAME = 'LuaUI/'
 VFS.DEF_MODE = VFS.RAW_FIRST
 local STARTUP_FILENAME = LUAUI_DIRNAME .. 'mosaicmain.lua'
 
-
-VFS.Include("modules/graphics/init.lua").Init(gl)
+--TODO: This crashes my port of the BAR-GUI framework.. find out why and fix- as this is the prerequisit for the shaders like the bloom shader
+--which only works with recoil
+--VFS.Include("modules/graphics/init.lua").Init(gl)
 
 
 --------------------------------------------------------------------------------

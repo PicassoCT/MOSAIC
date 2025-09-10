@@ -321,18 +321,17 @@ function lightUpPad(cone, lengthOfTimeMs)
     end
 end
 
-function showBoosterSmokeRing(nr)    
+function showBoosterSmokeRing(nr, LandCone)    
+    downAxis = 2
     reset(TableOfPiecesGroups[CrawlerSmokeRingN][nr])
     boosterSmokeRingHeight = 1500
     Move(TableOfPiecesGroups[CrawlerSmokeRingN][nr], downAxis, -boosterSmokeRingHeight, 0)
     Sleep(500)
     Show(LandCone)
     Sleep(350)
-    Show(TableOfPiecesGroups[CrawlerBoosterGasRingN][boosterNr]) 
-    Show(TableOfPiecesGroups[CrawlerBoosterRingN][boosterNr]) 
+    Show(TableOfPiecesGroups[CrawlerBoosterGasRingN][nr]) 
+    Show(TableOfPiecesGroups[CrawlerBoosterRingN][nr]) 
     Sleep(500)
-
-    downAxis = 2
     val = math.random(42, 80) * randSign()
     Show(TableOfPiecesGroups[CrawlerSmokeRingN][nr])
     Spin(TableOfPiecesGroups[CrawlerSmokeRingN][nr],y_axis, math.rad(val), 0)
@@ -347,7 +346,7 @@ function showBoosterSmokeRing(nr)
     mSyncIn(TableOfPiecesGroups[CrawlerSmokeRingN][nr], 0, -boosterSmokeRingHeight, 0, 11500)
     WaitForMoves(TableOfPiecesGroups[CrawlerSmokeRingN][nr])
     Hide(TableOfPiecesGroups[CrawlerSmokeRingN][nr])
-    Hide(TableOfPiecesGroups[CrawlerBoosterGasRingN][boosterNr]) 
+    Hide(TableOfPiecesGroups[CrawlerBoosterGasRingN][nr]) 
     Hide(LandCone)  
 end
 
@@ -392,7 +391,7 @@ function landBooster(boostNr)
     Turn(booster, y_axis, math.rad(0), 3)
     Turn(boosterRotator, x_axis, math.rad(0),5)
 
-    StartThread(showBoosterSmokeRing, boostNr)
+    StartThread(showBoosterSmokeRing, boostNr, LandCone)
 
     for i= 2000, 0, -10 do
         WMove(booster, axis, i, math.max(i*3, 1200))
@@ -709,7 +708,7 @@ function vtolLoop()
             if rando then
                 if landed[rando] then -- start and hide
                     Show(rando)
-                    Move(rando, y_axis, 4500, 1500)
+                    WMove(rando, y_axis, 5500, 1500)
                     xval = math.random(0,800) *randSign()
                     zval = math.random(0,800) *randSign()
                     Move(rando, x_axis, xval, 250)
@@ -727,8 +726,8 @@ function vtolLoop()
                     rVal = math.random(0,360)
                     Turn(rando, y_axis, math.rad(rVal),0)
                     Show(rando)
-                    Move(rando, x_axis, xval, 250)
-                    Move(rando, z_axis, zval, 250)
+                    Move(rando, x_axis, 0, 250)
+                    Move(rando, z_axis, 0, 250)
                     WaitForMoves(rando)
                     Turn(rando, y_axis, math.rad(0),10)
                     WMove(rando, y_axis, 0, 800)         

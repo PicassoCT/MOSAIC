@@ -766,7 +766,7 @@ function sozialize(evtID, frame, persPack, startFrame, myID)
         if (persPack.maxTimeChattingInFrames <= 0 ) or -- end a chat
             not persPack.chatPartnerID or
             not doesUnitExistAlive(persPack.chatPartnerID) then
-                echo(myID.." chat has ended")
+                --echo(myID.." chat has ended")
                 persPack.boolStartAChat = false
                 persPack.boolDeactivateStuckDetection = false
                 persPack = moveToLocation(myID, persPack, {}, true)
@@ -782,7 +782,7 @@ function sozialize(evtID, frame, persPack, startFrame, myID)
         local partnerID = persPack.chatPartnerID 
         if partnerID and
             distanceUnitToUnit(myID, partnerID) > GameConfig.generalInteractionDistance then
-            echo(myID.." moving to chat ")
+            --echo(myID.." moving to chat ")
              px, py, pz = spGetUnitPosition(partnerID)
             Command(myID, "go", {x = px, y = py, z = pz}, {})
             Command(partnerID, "go", {

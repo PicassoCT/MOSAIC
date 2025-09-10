@@ -52,6 +52,7 @@ end
 
 
 pairs = function(...)
+    if( not type(...) == "table") then return function()end, 0, 0 end
     if SendToUnsynced then
         --if type(...) ~= "table" then assert(nil, "Not a table")end
         local n, s, i = origPairs(...)
