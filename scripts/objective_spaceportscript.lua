@@ -321,11 +321,18 @@ function lightUpPad(cone, lengthOfTimeMs)
     end
 end
 
-function showBoosterSmokeRing(nr)
-    boosterSmokeRingHeight = 1500
-    downAxis = 2
+function showBoosterSmokeRing(nr)    
     reset(TableOfPiecesGroups[CrawlerSmokeRingN][nr])
+    boosterSmokeRingHeight = 1500
     Move(TableOfPiecesGroups[CrawlerSmokeRingN][nr], downAxis, -boosterSmokeRingHeight, 0)
+    Sleep(500)
+    Show(LandCone)
+    Sleep(350)
+    Show(TableOfPiecesGroups[CrawlerBoosterGasRingN][boosterNr]) 
+    Show(TableOfPiecesGroups[CrawlerBoosterRingN][boosterNr]) 
+    Sleep(500)
+
+    downAxis = 2
     val = math.random(42, 80) * randSign()
     Show(TableOfPiecesGroups[CrawlerSmokeRingN][nr])
     Spin(TableOfPiecesGroups[CrawlerSmokeRingN][nr],y_axis, math.rad(val), 0)
@@ -338,7 +345,10 @@ function showBoosterSmokeRing(nr)
     Spin(TableOfPiecesGroups[CrawlerSmokeRingN][nr],z_axis, math.rad(0.5)*randSign(), 0)
     Turn(TableOfPiecesGroups[CrawlerSmokeRingN][nr],z_axis , math.rad(0), 0.5)
     mSyncIn(TableOfPiecesGroups[CrawlerSmokeRingN][nr], 0, -boosterSmokeRingHeight, 0, 11500)
+    WaitForMoves(TableOfPiecesGroups[CrawlerSmokeRingN][nr])
     Hide(TableOfPiecesGroups[CrawlerSmokeRingN][nr])
+    Hide(TableOfPiecesGroups[CrawlerBoosterGasRingN][boosterNr]) 
+    Hide(LandCone)  
 end
 
 boolBackDoorOpen = false
@@ -381,6 +391,9 @@ function landBooster(boostNr)
     Turn(booster, x_axis, math.rad(0), 0.5)
     Turn(booster, y_axis, math.rad(0), 3)
     Turn(boosterRotator, x_axis, math.rad(0),5)
+
+    StartThread(showBoosterSmokeRing, boostNr)
+
     for i= 2000, 0, -10 do
         WMove(booster, axis, i, math.max(i*3, 1200))
         spinVal = math.random(40, 120)*randSign()
@@ -389,15 +402,8 @@ function landBooster(boostNr)
             Move(plums[k], y_axis, math.random(-20,20), 0)
         end
         spinVal = math.random(40, 120)*randSign()
-        if (i < 1500) then    Show(LandCone) end
-        if (i < 1000) then 
-            Show(TableOfPiecesGroups[CrawlerBoosterGasRingN][boosterNr]) 
-            Show(TableOfPiecesGroups[CrawlerBoosterRingN][boosterNr]) 
-        end
-
-        if (i < 500) then 
-            Hide(LandCone)
-        end
+      
+ 
         if maRa() then
            rot = math.random(0,1)*180
            Turn(TableOfPiecesGroups[CrawlerBoosterRingN][boosterNr], x_axis, math.rad(rot),0)
@@ -407,7 +413,7 @@ function landBooster(boostNr)
        spinVal = math.random(40, 120)*randSign()
        Spin(LandCone, y_axis, math.rad(spinVal))
     end  
-    StartThread(showBoosterSmokeRing, boostNr)
+   
 
     Hide(TableOfPiecesGroups[CrawlerBoosterGasRingN][boosterNr])
     
@@ -703,29 +709,29 @@ function vtolLoop()
             if rando then
                 if landed[rando] then -- start and hide
                     Show(rando)
-                    WMove(rando, y_axis, 1500, 150)
-                    xval = math.random(0,250) *randSign()
-                    zval = math.random(0,250) *randSign()
-                    Move(rando, x_axis, xval, 50)
-                    Move(rando, z_axis, zval, 50)
+                    Move(rando, y_axis, 4500, 1500)
+                    xval = math.random(0,800) *randSign()
+                    zval = math.random(0,800) *randSign()
+                    Move(rando, x_axis, xval, 250)
+                    Move(rando, z_axis, zval, 250)
                     WaitForMoves(rando)
                     Hide(rando)
                     landed[rando] = nil
                 else
-                    xval = math.random(0,500) *randSign()
-                    zval = math.random(0,500) *randSign()
+                    xval = math.random(0,800) *randSign()
+                    zval = math.random(0,800) *randSign()
                     Move(rando, x_axis, xval, 0)
                     Move(rando, z_axis, zval, 0)
-                    WMove(rando, y_axis, 1500, 0)
+                    WMove(rando, y_axis, 4500, 0)
                     WaitForMoves(rando)
                     rVal = math.random(0,360)
                     Turn(rando, y_axis, math.rad(rVal),0)
                     Show(rando)
-                    Move(rando, x_axis, xval, 50)
-                    Move(rando, z_axis, zval, 50)
+                    Move(rando, x_axis, xval, 250)
+                    Move(rando, z_axis, zval, 250)
                     WaitForMoves(rando)
                     Turn(rando, y_axis, math.rad(0),10)
-                    WMove(rando, y_axis, 0, 0)         
+                    WMove(rando, y_axis, 0, 800)         
                     landed[rando] = true -- 
                 end
         end
@@ -735,7 +741,6 @@ function vtolLoop()
     end
 
 end
-
 
 function showBubbleSmoke()
     for i =  1, #TableOfPiecesGroups["SmokeBubble"] do
@@ -754,7 +759,8 @@ function resetSmokeBubbles()
 end
 
 function cloudFallingDown(cloudMovers, cloudGoingUp, cloudCoolingDown)
-    showBubbleSmoke()
+    --showBubbleSmoke()
+    showT(cloudGoingUp)
     hideT(TableOfPiecesGroups["FireFlower"])
     Move(Rocket,y_axis, 0, 100)
     for i =  1, #cloudMovers do
@@ -764,10 +770,11 @@ function cloudFallingDown(cloudMovers, cloudGoingUp, cloudCoolingDown)
             Move(cloudMovers[i+1], y_axis, i*4500, 4500)
         end
         WMove(cloudMovers[i], y_axis, -i*4500, 5500)
+        Hide(cloudCoolingDown[i])
     end
     hideT(cloudCoolingDown)
-    resetSmokeBubbles()
-    Move(ArenaSmoke, y_axis, -900, 35)
+    --resetSmokeBubbles()
+    Move(ArenaSmoke, y_axis, -2900, 290)
     Sleep(4000)
     Hide(turbineHot)
     Show(turbineCold)
@@ -802,13 +809,13 @@ function trafficRun(index)
     Show(runner)
     speed= 1/index
 
-    firstPart = math.random(140, 179)*turnSign
+    firstPart = math.random(140, 179) * turnSign
     WTurn(runner, y_axis, math.rad(firstPart), speed)
     if maRa() then Sleep(3000) end
-    secondPart = math.random(180, 290)*turnSign
+    secondPart = math.random(180, 290) * turnSign
     WTurn(runner, y_axis, math.rad(secondPart), speed)
     if maRa() then Sleep(3000) end
-    target = 360*turnSign
+    target = 360 * turnSign
     WTurn(runner, y_axis, math.rad(target), speed)
     Hide(runner)
     reset(runner)

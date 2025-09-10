@@ -1,3 +1,8 @@
+bloom
+vtol spaceport
+rocketsmoke spaceport
+bikes
+
 -BAR-Branch
 	- compile bar
 	- run bar

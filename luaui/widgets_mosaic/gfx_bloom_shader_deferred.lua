@@ -33,7 +33,7 @@ end
 
 local version = 1.1
 
-local dbgDraw = 1              -- draw only the bloom-mask? [0 | 1]
+local dbgDraw = 0              -- draw only the bloom-mask? [0 | 1]
 
 local glowAmplifier = 0.85            -- intensity multiplier when filtering a glow source fragment [1, n]
 local blurAmplifier = 1        -- intensity multiplier when applying a blur pass [1, n] (should be set close to 1)

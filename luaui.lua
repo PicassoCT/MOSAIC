@@ -17,6 +17,9 @@ VFS.DEF_MODE = VFS.RAW_FIRST
 local STARTUP_FILENAME = LUAUI_DIRNAME .. 'mosaicmain.lua'
 
 
+VFS.Include("modules/graphics/init.lua").Init(gl)
+
+
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
