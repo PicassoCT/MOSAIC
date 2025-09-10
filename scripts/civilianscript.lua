@@ -1920,6 +1920,7 @@ function ExplosiveDeath(dx, dz)
     _x_axis =1
     _y_axis =2
     _z_axis = 3
+    Spring.AddUnitImpulse(unitID, dx, 0, dz)
     -- fling body away from explosion
     Turn(root, _y_axis, math.atan2(dx, dz), 0.5) 
     Spin(UpBody, _x_axis, math.random(-10, 10), 15)
@@ -1977,7 +1978,7 @@ function script.Killed(recentDamage, _)
     dropLoot()
     _, maxHealth= Spring.GetUnitHealth(unitID)
     Spring.Echo("Unit civilian got final damage ".. (recentDamage/maxHealth).." %")
-    if (recentDamage > (maxHealth / 3)) then
+    if (recentDamage/maxHealth) > 2.5 then
         ExplosiveDeath(dx or randNVec() , dz or randNVec())
         return 1 -- signal custom animation handled
     else
