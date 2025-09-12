@@ -322,7 +322,7 @@ function lightUpPad(cone, lengthOfTimeMs)
 end
 
 function showBoosterSmokeRing(nr, LandCone)    
-    downAxis = 2
+    downAxis = y_axis
     reset(TableOfPiecesGroups[CrawlerSmokeRingN][nr])
     boosterSmokeRingHeight = 1500
     Move(TableOfPiecesGroups[CrawlerSmokeRingN][nr], downAxis, -boosterSmokeRingHeight, 0)
@@ -731,14 +731,13 @@ function vtolLoop()
                     WaitForMoves(rando)
                     Turn(rando, y_axis, math.rad(0),10)
                     WMove(rando, y_axis, 0, 800)         
-                    landed[rando] = true -- 
+                    landed[rando] = true
                 end
-        end
+            end
             Sleep(100)
         end
         Sleep(1000)
     end
-
 end
 
 function showBubbleSmoke()
@@ -781,7 +780,6 @@ function cloudFallingDown(cloudMovers, cloudGoingUp, cloudCoolingDown)
     Sleep(9000)
     Hide(ArenaSmoke)
     Turn(turbine, y_axis, 0, 3)
-
 end
 
 

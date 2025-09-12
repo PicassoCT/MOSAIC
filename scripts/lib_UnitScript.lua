@@ -619,18 +619,38 @@ function removeFeaturesInCircle(px, pz, radius)
         )
 end
 
-
-function showTSubSpins(pieceID, TableOfPiecesGroups)
-   local pieceName = getUnitPieceName(unitID, pieceID)
-   subSpinPieceName = pieceName.."Spin"    
-   if TableOfPiecesGroups[subSpinPieceName] then  
-    hideTReg(TableOfPiecesGroups[subSpinPieceName] )              
+function showTSubs(pieceName, TableOfPiecesGroups,selector)   
+   subSpinPieceName = pieceName.."Sub"    
+   if TableOfPiecesGroups[subSpinPieceName] then             
     for i=1, #TableOfPiecesGroups[subSpinPieceName] do
-        spinPiece = TableOfPiecesGroups[subSpinPieceName][i]
-        ShowReg(spinPiece)
-        Spin(spinPiece,y_axis, math.rad(-42 * randSign()),0)
+        if selector() then
+            subPiece = TableOfPiecesGroups[subSpinPieceName][i]
+            Show(spinPiece)
+        end
     end
    end
+end
+
+function showTSpins(pieceName, TableOfPiecesGroups, selector)
+   subSpinPieceName = pieceName.."Spin"    
+   if TableOfPiecesGroups[subSpinPieceName] then     
+    for i=1, #TableOfPiecesGroups[subSpinPieceName] do      
+        if  selector() == true then  
+            spinPiece = TableOfPiecesGroups[subSpinPieceName][i]
+            Show(spinPiece)
+            Spin(spinPiece,y_axis, math.rad(-42 * randSign()),0)
+        end
+    end
+   end
+end
+
+function showTSubSpins(pieceID, TableOfPiecesGroups, selector)
+    local pieceName = getUnitPieceName(unitID, selectExt)
+    local selector = selectExt or maRa
+    if pieceName then
+        showTSubs(pieceName, TableOfPiecesGroups, selector)
+        showTSpins(pieceName, TableOfPiecesGroups, selector)
+    end
 end
 
 function setNoneCollide(unitId)

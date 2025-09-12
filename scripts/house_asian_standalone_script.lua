@@ -265,9 +265,8 @@ function fillMegaTable()
                 x= pieceInfo.max[1] - pieceInfo.min[1],
                 y= pieceInfo.max[2] - pieceInfo.min[2],
                 z= pieceInfo.max[3] - pieceInfo.min[3],
-
             }
-             if dim.z > megaHeightDefinition then
+            if dim.z > megaHeightDefinition then
                 Mega[id] = true
             end
         end
@@ -353,7 +352,6 @@ function addGroundPlaceables()
         groundPiecesToPlace= math.random(1,5)
         randPlaceAbleID = ""
             while groundPiecesToPlace > 0 do
-
                 randPlaceAbleID = getSafeRandom(placeAbles)         
                 if randPlaceAbleID  then
                     opx= math.random(cubeDim.length * 4, cubeDim.length * 7) * randSign()
@@ -370,9 +368,8 @@ function addGroundPlaceables()
                         addToShowTable(randPlaceAbleID)
                         Show(randPlaceAbleID)    
                     end
-                end 
-            
-                groundPiecesToPlace = groundPiecesToPlace -1
+                end
+                groundPiecesToPlace = groundPiecesToPlace - 1
             end 
     end
 end
