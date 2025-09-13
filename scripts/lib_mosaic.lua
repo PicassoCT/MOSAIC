@@ -3888,7 +3888,7 @@ function buildRunCandleSpot(unitID)
         Sleep(2000) 
     end
 
-    Spring.PlaySoundFile(vigilSouthPath.."/Prelude_19s.ogg", 1.0)
+    Spring.PlaySoundFile(vigilSouthPath.."/Postlude_19s.ogg", 1.0)
     Sleep(19000)  
 end
 

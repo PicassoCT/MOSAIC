@@ -340,7 +340,9 @@ end
 function showSubs(pieceGroupName)
     local subName = pieceGroupName .. "Sub"
   --  Spring.Echo("SubGroupName "..subName)
-    showNoneOrMany(TablesOfPieceGroups[subName])
+    if TablesOfPieceGroups[subName] then
+        showNoneOrMany(TablesOfPieceGroups[subName])
+    end
 end
 
 function addGroundPlaceables()
@@ -351,26 +353,26 @@ function addGroundPlaceables()
     if placeAbles and count(placeAbles) > 0 then
         groundPiecesToPlace= math.random(1,5)
         randPlaceAbleID = ""
-            while groundPiecesToPlace > 0 do
-                randPlaceAbleID = getSafeRandom(placeAbles)         
-                if randPlaceAbleID  then
-                    opx= math.random(cubeDim.length * 4, cubeDim.length * 7) * randSign()
-                    opz= math.random(cubeDim.length * 4, cubeDim.length * 7) * randSign()
-                    WMove(randPlaceAbleID,x_axis, opz, 0)
-                    WMove(randPlaceAbleID,z_axis, opx, 0)
-                    Sleep(1)
-                    x, y, z, _, _, _ = Spring.GetUnitPiecePosDir(unitID, randPlaceAbleID)
-                    myHeight = Spring.GetGroundHeight(x, z)
-                    if myHeight > 0 then
-                        heightdifference =  myHeight -globalHeightUnit
-                        WMove(randPlaceAbleID,y_axis, heightdifference, 0)
-                        showSubs(pieceNr_pieceName[randPlaceAbleID])   
-                        addToShowTable(randPlaceAbleID)
-                        Show(randPlaceAbleID)    
-                    end
+        while groundPiecesToPlace > 0 do
+            randPlaceAbleID = getSafeRandom(placeAbles)         
+            if randPlaceAbleID  then
+                opx= math.random(cubeDim.length * 4, cubeDim.length * 7) * randSign()
+                opz= math.random(cubeDim.length * 4, cubeDim.length * 7) * randSign()
+                WMove(randPlaceAbleID,x_axis, opz, 0)
+                WMove(randPlaceAbleID,z_axis, opx, 0)
+                Sleep(1)
+                x, y, z, _, _, _ = Spring.GetUnitPiecePosDir(unitID, randPlaceAbleID)
+                myHeight = Spring.GetGroundHeight(x, z)
+                if myHeight > 0 then
+                    heightdifference =  myHeight -globalHeightUnit
+                    WMove(randPlaceAbleID,y_axis, heightdifference, 0)
+                    showSubs(pieceNr_pieceName[randPlaceAbleID])   
+                    addToShowTable(randPlaceAbleID)
+                    Show(randPlaceAbleID)    
                 end
-                groundPiecesToPlace = groundPiecesToPlace - 1
-            end 
+            end
+            groundPiecesToPlace = groundPiecesToPlace - 1
+        end 
     end
 end
 

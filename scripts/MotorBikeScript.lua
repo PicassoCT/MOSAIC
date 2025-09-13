@@ -156,11 +156,18 @@ function headChangeDetector( moveTreshold)
 end
 boolGaiaUnit = (Spring.GetUnitTeam(unitID) == Spring.GetGaiaTeamID())
 boolMoving = false
+boolPreviouslyMoving = boolMoving
 function updateSteering()
     StartThread(headChangeDetector, 3)   
     Sleep(100)
 
     while true do
+        if boolPreviouslyMoving == false and boolMoving == true then
+            if not (passenger and Spring.GetUnitTransporter(passenger) == unitID) then
+                Show(Civilian)
+                Show(myDeliverySymbol)
+            end
+        end
         if boolMoving == true and boolTurning == true then
            if boolGaiaUnit then
                 Show(myDeliverySymbol)
@@ -180,7 +187,7 @@ function updateSteering()
             Turn(center, x_axis, math.rad(0),1)
             WaitForTurns(SteerParts)
         end
-
+        boolPreviouslyMoving = boolMoving
         Sleep(250)
     end
 end
@@ -196,8 +203,8 @@ end
 
 function delayedRiseAndFall()
     if boolTurning == false then
-    WTurn(center,y_axis, math.rad(-10*LeanFactor),0.1 )
-    WTurn(center,y_axis, math.rad(0),0.2)
+        WTurn(center,y_axis, math.rad(-10*LeanFactor),0.1 )
+        WTurn(center,y_axis, math.rad(0),0.2)
     end
 end
 --- -aimining & fire weapon
@@ -225,6 +232,7 @@ function delayedStop()
     StartThread(honkIfHorny)
     Sleep(3000)
     Hide(Civilian)
+
 end
 
 function script.StopMoving() 
