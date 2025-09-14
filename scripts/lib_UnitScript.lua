@@ -619,37 +619,50 @@ function removeFeaturesInCircle(px, pz, radius)
         )
 end
 
-function showTSubs(pieceName, TableOfPiecesGroups,selector)   
+function showTSubs(pieceName, TableOfPiecesGroups, selector, countDown)   
    subSpinPieceName = pieceName.."Sub"    
-   if TableOfPiecesGroups[subSpinPieceName] then             
+   if TableOfPiecesGroups[subSpinPieceName] then    
+    selectorState = nil         
     for i=1, #TableOfPiecesGroups[subSpinPieceName] do
-        if selector() then
+        selectorResult, selectorState = selector(selectorState)
+        if selectorResult then
             subPiece = TableOfPiecesGroups[subSpinPieceName][i]
-            Show(spinPiece)
+            Show(subPiece)
+            if countDown then
+                countDown= countDown -1 
+                if countDown <= 0 then return end
+            end
         end
     end
    end
 end
 
-function showTSpins(pieceName, TableOfPiecesGroups, selector)
+function showTSpins(pieceName, TableOfPiecesGroups, selector, countDown)
    subSpinPieceName = pieceName.."Spin"    
-   if TableOfPiecesGroups[subSpinPieceName] then     
-    for i=1, #TableOfPiecesGroups[subSpinPieceName] do      
-        if  selector() == true then  
+   if TableOfPiecesGroups[subSpinPieceName] then 
+    selectorState = nil          
+    for i=1, #TableOfPiecesGroups[subSpinPieceName] do  
+        selectorResult, selectorState = selector(selectorState)    
+        if selectorResult then  
             spinPiece = TableOfPiecesGroups[subSpinPieceName][i]
             Show(spinPiece)
             Spin(spinPiece,y_axis, math.rad(-42 * randSign()),0)
+            if countDown then
+                countDown= countDown -1 
+                if countDown <= 0 then return end
+            end
+
         end
     end
    end
 end
 
-function showTSubSpins(pieceID, TableOfPiecesGroups, selector)
-    local pieceName = getUnitPieceName(unitID, selectExt)
+function showTSubSpins(pieceID, TableOfPiecesGroups, selectExt, countDown)
+    local pieceName = getUnitPieceName(unitID, pieceID)
     local selector = selectExt or maRa
     if pieceName then
-        showTSubs(pieceName, TableOfPiecesGroups, selector)
-        showTSpins(pieceName, TableOfPiecesGroups, selector)
+        showTSubs(pieceName, TableOfPiecesGroups, selector, countDown)
+        showTSpins(pieceName, TableOfPiecesGroups, selector, countDown)
     end
 end
 
@@ -4694,7 +4707,7 @@ end
 function getDeterministicUnitHash(unitID )
     defID = Spring.GetUnitDefID(unitID)
     x,y,z = Spring.GetUnitPosition(unitID)
-    return math.ceil(x) + math.ceil(y) + math.ceil(z) + defID
+    return math.ceil(x) + math.ceil(z) + defID
 end
 
 
