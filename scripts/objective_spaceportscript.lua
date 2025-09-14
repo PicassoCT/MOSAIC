@@ -322,7 +322,7 @@ function lightUpPad(cone, lengthOfTimeMs)
 end
 
 function showBoosterSmokeRing(nr, LandCone)    
-    downAxis = y_axis
+    downAxis = 3
     reset(TableOfPiecesGroups[CrawlerSmokeRingN][nr])
     boosterSmokeRingHeight = 1500
     Move(TableOfPiecesGroups[CrawlerSmokeRingN][nr], downAxis, -boosterSmokeRingHeight, 0)
