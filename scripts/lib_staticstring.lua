@@ -761,17 +761,25 @@ function getCivilianSex(id, UnitDefs)
             ["civilian_arab1"] = true,
             ["civilian_arab2"] = true,
             ["civilian_western0"] = true,
+            ["civilian_western3"] = true,
     }
     if mapping_male[name] then return "male" end
 
     mapping_female = {  
                 ["civilian_arab0"] = true,
                 ["civilian_arab3"] = true,
+                ["civilian_arab5"] = true,
                 ["civilian_western1"] = true,
-                ["civilian_western2"] = true
+                ["civilian_western2"] = true,
+                ["civilian_western4"] = true
             }
      if mapping_female[name] then return "female" end
-     return "divers"
+
+     if id % 2 == 0 then
+        return "male"
+    else
+        return "female"
+    end
 end
 
 
@@ -892,7 +900,7 @@ end
             names.international = GG.NameCacheInternational
           end
 
-    if id % 100 == 42 and not boolNoUnknown then return "[Illegal ID]", "DB:Inconsistency error" end
+    if id % 100 == 12 and not boolNoUnknown then return "[Illegal ID]", "DB:Inconsistency error" end
 
     surName = "[Illegal ID]"
     if boolNoUnknown then
