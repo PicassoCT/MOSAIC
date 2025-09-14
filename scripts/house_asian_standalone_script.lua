@@ -4,7 +4,7 @@ include "lib_mosaic.lua"
 include "lib_UnitScript.lua"
 
 local TablesOfPieceGroups = {}
-local boolDebug = false
+local boolDebug = true
 
 local GameConfig = getGameConfig()
 local factor = 35
@@ -237,7 +237,7 @@ function filterOutMegaBuilding()
     ProjectT[#ProjectT +1] = TablesOfPieceGroups["Project"][5]
 end
 
-if not GG.MegaBuildingMax then GG.MegaBuildingMax = 0 end
+if not GG.MegaBuildingCount then GG.MegaBuildingCount = 0 end
 
 
 megaHeightDefinition = 2700
@@ -429,11 +429,11 @@ function buildBuilding()
     Show(Icon)
     StartThread(buildAnimation)
     initilization()
-    Sleep(9000)
+    Sleep(3000)
     px, py, pz = Spring.GetUnitPosition(unitID)
-    boolBuildingShadowIsGameRelevant = ViewShadowGameRelevant(px,pz, boolDebug) or GG.MegaBuildingMax > GameConfig.MegaBuildingMax 
+    boolBuildingShadowIsGameRelevant = ViewShadowGameRelevant(px, pz, boolDebug) 
     --echo("Building "..unitID.." ViewShadowGameRelevant ".. toString(ViewShadowGameRelevant(px,pz)))
-    if  boolBuildingShadowIsGameRelevant then
+    if  boolBuildingShadowIsGameRelevant or GG.MegaBuildingCount > GameConfig.MegaBuildingMax  then
         filterOutMegaBuilding()
     end
     assert(count(ArcoT) > 1)
@@ -442,7 +442,10 @@ function buildBuilding()
     isArcology = (isNearCityCenter(px, pz, GameConfig) or isMapControlledBuildingPlacement()) and getDermenisticChance(unitID, 20) 
     isArcology = isArcology and not isProject
                     
-    unitHash = getDeterministicUnitHash(unitID )
+    unitHash = getDeterministicUnitHash(unitID)
+    uniqueSleepMs = unitHash % 1000
+    restSleep = 6000 - uniqueSleepMs
+    Sleep(uniqueSleepMs)
     mapHash = getDetermenisticMapHash(Game)
     
     hash = math.ceil(unitHash) + math.ceil(mapHash)
@@ -450,18 +453,18 @@ function buildBuilding()
     isDualProjectOrMix = randChance(10)
     if isArcology  then
         pieceToShow = findLowestPieceInTableFromWithSuggestion( (hash % count(ArcoT)) + 1, ArcoT)
-        if Mega[pieceToShow] then     GG.MegaBuildingMax = GG.MegaBuildingMax  +1 end
+        if Mega[pieceToShow] then     GG.MegaBuildingCount = GG.MegaBuildingCount  +1 end
         Show(pieceToShow)
         addToShowTable(pieceToShow)
-        showTSubSpins(pieceToShow, TablesOfPieceGroups)
+        showTSubSpins(pieceToShow, TablesOfPieceGroups, maRa, 1)
         registerRooftopSubPieces(pieceToShow)
         pieceToShowLightBlink(pieceToShow)
-    else
+    else --Project
         pieceToShow = findLowestPieceInTableFromWithSuggestion((hash % count(ProjectT)) + 1, ProjectT)
-        if Mega[pieceToShow] then     GG.MegaBuildingMax = GG.MegaBuildingMax  +1 end
+        if Mega[pieceToShow] then     GG.MegaBuildingCount = GG.MegaBuildingCount  +1 end
         Show(pieceToShow)
         addToShowTable(pieceToShow)
-        showTSubSpins(pieceToShow, TablesOfPieceGroups)
+        showTSubSpins(pieceToShow, TablesOfPieceGroups, maRa, 2)
         registerRooftopSubPieces(pieceToShow)
         pieceToShowLightBlink(pieceToShow)
     end
@@ -469,7 +472,7 @@ function buildBuilding()
         pieceToShow = findLowestPieceInTableFromWithSuggestion((hash  % count(ProjectT)) + 1 , ProjectT)
         
         if not Mega[pieceToShow] then
-            showTSubSpins(pieceToShow, TablesOfPieceGroups)
+            showTSubSpins(pieceToShow, TablesOfPieceGroups, maRa, 1)
             Show(pieceToShow)
             registerRooftopSubPieces(pieceToShow)
             addToShowTable(pieceToShow)
@@ -488,6 +491,7 @@ function buildBuilding()
     if toShowDict[TablesOfPieceGroups["Arcology"][8]] then
             StartThread(placeElevators, TablesOfPieceGroups, 200, 20, toShowDict)
     end
+    Sleep(restSleep)
     boolDoneShowing = true
     showHouse()
     Hide(Icon)
