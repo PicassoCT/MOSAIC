@@ -1636,7 +1636,8 @@ end
                         typeTable = {
                           "civilian_western1",
                           "civilian_western2",
-                          "civilian_western4"
+                          "civilian_western4",
+                          "civilian_western5"
                         }
                     end
                 end        
@@ -1657,7 +1658,8 @@ end
                             "civilian_arab5",
                             "civilian_western1",
                             "civilian_western2",
-                            "civilian_western4"
+                            "civilian_western4",
+                            "civilian_western5",
                         }
                     end
 
@@ -3893,6 +3895,7 @@ function buildRunCandleSpot(unitID)
 end
 
 function buildRunDeterministicAdvertisement()
+
     local ListOfMediaAdvertisementFileLength = 
         {
             ["9MediaName-07.ogg"] = 2120,["9MediaName-14.ogg"] = 1610,["9MediaName-16.ogg"] = 1790,["9MediaName-37.ogg"] = 1740,
@@ -3976,6 +3979,7 @@ function buildRunDeterministicAdvertisement()
     local thisAdvertisementIndex = GG.DeterministicCounterAdvertisement 
     local rootPath = "sounds/advertising/media"
     local identifierList = {
+       "0Music",
        "1Superlative",
        "2Superlative",
        "3MName",
@@ -3988,7 +3992,9 @@ function buildRunDeterministicAdvertisement()
        "10MediaType",
        "11OrderNow",
     }
+    
     local amountList = {
+       ["0Music"]=11,
        ["1Superlative"]=24,
        ["2Superlative"]=29,
        ["3MName"]=25,

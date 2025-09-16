@@ -771,7 +771,8 @@ function getCivilianSex(id, UnitDefs)
                 ["civilian_arab5"] = true,
                 ["civilian_western1"] = true,
                 ["civilian_western2"] = true,
-                ["civilian_western4"] = true
+                ["civilian_western4"] = true,
+                ["civilian_western5"] = true
             }
      if mapping_female[name] then return "female" end
 

@@ -322,7 +322,7 @@ function lightUpPad(cone, lengthOfTimeMs)
 end
 
 function showBoosterSmokeRing(nr, LandCone)    
-    downAxis = 3
+    downAxis = 2
     reset(TableOfPiecesGroups[CrawlerSmokeRingN][nr])
     boosterSmokeRingHeight = 1500
     Move(TableOfPiecesGroups[CrawlerSmokeRingN][nr], downAxis, -boosterSmokeRingHeight, 0)
@@ -337,13 +337,13 @@ function showBoosterSmokeRing(nr, LandCone)
     Spin(TableOfPiecesGroups[CrawlerSmokeRingN][nr],y_axis, math.rad(val), 0)
     Spin(TableOfPiecesGroups[CrawlerSmokeRingN][nr],x_axis, math.rad(0.5)*randSign(), 0)
     Spin(TableOfPiecesGroups[CrawlerSmokeRingN][nr],z_axis, math.rad(0.5)*randSign(), 0)
-    mSyncIn(TableOfPiecesGroups[CrawlerSmokeRingN][nr], 0, 0, 0, 3500)
+    Move(TableOfPiecesGroups[CrawlerSmokeRingN][nr], downAxis,  0, boosterSmokeRingHeight/3.5)
     Sleep(5000)   
     StopSpin(TableOfPiecesGroups[CrawlerSmokeRingN][nr],x_axis, 0)
     Turn(TableOfPiecesGroups[CrawlerSmokeRingN][nr],x_axis , math.rad(0), 0.5)
     Spin(TableOfPiecesGroups[CrawlerSmokeRingN][nr],z_axis, math.rad(0.5)*randSign(), 0)
     Turn(TableOfPiecesGroups[CrawlerSmokeRingN][nr],z_axis , math.rad(0), 0.5)
-    mSyncIn(TableOfPiecesGroups[CrawlerSmokeRingN][nr], 0, -boosterSmokeRingHeight, 0, 11500)
+    Move(TableOfPiecesGroups[CrawlerSmokeRingN][nr], downAxis, -boosterSmokeRingHeight, boosterSmokeRingHeight/5)
     WaitForMoves(TableOfPiecesGroups[CrawlerSmokeRingN][nr])
     Hide(TableOfPiecesGroups[CrawlerSmokeRingN][nr])
     Hide(TableOfPiecesGroups[CrawlerBoosterGasRingN][nr]) 

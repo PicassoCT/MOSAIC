@@ -4,7 +4,7 @@ include "lib_mosaic.lua"
 include "lib_UnitScript.lua"
 
 local TablesOfPieceGroups = {}
-local boolDebug = true
+local boolDebug = false
 
 local GameConfig = getGameConfig()
 local factor = 35

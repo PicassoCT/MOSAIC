@@ -130,11 +130,17 @@ local TruckTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "tr
 local NORMAL_WALK_SPEED =  0.65625
 local SPRINT_SPEED = 1.0
 
-iShoppingConfig = math.random(0, 7)
+
+function naked()
+    isBeachBabe = UnitDefNames["civilian_western4"].id == unitDefID
+    return isBeachBabe and randChance(50)
+end
+
+iShoppingConfig = math.random(0, 5)
 function variousBodyConfigs()
     bodyConfig.boolShoppingLoaded = (iShoppingConfig <= 1)
     bodyConfig.boolCarrysBaby = (iShoppingConfig == 2)
-    bodyConfig.boolTrolley = (iShoppingConfig == 3)
+    bodyConfig.boolTrolley = (iShoppingConfig == 3) or naked()
     bodyConfig.boolHandbag = (iShoppingConfig == 4)
     bodyConfig.boolLoaded = (iShoppingConfig < 5)
     bodyConfig.boolProtest = GG.GlobalGameState == GameConfig.GameState.anarchy and maRa()
