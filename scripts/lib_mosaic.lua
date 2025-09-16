@@ -1,7 +1,7 @@
 -- ===================================================================================================================
 -- Game Configuration
  GG.unitFactor = 0.80
- GameVersion = "1.002"  
+ GameVersion = "1.003"  
  function setUnitFactor(modOptions)
     GG.unitFactor = modOptions.unitfactor or 0.8
  end
@@ -3967,6 +3967,16 @@ function buildRunDeterministicAdvertisement()
             ["5Binding-04.ogg"] = 1269 ,
             ["5Binding-05.ogg"] = 1046 ,
             ["5Binding-06.ogg"] = 867 ,
+            ["0Music-01.ogg"] = 5000,
+            ["0Music-02.ogg"] = 5000,
+            ["0Music-03.ogg"] = 5000,
+            ["0Music-04.ogg"] = 5000,
+            ["0Music-05.ogg"] = 5000,
+            ["0Music-06.ogg"] = 5000,
+            ["0Music-07.ogg"] = 5000,
+            ["0Music-05.ogg"] = 5000,
+            ["0Music-09.ogg"] = 5000,
+            ["0Music-011.ogg"] = 5000,
 
 
         }
@@ -3992,7 +4002,7 @@ function buildRunDeterministicAdvertisement()
        "10MediaType",
        "11OrderNow",
     }
-    
+
     local amountList = {
        ["0Music"]=11,
        ["1Superlative"]=24,

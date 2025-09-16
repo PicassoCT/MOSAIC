@@ -133,7 +133,7 @@ local SPRINT_SPEED = 1.0
 
 function naked()
     isBeachBabe = UnitDefNames["civilian_western4"].id == unitDefID
-    return isBeachBabe and randChance(50)
+    return isBeachBabe and unitID % 2 == 0
 end
 
 iShoppingConfig = math.random(0, 5)
