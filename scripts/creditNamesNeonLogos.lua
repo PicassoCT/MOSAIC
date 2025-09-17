@@ -1,5 +1,7 @@
 
 return {
+"Steven F Allen",
+"Andrew Sung",
 "skytheguy",
 "qubodup",
 "muzaproduction",

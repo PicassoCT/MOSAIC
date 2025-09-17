@@ -112,14 +112,14 @@ local lastFrame = Spring.GetGameFrame()
 if not  GG.VisibleUnitPieces then  GG.VisibleUnitPieces= {} end
 
 function updateCheckCache()
-  local frame = Spring.GetGameFrame()
-    if frame ~= lastFrame then   
+   local frame = Spring.GetGameFrame()
+   if frame ~= lastFrame then   
         if oldCachedCopyDict ~= cachedCopyDict then
             oldCachedCopyDict = cachedCopyDict      
             GG.VisibleUnitPieces[unitID] = dictToTable(cachedCopyDict)
             lastFrame = frame
         end
-    end
+   end
 end
 
 function ShowReg(pieceID)
@@ -142,7 +142,6 @@ function showAllReg()
     local pieceMap = Spring.GetUnitPieceMap(unitID)
     for k, v in pairs(pieceMap) do ShowReg(v) end
 end
-
 
 -- > Hide all Pieces of a Unit
 function hideAllReg()
@@ -372,8 +371,8 @@ function script.Create()
     Spring.SetUnitNoSelect(unitID, true)
     Spring.SetUnitBlocking(unitID, false)
     TableOfPiecesGroups = GetSetSharedOneTimeResult("house_western_hologram_script_PiecesTable", GetPieceTableGroups)
-    showAllReg()
-    --restartHologram()
+    --showAllReg()
+    restartHologram()
     StartThread(grid)
     StartThread(emergencyWatcher)
 end
@@ -885,7 +884,7 @@ function localflickerScript(flickerGroup,  NoErrorFunction, errorDrift, timeoutM
 end
 
 function HoloGrams()
-   -- echo("begin western hologram initialisation")
+    echo("begin western hologram initialisation")
     SetSignalMask(SIG_HOLO)
     assert(buisnessNeonSigns)
     assert(buisnessNeonSigns)

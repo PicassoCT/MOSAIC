@@ -366,7 +366,7 @@
 	{	    
 		//our original texcoord for this fragment
 		vec2 uv =  gl_FragCoord.xy;   
-    rainPercentage = rainPercent; 
+        rainPercentage = rainPercent; 
 		
 		//the amount to blur, i.e. how far off center to sample from 
 		//1.0 -> blur by one pixel

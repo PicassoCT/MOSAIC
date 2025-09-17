@@ -516,11 +516,11 @@ end
 
 local function DrawRain()
     local _, _, isPaused = Spring.GetGameSpeed()
-    if isPaused then
-       local timerNow = Spring.GetTimer()
-       pausedTime = pausedTime + Spring.DiffTimers(timerNow, lastFrametime)       
-       return
-    end
+    --if isPaused then
+    --   local timerNow = Spring.GetTimer()
+    --   pausedTime = pausedTime + Spring.DiffTimers(timerNow, lastFrametime)       
+    --   return
+    --end
 
     lastFrametime = Spring.GetTimer()
     prepareTextures()

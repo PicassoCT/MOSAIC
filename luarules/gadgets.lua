@@ -50,15 +50,22 @@ local function mynext(...)
     return i, v
 end
 
+local function bad_iter()
+    error("pairs() was called with a non-table value", 3)
+end
 
-pairs = function(...)
+pairs = function(t, ...)
+    if type(t) ~= "table" then
+        -- Grab caller info for easier debugging
+        error("pairs() expected table, got " .. tostring(t) .. " (type: " .. type(t) .. ")", 2)
+        return bad_iter, nil, nil
+    end
+
     if SendToUnsynced then
-        --if type(...) ~= "table" then assert(nil, "Not a table")end
-        local n, s, i = origPairs(...)
+        local n, s, i = origPairs(t, ...)
         return mynext, s, i
     else
-        --if type(...) ~= "table" then assert(nil, "Not a table")end
-        local n, s, i = origPairs(...)
+        local n, s, i = origPairs(t, ...)
         return next, s, i
     end
 end

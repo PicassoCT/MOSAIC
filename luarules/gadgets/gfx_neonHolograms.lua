@@ -13,10 +13,8 @@ function gadget:GetInfo()
 end
 
 if (gadgetHandler:IsSyncedCode()) then
-    
     VFS.Include("scripts/lib_mosaic.lua")    
     VFS.Include("scripts/lib_UnitScript.lua")    
-    if not GG.VisibleUnitPieces then GG.VisibleUnitPieces = {} end
     
     local frameGameStart = Spring.GetGameFrame()     
     local myAllyTeamID = 0
@@ -48,7 +46,6 @@ if (gadgetHandler:IsSyncedCode()) then
         return "Neon Hologram Rendering: "
     end
 
-
     local neonHologramTypeTable = getHologramTypes(UnitDefs)
     local neonHologramTypeNames = getHologramTypeNames(UnitDefs)
     local engineVersion = getEngineVersion()
@@ -63,6 +60,7 @@ if (gadgetHandler:IsSyncedCode()) then
     end
 
     function gadget:Initialize()
+        if not GG.VisibleUnitPieces then GG.VisibleUnitPieces = {} end
         myAllyTeamID = 0--Spring.GetMyAllyTeamID()
         if Spring.GetMyTeamID then
             myTeam = Spring.GetMyTeamID () 
@@ -81,8 +79,9 @@ if (gadgetHandler:IsSyncedCode()) then
     function registerUnitIfHolo(unitID, unitDefID)
          if neonHologramTypeTable[unitDefID] then
             Spring.SetUnitNoDraw(unitID, true)
+            neonUnitDataTransfer[unitID] = unitDefID
             allNeonUnits[#allNeonUnits + 1]= unitID
---            Spring.Echo("Registering neon unit "..unitID.. " of type "..neonHologramTypeNames[unitDefID])
+            Spring.Echo("Registering neon unit "..unitID.. " of type "..neonHologramTypeNames[unitDefID])
            -- SendToUnsynced("setUnitNeonLuaDraw", unitID, unitDefID)
         end
     end
@@ -116,9 +115,11 @@ if (gadgetHandler:IsSyncedCode()) then
                 if VisibleUnitPieces then
         			for id, defID in pairs(neonUnitDataTransfer) do     
                         local thisVisibleUnitPieces = VisibleUnitPieces[id]
-                        -- echo(HEAD().." Start:Sending Neon Hologram unit data:"..toString(VisibleUnitPieces[id] ))
+
         				if id and defID and thisVisibleUnitPieces and thisVisibleUnitPieces ~= cachedUnitPieces[id] then
                             cachedUnitPieces[id] = thisVisibleUnitPieces
+                            Spring.Echo(HEAD().." Start:Sending Neon Hologram unit "..neonHologramTypeNames[defID].." data:"..toString(thisVisibleUnitPieces).. " - ")
+                            assert(type(thisVisibleUnitPieces) == "table")
         					SendToUnsynced("setUnitNeonLuaDraw", id, defID, unpack(thisVisibleUnitPieces))                                 
         				end
         			end 
@@ -349,6 +350,7 @@ end
 
     local function setUnitNeonLuaDraw(callname, unitID, unitDefID, ...)
         local piecesTable = {...}
+        Spring.Echo("Drawing Unit with Lua "..unitID.. " of type"..UnitDefs[unitDefID].name)
         Spring.UnitRendering.SetUnitLuaDraw(unitID, false)
         neonUnitTables[unitID] =  piecesTable
         UnitUnitDefIDMap[unitID] = unitDefID
@@ -581,7 +583,7 @@ end
                                     glUnitPiece(unitID, pieceID)
                                 end)
                             end
-                        --[[else --do a traditional unshaded transparent draw for units in a distance
+                        --[[else --do a traditional unshaded transparent draw for units in the distance
                             glDepthMask(false)
                                 glBlending(GL_SRC_ALPHA, GL_ONE)
                                 glUnitRaw(unitID, true)

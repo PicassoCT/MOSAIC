@@ -1,12 +1,17 @@
 local isPotatoGpu = false
-local gpuMem = (Platform.gpuMemorySize and Platform.gpuMemorySize or 1000) / 1000
-if Platform ~= nil and Platform.gpuVendor == 'Intel' then
+if not Platform then
+	Spring.Echo("Unable to detect Platform abstraction in gfx_bloom_shader_deferred.lua. Defaulting to allow")
+end
+local gpuMem = Platform and (Platform.gpuMemorySize and Platform.gpuMemorySize or 1000) / 1000
+if Platform and Platform.gpuVendor == 'Intel' then
 	isPotatoGpu = true
 end
 if gpuMem and gpuMem > 0 and gpuMem < 1800 then
 	isPotatoGpu = true
 end
 
+local LUASHADER_DIR = "modules/graphics/"
+local LuaShader = VFS.Include(LUASHADER_DIR .. "LuaShader.lua")
 
 if isPotatoGpu then
 	Spring.Echo("Error: No deffered Bloom for potatoe cpus. Goodbye")
@@ -28,7 +33,7 @@ end
 
 local version = 1.1
 
-local dbgDraw = 1              -- draw only the bloom-mask? [0 | 1]
+local dbgDraw = 0              -- draw only the bloom-mask? [0 | 1]
 
 local glowAmplifier = 0.85            -- intensity multiplier when filtering a glow source fragment [1, n]
 local blurAmplifier = 1        -- intensity multiplier when applying a blur pass [1, n] (should be set close to 1)
@@ -75,7 +80,6 @@ local rectVAO = nil
 
 local combineShader = nil
 
-local LuaShader = gl.LuaShader
 local InstanceVBOTable = gl.InstanceVBOTable
 
 local glGetSun = gl.GetSun
@@ -559,6 +563,7 @@ local function Bloom()
 	gl.Culling(true)
 
 	brightShader:Activate()
+	Spring.Echo("TODO: Insert Hologram Bloom from Hologram Buffer!")
 	brightShader:SetUniform("illuminationThreshold", illumThreshold)
 	brightShader:SetUniform("fragGlowAmplifier", glowAmplifier)
 		--brightShader:SetUniform("time", df)

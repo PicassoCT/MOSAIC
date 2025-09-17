@@ -1,7 +1,7 @@
 -- ===================================================================================================================
 -- Game Configuration
  GG.unitFactor = 0.80
- GameVersion = "1.000"  
+ GameVersion = "1.003"  
  function setUnitFactor(modOptions)
     GG.unitFactor = modOptions.unitfactor or 0.8
  end
@@ -1636,7 +1636,8 @@ end
                         typeTable = {
                           "civilian_western1",
                           "civilian_western2",
-                          "civilian_western4"
+                          "civilian_western4",
+                          "civilian_western5"
                         }
                     end
                 end        
@@ -1657,7 +1658,8 @@ end
                             "civilian_arab5",
                             "civilian_western1",
                             "civilian_western2",
-                            "civilian_western4"
+                            "civilian_western4",
+                            "civilian_western5",
                         }
                     end
 
@@ -3834,7 +3836,8 @@ function buildRunProGenicsSpot()
     folderName = "sounds/khanprogram"
     Spring.PlaySoundFile(folderName.."/Prelude_2s.ogg", 1.0)
     Sleep(2000)
-    nameFilePath, surFileNamePath = getRandomSurNameDir()
+    nameFilePaths, surFileNamePaths = getRandomSurNameDir()
+    nameFilePath, surFileNamePath = getSafeRandom(nameFilePaths,nameFilePaths[1]),getSafeRandom(surFileNamePaths,surFileNamePaths[1])
     if maRa()then
          Spring.PlaySoundFile(nameFilePath, 1.0)
          Sleep(1000)
@@ -3887,11 +3890,12 @@ function buildRunCandleSpot(unitID)
         Sleep(2000) 
     end
 
-    Spring.PlaySoundFile(vigilSouthPath.."/Prelude_19s.ogg", 1.0)
+    Spring.PlaySoundFile(vigilSouthPath.."/Postlude_19s.ogg", 1.0)
     Sleep(19000)  
 end
 
 function buildRunDeterministicAdvertisement()
+
     local ListOfMediaAdvertisementFileLength = 
         {
             ["9MediaName-07.ogg"] = 2120,["9MediaName-14.ogg"] = 1610,["9MediaName-16.ogg"] = 1790,["9MediaName-37.ogg"] = 1740,
@@ -3963,6 +3967,17 @@ function buildRunDeterministicAdvertisement()
             ["5Binding-04.ogg"] = 1269 ,
             ["5Binding-05.ogg"] = 1046 ,
             ["5Binding-06.ogg"] = 867 ,
+            ["0Music-01.ogg"] = 5000,
+            ["0Music-02.ogg"] = 5000,
+            ["0Music-03.ogg"] = 5000,
+            ["0Music-04.ogg"] = 5000,
+            ["0Music-05.ogg"] = 5000,
+            ["0Music-06.ogg"] = 5000,
+            ["0Music-07.ogg"] = 5000,
+            ["0Music-08.ogg"] = 5000,
+            ["0Music-09.ogg"] = 5000,
+            ["0Music-10.ogg"] = 5000,
+            ["0Music-11.ogg"] = 5000,
 
 
         }
@@ -3975,6 +3990,7 @@ function buildRunDeterministicAdvertisement()
     local thisAdvertisementIndex = GG.DeterministicCounterAdvertisement 
     local rootPath = "sounds/advertising/media"
     local identifierList = {
+       "0Music",
        "1Superlative",
        "2Superlative",
        "3MName",
@@ -3987,7 +4003,9 @@ function buildRunDeterministicAdvertisement()
        "10MediaType",
        "11OrderNow",
     }
+
     local amountList = {
+       ["0Music"]=11,
        ["1Superlative"]=24,
        ["2Superlative"]=29,
        ["3MName"]=25,

@@ -619,18 +619,51 @@ function removeFeaturesInCircle(px, pz, radius)
         )
 end
 
-
-function showTSubSpins(pieceID, TableOfPiecesGroups)
-   local pieceName = getUnitPieceName(unitID, pieceID)
-   subSpinPieceName = pieceName.."Spin"    
-   if TableOfPiecesGroups[subSpinPieceName] then  
-    hideTReg(TableOfPiecesGroups[subSpinPieceName] )              
+function showTSubs(pieceName, TableOfPiecesGroups, selector, countDown)   
+   subSpinPieceName = pieceName.."Sub"    
+   if TableOfPiecesGroups[subSpinPieceName] then    
+    selectorState = nil         
     for i=1, #TableOfPiecesGroups[subSpinPieceName] do
-        spinPiece = TableOfPiecesGroups[subSpinPieceName][i]
-        ShowReg(spinPiece)
-        Spin(spinPiece,y_axis, math.rad(-42 * randSign()),0)
+        selectorResult, selectorState = selector(selectorState)
+        if selectorResult then
+            subPiece = TableOfPiecesGroups[subSpinPieceName][i]
+            Show(subPiece)
+            if countDown then
+                countDown= countDown -1 
+                if countDown <= 0 then return end
+            end
+        end
     end
    end
+end
+
+function showTSpins(pieceName, TableOfPiecesGroups, selector, countDown)
+   subSpinPieceName = pieceName.."Spin"    
+   if TableOfPiecesGroups[subSpinPieceName] then 
+    selectorState = nil          
+    for i=1, #TableOfPiecesGroups[subSpinPieceName] do  
+        selectorResult, selectorState = selector(selectorState)    
+        if selectorResult then  
+            spinPiece = TableOfPiecesGroups[subSpinPieceName][i]
+            Show(spinPiece)
+            Spin(spinPiece,y_axis, math.rad(-42 * randSign()),0)
+            if countDown then
+                countDown= countDown -1 
+                if countDown <= 0 then return end
+            end
+
+        end
+    end
+   end
+end
+
+function showTSubSpins(pieceID, TableOfPiecesGroups, selectExt, countDown)
+    local pieceName = getUnitPieceName(unitID, pieceID)
+    local selector = selectExt or maRa
+    if pieceName then
+        showTSubs(pieceName, TableOfPiecesGroups, selector, countDown)
+        showTSpins(pieceName, TableOfPiecesGroups, selector, countDown)
+    end
 end
 
 function setNoneCollide(unitId)
@@ -727,14 +760,14 @@ function showAllSubsSpinsOfPiece(T, pieceGroupName, nr)
         return 
     end
     local subName = pieceGroupName .. nr .. "Sub"
-    showT(T[subName])
+    if T[subName] then 
+        showT(T[subName])
+    end
 
     local spinName = pieceGroupName .. nr .. "Spin"
-    showT(T[spinName])
-   
-    direction = math.random(40,160) * randSign()
-
     if T[spinName] then
+        showT(T[spinName])
+        direction = math.random(40,160) * randSign()
         for i=1,#T[spinName] do
             Spin(T[spinName][i] , y_axis, math.rad(direction), math.pi)
         end
@@ -2467,7 +2500,8 @@ end
 -- >Shows a Pieces Table
 function showT(l_tableName, l_lowLimit, l_upLimit, l_delay)
     if not l_tableName then
-        Spring.Echo("No table given as argument for showT")
+        Spring.Echo("No table given as argument for showT in "..getUnitName(unitID))
+        assert(l_tableName)
         return
     end
 
@@ -4673,7 +4707,7 @@ end
 function getDeterministicUnitHash(unitID )
     defID = Spring.GetUnitDefID(unitID)
     x,y,z = Spring.GetUnitPosition(unitID)
-    return math.ceil(x) + math.ceil(y) + math.ceil(z) + defID
+    return math.ceil(x) + math.ceil(z) + defID
 end
 
 

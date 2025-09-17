@@ -6,11 +6,11 @@ include "lib_mosaic.lua"
 
 local TablesOfPiecesGroups = {}
 local GameConfig = getGameConfig()
-SIG_ORDERTRANFER = 1
-SIG_HONK = 2
-SIG_INTERNAL = 4
-SIG_STOP = 8
-SIG_Kill = 16
+local SIG_ORDERTRANFER = 1
+local SIG_HONK = 2
+local SIG_INTERNAL = 4
+local SIG_STOP = 8
+local SIG_Kill = 16
 
 local center = piece "center"
 local attachPoint = piece"attachPoint"
@@ -19,7 +19,7 @@ local motorBikeLoadableTypeTable = getMotorBikeLoadableTypes(UnitDefs)
 local truckTypeTable = getTruckTypeTable(UnitDefs)
 local Seat = piece "Seat"
 
-myTeamID = Spring.GetUnitTeam(unitID)
+local myTeamID = Spring.GetUnitTeam(unitID)
 local boolGaiaUnit = myTeamID == Spring.GetGaiaTeamID()
 local boolIsDelivery = randChance(66)
 local myDeliverySymbolIndex = nil
@@ -32,9 +32,8 @@ local SteerParts = {}
 local Signum = -1
 local LeanFactor = 1.0
 
-
-boolIsCivilianTruck = (truckTypeTable[unitDefID] ~= nil)
-boolIsPoliceTruck = unitDefID == UnitDefNames["policetruck"].id
+local boolIsCivilianTruck = (truckTypeTable[unitDefID] ~= nil)
+local boolIsPoliceTruck = unitDefID == UnitDefNames["policetruck"].id
  
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false)
@@ -103,9 +102,9 @@ function script.TransportPickup(passengerID)
 end
 
 function script.TransportDrop(passengerID, x, y, z)
-    if boolGaiaUnit then   Show(Civilian)   end
+    if boolGaiaUnit then Show(Civilian) end
     if doesUnitExistAlive(passengerID) then
-        passenger= nil
+        passenger = nil
         Spring.UnitDetach(passengerID)
         px,py,pz = Spring.GetUnitPosition(unitID)
         Spring.SetUnitNoSelect(passengerID, false)
@@ -118,15 +117,14 @@ function script.TransportDrop(passengerID, x, y, z)
     end
 end
 
-
 function killAfterTime()
     Signal(SIG_KILL)
     SetSignalMask(SIG_KILL)
 	factor = 2.0
 	vx,vy,vz = Spring.GetUnitDirection(unitID) 
-	Spring.AddUnitImpulse(unitID, vx*factor, vy*factor, vz*factor)
+	Spring.AddUnitImpulse(unitID, vx * factor, vy * factor, vz * factor)
 	Sleep(2000)
-	WTurn(center, z_axis,math.rad(90*randSign()), math.pi)
+	WTurn(center, z_axis,math.rad(90 * randSign()), math.pi)
     Sleep(GameConfig.motorBikeSurvivalStandaloneMS)
     Spring.DestroyUnit(unitID, false, true)
 end
@@ -158,11 +156,18 @@ function headChangeDetector( moveTreshold)
 end
 boolGaiaUnit = (Spring.GetUnitTeam(unitID) == Spring.GetGaiaTeamID())
 boolMoving = false
+boolPreviouslyMoving = boolMoving
 function updateSteering()
     StartThread(headChangeDetector, 3)   
     Sleep(100)
 
     while true do
+        if boolPreviouslyMoving == false and boolMoving == true then
+            if not (passenger and Spring.GetUnitTransporter(passenger) == unitID) then
+                Show(Civilian)
+                Show(myDeliverySymbol)
+            end
+        end
         if boolMoving == true and boolTurning == true then
            if boolGaiaUnit then
                 Show(myDeliverySymbol)
@@ -182,7 +187,7 @@ function updateSteering()
             Turn(center, x_axis, math.rad(0),1)
             WaitForTurns(SteerParts)
         end
-
+        boolPreviouslyMoving = boolMoving
         Sleep(250)
     end
 end
@@ -198,8 +203,8 @@ end
 
 function delayedRiseAndFall()
     if boolTurning == false then
-    WTurn(center,y_axis, math.rad(-10*LeanFactor),0.1 )
-    WTurn(center,y_axis, math.rad(0),0.2)
+        WTurn(center,y_axis, math.rad(-10*LeanFactor),0.1 )
+        WTurn(center,y_axis, math.rad(0),0.2)
     end
 end
 --- -aimining & fire weapon
@@ -227,11 +232,13 @@ function delayedStop()
     StartThread(honkIfHorny)
     Sleep(3000)
     Hide(Civilian)
+
 end
 
 function script.StopMoving() 
     StartThread(delayedStop)
     stopSpinT(activeWheels, x_axis, 3) 
+    if boolGaiaUnit then Show(Civilian) end
 end
 
 function script.Activate() return 1 end
