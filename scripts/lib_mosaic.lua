@@ -3974,9 +3974,10 @@ function buildRunDeterministicAdvertisement()
             ["0Music-05.ogg"] = 5000,
             ["0Music-06.ogg"] = 5000,
             ["0Music-07.ogg"] = 5000,
-            ["0Music-05.ogg"] = 5000,
+            ["0Music-08.ogg"] = 5000,
             ["0Music-09.ogg"] = 5000,
-            ["0Music-011.ogg"] = 5000,
+            ["0Music-10.ogg"] = 5000,
+            ["0Music-11.ogg"] = 5000,
 
 
         }

@@ -7,6 +7,7 @@ local house_western_hologram = Abstract:New{
 	FootprintX = 1,
 	FootprintZ = 1,
 	script 				= "house_western_hologram_script.lua",
+	--script 				= "house_hologram_showAll_script.lua",
 	objectName       	= "house_western_hologram.dae",
 
 	customparams = {	
@@ -31,6 +32,7 @@ local house_western_hologram_brothel = Abstract:New{
 	name = "Western Style Housing",	
 	FootprintX = 1,
 	FootprintZ = 1,
+	--script 				= "house_hologram_showAll_script.lua",
 	script 				= "house_western_brothel_hologram_script.lua",
 	objectName       	= "house_western_brothel_hologram.dae",
 

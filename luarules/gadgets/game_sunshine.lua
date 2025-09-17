@@ -328,7 +328,7 @@ if gadgetHandler:IsSyncedCode() then
             Spring.PlaySoundFile("sounds/civilian/arabic/callToPrayer" .. math.random(1, 6) .. ".ogg", 0.9)
             end
             if (GameConfig.instance.culture == "international") then    
-            Spring.PlaySoundFile("sounds/civilian/international/callToPrayer" .. math.random(1, 5) .. ".ogg", 0.9)
+            Spring.PlaySoundFile("sounds/civilian/international/callToPrayer" .. math.random(1, 4) .. ".ogg", 0.9)
             end
         end
         config = getDefaultConfg({r = 0.5, g = 0.5, b = 0.5, a = 0.5})

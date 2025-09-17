@@ -38,7 +38,7 @@ local spGetGameFrame = Spring.GetGameFrame
 local buisnessLogo = nil
 local brothelFlickerGroup = nil
 local CasinoflickerGroup = nil
-local JoyFlickerGroup = nil
+local JoyFlickerGroup = {}
 SIG_TIGLIL = 2
 SIG_GESTE = 4
 SIG_TALKHEAD = 8
@@ -95,6 +95,7 @@ end
 
 function ShowReg(pieceID)
     if not pieceID then return end
+    Spring.Echo("Avertiseblimp registering ShowReg "..pieceID)
     Show(pieceID)
     cachedCopyDict[pieceID] = pieceID
     updateCheckCache()
@@ -390,8 +391,8 @@ function script.Create()
     Spring.SetUnitNoSelect(unitID, true)
     Spring.SetUnitBlocking(unitID, false)
      TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
-    showAllReg()
-     --StartThread(HoloGrams)
+    --showAllReg()
+     StartThread(HoloGrams)
      HideReg(BrothelSpin)
      HideReg(CasinoSpin)
      HideReg(BuisnessSpin)
@@ -404,14 +405,13 @@ function HoloGrams()
     buisnessLogo = TablesOfPiecesGroups["buisness_holo"]
     brothelFlickerGroup = TablesOfPiecesGroups["BrothelFlicker"]
     CasinoflickerGroup = TablesOfPiecesGroups["CasinoFlicker"]
-    JoyFlickerGroup = {}
-
     JoyFlickerGroup[#JoyFlickerGroup+1] = Joy
     JoyFlickerGroup[#JoyFlickerGroup+1] = JoyZoom
     JoyFlickerGroup[#JoyFlickerGroup+1] = JoyRide
     hideAllReg()
 
     Sleep(15000)
+    --echo("Start Holograms advertisement")
     --sexxxy time
     px,py,pz = Spring.GetUnitPosition(unitID)
     if maRa() then
