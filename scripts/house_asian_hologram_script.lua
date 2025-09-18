@@ -12,7 +12,7 @@ local GameConfig = getGameConfig()
 local pieceID_NameMap = Spring.GetUnitPieceList(unitID)
 local TableOfPiecesGroups = {}
 local cachedCopyDict ={}
-local oldCachedCopyDict ={}
+
 
 local lastFrame = Spring.GetGameFrame()
 local crossRotatePiece1 =  piece("HoloSpin72")
@@ -26,23 +26,22 @@ function clock()
     end
 end
 
---Error: [string "scripts/house_asian_hologram_script.lua"]:462: bad argument #1 to 'Spin' (number expected, got nil)
-function updateCheckCache()
-    local frame = Spring.GetGameFrame()
-    if frame ~= lastFrame then   
-        if oldCachedCopyDict ~= cachedCopyDict then
-            oldCachedCopyDict = cachedCopyDict      
-            GG.VisibleUnitPieces[unitID] = dictToTable(cachedCopyDict)
-            lastFrame = frame
-        end
-    end
+function setUpdateRequest()
+     GG.VisibleUnitPieceUpateStates[unitID] = true
 end
 
-function ShowReg(pieceID)
+--Error: [string "scripts/house_asian_hologram_script.lua"]:462: bad argument #1 to 'Spin' (number expected, got nil)
+function updateCheckCache()   
+    GG.VisibleUnitPieces[unitID] = dictToTable(cachedCopyDict)
+end
+
+function ShowReg(pieceID, boolSupressUpdate)
     if pieceID == nil then return end
     Show(pieceID)
     cachedCopyDict[pieceID] = pieceID
-    updateCheckCache()
+    if not boolSupressUpdate then
+        setUpdateRequest()
+    end
 end
 
 function displayPieceTable(T)
@@ -55,12 +54,14 @@ function displayPieceTable(T)
     return concatString
 end
 
-function HideReg(pieceID)
+function HideReg(pieceID, boolSupressUpdate)
     if pieceID == nil then return end
-    --assert(pieceID_NameMap[pieceID], "Not a piece".. displayPieceTable(pieceID))
+
     Hide(pieceID)  
     cachedCopyDict[pieceID] = nil
-    updateCheckCache()
+    if not boolSupressUpdate then
+        setUpdateRequest()
+    end
 end
 
 local  pieceMap = Spring.GetUnitPieceMap(unitID)

@@ -18,7 +18,7 @@ local brothelsloganNamesNeonSigns = include('SloganBrothelNeonLogos.lua')
 local restaurantNeonLogos = include('restaurantNeonLogos.lua')
 local civilianTypeTable = getCivilianTypeTable(UnitDefs)
 cachedCopyDict ={}
-oldCachedCopyDict ={}
+
 local hours   = 0
 local minutes = 0
 local seconds = 0
@@ -110,35 +110,30 @@ local pieceID_NameMap = Spring.GetUnitPieceList(unitID)
 local lastFrame = Spring.GetGameFrame()
 if not  GG.VisibleUnitPieces then  GG.VisibleUnitPieces= {} end
 
-function updateCheckCache()
-   local frame = Spring.GetGameFrame()
-   if frame ~= lastFrame then 
-        Spring.Echo("Updating cache frame diff")  
-        if oldCachedCopyDict ~= cachedCopyDict then
-            Spring.Echo("Updating piecesTable is ".. toString(cachedCopyDict))
-            oldCachedCopyDict = cachedCopyDict      
-            local toSeePiecesTable = dictToTable(cachedCopyDict)     
-            GG.VisibleUnitPieces[unitID] = toSeePiecesTable
-            lastFrame = frame
-        end
-   end
+function updateCheckCache()     
+    GG.VisibleUnitPieces[unitID] =  dictToTable(cachedCopyDict)     
 end
 
-function ShowReg(pieceID)
-    if not pieceID then return end
+function setUpdateRequest()
+     GG.VisibleUnitPieceUpateStates[unitID] = true
+end
+
+function ShowReg(pieceID, boolSupressUpdate)
+    if  pieceID == nil then return end
     Show(pieceID)
-    assert(pieceID)
     cachedCopyDict[pieceID] = pieceID
-    updateCheckCache()
+    if not boolSupressUpdate then
+        setUpdateRequest()
+    end
 end
 
-function HideReg(pieceID)
-    if not pieceID then return end
-    
+function HideReg(pieceID, boolSupressUpdate)
+    if  pieceID  == nil then return end
     Hide(pieceID)  
-    --TODO make dictionary for efficiency
     cachedCopyDict[pieceID] = nil
-    updateCheckCache()
+    if not boolSupressUpdate then
+        setUpdateRequest()
+    end
 end
 
 local pieceMap = Spring.GetUnitPieceMap(unitID)
@@ -160,19 +155,19 @@ function hideTReg(l_tableName, l_lowLimit, l_upLimit, l_delay)
     if l_lowLimit and l_upLimit then
         for ik = l_upLimit, l_lowLimit, -1 do
             if l_tableName[ik] then
-                HideReg(l_tableName[ik])
+                HideReg(l_tableName[ik], true)
             elseif boolDebugActive == true then
                 echo("In HideT, table " .. l_lowLimit ..
                          " contains a empty entry")
             end
 
-            if l_delay and l_delay > 0 then Sleep(l_delay) end
+            if l_delay and l_delay > 0 then setUpdateRequest();Sleep(l_delay) end
         end
 
     else
         for ik = 1, table.getn(l_tableName), 1 do
             if l_tableName[ik] then
-                HideReg(l_tableName[ik])
+                HideReg(l_tableName[ik], true)
             elseif boolDebugActive == true then
                 echo("In HideT, table " .. l_lowLimit .. " contains a empty entry")
             end
@@ -191,19 +186,19 @@ function showTReg(l_tableName, l_lowLimit, l_upLimit, l_delay)
 
     if l_lowLimit and l_upLimit then
         for ij = l_lowLimit, l_upLimit, 1 do
-            if l_tableName[i] then ShowReg(l_tableName[ij]) end
-            if l_delay and l_delay > 0 then Sleep(l_delay) end
+            if l_tableName[i] then ShowReg(l_tableName[ij], true) end
+            if l_delay and l_delay > 0 then setUpdateRequest(); Sleep(l_delay) end
         end
 
     else
         for k,v in pairs(l_tableName)do
             if v then
-                ShowReg(v)
+                ShowReg(v, true)
             end
         end
     end
+    setUpdateRequest()
 end
-
 
 include ("tigLilAnimation.lua")
 include("lib_textFx.lua")

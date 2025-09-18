@@ -59,19 +59,24 @@ if (gadgetHandler:IsSyncedCode()) then
         enabled = true
     end
 
-    function gadget:Initialize()
-        if not GG.VisibleUnitPieces then GG.VisibleUnitPieces = {} end
-        myAllyTeamID = 0--Spring.GetMyAllyTeamID()
-        if Spring.GetMyTeamID then
-            myTeam = Spring.GetMyTeamID () 
-        end
-        allUnits = Spring.GetAllUnits()
+    function reRegisterAllAlreadyExistingUnits()
+        local allUnits = Spring.GetAllUnits()
         for _,id in pairs(allUnits) do
             unitDefID = Spring.GetUnitDefID(id) 
             if neonHologramTypeTable[unitDefID] then
                 registerUnitIfHolo(id, unitDefID)
             end
         end
+    end
+
+    function gadget:Initialize()
+        if not GG.VisibleUnitPieces then GG.VisibleUnitPieces = {} end
+        if not GG.VisibleUnitPieceUpateStates then GG.VisibleUnitPieceUpateStates = {} end
+
+        if Spring.GetMyTeamID then
+            myTeam = Spring.GetMyTeamID () 
+        end
+       reRegisterAllAlreadyExistingUnits()
     end
 
     local allNeonUnits= {}
@@ -104,10 +109,29 @@ if (gadgetHandler:IsSyncedCode()) then
         return max
     end
 
+    function callEnvironmentForUpdate(id)
+        env = Spring.UnitScript.GetScriptEnv(id)
+        if env and env.updateCheckCache then
+          Spring.UnitScript.CallAsUnit(unitID, env.updateCheckCache)
+        end
+    end
+
+    function updateDataFromEnvironments()
+        local visibleUnitNeedingUpdates =  GG.VisibleUnitPieceUpateStates
+        for unitID, request in pairs(visibleUnitNeedingUpdates) do
+            if request then
+                callEnvironmentForUpdate(unitID)
+                visibleUnitNeedingUpdates[unitID] = false --Request consumed
+            end
+        end
+        GG.VisibleUnitPieceUpateStates = visibleUnitNeedingUpdates
+    end
+
     local cachedUnitPieces = {}
-    local oldneonUnitDataTransfer = {}
+
     function gadget:GameFrame(frame)
-		if frame > frameGameStart then           
+		if frame > frameGameStart then  
+            updateDataFromEnvironments()         
             if count(neonUnitDataTransfer) > 0 then
                 --echo("gadget:GameFrame:gfx_neonHolograms.lua "..frame)
                 local VisibleUnitPieces = GG.VisibleUnitPieces   
