@@ -107,7 +107,6 @@ SIG_TIGLIL = 128
 SIG_FLICKER= 256
 local GameConfig = getGameConfig()
 local pieceID_NameMap = Spring.GetUnitPieceList(unitID)
-
 local lastFrame = Spring.GetGameFrame()
 if not  GG.VisibleUnitPieces then  GG.VisibleUnitPieces= {} end
 
