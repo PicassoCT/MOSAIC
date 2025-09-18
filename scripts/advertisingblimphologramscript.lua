@@ -9,8 +9,8 @@ local minutes = 0
 local seconds = 0
 local percent = 0
 local TablesOfPiecesGroups = {}
-cachedCopyDict = {}
-oldCachedCopyDict = {}
+local cachedCopyDict = {}
+local boolChanges = false
 
 gaiaTeamID = Spring.GetGaiaTeamID()
 BrothelSpin= piece("BrothelSpin")
@@ -84,12 +84,10 @@ end
 
 function updateCheckCache()
     frame = Spring.GetGameFrame()
-    if frame ~= lastFrame then   
-        --if oldCachedCopyDict ~= cachedCopyDict then
-            oldCachedCopyDict = cachedCopyDict    
+    if frame ~= lastFrame and boolChanges then   
             GG.VisibleUnitPieces[unitID] =  dictToTable(cachedCopyDict)
             lastFrame = frame
-        --end
+            boolChanges = false
     end
 end
 
@@ -97,17 +95,16 @@ function ShowReg(pieceID)
     if  pieceID == nil then return end
     --Spring.Echo("Avertiseblimp registering ShowReg "..pieceID)
     Show(pieceID)
-    assert(pieceID)
-    assert(type(pieceID)== "number")
+    boolChanges = true
+  
     cachedCopyDict[pieceID] = pieceID
-    assert(cachedCopyDict[pieceID])
-    assert(count(cachedCopyDict) > 0)
-    assert(cachedCopyDict[pieceID] == pieceID)
+    
     updateCheckCache()
 end
 
 function HideReg(pieceID)
     if  pieceID == nil then return end
+    boolChanges = true
     Hide(pieceID)  
     cachedCopyDict[pieceID] = nil
     updateCheckCache()
