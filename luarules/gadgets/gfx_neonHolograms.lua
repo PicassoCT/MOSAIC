@@ -78,8 +78,7 @@ if (gadgetHandler:IsSyncedCode()) then
     local neonUnitDataTransfer = {}
     function registerUnitIfHolo(unitID, unitDefID)
          if neonHologramTypeTable[unitDefID] then
-            Spring.SetUnitNoDraw(unitID, true)
-            neonUnitDataTransfer[unitID] = unitDefID
+            Spring.SetUnitNoDraw(unitID, true)            
             allNeonUnits[#allNeonUnits + 1]= unitID
             Spring.Echo("Registering neon unit "..unitID.. " of type "..neonHologramTypeNames[unitDefID])
            -- SendToUnsynced("setUnitNeonLuaDraw", unitID, unitDefID)
@@ -119,7 +118,6 @@ if (gadgetHandler:IsSyncedCode()) then
         				if id and defID and thisVisibleUnitPieces and thisVisibleUnitPieces ~= cachedUnitPieces[id] then
                             cachedUnitPieces[id] = thisVisibleUnitPieces
                             Spring.Echo(HEAD().." Start:Sending Neon Hologram unit "..neonHologramTypeNames[defID].." data:"..toString(thisVisibleUnitPieces).. " - ")
-                            assert(type(thisVisibleUnitPieces) == "table")
         					SendToUnsynced("setUnitNeonLuaDraw", id, defID, unpack(thisVisibleUnitPieces))                                 
         				end
         			end 

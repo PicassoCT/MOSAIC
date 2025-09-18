@@ -3,17 +3,18 @@ include "lib_mosaic.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 
-local hours  =0
-local minutes=0
-local seconds=0
-local percent=0
+local hours   = 0
+local minutes = 0
+local seconds = 0
+local percent = 0
 
 local GameConfig = getGameConfig()
 local pieceID_NameMap = Spring.GetUnitPieceList(unitID)
+local TableOfPiecesGroups = {}
 local cachedCopyDict ={}
 local oldCachedCopyDict ={}
+
 local lastFrame = Spring.GetGameFrame()
-TableOfPiecesGroups = {}
 local crossRotatePiece1 =  piece("HoloSpin72")
 local crossRotatePiece2 =  piece("HoloSpin74")
 local jumpScareRotor = piece("jumpScareRotor")
@@ -38,7 +39,7 @@ function updateCheckCache()
 end
 
 function ShowReg(pieceID)
-    if not pieceID then return end
+    if pieceID == nil then return end
     Show(pieceID)
     cachedCopyDict[pieceID] = pieceID
     updateCheckCache()
@@ -55,23 +56,21 @@ function displayPieceTable(T)
 end
 
 function HideReg(pieceID)
-    if not pieceID then return end
+    if pieceID == nil then return end
     --assert(pieceID_NameMap[pieceID], "Not a piece".. displayPieceTable(pieceID))
     Hide(pieceID)  
-    --TODO make dictionary for efficiency
     cachedCopyDict[pieceID] = nil
     updateCheckCache()
 end
 
+local  pieceMap = Spring.GetUnitPieceMap(unitID)
 -- > Hide all Pieces of a Unit
 function showAllReg()
-    local  pieceMap = Spring.GetUnitPieceMap(unitID)
     for k, v in pairs(pieceMap) do ShowReg(v) end
 end
 
 -- > Hide all Pieces of a Unit
 function hideAllReg()
-    local pieceMap = Spring.GetUnitPieceMap(unitID)
     for k, v in pairs(pieceMap) do HideReg(v) end
 end
 
@@ -147,7 +146,6 @@ function technoDancer()
     end
 
 end
-
 
 function restartHologram()
     Signal(SIG_CORE)

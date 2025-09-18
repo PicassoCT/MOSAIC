@@ -4,19 +4,22 @@ include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 include "lib_mosaic.lua"
 
+local hours   = 0
+local minutes = 0
+local seconds = 0
+local percent = 0
 local TablesOfPiecesGroups = {}
+cachedCopyDict = {}
+oldCachedCopyDict = {}
 
 gaiaTeamID = Spring.GetGaiaTeamID()
 BrothelSpin= piece("BrothelSpin")
 CasinoSpin= piece("CasinoSpin")
 Joy = piece("Joy1")
-JoyZoom = piece("Joy2")
- 
+JoyZoom = piece("Joy2") 
 JoyRide = piece("JoyRide")
 local boolDebugScript = false
-local lastFrame = Spring.GetGameFrame()
-cachedCopyDict = {}
-oldCachedCopyDict = {}
+lastFrame = Spring.GetGameFrame()
 local tldrum = piece "tldrum"
 local dancepivot = piece "dancepivot"
 local deathpivot = piece "deathpivot"
@@ -68,10 +71,7 @@ tigLilHoloPices = {
     handl,
     ball
 }
-local hours  =0
-local minutes=0
-local seconds=0
-local percent=0
+
 if not  GG.VisibleUnitPieces then  GG.VisibleUnitPieces= {} end
 hours, minutes, seconds, percent = getDayTime()
 
@@ -83,35 +83,33 @@ function clock()
 end
 
 function updateCheckCache()
-  local frame = Spring.GetGameFrame()
+    frame = Spring.GetGameFrame()
     if frame ~= lastFrame then   
         if oldCachedCopyDict ~= cachedCopyDict then
-            oldCachedCopyDict = cachedCopyDict      
-            GG.VisibleUnitPieces[unitID] = dictToTable(cachedCopyDict)
+            oldCachedCopyDict = cachedCopyDict    
+            GG.VisibleUnitPieces[unitID] =  dictToTable(cachedCopyDict)
             lastFrame = frame
         end
     end
 end
 
 function ShowReg(pieceID)
-    if not pieceID then return end
-    Spring.Echo("Avertiseblimp registering ShowReg "..pieceID)
+    if  pieceID == nil then return end
+    --Spring.Echo("Avertiseblimp registering ShowReg "..pieceID)
     Show(pieceID)
     cachedCopyDict[pieceID] = pieceID
     updateCheckCache()
 end
 
 function HideReg(pieceID)
-    if not pieceID then return end
+    if  pieceID == nil then return end
     Hide(pieceID)  
     cachedCopyDict[pieceID] = nil
     updateCheckCache()
 end
-
+local pieceMap = Spring.GetUnitPieceMap(unitID)
 function showAllReg(id)
     if not unitID then unitID = id end
-
-    pieceMap = Spring.GetUnitPieceMap(unitID)
     for k, v in pairs(pieceMap) do 
         if v then
             HideReg(v) 
@@ -121,8 +119,6 @@ end
 -- > Hide all Pieces of a Unit
 function hideAllReg(id)
     if not unitID then unitID = id end
-
-    pieceMap = Spring.GetUnitPieceMap(unitID)
     for k, v in pairs(pieceMap) do 
         if v then
             HideReg(v) 
@@ -147,7 +143,6 @@ function hideTReg(l_tableName, l_lowLimit, l_upLimit, l_delay)
 
             if l_delay and l_delay > 0 then Sleep(l_delay) end
         end
-
     else
         for i = 1, table.getn(l_tableName), 1 do
             if l_tableName[i] then
@@ -231,9 +226,7 @@ idleAnimations[#idleAnimations +1] = strikeAPose
 local function tiglLilLoop()
 
     while true do
-        if (hours > 20 or hours < 6) then
-        
-
+        if (hours > 20 or hours < 6) then      
             StartThread(dancingTiglil, idleAnimations)
 
             waitTillDay()
@@ -244,8 +237,7 @@ local function tiglLilLoop()
             HideReg(tldrum)
             HideReg(tlflute)
             hideTReg(TablesOfPiecesGroups["GlowStick"])
-            hideTReg(tigLilHoloPices)
-            
+            hideTReg(tigLilHoloPices)            
         end
         waitTillNight()
         Sleep(3000)
@@ -280,19 +272,18 @@ end
 
 function showLogo()
     Sleep(100)
-        for i=1, math.random(3, 9) do            
-            logo = buisnessLogo[math.random(1, #buisnessLogo)]
-            val =math.random(5,22)*randSign()
-            Spin(logo,y_axis, math.rad(val),0)
-            ShowReg(logo)
-            Sleep(1000)
-        end
-        Sleep(5000)
-        hideTReg(buisnessLogo)
+    for i=1, math.random(3, 9) do            
+        logo = buisnessLogo[math.random(1, #buisnessLogo)]
+        val =math.random(5,22)*randSign()
+        Spin(logo,y_axis, math.rad(val),0)
+        ShowReg(logo)
+        Sleep(1000)
+    end
+    Sleep(5000)
+    hideTReg(buisnessLogo)
 end
 
-function chipsDropping(chips, boolReverse)
-   
+function chipsDropping(chips, boolReverse)   
     while true do
         if (hours > 20 or hours < 6)  then
             for i=1, #chips do
@@ -349,14 +340,12 @@ function dropCoinsOrMoney(boolIsMoney)
     if boolIsMoney then
        chipsDropping(TablesOfPiecesGroups["Money"], maRa())
     end
-
     if maRa()then
         chipsDropping(TablesOfPiecesGroups["CasinoChip"], maRa())
     else
         chipsDropping(TablesOfPiecesGroups["Money"], maRa())
     end
 end
-
 
 variousFunctions = {
     [1] = function ()
@@ -384,7 +373,6 @@ variousFunctions = {
     end,
 }
 
-
 function script.Create()
     --echo(UnitDefs[unitDefID].name.."has placeholder script called")
     Spring.SetUnitAlwaysVisible(unitID, true)
@@ -396,9 +384,7 @@ function script.Create()
      HideReg(BrothelSpin)
      HideReg(CasinoSpin)
      HideReg(BuisnessSpin)
-
 end
-
 
 function HoloGrams()    
     StartThread(clock)
@@ -453,8 +439,6 @@ function joyToTheWorld()
         turnUnitPieceToUnit(unitID, Joy, lowestID, 15)
     end
 end
-
-
 
 function JoyAnimation()
     offsetValue = -70
@@ -529,7 +513,6 @@ function flickerScript(flickerGroup,  errorDrift, timeoutMs, maxInterval, boolDa
         Sleep(breakTime)
     end
 end
-
 
 function script.Activate() return 1 end
 

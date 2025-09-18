@@ -16,13 +16,14 @@ local buisnessNeonSigns =  include('buissnesNamesNeonLogos.lua')
 local sloganNamesNeonSigns = include('SlogansNewsNeonLogos.lua')
 local brothelsloganNamesNeonSigns = include('SloganBrothelNeonLogos.lua')
 local restaurantNeonLogos = include('restaurantNeonLogos.lua')
-civilianTypeTable = getCivilianTypeTable(UnitDefs)
-local hours  =0
-local minutes=0
-local seconds=0
-local percent=0
+local civilianTypeTable = getCivilianTypeTable(UnitDefs)
+cachedCopyDict ={}
+oldCachedCopyDict ={}
+local hours   = 0
+local minutes = 0
+local seconds = 0
+local percent = 0
 hours, minutes, seconds, percent = getDayTime()
-
 
 function hashMaRa()
     return getLocationHash(unitID) % 2 == 0
@@ -95,28 +96,30 @@ local _y_axis = 2
 local _z_axis = 3
 
 rotatorTable ={}
-local SIG_HOLO = 1
-local SIG_CORE = 2
-local SIG_HAIR = 4
-local SIG_INCIRCLE = 8
-local SIG_TALKHEAD = 16
-local SIG_GESTE = 32
-local SIG_ONTHEMOVE = 64
-local SIG_TIGLIL = 128
-local SIG_FLICKER= 256
+SIG_HOLO = 1
+SIG_CORE = 2
+SIG_HAIR = 4
+SIG_INCIRCLE = 8
+SIG_TALKHEAD = 16
+SIG_GESTE = 32
+SIG_ONTHEMOVE = 64
+SIG_TIGLIL = 128
+SIG_FLICKER= 256
 local GameConfig = getGameConfig()
 local pieceID_NameMap = Spring.GetUnitPieceList(unitID)
-local cachedCopyDict ={}
-local oldCachedCopyDict ={}
+
 local lastFrame = Spring.GetGameFrame()
 if not  GG.VisibleUnitPieces then  GG.VisibleUnitPieces= {} end
 
 function updateCheckCache()
    local frame = Spring.GetGameFrame()
-   if frame ~= lastFrame then   
+   if frame ~= lastFrame then 
+        Spring.Echo("Updating cache frame diff")  
         if oldCachedCopyDict ~= cachedCopyDict then
+            Spring.Echo("Updating piecesTable is ".. toString(cachedCopyDict))
             oldCachedCopyDict = cachedCopyDict      
-            GG.VisibleUnitPieces[unitID] = dictToTable(cachedCopyDict)
+            local toSeePiecesTable = dictToTable(cachedCopyDict)     
+            GG.VisibleUnitPieces[unitID] = toSeePiecesTable
             lastFrame = frame
         end
    end
@@ -125,6 +128,7 @@ end
 function ShowReg(pieceID)
     if not pieceID then return end
     Show(pieceID)
+    assert(pieceID)
     cachedCopyDict[pieceID] = pieceID
     updateCheckCache()
 end
@@ -138,14 +142,13 @@ function HideReg(pieceID)
     updateCheckCache()
 end
 
+local pieceMap = Spring.GetUnitPieceMap(unitID)
 function showAllReg()
-    local pieceMap = Spring.GetUnitPieceMap(unitID)
     for k, v in pairs(pieceMap) do ShowReg(v) end
 end
 
--- > Hide all Pieces of a Unit
+    -- > Hide all Pieces of a Unit
 function hideAllReg()
-    local pieceMap = Spring.GetUnitPieceMap(unitID)
     for k, v in pairs(pieceMap) do HideReg(v) end
 end
 
@@ -252,9 +255,7 @@ function dancingTiglil(animations, boolTechno)
     end
 end
 
-
 --Direction = piece("Direction")
-
 function showSubSpins(pieceID)
    local subspinName = getUnitPieceName(unitID, pieceID)
    subSpinPieceName = subspinName.."Spin"    
@@ -326,18 +327,17 @@ function getDramatisPersona()
 end
 
 function mergePersonalizeMessages()
-  location_region, location_country, location_province, location_cityname, location_citypart = getLocation()
-  
-        for i=1, #sloganNamesNeonSigns do
-            sloganNamesNeonSigns[i] = sloganNamesNeonSigns[i]:gsub( "<suspect>", getDramatisPersona())
-            if maRa() then
-                sloganNamesNeonSigns[i] = sloganNamesNeonSigns[i]:gsub( "<cityname>", location_cityname)
-            else
-                sloganNamesNeonSigns[i] = sloganNamesNeonSigns[i]:gsub( "<cityname>", location_citypart)
-            end
+    location_region, location_country, location_province, location_cityname, location_citypart = getLocation()
+    for i=1, #sloganNamesNeonSigns do
+        sloganNamesNeonSigns[i] = sloganNamesNeonSigns[i]:gsub( "<suspect>", getDramatisPersona())
+        if maRa() then
+            sloganNamesNeonSigns[i] = sloganNamesNeonSigns[i]:gsub( "<cityname>", location_cityname)
+        else
+            sloganNamesNeonSigns[i] = sloganNamesNeonSigns[i]:gsub( "<cityname>", location_citypart)
         end
-        buisnessNeonSigns =  sloganNamesNeonSigns
-        assert(buisnessNeonSigns)
+    end
+    buisnessNeonSigns =  sloganNamesNeonSigns
+    assert(buisnessNeonSigns)
 end
 
 boolJustOnce= true
@@ -371,7 +371,7 @@ function script.Create()
     Spring.SetUnitNoSelect(unitID, true)
     Spring.SetUnitBlocking(unitID, false)
     TableOfPiecesGroups = GetSetSharedOneTimeResult("house_western_hologram_script_PiecesTable", GetPieceTableGroups)
-    --showAllReg()
+ 
     restartHologram()
     StartThread(grid)
     StartThread(emergencyWatcher)
@@ -386,8 +386,6 @@ function ShowEmergencyElements ()
     element=showOne(TableOfPiecesGroups["EmergencyMessage" ]) 
     Spin(element , y_axis, math.rad(randSign() * 42), 0)
 end
-
-
 
 function emergencyWatcher()
     while true do
@@ -410,7 +408,6 @@ function emergencyWatcher()
         Sleep(3000)
     end
 end
-
 
 function clock()
     while true do
@@ -436,7 +433,6 @@ function getGrid()
         end
     end
 
-
     if (randChance(25)) then
         return getSafeRandom(allGrids, allGrids[1])
     end
@@ -448,7 +444,6 @@ function getGrid()
         return TableOfPiecesGroups["CasinoGrid"][math.random(1,2)]
     end    
 end
-
 
 function grid()
     Sleep(100)
@@ -566,7 +561,6 @@ function holoGramRain()
 end
 
 function holoGramNightTimes( name, axisToRotateAround, elementsMax)
-
     elementsMax = elementsMax or 5
     elementsMax = math.max(math.min(elementsMax, #TableOfPiecesGroups[name]),4)
     interval = math.random(1,3)*60*1000
@@ -638,7 +632,6 @@ function disAppearGlowWorm(piecesTable, fadeInTimeMs, lifeTimeMs, fadeOutTimeMs)
 
     fadeOut(piecesTable, fadeOutTimeMs/(#piecesTable))
 end
-
 
 function disAppearGlowWormSwarm( fadeInTimeMs, lifeTimeMs, fadeOutTimeMs)
     for i=1, #TableOfPiecesGroups["GlowSwarm"] do
@@ -712,8 +705,6 @@ function glowWormFlight(speed)
 end
 
 function lineBufferForward(buffer, fscope)
-
-
     sum = 0
     for i=1, 10 do
         buffer[i] =  math.random(fscope.min, fscope.max)
@@ -783,7 +774,6 @@ function lineTicker()
         hideT(TableOfPiecesGroups["BuisnessWall35Sub"])
     end
 end
-
 
 function showWallDayTime(name)
     local BuisnessWall35 = piece("BuisnessWall35")
@@ -1167,9 +1157,9 @@ function fireWorks()
             WMove(FireWorksCenter, upaxis, 0, 1000)
             timeBetweenShots= math.random(4,10)*1000
             Sleep(1000)     
-
         end
-    Sleep(5000)
+
+        Sleep(5000)
     end
 end
 
@@ -1200,12 +1190,9 @@ function shapeSymmetry(logo)
             end
         end
     end
-   
 
-       
-    
     if not maRa() then
-     ShowReg(logo)
+        ShowReg(logo)
     end
     if maRa() == maRa() then
         addHologramLetters(creditNeonSigns)
@@ -1320,8 +1307,8 @@ function setupMessage(myMessages)
         end
     end
 
-    allLetters = {} 
-    posLetters = {}   
+    local allLetters = {} 
+    local posLetters = {}   
     posLetters.unitID = unitID
     posLetters.myMessage = myMessage
     posLetters.TriLetters= getAllLetters(TableOfPiecesGroups)
@@ -1406,7 +1393,6 @@ end
 backdropAxis = x_axis
 spindropAxis = y_axis
 
-
 function resetSpinDrop(allLetters)
 
          foreach(allLetters,
@@ -1436,8 +1422,8 @@ function addJHologramLetters()
     downIndex = 1
     --echo("Adding Grafiti with message:" ..myMessage)
     stringlength = 6
-    rowIndex= 0
-    columnIndex= 0
+    rowIndex = 0
+    columnIndex = 0
 
     val = math.random(5,45)
     for i=1, stringlength do
