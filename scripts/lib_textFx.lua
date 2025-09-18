@@ -208,9 +208,9 @@ function waitAllLetters(allLetters)
             end)
 end
 
-function messageUniqueLettered(message)
+function messageUniqueLettered( posLetters)
     bucket= {}
-    for i=1, string.len(message) do
+    for i=1, string.len(posLetters.myMessage) do
         letter =  string.upper(string.sub(posLetters.myMessage, i, i))
         if not bucket[letter] then 
             bucket[letter]= true 
@@ -223,7 +223,7 @@ end
 
 --Produces a Holographic Sign made of several letters that shiver into different directions 
 function achromaticShivering(allLetters, posLetters, TableOfPiecesGroups)
-    if messageUniqueLettered(posLetters.myMessage) == false then return end
+    if messageUniqueLettered(posLetters) == false then return end
     timeOut = math.random(10,25) * 1000
     dim = math.random(5, 50)
     while timeOut > 0 do
