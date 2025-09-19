@@ -112,7 +112,7 @@ if (gadgetHandler:IsSyncedCode()) then
     function callEnvironmentForUpdate(id)
         env = Spring.UnitScript.GetScriptEnv(id)
         if env and env.updateCheckCache then
-          Spring.UnitScript.CallAsUnit(unitID, env.updateCheckCache)
+          Spring.UnitScript.CallAsUnit(id, env.updateCheckCache)
         end
     end
 
@@ -141,7 +141,7 @@ if (gadgetHandler:IsSyncedCode()) then
 
         				if id and defID and thisVisibleUnitPieces and thisVisibleUnitPieces ~= cachedUnitPieces[id] then
                             cachedUnitPieces[id] = thisVisibleUnitPieces
-                            Spring.Echo(HEAD().." Start:Sending Neon Hologram unit "..neonHologramTypeNames[defID].." data:"..toString(thisVisibleUnitPieces).. " - ")
+                            --Spring.Echo(HEAD().." Start:Sending Neon Hologram unit "..neonHologramTypeNames[defID].." data:"..toString(thisVisibleUnitPieces).. " - ")
         					SendToUnsynced("setUnitNeonLuaDraw", id, defID, unpack(thisVisibleUnitPieces))                                 
         				end
         			end 
@@ -372,7 +372,7 @@ end
 
     local function setUnitNeonLuaDraw(callname, unitID, unitDefID, ...)
         local piecesTable = {...}
-        Spring.Echo("Drawing Unit with Lua "..unitID.. " of type"..UnitDefs[unitDefID].name)
+        --Spring.Echo("Drawing Unit with Lua "..unitID.. " of type"..UnitDefs[unitDefID].name)
         Spring.UnitRendering.SetUnitLuaDraw(unitID, false)
         neonUnitTables[unitID] =  piecesTable
         UnitUnitDefIDMap[unitID] = unitDefID
@@ -419,8 +419,7 @@ end
 
     local str_blurShader_part1 = 
     [[
-       #version 150 compatibility
-       
+       #version 150 compatibility      
     
         void main() {
           vec2 texCoord = vec2(gl_TextureMatrix[0] * gl_TexCoord[0]);
