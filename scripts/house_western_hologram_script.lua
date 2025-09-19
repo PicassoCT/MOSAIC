@@ -110,6 +110,7 @@ local pieceID_NameMap = Spring.GetUnitPieceList(unitID)
 local lastFrame = Spring.GetGameFrame()
 if not  GG.VisibleUnitPieces then  GG.VisibleUnitPieces= {} end
 
+--This is a externally pulled function- meaning its called after all unitscripts have run by a gadget to deliver the show and hidden pieces
 function updateCheckCache()     
     GG.VisibleUnitPieces[unitID] =  dictToTable(cachedCopyDict)     
 end

@@ -85,7 +85,7 @@ if (gadgetHandler:IsSyncedCode()) then
          if neonHologramTypeTable[unitDefID] then
             Spring.SetUnitNoDraw(unitID, true)            
             allNeonUnits[#allNeonUnits + 1]= unitID
-            Spring.Echo("Registering neon unit "..unitID.. " of type "..neonHologramTypeNames[unitDefID])
+            --Spring.Echo("Registering neon unit "..unitID.. " of type "..neonHologramTypeNames[unitDefID])
            -- SendToUnsynced("setUnitNeonLuaDraw", unitID, unitDefID)
         end
     end
@@ -109,10 +109,11 @@ if (gadgetHandler:IsSyncedCode()) then
         return max
     end
 
+    local spCallAsUnit = Spring.UnitScript.CallAsUnit
     function callEnvironmentForUpdate(id)
-        env = Spring.UnitScript.GetScriptEnv(id)
+        local env = Spring.UnitScript.GetScriptEnv(id)
         if env and env.updateCheckCache then
-          Spring.UnitScript.CallAsUnit(id, env.updateCheckCache)
+          spCallAsUnit(id, env.updateCheckCache)
         end
     end
 
