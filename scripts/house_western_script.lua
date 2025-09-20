@@ -213,11 +213,12 @@ function HoloGrams()
     if getDeterministicCityOfSin(getCultureName(), Game)== true and isNearCityCenter(px,pz, GameConfig) == true or mapOverideSinCity() then
         hostBrothelPiece = piece("WhiteOfficeGhetto_Roof_Deco2")   
         if maRa()== true and contains(ToShowTable, hostBrothelPiece) == true then
-            if not decoPieceUsedOrientation[hostBrothelPiece] then echo( unitID..":"..pieceNameMap[hostBrothelPiece].." has no value assigned to it") end
+            echo("Spawn brothel hologram")
             StartThread(moveCtrlHologramToUnitPiece, unitID, "house_western_hologram_brothel", hostBrothelPiece, decoPieceUsedOrientation[hostBrothelPiece] )
         else
             hostCasinoPiece = piece("WhiteOfficeGhetto_Roof_Deco01")   
             if contains(ToShowTable, hostCasinoPiece) == true then 
+                echo("Spawn casino hologram")
                 StartThread(moveCtrlHologramToUnitPiece, unitID, "house_western_hologram_casino", hostCasinoPiece, decoPieceUsedOrientation[hostCasinoPiece] )
             end
         end

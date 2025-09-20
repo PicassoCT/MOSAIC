@@ -394,7 +394,7 @@ function GetPieceTableGroups()
 end
 
 function script.Create()
---    echo("brothelhologram created at"..locationstring(unitID))
+    echo("brothelhologram created at"..locationstring(unitID))
     Spring.SetUnitAlwaysVisible(unitID, true)
     Spring.SetUnitNeutral(unitID, true)
     Spring.SetUnitNoSelect(unitID, true)
