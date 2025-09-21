@@ -1,9 +1,7 @@
 include "lib_OS.lua"
-
 include "lib_mosaic.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
-
 
 
 local boolIsCasino    = UnitDefNames["house_western_hologram_casino"].id == unitDefID
@@ -82,7 +80,7 @@ tigLilHoloPices = {
 
 spins ={buisness_spin,wallSpin,general_spin, text_spin, brothel_spin, casino_spin}
 local TableOfPiecesGroups = {}
-local boolDebugHologram = true
+local boolDebugHologram = false
 
 sizeDownLetter  = 350
 sizeSpacingLetter = 300
@@ -106,22 +104,14 @@ local cachedCopyDict ={}
 local oldCachedCopyDict ={}
 local lastFrame = Spring.GetGameFrame()
 
-function updateCheckCache()
-  local frame = Spring.GetGameFrame()
-    if frame ~= lastFrame then   
-        if oldCachedCopyDict ~= cachedCopyDict then
-            oldCachedCopyDict = cachedCopyDict      
-            GG.VisibleUnitPieces[unitID] = dictToTable(cachedCopyDict)
-            lastFrame = frame
-        end
-    end
+function updateCheckCache()     
+    GG.VisibleUnitPieces[unitID] = dictToTable(cachedCopyDict)
 end
 
 function ShowReg(pieceID)
     if not pieceID then return end
     Show(pieceID)
     cachedCopyDict[pieceID] = pieceID
-    updateCheckCache()
 end
 
 function HideReg(pieceID)
@@ -130,7 +120,6 @@ function HideReg(pieceID)
     Hide(pieceID)  
     --TODO make dictionary for efficiency
     cachedCopyDict[pieceID] = nil
-    updateCheckCache()
 end
 
 -- > Hide all Pieces of a Unit
@@ -223,7 +212,8 @@ local function tiglLilLoop()
             hideTReg(TableOfPiecesGroups["GlowStick"])
             hideTReg(tigLilHoloPices)
         end
-        Sleep(9000)
+        waitTillNight()
+        Sleep(1000)
     end
 end
 
@@ -303,6 +293,7 @@ function chipsDropping(chips, boolReverse)
                 HideReg(chips[i])
             end
         end
+        waitTillNight()
         Sleep(1000)
     end
 end
