@@ -82,7 +82,7 @@ function clock()
 end
 
 function updateCheckCache()
-    GG.VisibleUnitPieces[unitID] =  dictToTable(cachedDict)
+    GG.VisibleUnitPieces[unitID] =  dictToTable(cachedCopyDict)
 end
 
 function ShowReg(pieceID)
@@ -388,10 +388,11 @@ function HoloGrams()
     hideAllReg()
 
     Sleep(15000)
-    --echo("Start Holograms advertisement")
+
     --sexxxy time
     px,py,pz = Spring.GetUnitPosition(unitID)
     if maRa() then
+        echo("Start blimp Holograms advertisement")
         variousFunctions[math.random(1,#variousFunctions)]()
     else
        indexA = math.random(1,#variousFunctions)

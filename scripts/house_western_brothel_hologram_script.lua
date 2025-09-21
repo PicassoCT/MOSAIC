@@ -100,9 +100,7 @@ local SIG_TIGLIL = 128
 local SIG_FLICKER= 256
 local GameConfig = getGameConfig()
 local pieceID_NameMap = Spring.GetUnitPieceList(unitID)
-local cachedCopyDict ={}
-local oldCachedCopyDict ={}
-local lastFrame = Spring.GetGameFrame()
+cachedCopyDict ={}
 
 function updateCheckCache()     
     GG.VisibleUnitPieces[unitID] = dictToTable(cachedCopyDict)
