@@ -130,8 +130,8 @@ local snippetStarts=
     [400] = { endsat= 400 + 5,  jumpsto = {400, 1}},
     [405] = { endsat= 405 + 409,  jumpsto = {405, 1}},
 }
-local endIndex= snippetStarts[1].endsat
-local jumpsto = snippetStarts[1].jumpsto
+ endIndex= snippetStarts[1].endsat
+ jumpsto = snippetStarts[1].jumpsto
 
 function flickerAnimation()
     local index = 1
@@ -154,15 +154,13 @@ function loopsReptitionsJumps(index)
     newIndex = (index % #TablesOfPiecesGroups["Flicker"]) +1
     if index == endIndex then
         if maRa() then
-           if maRa() then Sleep(1000) end
-           newIndex = getSafeRandom(jumpsto, jumpsto[1])
+           if maRa() then Sleep(500) end
+           newIndex = jumpsto[math.random(1,#jumpsto)]
+           jumpsto = snippetStarts[newIndex].jumpsto
+           endIndex = snippetStarts[newIndex].endsat
         end
     end
 
-    if snippetStarts[newIndex] then 
-        jumpsto = snippetStarts[newIndex].jumpsto
-        endIndex = snippetStarts[newIndex].endsat
-    end
     return newIndex
 end
 

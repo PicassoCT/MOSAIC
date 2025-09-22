@@ -89,15 +89,15 @@ local _y_axis = 2
 local _z_axis = 3
 
 rotatorTable ={}
-local SIG_HOLO = 1
-local SIG_CORE = 2
-local SIG_HAIR = 4
-local SIG_INCIRCLE = 8
-local SIG_TALKHEAD = 16
-local SIG_GESTE = 32
-local SIG_ONTHEMOVE = 64
-local SIG_TIGLIL = 128
-local SIG_FLICKER= 256
+ SIG_HOLO = 1
+ SIG_CORE = 2
+ SIG_HAIR = 4
+ SIG_INCIRCLE = 8
+ SIG_TALKHEAD = 16
+ SIG_GESTE = 32
+ SIG_ONTHEMOVE = 64
+ SIG_TIGLIL = 128
+ SIG_FLICKER= 256
 local GameConfig = getGameConfig()
 local pieceID_NameMap = Spring.GetUnitPieceList(unitID)
 cachedCopyDict ={}
@@ -120,9 +120,9 @@ function HideReg(pieceID)
     cachedCopyDict[pieceID] = nil
 end
 
+local pieceMap = Spring.GetUnitPieceMap(unitID)
 -- > Hide all Pieces of a Unit
 function hideAllReg()
-    pieceMap = Spring.GetUnitPieceMap(unitID)
     for k, v in pairs(pieceMap) do HideReg(v) end
 end
 
