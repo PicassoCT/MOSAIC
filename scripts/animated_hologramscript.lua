@@ -150,14 +150,20 @@ function flickerAnimation()
     end
 end
 
-function loopsReptitionsJumps(index)
-    newIndex = (index % #TablesOfPiecesGroups["Flicker"]) +1
-    if index == endIndex then
+function loopsReptitionsJumps(indexs)
+    newIndex = (indexs % #TablesOfPiecesGroups["Flicker"]) +1
+    if indexs == endIndex then
         if maRa() then
            if maRa() then Sleep(500) end
-           newIndex = jumpsto[math.random(1,#jumpsto)]
-           jumpsto = snippetStarts[newIndex].jumpsto
-           endIndex = snippetStarts[newIndex].endsat
+           newIndex, data = randDict(snippetStarts)
+           endIndex= data.endsat
+           jumpsto = data.jumpsto
+           if not TablesOfPiecesGroups["Flicker"][endIndex] then
+                echo("animated_hologramscript: Not defined index ".. toString(newIndex))
+                newIndex = 1
+                endIndex= snippetStarts[1].endsat
+                jumpsto = snippetStarts[1].jumpsto
+           end
         end
     end
 
