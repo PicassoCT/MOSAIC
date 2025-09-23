@@ -457,8 +457,9 @@ local function getPieceRotationMatrix(unitID, piece)
     }
 end
 
-function turnPieceTowards(unitID, vecTowards, parentPieceMap, pieceNr, speed)
-    local function cross(ax,ay,az, bx,by,bz)
+function turnPieceTowards(unitID, vecTowards, parentPieceMap, pieceNr, speed, itterations, delayTimeMs)
+   local itteration = itterations or 1
+   local function cross(ax,ay,az, bx,by,bz)
     return ay*bz - az*by,
            az*bx - ax*bz,
            ax*by - ay*bx
@@ -482,24 +483,28 @@ function turnPieceTowards(unitID, vecTowards, parentPieceMap, pieceNr, speed)
         return m
     end
 
-    local vx, vy, vz = normalize(vecTowards[1], vecTowards[2], vecTowards[3])
-    local mat = {{1,0,0},{0,1,0},{0,0,1}} -- identity
-    local parent = parentPieceMap[pieceNr]
-    while parent do        
-        local parentMat = getPieceRotationMatrix(unitID, parent)
-        mat = mulMatMat(mat, parentMat)
-        parent = parentPieceMap[parent]
+    for i=1, itteration, 1 do
+        local vx, vy, vz = normalize(vecTowards[1], vecTowards[2], vecTowards[3])
+        local mat = {{1,0,0},{0,1,0},{0,0,1}} -- identity
+        local parent = parentPieceMap[pieceNr]
+        while parent do        
+            local parentMat = getPieceRotationMatrix(unitID, parent)
+            mat = mulMatMat(mat, parentMat)
+            parent = parentPieceMap[parent]
+        end
+
+            -- transform target into local space
+        local lx,ly,lz = mulMatVec(mat, vx,vy,vz)
+
+        -- convert to Euler
+        local yaw   = math.atan2(lx, lz)
+        local pitch = -math.asin(ly)
+
+        Turn(pieceNr, y_axis, yaw,   speed or 0)
+        Turn(pieceNr, x_axis, pitch,   speed or 0)
+        delayTime = delayTimeMs or 250
+        Sleep(delayTime)
     end
-
-        -- transform target into local space
-    local lx,ly,lz = mulMatVec(mat, vx,vy,vz)
-
-    -- convert to Euler
-    local yaw   = math.atan2(lx, lz)
-    local pitch = -math.asin(ly)
-
-    Turn(pieceNr, y_axis, yaw,   speed or 0)
-    Turn(pieceNr, x_axis, pitch,   speed or 0)
 end
 
 -- > creates a hierarchical table of pieces, descending from root

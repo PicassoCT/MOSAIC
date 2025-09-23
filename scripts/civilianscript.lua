@@ -170,6 +170,26 @@ function setDefaultBodyConfig()
 end
 
 
+function bagDanglignDiagnostics()  
+    echo("Bag Physics Diangostic Loop in civilian is active at " .. locationstring(unitID))
+    while true do
+        for _,axis in ipairs({x_axis, y_axis, z_axis}) do
+            resetAll(unitID)
+            for i=1,360, 45 do
+                Turn(LowArm1, axis, math.rad(i),0)
+                Turn(LowArm2, axis, math.rad(i),0)
+                
+                StartThread(turnPieceTowards, unitID, getDown(), parentPieceMap, ShoppingBag, 15, 2, 100) 
+                StartThread(turnPieceTowards, unitID, getDown(), parentPieceMap, Handbag, 15, 2, 100)
+                Sleep(1)
+                WaitForTurns(ShoppingBag)
+                WaitForTurns(Handbag)
+                Sleep(5000)
+            end
+        end
+    end
+end
+
 function script.Create()
     Move(root, y_axis, -3, 0)
 
@@ -196,6 +216,11 @@ function script.Create()
     bodyBuild()
 
     setupAnimation()
+     if carriesShoppingBag() then  
+        StartThread(bagDanglignDiagnostics)
+        return
+    end
+   
 
     setOverrideAnimationState(eAnimState.standing, eAnimState.standing, true, nil, false)
     --StartThread(animationTestLoop)
@@ -983,8 +1008,8 @@ function PlayAnimation(animname, piecesToFilterOutTable, speed)
         end
     end
     --has handbag
-    if carriesShoppingBag() then  StartThread(turnPieceTowards, unitID, getDown(), parentPieceMap, ShoppingBag, 15) end
-    if bodyConfig.boolHandbag then StartThread(turnPieceTowards, unitID, getDown(), parentPieceMap, Handbag, 15)  end
+    if carriesShoppingBag() then  StartThread(turnPieceTowards, unitID, getDown(), parentPieceMap, ShoppingBag, 15, 2, 100) end
+    if bodyConfig.boolHandbag then StartThread(turnPieceTowards, unitID, getDown(), parentPieceMap, Handbag, 15, 2, 100)  end
 
     return spGetGameFrame() - startTimeFrame
 end
