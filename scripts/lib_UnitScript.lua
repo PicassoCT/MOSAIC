@@ -436,33 +436,74 @@ function normalize(x,y,z)
     return x/len, y/len, z/len
 end
 
+function getRandomDirection()
+    return {math.random(0,1)*randSign(), randSign(), math.random(0,1)*randSign()}
+end
+
+function getUp()
+    return {0, 1, 0}
+end
+
 function getDown()
     return {0, -1, 0}
 end
 
--- extract 3×3 rotation matrix from Spring's 4×4
-local function getPieceRotationMatrix(unitID, piece)
-    local mat = Spring.GetUnitPieceMatrix(unitID, piece) -- 16 numbers
-
-    -- Spring returns column-major (OpenGL-style):  
-    -- [1] [5]  [9] [13]  
-    -- [2] [6] [10] [14]  
-    -- [3] [7] [11] [15]  
-    -- [4] [8] [12] [16]  
-
-    return {
-        {mat[1], mat[5],  mat[9]},   -- X basis
-        {mat[2], mat[6],  mat[10]},  -- Y basis
-        {mat[3], mat[7],  mat[11]},  -- Z basis
-    }
+local function mulMatMat4(a, b)
+    local m = {}
+    for i = 1,4 do
+        m[i] = {}
+        for j = 1,4 do
+            m[i][j] = a[i][1]*b[1][j] + a[i][2]*b[2][j] + a[i][3]*b[3][j] + a[i][4]*b[4][j]
+        end
+    end
+    return m
 end
 
-function turnPieceTowards(unitID, vecTowards, parentPieceMap, pieceNr, speed, itterations, delayTimeMs)
+local function getPieceWorldMatrix(unitID, piece, parentPieceMap)
+    local mat = {
+        {1,0,0,0},
+        {0,1,0,0},
+        {0,0,1,0},
+        {0,0,0,1},
+    }
+
+    local chain = {}
+    local p = piece
+    while p do
+        table.insert(chain, 1, p) -- prepend parent-first
+        p = parentPieceMap[p]
+    end
+
+    for _,pc in ipairs(chain) do
+        local m = {Spring.GetUnitPieceMatrix(unitID, pc)} -- local matrix (4x4 flat)
+        -- expand into 4x4
+        local localMat = {
+            {m[1], m[5],  m[9],  m[13]},
+            {m[2], m[6],  m[10], m[14]},
+            {m[3], m[7],  m[11], m[15]},
+            {m[4], m[8],  m[12], m[16]},
+        }
+        mat = mulMatMat4(mat, localMat) -- accumulate properly
+    end
+    return mat
+end
+
+
+
+function turnPieceTowards(unitID, vecTowards, parentPieceMap, pieceNr, speed)
    local itteration = itterations or 1
    local function cross(ax,ay,az, bx,by,bz)
     return ay*bz - az*by,
            az*bx - ax*bz,
            ax*by - ay*bx
+    end
+
+    local function transpose3x3(m) -- works as inverse for pure rotations
+        return {
+            {m[1][1], m[2][1], m[3][1]},
+            {m[1][2], m[2][2], m[3][2]},
+            {m[1][3], m[2][3], m[3][3]},
+        }
     end
 
     -- Multiply a vector by a 3x3 matrix
@@ -483,28 +524,28 @@ function turnPieceTowards(unitID, vecTowards, parentPieceMap, pieceNr, speed, it
         return m
     end
 
-    for i=1, itteration, 1 do
-        local vx, vy, vz = normalize(vecTowards[1], vecTowards[2], vecTowards[3])
-        local mat = {{1,0,0},{0,1,0},{0,0,1}} -- identity
-        local parent = parentPieceMap[pieceNr]
-        while parent do        
-            local parentMat = getPieceRotationMatrix(unitID, parent)
-            mat = mulMatMat(mat, parentMat)
-            parent = parentPieceMap[parent]
-        end
+    local worldMat = getPieceWorldMatrix(unitID, pieceNr, parentPieceMap)
 
-            -- transform target into local space
-        local lx,ly,lz = mulMatVec(mat, vx,vy,vz)
+    -- extract rotation only (upper 3x3)
+    local rot = {
+        {worldMat[1][1], worldMat[1][2], worldMat[1][3]},
+        {worldMat[2][1], worldMat[2][2], worldMat[2][3]},
+        {worldMat[3][1], worldMat[3][2], worldMat[3][3]},
+    }
 
-        -- convert to Euler
-        local yaw   = math.atan2(lx, lz)
-        local pitch = -math.asin(ly)
+    -- invert rotation (transpose)
+    local inv = transpose3x3(rot)
 
-        Turn(pieceNr, y_axis, yaw,   speed or 0)
-        Turn(pieceNr, x_axis, pitch,   speed or 0)
-        delayTime = delayTimeMs or 250
-        Sleep(delayTime)
-    end
+    -- transform world down into piece local space
+    local lx,ly,lz = mulMatVec(inv, 0,-1,0)
+
+    -- convert to Euler
+    local yaw   = math.atan2(lx, lz)
+    local pitch = -math.asin(ly)
+    Spring.Echo("turnPieceTowards yaw="..yaw.." pitch="..pitch.." local="..lx..","..ly..","..lz)
+
+    Turn(pieceNr, x_axis, yaw,   speed or 0)
+    Turn(pieceNr, y_axis, pitch, speed or 0)
 end
 
 -- > creates a hierarchical table of pieces, descending from root

@@ -16,7 +16,7 @@ local spGetGameFrame = Spring.GetGameFrame
 
 local TablesOfPiecesGroups =   getPieceTableByNameGroups(false, true)
 local map = Spring.GetUnitPieceMap(unitID);
-
+local parentPieceMap = getParentPieceMap(unitID)
 local SIG_ANIM = 1
 local SIG_UP = 2
 local SIG_LOW = 4
@@ -170,8 +170,10 @@ function setDefaultBodyConfig()
 end
 
 
+
 function bagDanglignDiagnostics()  
     echo("Bag Physics Diangostic Loop in civilian is active at " .. locationstring(unitID))
+
     while true do
         for _,axis in ipairs({x_axis, y_axis, z_axis}) do
             resetAll(unitID)
@@ -179,8 +181,8 @@ function bagDanglignDiagnostics()
                 Turn(LowArm1, axis, math.rad(i),0)
                 Turn(LowArm2, axis, math.rad(i),0)
                 
-                StartThread(turnPieceTowards, unitID, getDown(), parentPieceMap, ShoppingBag, 15, 2, 100) 
-                StartThread(turnPieceTowards, unitID, getDown(), parentPieceMap, Handbag, 15, 2, 100)
+                StartThread(turnPieceTowards, unitID, getRandomDirection(), parentPieceMap, ShoppingBag) 
+                StartThread(turnPieceTowards, unitID, getDown(), parentPieceMap, Handbag)
                 Sleep(1)
                 WaitForTurns(ShoppingBag)
                 WaitForTurns(Handbag)
@@ -968,7 +970,7 @@ function setupAnimation()
 end
 
 local animCmd = {['turn'] = Turn, ['move'] = Move};
-local parentPieceMap = getParentPieceMap(unitID)
+
 local axisSign = {[x_axis] = 1, [y_axis] = 1, [z_axis] = 1}
 
 function PlayAnimation(animname, piecesToFilterOutTable, speed)
