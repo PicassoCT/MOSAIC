@@ -982,28 +982,31 @@ function PlayAnimation(animname, piecesToFilterOutTable, speed)
     local startTimeFrame = spGetGameFrame()
 
     local anim = Animations[animname];
+    if not anim then echo("animation named:"..animname .." does not exist"); return end
     local randoffset
     for i = 1, #anim do
         local commands = anim[i].commands;
         for j = 1, #commands do
             local cmd = commands[j];
-            randoffset = 0.0
-            if cmd.r then
-                randVal = cmd.r * 100
-                randoffset = math.random(-randVal, randVal) / 100
-            end
+            if cmd then 
+                randoffset = 0.0
+                if cmd.r then
+                    randVal = cmd.r * 100
+                    randoffset = math.random(-randVal, randVal) / 100
+                end
 
-            if cmd.ru or cmd.rl then
-                randUpVal = (cmd.ru or 0.01) * 100
-                randLowVal = (cmd.rl or 0) * 100
-                randoffset = math.random(randLowVal, randUpVal) / 100
-            end
+                if cmd.ru or cmd.rl then
+                    randUpVal = (cmd.ru or 0.01) * 100
+                    randLowVal = (cmd.rl or 0) * 100
+                    randoffset = math.random(randLowVal, randUpVal) / 100
+                end
 
-            if not piecesToFilterOutTable[cmd.p] then
-                animCmd[cmd.c](cmd.p, cmd.a,
-                               axisSign[cmd.a] * (cmd.t + randoffset),
-                               cmd.s * speedFactor)
+                if not piecesToFilterOutTable[cmd.p] then
+                    animCmd[cmd.c](cmd.p, cmd.a,
+                                   axisSign[cmd.a] * (cmd.t + randoffset),
+                                   cmd.s * speedFactor)
 
+                end
             end
         end
         if (i < #anim) then

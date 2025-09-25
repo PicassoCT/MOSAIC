@@ -100,6 +100,9 @@ rotatorTable ={}
 local GameConfig = getGameConfig()
 local pieceID_NameMap = Spring.GetUnitPieceList(unitID)
 
+function setUpdateRequest()
+     GG.VisibleUnitPieceUpateStates[unitID] = true
+end
 
 function updateCheckCache()     
     GG.VisibleUnitPieces[unitID] = dictToTable(cachedCopyDict)
@@ -109,6 +112,7 @@ function ShowReg(pieceID)
     if not pieceID then return end
     Show(pieceID)
     cachedCopyDict[pieceID] = pieceID
+    setUpdateRequest()
 end
 
 function HideReg(pieceID)
@@ -117,6 +121,7 @@ function HideReg(pieceID)
     Hide(pieceID)  
     --TODO make dictionary for efficiency
     cachedCopyDict[pieceID] = nil
+    setUpdateRequest()
 end
 
 local pieceMap = Spring.GetUnitPieceMap(unitID)

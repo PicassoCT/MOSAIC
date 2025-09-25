@@ -105,6 +105,10 @@ function visualizeClock()
     Spin(minute, x_axis, minuteSpeed, minuteSpeed)
 end
 
+function setUpdateRequest()
+     GG.VisibleUnitPieceUpateStates[unitID] = true
+end
+
 function updateCheckCache()
     GG.VisibleUnitPieces[unitID] =  dictToTable(cachedCopyDict)
 end
@@ -114,12 +118,14 @@ function ShowReg(pieceID)
     --Spring.Echo("Avertiseblimp registering ShowReg "..pieceID)
     Show(pieceID)
     cachedCopyDict[pieceID] = pieceID
+    setUpdateRequest()
 end
 
 function HideReg(pieceID)
     if  pieceID == nil then return end
     Hide(pieceID)  
     cachedCopyDict[pieceID] = nil
+    setUpdateRequest()
 end
 local pieceMap = Spring.GetUnitPieceMap(unitID)
 function showAllReg(id)
@@ -393,7 +399,7 @@ function script.Create()
     Spring.SetUnitNoSelect(unitID, true)
     Spring.SetUnitBlocking(unitID, false)
      TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
-    --showAllReg()
+     --showAllReg()
      StartThread(HoloGrams)
 
      HideReg(BrothelSpin)

@@ -2,10 +2,8 @@ include "lib_UnitScript.lua"
 
 local TablesOfPiecesGroups = {}
 local pieceID_NameMap = Spring.GetUnitPieceList(unitID)
-local cachedCopyDict ={}
-local oldCachedCopyDict ={}
 local Frame = piece("Frame")
-if not  GG.VisibleUnitPieces then  GG.VisibleUnitPieces= {} end
+
 function script.Create()
     Spring.SetUnitAlwaysVisible(unitID, true)
     Spring.SetUnitNoSelect(unitID, true)
@@ -16,22 +14,10 @@ function script.Create()
     StartThread(flickerAnimation)
 end
 
-function updateCheckCache()
-  local frame = Spring.GetGameFrame()
-    if frame ~= lastFrame then   
-        if oldCachedCopyDict ~= cachedCopyDict then
-            oldCachedCopyDict = cachedCopyDict      
-            GG.VisibleUnitPieces[unitID] = dictToTable(cachedCopyDict)
-            lastFrame = frame
-        end
-    end
-end
 
 function ShowReg(pieceID)
     if not pieceID then return end
     Show(pieceID)
-    cachedCopyDict[pieceID] = pieceID
-    updateCheckCache()
 end
 
 function displayPieceTable(T)
@@ -51,8 +37,6 @@ function HideReg(pieceID)
     assert(pieceID_NameMap[pieceID], "Not a piece".. displayPieceTable(pieceID))
     Hide(pieceID)  
     --TODO make dictionary for efficiency
-    cachedCopyDict[pieceID] = nil
-    updateCheckCache()
 end
 
 -- > Hide all Pieces of a Unit

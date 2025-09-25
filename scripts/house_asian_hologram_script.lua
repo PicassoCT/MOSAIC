@@ -30,18 +30,15 @@ function setUpdateRequest()
      GG.VisibleUnitPieceUpateStates[unitID] = true
 end
 
---Error: [string "scripts/house_asian_hologram_script.lua"]:462: bad argument #1 to 'Spin' (number expected, got nil)
 function updateCheckCache()   
     GG.VisibleUnitPieces[unitID] = dictToTable(cachedCopyDict)
 end
 
-function ShowReg(pieceID, boolSupressUpdate)
+function ShowReg(pieceID)
     if pieceID == nil then return end
     Show(pieceID)
     cachedCopyDict[pieceID] = pieceID
-    if not boolSupressUpdate then
-        setUpdateRequest()
-    end
+    setUpdateRequest()
 end
 
 function displayPieceTable(T)
@@ -54,14 +51,11 @@ function displayPieceTable(T)
     return concatString
 end
 
-function HideReg(pieceID, boolSupressUpdate)
+function HideReg(pieceID)
     if pieceID == nil then return end
-
     Hide(pieceID)  
     cachedCopyDict[pieceID] = nil
-    if not boolSupressUpdate then
-        setUpdateRequest()
-    end
+    setUpdateRequest()
 end
 
 local  pieceMap = Spring.GetUnitPieceMap(unitID)

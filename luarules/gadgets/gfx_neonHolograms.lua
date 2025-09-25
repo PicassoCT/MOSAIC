@@ -27,7 +27,7 @@ if (gadgetHandler:IsSyncedCode()) then
 	local SO_SHOPAQ_FLAG = 16
 	local SO_SHTRAN_FLAG = 32
 	local SO_DRICON_FLAG = 128
-    local boolOverride = true
+    local boolDebugActive = false
 
     -- TODO: Add bloomstage - write to low level aphabitmask
     -- Texture back to resolution
@@ -83,10 +83,12 @@ if (gadgetHandler:IsSyncedCode()) then
     local neonUnitDataTransfer = {}
     function registerUnitIfHolo(unitID, unitDefID)
          if neonHologramTypeTable[unitDefID] then
-            Spring.SetUnitNoDraw(unitID, true)            
+            Spring.SetUnitNoDraw(unitID, true)     
+
             allNeonUnits[#allNeonUnits + 1]= unitID
-            Spring.Echo("Registering neon unit "..unitID.. " of type "..neonHologramTypeNames[unitDefID])
-           -- SendToUnsynced("setUnitNeonLuaDraw", unitID, unitDefID)
+            neonUnitDataTransfer[unitID] = unitDefID
+            --conditionalEcho(boolDebugActive, "Registering neon unit "..unitID.. " of type "..neonHologramTypeNames[unitDefID])
+           SendToUnsynced("setUnitNeonLuaDraw", unitID, unitDefID)
         end
     end
 
@@ -142,8 +144,8 @@ if (gadgetHandler:IsSyncedCode()) then
 
         				if id and defID and thisVisibleUnitPieces and thisVisibleUnitPieces ~= cachedUnitPieces[id] then
                             cachedUnitPieces[id] = thisVisibleUnitPieces
-                            --Spring.Echo(HEAD().." Start:Sending Neon Hologram unit "..neonHologramTypeNames[defID].." data:"..toString(thisVisibleUnitPieces).. " - ")
-        					SendToUnsynced("setUnitNeonLuaDraw", id, defID, unpack(thisVisibleUnitPieces))                                 
+                            --conditionalEcho(boolDebugActive, HEAD().." Start:Sending Neon Hologram unit "..neonHologramTypeNames[defID].." data:"..toString(thisVisibleUnitPieces).. " - ")
+        					SendToUnsynced("updateUnitNeonLuaDraw", id, unpack(thisVisibleUnitPieces))                                 
         				end
         			end 
                 end   
@@ -157,6 +159,7 @@ if (gadgetHandler:IsSyncedCode()) then
 
    function gadget:UnitEnteredLos(unitID, unitTeam, allyTeam, unitDefID)
         if neonHologramTypeTable[unitDefID] then
+
             neonUnitDataTransfer[unitID] = unitDefID
         end
     end
@@ -371,13 +374,16 @@ end
     local counterNeonUnits = 0
     local neonHoloParts= {}
 
-    local function setUnitNeonLuaDraw(callname, unitID, unitDefID, ...)
-        local piecesTable = {...}
-        Spring.Echo("Drawing Unit with Lua Neonshader "..unitID.. " of type"..UnitDefs[unitDefID].name)
-        Spring.UnitRendering.SetUnitLuaDraw(unitID, false)
-        neonUnitTables[unitID] =  piecesTable
+    local function setUnitNeonLuaDraw(callname, unitID, unitDefID)
+        Spring.UnitRendering.SetUnitLuaDraw(unitID, false) 
         UnitUnitDefIDMap[unitID] = unitDefID
-        counterNeonUnits = counterNeonUnits + 1
+        counterNeonUnits = counterNeonUnits + 1     
+        neonUnitTables[unitID] = {}
+    end
+    local function updateUnitNeonLuaDraw(callname, unitID, ...)
+        local piecesTable = {...}
+        --Spring.Echo("Drawing Unit with Lua Neonshader "..unitID.. " of type"..UnitDefs[unitDefID].name)
+        neonUnitTables[unitID] =  piecesTable       
     end	
 
     local function unsetUnitNeonLuaDraw(callname, unitID)
@@ -473,6 +479,7 @@ end
 		InitializeTextures()
 		gadget:ViewResize(vsx, vsy)
         gadgetHandler:AddSyncAction("setUnitNeonLuaDraw", setUnitNeonLuaDraw)
+        gadgetHandler:AddSyncAction("updateUnitNeonLuaDraw", updateUnitNeonLuaDraw)
         gadgetHandler:AddSyncAction("unsetUnitNeonLuaDraw", unsetUnitNeonLuaDraw) --TODO debug
 		frameGameStart = Spring.GetGameFrame()+1
 
@@ -670,6 +677,7 @@ end
         gl.DeleteTexture(screencopy or 0)
 
         gadgetHandler.RemoveSyncAction("setUnitNeonLuaDraw")
+        gadgetHandler.RemoveSyncAction("updateUnitNeonLuaDraw")
         gadgetHandler.RemoveSyncAction("unsetUnitNeonLuaDraw")
     end
 end
