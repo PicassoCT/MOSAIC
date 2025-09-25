@@ -3,7 +3,6 @@ include "lib_mosaic.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 
-
 local boolIsCasino    = UnitDefNames["house_western_hologram_casino"].id == unitDefID
 local boolIsBrothel   = UnitDefNames["house_western_hologram_brothel"].id == unitDefID
 local boolIsBuisness  = UnitDefNames["house_western_hologram_buisness"].id == unitDefID 
@@ -12,8 +11,9 @@ local creditNeonSigns =  include('creditNamesNeonLogos.lua')
 local brothelNamesNeonSigns = include('brothelNamesNeonLogos.lua')
 local sloganNamesNeonSigns = include('SlogansNewsNeonLogos.lua')
 local brothelsloganNamesNeonSigns = include('SloganBrothelNeonLogos.lua')
+local civilianTypeTable = getCivilianTypeTable(UnitDefs)
+cachedCopyDict ={}
 
-civilianTypeTable = getCivilianTypeTable(UnitDefs)
 local hours  =0
 local minutes=0
 local seconds=0
@@ -49,7 +49,6 @@ local tllegUpR = piece "tllegUpR"
 local tlpole = piece "tlpole"
 local tlflute = piece "tlflute"
 local spGetGameFrame = Spring.GetGameFrame
-if not  GG.VisibleUnitPieces then  GG.VisibleUnitPieces= {} end
 boolIsRestaurant = false
 textSpinner =  piece("text_spin")
 DirectionArcPoint = piece "DirectionArcPoint"
@@ -100,7 +99,7 @@ rotatorTable ={}
  SIG_FLICKER= 256
 local GameConfig = getGameConfig()
 local pieceID_NameMap = Spring.GetUnitPieceList(unitID)
-cachedCopyDict ={}
+
 
 function updateCheckCache()     
     GG.VisibleUnitPieces[unitID] = dictToTable(cachedCopyDict)
@@ -200,9 +199,7 @@ local function tiglLilLoop()
 
             StartThread(dancingTiglil, idleAnimations)
 
-            while  (hours > 20 or hours < 6) do
-                Sleep(3000)
-            end
+            waitTillDay()
             Signal(SIG_TIGLIL)
             HideReg(tlpole)
             HideReg(tldrum)
@@ -210,7 +207,6 @@ local function tiglLilLoop()
             hideTReg(TableOfPiecesGroups["GlowStick"])
             hideTReg(tigLilHoloPices)
         end
-        waitTillNight()
         Sleep(1000)
     end
 end
@@ -291,10 +287,10 @@ function chipsDropping(chips, boolReverse)
                 HideReg(chips[i])
             end
         end
-        waitTillNight()
         Sleep(1000)
     end
 end
+
 rPlayerName = getRandomPlayerName()
 function getDramatisPersona()
 
@@ -383,7 +379,7 @@ function GetPieceTableGroups()
 end
 
 function script.Create()
-    echo("brothelhologram created at"..locationstring(unitID))
+    conditionalEcho(boolDebugHologram, "brothelhologram created at"..locationstring(unitID))
     Spring.SetUnitAlwaysVisible(unitID, true)
     Spring.SetUnitNeutral(unitID, true)
     Spring.SetUnitNoSelect(unitID, true)
@@ -420,7 +416,6 @@ function emergencyWatcher()
         Sleep(3000)
     end
 end
-
 
 function clock()
     while true do
@@ -647,7 +642,6 @@ function disAppearGlowWorm(piecesTable, fadeInTimeMs, lifeTimeMs, fadeOutTimeMs)
     fadeOut(piecesTable, fadeOutTimeMs/(#piecesTable))
 end
 
-
 function disAppearGlowWormSwarm( fadeInTimeMs, lifeTimeMs, fadeOutTimeMs)
     for i=1, #TableOfPiecesGroups["GlowSwarm"] do
         if maRa() then
@@ -813,7 +807,7 @@ end
 
 function HoloGrams()
     SetSignalMask(SIG_HOLO)
-    assert(brothelNamesNeonSigns)
+
     rotatorTable[#rotatorTable+1] = piece("brothel_spin")
     rotatorTable[#rotatorTable+1] = piece("general_spin")
     
@@ -823,10 +817,9 @@ function HoloGrams()
     Spin(rotatorTable[2], 2, math.rad(val), 0)
 
     Sleep(15000)
-
-    
+  
     local flickerGroup = TableOfPiecesGroups["BrothelFlicker"]
-    assert(flickerGroup)
+
     hideTReg(flickerGroup)
 
     
@@ -1140,7 +1133,7 @@ function addHologramLetters( myMessages)
             if not posLetters.boolUpright then
                 name, textFX = randDict(allFunctions)
                 if name then
-                    --echo("Hologram "..newMessage.." with textFX "..name)
+                    --conditionalEcho(boolHoloramActive, "Hologram "..newMessage.." with textFX "..name)
                     textFX(allLetters, posLetters, TableOfPiecesGroups)
                     Signal(SIG_FLICKER)
                     HideLetters(allLetters,posLetters)

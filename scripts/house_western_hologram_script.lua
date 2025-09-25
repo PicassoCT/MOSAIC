@@ -4,8 +4,6 @@ include "lib_textFx.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 
-
-
 local boolIsCasino    = UnitDefNames["house_western_hologram_casino"].id == unitDefID
 local boolIsBrothel   = UnitDefNames["house_western_hologram_brothel"].id == unitDefID
 local boolIsBuisness  = UnitDefNames["house_western_hologram_buisness"].id == unitDefID 
@@ -87,7 +85,7 @@ tigLilHoloPices = {
 
 spins ={buisness_spin,wallSpin,general_spin, text_spin, brothel_spin, casino_spin}
 local TableOfPiecesGroups = {}
-local boolDebugHologram = true
+local boolDebugHologram = false
 
 sizeDownLetter  = 350
 sizeSpacingLetter = 300
@@ -228,7 +226,6 @@ local function tiglLilLoop()
             hideTReg(TableOfPiecesGroups["GlowStick"])
             hideTReg(tigLilHoloPices)
         end
-        waitTillNight()
         Sleep(1000)
     end
 end
@@ -869,10 +866,8 @@ function localflickerScript(flickerGroup,  NoErrorFunction, errorDrift, timeoutM
 end
 
 function HoloGrams()
-    echo("begin western hologram initialisation")
+    conditionalEcho(boolHoloramActive, "begin western hologram initialisation")
     SetSignalMask(SIG_HOLO)
-    assert(buisnessNeonSigns)
-    assert(buisnessNeonSigns)
     rotatorTable[#rotatorTable+1] = piece("brothel_spin")
     rotatorTable[#rotatorTable+1] = piece("casino_spin")
     rotatorTable[#rotatorTable+1] = piece("buisness_spin")
@@ -886,10 +881,7 @@ function HoloGrams()
     Spin(rotatorTable[4], 2, math.rad(val), 0)
     Sleep(15000)
 
-    
-    local flickerGroup = TableOfPiecesGroups["BrothelFlicker"]
     local CasinoflickerGroup = TableOfPiecesGroups["CasinoFlicker"]
-    hideTReg(flickerGroup)
     hideTReg(CasinoflickerGroup)
     --echo("Starting hologram GeneralDeco")
     StartThread(holoGramNightTimes, "GeneralDeco", nil, 3)
@@ -1549,7 +1541,7 @@ function addHologramLetters( myMessages)
                 name, textFX = randDict(allFunctions)
                -- name, textFx = "circleProject", circleProject
                 if name then
---                    echo("Hologram "..newMessage.." with textFX "..name..locationstring(unitID))
+--                    conditionalEcho(boolHoloramActive,"Hologram "..newMessage.." with textFX "..name..locationstring(unitID))
                     textFX(allLetters, posLetters, TableOfPiecesGroups)
                     Signal(SIG_FLICKER)
                     HideLetters(allLetters,posLetters)

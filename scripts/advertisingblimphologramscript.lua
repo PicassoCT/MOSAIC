@@ -17,7 +17,7 @@ CasinoSpin= piece("CasinoSpin")
 Joy = piece("Joy1")
 JoyZoom = piece("Joy2") 
 JoyRide = piece("JoyRide")
-local boolDebugScript = false
+local boolDebugHologram = false
 lastFrame = Spring.GetGameFrame()
 local tldrum = piece "tldrum"
 local dancepivot = piece "dancepivot"
@@ -84,7 +84,7 @@ function clock()
     end
 end
 
-function showSetClock()
+function visualizeClock()
     Sleep(100)
     Show(Clock)
     Show(minute)
@@ -104,6 +104,7 @@ function showSetClock()
     minuteSpeed = hourSize/hourInFrames
     Spin(minute, x_axis, minuteSpeed, minuteSpeed)
 end
+
 function updateCheckCache()
     GG.VisibleUnitPieces[unitID] =  dictToTable(cachedCopyDict)
 end
@@ -119,7 +120,6 @@ function HideReg(pieceID)
     if  pieceID == nil then return end
     Hide(pieceID)  
     cachedCopyDict[pieceID] = nil
-
 end
 local pieceMap = Spring.GetUnitPieceMap(unitID)
 function showAllReg(id)
@@ -413,9 +413,9 @@ function HoloGrams()
 
     Sleep(15000)
 
-    if maRa() or true then
-        echo("debugging for rowlexclock active")
-        StartThread(showSetClock)
+    if maRa() or boolDebugHologram then
+        conditionalEcho(boolDebugHologram, "debugging for rowlexclock active")
+        StartThread(visualizeClock)
     end
 
     --sexxxy time
@@ -470,7 +470,7 @@ function JoyAnimation()
     while true do
         HideReg(JoyZoom)
         HideReg(Joy)
-        if boolDebugScript or (hours > 17 or hours < 7) then
+        if boolDebugHologram or (hours > 17 or hours < 7) then
             if maRa() then ShowReg(JoyZoom); else ShowReg(Joy) end
             joyToTheWorld()
             Spin(JoySpinOrigin, z_axis, math.rad(17*3), 0)
@@ -514,7 +514,7 @@ function flickerScript(flickerGroup,  errorDrift, timeoutMs, maxInterval, boolDa
         hideTReg(fGroup)
         --assertRangeConsistency(fGroup, "flickerGroup")
         Sleep(500)
-        if boolDebugScript or (hours > 17 or hours < 7) then
+        if boolDebugHologram or (hours > 17 or hours < 7) then
             toShowTableT= {}
             for x=1,math.random(1,3) do
                 toShowTableT[#toShowTableT+1] = fGroup[math.random(1,#fGroup)]
