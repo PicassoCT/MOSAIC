@@ -28,7 +28,7 @@ local advertising_blimp_hologram = Abstract:New{
 
 	  customParams = {
 	  	baseclass = "Abstract",
-	  	normaltex = "unittextures/component_atlas_normal.dds",
+	  	normaltex = "unittextures/house_europe_normal.dds",
 	  },
 	
 							

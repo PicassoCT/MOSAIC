@@ -41,6 +41,9 @@ local buisnessLogo = nil
 local brothelFlickerGroup = nil
 local CasinoflickerGroup = nil
 local JoyFlickerGroup = {}
+local Clock = piece"Clock"
+local hour = piece"hour"
+local minute = piece"minute"
 SIG_TIGLIL = 2
 SIG_GESTE = 4
 SIG_TALKHEAD = 8
@@ -81,6 +84,26 @@ function clock()
     end
 end
 
+function showSetClock()
+    Sleep(100)
+    Show(Clock)
+    Show(minute)
+    Show(hour)
+    hours, minutes, seconds, percent = getDayTime() 
+    daylength = GG.GameConfig.daylength
+    hourPercent = ((percent % 0.5)/0.5) * math.pi*2
+    Turn(hour,x_axis, hourPercent,0)
+    hourInFrames = daylength/24
+    hourSize = ((2 * math.pi)/12) 
+    hourSpeed = hourSize/hourInFrames
+    Spin(hour, x_axis, hourSpeed, hourSpeed)
+    minutePercent = (minutes /60) * math.pi *2
+    Turn(minute,x_axis, hourPercent,0)
+    minuteInFrames = daylength/( 24 * 60)
+    minuteSize = ((2 * math.pi)/ 60) 
+    minuteSpeed = hourSize/hourInFrames
+    Spin(minute, x_axis, minuteSpeed, minuteSpeed)
+end
 function updateCheckCache()
     GG.VisibleUnitPieces[unitID] =  dictToTable(cachedCopyDict)
 end
@@ -372,6 +395,7 @@ function script.Create()
      TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     --showAllReg()
      StartThread(HoloGrams)
+
      HideReg(BrothelSpin)
      HideReg(CasinoSpin)
      HideReg(BuisnessSpin)
@@ -388,6 +412,11 @@ function HoloGrams()
     hideAllReg()
 
     Sleep(15000)
+
+    if maRa() or true then
+        echo("debugging for rowlexclock active")
+        StartThread(showSetClock)
+    end
 
     --sexxxy time
     px,py,pz = Spring.GetUnitPosition(unitID)

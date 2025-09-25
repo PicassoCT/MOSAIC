@@ -85,7 +85,7 @@ if (gadgetHandler:IsSyncedCode()) then
          if neonHologramTypeTable[unitDefID] then
             Spring.SetUnitNoDraw(unitID, true)            
             allNeonUnits[#allNeonUnits + 1]= unitID
-            --Spring.Echo("Registering neon unit "..unitID.. " of type "..neonHologramTypeNames[unitDefID])
+            Spring.Echo("Registering neon unit "..unitID.. " of type "..neonHologramTypeNames[unitDefID])
            -- SendToUnsynced("setUnitNeonLuaDraw", unitID, unitDefID)
         end
     end
@@ -373,7 +373,7 @@ end
 
     local function setUnitNeonLuaDraw(callname, unitID, unitDefID, ...)
         local piecesTable = {...}
-        --Spring.Echo("Drawing Unit with Lua "..unitID.. " of type"..UnitDefs[unitDefID].name)
+        Spring.Echo("Drawing Unit with Lua Neonshader "..unitID.. " of type"..UnitDefs[unitDefID].name)
         Spring.UnitRendering.SetUnitLuaDraw(unitID, false)
         neonUnitTables[unitID] =  piecesTable
         UnitUnitDefIDMap[unitID] = unitDefID

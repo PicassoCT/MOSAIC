@@ -550,7 +550,7 @@ function turnPieceTowards(unitID, vecTowards, parentPieceMap, pieceNr, speed)
     -- convert to Euler
     local yaw   = math.atan2(lx, lz)
     local pitch = -math.asin(ly)
-    Spring.Echo("turnPieceTowards yaw="..math.deg(yaw).." pitch="..math.deg(pitch).." local="..lx..","..ly..","..lz)
+    --Spring.Echo("turnPieceTowards yaw="..math.deg(yaw).." pitch="..math.deg(pitch).." local="..lx..","..ly..","..lz)
 
   if iterations and iterations > 1 then
       local factor = 1.0
