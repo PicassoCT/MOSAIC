@@ -151,7 +151,7 @@ end
 function externalPickUpHandbag()
     bodyConfig.boolHandbag = true
     if Handbag then Hide(Handbag) end
-    local Handbag = randomMultipleByNameOrDefault("Handbag")
+    Handbag = randomMultipleByNameOrDefault("Handbag")
     Show(Handbag)
 end
 
@@ -173,15 +173,17 @@ end
 
 function bagDanglignDiagnostics()  
     echo("Bag Physics Diangostic Loop in civilian is active at " .. locationstring(unitID))
-
+    Show(ShoppingBag)
+    Show(Handbag)
     while true do
         for _,axis in ipairs({x_axis, y_axis, z_axis}) do
             resetAll(unitID)
             for i=1,360, 45 do
-                Turn(LowArm1, axis, math.rad(i),0)
-                Turn(LowArm2, axis, math.rad(i),0)
-                
-                StartThread(turnPieceTowards, unitID, getRandomDirection(), parentPieceMap, ShoppingBag) 
+                WTurn(LowArm1, axis, math.rad(i),0)
+                WTurn(LowArm2, axis, math.rad(i),0)
+                WTurn(ShoppingBag, 1, math.rad(math.random(-360,360)), 0)
+
+                StartThread(turnPieceTowards, unitID, getDown(), parentPieceMap, ShoppingBag) 
                 StartThread(turnPieceTowards, unitID, getDown(), parentPieceMap, Handbag)
                 Sleep(1)
                 WaitForTurns(ShoppingBag)
@@ -218,7 +220,7 @@ function script.Create()
     bodyBuild()
 
     setupAnimation()
-     if carriesShoppingBag() then  
+    if carriesShoppingBag() then  
         StartThread(bagDanglignDiagnostics)
         return
     end

@@ -488,8 +488,6 @@ local function getPieceWorldMatrix(unitID, piece, parentPieceMap)
     return mat
 end
 
-
-
 function turnPieceTowards(unitID, vecTowards, parentPieceMap, pieceNr, speed)
    local itteration = itterations or 1
    local function cross(ax,ay,az, bx,by,bz)
@@ -533,6 +531,16 @@ function turnPieceTowards(unitID, vecTowards, parentPieceMap, pieceNr, speed)
         {worldMat[3][1], worldMat[3][2], worldMat[3][3]},
     }
 
+    local function getOriginPieceRotation() 
+        local ox, oy, oz = Spring.GetUnitPieceDirection(unitID, pieceNr)
+        local len = math.sqrt(ox*ox + oy*oy + oz*oz)
+        ox, oy, oz = ox/len, oy/len, oz/len
+
+        local originYaw   = math.atan2(ox, oz)
+        local originPitch = -math.asin(oy)
+        return originYaw, originPitch
+    end
+
     -- invert rotation (transpose)
     local inv = transpose3x3(rot)
 
@@ -542,8 +550,25 @@ function turnPieceTowards(unitID, vecTowards, parentPieceMap, pieceNr, speed)
     -- convert to Euler
     local yaw   = math.atan2(lx, lz)
     local pitch = -math.asin(ly)
-    Spring.Echo("turnPieceTowards yaw="..yaw.." pitch="..pitch.." local="..lx..","..ly..","..lz)
+    Spring.Echo("turnPieceTowards yaw="..math.deg(yaw).." pitch="..math.deg(pitch).." local="..lx..","..ly..","..lz)
 
+  if iterations and iterations > 1 then
+      local factor = 1.0
+      local dir = 1
+      local originYaw, originPitch = getOriginPieceRotation()
+
+      while factor > 0.1 do
+         local swingYaw   = yaw   + dir * factor * originYaw
+         local swingPitch = pitch + dir * factor * originPitch
+         Turn(pieceNr, x_axis, swingYaw,   speed or 0)
+         Turn(pieceNr, y_axis, swingPitch, speed or 0)
+         WaitForTurns(pieceNr)
+         Sleep(33) -- ~1 frame (30Hz), tune as needed
+         dir = -dir -- flip direction
+         factor = factor * 0.95
+      end
+      -- settle at center
+   end
     Turn(pieceNr, x_axis, yaw,   speed or 0)
     Turn(pieceNr, y_axis, pitch, speed or 0)
 end
