@@ -220,10 +220,10 @@ function script.Create()
     bodyBuild()
 
     setupAnimation()
-    if carriesShoppingBag() then  
-        StartThread(bagDanglignDiagnostics)
-        return
-    end
+    --if carriesShoppingBag() then  
+    --    StartThread(bagDanglignDiagnostics)
+    --    return
+    --end
    
 
     setOverrideAnimationState(eAnimState.standing, eAnimState.standing, true, nil, false)
