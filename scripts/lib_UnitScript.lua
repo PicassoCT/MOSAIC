@@ -488,91 +488,87 @@ local function getPieceWorldMatrix(unitID, piece, parentPieceMap)
     return mat
 end
 
-function turnPieceTowards(unitID, vecTowards, parentPieceMap, pieceNr, speed, itterations)
-   local itteration = itterations or 1
-   local function cross(ax,ay,az, bx,by,bz)
-    return ay*bz - az*by,
-           az*bx - ax*bz,
-           ax*by - ay*bx
-    end
-
-    local function transpose3x3(m) -- works as inverse for pure rotations
-        return {
-            {m[1][1], m[2][1], m[3][1]},
-            {m[1][2], m[2][2], m[3][2]},
-            {m[1][3], m[2][3], m[3][3]},
-        }
-    end
-
-    -- Multiply a vector by a 3x3 matrix
-    local function mulMatVec(m, x,y,z)
-        return
-            m[1][1]*x + m[1][2]*y + m[1][3]*z,
-            m[2][1]*x + m[2][2]*y + m[2][3]*z,
-            m[3][1]*x + m[3][2]*y + m[3][3]*z
-    end
-
-    local function mulMatMat(a, b)
-        local m = {{0,0,0},{0,0,0},{0,0,0}}
-        for i=1,3 do
-            for j=1,3 do
-                m[i][j] = a[i][1]*b[1][j] + a[i][2]*b[2][j] + a[i][3]*b[3][j]
-            end
-        end
-        return m
-    end
-
-    local worldMat = getPieceWorldMatrix(unitID, pieceNr, parentPieceMap)
-
-    -- extract rotation only (upper 3x3)
-    local rot = {
-        {worldMat[1][1], worldMat[1][2], worldMat[1][3]},
-        {worldMat[2][1], worldMat[2][2], worldMat[2][3]},
-        {worldMat[3][1], worldMat[3][2], worldMat[3][3]},
-    }
-
-    local function getOriginPieceRotation() 
-        local ox, oy, oz = Spring.GetUnitPieceDirection(unitID, pieceNr)
-        local len = math.sqrt(ox*ox + oy*oy + oz*oz)
-        ox, oy, oz = ox/len, oy/len, oz/len
-
-        local originYaw   = math.atan2(ox, oz)
-        local originPitch = -math.asin(oy)
-        return originYaw, originPitch
-    end
-
-    -- invert rotation (transpose)
-    local inv = transpose3x3(rot)
-
-    -- transform world down into piece local space
-    local lx,ly,lz = mulMatVec(inv, 0,-1,0)
-
-    -- convert to Euler
-    local yaw   = math.atan2(lx, lz)
-    local pitch = -math.asin(ly)
-    --Spring.Echo("turnPieceTowards yaw="..math.deg(yaw).." pitch="..math.deg(pitch).." local="..lx..","..ly..","..lz)
-
-  if iterations and iterations > 1 then
-      local factor = 1.0
-      local dir = 1
-      local originYaw, originPitch = getOriginPieceRotation()
-
-      while factor > 0.1 do
-         local swingYaw   = yaw   + dir * factor * originYaw
-         local swingPitch = pitch + dir * factor * originPitch
-         Turn(pieceNr, x_axis, swingYaw,   speed or 0)
-         Turn(pieceNr, y_axis, swingPitch, speed or 0)
-         WaitForTurns(pieceNr)
-         Sleep(33) -- ~1 frame (30Hz), tune as needed
-         dir = -dir -- flip direction
-         factor = factor * 0.95
-      end
-      -- settle at center
+function swingPendulum(unitID, parentPieceMap, pieceNr, speed, iterations)
+   -- utility: normalize a vector
+   local function normalize(x,y,z)
+      local l = math.sqrt(x*x + y*y + z*z)
+      if l == 0 then return 0,0,0 end
+      return x/l, y/l, z/l
    end
-    Turn(pieceNr, x_axis, yaw,   speed or 0)
-    Turn(pieceNr, y_axis, pitch, speed or 0)
-end
 
+   -- Rodrigues' rotation formula: rotate vector (x,y,z) around axis (ax,ay,az) by angle
+   local function rotateAroundAxis(x,y,z, ax,ay,az, angle)
+      local c = math.cos(angle)
+      local s = math.sin(angle)
+      local dot = x*ax + y*ay + z*az
+      return
+         x*c + (ay*z - az*y)*s + ax*dot*(1-c),
+         y*c + (az*x - ax*z)*s + ay*dot*(1-c),
+         z*c + (ax*y - ay*x)*s + az*dot*(1-c)
+   end
+
+   -- convert a local vector into Euler yaw/pitch
+   local function vecToEuler(x,y,z)
+      local yaw   = math.atan2(x, z)
+      local pitch = -math.asin(y)
+      return yaw, pitch
+   end
+
+
+   local worldMat = getPieceWorldMatrix(unitID, pieceNr, parentPieceMap)
+
+   -- extract rotation only (upper 3x3)
+   local rot = {
+      {worldMat[1][1], worldMat[1][2], worldMat[1][3]},
+      {worldMat[2][1], worldMat[2][2], worldMat[2][3]},
+      {worldMat[3][1], worldMat[3][2], worldMat[3][3]},
+   }
+
+   -- invert rotation (transpose, since pure rotation)
+   local inv = {
+      {rot[1][1], rot[2][1], rot[3][1]},
+      {rot[1][2], rot[2][2], rot[3][2]},
+      {rot[1][3], rot[2][3], rot[3][3]},
+   }
+
+   -- transform world gravity (0,-1,0) into piece local space
+   local lx = inv[1][1]*0 + inv[1][2]*-1 + inv[1][3]*0
+   local ly = inv[2][1]*0 + inv[2][2]*-1 + inv[2][3]*0
+   local lz = inv[3][1]*0 + inv[3][2]*-1 + inv[3][3]*0
+
+   local tx,ty,tz = normalize(lx,ly,lz)
+
+   -- base orientation
+   local baseYaw, basePitch = vecToEuler(tx,ty,tz)
+
+   -- choose swing axis: perpendicular to gravity & bag direction
+   local ax,ay,az = normalize(
+      ty*0 - tz*1,  -- cross product with world up (0,1,0)
+      tz*0 - tx*0,
+      tx*1 - ty*0
+   )
+
+   -- pendulum swing
+   local factor = 1.0
+   local dir = 1
+   for i=1,iterations do
+      local angle = dir * factor * 0.3   -- swing amplitude in radians
+      local sx,sy,sz = rotateAroundAxis(tx,ty,tz, ax,ay,az, angle)
+
+      local swingYaw, swingPitch = vecToEuler(sx,sy,sz)
+
+      Turn(pieceNr, x_axis, swingYaw,   speed or 0)
+      Turn(pieceNr, y_axis, swingPitch, speed or 0)
+      WaitForTurns(pieceNr)
+      Sleep(33) -- one frame
+      dir = -dir
+      factor = factor * 0.95
+   end
+
+   -- settle at center
+   Turn(pieceNr, x_axis, baseYaw,   speed or 0)
+   Turn(pieceNr, y_axis, basePitch, speed or 0)
+end
 -- > creates a hierarchical table of pieces, descending from root
 function getPieceHierarchy(unitID)
     local pieceMap = Spring.GetUnitPieceMap ( unitID ) 

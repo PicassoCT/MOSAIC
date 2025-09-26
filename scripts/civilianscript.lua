@@ -220,10 +220,10 @@ function script.Create()
     bodyBuild()
 
     setupAnimation()
-    if myTeamID ~= gaiaTeamID then  
-        StartThread(bagDanglignDiagnostics)
-        return
-    end
+    --if myTeamID ~= gaiaTeamID then  
+    --    StartThread(bagDanglignDiagnostics)
+    --    return
+    --end
    
 
     setOverrideAnimationState(eAnimState.standing, eAnimState.standing, true, nil, false)
@@ -1015,8 +1015,8 @@ function PlayAnimation(animname, piecesToFilterOutTable, speed)
         end
     end
     --has handbag
-    if carriesShoppingBag() then   StartThread(swingPendulum, unitID, parentPieceMap, ShoppingBag, math.pi, 3) end
-    if bodyConfig.boolHandbag then StartThread(swingPendulum, unitID, parentPieceMap, Handbag, math.pi, 3) end
+    if carriesShoppingBag() then   StartThread(swingPendulum, unitID, parentPieceMap, ShoppingBag, 1, 3) end
+    if bodyConfig.boolHandbag then StartThread(swingPendulum, unitID, parentPieceMap, Handbag, 1, 3) end
 
     return spGetGameFrame() - startTimeFrame
 end
