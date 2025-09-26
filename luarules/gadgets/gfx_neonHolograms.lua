@@ -98,7 +98,7 @@ if (gadgetHandler:IsSyncedCode()) then
         for i=1, #piecesTable do
             stringResult = stringResult .. "|" .. pieceNameMap[piecesTable[i]]
         end
-        echo(stringResult)
+        conditionalEcho(boolDebugActive, stringResult)
     end
 
     local function sparse_len(t)
@@ -552,7 +552,7 @@ end
         end
     end       
 
-    local function RenderAllNeonUnits()
+    local function RenderAllNeonUnitsDrawWorld()
 
         if counterNeonUnits == 0 or not boolActivated then
             return
@@ -663,7 +663,7 @@ end
 
     --function gadget:DrawWorld(deferredPass, drawReflection, drawRefraction)
     function gadget:DrawWorld()
-        RenderAllNeonUnits()
+        RenderAllNeonUnitsDrawWorld()
         --RenderBlurApplyBlur()
     end
 
