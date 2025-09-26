@@ -12,9 +12,8 @@ local GameConfig = getGameConfig()
 local pieceID_NameMap = Spring.GetUnitPieceList(unitID)
 local TableOfPiecesGroups = {}
 local cachedCopyDict ={}
+local spGetGameFrame = Spring.GetGameFrame
 
-
-local lastFrame = Spring.GetGameFrame()
 local crossRotatePiece1 =  piece("HoloSpin72")
 local crossRotatePiece2 =  piece("HoloSpin74")
 local jumpScareRotor = piece("jumpScareRotor")
@@ -26,12 +25,19 @@ function clock()
     end
 end
 
-function setUpdateRequest()
-     GG.VisibleUnitPieceUpateStates[unitID] = true
+local oldFrame = spGetGameFrame()
+local newFrame = nil
+--This is a externally pulled function- meaning its called after all unitscripts have run by a gadget to deliver the show and hidden pieces
+function updateCheckCache()     
+    GG.VisibleUnitPieces[unitID] =  dictToTable(cachedCopyDict)     
+    newFrame = spGetGameFrame()
 end
 
-function updateCheckCache()   
-    GG.VisibleUnitPieces[unitID] = dictToTable(cachedCopyDict)
+function setUpdateRequest()
+    if newFrame ~= oldFrame then
+        oldFrame = newFrame
+        GG.VisibleUnitPieceUpateStates[unitID] = true
+    end
 end
 
 function ShowReg(pieceID)

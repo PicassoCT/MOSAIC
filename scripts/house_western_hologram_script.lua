@@ -8,14 +8,14 @@ local boolIsCasino    = UnitDefNames["house_western_hologram_casino"].id == unit
 local boolIsBrothel   = UnitDefNames["house_western_hologram_brothel"].id == unitDefID
 local boolIsBuisness  = UnitDefNames["house_western_hologram_buisness"].id == unitDefID 
 
-local creditNeonSigns =  include('creditNamesNeonLogos.lua')
-local casinoNamesNeonSigns = include('casinoNamesNeonLogos.lua')
-local buisnessNeonSigns =  include('buissnesNamesNeonLogos.lua')
-local sloganNamesNeonSigns = include('SlogansNewsNeonLogos.lua')
-local brothelsloganNamesNeonSigns = include('SloganBrothelNeonLogos.lua')
+creditNeonSigns =  include('creditNamesNeonLogos.lua')
+casinoNamesNeonSigns = include('casinoNamesNeonLogos.lua')
+buisnessNeonSigns =  include('buissnesNamesNeonLogos.lua')
+sloganNamesNeonSigns = include('SlogansNewsNeonLogos.lua')
+brothelsloganNamesNeonSigns = include('SloganBrothelNeonLogos.lua')
 local restaurantNeonLogos = include('restaurantNeonLogos.lua')
 local civilianTypeTable = getCivilianTypeTable(UnitDefs)
-cachedCopyDict ={}
+local cachedCopyDict ={}
 
 local hours   = 0
 local minutes = 0
@@ -105,34 +105,34 @@ SIG_TIGLIL = 128
 SIG_FLICKER= 256
 local GameConfig = getGameConfig()
 local pieceID_NameMap = Spring.GetUnitPieceList(unitID)
-local lastFrame = Spring.GetGameFrame()
-if not  GG.VisibleUnitPieces then  GG.VisibleUnitPieces= {} end
+local oldFrame = spGetGameFrame()
+local newFrame = nil
 
 --This is a externally pulled function- meaning its called after all unitscripts have run by a gadget to deliver the show and hidden pieces
 function updateCheckCache()     
     GG.VisibleUnitPieces[unitID] =  dictToTable(cachedCopyDict)     
+    newFrame = spGetGameFrame()
 end
 
 function setUpdateRequest()
-     GG.VisibleUnitPieceUpateStates[unitID] = true
+    if newFrame ~= oldFrame then
+        oldFrame = newFrame
+        GG.VisibleUnitPieceUpateStates[unitID] = true
+    end
 end
 
-function ShowReg(pieceID, boolSupressUpdate)
+function ShowReg(pieceID)
     if  pieceID == nil then return end
     Show(pieceID)
     cachedCopyDict[pieceID] = pieceID
-    if not boolSupressUpdate then
-        setUpdateRequest()
-    end
+    setUpdateRequest()  
 end
 
-function HideReg(pieceID, boolSupressUpdate)
+function HideReg(pieceID)
     if  pieceID  == nil then return end
     Hide(pieceID)  
     cachedCopyDict[pieceID] = nil
-    if not boolSupressUpdate then
-        setUpdateRequest()
-    end
+    setUpdateRequest()
 end
 
 local pieceMap = Spring.GetUnitPieceMap(unitID)
@@ -154,7 +154,7 @@ function hideTReg(l_tableName, l_lowLimit, l_upLimit, l_delay)
     if l_lowLimit and l_upLimit then
         for ik = l_upLimit, l_lowLimit, -1 do
             if l_tableName[ik] then
-                HideReg(l_tableName[ik], true)
+                HideReg(l_tableName[ik])
             elseif boolDebugActive == true then
                 echo("In HideT, table " .. l_lowLimit ..
                          " contains a empty entry")
@@ -166,7 +166,7 @@ function hideTReg(l_tableName, l_lowLimit, l_upLimit, l_delay)
     else
         for ik = 1, table.getn(l_tableName), 1 do
             if l_tableName[ik] then
-                HideReg(l_tableName[ik], true)
+                HideReg(l_tableName[ik])
             elseif boolDebugActive == true then
                 echo("In HideT, table " .. l_lowLimit .. " contains a empty entry")
             end

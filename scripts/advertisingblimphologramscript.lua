@@ -18,7 +18,6 @@ Joy = piece("Joy1")
 JoyZoom = piece("Joy2") 
 JoyRide = piece("JoyRide")
 local boolDebugHologram = false
-lastFrame = Spring.GetGameFrame()
 local tldrum = piece "tldrum"
 local dancepivot = piece "dancepivot"
 local deathpivot = piece "deathpivot"
@@ -74,7 +73,7 @@ tigLilHoloPices = {
     ball
 }
 
-if not  GG.VisibleUnitPieces then  GG.VisibleUnitPieces= {} end
+
 hours, minutes, seconds, percent = getDayTime()
 
 function clock()
@@ -105,12 +104,20 @@ function visualizeClock()
     Spin(minute, x_axis, minuteSpeed, minuteSpeed)
 end
 
-function setUpdateRequest()
-     GG.VisibleUnitPieceUpateStates[unitID] = true
+local oldFrame = spGetGameFrame()
+local newFrame = nil
+--This is a externally pulled function- meaning its called after all unitscripts have run by a gadget to deliver the show and hidden pieces
+function updateCheckCache()     
+    GG.VisibleUnitPieces[unitID] =  dictToTable(cachedCopyDict)     
+    newFrame = spGetGameFrame()
 end
 
-function updateCheckCache()
-    GG.VisibleUnitPieces[unitID] =  dictToTable(cachedCopyDict)
+
+function setUpdateRequest()
+    if newFrame ~= oldFrame then
+        oldFrame = newFrame
+        GG.VisibleUnitPieceUpateStates[unitID] = true
+    end
 end
 
 function ShowReg(pieceID)

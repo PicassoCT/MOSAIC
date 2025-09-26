@@ -12,7 +12,7 @@ local brothelNamesNeonSigns = include('brothelNamesNeonLogos.lua')
 local sloganNamesNeonSigns = include('SlogansNewsNeonLogos.lua')
 local brothelsloganNamesNeonSigns = include('SloganBrothelNeonLogos.lua')
 local civilianTypeTable = getCivilianTypeTable(UnitDefs)
-cachedCopyDict ={}
+local cachedCopyDict ={}
 
 local hours  =0
 local minutes=0
@@ -100,12 +100,21 @@ rotatorTable ={}
 local GameConfig = getGameConfig()
 local pieceID_NameMap = Spring.GetUnitPieceList(unitID)
 
-function setUpdateRequest()
-     GG.VisibleUnitPieceUpateStates[unitID] = true
+
+l--This is a externally pulled function- meaning its called after all unitscripts have run by a gadget to deliver the show and hidden pieces
+--This is a externally pulled function- meaning its called after all unitscripts have run by a gadget to deliver the show and hidden pieces
+local oldFrame = spGetGameFrame()
+local newFrame = nil
+function updateCheckCache()     
+    GG.VisibleUnitPieces[unitID] =  dictToTable(cachedCopyDict)     
+    newFrame = spGetGameFrame()
 end
 
-function updateCheckCache()     
-    GG.VisibleUnitPieces[unitID] = dictToTable(cachedCopyDict)
+function setUpdateRequest()
+    if newFrame ~= oldFrame then
+        oldFrame = newFrame
+        GG.VisibleUnitPieceUpateStates[unitID] = true
+    end
 end
 
 function ShowReg(pieceID)
