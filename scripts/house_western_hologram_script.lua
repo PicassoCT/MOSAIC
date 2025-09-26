@@ -13,7 +13,7 @@ casinoNamesNeonSigns = include('casinoNamesNeonLogos.lua')
 buisnessNeonSigns =  include('buissnesNamesNeonLogos.lua')
 sloganNamesNeonSigns = include('SlogansNewsNeonLogos.lua')
 brothelsloganNamesNeonSigns = include('SloganBrothelNeonLogos.lua')
-local restaurantNeonLogos = include('restaurantNeonLogos.lua')
+restaurantNeonLogos = include('restaurantNeonLogos.lua')
 local civilianTypeTable = getCivilianTypeTable(UnitDefs)
 local cachedCopyDict ={}
 
@@ -85,7 +85,7 @@ tigLilHoloPices = {
 
 spins ={buisness_spin,wallSpin,general_spin, text_spin, brothel_spin, casino_spin}
 local TableOfPiecesGroups = {}
-local boolDebugHologram = false
+local boolDebugActive = false
 
 sizeDownLetter  = 350
 sizeSpacingLetter = 300
@@ -559,7 +559,7 @@ function holoGramNightTimes( name, axisToRotateAround, elementsMax)
     alreadyShowing = {}
     
     while true do
-        if ( (hours > 17 or hours < 7) or boolDebugHologram) and isANormalDay() then
+        if ( (hours > 17 or hours < 7) or boolDebugActive) and isANormalDay() then
         StartThread(PlaySoundByUnitDefID, unitDefID, "sounds/advertising/hologramnoise.ogg", 0.25, 25000, 1)
             showTellDict= {}
             hcounter = math.random(3, elementsMax)
@@ -772,7 +772,7 @@ function showWallDayTime(name)
     wallGrid = TableOfPiecesGroups["WallGrid"][math.random(1,#TableOfPiecesGroups["WallGrid"])]
     while true do
         randOffset =  randSign() 
-        if (hours > 18 +randOffset or hours < 7 or boolDebugHologram) and isANormalDay() then 
+        if (hours > 18 +randOffset or hours < 7 or boolDebugActive) and isANormalDay() then 
             if maRa() then
                 ShowReg(wallGrid)
             end

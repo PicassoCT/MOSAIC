@@ -182,9 +182,9 @@ function bagDanglignDiagnostics()
                 WTurn(LowArm1, axis, math.rad(i),0)
                 WTurn(LowArm2, axis, math.rad(i),0)
                 WTurn(ShoppingBag, 1, math.rad(math.random(-360,360)), 0)
+                StartThread(swingPendulum, unitID, parentPieceMap, ShoppingBag, 10, 3)
+                StartThread(swingPendulum, unitID, parentPieceMap, Handbag, 10, 3)
 
-                StartThread(turnPieceTowards, unitID, getDown(), parentPieceMap, ShoppingBag) 
-                StartThread(turnPieceTowards, unitID, getDown(), parentPieceMap, Handbag)
                 Sleep(1)
                 WaitForTurns(ShoppingBag)
                 WaitForTurns(Handbag)
@@ -220,10 +220,10 @@ function script.Create()
     bodyBuild()
 
     setupAnimation()
-    --if carriesShoppingBag() then  
-    --    StartThread(bagDanglignDiagnostics)
-    --    return
-    --end
+    if myTeamID ~= gaiaTeamID then  
+        StartThread(bagDanglignDiagnostics)
+        return
+    end
    
 
     setOverrideAnimationState(eAnimState.standing, eAnimState.standing, true, nil, false)
@@ -1015,8 +1015,8 @@ function PlayAnimation(animname, piecesToFilterOutTable, speed)
         end
     end
     --has handbag
-    if carriesShoppingBag() then  StartThread(turnPieceTowards, unitID, getDown(), parentPieceMap, ShoppingBag, 15, 2, 100) end
-    if bodyConfig.boolHandbag then StartThread(turnPieceTowards, unitID, getDown(), parentPieceMap, Handbag, 15, 2, 100)  end
+    if carriesShoppingBag() then   StartThread(swingPendulum, unitID, parentPieceMap, ShoppingBag, math.pi, 3) end
+    if bodyConfig.boolHandbag then StartThread(swingPendulum, unitID, parentPieceMap, Handbag, math.pi, 3) end
 
     return spGetGameFrame() - startTimeFrame
 end

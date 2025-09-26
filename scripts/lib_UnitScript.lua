@@ -488,7 +488,7 @@ local function getPieceWorldMatrix(unitID, piece, parentPieceMap)
     return mat
 end
 
-function turnPieceTowards(unitID, vecTowards, parentPieceMap, pieceNr, speed)
+function turnPieceTowards(unitID, vecTowards, parentPieceMap, pieceNr, speed, itterations)
    local itteration = itterations or 1
    local function cross(ax,ay,az, bx,by,bz)
     return ay*bz - az*by,
@@ -553,7 +553,7 @@ function turnPieceTowards(unitID, vecTowards, parentPieceMap, pieceNr, speed)
     --Spring.Echo("turnPieceTowards yaw="..math.deg(yaw).." pitch="..math.deg(pitch).." local="..lx..","..ly..","..lz)
 
   if iterations and iterations > 1 then
-      local factor = 1.0
+      local factor = 1.0e
       local dir = 1
       local originYaw, originPitch = getOriginPieceRotation()
 
