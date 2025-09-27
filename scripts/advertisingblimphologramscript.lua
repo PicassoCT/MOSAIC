@@ -11,13 +11,22 @@ local percent = 0
 local TablesOfPiecesGroups = {}
 local cachedCopyDict = {}
 
+hours, minutes, seconds, percent = getDayTime()
+
+function clock()
+    while true do
+        hours, minutes, seconds, percent = getDayTime()
+        Sleep(10000)
+    end
+end
+
 gaiaTeamID = Spring.GetGaiaTeamID()
 BrothelSpin= piece("BrothelSpin")
 CasinoSpin= piece("CasinoSpin")
 Joy = piece("Joy1")
 JoyZoom = piece("Joy2") 
 JoyRide = piece("JoyRide")
-local boolDebugHologram = false
+local boolDebugHologram = true
 local tldrum = piece "tldrum"
 local dancepivot = piece "dancepivot"
 local deathpivot = piece "deathpivot"
@@ -74,34 +83,30 @@ tigLilHoloPices = {
 }
 
 
-hours, minutes, seconds, percent = getDayTime()
 
-function clock()
-    while true do
-        hours, minutes, seconds, percent = getDayTime()
-        Sleep(10000)
-    end
-end
 
 function visualizeClock()
     Sleep(100)
-    Show(Clock)
-    Show(minute)
-    Show(hour)
-    hours, minutes, seconds, percent = getDayTime() 
-    daylength = GG.GameConfig.daylength
+    ShowReg(Clock)
+    ShowReg(minute)
+    ShowReg(hour)
+    turnAxis = y_axis
+    _, minutes, _, percent = getDayTime() 
+    local fps = 30
+    daylengthInFrames = GG.GameConfig.daylength
     hourPercent = ((percent % 0.5)/0.5) * math.pi*2
-    Turn(hour,x_axis, hourPercent,0)
-    hourInFrames = daylength/24
+    Turn(hour,turnAxis, hourPercent*-1,0)
+    hourInFrames = daylengthInFrames/24
     hourSize = ((2 * math.pi)/12) 
-    hourSpeed = hourSize/hourInFrames
-    Spin(hour, x_axis, hourSpeed, hourSpeed)
+    hourSpeed = (hourSize/hourInFrames ) * fps
+    Spin(hour, turnAxis, -hourSpeed, 0 )
+   
     minutePercent = (minutes /60) * math.pi *2
-    Turn(minute,x_axis, hourPercent,0)
-    minuteInFrames = daylength/( 24 * 60)
+    Turn(minute,turnAxis, minutePercent*-1,0)
+    minuteInFrames = daylengthInFrames/( 24 * 60)
     minuteSize = ((2 * math.pi)/ 60) 
-    minuteSpeed = hourSize/hourInFrames
-    Spin(minute, x_axis, minuteSpeed, minuteSpeed)
+    minuteSpeed = (minuteSize/ minuteInFrames) * fps
+    Spin(minute, turnAxis, -minuteSpeed, 0 )
 end
 
 local oldFrame = spGetGameFrame()

@@ -145,7 +145,7 @@ if (gadgetHandler:IsSyncedCode()) then
         				if id and defID and thisVisibleUnitPieces and thisVisibleUnitPieces ~= cachedUnitPieces[id] then
                             cachedUnitPieces[id] = thisVisibleUnitPieces
                             --conditionalEcho(boolDebugActive, HEAD().." Start:Sending Neon Hologram unit "..neonHologramTypeNames[defID].." data:"..toString(thisVisibleUnitPieces).. " - ")
-        					SendToUnsynced("updateUnitNeonLuaDraw", id, unpack(thisVisibleUnitPieces))                                 
+        					SendToUnsynced("updateUnitNeonLuaDraw", id, defID, unpack(thisVisibleUnitPieces))                                 
         				end
         			end 
                 end   
@@ -380,10 +380,11 @@ end
         counterNeonUnits = counterNeonUnits + 1     
         neonUnitTables[unitID] = {}
     end
-    local function updateUnitNeonLuaDraw(callname, unitID, ...)
+    local function updateUnitNeonLuaDraw(callname, unitID, unitDefID, ...)
         local piecesTable = {...}
         --Spring.Echo("Drawing Unit with Lua Neonshader "..unitID.. " of type"..UnitDefs[unitDefID].name)
-        neonUnitTables[unitID] =  piecesTable       
+        neonUnitTables[unitID] =  piecesTable  
+        UnitUnitDefIDMap[unitID] = unitDefID     
     end	
 
     local function unsetUnitNeonLuaDraw(callname, unitID)
