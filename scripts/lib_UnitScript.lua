@@ -514,7 +514,7 @@ function swingPendulum(unitID, parentPieceMap, pieceNr, speed, iterations)
       return yaw, pitch
    end
 
-
+   local down = getUp()
    local worldMat = getPieceWorldMatrix(unitID, pieceNr, parentPieceMap)
 
    -- extract rotation only (upper 3x3)
@@ -532,20 +532,20 @@ function swingPendulum(unitID, parentPieceMap, pieceNr, speed, iterations)
    }
 
    -- transform world gravity (0,-1,0) into piece local space
-   local lx = inv[1][1]*0 + inv[1][2]*-1 + inv[1][3]*0
-   local ly = inv[2][1]*0 + inv[2][2]*-1 + inv[2][3]*0
-   local lz = inv[3][1]*0 + inv[3][2]*-1 + inv[3][3]*0
+   local lx = inv[1][1]*down[1] + inv[1][2]*down[2] + inv[1][3]*down[3]
+   local ly = inv[2][1]*down[1] + inv[2][2]*down[2] + inv[2][3]*down[3]
+   local lz = inv[3][1]*down[1] + inv[3][2]*down[2] + inv[3][3]*down[3]
 
    local tx,ty,tz = normalize(lx,ly,lz)
 
    -- base orientation
    local baseYaw, basePitch = vecToEuler(tx,ty,tz)
-
+   local up = getDown()
    -- choose swing axis: perpendicular to gravity & bag direction
    local ax,ay,az = normalize(
-      ty*0 - tz*1,  -- cross product with world up (0,1,0)
-      tz*0 - tx*0,
-      tx*1 - ty*0
+      ty*up[1] - tz * up[2],  -- cross product with world up (0,1,0)
+      tz*up[3] - tx*up[3],
+      tx*up[2] - ty*up[1]
    )
 
    -- pendulum swing
@@ -556,7 +556,15 @@ function swingPendulum(unitID, parentPieceMap, pieceNr, speed, iterations)
       local sx,sy,sz = rotateAroundAxis(tx,ty,tz, ax,ay,az, angle)
 
       local swingYaw, swingPitch = vecToEuler(sx,sy,sz)
+--[[
+localUp <- [ 0, 1, 0, 0 ]
+worldUp <- Spring.GetModelSpaceTransform() * [ 0, 1, 0, 0 ]
+worldUp <- worldUp / len(worldUp)
+currentTurnAxis <- cross(localUp, worldUp)
+currentTurnAngle <- acos(dot(localUp, worldUp))
+TurnPiece(currentTurnAxis, - currentTurnAngle)
 
+]]
       Turn(pieceNr, x_axis, swingYaw,   speed or 0)
       Turn(pieceNr, y_axis, swingPitch, speed or 0)
       WaitForTurns(pieceNr)

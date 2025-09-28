@@ -82,9 +82,6 @@ tigLilHoloPices = {
     ball
 }
 
-
-
-
 function visualizeClock()
     Sleep(100)
     ShowReg(Clock)

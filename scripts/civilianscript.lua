@@ -172,13 +172,13 @@ end
 
 
 function bagDanglignDiagnostics()  
-    echo("Bag Physics Diangostic Loop in civilian is active at " .. locationstring(unitID))
+    echo("civilian Bag Physics Diangostic Loop in civilian is active at " .. locationstring(unitID))
     Show(ShoppingBag)
     Show(Handbag)
     while true do
         for _,axis in ipairs({x_axis, y_axis, z_axis}) do
             resetAll(unitID)
-            for i=1,360, 45 do
+            for i=1,360, 5 do
                 WTurn(LowArm1, axis, math.rad(i),0)
                 WTurn(LowArm2, axis, math.rad(i),0)
                 WTurn(ShoppingBag, 1, math.rad(math.random(-360,360)), 0)
@@ -188,7 +188,7 @@ function bagDanglignDiagnostics()
                 Sleep(1)
                 WaitForTurns(ShoppingBag)
                 WaitForTurns(Handbag)
-                Sleep(5000)
+                Sleep(1000)
             end
         end
     end
@@ -243,8 +243,8 @@ end
 
 function animationTestLoop()
     while true do
-        dx, dz = math.random(-10, 10)/10, math.random(-10, 10)/10 
-        ExplosiveDeath(dx, dz)
+       
+        noTPoses()
         Sleep(1000)
         resetAll(unitID)
         WaitForTurns(upperBodyPieces) 
@@ -656,6 +656,35 @@ function startPeacefullProtest( id)
     return true
 end
 
+function noTPoses(range, speed)
+    val =math.random(-range,range)
+    Turn(UpArm1,x_axis, math.rad(val),speed)
+    val =math.random(-range,range)
+    Turn(UpArm1,z_axis, math.rad(val),speed)
+    val =math.random(-range, 0)    
+    Turn(UpArm1,y_axis, math.rad(val),speed)
+
+    val =math.random(-range,range)  
+    Turn(LowArm1,x_axis, math.rad(val),speed)
+    val =math.random(-range,range)
+    Turn(LowArm1,z_axis, math.rad(val),speed)    
+    val =math.random(-range,0)
+    Turn(LowArm1,y_axis, math.rad(val),speed)
+
+    Turn(UpArm2,x_axis, math.rad(val),speed)
+    val =math.random(-range,range)
+    Turn(UpArm2,z_axis, math.rad(val),speed)  
+
+    val =math.random(0, range)    
+    Turn(UpArm2,y_axis, math.rad(val),speed)
+    val =math.random(-range,range)
+    Turn(LowArm2,x_axis, math.rad(val),speed)
+    val =math.random(-range,range)
+    Turn(LowArm2,z_axis, math.rad(val),speed)
+    val =math.random(0,range)
+    Turn(LowArm2,y_axis, math.rad(val),speed)
+end
+
 function peacefullProtest()
     Signal(SIG_INTERNAL)
     SetSignalMask(SIG_INTERNAL)
@@ -679,9 +708,17 @@ function peacefullProtest()
         Sleep(3000)
     end
 	GG.SocialEngineeredPeople[unitID] = nil
-    resetT(upperBodyPieces,2.0, false, true)
+   resetUpperBodyWaitNoTPose(true)
 	hideProtestSign()
     setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_ENDED, "protest")
+end
+
+function resetUpperBodyWaitNoTPose(boolWait)
+  resetT(upperBodyPieces,2.0)
+  noTPoses(15.0, 2.0)
+  if boolWait then
+    WaitForTurns(upperBodyPieces)
+  end
 end
 
 boolStartPraying = false
@@ -712,7 +749,7 @@ function pray()
         Sleep(500)
     end
     setSpeedEnv(unitID, NORMAL_WALK_SPEED)
-    resetT(upperBodyPieces,2.0, false, true)
+    resetUpperBodyWaitNoTPose()
     Move(center,z_axis, 0, 2500)
     setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_ENDED, "pray")
 end
@@ -839,7 +876,7 @@ function chatting()
     end
     conditionalEcho(boolDebugActive, "civilian "..unitID.. " chat has ended")
     playUpperBodyIdleAnimation()
-    resetT(TablesOfPiecesGroups["UpArm"], math.pi, false, true)
+    resetUpperBodyWaitNoTPose(true)
     setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_ENDED, "talk")
 end
 
@@ -1446,7 +1483,7 @@ UpperAnimationStateFunctions = {
         if boolDecoupled == true then
             if math.random(1, 10) > 5 then
                 playUpperBodyIdleAnimation()
-                resetT(TablesOfPiecesGroups["UpArm"], math.pi, false, true)
+                resetUpperBodyWaitNoTPose(true)
             end
         end
 
