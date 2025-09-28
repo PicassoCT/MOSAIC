@@ -1027,12 +1027,15 @@ if (gadgetHandler:IsSyncedCode()) then
                         end
                         )
             if nearest ~= projOwnerID then
+                id = nil
                 civilianBuildingBirdTimer[nearest] = {frame = gameFrame, boolIsAtSea = isBuildingNearSea(nearest)}
                 if civilianBuildingBirdTimer[nearest].boolIsAtSea then
-                    createUnitAtUnit(gaiaTeamID, "gullswarm", nearest)
+                    id = createUnitAtUnit(gaiaTeamID, "gullswarm", nearest)
                 else
-                    createUnitAtUnit(gaiaTeamID, "ravenswarm", nearest)
+                    id = createUnitAtUnit(gaiaTeamID, "ravenswarm", nearest)
                 end
+                px,py,pz = Spring.GetProjectilePosition(proID)
+                genericCallUnitFunctionPassArgs(unitID, setShotNearby, {value = 0, x= px, y= py, z= pz})
             end
         end
     end
