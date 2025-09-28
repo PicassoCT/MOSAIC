@@ -127,8 +127,8 @@ home = {}
 local damagedCoolDown = 0
 local bodyConfig = {}
 local TruckTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "truck", UnitDefs)
-local NORMAL_WALK_SPEED =  0.65625
-local SPRINT_SPEED = 1.0
+local NORMAL_WALK_SPEED =  GameConfig.civilian_walking_speedfactor
+local SPRINT_SPEED = GameConfig.civilian_running_speedfactor
 
 
 function naked()
@@ -708,17 +708,18 @@ function peacefullProtest()
         Sleep(3000)
     end
 	GG.SocialEngineeredPeople[unitID] = nil
-   resetUpperBodyWaitNoTPose(true)
+   resetUpperBodyNoTPose(true)
 	hideProtestSign()
     setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_ENDED, "protest")
 end
 
-function resetUpperBodyWaitNoTPose(boolWait)
-  resetT(upperBodyPieces,2.0)
-  noTPoses(15.0, 2.0)
-  if boolWait then
-    WaitForTurns(upperBodyPieces)
-  end
+function resetUpperBodyNoTPose(boolWait)
+    randSpeed = math.random(20, 30)/10
+    resetT(upperBodyPieces, randSpeed)
+    noTPoses(15.0, randSpeed)
+    if boolWait then
+      WaitForTurns(upperBodyPieces)
+    end
 end
 
 boolStartPraying = false
@@ -749,7 +750,7 @@ function pray()
         Sleep(500)
     end
     setSpeedEnv(unitID, NORMAL_WALK_SPEED)
-    resetUpperBodyWaitNoTPose()
+    resetUpperBodyNoTPose()
     Move(center,z_axis, 0, 2500)
     setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_ENDED, "pray")
 end
@@ -876,7 +877,7 @@ function chatting()
     end
     conditionalEcho(boolDebugActive, "civilian "..unitID.. " chat has ended")
     playUpperBodyIdleAnimation()
-    resetUpperBodyWaitNoTPose(true)
+    resetUpperBodyNoTPose(true)
     setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_ENDED, "talk")
 end
 
@@ -1483,7 +1484,7 @@ UpperAnimationStateFunctions = {
         if boolDecoupled == true then
             if math.random(1, 10) > 5 then
                 playUpperBodyIdleAnimation()
-                resetUpperBodyWaitNoTPose(true)
+                resetUpperBodyNoTPose(true)
             end
         end
 

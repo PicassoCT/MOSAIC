@@ -56,8 +56,6 @@ function GetRegionByHash(mapHash)
       return resultMap[region]
   end
 
-
-
   function getLocation()
         location = GG.Location
         if location then
@@ -208,6 +206,8 @@ function getGameConfig()
         civilianFleeDistance = 1200,
         civilianMaxFlightTimeMS = 300000,
         civilianInterestRadius = 350,
+        civilian_walking_speedfactor =  0.65625,
+        civilian_running_speedfactor = 1.0,
 
         generalInteractionDistance = 110,
         minConversationLengthFrames = 15 * 30,

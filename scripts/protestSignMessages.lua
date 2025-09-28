@@ -46,6 +46,7 @@ return {
     "DONT LUUK BACK ANGER", "BOOBS & VAGENE", 
 
     "MAKE LOVE& NOT WAR",
+    "MAKE LOVE& NOT WARCRAFT",
     "MAKE WAR NOT LOVE",
     "REALITY IS A RTS",
     "FUCK PROTAGON",
@@ -77,7 +78,11 @@ return {
     "FB SAID IT FIRST",
     "ALL DEFECTOR",
     "prisoner dilemma",
-    "LIFE &SA &PITCH"
+    "LIFE &SA &PITCH",
+    "They are after me",
+    "Will protest for money"
+
+
 	
 	
 }
