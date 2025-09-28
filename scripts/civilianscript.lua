@@ -130,7 +130,6 @@ local TruckTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "tr
 local NORMAL_WALK_SPEED =  GameConfig.civilian_walking_speedfactor
 local SPRINT_SPEED = GameConfig.civilian_running_speedfactor
 
-
 function naked()
     isBeachBabe = UnitDefNames["civilian_western4"].id == unitDefID
     return isBeachBabe and (unitID % 2 == 0)
@@ -1144,7 +1143,6 @@ function tacticalAnarchy()
             if ed then Command(unitID, "attack", ed, {}) end
         end
     end
-
 end
 
 normalBehavourStateMachine = {
