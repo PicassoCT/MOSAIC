@@ -265,6 +265,7 @@ function checkReSpawnPopulation()
         		if GG.BusesTable  and #GG.BusesTable > 0 and randChance(10) then
                     busId = randDict(GG.BusesTable)
                     if doesUnitExistAlive(busId) then
+                        --TODO stop bus temporary
         	   	        x,_,z = spGetUnitPosition(busId)
                         --assert(x > 0 and x < Game.mapSizeX, x)
                         --assert(z > 0 and z < Game.mapSizeZ, z)

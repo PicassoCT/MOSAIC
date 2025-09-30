@@ -5,8 +5,7 @@ bloom
 	- run bar
 	- retry bar, uint8_t seems to have been replaced in master with in
 
--Test gullswarm
--Test ravenswarm
+
 
 - healthbars /holograms are darkened by ssao -> fix, by excluding gui-h
 - update house arcology for house_asian standlone 
