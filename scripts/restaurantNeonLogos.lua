@@ -1,5 +1,7 @@
 return 
 {
+"Metall Factions",
+"Beyon All Reason",
 "Greaseburg",
 "Quickbait",
 "FryFiasco",

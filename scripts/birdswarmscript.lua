@@ -20,6 +20,7 @@ function script.Create()
     StartThread(moveControl)    
     hideT(TablesOfPiecesGroups["Gull"])
     hideT(TablesOfPiecesGroups["Raven"])
+    Hide(center)
     name = "Gull"
     if boolIsGull == false then  name = "Raven" end
     boolAtLeastOne = true
@@ -32,7 +33,7 @@ function script.Create()
             boolAtLeastOne = false
         end
     end
-   
+    Spring.PlaySoundFile("sounds/animals/birdsFleeing.ogg")
     Spring.SetUnitAlwaysVisible(unitID, true)
     Spring.SetUnitNoSelect(unitID,true)
     StartThread(iterrativeLifeTime, unitID, true, false)
@@ -49,34 +50,46 @@ function iterrativeLifeTime(unitID,  boolReclaimed, boolSelfdestroyed, finalizeF
 end
 
 shotNearby= 30000
-fleeX, fleeZ = 0,0
+fleeX, fleeZ = getNormalizedRandomVector(), getNormalizedRandomVector()
+proOwnerId= nil
+boolShotsFired = false
 function setShotNearby(args)
+    boolShotsFired = true
     shotNearby = shotNearby + args.value
     mx,my,mz = Spring.GetUnitPosition(unitID)
     fleeX, fleeZ = mx - args.x or 0, mz - args.z or 0
     norm = math.max(math.abs(fleeX), math.abs(fleeZ))
     fleeX = fleeX/norm
     fleeZ = fleeZ/norm
+    if args.proOwnerID and doesUnitExistAlive(args.proOwnerId) then
+        proOwnerId = args.proOwnerID
+        Spring.AddUnitImpulse(unitID, 0, 0.1, 0)
+        Command(proOwnerId, "guard")
+    end
 end
 
-function timeBasedOffset()
-    return math.sin((((Spring.GetGameFrame() % 15000)/15000)*2*math.pi) -math.pi) * 500
-end
 
 function moveControl()
-    factor = 3.0
-    Spring.MoveCtrl.Enable(unitID,true)
-    xsignum= randSign()
-    zsignum= randSign()
+    factor = 1.0
+    Sleep(150)
+    Spring.MoveCtrl.Enable(unitID,true) 
+    minFleightHeight = 256
     x,y,z=Spring.GetUnitPosition(unitID)
-    upValue= 0
-    while true do
+    groundHeight = Spring.GetGroundHeight(x,z)
+    riseFactor = 0
+    rate = 1.0 /  (5*1000/30)
+    while not boolShotsFired do
          Spring.MoveCtrl.SetPosition(unitID
-            ,x + timeBasedOffset()*xsignum + fleeX * factor, y+ upValue 
-            ,z +timeBasedOffset()*zsignum + fleeZ * factor)
-         upValue = math.min(100, upValue +0.1)
-         Sleep(100)
+            ,x + fleeX * factor
+            ,groundHeight + mix( minFleightHeight + math.random(0,1)/100, 0, riseFactor)
+            ,z + fleeZ * factor)
+         Sleep(33)
+         x,y,z=Spring.GetUnitPosition(unitID)
+         groundHeight = Spring.GetGroundHeight(x,z)
+         minFleightHeight = minFleightHeight + math.random(0,1)/100
+         riseFactor = math.min(1.0, riseFactor + 0.006)
     end
+     Spring.MoveCtrl.Disable(unitID) 
 end
     
 

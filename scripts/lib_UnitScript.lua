@@ -440,6 +440,10 @@ function getRandomDirection()
     return {math.random(0,1)*randSign(), randSign(), math.random(0,1)*randSign()}
 end
 
+function getNormalizedRandomVector()
+    return (math.random(0,100)/100) * randSign()
+end
+
 function getUp()
     return {0, 1, 0}
 end

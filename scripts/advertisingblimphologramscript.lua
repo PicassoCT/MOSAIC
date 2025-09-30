@@ -428,8 +428,7 @@ function HoloGrams()
 
     Sleep(15000)
 
-    if maRa() or boolDebugHologram then
-        conditionalEcho(boolDebugHologram, "debugging for rowlexclock active")
+    if randChance(10) then
         StartThread(visualizeClock)
     end
 

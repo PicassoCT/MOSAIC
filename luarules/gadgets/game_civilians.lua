@@ -259,16 +259,13 @@ function checkReSpawnPopulation()
             x, _, z, startNode = getRandomSpawnNode()
             --assert(x > 0 and x < Game.mapSizeX, x)
             --assert(z > 0 and z < Game.mapSizeZ, z)
-            if x and startNode then
+            if x and startNode and GG.BusesTable then
                 goalNode = RouteTabel[startNode][math.random(1, #RouteTabel[startNode])]
                 civilianType = randDict(civilianWalkingTypeTable)
-        		if GG.BusesTable  and #GG.BusesTable > 0 and randChance(10) then
-                    busId = randDict(GG.BusesTable)
-                    if doesUnitExistAlive(busId) then
-        	   	        x,_,z = spGetUnitPosition(busId)
-                        --assert(x > 0 and x < Game.mapSizeX, x)
-                        --assert(z > 0 and z < Game.mapSizeZ, z)
-                    end
+                busId = randDict(GG.BusesTable)      		
+                if busId and doesUnitExistAlive(busId) and randChance(10) then                    
+    	   	        x,_,z = spGetUnitPosition(busId)
+                    echo("Spawning civilian at bus at "..locationstring(busId))                    
         		end
 
                id = spawnAMobileCivilianUnit(civilianType, x, z, startNode, goalNode)

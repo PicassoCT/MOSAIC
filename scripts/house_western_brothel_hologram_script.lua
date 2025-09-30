@@ -110,6 +110,7 @@ function updateCheckCache()
     newFrame = spGetGameFrame()
 end
 
+--produce
 function setUpdateRequest()
     if newFrame ~= oldFrame then
         oldFrame = newFrame
