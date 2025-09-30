@@ -1035,7 +1035,7 @@ if (gadgetHandler:IsSyncedCode()) then
                     id = createUnitAtUnit(gaiaTeamID, "ravenswarm", nearest)
                 end
                 px,py,pz = Spring.GetProjectilePosition(proID)
-                genericCallUnitFunctionPassArgs(unitID, setShotNearby, {value = 0, x= px, y= py, z= pz})
+                genericCallUnitFunctionPassArgs(unitID, setShotNearby, {value = 0, x= px, y= py, z= pz, proOwnerID = proOwnerID})
             end
         end
     end
