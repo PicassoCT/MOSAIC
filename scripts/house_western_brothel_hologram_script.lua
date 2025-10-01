@@ -1,5 +1,6 @@
 include "lib_OS.lua"
 include "lib_mosaic.lua"
+include "lib_textFx.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 
@@ -14,10 +15,10 @@ local brothelsloganNamesNeonSigns = include('SloganBrothelNeonLogos.lua')
 local civilianTypeTable = getCivilianTypeTable(UnitDefs)
 local cachedCopyDict ={}
 
-local hours  =0
-local minutes=0
-local seconds=0
-local percent=0
+local hours   = 0
+local minutes = 0
+local seconds = 0
+local percent = 0
 hours, minutes, seconds, percent = getDayTime()
 
 function hashMaRa()
@@ -79,7 +80,7 @@ tigLilHoloPices = {
 
 spins ={buisness_spin,wallSpin,general_spin, text_spin, brothel_spin, casino_spin}
 local TableOfPiecesGroups = {}
-local boolDebugHologram = false
+local boolDebugActive = false
 
 sizeDownLetter  = 350
 sizeSpacingLetter = 300
@@ -99,12 +100,11 @@ rotatorTable ={}
  SIG_FLICKER= 256
 local GameConfig = getGameConfig()
 local pieceID_NameMap = Spring.GetUnitPieceList(unitID)
-
-
-l--This is a externally pulled function- meaning its called after all unitscripts have run by a gadget to deliver the show and hidden pieces
---This is a externally pulled function- meaning its called after all unitscripts have run by a gadget to deliver the show and hidden pieces
 local oldFrame = spGetGameFrame()
 local newFrame = nil
+
+--This is a externally pulled function- meaning its called after all unitscripts have run by a gadget to deliver the show and hidden pieces
+--consume
 function updateCheckCache()     
     GG.VisibleUnitPieces[unitID] =  dictToTable(cachedCopyDict)     
     newFrame = spGetGameFrame()
@@ -119,17 +119,15 @@ function setUpdateRequest()
 end
 
 function ShowReg(pieceID)
-    if not pieceID then return end
+    if pieceID == nil then return end
     Show(pieceID)
     cachedCopyDict[pieceID] = pieceID
     setUpdateRequest()
 end
 
 function HideReg(pieceID)
-    if not pieceID then return end
-    
+    if  pieceID  == nil then return end
     Hide(pieceID)  
-    --TODO make dictionary for efficiency
     cachedCopyDict[pieceID] = nil
     setUpdateRequest()
 end
@@ -155,7 +153,7 @@ function hideTReg(l_tableName, l_lowLimit, l_upLimit, l_delay)
                          " contains a empty entry")
             end
 
-            if l_delay and l_delay > 0 then Sleep(l_delay) end
+            if l_delay and l_delay > 0 then setUpdateRequest; Sleep(l_delay) end
         end
 
     else
@@ -196,8 +194,8 @@ end
 include ("tigLilAnimation.lua")
 include("lib_textFx.lua")
 
-local function tiglLilLoop()
---    echo("Reaching brothel tiglil")
+local function tiglLilLoop() 
+   conditionalEcho(boolDebugActive, "Reaching brothel tiglil")
     if unitID % 3 ~= 0 then return end
     if not GG.TiglilHoloTable then GG.TiglilHoloTable = {} end
     if not GG.TiglilHoloTable[unitDefID] then GG.TiglilHoloTable[unitDefID] = {} end
@@ -318,25 +316,12 @@ end
 
 function mergePersonalizeMessages()
   location_region, location_country, location_province, location_cityname, location_citypart = getLocation()
-
-        if boolIsBrothel then 
             for i=1, #brothelsloganNamesNeonSigns do
                 brothelsloganNamesNeonSigns[i] = brothelsloganNamesNeonSigns[i]:gsub( "<suspect>", getDramatisPersona())
             end
              brothelNamesNeonSigns = mergeTables(brothelNamesNeonSigns, brothelsloganNamesNeonSigns)
              assert(brothelNamesNeonSigns)
-        end
-  
-        for i=1, #sloganNamesNeonSigns do
-            sloganNamesNeonSigns[i] = sloganNamesNeonSigns[i]:gsub( "<suspect>", getDramatisPersona())
-            if maRa() then
-                sloganNamesNeonSigns[i] = sloganNamesNeonSigns[i]:gsub( "<cityname>", location_cityname)
-            else
-                sloganNamesNeonSigns[i] = sloganNamesNeonSigns[i]:gsub( "<cityname>", location_citypart)
-            end
-        end
-        buisnessNeonSigns =  sloganNamesNeonSigns
-        assert(buisnessNeonSigns)
+        
 end
 
 boolJustOnce= true
@@ -394,7 +379,7 @@ function GetPieceTableGroups()
 end
 
 function script.Create()
-    conditionalEcho(boolDebugHologram, "brothelhologram created at"..locationstring(unitID))
+    conditionalEcho(boolDebugActive, "brothelhologram created at"..locationstring(unitID))
     Spring.SetUnitAlwaysVisible(unitID, true)
     Spring.SetUnitNeutral(unitID, true)
     Spring.SetUnitNoSelect(unitID, true)
@@ -564,15 +549,8 @@ function holoGramRain()
                 Turn(RainCenter,x_axis,math.rad(rainDirectioinCopy.x),0)
                 Turn(RainCenter,z_axis,math.rad(rainDirectioinCopy.z),0)
                 while(hours > 19 or hours < 6) do
-                    if boolIsBrothel then
-                        holoRain("Brothel", speed)
-                    end
-                    if boolIsBuisness then
-                        holoRain("Buisness", speed)
-                    end
-                    if maRa() == maRa() then
-                        holoRain("Neutral", speed)
-                    end
+                    holoRain("Brothel", speed)
+       
                     Sleep(1000)
                 end
                 hideT(TableOfPiecesGroups["BuisnessRain"])
@@ -591,7 +569,7 @@ function holoGramNightTimes( name, axisToRotateAround, max)
     interval = math.random(1,3)*60*1000
     alreadyShowing = {}
     while true do
-        if ( (hours > 17 or hours < 7) or boolDebugHologram) and isANormalDay() then
+        if ( (hours > 17 or hours < 7) or boolDebugActive) and isANormalDay() then
         StartThread(PlaySoundByUnitDefID, unitDefID, "sounds/advertising/hologramnoise.ogg", 0.25, 25000, 1)
             showTellDict= {}
             hcounter = math.random(3, 6)
@@ -732,7 +710,7 @@ function showWallDayTime(name)
     wallGrid = TableOfPiecesGroups["WallGrid"][math.random(1,#TableOfPiecesGroups["WallGrid"])]
     while true do
         randOffset =  randSign() 
-        if (hours > 18 +randOffset or hours < 7 or boolDebugHologram) and isANormalDay() then 
+        if (hours > 18 +randOffset or hours < 7 or boolDebugActive) and isANormalDay() then 
             if maRa() then
                 ShowReg(wallGrid)
             end
@@ -923,8 +901,6 @@ function delayedFlickerSingleLetter(letterPiece)
     end
 end
 
-
-
 function setupMessage(myMessages)
     boolHighlightFirstLetter = math.random(1,100) < 10
     hideResetAllLetters()
@@ -964,12 +940,11 @@ function setupMessage(myMessages)
         end
     end
 
-    allLetters = {} 
-    posLetters = {}   
+    local allLetters = {} 
+    local posLetters = {}   
     posLetters.unitID = unitID
     posLetters.myMessage = myMessage
     posLetters.TriLetters= getAllLetters(TableOfPiecesGroups)
-    
     posLetters.spacing = {}
     posLetters.boolUpright = boolUpright
 
@@ -988,7 +963,6 @@ function setupMessage(myMessages)
             if boolContinue == true and TableOfPiecesGroups[letter] and lettercounter[letter] and TableOfPiecesGroups[letter][lettercounter[letter]] then
                 local letterName = TableOfPiecesGroups[letter][(lettercounter[letter] % #TableOfPiecesGroups[letter]) + 1 ] 
       
-
                 --Highlight first
                 if boolHighlightFirstLetter and boolFirstHighlight then
                     boolFirstHighlight =false
@@ -1050,6 +1024,19 @@ function restoreMessageOriginalPosition(message, posLetters)
 end
 
 
+backdropAxis = x_axis
+spindropAxis = y_axis
+
+function resetSpinDrop(allLetters)
+
+         foreach(allLetters,
+        function(id)   
+                StopSpin(id, spindropAxis, math.rad(0), 0)      
+                Turn(id, 1, math.rad(0), 0)    
+                Turn(id, 2, math.rad(0), 0)    
+                Turn(id, 3, math.rad(0), 0)    
+        end)
+end
 
 
 function addJHologramLetters()
@@ -1148,7 +1135,7 @@ function addHologramLetters( myMessages)
             if not posLetters.boolUpright then
                 name, textFX = randDict(allFunctions)
                 if name then
-                    --conditionalEcho(boolHoloramActive, "Hologram "..newMessage.." with textFX "..name)
+                    --conditionalEcho(boolDebugActive, "Hologram "..newMessage.." with textFX "..name)
                     textFX(allLetters, posLetters, TableOfPiecesGroups)
                     Signal(SIG_FLICKER)
                     HideLetters(allLetters,posLetters)

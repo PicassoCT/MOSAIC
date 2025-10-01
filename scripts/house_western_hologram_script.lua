@@ -109,11 +109,13 @@ local oldFrame = spGetGameFrame()
 local newFrame = nil
 
 --This is a externally pulled function- meaning its called after all unitscripts have run by a gadget to deliver the show and hidden pieces
+--consume
 function updateCheckCache()     
     GG.VisibleUnitPieces[unitID] =  dictToTable(cachedCopyDict)     
     newFrame = spGetGameFrame()
 end
 
+--produce
 function setUpdateRequest()
     if newFrame ~= oldFrame then
         oldFrame = newFrame
@@ -866,7 +868,7 @@ function localflickerScript(flickerGroup,  NoErrorFunction, errorDrift, timeoutM
 end
 
 function HoloGrams()
-    conditionalEcho(boolHoloramActive, "begin western hologram initialisation")
+    conditionalEcho(boolDebugActive, "begin western hologram initialisation")
     SetSignalMask(SIG_HOLO)
     rotatorTable[#rotatorTable+1] = piece("brothel_spin")
     rotatorTable[#rotatorTable+1] = piece("casino_spin")
@@ -1429,8 +1431,6 @@ function addJHologramLetters()
     end
 end
 
-
-
 idleAnimations[#idleAnimations +1] = idle_stance
 idleAnimations[#idleAnimations +1] = idle_stance2
 idleAnimations[#idleAnimations +1] = idle_stance3
@@ -1541,7 +1541,7 @@ function addHologramLetters( myMessages)
                 name, textFX = randDict(allFunctions)
                -- name, textFx = "circleProject", circleProject
                 if name then
---                    conditionalEcho(boolHoloramActive,"Hologram "..newMessage.." with textFX "..name..locationstring(unitID))
+--                    conditionalEcho(boolDebugActive,"Hologram "..newMessage.." with textFX "..name..locationstring(unitID))
                     textFX(allLetters, posLetters, TableOfPiecesGroups)
                     Signal(SIG_FLICKER)
                     HideLetters(allLetters,posLetters)
