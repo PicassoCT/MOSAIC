@@ -4,7 +4,7 @@ local PornoRama = Abstract:New{
 
 	objectName = "PornoRama.dae",
 
-	script = "pornoRamaScript.lua",
+	script = "advertising_blimp_pornoramascript.lua",
 	mass = 1,
 	--floater = true,
 	--cost	
