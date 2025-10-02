@@ -33,7 +33,7 @@ local OperativeAsset = Human:New{
 
 	onoffable = false,
 	  	
-	sightDistance = 400,
+	sightDistance = 1024,
 		--cloaking behaviour
 	canCloak =true,
 	cloakCost=0.0001,

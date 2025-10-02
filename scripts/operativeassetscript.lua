@@ -104,8 +104,16 @@ local boolDecoupled = false
 local boolFlying = false
 local boolAiming = false
 local boolOnRoof = false
+
+local FAR_SIGHTED= 1.0
+local NEAR_SIGHTED = 0.4
+local CLOSE_COMBAT_SIGHTED = 0.1
+
+
+
 function onRooftop()
     --Spring.Echo("Is on Rooftop")
+    setViewRadius(unitID, FAR_SIGHTED)
     boolOnRoof = true
     boolStartRoofTopThread= true
 end
@@ -117,6 +125,7 @@ boolInClosedCombat = false
 closeCombat= {}
 function isNowInCloseCombat( arenaID)
 	boolInClosedCombat = true
+    setViewRadius(unitID, CLOSE_COMBAT_SIGHTED)
 	closeCombat= { arenaID = arenaID}
 end
 
@@ -143,6 +152,7 @@ function closeCombatOS()
             end
             --Spring.Echo("Operativeasset: Is leaving close combat")
             boolInClosedCombat = false 
+            setViewRadius(unitID, NEAR_SIGHTED)
         end
     Sleep(250)
     end
@@ -206,7 +216,7 @@ function script.Create()
     Hide(backpack)
     hideT(TablesOfPiecesGroups["backpackX"])
     shownPieces[#shownPieces+1] =TablesOfPiecesGroups["backpackX"][math.random(1,#TablesOfPiecesGroups["backpackX"])]
-
+    setViewRadius(unitID, NEAR_SIGHTED)
     setupAnimation()
     --StartThread(turnDetector)
     StartThread(flyingMonitored)
@@ -858,6 +868,7 @@ function onRoof()
             Spring.UnitDetach(unitID)
         end
     end
+    setViewRadius(unitID, NEAR_SIGHTED)
     boolOnRoof= false
 end
 
@@ -1111,7 +1122,7 @@ end
 
 
 function sniperAimFunction(weaponID, heading, pitch)
-	if not boolOnRoof then return false end
+
     boolAiming = true
 	showFireArm()
     if boolWalking == true then

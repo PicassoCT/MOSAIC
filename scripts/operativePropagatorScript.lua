@@ -117,11 +117,14 @@ lowerBodyPieces =
 
 local houseTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture,
                                                 "house", UnitDefs)
+local FAR_SIGHTED= 1.0
+local CLOSE_COMBAT_SIGHTED = 0.1
 
 boolInClosedCombat = false
 closeCombat= {}
 function isNowInCloseCombat( arenaID)
     boolInClosedCombat = true
+    setViewRadius(unitID, CLOSE_COMBAT_SIGHTED)
     closeCombat= {arenaID = arenaID}
 end
 
@@ -131,17 +134,11 @@ end
 	end
 end
 
-function inverseTurnCoat()
-
-
-end
-
 function SwayCoatWithTorso(remainderRotationRad)
 	-- safety
 	-- scale the effect: coat bones shouldn’t rotate as much as torso
-	accumulatedRoatationChange = accumulatedRoatationChange +remainderRotationRad
+	accumulatedRoatationChange = accumulatedRoatationChange + remainderRotationRad
 end
-
 
 
 function externalAimFunction(targetPosT, remainderRotationRad)
@@ -177,6 +174,7 @@ function closeCombatOS()
                 oldState = newState
                 Sleep(20)
             end
+            setViewRadius(unitID, FAR_SIGHTED)
             boolInClosedCombat = false 
         end
     Sleep(1000)

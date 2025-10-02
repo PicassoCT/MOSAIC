@@ -265,6 +265,7 @@ function checkReSpawnPopulation()
                 busId = randDict(GG.BusesTable)      		
                 if busId and doesUnitExistAlive(busId) and randChance(10) then                    
     	   	        x,_,z = spGetUnitPosition(busId)
+                    stunUnit(buisId, 1.0)
         		end
 
                id = spawnAMobileCivilianUnit(civilianType, x, z, startNode, goalNode)

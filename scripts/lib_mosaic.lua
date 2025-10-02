@@ -788,6 +788,16 @@ end
                     [UnitDefNames["advertising_blimp_pornorama"].id] = "advertising_blimp_pornorama"      
                 }
     end  
+
+
+    function setViewRadius(unitID, radiusFactor)
+        local unitDefID = Spring.GetUnitDefID(unitID)
+        local maxSightDistance = UnitDefs[unitDefID].sightDistance
+        assert(maxSighDistance)
+        radius =  maxSightDistance * radiusFactor
+        Spring.SetUnitSensorRadius(unitID, "los" ,radius)
+    end
+
     function attachHologramToUnitPiece(unitID, holoDefID, pieceID)
         id = createUnitAtUnit(Spring.GetUnitTeam(unitID), holoDefID, unitID)
         Spring.UnitAttach(id,unitID, pieceID)
