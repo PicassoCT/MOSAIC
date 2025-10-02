@@ -153,7 +153,7 @@ function hideTReg(l_tableName, l_lowLimit, l_upLimit, l_delay)
                          " contains a empty entry")
             end
 
-            if l_delay and l_delay > 0 then setUpdateRequest; Sleep(l_delay) end
+            if l_delay and l_delay > 0 then setUpdateRequest(); Sleep(l_delay) end
         end
 
     else

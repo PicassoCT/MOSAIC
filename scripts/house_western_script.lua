@@ -3,6 +3,7 @@ include "lib_OS.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 
+local boolDebugActive = false
 local spGetUnitPosition = Spring.GetUnitPosition
 local GameConfig = getGameConfig()
 local grafitiMessages =  include('grafitiMessages.lua')
@@ -213,12 +214,12 @@ function HoloGrams()
     if getDeterministicCityOfSin(getCultureName(), Game)== true and isNearCityCenter(px,pz, GameConfig) == true or mapOverideSinCity() then
         hostBrothelPiece = piece("WhiteOfficeGhetto_Roof_Deco2")   
         if maRa()== true and contains(ToShowTable, hostBrothelPiece) == true then
-            echo("Spawn brothel hologram")
+            conditionalEcho(boolDebugActive, "Spawn brothel hologram")
             StartThread(moveCtrlHologramToUnitPiece, unitID, "house_western_hologram_brothel", hostBrothelPiece, decoPieceUsedOrientation[hostBrothelPiece] )
         else
             hostCasinoPiece = piece("WhiteOfficeGhetto_Roof_Deco01")   
             if contains(ToShowTable, hostCasinoPiece) == true then 
-                echo("Spawn casino hologram")
+                conditionalEcho(boolDebugActive, "Spawn casino hologram")
                 StartThread(moveCtrlHologramToUnitPiece, unitID, "house_western_hologram_casino", hostCasinoPiece, decoPieceUsedOrientation[hostCasinoPiece] )
             end
         end

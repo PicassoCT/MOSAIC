@@ -24,6 +24,7 @@ gaiaTeamID = Spring.GetGaiaTeamID()
 BrothelSpin= piece("BrothelSpin")
 CasinoSpin= piece("CasinoSpin")
 Joy = piece("Joy1")
+JoyAlt = piece("Joy3")
 JoyZoom = piece("Joy2") 
 JoyRide = piece("JoyRide")
 local boolDebugHologram = true
@@ -422,6 +423,7 @@ function HoloGrams()
     brothelFlickerGroup = TablesOfPiecesGroups["BrothelFlicker"]
     CasinoflickerGroup = TablesOfPiecesGroups["CasinoFlicker"]
     JoyFlickerGroup[#JoyFlickerGroup+1] = Joy
+    JoyFlickerGroup[#JoyFlickerGroup+1] = JoyAlt
     JoyFlickerGroup[#JoyFlickerGroup+1] = JoyZoom
     JoyFlickerGroup[#JoyFlickerGroup+1] = JoyRide
     hideAllReg()
@@ -485,7 +487,15 @@ function JoyAnimation()
         HideReg(JoyZoom)
         HideReg(Joy)
         if boolDebugHologram or (hours > 17 or hours < 7) then
-            if maRa() then ShowReg(JoyZoom); else ShowReg(Joy) end
+            if maRa() then 
+                ShowReg(JoyZoom); 
+            else 
+                if maRa() then
+                ShowReg(Joy) 
+            else
+                ShowReg(JoyAlt) 
+            end
+            end
             joyToTheWorld()
             Spin(JoySpinOrigin, z_axis, math.rad(17*3), 0)
             ShowReg(JoySpinOrigin)

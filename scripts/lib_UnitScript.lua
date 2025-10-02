@@ -2900,6 +2900,10 @@ function getTypeName(unitID)
     return UnitDefs[defID].name
 end
 
+function genFunc(returnStringOnCall)
+    val = function() return returnStringOnCall end
+    return val
+end
 -- >Retrieves a random element from a Dictionary
 function randDict(Dict)
     if not Dict then return end
@@ -2907,8 +2911,8 @@ function randDict(Dict)
 
     countDict = count(Dict)
     if countDict == 0 then 
-        echo("Dictionary is empty")
-     return 
+        conditionalEcho(GG.lib_boolDebug ,"Dictionary is empty")
+        return genFunc("no Key"), genFunc("no Value")
     end
     randElement = 1
     if countDict > 1 then randElement = math.random(1, countDict) end
