@@ -1340,7 +1340,7 @@ function widget:MousePress(x, y, button)
 end
 
 function widget:MouseRelease(x, y, button)
-	Spring.Echo("gui_options: Release called")
+--	Spring.Echo("gui_options: Release called")
 	return mouseEvent(x, y, button, true)
 end
 

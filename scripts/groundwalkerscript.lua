@@ -133,7 +133,7 @@ function ManualTriggeredHeadingChangeDetector()
         end
         boolManualUpdate = false
         tempHead = Spring.GetUnitHeading(unitID)
-        Spring.Echo("Current Heading"..tempHead) 
+--        Spring.Echo("Current Heading"..tempHead) 
         if tempHead ~= headingOfOld then
             boolManualUpdate= true
             TurnCount = TurnCount + 1

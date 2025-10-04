@@ -1,7 +1,7 @@
 -- ===================================================================================================================
 -- Game Configuration
  GG.unitFactor = 0.80
- GameVersion = "1.008"  
+ GameVersion = "1.009"  
  function setUnitFactor(modOptions)
     GG.unitFactor = modOptions.unitfactor or 0.8
  end
@@ -766,6 +766,15 @@ end
                     [UnitDefNames["house_arab0"].id] = true       
                 }
     end  
+    function getBlimpHologramTypes(UnitDefs)
+        local UnitDefNames = getUnitDefNames(UnitDefs)
+        return {
+                    [UnitDefNames["advertising_blimp_hologram"].id] = true,         
+                    [UnitDefNames["advertising_blimp_pornorama"].id] = true 
+                }
+    end  
+
+
     function getHologramTypes(UnitDefs)
         local UnitDefNames = getUnitDefNames(UnitDefs)
         return {
@@ -793,7 +802,6 @@ end
     function setViewRadius(unitID, radiusFactor)
         local unitDefID = Spring.GetUnitDefID(unitID)
         local maxSightDistance = UnitDefs[unitDefID].sightDistance
-        assert(maxSighDistance)
         radius =  maxSightDistance * radiusFactor
         Spring.SetUnitSensorRadius(unitID, "los" ,radius)
     end

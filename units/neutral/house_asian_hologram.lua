@@ -9,9 +9,6 @@ local house_asian_hologram = Abstract:New{
 	script 				= "house_asian_hologram_script.lua",
 	objectName       	= "house_asian_hologram.dae",
 
-	
-	
-
 	customparams = {	
 		normaltex = "unittextures/house_asian_normal.dds",
 		helptext			= "Civilian Building",

@@ -486,15 +486,16 @@ function JoyAnimation()
     while true do
         HideReg(JoyZoom)
         HideReg(Joy)
+        HideReg(JoyAlt)
         if boolDebugHologram or (hours > 17 or hours < 7) then
             if maRa() then 
                 ShowReg(JoyZoom); 
             else 
                 if maRa() then
                 ShowReg(Joy) 
-            else
+                else
                 ShowReg(JoyAlt) 
-            end
+                end
             end
             joyToTheWorld()
             Spin(JoySpinOrigin, z_axis, math.rad(17*3), 0)

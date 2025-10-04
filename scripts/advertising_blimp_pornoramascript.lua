@@ -1,7 +1,6 @@
-include "createCorpse.lua"
 include "lib_OS.lua"
-include "lib_UnitScript.lua"
 include "lib_Animation.lua"
+include "lib_UnitScript.lua"
 include "lib_mosaic.lua"
 
 local hours   = 0
@@ -10,6 +9,8 @@ local seconds = 0
 local percent = 0
 local TablesOfPiecesGroups = {}
 local cachedCopyDict = {}
+local spGetGameFrame = Spring.GetGameFrame
+local GameConfig = getGameConfig()
 
 hours, minutes, seconds, percent = getDayTime()
 
@@ -20,7 +21,7 @@ function clock()
     end
 end
 
-gaiaTeamID = Spring.GetGaiaTeamID()
+local gaiaTeamID = Spring.GetGaiaTeamID()
 local boolDebugHologram = true
 local PornoRamaFlickerGroup = {}
 
@@ -170,33 +171,28 @@ function script.Create()
     Spring.SetUnitAlwaysVisible(unitID, true)
     Spring.SetUnitNoSelect(unitID, true)
     Spring.SetUnitBlocking(unitID, false)
-     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
+    TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
+    PornoRamaFlickerGroup = TablesOfPiecesGroups["PornoRama"]
      --showAllReg()
-     StartThread(HoloGrams)
+    StartThread(HoloGrams)
 
-     HideReg(BrothelSpin)
-     HideReg(CasinoSpin)
-     HideReg(BuisnessSpin)
+    HideReg(BrothelSpin)
+    HideReg(CasinoSpin)
+    HideReg(BuisnessSpin)
 end
 
 function HoloGrams()    
     StartThread(clock)
     hideAllReg()
 
-    Sleep(15000)
-
-    
+    Sleep(15000)    
     --sexxxy time
     px,py,pz = Spring.GetUnitPosition(unitID)
-    
-        echo("Start blimp Holograms advertisement")
-        StartThread(pornoRamaStart)
+    echo("Start blimp Holograms advertisement")
+    StartThread(pornoRamaStart)
 end
 
-local GameConfig = getGameConfig()
-
 function flickerScript(flickerGroup,  errorDrift, timeoutMs, maxInterval, boolDayLightSavings)
-    assert(flickerGroup)
     local fGroup = flickerGroup
     flickerIntervall = math.ceil(1000/25)
     

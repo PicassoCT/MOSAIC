@@ -220,7 +220,8 @@ function script.Create()
 
     setupAnimation()
     --if myTeamID ~= gaiaTeamID then  
-    --    StartThread(bagDanglignDiagnostics)
+    --    StartThread(spitRostTest)
+    --    --StartThread(bagDanglignDiagnostics)
     --    return
     --end
    
@@ -239,7 +240,15 @@ function script.Create()
     StartThread(rainyDayCare)
 
 end
-
+--[[function spitRostTest()
+    rotVal = 0
+    while true do
+        rotVal = rotVal +1
+        Spring.SetUnitRotation(unitID, 0, math.rad(rotVal), 0)
+        Sleep(100)
+    end
+end
+--]]
 function animationTestLoop()
     while true do
        
@@ -629,10 +638,10 @@ end
 chattingTime = 0
 chatPartner = nil
 boolStartChatting = false
-function startChatting(time, chatPartner)
+function startChatting(time, chatPartners)
     setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_STARTED, "talk")
     chattingTime = time
-    chatPartner = chatPartner
+    chatPartner = chatPartners
     boolStartChatting = true
     return true
 end
@@ -837,11 +846,24 @@ function wailing()
     setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_ENDED ,"wailing")
 end
 
+function turnUnitTowardsUnit( chatPartner, blendFactor)
+    factors =  math.max(0.0, math.min(1.0, blendFactor))
+    bx,by,bz = spGetUnitPosition(chatPartner)
+    ux,uy,uz= spGetUnitPosition(unitID)
+    ux, uy, uz = bx-ux, by-uy, bz -uz
+    norm = absNormMax(ux,uz)
+    radresult = math.atan2(ux/norm, uz/norm) 
+    rx,ry,rz = Spring.GetUnitRotation(unitID)
+    resultRotationRad = mix(  radresult, ry, factors)
+    Spring.SetUnitRotation(unitID, 0, resultRotationRad, 0)
+    --conditionalEcho(true, unitID.." looking at ".. locationstring(chatPartner).." with ".. math.deg(resultRotationRad))
+end
+
 function chatting()
     Signal(SIG_INTERNAL)
     SetSignalMask(SIG_INTERNAL)
 
-
+    accumulated = 0
     while 
         chattingTime > 0 and 
         doesUnitExistAlive(chatPartner) and 
@@ -853,26 +875,14 @@ function chatting()
             durationFrames = PlayAnimation("UPBODY_AGGRO_TALK", lowerBodyPieces, math.random(10,30)/10)
         end     
         
-
-       headVal = math.random(-20,20)
-       if maRa() == maRa()  then
-                if randChance(10)then
-                    Command(unitID, "guard", chatPartner)
-                end
-                x,y,z = spGetUnitPosition(chatPartner)
-                setUnitRotationToPoint(unitID,x,yz)
-                mx,my,mz = spGetUnitPosition(unitID)
-                _,myRotation,_ = Spring.GetUnitRotation(unitID)
-                headVal = math.deg(myRotation -(math.atan2(x-mx, z-mz)))
-                conditionalEcho(boolDebugActive, unitID.." looking at ".. lookAtHim.." with ".. headVal)
-       end
-
-       headVal = clamp(-20, headVal, 20)
+       turnUnitTowardsUnit(chatPartner, accumulated)
+       headVal = math.random(-5,5)
        Turn(Head1,y_axis,math.rad(headVal),1.5)
        WaitForTurns(Head1)
 
        chattingTime = chattingTime - 100 - frameToMs(durationFrames)
-        Sleep(100)       
+       accumulated = accumulated + 0.025
+       Sleep(100)       
     end
     conditionalEcho(boolDebugActive, "civilian "..unitID.. " chat has ended")
     playUpperBodyIdleAnimation()

@@ -976,7 +976,7 @@ function HoloGrams()
         if logo == symmetryPiece then 
             symmetryOrigin = piece("SymmetryOrigin")
             if maRa() then ShowReg(symmetryOrigin) end
-            StartThread(shapeSymmetry, symmetryPiece)
+            StartThread(shapeSymmetry, symmetryPiece, randChance(10))
             --return            
         end
 
@@ -1152,41 +1152,46 @@ function fireWorks()
     end
 end
 
-function shapeSymmetry(logo)
-    Sleep(500)
-    resetT(TableOfPiecesGroups["Symmetry"], 0)
-    hideTReg(TableOfPiecesGroups["Symmetry"])
-    local symmetryLimit =11
-    for ix=1, symmetryLimit do
-        if  (randChance(65.0)) or ix < 2 then
-            local smyPieceOrgName = "Symmetry0"..ix
-            local symPieceName = "Symmetry0"..(ix + symmetryLimit)
-            local ap = piece(smyPieceOrgName)
-            local symRoationVal = 0
-            if ap then         
-                symRoationVal = math.random(1,8)*randSign()*45
-                WTurn(ap, x_axis, math.rad(symRoationVal), 5000)
-                ShowReg(ap)
-            end
-
-            local orgVal = 0 
-            if ix == 1 then orgVal = 180 end
-            local symValue =  orgVal - symRoationVal
-            local bp = piece(symPieceName)
-            if bp then          
-                WTurn(bp, x_axis, math.rad(symValue), 5000)
-                ShowReg(bp)
-            end
-        end
+function shapeSymmetry(logo, boolEverChangingSymmetry)
+    if maRa() == maRa() then
+        addHologramLetters(creditNeonSigns)
+    else
+        addHologramLetters(buisnessNeonSigns)
     end
 
     if not maRa() then
         ShowReg(logo)
     end
-    if maRa() == maRa() then
-        addHologramLetters(creditNeonSigns)
-    else
-        addHologramLetters(buisnessNeonSigns)
+
+    while boolEverChangingSymmetry do
+        speedSymmetry = math.random(50,5000)
+        Sleep(5000)
+        hideTReg(TableOfPiecesGroups["Symmetry"])
+        resetT(TableOfPiecesGroups["Symmetry"], 0)
+
+        local symmetryLimit =11
+        for ix=1, symmetryLimit do
+            if  (randChance(65.0)) or ix < 2 then
+                local smyPieceOrgName = "Symmetry0"..ix
+                local symPieceName = "Symmetry0"..(ix + symmetryLimit)
+                local ap = piece(smyPieceOrgName)
+                local symRoationVal = 0
+                if ap then         
+                    symRoationVal = math.random(1,8)*randSign()*45
+                    WTurn(ap, x_axis, math.rad(symRoationVal), speedSymmetry)
+                    ShowReg(ap)
+                end
+
+                local orgVal = 0 
+                if ix == 1 then orgVal = 180 end
+                local symValue =  orgVal - symRoationVal
+                local bp = piece(symPieceName)
+                if bp then          
+                    WTurn(bp, x_axis, math.rad(symValue), speedSymmetry)
+                    ShowReg(bp)
+                end
+            end
+        end
     end
 end
 

@@ -1021,7 +1021,7 @@ function headingChangeDetector(unitID,  boolTurnLeft, boolTurning, boolDebugPrin
         Sleep(250)
  
         tempHead = Spring.GetUnitHeading(unitID)
-        if boolDebugPrintDiff then Spring.Echo("Current Heading"..tempHead) end
+        --if boolDebugPrintDiff then Spring.Echo("Current Heading"..tempHead) end
         if tempHead ~= headingOfOld then
             TurnCount = TurnCount + 1
             if TurnCount > 3 then

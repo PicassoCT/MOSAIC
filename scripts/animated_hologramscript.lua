@@ -143,7 +143,7 @@ function loopsReptitionsJumps(indexs)
            endIndex= data.endsat
            jumpsto = data.jumpsto
            if not TablesOfPiecesGroups["Flicker"][endIndex] then
-                echo("animated_hologramscript: Not defined index ".. toString(newIndex))
+                --echo("animated_hologramscript: Not defined index ".. toString(newIndex))
                 newIndex = 1
                 endIndex= snippetStarts[1].endsat
                 jumpsto = snippetStarts[1].jumpsto

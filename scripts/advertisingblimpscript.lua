@@ -66,6 +66,7 @@ function script.Create()
      StartThread(flyTowardsPerson)
      StartThread(advertisingLoop)
      StartThread(limitToMapLimits)
+     StartThread(controlDirectionRotors)
 end
 
 function advertiseTimeOfDay(hour)
@@ -128,9 +129,14 @@ function limitToMapLimits()
         end
     end
 end
+if not GG.advertising_blimp_pornorama_counter then GG.advertising_blimp_pornorama_counter = 0 end 
 function attachHologram()
-    holoType = TODO 
-    holoID = moveCtrlHologramToUnitPiece(unitID, "advertising_blimp_hologram", HoloCenter, 0)
+    if randChance(25) and GG.advertising_blimp_pornorama_counter == 0  then
+        holoID = moveCtrlHologramToUnitPiece(unitID, "advertising_blimp_pornorama", HoloCenter, 0)
+        GG.advertising_blimp_pornorama_counter  = 1
+    else
+        holoID = moveCtrlHologramToUnitPiece(unitID, "advertising_blimp_hologram", HoloCenter, 0)
+    end
     isblocking= false
     isSolidObjectCollidable=false
     isProjectileCollidable= false

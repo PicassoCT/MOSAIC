@@ -234,6 +234,23 @@ function getRandomSpawnNode()
     return x, y, z, startNode
 end
 
+temporaryStoppedTilFrame = {}
+function checkResetTemporaryStopped(frame)
+    local temporaryCopy = temporaryStoppedTilFrame
+    for id, endFrame in pairs(temporaryCopy) do
+        if endFrame and frame > endFrame then
+            setSpeedEnv(busId, 1.0)
+            temporaryStoppedTilFrame[id] = nil
+        end
+    end
+end
+
+
+function setTemporaryStopped(busId)
+    setSpeedEnv(busId, 0.0)
+    temporaryStoppedTilFrame[busId] = spGetGameFrame() + 3 * 30
+end
+
 function checkReSpawnPopulation()
     counter = 0
     toDeleteTable = {}
@@ -265,7 +282,7 @@ function checkReSpawnPopulation()
                 busId = randDict(GG.BusesTable)      		
                 if busId and doesUnitExistAlive(busId) and randChance(10) then                    
     	   	        x,_,z = spGetUnitPosition(busId)
-                    stunUnit(buisId, 1.0)
+                    setTemporaryStopped(busId)
         		end
 
                id = spawnAMobileCivilianUnit(civilianType, x, z, startNode, goalNode)
@@ -775,10 +792,9 @@ function sozialize(evtID, frame, persPack, startFrame, myID)
         persPack.maxTimeChattingInFrames = persPack.maxTimeChattingInFrames + 10
     end
 
-    if persPack.boolStartAChat == true then
+    if persPack.boolStartAChat == true and persPack.chatPartnerID then
         local partnerID = persPack.chatPartnerID 
-        if partnerID and
-            distanceUnitToUnit(myID, partnerID) > GameConfig.generalInteractionDistance then
+        if distanceUnitToUnit(myID, partnerID) > GameConfig.generalInteractionDistance then
             --echo(myID.." moving to chat ")
              px, py, pz = spGetUnitPosition(partnerID)
             Command(myID, "go", {x = px, y = py, z = pz}, {})
@@ -791,7 +807,7 @@ function sozialize(evtID, frame, persPack, startFrame, myID)
             return true, frame + 30 , persPack        
         else 
             --stop and chat 
---          echo(myID.." chatting at "..locationstring(partnerID))
+          echo(myID.." chatting at "..locationstring(partnerID))
             Command(myID, "stop")
             Command(partnerID, "stop")
             displayConversationTextAt(myID, partnerID)
@@ -799,11 +815,11 @@ function sozialize(evtID, frame, persPack, startFrame, myID)
                                         math.random(GameConfig.minConversationLengthFrames,
                                        GameConfig.maxConversationLengthFrames))
             startInternalBehaviourOfState(myID, "startChatting", timeChattingInFrames*33, partnerID)
-            startInternalBehaviourOfState(partnerID, "startChatting", timeChattingInFrames*33, myId)
+            startInternalBehaviourOfState(partnerID, "startChatting", timeChattingInFrames*33, myID)
             persPack.maxTimeChattingInFrames  = 0
             return true, frame + timeChattingInFrames, persPack
-        end
-    end  
+        end    
+    end
     return boolDone, nil, persPack
 end  
 
@@ -1104,8 +1120,11 @@ function gadget:GameFrame(frame)
     if boolInitialized == false then       
         spawnInitialPopulation(frame)
     elseif boolInitialized == true and frame > 0 and frame % 5 == 0 then
-               -- Check number of Units	
-        if frame % 30 == 0 and frame > startFrame then checkReSpawnPopulation() end
+        -- Check number of Units	
+        if frame % 30 == 0 and frame > startFrame then 
+            checkReSpawnPopulation() 
+            checkResetTemporaryStopped(frame)
+        end
 
         if frame % 55 == 0 and frame > startFrame then checkReSpawnTraffic() end
 

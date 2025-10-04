@@ -542,6 +542,7 @@ end
         ["house_western_hologram_buisness"] =   3,
         ["house_asian_hologram_buisness"] =     4,
         ["advertising_blimp_hologram"] =        3,
+        ["advertising_blimp_pornorama"] =       1,
 
     }
 
@@ -571,7 +572,7 @@ end
 
                -- neonHologramShader:SetUniformMatrix("viewInvMat", "viewinverse")
                --neonHologramShader:SetUniformFloatArray("vCamPositionWorld", {cx,cy,cz} )
-                neonHologramShader:SetUniformFloat("viewPortSize", vsx, vsy )
+                neonHologramShader:SetUniformFloatArray("viewPortSize", {vsx, vsy} )
                 neonHologramShader:SetUniformFloat("rainPercent", rainPercent)
                 local cx,cy,cz  = Spring.GetCameraPosition()
                 local timeSeconds = Spring.GetGameSeconds()
