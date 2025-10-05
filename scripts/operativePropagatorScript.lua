@@ -1267,6 +1267,7 @@ function visibleAfterWeaponsFireTimer()
 	value= GameConfig.operativeShotFiredWaitTimeToRecloak_MS
 	Sleep(value)
 	boolFireForcedVisible = false
+	Spring.PlaySoundFile("sounds/weapons/pistol/pistolreload.ogg", 0.5)
 end
 
 function delayedFlashBang( )
@@ -1286,7 +1287,7 @@ function pistolFireFunction(weaponID, heading, pitch)
 	if boolCloaked == true then
         Spring.PlaySoundFile("sounds/weapons/pistol/stealthpistol.ogg", 1.0)
     else
-        Spring.PlaySoundFile("sounds/weapons/pistol/pistolshot"..math.random(1,3)..".ogg", 1.0)
+        Spring.PlaySoundFile("sounds/weapons/pistol/operativepistol"..math.random(1,2)..".ogg", 1.0)
     end
 	return true
 end

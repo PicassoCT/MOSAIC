@@ -80,7 +80,6 @@ return {
 "AERON",
 "work smart not hard",
 "work hard not smart",
-"hard work not work",
 "hardly work twerk more",
 "Endurance Embrace",
 "Nautilus Shell Company",
@@ -446,6 +445,7 @@ return {
 "Astromech ",
 "Buy and Large",
 "Tyrell Corporation",
+"More human than human",
 "Serrano Genomics",
 "Incom Corporation ",
 "Nergal Heavy Industries",
@@ -460,7 +460,6 @@ return {
 "Tagruato ",
 "Czerka Corporation ",
 "Liandri Mining Corporation ",
-
 "Chotchkies ",
 "Armacham Technology Corporation ",
 "Initech ",

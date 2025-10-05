@@ -422,9 +422,6 @@ function getGrid()
         allGrids[#allGrids+1] = TableOfPiecesGroups["BrothelGrid"][2]
         allGrids[#allGrids+1] = TableOfPiecesGroups["BuisnessGrid"][2]
         allGrids[#allGrids+1] = TableOfPiecesGroups["CasinoGrid"][2]
-        for i=1, #allGrids do
-            --assert(allGrids[i])
-        end
     end
 
     if (randChance(25)) then
@@ -448,6 +445,7 @@ function grid()
             lowVal= math.random(0,2)
             ShowReg(theGrid)
             Sleep(33)
+
             for i= lowVal, upVal do 
                 Turn(theGrid, y_axis, math.rad(i*90),0)
                 Sleep(33)
@@ -455,6 +453,7 @@ function grid()
                     Sleep(66)
                 end
             end
+
             for i= upVal, lowVal, -1 do 
                 Turn(theGrid, y_axis, math.rad(i*90),0)
                 Sleep(33)
@@ -462,6 +461,7 @@ function grid()
                     Sleep(66)
                 end
             end
+
             if maRa() == maRa() then
                 Sleep(500)
             end
@@ -520,9 +520,10 @@ function holoRain(Name, speed)
     end
 end
 
-RainCenter = piece("RainCenter")
+
 function holoGramRain()
     Sleep(100)
+    local RainCenter = piece("RainCenter")
     local speed = math.pi * 2000
     if unitID % 3 == 0 then
         StartThread(glowWormFlight, 5.0)

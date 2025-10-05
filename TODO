@@ -1,11 +1,13 @@
-bloom
+
+- shopping bags
+- turn towards one another while talking
+- make deco-buildings have realistic-selfilu
+- bloom
 
 -BAR-Branch
 	- compile bar
 	- run bar
 	- retry bar, uint8_t seems to have been replaced in master with in
-
-
 
 - healthbars /holograms are darkened by ssao -> fix, by excluding gui-h
 - update house arcology for house_asian standlone 
@@ -17,15 +19,9 @@ bloom
 Bugs:
 - self-revealing of operators
 - recruited civilians kill themselves
--letter axis wrong  western civilians
+- letter axis wrong  western civilians
 - vannishing buildings on upgrade if over budget -> 
-
-
-- depends on memory stackoverflow solved due to building model copies 
-
 - testgame:AI vs AI. 
 - divide and conquer performance testing debugging /buildings /no buildings
 - https://f3d.app//
 
-- Telekom adress switch
-- Living location switch

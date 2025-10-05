@@ -74,6 +74,7 @@ local customMapSunPos = {}
 local isSpec = Spring.GetSpectatingState()
 
 local spIsGUIHidden = Spring.IsGUIHidden
+local show = false
 
 local glColor = gl.Color
 local glTexRect = gl.TexRect

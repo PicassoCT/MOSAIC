@@ -168,8 +168,6 @@ function setDefaultBodyConfig()
     bodyConfig.boolRPGCarrying = rpgCarryingTypeTable[unitDefID] ~= nil 
 end
 
-
-
 function bagDanglignDiagnostics()  
     echo("civilian Bag Physics Diangostic Loop in civilian is active at " .. locationstring(unitID))
     Show(ShoppingBag)
@@ -220,8 +218,8 @@ function script.Create()
 
     setupAnimation()
     --if myTeamID ~= gaiaTeamID then  
-    --    StartThread(spitRostTest)
-    --    --StartThread(bagDanglignDiagnostics)
+    --    --StartThread(spitRostTest)
+    --    StartThread(bagDanglignDiagnostics)
     --    return
     --end
    
@@ -846,42 +844,58 @@ function wailing()
     setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_ENDED ,"wailing")
 end
 
-function turnUnitTowardsUnit( chatPartner, blendFactor)
+function blendShortestPath(goalRotation, orgRotation, factor )
+    local diff = goalRotation - orgRotation
+
+    -- Wrap difference to [-pi, pi]
+    diff = (diff + math.pi) % (2 * math.pi) - math.pi
+
+    -- Interpolate along shortest path
+    return orgRotation + diff * factor
+end
+
+
+function turnUnitTowardsUnit( chatPartner, blendFactor, startRotation)
     factors =  math.max(0.0, math.min(1.0, blendFactor))
     bx,by,bz = spGetUnitPosition(chatPartner)
     ux,uy,uz= spGetUnitPosition(unitID)
+
     ux, uy, uz = bx-ux, by-uy, bz -uz
     norm = absNormMax(ux,uz)
-    radresult = math.atan2(ux/norm, uz/norm) 
-    rx,ry,rz = Spring.GetUnitRotation(unitID)
-    resultRotationRad = mix(  radresult, ry, factors)
+    radresult = math.pi + math.atan2(ux/norm, uz/norm) 
+    resultRotationRad = blendShortestPath(radresult, startRotation, factors)
     Spring.SetUnitRotation(unitID, 0, resultRotationRad, 0)
-    --conditionalEcho(true, unitID.." looking at ".. locationstring(chatPartner).." with ".. math.deg(resultRotationRad))
 end
 
 function chatting()
     Signal(SIG_INTERNAL)
     SetSignalMask(SIG_INTERNAL)
-
+    --echo("Debugging chat civilianscript: active at ".. locationstring(unitID))
     accumulated = 0
+    _, startRotation,_ = Spring.GetUnitRotation(unitID)
+
     while 
         chattingTime > 0 and 
         doesUnitExistAlive(chatPartner) and 
         distanceUnitToUnit(unitID, chatPartner) < GameConfig.generalInteractionDistance do
         durationFrames = 0
         if maRa() == true then
-            durationFrames = PlayAnimation("UPBODY_NORMAL_TALK", lowerBodyPieces, math.random(10,20)/10)
-        else
-            durationFrames = PlayAnimation("UPBODY_AGGRO_TALK", lowerBodyPieces, math.random(10,30)/10)
+            if randChance(75) then
+                durationFrames = PlayAnimation("UPBODY_NORMAL_TALK", lowerBodyPieces, math.random(10,20)/10)
+            else
+                durationFrames = PlayAnimation("UPBODY_AGGRO_TALK", lowerBodyPieces, math.random(10,30)/10)
+            end     
         end     
-        
-       turnUnitTowardsUnit(chatPartner, accumulated)
+        turnUnitTowardsUnit(chatPartner, accumulated, startRotation)
+    
        headVal = math.random(-5,5)
        Turn(Head1,y_axis,math.rad(headVal),1.5)
        WaitForTurns(Head1)
 
        chattingTime = chattingTime - 100 - frameToMs(durationFrames)
        accumulated = accumulated + 0.025
+    
+       chattingTime = chattingTime + 1000
        Sleep(100)       
     end
     conditionalEcho(boolDebugActive, "civilian "..unitID.. " chat has ended")
@@ -1299,8 +1313,7 @@ function threadStateStarter()
 
         if boolStartChatting == true then
             boolStartChatting = false
-            StartThread(chatting)
-            conditionalEcho(boolDebugActive, "Starting chatting at location "..locationstring(unitID).." for ".. chattingTime.. " ms")
+            StartThread(chatting)         
         end
 
         if boolStartFleeing == true then

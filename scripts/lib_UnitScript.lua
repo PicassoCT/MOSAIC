@@ -433,6 +433,7 @@ end
 
 function normalize(x,y,z)
     local len = math.sqrt(x*x + y*y + z*z)
+    if len == 0 then return 0,0,0 end
     return x/len, y/len, z/len
 end
 
@@ -560,15 +561,6 @@ function swingPendulum(unitID, parentPieceMap, pieceNr, speed, iterations)
       local sx,sy,sz = rotateAroundAxis(tx,ty,tz, ax,ay,az, angle)
 
       local swingYaw, swingPitch = vecToEuler(sx,sy,sz)
---[[
-localUp <- [ 0, 1, 0, 0 ]
-worldUp <- Spring.GetModelSpaceTransform() * [ 0, 1, 0, 0 ]
-worldUp <- worldUp / len(worldUp)
-currentTurnAxis <- cross(localUp, worldUp)
-currentTurnAngle <- acos(dot(localUp, worldUp))
-TurnPiece(currentTurnAxis, - currentTurnAngle)
-
-]]
       Turn(pieceNr, x_axis, swingYaw,   speed or 0)
       Turn(pieceNr, y_axis, swingPitch, speed or 0)
       WaitForTurns(pieceNr)

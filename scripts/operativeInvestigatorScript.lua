@@ -1110,6 +1110,7 @@ function visibleAfterWeaponsFireTimer()
 	value= GameConfig.operativeShotFiredWaitTimeToRecloak_MS
 	Sleep(value)
 	boolFireForcedVisible = false
+	Spring.PlaySoundFile("sounds/weapons/pistol/pistolreload.ogg", 1.0)
 end
 
 function delayedFlashBang( )

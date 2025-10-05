@@ -36,8 +36,9 @@ function getFirstShopName(firstName)
     }
     if products[secondLetter] then
         products.D = "Designer " .. products[secondLetter]
-    --else
-    --    echo("Not an alphabet letter " .. secondLetter)
+    else
+        key, val = randDict(products)
+        products.D = "Designer ".. val
     end
 
     broducts = {       
