@@ -862,7 +862,7 @@ function turnUnitTowardsUnit( chatPartner, blendFactor, startRotation)
 
     ux, uy, uz = bx-ux, by-uy, bz -uz
     norm = absNormMax(ux,uz)
-    radresult = math.pi + math.atan2(ux/norm, uz/norm) 
+    radresult = math.atan2(ux/norm, uz/norm)
     resultRotationRad = blendShortestPath(radresult, startRotation, factors)
     Spring.SetUnitRotation(unitID, 0, resultRotationRad, 0)
 end
@@ -870,7 +870,7 @@ end
 function chatting()
     Signal(SIG_INTERNAL)
     SetSignalMask(SIG_INTERNAL)
-    --echo("Debugging chat civilianscript: active at ".. locationstring(unitID))
+    conditionalEcho(boolDebugActive, "Debugging chat civilianscript: active at ".. locationstring(unitID))
     accumulated = 0
     _, startRotation,_ = Spring.GetUnitRotation(unitID)
 
@@ -879,27 +879,23 @@ function chatting()
         doesUnitExistAlive(chatPartner) and 
         distanceUnitToUnit(unitID, chatPartner) < GameConfig.generalInteractionDistance do
         durationFrames = 0
-        if maRa() == true then
+        if maRa() then
             if randChance(75) then
                 durationFrames = PlayAnimation("UPBODY_NORMAL_TALK", lowerBodyPieces, math.random(10,20)/10)
             else
                 durationFrames = PlayAnimation("UPBODY_AGGRO_TALK", lowerBodyPieces, math.random(10,30)/10)
             end     
-        end     
+        else
+            playUpperBodyIdleAnimation()
+        end
         turnUnitTowardsUnit(chatPartner, accumulated, startRotation)
-    
-       headVal = math.random(-5,5)
-       Turn(Head1,y_axis,math.rad(headVal),1.5)
-       WaitForTurns(Head1)
 
        chattingTime = chattingTime - 100 - frameToMs(durationFrames)
-       accumulated = accumulated + 0.025
-    
-       chattingTime = chattingTime + 1000
+       accumulated = accumulated + 0.05
        Sleep(100)       
     end
     conditionalEcho(boolDebugActive, "civilian "..unitID.. " chat has ended")
-    playUpperBodyIdleAnimation()
+
     resetUpperBodyNoTPose(true)
     setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_ENDED, "talk")
 end
@@ -1449,7 +1445,6 @@ function showHideProps(selectedIdleFunction, bShow)
             showHide(cofee, bShow)
         end
     end
-
 end
 
 function playUpperBodyIdleAnimation()
