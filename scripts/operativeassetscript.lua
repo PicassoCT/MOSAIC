@@ -22,6 +22,7 @@ local center = piece('center');
 local Torso = piece('Torso');
 local Pistol = piece('Pistol');
 local Gun = piece('Gun');
+local SniperRifle = piece("SniperRifle")
 local HolsteredGun = piece('HolsteredGun');
 local Head = piece('Head');
 local UpLeg2 = piece('UpLeg2');
@@ -29,7 +30,7 @@ local LowLeg2 = piece('LowLeg2');
 local UpLeg1 = piece('UpLeg1');
 local LowLeg1 = piece('LowLeg1');
 local UpArm2 = piece('UpArm2');
-local LowArm2 = piece('LowArm2');
+local LowArmGun2 = piece('LowArm2');
 local UpArm1 = piece('UpArm1');
 local LowArm1 = piece('LowArm1');
 local Eye1 = piece('Eye1');
@@ -168,6 +169,14 @@ function delayedPieceDrop (pieces, times)
     Hide(pieces)
 end
 
+function showSniperRifle()
+    Show(SniperRifle)
+end
+
+function hideSniperRifle()
+    Hide(SniperRifle)
+end
+
 function showGun()
     Show(Gun)
     Show(silencer)
@@ -186,6 +195,9 @@ function hideGun()
 	if lastShownWeapon == Gun then
 		hideGun()
 	end
+    if lastShownWeapon == SniperRifle then
+        hideSniperRifle()
+    end
 end
 
  function showFireArm()
@@ -194,8 +206,14 @@ end
 	Hide(silencer)
     if not boolInClosedCombat then
     	Show(lastShownWeapon)
+        if lastShownWeapon == SniperRifle then
+            showSniperRifle()
+            return
+        end
+
     	if lastShownWeapon == Gun then
     		showGun()
+            return
     	end
     end
 end
@@ -1160,7 +1178,7 @@ function pistolFireFunction(weaponID)
     else
         Spring.PlaySoundFile("sounds/weapons/pistol/operativepistol"..math.random(1,2)..".ogg", 1.0)
     end
-    -- Explode(TablesOfPiecesGroups["Shell"][1], SFX.FALL + SFX.NO_HEATCLOUD)
+    spawnCegAtPiece(unitID, Pistol, "pistol_casing")
     return true
 end
 
@@ -1174,8 +1192,8 @@ end
 function sniperFireFunction(weaponID)
     StartThread(visibleAfterWeaponsFireTimer)
     boolAiming = false
-    --	Explode(TablesOfPiecesGroups["Shell"][2], SFX.FALL + SFX.NO_HEATCLOUD)
     Spring.PlaySoundFile("sounds/weapons/sniper/sniperEject.wav", 0.8)
+    spawnCegAtPiece(unitID, Gun, "gun_casing")
     return true
 end
 
@@ -1203,7 +1221,7 @@ function makeWeaponsTable()
     }
     WeaponsTable[3] = {
         aimpiece = center,
-        emitpiece = Gun,
+        emitpiece = SniperRifle,
         aimfunc = sniperAimFunction,
         firefunc = sniperFireFunction,
         signal = SIG_SNIPER
@@ -1241,6 +1259,7 @@ end
 
 
 lastShownWeapon = Pistol
+gunMaxRange = WeaponDefNames["submachingegun"].range
 function script.AimWeapon(weaponID, heading, pitch)
      if weaponID == 4 then 
       --  Spring.Echo("weaponAim:"..weaponID.." targetType"..targetType)
@@ -1288,9 +1307,15 @@ function script.AimWeapon(weaponID, heading, pitch)
             return WeaponsTable[weaponID].aimfunc(weaponID, heading, pitch)
         end
     else
-        lastShownWeapon = Gun
-		showFireArm()
-        boolPistol = false
+        --if sniper is reloaded then
+        if boolOnRoof or dist > gunMaxRange then 
+            showSniperRifle()
+            lastShownWeapon = SniperRifle  
+        else
+            lastShownWeapon = Gun
+    		showFireArm()  
+        end
+        boolPistol = false  
         if weaponID > 1 then
             return WeaponsTable[weaponID].aimfunc(weaponID, heading, pitch)
         end

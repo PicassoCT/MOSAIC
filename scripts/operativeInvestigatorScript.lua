@@ -1132,7 +1132,8 @@ function pistolFireFunction(weaponID, heading, pitch)
     else
         Spring.PlaySoundFile("sounds/weapons/pistol/pistolshot"..math.random(1,3)..".ogg", 1.0)
     end
-	--Explode(Shell1, SFX.FALL + SFX.NO_HEATCLOUD)
+
+	spawnCegAtPiece(unitID, Pistol, "pistol_casing")
 	return true
 end
 

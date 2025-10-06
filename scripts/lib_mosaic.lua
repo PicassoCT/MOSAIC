@@ -1535,6 +1535,11 @@ end
                 return plate
             end
 
+            function getDeadGuyInTowTypeTable(UnitDefs)
+
+                UnitDefNames = getUnitDefNames(UnitDefs)
+                return {UnitDefNames["truck_arab1"] = true}
+            end
 
             function getTruckTypeTable(UnitDefs)
                 return getCultureUnitModelTypes(GG.GameConfig.instance.culture or getCultureName(), "truck", UnitDefs)

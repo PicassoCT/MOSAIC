@@ -12,6 +12,7 @@ local GameConfig = getGameConfig()
 SIG_ORDERTRANFER = 1
 SIG_HONK = 2
 SIG_INTERNAL = 4
+SIG_DEADGUY = 8
 
 local center = piece "center"
 local attachPoint = piece "attachPoint"
@@ -81,6 +82,133 @@ end
     end
 end
 
+boolMoving = false
+boolTurnLeft = false
+boolTurning = false
+function monitorMoving()
+    local spGetUnitPosition = Spring.GetUnitPosition
+    ox,oy,oz = spGetUnitPosition(unitID)
+    nx,ny,nz = ox,oy,oz
+    while true do
+            ox,oy,oz = nx,ny,nz  
+            nx,ny,nz = spGetUnitPosition(unitID)        
+            diff= math.abs(ox - nx) + math.abs(oz-nz) 
+            if diff >  5  then
+                boolMoving = true
+            else
+                boolMoving = false
+            end    
+        Sleep(125)    
+    end
+end
+
+function hcdetector()
+    TurnCount = 0
+    local spGetUnitHeading = Spring.GetUnitHeading
+    headingOfOld = spGetUnitHeading(unitID)
+    while true do
+        Sleep(50)
+ 
+        tempHead = spGetUnitHeading(unitID)
+        --if boolDebugPrintDiff then Spring.Echo("Current Heading"..tempHead) end
+        if tempHead ~= headingOfOld then
+            boolTurning = true
+        else
+            boolTurning = false
+        end
+        boolTurnLeft = headingOfOld > tempHead
+        headingOfOld = tempHead
+    end
+end
+
+function turnDeadGuyLoop(PayloadCenter)
+    Signal(SIG_DEADGUY)
+    SetSignalMask(SIG_DEADGUY)
+    StartThread(monitorMoving)
+    StartThread(hcdetector)
+    local spGetUnitPiecePosDir = Spring.GetUnitPiecePosDir
+    local spGetGroundHeight = Spring.GetGroundHeight
+    turnRatePerSecondDegree = (300*0.16)/4
+    _,lastOrientation,_  = Spring.UnitScript.GetPieceRotation(PayloadCenter)
+    px,py,pz = spGetUnitPiecePosDir(unitID, DetectPiece)
+    val  = 0
+    oldPitch, oldYaw, OldRoll = Spring.GetUnitRotation(unitID)
+    while true do
+        px,py,pz = Spring.GetUnitPiecePosDir(unitID, DetectPiece)
+        pitch,yaw,roll = Spring.GetUnitRotation(unitID)
+       -- echo("Unit  "..pitch.."/"..yaw.."/"..roll)
+        if boolMoving == true  then          
+            x, y, z = Spring.UnitScript.GetPieceRotation(PayloadCenter)
+            goal = math.ceil(y * 0.95)
+            Turn(PayloadCenter,y_axis, goal, 1.125)
+            lastOrientation = goal
+        else
+            if boolTurning == true then                
+                x,y,z = spGetUnitPiecePosDir(unitID, PayloadCenter)
+                dx,  dz = px-x, pz-z
+                if boolTurnLeft then
+                    headRad = -math.pi + math.atan2(dz, dx)
+                else
+                    headRad = math.pi - math.atan2(dx, dz)
+                end
+                Turn(PayloadCenter,y_axis, headRad, 1)
+                lastOrientation = headRad
+            else    
+                Turn(PayloadCenter,y_axis, lastOrientation, 0)   
+            end
+        end     
+
+        groundHeigth =   spGetGroundHeight(px,pz)
+        diff = math.max(math.abs((py - 7) -groundHeigth), 0.0125)
+        if py - 7 > groundHeigth then
+            val = val - (diff/10)
+        else
+            val = val + (diff/10)
+        end
+        radYaw = math.rad(clamp( val, -5, 5))
+        Turn(PayloadCenter, x_axis, radYaw, 0.881)   
+
+        if boolMoving == true then
+            Sleep(125)
+        else
+            Sleep(50)
+        end
+        oldPitch, oldYaw, OldRoll = pitch, yaw, roll
+    end
+end
+
+deadGuyInTowTypeTable = getDeadGuyInTowTypeTable(UnitDefs)
+
+function isTowTruck(defID)
+    return deadGuyInTowTypeTable[defID]
+end
+
+local boolTowsGuyInAnarchy = isTowTruck(myDefId) and randChance(5)
+
+function goingIntoAnarchy()
+    ShowOne(TablesOfPiecesGroups["TowGuys"]))
+    StartThread(turnDeadGuyLoop, piece("DeadGuyTurningPoint"))
+end
+
+function goingOutOfAnarchy()
+    hideT(TablesOfPiecesGroups["TowGuys"])
+    Signal(SIG_DEADGUY)
+end
+
+function waitForAnarchy(intoAnarchyFunction, outOfAnarchyFunction)
+    while true do
+        waitTillDay()
+        if GG.GlobalGameState == "anarchy" then
+            intoAnarchyFunction()
+            while GG.GlobalGameState == "anarchy"  do
+                Sleep(9000)
+            end
+            outOfAnarchyFunction()
+        end
+        Sleep(1000)
+
+    end
+
 local loadOutUnitID
 function script.Create()
 
@@ -100,7 +228,12 @@ function script.Create()
     Hide(center)
     showAndTell()
     StartThread(observeTeamChange)
+    if boolTowsGuyInAnarchy then
+        StartThread(waitForAnarchy, goingIntoAnarchy, goingOutOfAnarchy )
+    end
 end
+
+function 
 
 function showLamboWindow()
     Sleep(1)
@@ -111,31 +244,6 @@ function showLamboWindow()
         Show(Spoiler)
     else
         Hide(Spoiler)
-    end
-
-    interval = math.ceil(1000/30)
-    local spGetUnitRotation = Spring.GetUnitRotation
-    local quarterRad = (math.pi*2)/4
-    local lookInsideRatio = quarterRad/10
-
-    oldyaw = 0
-    while true do
-        _,yaw,_ = spGetUnitRotation(unitID)
-        remainder = yaw % quarterRad
-        randDistance = math.huge
-        boolChangedRotation = (yaw ~= oldyaw)
-        if remainder < lookInsideRatio then
-             randDistance = remainder
-        elseif  remainder + lookInsideRatio > quarterRad  then
-            randDistance = math.abs(remainder - quarterRad)
-        end
-
-        if randDistance < lookInsideRatio and boolStopped == true then
-            Hide(LamboWindow)
-        else
-            Show(LamboWindow)
-        end
-        Sleep(interval)
     end
 end
 
