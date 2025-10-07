@@ -862,7 +862,7 @@ function turnUnitTowardsUnit( chatPartner, blendFactor, startRotation)
 
     ux, uy, uz = bx-ux, by-uy, bz -uz
     norm = absNormMax(ux,uz)
-    radresult = math.atan2(ux/norm, uz/norm)
+    radresult = math.pi - math.atan2(ux/norm, uz/norm)
     resultRotationRad = blendShortestPath(radresult, startRotation, factors)
     Spring.SetUnitRotation(unitID, 0, resultRotationRad, 0)
 end

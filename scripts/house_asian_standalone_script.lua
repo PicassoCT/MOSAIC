@@ -454,7 +454,6 @@ function buildBuilding()
     if isArcology  then
         pieceToShow = findLowestPieceInTableFromWithSuggestion( (hash % count(ArcoT)) + 1, ArcoT)
         if Mega[pieceToShow] then     GG.MegaBuildingCount = GG.MegaBuildingCount  +1 end
-        Show(pieceToShow)
         addToShowTable(pieceToShow)
         showTSubSpins(pieceToShow, TablesOfPieceGroups, maRa, 1)
         registerRooftopSubPieces(pieceToShow)
@@ -462,7 +461,6 @@ function buildBuilding()
     else --Project
         pieceToShow = findLowestPieceInTableFromWithSuggestion((hash % count(ProjectT)) + 1, ProjectT)
         if Mega[pieceToShow] then     GG.MegaBuildingCount = GG.MegaBuildingCount  +1 end
-        Show(pieceToShow)
         addToShowTable(pieceToShow)
         showTSubSpins(pieceToShow, TablesOfPieceGroups, maRa, 2)
         registerRooftopSubPieces(pieceToShow)
@@ -473,7 +471,6 @@ function buildBuilding()
         
         if not Mega[pieceToShow] then
             showTSubSpins(pieceToShow, TablesOfPieceGroups, maRa, 1)
-            Show(pieceToShow)
             registerRooftopSubPieces(pieceToShow)
             addToShowTable(pieceToShow)
             pieceToShowLightBlink(pieceToShow)
@@ -483,7 +480,6 @@ function buildBuilding()
     if pieceToShow == TablesOfPieceGroups["Project"][1] or pieceToShow == TablesOfPieceGroups["Project"][2] then
         blockNumber = showOne(TablesOfPieceGroups["StandAloneLights"], unitID)
         if blockNumber then
-            Show(blockNumber)
             addToShowTable(blockNumber)
         end
     end
