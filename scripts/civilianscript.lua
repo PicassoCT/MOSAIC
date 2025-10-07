@@ -855,11 +855,11 @@ function blendShortestPath(goalRotation, orgRotation, factor )
 end
 
 
-function turnUnitTowardsUnit( chatPartner, blendFactor, startRotation)
+function turnUnitTowardsUnit( blendFactor, startRotation)
     factors =  math.max(0.0, math.min(1.0, blendFactor))
     bx,by,bz = spGetUnitPosition(chatPartner)
     ux,uy,uz= spGetUnitPosition(unitID)
-
+    assert(bx)
     ux, uy, uz = bx-ux, by-uy, bz -uz
     norm = absNormMax(ux,uz)
     radresult = math.pi - math.atan2(ux/norm, uz/norm)
@@ -873,7 +873,8 @@ function chatting()
     conditionalEcho(boolDebugActive, "Debugging chat civilianscript: active at ".. locationstring(unitID))
     accumulated = 0
     _, startRotation,_ = Spring.GetUnitRotation(unitID)
-
+    timeTillFullRotatedMs = 3500
+    turnStep = 1/(timeTillFullRotatedMs/100)
     while 
         chattingTime > 0 and 
         doesUnitExistAlive(chatPartner) and 
@@ -888,10 +889,10 @@ function chatting()
         else
             playUpperBodyIdleAnimation()
         end
-        turnUnitTowardsUnit(chatPartner, accumulated, startRotation)
+        turnUnitTowardsUnit(accumulated, startRotation)
 
        chattingTime = chattingTime - 100 - frameToMs(durationFrames)
-       accumulated = accumulated + 0.05
+       accumulated = accumulated + turnStep
        Sleep(100)       
     end
     conditionalEcho(boolDebugActive, "civilian "..unitID.. " chat has ended")
