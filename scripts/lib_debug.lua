@@ -1110,3 +1110,245 @@ function assertPieceDictValue(unitID, T, name)
         assert(pieceID_NameMap[id], "Piece with id "..id .. " in table ".. name .." is invalid")
     end
 end
+
+function printUnitDefs(UnitDefs)
+    echo("Printing UnitName DefIds:")
+    for i=1, #UnitDefs do
+        echo(UnitDefs[i].name .. " = "..UnitDefs[i].id)
+    end
+
+end
+
+
+function printStacktrace(maxdepth, maxwidth, maxtableelements, ...)
+    maxdepth = maxdepth or 16
+    maxwidth = maxwidth or 10
+    maxtableelements = maxtableelements or 6 -- max amount of elements to expand from table type values
+
+    local function dbgt(t, maxtableelements)
+        local count = 0
+        local res = ''
+        for k,v in pairs(t) do
+            count = count + 1
+            if count < maxtableelements then
+                res = res .. tostring(k) .. ':' .. tostring(v) ..', '
+            end
+        end
+        res = '{'..res .. '}[#'..count..']'
+        return res
+    end
+
+    local myargs = {...}
+    infostr = ""
+    for i,v in ipairs(myargs) do
+        infostr = infostr .. tostring(v) .. "\t"
+    end
+    if infostr ~= "" then infostr = "Trace:[" .. infostr .. "]\n" end 
+    local functionstr = "" -- "Trace:["
+    for i = 2, maxdepth do
+        if debug.getinfo(i) then
+            local funcName = (debug and debug.getinfo(i) and debug.getinfo(i).name)
+            if funcName then
+                functionstr = functionstr .. tostring(i-1) .. ": " .. tostring(funcName) .. " "
+                local arguments = ""
+                local funcName = (debug and debug.getinfo(i) and debug.getinfo(i).name) or "??"
+                if funcName ~= "??" then
+                    for j = 1, maxwidth do
+                        local name, value = debug.getlocal(i, j)
+                        if not name then break end
+                        local sep = ((arguments == "") and "") or  "; "
+                        if tostring(name) == 'self'  then
+                            arguments = arguments .. sep .. ((name and tostring(name)) or "name?") .. "=" .. tostring("??")
+                        else
+                            local newvalue
+                            if maxtableelements > 0 and type({}) == type(value) then newvalue = dbgt(value, maxtableelements) else newvalue = value end 
+                            arguments = arguments .. sep .. ((name and tostring(name)) or "name?") .. "=" .. tostring(newvalue)
+                        end
+                    end
+                end
+                functionstr  = functionstr .. " Locals:(" .. arguments .. ")" .. "\n"
+            else 
+                functionstr = functionstr .. tostring(i-1) .. ": ??\n"
+            end
+        else break end
+    end
+    Spring.Echo(infostr .. functionstr)
+end
+
+function assertArgumentsExistOfType(...)
+    local arg = {...}
+    arg.n = #arg
+
+    for i = 1, arg.n, 2 do
+        local expected = arg[i]
+        local actual = arg[i + 1]
+        assert(actual ~= nil, "Arg:" .. i .. " :Value is nil")
+        assert((type(expected) == type(actual)),
+               "Arg:" .. i .. " :Types not compatible, expected " ..
+                   type(expected) .. " got " .. type(actual))
+
+    end
+end
+
+function assertNumberValid(nr)
+    assert(nr ~=  math.huge)
+    assert(nr ~= -math.huge)
+    assert(nr-1 < nr) --(Nan check)
+end
+
+function trackEchoCallCountPerFrame(name)
+    if not GG.CallCountEcho then GG.CallCountEcho = {} end
+    if not GG.CallCountEcho[name] then GG.CallCountEcho[name] = {} end
+    currentFrame = Spring.GetGameFrame()
+    if not GG.CallCountEcho[name][currentFrame] then 
+        GG.CallCountEcho[name][currentFrame] = 1; 
+        previousFrame = currentFrame -1 
+        --if GG.CallCountEcho[name][previousFrame] then
+        --    Spring.Echo(name.." Called in Frame:"..previousFrame..": "..GG.CallCountEcho[name][previousFrame] )
+        --end
+    else
+        GG.CallCountEcho[name][currentFrame] = GG.CallCountEcho[name][currentFrame] +1
+        if GG.CallCountEcho[name][currentFrame] > 20 then
+            Spring.Echo(name.." Called in Frame:"..currentFrame..": "..GG.CallCountEcho[name][currentFrame] )
+        end
+    end
+end
+
+
+
+function debugDisplayPieceChain(Tables)
+    for i = 1, #Tables, 1 do
+        x, y, z, _, _, _ = Spring.GetUnitPiecePosDir(unitID, Tables[i])
+        Spring.SpawnCEG("redlight", x, y + 10, z, 0, 1, 0, 50, 0)
+    end
+end
+
+-- > echos out a Units Properties
+function echoUnitStats(id)
+    h, mh, pD, cP, bP = Spring.GetUnitHealth(id)
+    echo(h, mh, pD, "Capture Progress:" .. cP, "Build Progress:" .. bP)
+end
+
+function echStats(headerT, dataTable, maxlength, boolNumeric)
+    cat = "|"
+    for i = 1, #headerT do
+        cat = cat .. headerT[i] ..
+                  stringBuilder(" ",
+                                math.max(0, maxLength - string.len(headerT[i]))) ..
+                  "|"
+    end
+    echo(stringBuilder("=", string.len(cat)))
+    echo(cat)
+    echo(stringBuilder("_", string.len(cat)))
+    for i = 1, #dataTable do
+        cat = "|"
+        if not boolNumeric or boolNumeric == false then
+            for k, v in pairs(headerT) do
+                token = dataTable[i][k]
+                cat = cat .. token ..
+                          stringBuilder(" ", math.max(0, maxLength -
+                                                          string.len(token))) ..
+                          "|"
+            end
+            echo(cat)
+        else
+            for j = 1, #dataTable[i] do
+                token = dataTable[i][j]
+                cat = cat .. token ..
+                          stringBuilder(" ", math.max(0, maxLength -
+                                                          string.len(token))) ..
+                          "|"
+            end
+            echo(cat)
+        end
+    end
+    echo(stringBuilder("=", string.len(cat)))
+
+end
+
+
+-- > prints a square 2dmap 
+function echo2DMap(tmap, squareSideDimension, valueSignMap)
+    map = {}
+    local map = tmap
+    step = 8
+
+    valueSignMap = valueSignMap or
+                       {[0] = " ҉ ", [false] = " �? ", [true] = " "}
+
+    if squareSideDimension ~= nil and squareSideDimension < 128 then step = 1 end
+
+    for x = 2, #map, step do
+        StringToConcat = ""
+        for z = 2, #map, step do
+            if not map[x][z] then
+                StringToConcat = StringToConcat .. " "
+            elseif valueSignMap[map[x][z]] then
+                StringToConcat = StringToConcat .. valueSignMap[map[x][z]]
+            else
+                StringToConcat = StringToConcat .. printFloat(map[x][z], 3) ..
+                                     " "
+            end
+        end
+        Spring.Echo(StringToConcat)
+    end
+end
+
+function printFloat(anyNumber, charsToPrint)
+    stringifyFloat = "" .. anyNumber
+    return string.sub(stringifyFloat, 1, charsToPrint)
+end
+
+-- > Flashes a Piece for debug purposes
+function flashPiece(pname, Time, rate)
+    r = rate
+    t = Time or 1000
+    if not rate then r = 50 end
+
+    for i = 0, Time, 2 * r do
+        Sleep(r)
+        Show(pname)
+        Sleep(r)
+        Hide(pname)
+    end
+end
+
+function codeGeneratePiecesTable(unitID)
+    Spring.Echo("")
+    Spring.Echo("--PIECESLIST::BEGIN |>----------------------------")
+    Spring.Echo("piecesTable={}")
+    piecesTable = {}
+    piecesTable = Spring.GetUnitPieceList(unitID)
+    -- Spring.Echo("local piecesTable={}")
+    if piecesTable ~= nil then
+        for i = 1, #piecesTable, 1 do
+            workingString = piecesTable[i]
+            Spring.Echo("" .. piecesTable[i] .. " = piece(\"" ..
+                            piecesTable[i] ..
+                            "\")\n piecesTable[#piecesTable+1]= " ..
+                            piecesTable[i])
+        end
+    end
+
+    Spring.Echo("PIECESLIST::END |>-----------------------------")
+end
+
+
+-- >Validates that a table of UnitIds or a UnitID still exist and is alive
+-- >Non existant ids are silently filtered out
+function affirm(T)
+    if type(T) == "number" then
+        t1 = T;
+        T = {[1] = t1}
+    end
+    resulT = foreach(T, function(id)
+        if doesUnitExistAlive(id) == true then return id end
+    end)
+    if resulT then
+        if #resulT > 1 then
+            return resulT
+        else
+            return resulT[1]
+        end
+    end
+end

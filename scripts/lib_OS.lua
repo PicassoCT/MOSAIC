@@ -110,6 +110,18 @@ function playSoundScape_OS(path, dataTable, restIntervallMin, restIntervallMax,
     end
 end
 
+function SetSharedOneTimeResult(key,  data)
+    if not GG.SharedResult then GG.SharedResult = {} end
+    if not GG.SharedResult[key] then
+       GG.SharedResult[key] = data
+    end 
+end
+
+function GetSharedOneTimeResult(key)
+    if not GG.SharedResult then GG.SharedResult = {} end
+    return GG.SharedResult[key]
+end
+
 -- >pulsates a UnitsSpeed
 -- >Gets a CurveFunction, a UnitID, and a Maxtime
 function pulsateMovement(unitID, Maxtime, curveFunction, resolution)
@@ -782,18 +794,6 @@ function assemble(center, unitid, udefSub, CubeLenghtSub, nrNeeded, range,
     return true
 end
 
-function SetSharedOneTimeResult(key,  data)
-    if not GG.SharedResult then GG.SharedResult = {} end
-    if not GG.SharedResult[key] then
-       GG.SharedResult[key] = data
-    end 
-end
-
-function GetSharedOneTimeResult(key)
-    if not GG.SharedResult then GG.SharedResult = {} end
-    return GG.SharedResult[key]
-end
-
 function GetSetSharedOneTimeResult(key, calcDataFunction)
  if not GG.SharedResult then SetSharedOneTimeResult(key, calcDataFunction()) end
  if not GG.SharedResult[key] then SetSharedOneTimeResult(key, calcDataFunction()) end
@@ -816,7 +816,6 @@ function sharedComputationResult(key, func, data, frameInterval, GameConfig)
     end
 
     return GG.SharedComputationResult[key].result
-
 end
 
 function onDeCloakNeverRecloak(unitID)

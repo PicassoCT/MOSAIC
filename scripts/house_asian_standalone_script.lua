@@ -442,7 +442,7 @@ function buildBuilding()
     isArcology = (isNearCityCenter(px, pz, GameConfig) or isMapControlledBuildingPlacement()) and getDermenisticChance(unitID, 20) 
     isArcology = isArcology and not isProject
                     
-    unitHash = getDeterministicUnitHash(unitID)
+    unitHash = getDeterministicStationaryUnitHash(unitID)
     uniqueSleepMs = unitHash % 1000
     restSleep = 6000 - uniqueSleepMs
     Sleep(uniqueSleepMs)
