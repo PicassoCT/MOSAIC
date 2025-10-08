@@ -801,7 +801,8 @@ end
 
     function setViewRadius(unitID, radiusFactor)
         local unitDefID = Spring.GetUnitDefID(unitID)
-        local maxSightDistance = UnitDefs[unitDefID].sightDistance
+        local maxSightDistance = UnitDefs[unitDefID].losRadius
+        assert(maxSightDistance)
         radius =  maxSightDistance * radiusFactor
         Spring.SetUnitSensorRadius(unitID, "los" ,radius)
     end
@@ -1536,9 +1537,10 @@ end
             end
 
             function getDeadGuyInTowTypeTable(UnitDefs)
-
                 UnitDefNames = getUnitDefNames(UnitDefs)
-                return {UnitDefNames["truck_arab1"] = true}
+                return {
+                    [UnitDefNames["truck_arab0"].id] = true,
+                     [UnitDefNames["truck_arab1"].id] = true}
             end
 
             function getTruckTypeTable(UnitDefs)

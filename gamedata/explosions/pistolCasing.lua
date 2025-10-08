@@ -1,4 +1,5 @@
-["pistol_casing"] = {
+return {
+  ["pistol_casing"] = {
   usedefaultexplosions = false,
 
   particlesystem = {
@@ -6,12 +7,14 @@
     count = 1,
     air = true,
     ground = true,
-    water = false,
+    water = true,
     underwater = false,
     properties = {
       airdrag            = 0.92,
       alwaysvisible      = false,
-      colormap           = [[1 0.9 0.6 1   0.6 0.5 0.2 0.8   0.3 0.25 0.1 0.3   0 0 0 0.01]],
+      colormap           = [[0.8  0.8  0.8  0.051   
+                              0.8  0.8  0.8  0.051 
+                              0.8  0.8  0.8  0.0251    ]], 
       directional        = true,
       emitrot            = 60,
       emitrotspread      = 40,
@@ -23,12 +26,13 @@
       particlesize       = 1.2,
       particlesizespread = 0.4,
       particlespeed      = 2.8,
-      particlespeedspread = 1.2,
+      particlespeedspread= 1.2,
       pos                = [[0, 0, 0]],
-      sizegrowth         = -0.02,
+      sizegrowth         = 0.00,
       sizemod            = 1.0,
-      texture            = [[shell.tga]],
+      texture            = [[shell]],
       useairlos          = true,
     },
   },
 },
+}

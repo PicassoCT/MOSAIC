@@ -30,13 +30,12 @@ local LowLeg2 = piece('LowLeg2');
 local UpLeg1 = piece('UpLeg1');
 local LowLeg1 = piece('LowLeg1');
 local UpArm2 = piece('UpArm2');
-local LowArmGun2 = piece('LowArm2');
+local LowArm2 = piece('LowArm2');
 local UpArm1 = piece('UpArm1');
 local LowArm1 = piece('LowArm1');
 local Eye1 = piece('Eye1');
 local Eye2 = piece('Eye2');
 local backpack = piece('backpack');
-local silencer = piece('Silencer');
 local GameConfig = getGameConfig()
 local civilianWalkingTypeTable = getCultureUnitModelTypes(
                                      GameConfig.instance.culture, "civilian",
@@ -175,19 +174,16 @@ end
 
 function showGun()
     Show(Gun)
-    Show(silencer)
     Hide(HolsteredGun)
  end
 
 function hideGun()
     Hide(Gun)
-    Hide(silencer)
     Show(HolsteredGun)
  end
  
  function hideFireArm()
 	Hide(lastShownWeapon)
-    Hide(silencer)
 	if lastShownWeapon == Gun then
 		hideGun()
 	end
@@ -199,7 +195,7 @@ end
  function showFireArm()
 	Hide(Gun)
 	Hide(Pistol)
-	Hide(silencer)
+    Hide(SniperRifle)
     if not boolInClosedCombat then
     	Show(lastShownWeapon)
         if lastShownWeapon == SniperRifle then
@@ -484,7 +480,7 @@ function PlayAnimation(animname, piecesToFilterOutTable, speed)
     assert(animname, "animation name is nil")
     assert(type(animname) == "string",
            "Animname is not string " .. toString(animname))
-    assert(Animations[animname], "No animation with name ")
+    assert(Animations[animname], "No animation with name "..animname)
     local anim = Animations[animname];
     local randoffset
     for i = 1, #anim do

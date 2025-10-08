@@ -25,6 +25,7 @@ local boolIsCivilianTruck = (truckTypeTable[unitDefID] ~= nil)
 local boolIsPoliceTruck = unitDefID == UnitDefNames["policetruck"].id
 local myLoadOutType = LoadOutTypes[unitDefID]
 local loadOutUnitID
+local map = Spring.GetUnitPieceMap(unitID)
 
 
 function showOne(T, bNotDelayd)
@@ -63,11 +64,17 @@ end
 function showAndTell()
     showAll(unitID)
     Hide(center)
+    if TablesOfPiecesGroups["TowGuys"] then
+        hideT(TablesOfPiecesGroups["TowGuys"])
+    end
+    if map["DeadGuyTurningPoint"] then
+        Hide(map["DeadGuyTurningPoint"] )
+    end
 
     if UnitDefs[unitDefID].name == "truck_western2" then --WeyMo
         hideT(TablesOfPiecesGroups["Logo"])
         showOneOrAll(TablesOfPiecesGroups["Logo"])
-end
+    end
 
     if TablesOfPiecesGroups["EmitLight"] then
         hideT(TablesOfPiecesGroups["EmitLight"])
@@ -105,7 +112,7 @@ end
 function hcdetector()
     TurnCount = 0
     local spGetUnitHeading = Spring.GetUnitHeading
-    headingOfOld = spGetUnitHeading(unitID)
+    local headingOfOld = spGetUnitHeading(unitID)
     while true do
         Sleep(50)
  
@@ -124,6 +131,9 @@ end
 function turnDeadGuyLoop(PayloadCenter)
     Signal(SIG_DEADGUY)
     SetSignalMask(SIG_DEADGUY)
+    boolMoving = false
+    boolTurnLeft = false
+    boolTurning = false
     StartThread(monitorMoving)
     StartThread(hcdetector)
     local spGetUnitPiecePosDir = Spring.GetUnitPiecePosDir
@@ -146,6 +156,7 @@ function turnDeadGuyLoop(PayloadCenter)
             if boolTurning == true then                
                 x,y,z = spGetUnitPiecePosDir(unitID, PayloadCenter)
                 dx,  dz = px-x, pz-z
+                local headRad
                 if boolTurnLeft then
                     headRad = -math.pi + math.atan2(dz, dx)
                 else
@@ -177,7 +188,7 @@ function turnDeadGuyLoop(PayloadCenter)
     end
 end
 
-deadGuyInTowTypeTable = getDeadGuyInTowTypeTable(UnitDefs)
+local deadGuyInTowTypeTable = getDeadGuyInTowTypeTable(UnitDefs)
 
 function isTowTruck(defID)
     return deadGuyInTowTypeTable[defID]
@@ -186,12 +197,16 @@ end
 local boolTowsGuyInAnarchy = isTowTruck(myDefId) and randChance(5)
 
 function goingIntoAnarchy()
-    ShowOne(TablesOfPiecesGroups["TowGuys"]))
-    StartThread(turnDeadGuyLoop, piece("DeadGuyTurningPoint"))
+    local deadGuyTurningPoint = piece("DeadGuyTurningPoint")
+    ShowOne(TablesOfPiecesGroups["TowGuys"])
+    Show(deadGuyTurningPoint)
+    StartThread(turnDeadGuyLoop, deadGuyTurningPoint)
 end
 
 function goingOutOfAnarchy()
+    local deadGuyTurningPoint = piece("DeadGuyTurningPoint")
     hideT(TablesOfPiecesGroups["TowGuys"])
+    Hide(deadGuyTurningPoint)
     Signal(SIG_DEADGUY)
 end
 
@@ -206,34 +221,28 @@ function waitForAnarchy(intoAnarchyFunction, outOfAnarchyFunction)
             outOfAnarchyFunction()
         end
         Sleep(1000)
-
     end
+end
 
 local loadOutUnitID
 function script.Create()
-
+    myName = UnitDefs[unitDefID].name
     if boolIsCivilianTruck == false then StartThread(loadLoadOutLoop) end
     if boolIsCivilianTruck == true then assingCivilianTruckRegistration(unitID, Game, GameConfig.instance.culture) end
 
-    if UnitDefs[unitDefID].name == "polictruck" then
-        StartThread(theySeeMeRollin)
-    end 
+    if myName == "policetruck" then StartThread(theySeeMeRollin) end 
 
-    if UnitDefs[unitDefID].name == "truck_western1" then
-        StartThread(showLamboWindow)
-    end
-    generatepiecesTableAndArrayCode(unitID)
+    if myName == "truck_western1" then StartThread(showLamboWindow) end
     TablesOfPiecesGroups = getPieceTableByNameGroups(false)
     Hide(attachPoint)
     Hide(center)
+
     showAndTell()
     StartThread(observeTeamChange)
     if boolTowsGuyInAnarchy then
         StartThread(waitForAnarchy, goingIntoAnarchy, goingOutOfAnarchy )
     end
 end
-
-function 
 
 function showLamboWindow()
     Sleep(1)
