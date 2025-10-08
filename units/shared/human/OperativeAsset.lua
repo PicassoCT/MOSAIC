@@ -52,7 +52,7 @@ local OperativeAsset = Human:New{
 	moveState = 0,
 	transportByEnemy = true,
 	
-		weapons={
+	weapons={
 			[1]={name  = "pistol",
 				onlyTargetCategory = [[GROUND AIR]],
 				noChaseCategory = [[GROUND AIR]],
@@ -70,7 +70,13 @@ local OperativeAsset = Human:New{
 				noChaseCategory = [[CLOSECOMBATABLE]],
 			}
 		},
-		
+
+	sfxtypes = {
+		explosiongenerators = {
+			"custom:gunmuzzle",
+			"custom:pistolmuzzle"
+			},
+		},
 		
 	Builder = true,
 	nanocolor=[[0.20 0.411 0.611]],--

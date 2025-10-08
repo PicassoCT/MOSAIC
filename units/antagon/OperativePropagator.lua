@@ -77,7 +77,7 @@ local OperativePropagator = Human:New{
 	
 	fireState= 1,
 	
-		weapons={
+	weapons={
 			[1]={name  = "raidarrest", --prevents other weapon usage
 				onlyTargetCategory = [[RAIDABLE]],
 			},				
@@ -89,11 +89,15 @@ local OperativePropagator = Human:New{
 			noChaseCategory = [[CLOSECOMBATABLE]],
 		}
 		},	
+	
+	sfxtypes = {
+		explosiongenerators = {
+			"custom:gunmuzzle",
+			"custom:pistolmuzzle"
+			},
+		},
 		
 	category = [[GROUND ARRESTABLE]],
-
-
-	
 }
 
 

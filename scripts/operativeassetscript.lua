@@ -160,12 +160,8 @@ function closeCombatOS()
 end
 
 function delayedPieceDrop (pieces, times)
-    for i=0,times, 1000 do
-        EmitSfx(pieces,1024)
-        Sleep(1000)
-    end
     Sleep(times)
-    --Explode(pieces, SFX.FALL)
+    Explode(pieces, SFX.FALL)
     Hide(pieces)
 end
 
@@ -1179,21 +1175,29 @@ function pistolFireFunction(weaponID)
         Spring.PlaySoundFile("sounds/weapons/pistol/operativepistol"..math.random(1,2)..".ogg", 1.0)
     end
     spawnCegAtPiece(unitID, Pistol, "pistol_casing")
+    EmitSfx(MuzzleFlashPistol, PistolMuzzleFlash)
     return true
 end
 
 function gunFireFunction(weaponID)
     StartThread(visibleAfterWeaponsFireTimer)
     boolAiming = false
-    -- Explode(TablesOfPiecesGroups["Shell"][2], SFX.FALL + SFX.NO_HEATCLOUD)
+    EmitSfx(MuzzleFlashGun, GunMuzzleFlash)
     return true
 end
+
+GunMuzzleFlash = 1024
+PistolMuzzleFlash = 1025
+MuzzleFlashSniperRifle = piece ("MuzzleFlashSniperRifle")
+MuzzleFlashGun = piece ("MuzzleFlashGun")
+MuzzleFlashPistol = piece ("MuzzleFlashPistol")
 
 function sniperFireFunction(weaponID)
     StartThread(visibleAfterWeaponsFireTimer)
     boolAiming = false
     Spring.PlaySoundFile("sounds/weapons/sniper/sniperEject.wav", 0.8)
     spawnCegAtPiece(unitID, Gun, "gun_casing")
+    EmitSfx(MuzzleFlashSniperRifle, GunMuzzleFlash)
     return true
 end
 
