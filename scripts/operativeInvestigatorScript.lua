@@ -1092,11 +1092,9 @@ function pistolAimFunction(weaponID, heading, pitch, targetType, isUserTarget, t
     else
         setOverrideAnimationState(eAnimState.aiming, eAnimState.standing,  true, nil, false)
     end
-    if isInvestigator then
-		WTurn(center, y_axis,heading, 22)
-	else
-		WTurn(center, z_axis,heading, 22)
-	end
+
+	WTurn(center, y_axis,heading, 22)
+	
 	WaitForTurns(UpArm1, UpArm2, LowArm1,LowArm2)
 	-- echo("Aiming Pistol finnished")
 	return  true
@@ -1117,6 +1115,7 @@ function delayedFlashBang( )
 	Sleep(5000)
 	Spring.PlaySoundFile("sounds/weapons/raid/flashbang.ogg", 1.0)
 end
+
 function raidFireFunction(weaponID, heading, pitch)
 	StartThread(visibleAfterWeaponsFireTimer)
 	StartThread(delayedFlashBang)
@@ -1124,6 +1123,8 @@ function raidFireFunction(weaponID, heading, pitch)
 	return true
 end
 
+PistolMuzzleFlash = 1024
+local MuzzleFlashPistol = piece ("MuzzleFlashPistol")
 function pistolFireFunction(weaponID, heading, pitch)
 	StartThread(visibleAfterWeaponsFireTimer)
 	boolAiming = false
@@ -1134,6 +1135,7 @@ function pistolFireFunction(weaponID, heading, pitch)
     end
 
 	spawnCegAtPiece(unitID, Pistol, "pistol_casing")
+	EmitSfx(MuzzleFlashPistol, PistolMuzzleFlash)
 	return true
 end
 
@@ -1147,7 +1149,7 @@ function stabAimFunction(weaponID, heading, pitch)
     return true
 end
 
-WeaponsTable = {}
+local WeaponsTable = {}
 function makeWeaponsTable()
     WeaponsTable[1] = { aimpiece = Drone, emitpiece = Drone, aimfunc = raidAimFunction, firefunc = raidFireFunction, signal = SIG_RAID }
 	WeaponsTable[2] = { aimpiece = Pistol, emitpiece = Pistol, aimfunc = pistolAimFunction, firefunc = pistolFireFunction, signal = SIG_PISTOL }
@@ -1183,21 +1185,22 @@ boolInterrogated = false
 function setBoolInterrogatedExternally(boolInterrogatedExternally)
 	boolInterrogated = boolInterrogatedExternally
 end
-drone = piece("Drone")
-policeLineDoNotCross = piece("DroneSpin")
+
+local drone = piece("Drone")
+local policeLineDoNotCross = piece("DroneSpin")
 boolAlreadyHasRaidDrones = false
 function showDroneHovering()
 	if boolAlreadyHasRaidDrones then return end
 	boolAlreadyHasRaidDrones= true
-	Move(drone, y_axis, 250, 0)
+	Move(drone, y_axis, 0,0)
 	Show(drone)
-	Move(drone, y_axis, 0, 250)
-	Spin(policeLineDoNotCross, y_axis, math.random(15)*randSign(), 0)
+	WMove(drone, y_axis, 250, 250)
+	Spin(policeLineDoNotCross, y_axis, math.random(15) * randSign(), 0)
 	Show(policeLineDoNotCross)
 	showT(TablesOfPiecesGroups["WarnCone"])
 	while (not boolMoving and not boolCloaked) do
 		for axis=1,3 do
-			Move(drone,axis, math.random(1,3)*randSign())
+			Move(drone,axis, math.random(1,3) * randSign())
 		end
 		Sleep(1000)
 	end

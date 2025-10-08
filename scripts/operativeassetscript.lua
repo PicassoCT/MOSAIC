@@ -73,7 +73,7 @@ local scriptEnv = {
     y_axis = y_axis,
     z_axis = z_axis
 }
-eAnimState = getCivilianAnimationStates()
+local eAnimState = getCivilianAnimationStates()
 upperBodyPieces = {
     [Head] = Head,
     [Pistol] = Pistol,
@@ -109,13 +109,11 @@ local FAR_SIGHTED= 1.0
 local NEAR_SIGHTED = 0.4
 local CLOSE_COMBAT_SIGHTED = 0.1
 
-
-
 function onRooftop()
     --Spring.Echo("Is on Rooftop")
     setViewRadius(unitID, FAR_SIGHTED)
     boolOnRoof = true
-    boolStartRoofTopThread= true
+    boolStartRoofTopThread = true
 end
 
 if not GG.OperativesDiscovered then GG.OperativesDiscovered = {} end

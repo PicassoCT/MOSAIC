@@ -92,7 +92,7 @@ local OperativeInvestigator = Human:New{
 	
 	sfxtypes = {
 		explosiongenerators = {
-			"custom:gunmuzzle", --1024
+			"custom:gunmuzzle", --1024 
 			"custom:pistolmuzzle"
 			},
 		},
