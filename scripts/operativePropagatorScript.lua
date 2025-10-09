@@ -1242,6 +1242,8 @@ function raidAimFunction(weaponID, heading, pitch, targetType, isUserTarget, tar
 	return  currentCloakState == "decloaked"
 end
 
+PistolMuzzleFlash = 1024
+local MuzzleFlashPistol = piece ("MuzzleFlashPistol")
 function pistolAimFunction(weaponID, heading, pitch, targetType, isUserTarget, targetID)
 	StartThread(aimAutoReset)
     if boolWalking == true then
@@ -1256,6 +1258,7 @@ function pistolAimFunction(weaponID, heading, pitch, targetType, isUserTarget, t
 	end
 	WaitForTurns(UpArm1, UpArm2, LowArm1,LowArm2)
 	-- echo("Aiming Pistol finnished")
+	EmitSfx(MuzzleFlashPistol, PistolMuzzleFlash)
 	return  true
 end
 

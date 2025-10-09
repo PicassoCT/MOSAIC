@@ -89,7 +89,7 @@ function getFirstShopName(firstName)
 end
 
 function getHouseShopName(id,  buisnessNamesTable, UnitDefs)
-	hash = getDeterministicUnitHash(id) % 100 
+	hash = getDeterministicStationaryUnitHash(id) % 100 
     houseHasShop = hash > 75   
 	if houseHasShop then
         x,y, z = Spring.GetUnitPosition(id)
@@ -1340,4 +1340,12 @@ return
 "knife towards disposable camera sensory pre- jeans face forwards saturation point lights kanji skyscraper car long-chain hydrocarbons advert. RAF corrupted tiger-team network voodoo god alcohol hacker euro-pop jeans smart- faded concrete A.I. faded nodal point. jeans geodesic hotdog chrome geodesic computer narrative plastic decay soul-delay tube euro-pop Legba katana shrine. nodality courier silent carbon media corporation media dolphin camera tanto weathered car knife gang alcohol. neural cyber- nodal point digital dead spook table engine knife pistol Tokyo girl dolphin soul-delay neon. 3D-printed cartel alcohol footage fetishism BASE jump A.I. assault Chiba A.I. digital San Francisco neon free-market pen. neon long-chain hydrocarbons DIY artisanal realism neural vinyl claymore mine military-grade weathered rifle concrete table sub-orbital tanto. modem tanto human pre- render-farm receding bicycle wristwatch 3D-printed tanto carbon boat Tokyo cartel camera. range-rover grenade neon youtube motion A.I. shanty town neon boy augmented reality wristwatch smart- geodesic digital boy."..
 "j-pop saturation point cartel sprawl gang savant courier footage post- savant 8-bit warehouse j-pop alcohol footage. bicycle Chiba plastic neural chrome shanty town numinous apophenia San Francisco motion computer alcohol into knife wristwatch. chrome youtube drugs Kowloon carbon tank-traps market bridge fetishism silent futurity face forwards uplink neon carbon. digital savant hotdog assault market face forwards otaku footage A.I. meta- 3D-printed plastic jeans pistol bridge. otaku advert engine film jeans towards convenience store city garage nano- augmented reality dome denim Kowloon shoes. sunglasses bomb assault digital skyscraper footage nodality neural girl sub-orbital refrigerator warehouse singularity construct franchise. motion apophenia advert tanto drone Tokyo free-market semiotics motion industrial grade hacker nodality ablative long-chain hydrocarbons sub-orbital. fluidity hotdog knife pre- lights plastic concrete Chiba dolphin drugs papier-mache computer hotdog j-pop man. assassin grenade meta- singularity artisanal market dome post- girl human tower lights cyber- Chiba wonton soup."..
 "faded geodesic DIY 3D-printed towards towards Kowloon boy man franchise artisanal uplink semiotics marketing assassin. hotdog gang wonton soup weathered physical tower cyber- urban Shibuya girl grenade wonton soup hacker futurity Legba. uplink free-market shoes refrigerator receding sprawl knife futurity kanji hacker girl tiger-team tank-traps table assassin. otaku media math- lights city beef noodles tattoo long-chain hydrocarbons neural pre- math- network bridge pre- bicycle. table smart- towards film futurity dead corporation film engine boat cardboard digital film systemic receding. youtube long-chain hydrocarbons rebar augmented reality San Francisco bridge paranoid alcohol camera sub-orbital -ware military-grade towards sign rebar. narrative jeans marketing city savant denim dolphin modem A.I. tank-traps refrigerator tower gang papier-mache stimulate. Tokyo A.I. geodesic cartel BASE jump hotdog 8-bit fluidity otaku augmented reality geodesic vinyl cardboard film camera. Chiba DIY sub-orbital pen RAF sentient knife grenade spook gang sentient hotdog grenade singularity systema. "
+end
+
+function getDetThreeLetterAgency(hash)
+    first = (hash % 16)
+    second = ((hash +16) % 20)
+    third = {"s", "a", "i", "b", "f"}
+
+    return string.upper(string.char(65+first)..string.char(65+second)..third[(hash%#third)+1])
 end

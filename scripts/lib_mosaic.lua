@@ -1341,15 +1341,15 @@ end
 
                     --translationAsian = getTranslation(Cultures.asian)
                     DicAsianNameDefID = expandNameSubSet_Dict_NameDefID(translationAsian[typeName], UnitDefs)
-                    assertNameTypeInTable(DicAsianNameDefID, typeName == "house" , "house_asian0")
-                    assertNameTypeInTable(DicAsianNameDefID, typeName == "house" , "house_asian1")
+                    assertInDict(DicAsianNameDefID,  "house_asian0")
+                    assertInDict(DicAsianNameDefID,  "house_asian1")
 
                     DicWesternNameDefID = expandNameSubSet_Dict_NameDefID(translationWestern[typeName], UnitDefs)
-                    assertNameTypeInTable(DicWesternNameDefID, typeName == "civilian" , "civilian_western0")
+                    assertInDict(DicWesternNameDefID,  "civilian_western0")
   
 
                     DictArabNameDefID = expandNameSubSet_Dict_NameDefID(translationArabic[typeName], UnitDefs)
-                    assertNameTypeInTable(DictArabNameDefID, typeName == "civilian" , "civilian_arab0")            
+                    assertInDict(DictArabNameDefID, "civilian_arab0")            
 
                     local fullTable = {}
                     for name,defID in pairs(DicAsianNameDefID) do                       

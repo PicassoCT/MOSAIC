@@ -2308,7 +2308,10 @@ gramarTable = {
     }
 }
 
--- > Executes a Lindemeyer system and generates a random gramar tree
+-- > Forms a Tree from handed over Table
+--  this function needs a global Itterator and but is threadsafe, as in only one per unit
+--  it calls itself, waits for all other threads running parallel to reach the same recursion Depth
+--  once hitting the UpperLimit it ends
 function executeLindeMayerSystem(gramarTable, String, oldDeg, Degree,
                                  UpperLimit, recursionDepth, recursiveItterator,
                                  PredPiece)

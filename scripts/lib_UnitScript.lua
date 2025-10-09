@@ -824,10 +824,8 @@ function showHide(id, bShow)
     end
 end
 
-
 function showAllSubsSpinsOfPiece(T, pieceGroupName, nr)
     if not nr then 
-        lecho("Subpiece nr not given")
         return 
     end
     local subName = pieceGroupName .. nr .. "Sub"
@@ -843,19 +841,6 @@ function showAllSubsSpinsOfPiece(T, pieceGroupName, nr)
             Spin(T[spinName][i] , y_axis, math.rad(direction), math.pi)
         end
     end
-end
-
-
-function showOneOfTable(pieceList)
-    nrID = piece(getSafeRandom(pieceList,pieceList[1]))
-    Show(nrID)
-end
-
-function showOneOfUnit(id)
-    if not unitID then unitID = id end
-    pieceList = Spring.GetUnitPieceList(unitID)
-    nrID = piece(pieceList[math.random(1,#pieceList)])
-    Show(nrID)
 end
 
 -- > Shows all Pieces of a a Unit in 
@@ -1007,9 +992,9 @@ function getUnitCanBuild(unitName, closedT)
 end
 
 -- >Stuns a Unit
-function stunUnit(k, factor)
+function stunUnit(k, seconds)
     hp = Spring.GetUnitHealth(k)
-    if hp then Spring.SetUnitHealth(k, {paralyze = hp * factor}) end
+    if hp then Spring.SetUnitHealth(k, {paralyze = hp * seconds}) end
 end
 
 function transferStates(orgID, targID)
@@ -1232,25 +1217,6 @@ end
 
 function confirmUnit(id) if doesUnitExistAlive(id) == true then return id end end
 
--- >Validates that a table of UnitIds or a UnitID still exist and is alive
--- >Non existant ids are silently filtered out
-function affirm(T)
-    if type(T) == "number" then
-        t1 = T;
-        T = {[1] = t1}
-    end
-    resulT = foreach(T, function(id)
-        if isUnitAlive(id) == true then return id end
-    end)
-    if resulT then
-        if #resulT > 1 then
-            return resulT
-        else
-            return resulT[1]
-        end
-    end
-end
-
 function delayedHide(piece, timeT)
     Sleep(timeT)
     Hide(piece)
@@ -1386,28 +1352,6 @@ end
 
 -- >generates a Pieces List 
 function generatepiecesTableAndArrayCode(unitID, boolLoud)
-    bLoud = boolLoud or false
-
-    if bLoud == true then
-        Spring.Echo("")
-        Spring.Echo("--PIECESLIST::BEGIN |>----------------------------")
-        Spring.Echo("piecesTable={}")
-        piecesTable = {}
-        piecesTable = Spring.GetUnitPieceList(unitID)
-        -- Spring.Echo("local piecesTable={}")
-        if piecesTable ~= nil then
-            for i = 1, #piecesTable, 1 do
-                workingString = piecesTable[i]
-                Spring.Echo("" .. piecesTable[i] .. " = piece(\"" ..
-                                piecesTable[i] ..
-                                "\")\n piecesTable[#piecesTable+1]= " ..
-                                piecesTable[i])
-            end
-        end
-
-        Spring.Echo("PIECESLIST::END |>-----------------------------")
-    end
-
     return getPieceTable(unitID)
 end
 function getPieceTable(unitID)
@@ -1433,7 +1377,7 @@ end
 
 
 -- >Gets the Height of a Unit
-function getunitHeight(UnitId)
+function getUnitHeight(UnitId)
     _, y, _ = Spring.GetUnitPosition(unitID)
     return y
 end
@@ -1463,7 +1407,6 @@ end
 -- ======================================================================================
 -- Section: Initializing Functions
 -- ======================================================================================
-
 function getPieceMap(unitID)
     List = Spring.GetUnitPieceMap(unitID)
     return List
@@ -1537,13 +1480,6 @@ end
 -- ======================================================================================
 -- Section: Landscape/Pathing Getter/Setters
 -- ======================================================================================
-
--- > every PixelPiecetable consists of a List of Pieces, a selectFunction and a PlaceFunction
--- both recive a List of allready in Pixel Placed Pieces and the relative Heigth they are at, 
--- and gives back a piece, and its heigth, the Selector returns nil upon Complete 
-function createLandscapeFromFeaturePieces(pixelPieceTable, drawFunctionTable)
-    echo("TODO:createLandscapeFromFeaturePieces")
-end
 
 function createExtrema()
 
@@ -1787,7 +1723,6 @@ function smoothGroundHeigthmap(size, x, z)
     return T
 end
 
-
 function isInTransformationRange(x,z, totalWidth, smoothRange)
     if x < smoothRange or x > (totalWidth -  smoothRange) then return true end
     if z < smoothRange or z > (totalWidth -  smoothRange) then return true end
@@ -1965,7 +1900,6 @@ function doForMapPos(Resolution, ...)
     return ReT
 end
 
-
 -- ======================================================================================
 -- Section: Syntax additions and Tableoperations
 -- ======================================================================================
@@ -2030,22 +1964,12 @@ function getNthDictElement(Dict, nr)
     end     
 end     
 
-function axToKey(axis)
+function axisToString(axis)
     if axis == 1 then return "x" end
     if axis == 2 then return "y" end
     if axis == 3 then return "z" end
 end
 
-function selectExecute(selector, ...)
-
-    local arg = arg;
-    if (not arg) then
-        arg = {...};
-        arg.n = #arg
-    end
-    if arg[selector] then return selector() end
-
-end
 -- >selects a element from a table
 function selStr(index, t)
     if not t[index] then return "" end
@@ -2362,15 +2286,15 @@ function getHighestPointOfSet(Table, axis)
     return Table[index].x, Table[index].y, Table[index].z, index
 end
 
-function deepcopy(orig)
+function deepCopy(orig)
     local orig_type = type(orig)
     local copy
     if orig_type == 'table' then
         copy = {}
         for orig_key, orig_value in next, orig, nil do
-            copy[deepcopy(orig_key)] = deepcopy(orig_value)
+            copy[deepCopy(orig_key)] = deepCopy(orig_value)
         end
-        setmetatable(copy, deepcopy(getmetatable(orig)))
+        setmetatable(copy, deepCopy(getmetatable(orig)))
     else -- number, string, boolean, etc
         copy = orig
     end
@@ -2382,9 +2306,9 @@ function inherit(childClass, parent)
     local copy = parentClass or {}
 
     for orig_key, orig_value in next, parent, nil do
-        copy[deepcopy(orig_key)] = deepcopy(orig_value)
+        copy[deepCopy(orig_key)] = deepCopy(orig_value)
     end
-    setmetatable(copy, deepcopy(getmetatable(parent)))
+    setmetatable(copy, deepCopy(getmetatable(parent)))
     -- add Operators to unitscript
     return copy
 end
@@ -2429,7 +2353,7 @@ function UnitDefToUnitDefNames(UnitDef)
 end
 
 -- > Encapsulates the Show function for easier debugging
-function capShow(l_Num)
+function assertShow(l_Num)
     assert(l_Num)
     assertNum(l_Num)
 
@@ -2437,7 +2361,7 @@ function capShow(l_Num)
 end
 
 -- > Encapsulates the Hide function for easier debugging
-function capHide(l_Num)
+function assertHide(l_Num)
     assert(type(l_Num) == "number")
     Hide(l_Num)
 end
@@ -2547,12 +2471,6 @@ function hideT(l_tableName, l_lowLimit, l_upLimit, l_delay)
     end
 end
 
-function getCoordinateString(unitID)
-    px,py,pz = Spring.GetUnitPosition(unitID)
-    return "("..px.."/"..py.."/"..pz..")"
-
-end
-
 function placeElevators(TablesOfPiecesGroups, elevatorHeight, nrLevels, toShowDict)
     foreach(TablesOfPiecesGroups["Cabin"],
         function(id)
@@ -2593,21 +2511,11 @@ function showT(l_tableName, l_lowLimit, l_upLimit, l_delay)
     end
 end
 
-function showD(l_tableName, l_delay)
-    if not l_tableName then
-        Spring.Echo("No dictionary given as argument for showD")
-        return
-    end
-
-	for k,v in pairs(l_tableName)do
-	  Show(k)
-	end  
-end
-
 function subSetT(T, elementToSelect)
     reT = {}
-
-    for i = 1, #T do reT[#reT + 1] = T[i][elementToSelect] end
+    for i = 1, #T do
+     reT[#reT + 1] = T[i][elementToSelect]
+    end
     return reT
 end
 
@@ -2622,7 +2530,6 @@ end
 function replaceStr(str, sub, replacement)
     return string.gsub(str, sub, replacement)
 end
-
 
 function stringSplit(String, Seperator)
     if Seperator == nil then sep = "%s" end
@@ -2966,15 +2873,15 @@ function shuffleT(T)
 end
 
 -- >Copys a table
-function tableCopy(orig)
+function deepCopy(orig)
     local orig_type = type(orig)
     local copy
     if orig_type == "table" then
         copy = {}
         for orig_key, orig_value in next, orig, nil do
-            copy[tableCopy(orig_key)] = tableCopy(orig_value)
+            copy[deepCopy(orig_key)] = deepCopy(orig_value)
         end
-        setmetatable(copy, tableCopy(getmetatable(orig)))
+        setmetatable(copy, deepCopy(getmetatable(orig)))
     else
         copy = orig
     end
@@ -2992,7 +2899,7 @@ function recieveMessage(reciverID)
 end
 
 -- > Destroys A Table of Units
-function DestroyTable(T, boolSelfd, boolReclaimed, condFunction, unitID)
+function DestroyUnits(T, boolSelfd, boolReclaimed, condFunction, unitID)
     if T then
         for i = 1, #T, 1 do
             if condFunction(T[i]) == true or not condFunction then
@@ -3000,34 +2907,6 @@ function DestroyTable(T, boolSelfd, boolReclaimed, condFunction, unitID)
             end
         end
     end
-end
-
--- > Explodes a Table of Pieces 
-function explodeT(TableOfPieces, Conditions, StepSize)
-    lStepSize = StepSize or 1
-    for i = 1, #TableOfPieces, lStepSize do
-        Explode(TableOfPieces[i], Conditions)
-    end
-end
-
-function explodeTableOfPiecesGroupsExcludeTable(TableOfPiecesGroups,  ExcludePiecesDict, Condition)
-    if Condition == nil then
-        Condition = SFX.FALL + SFX.FIRE
-    end
-
-    for groupName, group in pairs(TableOfPiecesGroups) do
-        for num, pieces in pairs(group) do 
-            if not ExcludePiecesDict[pieces] then
-                Explode(pieces, Condition) 
-            end
-        end
-    end
-end
-
--- > Explodes a Table of Pieces 
-function explodeD(TableOfPieces, Conditions)
-    lStepSize = StepSize or 1
-    for num, pieces in pairs(TableOfPieces) do Explode(pieces, Conditions) end
 end
 
 function echoNFrames(str, frames)
@@ -3538,18 +3417,9 @@ end
 
 function isPointInSquare(P, s1, s2, s3, s4)
     return pointWithinTriangle(s1.x, s1.y, s2.x, s2.y, s3.x, s3.y, P.x, P.y) or
-               pointWithinTriangle(s3.x, s3.y, s4.x, s4.y, s1.x, s1.y, P.x, P.y)
+            pointWithinTriangle(s3.x, s3.y, s4.x, s4.y, s1.x, s1.y, P.x, P.y)
 end
 
-
-
-
-function assertRangeConsistency(Tables, name)
-    max= #Tables
-    for i=1, max do 
-        assert(Tables[i], "No element "..i.." for "..name.." in asserRangeConsistency")
-    end
-end
 
 function holdsForAll(Var, fillterConditionString, ...)
     assert(fillterConditionString)
@@ -3988,14 +3858,12 @@ function distance(x, y, z, xa, ya, za)
 end
 
 function getUnitVariable(unitID, varname)
-
     env = Spring.UnitScript.GetScriptEnv(unitID)
 
     if env and env.varname then return env.varname end
 end
 
 function setParent(unitID, child)
-
     env = Spring.UnitScript.GetScriptEnv(child)
 
     if env then env.parent = unitID end
@@ -4110,80 +3978,6 @@ end
 -- ======================================================================================
 -- Section : Code Generation 
 -- ======================================================================================
-
--- >renames piecenames placeholders in a given s3o file 
--- replaced asciichars must be equal in digits	
-function objectPieceRenamer(filename)
-
-    local file = io.open(filename, "r+b")
-
-    if file then
-
-        -- Opens a file in append mode
-        lineTable = {}
-
-        keycount = {}
-        keycount["aa"] = {};
-        keycount["bb"] = {};
-        keycount["cc"] = {};
-        keycount["dd"] = {};
-        keycount["ee"] = {};
-        keycount["ff"] = {};
-        keycount["gg"] = {};
-        keycount["aa"].matchcounter = 0
-        keycount["bb"].matchcounter = 0
-        keycount["cc"].matchcounter = 0
-        keycount["dd"].matchcounter = 0
-        keycount["ee"].matchcounter = 0
-        keycount["ff"].matchcounter = 0
-        keycount["gg"].matchcounter = 0
-
-        local outputc = io.open("output.c", "wb")
-
-        keycount["aa"].nr = 1;
-        keycount["bb"].nr = 2;
-        keycount["cc"].nr = 3;
-        keycount["dd"].nr = 4;
-        keycount["ee"].nr = 5;
-        keycount["ff"].nr = 6;
-        keycount["gg"].nr = 7
-
-        count = 0
-        for line in file:lines() do
-
-            copystring = line
-            for k, v in pairs(keycount) do
-
-                matchCounter = v.matchcounter
-                while string.find(copystring, "c" .. k) or
-                    string.find(copystring, "E" .. k) do
-                    if string.find(copystring, "c" .. k) then
-                        copystring = string.gsub(copystring, "c" .. k,
-                                                 "c" .. v.nr, 1)
-                        matchCounter = matchCounter + 1
-                    end
-                    if string.find(copystring, "E" .. k) then
-                        copystring = string.gsub(copystring, "E" .. k,
-                                                 "E" .. v.nr, 1)
-                        matchCounter = matchCounter + 1
-                    end
-
-                    if matchCounter == 2 then
-                        v.nr = v.nr + 7
-                        matchCounter = 0
-                    end
-                end
-                v.matchcounter = matchCounter
-            end
-            outputc.write(outputc, copystring .. "\n")
-        end
-        outputc:close()
-
-    else
-        Spring.Echo(" could not open file")
-    end
-end
-
 -- > Symbolic multiplication
 function eraNonArgMul(A, B)
     if A == "0" or B == "0" or A == "" or B == "" then
@@ -4239,7 +4033,6 @@ end
 function getFileNameFromPath(path)
     return path:match("([^/\\]+)$")
 end
-
 
 -- > Displays Text at UnitPos Thread
 -- >> Expects a table with Line "Text", a speaker Name "Text", a DelayByLine "Numeric", a Alpha from wich it will start decaying "Numeric"
@@ -4428,123 +4221,6 @@ function split(inputstr, sep)
     return t
 end
 
--- > Forms a Tree from handed over Table
---	this function needs a global Itterator and but is threadsafe, as in only one per unit
---	it calls itself, waits for all other threads running parallel to reach the same recursion Depth
--- 	once hitting the UpperLimit it ends
-function executeLindeMayerSystem(gramarTable, String, oldDeg, Degree,
-                                 UpperLimit, recursionDepth, recursiveItterator,
-                                 PredPiece)
-
-    -- this keeps all recursive steps on the same level waiting for the last one - who releases the herd
-    gainLock(recursiveItterator)
-
-    -- we made it into the next step and get our piece
-    GlobalTotalItterator = GlobalTotalItterator + 1
-    local hit = GlobalTotalItterator
-
-    if not hit or TreePiece[hit] == nil or hit > UpperLimit then
-        releaseLocalLock(recursiveItterator)
-        return
-    end
-
-    -- DebugInfo
-    -- Spring.Echo("Level "..recursiveItterator.." Thread waiting for Level "..(recursiveItterator-1).. " to go from ".. GlobalInCurrentStep[recursiveItterator-1].." to zero so String:"..String.." can be foreached")
-
-    while GlobalInCurrentStep[recursiveItterator - 1] > 0 do Sleep(50) end
-
-    -- return clauses
-    if not String or String == "" or string.len(String) < 1 or
-        recursiveItterator == recursionDepth then
-        RecursionEnd[#RecursionEnd + 1] = PredPiece
-        releaseLocalLock(recursiveItterator)
-        return
-    end
-
-    ox, oy, oz = Spring.GetUnitPiecePosition(unitID, PredPiece)
-
-    -- Move Piece to Position
-
-    Show(TreePiece[hit])
-
-    Move(TreePiece[hit], x_axis, ox, 0)
-    Move(TreePiece[hit], y_axis, oy, 0)
-    Move(TreePiece[hit], z_axis, oz, 0, true)
-    -- DebugStoreInfo[#DebugStoreInfo+1]={"RecursionStep:"..hit.." ||RecursionDepth: "..recursiveItterator.." ||String"..String.." ||PredPiece: "..PredPiece.." || Moving Piece:"..TreePiece[hit].."to x:"..ox.." y:"..oy.." z:"..oz}
-
-    -- stores non-productive operators
-    OperationStorage = {}
-    -- stores Recursions and Operators
-    RecursiveStorage = {}
-
-    for i = 1, string.len(String) do
-        -- extracting the next token form the current string and find out what type it is
-        token = string.sub(String, i, i)
-        typeOf = type(gramarTable.transitions[token])
-
-        -- if the typeof is a function and a productive Element 
-        if typeOf == 'function' and gramarTable.productiveSymbols[token] then
-            -- execute every operation so far pushed back into the operationStorage on the current piece
-
-            for i = #OperationStorage, 1, -1 do
-                gramarTable.transitions[OperationStorage[i]](oldDeg, Degree,
-                                                             TreePiece[hit],
-                                                             PredPiece,
-                                                             recursiveItterator,
-                                                             recursiveItterator ==
-                                                                 UpperLimit - 1)
-            end
-
-            WaitForTurn(TreePiece[hit], x_axis)
-            WaitForTurn(TreePiece[hit], y_axis)
-            WaitForTurn(TreePiece[hit], z_axis)
-            -- renewOperationStorage
-            OperationStorage = {}
-
-            -- This LindeMayerSystem has a go
-            StartThread(executeLindeMayerSystem, gramarTable,
-                        gramarTable.transitions[token](oldDeg, Degree,
-                                                       TreePiece[hit],
-                                                       PredPiece,
-                                                       recursiveItterator,
-                                                       recursiveItterator ==
-                                                           UpperLimit - 1),
-                        oldDeg, Degree, UpperLimit, recursionDepth,
-                        recursiveItterator + 1,
-                        EndPiece[math.max(1, math.min(#EndPiece, hit))])
-
-            -- if we have a non productive function we push it back into the OperationStorage
-        elseif typeOf == "function" then -- we execute the commands on the current itteration-- which i
-            OperationStorage[#OperationStorage + 1] = token
-
-            -- recursionare pushed into the recursionstorage and executed after the current string has beenn pushed
-        elseif typeOf == "string" and token ==
-            gramarTable.transitions["RECURSIONSTART"] then
-            -- Here comes the trouble, we have to postpone the recurssion 
-            RecursiveStorage[#RecursiveStorage + 1], recursionEnd =
-                extractRecursion(String, i,
-                                 gramarTable.transitions["RECURSIONSTART"],
-                                 gramarTable.transitions["RECURSIONEND"])
-            i = math.min(recursionEnd + 1, string.len(String))
-        end
-    end
-
-    -- Recursions are itterated last but not least
-    if table.getn(RecursiveStorage) > 0 then
-        for i = 1, #RecursiveStorage do
-
-            StartThread(executeLindeMayerSystem, gramarTable,
-                        RecursiveStorage[i], oldDeg, Degree, UpperLimit,
-                        recursionDepth, recursiveItterator + 1,
-                        EndPiece[math.max(1, math.min(#EndPiece, hit))])
-        end
-    end
-    -- Recursion Lock - the last one steps the Global Itteration a level up
-
-    releaseLocalLock(recursiveItterator)
-    -- Spring.Echo("Thread Level "..recursiveItterator.." signing off")
-    return
-end
 
 function addAscii(str)
     local l_Result = 0
@@ -4660,117 +4336,21 @@ function conditionalEcho(active, message )
     end
 end
 
--- > prints a square 2dmap 
-function echo2DMap(tmap, squareSideDimension, valueSignMap)
-    map = {}
-    local map = tmap
-    step = 8
-
-    valueSignMap = valueSignMap or
-                       {[0] = " ҉ ", [false] = " �? ", [true] = " "}
-
-    if squareSideDimension ~= nil and squareSideDimension < 128 then step = 1 end
-
-    for x = 2, #map, step do
-        StringToConcat = ""
-        for z = 2, #map, step do
-            if not map[x][z] then
-                StringToConcat = StringToConcat .. " "
-            elseif valueSignMap[map[x][z]] then
-                StringToConcat = StringToConcat .. valueSignMap[map[x][z]]
-            else
-                StringToConcat = StringToConcat .. printFloat(map[x][z], 3) ..
-                                     " "
-            end
-        end
-        Spring.Echo(StringToConcat)
-    end
-end
-
-function printFloat(anyNumber, charsToPrint)
-    stringifyFloat = "" .. anyNumber
-    return string.sub(stringifyFloat, 1, charsToPrint)
-end
-
--- > Flashes a Piece for debug purposes
-function flashPiece(pname, Time, rate)
-    r = rate
-    t = Time or 1000
-    if not rate then r = 50 end
-
-    for i = 0, Time, 2 * r do
-        Sleep(r)
-        Show(pname)
-        Sleep(r)
-        Hide(pname)
-    end
-end
-
-function debugDisplayPieceChain(Tables)
-    for i = 1, #Tables, 1 do
-        x, y, z, _, _, _ = Spring.GetUnitPiecePosDir(unitID, Tables[i])
-        Spring.SpawnCEG("redlight", x, y + 10, z, 0, 1, 0, 50, 0)
-    end
-end
-
--- > echos out a Units Properties
-function echoUnitStats(id)
-    h, mh, pD, cP, bP = Spring.GetUnitHealth(id)
-    echo(h, mh, pD, "Capture Progress:" .. cP, "Build Progress:" .. bP)
-end
-
-function echStats(headerT, dataTable, maxlength, boolNumeric)
-    cat = "|"
-    for i = 1, #headerT do
-        cat = cat .. headerT[i] ..
-                  stringBuilder(" ",
-                                math.max(0, maxLength - string.len(headerT[i]))) ..
-                  "|"
-    end
-    echo(stringBuilder("=", string.len(cat)))
-    echo(cat)
-    echo(stringBuilder("_", string.len(cat)))
-    for i = 1, #dataTable do
-        cat = "|"
-        if not boolNumeric or boolNumeric == false then
-            for k, v in pairs(headerT) do
-                token = dataTable[i][k]
-                cat = cat .. token ..
-                          stringBuilder(" ", math.max(0, maxLength -
-                                                          string.len(token))) ..
-                          "|"
-            end
-            echo(cat)
-        else
-            for j = 1, #dataTable[i] do
-                token = dataTable[i][j]
-                cat = cat .. token ..
-                          stringBuilder(" ", math.max(0, maxLength -
-                                                          string.len(token))) ..
-                          "|"
-            end
-            echo(cat)
-        end
-    end
-    echo(stringBuilder("=", string.len(cat)))
-
-end
-
 -- ======================================================================================
 -- Section: Tableoperators 
 -- ======================================================================================
 
 function isInTable(T, val)
-for i=1, #T do
-    if T[i] == val then return true end
-end
-return false
+    for i=1, #T do
+        if T[i] == val then return true end
+    end
+    return false
 end 
+
 -- ======================================================================================
 -- Section: Random 
 -- ======================================================================================
 function getDeterministicRandom(hash, maximum)
-    assert(hash)
     return hash % maximum
 end
 
@@ -4779,10 +4359,41 @@ function getDermenisticChance(unitID, upperLimit)
     return (value % 100) < upperLimit
 end
 
-function getDeterministicUnitHash(unitID )
+function SetSharedOneTimeResult(key,  data)
+    if not GG.SharedResult then GG.SharedResult = {} end
+    if not GG.SharedResult[key] then
+       GG.SharedResult[key] = data
+    end 
+end
+
+function GetSharedOneTimeResult(key)
+    if not GG.SharedResult then GG.SharedResult = {} end
+    return GG.SharedResult[key]
+end
+
+function getDeterministicStationaryUnitHash(unitID )
     defID = Spring.GetUnitDefID(unitID)
     x,y,z = Spring.GetUnitPosition(unitID)
     return math.ceil(x) + math.ceil(z) + defID
+end
+
+function getDeterministicUnitHash(unitID )
+    defID = Spring.GetUnitDefID(unitID)
+    key = "UnitDefHash"..defID
+    sharedResult = GetSharedOneTimeResult(key)
+    if sharedResult then return sharedResult end
+    deterministicUnitHash = defID
+    for k,v in pairs (UnitDefs[defID]) do
+        defMemberType = type(v)
+        if defMemberType == "number" then
+            deterministicUnitHash = deterministicUnitHash + v
+        end
+        if defMemberType == "string" then
+            deterministicUnitHash = deterministicUnitHash + hashString(v)
+        end
+    end
+    SetSharedOneTimeResult(key, deterministicUnitHash)
+    return deterministicUnitHash
 end
 
 
@@ -4888,14 +4499,6 @@ function seedRandom()
 
 end
 
-function frameToMs(frame)
-    return frame*33
-end
-
-function MsToFrame(timeMs)
-    return math.ceil(timeMs/33)
-end
-
 -- > Execute Random Function in Table
 function randTableFunc(Table)
     Table = shuffleT(Table)
@@ -4921,6 +4524,7 @@ function randT(Table)
     return Table[math.random(1, #Table)]
 end
 
+--"Fair" pseudo random, that becomes fair by having a higher chance to roll true the longer you miss
 function fairRandom(identifier, diffDistance) -- chance to get true
     if not GG.FairRandom then GG.FairRandom = {} end
     if not GG.FairRandom[identifier] or GG.FairRandom[identifier].numberOfCalls ==
@@ -5012,7 +4616,7 @@ end
 -- >Returns randomized Boolean
 function maRa() return math.random(0, 1) == 1 end
 
--- >Returns not nil if random
+-- >Returns trinary logic result
 function raNil()
     if math.random(0, 1) == 1 then
         return maRa()
@@ -5585,26 +5189,12 @@ function getUnitsOfTypeInT(T, UnitTypeTable, Cache)
 end
 
 function getUnarmedInT(T)
-    returnTable = {}
-    for num, id in pairs(T) do
-        def = Spring.GetUnitDefID(id)
-        if UnitDefs[def].canAttack or UnitDefs[def].canFight then
-            returnTable[#returnTable + 1] = id
-        end
-    end
-    return returnTable
+    return getUnitDefIdsWithProperty(T, "canFight")
 end
 
 -- >filters Out TransportUnits
 function getTransportsInT(T)
-    returnTable = {}
-    for num, id in pairs(T) do
-        def = Spring.GetUnitDefID(id)
-        if false == UnitDefs[def].isTransport then
-            returnTable[#returnTable + 1] = id
-        end
-    end
-    return returnTable
+    return getUnitDefIdsWithProperty(T, "isTransport")
 end
 
 function isTransport(id)
@@ -5613,28 +5203,13 @@ function isTransport(id)
 end
 -- >filters Out Immobile Units
 function getImmobileInT(T, UnitDefs)
-    returnTable = {}
-    boolFilterOut = boolFilterOut or true
-    for num, id in pairs(T) do
-        def = Spring.GetUnitDefID(id)
-        if UnitDefs[def].isImmobile == true then
-            returnTable[#returnTable + 1] = id
-        end
-    end
-    return returnTable
+    return getUnitDefIdsWithProperty(T, "isImmobile")
 end
 
 -- >filters Out Immobile Units
-function removeImmobileInT(T, UnitDefs)
-    returnTable = {}
-    boolFilterOut = boolFilterOut or true
-    for num, id in pairs(T) do
-        def = Spring.GetUnitDefID(id)
-        if UnitDefs[def].isImmobile == false then
-            returnTable[#returnTable + 1] = id
-        end
-    end
-    return returnTable
+function removeImmobileInT(T)
+    filterTable =  getUnitDefIdsWithProperty(T, "isImmobile")
+    return removeDictFromDict(T, filterTable)
 end
 
 function removeBuildingInT(T, UnitDefs)
@@ -5653,158 +5228,47 @@ end
 
 -- > filters Out Buildings
 function getBuildingInT(T, UnitDefs)
-
-    returnTable = {}
-
-    for num, id in pairs(T) do
-        def = Spring.GetUnitDefID(id)
-        if UnitDefs[def] and UnitDefs[def].isBuilding == true then
-            returnTable[#returnTable + 1] = id
-        end
-
-    end
-    return returnTable
+    return getUnitDefIdsWithProperty(T, "isBuilding")
 end
 
 -- > filters Out Builders
 function getBuilderInT(T)
-    returnTable = {}
-    for num, id in pairs(T) do
-        def = Spring.GetUnitDefID(id)
-        if false == UnitDefs[def].isBuilder then
-            returnTable[#returnTable + 1] = id
-        end
-    end
-    return returnTable
+    return getUnitDefIdsWithProperty(T, "isBuilder")
 end
 
 -- > filters Out Mobile Builders
-function getMobileBuildersInT(T, boolCondi)
-    boolCond = boolCondi or false
-
-    returnTable = {}
-    for num, id in pairs(T) do
-        def = Spring.GetUnitDefID(id)
-        if boolCond == UnitDefs[def].isMobileBuilder then
-            returnTable[#returnTable + 1] = id
-        end
-    end
-    return returnTable
+function getMobileBuildersInT(T)
+    return getUnitDefIdsWithProperty(T, "isMobileBuilder")
 end
 
 function getStaticBuildersInT(T)
-    returnTable = {}
-    for num, id in pairs(T) do
-        def = Spring.GetUnitDefID(id)
-        if false == UnitDefs[def].isStaticBuilder then
-            returnTable[#returnTable + 1] = id
-        end
-    end
-    return returnTable
+    return getUnitDefIdsWithProperty(T, "isStaticBuilder")
 end
 
 function getFactorysInT(T)
-    returnTable = {}
-    for num, id in pairs(T) do
-        def = Spring.GetUnitDefID(id)
-        if false == UnitDefs[def].isFactory then
-            returnTable[#returnTable + 1] = id
-        end
-    end
-    return returnTable
+    return getUnitDefIdsWithProperty(T, "isFactory")
 end
 
 function getExtractorsInT(T)
-    returnTable = {}
-    for num, id in pairs(T) do
-        def = Spring.GetUnitDefID(id)
-        if false == UnitDefs[def].isExtractor then
-            returnTable[#returnTable + 1] = T[i]
-        end
-    end
-    return returnTable
+    return getUnitDefIdsWithProperty(T, "isExtractor")
 end
 
 function getGroundUnitsInT(T)
-    returnTable = {}
-    for num, id in pairs(T) do
-        def = Spring.GetUnitDefID(T[i])
-        if false == UnitDefs[def].isGroundUnit then
-            returnTable[#returnTable + 1] = T[i]
-        end
-    end
-    return returnTable
+    return getUnitDefIdsWithProperty(T, "isGroundUnit")
 end
 
-function getAirUnitsInT(T, UnitDefs, lboolFilterOut)
+function getUnitDefIdsWithProperty(T, propertyName)
 
     boolFilterOut = lboolFilterOut or false
     returnTable = {}
     for num, id in pairs(T) do
         def = Spring.GetUnitDefID(id)
-        if boolFilterOut == UnitDefs[def].isAirUnit then
+        if UnitDefs[def][propertyName] then
             returnTable[#returnTable + 1] = id
         end
     end
     return returnTable
 end
-
-function getStrafingAirUnitsInT(T)
-    returnTable = {}
-    for i = 1, #T do
-        def = 
-        Spring.GetUnitDefID(T[i])
-        if false == UnitDefs[def].isStrafingAirUnit then
-            returnTable[#returnTable + 1] = T[i]
-        end
-    end
-    return returnTable
-end
-
-function getNextKey(T, oldKey, boolFirst)
-    boolNext = false
-
-    if boolFirst then for k, v in pairs(T) do return k, v; end end
-
-    for key, value in pairs(T) do
-        if boolNext == true then return key, value end
-        if key == oldKey then boolNext = true end
-    end
-end
-
-function getHovringAirUnitsInT(T)
-    returnTable = {}
-    for i = 1, #T do
-        def = Spring.GetUnitDefID(T[i])
-        if false == UnitDefs[def].isHoveringAirUnit then
-            returnTable[#returnTable + 1] = T[i]
-        end
-    end
-    return returnTable
-end
-
-function getFighterAirUnitsInT(T)
-    returnTable = {}
-    for i = 1, #T do
-        def = Spring.GetUnitDefID(T[i])
-        if false == UnitDefs[def].isFighterAirUnit then
-            returnTable[#returnTable + 1] = T[i]
-        end
-    end
-    return returnTable
-end
-
-function getBomberAirUnitInT(T)
-    returnTable = {}
-    for i = 1, #T do
-        def = Spring.GetUnitDefID(T[i])
-        if false == UnitDefs[def].isBomberAirUnit then
-            returnTable[#returnTable + 1] = T[i]
-        end
-    end
-    return returnTable
-end
-
 
 -- ======================================================================================
 -- Section: Sound
@@ -5843,9 +5307,8 @@ end
 function consumeAvailableRessource(typeRessource, amount, teamID,
                                    boolConsumeAllAvailable)
     boolConsumeAllAvailable = boolConsumeAllAvailable or false
-
-    if "m" == string.lower(typeRessource) or "metal" ==
-        string.lower(typeRessource) then
+    typeRessource = string.lower(typeRessource)
+    if "m" == typeRessource or "metal" == typeRessource then
         currentLevel = Spring.GetTeamResources(teamID, "metal")
         if amount > currentLevel and boolConsumeAllAvailable == false then
             return false
@@ -5857,8 +5320,7 @@ function consumeAvailableRessource(typeRessource, amount, teamID,
         end
     end
 
-    if "energy" == string.lower(typeRessource) or "e" ==
-        string.lower(typeRessource) then
+    if "energy" == typeRessource or "e" == typeRessource then
         currentLevel = Spring.GetTeamResources(teamID, "energy")
         if amount > currentLevel and boolConsumeAllAvailable == false then
             return false
@@ -5883,7 +5345,7 @@ function consumeAvailableRessourceUnit(unitID, typeRessource, amount)
         if Spring.UseUnitResource(unitID, "m", amount) then return true end
     end
 
-    if "energy" == typeRessource or "e" == typeRessource then
+    if "e" == typeRessource or  "energy" == typeRessource then
         currentLevel = Spring.GetTeamResources(teamID, "energy")
         if amount > currentLevel then return false end
 
@@ -5911,7 +5373,6 @@ end
 function spawnProjectile( weaponDefID,  projectileParams)
     return Spring.SpawnProjectile (  weaponDefID,  projectileParams )
 end
-
 
 --> Set Unit permanent flying
 function setUnitNeverLand(unitID, boolNeverLand)
@@ -6090,17 +5551,6 @@ function runAwayFromPlace(id, px, py, pz, distanceToRun)
     hx, hz = x + hx, z + hz
 
     Spring.SetUnitMoveGoal ( id, hx, hy, hz)
-    --[[Command(id, "go", {
-                x = hx,
-                y = y,
-                z = hz
-            }, {})   
-    Command(id, "go", {
-                x = hx,
-                y = y,
-                z = hz
-            }, {"shift"})--]]
---[[    Spring.Echo("Running away from "..horrorID)--]]
 end
 
 function sampleKeyFromDicct(T, ...)
@@ -6115,8 +5565,6 @@ function sampleKeyFromDicct(T, ...)
 end
 
 function delayedCommand(id, command, target, option, framesToDelay)
-    assert(id)
-    assert(command)
     persPack = {framesToDelay = framesToDelay}
     function delay(evtID, frame, persPack, startFrame)
         if frame >= startFrame + persPack.framesToDelay then
@@ -6142,31 +5590,10 @@ function isTransported(unitID)
     return (transporterID ~= nil)
 end
 
-function trackEchoCallCountPerFrame(name)
-    if not GG.CallCountEcho then GG.CallCountEcho = {} end
-    if not GG.CallCountEcho[name] then GG.CallCountEcho[name] = {} end
-    currentFrame = Spring.GetGameFrame()
-    if not GG.CallCountEcho[name][currentFrame] then 
-        GG.CallCountEcho[name][currentFrame] = 1; 
-        previousFrame = currentFrame -1 
-        --if GG.CallCountEcho[name][previousFrame] then
-        --    Spring.Echo(name.." Called in Frame:"..previousFrame..": "..GG.CallCountEcho[name][previousFrame] )
-        --end
-    else
-        GG.CallCountEcho[name][currentFrame] = GG.CallCountEcho[name][currentFrame] +1
-        if GG.CallCountEcho[name][currentFrame] > 20 then
-            Spring.Echo(name.." Called in Frame:"..currentFrame..": "..GG.CallCountEcho[name][currentFrame] )
-        end
-    end
-end
-
-
 -- >Generic Simple Commands
 function Command(id, command, tarGet, option)
     assert(id)
-    assert(type(id) == "number", id)
     assert(command ~= nil, UnitDefs[Spring.GetUnitDefID(id)].name.." has invalid Command executed on it")
-    trackEchoCallCountPerFrame("Command")
     local target = tarGet
 
     option = option  or {}
@@ -6333,6 +5760,33 @@ end
 -- ======================================================================================
 -- Section: Sfx Operations
 -- ======================================================================================
+-- > Explodes a Table of Pieces 
+function explodeT(TableOfPieces, Conditions, StepSize)
+    lStepSize = StepSize or 1
+    for i = 1, #TableOfPieces, lStepSize do
+        Explode(TableOfPieces[i], Conditions)
+    end
+end
+
+function explodeTableOfPiecesGroupsExcludeTable(TableOfPiecesGroups,  ExcludePiecesDict, Condition)
+    if Condition == nil then
+        Condition = SFX.FALL + SFX.FIRE
+    end
+
+    for groupName, group in pairs(TableOfPiecesGroups) do
+        for num, pieces in pairs(group) do 
+            if not ExcludePiecesDict[pieces] then
+                Explode(pieces, Condition) 
+            end
+        end
+    end
+end
+
+-- > Explodes a Table of Pieces 
+function explodeD(TableOfPieces, Conditions)
+    lStepSize = StepSize or 1
+    for num, pieces in pairs(TableOfPieces) do Explode(pieces, Conditions) end
+end
 
 -- > make a CEG CLOUD
 function CEG_CLOUD(cegname, size, pos, lifetime, nr, densits, plifetime, swing,
@@ -6442,8 +5896,6 @@ function spawnCegNearUnitGround(unitID, cegname, ox, oz, oy)
     y= Spring.GetGroundHeight(x + ox ,z + oz )
     Spring.SpawnCEG(cegname, x +ox   , y +oy , z+oz  , dx, dy, dz, 50, 0)
 end
-
-
 
 -- >Spawn CEG at unit
 function spawnCegAtUnit(unitID, cegname, xoffset, yoffset, zoffset, dx, dy, dz)
@@ -6555,104 +6007,11 @@ function frameToMS(frames) return frameToS(frames) * 1000; end
 
 function frameToS(frames) return (frames / 30); end
 
-function assertArguments(...)
-    local arg = {...}
-    for i, v in ipairs(args) do
-        assert(v ~= nil, string.format("Argument #%d is nil", i))
-    end
+
+
+function assertInDict(T,  Key)
+     assert(T[Key])                        
 end
-
-function assertNameTypeInTable(T, boolActive, Type)
-    if boolActive == true then
-        assert(T[Type])                        
-    end
-end
-
-function assertType(x, typeDescription)
-    assert(type(x) == typeDescription, "variable "..toString(x).. " is not of type ".. typeDescription)
-end
-
-function assertNumberValid(nr)
-    assert(nr ~=  math.huge)
-    assert(nr ~= -math.huge)
-    assert(nr-1 < nr) --(Nan check)
-end
-
-function assertInMap(nr, maxVal)
-    assert(nr > 0)
-    assert(nr<maxVal) 
-end
-
-function assertArgumentsExistOfType(...)
-    local arg = {...}
-    arg.n = #arg
-
-    for i = 1, arg.n, 2 do
-        local expected = arg[i]
-        local actual = arg[i + 1]
-        assert(actual ~= nil, "Arg:" .. i .. " :Value is nil")
-        assert((type(expected) == type(actual)),
-               "Arg:" .. i .. " :Types not compatible, expected " ..
-                   type(expected) .. " got " .. type(actual))
-
-    end
-end
-
-function printStacktrace(maxdepth, maxwidth, maxtableelements, ...)
-    maxdepth = maxdepth or 16
-    maxwidth = maxwidth or 10
-    maxtableelements = maxtableelements or 6 -- max amount of elements to expand from table type values
-
-    local function dbgt(t, maxtableelements)
-        local count = 0
-        local res = ''
-        for k,v in pairs(t) do
-            count = count + 1
-            if count < maxtableelements then
-                res = res .. tostring(k) .. ':' .. tostring(v) ..', '
-            end
-        end
-        res = '{'..res .. '}[#'..count..']'
-        return res
-    end
-
-    local myargs = {...}
-    infostr = ""
-    for i,v in ipairs(myargs) do
-        infostr = infostr .. tostring(v) .. "\t"
-    end
-    if infostr ~= "" then infostr = "Trace:[" .. infostr .. "]\n" end 
-    local functionstr = "" -- "Trace:["
-    for i = 2, maxdepth do
-        if debug.getinfo(i) then
-            local funcName = (debug and debug.getinfo(i) and debug.getinfo(i).name)
-            if funcName then
-                functionstr = functionstr .. tostring(i-1) .. ": " .. tostring(funcName) .. " "
-                local arguments = ""
-                local funcName = (debug and debug.getinfo(i) and debug.getinfo(i).name) or "??"
-                if funcName ~= "??" then
-                    for j = 1, maxwidth do
-                        local name, value = debug.getlocal(i, j)
-                        if not name then break end
-                        local sep = ((arguments == "") and "") or  "; "
-                        if tostring(name) == 'self'  then
-                            arguments = arguments .. sep .. ((name and tostring(name)) or "name?") .. "=" .. tostring("??")
-                        else
-                            local newvalue
-                            if maxtableelements > 0 and type({}) == type(value) then newvalue = dbgt(value, maxtableelements) else newvalue = value end 
-                            arguments = arguments .. sep .. ((name and tostring(name)) or "name?") .. "=" .. tostring(newvalue)
-                        end
-                    end
-                end
-                functionstr  = functionstr .. " Locals:(" .. arguments .. ")" .. "\n"
-            else 
-                functionstr = functionstr .. tostring(i-1) .. ": ??\n"
-            end
-        else break end
-    end
-    Spring.Echo(infostr .. functionstr)
-end
-
 
 function deserializeStringToTable(str)
   local f = loadstring(str)
@@ -6703,13 +6062,6 @@ function serializeTable(val, name, skipnewlines, depth)
     return tmp
 end
 
-function getDetThreeLetterAgency(hash)
-    first = (hash % 16)
-    second = ((hash +16) % 20)
-    third = {"s", "a", "i", "b", "f"}
-
-    return string.upper(string.char(65+first)..string.char(65+second)..third[(hash%#third)+1])
-end
 
 
 function setupPrintf(unitID)
@@ -6734,7 +6086,7 @@ return OrgT
 end
 
 function houseDestroyWithDestructionTable(LevelPieces, maxSpeed, id)
-	echo("Destroyed house animation") -- TODO find out why scrapheap has vertices going to infinity
+	conditionalEcho(GG.lib_boolDebug, "Destroyed house animation") -- TODO find out why scrapheap has vertices going to infinity
 	hideAll(id)
 	speed= 9.8
     scale = 10
@@ -6821,7 +6173,6 @@ function find_closest_position(positions, vector_start, vector_direction)
     return closest_position
 end
 
-
 function GetRayIntersectPiecesPosition(unitID, RoofTopPieces, vector_position, vector_direction)
 	local RooftopClosestPiece = -1
 	local RooftopMinDistance = math.huge
@@ -6846,12 +6197,4 @@ function holdsForAllBool(T, state)
                 if id ~= state then holdsForEach = false end 
             end)
     return holdsForEach
-end
-
-function printUnitDefs(UnitDefs)
-    echo("Printing UnitName DefIds:")
-    for i=1, #UnitDefs do
-        echo(UnitDefs[i].name .. " = "..UnitDefs[i].id)
-    end
-
 end

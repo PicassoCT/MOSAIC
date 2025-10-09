@@ -10,7 +10,7 @@ include "lib_mosaic.lua"
 toShowTable = {}
 TablesOfPiecesGroups = {}
 mapHash = getDetermenisticMapHash(Game)
-unitHash = getDeterministicUnitHash(unitID)
+unitHash = getDeterministicStationaryUnitHash(unitID)
 
 -- Create a deterministic PRNG
 

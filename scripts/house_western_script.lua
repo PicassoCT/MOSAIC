@@ -347,7 +347,6 @@ end
 
 function selectBase() 
      maxBase = count(TablesOfPiecesGroups["base"]) -1
-     assertType(TablesOfPiecesGroups["base"], "table")
     if materialColourNameGround == "ghetto" or  materialColourNameWall == "ghetto" then
         maxBase = count(TablesOfPiecesGroups["base"]) 
     end
