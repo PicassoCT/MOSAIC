@@ -1295,7 +1295,7 @@ end
                     ["civilian"] = {name = "civilian_western", range = 4},
                     ["truck"] = {name = "truck_western", range = 4}},        
                 ["asian"] = {
-                    ["house"] = {name = "house_asian", range = 3},
+                    ["house"] = {name = "house_asian", range = 4},
                     ["civilian"] = {name = "civilian_arab", range = 5},
                     ["truck"] = {name = "truck_western", range = 4}}
                 }
@@ -1343,6 +1343,7 @@ end
                     DicAsianNameDefID = expandNameSubSet_Dict_NameDefID(translationAsian[typeName], UnitDefs)
                     assertInDict(DicAsianNameDefID,  "house_asian0")
                     assertInDict(DicAsianNameDefID,  "house_asian1")
+                    assertInDict(DicAsianNameDefID,  "house_asian4")
 
                     DicWesternNameDefID = expandNameSubSet_Dict_NameDefID(translationWestern[typeName], UnitDefs)
                     assertInDict(DicWesternNameDefID,  "civilian_western0")
