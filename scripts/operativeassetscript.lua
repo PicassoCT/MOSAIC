@@ -222,6 +222,9 @@ function script.Create()
     hideT(TablesOfPiecesGroups["Shell"])
     shownPieces = randShowHide(unpack(TablesOfPiecesGroups["HeadDeco"]))
     Hide(backpack)
+    Hide(piece("MuzzleFlashSniperRifle"))
+    Hide(piece("MuzzleFlashGun"))
+    Hide(piece("MuzzleFlashPistol"))
     hideT(TablesOfPiecesGroups["backpackX"])
     shownPieces[#shownPieces+1] =TablesOfPiecesGroups["backpackX"][math.random(1,#TablesOfPiecesGroups["backpackX"])]
     setViewRadius(unitID, NEAR_SIGHTED)
@@ -258,9 +261,11 @@ end
 function gunVisibleOS()
     while true do
 	Sleep(1000)
-		if not boolVisiblyForced and not boolAiming then
-			Sleep(3000)
-			hideFireArm()
+		if not boolVisiblyForced and not boolAiming and boolWalking then
+			Sleep(5000)
+            if not boolVisiblyForced and not boolAiming and boolWalking then
+			     hideFireArm()
+            end
 		else
 		-- TODDO Cause Fleeing People event
 		end

@@ -2,32 +2,134 @@ include "createCorpse.lua"
 include "lib_OS.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
---include "lib_Build.lua"
+include "lib_mosaic.lua"
 
 TablesOfPiecesGroups = {}
+GameConfig = getGameConfig()
 function script.HitByWeapon(x, z, weaponDefID, damage) end
+x,y,z = nil, nil, nil
+boolDoneShowing = false
+RoofTopPieces = {}
+base = nil
+ToShowTable = {}
+Icon =piece("Icon")
 
+-- Returns a random integer between min and max (inclusive)
+local function random_range(min, max)
+    min = min or 0
+    max = max or 1
+    return math.floor(math.random() * (max - min + 1)) + min
+end
+
+function addToShowTables(tables)
+    for i=1,#tables do
+        addToShowTable(tables[i])
+    end
+    return tables
+end
+
+function addToShowTable(pieceID)
+    ToShowTable[#ToShowTable +1]= pieceID
+    return pieceID
+end
+
+function showSeveral(T)
+    if not T then return end
+    ToShow= {}
+    for num, val in pairs(T) do 
+        if random_range() == 1 then
+           ToShow[#ToShow +1] = val
+        end
+    end
+
+    for i=1, #ToShow do
+        ToShowTable[#ToShowTable +1] = ToShow[i]
+        Show(ToShow[i])
+    end
+    return ToShow
+end
+
+function showOne(T, bNotDelayd)
+    if not T then return end
+    dice = math.random(1, count(T))
+    c = 0
+    for k, v in pairs(T) do
+        if k and v then c = c + 1 end
+        if c == dice then
+            ToShowTable[#ToShowTable + 1] = v
+            if bNotDelayd and bNotDelayd == true then
+                Show(v)
+            end
+            return v
+        end
+    end
+end
+
+function buildHouse()
+    resetAll(unitID)
+    hideAll(unitID)
+    Sleep(1)
+    buildBuilding()
+end
+
+function buildAnimation()
+    Show(Icon)
+    while not boolDoneShowing do
+        Sleep(1000)
+    end
+    Hide(Icon)
+    StartThread(waterFalls)
+    showHouse()
+end
+
+boolHasWaterFalls = false
+function waterFalls()
+    while chasingWaterfalls[base] do
+        foreach(TablesOfPiecesGroups["Water"],
+            function (water)
+                Show(water)
+                val = math.random(0,1)*180
+                Turn(water, x_axis, math.rad(randSign()*val),0)
+                val = math.random(0,1)*180
+                Turn(water, z_axis, math.rad(randSign()*val),0)
+            end
+            )
+    Sleep(35)
+    end
+end
+
+base1 = piece("base1")
+base2 = piece("base2")
+base3 = piece("base3")
+chasingWaterfalls  = {
+[piece("base2")] = true
+
+}
+function buildBuilding()
+    StartThread(buildAnimation)
+    Sleep(1000)
+    addToShowTable(piece("Plate"))
+    base = addToShowTable(showOne(TablesOfPiecesGroups["base"], true))
+    showTSubSpins(base, TablesOfPiecesGroups)
+    if base == base1 then  showSeveral(TablesOfPiecesGroups["ShowCombe"])    end
+
+    if base == base1 then RoofTopPieces = TablesOfPiecesGroups["RoofTopCircle"] end
+    if base == base2 then RoofTopPieces = TablesOfPiecesGroups["RoofTopSquare"] end
+    if base == base3 then RoofTopPieces = TablesOfPiecesGroups["RoofTopUpright"] end
+    boolDoneShowing = true
+end
 
 function script.Create()
-    echo(UnitDefs[unitDefID].name.."has placeholder script called")
-    -- generatepiecesTableAndArrayCode(unitID)
-    TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
-    -- Spring.MoveCtrl.Enable(unitID,true)
-    -- x,y,z =Spring.GetUnitPosition(unitID)
-    -- Spring.MoveCtrl.SetPosition(unitID, x,y+500,z)
-    -- StartThread(AnimationTest)
-    x,y,z = Spring.GetUnitPosition(unitID)
-    echo("{name = \"placeholder\", x = "..x..", z = "..z..", rot = 0, scale = 1.000000}")
+    TablesOfPiecesGroups =   getPieceTableByNameGroups(false, true)
+    x, y, z = Spring.GetUnitPosition(unitID)
+    StartThread(removeFeaturesInCircle,x,z, GameConfig.houseSizeZ/2) 
+    math.randomseed(x + y + z)
+    StartThread(buildHouse)
 end
-
 
 function script.Killed(recentDamage, _)
-
-    -- createCorpseCUnitGeneric(recentDamage)
     return 1
 end
-
-
 
 function script.StartMoving() end
 
@@ -37,9 +139,14 @@ function script.Activate() return 1 end
 
 function script.Deactivate() return 0 end
 
--- function script.QueryBuildInfo()
--- return center
--- end
+function showHouse() boolHouseHidden = false; showT(ToShowTable) end
 
--- Spring.SetUnitNanoPieces(unitID, { center })
+function hideHouse() boolHouseHidden = true; hideT(ToShowTable) end
 
+boolDoneShowing = false
+boolHouseHidden = false
+
+function traceRayRooftop( vector_position, vector_direction)
+    return GetRayIntersectPiecesPosition(unitID, RoofTop, vector_position, vector_direction)
+end
+ 

@@ -74,7 +74,8 @@ function stealVehicle()
                ad = copyUnit(id, teamID)
                 fatherID = fatherID or unitID
                 x,y,z = Spring.GetUnitPosition(fatherID)
-                if doesUnitExistAlive(id) == doesUnitExistAlive(fatherID) then
+                if doesUnitExistAlive(id) == true and
+                   doesUnitExistAlive(fatherID) then
                      Spring.SetUnitLoadingTransport(fatherID, ad)
                      env = Spring.UnitScript.GetScriptEnv(ad) 
                     if env and env.TransportPickup then

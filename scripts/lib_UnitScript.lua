@@ -6003,14 +6003,12 @@ function getMapCenter(Game)
     return mapCenter
 end
 
-function frameToMS(frames) return frameToS(frames) * 1000; end
+function frameToMs(frames) return frameToS(frames) * 1000; end
 
 function frameToS(frames) return (frames / 30); end
 
-
-
 function assertInDict(T,  Key)
-     assert(T[Key])                        
+     assert(T[Key], Key.. " not in ".. (toString(T)))                        
 end
 
 function deserializeStringToTable(str)

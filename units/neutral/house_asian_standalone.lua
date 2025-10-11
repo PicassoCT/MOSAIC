@@ -152,8 +152,8 @@ local house_asian_combs = Building:New{
 	mass           		= 500,
 	buildCostEnergy    	= 5,
 	buildCostMetal    	= 5,
-	explodeAs				= "none",
-	name = "Luxor Combs ",
+	explodeAs			= "none",
+	name 				= "Luxor Combs ",
 	description = "housing mega project",
 	buildPic = "house.png",
 	iconType = "house",
@@ -162,7 +162,7 @@ local house_asian_combs = Building:New{
 	FootprintX = 8,
 	FootprintZ = 8,
 	script 				= "house_asian_comb_script.lua",
-	objectName       	= "house_asian_combs.dae",
+	objectName       	= "house_asian_comb.dae",
 	isFirePlatform  = true, 	
 		
 	YardMap =  [[yyyyyyyy
@@ -190,14 +190,11 @@ local house_asian_combs = Building:New{
 	collisionvolumescales = "130 60 130",
 	collisionVolumeOffsets  = {0.0, 30.0,  0.0},
 	category = [[BUILDING RAIDABLE]],
-
 }
-
-
 
 return lowerkeys({
 	["house_asian1"] = house_asian_standalone:New(),
 	["house_asian2"] = house_asian_refugeecamp:New(),
-	["house_asian3"] = house_asian_projects:New()	
+	["house_asian3"] = house_asian_projects:New(),
 	["house_asian4"] = house_asian_combs:New()	
 })

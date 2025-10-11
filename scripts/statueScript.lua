@@ -4,7 +4,7 @@ include "lib_UnitScript.lua"
 function script.Create()
     hideAll(unitID)
 
-    hash = getDeterministicUnitHash(unitID)
+    hash = getDeterministicStationaryUnitHash(unitID)
     defID = Spring.GetUnitDefID(unitID)
     if not GG.StatueSelectorTable then GG.StatueSelectorTable = {} end
     if not GG.StatueSelectorTable[defID] then 

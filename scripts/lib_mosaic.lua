@@ -1,7 +1,7 @@
 -- ===================================================================================================================
 -- Game Configuration
  GG.unitFactor = 0.80
- GameVersion = "1.009"  
+ GameVersion = "1.010"  
  function setUnitFactor(modOptions)
     GG.unitFactor = modOptions.unitfactor or 0.8
  end
@@ -1330,7 +1330,6 @@ end
             function getCultureUnitModelNames_Dict_DefIDName(cultureName, typeName, UnitDefs)
                 if cultureName == nil then 
                     cultureName = getCultureName()
-                    assert(cultureName)
                 end
 
                 local translation = {}
@@ -1341,16 +1340,20 @@ end
 
                     --translationAsian = getTranslation(Cultures.asian)
                     DicAsianNameDefID = expandNameSubSet_Dict_NameDefID(translationAsian[typeName], UnitDefs)
-                    assertInDict(DicAsianNameDefID,  "house_asian0")
-                    assertInDict(DicAsianNameDefID,  "house_asian1")
-                    assertInDict(DicAsianNameDefID,  "house_asian4")
+                    if typeName == "house" then
+                        assertInDict(DicAsianNameDefID,  "house_asian0")
+                        assertInDict(DicAsianNameDefID,  "house_asian1")
+                        assertInDict(DicAsianNameDefID,  "house_asian4")
+                    end
 
-                    DicWesternNameDefID = expandNameSubSet_Dict_NameDefID(translationWestern[typeName], UnitDefs)
-                    assertInDict(DicWesternNameDefID,  "civilian_western0")
-  
+                    DicWesternNameDefID = expandNameSubSet_Dict_NameDefID(translationWestern[typeName], UnitDefs) 
 
                     DictArabNameDefID = expandNameSubSet_Dict_NameDefID(translationArabic[typeName], UnitDefs)
-                    assertInDict(DictArabNameDefID, "civilian_arab0")            
+                    if typeName == "civilian" then
+                        assertInDict(DicWesternNameDefID,  "civilian_western0")
+                        assertInDict(DictArabNameDefID, "civilian_arab0")
+                    end
+            
 
                     local fullTable = {}
                     for name,defID in pairs(DicAsianNameDefID) do                       
