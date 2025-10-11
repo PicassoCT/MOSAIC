@@ -2,14 +2,14 @@ include "createCorpse.lua"
 include "lib_OS.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
-
 include "lib_mosaic.lua"
 
 local Animations = include('animations_civilian_female.lua')
 local signMessages = include('protestSignMessages.lua')
+local map = Spring.GetUnitPieceMap(unitID)
+local parentPieceMap = getParentPieceMap(unitID)
 
-
-local TablesOfPiecesGroups = {}
+local TablesOfPiecesGroups =   getPieceTableByNameGroups(false, true)
 local GameConfig = getGameConfig()
 SIG_ANIM = 1
 SIG_UP = 2
@@ -21,6 +21,21 @@ SIG_MOLOTOW = 64
 SIG_INTERNAL = 128
 SIG_RPG = 256
 
+local function randomMultipleByNameOrDefault(name, index)
+    if TablesOfPiecesGroups[name] then
+        if index then
+             return TablesOfPiecesGroups[name][index]
+         else
+            if maRa() and map[name] then
+                return piece(name)
+            else
+                return TablesOfPiecesGroups[name][math.random(1,#TablesOfPiecesGroups[name])]
+            end
+        end
+    else
+        return piece(name)
+    end
+end
 local center = piece('center');
 local Feet1 = piece('Feet1');
 local Feet2 = piece('Feet2');
@@ -38,10 +53,10 @@ local UpBody = piece('UpBody');
 local UpLeg1 = piece('UpLeg1');
 local UpLeg2 = piece('UpLeg2');
 local cigarett = piece('cigarett');
-local Handbag = piece('Handbag');
+local Handbag = randomMultipleByNameOrDefault("Handbag")
 local SittingBaby = piece('SittingBaby');
 local ak47 = piece('ak47')
-local cofee = piece('cofee');
+local cofee = nil
 local ProtestSign = piece "ProtestSign"
 local cellphone1 = piece "cellphone1"
 local cellphone2 = piece "cellphone2"
@@ -52,9 +67,9 @@ local RPG7Rocket
 gunsTable =  {}
 gunsTable[#gunsTable+1] = ak47
 local walkMotionExcludeTable = {}
-pieceMap = Spring.GetUnitPieceMap (unitID)
 
-if pieceMap["Pistol"] and maRa() == true then
+
+if map["Pistol"] and maRa() == true then
     gunsTable[#gunsTable + 1 ] = piece('Pistol')
     walkMotionExcludeTable[ShoppingBag]=ShoppingBag
     walkMotionExcludeTable[Handbag]=Handbag
@@ -136,51 +151,78 @@ local boolAiming = false
 
 home = {}
 
-loadMax = 8
 local damagedCoolDown = 0
 local bodyConfig = {}
 local TruckTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "truck", UnitDefs)
-local NORMAL_WALK_SPEED =  0.65625
-SPRINT_SPEED = 1.0
+local NORMAL_WALK_SPEED =  GameConfig.civilian_walking_speedfactor
+local SPRINT_SPEED = GameConfig.civilian_running_speedfactor
 
-iShoppingConfig = math.random(0, 8)
+function naked()
+    isBeachBabe = UnitDefNames["civilian_western4"].id == unitDefID
+    return isBeachBabe and (unitID % 2 == 0)
+end
+
+iShoppingConfig = math.random(0, 5)
 function variousBodyConfigs()
     bodyConfig.boolShoppingLoaded = (iShoppingConfig <= 1)
     bodyConfig.boolCarrysBaby = (iShoppingConfig == 2)
-    bodyConfig.boolTrolley = (iShoppingConfig == 3)
+    bodyConfig.boolTrolley = (iShoppingConfig == 3) or naked()
     bodyConfig.boolHandbag = (iShoppingConfig == 4)
     bodyConfig.boolLoaded = (iShoppingConfig < 5)
     bodyConfig.boolProtest = GG.GlobalGameState == GameConfig.GameState.anarchy and maRa()
+    bodyConfig.boolHasDeco = maRa()
+    setDefaultBodyConfig()
+end
+
+function externalPickUpHandbag()
+    bodyConfig.boolHandbag = true
+    if Handbag then Hide(Handbag) end
+    Handbag = randomMultipleByNameOrDefault("Handbag")
+    Show(Handbag)
 end
 
 orgHousePosTable = {}
 
 rpgCarryingTypeTable = getRPGCarryingCivilianTypes(UnitDefs)
-myName = UnitDefs[unitDefID].name
+
 local myGun = ak47
-
-function script.Create()
-
-    Move(root, y_axis, -3, 0)
-    TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
-    MilitiaMask = TablesOfPiecesGroups["MilitiaMask"][math.random(1,#TablesOfPiecesGroups["MilitiaMask"])]
-    if maRa() and MilitiaMask then Show(MilitiaMask) end
-    if #gunsTable > 1 then myGun = gunsTable[math.random(1,#gunsTable)] else myGun = gunsTable[1] end
-    makeWeaponsTable(myGun)
-    variousBodyConfigs()
-
-    bodyConfig.boolArmed = false 
+function setDefaultBodyConfig()
+   bodyConfig.boolArmed = false 
     bodyConfig.boolRPGArmed = false
     bodyConfig.boolWounded = false
     bodyConfig.boolInfluenced = false
     bodyConfig.boolCoverWalk = false
+    rpgCarryingTypeTable = getRPGCarryingCivilianTypes(UnitDefs)
     bodyConfig.boolRPGCarrying = rpgCarryingTypeTable[unitDefID] ~= nil 
-    home.x, home.y, home.z = Spring.GetUnitPosition(unitID)
+end
+function script.Create()
+    Move(root, y_axis, -3, 0)
+
+    if UnitDefs[unitDefID].name == "civilian_western0" then
+        gunsTable[#gunsTable + 1 ] = piece('Pistol')
+        walkMotionExcludeTable[ShoppingBag]=ShoppingBag
+        if Handbag then
+            walkMotionExcludeTable[Handbag]=Handbag
+        end
+    end
+
+    MilitiaMask = randomMultipleByNameOrDefault("MilitiaMask")
+    if maRa() and MilitiaMask then Show(MilitiaMask) end
+
+    --Handbag does not rotate with the pieces, its 
+    cofee = randomMultipleByNameOrDefault("cofee")
+
+    myGun = getSafeRandom(gunsTable, gunsTable[1])
+    makeWeaponsTable(myGun)
+    variousBodyConfigs()
+ 
+    home.x, home.y, home.z = spGetUnitPosition(unitID)
     bodyBuild()
 
     setupAnimation()
 
-    setOverrideAnimationState(eAnimState.standing, eAnimState.standing, true,  nil, false)
+    setOverrideAnimationState(eAnimState.standing, eAnimState.standing, true, nil, false)
+    --StartThread(animationTestLoop)
     StartThread(threadStarter)
     StartThread(threadStateStarter)
     StartThread(noCapesControl, LowArm1, LowArm2)
@@ -188,6 +230,7 @@ function script.Create()
                                                computeOrgHouseTable, UnitDefs,
                                                math.huge, GameConfig)
     StartThread(cloakLoop)
+    StartThread(rainyDayCare)
 end
 
 function getVectorTable(pieceName)
@@ -261,6 +304,79 @@ end
 
 end
 
+function speedControl()
+    Sleep(100)
+    setSpeedIntern(unitID, NORMAL_WALK_SPEED) 
+    while true do
+
+    if damagedCoolDown > 0 then
+        setSpeedIntern(unitID, SPRINT_SPEED) 
+        while damagedCoolDown > 0 do
+            Sleep(100)
+            damagedCoolDown = damagedCoolDown -10
+
+        end
+        setSpeedIntern(unitID, NORMAL_WALK_SPEED) 
+    end
+
+    if GG.GlobalGameState ~= GameConfig.GameState.normal  then
+        setSpeedIntern(unitID, 0.85)
+        while GG.GlobalGameState ~= GameConfig.GameState.normal do
+            Sleep(1000)
+            if  GG.DamageHeatMap and GG.DamageHeatMap.getDangerAtLocation then
+                x,y, z = spGetUnitPosition(unitID)
+                normalizedDanger =GG.DamageHeatMap:getDangerAtLocation(x,z)
+                if normalizedDanger > 0.5 then
+                    setSpeedIntern(unitID, normalizedDanger)
+                end
+            end
+        end
+        setSpeedIntern(unitID, NORMAL_WALK_SPEED) 
+    end
+
+    Sleep(500)
+    end
+end
+
+function headAnimationLoop()
+    while true do
+        if boolAiming == false then
+            WaitForTurns(Head1)
+            headTurnValue = math.random(-10,10)
+            if TablesOfPiecesGroups["Eye"] then
+                rx,ry,rz = math.random(-40,40)/10, math.random(-40,40)/10, math.random(-40,40)/10
+                tP(TablesOfPiecesGroups["Eye"][1],rx,ry,rz, 16)
+                tP(TablesOfPiecesGroups["Eye"][2],rx,ry,rz, 16)
+            end
+            Turn(Head1,y_axis, math.rad(headTurnValue), 1)
+            WaitForTurns(Head1)
+        end
+    interval = math.random(500, 5000)
+    Sleep(interval)
+    end
+end
+
+function attachLoot()
+    transportID =  Spring.GetUnitIsTransporting(unitID) 
+    if not transportID then 
+       val = math.random(1,25)
+       Sleep(val)
+       lootID = createUnitAtUnit(myTeamID, "civilianloot", unitID)
+       if lootID then
+       Spring.UnitAttach( unitID, lootID, UpBody)
+       end
+    end
+end
+
+function throwPayloads()
+    if lootID and doesUnitExistAlive(lootID) then Spring.UnitDetach(lootID) end
+    Hide(ShoppingBag)
+    Hide(SittingBaby)
+    Hide(trolley)
+    Hide(Handbag)
+end
+
+
 function bodyBuild()
     hideAll(unitID)
     Show(UpBody)
@@ -269,12 +385,15 @@ function bodyBuild()
     showT(TablesOfPiecesGroups["LowLeg"])
     showT(TablesOfPiecesGroups["LowArm"])
     showT(TablesOfPiecesGroups["UpArm"])
-    showT(TablesOfPiecesGroups["Head"])
+    showOnePiece(TablesOfPiecesGroups["Head"], unitID)
     showT(TablesOfPiecesGroups["Feet"])
     if TablesOfPiecesGroups["Hand"] then showT(TablesOfPiecesGroups["Hand"]) end
-    if TablesOfPiecesGroups["Suit"] and maRa() == true then showT(TablesOfPiecesGroups["Suit"]) end
+    if TablesOfPiecesGroups["Suit"] and randChance(75)) then showT(TablesOfPiecesGroups["Suit"]) end
     if TablesOfPiecesGroups["Eye"] then showT(TablesOfPiecesGroups["Eye"]) end
-
+    if TablesOfPiecesGroups["Deco"] and bodyConfig.boolHasDeco then 
+        decoPiece, index= showOnePiece(TablesOfPiecesGroups["Deco"], unitID)       
+        showAllSubsSpinsOfPiece(TablesOfPiecesGroups, "Deco", index)
+    end
 
     if math.random(0, 4) > 3 or GG.GlobalGameState ~=  GameConfig.GameState.normal then Show(MilitiaMask) end
 
@@ -294,9 +413,17 @@ function bodyBuild()
         return
     end
 
-    if bodyConfig.boolLoaded == true and bodyConfig.boolWounded == false then
+    if GG.GlobalGameState == GameConfig.GameState.normal  then
+       dropLoot()
+    end
+ 
 
-        if iShoppingConfig == 1 then
+    if bodyConfig.boolLoaded == true and bodyConfig.boolWounded == false then
+        if  randChance(50) and Handbag then
+            Show(Handbag);
+        end
+
+        if carriesShoppingBag() then
             Show(ShoppingBag);
             return
         end
@@ -309,13 +436,12 @@ function bodyBuild()
         if iShoppingConfig == 3 then
             Show(trolley);
             return
-        end
-
-        if iShoppingConfig == 4 then
-            Show(Handbag);
-            return
-        end
+        end       
     end
+end
+
+function carriesShoppingBag()
+    return iShoppingConfig == 1
 end
 
 function hideAllProps()
@@ -328,7 +454,6 @@ function hideAllProps()
     hideT(TablesOfPiecesGroups["cellphone"])
     Hide(cofee)
     Hide(cigarett)
-    Hide(cellphone)
     Hide(ShoppingBag)
     Hide(SittingBaby)
     Hide(trolley)
@@ -412,12 +537,23 @@ function script.HitByWeapon(x, z, weaponDefID, damage)
     bodyConfig.boolCoverWalk = true
     bodyConfig.boolLoaded = false
     bodyConfig.boolWounded = true
+    if damage > 10 and randChance(10) then
+        conditionalEcho(boolDebugActive, "Damage to civilian drawing blood at "..locationstring(unitID))
+        bloodyHell= {"bloodspray", "bloodslay"}
+        StartThread(spawnCegAtPiece, unitID, Head, bloodyHell[math.random(1,2)])
+    end
     bodyBuild()
     StartThread(setAnimationState, getWalkingState(), getWalkingState())
     damagedCoolDown = damagedCoolDown + (damage )
 end
 
-
+function setCivilianUnitInternalStateMode(unitID, State, name)
+     assert(State)
+     assert(name)
+     if not GG.CivilianUnitInternalLogicActive then GG.CivilianUnitInternalLogicActive = {} end
+     conditionalEcho(boolDebugActive, unitID.."civilian internal logic "..State.." "..(name or "unknown"))
+     GG.CivilianUnitInternalLogicActive[unitID] = State 
+ end
 
 filmLocation = {}
 boolStartFilming = false
@@ -441,10 +577,12 @@ function startWailing(time)
 end
 
 chattingTime = 0
+chatPartner = nil
 boolStartChatting = false
-function startChatting(time)
+function startChatting(time, chatPartners)
     setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_STARTED, "talk")
     chattingTime = time
+    chatPartner = chatPartners
     boolStartChatting = true
     return true
 end
@@ -457,6 +595,81 @@ function startFleeing(enemyID)
     setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_STARTED, "fleeing")
     boolStartFleeing = true
     return true
+end
+
+boolStartPeaceFullProtest = false
+socialEngineerID = nil
+function startPeacefullProtest( id)
+    setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_STARTED, "protest")
+	socialEngineerID= id
+    boolStartPeaceFullProtest = true
+    return true
+end
+
+function noTPoses(range, speed)
+    val =math.random(-range,range)
+    Turn(UpArm1,x_axis, math.rad(val),speed)
+    val =math.random(-range,range)
+    Turn(UpArm1,z_axis, math.rad(val),speed)
+    val =math.random(-range, 0)    
+    Turn(UpArm1,y_axis, math.rad(val),speed)
+
+    val =math.random(-range,range)  
+    Turn(LowArm1,x_axis, math.rad(val),speed)
+    val =math.random(-range,range)
+    Turn(LowArm1,z_axis, math.rad(val),speed)    
+    val =math.random(-range,0)
+    Turn(LowArm1,y_axis, math.rad(val),speed)
+
+    Turn(UpArm2,x_axis, math.rad(val),speed)
+    val =math.random(-range,range)
+    Turn(UpArm2,z_axis, math.rad(val),speed)  
+
+    val =math.random(0, range)    
+    Turn(UpArm2,y_axis, math.rad(val),speed)
+    val =math.random(-range,range)
+    Turn(LowArm2,x_axis, math.rad(val),speed)
+    val =math.random(-range,range)
+    Turn(LowArm2,z_axis, math.rad(val),speed)
+    val =math.random(0,range)
+    Turn(LowArm2,y_axis, math.rad(val),speed)
+end
+
+function peacefullProtest()
+    Signal(SIG_INTERNAL)
+    SetSignalMask(SIG_INTERNAL)
+    if maRa()== true then
+	   makeProtestSign(8, 3, 34, 62, peacfulProtestSignMessages[socialEngineerID % #peacfulProtestSignMessages+ 1], playerName)
+    end
+
+    myOffsetX = (math.random(0,15)+ (unitID % 15))*randSign()
+    myOffsetZ = (math.random(0,15)+ (unitID % 5))*randSign()
+
+    while doesUnitExistAlive(socialEngineerID) == true do
+        PlayAnimation("UPBODY_PROTEST", lowerBodyPieces, 1.0)        
+		WaitForTurns(upperBodyPieces)
+		pos = {}
+		pos.x,_,pos.z = spGetUnitPosition(socialEngineerID)
+        if pos.x then
+            pos.x = myOffsetX + pos.x 
+            pos.z = myOffsetZ + pos.z
+        end
+		Command(unitID, "go", {x = pos.x, y = 0, z = pos.z})
+        Sleep(3000)
+    end
+	GG.SocialEngineeredPeople[unitID] = nil
+   resetUpperBodyNoTPose(true)
+	hideProtestSign()
+    setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_ENDED, "protest")
+end
+
+function resetUpperBodyNoTPose(boolWait)
+    randSpeed = math.random(20, 30)/10
+    resetT(upperBodyPieces, randSpeed)
+    noTPoses(15.0, randSpeed)
+    if boolWait then
+      WaitForTurns(upperBodyPieces)
+    end
 end
 
 boolStartPraying = false
@@ -472,8 +685,7 @@ function pray()
     SetSignalMask(SIG_INTERNAL)
     local prayTime= frameToMs(getPrayDurationInFrames())
     setSpeedEnv(unitID, 0.0)
-    interpolation = 0.1
-    orgRotation = Spring.GetUnitRotation(unitID)
+
     while prayTime > 0 do
         
         durationFrames = PlayAnimation("UPBODY_PRAY", lowerBodyPieces, 1.0)         
@@ -481,17 +693,16 @@ function pray()
         if not GG.PrayerRotationRad then 
             val = math.random(0,360)
             GG.PrayerRotationRad =  math.rad(val)
-        end
-        targetRotation = mix( GG.PrayerRotationRad, orgRotation,interpolation)
-        Spring.SetUnitRotation(unitID, 0, targetRotation, 0)
-        interpolation = math.min(1.0,interpolation + 0.1)
+         end
+
+        Spring.SetUnitRotation(unitID, 0, GG.PrayerRotationRad, 0)
         prayTime = prayTime - frameToMs(durationFrames) -500
         WaitForTurns(upperBodyPieces)
         WaitForTurns(lowerBodyPieces)
         Sleep(500)
     end
     setSpeedEnv(unitID, NORMAL_WALK_SPEED)
-    resetT(upperBodyPieces,2.0, false, true)
+    resetUpperBodyNoTPose()
     Move(center,z_axis, 0, 2500)
     setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_ENDED, "pray")
 end
@@ -513,7 +724,6 @@ function anarchyBehaviour()
         StartThread(haveSexTimeDelayed)
         return
     end
-
 
     while GG.GlobalGameState ~= GameConfig.GameState.normal do
         normalBehavourStateMachine[newState](oldBehaviourState, GG.GlobalGameState, unitID)
@@ -564,49 +774,86 @@ function wailing()
     Signal(SIG_INTERNAL)
     SetSignalMask(SIG_INTERNAL)
     while wailingTime > 0 do
-        durationA = PlayAnimation("UPBODY_HANDSUP", lowerBodyPieces, 1.0)
-        durationB = PlayAnimation("UPBODY_WAILING"..math.random(1,2), lowerBodyPieces, 1.0)
-       wailingTime = wailingTime - frameToMs(math.max(durationA, durationB))
+        throwArmsUp()
+        duration = PlayAnimation("UPBODY_WAILING"..math.random(1,2), lowerBodyPieces, 1.0)
+       wailingTime = wailingTime - frameToMs(duration)
         Sleep(100)
     end
     setCivilianUnitInternalStateMode(unitID,GameConfig.STATE_ENDED, "wailing")
 end
 
+function blendShortestPath(goalRotation, orgRotation, factor)
+    local diff = goalRotation - orgRotation
+
+    -- Wrap difference to [-pi, pi]
+    diff = (diff + math.pi) % (2 * math.pi) - math.pi
+
+    -- Interpolate along shortest path
+    return orgRotation + diff * factor
+end
+
+
+-- Turns a unit smoothly towards another unit
+function turnUnitTowardsUnit(unitID, chatPartner, blendFactor, startRotation)
+    -- Clamp blendFactor to [0, 1]
+    local factor = math.max(0.0, math.min(1.0, blendFactor))
+
+    local bx, by, bz = spGetUnitPosition(chatPartner)
+    local ux, uy, uz = spGetUnitPosition(unitID)
+    if not bx then return startRotation end  -- safety check
+
+    -- Calculate direction vector from unit to target
+    local dx, dz = bx - ux, bz - uz
+
+    -- Normalize the direction (avoid division by 0)
+    local len = math.sqrt(dx * dx + dz * dz)
+    if len == 0 then return startRotation end
+
+    dx, dz = dx / len, dz / len
+
+    -- Calculate facing angle (Spring uses radians, Y-up)
+    -- atan2 arguments: (x, z) swapped depending on coordinate system
+    local targetRotation = math.atan2(dx, dz)
+
+    -- Interpolate rotation
+    local resultRotation = blendShortestPath(targetRotation, startRotation, factor)
+
+    -- Apply rotation: note Spring.SetUnitRotation(x, y, z) uses radians around axes
+    Spring.SetUnitRotation(unitID, 0, resultRotation, 0)
+end
+
 function chatting()
     Signal(SIG_INTERNAL)
     SetSignalMask(SIG_INTERNAL)
-    while   
+    conditionalEcho(boolDebugActive, "Debugging chat civilianscript: active at ".. locationstring(unitID))
+    accumulated = 0
+    _, startRotation,_ = Spring.GetUnitRotation(unitID)
+    timeTillFullRotatedMs = 3500
+    turnStep = 1/(timeTillFullRotatedMs/100)
+    while 
         chattingTime > 0 and 
         doesUnitExistAlive(chatPartner) and 
         distanceUnitToUnit(unitID, chatPartner) < GameConfig.generalInteractionDistance do
             
         durationFrames = 0
-        if maRa() == true then
-            durationFrames = PlayAnimation("UPBODY_NORMAL_TALK", lowerBodyPieces, math.random(10,20)/10)
+        if maRa() then
+            if randChance(75) then
+                durationFrames = PlayAnimation("UPBODY_NORMAL_TALK", lowerBodyPieces, math.random(10,20)/10)
+            else
+                durationFrames = PlayAnimation("UPBODY_AGGRO_TALK", lowerBodyPieces, math.random(10,30)/10)
+            end     
         else
-            durationFrames = PlayAnimation("UPBODY_AGGRO_TALK", lowerBodyPieces, math.random(10,30)/10)
-        end     
-        
-        if maRa() == maRa() and chatPartner ~= nil then          
-            x,y,z = spGetUnitPosition(chatPartner)
-            setUnitRotationToPoint(unitID,x,yz)
-            mx,my,mz = spGetUnitPosition(unitID)
-            _,myRotation,_ = Spring.GetUnitRotation(unitID)
-            headVal = math.deg(myRotation -(math.atan2(x-mx, z-mz)))
-            conditionalEcho(boolDebugActive, unitID.." looking at ".. lookAtHim.." with ".. headVal)
-       end
+            playUpperBodyIdleAnimation()
+        end
+        turnUnitTowardsUnit(accumulated, startRotation)
 
-       headVal = clamp(-20, headVal, 20)
-       Turn(Head1,y_axis,math.rad(headVal),1.5)
-       WaitForTurns(Head1)
-
-       chattingTime = chattingTime - 100- frameToMs(durationFrames)
-        Sleep(100)
+       chattingTime = chattingTime - 100 - frameToMs(durationFrames)
+       accumulated = accumulated + turnStep
+       Sleep(100)       
     end
 
-    playUpperBodyIdleAnimation()
-    resetT(TablesOfPiecesGroups["UpArm"], math.pi, false, true)
-    setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_ENDED,"talk")
+    resetUpperBodyNoTPose(true)
+    setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_ENDED, "talk")
 end
 
 function filmingLocation()
@@ -614,12 +861,19 @@ function filmingLocation()
     SetSignalMask(SIG_INTERNAL)
     Show(cellphone1)
     while filmLocation.time > 0 do
-        PlayAnimation("UPBODY_FILMING", lowerBodyPieces, 1.0)
-        filmLocation.time = filmLocation.time - 2000
+        durationMs = frameToMs(PlayAnimation("UPBODY_FILMING", lowerBodyPieces, 1.0))
+        filmLocation.time = filmLocation.time - durationMs
         setUnitRotationToPoint(unitID, filmLocation.x, filmLocation.y, filmLocation.z)
         Sleep(100)
     end
     setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_ENDED, "filming")
+end
+
+function throwArmsUp()
+    valr = math.random(80,115)
+    vall = math.random(80,115)*-1
+    Turn(UpArm1, z_axis, math.rad(valr), 50)
+    Turn(UpArm2, z_axis, math.rad(vall), 50)
 end
 
 function fleeEnemy(enemyID)
@@ -629,13 +883,11 @@ function fleeEnemy(enemyID)
         setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_ENDED, "flee")
         return 
     end  
-   -- echo(unitID.." starts fleeing from "..enemyID.." with distance "..distanceUnitToUnit(unitID, enemyID))
-  
+    throwPayloads()
+      
     flightTime =  GameConfig.civilian.MaxFlightTimeMS
-    while doesUnitExistAlive(enemyID) == true and 
-        flightTime > 0 and
-         distanceUnitToUnit(unitID, enemyID) < GameConfig.civilian.PanicRadius do
-
+    while doesUnitExistAlive(enemyID) == true and flightTime > 0 and distanceUnitToUnit(unitID, enemyID) < GameConfig.civilian.PanicRadius do
+        throwArmsUp()
         runAwayFrom(unitID, enemyID, GG.GameConfig.civilian.FleeDistance)
         distribution = math.random(1,10)
         Sleep(125+distribution)
@@ -646,11 +898,13 @@ function fleeEnemy(enemyID)
 end
 
 function delayedWoundedWalkAfterCover(timeInSeconds)
+    setSpeedEnv(unitID, SPRINT_SPEED)
     Signal(SIG_COVER_WALK)
     SetSignalMask(SIG_COVER_WALK)
     Sleep(accumulatedTimeInSeconds * 1000)
     bodyConfig.boolWounded = true
     bodyConfig.boolCoverWalk = false
+    setSpeedEnv(unitID, NORMAL_WALK_SPEED)
 end
 
 -- Civilian
@@ -690,7 +944,7 @@ end
 -- -Collapsing, Shivering, Coiling Up
 
 function setupAnimation()
-    local map = Spring.GetUnitPieceMap(unitID);
+
     local switchAxis = function(axis)
         if axis == z_axis then return y_axis end
         if axis == y_axis then return z_axis end
@@ -727,35 +981,35 @@ local axisSign = {[x_axis] = 1, [y_axis] = 1, [z_axis] = 1}
 function PlayAnimation(animname, piecesToFilterOutTable, speed)
     local speedFactor = speed or 1.0
     if not piecesToFilterOutTable then piecesToFilterOutTable = {} end
-    assert(animname, "animation name is nil")
-    assert(type(animname) == "string",
-           "Animname is not string " .. toString(animname))
-    assert(Animations[animname], "No animation with name ")
-    local startTime = spGetGameFrame()
+
+    local startTimeFrame = spGetGameFrame()
 
     local anim = Animations[animname];
+    if not anim then echo("animation named:"..animname .." does not exist"); return end
     local randoffset
     for i = 1, #anim do
         local commands = anim[i].commands;
         for j = 1, #commands do
             local cmd = commands[j];
-            randoffset = 0.0
-            if cmd.r then
-                randVal = cmd.r * 100
-                randoffset = math.random(-randVal, randVal) / 100
-            end
+            if cmd then 
+                randoffset = 0.0
+                if cmd.r then
+                    randVal = cmd.r * 100
+                    randoffset = math.random(-randVal, randVal) / 100
+                end
 
-            if cmd.ru or cmd.rl then
-                randUpVal = (cmd.ru or 0.01) * 100
-                randLowVal = (cmd.rl or 0) * 100
-                randoffset = math.random(randLowVal, randUpVal) / 100
-            end
+                if cmd.ru or cmd.rl then
+                    randUpVal = (cmd.ru or 0.01) * 100
+                    randLowVal = (cmd.rl or 0) * 100
+                    randoffset = math.random(randLowVal, randUpVal) / 100
+                end
 
-            if not piecesToFilterOutTable[cmd.p] then
-                animCmd[cmd.c](cmd.p, cmd.a,
-                               axisSign[cmd.a] * (cmd.t + randoffset),
-                               cmd.s * speedFactor)
+                if not piecesToFilterOutTable[cmd.p] then
+                    animCmd[cmd.c](cmd.p, cmd.a,
+                                   axisSign[cmd.a] * (cmd.t + randoffset),
+                                   cmd.s * speedFactor)
 
+                end
             end
         end
         if (i < #anim) then
@@ -763,7 +1017,11 @@ function PlayAnimation(animname, piecesToFilterOutTable, speed)
             Sleep(t * 33 * math.abs(1 / speedFactor)); -- sleep works on milliseconds
         end
     end
-    return spGetGameFrame() - startTime
+    --has handbag
+    if carriesShoppingBag()   then StartThread(swingPendulum, unitID, parentPieceMap, ShoppingBag, 1, 3) end
+    if bodyConfig.boolHandbag then StartThread(swingPendulum, unitID, parentPieceMap, Handbag, 1, 3) end
+
+    return spGetGameFrame() - startTimeFrame
 end
 
 function constructSkeleton(unit, piece, offset)
@@ -776,7 +1034,6 @@ function constructSkeleton(unit, piece, offset)
     for i = 1, 3 do info.offset[i] = offset[i] + info.offset[i]; end
 
     bones[piece] = info.offset;
-    local map = Spring.GetUnitPieceMap(unit);
     local children = info.children;
 
     if (children) then
@@ -806,7 +1063,7 @@ function tacticalAnarchy()
                                   GameConfig)
 
     myPos = {}
-    myPos.x, myPos.y, myPos.z = Spring.GetUnitPosition(unitID)
+    myPos.x, myPos.y, myPos.z = spGetUnitPosition(unitID)
     nearestClusterNode = {}
     smallestDistance = math.huge
     foreach(currentPositionClusters, -- get nearest cluster
@@ -840,7 +1097,6 @@ function tacticalAnarchy()
             if ed then Command(unitID, "attack", ed, {}) end
         end
     end
-
 end
 
 normalBehavourStateMachine = {
@@ -867,33 +1123,21 @@ normalBehavourStateMachine = {
                 StartThread(attachLoot)
             end
 
-            bodyConfig.boolArmed = (math.random(1, 100) >
-                                       GameConfig.chanceCivilianArmsItselfInHundred)
+            bodyConfig.boolArmed = randChance( GameConfig.chanceCivilianArmsItselfInHundred)
                 Hide(ShoppingBag)
                 Hide(Handbag)
                 Hide(cofee)
             if bodyConfig.boolArmed == true and maRa() then
                 Show(myGun)
                 Show(MilitiaMask)
-                T = foreach(getAllNearUnit(unitID, 100),
-                        function(id)
-                            if TruckTypeTable[Spring.GetUnitDefID(id)] then
-                                return id
-                            end
-                        end
-                        )
-                if T and #T > 0 then
-                    assert(T[1])
-                    assert(type(T[1])=="number")
-                    Spring.UnitAttach (T[1], unitID, getPieceNrByName(T[1], "attachPoint") )
+                if maRa()  then
+                    attachToTruckNearby()
                 end
             else
                 bodyConfig.boolProtest = (math.random(1, 10) > 5)
                 if bodyConfig.boolProtest == true then
                     playerName = getRandomPlayerName()
-                    makeProtestSign(8, 3, 34, 62, signMessages[math.random(1,
-                                                                           #signMessages)],
-                                    playerName)
+                    makeProtestSign(8, 3, 34, 62, signMessages[math.random(1,#signMessages)],playerName)
                     Show(MilitiaMask)
                     Show(molotow)
                     setOverrideAnimationState(eAnimState.protest, eAnimState.walking, false)
@@ -921,7 +1165,7 @@ normalBehavourStateMachine = {
 
             setOverrideAnimationState(eAnimState.wailing, eAnimState.walking,
                                       true, nil, true)
-            x, y, z = Spring.GetUnitPosition(unitID)
+            x, y, z = spGetUnitPosition(unitID)
             if maRa()== true then
                 Command(unitID, "go", {
                     x = x + math.random(-100, 100),
@@ -989,6 +1233,7 @@ function threadStateStarter()
     while true do
         if boolStartFilming == true then
             boolStartFilming = false
+            conditionalEcho(boolDebugActive,"Starting filming at location "..locationstring(unitID))
             StartThread(filmingLocation)
         end
         if boolStartWailing == true then
@@ -1010,6 +1255,8 @@ function threadStateStarter()
             boolStartPraying = false
             StartThread(pray)
         end
+		
+
 
         if boolStartAnarchyBehaviour == true then
             boolStartAnarchyBehaviour = false
@@ -1110,7 +1357,7 @@ end
 
 function cigarettGlowAndSmoke()
     if isTransported(unitID) then return end
-    Sleep(10)
+    Sleep(500)
     spawnCegAtPiece(unitID, cigarett, "cigarettglowsmoke")
 end
 
@@ -1128,7 +1375,6 @@ function showHideProps(selectedIdleFunction, bShow)
             showHide(cofee, bShow)
         end
     end
-
 end
 
 function playUpperBodyIdleAnimation()
@@ -1184,7 +1430,7 @@ UpperAnimationStateFunctions = {
         if boolDecoupled == true then
             if math.random(1, 10) > 5 then
                 playUpperBodyIdleAnimation()
-                resetT(TablesOfPiecesGroups["UpArm"], math.pi, false, true)
+                resetUpperBodyNoTPose(true)
             end
         end
 
@@ -1498,8 +1744,24 @@ function script.Deactivate() return 0 end
 
 function script.QueryBuildInfo() return center end
 
+function hideProtestSign()
+    for i = 1, 26 do
+        charOn = string.char(64 + i)
+        if TablesOfPiecesGroups[charOn] then
+            resetT(TablesOfPiecesGroups[charOn])
+            hideT(TablesOfPiecesGroups[charOn])
+        end
+    end
+    hideT(TablesOfPiecesGroups["Quest"])
+    resetT(TablesOfPiecesGroups["Quest"])
+    hideT(TablesOfPiecesGroups["Exclam"])
+    resetT(TablesOfPiecesGroups["Exclam"])
+    Hide(ProtestSign)
+end
+
 function makeProtestSign(xIndexMax, zIndexMax, sizeLetterX, sizeLetterZ,
                          sentence, personification)
+    hideProtestSign()
     for i = 1, 26 do
         charOn = string.char(64 + i)
         if TablesOfPiecesGroups[charOn] then
@@ -1589,6 +1851,11 @@ end
 
 function molotowFireFunction(weaponID, heading, pitch) return true end
 
+function rgpFireFunction(weaponID, heading, pitch) 
+    Hide(RPG7Rocket)
+    return true 
+end
+
 WeaponsTable = {}
 function makeWeaponsTable(myGun)
     WeaponsTable[1] = {
@@ -1650,16 +1917,89 @@ function allowTarget(weaponID)
 end
 
 function dropLoot()
-    if Spring.GetUnitIsTransporting(unitID) then
-        transportID = Spring.GetUnitIsTransporting(unitID)
+    if spGetUnitIsTransporting(unitID) then
+        transportID = spGetUnitIsTransporting(unitID)
         Spring.UnitDetach(transportID)
     end
 end
 
 
+function ExplosiveDeath(dx, dz)
+    _x_axis =1
+    _y_axis =2
+    _z_axis = 3
+    Spring.AddUnitImpulse(unitID, dx, 0, dz)
+    -- fling body away from explosion
+    Turn(root, _y_axis, math.atan2(dx, dz), 0.5) 
+    Spin(UpBody, _x_axis, math.random(-10, 10), 15)
+    Spin(UpBody, _z_axis, math.random(-10, 10), 15)
+
+    -- arms flailing
+    for i, limb in ipairs({UpArm1, LowArm1, UpArm2, LowArm2}) do
+        Spin(limb, _x_axis, math.random(-20, 20), 20)
+    end
+
+    -- legs flailing
+    for i, limb in ipairs({UpLeg1, LowLeg1, Feet1, UpLeg2, LowLeg2, Feet2}) do
+        Spin(limb, _x_axis, math.random(-15, 15), 20)
+    end
+    Turn(root,x_axis, math.rad(90),10)
+    Sleep(1200) -- let the ragdoll fling happen for a bit
+  -- arms flailing
+    stopAllSpins(unitID, 15)
+    -- curl into embryonic position
+    Turn(Head1,  _x_axis, math.rad(30), 1.5)
+    Turn(UpBody, _x_axis, math.rad(20), 1.5)
+    
+    Turn(UpLeg1, _x_axis, math.rad(-60), 1.5)
+    Turn(LowLeg1, _x_axis, math.rad(40), 1.5)
+
+    Turn(UpLeg2, _x_axis, math.rad(-60), 1.5)
+    Turn(LowLeg2, _x_axis, math.rad(40), 1.5)
+  
+    Turn(UpArm1, _x_axis, math.rad(-50), 1.5)
+    Turn(UpArm2, _x_axis, math.rad(-50), 1.5)
+  
+
+    Sleep(1000)
+    ragDoll = {
+        UpArm1, LowArm1, UpArm2, LowArm2,
+        UpLeg1, LowLeg1, Feet1,
+        UpLeg2, LowLeg2, Feet2,
+        Head1, UpBody
+    }
+    -- relax into random final pose
+    for _, p in ipairs(ragDoll) do
+        Turn(p, _x_axis, math.rad(math.random(-30, 30)), 0.5)
+        Turn(p, _z_axis, math.rad(math.random(-20, 20)), 0.5)
+    end
+    WaitForTurns(ragDoll)
+    Sleep(500)
+
+end
+
+
+
+lastDamageDirX, lastDamageDirZ = randNVec(), randNVec()
 function script.Killed(recentDamage, _)
-    --createCorpseCUnitGeneric(recentDamage)
-    return 1
+    setSpeedEnv(unitID, 0)
+    dropLoot()
+    _, maxHealth= Spring.GetUnitHealth(unitID)
+    Spring.Echo("Unit civilian got final damage ".. (recentDamage/maxHealth).." %")
+    if (recentDamage/maxHealth) > 2.5 then
+        ExplosiveDeath(lastDamageDirX, lastDamageDirZ )
+        return 1 -- signal custom animation handled
+    else
+        val = 5*randSign()
+        Turn(root,y_axis,math.rad(val),0.8)
+        for i=1,3 do
+            turnTableRand(TablesOfPiecesGroups["UpArm"], i, 90, -90, 1.4)
+            turnTableRand(TablesOfPiecesGroups["LowArm"], i, 90, -90, 1.4)
+        end
+        val = 90*randSign()
+        WTurn(root,x_axis, math.rad(val),1.4)
+        return 1
+    end
 end
 
 

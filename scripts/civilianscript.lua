@@ -155,6 +155,7 @@ function externalPickUpHandbag()
 end
 
 orgHousePosTable = {}
+rpgCarryingTypeTable = getRPGCarryingCivilianTypes(UnitDefs)
 
 local myGun = ak47
 
@@ -213,7 +214,7 @@ function script.Create()
 
     variousBodyConfigs()
  
-    home.x, home.y, home.z = Spring.GetUnitPosition(unitID)
+    home.x, home.y, home.z = spGetUnitPosition(unitID)
     bodyBuild()
 
     setupAnimation()
@@ -374,7 +375,7 @@ function speedControl()
         while GG.GlobalGameState ~= GameConfig.GameState.normal do
             Sleep(1000)
             if  GG.DamageHeatMap and GG.DamageHeatMap.getDangerAtLocation then
-                x,y, z = Spring.GetUnitPosition(unitID)
+                x,y, z = spGetUnitPosition(unitID)
                 normalizedDanger =GG.DamageHeatMap:getDangerAtLocation(x,z)
                 if normalizedDanger > 0.5 then
                     setSpeedIntern(unitID, normalizedDanger)
@@ -438,7 +439,7 @@ function bodyBuild()
     showOnePiece(TablesOfPiecesGroups["Head"], unitID)
     showT(TablesOfPiecesGroups["Feet"])
     if TablesOfPiecesGroups["Hand"] then showT(TablesOfPiecesGroups["Hand"]) end
-    if TablesOfPiecesGroups["Suit"] and not (maRa() == maRa()) then showT(TablesOfPiecesGroups["Suit"]) end
+    if TablesOfPiecesGroups["Suit"] and randChance(75)) then showT(TablesOfPiecesGroups["Suit"]) end
     if TablesOfPiecesGroups["Eye"] then showT(TablesOfPiecesGroups["Eye"]) end
     if TablesOfPiecesGroups["Deco"] and bodyConfig.boolHasDeco then 
         decoPiece, index= showOnePiece(TablesOfPiecesGroups["Deco"], unitID)       
@@ -580,7 +581,7 @@ lowerBodyAnimations = {
 }
 
 accumulatedTimeInSeconds = 5
-dx,dz = 0,0
+lastDamageDirX, lastDamageDirZ = 0, 0
 function script.HitByWeapon(x, z, weaponDefID, damage)
     transportID = spGetUnitIsTransporting(unitID)
     setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_ENDED, "wounded")
@@ -705,7 +706,7 @@ function peacefullProtest()
         PlayAnimation("UPBODY_PROTEST", lowerBodyPieces, 1.0)        
 		WaitForTurns(upperBodyPieces)
 		pos = {}
-		pos.x,_,pos.z = Spring.GetUnitPosition(socialEngineerID)
+		pos.x,_,pos.z = spGetUnitPosition(socialEngineerID)
         if pos.x then
             pos.x = myOffsetX + pos.x 
             pos.z = myOffsetZ + pos.z
@@ -844,7 +845,7 @@ function wailing()
     setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_ENDED ,"wailing")
 end
 
-function blendShortestPath(goalRotation, orgRotation, factor )
+function blendShortestPath(goalRotation, orgRotation, factor)
     local diff = goalRotation - orgRotation
 
     -- Wrap difference to [-pi, pi]
@@ -855,16 +856,33 @@ function blendShortestPath(goalRotation, orgRotation, factor )
 end
 
 
-function turnUnitTowardsUnit( blendFactor, startRotation)
-    factors =  math.max(0.0, math.min(1.0, blendFactor))
-    bx,by,bz = spGetUnitPosition(chatPartner)
-    ux,uy,uz= spGetUnitPosition(unitID)
-    assert(bx)
-    ux, uy, uz = bx-ux, by-uy, bz -uz
-    norm = absNormMax(ux,uz)
-    radresult = math.pi - math.atan2(ux/norm, uz/norm)
-    resultRotationRad = blendShortestPath(radresult, startRotation, factors)
-    Spring.SetUnitRotation(unitID, 0, resultRotationRad, 0)
+-- Turns a unit smoothly towards another unit
+function turnUnitTowardsUnit(unitID, chatPartner, blendFactor, startRotation)
+    -- Clamp blendFactor to [0, 1]
+    local factor = math.max(0.0, math.min(1.0, blendFactor))
+
+    local bx, by, bz = spGetUnitPosition(chatPartner)
+    local ux, uy, uz = spGetUnitPosition(unitID)
+    if not bx then return startRotation end  -- safety check
+
+    -- Calculate direction vector from unit to target
+    local dx, dz = bx - ux, bz - uz
+
+    -- Normalize the direction (avoid division by 0)
+    local len = math.sqrt(dx * dx + dz * dz)
+    if len == 0 then return startRotation end
+
+    dx, dz = dx / len, dz / len
+
+    -- Calculate facing angle (Spring uses radians, Y-up)
+    -- atan2 arguments: (x, z) swapped depending on coordinate system
+    local targetRotation = math.atan2(dx, dz)
+
+    -- Interpolate rotation
+    local resultRotation = blendShortestPath(targetRotation, startRotation, factor)
+
+    -- Apply rotation: note Spring.SetUnitRotation(x, y, z) uses radians around axes
+    Spring.SetUnitRotation(unitID, 0, resultRotation, 0)
 end
 
 function chatting()
@@ -1130,7 +1148,7 @@ function tacticalAnarchy()
                                   GameConfig)
 
     myPos = {}
-    myPos.x, myPos.y, myPos.z = Spring.GetUnitPosition(unitID)
+    myPos.x, myPos.y, myPos.z = spGetUnitPosition(unitID)
     nearestClusterNode = {}
     smallestDistance = math.huge
     foreach(currentPositionClusters, -- get nearest cluster
@@ -1190,7 +1208,7 @@ normalBehavourStateMachine = {
                 StartThread(attachLoot)
             end
 
-            bodyConfig.boolArmed = (math.random(1, 100) > GameConfig.chanceCivilianArmsItselfInHundred)
+            bodyConfig.boolArmed = randChance( GameConfig.chanceCivilianArmsItselfInHundred)
                 Hide(ShoppingBag)
                 Hide(Handbag)
                 Hide(cofee)
@@ -1232,7 +1250,7 @@ normalBehavourStateMachine = {
 
             setOverrideAnimationState(eAnimState.wailing, eAnimState.walking,
                                       true, nil, true)
-            x, y, z = Spring.GetUnitPosition(unitID)
+            x, y, z = spGetUnitPosition(unitID)
             if maRa()== true then
                 Command(unitID, "go", {
                     x = x + math.random(-100, 100),
@@ -1310,7 +1328,7 @@ function threadStateStarter()
 
         if boolStartChatting == true then
             boolStartChatting = false
-            StartThread(chatting)         
+            StartThread(chatting)
         end
 
         if boolStartFleeing == true then
@@ -1463,7 +1481,7 @@ UpperAnimationStateFunctions = {
     [eAnimState.catatonic] = function()
         PlayAnimation(randT(uppperBodyAnimations[eAnimState.wailing]),
                       catatonicBodyPieces)
-        return eAnimState.catatonic
+        return eAnimState.talking
     end,
     [eAnimState.talking] = function()
         if bodyConfig.boolLoaded == false then
@@ -1794,7 +1812,7 @@ function delayedStop()
     setOverrideAnimationState(eAnimState.standing, eAnimState.standing, true, nil, true)
 
     Sleep(2500)
-    _,h, _ = Spring.GetUnitPosition(unitID)
+    _,h, _ = spGetUnitPosition(unitID)
     if h < -5 and not  GG.DisguiseCivilianFor[unitID] then
         Spring.DestroyUnit(unitID, false, true)
     end
@@ -2062,14 +2080,14 @@ end
 
 
 
-
+lastDamageDirX, lastDamageDirZ = randNVec(), randNVec()
 function script.Killed(recentDamage, _)
     setSpeedEnv(unitID, 0)
     dropLoot()
     _, maxHealth= Spring.GetUnitHealth(unitID)
     Spring.Echo("Unit civilian got final damage ".. (recentDamage/maxHealth).." %")
     if (recentDamage/maxHealth) > 2.5 then
-        ExplosiveDeath(dx or randNVec() , dz or randNVec())
+        ExplosiveDeath(lastDamageDirX, lastDamageDirZ )
         return 1 -- signal custom animation handled
     else
         val = 5*randSign()
