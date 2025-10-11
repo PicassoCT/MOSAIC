@@ -439,7 +439,7 @@ function bodyBuild()
     showOnePiece(TablesOfPiecesGroups["Head"], unitID)
     showT(TablesOfPiecesGroups["Feet"])
     if TablesOfPiecesGroups["Hand"] then showT(TablesOfPiecesGroups["Hand"]) end
-    if TablesOfPiecesGroups["Suit"] and randChance(75)) then showT(TablesOfPiecesGroups["Suit"]) end
+    if TablesOfPiecesGroups["Suit"] and randChance(75) then showT(TablesOfPiecesGroups["Suit"]) end
     if TablesOfPiecesGroups["Eye"] then showT(TablesOfPiecesGroups["Eye"]) end
     if TablesOfPiecesGroups["Deco"] and bodyConfig.boolHasDeco then 
         decoPiece, index= showOnePiece(TablesOfPiecesGroups["Deco"], unitID)       
@@ -857,7 +857,7 @@ end
 
 
 -- Turns a unit smoothly towards another unit
-function turnUnitTowardsUnit(unitID, chatPartner, blendFactor, startRotation)
+function turnUnitTowardsUnit( blendFactor, startRotation)
     -- Clamp blendFactor to [0, 1]
     local factor = math.max(0.0, math.min(1.0, blendFactor))
 

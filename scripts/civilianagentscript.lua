@@ -388,7 +388,7 @@ function bodyBuild()
     showOnePiece(TablesOfPiecesGroups["Head"], unitID)
     showT(TablesOfPiecesGroups["Feet"])
     if TablesOfPiecesGroups["Hand"] then showT(TablesOfPiecesGroups["Hand"]) end
-    if TablesOfPiecesGroups["Suit"] and randChance(75)) then showT(TablesOfPiecesGroups["Suit"]) end
+    if TablesOfPiecesGroups["Suit"] and randChance(75) then showT(TablesOfPiecesGroups["Suit"]) end
     if TablesOfPiecesGroups["Eye"] then showT(TablesOfPiecesGroups["Eye"]) end
     if TablesOfPiecesGroups["Deco"] and bodyConfig.boolHasDeco then 
         decoPiece, index= showOnePiece(TablesOfPiecesGroups["Deco"], unitID)       

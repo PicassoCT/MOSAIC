@@ -48,10 +48,11 @@ function showSeveral(T)
     end
     return ToShow
 end
-
+if not GG.CombsIndex then GG.CombIndex = 1 end
 function showOne(T, bNotDelayd)
     if not T then return end
-    dice = math.random(1, count(T))
+    dice = (GG.CombIndex  % 3) +1
+    GG.CombIndex = dice
     c = 0
     for k, v in pairs(T) do
         if k and v then c = c + 1 end
@@ -78,9 +79,11 @@ function buildAnimation()
         Sleep(1000)
     end
     Hide(Icon)
+    waterPlateName = "PlateWater"
+    StartThread(waterFalls, TablesOfPiecesGroups[waterPlateName])
     waterBaseName = chasingWaterfalls[base]
-    if chasingWaterfalls[base] and TableOfPiecesGroups[waterBaseName] then
-        StartThread(waterFalls, TableOfPiecesGroups[waterBaseName])
+    if chasingWaterfalls[base] and TablesOfPiecesGroups[waterBaseName] then
+        StartThread(waterFalls, TablesOfPiecesGroups[waterBaseName])
     end
     showHouse()
 end
@@ -104,16 +107,18 @@ end
 base1 = piece("base1")
 base2 = piece("base2")
 base3 = piece("base3")
+Plate = piece("Plate")
 chasingWaterfalls  = {
-    [piece("base1")] = "base1Water",
-    [piece("base2")] = "base2Water",
-    [piece("base3")] = "base3Water"
+    [base1] = "base1Water",
+    [base2] = "base2Water",
+    [base3] = "base3Water",
+    [Plate] = "PlateWater"
 }
 
 function buildBuilding()
     StartThread(buildAnimation)
     Sleep(1000)
-    addToShowTable(piece("Plate"))
+    addToShowTable(Plate)
     base = addToShowTable(showOne(TablesOfPiecesGroups["base"], true))
     showTSubSpins(base, TablesOfPiecesGroups)
     if base == base1 then  
