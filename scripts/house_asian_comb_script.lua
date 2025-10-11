@@ -78,14 +78,17 @@ function buildAnimation()
         Sleep(1000)
     end
     Hide(Icon)
-    StartThread(waterFalls)
+    waterBaseName = chasingWaterfalls[base]
+    if chasingWaterfalls[base] and TableOfPiecesGroups[waterBaseName] then
+        StartThread(waterFalls, TableOfPiecesGroups[waterBaseName])
+    end
     showHouse()
 end
 
 boolHasWaterFalls = false
-function waterFalls()
-    while chasingWaterfalls[base] do
-        foreach(TablesOfPiecesGroups["Water"],
+function waterFalls(waterfallT)
+    while waterfallT do
+        foreach(waterfallT,
             function (water)
                 Show(water)
                 val = math.random(0,1)*180
@@ -102,25 +105,29 @@ base1 = piece("base1")
 base2 = piece("base2")
 base3 = piece("base3")
 chasingWaterfalls  = {
-[piece("base2")] = true
-
+    [piece("base1")] = "base1Water",
+    [piece("base2")] = "base2Water",
+    [piece("base3")] = "base3Water"
 }
+
 function buildBuilding()
     StartThread(buildAnimation)
     Sleep(1000)
     addToShowTable(piece("Plate"))
     base = addToShowTable(showOne(TablesOfPiecesGroups["base"], true))
     showTSubSpins(base, TablesOfPiecesGroups)
-    if base == base1 then  showSeveral(TablesOfPiecesGroups["ShowCombe"])    end
+    if base == base1 then  
+        showSeveral(TablesOfPiecesGroups["ShowCombe"])   
+        RoofTopPieces = TablesOfPiecesGroups["RoofTopCircle"]
+    end
 
-    if base == base1 then RoofTopPieces = TablesOfPiecesGroups["RoofTopCircle"] end
     if base == base2 then RoofTopPieces = TablesOfPiecesGroups["RoofTopSquare"] end
     if base == base3 then RoofTopPieces = TablesOfPiecesGroups["RoofTopUpright"] end
     boolDoneShowing = true
 end
 
 function script.Create()
-    TablesOfPiecesGroups =   getPieceTableByNameGroups(false, true)
+    TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     x, y, z = Spring.GetUnitPosition(unitID)
     StartThread(removeFeaturesInCircle,x,z, GameConfig.houseSizeZ/2) 
     math.randomseed(x + y + z)

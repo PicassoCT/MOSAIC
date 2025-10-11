@@ -52,6 +52,7 @@ local Icon = piece("Icon")
 local Shell1 = piece("Shell1")
 local FoldtopUnfolded = piece'FoldtopUnfolded'
 local FoldtopFolded= piece'FoldtopFolded'
+local MuzzleFlashPistol = piece ("MuzzleFlashPistol")
 
 local spGetUnitWeaponTarget = Spring.GetUnitWeaponTarget
 local GameConfig = getGameConfig()
@@ -195,6 +196,7 @@ function showBody()
 	showT(lowerBodyPieces)
 	Show(FoldtopFolded)
 	showT(shownPieces)
+	Hide(MuzzleFlashPistol)
 end
 
 shownPieces={}
@@ -1243,7 +1245,7 @@ function raidAimFunction(weaponID, heading, pitch, targetType, isUserTarget, tar
 end
 
 PistolMuzzleFlash = 1024
-local MuzzleFlashPistol = piece ("MuzzleFlashPistol")
+
 function pistolAimFunction(weaponID, heading, pitch, targetType, isUserTarget, targetID)
 	StartThread(aimAutoReset)
     if boolWalking == true then

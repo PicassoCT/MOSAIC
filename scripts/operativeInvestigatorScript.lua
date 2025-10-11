@@ -48,6 +48,7 @@ local Icon = piece("Icon")
 local Shell1 = piece("Shell1")
 local FoldtopUnfolded = piece'FoldtopUnfolded'
 local FoldtopFolded= piece'FoldtopFolded'
+local MuzzleFlashPistol = piece ("MuzzleFlashPistol")
 
 local spGetUnitWeaponTarget = Spring.GetUnitWeaponTarget
 local GameConfig = getGameConfig()
@@ -198,6 +199,7 @@ function script.Create()
 	showBody()
 	setupAnimation()
     Show(FoldtopUnfolded)
+    Hide(MuzzleFlashPistol)
 	StartThread(flyingMonitored)
 	StartThread(turnDetector)
 
@@ -1124,7 +1126,7 @@ function raidFireFunction(weaponID, heading, pitch)
 end
 
 PistolMuzzleFlash = 1024
-local MuzzleFlashPistol = piece ("MuzzleFlashPistol")
+
 function pistolFireFunction(weaponID, heading, pitch)
 	StartThread(visibleAfterWeaponsFireTimer)
 	boolAiming = false
