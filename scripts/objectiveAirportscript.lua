@@ -128,12 +128,6 @@ function blink()
         Sleep(2500)
         cturnT(TablesOfPiecesGroups["SwitchLight"], upaxis, 0, 0)
         Sleep(2500)
-        cturnT(TablesOfPiecesGroups["SwitchLight"], upaxis, 180, 0)
-        Sleep(2500)
-        cturnT(TablesOfPiecesGroups["SwitchLight"], upaxis, 0, 0)
-        Sleep(5000)
-        cturnT(TablesOfPiecesGroups["SwitchLight"], upaxis, 180, 0)
-        Sleep(5000)
     end
 end
 
@@ -175,6 +169,9 @@ function showOne(T, bNotDelayd)
         end
     end
 end
+
+boolFerry9ScramJet = randChance(25)
+boolFerr10ScramJet = randChance(25)
 
 function arrival()
     resetT(TablesOfPiecesGroups["SwingCenter"], 0)
@@ -269,7 +266,26 @@ function showPlane()
     showOne(TablesOfPiecesGroups["MainBirdBody"])
 end
 
+function ScramJetGoUp(nr)
+
+end
+
 function ferryGoUp(selectedFerryNr, times)
+    local ferry = TablesOfPiecesGroups["Shuttle"][selectedFerryNr]
+    local engine = TablesOfPiecesGroups["Engine"][selectedFerryNr]
+    if selectedFerryNr == 9 and boolFerry9ScramJet then
+        Hide(ferry)
+        Hide(engine)
+        ScramJetGoUp(1)
+        return
+    end   
+
+    if selectedFerryNr == 10 and boolFerry9ScramJet then
+        Hide(ferry)
+        Hide(engine)
+        ScramJetGoUp(2)
+        return
+    end
     if not ferryFreeTable[selectedFerryNr] then
         ferryFreeTable[selectedFerryNr] = false
     end
@@ -303,8 +319,49 @@ function ferryGoUp(selectedFerryNr, times)
     ferryFreeTable[selectedFerryNr] = false
 end
 
+function ScramJetGoDown(nr)
+    local Jet = TablesOfPiecesGroups["ScramJet"][nr]
+    name = "ScramJet"..nr.."Gear"
+    local Gear = piece(name)
+    reset(Jet)
+    Hide(Jet)
+    Hide(Gear)
+    dist = math.random(8, 15)*1000 * -1
+    Move(Jet, x_axis,dist, 0)
+    arrivalVector = math.random(-180, 180)
+    Turn(Jet, ferryUpAxis, math.rad(arrivalVector), 0)
+    Show(Jet)
+
+    WMove(Jet, x_axis, -7000, 1000)
+    WMove(Jet, x_axis, -6000, 750)
+    WMove(Jet, x_axis, -5000, 500)
+    WMove(Jet, x_axis, -3000, 250)
+    WMove(Jet, x_axis, 0, 125)    
+
+    WTurn(Jet, ferryUpAxis, math.rad(0), 5)
+    Show(Gear)
+    WMove(Jet, ferryUpAxis, 0, 125)    
+end
+
+
 ferryUpAxis = 2
 function ferryGoDown(selectedFerryNr, times)
+    local ferry = TablesOfPiecesGroups["Shuttle"][selectedFerryNr]
+    local engine = TablesOfPiecesGroups["Engine"][selectedFerryNr]
+    if selectedFerryNr == 9 and boolFerry9ScramJet then
+        Hide(ferry)
+        Hide(engine)
+        ScramJetGoDown(1)
+        return
+    end   
+
+    if selectedFerryNr == 10 and boolFerry9ScramJet then
+        Hide(ferry)
+        Hide(engine)
+        ScramJetGoDown(2)
+        return
+    end
+
     if not ferryFreeTable[selectedFerryNr] then
         ferryFreeTable[selectedFerryNr] = false
     end
@@ -313,8 +370,7 @@ function ferryGoDown(selectedFerryNr, times)
     end
     ferryFreeTable[selectedFerryNr] = true
     Sleep(selectedFerryNr * 50)
-    local ferry = TablesOfPiecesGroups["Shuttle"][selectedFerryNr]
-    local engine = TablesOfPiecesGroups["Engine"][selectedFerryNr]
+
     rVal = math.random(-45, 45)
     if selectedFerryNr < 6 then
         Turn(ferry, ferryTurnAxis, math.rad(180 + rVal), 0)
@@ -354,6 +410,27 @@ function ferryingGoods()
     StartThread(turnPlaneAround)
     ferryGoRound = math.random(3, 10)
     Sleep(60 * 3 * 1000)
+end
+
+function ScramJetGoUp(nr)
+    local Jet = TablesOfPiecesGroups["ScramJet"][nr]
+    name = "ScramJet"..nr.."Gear"
+    local Gear = piece(name)
+    Show(Jet)
+    Show(Gear)
+    travelAltitude = math.random(2, 4) * 1000
+    WMove(Jet, ferryUpAxis, travelAltitude, 350)  
+    Hide(Gear)
+    departureVector = math.random(-180, 180)
+    Turn(Jet, ferryUpAxis, math.rad(departureVector), 66)
+
+    dist = math.random(8, 15)*1000 
+    WMove(Jet, x_axis,1000, 250)
+    WMove(Jet, x_axis,2000, 500)
+    WMove(Jet, x_axis,4000, 1000)
+    WMove(Jet, x_axis,dist, 1000)
+    Hide(Jet)
+    reset(Jet)  
 end
 
 function PlaneLights()

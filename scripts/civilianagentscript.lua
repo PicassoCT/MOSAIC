@@ -11,6 +11,13 @@ local parentPieceMap = getParentPieceMap(unitID)
 
 local TablesOfPiecesGroups =   getPieceTableByNameGroups(false, true)
 local GameConfig = getGameConfig()
+local spGetUnitDefID = Spring.GetUnitDefID
+local spGetUnitIsTransporting = Spring.GetUnitIsTransporting
+local spGetUnitTeam = Spring.GetUnitTeam
+local spGetUnitPosition = Spring.GetUnitPosition
+local spGetGameFrame = Spring.GetGameFrame
+local spGetUnitWeaponTarget = Spring.GetUnitWeaponTarget
+
 SIG_ANIM = 1
 SIG_UP = 2
 SIG_LOW = 4
@@ -100,11 +107,11 @@ local scriptEnv = {
     z_axis = z_axis
 }
 
-local spGetUnitTeam = Spring.GetUnitTeam
+
+
 local myTeamID = spGetUnitTeam(unitID)
 local gaiaTeamID = Spring.GetGaiaTeamID()
-local spGetGameFrame = Spring.GetGameFrame
-local spGetUnitWeaponTarget = Spring.GetUnitWeaponTarget
+
 local loc_doesUnitExistAlive = doesUnitExistAlive
 
 local civilianWalkingTypeTable = getCultureUnitModelTypes(
@@ -236,6 +243,28 @@ end
 function getVectorTable(pieceName)
     ex, ey, ez = Spring.GetUnitPiecePosition(unitID, pieceName)
     return {x=ex,y=ey, z=ez}
+end
+
+function umbrellaCondition(boolSunUmbrella)
+    return isANormalDay() and (isRaining() or boolSunUmbrella and not isNight())
+end
+
+function rainyDayCare()
+    if not TablesOfPiecesGroups["Umbrella"] then return end
+    umbrellaIndex = (unitID % #TablesOfPiecesGroups["Umbrella"] )+1
+    local Umbrella = TablesOfPiecesGroups["Umbrella"][umbrellaIndex]
+    local boolSunUmbrella = randChance(10)
+
+    while Umbrella do
+        if umbrellaCondition(boolSunUmbrella) then
+            while umbrellaCondition(boolSunUmbrella) do
+                Show(Umbrella)
+                Sleep(15000)
+            end
+            Hide(Umbrella)
+        end
+        Sleep(10000)
+    end
 end
 
 function noCapesControl( leftPiece, rightPiece)
