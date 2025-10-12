@@ -1,7 +1,7 @@
 -- ===================================================================================================================
 -- Game Configuration
  GG.unitFactor = 0.80
- GameVersion = "1.012"  
+ GameVersion = "1.013"  
  function setUnitFactor(modOptions)
     GG.unitFactor = modOptions.unitfactor or 0.8
  end
@@ -1221,7 +1221,7 @@ end
 
         function getRefugeeAbleTruckTypes(UnitDefs, TruckTypeTable, culture)
             assert(UnitDefs)
-                    typeTable = {
+            typeTable = {
                     "truck_arab1",
                     "truck_arab2",
                     "truck_arab3",
@@ -1230,8 +1230,9 @@ end
                     "truck_arab6",
                     "truck_arab7"
                 }
-                arabicTruckTypeTable = getTypeTable(UnitDefNames, typeTable)
             local UnitDefNames = getUnitDefNames(UnitDefs)
+            arabicTruckTypeTable = getTypeTable(UnitDefNames, typeTable)
+
             if culture == Cultures.arabic then
                 return arabicTruckTypeTable
             end
@@ -1318,13 +1319,47 @@ end
             function getHouseTypeLimitations(UnitDefs)
                 UnitDefNames = getUnitDefNames(UnitDefs)
                 LimitedHouseTypes = {
-                    [UnitDefNames["house_asian1"].id] = 10
+                    [UnitDefNames["house_asian1"].id] = 10,
+                    [UnitDefNames["house_asian4"].id] = 3
                 }
                 return LimitedHouseTypes
             end
 
             function getWesternUnitTypeMap(typeName, UnitDefs)
                 return getCultureUnitModelTypes("western", typeName, UnitDefs)
+            end
+
+            function getHouseTypeIsInnerCityOnly(culture, UnitDefs)
+                if culture == nil then 
+                    culture = getCultureName()
+                end
+                local UnitDefNames = getUnitDefNames(UnitDefs)
+
+                if culture == Cultures.asian then
+                    typeTable = {
+                    "house_asian1",
+                    "house_asian4",
+                    }
+                    return getTypeTable(UnitDefNames, typeTable)
+                end
+
+                if culture == Cultures.arabic then
+                    return {}
+                end
+
+                if culture == Cultures.international then
+                        return mergeDictionarys(
+                            getHouseTypeIsInnerCityOnly(Cultures.arabic, UnitDefs),
+                            getHouseTypeIsInnerCityOnly(Cultures.western, UnitDefs),
+                            getHouseTypeIsInnerCityOnly(Cultures.asian, UnitDefs)
+                            )                       
+                end
+
+                if culture == Cultures.western then
+                    return {}
+                end
+
+                assert(nil)
             end
 
             function getCultureUnitModelNames_Dict_DefIDName(cultureName, typeName, UnitDefs)

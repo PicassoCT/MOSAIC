@@ -2144,7 +2144,11 @@ end
 
 function removeDictFromDict(dA, dB)
     returnTable = {}
-    for k, v in pairs(dA) do if not dB[k] then returnTable[k] = v end end
+    for k, v in pairs(dA) do 
+        if not dB[k] then 
+            returnTable[k] = v 
+        end 
+    end
     return returnTable
 end
 

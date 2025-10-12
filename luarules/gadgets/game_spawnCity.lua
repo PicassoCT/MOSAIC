@@ -51,6 +51,8 @@ local TruckTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture,
 local houseTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture,
                                                 "house", UnitDefs)
 
+local outerCityHouseTypeTable = removeDictFromDict(houseTypeTable, getHouseTypeIsInnerCityOnly(GameConfig.instance.culture, UnitDefs))
+
 local houseTypeLimitationsTable = getHouseTypeLimitations(UnitDefs)
 local houeArabicDefID = UnitDefNames["house_arab0"].id
 
@@ -291,9 +293,8 @@ function getBuildingTypeWithinLimits()
         if houseTypeLimitationsTable[buildingType] > 0 then
             houseTypeLimitationsTable[buildingType] = houseTypeLimitationsTable[buildingType] -1 
             return buildingType
-        else
-            houseTypeTable[buildingType] = nil
-            return randDict(houseTypeTable)
+        else           
+            return randDict(outerCityHouseTypeTable)
         end
     else
         return buildingType
@@ -352,7 +353,7 @@ function fromMapCenterOutwards(BuildingPlaceT, startx, startz)
             end
 
             if boolFirstPlaced == true and BuildingPlaceT[mirror.x][mirror.z] == true and isOnRoad(mirror) == false then
-                buildingType = randDict(houseTypeTable)
+                buildingType = getBuildingTypeWithinLimits()
                 buildingType = overrideRuinByChance(buildingType, mirrorDistanceToCityCenter)
                 houseID = spawnBuilding(buildingType, mirror.x * dimX, mirror.z * dimZ, boolMirrorNearCityCenter)
                 if houseID then
@@ -407,7 +408,7 @@ function placeThreeByThreeBlockAroundCursor(cursor, numberOfBuildings,  Building
                         local tmpCursor = {x =cursor.x + offx, z = cursor.z + offz}
                         local nameCursor = {x =(cursor.x*2) + offx, z =(cursor.z*2) + offz}
                         tmpCursor = clampCursor(tmpCursor)  
-                        buildingType = randDict(houseTypeTable)                    
+                        buildingType = getBuildingTypeWithinLimits()                  
                         buildingType = overrideRuinByChance(buildingType, distanceToCityCenter)
                         if BuildingPlaceT[tmpCursor.x] and BuildingPlaceT[tmpCursor.x][tmpCursor.z] and BuildingPlaceT[tmpCursor.x][tmpCursor.z] == true then
                             houseID = spawnBuilding(buildingType,
@@ -470,7 +471,7 @@ function checkReSpawnHouses()
             GG.BuildingTable[bID] = nil
 
             x, z = routeDataCopy.x, routeDataCopy.z
-            buildingType = randDict(houseTypeTable)
+            buildingType = getBuildingTypeWithinLimits()
             id = spawnBuilding(buildingType, x, z, isNearCityCenter(x,z, GameConfig))
             dataToAdd[id] = routeDataCopy
         end
