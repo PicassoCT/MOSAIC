@@ -360,6 +360,7 @@ function GetPieceTableGroups()
 end
 
 function script.Create()
+    echo("house_western_hologram.dae -> create:TODO: retexture pixels, attach to Fireworks in hierarchy")
     Spring.SetUnitAlwaysVisible(unitID, true)
     Spring.SetUnitNeutral(unitID, true)
     Spring.SetUnitNoSelect(unitID, true)
@@ -897,9 +898,10 @@ function HoloGrams()
         if maRa() or isNearCityCenter(x,z, GameConfig)  then
           StartThread(showWallDayTime, "CasinoWall")
           StartThread(addJHologramLetters)
-          if maRa() then
-            StartThread(fireWorks)
-          end
+            if maRa() then
+                StartThread(fireWorks)
+                if maRa() then StartThread(dragonDance); end
+            end
         end           
         if randChance(75) then
             StartThread(addHologramLetters, casinoNamesNeonSigns)         
@@ -1092,60 +1094,227 @@ function fireWorksSet(fireSet, maxDistance, speed)
     end
 end
 
+upaxis = 2 
+-- ======== FIREWORKS SYSTEM ========
+
+local upAxis = 2
+
+-- === Utility ===
+local function randRange(min, max)
+    return math.random() * (max - min) + min
+end
+
+local function randSign()
+    return (math.random(0, 1) == 0) and -1 or 1
+end
+
+-- === Motion ===
+local function fireworkMove(id, x, y, z, speed)
+    mP(id, x, y, z, speed)
+    turnPieceRandDir(id, 0)
+    spinRand(id, -10, 10, 0.25)
+    ShowReg(id)
+end
+
+-- === Shape generation ===
+local function makeShapeSphere(maxDist)
+    return randRange(maxDist * 0.75, maxDist) * randSign(),
+           randRange(maxDist * 0.75, maxDist) * randSign(),
+           randRange(maxDist * 0.75, maxDist) * randSign()
+end
+
+local function makeShapeFlower(maxDist)
+    local angle = math.random() * 2 * math.pi
+    local radius = randRange(maxDist * 0.5, maxDist)
+    local x = math.cos(angle) * radius
+    local y = randRange(maxDist * 0.1, maxDist * 0.25)
+    local z = math.sin(angle) * radius
+    return x, y, z
+end
+
+local function makeShapeSnow(maxDist)
+    -- Random horizontal spread, gentle downward bias
+    local x = randRange(-maxDist, maxDist)
+    local z = randRange(-maxDist, maxDist)
+    -- Start slightly above center, then fall down slowly
+    local y = randRange(maxDist * 0.5, maxDist * 1.2) * -1
+    -- Add some slight horizontal drift to mimic wind
+    local driftX = randRange(-maxDist * 0.2, maxDist * 0.2)
+    local driftZ = randRange(-maxDist * 0.2, maxDist * 0.2)
+    return x + driftX, y, z + driftZ
+end
+
+local function makeShapePalm(maxDist)
+    local angle = math.random() * 2 * math.pi
+    local radius = randRange(maxDist * 0.5, maxDist)
+    local height = randRange(maxDist * 0.8, maxDist * 1.2)
+    local x = math.cos(angle) * radius
+    local y = height
+    local z = math.sin(angle) * radius
+    return x, y, z
+end
+
+local function makeShapeComet(maxDist)
+    local spread = randRange(0, maxDist * 0.15)
+    local angle = math.random() * 2 * math.pi
+    local x = math.cos(angle) * spread
+    local z = math.sin(angle) * spread
+    local y = randRange(maxDist * 0.8, maxDist * 1.2)
+    return x, y, z
+end
+
+local function makeShapeWillow(maxDist)
+    local angle = math.random() * 2 * math.pi
+    local radius = randRange(maxDist * 0.6, maxDist)
+    local x = math.cos(angle) * radius
+    local z = math.sin(angle) * radius
+    local y = randRange(maxDist * 0.2, maxDist * 0.5)
+    -- drooping bias (negative small)
+    y = y - randRange(maxDist * 0.3, maxDist * 0.6)
+    return x, y, z
+end
+
+local function makeShapeBurst(maxDist)
+    -- pick a random cluster center
+    local clusterRadius = randRange(maxDist * 0.2, maxDist * 0.6)
+    local clusterAngle = math.random() * 2 * math.pi
+    local cx = math.cos(clusterAngle) * clusterRadius
+    local cz = math.sin(clusterAngle) * clusterRadius
+    local cy = randRange(-maxDist * 0.2, maxDist * 0.4)
+
+    -- offset within the small local burst
+    local localAngle = math.random() * 2 * math.pi
+    local localRadius = randRange(0, maxDist * 0.2)
+    local lx = math.cos(localAngle) * localRadius
+    local lz = math.sin(localAngle) * localRadius
+    local ly = randRange(-maxDist * 0.1, maxDist * 0.1)
+
+    return cx + lx, cy + ly, cz + lz
+end
+
+local function makeShapeSmiley(maxDist)
+    -- radius defines overall face size
+    local r = maxDist * 0.8
+    local angle = math.random() * 2 * math.pi
+    local region = math.random()
+
+    local x, y, z
+
+    if region < 0.7 then
+        -- outer ring (face outline)
+        local radius = randRange(r * 0.9, r)
+        x = math.cos(angle) * radius
+        y = math.sin(angle) * radius * 0.9
+        z = randRange(-maxDist * 0.05, maxDist * 0.05)
+    elseif region < 0.85 then
+        -- left eye cluster
+        x = randRange(-r * 0.35, -r * 0.25)
+        y = randRange(r * 0.3, r * 0.45)
+        z = randRange(-maxDist * 0.05, maxDist * 0.05)
+    elseif region < 1.0 then
+        -- right eye cluster
+        x = randRange(r * 0.25, r * 0.35)
+        y = randRange(r * 0.3, r * 0.45)
+        z = randRange(-maxDist * 0.05, maxDist * 0.05)
+    end
+
+    -- optional mouth curve (every ~20% of particles)
+    if math.random() < 0.2 then
+        local mouthAngle = randRange(-math.pi / 3, math.pi / 3)
+        local mouthRadius = r * 0.55
+        x = math.cos(mouthAngle) * mouthRadius
+        y = -r * 0.35 + math.sin(mouthAngle) * r * 0.1
+        z = randRange(-maxDist * 0.05, maxDist * 0.05)
+    end
+
+    return x, y, z
+end
+
+
+-- === Firework Spread ===
+local function fireworkSet(fireSet, maxDist, speed, shapeFunc)
+    assert(fireSet)
+    for _, id in pairs(fireSet) do
+        local dx, dy, dz = shapeFunc(maxDist)
+        fireworkMove(id, dx, dy, dz, speed)
+    end
+end
+
+-- === Reset all pieces ===
+local function resetFireworks(center, sets)
+    ShowReg(center)
+    reset(center)
+    for _, set in pairs(sets) do
+        resetT(set)
+    end
+end
+
+local function hideAll(sets)
+    for _, set in pairs(sets) do
+        for _, id in ipairs(set) do
+            HideReg(id)
+        end
+    end
+end
+
+-- === Main Fireworks Loop ===
 function fireWorks()
     local FireWorksCenter = piece("FireWorksCenter")
-    FireWorksTableB = mergeTable(TableOfPiecesGroups["BlueSpark"],TableOfPiecesGroups["B"])
-    FireWorksTableR = mergeTable(TableOfPiecesGroups["RedSpark"],TableOfPiecesGroups["R"])
-    FireWorksTableY = TableOfPiecesGroups["YellowSpark"])
-    FireWorksTableG = TableOfPiecesGroups["G"])
-    upaxis = 2
 
-    if maRa() then
-        StartThread(dragonDance) 
-    end
+    local FireWorksTableB = mergeTable(TableOfPiecesGroups["BlueSpark"], TableOfPiecesGroups["B"])
+    local FireWorksTableR = mergeTable(TableOfPiecesGroups["RedSpark"], TableOfPiecesGroups["R"])
+    local FireWorksTableY = TableOfPiecesGroups["YellowSpark"]
+    local FireWorksTableG = TableOfPiecesGroups["G"]
+
+    local sets = { FireWorksTableB, FireWorksTableR, FireWorksTableY, FireWorksTableG }
+
+    local shapes = {
+        sphere = makeShapeSphere,
+        flower = makeShapeFlower,
+        palm   = makeShapePalm,
+        snow = makeShapeSnow,
+        comet = makeShapeComet,
+        willow = makeShapeWillow,
+        burst = makeShapeBurst,
+        smiley = makeShapeSmiley
+    }
 
     while true do
         while (hours > 20 or hours < 6) do
-            ShowReg(FireWorksCenter)
-            reset(FireWorksCenter)
-            resetT(FireWorksTableB)
-            resetT(FireWorksTableR)
-            resetT(FireWorksTableY)
-            updistance = 3000
+            resetFireworks(FireWorksCenter, sets)
 
-            spreaddistance = 750 
-            fOffsetX=math.random(1000,2500)*randSign()
-            fOffsetZ=math.random(1000,2500)*randSign()
-            Move(FireWorksCenter, 1, fOffsetX,0)
-            Move(FireWorksCenter, 3, fOffsetZ,0)
-            WMove(FireWorksCenter, upaxis, updistance, 1000.5)
-            --Show and Expand
+            local upDistance = 3000
+            local spreadDistance = 750
+            local offsetX = randRange(1000, 2500) * randSign()
+            local offsetZ = randRange(1000, 2500) * randSign()
 
-             speed = math.random(25,35)
-            if maRa() then
-               fireWorksSet(FireWorksTableB, spreaddistance, spreaddistance)
-            end     
+            Move(FireWorksCenter, 1, offsetX, 0)
+            Move(FireWorksCenter, 3, offsetZ, 0)
+            WMove(FireWorksCenter, upAxis, upDistance, 1000.5)
 
-            if maRa() then
-                fireWorksSet(FireWorksTableR, spreaddistance, spreaddistance)
-            end
-            
-            if maRa() then
-                fireWorksSet(FireWorksTableY, spreaddistance, spreaddistance)
-            end
-            HideReg( FireWorksCenter)          
-            WMove(FireWorksCenter, upaxis, updistance - 200, 250.5)
-            WMove(FireWorksCenter, upaxis, updistance - 1000, 500.5)
-            Move(FireWorksCenter, upaxis, updistance - 2000, 750)
-            Sleep(800) 
+            local speed = math.random(25, 35)
+
+            -- choose shape variant randomly
+            local shapeKey = ({ "sphere", "flower", "palm" })[math.random(1, 3)]
+            local shapeFunc = shapes[shapeKey]
+
+            -- Fire each color set conditionally
+            if maRa() then fireworkSet(FireWorksTableB, spreadDistance, speed, shapeFunc) end
+            if maRa() then fireworkSet(FireWorksTableR, spreadDistance, speed, shapeFunc) end
+            if maRa() then fireworkSet(FireWorksTableY, spreadDistance, speed, shapeFunc) end
+            if maRa() then fireworkSet(FireWorksTableG, spreadDistance, speed, shapeFunc) end
+
+            HideReg(FireWorksCenter)
+            WMove(FireWorksCenter, upAxis, upDistance - 200, 250.5)
+            WMove(FireWorksCenter, upAxis, upDistance - 1000, 500.5)
+            Move(FireWorksCenter, upAxis, upDistance - 2000, 750)
+            Sleep(1800)
             Move(FireWorksCenter, upaxis, 0, 1000)
-            for i=1, #FireWorksTableB do
-                HideReg(FireWorksTableB[i])
-                HideReg(FireWorksTableR[i])
-                HideReg(FireWorksTableY[i])
-                Sleep(200)
-            end     
-            WMove(FireWorksCenter, upaxis, 0, 1000)
+            hideTReg(FireWorksTableB)
+            hideTReg(FireWorksTableR)
+            hideTReg(FireWorksTableY)      
+            hideTReg(FireWorksTableG)
+            WMove(hideTReg, upaxis, 0, 1000)
             timeBetweenShots= math.random(4,10)*1000
             Sleep(1000)     
         end
@@ -1153,6 +1322,7 @@ function fireWorks()
         Sleep(5000)
     end
 end
+
 
 function shapeSymmetry(logo, boolEverChangingSymmetry)
     if maRa() == maRa() then
