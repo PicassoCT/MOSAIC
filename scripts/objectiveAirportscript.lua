@@ -390,7 +390,7 @@ local vtolFactor = 2.0
 local distFactor = 1.0
 local slowTurnVTol = 0.125
 
-travelAltitude = math.random(3, 5) * 10000
+travelAltitude = math.random(5, 15) * 3000
 function ScramJetGoDown(nr)
     local Jet = TablesOfPiecesGroups["ScramJet"][nr]
     local Gear = TablesOfPiecesGroups["ScramJetGear"][nr]

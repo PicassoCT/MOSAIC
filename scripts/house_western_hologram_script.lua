@@ -360,7 +360,6 @@ function GetPieceTableGroups()
 end
 
 function script.Create()
-    echo("house_western_hologram.dae -> create:TODO: retexture pixels, attach to Fireworks in hierarchy")
     Spring.SetUnitAlwaysVisible(unitID, true)
     Spring.SetUnitNeutral(unitID, true)
     Spring.SetUnitNoSelect(unitID, true)
@@ -1261,10 +1260,10 @@ end
 function fireWorks()
     local FireWorksCenter = piece("FireWorksCenter")
 
-    local FireWorksTableB = mergeTable(TableOfPiecesGroups["BlueSpark"], TableOfPiecesGroups["B"])
-    local FireWorksTableR = mergeTable(TableOfPiecesGroups["RedSpark"], TableOfPiecesGroups["R"])
+    local FireWorksTableB = DictionaryMergeDictionary(TableOfPiecesGroups["BlueSpark"], TableOfPiecesGroups["BPix"])
+    local FireWorksTableR = DictionaryMergeDictionary(TableOfPiecesGroups["RedSpark"], TableOfPiecesGroups["RPix"])
     local FireWorksTableY = TableOfPiecesGroups["YellowSpark"]
-    local FireWorksTableG = TableOfPiecesGroups["G"]
+    local FireWorksTableG = TableOfPiecesGroups["GPix"]
 
     local sets = { FireWorksTableB, FireWorksTableR, FireWorksTableY, FireWorksTableG }
 
