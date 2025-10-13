@@ -430,9 +430,6 @@ function HoloGrams()
 
     Sleep(15000)
 
-    if randChance(10) then
-        StartThread(visualizeClock)
-    end
 
     --sexxxy time
     px,py,pz = Spring.GetUnitPosition(unitID)
@@ -455,6 +452,10 @@ function HoloGrams()
     
     val = math.random(5, 12)*randSign()
     Spin(BuisnessSpin, z_axis,  math.rad(val), 0.1)
+    if randChance(10) then
+        visualizeClock()
+    end
+
 end
 
 local GameConfig = getGameConfig()

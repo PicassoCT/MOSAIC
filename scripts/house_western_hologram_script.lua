@@ -1094,9 +1094,10 @@ end
 
 function fireWorks()
     local FireWorksCenter = piece("FireWorksCenter")
-    FireWorksTableB = TableOfPiecesGroups["BlueSpark"]
-    FireWorksTableR = TableOfPiecesGroups["RedSpark"]
-    FireWorksTableY = TableOfPiecesGroups["YellowSpark"]
+    FireWorksTableB = mergeTable(TableOfPiecesGroups["BlueSpark"],TableOfPiecesGroups["B"])
+    FireWorksTableR = mergeTable(TableOfPiecesGroups["RedSpark"],TableOfPiecesGroups["R"])
+    FireWorksTableY = TableOfPiecesGroups["YellowSpark"])
+    FireWorksTableG = TableOfPiecesGroups["G"])
     upaxis = 2
 
     if maRa() then

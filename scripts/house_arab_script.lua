@@ -938,22 +938,22 @@ function addRoofDeocrate(Level, buildMaterial)
     end
 end
 
-function  noSunbathingConditons()
+function  SunbathingConditons()
     hours, minutes, seconds, percent = getDayTime()
-    return isRaining() or hours > 19 and hours < 6
+    return not isRaining() and not( hours > 19 and hours < 6)
 end
 
 function hideSunBathersInBadWeather()
     while true do
-        Sleep(1500)
-        if noSunbathingConditons() then
-            hideT(TablesOfPiecesGroups["RoofDeco28Sub"])
-            while noSunbathingConditons() do 
-                Sleep(5000)
-            end
-            showOneOrAll(TablesOfPiecesGroups[RoofDeco28Sub])
+        hideT(TablesOfPiecesGroups["RoofDeco28Sub"])
+        waitTillDay()
+        showOneOrAll(TablesOfPiecesGroups["RoofDeco28Sub"])
+        while SunbathingConditons() do
+            Sleep(5000)
         end
-    end
+        hideT(TablesOfPiecesGroups["RoofDeco28Sub"])   
+        Sleep(500)       
+    end    
 end
 
 boolDoneShowing = false
