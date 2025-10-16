@@ -1286,7 +1286,7 @@ function fireWorks()
             local spreadDistance = 750
             local offsetX = randRange(1000, 2500) * randSign()
             local offsetZ = randRange(1000, 2500) * randSign()
-
+            assert(FireWorksCenter)
             Move(FireWorksCenter, 1, offsetX, 0)
             Move(FireWorksCenter, 3, offsetZ, 0)
             WMove(FireWorksCenter, upAxis, upDistance, 1000.5)
@@ -1313,7 +1313,7 @@ function fireWorks()
             hideTReg(FireWorksTableR)
             hideTReg(FireWorksTableY)      
             hideTReg(FireWorksTableG)
-            WMove(hideTReg, upaxis, 0, 1000)
+            WMove(FireWorksCenter, upaxis, 0, 1000)
             timeBetweenShots= math.random(4,10)*1000
             Sleep(1000)     
         end

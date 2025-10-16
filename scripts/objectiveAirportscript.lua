@@ -397,6 +397,7 @@ function ScramJetGoDown(nr)
     local Rotator = TablesOfPiecesGroups["ScramJetRotator"][nr]
     reset(Rotator)
     reset(Jet)
+    assert(Jet)
     Hide(Jet)
     Hide(Gear)
     dist = math.random(8, 12) * 10000 * -1 * distFactor
@@ -421,6 +422,7 @@ end
 
 function ScramJetGoUp(nr)
     local Jet = TablesOfPiecesGroups["ScramJet"][nr]
+    assert(Jet)
     local Gear = TablesOfPiecesGroups["ScramJetGear"][nr]
     local Rotator = TablesOfPiecesGroups["ScramJetRotator"][nr]
     reset(Rotator)
