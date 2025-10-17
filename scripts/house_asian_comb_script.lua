@@ -77,6 +77,29 @@ function showOne(T, bNotDelayd)
     end
 end
 
+function showOneOrNone(T)
+    if maRa() then return end
+    showOne(T)
+end
+
+function showNoneOrMany(T)
+    if maRa() then  return showOneOrNone(T) end
+    for k, v in pairs(T) do        
+        if maRa() then
+            addToShowTable(v, "showOne", k)            
+        end
+    end
+end
+
+
+function showSubs(pieceGroupName)
+    local subName = pieceGroupName .. "Sub"
+  --  Spring.Echo("SubGroupName "..subName)
+    if TablesOfPieceGroups[subName] then
+        showNoneOrMany(TablesOfPieceGroups[subName])
+    end
+end
+
 function buildHouse()
     resetAll(unitID)
     hideAll(unitID)
@@ -164,7 +187,7 @@ local orgPieceParams = {
           {name="SimCan1",  mass=1.0, drag=0.9},
           {name="SimCan2",  mass=1.0, drag=0.9},
           {name="SimBox1",  mass=2.5, drag=0.85},
-          {name="SimPaper", mass=0.2, drag=0.95, lift=0.1}
+          {name="SimPaper1", mass=0.2, drag=0.95, lift=0.1}
         },
       params = 
       {

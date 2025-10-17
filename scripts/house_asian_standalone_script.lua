@@ -360,7 +360,7 @@ local orgPieceParams =
       {name="SimCan1",  mass=1.0, drag=0.9},
       {name="SimCan2",  mass=1.0, drag=0.9},
       {name="SimBox1",  mass=2.5, drag=0.85},
-      {name="SimPaper", mass=0.2, drag=0.95, lift=0.1}
+      {name="SimPaper1", mass=0.2, drag=0.95, lift=0.1}
     },
     params = 
     {
