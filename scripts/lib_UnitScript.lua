@@ -6016,10 +6016,10 @@ function SecToMs( seconds)
 end
 
 function MsToFrame(milliseconds)
-    return milliseconds/framePerSecond
+    return milliseconds/framesPerSecond()
 end
 
-function framePerSecond() return 30 end
+function framesPerSecond() return 30 end
 function assertInDict(T,  Key)
      assert(T[Key], Key.. " not in ".. (toString(T)))                        
 end

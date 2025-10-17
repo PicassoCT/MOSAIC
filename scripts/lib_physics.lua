@@ -439,7 +439,7 @@ function runGarbageSim(pieceParams, opx, opz)
         if physicsDurationSeconds then
             echo("PhysicsSim running at "..locationstring(unitID))
             for i= 1, physicsDurationSeconds do
-                PhysicsTick(1, pieces)  -- or use dt = Spring.GetLastUpdateSeconds()
+                PhysicsTick(1, pieceParams)  -- or use dt = Spring.GetLastUpdateSeconds()
                 Sleep(1000)
             end
         end
