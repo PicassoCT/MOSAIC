@@ -8,7 +8,7 @@ function widget:GetInfo()
 		license   = "GPL, MIT",
 		layer	 = -100000, --To run after gfx_deferred_rendering.lua
 		enabled   = false,
-		hidden = true
+		hidden 	 = false
 	}
 end
 

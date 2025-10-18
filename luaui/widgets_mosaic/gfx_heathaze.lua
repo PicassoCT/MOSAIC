@@ -8,7 +8,7 @@ function widget:GetInfo()
         license = "GPL3",
         layer = math.huge,
         enabled = true,
-        hidden = false
+        hidden = true
     }
 end
 

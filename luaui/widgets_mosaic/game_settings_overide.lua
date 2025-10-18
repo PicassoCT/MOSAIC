@@ -1,7 +1,7 @@
 function widget:GetInfo()
 	return {
 	  name = "Overrides settings for mosaic",
-        desc = "Store & Restore settings after gameend",
+        desc = "Store & restore settings after gameend",
 		author = "Pica",
 		date = "April 2020",
 		license = "GNU GPL, v2 or later",

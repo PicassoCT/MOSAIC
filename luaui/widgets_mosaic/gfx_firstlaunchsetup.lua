@@ -11,7 +11,7 @@ function widget:GetInfo()
     license   = "August 2017",
     layer     = 0,
     enabled   = true,
-    hidden = true
+    hidden    = true
   }
 end
 

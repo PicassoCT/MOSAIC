@@ -371,7 +371,6 @@ function getSetPhysicsSimToken()
     return nil
 end
 
-
 function PhysicsTick(dt, pieces)
     local params = pieces.params
     local BOUND = params.BOUND
@@ -427,7 +426,6 @@ function PhysicsTick(dt, pieces)
   end
 end
 
-
 function runGarbageSim(pieceParams, opx, opz)
     local pieceParams = setupGarbageSim(pieceParams)
     WMove(pieceParams.PlaceableSimPos, x_axis, opx, 0)
@@ -444,6 +442,6 @@ function runGarbageSim(pieceParams, opx, opz)
             end
         end
         randoSleep = math.random(1,32)*100 --backoffstrategy
-        Sleep(randSleep)
+        Sleep(randoSleep)
     end
 end

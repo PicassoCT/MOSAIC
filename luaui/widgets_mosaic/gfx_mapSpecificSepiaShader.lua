@@ -1,19 +1,18 @@
 function widget:GetInfo()
     return {
         name = "Sepia Shader Filter",
-        desc = "provides the dubai map with a sepia tone colour grading shader",
+        desc = "provides maps with a sepia tone colour grading shader",
         author = "ChatGPT",
         date = "2025-06-28",
         license = "MIT",
         layer = 0,
         enabled = true,
+
     }
 end
 
 -- CONFIGURATION
-local TARGET_MAPS = {}
-TARGET_MAPS[#TARGET_MAPS +1] = "lastdayofdubai"
-TARGET_MAPS[#TARGET_MAPS +1] = "tabula"
+local TARGET_MAPS = {"lastdayofdubai", "tabula"}
 local DAYLENGTH             = 28800
 local morningOffset = (DAYLENGTH / 2)
 local function getDayTime()

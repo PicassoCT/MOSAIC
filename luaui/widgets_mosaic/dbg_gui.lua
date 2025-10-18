@@ -10,7 +10,7 @@ function widget:GetInfo()
     license   = "GPL",
     layer     = 1,
     enabled   = false,  --  loaded by default?
-	hidden = false
+	  hidden = false
   }
 end
 

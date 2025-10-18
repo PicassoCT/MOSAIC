@@ -327,13 +327,16 @@ end
 TutorialInfoTable =	preProcesTutorialInfoTable()
 
 function widget:Initialize()	
-		Spring.SetConfigInt("mosaic_startupcounter", Spring.GetConfigInt("mosaic_startupcounter",0) + 1 )
-		if  Spring.GetConfigInt("mosaic_startupcounter",0) > 1 and not boolDebug then widgetHandler:RemoveWidget(self); return end
-
 		local myTeamID= spGetMyTeamID()
 		local playerID = spGetMyPlayerID()
 		local tname,_, tspec, myTeamID, tallyteam, tping, tcpu, tcountry, trank = spGetPlayerInfo(playerID)
+		if tspec then widgetHandler:RemoveWidget(self); return end
+
 		mySide     = select(5, spGetTeamInfo(myTeamID)) 
+		if mySide == nil then widgetHandler:RemoveWidget(self); return end
+
+		Spring.SetConfigInt("mosaic_startupcounter", Spring.GetConfigInt("mosaic_startupcounter",0) + 1 )
+		if  Spring.GetConfigInt("mosaic_startupcounter",0) > 2 and not boolDebug then widgetHandler:RemoveWidget(self); return end
 
 		if (mySide ~= nil and (mySide == "antagon" or mySide == "protagon")) == false then
 
