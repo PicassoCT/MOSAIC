@@ -429,6 +429,10 @@ function PhysicsTick(dt, pieces)
       p.spin[2] = p.spin[2] + (math.random()-0.5) * windEnergy * 50
     end
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
     -- apply to pieces
     Move(p.piece, x_axis, x, vx)
     Move(p.piece, y_axis, y, vy)
