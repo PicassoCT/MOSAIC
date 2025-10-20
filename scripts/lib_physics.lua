@@ -380,7 +380,7 @@ function PhysicsTick(dt, pieces)
     local params = pieces.params
     local BOUND = params.BOUND
  dx, dy,dz_, _, wx, wy, wz = Spring.GetWind()
- local WIND = {dx, dy, dz}
+ local WIND = {wx, wy, wz}
  scale = 1
  for _,p in ipairs(pieces) do
     local vx,vy,vz = p.vel[1], p.vel[2], p.vel[3]
@@ -421,6 +421,13 @@ function PhysicsTick(dt, pieces)
     p.rot[1] = (p.rot[1] + p.spin[1]*dt) % 360
     p.rot[2] = (p.rot[2] + p.spin[2]*dt) % 360
     p.rot[3] = (p.rot[3] + p.spin[3]*dt) % 360
+
+    -- After applying wind or bounce
+    local windEnergy = math.abs(WIND[1]*vx + WIND[3]*vz)
+    if math.random() < 0.2 then
+      p.spin[1] = p.spin[1] + (math.random()-0.5) * windEnergy * 50
+      p.spin[2] = p.spin[2] + (math.random()-0.5) * windEnergy * 50
+    end
 
     -- apply to pieces
     Move(p.piece, x_axis, x, vx)
