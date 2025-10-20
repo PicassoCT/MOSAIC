@@ -422,6 +422,14 @@ function PhysicsTick(dt, pieces)
     p.rot[2] = (p.rot[2] + p.spin[2]*dt) % 360
     p.rot[3] = (p.rot[3] + p.spin[3]*dt) % 360
 
+    -- After applying wind or bounce
+    local windEnergy = math.abs(WIND[1]*vx + WIND[3]*vz)
+    if math.random() < 0.2 then
+      p.spin[1] = p.spin[1] + (math.random()-0.5) * windEnergy * 50
+      p.spin[2] = p.spin[2] + (math.random()-0.5) * windEnergy * 50
+    end
+
+
     -- apply to pieces
     Move(p.piece, x_axis, x, vx)
     Move(p.piece, y_axis, y, vy)
