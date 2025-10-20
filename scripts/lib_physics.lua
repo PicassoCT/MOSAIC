@@ -342,10 +342,13 @@ function fallingPhysPieces(pName, ivec, ovec)
 end
 
 function setupGarbageSim(pieceParams)
+    boolAtLeastOne = false
     for k,p in ipairs(pieceParams.pieces) do
       local pieceID = piece(p.name)
+
       if maRa() then
           Show(pieceID)
+          boolAtLeastOne = true
       end
       p.piece = pieceID
       p.pos = {0,  0, 0}
@@ -355,7 +358,9 @@ function setupGarbageSim(pieceParams)
       pieceParams.pieces[k] = p
     end
 
-    return pieceParams
+    if boolAtLeastOne then 
+        return  pieceParams
+    end
 end
 
 function getSetPhysicsSimToken()
@@ -374,15 +379,16 @@ end
 function PhysicsTick(dt, pieces)
     local params = pieces.params
     local BOUND = params.BOUND
- _, _, _, _, wx, wy, wz = Spring.GetWind()
- local WIND = {wx, wy, wz}
+ dx, dy,dz_, _, wx, wy, wz = Spring.GetWind()
+ local WIND = {dx, dy, dz}
+ scale = 1
  for _,p in ipairs(pieces) do
     local vx,vy,vz = p.vel[1], p.vel[2], p.vel[3]
 
     -- forces
-    vy = vy + params.GRAVITY * dt
-    vx = vx + WIND[1] * dt / p.mass
-    vz = vz + WIND[3] * dt / p.mass
+    vy = vy + params.GRAVITY * dt* scale
+    vx = vx + ( WIND[1] * dt* scale) / p.mass
+    vz = vz + ( WIND[3] * dt* scale) / p.mass
 
     -- drag
     vx,vy,vz = vx * p.drag, vy * p.drag, vz * p.drag
@@ -417,25 +423,28 @@ function PhysicsTick(dt, pieces)
     p.rot[3] = (p.rot[3] + p.spin[3]*dt) % 360
 
     -- apply to pieces
-    Move(p.piece, x_axis, x, 0)
-    Move(p.piece, y_axis, y, 0)
-    Move(p.piece, z_axis, z, 0)
-    Turn(p.piece, x_axis, math.rad(p.rot[1]), 0)
-    Turn(p.piece, y_axis, math.rad(p.rot[2]), 0)
-    Turn(p.piece, z_axis, math.rad(p.rot[3]), 0)
+    Move(p.piece, x_axis, x, vx)
+    Move(p.piece, y_axis, y, vy)
+    Move(p.piece, z_axis, z, vy)
+    Turn(p.piece, x_axis, math.rad(p.rot[1]), math.pi)
+    Turn(p.piece, y_axis, math.rad(p.rot[2]), math.pi)
+    Turn(p.piece, z_axis, math.rad(p.rot[3]), math.pi)
   end
 end
 
-function runGarbageSim(pieceParams, opx, opz)
+function runGarbageSim(pieceParams, opx, opz, heightoffset)
+    local heightoffset = heightoffset or 100
     local pieceParams = setupGarbageSim(pieceParams)
+    if not pieceParams then return end
     WMove(pieceParams.PlaceableSimPos, x_axis, opx, 0)
+    WMove(pieceParams.PlaceableSimPos, y_axis, heightoffset, 0)
     WMove(pieceParams.PlaceableSimPos, z_axis, opz, 0)
     -- runtime state
 
     while true do
         physicsDurationSeconds = getSetPhysicsSimToken()
         if physicsDurationSeconds then
-            echo("PhysicsSim running at "..locationstring(unitID))
+            echo("PhysicsSim running at "..locationstring(unitID).. " for "..physicsDurationSeconds.. " seconds")
             for i= 1, physicsDurationSeconds do
                 PhysicsTick(1, pieceParams)  -- or use dt = Spring.GetLastUpdateSeconds()
                 Sleep(1000)

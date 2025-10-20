@@ -193,7 +193,7 @@ local orgPieceParams = {
       {
         GRAVITY = -0.15,
         FLOOR_Y = 0,
-        BOUND = {minX=-50, maxX=50, minY=0, maxY=10, minZ=-50, maxZ=50}
+        BOUND = {minX=-1000, maxX=1000, minY=0, maxY=250, minZ=-1000, maxZ=1000}
       },
       PlaceableSimPos= piece("PlaceableSimPos")
     }

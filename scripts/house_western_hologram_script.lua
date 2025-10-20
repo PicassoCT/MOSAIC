@@ -1054,6 +1054,7 @@ function dragonDance()
     local DragonTable = TableOfPiecesGroups["Dragon"]
     local DragonHead = DragonTable[1]
     dx,dz = math.random(-200,200),math.random(-200,200)
+    Turnspeed = 1
 
     while true do
         if (hours > 20 or hours < 6)  then
@@ -1068,7 +1069,7 @@ function dragonDance()
                 times = percent*30
                 for i=1, #DragonTable do
                     val = math.sin(times * step * i)
-                    Turn(DragonTable[i], 3, val, 0.1)
+                    Turn(DragonTable[i], 3, val, Turnspeed)
                 end
                 Sleep(250)
             end
