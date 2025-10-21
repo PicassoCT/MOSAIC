@@ -1,5 +1,5 @@
 local BioWeaponsPayload = Abstract:New{
-	name 				= "Bio Rocket Payload (bring to launcher)",
+	name 				= "Bio Rocket Payload (transport to launcher)",
 	description 		= "Snythetic Virus / Nano-tech Plague / Genocidefungi",
 	maxDamage           = 5000,
 	mass                = 5000,

@@ -1,6 +1,6 @@
 local PhysicsPayload = Abstract:New{
-	name 				= "Rocket Payload (bring to launcher)",
-	description 		= "Collapse Fusion / Anti-Matter / Entanglement Warhead",
+	name 				= "Rocket Payload (transport to launcher)",
+	description 		= "Diamond Anvil Cascadefusion / Anti-Matter - Warhead",
 	maxDamage           = 5000,
 	mass                = 5000,
 	buildtime			= 5*60,

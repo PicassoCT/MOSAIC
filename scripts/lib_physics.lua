@@ -429,10 +429,6 @@ function PhysicsTick(dt, pieces)
       p.spin[2] = p.spin[2] + (math.random()-0.5) * windEnergy * 50
     end
 
-<<<<<<< HEAD
-=======
-
->>>>>>> master
     -- apply to pieces
     Move(p.piece, x_axis, x, vx)
     Move(p.piece, y_axis, y, vy)
@@ -440,6 +436,9 @@ function PhysicsTick(dt, pieces)
     Turn(p.piece, x_axis, math.rad(p.rot[1]), math.pi)
     Turn(p.piece, y_axis, math.rad(p.rot[2]), math.pi)
     Turn(p.piece, z_axis, math.rad(p.rot[3]), math.pi)
+    p.pos[1] = x
+    p.pos[2] = y
+    p.pos[3] = z
   end
 end
 
@@ -447,9 +446,9 @@ function runGarbageSim(pieceParams, opx, opz, heightoffset)
     local heightoffset = heightoffset or 100
     local pieceParams = setupGarbageSim(pieceParams)
     if not pieceParams then return end
-    WMove(pieceParams.PlaceableSimPos, x_axis, opx, 0)
+    WMove(pieceParams.PlaceableSimPos, x_axis, -opx, 0)
     WMove(pieceParams.PlaceableSimPos, y_axis, heightoffset, 0)
-    WMove(pieceParams.PlaceableSimPos, z_axis, opz, 0)
+    WMove(pieceParams.PlaceableSimPos, z_axis, -opz, 0)
     -- runtime state
 
     while true do
