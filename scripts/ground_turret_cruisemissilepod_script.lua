@@ -220,6 +220,7 @@ function launchStateMachineThread()
     launchStateMachine = {}
     launchStateMachine["ready"] =   function (frame, oldState, persPack)
         persPack.launchingCounter = 0
+        Sleep(250)
         showHideDependantOnType(true)
         WMove(rocketPiece, y_axis, 0, 0)
         WTurn(PodTop, z_axis, math.rad(0), math.pi * 3)
@@ -243,7 +244,6 @@ function launchStateMachineThread()
         end
 
         if  persPack.launchingCounter > 50 and boolLaunchAnimationCompleted == true then
-            echo("Aborting launch")
             Signal(SIG_LAUNCHCLOUD)
             return "ready"
         end
@@ -282,12 +282,12 @@ end
 function launchCloud()   
     while true do
         while currentLaunchState == "launching" do
-        EmitSfx(rocketPiece, 1024)
-        if maRa()== maRa()  and maRa()== maRa()  then   EmitSfx(rocketPiece, 1025)  end
-        if maRa()== maRa() then   EmitSfx(rocketPiece, 1026)  end
-        Sleep(125)
+            EmitSfx(rocketPiece, 1024)
+            if maRa()== maRa()  and maRa()== maRa()  then   EmitSfx(rocketPiece, 1025)  end
+            if maRa()== maRa() then   EmitSfx(rocketPiece, 1026)  end
+            Sleep(125)
         end
-    Sleep(150)
+        Sleep(150)
     end    
 end
 
@@ -301,8 +301,6 @@ function script.FireWeapon1()
     return true
 end
 
-
-
 boolMoving = false
 
 function script.StartMoving() boolMoving = true end
@@ -312,7 +310,6 @@ function script.StopMoving() boolMoving = false end
 function script.Activate() return 1 end
 
 function script.Deactivate() return 0 end
-
 
 local boolFilled = false
 function script.TransportPickup(passengerID)

@@ -14,8 +14,8 @@ local myTeamID = Spring.GetUnitTeam(unitID)
 local gaiaTeamID = Spring.GetGaiaTeamID()
 local automationPayloadDisabledType = getAutomationPayloadDisabledType(UnitDefs)
 local automationPayloadDestroyedType = getAutomationPayloadDestroyedType(UnitDefs)
- launcherDefID = UnitDefNames["launcher"].id
- boolIsAITeam = isTeamAITeam(Spring.GetUnitTeam(unitID))
+launcherDefID = UnitDefNames["launcher"].id
+boolIsAITeam = isTeamAITeam(Spring.GetUnitTeam(unitID))
 BaseRotor = piece"BaseRotor1"
 
  function attachPayload(payLoadID, id)
@@ -194,6 +194,19 @@ end
 
 local spGetUnitTeam = Spring.GetUnitTeam
 local spGetUnitDefID = Spring.GetUnitDefID
+local center = piece("center")
+
+typeDependentTable = {
+["biopayload"] = { piece("BioPayload")},
+["physicspayload"] = { piece("PhysicsPayload")},
+["informationpayload"] = { piece("InfoPayload")},
+
+}
+function showTypeDependantWarhead()
+	Hide(center)
+	showTypeDependent(unitID, typeDependentTable)
+end
+
 
 RepairDefuseRod = piece"RepairDefuseRod"
 HereBeDragons = piece"HereBeDragons"
@@ -201,7 +214,9 @@ HereBeDragons = piece"HereBeDragons"
 function script.Create()
     -- generatepiecesTableAndArrayCode(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
+    showTypeDependantWarhead()
     Spring.SetUnitAlwaysVisible(unitID, true)
+    showTypeDependantWarhead()
     -- Spring.MoveCtrl.Enable(unitID,true)
     -- x,y,z =Spring.GetUnitPosition(unitID)
     -- Spring.MoveCtrl.SetPosition(unitID, x,y+500,z)

@@ -503,14 +503,14 @@ function swingPendulum(unitID, parentPieceMap, pieceNr, speed, iterations)
 
    -- Rodrigues' rotation formula: rotate vector (x,y,z) around axis (ax,ay,az) by angle
    local function rotateAroundAxis(x,y,z, ax,ay,az, angle)
-      local c = math.cos(angle)
-      local s = math.sin(angle)
-      local dot = x*ax + y*ay + z*az
-      return
-         x*c + (ay*z - az*y)*s + ax*dot*(1-c),
-         y*c + (az*x - ax*z)*s + ay*dot*(1-c),
-         z*c + (ax*y - ay*x)*s + az*dot*(1-c)
-   end
+        local c = math.cos(angle)
+        local s = math.sin(angle)
+        local dot = x*ax + y*ay + z*az
+        return
+            x*c + (ay*z - az*y)*s + ax*dot*(1-c),
+            y*c + (az*x - ax*z)*s + ay*dot*(1-c),
+            z*c + (ax*y - ay*x)*s + az*dot*(1-c)
+    end
 
    -- convert a local vector into Euler yaw/pitch
    local function vecToEuler(x,y,z)
@@ -519,7 +519,7 @@ function swingPendulum(unitID, parentPieceMap, pieceNr, speed, iterations)
       return yaw, pitch
    end
 
-   local down = getUp()
+   local down = getDown()
    local worldMat = getPieceWorldMatrix(unitID, pieceNr, parentPieceMap)
 
    -- extract rotation only (upper 3x3)
@@ -545,12 +545,12 @@ function swingPendulum(unitID, parentPieceMap, pieceNr, speed, iterations)
 
    -- base orientation
    local baseYaw, basePitch = vecToEuler(tx,ty,tz)
-   local up = getDown()
+   local up = getUp()
    -- choose swing axis: perpendicular to gravity & bag direction
    local ax,ay,az = normalize(
       ty*up[1] - tz * up[2],  -- cross product with world up (0,1,0)
-      tz*up[3] - tx*up[3],
-      tx*up[2] - ty*up[1]
+      tz*up[3] - tx * up[3],
+      tx*up[2] - ty * up[1]
    )
 
    -- pendulum swing
@@ -561,8 +561,8 @@ function swingPendulum(unitID, parentPieceMap, pieceNr, speed, iterations)
       local sx,sy,sz = rotateAroundAxis(tx,ty,tz, ax,ay,az, angle)
 
       local swingYaw, swingPitch = vecToEuler(sx,sy,sz)
-      Turn(pieceNr, x_axis, swingYaw,   speed or 0)
-      Turn(pieceNr, y_axis, swingPitch, speed or 0)
+      Turn(pieceNr, y_axis, swingYaw,   speed or 0)
+      Turn(pieceNr, x_axis, swingPitch, speed or 0)
       WaitForTurns(pieceNr)
       Sleep(33) -- one frame
       dir = -dir
@@ -570,9 +570,10 @@ function swingPendulum(unitID, parentPieceMap, pieceNr, speed, iterations)
    end
 
    -- settle at center
-   Turn(pieceNr, x_axis, baseYaw,   speed or 0)
-   Turn(pieceNr, y_axis, basePitch, speed or 0)
+   Turn(pieceNr, y_axis, baseYaw,   speed or 0)
+   Turn(pieceNr, x_axis, basePitch, speed or 0)
 end
+
 -- > creates a hierarchical table of pieces, descending from root
 function getPieceHierarchy(unitID)
     local pieceMap = Spring.GetUnitPieceMap ( unitID ) 
@@ -1389,21 +1390,18 @@ function getUnitSide(unitID)
     return select(1, getTeamSide(teamid))
 end
 
-function getUnitName(unitID)
-    return getUnitTypeName(Spring.GetUnitDefID(unitID))
-end
--- > returns a Units Name as String
-function getUnitTypeName(UnitDefID)
-    if not UnitDefNames then
-        echo("getUnitName: No UnitDefNames");
+function getUnitName(unitID)   
+    if not UnitDefs then
+        echo("getUnitName: No UnitDefs in context");
         return ""
     end
-    for name, def in pairs(UnitDefNames) do
-        if def.id == UnitDefID then return name end
-    end
-    return "UnitName not found in UnitDefID:: UnitParsing Errors"
+    return UnitDefs[Spring.GetUnitDefID(unitID)].name
 end
 
+function showTypeDependent(unitID, typenNamePiecesTable)
+    unitName = getUnitName(unitID)
+    showT(typenNamePiecesTable)
+end
 -- ======================================================================================
 -- Section: Initializing Functions
 -- ======================================================================================

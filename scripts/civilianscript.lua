@@ -237,20 +237,10 @@ function script.Create()
                                                computeOrgHouseTable, UnitDefs,
                                                math.huge, GameConfig)
     StartThread(rainyDayCare)
+end
 
-end
---[[function spitRostTest()
-    rotVal = 0
-    while true do
-        rotVal = rotVal +1
-        Spring.SetUnitRotation(unitID, 0, math.rad(rotVal), 0)
-        Sleep(100)
-    end
-end
---]]
 function animationTestLoop()
     while true do
-       
         noTPoses()
         Sleep(1000)
         resetAll(unitID)
