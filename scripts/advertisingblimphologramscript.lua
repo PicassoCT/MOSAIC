@@ -14,10 +14,7 @@ local cachedCopyDict = {}
 hours, minutes, seconds, percent = getDayTime()
 
 function clock()
-    if randChance(10) then
-        visualizeClock()
-    end
-    
+
     while true do
         hours, minutes, seconds, percent = getDayTime()
         Sleep(10000)
@@ -89,10 +86,12 @@ tigLilHoloPices = {
 
 function visualizeClock()
     Sleep(100)
+    if randChance(90) then return end
+
     ShowReg(Clock)
     ShowReg(minute)
     ShowReg(hour)
-    turnAxis = y_axis
+    turnAxis = x_axis
     _, minutes, _, percent = getDayTime() 
     local fps = 30
     daylengthInFrames = GG.GameConfig.daylength
@@ -432,8 +431,10 @@ function HoloGrams()
     JoyFlickerGroup[#JoyFlickerGroup+1] = JoyRide
     hideAllReg()
 
+    
     Sleep(15000)
-
+    StartThread(visualizeClock)
+    
 
     --sexxxy time
     px,py,pz = Spring.GetUnitPosition(unitID)

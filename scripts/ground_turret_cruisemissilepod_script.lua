@@ -69,6 +69,8 @@ function script.Create()
     Hide(aimpiece)
     showHideDependantOnType(true)
     Turn(aimpiece, x_axis, math.rad(180), 0)
+    Show(Door1)
+    Show(Door2)
 
     StartThread(foldControl)
     StartThread(launchCloud)

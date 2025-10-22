@@ -354,7 +354,10 @@ function setupGarbageSim(pieceParams)
       if p.typ == "can" then
           p.rotator = piece(p.rotator)
       end
-      p.pos = { math.random(piecesParams.params.BOUND.minX, piecesParams.params.BOUND.maxX),  0,  math.random(piecesParams.params.BOUND.minZ, piecesParams.params.BOUND.maxZ)}
+      p.pos = { 
+        math.random(pieceParams.params.BOUND.minX,  pieceParams.params.BOUND.maxX),
+        0,  
+        math.random(pieceParams.params.BOUND.minZ, pieceParams.params.BOUND.maxZ)}
       p.vel = {math.random()*0.1-0.05, 0, math.random()*0.1-0.05}
       p.rot = {math.random()*360, math.random()*360, math.random()*360}
       p.spin = {math.random()*2-1, math.random()*2-1, math.random()*2-1}
@@ -450,7 +453,7 @@ function PhysicsTick(dt, pieceParams, phase)
         mSyncIn(p.rotator, x, y, z, dt * 1000)
         windDir = math.atan2(wx, wz)
         Turn(p.piece, y_axis, math.rad(windDir), math.pi)
-        Spin(p.piece, x_axis, math.rad(p.spin[1]), math.pi)
+        Spin(p.piece, z_axis, math.rad(p.spin[1]), math.pi)
     else
         mSyncIn(p.piece, x, y, z, dt * 1000)
         for ax=1, 3 do
