@@ -351,7 +351,10 @@ function setupGarbageSim(pieceParams)
           boolAtLeastOne = true
       end
       p.piece = pieceID
-      p.pos = {0,  0, 0}
+      if p.typ == "can" then
+          p.rotator = piece(p.rotator)
+      end
+      p.pos = { math.random(piecesParams.params.BOUND.minX, piecesParams.params.BOUND.maxX),  0,  math.random(piecesParams.params.BOUND.minZ, piecesParams.params.BOUND.maxZ)}
       p.vel = {math.random()*0.1-0.05, 0, math.random()*0.1-0.05}
       p.rot = {math.random()*360, math.random()*360, math.random()*360}
       p.spin = {math.random()*2-1, math.random()*2-1, math.random()*2-1}
@@ -376,23 +379,33 @@ function getSetPhysicsSimToken()
     return nil
 end
 
-function PhysicsTick(dt, pieces)
-    local params = pieces.params
-    local BOUND = params.BOUND
- dx, dy,dz_, _, wx, wy, wz = Spring.GetWind()
- local WIND = {wx, wy, wz}
- scale = 1
- for _,p in ipairs(pieces) do
+function PhysicsTick(dt, pieceParams, phase)
+ local params = pieceParams.params
+ local BOUND = params.BOUND
+  dx, dy,dz_, _, wx, wy, wz = Spring.GetWind()
+  local WIND = {wx, wy, wz}
+  scale = 3
+
+
+ local function addSpinImpulse(p, s)
+   p.spin[1]=p.spin[1]+(math.random()-0.5)*s
+   p.spin[2]=p.spin[2]+(math.random()-0.5)*s
+   p.spin[3]=p.spin[3]+(math.random()-0.5)*s
+ end
+
+ for index,p in ipairs(pieceParams.pieces) do
     local vx,vy,vz = p.vel[1], p.vel[2], p.vel[3]
 
     -- forces
-    vy = vy + params.GRAVITY * dt* scale
-    vx = vx + ( WIND[1] * dt* scale) / p.mass
-    vz = vz + ( WIND[3] * dt* scale) / p.mass
+    vy = vy + params.GRAVITY * dt* scale 
+    vx = vx + ( WIND[1] * dt* scale) / p.mass * phase
+    vz = vz + ( WIND[3] * dt* scale) / p.mass * phase
 
     -- drag
-    vx,vy,vz = vx * p.drag, vy * p.drag, vz * p.drag
-    if p.lift then vy = vy + p.lift * WIND[1] * dt end
+     vx = vx * (p.drag * phase + (1-phase)*0.95)
+     vy=  vy * (p.drag * phase + (1-phase)*0.95)
+     vz =  vz * (p.drag * phase + (1-phase)*0.95)
+    if p.lift then vy = vy + p.lift * WIND[1] * dt * scale end
 
     -- integrate
     local x = p.pos[1] + vx
@@ -401,12 +414,12 @@ function PhysicsTick(dt, pieces)
 
     -- collisions with cube boundary
     local bounce = 0.4
-    if x < BOUND.minX then x = BOUND.minX; vx = -vx * bounce end
-    if x > BOUND.maxX then x = BOUND.maxX; vx = -vx * bounce end
-    if y < BOUND.minY then y = BOUND.minY; vy = -vy * bounce end
-    if y > BOUND.maxY then y = BOUND.maxY; vy = -vy * bounce end
-    if z < BOUND.minZ then z = BOUND.minZ; vz = -vz * bounce end
-    if z > BOUND.maxZ then z = BOUND.maxZ; vz = -vz * bounce end
+    if x < BOUND.minX then x = BOUND.minX; vx = -vx * bounce; addSpinImpulse(p,5) end
+    if x > BOUND.maxX then x = BOUND.maxX; vx = -vx * bounce; addSpinImpulse(p,5) end
+    if y < BOUND.minY then y = BOUND.minY; vy = -vy * bounce; addSpinImpulse(p,8) end
+    if y > BOUND.maxY then y = BOUND.maxY; vy = -vy * bounce; addSpinImpulse(p,3) end
+    if z < BOUND.minZ then z = BOUND.minZ; vz = -vz * bounce; addSpinImpulse(p,5) end
+    if z > BOUND.maxZ then z = BOUND.maxZ; vz = -vz * bounce; addSpinImpulse(p,5) end
 
     -- update
     p.pos = {x,y,z}
@@ -418,6 +431,7 @@ function PhysicsTick(dt, pieces)
     p.spin[3] = p.spin[3] * 0.98
 
     -- integrate rotation
+    local oldRot = p.rot
     p.rot[1] = (p.rot[1] + p.spin[1]*dt) % 360
     p.rot[2] = (p.rot[2] + p.spin[2]*dt) % 360
     p.rot[3] = (p.rot[3] + p.spin[3]*dt) % 360
@@ -430,15 +444,19 @@ function PhysicsTick(dt, pieces)
     end
 
     -- apply to pieces
-    Move(p.piece, x_axis, x, vx)
-    Move(p.piece, y_axis, y, vy)
-    Move(p.piece, z_axis, z, vy)
-    Turn(p.piece, x_axis, math.rad(p.rot[1]), math.pi)
-    Turn(p.piece, y_axis, math.rad(p.rot[2]), math.pi)
-    Turn(p.piece, z_axis, math.rad(p.rot[3]), math.pi)
-    p.pos[1] = x
-    p.pos[2] = y
-    p.pos[3] = z
+
+    --only if box or paper
+    if p.typ == "can" then
+        mSyncIn(p.rotator, x, y, z, dt * 1000)
+        windDir = math.atan2(wx, wz)
+        Turn(p.piece, y_axis, math.rad(windDir), math.pi)
+        Spin(p.piece, x_axis, math.rad(p.spin[1]), math.pi)
+    else
+        mSyncIn(p.piece, x, y, z, dt * 1000)
+        for ax=1, 3 do
+          turnInTime(p.piece, ax,  p.rot[ax],  dt * 1000, oldRot[1], oldRot[2], oldRot[3], false)
+        end
+    end
   end
 end
 
@@ -446,21 +464,27 @@ function runGarbageSim(pieceParams, opx, opz, heightoffset)
     local heightoffset = heightoffset or 100
     local pieceParams = setupGarbageSim(pieceParams)
     if not pieceParams then return end
-    WMove(pieceParams.PlaceableSimPos, x_axis, -opx, 0)
+    WMove(pieceParams.PlaceableSimPos, x_axis, opx, 0)
     WMove(pieceParams.PlaceableSimPos, y_axis, heightoffset, 0)
-    WMove(pieceParams.PlaceableSimPos, z_axis, -opz, 0)
+    WMove(pieceParams.PlaceableSimPos, z_axis, opz, 0)
     -- runtime state
 
     while true do
-        physicsDurationSeconds = getSetPhysicsSimToken()
+        local physicsDurationSeconds = getSetPhysicsSimToken()
+        local rollOutDuration = 3 -- seconds
+        local phase = 1.0
         if physicsDurationSeconds then
+            local startRollout = physicsDurationSeconds - rollOutDuration
             echo("PhysicsSim running at "..locationstring(unitID).. " for "..physicsDurationSeconds.. " seconds")
             for i= 1, physicsDurationSeconds do
-                PhysicsTick(1, pieceParams)  -- or use dt = Spring.GetLastUpdateSeconds()
+                if i >= startRollout then
+                    local t = (i - startRollout) / rollOutDuration
+                    phase = math.max(0, 1 - t)
+                end
+                PhysicsTick(1, pieceParams, phase)  -- or use dt = Spring.GetLastUpdateSeconds()
                 Sleep(1000)
             end
         end
-        randoSleep = math.random(1,32)*100 --backoffstrategy
-        Sleep(randoSleep)
+        Sleep(5)
     end
 end

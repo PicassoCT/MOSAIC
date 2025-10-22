@@ -1059,6 +1059,7 @@ function dragonDance()
     while true do
         if (hours > 20 or hours < 6)  then
             showTReg(DragonTable)
+            oldVals = makeTable(0, #DragonTable)
             interval = 2 * math.pi
             step = interval / #DragonTable
             while (hours > 20 or hours < 6)  do
@@ -1069,9 +1070,13 @@ function dragonDance()
                 times = percent*30
                 for i=1, #DragonTable do
                     val = math.sin(times * step * i)
+                    Turnspeed = math.abs(oldVals[i] - val)/0.25
                     Turn(DragonTable[i], 3, val, Turnspeed)
+                    oldVals[i] = val
                 end
-                Sleep(250)
+                WaitForTurns(DragonTable)
+                WaitForMoves(DragonHead)
+                Sleep(50)
             end
             hideTReg(DragonTable)
             dx,dz = math.random(-200,200),math.random(-200,200)
