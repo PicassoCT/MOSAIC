@@ -14,6 +14,10 @@ local cachedCopyDict = {}
 hours, minutes, seconds, percent = getDayTime()
 
 function clock()
+    if randChance(10) then
+        visualizeClock()
+    end
+    
     while true do
         hours, minutes, seconds, percent = getDayTime()
         Sleep(10000)
@@ -434,7 +438,7 @@ function HoloGrams()
     --sexxxy time
     px,py,pz = Spring.GetUnitPosition(unitID)
     if maRa() then
-        echo("Start blimp Holograms advertisement")
+       -- echo("Start blimp Holograms advertisement")
         variousFunctions[math.random(1,#variousFunctions)]()
     else
        indexA = math.random(1,#variousFunctions)
@@ -452,9 +456,7 @@ function HoloGrams()
     
     val = math.random(5, 12)*randSign()
     Spin(BuisnessSpin, z_axis,  math.rad(val), 0.1)
-    if randChance(10) then
-        visualizeClock()
-    end
+ 
 
 end
 

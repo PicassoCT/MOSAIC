@@ -199,7 +199,8 @@ function script.AimFromWeapon1() return aimpiece end
 function script.QueryWeapon1() return rocketPiece end
 boolLaunchAnimationStarted = false
 boolLaunchAnimationCompleted = false
-
+Door1 = piece("Door1")
+Door2 = piece("Door2")
 function launchAnimation()
     factor = 2.0
     Signal(SIG_LAUNCHCLOUD)
@@ -207,6 +208,8 @@ function launchAnimation()
     boolLaunchAnimationStarted = true
     boolLaunchAnimationCompleted= false
     showHideDependantOnType(true)
+    WTurn(Door1, x_axis, math.rad(140), 30)
+    WTurn(Door2, x_axis, math.rad(-140), 30)
     WTurn(PodTop, z_axis, math.rad(0), math.pi * 3)
     WTurn(PodTop, z_axis, math.rad(179), math.pi * 3)
     WMove(rocketPiece, y_axis, 500*factor, 250*factor)
@@ -220,7 +223,7 @@ function launchStateMachineThread()
     launchStateMachine = {}
     launchStateMachine["ready"] =   function (frame, oldState, persPack)
         persPack.launchingCounter = 0
-        Sleep(250)
+        Sleep(10)
         showHideDependantOnType(true)
         WMove(rocketPiece, y_axis, 0, 0)
         WTurn(PodTop, z_axis, math.rad(0), math.pi * 3)

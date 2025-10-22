@@ -188,7 +188,7 @@ function HoloGrams()
     Sleep(15000)    
     --sexxxy time
     px,py,pz = Spring.GetUnitPosition(unitID)
-    echo("Start blimp Holograms advertisement")
+--    echo("Start blimp Holograms advertisement")
     StartThread(pornoRamaStart)
 end
 
