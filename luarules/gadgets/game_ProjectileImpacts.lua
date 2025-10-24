@@ -5,7 +5,7 @@ function gadget:GetInfo()
         author = "Picasso",
         date = "Sep. 2008",
         license = "GNU GPL, v2 or later",
-        layer = 0,
+        layer = math.huge,
         enabled = true
     }
 end

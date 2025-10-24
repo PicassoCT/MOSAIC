@@ -429,7 +429,7 @@ function placeWallAndDoors()
     resetT(OutPost)
 
     xMax, xMin, zMax, zMin, height = getPlayingFieldMaxMinUnit()
-    echo("getPlayingFieldMaxMinUnit:", xMax, xMin, zMax, zMin)
+    --echo("getPlayingFieldMaxMinUnit:", xMax, xMin, zMax, zMin)
     scaleFactor = 0.85
     moveScale = 2
 
@@ -440,7 +440,7 @@ function placeWallAndDoors()
             if Wall[i] then
                 rx, rz = math.random(xMin * scaleFactor , xMax * scaleFactor ),
                          math.random(zMin * scaleFactor, zMax * scaleFactor)
-                echo("getPlayingFieldMaxMinUnit:Position:", rx,rz)
+                --echo("getPlayingFieldMaxMinUnit:Position:", rx,rz)
                 Move(Wall[i], 1, rx * moveScale, 0)
                 Move(Wall[i], 3, rz * moveScale, 0)
                 StartThread(boingWall,Wall[i], 250, 75)
