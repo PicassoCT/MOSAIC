@@ -702,6 +702,7 @@ function peacefullProtest()
             pos.z = myOffsetZ + pos.z
         end
 		Command(unitID, "go", {x = pos.x, y = 0, z = pos.z})
+        handleBagSwinging()
         Sleep(3000)
     end
 	GG.SocialEngineeredPeople[unitID] = nil
@@ -1077,11 +1078,16 @@ function PlayAnimation(animname, piecesToFilterOutTable, speed)
             Sleep(t * 33 * math.abs(1 / speedFactor)); -- sleep works on milliseconds
         end
     end
+
+    handleBagSwinging()
+
+    return spGetGameFrame() - startTimeFrame
+end
+
+function handleBagSwinging()
     --has handbag
     if carriesShoppingBag()   then StartThread(swingPendulum, unitID, parentPieceMap, ShoppingBag, 1, 3) end
     if bodyConfig.boolHandbag then StartThread(swingPendulum, unitID, parentPieceMap, Handbag, 1, 3) end
-
-    return spGetGameFrame() - startTimeFrame
 end
 
 function constructSkeleton(unit, piece, offset)

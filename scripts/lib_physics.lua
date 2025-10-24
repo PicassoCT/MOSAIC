@@ -387,7 +387,7 @@ function PhysicsTick(dt, pieceParams, phase)
  local BOUND = params.BOUND
   dx, dy,dz_, _, wx, wy, wz = Spring.GetWind()
   local WIND = {wx, wy, wz}
-  scale = 3
+  scale = 15
 
 
  local function addSpinImpulse(p, s)
@@ -425,6 +425,7 @@ function PhysicsTick(dt, pieceParams, phase)
     if z > BOUND.maxZ then z = BOUND.maxZ; vz = -vz * bounce; addSpinImpulse(p,5) end
 
     -- update
+    oldPos = p.pos 
     p.pos = {x,y,z}
     p.vel = {vx,vy,vz}
 
@@ -446,16 +447,14 @@ function PhysicsTick(dt, pieceParams, phase)
       p.spin[2] = p.spin[2] + (math.random()-0.5) * windEnergy * 50
     end
 
-    -- apply to pieces
-
     --only if box or paper
     if p.typ == "can" then
-        mSyncIn(p.rotator, x, y, z, dt * 1000)
-        windDir = math.atan2(wx, wz)
-        Turn(p.piece, y_axis, math.rad(windDir), math.pi)
+        movePosInTime(p.rotator, oldPos, p.pos, dt)
+        windDir = math.atan2(wx, wz) + math.pi/2
+        Turn(p.piece, y_axis, windDir, math.pi)
         Spin(p.piece, z_axis, math.rad(p.spin[1]), math.pi)
     else
-        mSyncIn(p.piece, x, y, z, dt * 1000)
+        movePosInTime(p.piece, oldPos, p.pos, dt)
         for ax=1, 3 do
           turnInTime(p.piece, ax,  p.rot[ax],  dt * 1000, oldRot[1], oldRot[2], oldRot[3], false)
         end
@@ -467,9 +466,9 @@ function runGarbageSim(pieceParams, opx, opz, heightoffset)
     local heightoffset = heightoffset or 100
     local pieceParams = setupGarbageSim(pieceParams)
     if not pieceParams then return end
-    WMove(pieceParams.PlaceableSimPos, x_axis, opx, 0)
+    WMove(pieceParams.PlaceableSimPos, x_axis, -opx, 0)
     WMove(pieceParams.PlaceableSimPos, y_axis, heightoffset, 0)
-    WMove(pieceParams.PlaceableSimPos, z_axis, opz, 0)
+    WMove(pieceParams.PlaceableSimPos, z_axis, -opz, 0)
     -- runtime state
 
     while true do

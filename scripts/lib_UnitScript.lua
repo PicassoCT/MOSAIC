@@ -2743,6 +2743,16 @@ function addTableTables(T, ...)
     return T
 end
 
+function movePosInTime(pieceName, oldPos, newPos, timeSec)
+    Move(pieceName, x_axis, newPos[1], calcSpeedSec( oldPos[1],  newPos[1],  timeSec ))
+    Move(pieceName, y_axis, newPos[2], calcSpeedSec(oldPos[2],   newPos[2],  timeSec ))
+    Move(pieceName, z_axis, newPos[3], calcSpeedSec(oldPos[3],   newPos[3],  timeSec ))
+end
+
+function calcSpeedSec(a, b, timeSec)
+    return math.abs(a-b)/(timeSec)
+end
+
 -- >filters out the dead 
 function validateUnitTable(T)
     TVeryMuchAlive = {}

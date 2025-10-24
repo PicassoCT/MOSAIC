@@ -21,6 +21,7 @@ Door = {}
 raidStates = getRaidStates()
 raidResultStates = getRaidResultStates()
 ecmIconTypes =  getECMIconTypes(UnitDefs)     
+Grid = piece("Grid")
 
 function script.HitByWeapon(x, z, weaponDefID, damage) end
 
@@ -412,6 +413,10 @@ end
 
 nrDoors = 0
 nrWalls = 0
+function boingWall(pieceName, height, speed)
+   Move(pieceName, 2, 0, 0) 
+   Move(pieceName, 2,height, speed) 
+end
 
 function placeWallAndDoors()
     hideT(Wall)
@@ -423,24 +428,31 @@ function placeWallAndDoors()
     hideT(OutPost)
     resetT(OutPost)
 
-    xMax, xMin, zMax, zMin, height = getPlayingFieldMaxMinZ()
+    xMax, xMin, zMax, zMin, height = getPlayingFieldMaxMinUnit()
+    echo("getPlayingFieldMaxMinUnit:", xMax, xMin, zMax, zMin)
+    scaleFactor = 0.85
+    moveScale = 2
 
     nrDoors = math.random(0, #Door)
     nrWalls = math.random(2, 5)
     if nrWalls > 0 then
         for i = 1, nrWalls do
-            rx, rz = math.random(xMax / -2, xMax / 2),
-                     math.random(zMax / -2, zMax / 2)
-            Move(Wall[i], x_axis, rx, 0)
-            Move(Wall[i], y_axis, rz, 0)
-            rot = math.random(0, 8) * 90
-            Turn(Wall[i], y_axis, math.rad(rot), 0)
-            Show(Wall[i])
-            if OutPost[(i - 1) * 2 + 1] then
-                Show(OutPost[(i - 1) * 2 + 1])
-            end
-            if OutPost[(i - 1) * 2 + 2] then
-                Show(OutPost[(i - 1) * 2 + 2])
+            if Wall[i] then
+                rx, rz = math.random(xMin * scaleFactor , xMax * scaleFactor ),
+                         math.random(zMin * scaleFactor, zMax * scaleFactor)
+                echo("getPlayingFieldMaxMinUnit:Position:", rx,rz)
+                Move(Wall[i], 1, rx * moveScale, 0)
+                Move(Wall[i], 3, rz * moveScale, 0)
+                StartThread(boingWall,Wall[i], 250, 75)
+                rot = math.random(0, 8) * 90
+                Turn(Wall[i], y_axis, math.rad(rot), 0)
+                Show(Wall[i])
+                if OutPost[(i - 1) * 2 + 1] then
+                    Show(OutPost[(i - 1) * 2 + 1])
+                end
+                if OutPost[(i - 1) * 2 + 2] then
+                    Show(OutPost[(i - 1) * 2 + 2])
+                end
             end
         end
     end
@@ -458,10 +470,10 @@ function placeWallAndDoors()
 
                 post = DoorPost[(i - 1) * 2 + 1]
 
-                rx, rz = math.random(xMax / -2, xMax / 2),
-                         math.random(zMax / -2, zMax / 2)
-                Move(post, x_axis, rx, 0)
-                Move(post, y_axis, rz, 0)
+                rx, rz = math.random(xMin * scaleFactor , xMax * scaleFactor ),
+                     math.random(zMin * scaleFactor, zMax * scaleFactor)
+                Move(post, 1, rx * moveScale, 0)
+                Move(post, 3, rz * moveScale, 0)                
                 rot = math.random(0, 360 / 90) * 90
                 Turn(post, y_axis, math.rad(rot), 0)
 
@@ -558,16 +570,31 @@ function waveSpin(id, val, speedtime, randoffset, boolRandoHide)
     end
 end
 
-function getPlayingFieldMaxMinZ()
+function getPlayingFieldMaxMinUnit()
     xMax, xMin, zMax, zMin, height = -math.huge, math.huge, -math.huge,
                                      math.huge, 0
 
     foreach(TablesOfPiecesGroups["Corner"], function(id)
+        dx, dy, dz = Spring.GetUnitPiecePosition(unitID, id)
+        xMax = math.max(xMax,dx) 
+        xMin = math.min(xMin,dx) 
+        zMax = math.max(zMax,dz) 
+        zMin = math.min(zMin,dz) 
+        height = dy
+    end)
+
+    return xMax, xMin, zMax, zMin, height
+end
+
+function getPlayingFieldMaxMinWorld()
+    xMax, xMin, zMax, zMin, height = -math.huge, math.huge, -math.huge, math.huge, 0
+
+    foreach(TablesOfPiecesGroups["Corner"], function(id)
         dx, dy, dz = Spring.GetUnitPiecePosDir(unitID, id)
-        if dx > xMax then xMax = dx end
-        if dx < xMin then xMin = dx end
-        if dz > zMax then zMax = dz end
-        if dz < zMin then zMin = dz end
+        xMax = math.max(xMax,dx) 
+        xMin = math.min(xMin,dx) 
+        zMax = math.max(zMax,dz) 
+        zMin = math.min(zMin,dz) 
         height = dy
     end)
 
@@ -578,7 +605,7 @@ function registerPlaceUnit(idToRegister, boolIsObjctive)
     Spring.MoveCtrl.Enable(idToRegister, true)
     mx, my, mz = Spring.GetUnitPosition(unitID)
     rx, ry, rz = Spring.GetUnitPosition(idToRegister)
-    xMax, xMin, zMax, zMin, height = getPlayingFieldMaxMinZ()
+    xMax, xMin, zMax, zMin, height = getPlayingFieldMaxMinWorld()
     -- Spring.Echo("xMax,xMin,zMax,zMin, height", xMax, xMin, zMax, zMin, height)
     rx = math.min(xMax, math.max(xMin, rx))
     rz = math.min(zMax, math.max(zMin, rz))

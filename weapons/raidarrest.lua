@@ -7,7 +7,7 @@ local weaponDef = {
     Accuracy = 100,
 
     --Physic/flight path
-    range                     = 175,
+    range                     = 175, --175
     burst                     = 7,
     burstrate                 = 0.025,
     reloadtime                = 120,
@@ -49,7 +49,7 @@ local weaponDef = {
     damage = {
         default = 1
     },
-    areaOfEffect = 5,
+    areaOfEffect = 35,
     craterMult = 0,
 
     lineOfSight = true,

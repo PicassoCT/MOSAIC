@@ -367,7 +367,9 @@ function selectBase()
     StartThread(showDeployRobot)
  end
 
-function selectBackYard() showOneOrNone(TablesOfPiecesGroups["back"]) end
+function selectBackYard() 
+   showOneOrNone(TablesOfPiecesGroups["back"]) 
+end
 
 function removeElementFromBuildMaterial(element, buildMaterial)
     local result = foreach(buildMaterial,
@@ -1169,7 +1171,7 @@ function showHouse() boolHouseHidden = false; showT(ToShowTable) end
 
 function hideHouse() boolHouseHidden = true; hideT(ToShowTable) end
 
-Bucket1= piece("Bucket1")
+Bucket1 = piece("Bucket1")
 
 function ropeLoop()
 Sleep(10)

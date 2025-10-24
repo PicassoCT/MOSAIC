@@ -1197,10 +1197,10 @@ function showDroneHovering()
 	Move(drone, y_axis, 0,0)
 	Show(drone)
 	WMove(drone, y_axis, 250, 250)
-	Spin(policeLineDoNotCross, y_axis, math.random(15) * randSign(), 0)
+	Spin(policeLineDoNotCross, y_axis, math.random(3) * randSign(), 0)
 	Show(policeLineDoNotCross)
 	showT(TablesOfPiecesGroups["WarnCone"])
-	while (not boolMoving and not boolCloaked) do
+	while (not boolWalking and not boolCloaked) do
 		for axis=1,3 do
 			Move(drone,axis, math.random(1,3) * randSign())
 		end

@@ -834,7 +834,7 @@ if (gadgetHandler:IsSyncedCode()) then
         if not attackerID then  conditionalEcho(boolDebugProjectile,"Raid: No valid attackerID derived"); return damage end
         if attackerID == unitID  then   conditionalEcho(boolDebugProjectile,"Raid:Aborted: attackerID == unitID"); return damage end
         houseID = unitID
-
+        assert(unitDefID)
         if not houseTypeTable[unitDefID] then
             echo("Raid: Hit not a house type. Aborted")
             return
