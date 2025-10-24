@@ -1,4 +1,5 @@
 local weaponName = "raidarrest"
+local weaponRange = 200 --TODO Debug and Confirm
 local weaponDef = {
     name = "Raid Safehouses",
 	weaponType = [[MissileLauncher]],
@@ -49,7 +50,7 @@ local weaponDef = {
     damage = {
         default = 1
     },
-    areaOfEffect = 35,
+    areaOfEffect = math.floor(weaponRange * 0.85),
     craterMult = 0,
 
     lineOfSight = true,
