@@ -1,6 +1,7 @@
 include "createCorpse.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
+include "lib_physics.lua"
 include "lib_mosaic.lua"
 
 

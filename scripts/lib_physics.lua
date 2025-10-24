@@ -342,6 +342,7 @@ function fallingPhysPieces(pName, ivec, ovec)
 end
 
 function setupGarbageSim(pieceParams)
+    todo("Debug: Physics: runGarbageSim")
     boolAtLeastOne = false
     for k,p in ipairs(pieceParams.pieces) do
       local pieceID = piece(p.name)
@@ -489,4 +490,148 @@ function runGarbageSim(pieceParams, opx, opz, heightoffset)
         end
         Sleep(5)
     end
+end
+
+function normalize(x,y,z)
+    local len = math.sqrt(x*x + y*y + z*z)
+    if len == 0 then return 0,0,0 end
+    return x/len, y/len, z/len
+end
+
+function getRandomDirection()
+    return {math.random(0,1)*randSign(), randSign(), math.random(0,1)*randSign()}
+end
+
+function getNormalizedRandomVector()
+    return (math.random(0,100)/100) * randSign()
+end
+
+function getUp()
+    return {0, 1, 0}
+end
+
+function getDown()
+    return {0, -1, 0}
+end
+
+local function mulMatMat4(a, b)
+    local m = {}
+    for i = 1,4 do
+        m[i] = {}
+        for j = 1,4 do
+            m[i][j] = a[i][1]*b[1][j] + a[i][2]*b[2][j] + a[i][3]*b[3][j] + a[i][4]*b[4][j]
+        end
+    end
+    return m
+end
+
+local function getPieceWorldMatrix(unitID, piece, parentPieceMap)
+    local mat = {
+        {1,0,0,0},
+        {0,1,0,0},
+        {0,0,1,0},
+        {0,0,0,1},
+    }
+
+    local chain = {}
+    local p = piece
+    while p do
+        table.insert(chain, 1, p) -- prepend parent-first
+        p = parentPieceMap[p]
+    end
+
+    for _,pc in ipairs(chain) do
+        local m = {Spring.GetUnitPieceMatrix(unitID, pc)} -- local matrix (4x4 flat)
+        -- expand into 4x4
+        local localMat = {
+            {m[1], m[5],  m[9],  m[13]},
+            {m[2], m[6],  m[10], m[14]},
+            {m[3], m[7],  m[11], m[15]},
+            {m[4], m[8],  m[12], m[16]},
+        }
+        mat = mulMatMat4(localMat, mat) -- accumulate properly
+    end
+    return mat
+end
+
+function swingPendulum(unitID, parentPieceMap, pieceNr, speed, iterations)
+    todo("Debug: Physics: swing Pendulum")
+   -- utility: normalize a vector
+   local function normalize(x,y,z)
+      local l = math.sqrt(x*x + y*y + z*z)
+      if l == 0 then return 0,0,0 end
+      return x/l, y/l, z/l
+   end
+
+   -- Rodrigues' rotation formula: rotate vector (x,y,z) around axis (ax,ay,az) by angle
+   local function rotateAroundAxis(x,y,z, ax,ay,az, angle)
+        local c = math.cos(angle)
+        local s = math.sin(angle)
+        local dot = x*ax + y*ay + z*az
+        return
+            x*c + (ay*z - az*y)*s + ax*dot*(1-c),
+            y*c + (az*x - ax*z)*s + ay*dot*(1-c),
+            z*c + (ax*y - ay*x)*s + az*dot*(1-c)
+    end
+
+   -- convert a local vector into Euler yaw/pitch
+   local function vecToEuler(x,y,z)
+      local yaw   = math.atan2(x, z)
+      local pitch = -math.asin(y)
+      return yaw, pitch
+   end
+
+   local down = getDown()
+   local worldMat = getPieceWorldMatrix(unitID, pieceNr, parentPieceMap)
+
+   -- extract rotation only (upper 3x3)
+   local rot = {
+      {worldMat[1][1], worldMat[1][2], worldMat[1][3]},
+      {worldMat[2][1], worldMat[2][2], worldMat[2][3]},
+      {worldMat[3][1], worldMat[3][2], worldMat[3][3]},
+   }
+
+   -- invert rotation (transpose, since pure rotation)
+   local inv = {
+      {rot[1][1], rot[2][1], rot[3][1]},
+      {rot[1][2], rot[2][2], rot[3][2]},
+      {rot[1][3], rot[2][3], rot[3][3]},
+   }
+
+   -- transform world gravity (0,-1,0) into piece local space
+   local lx = inv[1][1]*down[1] + inv[1][2]*down[2] + inv[1][3]*down[3]
+   local ly = inv[2][1]*down[1] + inv[2][2]*down[2] + inv[2][3]*down[3]
+   local lz = inv[3][1]*down[1] + inv[3][2]*down[2] + inv[3][3]*down[3]
+
+   local tx,ty,tz = normalize(lx,ly,lz)
+
+   -- base orientation
+   local baseYaw, basePitch = vecToEuler(tx,ty,tz)
+   local up = getUp()
+   -- choose swing axis: perpendicular to gravity & bag direction
+   local ax,ay,az = normalize(
+      ty*up[1] - tz * up[2],  -- cross product with world up (0,1,0)
+      tz*up[3] - tx * up[3],
+      tx*up[2] - ty * up[1]
+   )
+
+   -- pendulum swing
+   local factor = 1.0
+   local dir = 1
+   for i=1,iterations do
+      local angle = dir * factor * 0.3   -- swing amplitude in radians
+      local sx,sy,sz = rotateAroundAxis(tx,ty,tz, ax,ay,az, angle)
+
+      local swingYaw, swingPitch = vecToEuler(sx,sy,sz)
+      Turn(pieceNr, y_axis, swingYaw,   speed or 0)
+      Turn(pieceNr, x_axis, swingPitch, speed or 0)
+      WaitForTurns(pieceNr)
+      Sleep(33) -- one frame
+      dir = -dir
+      factor = factor * 0.95
+   end
+
+   -- settle at center
+   Turn(pieceNr, y_axis, baseYaw,   speed or 0)
+   Turn(pieceNr, x_axis, basePitch, speed or 0)
 end
