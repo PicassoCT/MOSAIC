@@ -749,7 +749,8 @@ end
             [UnitDefNames["icon_hijacksatellite"].id] = true,
             [UnitDefNames["icon_emc"].id] = true,
         }
-    end  
+    end      
+
 
     function getCivilianVTOLTypes(UnitDefs)
         local UnitDefNames = getUnitDefNames(UnitDefs)
@@ -757,6 +758,7 @@ end
                     [UnitDefNames["house_vtol"].id] = true     
                 }
     end  
+
     function getWindowBuildingTypes(UnitDefs)
         local UnitDefNames = getUnitDefNames(UnitDefs)
         return {
@@ -766,6 +768,7 @@ end
                     [UnitDefNames["house_arab0"].id] = true       
                 }
     end  
+
     function getBlimpHologramTypes(UnitDefs)
         local UnitDefNames = getUnitDefNames(UnitDefs)
         return {
@@ -1879,7 +1882,12 @@ end
                 assert(UnitDefs)
                 GameConfig = getGameConfig()
                 local UnitDefNames = getUnitDefNames(UnitDefs)
-                typeTable = {"icon_raid", "snipeicon", "objectiveicon","raidiconbaseplate"}
+                typeTable = {
+                    "icon_raid",
+                    "snipeicon",
+                    "objectiveicon",
+                    "raidiconbaseplate"
+                }
 
                 return getTypeTable(UnitDefNames, typeTable)
             end

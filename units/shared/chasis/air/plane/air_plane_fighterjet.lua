@@ -68,7 +68,7 @@ local AIR_F35 =
         },
         [2] = {
             name = "s16rocket",
-            onlyTargetCategory = [[GROUND]],
+            onlyTargetCategory = [[GROUND BUILDING]],
             turret = false
         }
     }

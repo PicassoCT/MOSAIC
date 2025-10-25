@@ -1,5 +1,6 @@
 
 return {
+"InspectorJ",
 "Diboz",
 "CRASHTIMEWARP",
 "mrrap4food",

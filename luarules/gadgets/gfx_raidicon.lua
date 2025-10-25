@@ -5,7 +5,7 @@ function gadget:GetInfo()
         author = "Picasso",
         date = "3rd of May 2010",
         license = "GPL3",
-        layer = 1024,
+        layer = math.huge,
         version = 1,
         enabled = true
     }
@@ -15,6 +15,7 @@ if (gadgetHandler:IsSyncedCode()) then
     VFS.Include("scripts/lib_UnitScript.lua")
     VFS.Include("scripts/lib_mosaic.lua")
     local transparentTypeTable = getIconTypes(UnitDefs)
+
    
     local engineVersion = getEngineVersion()
     local engine = 106.0

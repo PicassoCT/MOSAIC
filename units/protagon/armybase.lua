@@ -57,7 +57,8 @@ local ArmyBase = Building:New{
 			"ground_truck_rocket",		
 			"air_copter_blackhawk",
 			"air_plane_rocket",
-			"air_plane_sniper"
+			"air_plane_sniper",
+			"air_plane_fighterjet"
 		},
 
 	

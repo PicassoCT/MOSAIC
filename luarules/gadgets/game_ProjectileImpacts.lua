@@ -435,6 +435,15 @@ if (gadgetHandler:IsSyncedCode()) then
                     return true, persPack 
                 end
                 
+                if not persPack.basePlateID then
+                     persPack.basePlateID = createUnitAtUnit(
+                                  spGetUnitTeam(persPack.interrogatorID),--teamID
+                                  "raidiconbaseplate", --typeID
+                                  persPack.civilianHouseID,  --otherID
+                                  0,0,0,  -- ox, oy, oz
+                                  0)   --orientation 
+                end
+                
                 -- check if the icon is still there
                 if not persPack.IconID then
                     --(teamID, typeID, otherID, ox, oy, oz, orientation, parentID)
@@ -448,12 +457,7 @@ if (gadgetHandler:IsSyncedCode()) then
 
                     if persPack.IconID then
                         GG.HouseRaidIconMap[persPack.civilianHouseID] =  persPack.IconID
-                        persPack.basePlateID = createUnitAtUnit(
-                                          spGetUnitTeam(persPack.IconID),--teamID
-                                          "raidiconbaseplate", --typeID
-                                          persPack.civilianHouseID,  --otherID
-                                          0,0,0,  -- ox, oy, oz
-                                          0)   --orientation 
+           
                         conditionalEcho(boolDebugProjectile,"Raid: create BaseplateIcon "..persPack.basePlateID .." at "..persPack.civilianHouseID )      
                         GG.myParent[persPack.basePlateID] = persPack.IconID
 
