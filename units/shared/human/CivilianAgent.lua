@@ -28,13 +28,17 @@ local CivilianAgent = Human:New{
 	objectName        	= "civilian0_arab.dae",
 	buildPic = "civilianagent.png",
 	iconType = "civilianagent",
+
+--cloaking behaviour
 	canCloak =true,
-	cloakCost=0.0001,
-	cloakCostMoving =0.0001,
+	cloakCost=0.01,
+	cloakCostMoving =0,
+	cloakTimeout = 9000,
 	minCloakDistance = 0,
 	initCloaked = true,
+	stealth = true
 	decloakOnFire = true,
-	cloakTimeout = 5,
+
 	
 	customParams = {
 		helptext		= "Civilian ",
