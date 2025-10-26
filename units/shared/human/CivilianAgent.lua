@@ -39,16 +39,24 @@ local CivilianAgent = Human:New{
 	stealth = true,
 	decloakOnFire = true,
 
+	category = [[GROUND]],
 	
 	customParams = {
 		helptext		= "Civilian ",
 		baseclass		= "Human", -- TODO: hacks
 		normaltex = "unittextures/arab_civilian_normal.dds",
     },
+
+    sfxtypes = {
+		explosiongenerators = {
+			"custom:gunmuzzle",
+			"custom:pistolmuzzle"
+			},
+		},
 	
 	weapons ={
 		[1]={name  = "ak47",
-				onlyTargetCategory = [[GROUND ARRESTABLE]],
+				onlyTargetCategory = [[GROUND]],
 			},
 	
 	},

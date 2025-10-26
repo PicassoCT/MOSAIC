@@ -192,10 +192,12 @@ end
 orgHousePosTable = {}
 
 rpgCarryingTypeTable = getRPGCarryingCivilianTypes(UnitDefs)
-
+function isArmed() 
+    return randChance(GameConfig.chanceCivilianArmsItselfInHundred) or myTeamID ~= gaiaTeamID
+end
 local myGun = ak47
 function setDefaultBodyConfig()
-   bodyConfig.boolArmed = true 
+   bodyConfig.boolArmed = isArmed()
     bodyConfig.boolRPGArmed = false
     bodyConfig.boolWounded = false
     bodyConfig.boolInfluenced = false
@@ -1153,7 +1155,7 @@ normalBehavourStateMachine = {
                 StartThread(attachLoot)
             end
 
-            bodyConfig.boolArmed = randChance( GameConfig.chanceCivilianArmsItselfInHundred)
+            bodyConfig.boolArmed = isArmed()
                 Hide(ShoppingBag)
                 Hide(Handbag)
                 Hide(cofee)
@@ -1873,8 +1875,9 @@ function molotowAimFunction(weaponID, heading, pitch)
     -- Aim Animation
     return allowTarget(weaponID)
 end
-
+GunMuzzleFlash = 1024
 function akFireFunction(weaponID, heading, pitch)
+    EmitSfx(myGun, GunMuzzleFlash)
     boolAiming = false
     return true
 end
@@ -1930,6 +1933,8 @@ function script.QueryWeapon(weaponID)
 end
 
 function script.AimWeapon(weaponID, heading, pitch)
+    if boolCloaked then return false end 
+
     if WeaponsTable[weaponID] then
         if WeaponsTable[weaponID].aimfunc then
             return WeaponsTable[weaponID].aimfunc(weaponID, heading, pitch)

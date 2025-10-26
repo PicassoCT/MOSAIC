@@ -415,13 +415,12 @@ nrWalls = 0
 lx_axis = 1
 ly_axis = 2
 lz_axis = 3
+turnAxis = 3
 function plopElementUp(pieceName, height, speed)
-    while true do
-        Sleep(500)
         Move(pieceName, ly_axis, 0, 0) 
+        WMove(pieceName, ly_axis, height + 50, speed) 
+        Sleep(500)
         WMove(pieceName, ly_axis, height, speed) 
-        WMove(pieceName, ly_axis, height - 50, speed) 
-    end
 end
 
 function placeWallAndDoors()
@@ -448,9 +447,9 @@ function placeWallAndDoors()
 
                 Move(Wall[i], lx_axis, rx * moveScale, 0)
                 Move(Wall[i], lz_axis, rz * moveScale, 0)
-                StartThread(plopElementUp,Wall[i], 500, 250)
+                StartThread(plopElementUp,Wall[i], 50, 250)
                 rot = math.random(0, 8) * 90
-                Turn(Wall[i], ly_axis, math.rad(rot), 0)
+                Turn(Wall[i], turnAxis, math.rad(rot), 0)
                 Show(Wall[i])
                 if OutPost[(i - 1) * 2 + 1] then
                     Show(OutPost[(i - 1) * 2 + 1])
@@ -466,29 +465,25 @@ function placeWallAndDoors()
         for i = 1, nrDoors do
             if Door[i] then
                 Show(Door[i])
-                StartThread(plopElementUp,Door[i], 500, 250)
 
                 index = (i - 1) * 2 + 1
                 if DoorPost[index] then
                     Show(DoorPost[index])
-                    StartThread(plopElementUp,DoorPost[index], 500, 250)
+                    StartThread(plopElementUp,DoorPost[index], 50, 250)
                 end
                 post = DoorPost[index]
                 
                 index = (i - 1) * 2 + 2
                 if DoorPost[index] then
-                    Show(DoorPost[index])
-                    StartThread(plopElementUp,DoorPost[index], 500, 250)
+                    Show(DoorPost[index])                   
                 end       
 
-                rx, rz = math.random(xMin * scaleFactor , xMax * scaleFactor ),
-                     math.random(zMin * scaleFactor, zMax * scaleFactor)
+                rx, rz = math.random(xMin * scaleFactor , xMax * scaleFactor ),math.random(zMin * scaleFactor, zMax * scaleFactor)
 
                 Move(post, lx_axis, rx * moveScale, 0)
                 Move(post, lz_axis, rz * moveScale, 0)                
-                rot = math.random(0, 360 / 90) * 90
-                Turn(post, ly_axis, math.rad(rot), 0)
-
+                rot = math.random(0, 4) * 90
+                Turn(Door[i], turnAxis, math.rad(rot), 0)
             end
         end
     end
