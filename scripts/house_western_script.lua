@@ -298,10 +298,10 @@ function showOne(T, bNotDelayd)
     end
 end
 
-function showOneOrNone(T)
+function showOneOrNone(T, bNotDelayd)
     if not T then return end
     if math.random(1, 100) > 50 then
-        return showOne(T, true)
+        return showOne(T, bNotDelayd)
     else
         return
     end
@@ -368,7 +368,7 @@ function selectBase()
  end
 
 function selectBackYard() 
-   showOneOrNone(TablesOfPiecesGroups["back"]) 
+   showOneOrNone(TablesOfPiecesGroups["back"], false) 
 end
 
 function removeElementFromBuildMaterial(element, buildMaterial)

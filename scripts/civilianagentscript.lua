@@ -195,7 +195,7 @@ rpgCarryingTypeTable = getRPGCarryingCivilianTypes(UnitDefs)
 
 local myGun = ak47
 function setDefaultBodyConfig()
-   bodyConfig.boolArmed = false 
+   bodyConfig.boolArmed = true 
     bodyConfig.boolRPGArmed = false
     bodyConfig.boolWounded = false
     bodyConfig.boolInfluenced = false

@@ -36,7 +36,7 @@ local CivilianAgent = Human:New{
 	cloakTimeout = 9000,
 	minCloakDistance = 0,
 	initCloaked = true,
-	stealth = true
+	stealth = true,
 	decloakOnFire = true,
 
 	

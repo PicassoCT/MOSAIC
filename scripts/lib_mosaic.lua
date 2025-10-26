@@ -1799,6 +1799,7 @@ end
                     "nimrod",
                     "operativepropagator",
                     "operativeinvestigator",
+                    "civilianagent",
                     "operativeasset",
                     "blacksite",
                     "doubleagent"

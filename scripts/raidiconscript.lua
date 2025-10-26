@@ -416,9 +416,12 @@ lx_axis = 1
 ly_axis = 2
 lz_axis = 3
 function plopElementUp(pieceName, height, speed)
-   Move(pieceName, ly_axis, 0, 0) 
-   WMove(pieceName, ly_axis, height, speed) 
-   WMove(pieceName, ly_axis, height - 50, speed) 
+    while true do
+        Sleep(500)
+        Move(pieceName, ly_axis, 0, 0) 
+        WMove(pieceName, ly_axis, height, speed) 
+        WMove(pieceName, ly_axis, height - 50, speed) 
+    end
 end
 
 function placeWallAndDoors()
@@ -443,10 +446,9 @@ function placeWallAndDoors()
                 rx, rz = math.random(xMin * scaleFactor , xMax * scaleFactor ),
                          math.random(zMin * scaleFactor, zMax * scaleFactor)
 
-                rx, rz = xMin*scaleFactor, zMax * scaleFactor
                 Move(Wall[i], lx_axis, rx * moveScale, 0)
                 Move(Wall[i], lz_axis, rz * moveScale, 0)
-                --StartThread(plopElementUp,Wall[i], 500, 250)
+                StartThread(plopElementUp,Wall[i], 500, 250)
                 rot = math.random(0, 8) * 90
                 Turn(Wall[i], ly_axis, math.rad(rot), 0)
                 Show(Wall[i])
@@ -469,19 +471,19 @@ function placeWallAndDoors()
                 index = (i - 1) * 2 + 1
                 if DoorPost[index] then
                     Show(DoorPost[index])
-                   -- StartThread(plopElementUp,DoorPost[index], 500, 250)
+                    StartThread(plopElementUp,DoorPost[index], 500, 250)
                 end
                 post = DoorPost[index]
                 
                 index = (i - 1) * 2 + 2
                 if DoorPost[index] then
                     Show(DoorPost[index])
-                    --StartThread(plopElementUp,DoorPost[index], 500, 250)
+                    StartThread(plopElementUp,DoorPost[index], 500, 250)
                 end       
 
                 rx, rz = math.random(xMin * scaleFactor , xMax * scaleFactor ),
                      math.random(zMin * scaleFactor, zMax * scaleFactor)
-                rx, rz = xMax*scaleFactor, zMin * scaleFactor
+
                 Move(post, lx_axis, rx * moveScale, 0)
                 Move(post, lz_axis, rz * moveScale, 0)                
                 rot = math.random(0, 360 / 90) * 90
