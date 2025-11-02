@@ -478,7 +478,7 @@ function runGarbageSim(pieceParams, opx, opz, heightoffset)
         local phase = 1.0
         if physicsDurationSeconds then
             local startRollout = physicsDurationSeconds - rollOutDuration
-            echo("PhysicsSim running at "..locationstring(unitID).. " for "..physicsDurationSeconds.. " seconds")
+            --echo("PhysicsSim running at "..locationstring(unitID).. " for "..physicsDurationSeconds.. " seconds")
             for i= 1, physicsDurationSeconds do
                 if i >= startRollout then
                     local t = (i - startRollout) / rollOutDuration

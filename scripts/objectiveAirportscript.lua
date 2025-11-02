@@ -74,13 +74,15 @@ function setup()
     PlanePosition = TablesOfPiecesGroups["SwingCenter"][2]
     StartThread(blink)
     for i = 1, #TablesOfPiecesGroups["Shuttle"] do
-        if TablesOfPiecesGroups["Shuttle"][i] then
-            if maRa() == true then
-                statusTable[TablesOfPiecesGroups["Shuttle"][i]] = "landed"
-                Show(TablesOfPiecesGroups["Shuttle"][i])
-                Show(TablesOfPiecesGroups["Engine"][i])
-            else
-                statusTable[TablesOfPiecesGroups["Shuttle"][i]] = "docked"
+        if ferryScramJet[i] == false then
+            if TablesOfPiecesGroups["Shuttle"][i]  then
+                if maRa() == true then
+                    statusTable[TablesOfPiecesGroups["Shuttle"][i]] = "landed"
+                    Show(TablesOfPiecesGroups["Shuttle"][i])
+                    Show(TablesOfPiecesGroups["Engine"][i])
+                else
+                    statusTable[TablesOfPiecesGroups["Shuttle"][i]] = "docked"
+                end
             end
         end
     end
@@ -390,7 +392,7 @@ local vtolFactor = 2.0
 local distFactor = 1.0
 local slowTurnVTol = 0.125
 
-travelAltitude = math.random(5, 15) * 3000
+travelAltitude = math.random(8, 12) * 3000
 function ScramJetGoDown(nr)
     local Jet = TablesOfPiecesGroups["ScramJet"][nr]
     local Gear = TablesOfPiecesGroups["ScramJetGear"][nr]
@@ -406,6 +408,7 @@ function ScramJetGoDown(nr)
     arrivalVector = math.random(-180, 180)
     Turn(Rotator, rotatorAxis, math.rad(arrivalVector), 0)
     Show(Jet)
+    StartThread(showThruster, nr, time)
     Turn(Rotator, rotatorAxis, math.rad(0), slowTurnVTol)
     WMove(Jet, travelForwardAxis, -7000 * distFactor, 1000 * travelSpeed)
     WMove(Jet, travelForwardAxis, -6000 * distFactor, 750 * travelSpeed)
@@ -420,6 +423,23 @@ function ScramJetGoDown(nr)
     WMove(Jet, travelUpwardAxis, 0, vtolSpeed * 350)    
 end
 
+function showThruster(nr, time)
+    thrusterNr = piece("ScramJet"..nr.."Thrust")
+    
+    Spin(thrusterNr, z_axis, math.rad(960))
+    for k=1, 20 do
+        Show(thrusterNr)
+        startValue = math.random(0, 5)
+        Move(thrusterNr, z_axis, startValue, 0)
+        value = math.random(2,8)*-1
+        WMove(thrusterNr, z_axis, value, value*2)
+        Hide(thrusterNr)
+        Sleep(25)
+    end
+     Hide(thrusterNr)
+end
+
+
 function ScramJetGoUp(nr)
     local Jet = TablesOfPiecesGroups["ScramJet"][nr]
     assert(Jet)
@@ -432,12 +452,12 @@ function ScramJetGoUp(nr)
     departureVector = math.random(-180, 180)
    
     Turn(Rotator, rotatorAxis, math.rad(departureVector), slowTurnVTol)
-    WMove(Jet, travelUpwardAxis, travelAltitude* 0.5 * vtolFactor, vtolSpeed *350)  
-    WMove(Jet, travelUpwardAxis, travelAltitude * vtolFactor, vtolSpeed *700)  
+    WMove(Jet, travelUpwardAxis, travelAltitude* 0.5 * vtolFactor, vtolSpeed * 350)  
+    WMove(Jet, travelUpwardAxis, travelAltitude * vtolFactor, vtolSpeed * 700)  
     Hide(Gear)
 
     WTurn(Rotator, rotatorAxis, math.rad(departureVector), slowTurnVTol)
-
+    StartThread(showThruster, nr, 5000)
     dist = math.random(8, 15) * 10000 
     WMove(Jet, travelForwardAxis,1000*distFactor, 250 * travelSpeed)
     WMove(Jet, travelForwardAxis,2000*distFactor, 500 * travelSpeed)
