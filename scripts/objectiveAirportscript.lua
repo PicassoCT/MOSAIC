@@ -408,7 +408,7 @@ function ScramJetGoDown(nr)
     arrivalVector = math.random(-180, 180)
     Turn(Rotator, rotatorAxis, math.rad(arrivalVector), 0)
     Show(Jet)
-    StartThread(showThruster, nr, time)
+    StartThread(showThruster, nr, time, false)
     Turn(Rotator, rotatorAxis, math.rad(0), slowTurnVTol)
     WMove(Jet, travelForwardAxis, -7000 * distFactor, 1000 * travelSpeed)
     WMove(Jet, travelForwardAxis, -6000 * distFactor, 750 * travelSpeed)
@@ -422,23 +422,35 @@ function ScramJetGoDown(nr)
     WTurn(Rotator, rotatorAxis, math.rad(0), slowTurnVTol) 
     WMove(Jet, travelUpwardAxis, 0, vtolSpeed * 350)    
 end
+thrusterPieceTable = {}
+function showThruster(nr, timeMs, boolRampUpSpeed)
+    thrusterNr = thrusterPieceTable[nf] or piece("ScramJet"..nr.."Thrust")
+    if not thrusterPieceTable[nr] then  thrusterPieceTable[nr]  = thrusterNr end
 
-function showThruster(nr, time)
-    thrusterNr = piece("ScramJet"..nr.."Thrust")
+    speedFactor = 1
+    if not boolRampUpSpeed then
+        speedFactor = 8
+    end
     
     Spin(thrusterNr, z_axis, math.rad(960))
-    for k=1, 20 do
+    nrOfTimes = math.ceil(timeMs/500)
+    for k=1, nrOfTimes do
+        if boolRampUpSpeed then
+            speedFactor = math.min(speedFactor + 0.2)
+        else
+            speedFactor = math.min(speedFactor - 0.2)
+        end
         Show(thrusterNr)
         startValue = math.random(0, 5)
         Move(thrusterNr, z_axis, startValue, 0)
         value = math.random(2,8)*-1
-        WMove(thrusterNr, z_axis, value, value*2)
+        WMove(thrusterNr, z_axis, value, value * speedFactor)
         Hide(thrusterNr)
         Sleep(25)
     end
      Hide(thrusterNr)
+     StopSpin(thrusterNr, z_axis, 0)
 end
-
 
 function ScramJetGoUp(nr)
     local Jet = TablesOfPiecesGroups["ScramJet"][nr]
@@ -457,7 +469,7 @@ function ScramJetGoUp(nr)
     Hide(Gear)
 
     WTurn(Rotator, rotatorAxis, math.rad(departureVector), slowTurnVTol)
-    StartThread(showThruster, nr, 5000)
+    StartThread(showThruster, nr, 5000, true)
     dist = math.random(8, 15) * 10000 
     WMove(Jet, travelForwardAxis,1000*distFactor, 250 * travelSpeed)
     WMove(Jet, travelForwardAxis,2000*distFactor, 500 * travelSpeed)

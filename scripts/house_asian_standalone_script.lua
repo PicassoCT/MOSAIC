@@ -357,8 +357,8 @@ local garbageSimPlaceable =  {
 local orgPieceParams = 
 {
   pieces = {
-          {name="SimCan1", typ = "can", rotator= "SimCanRot1", mass=1.0, drag=0.9},
-          {name="SimCan2", typ = "can", rotator= "SimCanRot2", mass=1.0, drag=0.9},
+          {name="SimCan1", typ = "can", spinner = "SimCanSpinner1", rotator= "SimCanRot1", mass=1.0, drag=0.9},
+          {name="SimCan2", typ = "can", spinner = "SimCanSpinner2", rotator= "SimCanRot2", mass=1.0, drag=0.9},
           {name="SimBox1", typ = "box", mass=2.5, drag=0.85},
           {name="SimPaper1", typ = "paper", mass=0.2, drag=0.95, lift=0.1}
         },

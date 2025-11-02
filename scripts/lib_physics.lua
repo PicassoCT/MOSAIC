@@ -354,6 +354,7 @@ function setupGarbageSim(pieceParams)
       p.piece = pieceID
       if p.typ == "can" then
           p.rotator = piece(p.rotator)
+          p.spinner = piece(p.spinner)
       end
       p.pos = { 
         math.random(pieceParams.params.BOUND.minX,  pieceParams.params.BOUND.maxX),
@@ -453,7 +454,7 @@ function PhysicsTick(dt, pieceParams, phase)
         movePosInTime(p.rotator, oldPos, p.pos, dt)
         windDir = math.atan2(wx, wz) + math.pi/2
         Turn(p.piece, y_axis, windDir, math.pi)
-        Spin(p.piece, z_axis, math.rad(p.spin[1]), math.pi)
+        Spin(p.spinner, z_axis, math.rad(p.spin[1]), math.pi)
     else
         movePosInTime(p.piece, oldPos, p.pos, dt)
         for ax=1, 3 do

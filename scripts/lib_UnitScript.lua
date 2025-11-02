@@ -1474,7 +1474,6 @@ function todo(task)
         GG.Todo[task] = true
         echo("TODO: ".. task)
     end
-
 end
 
 -- > multiplies a deformation map with a factor
