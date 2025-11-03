@@ -31,6 +31,7 @@ function script.Create()
     resetFerrysScramJet()
     setup()
     StartThread(comingAndGoing)
+    StartThread(scramJetComingAndGoing)
     StartThread(advertisingBlimp)
 end
 
@@ -163,6 +164,20 @@ function comingAndGoing()
     end
 end
 
+function scramJetComingAndGoing()
+    while true do
+        while GG.GlobalGameState == GameConfig.GameState.normal do
+        repeat 
+            Sleep(3000)
+        until (GG.AirPortSemaphore ~= unitID)
+
+        arrivingDepartingScramJets()
+
+        end
+        Sleep(5000)
+    end
+end
+
 function showOne(T, bNotDelayd)
     if not T then
         return
@@ -189,6 +204,21 @@ function arrival()
     showPlane()
     WMove(PlanePosition, PlanePositionMoveAxis, 0, 15000)
 end
+
+function arrivingDepartingScramJets()
+    while (GG.AirPortSemaphore ~= unitID) do 
+      for i = 1,  #TablesOfPiecesGroups["Shuttle"] do
+            touchDownTime = math.random(8, 18)
+            if  not scramJetsPresent[i] then
+                StartThread(ScramJetArrival, i)
+            else
+                StartThread(ScramJetDeparture, i)
+            end
+        end
+        Sleep(60000)
+    end
+end
+
     dockedShuttleCount = 6
 function turnPlaneAround()
     Signal(SIG_PLANE)
@@ -280,7 +310,6 @@ function ferryGoUp(selectedFerryNr, times)
     if ferryScramJet[selectedFerryNr] then
         Hide(ferry)
         Hide(engine)
-        ScramJetGoUp(selectedFerryNr)
         return
     end   
 
@@ -327,7 +356,6 @@ function ferryGoDown(selectedFerryNr, times)
     if ferryScramJet[selectedFerryNr] then
         Hide(ferry)
         Hide(engine)
-        ScramJetGoDown(selectedFerryNr)
         return
     end   
 
@@ -393,7 +421,7 @@ local distFactor = 1.0
 local slowTurnVTol = 0.125
 
 travelAltitude = math.random(8, 12) * 3000
-function ScramJetGoDown(nr)
+function ScramJetArrival(nr)
     local Jet = TablesOfPiecesGroups["ScramJet"][nr]
     local Gear = TablesOfPiecesGroups["ScramJetGear"][nr]
     local Rotator = TablesOfPiecesGroups["ScramJetRotator"][nr]
@@ -421,6 +449,7 @@ function ScramJetGoDown(nr)
     WMove(Jet, travelUpwardAxis, 3000, vtolSpeed * 900)   
     WTurn(Rotator, rotatorAxis, math.rad(0), slowTurnVTol) 
     WMove(Jet, travelUpwardAxis, 0, vtolSpeed * 350)    
+    scramJetsPresent[nr] = true
 end
 thrusterPieceTable = {}
 function showThruster(nr, timeMs, boolRampUpSpeed)
@@ -452,7 +481,8 @@ function showThruster(nr, timeMs, boolRampUpSpeed)
      StopSpin(thrusterNr, z_axis, 0)
 end
 
-function ScramJetGoUp(nr)
+scramJetsPresent = {}
+function ScramJetDeparture(nr)
     local Jet = TablesOfPiecesGroups["ScramJet"][nr]
     assert(Jet)
     local Gear = TablesOfPiecesGroups["ScramJetGear"][nr]
@@ -478,6 +508,7 @@ function ScramJetGoUp(nr)
     Hide(Jet)
     reset(Jet)  
     reset(Rotator)  
+    scramJetsPresent[nr] = nil
 end
 
 function PlaneLights()
@@ -512,5 +543,6 @@ function departure()
 end
 
 function script.Killed(recentDamage, _)
+    if  GG.AirPortSemaphore == unitID then  GG.AirPortSemaphore = nil end
     return 1
 end
