@@ -219,11 +219,12 @@ function script.Create()
     bodyBuild()
 
     setupAnimation()
-    --if myTeamID ~= gaiaTeamID then  
-    --    --StartThread(spitRostTest)
-    --    StartThread(bagDanglignDiagnostics)
-    --    return
-    --end
+    if myTeamID ~= gaiaTeamID then  
+        --StartThread(spitRostTest)
+        todo("Civilian shopping bag diagnostics loop Activate")
+        StartThread(bagDanglignDiagnostics)
+        return
+    end
    
 
     setOverrideAnimationState(eAnimState.standing, eAnimState.standing, true, nil, false)
