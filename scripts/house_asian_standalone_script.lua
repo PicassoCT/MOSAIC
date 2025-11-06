@@ -390,7 +390,7 @@ function addGroundPlaceables()
 
                 if garbageSimPlaceable[randPlaceAbleID] and GG.SimPlaceableCounter < 1 then
                     GG.SimPlaceableCounter = GG.SimPlaceableCounter +1
- stat                    StartThread(runGarbageSim, orgPieceParams, opx, opz)
+                    StartThread(runGarbageSim, orgPieceParams, opx, opz)
                 end
                 WMove(randPlaceAbleID,x_axis, opz, 0)
                 WMove(randPlaceAbleID,z_axis, opx, 0)

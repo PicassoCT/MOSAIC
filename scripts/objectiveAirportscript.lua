@@ -19,11 +19,20 @@ distanceUp = 45000
 ferryFreeTable = {}
 ferryTurnAxis = 3
 gaiaTeamID = Spring.GetGaiaTeamID()
-local ferryScramJet = {}
+local isScramJetT = {}
 function resetFerrysScramJet()
     for i=1, #TablesOfPiecesGroups["Shuttle"] do
-        ferryScramJet[i] = randChance(25)
-    end
+        isScramJetT[i] = randChance(25)
+        scramJetsPresent[i] = false
+        if isScramJetT[i] then
+            scramJetsPresent[i] = maRa() 
+            if scramJetsPresent[i] then
+                ShowScramJet(i)
+            else
+                HideScramJet(i)
+            end
+        end
+    end        
 end
 
 function script.Create()
@@ -75,7 +84,7 @@ function setup()
     PlanePosition = TablesOfPiecesGroups["SwingCenter"][2]
     StartThread(blink)
     for i = 1, #TablesOfPiecesGroups["Shuttle"] do
-        if ferryScramJet[i] == false then
+        if isScramJetT[i] == false then
             if TablesOfPiecesGroups["Shuttle"][i]  then
                 if maRa() == true then
                     statusTable[TablesOfPiecesGroups["Shuttle"][i]] = "landed"
@@ -208,11 +217,13 @@ end
 function arrivingDepartingScramJets()
     while (GG.AirPortSemaphore ~= unitID) do 
       for i = 1,  #TablesOfPiecesGroups["Shuttle"] do
-            touchDownTime = math.random(8, 18)
-            if  not scramJetsPresent[i] then
-                StartThread(ScramJetArrival, i)
-            else
-                StartThread(ScramJetDeparture, i)
+            if isScramJetT[i] then
+                if  scramJetsPresent[i] == false then
+                    ScramJetArrival(i)
+                else
+                    ScramJetDeparture(i)
+                end
+                Sleep(2000)
             end
         end
         Sleep(60000)
@@ -307,7 +318,7 @@ end
 function ferryGoUp(selectedFerryNr, times)
     local ferry = TablesOfPiecesGroups["Shuttle"][selectedFerryNr]
     local engine = TablesOfPiecesGroups["Engine"][selectedFerryNr]
-    if ferryScramJet[selectedFerryNr] then
+    if isScramJetT[selectedFerryNr] then
         Hide(ferry)
         Hide(engine)
         return
@@ -353,7 +364,7 @@ ferryUpAxis = 2
 function ferryGoDown(selectedFerryNr, times)
     local ferry = TablesOfPiecesGroups["Shuttle"][selectedFerryNr]
     local engine = TablesOfPiecesGroups["Engine"][selectedFerryNr]
-    if ferryScramJet[selectedFerryNr] then
+    if isScramJetT[selectedFerryNr] then
         Hide(ferry)
         Hide(engine)
         return
@@ -420,7 +431,22 @@ local vtolFactor = 2.0
 local distFactor = 1.0
 local slowTurnVTol = 0.125
 
-travelAltitude = math.random(8, 12) * 3000
+function HideScramJet(nr)
+    local Jet = TablesOfPiecesGroups["ScramJet"][nr]
+    local Gear = TablesOfPiecesGroups["ScramJetGear"][nr]
+     Hide(Jet)
+    Hide(Gear)
+end
+
+function ShowScramJet(nr)
+    local Jet = TablesOfPiecesGroups["ScramJet"][nr]
+    local Gear = TablesOfPiecesGroups["ScramJetGear"][nr]
+    Hide(Jet)
+    Hide(Gear)
+end
+
+travelAltitude = math.random(3, 5) * 3000
+arrivalSoundPath = "sounds/objective/airport_scramjetArriving.ogg"
 function ScramJetArrival(nr)
     local Jet = TablesOfPiecesGroups["ScramJet"][nr]
     local Gear = TablesOfPiecesGroups["ScramJetGear"][nr]
@@ -428,19 +454,19 @@ function ScramJetArrival(nr)
     reset(Rotator)
     reset(Jet)
     assert(Jet)
-    Hide(Jet)
-    Hide(Gear)
+    HideScramJet(nr)
     dist = math.random(8, 12) * 10000 * -1 * distFactor
     Move(Jet, travelForwardAxis,dist, 0)
     Move(Jet, travelUpwardAxis, travelAltitude *vtolFactor, 0)
     arrivalVector = math.random(-180, 180)
     Turn(Rotator, rotatorAxis, math.rad(arrivalVector), 0)
     Show(Jet)
-    StartThread(showThruster, nr, time, false)
+    StartThread(showThruster, nr, 7000  , false)
     Turn(Rotator, rotatorAxis, math.rad(0), slowTurnVTol)
     WMove(Jet, travelForwardAxis, -7000 * distFactor, 1000 * travelSpeed)
     WMove(Jet, travelForwardAxis, -6000 * distFactor, 750 * travelSpeed)
     WMove(Jet, travelForwardAxis, -5000 * distFactor, 500 * travelSpeed)
+    PlaySoundAtUnitPieceLocatioin(unitID, Jet, arrivalSoundPath, 0.25)
     WMove(Jet, travelForwardAxis, -3000 * distFactor, 250 * travelSpeed)
     Show(Gear)
     WMove(Jet, travelForwardAxis, 0, 125 * travelSpeed)    
@@ -481,6 +507,7 @@ function showThruster(nr, timeMs, boolRampUpSpeed)
      StopSpin(thrusterNr, z_axis, 0)
 end
 
+departureSoundPath ="sounds/objective/airport_scramjetDeparting.ogg"
 scramJetsPresent = {}
 function ScramJetDeparture(nr)
     local Jet = TablesOfPiecesGroups["ScramJet"][nr]
@@ -489,26 +516,27 @@ function ScramJetDeparture(nr)
     local Rotator = TablesOfPiecesGroups["ScramJetRotator"][nr]
     reset(Rotator)
     reset(Jet)
-    Show(Jet)
-    Show(Gear)
+    ShowScramJet(nr)
     departureVector = math.random(-180, 180)
    
     Turn(Rotator, rotatorAxis, math.rad(departureVector), slowTurnVTol)
-    WMove(Jet, travelUpwardAxis, travelAltitude* 0.5 * vtolFactor, vtolSpeed * 350)  
-    WMove(Jet, travelUpwardAxis, travelAltitude * vtolFactor, vtolSpeed * 700)  
-    Hide(Gear)
+    PlaySoundAtUnitPieceLocatioin(unitID, Jet, departureSoundPath, 0.25)
+    WMove(Jet, travelUpwardAxis,  travelAltitude * 0.5 * vtolFactor, vtolSpeed * 350)  
+    WMove(Jet, travelUpwardAxis, nr*100 +  travelAltitude * vtolFactor, vtolSpeed * 700)  
 
     WTurn(Rotator, rotatorAxis, math.rad(departureVector), slowTurnVTol)
+    Hide(Gear)
     StartThread(showThruster, nr, 5000, true)
     dist = math.random(8, 15) * 10000 
-    WMove(Jet, travelForwardAxis,1000*distFactor, 250 * travelSpeed)
-    WMove(Jet, travelForwardAxis,2000*distFactor, 500 * travelSpeed)
-    WMove(Jet, travelForwardAxis,4000*distFactor, 1000 * travelSpeed)
+    WMove(Jet, travelForwardAxis,1000*distFactor, 150 * travelSpeed)
+    WMove(Jet, travelForwardAxis,2000*distFactor, 250 * travelSpeed)
+    WMove(Jet, travelForwardAxis,4000*distFactor, 500 * travelSpeed)
     WMove(Jet, travelForwardAxis,dist*distFactor, 1000 * travelSpeed)
     Hide(Jet)
+    Sleep(5000)
     reset(Jet)  
     reset(Rotator)  
-    scramJetsPresent[nr] = nil
+    scramJetsPresent[nr] = false
 end
 
 function PlaneLights()

@@ -5177,6 +5177,13 @@ function PlaySoundByUnitDefID(unitdef, soundfile, loudness, Time,
     end
     return false
 end
+
+
+function PlaySoundAtUnitPieceLocatioin(unitID, pieceID, soundfile, loudness)
+    loudness = loudness or 1.0
+    px,py,pz = Spring.GetUnitPiecePosDir(unitID, pieceID)
+    Spring.PlaySoundFile(soundfile, loudness, px,py,pz)
+end
 -- ======================================================================================
 -- Section: Ressources
 -- ======================================================================================
