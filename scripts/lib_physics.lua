@@ -555,8 +555,14 @@ local function getPieceWorldMatrix(unitID, piece, parentPieceMap)
     return mat
 end
 
-function swingPendulum(unitID, parentPieceMap, pieceNr, speed, iterations)
-    todo("Debug: Physics: swing Pendulum")
+function initializePendulumWorldMatrice(unitID, pieceNr, parentPieceMap)
+   local worldMat = getPieceWorldMatrix(unitID, pieceNr, parentPieceMap)
+   return worldMat
+end
+
+function swingPendulum(unitID, parentPieceMap, worldMat, pieceNr, speed, iterations)
+    debugPrefixPhysics = "Debug:Physics:PendulumSwing:"
+    todo(debugPrefixPhysics.."Starting")
    -- utility: normalize a vector
    local function normalize(x,y,z)
       local l = math.sqrt(x*x + y*y + z*z)
@@ -583,7 +589,7 @@ function swingPendulum(unitID, parentPieceMap, pieceNr, speed, iterations)
    end
 
    local down = getDown()
-   local worldMat = getPieceWorldMatrix(unitID, pieceNr, parentPieceMap)
+
 
    -- extract rotation only (upper 3x3)
    local rot = {

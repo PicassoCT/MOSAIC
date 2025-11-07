@@ -18,6 +18,8 @@ local spGetGameFrame = Spring.GetGameFrame
 local TablesOfPiecesGroups =   getPieceTableByNameGroups(false, true)
 local map = Spring.GetUnitPieceMap(unitID);
 local parentPieceMap = getParentPieceMap(unitID)
+local initialMatriceShoppingBag 
+local initialMatriceHandbag
 local SIG_ANIM = 1
 local SIG_UP = 2
 local SIG_LOW = 4
@@ -464,10 +466,13 @@ function bodyBuild()
     if bodyConfig.boolLoaded == true and bodyConfig.boolWounded == false then
         if  randChance(50) and Handbag then
             Show(Handbag);
+            initialMatriceHandBag  = initializePendulumWorldMatrice(unitID, Handbag, parentPieceMap)
         end
 
         if carriesShoppingBag() then
             Show(ShoppingBag);
+            initialMatriceHandBag  = initializePendulumWorldMatrice(unitID, ShoppingBag, parentPieceMap)
+            TODO(add to shopping code and agent)
             return
         end
 
