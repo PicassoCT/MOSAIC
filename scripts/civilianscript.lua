@@ -18,8 +18,8 @@ local spGetGameFrame = Spring.GetGameFrame
 local TablesOfPiecesGroups =   getPieceTableByNameGroups(false, true)
 local map = Spring.GetUnitPieceMap(unitID);
 local parentPieceMap = getParentPieceMap(unitID)
-local initialMatriceShoppingBag 
-local initialMatriceHandbag
+local shoppingBagConfig 
+local handbagConfig
 local SIG_ANIM = 1
 local SIG_UP = 2
 local SIG_LOW = 4
@@ -183,8 +183,8 @@ function bagDanglignDiagnostics()
                 WTurn(LowArm1, axis, math.rad(i),0)
                 WTurn(LowArm2, axis, math.rad(i),0)
                 WTurn(ShoppingBag, 1, math.rad(math.random(-360,360)), 0)
-                StartThread(swingPendulum, unitID, parentPieceMap, ShoppingBag, 10, 3)
-                StartThread(swingPendulum, unitID, parentPieceMap, Handbag, 10, 3)
+                StartThread(swingPendulum, unitID, shoppingBagConfig)
+                StartThread(swingPendulum, unitID, handBagConfig)
 
                 Sleep(1)
                 WaitForTurns(ShoppingBag)
@@ -466,13 +466,12 @@ function bodyBuild()
     if bodyConfig.boolLoaded == true and bodyConfig.boolWounded == false then
         if  randChance(50) and Handbag then
             Show(Handbag);
-            initialMatriceHandBag  = initializePendulumWorldMatrice(unitID, Handbag, parentPieceMap)
+            handBagConfig  = initializePendulumConfig(unitID, Handbag, parentPieceMap, math.pi/2, 3)
         end
 
         if carriesShoppingBag() then
             Show(ShoppingBag);
-            initialMatriceHandBag  = initializePendulumWorldMatrice(unitID, ShoppingBag, parentPieceMap)
-            TODO(add to shopping code and agent)
+            shoppingBagConfig  = initializePendulumConfig(unitID, ShoppingBag, parentPieceMap, math.pi/2, 3)
             return
         end
 
@@ -1093,8 +1092,8 @@ end
 
 function handleBagSwinging()
     --has handbag
-    if carriesShoppingBag()   then StartThread(swingPendulum, unitID, parentPieceMap, ShoppingBag, 1, 3) end
-    if bodyConfig.boolHandbag then StartThread(swingPendulum, unitID, parentPieceMap, Handbag, 1, 3) end
+    if carriesShoppingBag()   then StartThread(swingPendulum, unitID, shoppingBagConfig) end
+    if bodyConfig.boolHandbag then StartThread(swingPendulum, unitID, handBagConfig) end
 end
 
 function constructSkeleton(unit, piece, offset)

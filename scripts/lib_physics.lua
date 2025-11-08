@@ -555,12 +555,20 @@ local function getPieceWorldMatrix(unitID, piece, parentPieceMap)
     return mat
 end
 
-function initializePendulumWorldMatrice(unitID, pieceNr, parentPieceMap)
-   local worldMat = getPieceWorldMatrix(unitID, pieceNr, parentPieceMap)
-   return worldMat
+-- Must be while body is still in the original position
+function initializePendulumConfig(unitID, pieceId, parentPieceMap, speed, iterations)
+   local config = { 
+                speed = speed, 
+                iterations = iterations, 
+                parentPieceMap = parentPieceMap, 
+                pieceId = pieceId
+            }
+   config.worldMat = getPieceWorldMatrix(unitID, config.pieceId, config.parentPieceMap)
+   return config
 end
 
-function swingPendulum(unitID, parentPieceMap, worldMat, pieceNr, speed, iterations)
+function swingPendulum(unitID, config )
+    assertTable(config)
     debugPrefixPhysics = "Debug:Physics:PendulumSwing:"
     todo(debugPrefixPhysics.."Starting")
    -- utility: normalize a vector
@@ -589,8 +597,9 @@ function swingPendulum(unitID, parentPieceMap, worldMat, pieceNr, speed, iterati
    end
 
    local down = getDown()
-
-
+   local parentPieceMap = config.parentPieceMap
+   local worldMat = config.worldMat
+   local pieceId = config.pieceId
    -- extract rotation only (upper 3x3)
    local rot = {
       {worldMat[1][1], worldMat[1][2], worldMat[1][3]},
@@ -630,15 +639,15 @@ function swingPendulum(unitID, parentPieceMap, worldMat, pieceNr, speed, iterati
       local sx,sy,sz = rotateAroundAxis(tx,ty,tz, ax,ay,az, angle)
 
       local swingYaw, swingPitch = vecToEuler(sx,sy,sz)
-      Turn(pieceNr, y_axis, swingYaw,   speed or 0)
-      Turn(pieceNr, x_axis, swingPitch, speed or 0)
-      WaitForTurns(pieceNr)
+      Turn(pieceId, y_axis, swingYaw,   speed or 0)
+      Turn(pieceId, x_axis, swingPitch, speed or 0)
+      WaitForTurns(pieceId)
       Sleep(33) -- one frame
       dir = -dir
       factor = factor * 0.95
    end
 
    -- settle at center
-   Turn(pieceNr, y_axis, baseYaw,   speed or 0)
-   Turn(pieceNr, x_axis, basePitch, speed or 0)
+   Turn(pieceId, y_axis, baseYaw,   speed or 0)
+   Turn(pieceId, x_axis, basePitch, speed or 0)
 end

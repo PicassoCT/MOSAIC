@@ -9,6 +9,8 @@ local Animations = include('animations_civilian_female.lua')
 local signMessages = include('protestSignMessages.lua')
 local map = Spring.GetUnitPieceMap(unitID)
 local parentPieceMap = getParentPieceMap(unitID)
+local shoppingBagConfig 
+local handbagConfig
 
 local TablesOfPiecesGroups =   getPieceTableByNameGroups(false, true)
 local GameConfig = getGameConfig()
@@ -452,10 +454,12 @@ function bodyBuild()
 
     if bodyConfig.boolLoaded == true and bodyConfig.boolWounded == false then
         if  randChance(50) and Handbag then
+            handBagConfig  = initializePendulumConfig(unitID, Handbag, parentPieceMap, math.pi/2, 3)
             Show(Handbag);
         end
 
         if carriesShoppingBag() then
+            shoppingBagConfig  = initializePendulumConfig(unitID, ShoppingBag, parentPieceMap, math.pi/2, 3)
             Show(ShoppingBag);
             return
         end
@@ -1050,11 +1054,16 @@ function PlayAnimation(animname, piecesToFilterOutTable, speed)
         end
     end
     --has handbag
-    if carriesShoppingBag()   then StartThread(swingPendulum, unitID, parentPieceMap, ShoppingBag, 1, 3) end
-    if bodyConfig.boolHandbag then StartThread(swingPendulum, unitID, parentPieceMap, Handbag, 1, 3) end
-
+    handleBagSwinging()
     return spGetGameFrame() - startTimeFrame
 end
+
+function handleBagSwinging()
+    --has handbag
+    if carriesShoppingBag()   then StartThread(swingPendulum, unitID, shoppingBagConfig) end
+    if bodyConfig.boolHandbag then StartThread(swingPendulum, unitID, handBagConfig) end
+end
+
 
 function constructSkeleton(unit, piece, offset)
     if (offset == nil) then offset = {0, 0, 0}; end
