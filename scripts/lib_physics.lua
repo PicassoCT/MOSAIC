@@ -526,7 +526,7 @@ local function mulMatMat4(a, b)
     return m
 end
 
-local function getPieceWorldMatrix(unitID, piece, parentPieceMap)
+local function getPieceWorldMatrix(unitID, pieceId, parentPieceMap)
     local mat = {
         {1,0,0,0},
         {0,1,0,0},
@@ -535,7 +535,7 @@ local function getPieceWorldMatrix(unitID, piece, parentPieceMap)
     }
 
     local chain = {}
-    local p = piece
+    local p = pieceId
     while p do
         table.insert(chain, 1, p) -- prepend parent-first
         p = parentPieceMap[p]
@@ -552,23 +552,21 @@ local function getPieceWorldMatrix(unitID, piece, parentPieceMap)
         }
         mat = mulMatMat4(localMat, mat) -- accumulate properly
     end
+    assert(mat)
     return mat
 end
 
 -- Must be while body is still in the original position
 function initializePendulumConfig(unitID, pieceId, parentPieceMap, speed, iterations)
-   local config = { 
+    return { 
                 speed = speed, 
                 iterations = iterations, 
                 parentPieceMap = parentPieceMap, 
                 pieceId = pieceId
             }
-   config.worldMat = getPieceWorldMatrix(unitID, config.pieceId, config.parentPieceMap)
-   return config
 end
 
 function swingPendulum(unitID, config )
-    assertTable(config)
     debugPrefixPhysics = "Debug:Physics:PendulumSwing:"
     todo(debugPrefixPhysics.."Starting")
    -- utility: normalize a vector
@@ -597,9 +595,11 @@ function swingPendulum(unitID, config )
    end
 
    local down = getDown()
-   local parentPieceMap = config.parentPieceMap
-   local worldMat = config.worldMat
-   local pieceId = config.pieceId
+   parentPieceMap = config.parentPieceMap
+   pieceId = config.pieceId  
+   worldMat = getPieceWorldMatrix(unitID, pieceId, parentPieceMap)
+   iterations = config.iterations
+   speed = config.speed
    -- extract rotation only (upper 3x3)
    local rot = {
       {worldMat[1][1], worldMat[1][2], worldMat[1][3]},

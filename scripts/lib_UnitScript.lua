@@ -4541,6 +4541,50 @@ function iRand(start, fin)
     return math.ceil(sanitizeRandom(start, fin))
 end
 
+-- shift left
+function lsh(value,shift)
+    return (value*(2^shift)) % 2^24
+end
+
+-- shift right
+function rsh(value,shift)
+    return math.floor(value/2^shift) % 2^24
+end
+
+
+
+function DeterministicRandom(unitID)
+    x,y,z =Spring.GetUnitPosition(unitID)
+    typeDefID = Spring.GetUnitDefID(unitID)
+    if not GG.DeterministicRandomCounter then GG.DeterministicRandomCounter  = {}  end
+    if not GG.DeterministicRandomCounter[unitID] then GG.DeterministicRandomCounter[unitID] = 0  end
+    -- Mix inputs into a single integer key
+    local n = math.floor(typeDefID * 73856093 + x * 19349663 + y * 83492791 + z * 2654435761) + GG.DeterministicRandomCounter[unitID] 
+    local twoToPowTwentyFour = (2^24)
+    local twoToPowThirteen= (2^13)
+    local twoToPowSixteen = (2^16)
+  local r1 = math.floor(n / twoToPowThirteen) %  twoToPowTwentyFour
+    -- XOR with original
+    n = math.bit_xor(r1, n)
+    -- multiply by a large constant, then mod 2^24 again
+    n = (n * 1274126177) % twoToPowTwentyFour
+
+    -- shift right by 16 bits:
+    local r2 = math.floor(n / twoToPowSixteen) % (twoToPowTwentyFour)
+    -- final XOR
+    n = math.bit_xor(r2, n)
+
+    -- map to [0,1): use only lower 24 bits, divide by (2^24-1)
+   
+    GG.DeterministicRandomCounter[unitID] = GG.DeterministicRandomCounter[unitID] + 1
+    -- Map to [0, 1)
+    return (n % twoToPowTwentyFour) / (twoToPowTwentyFour - 1)
+end
+
+function DetMaRa(unitID)
+    return DeterministicRandom(unitID) > 0.5
+end
+
 -- > Executes a random Function from a table of functions
 function randFunc(...)
     local arg = {...}

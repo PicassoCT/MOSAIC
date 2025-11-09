@@ -10,7 +10,7 @@ local signMessages = include('protestSignMessages.lua')
 local map = Spring.GetUnitPieceMap(unitID)
 local parentPieceMap = getParentPieceMap(unitID)
 local shoppingBagConfig 
-local handbagConfig
+local handBagConfig
 
 local TablesOfPiecesGroups =   getPieceTableByNameGroups(false, true)
 local GameConfig = getGameConfig()
@@ -32,19 +32,19 @@ SIG_INTERNAL = 128
 SIG_RPG = 256
 
 local function randomMultipleByNameOrDefault(name, index)
+    if randChance(25) then
+        if map[name] then
+            return piece(name)
+        end
+    end
+
     if TablesOfPiecesGroups[name] then
         if index then
              return TablesOfPiecesGroups[name][index]
          else
-            if maRa() and map[name] then
-                return piece(name)
-            else
-                return TablesOfPiecesGroups[name][math.random(1,#TablesOfPiecesGroups[name])]
-            end
+            return TablesOfPiecesGroups[name][math.random(1,#TablesOfPiecesGroups[name])]
         end
-    else
-        return piece(name)
-    end
+    end   
 end
 local center = piece('center');
 local Feet1 = piece('Feet1');
@@ -455,11 +455,13 @@ function bodyBuild()
     if bodyConfig.boolLoaded == true and bodyConfig.boolWounded == false then
         if  randChance(50) and Handbag then
             handBagConfig  = initializePendulumConfig(unitID, Handbag, parentPieceMap, math.pi/2, 3)
+            assert(handBagConfig)
             Show(Handbag);
         end
 
         if carriesShoppingBag() then
             shoppingBagConfig  = initializePendulumConfig(unitID, ShoppingBag, parentPieceMap, math.pi/2, 3)
+            assert(shoppingBagConfig)
             Show(ShoppingBag);
             return
         end
@@ -2021,8 +2023,6 @@ function ExplosiveDeath(dx, dz)
     Sleep(500)
 
 end
-
-
 
 lastDamageDirX, lastDamageDirZ = randNVec(), randNVec()
 function script.Killed(recentDamage, _)

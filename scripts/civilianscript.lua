@@ -15,11 +15,11 @@ local spGetUnitTeam = Spring.GetUnitTeam
 local spGetUnitPosition = Spring.GetUnitPosition
 local spGetGameFrame = Spring.GetGameFrame
 
-local TablesOfPiecesGroups =   getPieceTableByNameGroups(false, true)
+local TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
 local map = Spring.GetUnitPieceMap(unitID);
 local parentPieceMap = getParentPieceMap(unitID)
-local shoppingBagConfig 
-local handbagConfig
+shoppingBagConfig = nil
+handBagConfig = nil
 local SIG_ANIM = 1
 local SIG_UP = 2
 local SIG_LOW = 4
@@ -30,21 +30,20 @@ local SIG_MOLOTOW = 64
 local SIG_INTERNAL = 128
 local SIG_RPG = 256
 
-
 local function randomMultipleByNameOrDefault(name, index)
+    if randChance(25) then
+        if map[name] then
+            return piece(name)
+        end
+    end
+
     if TablesOfPiecesGroups[name] then
         if index then
              return TablesOfPiecesGroups[name][index]
          else
-            if maRa() and map[name] then
-                return piece(name)
-            else
-                return TablesOfPiecesGroups[name][math.random(1,#TablesOfPiecesGroups[name])]
-            end
+            return TablesOfPiecesGroups[name][math.random(1,#TablesOfPiecesGroups[name])]
         end
-    else
-        return piece(name)
-    end
+    end   
 end
 
 local center = piece('center');
@@ -140,13 +139,13 @@ end
 
 iShoppingConfig = math.random(0, 5)
 function variousBodyConfigs()
-    bodyConfig.boolShoppingLoaded = (iShoppingConfig <= 1)
+    bodyConfig.boolShoppingLoaded = randChance(33)
     bodyConfig.boolCarrysBaby = (iShoppingConfig == 2)
     bodyConfig.boolTrolley = (iShoppingConfig == 3) or naked()
-    bodyConfig.boolHandbag = (iShoppingConfig == 4)
+    bodyConfig.boolHandbag = randChance(65)
     bodyConfig.boolLoaded = (iShoppingConfig < 5)
     bodyConfig.boolProtest = GG.GlobalGameState == GameConfig.GameState.anarchy and maRa()
-    bodyConfig.boolHasDeco = maRa()
+    bodyConfig.boolHasDeco = randChance(70)
     setDefaultBodyConfig()
 end
 
@@ -159,9 +158,7 @@ end
 
 orgHousePosTable = {}
 rpgCarryingTypeTable = getRPGCarryingCivilianTypes(UnitDefs)
-
 local myGun = ak47
-
 function setDefaultBodyConfig()
    bodyConfig.boolArmed = false 
     bodyConfig.boolRPGArmed = false
@@ -175,7 +172,8 @@ end
 function bagDanglignDiagnostics()  
     echo("civilian Bag Physics Diangostic Loop in civilian is active at " .. locationstring(unitID))
     Show(ShoppingBag)
-    Show(Handbag)
+    if Handbag then Show(Handbag) end
+
     while true do
         for _,axis in ipairs({x_axis, y_axis, z_axis}) do
             resetAll(unitID)
@@ -183,8 +181,7 @@ function bagDanglignDiagnostics()
                 WTurn(LowArm1, axis, math.rad(i),0)
                 WTurn(LowArm2, axis, math.rad(i),0)
                 WTurn(ShoppingBag, 1, math.rad(math.random(-360,360)), 0)
-                StartThread(swingPendulum, unitID, shoppingBagConfig)
-                StartThread(swingPendulum, unitID, handBagConfig)
+                handleBagSwinging()
 
                 Sleep(1)
                 WaitForTurns(ShoppingBag)
@@ -464,9 +461,14 @@ function bodyBuild()
  
 
     if bodyConfig.boolLoaded == true and bodyConfig.boolWounded == false then
-        if  randChance(50) and Handbag then
-            Show(Handbag);
-            handBagConfig  = initializePendulumConfig(unitID, Handbag, parentPieceMap, math.pi/2, 3)
+       if  bodyConfig.boolHandbag then
+            if Handbag then
+                handBagConfig  = initializePendulumConfig(unitID, Handbag, parentPieceMap, math.pi/2, 3)
+            end
+
+            if maRa() then
+                Show(Handbag);               
+            end
         end
 
         if carriesShoppingBag() then
@@ -1092,8 +1094,8 @@ end
 
 function handleBagSwinging()
     --has handbag
-    if carriesShoppingBag()   then StartThread(swingPendulum, unitID, shoppingBagConfig) end
-    if bodyConfig.boolHandbag then StartThread(swingPendulum, unitID, handBagConfig) end
+    if carriesShoppingBag() and shoppingBagConfig  then StartThread(swingPendulum, unitID, shoppingBagConfig) end
+    if bodyConfig.boolHandbag and handBagConfig then StartThread(swingPendulum, unitID, handBagConfig) end
 end
 
 function constructSkeleton(unit, piece, offset)
@@ -1902,10 +1904,8 @@ function makeProtestSign(xIndexMax, zIndexMax, sizeLetterX, sizeLetterZ,
                 index = index + 1
                 if zIndex > zIndexMax then return end
             end
-
         end
     end
-
 end
 
 function akAimFunction(weaponID, heading, pitch)
