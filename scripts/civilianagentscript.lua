@@ -174,13 +174,13 @@ end
 
 iShoppingConfig = math.random(0, 5)
 function variousBodyConfigs()
-    bodyConfig.boolShoppingLoaded = (iShoppingConfig <= 1)
+    bodyConfig.boolShoppingLoaded = randChance(33)
     bodyConfig.boolCarrysBaby = (iShoppingConfig == 2)
     bodyConfig.boolTrolley = (iShoppingConfig == 3) or naked()
-    bodyConfig.boolHandbag = (iShoppingConfig == 4)
+    bodyConfig.boolHandbag = randChance(65)
     bodyConfig.boolLoaded = (iShoppingConfig < 5)
     bodyConfig.boolProtest = GG.GlobalGameState == GameConfig.GameState.anarchy and maRa()
-    bodyConfig.boolHasDeco = maRa()
+    bodyConfig.boolHasDeco = randChance(70)
     setDefaultBodyConfig()
 end
 
@@ -453,16 +453,21 @@ function bodyBuild()
  
 
     if bodyConfig.boolLoaded == true and bodyConfig.boolWounded == false then
-        if  randChance(50) and Handbag then
-            handBagConfig  = initializePendulumConfig(unitID, Handbag, parentPieceMap, math.pi/2, 3)
-            assert(handBagConfig)
-            Show(Handbag);
+       if  bodyConfig.boolHandbag then
+            if Handbag then
+                handBagConfig  = initializePendulumConfig(unitID, Handbag, parentPieceMap, math.pi/2, 3)
+                StartThread(swingPendulum, unitID, handBagConfig) 
+            end
+
+            if maRa() then
+                Show(Handbag);               
+            end
         end
 
         if carriesShoppingBag() then
+	    Show(ShoppingBag);
             shoppingBagConfig  = initializePendulumConfig(unitID, ShoppingBag, parentPieceMap, math.pi/2, 3)
-            assert(shoppingBagConfig)
-            Show(ShoppingBag);
+            StartThread(swingPendulum, unitID, shoppingBagConfig) 
             return
         end
 
@@ -692,7 +697,8 @@ function peacefullProtest()
             pos.x = myOffsetX + pos.x 
             pos.z = myOffsetZ + pos.z
         end
-		Command(unitID, "go", {x = pos.x, y = 0, z = pos.z})
+	Command(unitID, "go", {x = pos.x, y = 0, z = pos.z})
+	handleBagSwinging()
         Sleep(3000)
     end
 	GG.SocialEngineeredPeople[unitID] = nil
@@ -883,7 +889,7 @@ function chatting()
         else
             playUpperBodyIdleAnimation()
         end
-        turnUnitTowardsUnit(accumulated, startRotation)
+        turnUnitTowardsUnit(unitID, chatPartner, accumulated, startRotation)
 
        chattingTime = chattingTime - 100 - frameToMs(durationFrames)
        accumulated = accumulated + turnStep
@@ -918,7 +924,7 @@ function fleeEnemy(enemyID)
     Signal(SIG_INTERNAL)
     SetSignalMask(SIG_INTERNAL)
     if not enemyID then 
-        setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_ENDED, "flee")
+        setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_ENDED, "fleeing")
         return 
     end  
     throwPayloads()
@@ -928,11 +934,11 @@ function fleeEnemy(enemyID)
         throwArmsUp()
         runAwayFrom(unitID, enemyID, GG.GameConfig.civilian.FleeDistance)
         distribution = math.random(1,10)
-        Sleep(125+distribution)
-        flightTime= flightTime - 125
+        Sleep(125 + distribution)
+        flightTime = flightTime - 125
     end
 
-    setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_ENDED, "flee")
+    setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_ENDED, "fleeing")
 end
 
 function delayedWoundedWalkAfterCover(timeInSeconds)

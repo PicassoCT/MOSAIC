@@ -9,15 +9,18 @@ local boolDebugActive = GG.BoolDebug and false
 local Animations = include('animations_civilian_female.lua')
 local signMessages = include('protestSignMessages.lua')
 local peacfulProtestSignMessages = include('PeacefullProtestSignMessages.lua')
+
+local TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
+local map = Spring.GetUnitPieceMap(unitID);
+local parentPieceMap = getParentPieceMap(unitID)
+local GameConfig = getGameConfig()
+
 local spGetUnitDefID = Spring.GetUnitDefID
 local spGetUnitIsTransporting = Spring.GetUnitIsTransporting
 local spGetUnitTeam = Spring.GetUnitTeam
 local spGetUnitPosition = Spring.GetUnitPosition
 local spGetGameFrame = Spring.GetGameFrame
 
-local TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
-local map = Spring.GetUnitPieceMap(unitID);
-local parentPieceMap = getParentPieceMap(unitID)
 shoppingBagConfig = nil
 handBagConfig = nil
 local SIG_ANIM = 1
@@ -81,7 +84,7 @@ local myTeamID = spGetUnitTeam(unitID)
 local gaiaTeamID = Spring.GetGaiaTeamID()
 
 local loc_doesUnitExistAlive = doesUnitExistAlive
-local GameConfig = getGameConfig()
+
 local civilianWalkingTypeTable = getCultureUnitModelTypes(
                                      GameConfig.instance.culture, "civilian",
                                      UnitDefs)
@@ -182,11 +185,9 @@ function bagDanglignDiagnostics()
                 WTurn(LowArm2, axis, math.rad(i),0)
                 WTurn(ShoppingBag, 1, math.rad(math.random(-360,360)), 0)
                 handleBagSwinging()
-
-                Sleep(1)
+                Sleep(5000)
                 WaitForTurns(ShoppingBag)
-                WaitForTurns(Handbag)
-                Sleep(1000)
+                WaitForTurns(Handbag)                
             end
         end
     end
@@ -464,6 +465,7 @@ function bodyBuild()
        if  bodyConfig.boolHandbag then
             if Handbag then
                 handBagConfig  = initializePendulumConfig(unitID, Handbag, parentPieceMap, math.pi/2, 3)
+                StartThread(swingPendulum, unitID, handBagConfig) 
             end
 
             if maRa() then
@@ -474,6 +476,7 @@ function bodyBuild()
         if carriesShoppingBag() then
             Show(ShoppingBag);
             shoppingBagConfig  = initializePendulumConfig(unitID, ShoppingBag, parentPieceMap, math.pi/2, 3)
+            StartThread(swingPendulum, unitID, shoppingBagConfig) 
             return
         end
 
@@ -709,7 +712,7 @@ function peacefullProtest()
             pos.x = myOffsetX + pos.x 
             pos.z = myOffsetZ + pos.z
         end
-		Command(unitID, "go", {x = pos.x, y = 0, z = pos.z})
+	Command(unitID, "go", {x = pos.x, y = 0, z = pos.z})
         handleBagSwinging()
         Sleep(3000)
     end
@@ -1094,8 +1097,8 @@ end
 
 function handleBagSwinging()
     --has handbag
-    if carriesShoppingBag() and shoppingBagConfig  then StartThread(swingPendulum, unitID, shoppingBagConfig) end
-    if bodyConfig.boolHandbag and handBagConfig then StartThread(swingPendulum, unitID, handBagConfig) end
+    if carriesShoppingBag() and shoppingBagConfig  then  shoppingBagConfig.iterations = shoppingBagConfig.iterations + 2 end
+    if bodyConfig.boolHandbag and handBagConfig then handBagConfig.iterations = handBagConfig.iterations + 2 end
 end
 
 function constructSkeleton(unit, piece, offset)
@@ -1354,7 +1357,7 @@ function threadStateStarter()
             boolStartAnarchyBehaviour = false
             StartThread(anarchyBehaviour)
         end
-        --TODO: Hunt revealed antagon agents?
+        todo("Hunt revealed antagon agents?")
 
          if boolStartAerosolBehaviour == true then
             boolStartAerosolBehaviour = false
@@ -1855,7 +1858,7 @@ function hideProtestSign()
     resetT(TablesOfPiecesGroups["Quest"])
     hideT(TablesOfPiecesGroups["Exclam"])
     resetT(TablesOfPiecesGroups["Exclam"])
-	Hide(ProtestSign)
+    Hide(ProtestSign)
 end
 
 function makeProtestSign(xIndexMax, zIndexMax, sizeLetterX, sizeLetterZ,
@@ -1947,7 +1950,9 @@ function rgpAimFunction(weaponID, heading, pitch)
     return allowTarget(weaponID)
 end
 
+GunMuzzleFlash = 1024
 function akFireFunction(weaponID, heading, pitch)
+    EmitSfx(myGun, GunMuzzleFlash)
     boolAiming = false
     return true
 end
@@ -2003,6 +2008,8 @@ function script.QueryWeapon(weaponID)
 end
 
 function script.AimWeapon(weaponID, heading, pitch)
+    if boolCloaked then return false end 
+
     if WeaponsTable[weaponID] then
         if WeaponsTable[weaponID].aimfunc then
             return WeaponsTable[weaponID].aimfunc(weaponID, heading, pitch)

@@ -562,7 +562,8 @@ function initializePendulumConfig(unitID, pieceId, parentPieceMap, speed, iterat
                 speed = speed, 
                 iterations = iterations, 
                 parentPieceMap = parentPieceMap, 
-                pieceId = pieceId
+                pieceId = pieceId,
+                counterSemaphore = iterations
             }
 end
 
@@ -597,57 +598,64 @@ function swingPendulum(unitID, config )
    local down = getDown()
    parentPieceMap = config.parentPieceMap
    pieceId = config.pieceId  
-   worldMat = getPieceWorldMatrix(unitID, pieceId, parentPieceMap)
-   iterations = config.iterations
    speed = config.speed
-   -- extract rotation only (upper 3x3)
-   local rot = {
-      {worldMat[1][1], worldMat[1][2], worldMat[1][3]},
-      {worldMat[2][1], worldMat[2][2], worldMat[2][3]},
-      {worldMat[3][1], worldMat[3][2], worldMat[3][3]},
-   }
-
-   -- invert rotation (transpose, since pure rotation)
-   local inv = {
-      {rot[1][1], rot[2][1], rot[3][1]},
-      {rot[1][2], rot[2][2], rot[3][2]},
-      {rot[1][3], rot[2][3], rot[3][3]},
-   }
-
-   -- transform world gravity (0,-1,0) into piece local space
-   local lx = inv[1][1]*down[1] + inv[1][2]*down[2] + inv[1][3]*down[3]
-   local ly = inv[2][1]*down[1] + inv[2][2]*down[2] + inv[2][3]*down[3]
-   local lz = inv[3][1]*down[1] + inv[3][2]*down[2] + inv[3][3]*down[3]
-
-   local tx,ty,tz = normalize(lx,ly,lz)
-
-   -- base orientation
-   local baseYaw, basePitch = vecToEuler(tx,ty,tz)
    local up = getUp()
-   -- choose swing axis: perpendicular to gravity & bag direction
-   local ax,ay,az = normalize(
-      ty*up[1] - tz * up[2],  -- cross product with world up (0,1,0)
-      tz*up[3] - tx * up[3],
-      tx*up[2] - ty * up[1]
-   )
-
    -- pendulum swing
    local factor = 1.0
    local dir = 1
-   for i=1,iterations do
-      local angle = dir * factor * 0.3   -- swing amplitude in radians
-      local sx,sy,sz = rotateAroundAxis(tx,ty,tz, ax,ay,az, angle)
 
-      local swingYaw, swingPitch = vecToEuler(sx,sy,sz)
-      Turn(pieceId, y_axis, swingYaw,   speed or 0)
-      Turn(pieceId, x_axis, swingPitch, speed or 0)
-      WaitForTurns(pieceId)
-      Sleep(33) -- one frame
-      dir = -dir
-      factor = factor * 0.95
+   while true do
+        Sleep(99) --
+        if config.iterations > 0 then
+            worldMat = getPieceWorldMatrix(unitID, pieceId, parentPieceMap)
+               -- extract rotation only (upper 3x3)
+           local rot = {
+              {worldMat[1][1], worldMat[1][2], worldMat[1][3]},
+              {worldMat[2][1], worldMat[2][2], worldMat[2][3]},
+              {worldMat[3][1], worldMat[3][2], worldMat[3][3]},
+           }
+
+           -- invert rotation (transpose, since pure rotation)
+           local inv = {
+              {rot[1][1], rot[2][1], rot[3][1]},
+              {rot[1][2], rot[2][2], rot[3][2]},
+              {rot[1][3], rot[2][3], rot[3][3]},
+           }
+
+           -- transform world gravity (0,-1,0) into piece local space
+           local lx = inv[1][1]*down[1] + inv[1][2]*down[2] + inv[1][3]*down[3]
+           local ly = inv[2][1]*down[1] + inv[2][2]*down[2] + inv[2][3]*down[3]
+           local lz = inv[3][1]*down[1] + inv[3][2]*down[2] + inv[3][3]*down[3]
+
+           local tx,ty,tz = normalize(lx,ly,lz)
+
+           -- base orientation
+           local baseYaw, basePitch = vecToEuler(tx,ty,tz)
+
+           -- choose swing axis: perpendicular to gravity & bag direction
+           local ax,ay,az = normalize(
+              ty*up[1] - tz * up[2],  -- cross product with world up (0,1,0)
+              tz*up[3] - tx * up[3],
+              tx*up[2] - ty * up[1]
+           )
+      while config.iterations > 0 do
+        local angle = dir * factor * 0.3   -- swing amplitude in radians
+        local sx,sy,sz = rotateAroundAxis(tx,ty,tz, ax,ay,az, angle)
+
+        local swingYaw, swingPitch = vecToEuler(sx,sy,sz)
+        Turn(pieceId, y_axis, swingYaw,   speed or 0)
+        Turn(pieceId, x_axis, swingPitch, speed or 0)
+        WaitForTurns(pieceId)
+        Sleep(33) -- one frame
+        dir = -dir
+        factor = factor * 0.95
+        config.iterations = config.iterations - 1
+        end
+
+        Turn(pieceId, y_axis, baseYaw,   speed or 0)
+        Turn(pieceId, x_axis, basePitch, speed or 0)
    end
 
    -- settle at center
-   Turn(pieceId, y_axis, baseYaw,   speed or 0)
-   Turn(pieceId, x_axis, basePitch, speed or 0)
+
 end
