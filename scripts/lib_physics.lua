@@ -638,7 +638,7 @@ function swingPendulum(unitID, config )
               tz*up[3] - tx * up[3],
               tx*up[2] - ty * up[1]
            )
-      while config.iterations > 0 do
+        while config.iterations > 0 do
         local angle = dir * factor * 0.3   -- swing amplitude in radians
         local sx,sy,sz = rotateAroundAxis(tx,ty,tz, ax,ay,az, angle)
 
@@ -654,8 +654,7 @@ function swingPendulum(unitID, config )
 
         Turn(pieceId, y_axis, baseYaw,   speed or 0)
         Turn(pieceId, x_axis, basePitch, speed or 0)
-   end
-
+        end
+    end
    -- settle at center
-
 end

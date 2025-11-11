@@ -462,15 +462,12 @@ function bodyBuild()
  
 
     if bodyConfig.boolLoaded == true and bodyConfig.boolWounded == false then
-       if  bodyConfig.boolHandbag then
-            if Handbag then
-                handBagConfig  = initializePendulumConfig(unitID, Handbag, parentPieceMap, math.pi/2, 3)
-                StartThread(swingPendulum, unitID, handBagConfig) 
-            end
-
+       if  bodyConfig.boolHandbag and Handbag then         
             if maRa() then
                 Show(Handbag);               
             end
+            handBagConfig  = initializePendulumConfig(unitID, Handbag, parentPieceMap, math.pi/2, 3)
+            StartThread(swingPendulum, unitID, handBagConfig)        
         end
 
         if carriesShoppingBag() then
