@@ -1,7 +1,7 @@
 -- ===================================================================================================================
 -- Game Configuration
  GG.unitFactor = 0.80
- GameVersion = "1.022"  --UpdateFlag
+ GameVersion = "1.023"  --UpdateFlag
  function setUnitFactor(modOptions)
     GG.unitFactor = modOptions.unitfactor or 0.8
  end
