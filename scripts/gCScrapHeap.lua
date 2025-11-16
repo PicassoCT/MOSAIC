@@ -12,10 +12,15 @@ distanceToGoDown = 90
 TablesOfPiecesGroups = {}
 function script.Killed()  end
 
-
+function playCollapseSound()
+    soundFilePath = "sounds/building/collapse"
+    collapseSoundFilePaths = getFilesInPath(path, "*.ogg")
+    Spring.PlaySoundFile(getRandomElementFromTable(collapseSoundFilePaths), 1.0)
+end
 
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
+    playCollapseSound()
     randHide(TablesOfPiecesGroups["scrapHeap"])
     randHide(TablesOfPiecesGroups["corn"])
     randHide(TablesOfPiecesGroups["girder"])

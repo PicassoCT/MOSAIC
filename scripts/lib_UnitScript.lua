@@ -11,7 +11,8 @@ Section: Code Generation
 Section: String Operations
 Section: Debug Tools 
 Section: Random 
-Section: Physics 
+Section: VFS
+
 Section: Sound
 Section: Ressources
 Section: Unit Commands
@@ -595,6 +596,20 @@ function showTSubSpins(pieceID, TableOfPiecesGroups, selectExt, countDown)
         showTSpins(pieceName, TableOfPiecesGroups, selector, countDown)
     end
 end
+
+function showTSubSubSpins(pieceID, TableOfPiecesGroups, selectExt, countDown)
+    local pieceName = getUnitPieceName(unitID, pieceID)
+    local selector = selectExt or maRa
+    if pieceName then
+        showTSubs(pieceName, TableOfPiecesGroups, selector, countDown)
+        showTSpins(pieceName, TableOfPiecesGroups, selector, countDown)
+        subSubName = pieceName.."Sub"
+        if TableOfPiecesGroups[subSubName] then
+            showTSubSpins(subSubName, TableOfPiecesGroups, selector, countDown)
+        end
+    end
+end
+
 
 function setNoneCollide(unitId)
     oldCol = getCollideData(unitID)
@@ -3912,6 +3927,8 @@ function getFileNameFromPath(path)
     return path:match("([^/\\]+)$")
 end
 
+
+
 -- > Displays Text at UnitPos Thread
 -- >> Expects a table with Line "Text", a speaker Name "Text", a DelayByLine "Numeric", a Alpha from wich it will start decaying "Numeric"
 function say(LineNameTimeT, timeToShowMs, NameColour, TextColour, OptionString,
@@ -4224,6 +4241,15 @@ function isInTable(T, val)
     end
     return false
 end 
+
+-- ======================================================================================
+-- Section: VFS
+-- ======================================================================================
+
+function getFilesInPath(path, endingPattern)
+    assert(VFS)
+    return VFS.DirList(path, endingPattern)
+end
 
 -- ======================================================================================
 -- Section: Random 

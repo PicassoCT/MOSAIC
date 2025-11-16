@@ -975,7 +975,7 @@ function buildAnimation()
 
         return
     end
-    StartThread(PlaySoundByUnitDefID, unitDefID, "sounds/gCrubbleHeap/construction/construction"..math.random(1,7)..".ogg", 1.0, 20000, 3, 0)
+    StartThread(PlaySoundByUnitDefID, unitDefID, "sounds/building/construction/construction"..math.random(1,7)..".ogg", 1.0, 20000, 3, 0)
     local builT = TablesOfPiecesGroups["Build"]
     axis = _y_axis
     for i = 1, 3 do WMove(builT[i], axis, i * -cubeDim.heigth * 2, 0) end

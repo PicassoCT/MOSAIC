@@ -1246,7 +1246,7 @@ function buildAnimation()
     showBuildCompanysLogo()
     axis = _z_axis
 
-    StartThread(PlaySoundByUnitDefID, unitDefID, "sounds/gCrubbleHeap/construction/construction"..math.random(1,7)..".ogg", 1.0, 20000, 3)
+    StartThread(PlaySoundByUnitDefID, unitDefID, "sounds/building/construction/construction"..math.random(1,7)..".ogg", 1.0, 20000, 3)
     Hide(Icon)
     StartThread(ropeLoop)
 
