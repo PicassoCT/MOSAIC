@@ -550,7 +550,7 @@ function removeFeaturesInCircle(px, pz, radius)
         )
 end
 
-function showTSubs(pieceName, TableOfPiecesGroups, selector, countDown)   
+function showTSubs(pieceName, TableOfPiecesGroups, selector, countDown, boolRecurse)   
    subSpinPieceName = pieceName.."Sub"    
    if TableOfPiecesGroups[subSpinPieceName] then    
     selectorState = nil         
@@ -558,6 +558,10 @@ function showTSubs(pieceName, TableOfPiecesGroups, selector, countDown)
         selectorResult, selectorState = selector(selectorState)
         if selectorResult then
             subPiece = TableOfPiecesGroups[subSpinPieceName][i]
+            if boolRecurse then
+                showTSubs(subSpinPieceName, TableOfPiecesGroups, selector, countDown, boolRecurse)   
+            end
+
             Show(subPiece)
             if countDown then
                 countDown= countDown -1 
@@ -601,12 +605,9 @@ function showTSubSubSpins(pieceID, TableOfPiecesGroups, selectExt, countDown)
     local pieceName = getUnitPieceName(unitID, pieceID)
     local selector = selectExt or maRa
     if pieceName then
-        showTSubs(pieceName, TableOfPiecesGroups, selector, countDown)
+        showTSubs(pieceName, TableOfPiecesGroups, selector, countDown, true)
         showTSpins(pieceName, TableOfPiecesGroups, selector, countDown)
-        subSubName = pieceName.."Sub"
-        if TableOfPiecesGroups[subSubName] then
-            showTSubSpins(subSubName, TableOfPiecesGroups, selector, countDown)
-        end
+      
     end
 end
 
@@ -691,6 +692,7 @@ end
 
 -- > 
 function showHide(id, bShow)
+    assert(id)
     if bShow == true then
         Show(id)
     else

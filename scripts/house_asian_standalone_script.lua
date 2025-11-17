@@ -489,7 +489,7 @@ function buildBuilding()
         pieceToShow = findLowestPieceInTableFromWithSuggestion( (hash % count(ArcoT)) + 1, ArcoT)
         if Mega[pieceToShow] then     GG.MegaBuildingCount = GG.MegaBuildingCount  +1 end
         addToShowTable(pieceToShow)
-        showTSubSpins(pieceToShow, TablesOfPieceGroups, maRa, 1)
+        showTSubSubSpins(pieceToShow, TablesOfPieceGroups, maRa, math.random(1,4))
         registerRooftopSubPieces(pieceToShow)
         pieceToShowLightBlink(pieceToShow)
     else --Project
