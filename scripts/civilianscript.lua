@@ -36,7 +36,7 @@ local SIG_RPG = 256
 local function randomMultipleByNameOrDefault(name, index)
     if randChance(25) then
         if map[name] then
-            assert(piece(name), name)
+            assert(piece(name), name .. " udef: "..getUnitName(unitID))
             return piece(name)
         end
     end
