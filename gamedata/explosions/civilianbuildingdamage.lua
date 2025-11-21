@@ -1,7 +1,6 @@
      
     return {
-      ["civilbuildingdamage"] = {
-	  
+      ["civilbuildingdamage"] = {	  
   papers = {
       air                = true,
       class              = [[CSimpleParticleSystem]] ,	
@@ -11,13 +10,13 @@
       water              = false,
       properties = {
         airdrag            = 1,
-        colormap           = [[0.8  0.8  0.8  0.3   0.8  0.8  0.8  1 	0.8  0.8  0.8  1   	]],	
+        colormap           = [[0.8  0.8  0.8  0.3   0.8  0.8  0.8  1 	0.8  0.8  0.8  1]],	
 		
         directional        = true,
         emitrot            = 25,
         emitrotspread      = 40,
         emitvector         = [[0,0.3,0]],	
-       gravity            = [[0, -0.0027, 0]] , 
+        gravity            = [[0, -0.0027, 0]] , 
         numparticles       = 3,
         particlelife       = 80,
         particlelifespread = 227,
@@ -29,8 +28,7 @@
 		 
         sizegrowth         = [[0.0 ]] ,
         sizemod            = 1.0,
-        texture            = [[paper]] ,
-		
+        texture            = [[paper]] ,		
         useairlos          = false,
       },
     },
@@ -43,13 +41,12 @@
       water              = false,
       properties = {
         airdrag            = 1,
-        colormap           = [[0.8  0.8  0.8  0.3   0.8  0.8  0.8  1  0.8  0.8  0.8  1    ]], 
-    
+        colormap           = [[0.8  0.8  0.8  0.3   0.8  0.8  0.8  1  0.8  0.8  0.8  1]],     
         directional        = true,
         emitrot            = 25,
         emitrotspread      = 40,
         emitvector         = [[0,0.1,0]], 
-       gravity            = [[0, -0.0027, 0]] , 
+        gravity            = [[0, -0.0027, 0]] , 
         numparticles       = 3,
         particlelife       = 80,
         particlelifespread = 227,
@@ -61,10 +58,9 @@
      
         sizegrowth         = [[0.0 ]] ,
         sizemod            = 1.0,
-        texture            = [[burnedPaper]] ,
-    
+        texture            = [[burnedPaper]] ,    
         useairlos          = false,
       },
-    },
-	   
+    },	   
+  }
 }

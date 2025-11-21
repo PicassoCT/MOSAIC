@@ -166,9 +166,14 @@ function showLogo()
     hideTReg(TablesOfPiecesGroups["PornoRama"])
 end
 
+function delayedAlwaysVisble()
+    Sleep(9000)
+    Spring.SetUnitAlwaysVisible(unitID, true)
+end
+
 function script.Create()
     --echo(UnitDefs[unitDefID].name.."has placeholder script called")
-    Spring.SetUnitAlwaysVisible(unitID, true)
+    StartThread(delayedAlwaysVisble)
     Spring.SetUnitNoSelect(unitID, true)
     Spring.SetUnitBlocking(unitID, false)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)

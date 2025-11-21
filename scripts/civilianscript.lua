@@ -36,6 +36,7 @@ local SIG_RPG = 256
 local function randomMultipleByNameOrDefault(name, index)
     if randChance(25) then
         if map[name] then
+            assert(piece(name), name)
             return piece(name)
         end
     end
@@ -209,7 +210,7 @@ function script.Create()
 
     --Handbag does not rotate with the pieces, its 
     cofee = randomMultipleByNameOrDefault("cofee")
-
+    assert(cofee)
     myGun = getSafeRandom(gunsTable, gunsTable[1])
     makeWeaponsTable(myGun)
 
@@ -1457,14 +1458,18 @@ end
 function showHideProps(selectedIdleFunction, bShow)
     -- 1 slaved
     if selectedIdleFunction == 2 then
+        assert(#TablesOfPiecesGroups["cellphone"])
         index = unitID % (#TablesOfPiecesGroups["cellphone"])
         index = math.min(#TablesOfPiecesGroups["cellphone"], math.max(1, index))
+        assert(TablesOfPiecesGroups["cellphone"][index], getUnitName(unitID).." >> "..index)
         showHide(TablesOfPiecesGroups["cellphone"][index], bShow)
     elseif selectedIdleFunction == 3 then -- consumption
         if unitID % 2 == 1 then
+            assert(cigarett)
             showHide(cigarett, bShow)
             StartThread(cigarettGlowAndSmoke)
         else
+            assert(cofee, UnitDefs[Spring.GetUnitDefID(unitID)].name)
             showHide(cofee, bShow)
         end
     end
@@ -1472,8 +1477,7 @@ end
 
 function playUpperBodyIdleAnimation()
     if bodyConfig.boolLoaded == false then
-        selectedIdleFunction =
-            (unitID % #uppperBodyAnimations[eAnimState.idle]) + 1
+        selectedIdleFunction = (unitID % #uppperBodyAnimations[eAnimState.idle]) + 1
         showHideProps(selectedIdleFunction, true)
         PlayAnimation(
             uppperBodyAnimations[eAnimState.idle][selectedIdleFunction])

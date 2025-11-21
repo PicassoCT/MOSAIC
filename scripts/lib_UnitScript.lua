@@ -551,22 +551,26 @@ function removeFeaturesInCircle(px, pz, radius)
 end
 
 function showTSubs(pieceName, TableOfPiecesGroups, selector, countDown, boolRecurse)   
-   subSpinPieceName = pieceName.."Sub"    
+   local subSpinPieceName = pieceName.."Sub"    
    if TableOfPiecesGroups[subSpinPieceName] then    
     selectorState = nil         
     for i=1, #TableOfPiecesGroups[subSpinPieceName] do
         selectorResult, selectorState = selector(selectorState)
         if selectorResult then
+            assert(TableOfPiecesGroups[subSpinPieceName], subSpinPieceName)
+            assert(TableOfPiecesGroups[subSpinPieceName][i], subSpinPieceName.." "..i)
             subPiece = TableOfPiecesGroups[subSpinPieceName][i]
-            if boolRecurse then
-                showTSubs(subSpinPieceName, TableOfPiecesGroups, selector, countDown, boolRecurse)   
+            Show(subPiece)
+            fullName= subSpinPieceName .. i
+            if boolRecurse and TableOfPiecesGroups[fullName] then
+                showTSubs(fullName, TableOfPiecesGroups, selector, countDown, boolRecurse)   
             end
 
-            Show(subPiece)
             if countDown then
                 countDown= countDown -1 
                 if countDown <= 0 then return end
             end
+
         end
     end
    end
@@ -606,8 +610,7 @@ function showTSubSubSpins(pieceID, TableOfPiecesGroups, selectExt, countDown)
     local selector = selectExt or maRa
     if pieceName then
         showTSubs(pieceName, TableOfPiecesGroups, selector, countDown, true)
-        showTSpins(pieceName, TableOfPiecesGroups, selector, countDown)
-      
+        showTSpins(pieceName, TableOfPiecesGroups, selector, countDown)      
     end
 end
 
@@ -690,15 +693,28 @@ function returnToWorld(unit, px, py, pz)
     Spring.SetUnitNoSelect(unit, false)
 end
 
+function assertValidPiece(id)
+    pieceList = Spring.GetUnitPieceList(unitID)
+    if not pieceList[id] then
+        echo("Not a valid unit piece "..toString(id).. " in "..getUnitName(unitID))
+    end
+end
+
+function assertPieceInUnitContext(id)
+    assert(unitID)
+    assert(id)
+    assertValidPiece(id)    
+end
 -- > 
 function showHide(id, bShow)
-    assert(id)
+    assertPieceInUnitContext(id)
     if bShow == true then
         Show(id)
     else
         Hide(id)
     end
 end
+
 
 function showAllSubsSpinsOfPiece(T, pieceGroupName, nr)
     if not nr then 

@@ -51,10 +51,15 @@ function setUnitActive(boolWantActive)
     end
 end
 
+function delayedAlwaysVisble()
+    Sleep(9000)
+    Spring.SetUnitAlwaysVisible(unitID, true)
+end
+
 function script.Create()
     defineMaxSoundFiles()
     --echo(UnitDefs[unitDefID].name.."has placeholder script called")
-    Spring.SetUnitAlwaysVisible(unitID, true)
+    StartThread(delayedAlwaysVisble)
     setUnitActive(unitID, false)
     setUnitActive(unitID, true)
      --Spring.SetUnitNoSelect(unitID, true)
