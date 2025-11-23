@@ -810,6 +810,7 @@ function showWallDayTime(name)
             end
 
             for i=1, #TableOfPiecesGroups[name] do
+                assert(TableOfPiecesGroups[name][i], name..i.." non existant")
                 HideReg(TableOfPiecesGroups[name][i])
                 hideSubSpins(TableOfPiecesGroups[name][i])
                 rest= ((i % 3)+1)*1000
@@ -928,7 +929,7 @@ function HoloGrams()
         start = (getLocationHash(unitID) % #TableOfPiecesGroups["buisness_holo"]) + 1
         for i=start, #TableOfPiecesGroups["buisness_holo"] do
             element = TableOfPiecesGroups["buisness_holo"][i]
-
+            assert(element, "buisness_holo"..i)
             if not GG.HoloLogoRegister.western[element] then
                 GG.HoloLogoRegister.western[element] = 1
                 logo = element
@@ -944,6 +945,7 @@ function HoloGrams()
         if not boolDone then
             for i=1, start do
                 element = TableOfPiecesGroups["buisness_holo"][i] 
+                assert(element, "buisness_holo"..i)
                 if not GG.HoloLogoRegister.western[element] then
                     GG.HoloLogoRegister.western[element] = 1
                     logo = element

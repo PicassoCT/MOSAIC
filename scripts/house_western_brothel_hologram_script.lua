@@ -741,6 +741,7 @@ function showWallDayTime(name)
             end
 
             for i=1, #TableOfPiecesGroups[name] do
+                assert(TableOfPiecesGroups[name][i], name..i)
                 HideReg(TableOfPiecesGroups[name][i])
                 hideSubSpins(TableOfPiecesGroups[name][i])
                 rest= ((i % 3)+1)*1000

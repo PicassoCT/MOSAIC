@@ -85,7 +85,10 @@ end
 local specials = {
     buildRunDeterministicAdvertisement,
     buildRunCandleSpot,
-    buildRunProGenicsSpot
+    buildRunProGenicsSpot,
+    buildRunDeterministicAdvertisement,
+    buildRunDeterministicAdvertisement,
+    buildRunDeterministicAdvertisement
 }
 
 function advertisingLoop()

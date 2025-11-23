@@ -427,8 +427,10 @@ function showSubs(pieceID)
 end
 
 function showSpins(pieceID)
+   assert(pieceID)
+   assert(type(pieceID)=="number")
    local pieceName = getUnitPieceName(unitID, pieceID)
-   showSubs(piecID)
+   showSubs(pieceID)
    subSpinPieceName = pieceName.."Spin"    
    if TableOfPiecesGroups[subSpinPieceName] then  
     hideTReg(TableOfPiecesGroups[subSpinPieceName] )              
@@ -469,15 +471,19 @@ function deterministiceSetup()
         if randChance(75) then
             logoPiece = deterministicElement( getDeterministicRandom(getLocationHash(unitID), #TableOfPiecesGroups["HoloLogo"]), TableOfPiecesGroups["HoloLogo"])
             if logoPiece then
+                assert(logoPiece)
+                assert(pieceID_NameMap[logoPiece], "HoloLogo")
                 showSpins(logoPiece)
                 ShowReg(logoPiece)
                 Spin(logoPiece, y_axis, math.rad(1.2)*randSign(), 0)
                 if maRa() then
                     legoPiece, index = getSafeRandom(TableOfPiecesGroups["HoloLogo"])
                     if legoPiece then
-                    showSpins(legoPiece)
-                    ShowReg(legoPiece)
-                    Spin(legoPiece, y_axis, math.rad(1.2)*randSign(), 0)
+                        assert(legoPiece)
+                        assert(pieceID_NameMap[legoPiece], "HoloLogo")
+                        showSpins(legoPiece)
+                        ShowReg(legoPiece)
+                        Spin(legoPiece, y_axis, math.rad(1.2)*randSign(), 0)
                     else
                         echo("No HologLogo for "..index)
                         assert(false)

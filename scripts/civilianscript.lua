@@ -34,20 +34,28 @@ local SIG_INTERNAL = 128
 local SIG_RPG = 256
 
 local function randomMultipleByNameOrDefault(name, index)
-    if randChance(25) then
-        if map[name] then
-            assert(piece(name), name .. " udef: "..getUnitName(unitID))
-            return piece(name)
+
+    if randChance(75) and TablesOfPiecesGroups[name] then
+        if index and TablesOfPiecesGroups[name][index] then
+             return TablesOfPiecesGroups[name][index]
         end
+        
+        return TablesOfPiecesGroups[name][math.random(1,#TablesOfPiecesGroups[name])]
+    end  
+    
+    if map[name] then
+        return piece(name)
     end
 
     if TablesOfPiecesGroups[name] then
-        if index then
+        if index and TablesOfPiecesGroups[name][index] then
              return TablesOfPiecesGroups[name][index]
-         else
-            return TablesOfPiecesGroups[name][math.random(1,#TablesOfPiecesGroups[name])]
         end
-    end   
+        
+        return TablesOfPiecesGroups[name][math.random(1,#TablesOfPiecesGroups[name])]
+    end
+
+    assert( nil, "piece not in piecegroup or single "..name.. " in unit "..getUnitName(unitID))
 end
 
 local center = piece('center');

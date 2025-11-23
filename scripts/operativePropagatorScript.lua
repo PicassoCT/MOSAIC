@@ -210,7 +210,7 @@ function script.Create()
 	hideAll(unitID)
 	
 	shownPieces = randShowHide(unpack(TablesOfPiecesGroups["HeadDeco"]))
-	StartThread(trenchCoateAnimation)
+	StartThread(trenchCoatAnimation)
 	showBody()
 	setupAnimation()
     Show(FoldtopUnfolded)
@@ -296,7 +296,7 @@ end
 
 accumulatedRoatationChange = 0
 swaySpeed = 2
-function trenchCoateAnimation()
+function trenchCoatAnimation()
 	--trenchcoat upper Part existing and active
 	if not TablesOfPiecesGroups["HeadDeco"][7] then return end
 	boolFoundTrenchCoat= false
@@ -333,7 +333,7 @@ function trenchCoateAnimation()
 	local curveLength = (math.pi)/5
 
 	while true do
-		accumulatedRoatationChange = accumulatedRoatationChange * 0.995
+		accumulatedRoatationChange = accumulatedRoatationChange * 0.95
 		swaySpeed = math.max(2, swaySpeed * 0.95)
 		UpdateCoatAnimation(accumulatedRoatationChange, 2)
 		Sleep(100) -- Update Rate every 100 Ms (3 frames)

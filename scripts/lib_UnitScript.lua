@@ -552,6 +552,7 @@ end
 
 function showTSubs(pieceName, TableOfPiecesGroups, selector, countDown, boolRecurse)   
    local subSpinPieceName = pieceName.."Sub"    
+   resultTable = {}
    if TableOfPiecesGroups[subSpinPieceName] then    
     selectorState = nil         
     for i=1, #TableOfPiecesGroups[subSpinPieceName] do
@@ -561,23 +562,25 @@ function showTSubs(pieceName, TableOfPiecesGroups, selector, countDown, boolRecu
             assert(TableOfPiecesGroups[subSpinPieceName][i], subSpinPieceName.." "..i)
             subPiece = TableOfPiecesGroups[subSpinPieceName][i]
             Show(subPiece)
+            resultTable[#resultTable +1] = subPiece
             fullName= subSpinPieceName .. i
             if boolRecurse and TableOfPiecesGroups[fullName] then
-                showTSubs(fullName, TableOfPiecesGroups, selector, countDown, boolRecurse)   
+                resultTable = mergeTable(resultTable, showTSubs(fullName, TableOfPiecesGroups, selector, countDown, boolRecurse))
             end
 
             if countDown then
                 countDown= countDown -1 
-                if countDown <= 0 then return end
+                if countDown <= 0 then return resultTable end
             end
-
         end
     end
    end
+   return resultTable
 end
 
-function showTSpins(pieceName, TableOfPiecesGroups, selector, countDown)
-   subSpinPieceName = pieceName.."Spin"    
+function showTSpins(pieceName, TableOfPiecesGroups, selector, countDown, boolRecurse)
+   subSpinPieceName = pieceName.."Spin"  
+   resultTable = {}  
    if TableOfPiecesGroups[subSpinPieceName] then 
     selectorState = nil          
     for i=1, #TableOfPiecesGroups[subSpinPieceName] do  
@@ -585,33 +588,39 @@ function showTSpins(pieceName, TableOfPiecesGroups, selector, countDown)
         if selectorResult then  
             spinPiece = TableOfPiecesGroups[subSpinPieceName][i]
             Show(spinPiece)
+            resultTable[#resultTable+1] = spinPiece
             Spin(spinPiece,y_axis, math.rad(-42 * randSign()),0)
             if countDown then
                 countDown= countDown -1 
-                if countDown <= 0 then return end
+                if countDown <= 0 then return resultTable end
             end
 
         end
     end
    end
+   return resultTable
 end
 
 function showTSubSpins(pieceID, TableOfPiecesGroups, selectExt, countDown)
     local pieceName = getUnitPieceName(unitID, pieceID)
     local selector = selectExt or maRa
     if pieceName then
-        showTSubs(pieceName, TableOfPiecesGroups, selector, countDown)
-        showTSpins(pieceName, TableOfPiecesGroups, selector, countDown)
+        shownSubs = showTSubs(pieceName, TableOfPiecesGroups, selector, countDown, false)
+        shownSpins = showTSpins(pieceName, TableOfPiecesGroups, selector, countDown, false)
+        return mergeTables(shownSubs, shownSpins)
     end
+    return {}
 end
 
 function showTSubSubSpins(pieceID, TableOfPiecesGroups, selectExt, countDown)
     local pieceName = getUnitPieceName(unitID, pieceID)
     local selector = selectExt or maRa
     if pieceName then
-        showTSubs(pieceName, TableOfPiecesGroups, selector, countDown, true)
-        showTSpins(pieceName, TableOfPiecesGroups, selector, countDown)      
+        shownSubs = showTSubs(pieceName, TableOfPiecesGroups, selector, countDown, true)
+        shownSpins = showTSpins(pieceName, TableOfPiecesGroups, selector, countDown, false)      
+        return mergeTables(shownSubs, shownSpins)
     end
+    return {}
 end
 
 
@@ -839,8 +848,10 @@ end
 
 -- > return the Name of a UnitPiece as String
 function getUnitPieceName(unitID, pieceNum)
+    if not pieceNum then Spring.Echo(toString(pieceNum) .." does not exist in "..getUnitName(unitID)); return end
     pieceList = Spring.GetUnitPieceList(unitID)
-    return pieceList[pieceNum] or "No such Piece "..unitID
+    
+    return pieceList[pieceNum] 
 end
 
 -- > Returns a Map of Pieces and there Position in World Coords
@@ -1153,6 +1164,16 @@ function getUnitPieceVolume(unit, Piece)
     return 0
 end
 
+function validatePieceGroups(T)
+    for name, groupT in pairs(T) do
+        for i=1, #groupT do
+            if not groupT[i] then
+                assert(nil, "Group "..name.." has missing member "..i)
+            end
+        end
+    end
+end
+
 -- > finds GenericNames and Creates Tables with them
 function getPieceTableByNameGroups(boolMakePiecesTable, boolSilent)
 
@@ -1237,7 +1258,7 @@ function getPieceTableByNameGroups(boolMakePiecesTable, boolSilent)
             end
             ReturnTable[tableName] = PackedAllNames
         end
-
+        validatePieceGroups(ReturnTable)
         return ReturnTable
     end
 end

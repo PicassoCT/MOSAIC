@@ -209,6 +209,12 @@ function setArcologyProjectsName(id, isArcology)
         Spring.SetUnitTooltip(id,  name .. ": " .. description )
 end
 
+function addTableToShowTable(element)
+    for i=1, #element do
+    ToShowTable[#ToShowTable + 1] = element[i]
+    toShowDict[element] = true
+    end
+end
 
 
 function addToShowTable(element)
@@ -489,14 +495,14 @@ function buildBuilding()
         pieceToShow = findLowestPieceInTableFromWithSuggestion( (hash % count(ArcoT)) + 1, ArcoT)
         if Mega[pieceToShow] then     GG.MegaBuildingCount = GG.MegaBuildingCount  +1 end
         addToShowTable(pieceToShow)
-        showTSubSubSpins(pieceToShow, TablesOfPieceGroups, maRa, math.random(2,4))
+        addTableToShowTable(showTSubSubSpins(pieceToShow, TablesOfPieceGroups, maRa, math.random(2,4)))
         registerRooftopSubPieces(pieceToShow)
         pieceToShowLightBlink(pieceToShow)
     else --Project
         pieceToShow = findLowestPieceInTableFromWithSuggestion((hash % count(ProjectT)) + 1, ProjectT)
         if Mega[pieceToShow] then     GG.MegaBuildingCount = GG.MegaBuildingCount  +1 end
         addToShowTable(pieceToShow)
-        showTSubSpins(pieceToShow, TablesOfPieceGroups, maRa, 2)
+        addTableToShowTable(showTSubSpins(pieceToShow, TablesOfPieceGroups, maRa, 2))
         registerRooftopSubPieces(pieceToShow)
         pieceToShowLightBlink(pieceToShow)
     end
@@ -504,7 +510,7 @@ function buildBuilding()
         pieceToShow = findLowestPieceInTableFromWithSuggestion((hash  % count(ProjectT)) + 1 , ProjectT)
         
         if not Mega[pieceToShow] then
-            showTSubSpins(pieceToShow, TablesOfPieceGroups, maRa, 1)
+            addTableToShowTable(showTSubSpins(pieceToShow, TablesOfPieceGroups, maRa, 1))
             registerRooftopSubPieces(pieceToShow)
             addToShowTable(pieceToShow)
             pieceToShowLightBlink(pieceToShow)
