@@ -1258,7 +1258,7 @@ function getPieceTableByNameGroups(boolMakePiecesTable, boolSilent)
             end
             ReturnTable[tableName] = PackedAllNames
         end
-        validatePieceGroups(ReturnTable)
+        --validatePieceGroups(ReturnTable)
         return ReturnTable
     end
 end

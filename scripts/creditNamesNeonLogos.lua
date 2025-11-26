@@ -1,5 +1,7 @@
 
 return {
+"silverillusionist",
+"GregorQuendel",
 "Justine Quiquempois",
 "hanstimm",
 "InspectorJ",
@@ -54,7 +56,6 @@ return {
  "sakebeats",
  "LoIc Norgeot",
  "ivand",
- "GregorQuendel",
  "neopolitansixth",
  "SergeQuadrado",
  "AngelicWings",
