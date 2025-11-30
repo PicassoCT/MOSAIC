@@ -47,44 +47,58 @@ function script.Create()
     if boolIsDelivery and not boolDeliveryOnGuy then
         Show(myDeliverySymbol)
     end
+    defaultTable = {Signum = 1, LeanFactor = 0.0, SteerParts = {}}    
+    bikeWheelMap = makeTable(defaultTable, 6)
+    bikeWheelMap[1] = {Signum = -1, LeanFactor = 0.1}    
+    for i= 1, 4 do
+        bikeWheelMap[1][#bikeWheelMap[1] + 1] = TablesOfPiecesGroups["Wheel"][i]
+    end
+
+    bikeWheelMap[2] = defaultTable  
+    for i= 5, 6 do
+        bikeWheelMap[2][#bikeWheelMap[2] + 1] = TablesOfPiecesGroups["Wheel"][i]
+    end
+
+    bikeWheelMap[3].Signum = -1
+    for i= 7, 8 do
+        bikeWheelMap[3][#bikeWheelMap[3] + 1] = TablesOfPiecesGroups["Wheel"][i]
+    end
+    bikeWheelMap[3].SteerParts[#bikeWheelMap[3].SteerParts +1 ]= piece("SteeringAddition3")
+
+    for i= 9, 10 do
+        bikeWheelMap[4][#bikeWheelMap[4] + 1] = TablesOfPiecesGroups["Wheel"][i]
+    end
+
+    for i= 11, 12 do
+        bikeWheelMap[5][#bikeWheelMap[5] + 1] = TablesOfPiecesGroups["Wheel"][i]
+    end
+
+     for i= 13, 18 do
+        bikeWheelMap[6][#bikeWheelMap[6] + 1] = TablesOfPiecesGroups["Wheel"][i]
+    end
+
+
     assert(TablesOfPiecesGroups["Steering"][bikeType])
     if boolGaiaUnit then   Show(Civilian)   end
 
-    SteerParts[#SteerParts +1 ]= TablesOfPiecesGroups["Steering"][bikeType]
-
-    if bikeType == 1 then 
-        Signum = -1
-        LeanFactor = 0.1
-        for i=1, 4 do
-            Show(TablesOfPiecesGroups["Wheel"][i])
-            activeWheels[#activeWheels+1] = TablesOfPiecesGroups["Wheel"][i]
-        end
-    elseif bikeType == 2 then
-        Signum = 1
-        for i=5, 6 do
-            Show(TablesOfPiecesGroups["Wheel"][i])
-            activeWheels[#activeWheels+1] = TablesOfPiecesGroups["Wheel"][i]
-        end
-    elseif bikeType == 3 then 
-        Signum = -1
-        for i=7, 8 do
-            Show(TablesOfPiecesGroups["Wheel"][i])
-            activeWheels[#activeWheels+1] = TablesOfPiecesGroups["Wheel"][i]
-        end
-        SteerParts[#SteerParts +1 ]= piece("SteeringAddition3")
-        assert(piece("SteeringAddition3"))
-        Show(piece("SteeringAddition3"))
-    elseif bikeType == 4 then 
-        Show(TablesOfPiecesGroups["Wheel"][9])
-        Show(TablesOfPiecesGroups["Wheel"][10])
-          activeWheels[#activeWheels+1] = TablesOfPiecesGroups["Wheel"][9]
-          activeWheels[#activeWheels+1] = TablesOfPiecesGroups["Wheel"][10]
+    Signum = bikeWheelMap[bikeType].Signum
+    LeanFactor = bikeWheelMap[bikeType].LeanFactor
+    for i=1, #bikeWheelMap[bikeType] do
+        Show(bikeWheelMap[bikeType][i])
+        activeWheels[#activeWheels+1] = bikeWheelMap[bikeType][i]
     end
+    SteerParts = bikeWheelMap[bikeType].SteerParts or {}
+    showT(SteerParts)
+    
     StartThread(updateSteering)
     if not boolGaiaUnit then
         setSpeedEnv(unitID, 0.0)  
     end
 end
+
+bikeWheelMap = {}
+
+
 
 function script.TransportPickup(passengerID)
 	Hide(Civilian)

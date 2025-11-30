@@ -20,6 +20,8 @@ pieceID_NameMap = Spring.GetUnitPieceList(unitID)
 Name_PieceIdMap = Spring.GetUnitPieceMap(unitID)
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
+    validatePieceGroups(TablesOfPiecesGroups)
+
     hideAll(unitID)
     Show(Ruin)
     foreach(TablesOfPiecesGroups["RuinSub"],
@@ -32,7 +34,7 @@ function script.Create()
         end
         )
 
-    if randChance(25) then
+    if DeterministicRandom(unitID) < 0.25 then
         Show(RuinCore)
         foreach(TablesOfPiecesGroups["RuinCoreSub"],
             function(id)
@@ -45,13 +47,11 @@ function script.Create()
                             Show(Name_PieceIdMap[subPiece])
                         end
                     end
-                else
-                    Hide(id)
                 end
             end
             )
     end
-    Spring.SetUnitNoSelect(unitID, true)
+    --Spring.SetUnitNoSelect(unitID, true)
 end
 
 function script.Killed(recentDamage, _)

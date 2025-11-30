@@ -567,18 +567,15 @@ function initializePendulumConfig(unitID, pieceId, parentPieceMap, speed, iterat
             }
 end
 
-function swingPendulum(unitID, config )
-    debugPrefixPhysics = "Debug:Physics:PendulumSwing:"
-    todo(debugPrefixPhysics.."Starting")
-   -- utility: normalize a vector
-   local function normalize(x,y,z)
-      local l = math.sqrt(x*x + y*y + z*z)
-      if l == 0 then return 0,0,0 end
-      return x/l, y/l, z/l
-   end
+function swingPendulum(unitID, config)
+    local function normalize(x,y,z)
+        local l = math.sqrt(x*x + y*y + z*z)
+        if l == 0 then return 0,0,0, 0 end
+        return x/l, y/l, z/l, l
+    end
 
-   -- Rodrigues' rotation formula: rotate vector (x,y,z) around axis (ax,ay,az) by angle
-   local function rotateAroundAxis(x,y,z, ax,ay,az, angle)
+    local function rotateAroundAxis(x,y,z, ax,ay,az, angle)
+        -- assume axis is normalized (we ensure that before calling)
         local c = math.cos(angle)
         local s = math.sin(angle)
         local dot = x*ax + y*ay + z*az
@@ -588,73 +585,106 @@ function swingPendulum(unitID, config )
             z*c + (ax*y - ay*x)*s + az*dot*(1-c)
     end
 
-   -- convert a local vector into Euler yaw/pitch
-   local function vecToEuler(x,y,z)
-      local yaw   = math.atan2(x, z)
-      local pitch = -math.asin(y)
-      return yaw, pitch
-   end
+    local function vecToEuler(x,y,z)
+        -- yaw: rotation around world Y such that forward aligns with (x,0,z)
+        -- pitch: rotation around local X to account for y component
+        -- clamp asin input to [-1,1] to avoid NaNs from float noise
+        local clampedY = math.max(-1, math.min(1, -y))
+        local yaw   = math.atan2(x, z)
+        local pitch = math.asin(clampedY)
+        return yaw, pitch
+    end
 
-   local down = getDown()
-   parentPieceMap = config.parentPieceMap
-   pieceId = config.pieceId  
-   speed = config.speed
-   local up = getUp()
-   -- pendulum swing
-   local factor = 1.0
-   local dir = 1
+    local down = getDown() or {0,-1,0}
+    local up = getUp() or {0,1,0}
+    local parentPieceMap = config.parentPieceMap
+    local pieceId = config.pieceId
+    local speed = config.speed or 1.0
+    local MIN_SPEED = 0.01
+    if speed == 0 then speed = MIN_SPEED end
 
-   while true do
-        Sleep(99) --
-        if config.iterations > 0 then
-            worldMat = getPieceWorldMatrix(unitID, pieceId, parentPieceMap)
-               -- extract rotation only (upper 3x3)
-           local rot = {
-              {worldMat[1][1], worldMat[1][2], worldMat[1][3]},
-              {worldMat[2][1], worldMat[2][2], worldMat[2][3]},
-              {worldMat[3][1], worldMat[3][2], worldMat[3][3]},
-           }
+    local factor = 1.0
+    local dir = 1
 
-           -- invert rotation (transpose, since pure rotation)
-           local inv = {
-              {rot[1][1], rot[2][1], rot[3][1]},
-              {rot[1][2], rot[2][2], rot[3][2]},
-              {rot[1][3], rot[2][3], rot[3][3]},
-           }
+    while true do
+        Sleep(99)
+        if not config.iterations or config.iterations <= 0 then
+            -- nothing to do this tick, continue waiting for iterations to be added
+        else
+            -- get current world rotation of the piece
+            local worldMat = getPieceWorldMatrix(unitID, pieceId, parentPieceMap)
+            -- pull rotation 3x3 (row-major assumed)
+            local rot = {
+                {worldMat[1][1], worldMat[1][2], worldMat[1][3]},
+                {worldMat[2][1], worldMat[2][2], worldMat[2][3]},
+                {worldMat[3][1], worldMat[3][2], worldMat[3][3]},
+            }
+            -- transpose to invert rotation
+            local inv = {
+                {rot[1][1], rot[2][1], rot[3][1]},
+                {rot[1][2], rot[2][2], rot[3][2]},
+                {rot[1][3], rot[2][3], rot[3][3]},
+            }
 
-           -- transform world gravity (0,-1,0) into piece local space
-           local lx = inv[1][1]*down[1] + inv[1][2]*down[2] + inv[1][3]*down[3]
-           local ly = inv[2][1]*down[1] + inv[2][2]*down[2] + inv[2][3]*down[3]
-           local lz = inv[3][1]*down[1] + inv[3][2]*down[2] + inv[3][3]*down[3]
+            -- transform world gravity into piece-local
+            local lx = inv[1][1]*down[1] + inv[1][2]*down[2] + inv[1][3]*down[3]
+            local ly = inv[2][1]*down[1] + inv[2][2]*down[2] + inv[2][3]*down[3]
+            local lz = inv[3][1]*down[1] + inv[3][2]*down[2] + inv[3][3]*down[3]
 
-           local tx,ty,tz = normalize(lx,ly,lz)
+            local tx,ty,tz, _ = normalize(lx,ly,lz) -- local gravity direction (unit)
 
-           -- base orientation
-           local baseYaw, basePitch = vecToEuler(tx,ty,tz)
+            -- base orientation to hang straight down
+            local baseYaw, basePitch = vecToEuler(tx,ty,tz)
 
-           -- choose swing axis: perpendicular to gravity & bag direction
-           local ax,ay,az = normalize(
-              ty*up[1] - tz * up[2],  -- cross product with world up (0,1,0)
-              tz*up[3] - tx * up[3],
-              tx*up[2] - ty * up[1]
-           )
-        while config.iterations > 0 do
-        local angle = dir * factor * 0.3   -- swing amplitude in radians
-        local sx,sy,sz = rotateAroundAxis(tx,ty,tz, ax,ay,az, angle)
+            -- compute swing axis = cross(local gravity direction, world up)
+            -- (you can also use cross(worldUp, localDir) depending on desired rotation direction)
+            local ux,uy,uz = up[1], up[2], up[3]
+            local ax = ty*uz - tz*uy
+            local ay = tz*ux - tx*uz
+            local az = tx*uy - ty*ux
 
-        local swingYaw, swingPitch = vecToEuler(sx,sy,sz)
-        Turn(pieceId, y_axis, swingYaw,   speed or 0)
-        Turn(pieceId, x_axis, swingPitch, speed or 0)
-        WaitForTurns(pieceId)
-        Sleep(33) -- one frame
-        dir = -dir
-        factor = factor * 0.95
-        config.iterations = config.iterations - 1
-        end
+            local axn, ayn, azn, alen = normalize(ax, ay, az)
 
-        Turn(pieceId, y_axis, baseYaw,   speed or 0)
-        Turn(pieceId, x_axis, basePitch, speed or 0)
+            -- fallback: if axis too small (vectors nearly parallel) choose any perpendicular axis
+            if alen < 1e-4 then
+                -- choose axis perpendicular to tx,ty,tz deterministically
+                if math.abs(tx) < 0.9 then
+                    axn, ayn, azn = 0, tz, -ty
+                else
+                    axn, ayn, azn = -tz, 0, tx
+                end
+                axn, ayn, azn = normalize(axn, ayn, azn)
+            end
+
+            -- do swings while iterations > 0 (user may add iterations externally at runtime)
+            while (config.iterations or 0) > 0 do
+                local angle = dir * factor * 0.3 -- amplitude
+                local sx,sy,sz = rotateAroundAxis(tx,ty,tz, axn,ayn,azn, angle)
+
+                local swingYaw, swingPitch = vecToEuler(sx,sy,sz)
+
+                -- clamp speeds to avoid instant snap; WaitForTurn per axis is more reliable
+                local useSpeed = math.max(speed, MIN_SPEED)
+
+                Turn(pieceId, y_axis, swingYaw,   useSpeed)
+                Turn(pieceId, x_axis, swingPitch, useSpeed)
+                -- wait for both turns to finish
+                WaitForTurn(pieceId, y_axis)
+                WaitForTurn(pieceId, x_axis)
+
+                Sleep(33) -- one frame
+                dir = -dir
+                factor = factor * 0.95
+                config.iterations = config.iterations - 1
+            end
+
+            -- return to base (center) when done swinging this batch
+            Turn(pieceId, y_axis, baseYaw,   speed)
+            Turn(pieceId, x_axis, basePitch, speed)
+            WaitForTurn(pieceId, y_axis)
+            WaitForTurn(pieceId, x_axis)
+            factor = 1.0 -- reset damping for next batch
+            dir = 1
         end
     end
-   -- settle at center
 end

@@ -6,8 +6,8 @@ local house_ruin = Building:New{
 	buildCostEnergy    	= 5,
 	buildCostMetal    	= 5,
 	explodeAs				= "none",
-	name = "Ruins of the warming wars",
-	description = "housing mega project",
+	name = "Ruins",
+	description = "remnants of the warming wars",
 	buildPic = "house.png",
 	iconType = "house",
 	Builder					= true,
@@ -44,7 +44,7 @@ local house_ruin = Building:New{
 	collisionVolumeType = "box",
 	collisionvolumescales = "130 60 130",
 	collisionVolumeOffsets  = {0.0, 30.0,  0.0},
-	category = [[NOTARGET]],
+	category = [[BUILDING RAIDABLE]],
 
 }
 

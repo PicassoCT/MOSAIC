@@ -193,7 +193,7 @@ function bagDanglignDiagnostics()
                 WTurn(LowArm1, axis, math.rad(i),0)
                 WTurn(LowArm2, axis, math.rad(i),0)
                 WTurn(ShoppingBag, 1, math.rad(math.random(-360,360)), 0)
-                handleBagSwinging()
+                addBagsSwingImpulse()
                 Sleep(5000)
                 WaitForTurns(ShoppingBag)
                 WaitForTurns(Handbag)                
@@ -228,12 +228,12 @@ function script.Create()
     bodyBuild()
 
     setupAnimation()
-    if myTeamID ~= gaiaTeamID then  
-        --StartThread(spitRostTest)
-        todo("Civilian shopping bag diagnostics loop Activate")
-        StartThread(bagDanglignDiagnostics)
-        return
-    end
+    --if myTeamID ~= gaiaTeamID then  
+    --    --StartThread(spitRostTest)
+    --    todo("Civilian shopping bag diagnostics loop Activate")
+    --    StartThread(bagDanglignDiagnostics)
+    --    return
+    --end
    
 
     setOverrideAnimationState(eAnimState.standing, eAnimState.standing, true, nil, false)
@@ -719,7 +719,7 @@ function peacefullProtest()
             pos.z = myOffsetZ + pos.z
         end
 	Command(unitID, "go", {x = pos.x, y = 0, z = pos.z})
-        handleBagSwinging()
+        addBagsSwingImpulse()
         Sleep(3000)
     end
 	GG.SocialEngineeredPeople[unitID] = nil
@@ -1096,12 +1096,12 @@ function PlayAnimation(animname, piecesToFilterOutTable, speed)
         end
     end
 
-    handleBagSwinging()
+    addBagsSwingImpulse()
 
     return spGetGameFrame() - startTimeFrame
 end
 
-function handleBagSwinging()
+function addBagsSwingImpulse()
     --has handbag
     if carriesShoppingBag() and shoppingBagConfig  then  shoppingBagConfig.iterations = shoppingBagConfig.iterations + 2 end
     if bodyConfig.boolHandbag and handBagConfig then handBagConfig.iterations = handBagConfig.iterations + 2 end

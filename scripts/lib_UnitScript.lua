@@ -2540,6 +2540,7 @@ end
 function makeTable(default, xDimension, yDimension, zDimension,
                    boolNegativeMirror)
     boolNegativeMirror = boolNegativeMirror or false
+    local defaultCopy = default
 
     xStartIndex = 1
     yStartIndex = 1
@@ -2552,15 +2553,15 @@ function makeTable(default, xDimension, yDimension, zDimension,
     end
 
     local RetTable = {}
-    if not xDimension then return default end
+    if not xDimension then return defaultCopy end
 
     for x = xStartIndex, xDimension, 1 do
         if yDimension then
             RetTable[x] = {}
         elseif xDimension then
-            RetTable[x] = default
+            RetTable[x] = defaultCopy
         else
-            return default
+            return defaultCopy
         end
 
         if yDimension then
@@ -2568,12 +2569,12 @@ function makeTable(default, xDimension, yDimension, zDimension,
                 if zDimension then
                     RetTable[x][y] = {}
                 else
-                    RetTable[x][y] = default
+                    RetTable[x][y] = defaultCopy
                 end
 
                 if zDimension then
                     for z = zStartIndex, zDimension, 1 do
-                        RetTable[x][y][z] = default
+                        RetTable[x][y][z] = defaultCopy
                     end
                 end
             end
@@ -4302,11 +4303,17 @@ function getDermenisticChance(unitID, upperLimit)
     return (value % 100) < upperLimit
 end
 
+function HasSharedOneTimeResult(Key)
+    if  not GG.SharedResult then GG.SharedResult = {} end
+    return  GG.SharedResult[key] ~= nil 
+end 
+
 function SetSharedOneTimeResult(key,  data)
     if not GG.SharedResult then GG.SharedResult = {} end
     if not GG.SharedResult[key] then
        GG.SharedResult[key] = data
     end 
+    return data
 end
 
 function GetSharedOneTimeResult(key)
@@ -4616,39 +4623,53 @@ function rsh(value,shift)
     return math.floor(value/2^shift) % 2^24
 end
 
-
+local function mix32(a)
+    a = bit.bxor(a, bit.rshift(a, 13))
+    a = bit.band((a * 1274126177), 0xFFFFFFFF)
+    a = bit.bxor(a, bit.rshift(a, 16))
+    return a
+end
 
 function DeterministicRandom(unitID)
-    x,y,z =Spring.GetUnitPosition(unitID)
-    typeDefID = Spring.GetUnitDefID(unitID)
-    if not GG.DeterministicRandomCounter then GG.DeterministicRandomCounter  = {}  end
-    if not GG.DeterministicRandomCounter[unitID] then GG.DeterministicRandomCounter[unitID] = 0  end
-    -- Mix inputs into a single integer key
-    local n = math.floor(typeDefID * 73856093 + x * 19349663 + y * 83492791 + z * 2654435761) + GG.DeterministicRandomCounter[unitID] 
-    local twoToPowTwentyFour = (2^24)
-    local twoToPowThirteen= (2^13)
-    local twoToPowSixteen = (2^16)
-  local r1 = math.floor(n / twoToPowThirteen) %  twoToPowTwentyFour
-    -- XOR with original
-    n = math.bit_xor(r1, n)
-    -- multiply by a large constant, then mod 2^24 again
-    n = (n * 1274126177) % twoToPowTwentyFour
+    local x, y, z = Spring.GetUnitPosition(unitID)
+    local typeDefID = Spring.GetUnitDefID(unitID)
 
-    -- shift right by 16 bits:
-    local r2 = math.floor(n / twoToPowSixteen) % (twoToPowTwentyFour)
-    -- final XOR
-    n = math.bit_xor(r2, n)
+    -- init counter
+    GG.DeterministicRandomCounter = GG.DeterministicRandomCounter or {}
+    local c = (GG.DeterministicRandomCounter[unitID] or 0) + 1
+    GG.DeterministicRandomCounter[unitID] = c
 
-    -- map to [0,1): use only lower 24 bits, divide by (2^24-1)
-   
-    GG.DeterministicRandomCounter[unitID] = GG.DeterministicRandomCounter[unitID] + 1
-    -- Map to [0, 1)
-    return (n % twoToPowTwentyFour) / (twoToPowTwentyFour - 1)
+    -- quantize coords (keep integers < 2^31)
+    local fx = math.floor(x * 1000)
+    local fy = math.floor(y * 1000)
+    local fz = math.floor(z * 1000)
+
+    -- mix inputs into a single safe-int seed (< 2^53)
+    local seed =
+          typeDefID * 1315423911
+        + fx        * 2654435761
+        + fy        * 97531
+        + fz        * 31337
+        + c         * 83492791
+
+    -- keep seed inside safe integer domain
+    seed = seed % 9007199254740991   -- 2^53-1
+
+    -- deterministic PRNG: LCG with good constants
+    -- X_{n+1} = (aX + c) mod m
+    seed = (seed * 6364136223846793005 + 1442695040888963407)
+    seed = seed % 9007199254740991     -- keep safe
+
+    -- convert to [0,1)
+    local result = seed / 9007199254740991
+    return result
 end
 
 function DetMaRa(unitID)
     return DeterministicRandom(unitID) > 0.5
 end
+
+
 
 -- > Executes a random Function from a table of functions
 function randFunc(...)

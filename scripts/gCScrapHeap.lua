@@ -13,9 +13,8 @@ TablesOfPiecesGroups = {}
 function script.Killed()  end
 
 function playCollapseSound()
-    soundFilePath = "sounds/building/collapse"
-    collapseSoundFilePaths = getFilesInPath(path, "*.ogg")
-    Spring.PlaySoundFile(getRandomElementFromTable(collapseSoundFilePaths), 1.0)
+    soundFilePath = "sounds/building/collapse/collapse"..math.random(1,4)..".ogg"
+    Spring.PlaySoundFile(soundFilePath, 1.0)
 end
 
 function script.Create()

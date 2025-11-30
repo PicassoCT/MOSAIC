@@ -1,7 +1,7 @@
 -- ===================================================================================================================
 -- Game Configuration
  GG.unitFactor = 0.80
- GameVersion = "1.024"  --UpdateFlag
+ GameVersion = "1.025"  --UpdateFlag
  function setUnitFactor(modOptions)
     GG.unitFactor = modOptions.unitfactor or 0.8
  end
@@ -1365,10 +1365,22 @@ end
                 assert(nil)
             end
 
+            function addRuinsToHouseTable(houseTable, UnitDefNames)
+                houseTable["house_ruin"] = UnitDefNames["house_ruin"].id
+                return houseTable
+            end
+
+
+
             function getCultureUnitModelNames_Dict_DefIDName(cultureName, typeName, UnitDefs)
                 if cultureName == nil then 
                     cultureName = getCultureName()
                 end
+
+                cachedResultsNameKey = "getCultureUnitModelNames_Dict_DefIDName"..cultureName..typeName
+                if HasSharedOneTimeResult(cachedResultsNameKey) then return GetSharedOneTimeResult(cachedResultsNameKey)end
+                
+
 
                 local translation = {}
                 if cultureName == Cultures.international then
@@ -1391,9 +1403,12 @@ end
                         assertInDict(DicWesternNameDefID,  "civilian_western0")
                         assertInDict(DictArabNameDefID, "civilian_arab0")
                     end
-            
-
+                    
                     local fullTable = {}
+                    DictRuinNameDefID = addRuinsToHouseTable({}, getUnitDefNames(UnitDefs))
+                    for name,defID in pairs(DictRuinNameDefID) do                       
+                        fullTable[defID]= name
+                    end                    
                     for name,defID in pairs(DicAsianNameDefID) do                       
                         fullTable[defID]= name
                     end
@@ -1403,7 +1418,8 @@ end
                      for name,defID in  pairs(DictArabNameDefID) do
                         fullTable[defID]= name
                     end
-                    return fullTable--, translationAsian
+
+                    return SetSharedOneTimeResult(cachedResultsNameKey,  fullTable)
                 else
                     assert(cultureName)
                     translation = getTranslation(cultureName)
@@ -1411,12 +1427,13 @@ end
                     assert(translation[typeName] ~= nil , "No translation for "..typeName.." in culture "..cultureName)
 
                     DictDefIDNames = expandNameSubSet_Dict_NameDefID(translation[typeName], UnitDefs)
+                    DictDefIDNames = addRuinsToHouseTable(DictDefIDNames, getUnitDefNames(UnitDefs))
                     --assert(count(expandedNamesTable) > 0, typeName .." --> ".. cultureName)
                     local fullTable = {}
                     for name,defID in pairs(DictDefIDNames) do
                         fullTable[defID] = name
                     end
-                    return fullTable
+                    return SetSharedOneTimeResult(cachedResultsNameKey,  fullTable)
                 end            
             end
 
