@@ -38,17 +38,8 @@ local boolMurdered = true
 local mexID = -666
 
 function UpdateUnitPosition(ParentID, UnitID, attach)
-    local px, py, pz, _, _, _ = Spring.GetUnitPiecePosDir(ParentID, attach)
-    local rx, ry, rz = Spring.GetUnitPieceRotation(ParentID, attach)
+    local px, py, pz, rx, ry, rz = Spring.GetUnitPiecePosDir(ParentID, attach)
     Spring.MoveCtrl.SetPhysics(UnitID, px, py, pz + 4, 0, 0, 0, rx, ry, rz)
-end
-
-function GetUnitPieceRotation(unitID, piece)
-    local rx, ry, rz = Spring.UnitScript.CallAsUnit(unitID, spGetPieceRotation,
-                                                    piece)
-    local Heading = Spring.GetUnitHeading(unitID) -- COB format
-    local dy = rad(Heading / 182)
-    return rx, dy + ry, rz
 end
 
 factoryID = nil
@@ -132,7 +123,7 @@ function moveFactory()
     local spGetUnitPiecePosition = Spring.GetUnitPiecePosDir
     local spMovCtrlSetPos = Spring.MoveCtrl.SetPosition
     local spValidUnitID = Spring.ValidUnitID
-    local LGetUnitPieceRotation = GetUnitPieceRotation
+
     local LUpdateUnitPosition = UpdateUnitPosition
     local spMoveCtrlSetRotation = Spring.MoveCtrl.SetRotation
     Hide(attachPoint)
