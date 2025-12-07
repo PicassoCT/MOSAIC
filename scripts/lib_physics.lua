@@ -567,7 +567,38 @@ function initializePendulumConfig(unitID, pieceId, parentPieceMap, speed, iterat
             }
 end
 
+function recAccumulatePieceRotations(unitID, pieceID, parentPieceMap)
+    if not pieceID then return 0, 0, 0 end
+    parent = parentPieceMap[pieceID]
+    rx, ry, rz = 0, 0, 0
+    if parent then
+        lrx, lry, lrz = recAccumulatePieceRotations(unitID, parent, parentPieceMap)
+        rx, ry, rz = lrx or 0, lry or 0, lrz or 0
+    end
+    trx, try, trz = Spring.GetUnitPieceDirection(unitID, pieceID)
+    return trx + rx, try + ry, trz + rz
+end
+
+
+function swingPendulumNeutralizeRotation(unitID, config)
+    local parentPieceMap = config.parentPieceMap
+    local pieceID = config.pieceId
+    local speed = config.speed or 1.0
+    irgx, irgy, irgz = Spring.GetUnitPieceDirection(unitID, pieceID)
+    while true do
+        Sleep(500)
+        orgx,orgy,orgz = Spring.GetUnitPieceDirection(unitID, pieceID)
+        rgx, rgy, rgz = recAccumulatePieceRotations(unitID, parentPieceMap[pieceID], parentPieceMap)
+        ngx,ngy, ngz =  -rgx * 0.5 + irgx, -rgy * 0.5 + irgy, -rgz * 0.5 +irgz
+        Turn(pieceID, x_axis, ngx, speed)
+        Turn(pieceID, y_axis, ngy, speed)
+        Turn(pieceID, z_axis, ngz, speed)
+        WaitForTurns(pieceID)
+    end
+end
+
 function swingPendulum(unitID, config)
+   -- swingPendulumNeutralizeRotation(unitID, config)
     local function normalize(x,y,z)
         local l = math.sqrt(x*x + y*y + z*z)
         if l == 0 then return 0,0,0, 0 end
