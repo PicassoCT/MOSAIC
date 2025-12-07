@@ -34,7 +34,7 @@ function script.Create()
         end
         )
 
-    if DeterministicRandom(unitID) < 0.25 then
+    if DetMaRa(unitID) then
         Show(RuinCore)
         foreach(TablesOfPiecesGroups["RuinCoreSub"],
             function(id)

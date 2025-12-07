@@ -2077,16 +2077,16 @@ function mergeDictionarys(...)
         arg = {...};
         arg.n = #arg
     end
-    Table = {}
+    Ts = {}
     if not arg then return end
 
     for _, v in pairs(arg) do
         if v and type(v) == "table" then
-            Table = DictionaryMergeDictionary(Table, v)
+            Ts = DictionaryMergeDictionary(Ts, v)
         end
     end
 
-    return Table
+    return Ts
 end
 
 function DictionaryMergeDictionary(TA, TB)
@@ -4639,34 +4639,11 @@ function DeterministicRandom(unitID)
     local c = (GG.DeterministicRandomCounter[unitID] or 0) + 1
     GG.DeterministicRandomCounter[unitID] = c
 
-    -- quantize coords (keep integers < 2^31)
-    local fx = math.floor(x * 1000)
-    local fy = math.floor(y * 1000)
-    local fz = math.floor(z * 1000)
-
-    -- mix inputs into a single safe-int seed (< 2^53)
-    local seed =
-          typeDefID * 1315423911
-        + fx        * 2654435761
-        + fy        * 97531
-        + fz        * 31337
-        + c         * 83492791
-
-    -- keep seed inside safe integer domain
-    seed = seed % 9007199254740991   -- 2^53-1
-
-    -- deterministic PRNG: LCG with good constants
-    -- X_{n+1} = (aX + c) mod m
-    seed = (seed * 6364136223846793005 + 1442695040888963407)
-    seed = seed % 9007199254740991     -- keep safe
-
-    -- convert to [0,1)
-    local result = seed / 9007199254740991
-    return result
+    return math.floor(x + y + z + c) 
 end
 
 function DetMaRa(unitID)
-    return DeterministicRandom(unitID) > 0.5
+    return DeterministicRandom(unitID) % 2 == 0
 end
 
 
