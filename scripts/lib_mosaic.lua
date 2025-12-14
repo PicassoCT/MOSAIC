@@ -702,6 +702,7 @@ end
             [UnitDefNames["objective_presidentialpalace"].id] = "land",
             [UnitDefNames["objective_oilrig"].id] = "land",
             [UnitDefNames["objective_oilrig_sea"].id] = "water",
+            [UnitDefNames["objective_IndustrialComplex"].id] = "land",
         }
     end
 
