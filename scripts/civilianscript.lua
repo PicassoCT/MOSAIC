@@ -21,8 +21,8 @@ local spGetUnitTeam = Spring.GetUnitTeam
 local spGetUnitPosition = Spring.GetUnitPosition
 local spGetGameFrame = Spring.GetGameFrame
 
-shoppingBagConfig = nil
-handBagConfig = nil
+shoppingBagConfig
+handBagConfig
 local SIG_ANIM = 1
 local SIG_UP = 2
 local SIG_LOW = 4
@@ -476,12 +476,14 @@ function bodyBuild()
                 Show(Handbag);               
             end
             handBagConfig  = initializePendulumConfig(unitID, Handbag, parentPieceMap, math.pi/2, 3)
+            assert(handBagConfig)
             StartThread(swingPendulum, unitID, handBagConfig)        
         end
 
         if carriesShoppingBag() then
             Show(ShoppingBag);
             shoppingBagConfig  = initializePendulumConfig(unitID, ShoppingBag, parentPieceMap, math.pi/2, 3)
+            assert(shoppingBagConfig)
             StartThread(swingPendulum, unitID, shoppingBagConfig) 
             return
         end

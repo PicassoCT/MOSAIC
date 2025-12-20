@@ -55,5 +55,5 @@ local objective_IndustrialComplex = Building:New{
 
 return lowerkeys({
 	--Temp
-	["objective_IndustrialComplex"] = objective_IndustrialComplex:New()	
+	["objective_industrialcomplex"] = objective_IndustrialComplex:New()	
 })
