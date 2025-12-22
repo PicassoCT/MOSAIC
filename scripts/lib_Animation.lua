@@ -2743,3 +2743,23 @@ function GenericElevatorOS(Elevator, ElevatorParent, totalHeigth, allLayers, spe
         Sleep(1000)
     end   
 end
+
+function invertSequence(T)
+    invertedT = {}
+    for i=#T, 1, -1 do
+        invertedT[#invertedT +1]= T[i]
+    end
+    return invertedT
+end
+
+
+function animateSequence(Sequence)
+    for k,v in pairs(Sequence) do
+        if v then
+            animationFunction = v[1]
+            if type(animationFunction) == "function" then
+                animationFunction(unpack(v, 2))
+            end
+        end
+    end
+end

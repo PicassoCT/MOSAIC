@@ -31,7 +31,7 @@ local bikeType = nil
 local SteerParts = {}
 local Signum = -1
 local LeanFactor = 1.0
-
+bikeWheelMap = {}
 local boolIsCivilianTruck = (truckTypeTable[unitDefID] ~= nil)
 local boolIsPoliceTruck = unitDefID == UnitDefNames["policetruck"].id
  
@@ -43,12 +43,14 @@ function script.Create()
     myDeliverySymbol = TablesOfPiecesGroups["Delivery"][myDeliverySymbolIndex]
     hideAll(unitID)
     Show(TablesOfPiecesGroups["Bike"][bikeType])
-    Show(TablesOfPiecesGroups["Steering"][bikeType])
+    if TablesOfPiecesGroups["Steering"][bikeType] then
+        Show(TablesOfPiecesGroups["Steering"][bikeType])
+    end
     if boolIsDelivery and not boolDeliveryOnGuy then
         Show(myDeliverySymbol)
     end
     defaultTable = {Signum = 1, LeanFactor = 0.0, SteerParts = {}}    
-    bikeWheelMap = makeTable(defaultTable, 6)
+    bikeWheelMap = makeTable(defaultTable, 7)
     bikeWheelMap[1] = {Signum = -1, LeanFactor = 0.1}    
     for i= 1, 4 do
         bikeWheelMap[1][#bikeWheelMap[1] + 1] = TablesOfPiecesGroups["Wheel"][i]
@@ -76,6 +78,10 @@ function script.Create()
      for i= 13, 18 do
         bikeWheelMap[6][#bikeWheelMap[6] + 1] = TablesOfPiecesGroups["Wheel"][i]
     end
+    
+    for i= 13, 18 do
+        bikeWheelMap[7][#bikeWheelMap[7] + 1] = TablesOfPiecesGroups["Wheel"][i]
+    end
 
 
     assert(TablesOfPiecesGroups["Steering"][bikeType])
@@ -95,8 +101,6 @@ function script.Create()
         setSpeedEnv(unitID, 0.0)  
     end
 end
-
-bikeWheelMap = {}
 
 
 
@@ -168,6 +172,7 @@ function headChangeDetector( moveTreshold)
         headingOfOld = tempHead
     end
 end
+
 boolGaiaUnit = (Spring.GetUnitTeam(unitID) == Spring.GetGaiaTeamID())
 boolMoving = false
 boolPreviouslyMoving = boolMoving
