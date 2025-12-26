@@ -86,6 +86,8 @@ local AntagonSafeHouse = Building:New{
 
 		"potemkinpayload",
 		"civilian_truck_ssied",
+		"civilian_suicidebomber",
+		
 		"ground_truck_assembly",			
 	
 		--Described in morphdefs

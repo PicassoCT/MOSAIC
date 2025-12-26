@@ -14,14 +14,49 @@ Claw2 = piece("Claw2")
 MeltSpinnerT = {piece"MeltSpin1", piece"MeltSpin2", piece"MeltSpin3" }
 TablesOfPiecesGroups = {}
 TOPG = {}
-function script.HitByWeapon(x, z, weaponDefID, damage) end
+function script.HitByWeapon(x, z, weaponDefID, damage) 
+end
 groundOffset = 0
 x_axis = 1
 y_axis = 2
 z_axis = 3
-rotationAxis= 3
+rotationAxis = 3
 truckAxis = 2
 horizontalAxis = 1
+
+SIG_TRUCK_ABOVE =1
+SIG_WELD = 2
+SIG_SPARK = 4
+function sparkles()
+    Signal(SIG_SPARK)
+    SetSignalMask(SIG_SPARK)
+    while true do
+        for i=1, #TablesOfPiecesGroups["SparkRotator"] do
+            rotator = TablesOfPiecesGroups["SparkRotator"][i]
+            spark = TablesOfPiecesGroups["Spark"][i]
+
+            if rotator then
+                val = math.random(0,360) * randSign()
+                Turn(rotator, 2, math.rad(val), 0)
+                Spin(rotator, 2, math.rad(42 * randSign()), 0)
+            end
+            if spark then
+                reset(spark)
+                Show(spark)
+                speed = math.rad(math.random(270, 360))
+                Turn(spark, truckAxis, math.rad(179), speed)
+            end
+        end
+        Sleep(100)
+        for i=1, #TablesOfPiecesGroups["SparkRotator"] do
+            spark = TablesOfPiecesGroups["Spark"][i]
+            WaitForTurns(spark)
+            Hide(spark)
+        end
+        Sleep(100)
+    end
+end
+
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     TOPG =TablesOfPiecesGroups
@@ -33,7 +68,9 @@ function script.Create()
 
     StartThread(truckComingAndGoing)
     StartThread(Melting)
-    StartThread(Cranes)
+    for i=1,3 do
+        StartThread(Cranes, i)
+    end
     StartThread(robot)
 end
 
@@ -51,7 +88,7 @@ function turnCraneTowardsPos(index, angle, turret, maxAngle, omega,  pot, hook)
     WTurn(hook, x_axis, 0, math.rad(90)) 
 end
 
-function Cranes()
+function Cranes(index)
     showT(TablesOfPiecesGroups["Crane"])
     showT(TablesOfPiecesGroups["Turret"])
     showT(TablesOfPiecesGroups["Pot"])
@@ -64,9 +101,10 @@ function Cranes()
     local timeStep = 0.05                    -- seconds
     local t = 0
     maxtime = 25000
+    one = showOnePiece(TablesOfPiecesGroups["CoolDown"])
     while true do
         -- random turret movement
-        local index = math.random(1,3)
+        
         local pot = TablesOfPiecesGroups["Pot"][index]
         local hook = TablesOfPiecesGroups["Crane"][index]
         local turret = TablesOfPiecesGroups["Turret"][index]
@@ -89,29 +127,41 @@ function Cranes()
             factor = factor - (250/maxtime)
         end
         WTurn(hook, x_axis, 0, math.rad(90)) 
+        WTurn(turret, rotationAxis, math.rad(val), 0.25)
+
         if index == 1 then 
             while boolTruckPresent == false do
                 Sleep(1000)
             end
+            WTurn(turret, rotationAxis, math.rad(0), 0.25)
             showT(TablesOfPiecesGroups["Metal"])
             Hide(TruckMetall)
             for i=1, #TablesOfPiecesGroups["Metal"] do
                 reset(TablesOfPiecesGroups["Metal"][i]) 
-                Move(TablesOfPiecesGroups["Metal"][i], y_axis, 1026, 150)
-                Move(TablesOfPiecesGroups["Metal"][i], x_axis, -337,150)
+                Move(TablesOfPiecesGroups["Metal"][i], rotationAxis, 1026, 1000)
+                Move(TablesOfPiecesGroups["Metal"][i], horizontalAxis, 337,500)
                 Sleep(750)
             end
             for i=1, #TablesOfPiecesGroups["Metal"] do
                 WaitForMoves(TablesOfPiecesGroups["Metal"][i])
             end
             boolTruckLoaded= false
-            turnCraneTowardsPos(index, 180, turret, maxAngle, omega, pot, hook)
+            turnCraneTowardsPos(index, 180 + 20*randSign(), turret, maxAngle, omega, pot, hook)
             for i=1, #TablesOfPiecesGroups["Metal"] do
-                WMove(TablesOfPiecesGroups["Metal"][i], y_axis, 0, 800)  
-                Hide(TablesOfPiecesGroups["Metal"][i])         
-                reset(TablesOfPiecesGroups["Metal"][i])   
+                Move(TablesOfPiecesGroups["Metal"][i], rotationAxis, 0, 900)                  
                 Sleep(750)
             end
+            for i=1, #TablesOfPiecesGroups["Metal"] do
+                WaitForMove(TablesOfPiecesGroups["Metal"][i], rotationAxis)  
+                Hide(TablesOfPiecesGroups["Metal"][i])         
+                reset(TablesOfPiecesGroups["Metal"][i])   
+            end
+        end
+        if index == 2 then
+            Hide(one)
+            one = showOnePiece(TablesOfPiecesGroups["CoolDown"])
+            reset(one)
+            Move(one, rotationAxis, -300, 3)
         end
     end
 end
@@ -159,7 +209,7 @@ function robot()
     end
 end
 
-SIG_WELD = 1
+
 
 function flickerWeld()
     Signal(SIG_WELD)
@@ -197,8 +247,11 @@ function Melting()
         showT(lavaStream)
         Spin(lavaStream[2], rotationAxis, math.rad(42)*randSign(),0)
         Spin(lavaStream[1], rotationAxis, math.rad(42)*randSign(),0)
+        StartThread(sparkles)
         WMove(Lava, rotationAxis, -5000, 500)
         hideT(lavaStream)
+        Signal(SIG_SPARK)
+        hideT(TablesOfPiecesGroups["Spark"])
         Sleep(5000)
         Signal(SIG_WELD)
         Sleep(1000)
@@ -225,40 +278,67 @@ rotationAxis= 3
 truckAxis = 2
 horizontalAxis = 1
 
+
+function truckAboveGround()
+    Signal(SIG_TRUCK_ABOVE)
+    SetSignalMask(SIG_TRUCK_ABOVE)
+    val = 0
+
+    while true do
+        x, y, z = Spring.GetUnitPiecePosDir(unitID, Truck)
+        groundHeight = Spring.GetGroundHeight(x, z)
+        if y > groundHeight then
+            val = val - 1
+        else
+            val = val + 1
+        end
+        Move(TruckMove, horizontalAxis, val + 200 , 100)
+        Sleep(100)
+    end
+end
 rotSign = -1
+outsideOffset= -100
 truckDepartingSequence = {
+    {reset, rotationAxis},
     {WTurn, TruckRotate2,truckAxis, math.rad(60 *rotSign), 0.3 },
-    {Move,  TruckMove,truckAxis, 2000, 20 },
-    --{Move,  TruckMove,rotationAxis, groundOffset, 200 },
-    {WTurn, TruckRotate1,truckAxis, math.rad(-60*rotSign), 0.3 },   
-    {Turn,  Truck,rotationAxis, math.rad(-90), 10},
+    {Move,  TruckMove,horizontalAxis, outsideOffset, 20 },
+    {StartThread,  truckAboveGround },  
+    {WTurn, TruckRotate1,truckAxis, math.rad(-60 * rotSign), 0.3 }, 
+    {WMove, TruckMove,horizontalAxis, -500, 100 },
+    {Turn,  Truck,rotationAxis, math.rad(90), 1.5},
     {WTurn, TruckRotate3,rotationAxis, math.rad(180), 0.1 },  
-    {Hide, Truck}
+    {Hide, Truck},
+    {Signal, SIG_TRUCK_ABOVE}
 }
 
 truckArrivingSequence = 
 {
     --Preparation
-    --{Move, TruckMove, rotationAxis, groundOffset, 0 },
-    {Turn,  TruckRotate2,truckAxis, math.rad(60*rotSign), 0 },
-    {Turn,  TruckRotate1,truckAxis, math.rad(-60*rotSign),0 },
+    {StartThread,  truckAboveGround },
+    {Turn,  TruckRotate2,truckAxis, math.rad(60 * rotSign), 0 },
+    {Turn,  TruckRotate1,truckAxis, math.rad(-60 * rotSign),0 },
     {Turn,  TruckRotate3,rotationAxis, math.rad(180),0 },
-    {Move,  TruckMove,truckAxis, 2000, 0 },
+    {Move,  TruckMove,horizontalAxis, outsideOffset, 0 },
     {Turn,  Truck,rotationAxis, math.rad(90), 0},   
-    {WTurn, TruckRotate3,rotationAxis, math.rad(0), 0.1 },
+    {WTurn, TruckRotate3,rotationAxis, math.rad(-10), 0.1 },
+    {Move, TruckMove,horizontalAxis, -500, 100 },
+    {Signal, SIG_TRUCK_ABOVE},
+    {Turn, TruckRotate3,rotationAxis, math.rad(0), 0.1 },
+    {WTurn, Truck,rotationAxis, math.rad(0), 1},
 
-    {Turn,  Truck,rotationAxis, math.rad(180), 0},
-    {Move,  TruckMove,rotationAxis, 0, 0.5 },
-    {WMove, TruckMove,truckAxis, 0, 0.5 },
-    {WTurn, Truck,rotationAxis, math.rad(0), 10},
-    {WTurn, TruckRotate2,truckAxis, math.rad(0), 0.1 }, 
-    {WTurn, TruckRotate1,truckAxis, math.rad(0), 0.1 }
+    --
+
+    {WMove, TruckMove,horizontalAxis, 0, 20 },
+
+    {WTurn, TruckRotate1,truckAxis, math.rad(0), 0.1 }, 
+    {Move,  TruckMove,rotationAxis, 0, 1 },
+    {WTurn, TruckRotate2,truckAxis, math.rad(0), 0.1 }
 }
 
 
 function truckComingAndGoing()
-    showT(TablesOfPiecesGroups["TruckRotate"])
-    Show(TruckMove)
+    hideT(TablesOfPiecesGroups["TruckRotate"])
+    Hide(TruckMove)
     offset = 0
 
 

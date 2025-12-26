@@ -460,14 +460,30 @@ function Spring.UnitScript.Hide(piece)
     return sp_SetPieceVisibility(piece, false)
 end
 
-function Spring.UnitScript.Show(piece)
+function echoPieceTable(p, unitID)
+    pieceList = Spring.GetUnitPieceList(unitID)
+    pieceTableString = "{"
+    for k,v in pairs(p) do
+        pieceTableString = pieceTableString .. pieceList[v].." , "
+    end
+    pieceTableString = pieceTableString.." }"
+    Spring.Echo(pieceTableString)
+end
 
-    if bool_GadgetDebug == true and piece and type(piece) ~= "number" and
-       type(piece) ~= "function" then
-        local activeUnit = GetActiveUnit()
-        local defID = Spring.GetUnitDefID(activeUnit.unitID)
-        Spring.Echo("Invalid PieceNumber in show in  "..UnitDefs[defID].name)
-        Spring.Echo("PieceNumber not a number " .. piece .. " - got " ..type(piece) .. " with value " .. piece .. " instead")
+
+function Spring.UnitScript.Show(piece)
+    typeInfo = type(piece)
+    if bool_GadgetDebug == true and piece and 
+        typeInfo ~= "number" and
+        typeInfo ~= "function" then
+
+       local activeUnit = GetActiveUnit()
+       local defID = Spring.GetUnitDefID(activeUnit.unitID)
+       Spring.Echo("Invalid PieceNumber in show in  "..UnitDefs[defID].name)
+        Spring.Echo("PieceNumber not a number - got " ..typeInfo)
+        if typeInfo == "table" then
+            echoPieceTable(piece, activeUnit.unitID)
+        end
     end
     if bool_GadgetDebug == true and (not piece) then
        error("Error: Piece  not handed as argument", 2)

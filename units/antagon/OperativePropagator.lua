@@ -65,7 +65,8 @@ local OperativePropagator = Human:New{
 
 		"air_parachut",
 		"stealvehicleicon",		
-		"recruitcivilian"		
+		"recruitcivilian",
+		"ground_carstop"		
 	},
 
 	customParams = {

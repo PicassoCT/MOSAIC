@@ -9,8 +9,8 @@ local Animations = include('animations_civilian_female.lua')
 local signMessages = include('protestSignMessages.lua')
 local map = Spring.GetUnitPieceMap(unitID)
 local parentPieceMap = getParentPieceMap(unitID)
-local shoppingBagConfig 
-local handBagConfig
+shoppingBagConfig = nil
+handBagConfig = nil
 
 local TablesOfPiecesGroups =   getPieceTableByNameGroups(false, true)
 local GameConfig = getGameConfig()
@@ -456,6 +456,7 @@ function bodyBuild()
        if  bodyConfig.boolHandbag then
             if Handbag then
                 handBagConfig  = initializePendulumConfig(unitID, Handbag, parentPieceMap, math.pi/2, 3)
+                assert(handBagConfig)
                 StartThread(swingPendulum, unitID, handBagConfig) 
             end
 
@@ -467,6 +468,7 @@ function bodyBuild()
         if carriesShoppingBag() then
 	    Show(ShoppingBag);
             shoppingBagConfig  = initializePendulumConfig(unitID, ShoppingBag, parentPieceMap, math.pi/2, 3)
+            assert(shoppingBagConfig)
             StartThread(swingPendulum, unitID, shoppingBagConfig) 
             return
         end
@@ -1062,16 +1064,15 @@ function PlayAnimation(animname, piecesToFilterOutTable, speed)
         end
     end
     --has handbag
-    handleBagSwinging()
+    addBagsSwingImpulse()
     return spGetGameFrame() - startTimeFrame
 end
 
-function handleBagSwinging()
+function addBagsSwingImpulse()
     --has handbag
-    if carriesShoppingBag()   then StartThread(swingPendulum, unitID, shoppingBagConfig) end
-    if bodyConfig.boolHandbag then StartThread(swingPendulum, unitID, handBagConfig) end
+    if carriesShoppingBag() and shoppingBagConfig  then  shoppingBagConfig.iterations = shoppingBagConfig.iterations + 2 end
+    if bodyConfig.boolHandbag and handBagConfig then handBagConfig.iterations = handBagConfig.iterations + 2 end
 end
-
 
 function constructSkeleton(unit, piece, offset)
     if (offset == nil) then offset = {0, 0, 0}; end
@@ -1948,10 +1949,13 @@ function script.QueryWeapon(weaponID)
         return myGun 
     end
 end
-
+myDefID = Spring.GetUnitDefID(unitID)
+sucideBomberManDefID = UnitDefNames["civilian_suicidebomber"].id
 function script.AimWeapon(weaponID, heading, pitch)
     if boolCloaked then return false end 
-
+    if myDefID == sucideBomberManDefID then
+        Spring.Echo("Aiming Weapon")
+    end
     if WeaponsTable[weaponID] then
         if WeaponsTable[weaponID].aimfunc then
             return WeaponsTable[weaponID].aimfunc(weaponID, heading, pitch)

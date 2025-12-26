@@ -3754,6 +3754,38 @@ function absDistance(valA, valB)
     end
 end
 
+
+function ShowAssert(p)
+    if type(p) ~= "number" then
+        if type(p) == "table" then echoPieceTable(p) end
+        assert(false, "Not an number in ShowAssert")
+    end
+    Show(p)
+end
+
+function showTAssert(p)
+    if type(p) ~= "table" then
+        assert(false, "Not an table in showTAssert")
+    end
+    showT(p)
+end
+
+function HideAssert(p)
+    if type(p) ~= "number" then
+        if type(p) == "table" then echoPieceTable(p) end
+        assert(false, "Not an number in hide")
+    end
+    Hide(p)
+end
+
+function hideTAssert(p)
+    if type(p) ~= "table" then
+        assert(false, "Not an table in showTAssert")
+    end
+    hideT(p)
+end
+
+
 -- functions
 -- >returns the Negated Axis
 function mirror(value)

@@ -598,7 +598,7 @@ function swingPendulumNeutralizeRotation(unitID, config)
 end
 
 function swingPendulum(unitID, config)
-    assert(config)
+
    -- swingPendulumNeutralizeRotation(unitID, config)
     local function normalize(x,y,z)
         local l = math.sqrt(x*x + y*y + z*z)

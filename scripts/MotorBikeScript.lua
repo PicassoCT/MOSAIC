@@ -28,30 +28,37 @@ local myDeliverySymbol = nil
 local activeWheels = {}
 local passenger = nil
 local bikeType = nil
-local SteerParts = {}
+SteerParts = {}
 local Signum = -1
 local LeanFactor = 1.0
 bikeWheelMap = {}
 local boolIsCivilianTruck = (truckTypeTable[unitDefID] ~= nil)
 local boolIsPoliceTruck = unitDefID == UnitDefNames["policetruck"].id
+
+
  
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false)
+   StartThread(buildBike)
+end
+
+function(buildBike)
     bikeType = math.random(1, #TablesOfPiecesGroups["Bike"])
     myDeliverySymbolIndex = math.random(1,#TablesOfPiecesGroups["Delivery"])
     boolDeliveryOnGuy = myDeliverySymbolIndex % 2 == 1
     myDeliverySymbol = TablesOfPiecesGroups["Delivery"][myDeliverySymbolIndex]
     hideAll(unitID)
-    Show(TablesOfPiecesGroups["Bike"][bikeType])
+    ShowAssert(TablesOfPiecesGroups["Bike"][bikeType])
     if TablesOfPiecesGroups["Steering"][bikeType] then
-        Show(TablesOfPiecesGroups["Steering"][bikeType])
+        ShowAssert(TablesOfPiecesGroups["Steering"][bikeType] )
     end
     if boolIsDelivery and not boolDeliveryOnGuy then
-        Show(myDeliverySymbol)
+        ShowAssert(myDeliverySymbol)
     end
     defaultTable = {Signum = 1, LeanFactor = 0.0, SteerParts = {}}    
     bikeWheelMap = makeTable(defaultTable, 7)
     bikeWheelMap[1] = {Signum = -1, LeanFactor = 0.1}    
+    SteerPartsCollection = {}
     for i= 1, 4 do
         bikeWheelMap[1][#bikeWheelMap[1] + 1] = TablesOfPiecesGroups["Wheel"][i]
     end
@@ -65,7 +72,8 @@ function script.Create()
     for i= 7, 8 do
         bikeWheelMap[3][#bikeWheelMap[3] + 1] = TablesOfPiecesGroups["Wheel"][i]
     end
-    bikeWheelMap[3].SteerParts[#bikeWheelMap[3].SteerParts +1 ]= piece("SteeringAddition3")
+
+    bikeWheelMap[3].SteerParts[#bikeWheelMap[3].SteerParts + 1 ] = {piece("SteeringAddition3")}
 
     for i= 9, 10 do
         bikeWheelMap[4][#bikeWheelMap[4] + 1] = TablesOfPiecesGroups["Wheel"][i]
@@ -75,26 +83,24 @@ function script.Create()
         bikeWheelMap[5][#bikeWheelMap[5] + 1] = TablesOfPiecesGroups["Wheel"][i]
     end
 
-     for i= 13, 18 do
+    for i= 13, 18 do
         bikeWheelMap[6][#bikeWheelMap[6] + 1] = TablesOfPiecesGroups["Wheel"][i]
     end
-    
+
     for i= 13, 18 do
         bikeWheelMap[7][#bikeWheelMap[7] + 1] = TablesOfPiecesGroups["Wheel"][i]
     end
 
 
-    assert(TablesOfPiecesGroups["Steering"][bikeType])
-    if boolGaiaUnit then   Show(Civilian)   end
+
+    if boolGaiaUnit then   ShowAssert(Civilian)   end
 
     Signum = bikeWheelMap[bikeType].Signum
     LeanFactor = bikeWheelMap[bikeType].LeanFactor
-    for i=1, #bikeWheelMap[bikeType] do
-        Show(bikeWheelMap[bikeType][i])
-        activeWheels[#activeWheels+1] = bikeWheelMap[bikeType][i]
-    end
-    SteerParts = bikeWheelMap[bikeType].SteerParts or {}
-    showT(SteerParts)
+    showTAssert(bikeWheelMap[bikeType])
+    activeWheels = bikeWheelMap[bikeType]
+    SteerParts = bikeWheelMap[bikeType].SteerParts 
+    showTAssert(SteerParts)
     
     StartThread(updateSteering)
     if not boolGaiaUnit then
@@ -102,10 +108,14 @@ function script.Create()
     end
 end
 
+function assertType(name, types)
+    assert(type(name) == types, "value of type " .. type(name) .. " is not a "..types)  
+end
+
 
 
 function script.TransportPickup(passengerID)
-	Hide(Civilian)
+	HideAssert(Civilian)
     if motorBikeLoadableTypeTable[Spring.GetUnitDefID(passengerID)] then
 		reset(center, math.pi)
         Signal(SIG_KILL)
@@ -120,7 +130,7 @@ function script.TransportPickup(passengerID)
 end
 
 function script.TransportDrop(passengerID, x, y, z)
-    if boolGaiaUnit then Show(Civilian) end
+    if boolGaiaUnit then ShowAssert(Civilian) end
     if doesUnitExistAlive(passengerID) then
         passenger = nil
         Spring.UnitDetach(passengerID)
@@ -183,14 +193,14 @@ function updateSteering()
     while true do
         if boolPreviouslyMoving == false and boolMoving == true then
             if not (passenger and Spring.GetUnitTransporter(passenger) == unitID) then
-                Show(Civilian)
-                Show(myDeliverySymbol)
+                ShowAssert(Civilian)
+                ShowAssert(myDeliverySymbol)
             end
         end
         if boolMoving == true and boolTurning == true then
            if boolGaiaUnit then
-                Show(myDeliverySymbol)
-                Show(Civilian)
+                ShowAssert(myDeliverySymbol)
+                ShowAssert(Civilian)
            end
            if boolTurnLeft == true then
                 turnT(SteerParts, y_axis, -10, 1)
@@ -222,7 +232,7 @@ end
 
 function delayedRiseAndFall()
     if boolTurning == false then
-        WTurn(center,y_axis, math.rad(-10*LeanFactor),0.1 )
+        WTurn(center,y_axis, math.rad(-10 * LeanFactor),0.1 )
         WTurn(center,y_axis, math.rad(0),0.2)
     end
 end
@@ -250,14 +260,14 @@ function delayedStop()
     boolMoving = false
     StartThread(honkIfHorny)
     Sleep(3000)
-    Hide(Civilian)
+    HideAssert(Civilian)
 
 end
 
 function script.StopMoving() 
     StartThread(delayedStop)
     stopSpinT(activeWheels, x_axis, 3) 
-    if boolGaiaUnit then Show(Civilian) end
+    if boolGaiaUnit then ShowAssert(Civilian) end
 end
 
 function script.Activate() return 1 end
