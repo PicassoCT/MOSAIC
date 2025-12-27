@@ -21,8 +21,8 @@ local spGetUnitTeam = Spring.GetUnitTeam
 local spGetUnitPosition = Spring.GetUnitPosition
 local spGetGameFrame = Spring.GetGameFrame
 
-shoppingBagConfig = nil
-handBagConfig= nil
+shoppingBagConfig
+handBagConfig
 local SIG_ANIM = 1
 local SIG_UP = 2
 local SIG_LOW = 4

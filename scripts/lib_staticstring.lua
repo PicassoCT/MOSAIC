@@ -1041,10 +1041,16 @@ end
 function GetBadGuysGroupNames(hash)
     hash = hash + getDetermenisticMapHash(Game)
     badGuys= {"Mr.RogerSendro", "Children of Elon", "GreenWar", "TaliBanned","SwissStabilityDefenseGroup",
-     "Isil", "AlNusra", "HareKrishnaSupremacy", "BrasilFirsters", "GliderGunDAOists", "CentralIntelligenceAgencyIregulars", "AmericanPatriotIrregulars","CheckaRemnants",
-      "Xi-DynastyInExile", "ChaosAdventists", "Loop Worshipper", "Axiom Ascendants", "The Veilkeepers", "GospelOfJose","TantricHives",
+     "Isil", "AlNusra", "HareKrishnaSupremacy", "BrasilFirsters", "GliderGunDAOists", "CentralIntelligenceAgencyIregulars", "AlaskaPatriotIrregulars","CheckaRemnants",
+      "Xi-DynastyInExile", "ChaosAdventists", "MokshaSleepers", "Loop Worshipper", "Axiom Ascendants", "The Veilkeepers", "GospelOfJose","TantricHives",
       "Realists", "EpicGeneticsCells", "HiveUnalive", "UmarTemplar", "SudoSims", "PuritySpiralists", "RetroStalinist" , "NeoRomans"}
-    return badGuys[(hash%#badGuys)+1]
+    return badGuys[(hash % #badGuys) + 1]
+end
+
+function GetShoutByIdeology(unitID)
+    _, agencyName = GetBadGuysGroupNames(Spring.GetUnitTeam(unitID))
+    slogansPerFaction = {}
+    return slogansPerFaction[agencyName][ unitID % #slogansPerFaction[agencyName] + 1]
 end
 
 function getSafeHouseTeamToolTip(teamID)
@@ -1052,14 +1058,17 @@ function getSafeHouseTeamToolTip(teamID)
     boolIsProtagon = (teamName == "protagon")
     if boolIsProtagon then
         agencyName = GetGoodGuysGroupName(teamID)
-        return agencyName.." base of operation <recruits Agents/ builds upgrades>"
+        return agencyName.." base of operation <recruits Agents/ builds upgrades>", agencyName
     else
         agencyName = GetBadGuysGroupNames(teamID)
-        return agencyName.." base of operation <recruits Agents/ builds upgrades>"
+        return agencyName.." base of operation <recruits Agents/ builds upgrades>", agencyName
     end
 
     echo("Unknown team in getSafeHouseTeamToolTip: "..teamName)
 end
+
+
+
 
 function setSafeHouseTeamName(unitID)
     teamID = Spring.GetUnitTeam(unitID)

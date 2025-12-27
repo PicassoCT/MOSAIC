@@ -4,6 +4,7 @@ include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 include "lib_mosaic.lua"
 include "lib_physics.lua"
+include "lib_staticstring.lua"
 
 local Animations = include('animations_civilian_female.lua')
 local signMessages = include('protestSignMessages.lua')
@@ -1949,13 +1950,39 @@ function script.QueryWeapon(weaponID)
         return myGun 
     end
 end
-myDefID = Spring.GetUnitDefID(unitID)
-sucideBomberManDefID = UnitDefNames["civilian_suicidebomber"].id
+boolIsBomberMan = Spring.GetUnitDefID(unitID) == UnitDefNames["civilian_suicidebomber"].id
+boolBombAimed = false
+boolBoom = false
+function cookingOff()
+    Spring.Echo("Bomberman cooking off")
+    --decloak 
+        -- shout
+        shoutFile = GetShoutByIdeology(unitID)
+        Spring.PlaySoundFile("sounds/civilian/bomberman/")
+        SetUnitValue(COB.WANT_CLOAK, 0)
+        SetUnitValue(COB.CLOAKED, 0)
+        -- wait three seconds
+        Sleep(GameConfig.SuicideBomberManWaitTimeMs)
+        -- kabloom
+    boolBoom = true
+end
+
 function script.AimWeapon(weaponID, heading, pitch)
     if boolCloaked then return false end 
-    if myDefID == sucideBomberManDefID then
-        Spring.Echo("Aiming Weapon")
+    if boolIsBomberMan 
+        if  not boolBombAimed  then
+            boolBombAimed = true
+            StartThread(cookingOff)
+            return false
+       end
+
+       if boolBombAimed and boolBoom then
+            return true
+       end
+        return false    
     end
+
+
     if WeaponsTable[weaponID] then
         if WeaponsTable[weaponID].aimfunc then
             return WeaponsTable[weaponID].aimfunc(weaponID, heading, pitch)

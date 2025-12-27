@@ -171,6 +171,7 @@ function getGameConfig()
         bonusFirstUnitMoney_S = 12,
         maxParallelIdleAnimations = 20,
         SniperAttachMaxDistance = 128,
+        SuicideBomberManWaitTimeMs = 4000,
         agentConfig = {
             recruitmentRange = 60,
             raidWeaponDownTimeInSeconds = 60,
