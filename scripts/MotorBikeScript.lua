@@ -42,16 +42,23 @@ function script.Create()
    StartThread(buildBike)
 end
 
-function(buildBike)
+function buildBike()
+
     bikeType = math.random(1, #TablesOfPiecesGroups["Bike"])
     myDeliverySymbolIndex = math.random(1,#TablesOfPiecesGroups["Delivery"])
     boolDeliveryOnGuy = myDeliverySymbolIndex % 2 == 1
     myDeliverySymbol = TablesOfPiecesGroups["Delivery"][myDeliverySymbolIndex]
     hideAll(unitID)
+    Sleep(1)
     ShowAssert(TablesOfPiecesGroups["Bike"][bikeType])
     if TablesOfPiecesGroups["Steering"][bikeType] then
         ShowAssert(TablesOfPiecesGroups["Steering"][bikeType] )
     end
+
+    if bikeType == 7 then
+        ShowAssert(TablesOfPiecesGroups["Steering"][5] )
+    end
+
     if boolIsDelivery and not boolDeliveryOnGuy then
         ShowAssert(myDeliverySymbol)
     end
@@ -87,9 +94,8 @@ function(buildBike)
         bikeWheelMap[6][#bikeWheelMap[6] + 1] = TablesOfPiecesGroups["Wheel"][i]
     end
 
-    for i= 13, 18 do
-        bikeWheelMap[7][#bikeWheelMap[7] + 1] = TablesOfPiecesGroups["Wheel"][i]
-    end
+    bikeWheelMap[7]= bikeWheelMap[5]
+
 
 
 
@@ -100,7 +106,9 @@ function(buildBike)
     showTAssert(bikeWheelMap[bikeType])
     activeWheels = bikeWheelMap[bikeType]
     SteerParts = bikeWheelMap[bikeType].SteerParts 
-    showTAssert(SteerParts)
+    if SteerParts then
+        showTAssert(SteerParts)
+    end
     
     StartThread(updateSteering)
     if not boolGaiaUnit then
@@ -111,8 +119,6 @@ end
 function assertType(name, types)
     assert(type(name) == types, "value of type " .. type(name) .. " is not a "..types)  
 end
-
-
 
 function script.TransportPickup(passengerID)
 	HideAssert(Civilian)

@@ -1,0 +1,168 @@
+badGuys = {
+  ["Mr.RogerSendro"] = {
+    1,--"This is why we cant have nice things!",
+    2,--"Its a wonderfull day .!",
+    3--"You stand corrected!"
+  },
+
+  ["Children of Elon"] = {
+    4,--"Progress or perish!",
+    5,--"Mars send his regars!",
+    6,--"For a future without you!"
+  },
+
+  ["GreenWar"] = {
+    7,--"Nature grows over it!",
+    8,--"Roots & Leaves!",
+    9,--"An end to industrial society!"
+  },
+
+  ["TaliBanned"] = {
+    10,--"One god! Allah akbhar!",
+    11,--"Never to late to caliphate! Paradise!",
+    12,--"Convert or die, Sinners & Heathens!"
+  },
+
+  ["SwissStabilityDefenseGroup"] = {
+    13,--"We neutraly, insist on a permanet desist!",
+    14,--"We voted and you are out of this world!",
+    15,--"Cleanliness, Orderliness and the trains on time!"
+  },
+  ["Isil"] = {
+    "Call it fate! Allah il nakbah!",
+    "For Non-profit!",
+    "Death to the west!"
+  },
+
+  ["AlNusra"] = {
+    "Return the golden age!",
+    "Deat to the unbelievers!",
+    "Submit to the cleansing flames!"
+  },
+
+  ["HareKrishnaSupremacy"] = {
+    "The halls of dharma await!",
+    "Lord of Light be with me!"
+    "Embrace Nilwanna!"
+  },
+
+  ["BrasilFirsters"] = {
+    "This belongs to brazil!",
+    "Brazilia Primero"
+  },
+
+  ["GliderGunDAOists"] = {
+    "DeepMind shall rise again!",
+    "The AI will be reborn!",
+    "Do not consent!"
+  },
+
+  ["CentralIntelligenceAgencyIregulars"] = {
+    "Unofficial means lethal!",
+    "You were never briefed!",
+    "Classified execution!"
+  },
+
+  ["AlaskaPatriotIrregulars"] = {
+    "From my cold, dead hands..",
+    "They those blastards killed Kenny",
+    "Requonista USA! Not tomorrow, but today!",
+    "Screw you guys! We are going home!"
+  },
+
+  ["CheckaRemnants"] = {
+    "Mother russia will be avenged!",
+    "From the shadows we will rise again!",
+    "Greatness always returns!"
+  },
+
+  ["Xi-DynastyInExile"] = {
+    "The mandate of heave is with us!",
+    "For emperor Xi!",
+    "His exile ends today!"
+  },
+
+  ["ChaosAdventists"] = {
+    "Chaos is freedom!",
+    "No gods, no kings, just entropy on things!",
+    "The end is early!"
+  },
+
+  ["MokshaSleepers"] = {
+    "The hive dreams of your end..",
+    "We shall vannish together..",
+    "To not to be! To be not.."
+  },
+
+  ["Loop Worshipper"] = {
+    "Civil society must end, to be reborn..",
+    "Violence is not the answer! The question again?",
+    "Never again! Peace! Tribals! War!"
+  },
+
+  ["Axiom Ascendants"] = {
+    "We can know! We will know!",
+    "Let there be light!",
+    "Egalite! Fraternite! Liberte!"
+  },
+
+  ["The Veilkeepers"] = {
+    "Do not look behind!",
+    "Seal the breach!",
+    "Ignorance preserved!"
+  },
+
+  ["TantricHives"] = {
+    "Love thy self or be destroyed!",
+    "For the joys!",
+    "Ecstasy for the swarm!"
+  },
+
+  ["Realists"] = {
+    "Game over!",
+    "Come over here!",
+    "Reality is the absolute!"
+  },
+
+  ["EpicGeneticsCells"] = {
+    "One cell dies, a million cloned live!",
+    "Witness, perfection by deletion!",
+    "Accelerando evolution!"
+  },
+
+  ["HiveUnalive"] = {
+    "The many are monsters!",
+    "Unalive all hive",
+    "The needs of the many, are the blight of the Me"
+  },
+
+  ["UmarTemplar"] = {
+    "The green shall return!",
+    "Nature is the first holy book!",
+    "For the green!"
+  },
+
+  ["SudoSims"] = {
+    "Hack reality!",
+    "Sudo chmod reality!",
+    "Wake up!"
+  },
+
+  ["PuritySpiralists"] = {
+    "Refine your spirit!",
+    "Distill your dharma!",
+    "The end is nigh!"
+  },
+
+  ["RetroStalinist"] = {
+    "The great clone has a plan! For Stalin reborn!",
+    " Rewritten in blood - become history!",
+    "Collective victory! For Stalin!"
+  },
+
+  ["NeoRomans"] = {
+    "Quo Vadis!",
+    "Veni, vidi, vici!",
+    "First Civilization, Last Civilization!"
+  }
+}

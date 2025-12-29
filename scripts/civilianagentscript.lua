@@ -1955,21 +1955,21 @@ boolBombAimed = false
 boolBoom = false
 function cookingOff()
     Spring.Echo("Bomberman cooking off")
-    --decloak 
-        -- shout
-        shoutFile = GetShoutByIdeology(unitID)
-        Spring.PlaySoundFile("sounds/civilian/bomberman/")
-        SetUnitValue(COB.WANT_CLOAK, 0)
-        SetUnitValue(COB.CLOAKED, 0)
-        -- wait three seconds
-        Sleep(GameConfig.SuicideBomberManWaitTimeMs)
-        -- kabloom
+    scream = "sounds/civilian/bomberman/scream"..math.random(1,3)..".ogg"
+    Spring.PlaySoundFile(scream)
+    -- decloak 
+    SetUnitValue(COB.WANT_CLOAK, 0)
+    SetUnitValue(COB.CLOAKED, 0)
+    Sleep(1000)
+    -- shout
+    shoutFilePath = GetShoutByIdeology(unitID)
+    Spring.PlaySoundFile(shoutFilePath)
+    Sleep(math.abs(GameConfig.SuicideBomberManWaitTimeMs-1000))
     boolBoom = true
 end
 
 function script.AimWeapon(weaponID, heading, pitch)
-    if boolCloaked then return false end 
-    if boolIsBomberMan 
+    if boolIsBomberMan  then
         if  not boolBombAimed  then
             boolBombAimed = true
             StartThread(cookingOff)
@@ -1979,8 +1979,11 @@ function script.AimWeapon(weaponID, heading, pitch)
        if boolBombAimed and boolBoom then
             return true
        end
-        return false    
+       return false    
     end
+
+    if boolCloaked then return false end 
+    
 
 
     if WeaponsTable[weaponID] then

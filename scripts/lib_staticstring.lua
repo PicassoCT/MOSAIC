@@ -1002,7 +1002,7 @@ local function generate_conversation(idA, idB, groupName)
         "(Music plays, soft moans) <Echo Analysis: Room is "..math.random(7,42).." m²>",
         "(Plates clanking) <Echo Analysis: Room is 15 m²>",
         "(cars honking in the background)  <Echo Analysis: Room is 10 m² at street level>",
-        "Daddy, mummy, the special phone from uncle bob is ringing. <Echo Analysis: Room is 20 m²>",
+        "Daddy, mummy, the special phone from uncle steves is ringing. <Echo Analysis: Room is 20 m²>",
         "Yeah? Speak up man, barely can hear you! <Echo Analysis: Room is unknown m²>"
     }
 
@@ -1049,8 +1049,27 @@ end
 
 function GetShoutByIdeology(unitID)
     _, agencyName = GetBadGuysGroupNames(Spring.GetUnitTeam(unitID))
-    slogansPerFaction = {}
-    return slogansPerFaction[agencyName][ unitID % #slogansPerFaction[agencyName] + 1]
+
+    maxSamples = 56
+    sampleHash = hashString(agencyName, maxSamples)
+   
+    soundPath = "sounds/civilian/bomberman/bomberman"
+
+    return soundPath..sampleHash..".ogg"
+end
+
+enumerator =1
+function enumerate()
+    enumCopy = enumerator
+    enumerator = enumerator +1
+    return enumCopy
+end
+
+enumerator = 1
+function enumerate()
+    local enumCopy = enumerator
+    enumerator = enumerator + 1
+    return enumCopy
 end
 
 function getSafeHouseTeamToolTip(teamID)
@@ -1066,9 +1085,6 @@ function getSafeHouseTeamToolTip(teamID)
 
     echo("Unknown team in getSafeHouseTeamToolTip: "..teamName)
 end
-
-
-
 
 function setSafeHouseTeamName(unitID)
     teamID = Spring.GetUnitTeam(unitID)

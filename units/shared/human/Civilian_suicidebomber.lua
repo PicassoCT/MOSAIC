@@ -11,10 +11,10 @@ local Suicidebomber = Human:New{
 	MetalStorage 		= 250,
 
 	explodeAs				  = "none",
-	Acceleration = 0.5,
+	Acceleration = 0.51,
 	BrakeRate = 0.35,
 	TurnRate = 900,
-	MaxVelocity = 0.8,
+	MaxVelocity = 0.82,
 	showNanoFrame= true,
 	
 	buildtime			 = 25,
@@ -37,7 +37,8 @@ local Suicidebomber = Human:New{
 	minCloakDistance = 0,
 	initCloaked = true,
 	stealth = true,
-
+	
+	fireState = 0,
 	kamikaze = true,
 	kamikazeDistance  = 70,
 	kamikazeUseLOS = true,
@@ -68,3 +69,4 @@ return lowerkeys({
 	["civilian_suicidebomber"] = Suicidebomber:New(),
 	
 })
+
