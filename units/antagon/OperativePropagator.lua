@@ -66,6 +66,8 @@ local OperativePropagator = Human:New{
 		"air_parachut",
 		"stealvehicleicon",		
 		"recruitcivilian",
+
+		"ground_turret_ssied",
 		"ground_carstop"		
 	},
 
@@ -79,17 +81,20 @@ local OperativePropagator = Human:New{
 	fireState= 1,
 	
 	weapons={
-			[1]={name  = "raidarrest", --prevents other weapon usage
+			[1]={
+				name  = "raidarrest", --prevents other weapon usage
 				onlyTargetCategory = [[RAIDABLE]],
-			},				
-			[2]={name  = "stunpistol",
+				},				
+			[2]={
+				name  = "stunpistol",
 				onlyTargetCategory = [[GROUND ARRESTABLE]],
 			},
-			[3]={name  = "closecombat",
-			onlyTargetCategory = [[CLOSECOMBATABLE]],
-			noChaseCategory = [[CLOSECOMBATABLE]],
-		}
-		},	
+			[3]={
+				name  = "closecombat",
+				onlyTargetCategory = [[CLOSECOMBATABLE]],
+				noChaseCategory = [[CLOSECOMBATABLE]],
+				}
+			},	
 	
 	sfxtypes = {
 		explosiongenerators = {

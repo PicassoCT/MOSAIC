@@ -143,6 +143,7 @@ local ignoredUnitDefs = {
 [UnitDefNames["house_spinner"].id]= true,
 [UnitDefNames["gullswarm"].id]= true,
 [UnitDefNames["ravenswarm"].id]= true,
+[UnitDefNames["ground_carstop"].id]= true,
 }
 
 if UnitDefNames["caesareagle"] then ignoredUnitDefs[UnitDefNames["caesareagle"].id]= true end

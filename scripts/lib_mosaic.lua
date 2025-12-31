@@ -361,6 +361,7 @@ function getGameConfig()
         iconHoverGroundOffset = 125,
         iconBlackHoleComDeactivateRange = 630,
         LifeTimeBlackOutIcon = 5* 60 * 1000,
+        LifeTimeCarStopIconMs = 2*60*1000,
         HedgeHog =
         {
             ShotgunRange = 75,
@@ -617,6 +618,15 @@ end
                 }
         return getTypeTable(UnitDefNames, typeTable)        
     end    
+
+    function getSuicideBombermanTypeTable(UnitDefs)
+        local UnitDefNames = getUnitDefNames(UnitDefs)
+
+                typeTable = {
+                    "civilian_suicidebomber"
+                }
+        return getTypeTable(UnitDefNames, typeTable)        
+    end  
 
     function getBombTypeTable(UnitDefs)
         local UnitDefNames = getUnitDefNames(UnitDefs)

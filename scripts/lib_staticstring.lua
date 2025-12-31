@@ -1058,19 +1058,6 @@ function GetShoutByIdeology(unitID)
     return soundPath..sampleHash..".ogg"
 end
 
-enumerator =1
-function enumerate()
-    enumCopy = enumerator
-    enumerator = enumerator +1
-    return enumCopy
-end
-
-enumerator = 1
-function enumerate()
-    local enumCopy = enumerator
-    enumerator = enumerator + 1
-    return enumCopy
-end
 
 function getSafeHouseTeamToolTip(teamID)
     teamName = string.lower(getTeamSideString(teamID))

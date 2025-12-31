@@ -1,9 +1,9 @@
 local carstop =  Turret:New{
-	name = "Explosive Charge",
+	name = "Throw away car stop spikes",
 	Description = "stops any vehicle driving over it permanent",
 	
 	objectName = "ground_carstop.dae",
-	script = "placeholder.lua",
+	script = "carstopscript.lua",
 	buildPic = "ground_carstop.png",
 	iconType = "ground_carstop",
 	--floater = true,

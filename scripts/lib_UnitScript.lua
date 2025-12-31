@@ -3759,7 +3759,7 @@ function ShowAssert(p)
     assert(p)
     if type(p) ~= "number" then
         if type(p) == "table" then echoPieceTable(p) end
-        assert(nil, "Not an number in ShowAssert got "..type(p).." instead")
+        assert(false, "Not an number in ShowAssert got "..type(p).." instead")
     end
     Show(p)
 end
@@ -3767,7 +3767,7 @@ end
 function showTAssert(p)
     assert(p)
     if type(p) ~= "table" then
-        assert(nil, "Not an table in showTAssert got "..type(p).." instead")
+        assert(false, "Not an table in showTAssert got "..type(p).." instead")
     end
     showT(p)
 end
@@ -3776,7 +3776,7 @@ function HideAssert(p)
     assert(p)
     if type(p) ~= "number" then
         if type(p) == "table" then echoPieceTable(p) end
-        assert(nil, "Not an number in hide")
+        assert(false, "Not an number in hide")
     end
     Hide(p)
 end
@@ -3784,7 +3784,7 @@ end
 function hideTAssert(p)
     assert(p)
     if type(p) ~= "table" then
-        assert(nil, "Not an table in hideTAssert")
+        assert(false, "Not an table in hideTAssert")
     end
     hideT(p)
 end

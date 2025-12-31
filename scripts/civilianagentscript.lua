@@ -21,7 +21,7 @@ local spGetUnitTeam = Spring.GetUnitTeam
 local spGetUnitPosition = Spring.GetUnitPosition
 local spGetGameFrame = Spring.GetGameFrame
 local spGetUnitWeaponTarget = Spring.GetUnitWeaponTarget
-
+local boolCookOff = false
 SIG_ANIM = 1
 SIG_UP = 2
 SIG_LOW = 4
@@ -31,7 +31,8 @@ SIG_PISTOL = 32
 SIG_MOLOTOW = 64
 SIG_INTERNAL = 128
 SIG_RPG = 256
-
+local suicideBomberManTypeTable = getSuicideBombermanTypeTable(UnitDefs)
+boolIsBomberMan = suicideBomberManTypeTable[spGetUnitDefID(unitID)]
 local function randomMultipleByNameOrDefault(name, index)
     if randChance(25) then
         if map[name] then
@@ -1266,6 +1267,7 @@ normalBehavourStateMachine = {
 
 function threadStarter()
     Sleep(100)
+
     while true do
         if boolStartThread == true then
             boolStartThread = false
@@ -1276,6 +1278,7 @@ function threadStarter()
             while boolStartThread == false do Sleep(33) end
         end
         Sleep(33)
+
     end
 end
 
@@ -1950,41 +1953,19 @@ function script.QueryWeapon(weaponID)
         return myGun 
     end
 end
-boolIsBomberMan = Spring.GetUnitDefID(unitID) == UnitDefNames["civilian_suicidebomber"].id
-boolBombAimed = false
-boolBoom = false
-function cookingOff()
-    Spring.Echo("Bomberman cooking off")
+
+function startCookingOff()
     scream = "sounds/civilian/bomberman/scream"..math.random(1,3)..".ogg"
-    Spring.PlaySoundFile(scream)
+    Spring.PlaySoundFile(scream, 1.0)
+    shoutFilePath = GetShoutByIdeology(unitID)
+    Spring.PlaySoundFile(shoutFilePath, 1.0)
     -- decloak 
     SetUnitValue(COB.WANT_CLOAK, 0)
-    SetUnitValue(COB.CLOAKED, 0)
-    Sleep(1000)
-    -- shout
-    shoutFilePath = GetShoutByIdeology(unitID)
-    Spring.PlaySoundFile(shoutFilePath)
-    Sleep(math.abs(GameConfig.SuicideBomberManWaitTimeMs-1000))
-    boolBoom = true
+    SetUnitValue(COB.CLOAKED, 0)    
 end
 
 function script.AimWeapon(weaponID, heading, pitch)
-    if boolIsBomberMan  then
-        if  not boolBombAimed  then
-            boolBombAimed = true
-            StartThread(cookingOff)
-            return false
-       end
-
-       if boolBombAimed and boolBoom then
-            return true
-       end
-       return false    
-    end
-
-    if boolCloaked then return false end 
-    
-
+    if boolCloaked then return false end   
 
     if WeaponsTable[weaponID] then
         if WeaponsTable[weaponID].aimfunc then
@@ -2068,21 +2049,25 @@ lastDamageDirX, lastDamageDirZ = randNVec(), randNVec()
 function script.Killed(recentDamage, _)
     setSpeedEnv(unitID, 0)
     dropLoot()
-    _, maxHealth= Spring.GetUnitHealth(unitID)
-    Spring.Echo("Unit civilian got final damage ".. (recentDamage/maxHealth).." %")
-    if (recentDamage/maxHealth) > 2.5 then
-        ExplosiveDeath(lastDamageDirX, lastDamageDirZ )
-        return 1 -- signal custom animation handled
+    if boolIsBomberMan then
+        startCookingOff()
     else
-        val = 5*randSign()
-        Turn(root,y_axis,math.rad(val),0.8)
-        for i=1,3 do
-            turnTableRand(TablesOfPiecesGroups["UpArm"], i, 90, -90, 1.4)
-            turnTableRand(TablesOfPiecesGroups["LowArm"], i, 90, -90, 1.4)
+        _, maxHealth= Spring.GetUnitHealth(unitID)
+        Spring.Echo("Unit civilian got final damage ".. (recentDamage/maxHealth).." %")
+        if (recentDamage/maxHealth) > 2.5 then
+            ExplosiveDeath(lastDamageDirX, lastDamageDirZ )
+            return 1 -- signal custom animation handled
+        else
+            val = 5*randSign()
+            Turn(root,y_axis,math.rad(val),0.8)
+            for i=1,3 do
+                turnTableRand(TablesOfPiecesGroups["UpArm"], i, 90, -90, 1.4)
+                turnTableRand(TablesOfPiecesGroups["LowArm"], i, 90, -90, 1.4)
+            end
+            val = 90*randSign()
+            WTurn(root,x_axis, math.rad(val),1.4)
+            return 1
         end
-        val = 90*randSign()
-        WTurn(root,x_axis, math.rad(val),1.4)
-        return 1
     end
 end
 

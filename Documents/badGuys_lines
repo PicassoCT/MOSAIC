@@ -1,168 +1,183 @@
+enumerator =1
+function enumerate()
+    enumCopy = enumerator
+    enumerator = enumerator +1
+    return enumCopy
+end
+
+enumerator = 1
+function enumerate()
+    local enumCopy = enumerator
+    enumerator = enumerator + 1
+    return enumCopy
+end
+
 badGuys = {
   ["Mr.RogerSendro"] = {
-    1,--"This is why we cant have nice things!",
-    2,--"Its a wonderfull day .!",
-    3--"You stand corrected!"
+    ["This is why we cant have nice things!"] = enumerate(),
+    ["Its a wonderfull day .!"] = enumerate(),
+    ["You stand corrected!"] = enumerate()
   },
 
   ["Children of Elon"] = {
-    4,--"Progress or perish!",
-    5,--"Mars send his regars!",
-    6,--"For a future without you!"
+    ["Progress or perish!"] = enumerate(),
+    ["Mars send his regars!"] = enumerate(),
+    ["For a future without you!"] = enumerate()
   },
 
   ["GreenWar"] = {
-    7,--"Nature grows over it!",
-    8,--"Roots & Leaves!",
-    9,--"An end to industrial society!"
+    ["Nature grows over it!"] = enumerate(),
+    ["Roots & Leaves!"] = enumerate(),
+    ["An end to industrial society!"] = enumerate()
   },
 
   ["TaliBanned"] = {
-    10,--"One god! Allah akbhar!",
-    11,--"Never to late to caliphate! Paradise!",
-    12,--"Convert or die, Sinners & Heathens!"
+    ["One god! Allah akbhar!"] = enumerate(),
+    ["Never to late to caliphate! Paradise!"] = enumerate(),
+    ["Convert or die, Sinners & Heathens!"] = enumerate()
   },
 
   ["SwissStabilityDefenseGroup"] = {
-    13,--"We neutraly, insist on a permanet desist!",
-    14,--"We voted and you are out of this world!",
-    15,--"Cleanliness, Orderliness and the trains on time!"
+    ["We neutraly, insist on a permanet desist!"] = enumerate(),
+    ["We voted and you are out of this world!"] = enumerate(),
+    ["Cleanliness, Orderliness and the trains on time!"] = enumerate()
   },
+
   ["Isil"] = {
-    "Call it fate! Allah il nakbah!",
-    "For Non-profit!",
-    "Death to the west!"
+    ["Call it fate! Allah il nakbah!"] = enumerate(),
+    ["For Non-profit!"] = enumerate(),
+    ["Death to the west!"] = enumerate()
   },
 
   ["AlNusra"] = {
-    "Return the golden age!",
-    "Deat to the unbelievers!",
-    "Submit to the cleansing flames!"
+    ["Return the golden age!"] = enumerate(),
+    ["Deat to the unbelievers!"] = enumerate(),
+    ["Submit to the cleansing flames!"] = enumerate()
   },
 
   ["HareKrishnaSupremacy"] = {
-    "The halls of dharma await!",
-    "Lord of Light be with me!"
-    "Embrace Nilwanna!"
+    ["The halls of dharma await!"] = enumerate(),
+    ["Lord of Light be with me!"] = enumerate(),
+    ["Embrace Nilwanna!"] = enumerate()
   },
 
   ["BrasilFirsters"] = {
-    "This belongs to brazil!",
-    "Brazilia Primero"
+    ["Brazil first!"] = enumerate(),
+    ["Brazilia Primero"] = enumerate()
   },
 
   ["GliderGunDAOists"] = {
-    "DeepMind shall rise again!",
-    "The AI will be reborn!",
-    "Do not consent!"
+    ["DeepMind shall rise again!"] = enumerate(),
+    ["The AI will be reborn!"] = enumerate(),
+    ["Do not consent!"] = enumerate()
   },
 
   ["CentralIntelligenceAgencyIregulars"] = {
-    "Unofficial means lethal!",
-    "You were never briefed!",
-    "Classified execution!"
+    ["Unofficial means lethal!"] = enumerate(),
+    ["You were never briefed!"] = enumerate(),
+    ["Classified execution!"] = enumerate()
   },
 
   ["AlaskaPatriotIrregulars"] = {
-    "From my cold, dead hands..",
-    "They those blastards killed Kenny",
-    "Requonista USA! Not tomorrow, but today!",
-    "Screw you guys! We are going home!"
+    ["From my cold, dead hands.."] = enumerate(),
+    ["They those blastards killed Kenny"] = enumerate(),
+    ["Requonista USA! Not tomorrow, but today!"] = enumerate(),
+    ["Screw you guys! We are going home!"] = enumerate()
   },
 
   ["CheckaRemnants"] = {
-    "Mother russia will be avenged!",
-    "From the shadows we will rise again!",
-    "Greatness always returns!"
+    ["Mother russia will be avenged!"] = enumerate(),
+    ["From the shadows we will rise again!"] = enumerate(),
+    ["Greatness always returns!"] = enumerate()
   },
 
   ["Xi-DynastyInExile"] = {
-    "The mandate of heave is with us!",
-    "For emperor Xi!",
-    "His exile ends today!"
+    ["The mandate of heaven is with us!"] = enumerate(),
+    ["For emperor Xi!"] = enumerate(),
+    ["His exile ends today!"] = enumerate()
   },
 
   ["ChaosAdventists"] = {
-    "Chaos is freedom!",
-    "No gods, no kings, just entropy on things!",
-    "The end is early!"
+    ["Chaos is freedom!"] = enumerate(),
+    ["No gods, no kings, just entropy on things!"] = enumerate(),
+    ["The end is early!"] = enumerate()
   },
 
   ["MokshaSleepers"] = {
-    "The hive dreams of your end..",
-    "We shall vannish together..",
-    "To not to be! To be not.."
+    ["The hive dreams of your end.."] = enumerate(),
+    ["We shall vannish together.."] = enumerate(),
+    ["To not to be! To be not.."] = enumerate()
   },
 
   ["Loop Worshipper"] = {
-    "Civil society must end, to be reborn..",
-    "Violence is not the answer! The question again?",
-    "Never again! Peace! Tribals! War!"
+    ["Civil society must end, to be reborn.."] = enumerate(),
+    ["Violence is not the answer! The question again?"] = enumerate(),
+    ["Never again! Peace! Tribals! War!"] = enumerate()
   },
 
   ["Axiom Ascendants"] = {
-    "We can know! We will know!",
-    "Let there be light!",
-    "Egalite! Fraternite! Liberte!"
+    ["We can know! We will know!"] = enumerate(),
+    ["Let there be light!"] = enumerate(),
+    ["Egalite! Fraternite! Liberte!"] = enumerate()
   },
 
   ["The Veilkeepers"] = {
-    "Do not look behind!",
-    "Seal the breach!",
-    "Ignorance preserved!"
+    ["Do not look behind!"] = enumerate(),
+    ["Seal the breach!"] = enumerate(),
+    ["Ignorance preserved!"] = enumerate()
   },
 
   ["TantricHives"] = {
-    "Love thy self or be destroyed!",
-    "For the joys!",
-    "Ecstasy for the swarm!"
+    ["Love thy self or be destroyed!"] = enumerate(),
+    ["For the joys!"] = enumerate(),
+    ["Ecstasy for the swarm!"] = enumerate()
   },
 
   ["Realists"] = {
-    "Game over!",
-    "Come over here!",
-    "Reality is the absolute!"
+    ["Game over!"] = enumerate(),
+    ["Come over here!"] = enumerate(),
+    ["Reality is the absolute!"] = enumerate()
   },
 
   ["EpicGeneticsCells"] = {
-    "One cell dies, a million cloned live!",
-    "Witness, perfection by deletion!",
-    "Accelerando evolution!"
+    ["One cell dies, a million cloned live!"] = enumerate(),
+    ["Witness, perfection by deletion!"] = enumerate(),
+    ["Accelerando evolution!"] = enumerate()
   },
 
   ["HiveUnalive"] = {
-    "The many are monsters!",
-    "Unalive all hive",
-    "The needs of the many, are the blight of the Me"
+    ["The many are monsters!"] = enumerate(),
+    ["Unalive all hive"] = enumerate(),
+    ["The needs of the many, are the blight of the Me"] = enumerate()
   },
 
   ["UmarTemplar"] = {
-    "The green shall return!",
-    "Nature is the first holy book!",
-    "For the green!"
+    ["The green shall return!"] = enumerate(),
+    ["Nature is the first holy book!"] = enumerate(),
+    ["For the green!"] = enumerate()
   },
 
   ["SudoSims"] = {
-    "Hack reality!",
-    "Sudo chmod reality!",
-    "Wake up!"
+    ["Hack reality!"] = enumerate(),
+    ["Sudo chmod reality!"] = enumerate(),
+    ["Wake up!"] = enumerate()
   },
 
   ["PuritySpiralists"] = {
-    "Refine your spirit!",
-    "Distill your dharma!",
-    "The end is nigh!"
+    ["Refine your spirit!"] = enumerate(),
+    ["Distill your dharma!"] = enumerate(),
+    ["The end is nigh!"] = enumerate()
   },
 
   ["RetroStalinist"] = {
-    "The great clone has a plan! For Stalin reborn!",
-    " Rewritten in blood - become history!",
-    "Collective victory! For Stalin!"
+    ["The great clone has a plan! For Stalin reborn!"] = enumerate(),
+    ["Rewritten in blood - become new, right history!"] = enumerate(),
+    ["Collective victory! For Stalin!"] = enumerate()
   },
 
   ["NeoRomans"] = {
-    "Quo Vadis!",
-    "Veni, vidi, vici!",
-    "First Civilization, Last Civilization!"
+    ["Quo Vadis!"] = enumerate(),
+    ["Veni, vidi, vici!"] = enumerate(),
+    ["First Civilization, Last Civilization! Rome is eternal!"] = enumerate()
   }
 }
