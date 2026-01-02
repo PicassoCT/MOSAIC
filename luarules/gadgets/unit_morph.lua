@@ -462,6 +462,7 @@ spawning moved away and works next way:
 ]]--
 
 local function CreateMorphedUnit(postMorphData)
+  echo("Creating Morphed Unit", postMorphData)
   local unitID = postMorphData.unitID
   local unitDefAfterMorph = postMorphData.unitDefAfterMorph
   local unitDefBeforeMorph = postMorphData.unitDefBeforeMorph
@@ -763,6 +764,7 @@ local function FinishMorph(unitID, morphData)
 
   -- DESTROY UNIT, this syntax is for spring 104+ only (parameter #5 does not exist in 103)
   -- selfd = false, reclaim = true, attacker = 0, recycleID = true
+  --echo("unitMorph: Destroying unit:".. unitID)
   Spring.DestroyUnit(unitID, false, true, 0, true)
 
   -- try to pass UnitRulesParam if asked to do so
@@ -797,6 +799,7 @@ local function FinishMorph(unitID, morphData)
         oldShieldState = oldShieldState,
         valueToPass = valueToPass,
   })
+    --echo("unitMorph: Created unit:".. newUnitID)
     GG.houseHasSafeHouseTable[containingHouseID] = newUnitID
 end
 
@@ -981,11 +984,14 @@ function gadget:UnitFromFactory(unitID, unitDefID, unitTeam, factID, factDefID, 
     morphUnits[factID].increment = 0.0
     -- Remove the fake unit (built by the factory to let the user know the
     -- progress). Obviously, we don't want to recycle this unitID
+    --echo("unitMorph: Destroying UnitFromFactory "..getUnitName(unitID))
     Spring.DestroyUnit(unitID, false, true, 0, false)
   end
 end
 
-function gadget:UnitDestroyed(unitID, unitDefID, teamID)
+upgradeTypeTable = getAllSafeHouseUpgradeTypeTable(UnitDefs)
+
+function gadget:UnitDestroyed(unitID, unitDefID, teamID, attackerID)
   if (morphUnits[unitID]) then
     StopMorph(unitID,morphUnits[unitID])
     morphUnits[unitID] = nil

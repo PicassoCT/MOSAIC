@@ -22,14 +22,6 @@ function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     StartThread(propagandaLoop)
     StartThread(delayedSpinStart)
-
-    T = foreach(getAllNearUnit(unitID, GameConfig.buildSafeHouseRange * 2),
-                function(id)
-        if houseTypeTable[Spring.GetUnitDefID(id)] then return id end
-    end)
-
-    GG.UnitHeldByHouseMap[unitID] = T[1]
-    StartThread(mortallyDependant, unitID, T[1], 15, false, true)
     StartThread(amplifyPropaganda)
 end
 

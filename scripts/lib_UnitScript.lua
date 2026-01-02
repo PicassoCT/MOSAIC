@@ -623,7 +623,6 @@ function showTSubSubSpins(pieceID, TableOfPiecesGroups, selectExt, countDown)
     return {}
 end
 
-
 function setNoneCollide(unitId)
     oldCol = getCollideData(unitID)
     col = {}
@@ -647,6 +646,7 @@ function getCollideData(unitID)
     col.isBlocking, col.isSolidObjectCollidable, col.isProjectileCollidable, col.isRaySegmentCollidable, col.crushable, col.blockEnemyPushing, col.blockHeightChanges = Spring.GetUnitBlocking(unitID)
     return col
 end
+
 -- > kill All Units near Pieces Volume
 function killAtPiece(unitID, piecename, selfd, reclaimed, sfxfunction)
     px, py, pz = Spring.GetUnitPieceCollisionVolumeData(unitID, piecename)
@@ -714,7 +714,7 @@ function assertPieceInUnitContext(id)
     assert(id)
     assertValidPiece(id)    
 end
--- > 
+
 function showHide(id, bShow)
     assertPieceInUnitContext(id)
     if bShow == true then
@@ -723,7 +723,6 @@ function showHide(id, bShow)
         Hide(id)
     end
 end
-
 
 function showAllSubsSpinsOfPiece(T, pieceGroupName, nr)
     if not nr then 
@@ -1312,7 +1311,7 @@ end
 
 function showTypeDependent(unitID, typenNamePiecesTable)
     unitName = getUnitName(unitID)
-    showT(typenNamePiecesTable)
+    showT(typenNamePiecesTable[unitName])
 end
 -- ======================================================================================
 -- Section: Initializing Functions
@@ -2865,13 +2864,8 @@ function echoT(T, layer)
             elseif typus == "boolean" then
                 Spring.Echo(Concated .. "boolean" .. ((T == true) and "True"))
             elseif typus == "function" then
-                Spring.Echo(Concated .. "function: Result")
-                resulT = T()
-                if type(resulT) == "table" then
-                    echoT(resulT, layer)
-                else
-                    echo(resulT)
-                end
+                Spring.Echo(Concated .. "function")
+                
             end
         end
     end

@@ -19,7 +19,6 @@ local houseTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture,
 
 local hologramTypeTable = getHologramTypes(UnitDefs)
 
-if not GG.UnitHeldByHouseMap then GG.UnitHeldByHouseMap = {} end
 
 boolBuilding = false
 function script.Create()
@@ -27,13 +26,7 @@ function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     Hide(projectile)
     Move(projectile, z_axis, -210, 0)
-    T = foreach(getAllNearUnit(unitID, GameConfig.buildSafeHouseRange * 2),
-                function(id)
-        if houseTypeTable[Spring.GetUnitDefID(id)] then return id end
-    end)
 
-    GG.UnitHeldByHouseMap[unitID] = T[1]
-    StartThread(mortallyDependant, unitID, T[1], 15, false, true)
     StartThread(goToFireMode)
     StartThread(modeChangeOS)
 end

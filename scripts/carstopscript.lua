@@ -16,13 +16,15 @@ function script.Create()
     -- generatepiecesTableAndArrayCode(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     StartThread(waitForCar)
+    assert(GameConfig.LifeTimeCarStopIconMs)
     StartThread(lifeTime, GameConfig.LifeTimeCarStopIconMs)
 
 end
 
 function waitForCar()
     while true do
-        foreach(getAllNearUnit(unitID, 90)
+        foreach(
+            getAllNearUnit(unitID, 90),
             function(id)
                 defID = spGetUnitDefID(id)
                 if TruckTypeTable[defID] then

@@ -638,10 +638,13 @@ end
 function mortallyDependant(id, LiveGiver, checkTime, boolSelfDestruct,
                            boolReclaimed)
 
-    while LiveGiver ~= nil and not Spring.GetUnitIsDead(LiveGiver) do
-        Sleep(checkTime)
+    if not GG.mortallyDependant then GG.mortallyDependant = {} end
+    if not GG.mortallyDependant[LiveGiver] then 
+        GG.mortallyDependant[LiveGiver] = {} 
     end
-    Spring.DestroyUnit(id, boolSelfDestruct, boolReclaimed)
+
+    GG.mortallyDependant[LiveGiver][#GG.mortallyDependant[LiveGiver] +1] = {id = id, boolSelfDestruct, boolReclaimed}
+
 end
 
 -- >plays the sounds handed over in a table 

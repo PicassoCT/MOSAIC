@@ -509,11 +509,11 @@ end
     assert(WeaponDefs)
      nameOfGun={
         "javelinrocket",
-	"mortar",
-	"orbitalrailgun",
-	"railgun",
-	"sniperrifle ",
-	"tankcannon"
+    	"mortar",
+    	"orbitalrailgun",
+    	"railgun",
+    	"sniperrifle ",
+    	"tankcannon"
 	}
     longRangeLoudWeaponTypes ={}
 	for defId,def in pairs(WeaponDefs) do
@@ -1856,6 +1856,14 @@ end
                     end
                 end
 
+                return getTypeTable(UnitDefNames, typeTable)
+            end
+
+            function getAllSafeHouseUpgradeTypeTable(UnitDefs)
+                local UnitDefNames = getUnitDefNames(UnitDefs)
+                typeTable = {"nimrod", "propagandaserver", "antagonassembly", "protagonassembly", "launcher", "hivemind", "warheadfactory", "blacksite", "aicore"}
+
+        
                 return getTypeTable(UnitDefNames, typeTable)
             end
 

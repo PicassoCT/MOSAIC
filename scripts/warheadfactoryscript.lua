@@ -26,13 +26,6 @@ function script.Create()
     spinT(TablesOfPiecesGroups["SignalLight"], y_axis,
           math.random(42, 420) * randSign(), 42)
     Spring.SetUnitNanoPieces(unitID, TablesOfPiecesGroups["SignalLight"])
-    T = foreach(getAllNearUnit(unitID, GameConfig.buildSafeHouseRange * 2),
-                function(id)
-        if houseTypeTable[Spring.GetUnitDefID(id)] then return id end
-    end)
-
-    GG.UnitHeldByHouseMap[unitID] = T[1]
-    StartThread(mortallyDependant, unitID, T[1], 15, false, true)
 	StartThread(howToBuildTheBombWatcher)
     Spin(Rotor,y_axis, math.rad(720),0)
 end

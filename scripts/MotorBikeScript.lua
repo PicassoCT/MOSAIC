@@ -25,11 +25,11 @@ local boolIsDelivery = randChance(66)
 local myDeliverySymbolIndex = nil
 local boolDeliveryOnGuy = false
 local myDeliverySymbol = nil
-local activeWheels = {}
+activeWheels = {}
 local passenger = nil
 local bikeType = nil
 SteerParts = {}
-local Signum = -1
+local Signum = 1
 local LeanFactor = 1.0
 bikeWheelMap = {}
 local boolIsCivilianTruck = (truckTypeTable[unitDefID] ~= nil)
@@ -63,46 +63,52 @@ function buildBike()
     if boolIsDelivery and not boolDeliveryOnGuy then
         Show(myDeliverySymbol)
     end
-    defaultTable = {Signum = 1, LeanFactor = 0.0, SteerParts = {}, wheels = {}} 
+    defaultTable = { LeanFactor = 0.0, SteerParts = {}, wheels = {}} 
     bikeWheelMap = makeTable(defaultTable, 7)
-    bikeWheelMap[1] = {Signum = -1, LeanFactor = 0.1, wheels = {}}    
+    bikeWheelMap[1].LeanFactor = 0.1
 
     for i= 1, 4 do
+        assert(TablesOfPiecesGroups["Wheel"][i], i)
         bikeWheelMap[1].wheels[#bikeWheelMap[1].wheels + 1] = TablesOfPiecesGroups["Wheel"][i]
     end
 
     for i= 5, 6 do
+        assert(TablesOfPiecesGroups["Wheel"][i], i)
         bikeWheelMap[2].wheels[#bikeWheelMap[2].wheels + 1] = TablesOfPiecesGroups["Wheel"][i]
     end
 
-    bikeWheelMap[3].Signum = -1
+
     for i= 7, 8 do
+        assert(TablesOfPiecesGroups["Wheel"][i], i)
         bikeWheelMap[3].wheels[#bikeWheelMap[3].wheels + 1] = TablesOfPiecesGroups["Wheel"][i]
     end
 
     bikeWheelMap[3].SteerParts[#bikeWheelMap[3].SteerParts + 1 ] = piece("SteeringAddition3")
 
     for i= 9, 10 do
+        assert(TablesOfPiecesGroups["Wheel"][i], i)
         bikeWheelMap[4].wheels[#bikeWheelMap[4].wheels + 1] = TablesOfPiecesGroups["Wheel"][i]
     end
 
     for i= 11, 12 do
+        assert(TablesOfPiecesGroups["Wheel"][i], i)
         bikeWheelMap[5].wheels[#bikeWheelMap[5].wheels + 1] = TablesOfPiecesGroups["Wheel"][i]
     end
 
     for i= 13, 18 do
+        assert(TablesOfPiecesGroups["Wheel"][i], i)
         bikeWheelMap[6].wheels[#bikeWheelMap[6].wheels + 1] = TablesOfPiecesGroups["Wheel"][i]
     end
 
-    bikeWheelMap[7].wheels= bikeWheelMap[5].wheels
+    local wheelCopy = bikeWheelMap[5].wheels
+    bikeWheelMap[7].wheels = wheelCopy
 
-    if boolGaiaUnit then   Show(Civilian)   end
+    if boolGaiaUnit then Show(Civilian) end
 
-    Signum = bikeWheelMap[bikeType].Signum
     LeanFactor = bikeWheelMap[bikeType].LeanFactor
-    showT(bikeWheelMap[bikeType].wheels)
-
     activeWheels = bikeWheelMap[bikeType].wheels
+
+    showT(activeWheels)
     SteerParts = bikeWheelMap[bikeType].SteerParts 
     if SteerParts and count(SteerParts) > 0 then
         showT(SteerParts)
@@ -112,7 +118,6 @@ function buildBike()
     if not boolGaiaUnit then
         setSpeedEnv(unitID, 0.0)  
     end
-
 end
 
 function assertType(name, types)
@@ -203,13 +208,14 @@ function updateSteering()
             end
         end
 
+        assert(SteerParts)
         if boolMoving == true and boolTurning == true then
            if boolGaiaUnit then
                 Show(myDeliverySymbol)
                 Show(Civilian)
            end
-           if boolTurnLeft == true then
 
+           if boolTurnLeft == true then                
                 turnT(SteerParts, y_axis, -10, 1)
                 Turn(center,x_axis ,math.rad(-15*LeanFactor),1)
                 WaitForTurns(SteerParts)

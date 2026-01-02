@@ -197,6 +197,7 @@ local spGetUnitDefID = Spring.GetUnitDefID
 local center = piece("center")
 
 typeDependentTable = {
+["potemkinpayload"] = { piece("PhysicsPayload")},
 ["biopayload"] = { piece("BioPayload")},
 ["physicspayload"] = { piece("PhysicsPayload")},
 ["informationpayload"] = { piece("InfoPayload")},

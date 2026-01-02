@@ -100,7 +100,7 @@ function houseAttach()
                 boolIsSafeHouse = safeHouseTypeTable[spGetUnitDefID(GG.houseHasSafeHouseTable[houseID])] ~= nil
                 attachDoubleAgentToUnit(unitID ,enemyTeamID, boolIsSafeHouse)
                 -- destroy the previous created safehouse
-                echo("Previous Safehouse detected")
+                echo("Previous Safehouse detected destroying "..getUnitName(GG.houseHasSafeHouseTable[houseID]))
                 Spring.DestroyUnit(GG.houseHasSafeHouseTable[houseID], true, false)
             end
         end
@@ -110,7 +110,6 @@ function houseAttach()
             containingHouseID = houseID
 
             GG.houseHasSafeHouseTable[houseID] = unitID
-            StartThread(mortallyDependant, unitID, houseID, 250, false, true)
             moveUnitToUnit(unitID, houseID)
             return houseID
         end
@@ -135,7 +134,7 @@ function checkPreExistingKill(toKillId, notID)
                         )
 
         if #OtherUpgradeTypesAliveAtLocation > 0 then
-            echo("Previous Upgrade active - killing the unit")
+            echo("Safehousescript: Previous Upgrade active - killing  unit".. getUnitName(toKillId))
             Spring.DestroyUnit(toKillId, false, true)
         end
 end

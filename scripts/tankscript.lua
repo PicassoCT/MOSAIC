@@ -86,7 +86,7 @@ function noLongerAiming()
     Sleep(10000)
     boolNoLongerAiming = true
     if maRa() then
-        StartThread(PlaySoundByUnitDefID, unitDefID, "sounds/tank/rotate.ogg", 0.8,
+        StartThread(PlaySoundByUnitDefID, unitDefID, "sounds/tank/rotate.ogg", 0.2,
                     1000, 1)
         WTurn(aimpiece, 2, 0, 0.5)
         WTurn(Cannon1, 1, 0, 0.5)
@@ -99,7 +99,7 @@ function script.AimWeapon1(Heading, pitch)
     -- aiming animation: instantly turn the gun towards the enemy
     startFrame = Spring.GetGameFrame()
     if not boolBarelyMoved  then
-        StartThread(PlaySoundByUnitDefID, unitDefID, "sounds/tank/rotate.ogg", 1.0, 1000, 1)
+        StartThread(PlaySoundByUnitDefID, unitDefID, "sounds/tank/rotate.ogg", 0.25, 1000, 1)
     end
     StartThread(noLongerAiming)
     WTurn(aimpiece, 2, Heading, 0.7)
@@ -124,7 +124,7 @@ end
 
 function script.StartMoving()
     StartThread(PlaySoundByUnitDefID, unitDefID, "sounds/tank/drive_4_30.ogg",
-                1.0, 30000, 1)
+                0.2, 30000, 1)
     boolMoving = true
 end
 
