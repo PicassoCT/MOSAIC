@@ -462,7 +462,7 @@ spawning moved away and works next way:
 ]]--
 
 local function CreateMorphedUnit(postMorphData)
-  echo("Creating Morphed Unit", postMorphData)
+  --echo("Creating Morphed Unit", postMorphData)
   local unitID = postMorphData.unitID
   local unitDefAfterMorph = postMorphData.unitDefAfterMorph
   local unitDefBeforeMorph = postMorphData.unitDefBeforeMorph

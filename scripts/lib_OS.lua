@@ -110,6 +110,19 @@ function playSoundScape_OS(path, dataTable, restIntervallMin, restIntervallMax,
     end
 end
 
+function blinkLoop(LigthOn, LightOff, restTime)
+
+    while true do
+        Hide(LightOff)
+        Show(LightOn)
+        Sleep(restTime)
+        Show(LightOff)
+        Hide(LightOn)
+        Sleep(restTime)
+    end
+end
+
+
 function SetSharedOneTimeResult(key,  data)
     if not GG.SharedResult then GG.SharedResult = {} end
     if not GG.SharedResult[key] then

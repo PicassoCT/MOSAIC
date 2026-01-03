@@ -1051,7 +1051,7 @@ function GetShoutByIdeology(unitID)
     _, agencyName = GetBadGuysGroupNames(Spring.GetUnitTeam(unitID))
 
     maxSamples = 56
-    sampleHash = hashString(agencyName, maxSamples)
+    sampleHash = (hashString(agencyName) % maxSamples) + 1
    
     soundPath = "sounds/civilian/bomberman/bomberman"
 

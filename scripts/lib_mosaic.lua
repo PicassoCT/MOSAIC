@@ -1382,8 +1382,6 @@ end
                 return houseTable
             end
 
-
-
             function getCultureUnitModelNames_Dict_DefIDName(cultureName, typeName, UnitDefs)
                 if cultureName == nil then 
                     cultureName = getCultureName()
@@ -1392,8 +1390,6 @@ end
                 cachedResultsNameKey = "getCultureUnitModelNames_Dict_DefIDName"..cultureName..typeName
                 if HasSharedOneTimeResult(cachedResultsNameKey) then return GetSharedOneTimeResult(cachedResultsNameKey)end
                 
-
-
                 local translation = {}
                 if cultureName == Cultures.international then
                     translationWestern = getTranslation(Cultures.western)                    
@@ -2114,7 +2110,6 @@ end
                 end
                 return false
             end
-
 
             function setAerosolCivilianBehaviour(unitID, TypeOfBehaviour)
                 env = Spring.UnitScript.GetScriptEnv(unitID)

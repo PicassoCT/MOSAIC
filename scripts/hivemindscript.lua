@@ -56,9 +56,7 @@ function integrateNewMembers()
                 if GG.DisguiseCivilianFor[id] then
                   return GG.DisguiseCivilianFor[id]
                 end
-
-
-
+                
                 return id
             end, 
             function(id)
