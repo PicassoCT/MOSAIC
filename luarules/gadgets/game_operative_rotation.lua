@@ -127,11 +127,11 @@ if (gadgetHandler:IsSyncedCode()) then
             LastAimFrame[id] = gf
             dx,dz = positionT.x, positionT.z --fallback to mouseTargetPosition
             if len > 0 then
-                dx = ((dx - x)/len) * 128
-                dz = ((dz - x)/len) * 128
+                dx = x + ((dx - x)/len) * 128
+                dz = z + ((dz - z)/len) * 128
             end
-
-            InjectMoveTowards(id, dx, y, dz)
+                InjectMoveTowards(id, dx, y, dz)
+            
         else
             Spring.Echo("Unit not moving while turning")
         end
