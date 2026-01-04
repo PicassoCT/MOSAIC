@@ -68,24 +68,6 @@ if (gadgetHandler:IsSyncedCode()) then
         [CMD.FIGHT] = true
     }
 
-
-    local function RemoveInjectedMove(unitID)
-        if not InjectedMove[unitID] then return end
-
-        local cmds = Spring.GetCommandQueue(unitID, 5)
-        if not cmds then return end
-
-        for i = 1, #cmds do
-            if cmds[i].id == CMD.MOVE and cmds[i].options.internal then
-                Spring.Echo("Removing InjectMoveTowards")
-                Spring.GiveOrderToUnit(unitID, CMD.REMOVE, { cmds[i].tag }, {})
-                break
-            end
-        end
-
-        InjectedMove[unitID] = nil
-    end
-
     local function IsUnitMoving(unitID)
         local cmds = Spring.GetCommandQueue(unitID, 3)
         if not cmds then  
@@ -105,20 +87,7 @@ if (gadgetHandler:IsSyncedCode()) then
         return false
     end
 
-    local function InjectMoveTowards(unitID, dx, ty, dy)
-        if InjectedMove[unitID] then --only one injected move
-            RemoveInjectedMove(unitID)
-        end
-        Spring.Echo("Giving InjectMoveTowards")
-        Spring.GiveOrderToUnit(
-            unitID,
-            CMD.INSERT,
-            { 0, CMD.MOVE, CMD.OPT_INTERNAL, dx, ty, dy },
-            {}
-        )
-
-        InjectedMove[unitID] = true
-    end
+    
 
     function optionalSmoothOutMovement(id, gf, x,y,z, positionT, len)   
         if not  LastAimFrame[id] then LastAimFrame[id] = gf end
@@ -130,7 +99,7 @@ if (gadgetHandler:IsSyncedCode()) then
                 dx = x + ((dx - x)/len) * 128
                 dz = z + ((dz - z)/len) * 128
             end
-                InjectMoveTowards(id, dx, y, dz)
+            Spring.SetUnitMovegoal(id, dx, y, dz)
             
         else
             Spring.Echo("Unit not moving while turning")
@@ -203,15 +172,4 @@ if (gadgetHandler:IsSyncedCode()) then
             end
         end
     end
-    
-    local AIM_TIMEOUT = 15     -- frames before we consider aiming disengaged
-    function gadget:GameFrame(gf)
-        for unitID, lastFrame in pairs(LastAimFrame) do
-            if gf - lastFrame > AIM_TIMEOUT then
-                RemoveInjectedMove(unitID)
-                LastAimFrame[unitID] = nil
-            end
-        end
-    end
-
 end 
