@@ -279,12 +279,12 @@ function UpdateCoatAnimation(remainderRotationRad, speed)
 			-- === TORSO SWAY ===
 			-- project torso rotation into tangent direction of this coat strip
 			local torsoLagX = math.sin(baseAngle) * (-torsoInfluence) * stiffness
-			local torsoLagZ = math.cos(baseAngle) * (-torsoInfluence) * stiffness
+			local torsoLagY = math.cos(baseAngle) * (-torsoInfluence) * stiffness
 
 			-- === MERGED RESULT ===
 			local rx = windBendX + torsoLagX + flutter
-			local ry = 0
-			local rz = windBendZ + torsoLagZ
+			local rz = 0
+			local ry = windBendZ + torsoLagY
 
 			-- smooth motion
 			Turn(toTurnPiece, 1, math.rad(rx), speed or 2)
@@ -333,7 +333,7 @@ function trenchCoatAnimation()
 	local curveLength = (math.pi)/5
 
 	while true do
-		accumulatedRoatationChange = accumulatedRoatationChange * 0.95
+		accumulatedRoatationChange = math.min(-math.pi, math.max(accumulatedRoatationChange * 0.95 , math.pi))
 		swaySpeed = math.max(2, swaySpeed * 0.95)
 		UpdateCoatAnimation(accumulatedRoatationChange, 2)
 		Sleep(100) -- Update Rate every 100 Ms (3 frames)

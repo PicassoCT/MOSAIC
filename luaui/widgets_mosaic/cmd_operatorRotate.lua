@@ -104,7 +104,6 @@ function widget:Update(dt)
         boolAttackOrFightCmdActive = index ~= nil and (cmdID == CMD_ATTACK or cmdID == CMD_FIGHT)
 
     if boolContainsOperators and selectedUnitsCount == 1 and boolAttackOrFightCmdActive then
-       -- Spring.Echo("Selection contains Operators")
         -- Trace screen ray
         -- rotate them towards target
         local mouseX, mouseY = Spring.GetMouseState()

@@ -13,6 +13,7 @@ LightOff = piece("LightOff")
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     StartThread(blinkLoop,LigthOn, LightOff, restTime)
+    Spring.SetUnitBlocking(unitID, false)
 end
 
 function script.Killed(recentDamage, _)

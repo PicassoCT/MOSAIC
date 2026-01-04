@@ -11,7 +11,6 @@ function gadget:GetInfo()
 end
 
 if (gadgetHandler:IsSyncedCode()) then
-    VFS.Include("scripts/lib_OS.lua")
     VFS.Include("scripts/lib_UnitScript.lua")
     VFS.Include("scripts/lib_mosaic.lua")
 
@@ -27,7 +26,15 @@ if (gadgetHandler:IsSyncedCode()) then
     local spGetUnitRotation = Spring.GetUnitRotation
     local spSetUnitRotation = Spring.SetUnitRotation
     local spGetUnitTeam = Spring.GetUnitTeam
-        local GameConfig = getGameConfig()
+    local GameConfig = getGameConfig()
+    InjectedMove = {}
+
+    local GaiaTeamID = Spring.GetGaiaTeamID()
+    local LastAimFrame = {}
+    local Cache= {}
+    local anglesUpperBodyTurnRad = math.rad(55)
+    local OneSecondFrames = 30
+
     local civilianWalkingTypeTable = getCultureUnitModelTypes(
                                          GameConfig.instance.culture,
                                          "civilian", UnitDefs)
@@ -37,37 +44,110 @@ if (gadgetHandler:IsSyncedCode()) then
     end
 
     function startInternalBehaviourOfState(id, name, ...)
-    local arg = arg;
-    if (not arg) then
-        arg = {...};
-        arg.n = #arg
-    end
+        local arg = arg;
+        if (not arg) then
+            arg = {...};
+            arg.n = #arg
+        end
 
-    env = Spring.UnitScript.GetScriptEnv(id)
-    if env  then
-        Spring.UnitScript.CallAsUnit(id, 
-                                     env[name],
-                                     arg[1] or nil,
-                                     arg[2] or nil,
-                                     arg[3] or nil,
-                                     arg[4] or nil
-                                     )
-    end
+        env = Spring.UnitScript.GetScriptEnv(id)
+        if env  then
+            Spring.UnitScript.CallAsUnit(id, 
+                                         env[name],
+                                         arg[1] or nil,
+                                         arg[2] or nil,
+                                         arg[3] or nil,
+                                         arg[4] or nil
+                                         )
+        end
     end    
 
-    GaiaTeamID = Spring.GetGaiaTeamID()
+    local moveCommands = {
+        [CMD.MOVE] = true,
+        [CMD.PATROL] = true,
+        [CMD.FIGHT] = true
+    }
 
-    Cache= {}
-    local anglesUpperBodyTurnRad = math.rad(55)
-    local OneSecondFrames = 30
+
+    local function RemoveInjectedMove(unitID)
+        if not InjectedMove[unitID] then return end
+
+        local cmds = Spring.GetCommandQueue(unitID, 5)
+        if not cmds then return end
+
+        for i = 1, #cmds do
+            if cmds[i].id == CMD.MOVE and cmds[i].options.internal then
+                Spring.Echo("Removing InjectMoveTowards")
+                Spring.GiveOrderToUnit(unitID, CMD.REMOVE, { cmds[i].tag }, {})
+                break
+            end
+        end
+
+        InjectedMove[unitID] = nil
+    end
+
+    local function IsUnitMoving(unitID)
+        local cmds = Spring.GetCommandQueue(unitID, 3)
+        if not cmds then  
+           echo("IsUnitMoving:No commands")
+           return false 
+       end
+       commandSting = ""
+        for i = 1, #cmds do
+            local id = cmds[i].id
+            commandSting = commandSting ..id.." >> "
+            if moveCommands[id] then
+                echo(" Move cmmand in queue :"..commandSting)
+                return true
+            end
+        end
+        echo("No Move cmmand in queue :"..commandSting)
+        return false
+    end
+
+    local function InjectMoveTowards(unitID, dx, ty, dy)
+        if InjectedMove[unitID] then --only one injected move
+            RemoveInjectedMove(unitID)
+        end
+        Spring.Echo("Giving InjectMoveTowards")
+        Spring.GiveOrderToUnit(
+            unitID,
+            CMD.INSERT,
+            { 0, CMD.MOVE, CMD.OPT_INTERNAL, dx, ty, dy },
+            {}
+        )
+
+        InjectedMove[unitID] = true
+    end
+
+    function optionalSmoothOutMovement(id, gf, x,y,z, positionT, len)   
+        if not  LastAimFrame[id] then LastAimFrame[id] = gf end
+
+        if  gf - LastAimFrame[id] > 15 and IsUnitMoving(id) then
+            LastAimFrame[id] = gf
+            dx,dz = positionT.x, positionT.z --fallback to mouseTargetPosition
+            if len > 0 then
+                dx = ((dx - x)/len) * 128
+                dz = ((dz - x)/len) * 128
+            end
+
+            InjectMoveTowards(id, dx, y, dz)
+        else
+            Spring.Echo("Unit not moving while turning")
+        end
+    end
+
     function rotateUnitTowardsPoint(id, positionT)
-
-
-        x,y,z = spGetUnitPosition(id)
+        local gameFrame = Spring.GetGameFrame()
+        local x,y,z = spGetUnitPosition(id)
+ 
         distanceToPoint = distance(x,y,z, positionT.x, positionT.y, positionT.z) 
         if distanceToPoint > 964 or distanceToPoint < 15  then return end --sniperrifle or to close
         yaw, pitch, roll = spGetUnitRotation(id)
         newPitch = math.pi - math.atan2(x-positionT.x, z-positionT.z) 
+
+        optionalSmoothOutMovement(id, gameFrame, x,y,z, positionT, distanceToPoint)
+   
         pitchDiff = pitch - newPitch
         rotationSign = pitchDiff/math.abs(pitchDiff)
         pitchDiff = math.abs(pitchDiff)
@@ -78,7 +158,7 @@ if (gadgetHandler:IsSyncedCode()) then
             internalPitch = pitchDiff * rotationSign 
         end
         
-        gameFrame = Spring.GetGameFrame()
+
         if (GG.OperativeTurnTable[id] == nil) or GG.OperativeTurnTable[id] < gameFrame + OneSecondFrames then
             GG.OperativeTurnTable[id] = gameFrame
             env = Spring.UnitScript.GetScriptEnv(id)
@@ -120,6 +200,16 @@ if (gadgetHandler:IsSyncedCode()) then
                 if string.len(unitID) > 0 then
                     rotateUnitTowardsPoint(tonumber(unitID), position)
                 end
+            end
+        end
+    end
+    
+    local AIM_TIMEOUT = 15     -- frames before we consider aiming disengaged
+    function gadget:GameFrame(gf)
+        for unitID, lastFrame in pairs(LastAimFrame) do
+            if gf - lastFrame > AIM_TIMEOUT then
+                RemoveInjectedMove(unitID)
+                LastAimFrame[unitID] = nil
             end
         end
     end
