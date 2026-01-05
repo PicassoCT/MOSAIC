@@ -131,10 +131,16 @@ function showFireArm()
 	end
 end
 
-function externalAimFunction(targetPosWorldT, remainderRotation)
+boolOldIsMoving = nil
+function externalAimFunction(targetPosWorldT, remainderRotation, boolIsMoving)
     showFireArm()
     Turn(Torso,y_axis, -remainderRotation, 55)
-    setOverrideAnimationState(eAnimState.aiming, nil,  true, nil, false)
+    if boolOldIsMoving ~= boolIsMoving then
+    	boolOldIsMoving= boolIsMoving
+   		lowerAnimationstate = nil
+    	if boolIsMoving then     lowerAnimationstate = eAnimState.walking end
+    	setOverrideAnimationState(eAnimState.aiming, lowerAnimationstate,  true, nil, false)
+	end
 end
 
 function closeCombatOS()

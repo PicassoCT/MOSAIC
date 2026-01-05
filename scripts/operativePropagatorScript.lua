@@ -141,11 +141,17 @@ function SwayCoatWithTorso(remainderRotationRad)
 	accumulatedRoatationChange = accumulatedRoatationChange + remainderRotationRad
 end
 
-
-function externalAimFunction(targetPosT, remainderRotationRad)
+boolOldIsMoving = nil
+function externalAimFunction(targetPosT, remainderRotationRad, boolIsMoving)
 	showFireArm()
     Turn(Torso, 3, remainderRotationRad, 55)
-   	setOverrideAnimationState(eAnimState.aiming, nil, true, nil, false)
+    if boolOldIsMoving ~= boolIsMoving then
+    	boolOldIsMoving= boolIsMoving
+   		lowerAnimationstate = nil
+    	if boolIsMoving then     lowerAnimationstate = eAnimState.walking end
+    	setOverrideAnimationState(eAnimState.aiming, lowerAnimationstate,  true, nil, false)
+	end
+
    	SwayCoatWithTorso(remainderRotationRad)
 end
 

@@ -16,22 +16,30 @@ if (gadgetHandler:IsSyncedCode()) then
 
     -- variables
 
-    local spGetUnitPosition = Spring.GetUnitPosition
-    
-
-    local spSetUnitAlwaysVisible = Spring.SetUnitAlwaysVisible
-    local spGetUnitDefID = Spring.GetUnitDefID
-    local spDestroyUnit = Spring.DestroyUnit
-    local postRoundTimeInSeconds = 15
+    local spGetUnitPosition = Spring.GetUnitPosition  
     local spGetUnitRotation = Spring.GetUnitRotation
     local spSetUnitRotation = Spring.SetUnitRotation
+    local spSetUnitMoveGoal = Spring.SetUnitMoveGoal
     local spGetUnitTeam = Spring.GetUnitTeam
+    local spGetGameFrame = Spring.GetGameFrame
+    local spGetCommandQueue= Spring.GetCommandQueue
+    local spGiveOrderToUnit = Spring.GiveOrderToUnit
+
     local GameConfig = getGameConfig()
-    InjectedMove = {}
+
+    local storedCommands = {}
+    LastAimFrame = {}
+    local Cache = {}
+
+    local moveCommands = {
+        [CMD.MOVE] = true,
+        [CMD.PATROL] = true,
+        [CMD.FIGHT] = true
+    }
+    local AIM_TIMEOUT = 33  
 
     local GaiaTeamID = Spring.GetGaiaTeamID()
-    local LastAimFrame = {}
-    local Cache= {}
+
     local anglesUpperBodyTurnRad = math.rad(55)
     local OneSecondFrames = 30
 
@@ -52,70 +60,86 @@ if (gadgetHandler:IsSyncedCode()) then
 
         env = Spring.UnitScript.GetScriptEnv(id)
         if env  then
-            Spring.UnitScript.CallAsUnit(id, 
-                                         env[name],
-                                         arg[1] or nil,
-                                         arg[2] or nil,
-                                         arg[3] or nil,
-                                         arg[4] or nil
-                                         )
+           Spring.UnitScript.CallAsUnit(id, 
+                         env[name],
+                         arg[1] or nil,
+                         arg[2] or nil,
+                         arg[3] or nil,
+                         arg[4] or nil
+                         )
         end
     end    
 
-    local moveCommands = {
-        [CMD.MOVE] = true,
-        [CMD.PATROL] = true,
-        [CMD.FIGHT] = true
-    }
-
     local function IsUnitMoving(unitID)
-        local cmds = Spring.GetCommandQueue(unitID, 3)
+        local cmds = spGetCommandQueue(unitID, 3)
         if not cmds then  
-           echo("IsUnitMoving:No commands")
            return false 
-       end
-       commandSting = ""
+        end
+
         for i = 1, #cmds do
             local id = cmds[i].id
-            commandSting = commandSting ..id.." >> "
             if moveCommands[id] then
-                echo(" Move cmmand in queue :"..commandSting)
                 return true
             end
         end
-        echo("No Move cmmand in queue :"..commandSting)
+
         return false
     end
 
-    
+    function StoreAwayAndRemoveCommands(id)
+         if storedCommands[id] then return end
 
-    function optionalSmoothOutMovement(id, gf, x,y,z, positionT, len)   
-        if not  LastAimFrame[id] then LastAimFrame[id] = gf end
+        local cmds = spGetCommandQueue(id, 20)
+        if not cmds or #cmds == 0 then return end
 
-        if  gf - LastAimFrame[id] > 15 and IsUnitMoving(id) then
+        local stored = {}
+
+        for i = #cmds, 1, -1 do
+            local cmd = cmds[i]
+            if moveCommands[cmd.id] and not cmd.options.internal then
+                stored[#stored+1] = {
+                    id = cmd.id,
+                    params = cmd.params,
+                    options = cmd.options,
+                }
+                spGiveOrderToUnit(id, CMD.REMOVE, { cmd.tag }, {})
+            end
+        end
+
+        if #stored > 0 then
+            storedCommands[id] = stored
+        end
+    end
+
+    function optionalSmoothOutMovement(id, gf, x,y,z, positionT, len, boolIsMoving)   
+        if not  LastAimFrame[id] then 
+            LastAimFrame[id] = gf 
+            StoreAwayAndRemoveCommands(id)
+        end
+
+        if  gf - LastAimFrame[id] > 5 and boolIsMoving then
             LastAimFrame[id] = gf
             dx,dz = positionT.x, positionT.z --fallback to mouseTargetPosition
             if len > 0 then
                 dx = x + ((dx - x)/len) * 128
                 dz = z + ((dz - z)/len) * 128
             end
-            Spring.SetUnitMovegoal(id, dx, y, dz)
-            
-        else
-            Spring.Echo("Unit not moving while turning")
+            spSetUnitMoveGoal(id, dx, y, dz)
         end
     end
 
+
     function rotateUnitTowardsPoint(id, positionT)
-        local gameFrame = Spring.GetGameFrame()
+        local gameFrame = spGetGameFrame()
         local x,y,z = spGetUnitPosition(id)
  
         distanceToPoint = distance(x,y,z, positionT.x, positionT.y, positionT.z) 
         if distanceToPoint > 964 or distanceToPoint < 15  then return end --sniperrifle or to close
         yaw, pitch, roll = spGetUnitRotation(id)
         newPitch = math.pi - math.atan2(x-positionT.x, z-positionT.z) 
+        boolIsMoving = IsUnitMoving(id)
 
-        optionalSmoothOutMovement(id, gameFrame, x,y,z, positionT, distanceToPoint)
+        optionalSmoothOutMovement(id, gameFrame, x,y,z, positionT, distanceToPoint, boolIsMoving)
    
         pitchDiff = pitch - newPitch
         rotationSign = pitchDiff/math.abs(pitchDiff)
@@ -127,32 +151,29 @@ if (gadgetHandler:IsSyncedCode()) then
             internalPitch = pitchDiff * rotationSign 
         end
         
-
         if (GG.OperativeTurnTable[id] == nil) or GG.OperativeTurnTable[id] < gameFrame + OneSecondFrames then
             GG.OperativeTurnTable[id] = gameFrame
             env = Spring.UnitScript.GetScriptEnv(id)
             if env and env.setOverrideAnimationState then
-                Spring.UnitScript.CallAsUnit(id, env.externalAimFunction, positionT, internalPitch)
-                if setWantCloak then
-                    Spring.UnitScript.CallAsUnit(id, env.setWantCloak, false)
-                end                   
+                Spring.UnitScript.CallAsUnit(id, env.externalAimFunction, positionT, internalPitch, boolIsMoving)                 
             end      
         end   
 
-        if not Cache[id] or Cache[id] < Spring.GetGameFrame() + (15*30) then
+        if not Cache[id] or Cache[id] < gameFrame + (15*30) then
             if Cache[id] then
                 registerEmergency(x, z)
             end
-            Cache[id] = Spring.GetGameFrame()            
+            Cache[id] = gameFrame          
 
-            foreach(getAllOfTypeNearUnit(id, civilianWalkingTypeTable, 256),
-                    function(civId)
-                      
-                        if spGetUnitTeam(civId) == GaiaTeamID and not GG.AerosolAffectedCivilians[civId] then                            
-                            startInternalBehaviourOfState(civId , "startFleeing", id)
-                            return civId
-                        end
-                    end)
+            foreach(
+                getAllOfTypeNearUnit(id, civilianWalkingTypeTable, 256),
+                 function(civId)
+                  
+                    if spGetUnitTeam(civId) == GaiaTeamID and not GG.AerosolAffectedCivilians[civId] then                            
+                        startInternalBehaviourOfState(civId , "startFleeing", id)
+                        return civId
+                    end
+                end)
 
         end
     end
@@ -172,4 +193,79 @@ if (gadgetHandler:IsSyncedCode()) then
             end
         end
     end
-end 
+
+local function SanitizeParams(params)
+    local out = {}
+    for i = 1, #params do
+        local v = params[i]
+        if type(v) == "number" then
+            out[#out + 1] = v
+        end
+    end
+    return out
+end
+
+local CMD_OPT_ALT = CMD.OPT_ALT
+local CMD_OPT_CTRL = CMD.OPT_CTRL
+local CMD_OPT_META = CMD.OPT_META
+local CMD_OPT_SHIFT = CMD.OPT_SHIFT
+local CMD_OPT_RIGHT = CMD.OPT_RIGHT
+
+
+local function GetCmdOpts(alt, ctrl, meta, shift, right)
+
+    local opts = { alt=alt, ctrl=ctrl, meta=meta, shift=shift, right=right }
+    local coded = 0
+
+    if alt   then coded = coded + CMD_OPT_ALT   end
+    if ctrl  then coded = coded + CMD_OPT_CTRL  end
+    if meta  then coded = coded + CMD_OPT_META  end
+    if shift then coded = coded + CMD_OPT_SHIFT end
+    if right then coded = coded + CMD_OPT_RIGHT end
+
+    opts.coded = coded
+    return opts
+end
+
+
+function RestoreStoredMovements(id)
+    echo("Restoring Movement  ")
+    if true then return end
+    local stored = storedCommands[id]
+    if not stored then return end
+
+
+    -- Reinsert in original order
+    for i = #stored, 1, -1 do
+        local cmd = stored[i]
+        local opts = GetCmdOpts(
+                cmd.options.alt,
+                cmd.options.ctrl,
+                cmd.options.meta,
+                cmd.options.shift,
+                cmd.options.right
+            )
+
+        local params = SanitizeParams(cmd.params or {})
+        spGiveOrderToUnit(
+            id,
+            CMD.INSERT,
+            { 0, cmd.id, opts, unpack(params) },
+            {}
+            )
+    end
+    storedCommands[id] = nil
+end
+
+function gadget:GameFrame(gf)
+    if LastAimFrame then
+        for unitID, lastFrame in pairs(LastAimFrame) do
+            if lastFrame and gf - lastFrame > AIM_TIMEOUT then
+                RestoreStoredMovements(unitID)
+                LastAimFrame[unitID] = nil
+            end
+        end
+    end
+end
+
+end

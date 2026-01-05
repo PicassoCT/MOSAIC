@@ -105,6 +105,9 @@ trayDecoMap = {
 }
 
 trayPartInPlaceLine = {}
+function getTrayObects(partName)
+    return {unpack( TablesOfPiecesGroups["Deco"], trayDecoMap[partName].start,  trayDecoMap[partName].ends)}         
+end
 
 function hideTrayObjects(partName)
     hideT(TablesOfPiecesGroups["Deco"], trayDecoMap[partName].start,
@@ -114,8 +117,7 @@ end
 
 function incShowTrayObjects(partName)
     if not partName then return end
-    if TablesOfPiecesGroups["Deco"][trayDecoMap[partName].start +
-        trayDecoMap[partName].counter] and boolLocalCloaked then
+    if TablesOfPiecesGroups["Deco"][trayDecoMap[partName].start + trayDecoMap[partName].counter]  then
         Show(TablesOfPiecesGroups["Deco"][trayDecoMap[partName].start +
                  trayDecoMap[partName].counter])
     end
@@ -123,13 +125,24 @@ function incShowTrayObjects(partName)
                                              trayDecoMap[partName].ends)
 end
 
+function stopWaitLocalyCloaked(partName, T)
+    if boolLocalCloaked then
+        Hide(partName)
+        if T then hideT(T) end
+        while (boolLocalCloaked) do
+            Sleep(500)
+        end
+    end
+end
+
+
 function trayAnimation(partName, totalTravelDistance, delayInMs,
                        travelDistanceStation, boolTravelDirection,
                        inStationSignalID, sspeed)
     reset(partName)
     Hide(partName)
     Sleep(delayInMs)
-    if boolLocalCloaked then Show(partName) end
+    Show(partName) 
     maxis = x_axis
     raxis = y_axis
 
@@ -143,6 +156,8 @@ function trayAnimation(partName, totalTravelDistance, delayInMs,
     end
 
     while true do
+        stopWaitLocalyCloaked({partName, getTrayObects(partName)})
+
         if boolTravelDirection == true then
             WTurn(partName, raxis, math.rad(0), math.pi)
             while TrayInPlaceStation[inStationSignalID] == true do
@@ -195,6 +210,10 @@ function trayAnimation(partName, totalTravelDistance, delayInMs,
     end
 end
 
+function getScaraTable(scaraNumber)
+    return {TablesOfPiecesGroups["ASAxis"][scaraNumber], TablesOfPiecesGroups["BSAxis"][scaraNumber], TablesOfPiecesGroups["CSAxis"][scaraNumber]}
+end
+
 function WMoveScara(scaraNumber, jointPosA, jointPosB, jointPosC, jointPosD, moveSpeed)
     Turn(TablesOfPiecesGroups["ASAxis"][scaraNumber], y_axis,
          math.rad(jointPosA), moveSpeed)
@@ -228,7 +247,7 @@ function scaraAnimationLoop(scaraNumber, objectToPick, targetIDTable,
                 break
             end
         end
-
+        stopWaitLocalyCloaked({objectToPick, getScaraTable(scaraNumber)})
         if targetID and boolObjectPicked == false then
             -- Move to PickUpPos
             WMoveScara(scaraNumber, jointPosTable.PickUp.a,
@@ -237,7 +256,7 @@ function scaraAnimationLoop(scaraNumber, objectToPick, targetIDTable,
                        jointPosTable.PickUp.b, 0, jointPosTable.PickUp.d,
                        moveSpeed)
             -- Pick up ObjectToPick
-            if boolLocalCloaked then Show(objectToPick) end
+
             boolObjectPicked = true
             WMoveScara(scaraNumber, jointPosTable.PickUp.a,
                        jointPosTable.PickUp.b, 0, 0, moveSpeed)
@@ -262,6 +281,16 @@ function scaraAnimationLoop(scaraNumber, objectToPick, targetIDTable,
         end
         Sleep(100)
     end
+end
+
+
+function getRobotTable(robotID)
+    return {     TablesOfPiecesGroups["AAxis"][robotID],
+                 TablesOfPiecesGroups["BAxis"][robotID],
+                 TablesOfPiecesGroups["CAxis"][robotID],
+                 TablesOfPiecesGroups["DAxis"][robotID],
+                 TablesOfPiecesGroups["EAxis"][robotID]}
+
 end
 
 function WMoveRobotToPos(robotID, JointPos, MSpeed)
@@ -317,6 +346,7 @@ function robotArmAnimation(robotID, posTable, speed, targetIDTable,
 
     while true do
         -- Check if there is stuff to be picked up
+        stopWaitLocalyCloaked({DeskTable[robotID][ToolType], getRobotTable(robotID)})
         local targetID
         if maRa() == true then
             for i = 1, #targetIDTable, 1 do
