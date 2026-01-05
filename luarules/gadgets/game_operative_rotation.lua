@@ -194,16 +194,7 @@ if (gadgetHandler:IsSyncedCode()) then
         end
     end
 
-local function SanitizeParams(params)
-    local out = {}
-    for i = 1, #params do
-        local v = params[i]
-        if type(v) == "number" then
-            out[#out + 1] = v
-        end
-    end
-    return out
-end
+
 
 local CMD_OPT_ALT = CMD.OPT_ALT
 local CMD_OPT_CTRL = CMD.OPT_CTRL
@@ -212,7 +203,7 @@ local CMD_OPT_SHIFT = CMD.OPT_SHIFT
 local CMD_OPT_RIGHT = CMD.OPT_RIGHT
 
 
-local function GetCmdOpts(alt, ctrl, meta, shift, right)
+local function buildCmdOptBitmask(alt, ctrl, meta, shift, right)
 
     local opts = { alt=alt, ctrl=ctrl, meta=meta, shift=shift, right=right }
     local coded = 0
@@ -227,6 +218,12 @@ local function GetCmdOpts(alt, ctrl, meta, shift, right)
     return opts
 end
 
+function assertTOnlyNumbers(T, commandName)
+    for k,v in pairs(T)
+     assert(type(v) == "number",commandName.." : ".. k.." >> "..v.. " is not a number")
+    end
+end
+
 
 function RestoreStoredMovements(id)
     echo("Restoring Movement  ")
@@ -238,7 +235,7 @@ function RestoreStoredMovements(id)
     -- Reinsert in original order
     for i = #stored, 1, -1 do
         local cmd = stored[i]
-        local opts = GetCmdOpts(
+        local opts = buildCmdOptBitmask(
                 cmd.options.alt,
                 cmd.options.ctrl,
                 cmd.options.meta,
@@ -246,11 +243,12 @@ function RestoreStoredMovements(id)
                 cmd.options.right
             )
 
-        local params = SanitizeParams(cmd.params or {})
+        assertTOnlyNumbers(cmd.params, cmd.id)
+
         spGiveOrderToUnit(
             id,
             CMD.INSERT,
-            { 0, cmd.id, opts, unpack(params) },
+            { 0, cmd.id, opts, unpack(cmd.params or {}) },
             {}
             )
     end
