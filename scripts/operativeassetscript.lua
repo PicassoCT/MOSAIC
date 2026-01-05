@@ -213,10 +213,13 @@ function externalAimFunction(targetPosT, remainderRotationRad, boolIsMoving)
     showFireArm()
     Turn(Torso,y_axis, remainderRotationRad, 55)
     if boolOldIsMoving ~= boolIsMoving then
-        boolOldIsMoving= boolIsMoving
-        lowerAnimationstate = nil
-        if boolIsMoving then     lowerAnimationstate = eAnimState.walking end
-        setOverrideAnimationState(eAnimState.aiming, lowerAnimationstate,  true, nil, false)
+        boolOldIsMoving = boolIsMoving
+        if boolIsMoving then     
+            setOverrideAnimationState(eAnimState.aiming, nil,  true, lowerBodyPieces, false)
+            setOverrideAnimationState(nil, eAnimState.walking,  true, upperBodyPieces, false)
+        else
+            setOverrideAnimationState(eAnimState.aiming, nil,  true, nil, false)
+        end
     end
     setOverrideAnimationState(eAnimState.aiming, lowerAnimState,  true, nil, false)
 end
