@@ -219,7 +219,7 @@ local function buildCmdOptBitmask(alt, ctrl, meta, shift, right)
 end
 
 function assertTOnlyNumbers(T, commandName)
-    for k,v in pairs(T)
+    for k,v in pairs(T) do
      assert(type(v) == "number",commandName.." : ".. k.." >> "..v.. " is not a number")
     end
 end

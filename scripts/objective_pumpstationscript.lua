@@ -82,25 +82,32 @@ local function collapseAndFade(pieces)
 end
 
 SIG_FLAME = 2
-Flame = piece("Flame")
-
+Flame = piece("Flame1")
 function flameSpin()
     Signal(SIG_FLAME)
     SetSignalMask(SIG_FLAME)
+    Flames = {unpack(TablesOfPiecesGroups["Flame"], 2, #TablesOfPiecesGroups["Flame"])}
 
     while true do
         Show(Flame)
         spinRand(Flame, -60, 60, randf(18, 32))
-                Spin(Flame, 2, math.rad(42)*randSign(), math.pi)
+        for k,fire in pairs(TablesOfPiecesGroups["Flame"]) do
+            if maRa() then
+                spinRand(fire, -60, 60, randf(18, 32))
+            end
+            Spin(fire, 2, math.rad(42) * randSign(), math.pi)
+        end
         rVal = math.random(150,500)
         Sleep(rVal)
+        hideT(Flames)
+        resetT(Flames)  
         Hide(Flame)
         reset(Flame)
 
     end
 end
 
-   piecePos = {}
+piecePos = {}
 local function stationaryCloud(smoke)
  
     for i = 1, #smoke do
@@ -126,7 +133,7 @@ function explosionLoop()
     explosionStem  = TablesOfPiecesGroups["Explosion"][1]
     cloudRadius = 750
     driftTimeInMs = 3000
-    Hide(Flame)
+    hideT(TablesOfPiecesGroups["Flame"])
     Hide(SmokeStem)
     while true do 
         hideT(explosionTable)
@@ -143,8 +150,8 @@ function explosionLoop()
         Show(explosionStem)
 
         -- vertical ignition plume
-        Move(explosionStem, y_axis, 1250, 250)
-
+        Move(explosionStem, 2, 1250, 250)
+        Move(SmokeStem, 2, 1250, 250)
 
         -- gas cloud bloom
         animateGasCloud(explosionTable, cloudRadius)
@@ -156,12 +163,12 @@ function explosionLoop()
             reset(TablesOfPiecesGroups["Smoke"][i])
             Sleep(50)
         end
-        Move(SmokeStem, y_axis, 1250, 0 )
+      
         driftCloud(explosionStem, dirX, dirZ, driftTimeInMs)
-  
+    
         StartThread(stationaryCloud, TablesOfPiecesGroups["Smoke"])
         Signal(SIG_FLAME)
-        Hide(Flame)
+        hideT(TablesOfPiecesGroups["Flame"])
         -- collapse + fade
         collapseAndFade(explosionTable)
 
