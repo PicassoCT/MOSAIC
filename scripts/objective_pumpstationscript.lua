@@ -51,22 +51,26 @@ local function animateGasCloud(pieces, radius)
     Sleep(5000)
 end
 
+
 local function driftCloud(stem, dirX, dirZ, timeMs)
+    SetSignalMask(SIG_WIND)
+    Signal(SIG_WIND)
     local steps = math.floor(timeMs / 250)
-    local speed = 18
+    local speed = 20
 
     for i = 1, steps do
 
-        Move(SmokeStem, 1, dirX * speed, 80)
-        Move(SmokeStem, 3, dirZ * speed, 80)
-        Move(stem, 1, dirX * speed, 80)
-        Move(stem, 3, dirZ * speed, 80)
-        Sleep(500)
+        Move(SmokeStem, 1, dirX * speed, 10)
+        Move(SmokeStem, 3, dirZ * speed, 10)
+        Move(stem, 1, dirX * speed, 10)
+        Move(stem, 3, dirZ * speed, 10)
+        Sleep(1000)
     end
-
+       
 end
 
 local function collapseAndFade(pieces)
+
     for i = 1, #pieces do
         local p = pieces[i]
 
@@ -85,6 +89,7 @@ local function collapseAndFade(pieces)
 end
 
 SIG_FLAME = 2
+SIG_WIND = 4
 Flame = piece("Flame1")
 function flameSpin()
     Signal(SIG_FLAME)
@@ -93,12 +98,13 @@ function flameSpin()
 
     while true do
         Show(Flame)
+        Move(Flame, 2, math.random(-20,20), 1)
         spinRand(Flame, -60, 60, randf(18, 32))
         for k,fire in pairs(TablesOfPiecesGroups["Flame"]) do
             if maRa() then
-                spinRand(fire, -60, 60, randf(18, 32))
+                Show(fire)
             end
-            Spin(fire, 2, math.rad(42) * randSign(), math.pi)
+            spinRand(fire, -60, 60, randf(18, 32))
         end
         rVal = math.random(150,500)
         Sleep(rVal)
@@ -130,14 +136,16 @@ local function stationaryCloud(smoke)
     Sleep(5000)
 end
 
+explosionStem  = piece("ExplosionStem")
 function explosionLoop()
     Sleep(100)
-    explosionTable = {unpack(TablesOfPiecesGroups["Explosion"], 2, #TablesOfPiecesGroups["Explosion"])} 
-    explosionStem  = TablesOfPiecesGroups["Explosion"][1]
+    explosionTable = TablesOfPiecesGroups["Explosion"]
+
     cloudRadius = 750
     driftTimeInMs = 3000
     hideT(TablesOfPiecesGroups["Flame"])
     Hide(SmokeStem)
+
     while true do 
         hideT(explosionTable)
         Hide(explosionStem)
@@ -148,17 +156,20 @@ function explosionLoop()
         reset(explosionStem, 0)
 
         local dirX, _, dirZ = Spring.GetWind()
-
         Show(explosionStem)
 
         -- vertical ignition plume
-        
-        Move(SmokeStem, 2, 1250, 250)
-
+        Move(SmokeStem, 2, 1350, 750)
+        Move(explosionStem, 2, 1800, 750)
+        spinRand(explosionStem, -30, 30, randf(8, 16))
         -- gas cloud bloom
         animateGasCloud(explosionTable, cloudRadius)
-        WMove(explosionStem, 2, 3000, 250)
-
+        WMove(explosionStem, 2, 2500, 450)
+        Hide(explosionStem)
+        stopSpins(explosionStem)
+        tP(explosionStem, 0, 0, 0, 5)
+        Signal(SIG_FLAME)
+        hideT(TablesOfPiecesGroups["Flame"])
         -- drift phase
         for i = 1, #TablesOfPiecesGroups["Smoke"] do        
             Hide( TablesOfPiecesGroups["Smoke"][i])
@@ -169,14 +180,14 @@ function explosionLoop()
         StartThread(driftCloud, explosionStem, dirX, dirZ, driftTimeInMs)
     
         StartThread(stationaryCloud, TablesOfPiecesGroups["Smoke"])
-        Sleep(5000)
-        Signal(SIG_FLAME)
-        hideT(TablesOfPiecesGroups["Flame"])
+      
+        Sleep(3000)
+       
         -- collapse + fade
         collapseAndFade(explosionTable)
 
         Hide(explosionStem)
-        Sleep(2000)
+        Sleep(9000)
     end
 end
 
