@@ -46,12 +46,14 @@ local topDownTex
 local topDownFBO
 local mapMinX, mapMaxX
 local mapMinZ, mapMaxZ
-
+local orthoWidth
+local orthoHeight
 local perspShader
 
 --------------------------------------------------------------------------------
 -- Utils
 --------------------------------------------------------------------------------
+local glOrtho                = gl.Ortho
 
 local function dayPercentToNeonPercent(p)
     if p < 0.25 then return 1 - p / 0.25 end
@@ -95,6 +97,7 @@ end
 local function popCamera(state)
     Spring.SetCameraState(state, 0)
 end
+
 
 local function setTopDownCamera()
     Spring.SetCameraState({
@@ -180,6 +183,9 @@ function widget:Initialize()
     mapMinZ = 0
     mapMaxX = Game.mapSizeX
     mapMaxZ = Game.mapSizeZ
+    orthoWidth = (mapMaxX - mapMinX) * 0.5
+    orthoHeight = (mapMaxZ - mapMinZ) * 0.5
+
 
     topDownTex = gl.CreateTexture(ATLAS_SIZE, ATLAS_SIZE, {
         min_filter = GL.LINEAR,
@@ -201,7 +207,9 @@ end
 local function renderTopDownAtlas()
     local camState = pushCamera()
     setTopDownCamera()
-
+     -- A: Orthogonal Topdown shader: 0) From ortho camera produce a depthmap Render a topdownview of all Neonsigns, lightsources in the size of cameraviewWidth x Scenedepth
+    glOrtho(orthoWidth, orthoHeight, -orthoWidth, orthoWidth) --> https://github.com/beyond-all-reason/Beyond-All-Reason/blob/8e6f934ab10e549f17438061eb6e1d4e267d995e/luarules/gadgets/unit_icongenerator.lua#L669
+   
     gl.RenderToTexture(topDownTex, function()
         gl.Clear(0, 0, 0, 1)
         gl.DepthTest(true)
