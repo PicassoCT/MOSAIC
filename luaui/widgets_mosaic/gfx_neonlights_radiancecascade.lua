@@ -15,7 +15,7 @@ end
 --------------------------------------------------------------------------------
 
 local DEBUG_VIEW = "L0"
-local ATLAS_SIZE = 1024        -- start small
+local ATLAS_SIZE = 2048        -- start small
 local CAMERA_HEIGHT = 10000
 
 local DAYLENGTH = 28800
@@ -165,7 +165,12 @@ local function initPerspectiveShader()
 
     if not perspShader then
         Spring.Echo("NeonLight: shader compile failed")
+        Spring.Echo("NeonLight:"..gl.GetShaderLog())
         widgetHandler:RemoveWidget(self)
+    end
+
+    if DEBUG_VIEW then 
+        Spring.Echo("Neonligth: shader has Debugview activated with ".. DEBUG_VIEW)
     end
 end
 
@@ -176,7 +181,6 @@ end
 local function recieveNeonHoloLightPiecesByUnit(unitPiecesTable)
     neonUnitTables = unitPiecesTable or {}
 end
-
 
 function widget:Initialize()
     mapMinX = 0
@@ -213,6 +217,7 @@ local function renderTopDownAtlas()
     gl.RenderToTexture(topDownTex, function()
         gl.Clear(0, 0, 0, 1)
         gl.DepthTest(true)
+        gl.Color(neonLightPercent, neonLightPercent, neonLightPercent, 1)
 
         for unitID, pieces in pairs(neonUnitTables) do
             gl.PushMatrix()
@@ -220,7 +225,7 @@ local function renderTopDownAtlas()
             for _, pieceID in ipairs(pieces) do
                 gl.PushMatrix()
                 gl.UnitPieceMultMatrix(unitID, pieceID)
-                gl.Color(neonLightPercent, neonLightPercent, neonLightPercent, 1)
+             
                 gl.UnitPiece(unitID, pieceID)
                 gl.PopMatrix()
             end
