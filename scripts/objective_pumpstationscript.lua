@@ -160,11 +160,11 @@ function explosionLoop()
 
         -- vertical ignition plume
         Move(SmokeStem, 2, 1350, 750)
-        Move(explosionStem, 2, 1800, 750)
+        Move(explosionStem, 2, 2000, 750)
         spinRand(explosionStem, -30, 30, randf(8, 16))
         -- gas cloud bloom
         animateGasCloud(explosionTable, cloudRadius)
-        WMove(explosionStem, 2, 2500, 450)
+        WMove(explosionStem, 2, 2000, 450)
         Hide(explosionStem)
         stopSpins(explosionStem)
         tP(explosionStem, 0, 0, 0, 5)
