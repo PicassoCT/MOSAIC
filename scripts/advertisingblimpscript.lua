@@ -280,6 +280,7 @@ function Advertising()
 end
 
 function script.Killed(recentDamage, _)
+    Spring.PlaySoundFile("sounds/advertising/media/GunnedDown.ogg",1.0)
     Spring.SetUnitCrashing ( unitID, true) 
     return 1
 end

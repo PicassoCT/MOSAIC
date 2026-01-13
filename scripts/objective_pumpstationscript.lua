@@ -23,30 +23,27 @@ function unfoldPiece(pID)
     Turn(pID, y_axis, math.rad(val), 5)
 end
 SmokeStem = piece("SmokeStem")
-local function animateGasCloud(pieces, radius)
+local function animateGasCloud(pieces)
  
     for i = 1, #pieces do
         local p = pieces[i]
-
-        local angle = randf(0, 2*math.pi)
-        local dist  = randf(radius * 0.2, radius)
-
-        local x = math.cos(angle) * dist
-        local z = math.sin(angle) * dist
-        local y = randf(150, radius)
-        piecePos[i] = {x, y, z}
-        Show(p)
-
-        -- fast outward bloom
-        Move(p, 1, x, randf(120, 260))
-        Move(p, 2, y, randf(160, 320))
-        Move(p, 3, z, randf(120, 260))
-     
-        Move(p, 2, y, randf(160, 320))
-
-
-        -- turbulent rotation
-        spinRand(p, -60, 60, randf(18, 32))
+        if p then
+            piecePos[i] = {
+                    randf(180, 325),
+                    randf(180, 325),
+                    randf(180, 325)
+                }
+                Show(p)
+    
+                -- fast outward bloom
+                Move(p, 1, piecePos[i][1] *randSign(), math.random(40,128))
+                Move(p, 2, piecePos[i][2]*randSign(), math.random(40,128))
+                Move(p, 3, piecePos[i][3]*randSign(), math.random(40,128))
+    
+    
+            -- turbulent rotation
+            spinRand(p, -5, 5, randf(18, 32))
+        end
     end
     Sleep(5000)
 end
@@ -59,9 +56,6 @@ local function driftCloud(stem, dirX, dirZ, timeMs)
     local speed = 20
 
     for i = 1, steps do
-
-        Move(SmokeStem, 1, dirX * speed, 10)
-        Move(SmokeStem, 3, dirZ * speed, 10)
         Move(stem, 1, dirX * speed, 10)
         Move(stem, 3, dirZ * speed, 10)
         Sleep(1000)
@@ -101,6 +95,7 @@ function flameSpin()
         Move(Flame, 2, math.random(-20,20), 1)
         spinRand(Flame, -60, 60, randf(18, 32))
         for k,fire in pairs(TablesOfPiecesGroups["Flame"]) do
+            reset(fire)
             if maRa() then
                 Show(fire)
             end
@@ -118,22 +113,7 @@ end
 
 piecePos = {}
 local function stationaryCloud(smoke)
- 
-    for i = 1, #smoke do
-        local p = smoke[i]
-        local pos = piecePos[i]
-        if p and pos  and pos[1] then
-         -- fast outward bloom
-            Move(p, 1, pos[1], 0)
-            Move(p, 3, pos[3], 0)
-            Move(p, 2, pos[2], 0)
-            Show(p)
-    
-            -- turbulent rotation
-            spinRand(p, -60, 60, randf(18, 32))
-        end
-    end
-    Sleep(5000)
+     
 end
 
 explosionStem  = piece("ExplosionStem")
@@ -147,47 +127,53 @@ function explosionLoop()
     Hide(SmokeStem)
 
     while true do 
-        hideT(explosionTable)
-        Hide(explosionStem)
-        StartThread(flameSpin)
-    
-
-        resetT(explosionTable, 0)   
-        reset(explosionStem, 0)
-
-        local dirX, _, dirZ = Spring.GetWind()
-        Show(explosionStem)
-
-        -- vertical ignition plume
-        Move(SmokeStem, 2, 1350, 750)
-        Move(explosionStem, 2, 2000, 750)
-        spinRand(explosionStem, -30, 30, randf(8, 16))
-        -- gas cloud bloom
-        animateGasCloud(explosionTable, cloudRadius)
-        WMove(explosionStem, 2, 2000, 450)
-        Hide(explosionStem)
-        stopSpins(explosionStem)
-        tP(explosionStem, 0, 0, 0, 5)
-        Signal(SIG_FLAME)
-        hideT(TablesOfPiecesGroups["Flame"])
-        -- drift phase
         for i = 1, #TablesOfPiecesGroups["Smoke"] do        
             Hide( TablesOfPiecesGroups["Smoke"][i])
             reset(TablesOfPiecesGroups["Smoke"][i])
             Sleep(50)
         end
+        Signal(SIG_WIND)
+        hideT(explosionTable)
+        Hide(explosionStem)
+        resetT(explosionTable, 0)   
+        reset(explosionStem, 0)
+        StartThread(flameSpin)
+        while maRa() do
+            Sleep(500)            
+            WMove(explosionStem, 2, -200, 400)
+            Show(SmokeStem)
+            WMove(explosionStem, 2, 0, 40)
+        end    
+        StartThread(flameSpin)
+        local dirX, _, dirZ = Spring.GetWind()
+        Show(explosionStem)
+
+        -- vertical ignition plume
+
+        Move(explosionStem, 2, 2000, 750)
+        spinRand(explosionStem, -3, 3, randf(8, 16))
+        -- gas cloud bloom
+        StartThread(animateGasCloud, explosionTable)
+        StartThread(    animateGasCloud, TablesOfPiecesGroups["Smoke"])     
+        WMove(explosionStem, 2, 2000, 450)
+        StartThread(flameSpin)
+        hideT(TablesOfPiecesGroups["Flame"])
+        -- drift phase
+        stopSpins(explosionStem,  0.1)
+        tP(explosionStem, 0, 0, 0, 0.3)
+  
       
         StartThread(driftCloud, explosionStem, dirX, dirZ, driftTimeInMs)
     
-        StartThread(stationaryCloud, TablesOfPiecesGroups["Smoke"])
+
       
         Sleep(3000)
-       
+        Signal(SIG_FLAME)
         -- collapse + fade
         collapseAndFade(explosionTable)
-
         Hide(explosionStem)
-        Sleep(9000)
+        Sleep(15000)
+
     end
 end
 
