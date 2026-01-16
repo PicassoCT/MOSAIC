@@ -2497,6 +2497,21 @@ end
                 hours, minutes, seconds, percent = getDayTime()			
 				return hours > 19 and hours < 6
 			end
+
+            function nightLightsLoop(LigthOn, LightOff, restTime)
+                while true do
+                    waitTillNight()
+                    while isNight() do
+                        Hide(LightOff)
+                        Show(LightOn)
+                        Sleep(restTime)
+                        Show(LightOff)
+                        Hide(LightOn)
+                        Sleep(restTime)
+                    end
+                    Sleep(1000)
+                end
+            end
 			
             function getPrayDurationInFrames()
                 return math.ceil(0.030 * GG.GameConfig.daylength)
