@@ -220,6 +220,7 @@ function flickerWeld()
     while true do
         for k, p in pairs(weldPieces) do           
             rot= math.random(0,360)
+            Turn(p, 2, math.rad(math.random(-1,1)), 1)
             Turn(p, rotationAxis, math.rad(rot), 0)
             Spin(p, rotationAxis,math.rad(42*randSign()),0)
             val = 180 * math.random(0,1)

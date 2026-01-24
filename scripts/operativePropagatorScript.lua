@@ -208,6 +208,7 @@ function showBody()
 end
 
 shownPieces={}
+hat = piece("HeadDeco7")
 boolTrenchCoatActive = false
 function script.Create()
 	--Spring.Echo("Operative Propagator spawned")
@@ -309,7 +310,7 @@ function trenchCoatAnimation()
 	if not TablesOfPiecesGroups["HeadDeco"][7] then return end
 	boolFoundTrenchCoat= false
 	for a=1, #shownPieces do
-		if shownPieces[a] == TablesOfPiecesGroups["HeadDeco"][7] then
+		if shownPieces[a] == hat then
 			boolFoundTrenchCoat= true
 		end
 	end
@@ -501,10 +502,48 @@ function breathing()
 	end
 end
 
+function dropHatIfWorrn()
+	dropHat = piece("DropHeadDeco")
+	
+	Move(dropHat, y_axis, 1000, 0)
+	Show(dropHat)
+	FLOOR_Y = 20
+	TICK = 33
+	GRAVITY = 9.81
+	Factor = 1000/(9.81* 4)
+    -- Random initial spin (looks organic)
+    Spin(dropHat, x_axis, math.rad(math.random(-180, 180)))
+    Spin(dropHat, z_axis, math.rad(math.random(-360, 360)))
+
+    -- Run gravity in parallel with death animation
+        local vel = 0
+        local y = 1000
+
+        while y > FLOOR_Y do
+            vel = vel + GRAVITY * (TICK / 1000)
+            y = y - vel*Factor * (TICK / 1000)
+
+            WMove(dropHat, y_axis, y, vel)
+        end
+
+        -- Clamp to floor
+        Move(dropHat, y_axis, FLOOR_Y, vel)
+
+        -- Stop chaotic motion
+        StopSpin(dropHat, x_axis, 2)
+        StopSpin(dropHat, z_axis, 2)
+
+        -- Optional: final settle tilt
+        Turn(dropHat, x_axis, math.rad(90), 1)
+        Turn(dropHat, z_axis, 0, 1)
+
+end
+
 function script.Killed(recentDamage, _)
 	if doesUnitExistAlive(civilianID) == true then
 		Spring.DestroyUnit(civilianID,true,true) 
 	end
+	StartThread(dropHatIfWorrn)
 	PlayAnimation("DEATH")
    return 1
 end

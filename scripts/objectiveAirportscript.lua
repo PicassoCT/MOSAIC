@@ -176,12 +176,11 @@ end
 function scramJetComingAndGoing()
     while true do
         while GG.GlobalGameState == GameConfig.GameState.normal do
-        repeat 
-            Sleep(3000)
-        until (GG.AirPortSemaphore ~= unitID)
+            repeat 
+                Sleep(3000)
+            until (GG.AirPortSemaphore ~= unitID)
 
-        arrivingDepartingScramJets()
-
+            arrivingDepartingScramJets()
         end
         Sleep(5000)
     end
