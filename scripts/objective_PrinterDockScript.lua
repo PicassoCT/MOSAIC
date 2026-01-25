@@ -270,7 +270,7 @@ StackB05
 ]]
 
 
-
+Boat = piece("Boat")
 TablesOfPiecesGroups = {}
 function script.HitByWeapon(x, z, weaponDefID, damage) end
 
@@ -278,26 +278,118 @@ function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     StartThread(buildAnimation)
 end
+function hideConstruction()
+    hideT(ship)
+    hideT(cool)
+    hideT(slice)
+end
 
-function printABoat()
+travellDistancePrinter = 210
+totalPiece = #TablesOfPiecesGroups["Ship"]
+function piecePercent(step)
+    factor = (step/totalPiece)
+    return factor
+end
+function InstallerAnimation()
+
+end
+function updateInstallerCrane(step)
+    position = piecePercent(step)*travellDistancePrinter
+    Move(Installer, x_axis, position, 0.5)
+    StartThread(InstallerAnimation)
+end
+
+function PrinterAnimation()
 
 end
 
-function OpenDoors()
+function updatePrinterCrane(step)
+    position = piecePercent(step)*travellDistancePrinter
+    Move(Installer, x_axis, position, 0.5)
+    StartThread(PrinterAnimation)
+end
 
+function printABoat()
+    local step = 1
+
+    local ship  = TablesOfPiecesGroups["Ship"]
+    local cool  = TablesOfPiecesGroups["Cool"]
+    local slice = TablesOfPiecesGroups["Slice"]
+
+    local nrOfSlices = #slice
+    local slicesHot = 3
+    local coolDownSlices = 10
+
+    -- initial state
+    hideConstruction()
+    updateInstallerCrane(0)
+    updatePrinterCrane(0)
+    
+    while step <= nrOfSlices do
+
+        -- 1. HOT slice (current print head position)
+        if slice[step] then
+            Show(slice[step])
+        end
+
+        -- 2. Move older hot slices into cooled state
+        local coolIndex = step - slicesHot
+        if coolIndex >= 1 and slice[coolIndex] then
+            Hide(slice[coolIndex])
+            if cool[coolIndex] then
+                Show(cool[coolIndex])
+            end
+        end
+
+        -- 3. Finalize cooled slices into ship geometry
+        local shipIndex = step - slicesHot - coolDownSlices
+        if shipIndex >= 1 then
+            if cool[shipIndex] then
+                Hide(cool[shipIndex])
+            end
+            if ship[shipIndex] then
+                Show(ship[shipIndex])
+            end
+        end
+
+        Sleep(10000)
+        step = step + 1
+        updateInstallerCrane(step)
+        updatePrinterCrane(step)
+    end
+
+    -- safety pass: ensure final ship is visible
+    reset(Printer, 1)
+    reset(Installer, 1.1)
+    hideT(slice)
+    hideT(cool)
+    hideT(ship)
+    Show(Boat)
+end
+Printer = piece("Printer")
+Installer = piece("Installer")
+
+function OpenDoors()
+    Move(center, y_axis, -250, 10)
+    WMove(Boat, y_axis, 250, 10)
+    Turn(TablesOfPiecesGroups["DockDoor"][1],y_axis, math.rad(90), 1)
+    Turn(TablesOfPiecesGroups["DockDoor"][2],y_axis, math.rad(-90), 1)
+    WaitForTurns(TablesOfPiecesGroups["DockDoor"])
 end
 
 function CloseDoors()
-  resetT(DockDoors, 0.1)
-  WaitForTurns(DockDoors)
+  resetT(TablesOfPiecesGroups["DockDoor"], 0.1)
+  WaitForTurns(TablesOfPiecesGroups["DockDoor"])
+  Move(center, y_axis, 0, 10)
 end
 
+BOAT_OUTSIDE_DISTANCE= 12000
 function LeaveAnimation()
-  Show(Boat)
   OpenDoors()
-  WMove(ModelRotator, x_axis, BOAT_OUTSIDE_DISTANCE, 10)
+  WMove(Boat, x_axis, BOAT_OUTSIDE_DISTANCE, 120)
   CloseDoors()
-  WTurn(ModelRotator, 2, math.rad(90), 1)
+  WTurn(Boat, 2, math.rad(90), 1)
+  --detectorLoop
   
 end
 

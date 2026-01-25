@@ -24,8 +24,13 @@ oilrigAnimationT =
             }
     }
 
+center = Industrial_Floor1
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
+    boolIsAboveGround, _,_,_, gh = isPieceAboveGround(unitID, center, 0) 
+    if boolIsAboveGround then
+        Move(center, 2, gh, 0)
+    end
     StartThread(oilrigAnimation, oilrigAnimationT.arg)  
     StartThread(drillAnimation)
 end

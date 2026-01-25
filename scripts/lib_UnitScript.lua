@@ -12,7 +12,6 @@ Section: String Operations
 Section: Debug Tools 
 Section: Random 
 Section: VFS
-
 Section: Sound
 Section: Ressources
 Section: Unit Commands
@@ -341,7 +340,6 @@ function setSpeedEnv(k, val)
     end
 end
 
-
 -- > Sets the Speed of a Unit
 function setSpeedIntern(k, val)
     val = math.max(0.000000001, math.min(val, 1.0))
@@ -355,7 +353,6 @@ function isUnitFlying(unitID)
     return y - 15 > h, y, h
 
 end
-
 
 function setUnitRotationToPoint(id, x,y,z)
     ux,uy,uz=Spring.GetUnitPosition(id)
@@ -3281,6 +3278,60 @@ function square(...)
     sum = 0
     for k, v in pairs(arg) do if v then sum = sum + v ^ 2 end end
     return math.sqrt(sum)
+end
+
+function applyByPercentageInterval(tbl, startPercent, endPercent, funcIn, funcOut)
+    --assert(type(tbl) == "table", "tbl must be a table")
+    --assert(type(startPercent) == "number", "startPercent must be a number")
+    --assert(type(endPercent) == "number", "endPercent must be a number")
+    --assert(type(funcIn) == "function", "funcIn must be a function")
+    --assert(type(funcOut) == "function", "funcOut must be a function")
+
+    local n = #tbl
+    if n == 0 then return end
+
+    -- normalize & clamp
+    if startPercent > endPercent then
+        startPercent, endPercent = endPercent, startPercent
+    end
+    startPercent = math.max(0, math.min(100, startPercent))
+    endPercent   = math.max(0, math.min(100, endPercent))
+
+    local startIndex = math.floor(n * (startPercent / 100)) + 1
+    local endIndex   = math.floor(n * (endPercent   / 100))
+
+    for i = 1, n do
+        if i >= startIndex and i <= endIndex then
+            funcIn(tbl[i], i, tbl)
+        else
+            funcOut(tbl[i], i, tbl)
+        end
+    end
+end
+
+
+function applyByPercentage(tbl, percent, funcA, funcB)
+    --assert(type(tbl) == "table", "tbl must be a table")
+    --assert(type(percent) == "number", "percent must be a number")
+    --assert(type(funcA) == "function", "funcA must be a function")
+    --assert(type(funcB) == "function", "funcB must be a function")
+
+    local n = #tbl
+    if n == 0 then return end
+
+    -- clamp percentage
+    if percent < 0 then percent = 0 end
+    if percent > 100 then percent = 100 end
+
+    local cutoff = math.floor(n * (percent / 100))
+
+    for i = 1, n do
+        if i <= cutoff then
+            funcA(tbl[i], i, tbl)
+        else
+            funcB(tbl[i], i, tbl)
+        end
+    end
 end
 
 -- > computes the result of the middleSqreWeylSequence

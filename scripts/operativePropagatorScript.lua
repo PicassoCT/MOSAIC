@@ -511,6 +511,9 @@ function dropHatIfWorrn()
 	TICK = 33
 	GRAVITY = 9.81
 	Factor = 1000/(9.81* 4)
+	TOTAL_TIME = 3000
+	DISTANCE = 1000
+	MAXSPEED =  DISTANCE/ TOTAL_TIME
     -- Random initial spin (looks organic)
     Spin(dropHat, x_axis, math.rad(math.random(-180, 180)))
     Spin(dropHat, z_axis, math.rad(math.random(-360, 360)))
@@ -520,14 +523,14 @@ function dropHatIfWorrn()
         local y = 1000
 
         while y > FLOOR_Y do
-            vel = vel + GRAVITY * (TICK / 1000)
+            vel = math.min(MAXSPEED, vel + GRAVITY * (TICK / 1000))
             y = y - vel*Factor * (TICK / 1000)
-
-            WMove(dropHat, y_axis, y, vel)
+            Move(dropHat, y_axis, y, vel)
+            Sleep(TICK)
         end
 
         -- Clamp to floor
-        Move(dropHat, y_axis, FLOOR_Y, vel)
+        WMove(dropHat, y_axis, FLOOR_Y, MAXSPEED)
 
         -- Stop chaotic motion
         StopSpin(dropHat, x_axis, 2)
