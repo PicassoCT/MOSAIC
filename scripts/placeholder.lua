@@ -9,15 +9,15 @@ function script.HitByWeapon(x, z, weaponDefID, damage) end
 
 
 function script.Create()
-    echo(UnitDefs[unitDefID].name.."has placeholder script called")
+    -- echo(UnitDefs[unitDefID].name.."has placeholder script called")
     -- generatepiecesTableAndArrayCode(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     -- Spring.MoveCtrl.Enable(unitID,true)
-    -- x,y,z =Spring.GetUnitPosition(unitID)
-    -- Spring.MoveCtrl.SetPosition(unitID, x,y+500,z)
-    -- StartThread(AnimationTest)
-    x,y,z = Spring.GetUnitPosition(unitID)
-    echo("{name = \"placeholder\", x = "..x..", z = "..z..", rot = 0, scale = 1.000000}")
+    if Spring.GetUnitDefID(unitID) == UnitDefNames["cegtest"].id then
+        x,y,z =Spring.GetUnitPosition(unitID)
+        Spring.MoveCtrl.SetPosition(unitID, x,y+500,z) 
+        echo("{name = \"placeholder\", x = "..x..", z = "..z..", rot = 0, scale = 1.000000}")
+    end
 end
 
 

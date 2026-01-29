@@ -11,8 +11,8 @@ function script.HitByWeapon(x, z, weaponDefID, damage) end
 
 oilrigAnimationT = 
     {   func="func", 
-        arg= {
-                method = oilrigAnimation, 
+         method = oilrigAnimation, 
+        arg= {               
                 jack1 =  piece("Industrial_Floor1Sub1"),
                 jack2 = piece("Industrial_Floor1Sub5"),
                 piston1 =  piece("Industrial_Floor1Sub2"),
@@ -31,11 +31,11 @@ function script.Create()
     if boolIsAboveGround then
         Move(center, 2, gh, 0)
     end
-    StartThread(oilrigAnimation, oilrigAnimationT.arg)  
+    StartThread(oilrigAnimation, oilrigAnimationT.arg, oilrigAnimationT.method)  
     StartThread(drillAnimation)
 end
 
-function oilrigAnimation(set)  
+function oilrigAnimation(set, method)  
     SetSignalMask(SIG_SUBANIMATIONS)
     jack1 = set.jack1 
     jack2 = set.jack2      

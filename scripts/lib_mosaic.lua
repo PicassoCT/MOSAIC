@@ -714,6 +714,7 @@ end
             [UnitDefNames["objective_oilrig"].id] = "land",
             [UnitDefNames["objective_oilrig_sea"].id] = "water",
             [UnitDefNames["objective_industrialcomplex"].id] = "land",
+            [UnitDefNames["objective_printerdock"].id] = "water",
         }
     end
 

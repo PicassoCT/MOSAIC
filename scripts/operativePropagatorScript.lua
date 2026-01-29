@@ -472,6 +472,18 @@ function flyingMonitored()
 	end
 end
 
+cigTable = nil
+cigIndex =  0
+function cigDrag()
+	if not cigTable then
+		cigTable = mergeTables({TablesOfPiecesGroups["HeadDeco"][5]}, TablesOfPiecesGroups["Cig"])
+	end
+	cigIndex = (cigIndex % #cigTable )+ 1
+	hideT(cigTable)
+	Show(cigTable[cigIndex])
+end
+
+
 function breathing()
 	local breathSpeed= 0.1/3
 	while true do
@@ -485,8 +497,7 @@ function breathing()
 			tP(Eye2,rx,ry,rz, 16)
             tP(Head,0,math.random(-20,20),0, 2)
    
-        	if randChance(5) then
-        		Show(TablesOfPiecesGroups["HeadDeco"][5])
+        	if randChance(5) then        		
 				StartThread(cigarettGlowAndSmoke)		
 				PlayAnimation( uppperBodyAnimations[eAnimState.idle][1], lowerBodyPieces, (math.random(5,15)/5))		
 			end
@@ -875,6 +886,7 @@ function leftArmPoses(speed)
 end
 
 function cigarettGlowAndSmoke()
+	cigDrag()
 	timeInTotal = (60/30)
 	cigarettDragMs = math.ceil(timeInTotal/2) * 1000
     Sleep(cigarettDragMs)

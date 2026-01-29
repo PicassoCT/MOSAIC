@@ -3,289 +3,159 @@ include "lib_OS.lua"
 include "lib_UnitScript.lua"
 include "lib_mosaic.lua"
 
---[[
-Cool01
-Cool02
-Cool03
-Cool04
-Cool05
-Cool06
-Cool07
-Cool08
-Cool09
-Cool10
-Cool11
-Cool12
-Cool13
-Cool14
-Cool15
-Cool16
-Cool17
-Cool18
-Cool19
-Cool20
-Cool21
-Cool22
-Cool23
-Cool24
-Cool25
-Cool26
-Cool27
-Cool28
-Cool29
-Cool30
-Cool31
-Cool32
-Cool33
-Cool34
-Cool35
-Crane1
-Crane2
-  StackBPick
-Crane3
-  Object012
-Dock
-  DockDoor1
-  DockDoor2
-  Down002
-  Down003
-  Down004
-  Down005
-  Down006
-  Down007
-  Down1
-  PowderLine002
-  PowderLine003
-  PowderLine004
-  PowderLine005
-  PowderLine006
-  PowderLine007
-  PowderLine008
-  PowderLine009
-  PowderLine010
-  PowderLine011
-  PowderLine012
-  PowderLine013
-  PowderLine014
-  PowderLine015
-  PowderLine016
-  PowderLine017
-  PowderLine018
-  PowderLine019
-  PowderLine020
-  PowderLine1
-  RailContainerPlace1
-  RailContainerPlace2
-  StackC01
-  StackC02
-  StackC03
-  StackC04
-Installer
-  Bow
-    DownBow
-    Up002
-    Up003
-    Up004
-    Up005
-    Up006
-    Up1
-  Curtain
-  HorizontalBeam1
-    InstallBase01
-      InstallUp1
-        InstallLow1
-          InstallTool1
-  HorizontalBeam2
-    InstallBase02
-      InstallUp2
-        InstallLow2
-          InstallTool2
-  InstallBeam1
-    InstallBase03
-      InstallUp3
-        InstallLow3
-          InstallTool3
-    InstallBase04
-      InstallUp4
-        InstallLow4
-          InstallTool4
-  InstallerStack01
-  InstallerStack02
-  InstallerStack03
-  InstallerStack04
-  Up007
-PowderLineRotator
-Printer
-  WeldCraneBeam1
-    Extruder002
-      Arm002
-        UpArm002
-          Weld001
-            Arm1Drop005
-            Arm1Drop006
-            Arm1Drop007
-            Arm1Drop008
-            Circle002
-            WeldSpot002
-    Extruder1
-      Arm1
-        UpArm1
-          Weld
-            Arm1Drop002
-            Arm1Drop003
-            Arm1Drop004
-            Arm1Drop1
-            Circle001
-            WeldSpot1
-  WeldCraneBeam2
-    Extruder003
-      Arm003
-        UpArm003
-          Weld003
-            Arm1Drop012
-            Arm1Drop013
-            Arm1Drop014
-            Arm1Drop015
-            Circle004
-            WeldSpot003
-    Extruder004
-      Arm004
-        UpArm004
-          Weld002
-            Arm1Drop009
-            Arm1Drop010
-            Arm1Drop011
-            Arm1Drop016
-            Circle003
-            WeldSpot004
-Ship01
-  Propeller
-  Ship02
-  Ship03
-  Ship04
-  Ship05
-  Ship06
-  Ship07
-  Ship08
-  Ship09
-  Ship10
-  Ship11
-  Ship12
-  Ship13
-  Ship14
-  Ship15
-  Ship16
-  Ship17
-  Ship18
-  Ship19
-  Ship20
-  Ship21
-  Ship22
-  Ship23
-  Ship24
-  Ship25
-  Ship26
-  Ship27
-  Ship28
-  Ship29
-  Ship30
-  Ship31
-  Ship32
-  Ship33
-  Ship34
-  Ship35
-Slice009
-Slice037
-Slice1
-Slice10
-Slice11
-Slice12
-Slice13
-Slice14
-Slice15
-Slice16
-Slice17
-Slice18
-Slice19
-Slice2
-Slice23
-Slice24
-Slice25
-Slice26
-Slice27
-Slice28
-Slice29
-Slice3
-Slice30
-Slice31
-Slice32
-Slice33
-Slice34
-Slice35
-Slice36
-Slice36_ncl1_1
-Slice4
-Slice5
-Slice6
-Slice7
-Slice8
-SolarPanel01
-SolarPanel02
-SolarPanel03
-SolarPanel04
-SolarPanel05
-SolarPanel06
-SolarPanel07
-SolarPanel08
-SolarPanel09
-SolarPanel10
-SolarPanel11
-SolarPanel12
-SolarPanel13
-SolarPanel14
-SolarPanel15
-SolarPanel16
-SolarPanel17
-SolarPanel18
-SolarPanel19
-SolarPanel20
-SolarPanel21
-SolarPanel22
-SolarPanel23
-SolarPanel24
-StackA01
-StackA02
-StackA03
-StackA04
-StackA05
-StackA06
-StackAPick
-StackB01
-StackB02
-StackB03
-StackB04
-StackB05
+Printer = piece("Printer")
+Installer = piece("Installer")
 
-
-]]
-
-
+center = piece("center")
 Boat = piece("Boat")
-TablesOfPiecesGroups = {}
-function script.HitByWeapon(x, z, weaponDefID, damage) end
+SensorRotator = piece("SensorRotator")
+BoatRotator = piece("BoatRotator")
 
+totalPiece = nil
+TablesOfPiecesGroups = nil
+function script.HitByWeapon(x, z, weaponDefID, damage) end
+sliceData = {}
 function script.Create()
+    resetAll(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
+    totalPiece = #TablesOfPiecesGroups["Ship"]
+    ship  = TablesOfPiecesGroups["Ship"]
+    cool  = TablesOfPiecesGroups["Cool"]
+    slice = TablesOfPiecesGroups["Slice"]
+    sliceData = GenerateContainerShipSlices(totalPiece)
+    setup()
     StartThread(buildAnimation)
 end
+
+function setup()
+    hideT(TablesOfPiecesGroups["WeldSpot"])
+    hideT(TablesOfPiecesGroups["DeptSensor"])
+    hideT(TablesOfPiecesGroups["Arm1Drop"])
+    Hide(center)
+    Hide(Boat)
+    Hide( SensorRotator)
+    Hide( BoatRotator)
+    hideConstruction()
+end
+
+function GenerateContainerShipSlices(numSlices)
+  local slices = {}
+
+  for s = 1, numSlices do
+    slices[s] = {}
+    local t = s / numSlices
+
+    for arm = 1, 4 do
+      slices[s][arm] = {}
+    end
+
+    if s <= 6 then
+      -- bridge: dense + asymmetry
+      for arm = 1, 4 do
+        table.insert(slices[s][arm], { -6, t*40,  6, t*40 })
+        table.insert(slices[s][arm], { -3, t*40+2, 3, t*40+2 })
+      end
+
+    elseif s <= 30 then
+      -- hull: containers
+      for arm = 1, 4 do
+        local y = t * 120
+        table.insert(slices[s][arm], { -10, y, 10, y })
+      end
+
+    else
+      -- stern taper
+      local w = (1 - t) * 10
+      for arm = 1, 4 do
+        table.insert(slices[s][arm], { -w, t*120, w, t*120 })
+      end
+    end
+  end
+
+  return slices
+end
+
+function EmitSparks(armNr)
+  spark = TablesOfPiecesGroups["Arm"..armNr.."Drop"][math.random(1,4)]
+  Show(spark)
+  spinRand(spark, -42, 42)
+  Move(spark, x_axis, math.random(-120,120),240)
+  Move(spark, y_axis, math.random(-120,120),240)
+  Move(spark, z_axis, math.random(-120,120),240)
+  WaitForMoves(spark)
+  Hide(spark)
+  stopSpins(spark)
+  reset(spark)  
+end
+
+function AnimateRobotsPrintingSlice(sliceNr, sliceDataSlice, timeMs)
+  local armCount = 4
+  local timePerArm = timeMs / 2
+
+  for arm = 1, armCount do
+    index = math.ceil(arm/2)
+    beam = TablesOfPiecesGroups["WeldCraneBeam"][index]
+    if arm < 3 then
+        StartThread(AnimateArmLines, arm, beam, sliceDataSlice[arm], timePerArm)
+    else
+        StartThread(AnimateArmLines, arm, beam, sliceDataSlice[arm], timePerArm)
+    end
+  end
+end
+
+
+function weldLights(signal, weld)
+    Signal(signal)
+    SetSignalMask(signal)
+    Show(weld)
+    Sleep(350)
+    Hide(weld)
+end
+
+
+function AnimateArmLines(armNr, beam, lines, timeMs)
+  local n = #lines
+  if n == 0 then return end
+
+  local segTime = timeMs / n
+  local weld = TablesOfPiecesGroups["WeldSpot"][armNr]
+  ArmLow = TablesOfPiecesGroups["Arm"][armNr]
+  ArmUp = TablesOfPiecesGroups["UpArm"][armNr]
+  Extruder = TablesOfPiecesGroups["Extruder"][armNr]
+  signal= 2^armNr
+
+  StartThread(weldLights, signal, weld)
+
+  for _, L in ipairs(lines) do
+    local x1,z1,x2,z2 = L[1],L[2],L[3],L[4]
+
+    -- rotate extruder (yaw)
+ 
+    -- linear draw
+    Move(Extruder, x_axis, x1, segTime*0.5)
+    Move(beam, z_axis, z1, segTime*0.5)
+    WaitForMoves(Extruder)
+    WaitForMoves(beam)
+
+    Move(Extruder, x_axis, x2, segTime)
+    Move(Extruder, z_axis, z2, segTime)
+
+    StartThread(EmitSparks, armNr)
+    Sleep(segTime)
+  end
+  Signal(signal)
+  Hide(weld)
+end
+
+
 function hideConstruction()
     hideT(ship)
     hideT(cool)
     hideT(slice)
 end
 
-travellDistancePrinter = 210
-totalPiece = #TablesOfPiecesGroups["Ship"]
+travellDistancePrinter = 250
+
 function piecePercent(step)
     factor = (step/totalPiece)
     return factor
@@ -294,28 +164,30 @@ function InstallerAnimation()
 
 end
 function updateInstallerCrane(step)
-    position = piecePercent(step)*travellDistancePrinter
-    Move(Installer, x_axis, position, 0.5)
+    position = piecePercent(step) * -travellDistancePrinter
+    WMove(Installer, x_axis, position, 0.5)
     StartThread(InstallerAnimation)
 end
 
-function PrinterAnimation()
-
-end
-
-function updatePrinterCrane(step)
-    position = piecePercent(step)*travellDistancePrinter
-    Move(Installer, x_axis, position, 0.5)
-    StartThread(PrinterAnimation)
+function updatePrinterCrane(step, slice, index)
+    position = piecePercent(step) * -travellDistancePrinter
+    WMove(Printer, x_axis, position, 0.5)
+    if slice then
+        Hide(sice)
+        Move(slice, x_axis, 6, 0)
+        Show(slice)
+        Move(slice, x_axis, 0, 0.125)
+    end
+    if index and sliceData[index] then
+        AnimateRobotsPrintingSlice(step, sliceData[index], travellDistancePrinter/0.125)
+    end
+    if slice then
+        WMove(slice, x_axis, 0, 0.125)
+    end
 end
 
 function printABoat()
     local step = 1
-
-    local ship  = TablesOfPiecesGroups["Ship"]
-    local cool  = TablesOfPiecesGroups["Cool"]
-    local slice = TablesOfPiecesGroups["Slice"]
-
     local nrOfSlices = #slice
     local slicesHot = 3
     local coolDownSlices = 10
@@ -326,7 +198,7 @@ function printABoat()
     updatePrinterCrane(0)
     
     while step <= nrOfSlices do
-
+        updatePrinterCrane(step + 1, slice[step], step)
         -- 1. HOT slice (current print head position)
         if slice[step] then
             Show(slice[step])
@@ -353,9 +225,9 @@ function printABoat()
         end
 
         Sleep(10000)
-        step = step + 1
-        updateInstallerCrane(step)
-        updatePrinterCrane(step)
+
+        updateInstallerCrane(math.max(0, step-10))
+        step = step + 1        
     end
 
     -- safety pass: ensure final ship is visible
@@ -366,8 +238,7 @@ function printABoat()
     hideT(ship)
     Show(Boat)
 end
-Printer = piece("Printer")
-Installer = piece("Installer")
+
 
 function OpenDoors()
     Move(center, y_axis, -250, 10)
@@ -394,26 +265,44 @@ function LeaveAnimation()
 end
 
 function openWatersAtNextRotation()
-  boolAllBelowWaters = true
-  foreach(TableOfPiecesGroups["Sensors"]),
-    function(id)
-      _,_,_,gh = isPieceAboveGround(id)
-      if gh > 0 then boolAllBelowWaters= false end
-    end
-    )
-  return boolAllBelowWaters
+    boolAllBelowWaters = true
+    foreach(TableOfPiecesGroups["Sensors"],
+        function(id)
+          _,_,_,gh = isPieceAboveGround(id)
+          if gh > 0 then boolAllBelowWaters= false end
+        end
+        )
+    return boolAllBelowWaters
+end
+
+function resetBoat()
+Hide(Boat)
+reset(Boat)
+reset(shipRotator)
+reset(sensorRotator)
+
+end
+function turnToSeaAndFade(degree)
+Turn(Boat, y_axis, math.rad(90), 2)
+WTurn(shipRotator, y_axis, math.rad(math.max(0, degree-15)), 1)
+Turn(Boat, y_axis, math.rad(0), 3)
+WTurn(shipRotator, y_axis, math.rad(degree), 1)
+WMove(Boat, x_axis, 1000, 30)
+WMove(Boat, x_axis, 2000, 60)
+WMove(Boat, x_axis, 3000, 120)
+resetBoat()
 end
 
 function boatTakingToSea()
   --Turn right side
-
   -- Drive in circle.. check with probes for high seas
   for i=1, 360, 10 do
-    WTurn(shipRotator, y_axis, math.rad(i), 0.1)
+    WTurn(sensorRotator, y_axis, math.rad(i), 0.1)
     boolIsOpenWaters = openWatersAtNextRotation()
-    if boolIsOpenWaters then     
-      turnToSeeAndFade(i)
-      return
+        if boolIsOpenWaters then     
+          turnToSeaAndFade(i)
+          return
+        end
     end
 end
 

@@ -13,7 +13,7 @@ local objective_printerdock = Building:New{
 	levelground				= true,
 	FootprintX = 8,
 	FootprintZ = 8,
-	script 					= "placeholder.lua",
+	script 					= "objective_PrinterDockScript.lua",
 	objectName       	= "objective_printerdock.dae",
 
 	
