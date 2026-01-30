@@ -38,42 +38,85 @@ function setup()
     hideConstruction()
 end
 
-function GenerateContainerShipSlices(numSlices)
-  local slices = {}
+BridgeTemplate = {
+{0,0,0,1,1,0,0,0},
+{0,0,1,0,0,1,0,0},
+{0,1,1,1,1,1,1,0},
+{1,1,1,1,1,1,1,1},
+{1,0,0,0,0,0,0,1},
+{1,1,0,0,0,0,1,1},
+{0,1,1,1,1,1,1,0},
+{0,0,0,1,1,0,0,0},
+}
 
-  for s = 1, numSlices do
-    slices[s] = {}
-    local t = s / numSlices
+HullTemplate = {
+{0,0,0,0,0,0,0,0},
+{0,0,0,0,0,0,0,0},
+{0,0,0,0,0,0,0,0},
+{1,1,1,1,1,1,1,1},
+{1,0,0,0,0,0,0,1},
+{1,1,0,0,0,0,1,1},
+{0,1,1,1,1,1,1,0},
+{0,0,0,1,1,0,0,0},
+}
 
-    for arm = 1, 4 do
-      slices[s][arm] = {}
-    end
+function VoxelToLine(ix, iz, scaleX, scaleZ, sliceZ)
+  local x1 = (ix - 4.5) * scaleX
+  local x2 = x1 + scaleX
+  local z  = sliceZ + (iz - 4.5) * scaleZ
+  return { x1, z, x2, z }
+end
 
-    if s <= 6 then
-      -- bridge: dense + asymmetry
-      for arm = 1, 4 do
-        table.insert(slices[s][arm], { -6, t*40,  6, t*40 })
-        table.insert(slices[s][arm], { -3, t*40+2, 3, t*40+2 })
-      end
+function AssignArm(ix, iz)
+  local bestArm, bestDist = 1, math.huge
 
-    elseif s <= 30 then
-      -- hull: containers
-      for arm = 1, 4 do
-        local y = t * 120
-        table.insert(slices[s][arm], { -10, y, 10, y })
-      end
-
-    else
-      -- stern taper
-      local w = (1 - t) * 10
-      for arm = 1, 4 do
-        table.insert(slices[s][arm], { -w, t*120, w, t*120 })
+  for z=1,8 do
+    for x=1,8 do
+      local arm = RobotStartPositions[z][x]
+      if arm and arm > 0 then
+        local d = (ix-x)^2 + (iz-z)^2
+        if d < bestDist then
+          bestDist = d
+          bestArm = arm
+        end
       end
     end
   end
 
-  return slices
+  return bestArm
 end
+
+function GenerateSlicesFromTemplates(params)
+  local slices      = params.slices or 37
+  local bridgeEnd   = params.bridgeSlices or 6
+  local scaleX      = params.scaleX or 1000.0
+  local scaleZ      = params.scaleZ or 1000.0
+  local sliceStep   = params.sliceStep or 350.0
+
+  local Print = {}
+
+  for s = 1, slices do
+    Print[s] = { {}, {}, {}, {} }
+
+    local template =
+      (s <= bridgeEnd) and BridgeTemplate or HullTemplate
+
+    local sliceZ = s * sliceStep
+
+    for iz = 1, 8 do
+      for ix = 1, 8 do
+        if template[iz][ix] == 1 then
+          local arm = AssignArm(ix, iz)
+          local line = VoxelToLine(ix, iz, scaleX, scaleZ, sliceZ)
+          table.insert(Print[s][arm], line)
+        end
+      end
+    end
+  end
+
+  return Print
+end
+
 
 function EmitSparks(armNr)
   spark = TablesOfPiecesGroups["Arm"..armNr.."Drop"][math.random(1,4)]
