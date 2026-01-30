@@ -67,13 +67,14 @@ function VoxelToLine(ix, iz, scaleX, scaleZ, sliceZ)
   return { x1, z, x2, z }
 end
 
+RobotStartPositions = { {_,_,_,2,1,_,_,_}, {_,_,_,_,_,_,_,_}, {_,_,_,_,_,_,_,_}, {_,_,_,_,_,_,_,_}, {_,_,_,_,_,_,_,_}, {_,_,_,_,_,_,_,_}, {_,_,_,_,_,_,_,_}, {_,_,_,3,4,_,_,_}, }
 function AssignArm(ix, iz)
   local bestArm, bestDist = 1, math.huge
 
   for z=1,8 do
     for x=1,8 do
       local arm = RobotStartPositions[z][x]
-      if arm and arm > 0 then
+      if arm and ty arm > 0 then
         local d = (ix-x)^2 + (iz-z)^2
         if d < bestDist then
           bestDist = d
@@ -86,8 +87,9 @@ function AssignArm(ix, iz)
   return bestArm
 end
 
-function GenerateSlicesFromTemplates(params)
-  local slices      = params.slices or 37
+function GenerateContainerShipSlices(nr)
+params = {}
+  local slices      = params.slices or nr
   local bridgeEnd   = params.bridgeSlices or 6
   local scaleX      = params.scaleX or 1000.0
   local scaleZ      = params.scaleZ or 1000.0
@@ -122,9 +124,9 @@ function EmitSparks(armNr)
   spark = TablesOfPiecesGroups["Arm"..armNr.."Drop"][math.random(1,4)]
   Show(spark)
   spinRand(spark, -42, 42)
-  Move(spark, x_axis, math.random(-120,120),240)
-  Move(spark, y_axis, math.random(-120,120),240)
-  Move(spark, z_axis, math.random(-120,120),240)
+  Move(spark, x_axis, math.random(-120,120),60)
+  Move(spark, y_axis, math.random(-120,120),60)
+  Move(spark, z_axis, math.random(-120,120),60)
   WaitForMoves(spark)
   Hide(spark)
   stopSpins(spark)
