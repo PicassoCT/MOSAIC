@@ -60,6 +60,73 @@ HullTemplate = {
 {0,0,0,1,1,0,0,0},
 }
 
+SlabTemplate = {
+{0,0,0,0,0,0,0,0},
+{0,0,0,0,0,0,0,0},
+{0,0,0,0,0,0,0,0},
+{1,1,1,1,1,1,1,1},
+{1,1,1,1,1,1,1,1},
+{1,1,1,1,1,1,1,1},
+{0,1,1,1,1,1,1,0},
+{0,0,0,1,1,0,0,0},
+}
+
+
+BowTemplate = {
+{
+{0,0,0,0,0,0,0,0},
+{0,0,0,0,0,0,0,0},
+{0,0,0,0,0,0,0,0},
+{0,1,1,1,1,1,1,0},
+{0,1,1,1,1,1,1,0},
+{0,1,1,1,1,1,1,0},
+{0,0,1,1,1,1,0,0},
+{0,0,0,1,1,0,0,0},
+},
+{
+{0,0,0,0,0,0,0,0},
+{0,0,0,0,0,0,0,0},
+{0,0,0,0,0,0,0,0},
+{0,1,1,1,1,1,1,0},
+{0,1,1,1,1,1,1,0},
+{0,0,1,1,1,1,0,0},
+{0,0,0,1,1,0,0,0},
+{0,0,0,0,0,0,0,0},
+},
+{
+{0,0,0,0,0,0,0,0},
+{0,0,0,0,0,0,0,0},
+{0,0,0,0,0,0,0,0},
+{0,1,1,1,1,1,1,0},
+{0,0,1,1,1,1,0,0},
+{0,0,0,1,1,0,0,0},
+{0,0,0,0,0,0,0,0},
+{0,0,0,0,0,0,0,0},
+},
+{
+{0,0,0,0,0,0,0,0},
+{0,0,0,0,0,0,0,0},
+{0,0,0,0,0,0,0,0},
+{0,0,1,1,1,1,0,0},
+{0,0,0,1,1,0,0,0},
+{0,0,0,0,0,0,0,0},
+{0,0,0,0,0,0,0,0},
+{0,0,0,0,0,0,0,0},
+},
+{
+{0,0,0,0,0,0,0,0},
+{0,0,0,0,0,0,0,0},
+{0,0,0,0,0,0,0,0},
+{0,0,0,1,1,0,0,0},
+{0,0,0,0,0,0,0,0},
+{0,0,0,0,0,0,0,0},
+{0,0,0,0,0,0,0,0},
+{0,0,0,0,0,0,0,0},
+},
+
+
+}
+
 function VoxelToLine(ix, iz, scaleX, scaleZ, sliceZ)
   local x1 = (ix - 4.5) * scaleX
   local x2 = x1 + scaleX
@@ -87,10 +154,25 @@ function AssignArm(ix, iz)
   return bestArm
 end
 
+bridgeEnd = 6
+bowStart  = 31
+function selecTemplate(index)
+    --bridge
+    if index < bridgeEnd then return BridgeTemplate end
+    -- shipHull
+    if index < bowStart then
+        if index % 5 == 0 then return SlabTemplate end
+        return HullTemplate
+    end
+    --shipbow
+    percent=  math.ceil(index-bowStart)
+    return BowTemplate[clamp(1, percent, #BowTemplate)]
+end
+
 function GenerateContainerShipSlices(nr)
 params = {}
   local slices      = params.slices or nr
-  local bridgeEnd   = params.bridgeSlices or 6
+
   local scaleX      = params.scaleX or 1000.0
   local scaleZ      = params.scaleZ or 1000.0
   local sliceStep   = params.sliceStep or 350.0
@@ -100,16 +182,13 @@ params = {}
   for s = 1, slices do
     Print[s] = { {}, {}, {}, {} }
 
-    local template =
-      (s <= bridgeEnd) and BridgeTemplate or HullTemplate
-
-    local sliceZ = s * sliceStep
+    local template = selecTemplate(s)
 
     for iz = 1, 8 do
       for ix = 1, 8 do
         if template[iz][ix] == 1 then
           local arm = AssignArm(ix, iz)
-          local line = VoxelToLine(ix, iz, scaleX, scaleZ, sliceZ)
+          local line = VoxelToLine(ix, iz, scaleX, scaleZ)
           table.insert(Print[s][arm], line)
         end
       end
