@@ -1,5 +1,6 @@
 include "createCorpse.lua"
 include "lib_OS.lua"
+include "lib_Animation.lua"
 include "lib_UnitScript.lua"
 include "lib_mosaic.lua"
 
@@ -60,39 +61,47 @@ HullTemplate = {
 {0,0,0,1,1,0,0,0},
 }
 
-function VoxelToLine(ix, iz, scaleX, scaleZ, sliceZ)
+function VoxelToLine(ix, iz, scaleX, scaleZ)
   local x1 = (ix - 4.5) * scaleX
   local x2 = x1 + scaleX
-  local z  = sliceZ + (iz - 4.5) * scaleZ
+  local z  = (iz - 4.5) * scaleZ
   return { x1, z, x2, z }
 end
 
-RobotStartPositions = { {_,_,_,2,1,_,_,_}, {_,_,_,_,_,_,_,_}, {_,_,_,_,_,_,_,_}, {_,_,_,_,_,_,_,_}, {_,_,_,_,_,_,_,_}, {_,_,_,_,_,_,_,_}, {_,_,_,_,_,_,_,_}, {_,_,_,3,4,_,_,_}, }
+RobotStartPositions = { 
+    { 2 , 2 , 2 , 2 , 1, 1 , 1 , 1 }, 
+    { 2 , 2 , 2 , 2 , 1, 1 , 1 , 1 }, 
+    { 2 , 2 , 2 , 2 , 1, 1 , 1 , 1 }, 
+    { 2 , 2 , 2 , 2 , 1, 1 , 1 , 1 }, 
+    { 3 , 3 , 3 , 3 , 4, 4 , 4 , 4 }, 
+    { 3 , 3 , 3 , 3 , 4, 4 , 4 , 4 }, 
+    { 3 , 3 , 3 , 3 , 4, 4 , 4 , 4 }, 
+    { 3 , 3 , 3 , 3 , 4, 4 , 4 , 4 }}
+
 function AssignArm(ix, iz)
   local bestArm, bestDist = 1, math.huge
 
   for z=1,8 do
     for x=1,8 do
-      local arm = RobotStartPositions[z][x]
-      if arm and ty arm > 0 then
-        local d = (ix-x)^2 + (iz-z)^2
-        if d < bestDist then
-          bestDist = d
-          bestArm = arm
-        end
-      end
+      return RobotStartPositions[z][x]
     end
   end
+  assert(false)
+end
 
-  return bestArm
+function GetArmOffset(arm)
+if arm == 2 then return 0, 0 end
+if arm == 1 then return 4, 0 end
+if arm == 3 then return 0, 4 end
+if arm == 4 then return 4, 4 end
 end
 
 function GenerateContainerShipSlices(nr)
 params = {}
   local slices      = params.slices or nr
   local bridgeEnd   = params.bridgeSlices or 6
-  local scaleX      = params.scaleX or 1000.0
-  local scaleZ      = params.scaleZ or 1000.0
+  local scaleX      = params.scaleX or 10.0
+  local scaleZ      = params.scaleZ or 10.0
   local sliceStep   = params.sliceStep or 350.0
 
   local Print = {}
@@ -109,28 +118,29 @@ params = {}
       for ix = 1, 8 do
         if template[iz][ix] == 1 then
           local arm = AssignArm(ix, iz)
-          local line = VoxelToLine(ix, iz, scaleX, scaleZ, sliceZ)
+          ox, oz = GetArmOffset(arm)
+          local line = VoxelToLine(ix-ox, iz-oz, scaleX, scaleZ)
           table.insert(Print[s][arm], line)
         end
       end
     end
   end
-
   return Print
 end
 
 
 function EmitSparks(armNr)
   spark = TablesOfPiecesGroups["Arm"..armNr.."Drop"][math.random(1,4)]
-  Show(spark)
+  reset(spark,0)  
   spinRand(spark, -42, 42)
   Move(spark, x_axis, math.random(-120,120),60)
   Move(spark, y_axis, math.random(-120,120),60)
   Move(spark, z_axis, math.random(-120,120),60)
+  Show(spark)
   WaitForMoves(spark)
   Hide(spark)
   stopSpins(spark)
-  reset(spark)  
+  reset(spark,0)
 end
 
 function AnimateRobotsPrintingSlice(sliceNr, sliceDataSlice, timeMs)
@@ -140,11 +150,7 @@ function AnimateRobotsPrintingSlice(sliceNr, sliceDataSlice, timeMs)
   for arm = 1, armCount do
     index = math.ceil(arm/2)
     beam = TablesOfPiecesGroups["WeldCraneBeam"][index]
-    if arm < 3 then
-        StartThread(AnimateArmLines, arm, beam, sliceDataSlice[arm], timePerArm)
-    else
-        StartThread(AnimateArmLines, arm, beam, sliceDataSlice[arm], timePerArm)
-    end
+    StartThread(AnimateArmLines, arm, beam, sliceDataSlice[arm], timePerArm)
   end
 end
 
@@ -156,8 +162,8 @@ function weldLights(signal, weld)
     Sleep(350)
     Hide(weld)
 end
-
-
+beamaxis = y_axis
+armaxis = x_axis
 function AnimateArmLines(armNr, beam, lines, timeMs)
   local n = #lines
   if n == 0 then return end
@@ -173,21 +179,27 @@ function AnimateArmLines(armNr, beam, lines, timeMs)
 
   for _, L in ipairs(lines) do
     local x1,z1,x2,z2 = L[1],L[2],L[3],L[4]
-
+    val= math.random(-40,40)
+    Turn(ArmUp,armaxis, math.rad(val), 25)
+    Turn(ArmLow,armaxis, math.rad(-val), 25)
     -- rotate extruder (yaw)
  
     -- linear draw
-    Move(Extruder, x_axis, x1, segTime*0.5)
-    Move(beam, z_axis, z1, segTime*0.5)
+    Move(Extruder, z_axis, x1, segTime*0.5)
+    Move(beam, beamaxis, z1, segTime*0.5)
     WaitForMoves(Extruder)
     WaitForMoves(beam)
 
-    Move(Extruder, x_axis, x2, segTime)
-    Move(Extruder, z_axis, z2, segTime)
+    Move(Extruder, z_axis, x2, segTime)
+    Move(beam, beamaxis, z2, segTime)
 
     StartThread(EmitSparks, armNr)
     Sleep(segTime)
   end
+  reset(beam, 2)
+  Turn(ArmLow,armaxis, math.rad(90),2)
+  Turn(ArmUp,armaxis, math.rad(80),2)
+
   Signal(signal)
   Hide(weld)
 end
@@ -205,12 +217,19 @@ function piecePercent(step)
     factor = (step/totalPiece)
     return factor
 end
+curtain = piece("Curtain")
 function InstallerAnimation()
+
 
 end
 function updateInstallerCrane(step)
     position = piecePercent(step) * -travellDistancePrinter
+    Turn(curtain, x_axis, math.rad(-2), 0.1)
     WMove(Installer, x_axis, position, 0.5)
+    Spin(curtain, y_axis, math.rad(0.1), 0.1)
+    WTurn(curtain, x_axis, math.rad(0), 0.25)
+    stopSpins(curtain)
+    reset(curtain)
     StartThread(InstallerAnimation)
 end
 
@@ -240,10 +259,10 @@ function printABoat()
     -- initial state
     hideConstruction()
     updateInstallerCrane(0)
-    updatePrinterCrane(0)
+    updatePrinterCrane(1)
     
     while step <= nrOfSlices do
-        updatePrinterCrane(step + 1, slice[step], step)
+        updatePrinterCrane(step + 2, slice[step], step)
         -- 1. HOT slice (current print head position)
         if slice[step] then
             Show(slice[step])

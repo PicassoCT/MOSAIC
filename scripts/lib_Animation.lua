@@ -725,7 +725,6 @@ function stopSpinsT(arg, speed)
     end
 end
 
-
 -- > Stops Spinning Table
 function stopAllSpins(unitID, speed)
     for k,v in pairs(Spring.GetUnitPieceMap(unitID)) do
