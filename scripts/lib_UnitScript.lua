@@ -3155,6 +3155,13 @@ end
 -- ======================================================================================
 -- Section: Geometry/Math functions
 -- ======================================================================================
+function mapIndexToIndex(indexOrg, OrgMax, TargetMax)
+    local percent = indexOrg/Orgmax
+    scaledIndex = percent * TargetMax
+
+    return clamp(scaledIndex, 1, TargetMax)
+end
+
 function mapAngleToCube(cubeDim, angle)
     local x, y
     
@@ -4852,6 +4859,16 @@ function ringcrement(index, upValue, LowValue)
     end
 
     return index + 1
+end
+
+function getInTable(T, fun)
+    value = -math.huge
+    for k,v in pairs(T) do
+        if v == fun(v, value) then
+            value = v 
+        end
+    end
+    return value
 end
 
 -- > takes a given position and the dir of a surface and calculates the vector by which the vector is reflectd,

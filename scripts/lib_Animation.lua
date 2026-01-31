@@ -183,6 +183,34 @@ function WaitForMoves(...)
     end
 end
 
+function turnTowardsSun(unitID, piece )
+
+    local piecesTable = {}
+    if type(piece)== "table" then 
+        piecesTable = piece 
+    else
+        table.insert(piecesTable, piece)
+    end
+
+    local turnTowardsTheSun = 
+        function (pieceName, percentage, heading)
+            if percentage > 0.25 and percentage < 0.70 then
+                percentage = 1-((percentage - 0.25) / 0.5)
+                degree = -90 + (percentage * 180) +  heading * 90
+                Turn(pieceName, y_axis, math.rad(degree), math.pi / 500)
+            end
+        end
+
+    local heading = Spring.GetUnitHeading(unitID)/16384
+    while true do
+        hours, minutes, seconds, percentage = getDayTime()
+        for _, pieceId in pairs(piecesTable) do
+            turnTowardsTheSun(pieceId, percentage, heading)
+        end
+        Sleep(100)
+    end
+end
+
 function waitForMovesForTime(waitTimeMs, ...)
     sf = Spring.GetGameFrame()
     WaitForMoves(...)
