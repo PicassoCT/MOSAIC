@@ -183,6 +183,16 @@ function WaitForMoves(...)
     end
 end
 
+function waitForMovesForTime(waitTimeMs, ...)
+    sf = Spring.GetGameFrame()
+    WaitForMoves(...)
+    ef = Spring.GetGameFrame()
+    timeWaitedMs = (sf- ef) * (1000/30)
+    if timeWaitedMs < waitTimeMs then
+        Sleep(waitTimeMs - timeWaitedMs)
+    end
+end
+
 -- >Waits for any Move ToComplete
 function WaitForMoveAllAxis(arg)
     WaitForMove(arg, x_axis)
@@ -724,7 +734,6 @@ function stopSpinsT(arg, speed)
         StopSpin(arg[i], 3, speed)
     end
 end
-
 
 -- > Stops Spinning Table
 function stopAllSpins(unitID, speed)
