@@ -42,11 +42,11 @@ end
 
 BridgeTemplate = {
 {0,0,0,1,1,0,0,0},
-{0,0,1,0,0,1,0,0},
-{0,1,1,1,1,1,1,0},
+{0,0,1,1,1,1,0,0},
 {1,1,1,1,1,1,1,1},
-{1,0,0,0,0,0,0,1},
-{1,1,0,0,0,0,1,1},
+{1,1,1,1,1,1,1,1},
+{1,0,0,1,1,0,0,1},
+{1,1,0,1,1,0,1,1},
 {0,1,1,1,1,1,1,0},
 {0,0,0,1,1,0,0,0},
 }
@@ -62,7 +62,6 @@ HullTemplate = {
 {0,0,0,1,1,0,0,0},
 }
 
-<<<<<<< HEAD
 SlabTemplate = {
 {0,0,0,0,0,0,0,0},
 {0,0,0,0,0,0,0,0},
@@ -71,9 +70,10 @@ SlabTemplate = {
 {1,1,1,1,1,1,1,1},
 {1,1,1,1,1,1,1,1},
 {0,1,1,1,1,1,1,0},
-{0,0,0,1,1,0,0,0},
+{0,0,0,1,1,0,0,0}
 }
 
+Slabs = {10, 11, 15, 16, 20, 21, 25, 26}
 
 BowTemplate = {
 {
@@ -84,7 +84,7 @@ BowTemplate = {
 {0,1,1,1,1,1,1,0},
 {0,1,1,1,1,1,1,0},
 {0,0,1,1,1,1,0,0},
-{0,0,0,1,1,0,0,0},
+{0,0,0,1,1,0,0,0}
 },
 {
 {0,0,0,0,0,0,0,0},
@@ -129,9 +129,9 @@ BowTemplate = {
 }
 
 function VoxelToLines(ix, iz, scaleX, scaleZ)
-  local x1 = (ix - 4.5) * scaleX
+  local x1 = (ix -1) * scaleX
   local x2 = x1 + scaleX
-  local z  = (iz - 4.5) * scaleZ
+  local z  = (iz -1) * scaleZ
   return { x1, z, x2, z },{  x2, z, x1, z, }
 end
 
@@ -145,12 +145,21 @@ RobotStartPositions = {
     { 3 , 3 , 3 , 3 , 4, 4 , 4 , 4 }, 
     { 3 , 3 , 3 , 3 , 4, 4 , 4 , 4 }}
 
-function AssignArm(ix, iz)
-  local bestArm, bestDist = 1, math.huge
+BeamArmTable = {
+    {2,1},
+    {3,4},
+}
 
+function getArmBeam(arm)
+    for beamNr, armT in pairs(BeamArmTable) do
+        if isInTable(armT, arm) then return beamNr end
+    end
+end
+
+function AssignArm(ix, iz)
   for z=1,8 do
     for x=1,8 do
-      return RobotStartPositions[z][x]
+      return RobotStartPositions[x][z]
     end
   end
   assert(false)
@@ -158,9 +167,9 @@ end
 
 function GetArmOffset(arm)
   if arm == 2 then return 0, 0 end
-  if arm == 1 then return 4, 0 end
-  if arm == 3 then return 0, 4 end
-  if arm == 4 then return 4, 4 end
+  if arm == 1 then return 1, 0 end
+  if arm == 3 then return 0, 1 end
+  if arm == 4 then return 1, 1 end
 end
 
 bridgeEnd = 6
@@ -170,7 +179,7 @@ function selecTemplate(index)
     if index < bridgeEnd then return BridgeTemplate end
     -- shipHull
     if index < bowStart then
-        if index % 5 == 0 then return SlabTemplate end
+        if isInTable(Slabs, index) then return SlabTemplate end
         return HullTemplate
     end
     --shipbow
@@ -178,15 +187,29 @@ function selecTemplate(index)
     return BowTemplate[clamp(percent, 1,  #BowTemplate)]
 end
 
+function  moveDebugPieceToPos(arm, ix, scaleX, iz, scaleZ )
+    debugPiece= piece("debug"..arm.."_"..ix.."_"..iz)
+    Move(debugPiece, y_axis, ix*scaleX)
+    Move(debugPiece, z_axis, iz*scaleZ)
+    Show(debugPiece)
+end
+
+function modIndexFour(index)
+    if index < 5 then return index end
+
+    index = index -4 
+    return index
+end
+
 function GenerateContainerShipSlices(nr)
   params = {}
   local slices      = params.slices or nr
 
   local bridgeEnd   = params.bridgeSlices or 6
-  local scaleX      = params.scaleX or 10.0
-  local scaleZ      = params.scaleZ or 10.0
+  local scaleX      = params.scaleX or 4.0
+  local scaleZ      = params.scaleZ or 4.0
   local sliceStep   = params.sliceStep or 350.0
-
+    offsetScale = 15
   local Print = {}
 
   for s = 1, slices do
@@ -198,9 +221,10 @@ function GenerateContainerShipSlices(nr)
       for ix = 1, 8 do
         if template[iz][ix] == 1 then
           local arm = AssignArm(ix, iz)
-          ox, oz = GetArmOffset(arm)
-          local lineForth, lineBack = VoxelToLine(ix-ox, iz-oz, scaleX, scaleZ)
-          table.insert(Print[s][arm], {lineForth, lineBack})
+          --ox, oz = GetArmOffset(arm)
+          local lineForth = VoxelToLines(modIndexFour(ix), modIndexFour(iz), scaleX, scaleZ)
+          table.insert(Print[s][arm], lineForth)
+            moveDebugPieceToPos(arm, modIndexFour(ix), scaleX, modIndexFour(iz), scaleZ )
         end
       end
     end
@@ -209,16 +233,13 @@ function GenerateContainerShipSlices(nr)
 end
 
 function EmitSparks(armNr)
+  hideT(TablesOfPiecesGroups["Arm"..armNr.."Drop"])
   spark = TablesOfPiecesGroups["Arm"..armNr.."Drop"][math.random(1,4)]
   reset(spark,0)  
-  spinRand(spark, -42, 42)
-  Move(spark, x_axis, math.random(-120,120),60)
-  Move(spark, y_axis, math.random(-120,120),60)
-  Move(spark, z_axis, math.random(-120,120),60)
+  Move(spark, y_axis, math.random(250,1200),750)  
   Show(spark)
   WaitForMoves(spark)
   Hide(spark)
-  stopSpins(spark)
   reset(spark,0)
 end
 
@@ -227,22 +248,22 @@ function AnimateRobotsPrintingSlice(sliceNr, sliceDataSlice, timeMs)
   local timePerArm = timeMs / 2
 
   for arm = 1, armCount do
-    index = math.ceil(arm/2)
-    beam = TablesOfPiecesGroups["WeldCraneBeam"][index]
+    beam = getArmBeam(arm)
     StartThread(AnimateArmLines, arm, beam, sliceDataSlice[arm], timePerArm)
   end
 end
 
 function weldLights(signal, weld)
     Signal(signal)
-    randSpin(weld, -10, 10)
+    spinRand(weld, -10, 10, 10)
     SetSignalMask(signal)
     Show(weld)
-    Sleep(100)
+    Sleep(250)
     Hide(weld)
 end
+
 beamaxis = y_axis
-armaxis = x_axis
+armaxis = z_axis
 
 function randomFoldArm(ArmUp, ArmLow, speed)
     val= math.random(-60,60)
@@ -250,9 +271,11 @@ function randomFoldArm(ArmUp, ArmLow, speed)
     Turn(ArmLow,armaxis, math.rad(-val), speed)
     WaitForTurns(ArmLow, ArmUp)
 end
+
+
 function AnimateArmLines(armNr, beam, lines, timeMs)
   local n = #lines
-  if n == 0 then return end
+  if n == 0 then echo("Arm nr:"..armNr.. " has no lines"); return end
 
   local segTime = timeMs / n
   local weld = TablesOfPiecesGroups["WeldSpot"][armNr]
@@ -261,27 +284,26 @@ function AnimateArmLines(armNr, beam, lines, timeMs)
   Extruder = TablesOfPiecesGroups["Extruder"][armNr]
   signal= 2^armNr
 
-  for _, lineBackForthL in ipairs(lines) do
-    for _,L in pairs(lineBackForthL) do
+  for _, L in ipairs(lines) do
       StartThread(weldLights, signal, weld)
       StartThread(EmitSparks, armNr)
-      StartThread(randomFoldArm, ArmUp, ArmLow, 25)
+      StartThread(randomFoldArm, ArmUp, ArmLow, 5)
       local x1,z1,x2,z2 = L[1],L[2],L[3],L[4]
+
 
       -- linear draw
       Move(Extruder, z_axis, x1, segTime*0.5)
-      Move(beam, beamaxis, z1, segTime*0.5)
-      
+      Move(beam, beamaxis, z1, segTime*0.5)      
       WaitForMoves(Extruder, beam)
+
       StartThread(weldLights, signal, weld)
       StartThread(EmitSparks, armNr)
-      StartThread(randomFoldArm, ArmUp, ArmLow, 25)
+      StartThread(randomFoldArm, ArmUp, ArmLow, 5)
       
       Move(Extruder, z_axis, x2, segTime)
       Move(beam, beamaxis, z2, segTime)
       waitForMovesForTime(segTime, Extruder, beam)
       Sleep(100)
-    end
   end
   reset(beam, 2)
   Turn(ArmLow,armaxis, math.rad(90),2)
@@ -307,7 +329,7 @@ end
 curtain = piece("Curtain")
 
 function turnSolarTowardsSun()
-  turnTowardsSun(unitID, TableOfPiecesGroups["SolarPanel"])
+  turnTowardsSun(unitID, TablesOfPiecesGroups["SolarPanel"])
 end
 
 Bow = piece("Bow")
@@ -316,12 +338,12 @@ function InstallerAnimation(step)
   halfStep = math.ceil(step/2)
   --Move bow towards installercrane
   Move(Bow, x_axis, halfStep * -travellDistancePrinter)
-  upIndexBlendOut = mapIndexToIndex(halfStep, math.low(totalNrOfSlices/2), #TablesOfPiecesGroups["Up"])
+  upIndexBlendOut = mapIndexToIndex(halfStep, math.min(totalNrOfSlices/2), #TablesOfPiecesGroups["Up"])
   hideT(TablesOfPiecesGroups["Up"])
   showT(TablesOfPiecesGroups["Up"], 1, #TablesOfPiecesGroups["Up"] - upIndexBlendOut)
 
   hideT(TablesOfPiecesGroups["Down"])
-  downIndexBlendIn = mapIndexToIndex(halfStep, math.low(totalNrOfSlices/2), #TablesOfPiecesGroups["Down"])
+  downIndexBlendIn = mapIndexToIndex(halfStep, math.min(totalNrOfSlices/2), #TablesOfPiecesGroups["Down"])
   showT(TablesOfPiecesGroups["Down"], 1, downIndexBlendIn)
   animateInstallerRobotsForTime(InstallerAnimationMs)
 end
@@ -329,69 +351,72 @@ end
 BaseDepth = {}
 BeamTravellSpeed = 15
 function moveVerticalInstallerRobot( robotNr)
-    local Base = TableOfPiecesGroups["HorizontalBeam"][robotNr]
-    local InstallBase = TableOfPiecesGroups["InstallBase"][robotNr] 
-    local InstallLow = TableOfPiecesGroups["InstallLow"][robotNr] 
-    local InstallUp = TableOfPiecesGroups["InstallUp"][robotNr]  
+    local Base = TablesOfPiecesGroups["HorizontalBeam"][robotNr]
+    local InstallBase = TablesOfPiecesGroups["InstallBase"][robotNr] 
+    local InstallLow = TablesOfPiecesGroups["InstallLow"][robotNr] 
+    local InstallUp = TablesOfPiecesGroups["InstallUp"][robotNr]  
 
     armGoal = math.random( InstallerBeamDepth, InstallerBeamRange)
     BaseDepth[robotNr] = armGoal
-    WMove(Base, y_axis, armGoal, BeamTravellSpeed)
+    WMove(Base, y_axis, -armGoal, BeamTravellSpeed)
     rotVal = math.random( -90, 90)
     Turn(InstallBase, z_axis, math.rad(rotVal), 0.5)
     adaptVal = math.random(-45,45)
-    Turn(InstallLow, x_axis, math.rad(adaptVal), 0.5)
-    Turn(InstallUp, x_axis, math.rad(-adaptVal), 0.5)
+    Turn(InstallLow, z_axis, math.rad(adaptVal), 0.5)
+    Turn(InstallUp, z_axis, math.rad(-adaptVal), 0.5)
     WaitForTurns(InstallBase, InstallLow, InstallUp)
     Sleep(1500)
-        Turn(InstallLow, x_axis, math.rad(0), 0.5)
-        Turn(InstallUp, x_axis, math.rad(0), 0.5)
+        Turn(InstallLow, z_axis, math.rad(0), 0.5)
+        Turn(InstallUp, z_axis, math.rad(0), 0.5)
     Sleep(3000)
         adaptVal = math.random(60,70)*randSign()
-    Turn(InstallLow, x_axis, math.rad(adaptVal), 0.5)
-    Turn(InstallUp, x_axis, math.rad(-2*adaptVal), 0.5)
+    Turn(InstallLow, z_axis, math.rad(adaptVal), 0.5)
+    Turn(InstallUp, z_axis, math.rad(-2*adaptVal), 0.5)
     WaitForTurns(InstallBase, InstallLow, InstallUp)
 end
 
 function moveHorizontalInstallerRobot( robotNr)
-    local InstallBase = TableOfPiecesGroups["InstallBase"][robotNr] 
-    local InstallLow = TableOfPiecesGroups["InstallLow"][robotNr] 
-    local InstallUp = TableOfPiecesGroups["InstallUp"][robotNr]  
+    local InstallBase = TablesOfPiecesGroups["InstallBase"][robotNr] 
+    local InstallLow = TablesOfPiecesGroups["InstallLow"][robotNr] 
+    local InstallUp = TablesOfPiecesGroups["InstallUp"][robotNr]  
 
-    rotVal = math.random( -90, 90)
-    Turn(InstallBase, z_axis, math.rad(rotVal), 0.5)
+    goal = math.random(0, 10) * randSign()
+    Move(InstallBase, z_axis, goal, 5 )
     adaptVal = math.random(-45,45)
     Turn(InstallLow, x_axis, math.rad(adaptVal), 0.5)
     Turn(InstallUp, x_axis, math.rad(-adaptVal), 0.5)
+    Move(InstallBase, z_axis, goal, 5 )
     WaitForTurns(InstallBase, InstallLow, InstallUp)
+
     Sleep(1500)
-        Turn(InstallLow, x_axis, math.rad(0), 0.5)
-        Turn(InstallUp, x_axis, math.rad(0), 0.5)
+    Turn(InstallLow, x_axis, math.rad(0), 0.5)
+    Turn(InstallUp, x_axis, math.rad(0), 0.5)
+    
     Sleep(3000)
-        adaptVal = math.random(60,70)*randSign()
+    adaptVal = math.random(60,70)*randSign()
     Turn(InstallLow, x_axis, math.rad(adaptVal), 0.5)
     Turn(InstallUp, x_axis, math.rad(-2*adaptVal), 0.5)
     WaitForTurns(InstallBase, InstallLow, InstallUp)
 end
 
 InstallerBeamDepth = 0
-InstallerBeamRange = 250
+InstallerBeamRange = 150
 InstallBeam = piece("InstallBeam1")
 function animateInstallerRobotsForTime(timeInMs)
-
     while timeInMs > 0 do 
         StartThread(moveVerticalInstallerRobot, 1)
         StartThread(moveVerticalInstallerRobot, 2)
         robotMinDepth = getInTable(BaseDepth, math.min)
         beamDepth = math.random(0, robotMinDepth )
-        Move(InstallBeam, y_axis, beamDepth, BeamTravellSpeed)
+        Move(InstallBeam, y_axis, -beamDepth, BeamTravellSpeed)
         StartThread(moveHorizontalInstallerRobot,3)
         StartThread(moveHorizontalInstallerRobot,4)
-        WMove(InstallBeam, y_axis, beamDepth, BeamTravellSpeed)
+        WMove(InstallBeam, y_axis, -beamDepth, BeamTravellSpeed)
         timeInMs = timeInMs - 3000
         Sleep(3000)
     end
 end
+
 function updateInstallerCrane(step)
     position = piecePercent(step) * -travellDistancePrinter
     Turn(curtain, x_axis, math.rad(-2), 0.1)
@@ -407,7 +432,7 @@ function updatePrinterCrane(step, slice, index)
     position = piecePercent(step) * -travellDistancePrinter
     showT(TablesOfPiecesGroups["PowderLine"])
     powderLineIndex = mapIndexToIndex(step, totalNrOfSlices, #TablesOfPiecesGroups["PowderLine"])
-    hideT(TablesOfPiecesGroups["PowderLine"], powderLineIndex, powderLineIndex +1)
+    hideT(TablesOfPiecesGroups["PowderLine"], powderLineIndex, math.min(powderLineIndex + 2, #TablesOfPiecesGroups["PowderLine"]))
     WMove(Printer, x_axis, position, 0.5)
     if slice then
         Hide(sice)
@@ -432,10 +457,10 @@ function printABoat()
     -- initial state
     hideConstruction()
     updateInstallerCrane(0)
-    updatePrinterCrane(1)
+    updatePrinterCrane(0)
     
     while step <= nrOfSlices do
-        updatePrinterCrane(step + 2, slice[step], step)
+        updatePrinterCrane(step + 1, slice[step], step)
         -- 1. HOT slice (current print head position)
         if slice[step] then
             Show(slice[step])
@@ -503,7 +528,7 @@ end
 
 function openWatersAtNextRotation()
     boolAllBelowWaters = true
-    foreach(TableOfPiecesGroups["Sensors"],
+    foreach(TablesOfPiecesGroups["Sensors"],
         function(id)
           _,_,_,gh = isPieceAboveGround(id)
           if gh > 0 then boolAllBelowWaters= false end
@@ -520,14 +545,14 @@ reset(sensorRotator)
 
 end
 function turnToSeaAndFade(degree)
-Turn(Boat, y_axis, math.rad(90), 2)
-WTurn(shipRotator, y_axis, math.rad(math.max(0, degree-15)), 1)
-Turn(Boat, y_axis, math.rad(0), 3)
-WTurn(shipRotator, y_axis, math.rad(degree), 1)
-WMove(Boat, x_axis, 1000, 30)
-WMove(Boat, x_axis, 2000, 60)
-WMove(Boat, x_axis, 3000, 120)
-resetBoat()
+    Turn(Boat, y_axis, math.rad(90), 2)
+    WTurn(shipRotator, y_axis, math.rad(math.max(0, degree-15)), 1)
+    Turn(Boat, y_axis, math.rad(0), 3)
+    WTurn(shipRotator, y_axis, math.rad(degree), 1)
+    WMove(Boat, x_axis, 1000, 30)
+    WMove(Boat, x_axis, 2000, 60)
+    WMove(Boat, x_axis, 3000, 120)
+    resetBoat()
 end
 
 function boatTakingToSea()

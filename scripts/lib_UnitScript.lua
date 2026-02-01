@@ -3156,7 +3156,7 @@ end
 -- Section: Geometry/Math functions
 -- ======================================================================================
 function mapIndexToIndex(indexOrg, OrgMax, TargetMax)
-    local percent = indexOrg/Orgmax
+    local percent = indexOrg/OrgMax
     scaledIndex = percent * TargetMax
 
     return clamp(scaledIndex, 1, TargetMax)
@@ -4362,8 +4362,8 @@ end
 -- ======================================================================================
 -- Section: Tableoperators 
 -- ======================================================================================
-
 function isInTable(T, val)
+    assert(type(T)=="table")
     for i=1, #T do
         if T[i] == val then return true end
     end
@@ -4863,6 +4863,9 @@ end
 
 function getInTable(T, fun)
     value = -math.huge
+    if fun == math.min then 
+        value = math.huge
+    end
     for k,v in pairs(T) do
         if v == fun(v, value) then
             value = v 
