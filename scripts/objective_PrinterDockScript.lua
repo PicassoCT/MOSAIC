@@ -33,6 +33,9 @@ function setup()
     hideT(TablesOfPiecesGroups["WeldSpot"])
     hideT(TablesOfPiecesGroups["DeptSensor"])
     hideT(TablesOfPiecesGroups["Arm1Drop"])
+    hideT(TablesOfPiecesGroups["Arm2Drop"])
+    hideT(TablesOfPiecesGroups["Arm3Drop"])
+    hideT(TablesOfPiecesGroups["Arm4Drop"])
     Hide(center)
     Hide(Boat)
     Hide( SensorRotator)
@@ -41,9 +44,9 @@ function setup()
 end
 
 BridgeTemplate = {
-{0,0,0,1,1,0,0,0},
+{0,0,0,0,0,0,0,0},
 {0,0,1,1,1,1,0,0},
-{1,1,1,1,1,1,1,1},
+{0,1,1,1,1,1,1,0},
 {1,1,1,1,1,1,1,1},
 {1,0,0,1,1,0,0,1},
 {1,1,0,1,1,0,1,1},
@@ -152,25 +155,14 @@ BeamArmTable = {
 
 function getArmBeam(arm)
     for beamNr, armT in pairs(BeamArmTable) do
-        if isInTable(armT, arm) then return beamNr end
+        if isInTable(armT, arm) then return piece("HorizontalBeam"..beamNr) end
     end
 end
 
 function AssignArm(ix, iz)
-  for z=1,8 do
-    for x=1,8 do
-      return RobotStartPositions[x][z]
-    end
-  end
-  assert(false)
+    return RobotStartPositions[ix][iz]
 end
 
-function GetArmOffset(arm)
-  if arm == 2 then return 0, 0 end
-  if arm == 1 then return 1, 0 end
-  if arm == 3 then return 0, 1 end
-  if arm == 4 then return 1, 1 end
-end
 
 bridgeEnd = 6
 bowStart  = 31
@@ -188,9 +180,9 @@ function selecTemplate(index)
 end
 
 function  moveDebugPieceToPos(arm, ix, scaleX, iz, scaleZ )
-    debugPiece= piece("debug"..arm.."_"..ix.."_"..iz)
-    Move(debugPiece, y_axis, ix*scaleX)
-    Move(debugPiece, z_axis, iz*scaleZ)
+    debugPiece= piece("debug"..arm.."_"..iz.."_"..ix)
+    Move(debugPiece, armaxis, -ix * scaleX)
+    Move(debugPiece, beamaxis, -iz * scaleZ)
     Show(debugPiece)
 end
 
@@ -204,13 +196,12 @@ end
 function GenerateContainerShipSlices(nr)
   params = {}
   local slices      = params.slices or nr
-
   local bridgeEnd   = params.bridgeSlices or 6
-  local scaleX      = params.scaleX or 4.0
-  local scaleZ      = params.scaleZ or 4.0
+  local scaleX      = params.scaleX or 5.0
+  local scaleZ      = params.scaleZ or 5.0
   local sliceStep   = params.sliceStep or 350.0
-    offsetScale = 15
-  local Print = {}
+  local offsetScale = 15
+  local Print       = {}
 
   for s = 1, slices do
     Print[s] = { {}, {}, {}, {} }
@@ -219,12 +210,11 @@ function GenerateContainerShipSlices(nr)
 
     for iz = 1, 8 do
       for ix = 1, 8 do
-        if template[iz][ix] == 1 then
-          local arm = AssignArm(ix, iz)
-          --ox, oz = GetArmOffset(arm)
-          local lineForth = VoxelToLines(modIndexFour(ix), modIndexFour(iz), scaleX, scaleZ)
-          table.insert(Print[s][arm], lineForth)
-            moveDebugPieceToPos(arm, modIndexFour(ix), scaleX, modIndexFour(iz), scaleZ )
+        local arm = AssignArm(ix, iz)
+        moveDebugPieceToPos(arm, modIndexFour(ix), scaleX, modIndexFour(iz), scaleZ )
+        if template[ix][iz] == 1 then
+          local lineForth = VoxelToLines(-modIndexFour(ix), -modIndexFour(iz), scaleX*30, scaleZ*30)
+          table.insert(Print[s][arm], lineForth)        
         end
       end
     end
@@ -234,83 +224,101 @@ end
 
 function EmitSparks(armNr)
   hideT(TablesOfPiecesGroups["Arm"..armNr.."Drop"])
-  spark = TablesOfPiecesGroups["Arm"..armNr.."Drop"][math.random(1,4)]
-  reset(spark,0)  
-  Move(spark, y_axis, math.random(250,1200),750)  
-  Show(spark)
-  WaitForMoves(spark)
-  Hide(spark)
-  reset(spark,0)
+  for i=1,4 do
+      spark = TablesOfPiecesGroups["Arm"..armNr.."Drop"][i]
+      reset(spark,0)  
+      rval = math.random(-10, 10)
+      Turn(spark, x_axis, math.rad(rval),0)
+      Move(spark, y_axis, math.random(250,1200),750)  
+      Show(spark)
+      Hide(spark)
+      reset(spark,0)
+  end
+  WaitForMoves(TablesOfPiecesGroups["Arm"..armNr.."Drop"])
+  hideT(TablesOfPiecesGroups["Arm"..armNr.."Drop"])
+  resetT(TablesOfPiecesGroups["Arm"..armNr.."Drop"])
 end
 
-function AnimateRobotsPrintingSlice(sliceNr, sliceDataSlice, timeMs)
+function AnimateRobotsPrintingSlice(sliceNr, sliceDataSlice,  slice)
   local armCount = 4
-  local timePerArm = timeMs / 2
-
   for arm = 1, armCount do
     beam = getArmBeam(arm)
-    StartThread(AnimateArmLines, arm, beam, sliceDataSlice[arm], timePerArm)
+    StartThread(AnimateArmLines, arm, beam, sliceDataSlice[arm],  slice)
   end
 end
 
-function weldLights(signal, weld)
+function weldLights(signal, weld, weldAlt)
     Signal(signal)
-    spinRand(weld, -10, 10, 10)
     SetSignalMask(signal)
-    Show(weld)
-    Sleep(250)
     Hide(weld)
+    Hide(weldAlt)
+    spot = weld
+    for a=1, 6 do
+        if maRa() then
+            spot = weld
+        else
+            spot = weldAlt
+        end
+        Show(spot)
+        Sleep(250)
+        Hide(spot)
+    end
 end
 
 beamaxis = y_axis
 armaxis = z_axis
 
 function randomFoldArm(ArmUp, ArmLow, speed)
-    val= math.random(-60,60)
+    val= math.random(-60, 60)
     Turn(ArmUp,armaxis, math.rad(val), speed)
     Turn(ArmLow,armaxis, math.rad(-val), speed)
     WaitForTurns(ArmLow, ArmUp)
 end
 
-
-function AnimateArmLines(armNr, beam, lines, timeMs)
+function AnimateArmLines(armNr, beam, lines, slice)
   local n = #lines
   if n == 0 then echo("Arm nr:"..armNr.. " has no lines"); return end
 
-  local segTime = timeMs / n
+  
   local weld = TablesOfPiecesGroups["WeldSpot"][armNr]
+  local weldAlt = TablesOfPiecesGroups["WeldSpot"][armNr+4]
   ArmLow = TablesOfPiecesGroups["Arm"][armNr]
   ArmUp = TablesOfPiecesGroups["UpArm"][armNr]
   Extruder = TablesOfPiecesGroups["Extruder"][armNr]
   signal= 2^armNr
+  while Spring.UnitScript.IsInMove(slice, x_axis)  do
+      for _, L in ipairs(lines) do
+          StartThread(weldLights, signal, weld, weldAlt)
+          StartThread(EmitSparks, armNr)
+          StartThread(randomFoldArm, ArmUp, ArmLow, 5)
+          local x1,z1,x2,z2 = L[1],L[2],L[3],L[4]
 
-  for _, L in ipairs(lines) do
-      StartThread(weldLights, signal, weld)
-      StartThread(EmitSparks, armNr)
-      StartThread(randomFoldArm, ArmUp, ArmLow, 5)
-      local x1,z1,x2,z2 = L[1],L[2],L[3],L[4]
+          for i=1, 2 do
 
+          -- linear draw
+          Move(Extruder, z_axis, x1, math.abs(x1))
+          Move(beam, beamaxis, z1, math.abs(z1))      
+          WaitForMoves(Extruder, beam)
 
-      -- linear draw
-      Move(Extruder, z_axis, x1, segTime*0.5)
-      Move(beam, beamaxis, z1, segTime*0.5)      
-      WaitForMoves(Extruder, beam)
-
-      StartThread(weldLights, signal, weld)
-      StartThread(EmitSparks, armNr)
-      StartThread(randomFoldArm, ArmUp, ArmLow, 5)
-      
-      Move(Extruder, z_axis, x2, segTime)
-      Move(beam, beamaxis, z2, segTime)
-      waitForMovesForTime(segTime, Extruder, beam)
-      Sleep(100)
+          StartThread(weldLights, signal, weld, weldAlt)
+          StartThread(EmitSparks, armNr)
+          StartThread(randomFoldArm, ArmUp, ArmLow, 5)
+          
+          Move(Extruder, z_axis, x2, math.abs(x2))
+          Move(beam, beamaxis, z2, math.abs(z2))
+          WaitForMoves(Extruder, beam)
+          Sleep(100)
+          end
+      end
   end
   reset(beam, 2)
+  Signal(signal)
   Turn(ArmLow,armaxis, math.rad(90),2)
-  Turn(ArmUp,armaxis, math.rad(80),2)
+  Turn(ArmUp,armaxis, math.rad(-80),2)
 
   Signal(signal)
   Hide(weld)
+  Hide(weldAlt)
 end
 
 
@@ -429,6 +437,7 @@ function updateInstallerCrane(step)
 end
 
 function updatePrinterCrane(step, slice, index)
+
     position = piecePercent(step) * -travellDistancePrinter
     showT(TablesOfPiecesGroups["PowderLine"])
     powderLineIndex = mapIndexToIndex(step, totalNrOfSlices, #TablesOfPiecesGroups["PowderLine"])
@@ -441,10 +450,16 @@ function updatePrinterCrane(step, slice, index)
         Move(slice, x_axis, 0, 0.125)
     end
     if index and sliceData[index] then
-        AnimateRobotsPrintingSlice(step, sliceData[index], travellDistancePrinter/0.125)
+        AnimateRobotsPrintingSlice(step, sliceData[index], slice)
     end
     if slice then
         WMove(slice, x_axis, 0, 0.125)
+        hideT(TablesOfPiecesGroups["Arm1Drop"])
+        hideT(TablesOfPiecesGroups["Arm2Drop"])
+        hideT(TablesOfPiecesGroups["Arm3Drop"])
+        hideT(TablesOfPiecesGroups["Arm4Drop"])
+        hideT(TablesOfPiecesGroups["WeldSpot"])
+
     end
 end
 
