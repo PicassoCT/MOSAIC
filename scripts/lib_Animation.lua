@@ -89,6 +89,38 @@ function whileInMove(pname, axis, functionToPerform, ...)
     end
 end
 
+function pickAndPlace(Crane, ContainerPick, Container, ContainerMover, 
+                      ContainerPlace, pickRot, pickHeight, 
+                      placeRot, placeHeight, speed, boolReverse)
+    transportHeight = math.max( pickHeight, placeHeight) +1
+    if boolReverse then
+        Hide(Container)
+        Show(ContainerPick)
+        WTurn(Crane, y_axis, math.rad(pickRot), speed)
+        Show(Container)
+        Hide(ContainerPick)
+        Move(ContainerMover, y_axis, pickHeight, 0)
+        WMove(ContainerMover, y_axis, transportHeight, speed)
+        WTurn(Crane, y_axis, math.rad(placeRot), speed)
+        WMove(ContainerMover, y_axis, placeHeight, speed )
+        Hide(Container)
+        reset(Container)
+        Show(ContainerPlace)
+    else
+        Show(ContainerPlace)
+        reset(Container)
+        Hide(Container)
+        Move(ContainerMover, y_axis, placeHeight, 0 )
+        WMove(ContainerMover, y_axis, transportHeight, speed )
+        WTurn(Crane, y_axis, math.rad(placeRot), speed)
+        WMove(ContainerMover, y_axis, pickHeight, speed)
+        Hide(ContainerPick)
+        Show(Container)
+        WTurn(Crane, y_axis, math.rad(pickRot), speed)
+        Show(ContainerPick)
+        Hide(Container)
+    end
+end
 -- >CombinedWaitTurn
 function WTurn(lib_piece, lib_axis, lib_distance, lib_speed)
     assert(lib_piece)
