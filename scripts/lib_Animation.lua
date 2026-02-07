@@ -149,6 +149,19 @@ function WaitForAll(unitID)
     end
 end
 
+function waitMoveHide(piece)
+    WaitForMoves(piece)
+    Hide(piece)
+end
+
+function WaitMoveHidesT(T)
+ for k, v in pairs(T) do
+    StartThread(waitMoveHide, v)
+ end
+ WaitForMoves(T)
+end
+
+
 -- >Waits for anyTurnToComplete
 function WaitForMoves(...)
     local arg = arg
