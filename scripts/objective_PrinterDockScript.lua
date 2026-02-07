@@ -30,6 +30,8 @@ function script.Create()
 end
 
 function setup()
+    hideT(TablesOfPiecesGroups["Down"])
+    hideT(TablesOfPiecesGroups["Slice1Sub"])
     hideT(TablesOfPiecesGroups["WeldSpot"])
     hideT(TablesOfPiecesGroups["DeptSensor"])
     hideT(TablesOfPiecesGroups["Arm1Drop"])
@@ -171,7 +173,7 @@ end
 
 bridgeEnd = 6
 bowStart  = 31
-function selecTemplate(index)
+function selectTemplate(index)
     --bridge
     if index < bridgeEnd then return BridgeTemplate end
     -- shipHull
@@ -196,17 +198,25 @@ function hideDebugPieces()
     end
 end
 
-function  moveDebugPieceToPos(arm, ix, scaleX, iz, scaleZ )
+function  moveDebugPieceToPos(arm, ix, scaleX, iz, scaleZ, zOffset )
     debugPiece= piece("debug"..arm.."_"..math.abs(iz).."_"..math.abs(ix))
     Show(debugPiece)
-    Move(debugPiece, armaxis, ix * scaleX)
-    Move(debugPiece, beamaxis, -iz * scaleZ)
+    Move(debugPiece, z_axis, ix * scaleX)
+    Move(debugPiece, beamaxis,zOffset + iz * scaleZ)
+end
+
+
+function modIndexFourLimited(index)
+    if index < 5 then return math.abs(index) end
+
+    index = math.abs(4 - index)
+    return index
 end
 
 function modIndexFour(index)
-    if index < 5 then return index end
+    if index < 5 then return math.abs(5 -index) end
 
-    index = index -4 
+    index = math.abs(9 - index)
     return index
 end
 
@@ -222,7 +232,7 @@ function GenerateContainerShipSlices(nr)
   for s = 1, slices do
     Print[s] = { {}, {}, {}, {} }
 
-    local template = selecTemplate(s)
+    local template = selectTemplate(s)
 
     for iz = 1, 8 do
       for ix = 1, 8 do
@@ -230,7 +240,7 @@ function GenerateContainerShipSlices(nr)
         --moveDebugPieceToPos(arm, modIndexFour(ix), scaleX, modIndexFour(iz), scaleZ )
         if template[ix][iz] == 1 then
           local lineForth = VoxelToLines(
-                                        -modIndexFour(ix), 
+                                        -modIndexFourLimited(ix), 
                                         modIndexFour(iz), 
                                         scaleX , 
                                         scaleZ )
@@ -286,6 +296,11 @@ end
 
 beamaxis = y_axis
 armaxis = z_axis
+firstSliceCounter = 1
+function buildUpFirstSlice()
+    showT(TablesOfPiecesGroups["Slice1Sub"],1, math.min(firstSliceCounter,#TablesOfPiecesGroups["Slice1Sub"]))
+    firstSliceCounter = firstSliceCounter + 1
+end
 
 function randomFoldArm(ArmUp, ArmLow, speed)
     val= math.random(-60, 60)
@@ -294,7 +309,7 @@ function randomFoldArm(ArmUp, ArmLow, speed)
     WaitForTurns(ArmLow, ArmUp)
 end
 
-function AnimateArmLines(armNr, beam, lines, slice)
+function AnimateArmLines(armNr, beam, lines, slice, step)
   local n = #lines
   if n == 0 then echo("Arm nr:"..armNr.. " has no lines"); return end
   beamDownOffset= -10
@@ -304,14 +319,15 @@ function AnimateArmLines(armNr, beam, lines, slice)
   local ArmLow = TablesOfPiecesGroups["Arm"][armNr]
   local ArmUp = TablesOfPiecesGroups["UpArm"][armNr]
   local Extruder = TablesOfPiecesGroups["Extruder"][armNr]
-  signal= 2^armNr
+  local signal= 2^armNr
+
   while Spring.UnitScript.IsInMove(slice, x_axis)  do
       for _, L in ipairs(lines) do
           StartThread(weldLights, signal, weld, weldAlt)
           StartThread(EmitSparks, armNr)
           StartThread(randomFoldArm, ArmUp, ArmLow, 5)
           local x1,z1,x2,z2, ix, iz = L[1],L[2],L[3],L[4],L[5],L[6]
-          moveDebugPieceToPos(armNr, ix, 3.5, iz, 3.5)
+          moveDebugPieceToPos(armNr, ix, 3.5, iz, 3.5, beamDownOffset)
           for i=1, 2 do
               -- linear draw
               Move(Extruder, z_axis, x1, math.abs(x1))
@@ -329,13 +345,17 @@ function AnimateArmLines(armNr, beam, lines, slice)
                 Move(beam, beamaxis,  beamDownOffset + z2, math.abs(z2))
               end
               WaitForMoves(Extruder, beam)
+               if step == 1 then 
+                buildUpFirstSlice()
+               end
               Sleep(100)
           end
       end
+     
   end
   Signal(signal)
-  Turn(ArmLow,armaxis, math.rad(90),2)
-  Turn(ArmUp,armaxis, math.rad(-80),2)
+  Turn(ArmLow, armaxis, math.rad(90),2)
+  Turn(ArmUp, armaxis, math.rad(-80),2)
   Hide(weld)
   Hide(weldAlt)
 end
@@ -347,6 +367,7 @@ function hideConstruction()
     hideT(ship)
     hideT(cool)
     hideT(slice)
+    hideT(TablesOfPiecesGroups["Slice1Sub"])
 end
 
 travellDistancePrinter = 250 + (250*(1/37)) 
@@ -485,7 +506,7 @@ function updatePrinterCrane(step, speed, boolWait, slice, index)
          local armCount = 4
           for arm = 1, armCount do
             local beam = getArmBeam(arm)
-            StartThread(AnimateArmLines, arm, beam, sliceData[index][arm],  slice)
+            StartThread(AnimateArmLines, arm, beam, sliceData[index][arm],  slice, step)
           end
     end
     if slice then
