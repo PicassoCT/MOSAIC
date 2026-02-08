@@ -52,10 +52,24 @@ BridgeTemplate = {
 {0,0,1,1,1,1,0,0},
 {0,1,1,1,1,1,1,0},
 {1,1,1,1,1,1,1,1},
-{1,1,0,0,0,0,1,1},
-{1,1,0,0,0,0,1,1},
+{1,1,1,1,1,1,1,1},
+{1,1,1,1,1,1,1,1},
 {0,1,1,1,1,1,1,0},
-{0,0,1,1,1,0,0,0},
+{0,0,1,1,1,1,0,0},
+}
+
+BridgeTemplateDebug = {
+    -- Top row (Quadrant 2 | Quadrant 1)
+    {1,1,1,0,  0,1,0,0},
+    {0,0,1,0,  1,1,0,0},
+    {0,1,0,0,  0,1,0,0},
+    {1,1,1,0,  1,1,1,0},
+
+    -- Bottom row (Quadrant 4 | Quadrant 3)
+    {1,0,1,0,  1,1,1,0},
+    {1,0,1,0,  0,0,1,0},
+    {1,1,1,0,  0,1,1,0},
+    {0,0,1,0,  1,1,1,0},
 }
 
 HullTemplate = {
@@ -138,7 +152,7 @@ BowTemplate = {
 function VoxelToLines(ix, iz, scaleX, scaleZ)
   local x1 = (ix -1) * scaleX
   local x2 = x1 + scaleX
-  local z  = (iz -1) * scaleZ
+  local z  = ((4 - iz)) * scaleZ
   return { x1, z, x2, z, ix, iz },{  x2, z, x1, z, ix, iz}
 end
 
@@ -167,7 +181,7 @@ function getArmBeam(arm)
 end
 
 function AssignArm(ix, iz)
-    return RobotStartPositions[ix][iz]
+    return RobotStartPositions[iz][ix]
 end
 
 
@@ -201,16 +215,23 @@ end
 function  moveDebugPieceToPos(arm, ix, scaleX, iz, scaleZ )
     debugPiece= piece("debug"..arm.."_"..math.abs(iz).."_"..math.abs(ix))
     Show(debugPiece)
-    Move(debugPiece, z_axis, ix * scaleX)
-    Move(debugPiece, beamaxis,  iz * scaleZ)
+    Move(debugPiece, z_axis, ix * scaleX, 0)
+    Move(debugPiece, beamaxis,  iz * scaleZ,0)
+    Move(debugPiece, x_axis,  -25, 0)
+end
+
+function modIndexFourFlip(index)
+    reIndex = modIndexFour(index)
+    return 5 - reIndex
 end
 
 function modIndexFour(index)
     if index < 5 then return index end
 
-    return (index % 4)
+    return index - 4
 end
-sliceStepHeight= 3.5
+
+sliceStepHeight= 4.5
 function GenerateContainerShipSlices(nr)
   params = {}
   local slices      = params.slices or nr
@@ -225,14 +246,14 @@ function GenerateContainerShipSlices(nr)
 
     local template = selectTemplate(s)
 
-    for iz = 1, 8 do
-      for ix = 1, 8 do
+    for ix = 1, 8 do
+        for iz = 1, 8 do     
         --moveDebugPieceToPos(arm, modIndexFour(ix), scaleX, modIndexFour(iz), scaleZ )
-        if template[ix][iz] == 1 then
+        if template[iz][ix] == 1 then
             local arm = AssignArm(ix, iz)
-            local lineForth = VoxelToLines(
+            local lineForth = VoxelToLines(                                        
                                         modIndexFour(ix), 
-                                        modIndexFour(iz), 
+                                        modIndexFourFlip(iz), 
                                         scaleX , 
                                         scaleZ )
 
@@ -285,10 +306,14 @@ end
 
 beamaxis = y_axis
 armaxis = z_axis
-firstSliceCounter = 1
-function buildUpFirstSlice()
-    showT(TablesOfPiecesGroups["Slice1Sub"],1, math.min(firstSliceCounter,#TablesOfPiecesGroups["Slice1Sub"]))
-    firstSliceCounter = firstSliceCounter + 1
+
+function buildUpFirstSlice(Delay)
+    for i=1, #TablesOfPiecesGroups["Slice1Sub"] do
+        Sleep(Delay)
+        if TablesOfPiecesGroups["Slice1Sub"][i] then
+            Show(TablesOfPiecesGroups["Slice1Sub"][i])
+        end
+    end
 end
 
 function randomFoldArm(ArmUp, ArmLow, speed)
@@ -316,7 +341,7 @@ function AnimateArmLines(armNr, beam, lines, slice, step)
           StartThread(EmitSparks, armNr)
           StartThread(randomFoldArm, ArmUp, ArmLow, 5)
           local x1,z1,x2,z2, ix, iz = L[1],L[2],L[3],L[4],L[5],L[6]
-          moveDebugPieceToPos(armNr, ix, 3.5, iz, 3.5)
+          moveDebugPieceToPos(armNr, ix, sliceStepHeight, iz, sliceStepHeight)
           for i=1, 2 do
               -- linear draw
               Move(Extruder, z_axis, x1, math.abs(x1))
@@ -334,9 +359,7 @@ function AnimateArmLines(armNr, beam, lines, slice, step)
                 Move(beam, beamaxis,   z2, math.abs(z2))
               end
               WaitForMoves(Extruder, beam)
-               if step == 1 then 
-                buildUpFirstSlice()
-               end
+              
               Sleep(100)
           end
       end
@@ -370,22 +393,20 @@ function turnSolarTowardsSun()
 end
 
 function updateCableBowAnimation(step)
-      halfStep = math.floor(step/2)
-      Move(Bow, x_axis, halfStep * -travellDistancePrinter)
-      upIndexBlendOut = mapIndexToIndex(halfStep, math.min(totalNrOfSlices/2), #TablesOfPiecesGroups["Up"])
-      hideT(TablesOfPiecesGroups["Up"])
-      showT(TablesOfPiecesGroups["Up"], upIndexBlendOut, #TablesOfPiecesGroups["Up"] )
+    halfStep = math.floor(step/2)
+    Move(Bow, x_axis, halfStep * -travellDistancePrinter)
+    upIndexBlendOut = mapIndexToIndex(halfStep, math.min(totalNrOfSlices/2), #TablesOfPiecesGroups["Up"])
+    hideT(TablesOfPiecesGroups["Up"])
+    showT(TablesOfPiecesGroups["Up"], upIndexBlendOut, #TablesOfPiecesGroups["Up"] )
 
-      hideT(TablesOfPiecesGroups["Down"])
-      downIndexBlendIn = mapIndexToIndex(halfStep, math.min(totalNrOfSlices/2), #TablesOfPiecesGroups["Down"])
-      showT(TablesOfPiecesGroups["Down"], 1, downIndexBlendIn)
+    hideT(TablesOfPiecesGroups["Down"])
+    downIndexBlendIn = mapIndexToIndex(halfStep, math.min(totalNrOfSlices/2), #TablesOfPiecesGroups["Down"])
+    showT(TablesOfPiecesGroups["Down"], 1, downIndexBlendIn)
 end
 
 Bow = piece("Bow")
 
 function InstallerAnimation(step)
-
-  --Move bow towards installercrane
   updateCableBowAnimation(step)
   animateInstallerRobotsForTime(step)
 end
@@ -411,7 +432,7 @@ function moveVerticalInstallerRobot( robotNr)
         Turn(InstallLow, z_axis, math.rad(0), 0.5)
         Turn(InstallUp, z_axis, math.rad(0), 0.5)
     Sleep(3000)
-        adaptVal = math.random(60,70)*randSign()
+    adaptVal = math.random(60,70)*randSign()
     Turn(InstallLow, z_axis, math.rad(adaptVal), 0.5)
     Turn(InstallUp, z_axis, math.rad(-2*adaptVal), 0.5)
     WaitForTurns(InstallBase, InstallLow, InstallUp)
@@ -464,14 +485,12 @@ function animateInstallerRobotsForTime(step)
         Move(InstallBeam, y_axis, beamDepth, BeamTravellSpeed)
         StartThread(moveHorizontalInstallerRobot,3, beamDepth)
         StartThread(moveHorizontalInstallerRobot,4 , beamDepth)
-
-        
         Sleep(5000)
     end
 end
 
 function updateInstallerCrane(step)
-    globalStep= step
+    globalStep = step
     if step > 0 then
     position = piecePercent(step) * -travellDistancePrinter
     Turn(curtain, z_axis, math.rad(-2), 0.1)
@@ -491,6 +510,11 @@ function updatePrinterCrane(step, speed, boolWait, slice, index)
     powderLineIndex = mapIndexToIndex(step, totalNrOfSlices, #TablesOfPiecesGroups["PowderLine"])
     showT(TablesOfPiecesGroups["PowderLine"], 1,  powderLineIndex)
     Move(Printer, x_axis, position, speed)
+
+      if step == 1 then 
+        StartThread(buildUpFirstSlice, 7000)
+      end
+
     if boolWait then
         WMove(Printer, x_axis, position, speed)
     end 
@@ -595,7 +619,6 @@ function LeaveAnimation()
   CloseDoors()
   WTurn(Boat, 2, math.rad(90), 1)
   --detectorLoop
-  
 end
 
 function openWatersAtNextRotation()
@@ -610,12 +633,12 @@ function openWatersAtNextRotation()
 end
 
 function resetBoat()
-Hide(Boat)
-reset(Boat)
-reset(shipRotator)
-reset(sensorRotator)
-
+    Hide(Boat)
+    reset(Boat)
+    reset(shipRotator)
+    reset(sensorRotator)
 end
+
 function turnToSeaAndFade(degree)
     Turn(Boat, y_axis, math.rad(90), 2)
     WTurn(shipRotator, y_axis, math.rad(math.max(0, degree-15)), 1)
@@ -656,8 +679,6 @@ function script.Killed(recentDamage, _)
     return 1
 end
 
-
-
 function script.StartMoving() end
 
 function script.StopMoving() end
@@ -670,13 +691,14 @@ boolPrinting = true
 CraneAnimationsRunning = {}
 function crane1Animation()
     CraneAnimationsRunning[1]= true
-    Crane1 = piece("Crane1")
-    StackAPick = piece("StackAPick")
-    Container = TablesOfPiecesGroups["StackA"]
-    elevator =piece("ElevatorA")
+    Crane1      = piece("Crane1")
+    StackAPick  = piece("StackAPick")
+    Container   = TablesOfPiecesGroups["StackA"]
+    elevator    = piece("ElevatorA")
+    DustHeap    = piece("DustHeap")
+    Hide(DustHeap)
     Hide(StackAPick)
     while true do
-
         hideT(Container)
         WMove(elevator, y_axis, -10, 0.5)
         Sleep(5000)
@@ -688,15 +710,19 @@ function crane1Animation()
         crane1Counter = 5
         while boolPrinting and crane1Counter > 0 do
             reset(StackAPick,0)
-            WTurn(Crane1, y_axis, math.rad(0), 2)
+            WTurn(Crane1, y_axis, math.rad(0), 1)
             Show(StackAPick)
             Hide(Container[crane1Counter])
-            WMove(StackAPick, y_axis, 10, 10)
-            WTurn(Crane1, y_axis, math.rad(175), 2)
-            WMove(StackAPick, y_axis, -35, 10)
+            WMove(StackAPick, y_axis, 5, 1)
+            WTurn(Crane1, y_axis, math.rad(175), 1)
+            Move(DustHeap, y_axis, -3, 0)
+            WMove(StackAPick, y_axis, -3, 2)
+            Move(DustHeap, y_axis, 0, 0.5)
+            Show(DustHeap)
             Sleep(7000)
-            WMove(StackAPick, y_axis, 0, 30)
-            WTurn(Crane1, y_axis, math.rad(90), 5)
+            Move(DustHeap, y_axis -3, 0.05)
+            WMove(StackAPick, y_axis, 5, 30)
+            WTurn(Crane1, y_axis, math.rad(90), 1)
 
             Sleep(100)
             crane1Counter= crane1Counter - 1
@@ -735,7 +761,7 @@ function crane2Animation()
             boolCombContainer = maRa()
             if boolCombContainer then
                 StackPick = TablesOfPiecesGroups["StackB"][craneCounter]
-                StackPlace = TablesOfPiecesGroups["RailContainerPlace"][1])
+                StackPlace = TablesOfPiecesGroups["RailContainerPlace"][1]
             else
                 StackPick = TablesOfPiecesGroups["StackC"][craneCounter]
                 StackPlace = TablesOfPiecesGroups["RailContainerPlace"][2]
@@ -759,8 +785,6 @@ function crane2Animation()
     end
     CraneAnimationsRunning[2] = false
 end
-
-
 
 function craneCPickUp(boolCombContainer, StackCPick, Crane )
     center = StackCPick[1]
