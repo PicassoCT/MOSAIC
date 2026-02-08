@@ -30,6 +30,7 @@ function script.Create()
 end
 
 function setup()
+    hideDebugPieces()
     hideT(TablesOfPiecesGroups["Down"])
     hideT(TablesOfPiecesGroups["Slice1Sub"])
     hideT(TablesOfPiecesGroups["WeldSpot"])
@@ -48,14 +49,14 @@ function setup()
 end
 
 BridgeTemplate = {
-{0,0,0,0,0,0,0,0},
+{0,0,0,1,1,0,0,0},
 {0,0,1,1,1,1,0,0},
 {0,1,1,1,1,1,1,0},
 {1,1,1,1,1,1,1,1},
 {1,1,1,1,1,1,1,1},
 {1,1,1,1,1,1,1,1},
 {0,1,1,1,1,1,1,0},
-{0,0,1,1,1,1,0,0},
+{0,0,0,1,1,0,0,0},
 }
 
 BridgeTemplateDebug = {
@@ -75,8 +76,8 @@ BridgeTemplateDebug = {
 HullTemplate = {
 {0,0,0,0,0,0,0,0},
 {0,0,0,0,0,0,0,0},
-{0,0,0,0,0,0,0,0},
-{1,1,1,1,1,1,1,1},
+{1,0,0,0,0,0,0,1},
+{1,1,0,0,0,0,0,1},
 {1,0,0,0,0,0,0,1},
 {1,1,0,0,0,0,1,1},
 {0,1,1,1,1,1,1,0},
@@ -308,10 +309,15 @@ beamaxis = y_axis
 armaxis = z_axis
 
 function buildUpFirstSlice(Delay)
-    for i=1, #TablesOfPiecesGroups["Slice1Sub"] do
+    Sleep(1)
+    for i=1,5 do
+        name = piece("Slice1Sub"..i)
+        assert(name, "Slice1Sub"..i)
         Sleep(Delay)
-        if TablesOfPiecesGroups["Slice1Sub"][i] then
-            Show(TablesOfPiecesGroups["Slice1Sub"][i])
+        if name then
+            Move(name,y_axis, -3.5, 0)
+            Move(name,y_axis, 0, 0.35)
+            Show(name)
         end
     end
 end
@@ -341,7 +347,7 @@ function AnimateArmLines(armNr, beam, lines, slice, step)
           StartThread(EmitSparks, armNr)
           StartThread(randomFoldArm, ArmUp, ArmLow, 5)
           local x1,z1,x2,z2, ix, iz = L[1],L[2],L[3],L[4],L[5],L[6]
-          moveDebugPieceToPos(armNr, ix, sliceStepHeight, iz, sliceStepHeight)
+          --moveDebugPieceToPos(armNr, ix, sliceStepHeight, iz, sliceStepHeight)
           for i=1, 2 do
               -- linear draw
               Move(Extruder, z_axis, x1, math.abs(x1))
@@ -374,6 +380,7 @@ end
 
 
 function hideConstruction()
+    Hide(propeller)
     hideT(ship)
     hideT(cool)
     hideT(slice)
@@ -407,8 +414,8 @@ end
 Bow = piece("Bow")
 
 function InstallerAnimation(step)
+  StartThread(animateInstallerRobotsForTime, step)
   updateCableBowAnimation(step)
-  animateInstallerRobotsForTime(step)
 end
 
 BaseDepth = {}
@@ -511,7 +518,7 @@ function updatePrinterCrane(step, speed, boolWait, slice, index)
     showT(TablesOfPiecesGroups["PowderLine"], 1,  powderLineIndex)
     Move(Printer, x_axis, position, speed)
 
-      if step == 1 then 
+      if index == 1 then 
         StartThread(buildUpFirstSlice, 7000)
       end
 
@@ -555,7 +562,7 @@ function printABoat()
     updatePrinterCrane(0, 0.5, true )
     boolPrinting = true
     while step <= nrOfSlices do
-        hideDebugPieces()
+        
         updatePrinterCrane(step + 1, 0.125, false, slice[step], step)
         -- 1. HOT slice (current print head position)
         if slice[step] then
@@ -564,6 +571,9 @@ function printABoat()
 
         -- 2. Move older hot slices into cooled state
         local coolIndex = step - slicesHot
+        if coolIndex == 1 then
+            hideT(TablesOfPiecesGroups["Slice1Sub"])
+        end
         if coolIndex >= 1 and slice[coolIndex] then
             Hide(slice[coolIndex])
             if cool[coolIndex] then
@@ -700,7 +710,8 @@ function crane1Animation()
     Hide(StackAPick)
     while true do
         hideT(Container)
-        WMove(elevator, y_axis, -10, 0.5)
+        resetT(Container)
+        WMove(elevator, y_axis, -15, 0.5)
         Sleep(5000)
         showT(Container)
         Sleep(5000)
@@ -720,7 +731,7 @@ function crane1Animation()
             Move(DustHeap, y_axis, 0, 0.5)
             Show(DustHeap)
             Sleep(7000)
-            Move(DustHeap, y_axis -3, 0.05)
+            Move(DustHeap, y_axis,-3, 0.25)
             WMove(StackAPick, y_axis, 5, 30)
             WTurn(Crane1, y_axis, math.rad(90), 1)
 
@@ -750,7 +761,9 @@ function crane2Animation()
     hideT(StackBPick)
     hideT(StackCPick)
     while true do
-        WMove(elevator, y_axis, -10, 0.5)
+        WMove(elevator, y_axis, -15, 0.5)
+        resetT(Container)
+      
         showT(Container)
         WMove(elevator, y_axis, 0, 0.5)
         Sleep(5000)
@@ -767,12 +780,12 @@ function crane2Animation()
                 StackPlace = TablesOfPiecesGroups["RailContainerPlace"][2]
             end
 
-            WMove(ContainerMover, x_axis, 0, 10)
+            WMove(ContainerMover, z_axis, 0, 0)
             pickAndPlace(Crane, StackPick, ContainerMover, Container[craneCounter], StackPlace,
-                         -35, -10, 0, 5,  0.5, false)
+                         35, -10, 0, 5,  0.5, false)
            
             installerGoal = (globalStep - math.ceil(totalNrOfSlices*0.3))* sliceSize
-            WMove(ContainerMover, x_axis, installerGoal, 10)
+            WMove(ContainerMover, z_axis, installerGoal, math.abs(installerGoal)*0.1)
             hideT(TablesOfPiecesGroups["RailContainerPlace"])
             WTurn(CraneC, y_axis, math.rad(0), 4)
             craneCPickUp(boolCombContainer, StackCPick, CraneC)
@@ -794,10 +807,11 @@ function craneCPickUp(boolCombContainer, StackCPick, Crane )
     else
         Show(StackCPick[2])
     end
-    Move(center, y_axis, 150, 10)
+    Move(center, y_axis, 10, 1)
     WTurn(center, x_axis, math.rad(0),0.5)
     WTurn(Crane, y_axis, math.rad(181), 1)
+    WMove(center, y_axis, -3, 1)
     Sleep(3000)
     hideT(StackCPick)
-    Turn(Crane, y_axis, math.rad(0), 2)
+    Turn(Crane, y_axis, math.rad(0), 1)
 end
