@@ -315,9 +315,9 @@ function buildUpFirstSlice(Delay)
         assert(name, "Slice1Sub"..i)
         Sleep(Delay)
         if name then
-            Move(name,y_axis, -3.5, 0)
-            Move(name,y_axis, 0, 0.35)
+            Move(name,y_axis, -5, 0)
             Show(name)
+            WMove(name,y_axis, 0, 0.7)
         end
     end
 end
@@ -401,14 +401,14 @@ end
 
 function updateCableBowAnimation(step)
     halfStep = math.floor(step/2)
+    Show(Bow)
     Move(Bow, x_axis, halfStep * -travellDistancePrinter)
     upIndexBlendOut = mapIndexToIndex(halfStep, math.min(totalNrOfSlices/2), #TablesOfPiecesGroups["Up"])
     hideT(TablesOfPiecesGroups["Up"])
     showT(TablesOfPiecesGroups["Up"], upIndexBlendOut, #TablesOfPiecesGroups["Up"] )
 
     hideT(TablesOfPiecesGroups["Down"])
-    downIndexBlendIn = mapIndexToIndex(halfStep, math.min(totalNrOfSlices/2), #TablesOfPiecesGroups["Down"])
-    showT(TablesOfPiecesGroups["Down"], 1, downIndexBlendIn)
+    showT(TablesOfPiecesGroups["Down"], 1, upIndexBlendOut)
 end
 
 Bow = piece("Bow")
@@ -760,12 +760,14 @@ function crane2Animation()
     elevator = piece("ElevatorB")
     hideT(StackBPick)
     hideT(StackCPick)
+    hideT(TablesOfPiecesGroups["RailContainerPlace"])
+    RailContainerMover = TablesOfPiecesGroups["RailContainerPlace"][1]
     while true do
-        WMove(elevator, y_axis, -15, 0.5)
-        resetT(Container)
-      
+        WMove(elevator, y_axis, -15, 5)
+        resetT(Container)      
         showT(Container)
-        WMove(elevator, y_axis, 0, 0.5)
+        WMove(elevator, y_axis, 0, 5)
+
         Sleep(5000)
         craneCounter = 4
         while boolPrinting and craneCounter > 0 do
@@ -779,19 +781,21 @@ function crane2Animation()
                 StackPick = TablesOfPiecesGroups["StackC"][craneCounter]
                 StackPlace = TablesOfPiecesGroups["RailContainerPlace"][2]
             end
+            Hide(StackPlace)
 
-            WMove(ContainerMover, z_axis, 0, 0)
-            pickAndPlace(Crane, StackPick, ContainerMover, Container[craneCounter], StackPlace,
-                         35, -10, 0, 5,  0.5, false)
+
+            pickAndPlace(Crane, StackPick, TablesOfPiecesGroups["StackBPick"][1], ContainerMover, StackPlace,
+                         37, -10, 0, 5,  0.5, false)
            
-            installerGoal = (globalStep - math.ceil(totalNrOfSlices*0.3))* sliceSize
-            WMove(ContainerMover, z_axis, installerGoal, math.abs(installerGoal)*0.1)
+            installerGoal = -(globalStep - math.ceil(totalNrOfSlices*0.4))* sliceSize
+            WMove(RailContainerMover, x_axis, installerGoal, math.abs(installerGoal)*0.1)
             hideT(TablesOfPiecesGroups["RailContainerPlace"])
             WTurn(CraneC, y_axis, math.rad(0), 4)
             craneCPickUp(boolCombContainer, StackCPick, CraneC)
+            WMove(RailContainerMover, x_axis, 0, math.abs(installerGoal)*0.1)
             WMove(StackPick, y_axis, 50, 0.5)
             Sleep(7000)
-
+            
             craneCounter = craneCounter-1
             Hide(StackPick)
         end
@@ -809,9 +813,10 @@ function craneCPickUp(boolCombContainer, StackCPick, Crane )
     end
     Move(center, y_axis, 10, 1)
     WTurn(center, x_axis, math.rad(0),0.5)
+    WMove(center, y_axis, 10, 1)
     WTurn(Crane, y_axis, math.rad(181), 1)
-    WMove(center, y_axis, -3, 1)
     Sleep(3000)
+    Move(center, y_axis, 0, 1)
     hideT(StackCPick)
     Turn(Crane, y_axis, math.rad(0), 1)
 end
