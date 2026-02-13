@@ -14,6 +14,7 @@ BoatRotator = piece("BoatRotator")
 
 totalNrOfSlices = nil
 TablesOfPiecesGroups = nil
+PopUp = piece("PropUp")
 function script.HitByWeapon(x, z, weaponDefID, damage) end
 sliceData = {}
 function script.Create()
@@ -30,6 +31,8 @@ function script.Create()
 end
 
 function setup()
+    Show(PopUp)
+    Move(PopUp,y_axis, -3, 0)
     hideDebugPieces()
     hideT(TablesOfPiecesGroups["Down"])
     hideT(TablesOfPiecesGroups["Slice1Sub"])
@@ -554,7 +557,7 @@ function printABoat()
     local nrOfSlices = #slice
     local slicesHot = 3
     local coolDownSlices = 10
-
+    Move(PopUp, y_axis, 0, 0.1)
     -- initial state
     hideConstruction()
     updateInstallerCrane(0)
@@ -605,6 +608,7 @@ function printABoat()
     hideT(cool)
     hideT(ship)
     Show(Boat)
+    Move(PopUp, y_axis, -3, 0.1)
 end
 
 
@@ -773,25 +777,34 @@ function crane2Animation()
         while boolPrinting and craneCounter > 0 do
             StackPick= nil
             StackPlace= nil
+            StickPickedUp = nil
             boolCombContainer = maRa()
             if boolCombContainer then
-                StackPick = TablesOfPiecesGroups["StackB"][craneCounter]
+                StackPick = StackBPick[1]
+                StickPickedUp = ContainerC[craneCounter]
                 StackPlace = TablesOfPiecesGroups["RailContainerPlace"][1]
             else
-                StackPick = TablesOfPiecesGroups["StackC"][craneCounter]
+                StackPick = StackBPick[2]
+                StickPickedUp = ContainerB[craneCounter]
                 StackPlace = TablesOfPiecesGroups["RailContainerPlace"][2]
             end
+            assert(StackPick, craneCounter)
+            assert(StackPlace)
             Hide(StackPlace)
 
 
-            pickAndPlace(Crane, StackPick, TablesOfPiecesGroups["StackBPick"][1], ContainerMover, StackPlace,
-                         37, -10, 0, 5,  0.5, false)
+            pickAndPlace(Crane, 
+                StickPickedUp,
+                StackPick, 
+                ContainerMover,                  
+                StackPlace,
+                37, -10, 0, 5,  0.5, false)
            
             installerGoal = -(globalStep - math.ceil(totalNrOfSlices*0.4))* sliceSize
             WMove(RailContainerMover, x_axis, installerGoal, math.abs(installerGoal)*0.1)
             hideT(TablesOfPiecesGroups["RailContainerPlace"])
             WTurn(CraneC, y_axis, math.rad(0), 4)
-            craneCPickUp(boolCombContainer, StackCPick, CraneC)
+            craneCPickUp(boolCombContainer, CraneC)
             WMove(RailContainerMover, x_axis, 0, math.abs(installerGoal)*0.1)
             WMove(StackPick, y_axis, 50, 0.5)
             Sleep(7000)
@@ -803,7 +816,8 @@ function crane2Animation()
     CraneAnimationsRunning[2] = false
 end
 
-function craneCPickUp(boolCombContainer, StackCPick, Crane )
+function craneCPickUp(boolCombContainer, Crane )
+    StackCPick = TablesOfPiecesGroups["StackCPick"]
     center = StackCPick[1]
     Turn(center, x_axis, math.rad(-90),0)
     if boolCombContainer then
