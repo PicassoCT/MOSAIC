@@ -209,19 +209,23 @@ function hideDebugPieces()
         for iz = 1, 8 do
           for ix = 1, 8 do
             debugPiece= piece("debug"..arm.."_"..(modIndexFour(iz)).."_"..(modIndexFour(ix)))
-            reset(debugPiece)
-            Hide(debugPiece)
+            if debugPiece then
+                reset(debugPiece)
+                Hide(debugPiece)
+            end
           end
         end
     end
 end
 
 function  moveDebugPieceToPos(arm, ix, scaleX, iz, scaleZ )
-    debugPiece= piece("debug"..arm.."_"..math.abs(iz).."_"..math.abs(ix))
-    Show(debugPiece)
-    Move(debugPiece, z_axis, ix * scaleX, 0)
-    Move(debugPiece, beamaxis,  iz * scaleZ,0)
-    Move(debugPiece, x_axis,  -25, 0)
+    debugPiece = piece("debug"..arm.."_"..math.abs(iz).."_"..math.abs(ix))
+    if debugPiece then
+        Show(debugPiece)
+        Move(debugPiece, z_axis, ix * scaleX, 0)
+        Move(debugPiece, beamaxis,  iz * scaleZ,0)
+        Move(debugPiece, x_axis,  -25, 0)
+    end
 end
 
 function modIndexFourFlip(index)
@@ -710,6 +714,13 @@ function crane1Animation()
     Container   = TablesOfPiecesGroups["StackA"]
     elevator    = piece("ElevatorA")
     DustHeap    = piece("DustHeap")
+
+    assert(Crane1)
+    assert(StackAPick)
+    assert(Container)
+    assert(elevator)
+    assert(DustHeap)
+
     Hide(DustHeap)
     Hide(StackAPick)
     while true do
@@ -722,7 +733,7 @@ function crane1Animation()
         WMove(elevator, y_axis, 0, 0.5)
 
         Sleep(5000)
-        crane1Counter = 5
+        crane1Counter = 4
         while boolPrinting and crane1Counter > 0 do
             reset(StackAPick,0)
             WTurn(Crane1, y_axis, math.rad(0), 1)
