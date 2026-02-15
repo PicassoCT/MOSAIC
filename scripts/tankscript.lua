@@ -40,7 +40,13 @@ function hideAllStealth()
     
 end
 
+Halterung= nil
+StealthBase = nil
+
 function setup()
+    boolCloaked = randChance(10)
+    Halterung = piece("Halterrung")
+    StealthBase = piece("StealthBase")
     Show(Halterung)
     Show(StealthBase)
     dayMoveStealthTable[1] = TablesOfPiecesGroups["StealthShieldFold"]
@@ -88,6 +94,7 @@ function hideCloakAnimation()
 end
 
 function showCloakAnimation()
+  Show(Halterung)
   hideT(TablesOfPiecesGroups["StealthShieldFold"])
   foreach(  TablesOfPiecesGroups["StealthShieldFold"],
     function(id)
@@ -143,12 +150,11 @@ function rotateCloake(PayloadCenter, DetectPiece)
         oldPitch, oldYaw, OldRoll = pitch, yaw, roll
     end
 end
-boolCloaked = true
-Halterung = piece("Halterrung")
-StealthBase = piece("StealthBase")
+
 function optionalStealth()
     if isStealthTank then
-
+    Halterung = piece("Halterrung")
+    StealthBase = piece("StealthBase")
         StartThread(rotateCloake, Halterung, FireEmit)
         setup()
         hideAllStealth()    

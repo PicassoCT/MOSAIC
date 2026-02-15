@@ -556,11 +556,12 @@ function updatePrinterCrane(step, speed, boolWait, slice, index)
     WMove(Printer, x_axis, position, speed)
 end
 globalStep = 0
+local slicesHot = 3
+local coolDownSlices = 10
 function printABoat()
     local step = 1
     local nrOfSlices = #slice
-    local slicesHot = 3
-    local coolDownSlices = 10
+
     Move(PopUp, y_axis, 0, 0.1)
     -- initial state
     hideConstruction()
@@ -576,34 +577,20 @@ function printABoat()
             Show(slice[step])
         end
 
-        -- 2. Move older hot slices into cooled state
-        local coolIndex = step - slicesHot
-        if coolIndex == 1 then
-            hideT(TablesOfPiecesGroups["Slice1Sub"])
-        end
-        if coolIndex >= 1 and slice[coolIndex] then
-            Hide(slice[coolIndex])
-            if cool[coolIndex] then
-                Show(cool[coolIndex])
-            end
-        end
-
-        -- 3. Finalize cooled slices into ship geometry
-        local shipIndex = step - slicesHot - coolDownSlices
-        if shipIndex >= 1 then
-            if cool[shipIndex] then
-                Hide(cool[shipIndex])
-            end
-            if ship[shipIndex] then
-                Show(ship[shipIndex])
-            end
-        end
+        coolYourShips(step)
 
         Sleep(10000)
 
         updateInstallerCrane(math.max(0, step-10))
         step = step + 1        
     end
+
+    for step= nrOfSlices-10, nrOfSlices + 10 do
+        Sleep(10000)
+        updateInstallerCrane(math.max(0, step-10))
+        step = step + 1     
+    end
+
     boolPrinting= false
     -- safety pass: ensure final ship is visible
     reset(Printer, 1)
@@ -615,10 +602,36 @@ function printABoat()
     Move(PopUp, y_axis, -3, 0.1)
 end
 
+function coolYourShips(step)
+    -- 2. Move older hot slices into cooled state
+    local coolIndex = step - slicesHot
+    if coolIndex == 1 then
+        hideT(TablesOfPiecesGroups["Slice1Sub"])
+    end
+    if coolIndex >= 1 and slice[coolIndex] then
+        Hide(slice[coolIndex])
+        if cool[coolIndex] then
+            Show(cool[coolIndex])
+        end
+    end
+
+    -- 3. Finalize cooled slices into ship geometry 
+   local shipIndex = step - slicesHot - coolDownSlices 
+   if shipIndex >= 1 then 
+       if cool[shipIndex] then 
+           Hide(cool[shipIndex]) 
+       end 
+       if ship[shipIndex] then 
+           Show(ship[shipIndex]) 
+       end
+    end
+
+end
+
 
 function OpenDoors()
-    Move(center, y_axis, -250, 10)
-    WMove(Boat, y_axis, 250, 10)
+    Move(Dock, y_axis, -250, 10)
+    WMove(Boat, y_axis, -50, 10)
     Turn(TablesOfPiecesGroups["DockDoor"][1],y_axis, math.rad(90), 1)
     Turn(TablesOfPiecesGroups["DockDoor"][2],y_axis, math.rad(-90), 1)
     WaitForTurns(TablesOfPiecesGroups["DockDoor"])
@@ -627,10 +640,10 @@ end
 function CloseDoors()
   resetT(TablesOfPiecesGroups["DockDoor"], 0.1)
   WaitForTurns(TablesOfPiecesGroups["DockDoor"])
-  Move(center, y_axis, 0, 10)
+  Move(Dock, y_axis, 0, 10)
 end
 
-BOAT_OUTSIDE_DISTANCE= 12000
+BOAT_OUTSIDE_DISTANCE= -12000
 function LeaveAnimation()
   OpenDoors()
   WMove(Boat, x_axis, BOAT_OUTSIDE_DISTANCE, 120)
