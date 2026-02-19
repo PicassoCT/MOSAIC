@@ -25,7 +25,7 @@ function script.Create()
     ship  = TablesOfPiecesGroups["Ship"]
     cool  = TablesOfPiecesGroups["Cool"]
     slice = TablesOfPiecesGroups["Slice"]
-    sliceData = GenerateContainerShipSlices(totalNrOfSlices)
+    sliceData = GenerateContainerShipSlices()
     setup()
     StartThread(buildAnimation)
 end
@@ -34,6 +34,7 @@ function setup()
     Show(PopUp)
     Move(PopUp,y_axis, -3, 0)
     hideDebugPieces()
+    hideT(TablesOfPiecesGroups["CoolDown"])
     hideT(TablesOfPiecesGroups["Down"])
     hideT(TablesOfPiecesGroups["Slice1Sub"])
     hideT(TablesOfPiecesGroups["WeldSpot"])
@@ -240,9 +241,9 @@ function modIndexFour(index)
 end
 
 sliceStepHeight= 4.5
-function GenerateContainerShipSlices(nr)
+function GenerateContainerShipSlices()
   params = {}
-  local slices      = params.slices or nr
+  local slices      = params.slices or totalNrOfSlices
   local bridgeEnd   = params.bridgeSlices or 6
   local scaleX      = params.scaleX or sliceStepHeight
   local scaleZ      = params.scaleZ or sliceStepHeight
@@ -274,23 +275,30 @@ function GenerateContainerShipSlices(nr)
   return Print
 end
 
-function EmitSparks(armNr)
+function EmitSparks(armNr, slice)
   hideT(TablesOfPiecesGroups["Arm"..armNr.."Drop"])
-  for i=1,4 do
-      spark = TablesOfPiecesGroups["Arm"..armNr.."Drop"][i]
-        reset(spark,0)  
-        WaitForMoves(spark)
-        if maRa() then
-            Sleep(100)
-        end
-        Show(spark)
-        Move(spark, x_axis, -math.random(-150,150),1250)  
-        Move(spark, z_axis, -math.random(-150,150),1250)  
-        Move(spark, y_axis, -math.random(2500,7500),1250)  
-  end
-  Sleep(500)
+  while Spring.UnitScript.IsInMove(slice, x_axis)  do
+
+      for i=1,4 do
+          spark = TablesOfPiecesGroups["Arm"..armNr.."Drop"][i]
+          reset(spark,0)  
+          Hide(spark)
+          if maRa() then              
+                Sleep(500)
+                Show(spark)
+                Move(spark, x_axis, -math.random(-150,150), 2500)  
+                Move(spark, z_axis, -math.random(-150,150), 2500)  
+                Move(spark, y_axis, -math.random(2500,7500), 3500)  
+                if maRa() then
+                    WaitForMoves(spark)
+                end
+            end      
+      end
+      Sleep(500)
+    end
   WaitMoveHidesT(TablesOfPiecesGroups["Arm"..armNr.."Drop"])
   resetT(TablesOfPiecesGroups["Arm"..armNr.."Drop"])
+  hideT(TablesOfPiecesGroups["Arm"..armNr.."Drop"])
 end
 
 function weldLights(signal, weld, weldAlt)
@@ -348,14 +356,16 @@ function AnimateArmLines(armNr, beam, lines, slice, step)
   local Extruder = TablesOfPiecesGroups["Extruder"][armNr]
   local signal= 2^armNr
 
+  StartThread(EmitSparks, armNr, slice)
   while Spring.UnitScript.IsInMove(slice, x_axis)  do
       for _, L in ipairs(lines) do
           StartThread(weldLights, signal, weld, weldAlt)
-          StartThread(EmitSparks, armNr)
+         
           StartThread(randomFoldArm, ArmUp, ArmLow, 5)
           local x1,z1,x2,z2, ix, iz = L[1],L[2],L[3],L[4],L[5],L[6]
           --moveDebugPieceToPos(armNr, ix, sliceStepHeight, iz, sliceStepHeight)
           for i=1, 2 do
+
               -- linear draw
               Move(Extruder, z_axis, x1, math.abs(x1))
               if armNr % 2 == 1 then
@@ -364,7 +374,6 @@ function AnimateArmLines(armNr, beam, lines, slice, step)
               WaitForMoves(Extruder, beam)
 
               StartThread(weldLights, signal, weld, weldAlt)
-              StartThread(EmitSparks, armNr)
               StartThread(randomFoldArm, ArmUp, ArmLow, 5)
               
               Move(Extruder, z_axis, x2, math.abs(x2))
@@ -383,6 +392,27 @@ function AnimateArmLines(armNr, beam, lines, slice, step)
   Turn(ArmUp, armaxis, math.rad(-80),2)
   Hide(weld)
   Hide(weldAlt)
+end
+
+
+function generateCoolDownMap()
+    coolDownMap = {
+    [1] = 1,
+    [2] = 2,
+    [4] = 3,
+    [5] = 4,
+    [6] = 4,
+    [7] = 5,
+    }
+    for i=8, totalNrOfSlices-4 do
+        if  isInTable(Slabs, i) then 
+            coolDownMap[i] = 4
+        else
+            coolDownMap[i] = 5
+        end
+    end
+
+    return coolDownMap
 end
 
 
@@ -408,20 +438,21 @@ end
 
 function updateCableBowAnimation(step)
     halfStep = math.floor(step/2)
+
     Show(Bow)
-    Move(Bow, x_axis, halfStep * -travellDistancePrinter)
+    Move(Bow, x_axis, halfStep * travellDistancePrinter, 0.5)
     upIndexBlendOut = mapIndexToIndex(halfStep, math.min(totalNrOfSlices/2), #TablesOfPiecesGroups["Up"])
     hideT(TablesOfPiecesGroups["Up"])
-    showT(TablesOfPiecesGroups["Up"], upIndexBlendOut, #TablesOfPiecesGroups["Up"] )
+    showT(TablesOfPiecesGroups["Up"], math.max(1, upIndexBlendOut), #TablesOfPiecesGroups["Up"] )
 
     hideT(TablesOfPiecesGroups["Down"])
-    showT(TablesOfPiecesGroups["Down"], 1, upIndexBlendOut)
+    showT(TablesOfPiecesGroups["Down"], 1, math.max(1,upIndexBlendOut))
 end
 
 Bow = piece("Bow")
 
 function InstallerAnimation(step)
-  StartThread(animateInstallerRobotsForTime, step)
+  StartThread(animateInstallerRobotsForTime, step, 35000)
   updateCableBowAnimation(step)
 end
 
@@ -490,9 +521,9 @@ end
 InstallerBeamDepth = 0
 InstallerBeamRange = 150
 InstallBeam = piece("InstallBeam1")
-function animateInstallerRobotsForTime(step)
-    beamDepth = getHighestPointOfSlice(step)
-    while Spring.UnitScript.IsInMove(Installer, x_axis)  do 
+function animateInstallerRobotsForTime(step, timeBudget)
+    beamDepth = getHighestPointOfSlice(step) 
+    while timeBudget > 0 do 
         StartThread(moveVerticalInstallerRobot, 1)
         StartThread(moveVerticalInstallerRobot, 2)
         
@@ -500,6 +531,7 @@ function animateInstallerRobotsForTime(step)
         StartThread(moveHorizontalInstallerRobot,3, beamDepth)
         StartThread(moveHorizontalInstallerRobot,4 , beamDepth)
         Sleep(5000)
+        timeBudget = timeBudget-5000
     end
 end
 
@@ -561,6 +593,7 @@ local coolDownSlices = 10
 function printABoat()
     local step = 1
     local nrOfSlices = #slice
+    local coolDownMap = generateCoolDownMap()
 
     Move(PopUp, y_axis, 0, 0.1)
     -- initial state
@@ -577,7 +610,7 @@ function printABoat()
             Show(slice[step])
         end
 
-        coolYourShips(step)
+        coolYourShips(step, coolDownMap)
 
         Sleep(10000)
 
@@ -602,18 +635,27 @@ function printABoat()
     Move(PopUp, y_axis, -3, 0.1)
 end
 
-function coolYourShips(step)
+
+
+function coolYourShips(step, coolDownMap)
     -- 2. Move older hot slices into cooled state
     local coolIndex = step - slicesHot
     if coolIndex == 1 then
         hideT(TablesOfPiecesGroups["Slice1Sub"])
     end
+
+
     if coolIndex >= 1 and slice[coolIndex] then
         Hide(slice[coolIndex])
         if cool[coolIndex] then
-            Show(cool[coolIndex])
+            Show(TablesOfPiecesGroups["CoolDown"][coolIndex])
+        end
+        if cool[coolIndex -1] then
+            Hide(TablesOfPiecesGroups["CoolDown"][coolIndex -1])
+            Show(cool[coolIndex -1])
         end
     end
+
 
     -- 3. Finalize cooled slices into ship geometry 
    local shipIndex = step - slicesHot - coolDownSlices 
@@ -625,12 +667,11 @@ function coolYourShips(step)
            Show(ship[shipIndex]) 
        end
     end
-
 end
 
 
 function OpenDoors()
-    Move(Dock, y_axis, -250, 10)
+    Move(Dock, y_axis, -100, 10)
     WMove(Boat, y_axis, -50, 10)
     Turn(TablesOfPiecesGroups["DockDoor"][1],y_axis, math.rad(90), 1)
     Turn(TablesOfPiecesGroups["DockDoor"][2],y_axis, math.rad(-90), 1)
@@ -849,7 +890,7 @@ function craneCPickUp(boolCombContainer, Crane )
     else
         Show(StackCPick[2])
     end
-    Move(center, y_axis, 10, 1)
+    WMove(center, y_axis, 50, 2)
     WTurn(center, x_axis, math.rad(0),0.5)
     WMove(center, y_axis, 10, 1)
     WTurn(Crane, y_axis, math.rad(181), 1)
