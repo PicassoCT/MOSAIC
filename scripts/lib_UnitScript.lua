@@ -1455,7 +1455,7 @@ function setupFairnessQuadrants(eventName)
 map = {minX = 1, minZ  = 1, maxX =Game.mapSizeX, maxY = Game.mapSizeZ}
 local quadrants = {
     {minX = map.minX, maxX = midX, minY = map.minY, maxY = midY, counter = 0}, -- Q1
-    {minX = midX,     maxX = map.maxX, minY = map.minY, maxY = midY, , counter = 0}, -- Q2
+    {minX = midX,     maxX = map.maxX, minY = map.minY, maxY = midY, counter = 0}, -- Q2
     {minX = map.minX, maxX = midX, minY = midY, maxY = map.maxY,  counter = 0}, -- Q3
     {minX = midX,     maxX = map.maxX, minY = midY, maxY = map.maxY, counter = 0} -- Q4
 }

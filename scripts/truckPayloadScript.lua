@@ -127,7 +127,7 @@ function setPayLoadDescription(payLoadPieceId)
 
 	for i=1, #TablesOfPiecesGroups["container"] do
 		if not pieceID_Content[TablesOfPiecesGroups["container"] [i]] then
-			pieceID_Content[TablesOfPiecesGroups["container"] [i]] = "TODO_DefaultPayloadDescription"
+			pieceID_Content[TablesOfPiecesGroups["container"] [i]] = "VAT ID:" .. math.random(10000,99999)
 		end
 	end
 
@@ -151,6 +151,8 @@ function setPayLoadDescription(payLoadPieceId)
 		"Homespun chips",
 		"Neuralnetwork pearls",
 		"BackUps",
+		"Gogols",
+		"Warzone harvested organs",
 		"Mercenaries",
 		"Infiltration teams",
 		"Sexworkers",
