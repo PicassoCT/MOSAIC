@@ -29,15 +29,162 @@ function script.HitByWeapon(x, z, weaponDefID, damage)
 return damage
 end
 
+isStealthTank = Spring.GetUnitDefID(unitID) == UnitDefNames["ground_tank_day"].id
+dayMoveStealthTable = {}
+nightMoveStealthTable = {}
+function hideAllStealth()
+
+    hideT(TablesOfPiecesGroups["MoveStealth"])
+    hideT(TablesOfPiecesGroups["StealthShieldFold"])
+    hideT(TablesOfPiecesGroups["StealthEvening"])
+    
+end
+
+Halterung= nil
+StealthBase = nil
+
+function setup()
+    boolCloaked = randChance(10)
+    Halterung = piece("Halterrung")
+    StealthBase = piece("StealthBase")
+    Show(Halterung)
+    Show(StealthBase)
+    dayMoveStealthTable[1] = TablesOfPiecesGroups["StealthShieldFold"]
+    dayMoveStealthTable[2] = {TablesOfPiecesGroups["MoveStealth"][1]}
+    dayMoveStealthTable[3] = {TablesOfPiecesGroups["MoveStealth"][2]}
+    dayMoveStealthTable[4] = {TablesOfPiecesGroups["MoveStealth"][3]}
+    dayMoveStealthTable[5] = {TablesOfPiecesGroups["MoveStealth"][4]}
+    nightMoveStealthTable= TablesOfPiecesGroups["StealthEvening"]
+end
+
+stealthMoveTable = nil
+function runCloakAnimations()
+    while boolCloaked do
+    moveIndex = 1
+    boolIsNight = isNight()
+    if boolIsNight then
+        stealthMoveTable= nightMoveStealthTable
+    else
+       stealthMoveTable=  dayMoveStealthTable 
+    end
+            hideT(stealthMoveTable[moveIndex])
+            if boolMoving  then
+                if not boolIsNight then
+                    moveIndex = (moveIndex % #stealthMoveTable) +1
+                else
+                    Sleep(5000)
+                    moveIndex = math.min(moveIndex +1, #stealthMoveTable)
+                end
+            end
+            showT(stealthMoveTable[moveIndex])
+         
+
+        Sleep(1000)
+    end
+end
+
+
+function hideCloakAnimation()
+
+  foreach(  TablesOfPiecesGroups["StealthShieldFold"],
+    function(id)
+        WTurn(id, y_axis, math.rad(-360/#TablesOfPiecesGroups["StealthShieldFold"]),0.1)
+        end
+    )
+end
+
+function showCloakAnimation()
+  Show(Halterung)
+  hideT(TablesOfPiecesGroups["StealthShieldFold"])
+  foreach(  TablesOfPiecesGroups["StealthShieldFold"],
+    function(id)
+        WTurn(id, x_axis, math.rad(-360/#TablesOfPiecesGroups["StealthShieldFold"]),0)
+        Show(id)
+        end   
+    )
+  foreach(  TablesOfPiecesGroups["StealthShieldFold"],
+    function(id)
+        WTurn(id, x_axis, 0 ,0.025)
+      end
+    )
+
+end
+function rotateCloake(PayloadCenter, DetectPiece)
+    local spGetUnitPiecePosDir = Spring.GetUnitPiecePosDir
+    local spGetGroundHeight = Spring.GetGroundHeight
+    turnRatePerSecondDegree = (300*0.16)/4
+    _,lastOrientation,_  = Spring.UnitScript.GetPieceRotation(PayloadCenter)
+    px,py,pz = spGetUnitPiecePosDir(unitID, DetectPiece)
+    val  = 0
+    oldPitch, oldYaw, OldRoll = Spring.GetUnitRotation(unitID)
+    while true do
+        px,py,pz = Spring.GetUnitPiecePosDir(unitID, DetectPiece)
+        pitch,yaw,roll = Spring.GetUnitRotation(unitID)
+       -- echo("Unit  "..pitch.."/"..yaw.."/"..roll)
+        if boolMoving == true  then          
+            x, y, z = Spring.UnitScript.GetPieceRotation(PayloadCenter)
+            goal = math.ceil(y * 0.95)
+            Turn(PayloadCenter,y_axis, goal, 1.125)
+            lastOrientation = goal
+        else
+            if boolTurning == true then                
+                x,y,z = spGetUnitPiecePosDir(unitID, PayloadCenter)
+                dx,  dz = px-x, pz-z
+                if boolTurnLeft then
+                    headRad = -math.pi + math.atan2(dz, dx)
+                else
+                    headRad = math.pi - math.atan2(dx, dz)
+                end
+                Turn(PayloadCenter,y_axis, headRad, 1)
+                lastOrientation = headRad
+            else    
+                Turn(PayloadCenter,y_axis, lastOrientation, 0)   
+            end
+        end     
+
+        if boolMoving == true then
+            Sleep(125)
+        else
+            Sleep(50)
+        end
+        oldPitch, oldYaw, OldRoll = pitch, yaw, roll
+    end
+end
+
+function optionalStealth()
+    if isStealthTank then
+    Halterung = piece("Halterrung")
+    StealthBase = piece("StealthBase")
+        StartThread(rotateCloake, Halterung, FireEmit)
+        setup()
+        hideAllStealth()    
+        
+        while isStealthTank do
+            if boolCloaked then
+                showCloakAnimation()
+                runCloakAnimations()
+                showDecloakAnimation()
+                hideCloakAnimation()
+            end   
+       
+            Sleep(1000)
+        end
+    end
+end
 
 function script.Create()
+
+    Show(center)
+    Show(aimpiece)
+    Show(Cannon1)
     Hide(DustEmit)
     Hide(FireEmit)    
     Hide(Shell)
 
-    generatepiecesTableAndArrayCode(unitID)
-
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
+
+    hideAllStealth()
+    StartThread(optionalStealth)
     resetAll(unitID)
     if gaiaTeamID == myTeamID then
         Spring.SetUnitAlwaysVisible(unitID, true)

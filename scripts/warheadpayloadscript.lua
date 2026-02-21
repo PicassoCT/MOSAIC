@@ -8,6 +8,7 @@ local defuseCapableUnitTypes = getDefusalCapableTypeTable(Unitdefs)
 local GameConfig = getGameConfig()
 
 local TruckTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "truck", UnitDefs)
+local LoadableTruckTypeTable = getLoadAbleTruckTypes(UnitDefs, GameConfig.instance.culture)
 local aerosolAffectableUnits = getChemTrailInfluencedTypes(UnitDefs)
 local spGetTeamInfo = Spring.GetTeamInfo
 local myTeamID = Spring.GetUnitTeam(unitID)
@@ -523,9 +524,9 @@ function defuseStateMachine()
       	 foreach(getAllNearUnit(unitID, 75),
       	 			function(id)
       	 				if boolLoaded ==true then return end
-      	 				if spGetUnitTeam(id) == myTeamID and TruckTypeTable[spGetUnitDefID(id)] then
+      	 				if spGetUnitTeam(id) == myTeamID and LoadableTruckTypeTable[spGetUnitDefID(id)] then
   	 					    pieceMap = Spring.GetUnitPieceMap(id)
-       						assert(pieceMap["attachPoint"])
+       						assert(pieceMap["attachPoint"], "Truck Type has not attachPoint "..getUnitName(id))
        						Spring.UnitAttach(id, unitID, pieceMap["attachPoint"])
 							boolLoaded= true
       	 				end

@@ -433,8 +433,8 @@ function Spring.UnitScript.Hide(piece)
     if not piece then
         local activeUnit = GetActiveUnit()
         local defID = Spring.GetUnitDefID(activeUnit.unitID)
-        Spring.Echo("Invalid PieceNumber in "..UnitDefs[defID].name)
-        return
+        Spring.Echo("Invalid PieceNumber in Hide in "..UnitDefs[defID].name)
+        return 
     end
 
     --local pieceType = type(piece)

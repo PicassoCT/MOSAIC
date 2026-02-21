@@ -100,8 +100,10 @@ function buildBike()
         bikeWheelMap[6].wheels[#bikeWheelMap[6].wheels + 1] = TablesOfPiecesGroups["Wheel"][i]
     end
 
-    local wheelCopy = bikeWheelMap[5].wheels
-    bikeWheelMap[7].wheels = wheelCopy
+        for i= 11, 12 do
+        assert(TablesOfPiecesGroups["Wheel"][i], i)
+        bikeWheelMap[7].wheels[#bikeWheelMap[7].wheels + 1] = TablesOfPiecesGroups["Wheel"][i]
+    end
 
     if boolGaiaUnit then Show(Civilian) end
 
