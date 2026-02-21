@@ -99,6 +99,10 @@ function getRandomPlayerName()
     return randDict(result)
 end
 
+function isPlayerUnit(id)
+    return Spring.GetUnitTeam(id) ~= Spring.GetGaiaTeamID()
+end
+
 -- > get all Player Units in a Range around a unit
 function isPlayerUnitNearby(unitID, range)
     gaiaTeamID = Spring.GetGaiaTeamID()
@@ -838,6 +842,10 @@ function getNearestGroundEnemy(id, UnitDefs)
         end)
         if Spring.ValidUnitID(foundUnit) == true then return foundUnit end
     end
+end
+
+function  selectValue(boolVal, valA, valB)
+    return boolVal and valA or valB
 end
 
 
@@ -3159,7 +3167,7 @@ function mapIndexToIndex(indexOrg, OrgMax, TargetMax)
     local percent = indexOrg/OrgMax
     scaledIndex = percent * TargetMax
 
-    return clamp(scaledIndex, 1, TargetMax)
+    return math.ceil(clamp(scaledIndex, 1, TargetMax))
 end
 
 function mapAngleToCube(cubeDim, angle)
