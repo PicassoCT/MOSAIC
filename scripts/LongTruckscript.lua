@@ -129,33 +129,25 @@ boolTurning = false
 function turnTrailerLoop()
     local spGetUnitPiecePosDir = Spring.GetUnitPiecePosDir
     local spGetGroundHeight = Spring.GetGroundHeight
-    turnRatePerSecondDegree = (300*0.16)/4
     _,lastOrientation,_  = Spring.UnitScript.GetPieceRotation(PayloadCenter)
     px,py,pz = spGetUnitPiecePosDir(unitID, DetectPiece)
     val  = 0
-    oldPitch, oldYaw, OldRoll = Spring.GetUnitRotation(unitID)
+    local headRad = 0
     while true do
-        px,py,pz = Spring.GetUnitPiecePosDir(unitID, DetectPiece)
-        pitch,yaw,roll = Spring.GetUnitRotation(unitID)
-       -- echo("Unit  "..pitch.."/"..yaw.."/"..roll)
+        px,py,pz = spGetUnitPiecePosDir(unitID, DetectPiece)
         if boolMoving == true  then          
-            x, y, z = Spring.UnitScript.GetPieceRotation(PayloadCenter)
-            goal = math.ceil(y * 0.95)
+            _, rot, _ = Spring.UnitScript.GetPieceRotation(PayloadCenter)
+            goal = math.ceil(rot * 0.98)
             Turn(PayloadCenter,y_axis, goal, 1.125)
             lastOrientation = goal
         else
             if boolTurning == true then                
                 x,y,z = spGetUnitPiecePosDir(unitID, PayloadCenter)
                 dx,  dz = px-x, pz-z
-                if boolTurnLeft then
-                    headRad = -math.pi + math.atan2(dz, dx)
-                else
-                    headRad = math.pi - math.atan2(dx, dz)
-                end
+                headRad = math.pi - math.atan2(dx, dz)
+
                 Turn(PayloadCenter,y_axis, headRad, 1)
                 lastOrientation = headRad
-            else    
-                Turn(PayloadCenter,y_axis, lastOrientation, 0)   
             end
         end     
 
@@ -174,7 +166,6 @@ function turnTrailerLoop()
         else
             Sleep(50)
         end
-        oldPitch, oldYaw, OldRoll = pitch, yaw, roll
     end
 end
 
@@ -279,16 +270,20 @@ function monitorMoving()
     local spGetUnitPosition = Spring.GetUnitPosition
     ox,oy,oz = spGetUnitPosition(unitID)
     nx,ny,nz = ox,oy,oz
+    boolPlayerUnit = isPlayerUnit(unitID)
     while true do
             ox,oy,oz = nx,ny,nz  
             nx,ny,nz = spGetUnitPosition(unitID)        
             diff= math.abs(ox - nx) + math.abs(oz-nz) 
+            oldState = boolMoving
             if diff >  5  then
                 boolMoving = true
             else
                 boolMoving = false
             end    
+            if oldState ~= boolMoving and boolPlayerUnit then echo("Movestate Changed to ".. selectValue(boolMoving, " moving", " not moving")) end
         Sleep(125)    
+
     end
 end
 
