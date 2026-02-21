@@ -1451,6 +1451,68 @@ function getADryWalkAbleSpot()
     return getPathPointFullfillingConditions(cond, 64)
 end
 
+function setupFairnessQuadrants(eventName)
+map = {minX = 1, minZ  = 1, maxX =Game.mapSizeX, maxY = Game.mapSizeZ}
+local quadrants = {
+    {minX = map.minX, maxX = midX, minY = map.minY, maxY = midY, counter = 0}, -- Q1
+    {minX = midX,     maxX = map.maxX, minY = map.minY, maxY = midY, , counter = 0}, -- Q2
+    {minX = map.minX, maxX = midX, minY = midY, maxY = map.maxY,  counter = 0}, -- Q3
+    {minX = midX,     maxX = map.maxX, minY = midY, maxY = map.maxY, counter = 0} -- Q4
+}
+return quadrants
+end
+
+function getQuadrantIndex(quadrants, x, z)
+   for i, q in ipairs(quadrants) do
+        if x >= q.minX and x <= q.maxX and
+           z >= q.minZ and z <= q.maxZ then
+            return i
+        end
+    end
+    echo("Error: Default quadrant selected")
+    return 1
+end
+
+function isMyQuadrantLow(quadtrans, x,z)
+    local nr = getQuadrantIndex(quadrants, x, z)
+    if not nr then
+        return false, nil
+    end
+
+    local myCount = quadrants[nr].counter
+
+    local lowest = math.huge
+    for _, q in ipairs(quadrants) do
+        if q.counter < lowest then
+            lowest = q.counter
+        end
+    end
+
+    -- Allow spawn if this quadrant is currently minimal
+    if myCount <= lowest then
+        return true, nr
+    end
+
+    return false, nr
+end
+
+function incrementQuadtrant(quadtrans, nr)
+    quadtrans[nr].counter = quadtrans[nr].counter + 1 
+    return quadtrans
+end
+
+function isFairOnMap(x,z, eventname)
+    if not GG.FairOnMap then GG.FairOnMap = {} end
+    if not GG.FairOnMap[eventname] then GG.FairOnMap[eventname] = setupFairnessQuadrants() end
+    local quadrants = GG.FairOnMap[eventname]
+    boolIsLowQuadrant, nr = isMyQuadrantLow(quadrants, x,  z)
+    if  boolIsLowQuadrant then
+        GG.FairOnMap[eventname] = incrementQuadtrant(quadrants, nr )
+    end
+    return boolIsLowQuadrant
+end
+
+
 -- >finds a spot on the map that is dry, and walkable
 function getPathPointFullfillingConditions(condition, maxRes, filterTable,
                                            mapSizeX, mapSizeZ)

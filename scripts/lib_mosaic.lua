@@ -189,7 +189,8 @@ function getGameConfig()
 
         Objectives = {
             RewardCyle = 30 * 60, -- /30 frames = 1 seconds
-            Reward = 20
+            Reward = 20,
+            RewardFortNoxDestroyed = 3000,
         },
         maxNrExplosionSoundFiles = 14,
         -- civilianbehaviour

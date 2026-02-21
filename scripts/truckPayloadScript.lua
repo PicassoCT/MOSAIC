@@ -7,6 +7,8 @@ include "lib_mosaic.lua"
 GameConfig = getGameConfig()
 TablesOfPiecesGroups = {}
 
+
+
 function script.HitByWeapon(x, z, weaponDefID, damage) end
 fireTruck = piece("container031")
 EMT = piece("container032")
@@ -14,6 +16,7 @@ GarbageTruck = piece("container39")
 
 myTeamID = Spring.GetUnitTeam(unitID)
 gaiaTeamID = Spring.GetGaiaTeamID()
+boolIsFortNoxTruck = Spring.GetUnitDefID(unitID) == UnitDefNames["truckpayloadfortnox"]
 
 function attachPayload(payLoadID, id)
     if payLoadID then
@@ -166,12 +169,21 @@ function setPayLoadDescription(payLoadPieceId)
 	return payLoad
 end
 
+
+transportingParent = nil
+function delayedParentDetection()
+	Sleep(100)
+	transportingParent = Spring.GetUnitTransporter(unitID)
+	assert(transportingParent)
+end
 function script.Create()
     -- generatepiecesTableAndArrayCode(unitID)
     Spring.SetUnitNeutral(unitID,true)
     Spring.SetUnitBlocking(unitID,false)
     Spring.SetUnitAlwaysVisible(unitID,true)
     Spring.SetUnitNoSelect(unitID,true)
+    StartThread(delayedParentDetection)
+    x,y,z = Spring.GetUnitPosition(unitID)
 
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     busPieces[TablesOfPiecesGroups["container"][41]] = TablesOfPiecesGroups["container"][41]
@@ -183,16 +195,19 @@ function script.Create()
     hideAll(unitID)
 
     if unitDefID == UnitDefNames["truckpayloadrefugee"].id then
-        showOnePiece(TablesOfPiecesGroups["RefugeePayload"])
-        if randChance(10) then
-        	StartThread(delayedAttachCivilianLoot)
-    	end
-        for i=1, #TablesOfPiecesGroups["RefugeeDeco"] do
-            if maRa() == true then
-                Show(TablesOfPiecesGroups["RefugeeDeco"][i] )
-            end
-        end
+     	refugeeTruckBehaviour()
     else
+    	if randChance(2) and isFairOnMap(x, z, "moneytransport") then
+    		displayedPiece = piece("FortNox")
+    		StartThread(delayedSetParentDescription, "Fort Nox - Dont even try it")
+    		Show(displayedPiece)
+    	else
+  		selectPayloadPiece()
+	end
+    end
+end
+
+function selectPayloadPiece()
       displayedPiece =  showOnePiece(TablesOfPiecesGroups["container"])
       description = setPayLoadDescription(displayedPiece)
 	  StartThread(delayedSetParentDescription, description)
@@ -201,6 +216,17 @@ function script.Create()
 	  if busPieces[displayedPiece] then
 	  	GG.BusesTable[unitID] = unitID
 	  end
+end
+
+function refugeeTruckBehaviour()
+   showOnePiece(TablesOfPiecesGroups["RefugeePayload"])
+    if randChance(10) then
+    	StartThread(delayedAttachCivilianLoot)
+	end
+    for i=1, #TablesOfPiecesGroups["RefugeeDeco"] do
+        if maRa() == true then
+            Show(TablesOfPiecesGroups["RefugeeDeco"][i] )
+        end
     end
 end
 
@@ -212,8 +238,19 @@ function delayedSetParentDescription(description)
       	Spring.SetUnitTooltip( transporterID, oldToolTip.." "..description)
       end
   end
+function rewardAudacity()
+	attackerID= Spring.GetUnitLastAttacker(transportingParent)
+	if attackerID then
+		attackerTeam = Spring.GetUnitTeam(attackerID)
+		GG.Bank:TransferToTeam(GameConfig.Objectives.RewardFortNoxDestroyed, attackerTeam, unitID)
+	end
+end
 
+fortNox = piece("FortNox")
 function script.Killed(recentDamage, _)
+	if displayedPiece == fortNox then
+		rewardAudacity()
+	end
     return 1
 end
 
