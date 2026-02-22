@@ -630,7 +630,7 @@ function setNoneCollide(unitId)
     col.isBlocking = false
     col.isSolidObjectCollidable = false
     col.isProjectileCollidable= false
-    col.isRaySegmentCollidable = true
+    col.isRaySegmentCollidable = false
     col.crushable= false
     col.blockEnemyPushing= false
     col.blockHeightChanges  = false
