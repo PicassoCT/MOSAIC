@@ -87,14 +87,16 @@ return {
             }
         }, 
         {["time"] = 30, ["commands"] = {}}
-    },   ["FIGHTING"] = {
+    },  
+["FIGHTING"] = {
           {
-            ["time"] = 1,          ["commands"] = {
+            ["time"] = 1,          
+            ["commands"] = {
                 {["c"]="turn",["p"]="Torso", ["a"]=z_axis, t= -40*deg_1, ["s"]=12.941510},              
                 {["c"]="turn",["p"]="UpArm1", ["a"]=x_axis, rl = deg_45, ru=  deg_1*60, ["s"]=22.941510},              {["c"]="turn",["p"]="UpArm1", ["a"]=y_axis, rl = -deg_45, ru= -deg_45 + deg_1*10, ["s"]=22.512869},              {["c"]="turn",["p"]="UpArm1", ["a"]=z_axis, rl = -33*deg_1, ru= -deg_1*-5, ["s"]=22.174944},              
                 {["c"]="turn",["p"]="LowArm1", ["a"]=x_axis, rl = -deg_45, ru=  -deg_1*20, ["s"]=22.941510},              {["c"]="turn",["p"]="LowArm1", ["a"]=y_axis, rl = deg_1*20,_45, ru=  deg_1*30, ["s"]=22.512869},              {["c"]="turn",["p"]="LowArm1", ["a"]=z_axis, rl = deg_1*60, ru=  deg_1*70, ["s"]=22.174944},            
                 --fist
-                {["c"]="turn",["p"]="UpArm2", ["a"]=x_axis, t= -87*deg_1, ["s"]=24.941510},              {["c"]="turn",["p"]="UpArm2", ["a"]=y_axis, 0, ["s"]=22.512869},              {["c"]="turn",["p"]="UpArm2", ["a"]=z_axis, -60*deg_1, ["s"]=2.174944},              
+                {["c"]="turn",["p"]="UpArm2", ["a"]=x_axis, t= -87*deg_1, ["s"]=24.941510},              {["c"]="turn",["p"]="UpArm2", ["a"]=y_axis, t = 0, ["s"]=22.512869},              {["c"]="turn",["p"]="UpArm2", ["a"]=z_axis, t=-60*deg_1, ["s"]=2.174944},              
                 {["c"]="turn",["p"]="LowArm2", ["a"]=x_axis, rl = deg_1*-5, ru= deg_1, ["s"]=21.941510},              {["c"]="turn",["p"]="LowArm2", ["a"]=y_axis, rl = deg_1*5, ru=  deg_1*10, ["s"]=20.512869},              {["c"]="turn",["p"]="LowArm2", ["a"]=z_axis, rl = deg_1*-5, ru=  deg_1*0, ["s"]=22.174944}              
             }
         },      {
@@ -120,7 +122,7 @@ return {
                 {["c"]="turn",["p"]="LowArm2", ["a"]=x_axis, rl = -deg_45, ru=  -deg_1*20, ["s"]=22.941510},              {["c"]="turn",["p"]="LowArm2", ["a"]=y_axis, rl = deg_1*20,_45, ru=  deg_1*30, ["s"]=22.512869},              {["c"]="turn",["p"]="LowArm2", ["a"]=z_axis, rl = deg_1*60, ru=  deg_1*70, ["s"]=22.174944},            
 
                 --fist
-                {["c"]="turn",["p"]="UpArm1", ["a"]=x_axis, t= -87*deg_1, ["s"]=24.941510},              {["c"]="turn",["p"]="UpArm1", ["a"]=y_axis, 0, ["s"]=22.512869},              {["c"]="turn",["p"]="UpArm1", ["a"]=z_axis, -60*deg_1, ["s"]=2.174944},              
+                {["c"]="turn",["p"]="UpArm1", ["a"]=x_axis, t= -87*deg_1, ["s"]=24.941510},              {["c"]="turn",["p"]="UpArm1", ["a"]=y_axis, t =  0, ["s"]=22.512869},              {["c"]="turn",["p"]="UpArm1", ["a"]=z_axis, t=-60*deg_1, ["s"]=2.174944},              
                 {["c"]="turn",["p"]="LowArm1", ["a"]=x_axis, rl = deg_1*-5, ru= deg_1, ["s"]=21.941510},              {["c"]="turn",["p"]="LowArm1", ["a"]=y_axis, rl = deg_1*5, ru=  deg_1*10, ["s"]=20.512869},              {["c"]="turn",["p"]="LowArm1", ["a"]=z_axis, rl = deg_1*-5, ru=  deg_1*0, ["s"]=22.174944}              
             }
         },        {
@@ -131,10 +133,9 @@ return {
         ["time"] = 1,      ["commands"] = {
             {["c"]="turn",["p"]="center", ["a"]=x_axis, ["t"]=0.947414, ["s"]=2.186340},          {["c"]="turn",["p"]="Head", ["a"]=x_axis, ["t"]=-0.601977, ["s"]=1.389178},          {["c"]="turn",["p"]="LowArm1", ["a"]=x_axis, ["t"]=-0.841321, ["s"]=1.941510},          {["c"]="turn",["p"]="LowArm1", ["a"]=y_axis, ["t"]=-0.222243, ["s"]=0.512869},          {["c"]="turn",["p"]="LowArm1", ["a"]=z_axis, ["t"]=0.942476, ["s"]=2.174944},          {["c"]="turn",["p"]="LowArm2", ["a"]=x_axis, ["t"]=-0.950410, ["s"]=2.193254},          {["c"]="turn",["p"]="LowArm2", ["a"]=y_axis, ["t"]=0.049276, ["s"]=0.113715},          {["c"]="turn",["p"]="LowArm2", ["a"]=z_axis, ["t"]=-1.129248, ["s"]=2.605958},          {["c"]="turn",["p"]="LowLeg1", ["a"]=x_axis, ["t"]=2.010944, ["s"]=4.640641},          {["c"]="turn",["p"]="LowLeg2", ["a"]=x_axis, ["t"]=2.010944, ["s"]=4.640641},          {["c"]="turn",["p"]="UpArm1", ["a"]=x_axis, ["t"]=-1.219794, ["s"]=2.814910},          {["c"]="turn",["p"]="UpArm2", ["a"]=x_axis, ["t"]=-1.001908, ["s"]=2.312096},          {["c"]="turn",["p"]="UpLeg1", ["a"]=x_axis, ["t"]=-1.723455, ["s"]=3.977204},          {["c"]="turn",["p"]="UpLeg2", ["a"]=x_axis, ["t"]=-1.723455, ["s"]=3.977204},      }
     },  {
-        ["time"] = 14,      ["commands"] = {
-        }
-    },
-},  ["UPBODY_STANDING_PISTOL"] = {
+        ["time"] = 14,      ["commands"] = {}    },
+},  
+["UPBODY_STANDING_PISTOL"] = {
         {
 
             ["time"] = 1,          ["commands"] = {
@@ -1446,5 +1447,52 @@ return {
             }
         }, {["time"] = 29, ["commands"] = {}},      {["time"] = 30, ["commands"] = {}}, {["time"] = 90, ["commands"] = {}}
     }
+ ,
+["UPBODY_STANDING_IDLE1"] = {
+        {
+            ["time"] = 1,          
+            ["commands"] = {
+                {["c"]="turn",["p"]="Head", ["a"]=y_axis, rl = deg_1*-10, ru= deg_1 * 10, ["s"]=1.941510},    
+
+                {["c"]="turn",["p"]="Torso", ["a"]=z_axis, t= 0*deg_1, ["s"]=12.941510},              
+                {["c"]="turn",["p"]="Torso", ["a"]=y_axis, rl = deg_1*-15, ru= deg_1 * 15, ["s"]=3.941510},              
+                {["c"]="turn",["p"]="UpArm1", ["a"]=x_axis, t = 38.7 * deg_1, ["s"]=22.941510},              
+                {["c"]="turn",["p"]="UpArm1", ["a"]=y_axis, t = -deg_45, ["s"]=22.512869},             
+                {["c"]="turn",["p"]="UpArm1", ["a"]=z_axis, t= 0, ["s"]=22.174944},    
+
+                {["c"]="turn",["p"]="LowArm1", ["a"]=x_axis, t = deg_1 * 50, ["s"]=22.941510},              
+                {["c"]="turn",["p"]="LowArm1", ["a"]=y_axis, t = deg_1 * -65, ["s"]=22.512869},           
+                {["c"]="turn",["p"]="LowArm1", ["a"]=z_axis, t= deg_1 * -72, ["s"]=22.174944},            
+                --fist
+                {["c"]="turn",["p"]="UpArm2", ["a"]=x_axis, t= -40*deg_1, ["s"]=24.941510},      
+                {["c"]="turn",["p"]="UpArm2", ["a"]=y_axis, t = -deg_45, ["s"]=22.512869},       
+                {["c"]="turn",["p"]="UpArm2", ["a"]=z_axis, t= 0, ["s"]=2.174944}, 
+
+                {["c"]="turn",["p"]="LowArm2", ["a"]=x_axis,t = deg_1* 61 ,["s"]=21.941510},            
+                {["c"]="turn",["p"]="LowArm2", ["a"]=y_axis,t = deg_1* 55, ["s"]=20.512869},          
+                {["c"]="turn",["p"]="LowArm2", ["a"]=z_axis,t = deg_1* 90, ["s"]=22.174944},    
+
+                {["c"]="turn",["p"]="UpLeg1", ["a"]=x_axis,t = deg_1* 0 ,["s"]=21.941510},            
+                {["c"]="turn",["p"]="UpLeg1", ["a"]=y_axis,t= 7 * deg_1, ["s"]=20.512869},          
+                {["c"]="turn",["p"]="UpLeg1", ["a"]=z_axis,t = deg_1* 0, ["s"]=22.174944},
+
+                {["c"]="turn",["p"]="LowLeg1", ["a"]=x_axis,t =0 ,["s"]=21.941510},            
+                {["c"]="turn",["p"]="LowLeg1", ["a"]=y_axis,t=0, ["s"]=20.512869},          
+                {["c"]="turn",["p"]="LowLeg1", ["a"]=z_axis,t =0, ["s"]=22.174944},
+
+                {["c"]="turn",["p"]="UpLeg2", ["a"]=x_axis,t = deg_1* 0 ,["s"]=21.941510},            
+                {["c"]="turn",["p"]="UpLeg2", ["a"]=y_axis,t= -7 *deg_1, ["s"]=20.512869},          
+                {["c"]="turn",["p"]="UpLeg2", ["a"]=z_axis,t = deg_1* 0, ["s"]=22.174944},
+
+                {["c"]="turn",["p"]="LowLeg2", ["a"]=x_axis,t =0 ,["s"]=21.941510},            
+                {["c"]="turn",["p"]="LowLeg2", ["a"]=y_axis,t=0, ["s"]=20.512869},          
+                {["c"]="turn",["p"]="LowLeg2", ["a"]=z_axis,t =0, ["s"]=22.174944},                         
+            }
+        },    
+         {
+            ["time"] = 60    
+        }  
+ }
+
 };
  
