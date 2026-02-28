@@ -384,7 +384,8 @@ uppperBodyAnimations = {
     },
 	[eAnimState.idle] = { 	
 		[1] = "UPBODY_STANDING_GUN",
-		[2] = "UPBODY_STANDING_PISTOL"
+		[2] = "UPBODY_STANDING_PISTOL",
+		[3] = "UPBODY_STANDING_IDLE1"
 	},
 	[eAnimState.aiming] = { 	
 		[1] = "UPBODY_AIMING"
