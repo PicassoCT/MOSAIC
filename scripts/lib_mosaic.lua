@@ -2147,6 +2147,7 @@ end
                     talking = "STATE_TALKING",
                     handsup = "STATE_HANDSUP",
                     protest = "STATE_PROTEST",
+                    idle = "STATE_IDLE",
 
                     --coupled cycles
                     standing = "STATE_STANDING",
