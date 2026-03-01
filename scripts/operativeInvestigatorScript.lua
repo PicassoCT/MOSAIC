@@ -131,17 +131,22 @@ function showFireArm()
 	end
 end
 
+TorosTable = {[Torso] = Torso}
+
 boolOldIsMoving = nil
+manualAimFrame = 0
 function externalAimFunction(targetPosWorldT, remainderRotation, boolIsMoving)
     showFireArm()
-    Turn(Torso,y_axis, -remainderRotation, 55)
+    boolAiming = true
+    Turn(Torso,y_axis, remainderRotation, 55)
     if boolOldIsMoving ~= boolIsMoving then
+    	manualAimFrame=Spring.GetGameFrame()
     	boolOldIsMoving = boolIsMoving
     	if boolIsMoving then     
 			setOverrideAnimationState(eAnimState.aiming, nil,  true, lowerBodyPieces, false)
 			setOverrideAnimationState(nil, eAnimState.walking,  true, upperBodyPieces, false)
 		else
-			setOverrideAnimationState(eAnimState.aiming, nil,  true, nil, false)
+			setOverrideAnimationState(eAnimState.aiming, nil,  true, TorosTable, false)
 		end
     end
 end
@@ -712,10 +717,25 @@ AnimationConditions= {
             return boolAnyBuildings
     end,
 ["UPBODY_STANDING_IDLE_ARMS_FOLDED"] =   function() 
+	showFoldLaptop(false)
 	setOverrideAnimationState(nil, eAnimState.idle,  true, nil, false)
 	return true
 end,
+["UPBODY_IDLE_LOWREADY"] =   function() 
+	Show(Gun)
+	showFoldLaptop(false)
+	return true
+end,
+["UPBODY_STANDING_GUN"] =   function() 
+	Show(Gun)
+	return true
+end,
+["UPBODY_IDLE_POSE"] =   function() 
+	Show(Gun)
+	return true
+end,
 ["UPBODY_IDLE_BALLERINA"] =   function() 
+	showFoldLaptop(false)
 	setOverrideAnimationState(nil, eAnimState.idle,  true, nil, false)
 	return true
 end
@@ -724,14 +744,21 @@ end
 
 }
 
+function getAimConditionalTable()
+	if Spring.GetGameFrame() - manualAimFrame < 90 then
+		return {[Torso]= Torso}
+	end
+return {}
+end
 
 function playUpperBodyIdleAnimation()
 		selectedIdleFunction = math.random(1,#uppperBodyAnimations[eAnimState.idle])
-		if AnimationConditions[selectedIdleFunction] and AnimationConditions[selectedIdleFunction]() == false then
+		nameOfFunc = uppperBodyAnimations[eAnimState.idle][selectedIdleFunction]
+		if AnimationConditions[nameOfFunc] and AnimationConditions[nameOfFunc]() == false then
 			return 
 		end
 		echo("Playing upper idle animation "..uppperBodyAnimations[eAnimState.idle][selectedIdleFunction])
-		PlayAnimation(uppperBodyAnimations[eAnimState.idle][selectedIdleFunction], lowerBodyPieces, math.random(1,5)/2.5)	
+		PlayAnimation(uppperBodyAnimations[eAnimState.idle][selectedIdleFunction], {}, math.random(1,5)/2.5)	
 end
 
 
@@ -776,9 +803,11 @@ UpperAnimationStateFunctions ={
 						Hide(FoldtopUnfolded)
 						Show(FoldtopFolded)
 						if boolPistol == true and isInvestigator then
-							PlayAnimation("UPBODY_AIM_PISTOL")
+							showFoldLaptop(false)
+							PlayAnimation("UPBODY_AIM_PISTOL", getAimConditionalTable())
 						else	
-							PlayAnimation("UPBODY_AIMING", nil, 3.0)
+							showFoldLaptop(false)
+							PlayAnimation("UPBODY_AIMING",  getAimConditionalTable(), 3.0)
 						end
 						Sleep(100)
 						return eAnimState.aiming 

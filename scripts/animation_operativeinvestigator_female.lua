@@ -1144,7 +1144,7 @@ return {
 },
 ["UPBODY_IDLE_PIVOTSCAN"] = {
     {
-        ["time"]=30,
+        ["time"]=1,
         ["commands"]={
             {["c"]="turn",["p"]="Torso",["a"]=z_axis,t=deg_1*20,["s"]=1},
             {["c"]="turn",["p"]="Head",["a"]=z_axis,t=deg_1*35,["s"]=1},
@@ -1156,7 +1156,17 @@ return {
             {["c"]="turn",["p"]="Torso",["a"]=z_axis,t=deg_1*-20,["s"]=1},
             {["c"]="turn",["p"]="Head",["a"]=z_axis,t=deg_1*-35,["s"]=1},
         }
+    },
+
+
+     {
+        ["time"]=60,
+        ["commands"]={
+            {["c"]="turn",["p"]="Torso",["a"]=z_axis,ru=deg_1*20, rl=deg_1* -20,["s"]=1},
+            {["c"]="turn",["p"]="Head",["a"]=z_axis,ru=deg_1*20, rl=deg_1* -20,["s"]=1},
+        }
     }
+
 } 
 };
  
