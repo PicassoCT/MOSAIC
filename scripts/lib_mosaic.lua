@@ -3824,7 +3824,7 @@ end
 
         function setCivilianUnitInternalStateMode(unitID, State, behaviour)
             if not GG.CivilianUnitInternalLogicActive then GG.CivilianUnitInternalLogicActive = {} end
-            if GG.CivilianUnitInternalLogicActive[unitID].behaviour then 
+            if GG.CivilianUnitInternalLogicActive[unitID] and  GG.CivilianUnitInternalLogicActive[unitID].behaviour then 
                 echo("Overriding internal state".. GG.CivilianUnitInternalLogicActive[unitID].behaviour .. " with ".. behaviour or "no behavour name") 
             end
             GG.CivilianUnitInternalLogicActive[unitID] = {state = state, behaviour = behaviour or "no behavour name"} 

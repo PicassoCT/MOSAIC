@@ -226,7 +226,6 @@ end
 
 
 function RestoreStoredMovements(id)
-    echo("Restoring Movement  ")
     if true then return end
     local stored = storedCommands[id]
     if not stored then return end

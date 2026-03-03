@@ -396,9 +396,10 @@ uppperBodyAnimations = {
 		[4] = "UPBODY_IDLE_LOWREADY",
 		[5]= "UPBODY_IDLE_EARPIECE",
 		[6]= "UPBODY_IDLE_BALLERINA",
+		[7]= "UPBODY_IDLE_POSE",
 		[8]= "UPBODY_IDLE_PIVOTSCAN",
 		[9]= "UPBODY_IDLE_WALLLEAN",
-		[7]= "UPBODY_IDLE_POSE"
+		[10]="UPBODY_IDLE_EAT_SNACK"
 	},
 	[eAnimState.aiming] = { 	
 		[1] = "UPBODY_AIMING"
@@ -730,6 +731,12 @@ end,
 	Show(Gun)
 	return true
 end,
+["UPBODY_IDLE_EARPIECE"] =   function() 
+	Hide(FoldtopFolded)
+	Hide(FoldtopUnfolded)
+	Show(Gun)
+	return true
+end,
 ["UPBODY_IDLE_POSE"] =   function() 
 	Show(Gun)
 	return true
@@ -739,9 +746,6 @@ end,
 	setOverrideAnimationState(nil, eAnimState.idle,  true, nil, false)
 	return true
 end
-
-    
-
 }
 
 function getAimConditionalTable()

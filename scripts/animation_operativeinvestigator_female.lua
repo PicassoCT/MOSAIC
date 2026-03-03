@@ -994,44 +994,157 @@ return {
     {["time"]=60,
             ["commands"] = {}}
 },
+["UPBODY_IDLE_EAT_SNACK"] = {
+
+-- PHASE 1: Raise snack to mouth
+{
+    ["time"]=30,
+    ["commands"]={
+
+        -- slight torso turn toward eating hand
+        {["c"]="turn",["p"]="Torso",["a"]=y_axis,t=deg_1*-10,["s"]=2},
+
+        -- head lowers slightly
+        {["c"]="turn",["p"]="Head",["a"]=x_axis,t=deg_1*8,["s"]=2},
+
+        -- Upper arm lifts
+        {["c"]="turn",["p"]="UpArm1",["a"]=x_axis,t=deg_1*-20,["s"]=3},
+        {["c"]="turn",["p"]="UpArm1",["a"]=y_axis,t=deg_1*-35,["s"]=3},
+        {["c"]="turn",["p"]="UpArm1",["a"]=z_axis,t=deg_1*15,["s"]=3},
+
+        -- Forearm bends strongly
+        {["c"]="turn",["p"]="LowArm1",["a"]=x_axis,t=deg_1*110,["s"]=3},
+    }
+},
+
+-- PHASE 2: Bite moment (hold at mouth)
+{
+    ["time"]=40,
+    ["commands"]={
+        -- small head forward tap (bite cue)
+        {["c"]="turn",["p"]="Head",["a"]=x_axis,t=deg_1*12,["s"]=0.6},
+    }
+},
+
+-- PHASE 3: Chewing loop (subtle oscillation)
+{
+    ["time"]=60,
+    ["commands"]={
+        -- tiny chew bob
+        {["c"]="turn",["p"]="Head",["a"]=x_axis,t=deg_1*9,["s"]=0.3},
+    }
+},
+
+-- PHASE 4: Lower hand slightly but not fully
+{
+    ["time"]=30,
+    ["commands"]={
+        {["c"]="turn",["p"]="UpArm1",["a"]=x_axis,t=deg_1*-10,["s"]=2},
+        {["c"]="turn",["p"]="LowArm1",["a"]=x_axis,t=deg_1*80,["s"]=2},
+        {["c"]="turn",["p"]="Head",["a"]=x_axis,t=deg_1*6,["s"]=2},
+    }
+},
+
+-- PHASE 5: Return to neutral (loop-safe)
+{
+    ["time"]=20,
+    ["commands"]={
+        {["c"]="turn",["p"]="Torso",["a"]=y_axis,t=0,["s"]=2},
+        {["c"]="turn",["p"]="Head",["a"]=x_axis,t=0,["s"]=2},
+        {["c"]="turn",["p"]="UpArm1",["a"]=x_axis,t=0,["s"]=2},
+        {["c"]="turn",["p"]="UpArm1",["a"]=y_axis,t=0,["s"]=2},
+        {["c"]="turn",["p"]="UpArm1",["a"]=z_axis,t=0,["s"]=2},
+        {["c"]="turn",["p"]="LowArm1",["a"]=x_axis,t=0,["s"]=2},
+    }
+}
+
+},
  ["UPBODY_IDLE_LOWREADY"] = {
-    {
-        ["time"]=1,
-        ["commands"]={
-            -- Head scan
-            {["c"]="turn",["p"]="Head",["a"]=y_axis, rl=deg_1*-15, ru=deg_1*15,["s"]=3},
-            {["c"]="turn",["p"]="Head",["a"]=z_axis, rl=deg_1*-3, ru=deg_1*3,["s"]=2},
 
-            -- Torso slight forward combat bias
-            {["c"]="turn",["p"]="Torso",["a"]=x_axis,t=deg_1*6,["s"]=4},
-            {["c"]="turn",["p"]="Torso",["a"]=y_axis, rl=deg_1*-10, ru=deg_1*10,["s"]=3},
+-- PHASE 1: Establish Base Pose
+{
+    ["time"]=1,
+    ["commands"]={
 
-            -- Dominant arm (weapon low ready)
-            {["c"]="turn",["p"]="UpArm1", ["a"]=x_axis, t = -38.7 * deg_1, ["s"]=3.941510},              
-            {["c"]="turn",["p"]="UpArm1", ["a"]=y_axis, t = -deg_45, ["s"]=3.512869},             
-            {["c"]="turn",["p"]="UpArm1", ["a"]=z_axis, t= 0, ["s"]=3.174944},    
-         
-            {["c"]="turn",["p"]="UpArm2", ["a"]=x_axis, t= -40*deg_1, ["s"]=3.941510},      
-            {["c"]="turn",["p"]="UpArm2", ["a"]=y_axis, t = deg_45, ["s"]=3.512869},       
-            {["c"]="turn",["p"]="UpArm2", ["a"]=z_axis, t= 0, ["s"]=2.174944}, 
+        -- Head scan (larger for topdown readability)
+        {["c"]="turn",["p"]="Head",["a"]=y_axis, rl=deg_1*-20, ru=deg_1*20,["s"]=2},
+        {["c"]="turn",["p"]="Head",["a"]=z_axis, rl=deg_1*-6, ru=deg_1*6,["s"]=2},
 
-         
-            {["c"]="turn",["p"]="LowArm1",["a"]=x_axis,t=0*deg_1,["s"]=6},
-            {["c"]="turn",["p"]="LowArm1",["a"]=y_axis,t=0*deg_1,["s"]=6},
-            {["c"]="turn",["p"]="LowArm1",["a"]=z_axis,t=0* deg_1,["s"]=6},
+        -- Torso forward combat bias
+        {["c"]="turn",["p"]="Torso",["a"]=x_axis,t=deg_1*6,["s"]=3},
+        {["c"]="turn",["p"]="Torso",["a"]=y_axis,t=0,["s"]=3},
+
+        -- Arms (your actual lowready values)
+        {["c"]="turn",["p"]="UpArm1",["a"]=x_axis,t=-38.7*deg_1,["s"]=3},
+        {["c"]="turn",["p"]="UpArm1",["a"]=y_axis,t=-deg_45,["s"]=3},
+
+        {["c"]="turn",["p"]="UpArm2",["a"]=x_axis,t=-40*deg_1,["s"]=3},
+        {["c"]="turn",["p"]="UpArm2",["a"]=y_axis,t=deg_45,["s"]=3},
+
+        {["c"]="turn",["p"]="LowArm2",["a"]=x_axis,t=-25*deg_1,["s"]=3},
+        {["c"]="turn",["p"]="LowArm2",["a"]=y_axis,t=60*deg_1,["s"]=3},
+
+        -- Legs
+        {["c"]="turn",["p"]="UpLeg1",["a"]=y_axis,t=6*deg_1,["s"]=3},
+        {["c"]="turn",["p"]="UpLeg2",["a"]=y_axis,t=-6*deg_1,["s"]=3},
+    }
+},
+
+-- PHASE 2: Weight shift left + slight weapon drift
+{
+    ["time"]=50,
+    ["commands"]={
+
+        -- Torso slight yaw
+        {["c"]="turn",["p"]="Torso",["a"]=y_axis,t=deg_1*4,["s"]=0.4},
+
+        -- Slight lean
+        {["c"]="turn",["p"]="Torso",["a"]=z_axis,t=deg_1*2,["s"]=0.4},
+
+        -- Weapon arc drift (visible from above)
+        {["c"]="turn",["p"]="UpArm1",["a"]=x_axis,t=-36.5*deg_1,["s"]=0.4},
+        {["c"]="turn",["p"]="UpArm2",["a"]=x_axis,t=-37.5*deg_1,["s"]=0.4},
+
+        -- Hip bias
+        {["c"]="turn",["p"]="UpLeg1",["a"]=y_axis,t=9*deg_1,["s"]=0.4},
+        {["c"]="turn",["p"]="UpLeg2",["a"]=y_axis,t=-3*deg_1,["s"]=0.4},
+    }
+},
+
+-- PHASE 3: Shift right (mirror bias)
+{
+    ["time"]=50,
+    ["commands"]={
+
+        {["c"]="turn",["p"]="Torso",["a"]=y_axis,t=deg_1*-4,["s"]=0.4},
+        {["c"]="turn",["p"]="Torso",["a"]=z_axis,t=deg_1*-2,["s"]=0.4},
+
+        {["c"]="turn",["p"]="UpArm1",["a"]=x_axis,t=-41*deg_1,["s"]=0.4},
+        {["c"]="turn",["p"]="UpArm2",["a"]=x_axis,t=-42*deg_1,["s"]=0.4},
+
+        {["c"]="turn",["p"]="UpLeg1",["a"]=y_axis,t=3*deg_1,["s"]=0.4},
+        {["c"]="turn",["p"]="UpLeg2",["a"]=y_axis,t=-9*deg_1,["s"]=0.4},
+    }
+},
+
+-- PHASE 4: Re-center to exact base
+{
+    ["time"]=49,
+    ["commands"]={
+        {["c"]="turn",["p"]="Torso",["a"]=y_axis,t=0,["s"]=0.4},
+        {["c"]="turn",["p"]="Torso",["a"]=z_axis,t=0,["s"]=0.4},
+
+        {["c"]="turn",["p"]="UpArm1",["a"]=x_axis,t=-38.7*deg_1,["s"]=0.4},
+        {["c"]="turn",["p"]="UpArm2",["a"]=x_axis,t=-40*deg_1,["s"]=0.4},
+
+        {["c"]="turn",["p"]="UpLeg1",["a"]=y_axis,t=6*deg_1,["s"]=0.4},
+        {["c"]="turn",["p"]="UpLeg2",["a"]=y_axis,t=-6*deg_1,["s"]=0.4},
+    }
+}
 
 
-            {["c"]="turn",["p"]="LowArm2",["a"]=x_axis,t=-deg_1*25,["s"]=6},
-            {["c"]="turn",["p"]="LowArm2",["a"]=y_axis,t=deg_1*60,["s"]=6},
-            {["c"]="turn",["p"]="LowArm2",["a"]=z_axis,t=deg_1*0,["s"]=6},
 
-            -- Legs stable, slight offset
-            {["c"]="turn",["p"]="UpLeg1",["a"]=y_axis,t=deg_1*6,["s"]=3},
-            {["c"]="turn",["p"]="UpLeg2",["a"]=y_axis,t=deg_1*-6,["s"]=3},
-        }
-    },
-    {["time"]=60,
-            ["commands"] = {}}
+
 },
 ["UPBODY_IDLE_WALLLEAN"] = {
 
