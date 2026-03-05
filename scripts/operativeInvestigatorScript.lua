@@ -198,6 +198,14 @@ function showBody()
 	showT(lowerBodyPieces)
 	Show(FoldtopFolded)
 	showT(shownPieces)
+	if randChance(10) then
+		showT(TablesOfPiecesGroups["Tail"])
+		StartThread(tailWind)
+	end
+end
+
+function tailWind()
+
 end
 
 shownPieces={}
