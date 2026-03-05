@@ -21,7 +21,7 @@ local axisSign ={
 }
 
 
-	Animations = include('animation_operativeinvestigator_female.lua') 
+Animations = include('animation_operativeinvestigator_female.lua') 
 
 local center = piece('center');
 local Torso = piece('Torso');
@@ -131,17 +131,22 @@ function showFireArm()
 	end
 end
 
+TorosTable = {[Torso] = Torso}
+
 boolOldIsMoving = nil
+manualAimFrame = 0
 function externalAimFunction(targetPosWorldT, remainderRotation, boolIsMoving)
     showFireArm()
-    Turn(Torso,y_axis, -remainderRotation, 55)
+    boolAiming = true
+    Turn(Torso,y_axis, remainderRotation, 55)
     if boolOldIsMoving ~= boolIsMoving then
+    	manualAimFrame=Spring.GetGameFrame()
     	boolOldIsMoving = boolIsMoving
     	if boolIsMoving then     
 			setOverrideAnimationState(eAnimState.aiming, nil,  true, lowerBodyPieces, false)
 			setOverrideAnimationState(nil, eAnimState.walking,  true, upperBodyPieces, false)
 		else
-			setOverrideAnimationState(eAnimState.aiming, nil,  true, nil, false)
+			setOverrideAnimationState(eAnimState.aiming, nil,  true, TorosTable, false)
 		end
     end
 end
@@ -193,10 +198,14 @@ function showBody()
 	showT(lowerBodyPieces)
 	Show(FoldtopFolded)
 	showT(shownPieces)
-	if boolShowHair then
-		selectedHair = "TODO"
-		StartThread(turnTail, selectedHair)
+	if randChance(10) then
+		showT(TablesOfPiecesGroups["Tail"])
+		StartThread(tailWind)
 	end
+end
+
+function tailWind()
+
 end
 
 shownPieces={}
@@ -227,16 +236,18 @@ function script.Create()
     StartThread(breathing)
     StartThread(transportControl)
     StartThread(cloakIfAIPlayer)
-    StartThread(testAnimation)
+   -- StartThread(testAnimation)
 end
 
 function testAnimation()
-	if isInvestigator then return end
+	resetAll(unitID)
     Sleep(500)
-  
+  	setOverrideAnimationState(nil, eAnimState.idle,  true, nil, false)
     while true do
-       -- PlayAnimation("WALKCYCLE_RUNNING", {}, 1.0)
+        PlayAnimation("UPBODY_IDLE_PIVOTSCAN", {}, 1.0)
 
+    	Sleep(5000)
+    	--resetAll(unitID)
     	Sleep(1000)
     end
 end
@@ -390,7 +401,14 @@ uppperBodyAnimations = {
 	[eAnimState.idle] = { 	
 		[1] = "UPBODY_STANDING_GUN",
 		[2] = "UPBODY_STANDING_PISTOL",
-		[3] = "UPBODY_STANDING_IDLE1"
+		[3] = "UPBODY_STANDING_IDLE_ARMS_FOLDED",
+		[4] = "UPBODY_IDLE_LOWREADY",
+		[5]= "UPBODY_IDLE_EARPIECE",
+		[6]= "UPBODY_IDLE_BALLERINA",
+		[7]= "UPBODY_IDLE_POSE",
+		[8]= "UPBODY_IDLE_PIVOTSCAN",
+		[9]= "UPBODY_IDLE_WALLLEAN",
+		[10]="UPBODY_IDLE_EAT_SNACK"
 	},
 	[eAnimState.aiming] = { 	
 		[1] = "UPBODY_AIMING"
@@ -418,11 +436,13 @@ lowerBodyAnimations = {
 		[1] = "UPBODY_STANDING_GUN"
 	
 	},
+	[eAnimState.idle] =  { 	
+	},
 }
 
 
 local animCmd = { ['turn'] = Turn, ['move'] = Move };
-
+animationCacheKey = "opverativeinvestigator_animation"
 function setupAnimation()
     local map = Spring.GetUnitPieceMap(unitID);
 	local switchAxis = function(axis) 
@@ -431,10 +451,18 @@ function setupAnimation()
 		return axis
 	end
 
+
     local offsets = constructSkeleton(unitID, center, {0,0,0});
+    if HasSharedOneTimeResult(animationCacheKey) then
+    		Animations = GetSharedOneTimeResult(animationCacheKey)
+    		return
+    end
+
     
     for a,anim in pairs(Animations) do
-        for i,keyframe in pairs(anim) do
+    	
+        for i,keyframe in pairs(anim) do      
+
         	if type(keyframe) == "number" then echo("animation ".. a.."has no keyframes") end
             local commands = keyframe.commands;
             for k,command in pairs(commands) do
@@ -455,6 +483,7 @@ function setupAnimation()
             end
         end
     end
+    SetSharedOneTimeResult(animationCacheKey,  Animations)
 end
 
 local animCmd = {['turn']=Turn,['move']=Move};
@@ -700,9 +729,67 @@ function leftArmPoses()
 	WaitForTurns(UpArm2,LowArm2, Hand2)
 end
 
+behindTheScene = piece("WarnCone2")
+AnimationConditions= {
+["UPBODY_IDLE_WALLLEAN"] =   function() 
+            
+            x,y,z = Spring.GetUnitPiecePosDir(unitID, behindTheScene)
+            T= getAllInCircle(x,z, 10, unitID, myTeamID)
+            boolAnyBuildings = false
+            foreach(T,
+                function(id)
+                    if houseTypeTable[Spring.GetUnitDefID(id)] then
+                        boolAnyBuildings = true
+                    end
+                end)
+            return boolAnyBuildings
+    end,
+["UPBODY_STANDING_IDLE_ARMS_FOLDED"] =   function() 
+	showFoldLaptop(false)
+	setOverrideAnimationState(nil, eAnimState.idle,  true, nil, false)
+	return true
+end,
+["UPBODY_IDLE_LOWREADY"] =   function() 
+	Show(Gun)
+	showFoldLaptop(false)
+	return true
+end,
+["UPBODY_STANDING_GUN"] =   function() 
+	Show(Gun)
+	return true
+end,
+["UPBODY_IDLE_EARPIECE"] =   function() 
+	Hide(FoldtopFolded)
+	Hide(FoldtopUnfolded)
+	Show(Gun)
+	return true
+end,
+["UPBODY_IDLE_POSE"] =   function() 
+	Show(Gun)
+	return true
+end,
+["UPBODY_IDLE_BALLERINA"] =   function() 
+	showFoldLaptop(false)
+	setOverrideAnimationState(nil, eAnimState.idle,  true, nil, false)
+	return true
+end
+}
+
+function getAimConditionalTable()
+	if Spring.GetGameFrame() - manualAimFrame < 90 then
+		return {[Torso]= Torso}
+	end
+return {}
+end
+
 function playUpperBodyIdleAnimation()
 		selectedIdleFunction = math.random(1,#uppperBodyAnimations[eAnimState.idle])
-		PlayAnimation(uppperBodyAnimations[eAnimState.idle][selectedIdleFunction], lowerBodyPieces, math.random(1,5)/2.5)	
+		nameOfFunc = uppperBodyAnimations[eAnimState.idle][selectedIdleFunction]
+		if AnimationConditions[nameOfFunc] and AnimationConditions[nameOfFunc]() == false then
+			return 
+		end
+		echo("Playing upper idle animation "..uppperBodyAnimations[eAnimState.idle][selectedIdleFunction])
+		PlayAnimation(uppperBodyAnimations[eAnimState.idle][selectedIdleFunction], {}, math.random(1,5)/2.5)	
 end
 
 
@@ -720,11 +807,11 @@ UpperAnimationStateFunctions ={
 								--echo("Idling")
 								if boolFlying == true then 	 return eAnimState.standing end
 
-								resetT(lowerBodyPieces, 10)
+			
 								boolDecoupled = true
 								while not boolAiming and not boolWalking and not boolFlying do			
 									playUpperBodyIdleAnimation()		
-									if maRa()== true then leftArmPoses() end
+									if maRa() then leftArmPoses() end
 									Sleep(30)
 								end
 						
@@ -747,9 +834,11 @@ UpperAnimationStateFunctions ={
 						Hide(FoldtopUnfolded)
 						Show(FoldtopFolded)
 						if boolPistol == true and isInvestigator then
-							PlayAnimation("UPBODY_AIM_PISTOL")
+							showFoldLaptop(false)
+							PlayAnimation("UPBODY_AIM_PISTOL", getAimConditionalTable())
 						else	
-							PlayAnimation("UPBODY_AIMING", nil, 3.0)
+							showFoldLaptop(false)
+							PlayAnimation("UPBODY_AIMING",  getAimConditionalTable(), 3.0)
 						end
 						Sleep(100)
 						return eAnimState.aiming 
@@ -774,6 +863,12 @@ LowerAnimationStateFunctions ={
 						resetT(lowerBodyPieces, 12)
 						Sleep(100)
 						return eAnimState.standing
+					end,
+
+[eAnimState.idle] = 	function () 			
+
+						Sleep(100)
+						return eAnimState.idle
 					end,
 [eAnimState.aiming] = 	function () 
 						AimDelay=AimDelay+100

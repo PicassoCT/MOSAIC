@@ -417,7 +417,7 @@ end
 
 
 function hideConstruction()
-    Hide(propeller)
+
     hideT(ship)
     hideT(cool)
     hideT(slice)

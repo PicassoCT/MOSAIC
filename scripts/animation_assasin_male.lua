@@ -89,8 +89,8 @@ return {
 
                 --fist
                 {['c']='turn',['p']="UpArm1", ['a']=x_axis, t= -87*deg_1, ['s']=24.941510},
-                {['c']='turn',['p']="UpArm1", ['a']=y_axis, 0, ['s']=22.512869},
-                {['c']='turn',['p']="UpArm1", ['a']=z_axis, -60*deg_1, ['s']=2.174944},
+                {['c']='turn',['p']="UpArm1", ['a']=y_axis, t=0, ['s']=22.512869},
+                {['c']='turn',['p']="UpArm1", ['a']=z_axis, t= -60*deg_1, ['s']=2.174944},
                 
                 {['c']='turn',['p']="LowArm1", ['a']=x_axis, rl = deg_1*-5, ru= deg_1, ['s']=21.941510},
                 {['c']='turn',['p']="LowArm1", ['a']=y_axis, rl = deg_1*5, ru=  deg_1*10, ['s']=20.512869},

@@ -194,6 +194,9 @@ end
 	Hide(Gun)
 	Hide(Pistol)
     Hide(SniperRifle)
+    Hide(MuzzleFlashSniperRifle)
+    Hide(MuzzleFlashGun)
+    Hide(MuzzleFlashPistol)
     if not boolInClosedCombat then
     	Show(lastShownWeapon)
         if lastShownWeapon == SniperRifle then
@@ -1347,6 +1350,7 @@ function showHideIcon(boolCloaked)
     else
         showAll(unitID)
         hideT(TablesOfPiecesGroups.HeadDeco)
+      
         showT(shownPieces)
         showFireArm()
         hideT(TablesOfPiecesGroups["Shell"])

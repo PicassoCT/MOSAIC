@@ -1,7 +1,7 @@
 -- ===================================================================================================================
 -- Game Configuration
  GG.unitFactor = 0.80
- GameVersion = "1.027"  --UpdateFlag
+ GameVersion = "1.028"  --UpdateFlag
  function setUnitFactor(modOptions)
     GG.unitFactor = modOptions.unitfactor or 0.8
  end
@@ -2147,6 +2147,7 @@ end
                     talking = "STATE_TALKING",
                     handsup = "STATE_HANDSUP",
                     protest = "STATE_PROTEST",
+                    idle = "STATE_IDLE",
 
                     --coupled cycles
                     standing = "STATE_STANDING",
@@ -3823,7 +3824,7 @@ end
 
         function setCivilianUnitInternalStateMode(unitID, State, behaviour)
             if not GG.CivilianUnitInternalLogicActive then GG.CivilianUnitInternalLogicActive = {} end
-            if GG.CivilianUnitInternalLogicActive[unitID].behaviour then 
+            if GG.CivilianUnitInternalLogicActive[unitID] and  GG.CivilianUnitInternalLogicActive[unitID].behaviour then 
                 echo("Overriding internal state".. GG.CivilianUnitInternalLogicActive[unitID].behaviour .. " with ".. behaviour or "no behavour name") 
             end
             GG.CivilianUnitInternalLogicActive[unitID] = {state = state, behaviour = behaviour or "no behavour name"} 

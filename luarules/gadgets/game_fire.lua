@@ -69,7 +69,7 @@ if (gadgetHandler:IsSyncedCode()) then
                             end
                         else
                             Spring.SetUnitNoSelect(onFireUpInHere[i][UnitID], false)
-                            setCivilianUnitInternalStateMode(UnitID, STATE_ENDED)
+                            setCivilianUnitInternalStateMode(UnitID, STATE_ENDED, "fire")
                             onFireUpInHere[i][UnitID] = nil
                         end
                     end

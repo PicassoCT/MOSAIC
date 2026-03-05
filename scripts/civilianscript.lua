@@ -616,7 +616,7 @@ end
 
 function setCivilianUnitInternalStateMode(unitID, State, name)
      assert(State)
-     assert(name)
+     if State == STATE_STARTED then     assert(name) end
      if not GG.CivilianUnitInternalLogicActive then GG.CivilianUnitInternalLogicActive = {} end
      conditionalEcho(boolDebugActive, unitID.."civilian internal logic "..State.." "..(name or "unknown"))
      GG.CivilianUnitInternalLogicActive[unitID] = State 
