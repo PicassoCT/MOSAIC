@@ -193,9 +193,14 @@ function showBody()
 	showT(lowerBodyPieces)
 	Show(FoldtopFolded)
 	showT(shownPieces)
+	if boolShowHair then
+		selectedHair = "TODO"
+		StartThread(turnTail, selectedHair)
+	end
 end
 
 shownPieces={}
+
 
 function script.Create()
 	--Spring.Echo("Operative Propagator spawned")
@@ -454,6 +459,24 @@ end
 
 local animCmd = {['turn']=Turn,['move']=Move};
 
+function turnTail(tailBone)
+	persistUp = 0.0
+	tailRotation= 0.0
+	while true do
+		dirX, dirY, dirZ, strength, normDirX, normDirY, normDirZ = Spring.GetWind()
+		windAngle = math.atan2(dirX, dirZ)
+		persistUp = persistUp * 0.9
+		persistUp = persistUp + strength
+
+		dx,y,dz = spGetUnitPiecePosDir(unitID, PayloadCenter)
+        headRad = math.pi - math.atan2(dx, dz)
+		tailRotation = windAngle + headRad
+
+		Turn(tailBone, y_axis, math.rad(tailRotation), 2)
+		Turn(tailBone, x_axis, math.rad(persistUp), 2)
+		Sleep(100)
+	end
+end
 
 
 function PlayAnimation(animname, piecesToFilterOutTable, speed)
