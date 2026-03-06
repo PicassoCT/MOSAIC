@@ -486,29 +486,63 @@ end
 
 local animCmd = {['turn']=Turn,['move']=Move};
 
-function tailWind(tailBone)
-	persistUp = 0.0
-	tailRotation= 0.0
-	while true do
-		dirX, dirY, dirZ, strength, normDirX, normDirY, normDirZ = Spring.GetWind()
-		windAngle = math.atan2(dirX, dirZ)
-		persistUp = persistUp * 0.9
-		persistUp = math.max(0, math.min(1, persistUp + strength))
-
-		dx,y,dz = spGetUnitPiecePosDir(unitID, PayloadCenter)
-        headRad = math.pi - math.atan2(dx, dz)
-		tailRotation = windAngle + headRad
-		if tailRotation ~= 0 then
-			sign = math.abs(tailRotation)/tailRotation
-			--clamp
-
-		end
-		Turn(tailBone, y_axis, tailRotation, 2)
-		Turn(tailBone, x_axis, math.rad(persistUp * 90), 2)
-		Sleep(100)
-	end
+function clamp(v, minv, maxv)
+	return math.max(minv, math.min(maxv, v))
 end
 
+function angleDiff(a,b)
+    return (a - b + math.pi) % (2*math.pi) - math.pi
+end
+
+function tailWind(tailBone)
+
+	local persistUp = 0
+	local tailRotation = 0
+	local smoothRot = 0
+
+	while true do
+
+		local dirX, dirY, dirZ, strength = Spring.GetWind()
+		local windAngle = math.atan2(dirX, dirZ)
+
+		-- persistence gives slow settling vertical lift
+		persistUp = persistUp * 0.92
+		persistUp = clamp(persistUp + strength * 0.25,0,1)
+
+		-- unit facing
+		local dx,dy,dz = spGetUnitPiecePosDir(unitID, PayloadCenter)
+		local headRad = math.pi - math.atan2(dx, dz)
+
+		-- desired wind rotation
+		local windTarget = windAngle + headRad
+
+		local targetRot
+
+		if boolMoving then
+			-- when moving bias tail behind the unit
+			local behind = headRad
+			targetRot = lerp(windTarget, behind, 0.6)
+		else
+			targetRot = windTarget
+		end
+
+		-- prevent passing through shoulders/head
+		local maxArc = math.rad(110)
+		local minArc = math.rad(-110)
+		targetRot = clamp(angleDiff(targetRot,0), minArc, maxArc)
+
+		-- smooth rotation
+		smoothRot = lerp(smoothRot, targetRot, 0.15)
+
+		Turn(tailBone, y_axis, smoothRot, 2)
+
+		-- vertical lift from wind
+		local lift = math.rad(persistUp * 60)
+		Turn(tailBone, x_axis, lift, 2)
+
+		Sleep(33)
+	end
+end
 
 function PlayAnimation(animname, piecesToFilterOutTable, speed)
 	local speedFactor = speed or 1.0
