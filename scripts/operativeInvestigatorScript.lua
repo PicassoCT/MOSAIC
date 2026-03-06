@@ -200,13 +200,11 @@ function showBody()
 	showT(shownPieces)
 	if randChance(10) then
 		showT(TablesOfPiecesGroups["Tail"])
-		StartThread(tailWind)
+		StartThread(tailWind,TablesOfPiecesGroups["Tail"][1] )
 	end
 end
 
-function tailWind()
 
-end
 
 shownPieces={}
 
@@ -488,21 +486,25 @@ end
 
 local animCmd = {['turn']=Turn,['move']=Move};
 
-function turnTail(tailBone)
+function tailWind(tailBone)
 	persistUp = 0.0
 	tailRotation= 0.0
 	while true do
 		dirX, dirY, dirZ, strength, normDirX, normDirY, normDirZ = Spring.GetWind()
 		windAngle = math.atan2(dirX, dirZ)
 		persistUp = persistUp * 0.9
-		persistUp = persistUp + strength
+		persistUp = math.max(0, math.min(1, persistUp + strength))
 
 		dx,y,dz = spGetUnitPiecePosDir(unitID, PayloadCenter)
         headRad = math.pi - math.atan2(dx, dz)
 		tailRotation = windAngle + headRad
+		if tailRotation ~= 0 then
+			sign = math.abs(tailRotation)/tailRotation
+			--clamp
 
-		Turn(tailBone, y_axis, math.rad(tailRotation), 2)
-		Turn(tailBone, x_axis, math.rad(persistUp), 2)
+		end
+		Turn(tailBone, y_axis, tailRotation, 2)
+		Turn(tailBone, x_axis, math.rad(persistUp * 90), 2)
 		Sleep(100)
 	end
 end
