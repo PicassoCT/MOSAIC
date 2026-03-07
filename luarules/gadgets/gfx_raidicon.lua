@@ -28,9 +28,7 @@ if (gadgetHandler:IsSyncedCode()) then
     local SO_SHTRAN_FLAG = 32
     local SO_DRICON_FLAG = 128
 
-	if (engineVersion < 105.0 ) then
-        transparentTypeTable = transparentTypeTable
-    end
+
     local GameConfig = getGameConfig()
 
     function gadget:UnitCreated(unitID, unitDefID)
@@ -82,11 +80,11 @@ else -- unsynced
 
     function gadget:DrawUnit(unitID, drawMode)
         if  iconTables[unitID] then --transparent draw
-	    glDepthMask(false)
+	       glDepthMask(false)
             glBlending(GL_SRC_ALPHA, GL_ONE)
             glUnitRaw(unitID, true)
             glBlending(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-	   glDepthMask(true)		
+	       glDepthMask(true)		
             return true 
         end
     end

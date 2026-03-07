@@ -3,7 +3,8 @@ bugs:
 - Argos hologram 
 - motorbikes
 - recoil rain on roofs
-- glyphs from text
+- glyphs from text not rendered correctly
+- transparent units not rendered correctly
 
 features:
 

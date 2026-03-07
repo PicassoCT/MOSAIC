@@ -198,9 +198,9 @@ function showBody()
 	showT(lowerBodyPieces)
 	Show(FoldtopFolded)
 	showT(shownPieces)
-	if randChance(10) then
+	if randChance(10) or true then
 		showT(TablesOfPiecesGroups["Tail"])
-		StartThread(tailWind,TablesOfPiecesGroups["Tail"][1] )
+		StartThread(tailWind,TablesOfPiecesGroups["Tail"] )
 	end
 end
 
@@ -486,7 +486,7 @@ end
 
 local animCmd = {['turn']=Turn,['move']=Move};
 
-function clamp(v, minv, maxv)
+function lock(v, minv, maxv)
 	return math.max(minv, math.min(maxv, v))
 end
 
@@ -494,51 +494,70 @@ function angleDiff(a,b)
     return (a - b + math.pi) % (2*math.pi) - math.pi
 end
 
-function tailWind(tailBone)
-
+function tailWind(tailBones)
+	TailRotator = piece("TailRotator")
+	resetT(tailBones, 0)
 	local persistUp = 0
-	local tailRotation = 0
 	local smoothRot = 0
-
+	tailBone = tailBones[1]
+	tail = takeTableSubRange(tailBones, 2, #tailBones)
+	maxStrength = 25
 	while true do
-
-		local dirX, dirY, dirZ, strength = Spring.GetWind()
+		local _,_,_, strength,dirX,dirY,dirZ = Spring.GetWind()
+	
 		local windAngle = math.atan2(dirX, dirZ)
-
-		-- persistence gives slow settling vertical lift
-		persistUp = persistUp * 0.92
-		persistUp = clamp(persistUp + strength * 0.25,0,1)
-
-		-- unit facing
-		local dx,dy,dz = spGetUnitPiecePosDir(unitID, PayloadCenter)
-		local headRad = math.pi - math.atan2(dx, dz)
-
-		-- desired wind rotation
-		local windTarget = windAngle + headRad
-
-		local targetRot
-
-		if boolMoving then
-			-- when moving bias tail behind the unit
-			local behind = headRad
-			targetRot = lerp(windTarget, behind, 0.6)
-		else
-			targetRot = windTarget
+		--echo("Windstrength: "..strength, "windAngle:"..windAngle, dirX, dirY, dirZ)
+	
+		strength = strength/maxStrength
+		if not boolIsMoving then
+			persistUp = persistUp * 0.92
 		end
+		persistUp = lock(persistUp + strength * 0.25,0,1)
 
-		-- prevent passing through shoulders/head
+		local dx,dy,dz = Spring.GetUnitPiecePosDir(unitID, backpack)
+		local bodyRad = math.pi - math.atan2(dx, dz)
+		lerpFactor = 1.0
+
+		 hx, hy, hz = Spring.UnitScript.GetPieceRotation(Head)
+
+		if boolIsMoving then
+			lerpFactor = 0.7
+			windTarget = windTarget * 0.9
+		else
+			lerpFactor = 0.4
+		end
+		local windTarget = windAngle  + bodyRad -hz
+
 		local maxArc = math.rad(110)
 		local minArc = math.rad(-110)
-		targetRot = clamp(angleDiff(targetRot,0), minArc, maxArc)
+		targetRot = lock(angleDiff(windTarget,0), minArc, maxArc)
+		smoothRot = lerp(smoothRot, targetRot, lerpFactor)
+		Turn(TailRotator, 2, smoothRot, 5)
 
-		-- smooth rotation
+		local lift = math.rad(persistUp * 90)
+		--Turn(tailBone, y_axis, targetRot, 2)
+		Turn(tailBone, x_axis, math.rad(lift), 2)
 		smoothRot = lerp(smoothRot, targetRot, 0.15)
 
-		Turn(tailBone, y_axis, smoothRot, 2)
+		-- animate chain
+		local count = #tail
+		piPart = math.pi /#tail
+		degPart = math.rad(15)*persistUp
+		times = Spring.GetGameFrame()/4
+		for i,bone in ipairs(tail) do
 
-		-- vertical lift from wind
-		local lift = math.rad(persistUp * 60)
-		Turn(tailBone, x_axis, lift, 2)
+			local t = (i-1)/(count-1)
+
+			-- deeper bones swing more
+			local rot = math.sin(times  +i* piPart)*degPart
+
+			-- tip lifts more
+			local boneLift = lift * (0.6 + t*0.5)
+
+			Turn(bone, z_axis, rot, 20)
+			Turn(bone, x_axis, math.rad(boneLift), 2)
+
+		end
 
 		Sleep(33)
 	end

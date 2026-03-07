@@ -744,7 +744,7 @@ function TurnTowardsWind(piecename, speed, offset)
     offSet = offset or 0
     dx, dy, dz = Spring.GetWind()
     headRad = math.atan2(dx, dz)
-    Turn(piecename, y_axis, headRad + offSet, speed)
+    Turn(piecename, y_axis, headRad + offSet, speed)  
     return headRad
 end
 
