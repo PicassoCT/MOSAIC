@@ -486,7 +486,7 @@ end
 
 local animCmd = {['turn']=Turn,['move']=Move};
 
-function lock(v, minv, maxv)
+function localclamp(v, minv, maxv)
 	return math.max(minv, math.min(maxv, v))
 end
 
@@ -512,17 +512,18 @@ function tailWind(tailBones)
 		if not boolIsMoving then
 			persistUp = persistUp * 0.92
 		end
-		persistUp = lock(persistUp + strength * 0.25,0,1)
-
+		persistUp = localclamp(persistUp + strength * 0.25,0,1)
+		x,y,z = Spring.GetUnitPosition(unitID)
 		local dx,dy,dz = Spring.GetUnitPiecePosDir(unitID, backpack)
-		local bodyRad = math.pi - math.atan2(dx, dz)
+		local bodyRad = math.pi - math.atan2(dx-x, dz-z)
 		lerpFactor = 1.0
 
 		 hx, hy, hz = Spring.UnitScript.GetPieceRotation(Head)
 
 		if boolIsMoving then
 			lerpFactor = 0.7
-			windTarget = windTarget * 0.9
+			windTarget= windTarget* 0.9
+			persistUp = 1.0
 		else
 			lerpFactor = 0.4
 		end
@@ -530,13 +531,12 @@ function tailWind(tailBones)
 
 		local maxArc = math.rad(110)
 		local minArc = math.rad(-110)
-		targetRot = lock(angleDiff(windTarget,0), minArc, maxArc)
+		targetRot = localclamp(angleDiff(windTarget,0), minArc, maxArc)
 		smoothRot = lerp(smoothRot, targetRot, lerpFactor)
 		Turn(TailRotator, 2, smoothRot, 5)
 
 		local lift = math.rad(persistUp * 90)
-		--Turn(tailBone, y_axis, targetRot, 2)
-		Turn(tailBone, x_axis, math.rad(lift), 2)
+		Turn(tailBone, x_axis, lift, 2)
 		smoothRot = lerp(smoothRot, targetRot, 0.15)
 
 		-- animate chain
