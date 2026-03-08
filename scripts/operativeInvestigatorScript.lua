@@ -198,11 +198,13 @@ function showBody()
 	showT(lowerBodyPieces)
 	Show(FoldtopFolded)
 	showT(shownPieces)
-	if randChance(10) or true then
+	boolHasPonyTail = getGlobalLimitedRessource("investigatorponytail", 5)
+	if boolHasPonyTail then
 		showT(TablesOfPiecesGroups["Tail"])
 		StartThread(tailWind,TablesOfPiecesGroups["Tail"] )
 	end
 end
+boolHasPonyTail = false
 
 
 
@@ -382,6 +384,9 @@ function script.Killed(recentDamage, _)
 		Spring.DestroyUnit(civilianID,true,true) 
 	end
 	PlayAnimation("DEATH")
+	if boolHasPonyTail then
+		releaseGlobalLimitedRessource("investigatorponytail")
+	end
    return 1
 end
 
@@ -495,13 +500,14 @@ function angleDiff(a,b)
 end
 
 function tailWind(tailBones)
-	TailRotator = piece("TailRotator")
+	local TailRotator = piece("TailRotator")
 	resetT(tailBones, 0)
 	local persistUp = 0
 	local smoothRot = 0
-	tailBone = tailBones[1]
-	tail = takeTableSubRange(tailBones, 2, #tailBones)
-	maxStrength = 25
+	local tailBone = tailBones[1]
+	local tail = takeTableSubRange(tailBones, 2, #tailBones)
+	local maxStrength = 25
+	local lastSmoothRot = 0
 	while true do
 		local _,_,_, strength,dirX,dirY,dirZ = Spring.GetWind()
 	
@@ -511,6 +517,8 @@ function tailWind(tailBones)
 		strength = strength/maxStrength
 		if not boolIsMoving then
 			persistUp = persistUp * 0.92
+		else
+			persistUp = math.min(1, persistUp * 1.01)
 		end
 		persistUp = localclamp(persistUp + strength * 0.25,0,1)
 		x,y,z = Spring.GetUnitPosition(unitID)
@@ -523,8 +531,8 @@ function tailWind(tailBones)
 		if boolIsMoving then
 			lerpFactor = 0.7
 			windTarget= windTarget* 0.9
-			persistUp = 1.0
 		else
+			lastSmoothRot= smoothRot
 			lerpFactor = 0.4
 		end
 		local windTarget = windAngle  + bodyRad -hz
@@ -533,8 +541,12 @@ function tailWind(tailBones)
 		local minArc = math.rad(-110)
 		targetRot = localclamp(angleDiff(windTarget,0), minArc, maxArc)
 		smoothRot = lerp(smoothRot, targetRot, lerpFactor)
-		Turn(TailRotator, 2, smoothRot, 5)
-
+		if boolIsMoving then 
+			lastSmoothRot = lastSmoothRot *0.99
+			Turn(TailRotator, 2, lastSmoothRot, 5)
+		else
+			Turn(TailRotator, 2, smoothRot, 5)
+		end
 		local lift = math.rad(persistUp * 90)
 		Turn(tailBone, x_axis, lift, 2)
 		smoothRot = lerp(smoothRot, targetRot, 0.15)
@@ -545,18 +557,10 @@ function tailWind(tailBones)
 		degPart = math.rad(15)*persistUp
 		times = Spring.GetGameFrame()/4
 		for i,bone in ipairs(tail) do
-
 			local t = (i-1)/(count-1)
-
 			-- deeper bones swing more
 			local rot = math.sin(times  +i* piPart)*degPart
-
-			-- tip lifts more
-			local boneLift = lift * (0.6 + t*0.5)
-
 			Turn(bone, z_axis, rot, 20)
-			Turn(bone, x_axis, math.rad(boneLift), 2)
-
 		end
 
 		Sleep(33)

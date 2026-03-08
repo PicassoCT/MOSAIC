@@ -6236,7 +6236,21 @@ function serializeTable(val, name, skipnewlines, depth)
     return tmp
 end
 
+function getGlobalLimitedRessource(name, maximum)
+    if not GG.GlobalLimitedRessource then GG.GlobalLimitedRessource = {} end
+    if not GG.GlobalLimitedRessource[name] then GG.GlobalLimitedRessource[name] = 0 end
+    if GG.GlobalLimitedRessource[name] < maximum then
+        GG.GlobalLimitedRessource[name] = GG.GlobalLimitedRessource[name] +1 
+        return true
+    end
+    return fals
+end
 
+function releaseGlobalLimitedRessource(name)
+ if not GG.GlobalLimitedRessource then GG.GlobalLimitedRessource = {} end
+ if not GG.GlobalLimitedRessource[name] then GG.GlobalLimitedRessource[name] = 0 end
+ GG.GlobalLimitedRessource[name] = math.max(0, GG.GlobalLimitedRessource[name] -1)
+end
 
 function setupPrintf(unitID)
     if not GG.DebugPrintF then 
