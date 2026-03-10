@@ -276,8 +276,8 @@ function checkReSpawnPopulation()
             x, _, z, startNode = getRandomSpawnNode()
             --assert(x > 0 and x < Game.mapSizeX, x)
             --assert(z > 0 and z < Game.mapSizeZ, z)
-            if x and startNode and GG.BusesTable then
-                goalNode = RouteTabel[startNode][math.random(1, #RouteTabel[startNode])]
+            if x and startNode and GG.BusesTable and  #RouteTabel[startNode] > 0 then
+                goalNode = getSafeRandom(RouteTabel[startNode], RouteTabel[startNode][1])
                 civilianType = randDict(civilianWalkingTypeTable)
                 busId = randDict(GG.BusesTable)      		
                 if busId and doesUnitExistAlive(busId) and randChance(10) then                    
