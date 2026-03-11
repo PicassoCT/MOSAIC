@@ -47,10 +47,10 @@ function addon.DrawLoadScreen()
 		playMusicFile()
 		return
 	end
-	if loadProgress > nextProgressStep then
+--[[	if loadProgress > nextProgressStep then
 		nextProgressStep = nextProgressStep + 0.35
 		playAdvertisementFile()
-	end
+	end--]]
 end
 
 
