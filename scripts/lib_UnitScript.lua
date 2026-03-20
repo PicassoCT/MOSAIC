@@ -2507,6 +2507,14 @@ function subSetT(T, elementToSelect)
     return reT
 end
 
+function getTableRange(T, start, ends)
+    local L = {}
+    for i=start, ends do
+        L[#L + 1] = T[i]
+    end
+    return L
+end
+
 -- > safeAccessTable a table three layers deep on any key/index
 function safeAccessTable(T, a, b, c)
     if a and not T[a] then T[a] = {} end
