@@ -64,7 +64,10 @@ function buildBike()
         Show(myDeliverySymbol)
     end
     defaultTable = { LeanFactor = 0.0, SteerParts = {}, wheels = {}} 
-    bikeWheelMap = makeTable(defaultTable, 7)
+    for i=1, 7 do 
+        bikeWheelMap[i] = { LeanFactor = 0.0, SteerParts = {}, wheels = {}}
+    end
+
     bikeWheelMap[1].LeanFactor = 0.1
 
     bikeWheelMap[1].wheels =  getTableRange(TablesOfPiecesGroups["Wheel"], 1, 4)
