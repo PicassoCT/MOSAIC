@@ -88,7 +88,8 @@ local specials = {
     buildRunProGenicsSpot,
     buildRunDeterministicAdvertisement,
     buildRunDeterministicAdvertisement,
-    buildRunDeterministicAdvertisement
+    buildRunDeterministicAdvertisement,
+    buildRunWeaterForeCast
 }
 
 function advertisingLoop()
@@ -111,7 +112,7 @@ function advertisingLoop()
         halfRestTime = math.ceil(restTime/2)
 
         Sleep(halfRestTime)
-        if maRa() then
+        if randChance(5) then
             specials[math.random(1,#specials)](unitID)
         end
         Sleep(halfRestTime)
