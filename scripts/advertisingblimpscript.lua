@@ -112,7 +112,7 @@ function advertisingLoop()
         halfRestTime = math.ceil(restTime/2)
 
         Sleep(halfRestTime)
-        if randChance(5) then
+        if randChance(12.5) then
             specials[math.random(1,#specials)](unitID)
         end
         Sleep(halfRestTime)
