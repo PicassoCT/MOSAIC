@@ -64,53 +64,29 @@ function buildBike()
         Show(myDeliverySymbol)
     end
     defaultTable = { LeanFactor = 0.0, SteerParts = {}, wheels = {}} 
-    bikeWheelMap = makeTable(defaultTable, 7)
+    for i=1, 7 do 
+        bikeWheelMap[i] = { LeanFactor = 0.0, SteerParts = {}, wheels = {}}
+    end
+
     bikeWheelMap[1].LeanFactor = 0.1
 
-    for i= 1, 4 do
-        assert(TablesOfPiecesGroups["Wheel"][i], i)
-        bikeWheelMap[1].wheels[#bikeWheelMap[1].wheels + 1] = TablesOfPiecesGroups["Wheel"][i]
-    end
-
-    for i= 5, 6 do
-        assert(TablesOfPiecesGroups["Wheel"][i], i)
-        bikeWheelMap[2].wheels[#bikeWheelMap[2].wheels + 1] = TablesOfPiecesGroups["Wheel"][i]
-    end
-
-
-    for i= 7, 8 do
-        assert(TablesOfPiecesGroups["Wheel"][i], i)
-        bikeWheelMap[3].wheels[#bikeWheelMap[3].wheels + 1] = TablesOfPiecesGroups["Wheel"][i]
-    end
-
+    bikeWheelMap[1].wheels =  getTableRange(TablesOfPiecesGroups["Wheel"], 1, 4)
+    bikeWheelMap[2].wheels =  getTableRange(TablesOfPiecesGroups["Wheel"], 5, 6)
+    bikeWheelMap[3].wheels =  getTableRange(TablesOfPiecesGroups["Wheel"], 7, 8)
     bikeWheelMap[3].SteerParts[#bikeWheelMap[3].SteerParts + 1 ] = piece("SteeringAddition3")
+    bikeWheelMap[4].wheels =  getTableRange(TablesOfPiecesGroups["Wheel"], 9, 10)
 
-    for i= 9, 10 do
-        assert(TablesOfPiecesGroups["Wheel"][i], i)
-        bikeWheelMap[4].wheels[#bikeWheelMap[4].wheels + 1] = TablesOfPiecesGroups["Wheel"][i]
-    end
+    bikeWheelMap[6].wheels =  getTableRange(TablesOfPiecesGroups["Wheel"], 13, 18)
+    bikeWheelMap[5].wheels =  getTableRange(TablesOfPiecesGroups["Wheel"], 11, 12)
+    bikeWheelMap[7].wheels =  getTableRange(TablesOfPiecesGroups["Wheel"], 11, 12)
 
-    for i= 11, 12 do
-        assert(TablesOfPiecesGroups["Wheel"][i], i)
-        bikeWheelMap[5].wheels[#bikeWheelMap[5].wheels + 1] = TablesOfPiecesGroups["Wheel"][i]
-    end
-
-    for i= 13, 18 do
-        assert(TablesOfPiecesGroups["Wheel"][i], i)
-        bikeWheelMap[6].wheels[#bikeWheelMap[6].wheels + 1] = TablesOfPiecesGroups["Wheel"][i]
-    end
-
-        for i= 11, 12 do
-        assert(TablesOfPiecesGroups["Wheel"][i], i)
-        bikeWheelMap[7].wheels[#bikeWheelMap[7].wheels + 1] = TablesOfPiecesGroups["Wheel"][i]
-    end
 
     if boolGaiaUnit then Show(Civilian) end
 
     LeanFactor = bikeWheelMap[bikeType].LeanFactor
     activeWheels = bikeWheelMap[bikeType].wheels
 
-    showT(activeWheels)
+    showT(bikeWheelMap[bikeType].wheels)
     SteerParts = bikeWheelMap[bikeType].SteerParts 
     if SteerParts and count(SteerParts) > 0 then
         showT(SteerParts)

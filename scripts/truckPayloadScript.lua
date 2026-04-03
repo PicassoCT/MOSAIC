@@ -73,7 +73,7 @@ function getElPresidenteResidentePraise(unitID)
 
 end
 
-function setPayLoadDescription(payLoadPieceId)
+function getSetPayLoadDescription(payLoadPieceId)
 	pieceID_Content =	{}
 	pieceID_Content[TablesOfPiecesGroups["container"] [1]]	=  getShippingContainerCompany(unitID).." Shipping Container"
 	pieceID_Content[TablesOfPiecesGroups["container"] [2]]	= "Construction site spoil"
@@ -211,7 +211,7 @@ end
 
 function selectPayloadPiece()
       displayedPiece =  showOnePiece(TablesOfPiecesGroups["container"])
-      description = setPayLoadDescription(displayedPiece)
+      description = getSetPayLoadDescription(displayedPiece)
 	  StartThread(delayedSetParentDescription, description)
 	  if (displayedPiece == fireTruck or displayedPiece == EMT) then StartThread(FireTruckEmergencyBehaviour) end
 	  if displayedPiece == GarbageTruck then StartThread(GarbageTruckBehaviour) end
@@ -232,12 +232,12 @@ function refugeeTruckBehaviour()
     end
 end
 
-function delayedSetParentDescription(description)
-	Sleep(100)
+function delayedSetParentDescription(payloadDescription)
+	Sleep(1000)
 	  transporterID = Spring.GetUnitTransporter(unitID)
       if transporterID then
       	oldToolTip = Spring.GetUnitTooltip ( transporterID ) 
-      	Spring.SetUnitTooltip( transporterID, oldToolTip.." "..description)
+      	Spring.SetUnitTooltip( transporterID, oldToolTip.." transporting "..payloadDescription)
       end
   end
 function rewardAudacity()

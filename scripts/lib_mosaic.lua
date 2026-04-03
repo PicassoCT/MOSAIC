@@ -1,7 +1,7 @@
 -- ===================================================================================================================
 -- Game Configuration
  GG.unitFactor = 0.80
- GameVersion = "1.029"  --UpdateFlag
+ GameVersion = "1.030"  --UpdateFlag
  function setUnitFactor(modOptions)
     GG.unitFactor = modOptions.unitfactor or 0.8
  end
@@ -4011,6 +4011,99 @@ function buildRunCandleSpot(unitID)
 
     Spring.PlaySoundFile(vigilSouthPath.."/Postlude_19s.ogg", 1.0)
     Sleep(19000)  
+end
+
+
+function buildRunWeaterForeCast()
+
+    local forecastdurations = {
+
+    newsJingle = {
+        [1]=15.33, [2]=8.01, [3]=10.00, [4]=5.29, [5]=8.69, [6]=9.24
+    },
+
+    PreLude = {
+        [1]=4.82, [2]=4.56, [3]=4.86, [4]=16.67, [5]=4.38,
+        [6]=5.12, [7]=4.69, [8]=5.55, [9]=4.51,
+        [10]=9.45, [11]=4.30, [12]=7.75, [13]=8.70
+    },
+
+    City = {
+        [1]=0.69, [2]=0.84, [3]=0.80, [4]=0.58, [5]=0.66,
+        [6]=0.75, [7]=1.00, [8]=1.30, [9]=0.50,
+        [10]=0.88, [11]=0.97, [12]=1.08, [13]=0.95,
+        [14]=1.18, [15]=0.98, [16]=0.95, [17]=1.25, [18]=1.29
+    },
+
+    PostLude = {
+        [1]=9.51, [2]=9.07, [3]=14.79, [4]=11.66, [5]=5.05,
+        [6]=6.32, [7]=15.85, [8]=3.74, [9]=14.20,
+        [10]=9.45, [11]=12.90, [12]=3.52, [13]=8.70
+    }
+    }
+
+    -- Utility: deterministic index selection
+    local function pick(tbl, seed)
+        local count = 0
+        for _ in pairs(tbl) do count = count + 1 end
+        return (seed % count) + 1
+    end
+
+    -- Stub: replace with your actual audio playback system
+    local function play(path)
+        Spring.PlaySoundFile(path, 1.0)
+    end
+
+    -- Stub: replace with engine wait (e.g. coroutine.yield / timer)
+    local function wait(seconds)
+       Sleep(seconds * 1000)
+    end
+
+    local hash = getDetermenisticHash()
+    local rootPath = "sounds/advertising/media/12weatherforecast"
+
+    local jingleSet   = "newsJingle"
+    local preludeSet  = "PreLude"
+    local citySet     = "City"
+    local postludeSet = "PostLude"
+
+    -- Deterministic selection
+    local jingleIdx   = pick(forecastdurations[jingleSet], hash + math.random(0, #jingleSet))
+    local preludeIdx  = pick(forecastdurations[preludeSet], hash +  math.random(0, #preludeSet))
+    local cityIdx     = pick(forecastdurations[citySet], hash +  math.random(0, #citySet))
+   
+
+    -- Build paths
+    local jinglePath1 = string.format("%s/%s/%d.ogg", rootPath, jingleSet, jingleIdx)
+    local preludePath = string.format("%s/%s/%d.ogg", rootPath, preludeSet, preludeIdx)
+    local cityPath    = string.format("%s/%s/%d.ogg", rootPath, citySet, cityIdx)
+    local postPath    = string.format("%s/%s/%d.ogg", rootPath, postludeSet, postludeIdx)
+    local jinglePath2 = jinglePath1 -- reuse same jingle at end
+
+    -- Sequence execution
+
+    -- 1. Play jingle
+    play(jinglePath1)
+    wait(durations[jingleSet][jingleIdx])
+
+    -- 2. Gap before forecast
+    wait(3.0)
+
+    -- 3. Prelude
+    play(preludePath)
+    wait(durations[preludeSet][preludeIdx])
+
+    -- 4. City name
+    play(cityPath)
+    wait(durations[citySet][cityIdx])
+
+    -- 5. Postlude (forecast body)
+    play(postPath)
+    wait(durations[postludeSet][preludeIdx])
+
+    -- 6. Closing jingle
+    play(jinglePath2)
+    wait(durations[jingleSet][jingleIdx])
 end
 
 function buildRunDeterministicAdvertisement()

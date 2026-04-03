@@ -24,7 +24,6 @@ features:
 - Fix rainreflecitons being one directional
 
 Bugs:
-- self-revealing of operators
 - recruited civilians kill themselves
 - letter axis wrong  western civilians
 - vannishing buildings on upgrade if over budget -> 

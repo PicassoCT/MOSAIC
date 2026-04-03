@@ -2507,6 +2507,14 @@ function subSetT(T, elementToSelect)
     return reT
 end
 
+function getTableRange(T, start, ends)
+    local L = {}
+    for i=start, ends do
+        L[#L + 1] = T[i]
+    end
+    return L
+end
+
 -- > safeAccessTable a table three layers deep on any key/index
 function safeAccessTable(T, a, b, c)
     if a and not T[a] then T[a] = {} end
@@ -2602,11 +2610,30 @@ function startsWith(str, start)
    return str:sub(1, #start) == start
 end
 
+function deepCopy(original, seen)
+    if type(original) ~= "table" then
+        return original
+    end
+
+    if seen and seen[original] then
+        return seen[original]
+    end
+
+    local copy = {}
+    seen = seen or {}
+    seen[original] = copy
+
+    for key, value in pairs(original) do
+        copy[deepCopy(key, seen)] = deepCopy(value, seen)
+    end
+
+    return setmetatable(copy, getmetatable(original))
+end
+
 -- > Creates a Table and initializes it with default value
 function makeTable(default, xDimension, yDimension, zDimension,
                    boolNegativeMirror)
     boolNegativeMirror = boolNegativeMirror or false
-    local defaultCopy = default
 
     xStartIndex = 1
     yStartIndex = 1
@@ -2625,7 +2652,7 @@ function makeTable(default, xDimension, yDimension, zDimension,
         if yDimension then
             RetTable[x] = {}
         elseif xDimension then
-            RetTable[x] = defaultCopy
+            RetTable[x] = deepCopy(default)
         else
             return defaultCopy
         end
@@ -2635,12 +2662,12 @@ function makeTable(default, xDimension, yDimension, zDimension,
                 if zDimension then
                     RetTable[x][y] = {}
                 else
-                    RetTable[x][y] = defaultCopy
+                    RetTable[x][y] =  deepCopy(default)
                 end
 
                 if zDimension then
                     for z = zStartIndex, zDimension, 1 do
-                        RetTable[x][y][z] = defaultCopy
+                        RetTable[x][y][z] =  deepCopy(default)
                     end
                 end
             end
