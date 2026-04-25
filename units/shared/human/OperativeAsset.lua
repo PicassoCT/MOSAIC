@@ -69,6 +69,10 @@ local OperativeAsset = Human:New{
 				onlyTargetCategory = [[CLOSECOMBATABLE]],
 				noChaseCategory = [[CLOSECOMBATABLE]],
 			}
+			[5]={name  = "targetlaseroperative",
+				onlyTargetCategory = [[GROUND]],
+				turret= true
+			},
 		},
 
 	sfxtypes = {

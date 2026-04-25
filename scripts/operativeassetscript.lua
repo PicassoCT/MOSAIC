@@ -16,6 +16,7 @@ SIG_FIRE_VISIBLITY = 64
 SIG_DELAYEDRECLOAK = 128
 SIG_STAB = 256
 SIG_ROOF_TOP = 512
+SIG_SNIPER_LASER=1024
 local Animations = include('animation_assasin_male.lua')
 boolStartRoofTopThread = false
 local center = piece('center');
@@ -1163,6 +1164,10 @@ function sniperAimFunction(weaponID, heading, pitch)
     return true
 end
 
+function sniperLaserAimFunction(weaponID, heading, pitch)
+    return boolTargetLaserActive and not boolCloaked and not boolInClosedCombat
+end
+
 function stabAimFunction(weaponID, heading, pitch)
     boolAiming = true
     return true
@@ -1203,6 +1208,18 @@ PistolMuzzleFlash = 1025
 MuzzleFlashSniperRifle = piece ("MuzzleFlashSniperRifle")
 MuzzleFlashGun = piece ("MuzzleFlashGun")
 MuzzleFlashPistol = piece ("MuzzleFlashPistol")
+boolTargetLaserActive= true
+function reactivateLaserShine()
+    boolTargetLaserActive = false
+    Sleep(35000)
+    boolTargetLaserActive = true
+end
+
+
+function sniperFireLaserFunction(weaponID)
+   StartThread(reactivateLaserShine)
+   return true
+end
 
 function sniperFireFunction(weaponID)
     StartThread(visibleAfterWeaponsFireTimer)
@@ -1248,6 +1265,13 @@ function makeWeaponsTable()
         aimfunc = stabAimFunction,
         firefunc = stabFireFunction,
         signal = SIG_STAB
+    },
+     WeaponsTable[5] = {
+        aimpiece = center,
+        emitpiece = SniperRifle,
+        aimfunc = sniperLaserAimFunction,
+        firefunc = sniperFireLaserFunction,
+        signal = SIG_SNIPER_LASER
     }
 end
 
