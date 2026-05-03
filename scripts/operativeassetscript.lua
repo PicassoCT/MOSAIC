@@ -1265,8 +1265,9 @@ function makeWeaponsTable()
         aimfunc = stabAimFunction,
         firefunc = stabFireFunction,
         signal = SIG_STAB
-    },
-     WeaponsTable[5] = {
+    }
+    
+    WeaponsTable[5] = {
         aimpiece = center,
         emitpiece = SniperRifle,
         aimfunc = sniperLaserAimFunction,
