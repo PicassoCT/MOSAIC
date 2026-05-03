@@ -68,7 +68,7 @@ local OperativeAsset = Human:New{
 			[4]={name  = "closecombat",
 				onlyTargetCategory = [[CLOSECOMBATABLE]],
 				noChaseCategory = [[CLOSECOMBATABLE]],
-			}
+			},
 			[5]={name  = "targetlaseroperative",
 				onlyTargetCategory = [[GROUND]],
 				turret= true
