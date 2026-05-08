@@ -1401,16 +1401,80 @@ function showSubsAnimateSpins(pieceGroupName, nr)
     end
 end
 
-function nightAndDay(dayNightPieceNameDict)
-    while boolDoneShowing == false do Sleep(100) end
+function showHideSwitch(a, b)
+    Hide(a)
+    Show(b)
+end
 
+function rainFaultPieces(faulty, rainFaulty, hour)
+    for k,v in pairs(faulty) do
+        StartThread(simulateRainShort, k,v, 5, hour)
+    end
+
+    if isRaining(hour) then
+        for k,v in pairs(rainFaulty) do
+            StartThread(simulateRainShort, k,v, 6, hour)
+        end
+    end
+end
+
+local function simulateRainShort(normalPart, illuminatedPart, duration, hour)
+    duration = (duration or 5)*30
+
+    local startTime = Spring.GetGameFrame()
+
+    -- Initial state on
+    showHideSwitch(normalpart, illuminatedPart)
+
+    if randChance(50)  then return end
+
+    -- Optional sound support
+    --local shortSound = illuminatedPart:FindFirstChild("ShortCircuitSound")
+
+    -- Random flicker loop
+    while Spring.GetGameFrame() - startTime < duration do
+
+        if randChance(70) then
+            -- Illuminate
+            showHideSwitch(normalpart, illuminatedPart)
+            
+            Sleep(math.random(50, 150))
+        end
+        showHideSwitch(illuminatedPart, normalpart)
+        -- Cut out
+
+        Sleep( math.random(30, 120) )
+    end
+
+    -- Final burnout flicker
+    for i = 1, 6 do
+        if i % 2 == 0 then
+            showHideSwitch(normalpart, illuminatedPart)
+          else
+            showHideSwitch(illuminatedPart, normalpart)
+        end
+        Sleep(80)
+    end
+
+    -- End state: dead/off
+    showHideSwitch(illuminatedPart, normalpart)
+end
+
+function nightAndDay(dayNightPieceNameDict, defaultFaultRate, rainFaultRate)
+    while boolDoneShowing == false do Sleep(100) end
+    
+    faultPieces = {}
+    rainFaultPieces = {}
 	daynightPieces = {}
 	for k,v in pairs(dayNightPieceNameDict) do
 		daynightPieces[#daynightPieces + 1] = pieceName_pieceNr[k]
 		daynightPieces[#daynightPieces + 1] = pieceName_pieceNr[v]
+        if randChance(defaultFaultRate) then    faultPieces[pieceName_pieceNr[k]]= pieceName_pieceNr[v] end
+        if randChance(rainFaultRate) then    rainFaultPieces[pieceName_pieceNr[k]]= pieceName_pieceNr[v] end
 	end
     
 
+    
     hideDuringDayPieces= {}
     for nr, name in pairs(hideDuringDayPieceNames) do
         if not pieceName_pieceNr[name] then 
@@ -1445,7 +1509,9 @@ function nightAndDay(dayNightPieceNameDict)
 					hours, minutes, seconds, percent = getDayTime()
 					hideConditional(daynightPieces)
                     hideConditional(hideDuringDayPieces)
+                    rainAndFaultyPieces(faultPieces, rainFaultPieces)
 				end
+
                 hideT(hideDuringDayPieces)
 				for dayPieceName,nightPieceName in pairs(dayNightPieceNameDict) do
 					randSleep= math.random(1,10)*1000
@@ -1456,6 +1522,7 @@ function nightAndDay(dayNightPieceNameDict)
 			end
 	end
 end
+
 local RoofTopPieces = {}
 function addRoofDeocrate(Level, buildMaterial, materialColourName)
 	if not GG.house_asian_piece_counter then GG.house_asian_piece_counter = {} end
@@ -1547,7 +1614,7 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
     end
 
     if count(dayNightPieceNames) > 0 then
-        StartThread(nightAndDay, dayNightPieceNames)
+        StartThread(nightAndDay, dayNightPieceNames, 1,  5)
     end
 
     countElements = 0

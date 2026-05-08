@@ -1,6 +1,6 @@
 function gadget:GetInfo()
     return {
-        name = "Icon Rendering ",
+        name = "Transparent Icon Rendering ",
         desc = " ",
         author = "Picasso",
         date = "3rd of May 2010",
@@ -17,7 +17,7 @@ if (gadgetHandler:IsSyncedCode()) then
     local transparentTypeTable = getIconTypes(UnitDefs)
 
    
-    local engineVersion = getEngineVersion()
+    local engineVersion = getEngineVersion() 
     local engine = 106.0
     local SO_NODRAW_FLAG = 0
     local SO_OPAQUE_FLAG = 1
