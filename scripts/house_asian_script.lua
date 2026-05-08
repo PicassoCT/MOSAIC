@@ -9,6 +9,7 @@ IDGroupsDirection = {
     "u", --upright
     "l"} -- lengthwise
 
+boolHasNeonDefects = randChance(10)
 IDGroups_Trad_Office_Direction = { 
     "u", --upright
     "u", --upright
@@ -1406,7 +1407,7 @@ function showHideSwitch(a, b)
     Show(b)
 end
 
-function rainFaultPieces(faulty, rainFaulty, hour)
+function rainAndFaultyPieces(faulty, rainFaulty, hour)
     for k,v in pairs(faulty) do
         StartThread(simulateRainShort, k,v, 5, hour)
     end
@@ -1509,7 +1510,9 @@ function nightAndDay(dayNightPieceNameDict, defaultFaultRate, rainFaultRate)
 					hours, minutes, seconds, percent = getDayTime()
 					hideConditional(daynightPieces)
                     hideConditional(hideDuringDayPieces)
-                    rainAndFaultyPieces(faultPieces, rainFaultPieces)
+                    if boolHasNeonDefects then
+                        rainAndFaultyPieces(faultPieces, rainFaultPieces)
+                    end
 				end
 
                 hideT(hideDuringDayPieces)
