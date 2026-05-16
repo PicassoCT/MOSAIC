@@ -1680,14 +1680,33 @@ function showHouse() boolHouseHidden = false; showT(ToShowTable) end
 
 function hideHouse() boolHouseHidden = true; hideT(ToShowTable) end
 
-function buildAnimation()
-   
-    Show(Icon)
-    while boolDoneShowing == false do Sleep(100) end
-    Hide(Icon)
-    showHouse() 
+function buildAnimation(boolIsReconstruction)
+    if boolIsReconstruction then
+        while boolDoneShowing == false do Sleep(100) end
+        buildAnimationSequential()
+    else
+        Show(Icon)
+        while boolDoneShowing == false do Sleep(100) end
+        showHouse() 
+        Hide(Icon)
+    end
     GG.ManualRenderedBuildingWithWindowsVisiblePieces[unitID] = toShowDict
 end
+
+function buildAnimationSequential()
+    Show(Icon)
+    Sleep(3000)
+    while boolDoneShowing == false do Sleep(100) end
+    Hide(Icon)
+    heightSortedTable = sortPiecesInDictionaryByHeight(toShowDict)
+    timeBudget = math.ceil((25*1000 ) /#heightSortedTable)
+    for index,pieceId in pairs(heightSortedTable) do
+        Show(pieceId)
+        Sleep(timeBudget)
+    end
+    GG.ManualRenderedBuildingWithWindowsVisiblePieces[unitID] = toShowDict
+end
+
 
 function addGroundPlaceables()
     x,y,z = Spring.GetUnitPosition(unitID)
@@ -1749,8 +1768,8 @@ function threadStarter()
     end
 end
 
-function buildBuilding()
-    StartThread(buildAnimation)
+function buildBuilding(boolIsReconstruction)
+    StartThread(buildAnimation, boolIsReconstruction)
     StartThread(threadStarter)
     lecho( "buildBuilding")
      

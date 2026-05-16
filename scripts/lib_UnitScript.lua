@@ -3107,6 +3107,21 @@ function countT(T)
     return it
 end
 
+function sortPiecesInDictionaryByHeight(dict)
+    result = {}
+    for k,v in pairs(dict) do
+        x,y,z = Spring.GetUnitPiecePosDir(unitID, k)
+        result[#result +1 ] = {pieceId = k, height= y} 
+    end
+
+    result = table.sort(result, function(a,b) return a.height < b.height end)
+    sortedResult = {}
+    for i=1, #result do
+        sortedResult[#sortedResult +1] = result[i].pieceId
+    end
+    return sortedResult
+end
+
 function sortDictKeysNumeric(T)
     local sorT = {}
 
