@@ -4071,6 +4071,7 @@ function buildRunWeaterForeCast()
     local jingleIdx   = pick(forecastdurations[jingleSet], hash + math.random(0, #jingleSet))
     local preludeIdx  = pick(forecastdurations[preludeSet], hash +  math.random(0, #preludeSet))
     local cityIdx     = pick(forecastdurations[citySet], hash +  math.random(0, #citySet))
+    local postludeIdx     = pick(forecastdurations[postludeSet], hash +  math.random(0, #citySet))
    
 
     -- Build paths
