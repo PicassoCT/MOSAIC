@@ -129,7 +129,6 @@ gadget.baseBuildOrder = {
 		"propagandaserver",	
 		"launcher",
 		"launcherstep",
-		"hivemind"
 	},
 	["protagon"] = UnitArray{
 		"protagonsafehouse",

@@ -9,7 +9,8 @@ IDGroupsDirection = {
     "u", --upright
     "l"} -- lengthwise
 
-boolHasNeonDefects = randChance(10)
+
+
 IDGroups_Trad_Office_Direction = { 
     "u", --upright
     "u", --upright
@@ -1428,6 +1429,7 @@ local function simulateRainShort(normalPart, illuminatedPart, duration, hour)
     showHideSwitch(normalpart, illuminatedPart)
 
     if randChance(50)  then return end
+    Spring.Echo("Rain short active for "..pieceNr_pieceName[normalpart].. " active")
 
     -- Optional sound support
     --local shortSound = illuminatedPart:FindFirstChild("ShortCircuitSound")
@@ -1439,12 +1441,12 @@ local function simulateRainShort(normalPart, illuminatedPart, duration, hour)
             -- Illuminate
             showHideSwitch(normalpart, illuminatedPart)
             
-            Sleep(math.random(50, 150))
+            Sleep(math.random(250, 1000))
         end
         showHideSwitch(illuminatedPart, normalpart)
         -- Cut out
 
-        Sleep( math.random(30, 120) )
+        Sleep( math.random(500, 1000) )
     end
 
     -- Final burnout flicker
@@ -1454,7 +1456,7 @@ local function simulateRainShort(normalPart, illuminatedPart, duration, hour)
           else
             showHideSwitch(illuminatedPart, normalpart)
         end
-        Sleep(80)
+        Sleep(280)
     end
 
     -- End state: dead/off
@@ -1473,7 +1475,8 @@ function nightAndDay(dayNightPieceNameDict, defaultFaultRate, rainFaultRate)
         if randChance(defaultFaultRate) then    faultPieces[pieceName_pieceNr[k]]= pieceName_pieceNr[v] end
         if randChance(rainFaultRate) then    rainFaultPieces[pieceName_pieceNr[k]]= pieceName_pieceNr[v] end
 	end
-    
+    boolHasNeonDefects = randChance(10) and (count(faultPieces) > 0 or  count(rainFaultPieces) > 0)
+    echo("Building at "..locationstring(unitid).." has neonFlicker in rain "..toString(boolHasNeonDefects)))
 
     
     hideDuringDayPieces= {}
@@ -1493,7 +1496,7 @@ function nightAndDay(dayNightPieceNameDict, defaultFaultRate, rainFaultRate)
         hours, minutes, seconds, percent = getDayTime()
         Sleep(5000)
 		hideConditional(daynightPieces)
-			if hours > 19 then 
+			if  atNight(hours) then 
                 showT(hideDuringDayPieces)
 
 				for dayPieceName,nightPieceName in pairs(dayNightPieceNameDict) do
@@ -1505,7 +1508,7 @@ function nightAndDay(dayNightPieceNameDict, defaultFaultRate, rainFaultRate)
 					end
 				end
 	
-				while hours > 19 or hours < 6 do
+				while atNight(hours) do
 					Sleep(5000)
 					hours, minutes, seconds, percent = getDayTime()
 					hideConditional(daynightPieces)
