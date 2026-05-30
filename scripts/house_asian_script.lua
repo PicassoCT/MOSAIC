@@ -139,7 +139,7 @@ if maRa() == true then
     notindex = math.random(2,5)
     NotInPlanIndeces[notindex] = true 
     if maRa()== true then
-        notindex = math.min(notindex+1,5)
+        notindex = math.min(notindex + 1 , 5)
         NotInPlanIndeces[notindex] = true 
     end
 end
@@ -148,7 +148,7 @@ if maRa() == true then
     notindex=  math.random(32,35)
     NotInPlanIndeces[notindex] = true 
     if maRa()== false then
-        notindex = math.min(notindex+1,35)
+        notindex = math.min(notindex + 1 , 35)
         NotInPlanIndeces[notindex] = true 
     end
 end

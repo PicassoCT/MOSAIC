@@ -11,7 +11,7 @@ function widget:GetInfo()
                 license   = "xxx",
                 layer     = math.huge,
                 handler   = true, -- used widget handlers
-                enabled   = false, -- loaded by default,
+                enabled   = true, -- loaded by default,
 		hidden 	  = true
         }
 end
