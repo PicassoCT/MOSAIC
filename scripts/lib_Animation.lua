@@ -78,7 +78,6 @@ function whileInTurn(pname, axis, functionToPerform, ...)
         functionToPerform(...)
         Sleep(1)
     end
-
 end
 
 -- >Performs a Animation while a Piece Is in Turn
