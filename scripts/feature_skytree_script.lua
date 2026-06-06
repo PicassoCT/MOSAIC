@@ -7,7 +7,7 @@ include "lib_mosaic.lua"
 TablesOfPiecesGroups = {}
 function script.HitByWeapon(x, z, weaponDefID, damage) end
 
-
+ Tree = piece("tree")
 function script.Create()
     -- echo(UnitDefs[unitDefID].name.."has placeholder script called")
     -- generatepiecesTableAndArrayCode(unitID)
@@ -16,8 +16,24 @@ function script.Create()
     if Spring.GetUnitDefID(unitID) == UnitDefNames["cegtest"].id then
         x,y,z =Spring.GetUnitPosition(unitID)
         Spring.MoveCtrl.SetPosition(unitID, x,y+500,z) 
-        echo("{name = \"placeholder\", x = "..x..", z = "..z..", rot = 0, scale = 1.000000}")
+        echo("{name = \"placeholder\", x = "..x..", z = "..z..", rot = 0, ")
+        end   
+    hideAll(unitId)
+    showOne(TablesOfPiecesGroups["Add"])
+    for i=1,10 do
+        if randChanc(99) then
+        if randChance(90)
+           Show(TablesOfPiecesGroups["Panel"][i])
+        else       
+            Show(TablesOfPiecesGroups["ErrorPanel"][i])
+        end
+        end
     end
+    end
+end
+    Show(tree)
+    
+Spring.SetUnitAlwaysVisible(unitId, true)
 end
 
 
