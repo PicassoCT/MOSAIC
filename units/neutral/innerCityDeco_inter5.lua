@@ -1,15 +1,11 @@
 
-local unitName = "innerCityDeco_asian"
-
-
-
-	local unitDef = {
-
+local unitName = "innerCityDeco_inter5"
+local unitDef = {
 	name = "",
 
 	Description = "Skytree Advertising",
 
-	objectName = "innerCityDeco_inter5.dae"
+	objectName = "innerCityDeco_inter5.dae",
 
 	script = "feature_skytree_script.lua",
 
@@ -43,9 +39,9 @@ local unitName = "innerCityDeco_asian"
 
 	pushResistant=true,
 
-	FootprintX = 2,
+	FootprintX = 1,
 
-	FootprintZ = 2,
+	FootprintZ = 1,
 
 
 

@@ -4,40 +4,34 @@ include "lib_UnitScript.lua"
 include "lib_mosaic.lua"
 
 
-local TablesOfPiecesGroups = {}
+TablesOfPiecesGroups = {}
 function script.HitByWeapon(x, z, weaponDefID, damage) end
 
- Tree = piece("tree")
+Tree = piece("Tree")
 function script.Create()
-    
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
-    
-    if Spring.GetUnitDefID(unitID) == UnitDefNames["cegtest"].id then
-        x,y,z =Spring.GetUnitPosition(unitID)
-        Spring.MoveCtrl.SetPosition(unitID, x,y+500,z) 
-        echo("{name = \"placeholder\", x = "..x..", z = "..z..", rot = 0 } ")
-     end   
+    x,y,z = Spring.GetUnitPosition(unitID)
+    echo("{name = \"feature_skytree\", x = "..x..", z = "..z..", rot = 0 } ")
+
     hideAll(unitId)
-    showOne(TablesOfPiecesGroups["Add"])
+    showOnePiece(TablesOfPiecesGroups["Add"])
     for i=1,10 do
         if randChanc(99) then
-        if randChance(90)
-           Show(TablesOfPiecesGroups["Panel"][i])
-        else       
-            Show(TablesOfPiecesGroups["ErrorPanel"][i])
-        end
+            if randChance(90) then
+               Show(TablesOfPiecesGroups["ForrestPlate"][i])
+            else       
+                Show(TablesOfPiecesGroups["ErrorPlate"][i])
+            end
         end
     end
-    end
-end
-Show(tree)
-    
-Spring.SetUnitAlwaysVisible(unitId, true)
+    Show(Tree)        
+    Spring.SetUnitAlwaysVisible(unitId, true)
 end
 
 function script.Killed(recentDamage, _)
     return 1
-en
+end
+
 function script.StartMoving() end
 
 function script.StopMoving() end
@@ -45,10 +39,3 @@ function script.StopMoving() end
 function script.Activate() return 1 end
 
 function script.Deactivate() return 0 end
-
--- function script.QueryBuildInfo()
--- return center
--- end
-
--- Spring.SetUnitNanoPieces(unitID, { center })
-
