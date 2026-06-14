@@ -42,6 +42,8 @@ function airPortConnection()
 end
 
 allAnimatedAddPositions = {"Add018", "Add01"}
+function getRandomizedDeocration ()
+    return getRandomElementFromTable({"animated_hologram", "animated_hologramV2"})
 
 function setup()
     airPortConnection()

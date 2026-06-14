@@ -1,3 +1,4 @@
+rm -rf /tmp/ogg_norm 
 mkdir -p /tmp/ogg_norm && \
 i=0 && \
 for f in *.ogg; do \
