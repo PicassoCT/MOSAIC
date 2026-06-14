@@ -44,6 +44,7 @@ end
 allAnimatedAddPositions = {"Add018", "Add01"}
 function getRandomizedDeocration ()
     return getRandomElementFromTable({"animated_hologram", "animated_hologramV2"})
+end
 
 function setup()
     airPortConnection()
@@ -65,7 +66,7 @@ function setup()
     foreach(allAnimatedAddPositions,
             function(name)
                     hostPiece = piece(name)
-                    StartThread(moveCtrlHologramToUnitPiece, unitID, "animated_hologram", hostPiece, hostPiece, 0 )
+                    StartThread(moveCtrlHologramToUnitPiece, unitID, getRandomizedDeocration(), hostPiece, hostPiece, 0 )
             end)
 
 end

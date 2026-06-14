@@ -29,7 +29,7 @@ function script.HitByWeapon(x, z, weaponDefID, damage)
 return damage
 end
 
-isStealthTank = Spring.GetUnitDefID(unitID) == UnitDefNames["ground_tank_day"].id
+isStealthTank = Spring.GetUnitDefID(unitID) == UnitDefNames["ground_tank_day"].id and randChance(10)
 dayMoveStealthTable = {}
 nightMoveStealthTable = {}
 function hideAllStealth()
