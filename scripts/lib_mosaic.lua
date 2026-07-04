@@ -812,6 +812,7 @@ end
                     [UnitDefNames["house_western_hologram_casino"].id] = "house_western_hologram_casino",           
                     [UnitDefNames["house_western_hologram_brothel"].id] = "house_western_hologram_brothel",           
                     [UnitDefNames["advertising_blimp_pornorama"].id] = "advertising_blimp_pornorama"      
+                    [UnitDefNames["advertising_blimp_asian_hologram"].id] = "advertising_blimp_asian_hologram"      
                 }
     end  
 

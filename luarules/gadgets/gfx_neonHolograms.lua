@@ -543,6 +543,7 @@ end
         ["house_asian_hologram_buisness"] =     4,
         ["advertising_blimp_hologram"] =        3,
         ["advertising_blimp_pornorama"] =       1,
+        ["advertising_blimp_asian_hologram"] =  2,
 
     }
 
