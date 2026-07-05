@@ -118,6 +118,10 @@ function isPlayerUnitNearby(unitID, range)
     return false
 end
 
+function IsEmpty(t)
+    return t == nil or next(t) == nil
+end
+
 function getAllOfTypeNearUnit(unitID, typeTable, range)
     return foreach(getAllNearUnit(unitID, range),
                     function (id)

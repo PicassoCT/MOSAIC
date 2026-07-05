@@ -38,6 +38,6 @@ local Hologram = Abstract:New{
 
 return lowerkeys({
 	--PornoRama
-	["advertising_blimp_asian_hologram1"] = Hologram:New(),
+	["advertising_blimp_asian_hologram2"] = Hologram:New(),
 	
 })
