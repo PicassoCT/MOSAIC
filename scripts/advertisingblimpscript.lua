@@ -138,14 +138,21 @@ function limitToMapLimits()
         end
     end
 end
-if not GG.advertising_blimp_pornorama_counter then GG.advertising_blimp_pornorama_counter = 0 end 
+
+hologramTypes = {
+"advertising_blimp_pornorama",
+"advertising_blimp_hologram",
+"advertising_blimp_hologram",
+"advertising_blimp_hologram",
+"advertising_blimp_asian_hologram1",
+"advertising_blimp_asian_hologram2",
+}
+
+
 function attachHologram()
-    if randChance(25) and GG.advertising_blimp_pornorama_counter == 0  then
-        holoID = moveCtrlHologramToUnitPiece(unitID, "advertising_blimp_pornorama", HoloCenter, 0)
-        GG.advertising_blimp_pornorama_counter  = 1
-    else
-        holoID = moveCtrlHologramToUnitPiece(unitID, "advertising_blimp_hologram", HoloCenter, 0)
-    end
+
+    holoID = moveCtrlHologramToUnitPiece(unitID, hologramTypes[math.random(1,#hologramTypes)], HoloCenter, 0)
+    
     isblocking= false
     isSolidObjectCollidable=false
     isProjectileCollidable= false

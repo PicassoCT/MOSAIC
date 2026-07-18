@@ -13,11 +13,8 @@ function script.Create()
     -- generatepiecesTableAndArrayCode(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     -- Spring.MoveCtrl.Enable(unitID,true)
-    if Spring.GetUnitDefID(unitID) == UnitDefNames["cegtest"].id then
-        x,y,z =Spring.GetUnitPosition(unitID)
-        Spring.MoveCtrl.SetPosition(unitID, x,y+500,z) 
-        echo("{name = \"placeholder\", x = "..x..", z = "..z..", rot = 0, scale = 1.000000}")
-    end
+    hideAll(unitID)
+    showOnePiece(TablesOfPiecesGroups)
 end
 
 

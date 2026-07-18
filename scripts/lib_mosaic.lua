@@ -787,7 +787,9 @@ end
         local UnitDefNames = getUnitDefNames(UnitDefs)
         return {
                     [UnitDefNames["advertising_blimp_hologram"].id] = true,         
-                    [UnitDefNames["advertising_blimp_pornorama"].id] = true 
+                    [UnitDefNames["advertising_blimp_pornorama"].id] = true,
+                    [UnitDefNames["advertising_blimp_asian_hologram1"].id] = true,
+                    [UnitDefNames["advertising_blimp_asian_hologram2"].id] = true
                 }
     end  
 
@@ -800,7 +802,9 @@ end
                     [UnitDefNames["house_western_hologram_casino"].id] = true,           
                     [UnitDefNames["house_western_hologram_brothel"].id] = true,           
                     [UnitDefNames["house_asian_hologram_buisness"].id] = true,   
-                    [UnitDefNames["advertising_blimp_pornorama"].id] = true 
+                    [UnitDefNames["advertising_blimp_pornorama"].id] = true,
+                    [UnitDefNames["advertising_blimp_asian_hologram1"].id] = true,
+                    [UnitDefNames["advertising_blimp_asian_hologram2"].id] = true 
                 }
     end  
 
@@ -811,7 +815,9 @@ end
                     [UnitDefNames["house_western_hologram_buisness"].id] = "house_western_hologram_buisness",           
                     [UnitDefNames["house_western_hologram_casino"].id] = "house_western_hologram_casino",           
                     [UnitDefNames["house_western_hologram_brothel"].id] = "house_western_hologram_brothel",           
-                    [UnitDefNames["advertising_blimp_pornorama"].id] = "advertising_blimp_pornorama"      
+                    [UnitDefNames["advertising_blimp_pornorama"].id] = "advertising_blimp_pornorama",
+                    [UnitDefNames["advertising_blimp_asian_hologram1"].id] = "advertising_blimp_asian_hologram1",
+                    [UnitDefNames["advertising_blimp_asian_hologram2"].id] = "advertising_blimp_asian_hologram2"      
                 }
     end  
 
