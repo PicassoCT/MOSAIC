@@ -1,5 +1,5 @@
 local PotemkinPayload = Abstract:New{
-	name 				= "Rocket Payload (transport to launcher)",
+	name 				= "Potemkin Payload (transport to launcher)",
 	description 		= "fake Warhead",
 	maxDamage           = 5000,
 	mass                = 5000,
