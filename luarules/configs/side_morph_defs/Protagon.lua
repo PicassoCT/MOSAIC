@@ -42,7 +42,7 @@ local protagonDefs = {
 			energy = 2500,
 			time = 7*60,
 			name = 'AICore',
-			text = 'supplies heavy assault vehicles',
+			text = 'supplies heavy assault and air vehicles',
 			facing = true,
 		},			
 		
