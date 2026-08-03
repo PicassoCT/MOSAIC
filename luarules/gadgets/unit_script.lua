@@ -433,7 +433,7 @@ function Spring.UnitScript.Hide(piece)
     if not piece then
         local activeUnit = GetActiveUnit()
         local defID = Spring.GetUnitDefID(activeUnit.unitID)
-        Spring.Echo("Invalid PieceNumber in Hide in "..UnitDefs[defID].name)
+        Spring.Echo("Invalid PieceNumber in Hide in "..UnitDefs[defID].name .. "got ".. tostring(piece))
         return 
     end
 
@@ -479,8 +479,7 @@ function Spring.UnitScript.Show(piece)
 
        local activeUnit = GetActiveUnit()
        local defID = Spring.GetUnitDefID(activeUnit.unitID)
-       Spring.Echo("Invalid PieceNumber in show in  "..UnitDefs[defID].name)
-        Spring.Echo("PieceNumber not a number - got " ..typeInfo)
+       Spring.Echo("Invalid PieceNumber in show in  "..UnitDefs[defID].name.. " got "..typeInfo)
         if typeInfo == "table" then
             echoPieceTable(piece, activeUnit.unitID)
         end

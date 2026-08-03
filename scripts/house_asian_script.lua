@@ -1476,9 +1476,8 @@ function nightAndDay(dayNightPieceNameDict, defaultFaultRate, rainFaultRate)
         if randChance(rainFaultRate) then    rainFaultPieces[pieceName_pieceNr[k]]= pieceName_pieceNr[v] end
 	end
     boolHasNeonDefects = randChance(10) and (count(faultPieces) > 0 or  count(rainFaultPieces) > 0)
-    echo("Building at "..locationstring(unitID).." has neonFlicker in rain "..toString(boolHasNeonDefects))
+    echo("Building at "..locationstring(unitID).." has neonFlicker in rain "..toString(boolHasNeonDefects).. " with "..count(faultPieces).. " and "..count(rainFaultPieces))
 
-    
     hideDuringDayPieces= {}
     for nr, name in pairs(hideDuringDayPieceNames) do
         if not pieceName_pieceNr[name] then 

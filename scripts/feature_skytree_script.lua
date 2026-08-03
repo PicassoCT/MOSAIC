@@ -14,7 +14,9 @@ function script.Create()
    -- echo("{name = \"innerCityDeco_inter5\", x = "..x..", z = "..z..", rot = 0 } ")
 
     hideAll(unitId)
-    Show(Tree)   
+    if Tree then
+        Show(Tree)  
+    end 
     showOnePiece(TablesOfPiecesGroups["Add"])
     for i=1,10 do
         if randChance(99) then
