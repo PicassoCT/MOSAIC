@@ -1043,8 +1043,8 @@ end
 
 function talkingHead()
     Signal(SIG_TALKHEAD)
-
     SetSignalMask(SIG_TALKHEAD)
+    
     while (true) do
         for tlH = 0, howlong, 1 do
             rindRand = math.random(-5, 10)

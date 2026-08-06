@@ -91,7 +91,7 @@ local specials = {
     buildRunDeterministicAdvertisement,
     buildRunWeaterForeCast,
     buildRunLostAndFound,
-    buildRunDeadOrAlive
+    buildRunMostWanted
 }
 
 function advertisingLoop()
