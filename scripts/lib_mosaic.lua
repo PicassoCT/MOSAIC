@@ -3993,27 +3993,27 @@ function buildRunCandleSpot(unitID)
     vigilSouthPath = "sounds/vigil"
     spPlaySoundFile(vigilSouthPath.."/Prelude_12s.ogg", 1.0)
     Sleep(12000)      
-    nameFiles = VFS.DirList(vigilSouthPath.."/name", "*.ogg")
-    surnameFiles = VFS.DirList(vigilSouthPath.."/surname", "*.ogg")
-    ageFiles = VFS.DirList(vigilSouthPath.."/age", "*.ogg")
-    countryFiles = VFS.DirList(vigilSouthPath.."/country", "*.ogg")
+    local nameFiles = VFS.DirList(vigilSouthPath.."/name", "*.ogg")
+    local surnameFiles = VFS.DirList(vigilSouthPath.."/surname", "*.ogg")
+    local ageFiles = VFS.DirList(vigilSouthPath.."/age", "*.ogg")
+    local countryFiles = VFS.DirList(vigilSouthPath.."/country", "*.ogg")
 
     
-    nameNr = math.random(3,9)
+    local nameNr = math.random(3,9)
     for i=1, nameNr do
-        name = nameFiles[math.random(1,#nameFiles)]
+        local name = nameFiles[math.random(1,#nameFiles)]
         spPlaySoundFile(name, 1.0)
         Sleep(1000)
 
-        surname= surnameFiles[math.random(1,#surnameFiles)]
+        local surname = surnameFiles[math.random(1,#surnameFiles)]
         spPlaySoundFile(surname, 1.0)
         Sleep(1000)
 
-        age= ageFiles[math.random(1,#ageFiles)]
+        local  age = ageFiles[math.random(1,#ageFiles)]
         spPlaySoundFile(age, 1.0)
         Sleep(1000)
 
-        country = countryFiles[math.random(1,#countryFiles)]
+        local country = countryFiles[math.random(1,#countryFiles)]
         spPlaySoundFile(country, 1.0)
         Sleep(2000) 
     end
@@ -4021,6 +4021,45 @@ function buildRunCandleSpot(unitID)
     Spring.PlaySoundFile(vigilSouthPath.."/Postlude_19s.ogg", 1.0)
     Sleep(19000)  
 end
+
+function buildRunDeadOrAlive(unitID)
+    echo("TODO:Implement")
+end
+
+function buildRunLostAndFound(unitID)
+    local spPlaySoundFile = Spring.PlaySoundFile
+    if isNight() then
+        waitTillDay()
+    else
+        waitTillNight()
+        waitTillDay()
+    end
+    local lostAndFoundPath = "sounds/civilian/lostAndFound"
+    spPlaySoundFile(lostAndFoundPath.."/lostandfound_12s.ogg", 1.0)
+    Sleep(12000)      
+    local nameFiles = VFS.DirList(lostAndFoundPath.."/name", "*.ogg")
+    local surnameFiles = VFS.DirList(lostAndFoundPath.."/surname", "*.ogg")
+    local rewardsFiles = VFS.DirList(lostAndFoundPath.."/rewards", "*.ogg")
+
+    local nameNr = math.random(1,3)
+    for i=1, nameNr do
+        name = nameFiles[math.random(1,#nameFiles)]
+        spPlaySoundFile(name, 1.0)
+        Sleep(1000)
+
+        surname = surnameFiles[math.random(1,#surnameFiles)]
+        spPlaySoundFile(surname, 1.0)
+        Sleep(1000)
+
+        reward = rewardsFiles[math.random(1,#rewardsFiles)]
+        spPlaySoundFile(reward, 1.0)
+        Sleep(1000)
+    end
+
+    Spring.PlaySoundFile(lostAndFoundPath.."/Postlude_9s.ogg", 1.0)
+    Sleep(9000)  
+end
+
 
 
 function buildRunWeaterForeCast()

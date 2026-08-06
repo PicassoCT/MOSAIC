@@ -89,7 +89,9 @@ local specials = {
     buildRunDeterministicAdvertisement,
     buildRunDeterministicAdvertisement,
     buildRunDeterministicAdvertisement,
-    buildRunWeaterForeCast
+    buildRunWeaterForeCast,
+    buildRunLostAndFound,
+    buildRunDeadOrAlive
 }
 
 function advertisingLoop()
@@ -287,6 +289,7 @@ function Advertising()
     end
 end
 
+--Avenge me by plasting the block with a 5 Minute continous add with the hoard
 function script.Killed(recentDamage, _)
     Spring.PlaySoundFile("sounds/advertising/media/GunnedDown.ogg",1.0)
     Spring.SetUnitCrashing ( unitID, true) 
