@@ -3990,30 +3990,30 @@ function buildRunCandleSpot(unitID)
         waitTillNight()
         waitTillDay()
     end
-    vigilSouthPath = "sounds/vigil"
+    local vigilSouthPath = "sounds/vigil"
     spPlaySoundFile(vigilSouthPath.."/Prelude_12s.ogg", 1.0)
     Sleep(12000)      
-    nameFiles = VFS.DirList(vigilSouthPath.."/name", "*.ogg")
-    surnameFiles = VFS.DirList(vigilSouthPath.."/surname", "*.ogg")
-    ageFiles = VFS.DirList(vigilSouthPath.."/age", "*.ogg")
-    countryFiles = VFS.DirList(vigilSouthPath.."/country", "*.ogg")
+    local nameFiles = VFS.DirList(vigilSouthPath.."/name", "*.ogg")
+    local surnameFiles = VFS.DirList(vigilSouthPath.."/surname", "*.ogg")
+    local ageFiles = VFS.DirList(vigilSouthPath.."/age", "*.ogg")
+    local countryFiles = VFS.DirList(vigilSouthPath.."/country", "*.ogg")
 
     
-    nameNr = math.random(3,9)
+    local nameNr = math.random(3,9)
     for i=1, nameNr do
-        name = nameFiles[math.random(1,#nameFiles)]
+        local name = nameFiles[math.random(1,#nameFiles)]
         spPlaySoundFile(name, 1.0)
         Sleep(1000)
 
-        surname= surnameFiles[math.random(1,#surnameFiles)]
+        local surname = surnameFiles[math.random(1,#surnameFiles)]
         spPlaySoundFile(surname, 1.0)
         Sleep(1000)
 
-        age= ageFiles[math.random(1,#ageFiles)]
+        local  age = ageFiles[math.random(1,#ageFiles)]
         spPlaySoundFile(age, 1.0)
         Sleep(1000)
 
-        country = countryFiles[math.random(1,#countryFiles)]
+        local country = countryFiles[math.random(1,#countryFiles)]
         spPlaySoundFile(country, 1.0)
         Sleep(2000) 
     end
@@ -4021,6 +4021,397 @@ function buildRunCandleSpot(unitID)
     Spring.PlaySoundFile(vigilSouthPath.."/Postlude_19s.ogg", 1.0)
     Sleep(19000)  
 end
+
+--[[
+# MOST WANTED PUBLIC NOTICE SYSTEM
+
+## INTRO — 4 alternatives
+
+1. **Attention, citizens. The following individual is wanted by the civil authorities. Listen carefully and do not attempt direct contact.**
+
+2. **This is an urgent public-security notice. A wanted suspect may be operating within the city. Memorize the following information.**
+
+3. **Citizens are advised that the following person remains at large. Any confirmed sighting must be reported immediately.**
+
+4. **Your cooperation is required. The individual named in this announcement is considered a threat to public order and remains under active pursuit.**
+
+---
+
+## FIRST NAMES — 16 alternatives
+
+1. Adnan
+2. Aleks
+3. Amir
+4. Anton
+5. Bashir
+6. Darius
+7. Elias
+8. Farid
+9. Gabriel
+10. Hassan
+11. Idris
+12. Karim
+13. Leon
+14. Malik
+15. Nadia
+16. Samira
+
+---
+
+## SURNAMES — 16 alternatives
+
+1. Abbas
+2. Adler
+3. Al-Hassan
+4. Bauer
+5. Darzi
+6. Farouk
+7. Haddad
+8. Jaber
+9. Keller
+10. Mansour
+11. Neumann
+12. Rahmani
+13. Saleh
+14. Stein
+15. Varga
+16. Weiss
+
+---
+
+## ALIAS — 4 alternatives
+
+1. **Also known as “the Courier.”**
+
+2. **Known to associates as “Blackbird.”**
+
+3. **Operating under the alias “Mister Grey.”**
+
+4. **Believed to use multiple identities and forged documentation.**
+
+---
+
+## OFFENCE OR ACCUSATION — 4 alternatives
+
+1. **Wanted in connection with armed robbery, extortion and unlawful detention.**
+
+2. **Wanted for sabotage of municipal infrastructure and the theft of restricted equipment.**
+
+3. **Suspected of coordinating organized violence against civilians and public officials.**
+
+4. **Wanted for conspiracy, smuggling and repeated interference with civil-security operations.**
+
+---
+
+## LAST KNOWN LOCATION — 4 alternatives
+
+1. **Last confirmed in the northern industrial district.**
+
+2. **Last observed entering the old market shortly before curfew.**
+
+3. **Believed to be moving between abandoned properties in the eastern residential sector.**
+
+4. **Most recently identified near the freight terminal, travelling with unknown associates.**
+
+---
+
+## APPEARANCE OR BEHAVIOUR — 4 alternatives
+
+1. **The suspect may alter their clothing, hairstyle and apparent occupation to avoid recognition.**
+
+2. **The suspect is known to travel on foot and avoid registered transport.**
+
+3. **The suspect may present themselves as a municipal employee, courier or displaced civilian.**
+
+4. **The suspect should be considered capable of deception and may seek assistance under a false identity.**
+
+---
+
+## PUBLIC WARNING — 4 alternatives
+
+1. **Do not approach, confront or attempt to detain this individual.**
+
+2. **Do not provide shelter, transportation, communication equipment or medical assistance.**
+
+3. **Maintain your distance. Record the location if it is safe to do so, then contact the authorities.**
+
+4. **The suspect may be armed. Any attempt at civilian intervention could result in serious injury.**
+
+---
+
+## REWARD OR COERCIVE NOTICE — 4 alternatives
+
+1. **A substantial reward is offered for verified information leading to the suspect’s capture.**
+
+2. **Information may be submitted anonymously. Compensation will be issued following verification.**
+
+3. **Those knowingly assisting the suspect will be treated as accomplices.**
+
+4. **Harbouring, transporting or concealing this individual will result in prosecution and forfeiture of property.**
+
+---
+
+## POSTLUDE — 4 alternatives
+
+1. **Observe. Remember. Report. Do not intervene.**
+
+2. **Public cooperation protects the city. Silence protects the fugitive.**
+
+3. **This individual remains at large. Further notices will follow until the threat has been contained.**
+
+4. **The authorities know the suspect is listening. Surrender remains the only safe course of action.**
+
+---
+
+# EXAMPLE ASSEMBLED BULLETIN
+
+**Attention, citizens. The following individual is wanted by the civil authorities. Listen carefully and do not attempt direct contact.**
+
+**Karim Rahmani.**
+
+**Also known as “the Courier.”**
+
+**Wanted for sabotage of municipal infrastructure and the theft of restricted equipment.**
+
+**Last confirmed in the northern industrial district.**
+
+**The suspect may present themselves as a municipal employee, courier or displaced civilian.**
+
+**Do not approach, confront or attempt to detain this individual.**
+
+**A substantial reward is offered for verified information leading to the suspect’s capture.**
+
+**Observe. Remember. Report. Do not intervene.**
+
+sounds/civilian/mostWanted/
+├── intro/
+├── name/
+├── surname/
+├── alias/
+├── offence/
+├── lastseen/
+├── description/
+├── warning/
+├── consequence/
+└── postlude/
+
+]]
+function buildRunMostWanted(unitID)
+    local spPlaySoundFile = Spring.PlaySoundFile
+    local basePath = "sounds/civilian/mostWanted"
+
+    if isNight() then
+        waitTillDay()
+    else
+        waitTillNight()
+        waitTillDay()
+    end
+
+    local function getFiles(folder)
+        return VFS.DirList(basePath .. "/" .. folder, "*.ogg")
+    end
+
+    local function playRandom(files, fallbackDuration)
+        if not files or #files == 0 then
+            return
+        end
+
+        local file = files[math.random(1, #files)]
+        spPlaySoundFile(file, 1.0)
+        Sleep(fallbackDuration or 1500)
+    end
+
+    local introFiles       = getFiles("intro")
+    local nameFiles        = getFiles("name")
+    local surnameFiles     = getFiles("surname")
+    local aliasFiles       = getFiles("alias")
+    local offenceFiles     = getFiles("offence")
+    local lastSeenFiles    = getFiles("lastseen")
+    local descriptionFiles = getFiles("description")
+    local warningFiles     = getFiles("warning")
+    local consequenceFiles = getFiles("consequence")
+    local postludeFiles    = getFiles("postlude")
+
+    playRandom(introFiles, 12000)
+
+    local suspectCount = math.random(1, 2)
+
+    for i = 1, suspectCount do
+        playRandom(nameFiles, 1000)
+        playRandom(surnameFiles, 1200)
+
+        -- Alias information should not appear for every suspect.
+        if math.random() < 0.65 then
+            playRandom(aliasFiles, 2500)
+        end
+
+        playRandom(offenceFiles, 4500)
+        playRandom(lastSeenFiles, 3500)
+
+        -- Optional identifying or behavioural detail.
+        if math.random() < 0.75 then
+            playRandom(descriptionFiles, 4000)
+        end
+
+        playRandom(warningFiles, 4000)
+        playRandom(consequenceFiles, 4500)
+    end
+
+    playRandom(postludeFiles, 5000)
+end
+
+--[[
+## INTRO — 4 alternatives
+
+1. **Attention, citizens. The following persons have been reported missing. Please remain alert and report any confirmed sighting to the nearest civil authority.**
+
+2. **This is a public missing-persons notice. Several residents have failed to return home. Listen carefully. You may have seen them.**
+
+3. **Your attention is required. The following individuals are currently unaccounted for. Information from the public may assist in their safe recovery.**
+
+4. **Citizens are requested to observe the following missing-persons bulletin. Remember their names. Remember their descriptions. Someone knows where they are.**
+
+---
+
+## FIRST NAMES — 16 alternatives
+
+1. Adam
+2. Amir
+3. Anton
+4. Daniel
+5. Elias
+6. Farid
+7. Gabriel
+8. Hassan
+9. Jonas
+10. Karim
+11. Leon
+12. Malik
+13. Miriam
+14. Nadia
+15. Samira
+16. Yasmin
+
+---
+
+## SURNAMES — 16 alternatives
+
+1. Abbas
+2. Adler
+3. Al-Hassan
+4. Bauer
+5. Darzi
+6. Farouk
+7. Haddad
+8. Jaber
+9. Keller
+10. Mansour
+11. Neumann
+12. Rahmani
+13. Saleh
+14. Stein
+15. Varga
+16. Weiss
+
+---
+
+## LAST SEEN — 4 alternatives
+
+1. **Last seen near the central market shortly before sunset.**
+
+2. **Last seen leaving their place of employment in the northern district.**
+
+3. **Last seen waiting at a public transport stop near the old city.**
+
+4. **Last seen walking alone near the eastern residential blocks.**
+
+---
+
+## REWARD OR WARNING — 4 alternatives
+
+1. **A substantial reward is offered for information leading to their safe return.**
+
+2. **Those assisting in their recovery will be compensated. Anonymous information will be accepted.**
+
+3. **Anyone responsible for preventing their return should understand that the matter will not be forgotten.**
+
+4. **If harm has come to this person, those responsible will be identified, pursued and held to account.**
+
+---
+
+## POSTLUDE — 4 alternatives
+
+1. **Look carefully. Listen carefully. A missing person may be closer than you think.**
+
+2. **Report verified information immediately. False reports obstruct the search and endanger lives.**
+
+3. **Their families are waiting. Their absence has been noticed. Help bring them home.**
+
+4. **This concludes the missing-persons bulletin. Remain observant. Further announcements will follow.**
+
+---
+
+## Example assembled announcement
+
+**Attention, citizens. The following persons have been reported missing. Please remain alert and report any confirmed sighting to the nearest civil authority.**
+
+**Nadia Rahmani.**
+
+**Last seen waiting at a public transport stop near the old city.**
+
+**A substantial reward is offered for information leading to her safe return.**
+
+**Amir Keller.**
+
+**Last seen near the central market shortly before sunset.**
+
+**If harm has come to this person, those responsible will be identified, pursued and held to account.**
+
+**Their families are waiting. Their absence has been noticed. Help bring them home.**
+
+
+]]
+
+
+function buildRunLostAndFound(unitID)
+    local spPlaySoundFile = Spring.PlaySoundFile
+    if isNight() then
+        waitTillDay()
+    else
+        waitTillNight()
+        waitTillDay()
+    end
+    local lostAndFoundPath = "sounds/civilian/lostAndFound"
+    spPlaySoundFile(lostAndFoundPath.."/lostandfound_12s.ogg", 1.0)
+    Sleep(12000)      
+    local nameFiles = VFS.DirList(lostAndFoundPath.."/name", "*.ogg")
+    local surnameFiles = VFS.DirList(lostAndFoundPath.."/surname", "*.ogg")
+    local rewardsFiles = VFS.DirList(lostAndFoundPath.."/rewards", "*.ogg")
+    local additionalInfo = VFS.DirList(lostAndFoundPath.."/additionalInfo", "*.ogg")
+
+    local nameNr = math.random(1,3)
+    for i=1, nameNr do
+        local name = nameFiles[math.random(1,#nameFiles)]
+        spPlaySoundFile(name, 1.0)
+        Sleep(1000)
+
+        local surname = surnameFiles[math.random(1,#surnameFiles)]
+        spPlaySoundFile(surname, 1.0)
+        Sleep(1000)
+
+        local additionalInfo = additionalInfo[math.random(1,#additionalInfo)]
+        spPlaySoundFile(additionalInfo, 1.0)
+        Sleep(7000)
+
+        local reward = rewardsFiles[math.random(1,#rewardsFiles)]
+        spPlaySoundFile(reward, 1.0)
+        Sleep(3000)
+    end
+
+    Spring.PlaySoundFile(lostAndFoundPath.."/Postlude_9s.ogg", 1.0)
+    Sleep(9000)  
+end
+
 
 
 function buildRunWeaterForeCast()
