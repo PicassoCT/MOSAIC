@@ -4085,7 +4085,7 @@ end
 
 2. **Known to associates as “Blackbird.”**
 
-3. **Operating under the alias “Mister Grey.”**
+3. **Operating under the alias Grey.”**
 
 4. **Believed to use multiple identities and forged documentation.**
 
@@ -4381,7 +4381,7 @@ function buildRunLostAndFound(unitID)
         waitTillNight()
         waitTillDay()
     end
-    local lostAndFoundPath = "sounds/civilian/lostAndFound"
+    local lostAndFoundPath = "sounds/civilian/lostandfound"
     spPlaySoundFile(lostAndFoundPath.."/lostandfound_12s.ogg", 1.0)
     Sleep(12000)      
     local nameFiles = VFS.DirList(lostAndFoundPath.."/name", "*.ogg")
