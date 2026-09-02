@@ -4163,25 +4163,7 @@ end
 
 ---
 
-# EXAMPLE ASSEMBLED BULLETIN
 
-**Attention, citizens. The following individual is wanted by the civil authorities. Listen carefully and do not attempt direct contact.**
-
-**Karim Rahmani.**
-
-**Also known as “the Courier.”**
-
-**Wanted for sabotage of municipal infrastructure and the theft of restricted equipment.**
-
-**Last confirmed in the northern industrial district.**
-
-**The suspect may present themselves as a municipal employee, courier or displaced civilian.**
-
-**Do not approach, confront or attempt to detain this individual.**
-
-**A substantial reward is offered for verified information leading to the suspect’s capture.**
-
-**Observe. Remember. Report. Do not intervene.**
 
 sounds/civilian/mostWanted/
 ├── intro/
@@ -4198,7 +4180,7 @@ sounds/civilian/mostWanted/
 ]]
 function buildRunMostWanted(unitID)
     local spPlaySoundFile = Spring.PlaySoundFile
-    local basePath = "sounds/civilian/mostWanted"
+    local basePath = "sounds/civilian/mostwanted"
 
     if isNight() then
         waitTillDay()
@@ -4208,7 +4190,7 @@ function buildRunMostWanted(unitID)
     end
 
     local function getFiles(folder)
-        return VFS.DirList(basePath .. "/" .. folder, "*.ogg")
+        return VFS.DirList(basePath .. "/" .. folder, "*.wav")
     end
 
     local function playRandom(files, fallbackDuration)
