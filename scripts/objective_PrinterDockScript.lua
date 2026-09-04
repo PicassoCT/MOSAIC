@@ -646,12 +646,16 @@ function coolYourShips(step, coolDownMap)
 
 
     if coolIndex >= 1 and slice[coolIndex] then
+        assert(TablesOfPiecesGroups["CoolDown"][coolIndex], "CoolDown"..coolIndex)
+        assert(slice[coolIndex])
         Hide(slice[coolIndex])
         if cool[coolIndex] then
+            assert(TablesOfPiecesGroups["CoolDown"][coolIndex], "CoolDown"..coolIndex)
             Show(TablesOfPiecesGroups["CoolDown"][coolIndex])
         end
         if cool[coolIndex -1] then
             Hide(TablesOfPiecesGroups["CoolDown"][coolIndex -1])
+            assert(cool[coolIndex -1])
             Show(cool[coolIndex -1])
         end
     end
@@ -661,14 +665,15 @@ function coolYourShips(step, coolDownMap)
    local shipIndex = step - slicesHot - coolDownSlices 
    if shipIndex >= 1 then 
        if cool[shipIndex] then 
+           assert(cool[shipIndex], "cool[shipIndex]"..shipIndex)
            Hide(cool[shipIndex]) 
        end 
        if ship[shipIndex] then 
+           assert(cool[shipIndex], "ship[shipIndex]"..shipIndex)
            Show(ship[shipIndex]) 
        end
     end
 end
-
 
 function OpenDoors()
     Move(Dock, y_axis, -100, 10)

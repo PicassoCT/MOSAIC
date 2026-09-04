@@ -1475,8 +1475,9 @@ function nightAndDay(dayNightPieceNameDict, defaultFaultRate, rainFaultRate)
         if randChance(defaultFaultRate) then    faultPieces[pieceName_pieceNr[k]]= pieceName_pieceNr[v] end
         if randChance(rainFaultRate) then    rainFaultPieces[pieceName_pieceNr[k]]= pieceName_pieceNr[v] end
 	end
+
     boolHasNeonDefects = randChance(10) and (count(faultPieces) > 0 or  count(rainFaultPieces) > 0)
-    echo("Building at "..locationstring(unitID).." has neonFlicker in rain "..toString(boolHasNeonDefects).. " with "..count(faultPieces).. " and "..count(rainFaultPieces))
+    --echo("Building at "..locationstring(unitID).." has neonFlicker in rain "..toString(boolHasNeonDefects).. " with "..count(faultPieces).. " and "..count(rainFaultPieces))
 
     hideDuringDayPieces= {}
     for nr, name in pairs(hideDuringDayPieceNames) do
@@ -1619,7 +1620,7 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
     end
 
     if count(dayNightPieceNames) > 0 then
-        StartThread(nightAndDay, dayNightPieceNames, 1,  5)
+        StartThread(nightAndDay, dayNightPieceNames, 10,  25)
     end
 
     countElements = 0
