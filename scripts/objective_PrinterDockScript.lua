@@ -675,7 +675,6 @@ function coolYourShips(step, coolDownMap)
     end
 end
 
-
 function OpenDoors()
     Move(Dock, y_axis, -100, 10)
     WMove(Boat, y_axis, -50, 10)

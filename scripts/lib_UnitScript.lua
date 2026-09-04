@@ -1477,7 +1477,7 @@ function getQuadrantIndex(quadrants, x, z)
     return 1
 end
 
-function isMyQuadrantLow(quadtrans, x,z)
+function isMyQuadrantLow(quadrants, x,z)
     local nr = getQuadrantIndex(quadrants, x, z)
     if not nr then
         return false, nil
