@@ -1469,7 +1469,7 @@ end
 function getQuadrantIndex(quadrants, x, z)
    for i, q in ipairs(quadrants) do
         if x >= q.minX and x <= q.maxX and
-           z >= q.minZ and z <= q.maxZ then
+           z >= q.minY and z <= q.maxY then
             return i
         end
     end

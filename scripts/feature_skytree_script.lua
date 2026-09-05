@@ -33,7 +33,7 @@ function script.Create()
     end
      
   
-    Spring.SetUnitAlwaysVisible(unitId, true)
+    Spring.SetUnitAlwaysVisible(unitID, true)
 end
 
 function script.Killed(recentDamage, _)
