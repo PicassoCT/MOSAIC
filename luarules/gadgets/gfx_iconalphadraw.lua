@@ -150,6 +150,13 @@ else
     -- Recoil 105.1 and later
     ---------------------------------------------------------------------------
 
+    local spGetUnitDrawPosition = Spring.GetUnitDrawPosition
+
+    local glPushMatrix = gl.PushMatrix
+    local glPopMatrix = gl.PopMatrix
+    local glTranslate = gl.Translate
+    local glUnitRaw = gl.UnitRaw
+
     function gadget:DrawWorld()
         if useLegacyDrawUnit then
             return
@@ -160,15 +167,24 @@ else
 
         for unitID in pairs(iconUnits) do
             if spValidUnitID(unitID) then
-                -- DrawWorld does not provide a unit transformation.
-                -- gl.Unit applies the maintained unit render matrix.
-                glUnit(unitID, false)
+                local x, y, z = spGetUnitDrawPosition(unitID)
+
+                if x then
+                    glPushMatrix()
+                    glTranslate(x, y, z)
+
+                    -- The root position is supplied explicitly. UnitRaw still
+                    -- draws the animated local-piece transforms.
+                    glUnitRaw(unitID, true)
+
+                    glPopMatrix()
+                end
             else
                 iconUnits[unitID] = nil
             end
         end
 
-        glBlending(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+        glBlending(GL_SRC_ALPHA, GL.ONE_MINUS_SRC_ALPHA)
         glDepthMask(true)
     end
 
