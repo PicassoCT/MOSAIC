@@ -1694,6 +1694,9 @@ function buildAnimation(boolIsReconstruction)
         Hide(Icon)
     end
     GG.ManualRenderedBuildingWithWindowsVisiblePieces[unitID] = toShowDict
+    if GG.MarkBuildingShadowVolumeDirty then
+        GG.MarkBuildingShadowVolumeDirty(unitID)
+    end
 end
 
 function buildAnimationSequential()
