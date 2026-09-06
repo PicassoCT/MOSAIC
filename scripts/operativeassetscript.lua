@@ -984,7 +984,7 @@ function transitionToCloaked()
     setWantCloak(true)
     boolRunningPossible = false
     setSpeedEnvCached(unitID, speedCloaked)
-    myCollideData = setNoneCollide(unitId)
+    myCollideData = setNoneCollide(unitID)
     StartThread(spawnDecoyCivilian)
     return "cloaked"
 end

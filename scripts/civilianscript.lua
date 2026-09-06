@@ -1845,6 +1845,10 @@ function getWalkingState()
 end
 
 function script.StartMoving()
+    -- Cancel a pending delayedStop when a new follow order arrives. Without
+    -- this, the old stop thread can switch the decoy back to standing while
+    -- it is already moving again.
+    Signal(SIG_STOP)
     boolWalking = true
     setOverrideAnimationState(eAnimState.walking, eAnimState.walking, true, nil, true)
 end

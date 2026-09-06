@@ -1786,6 +1786,7 @@ function getWalkingState()
 end
 
 function script.StartMoving()
+    Signal(SIG_STOP)
     boolWalking = true
     setOverrideAnimationState(eAnimState.walking, eAnimState.walking, true, nil, true)
 end

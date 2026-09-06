@@ -2770,6 +2770,18 @@ end
 
             -- EventStream Function
             function syncDecoyToAgent(evtID, frame, persPack, startFrame)
+                local function setDecoyMoving(boolMoving)
+                    if persPack.boolMoving == boolMoving then return end
+
+                    persPack.boolMoving = boolMoving
+                    local env = Spring.UnitScript.GetScriptEnv(persPack.myID)
+                    local callin = env and env.script and
+                        (boolMoving and env.script.StartMoving or env.script.StopMoving)
+                    if callin then
+                        Spring.UnitScript.CallAsUnit(persPack.myID, callin)
+                    end
+                end
+
                 --only apply if Unit is still alive
                 if doesUnitExistAlive(persPack.myID) == false then
                     -- if Unit did not die peacefully - kill the synced unit
@@ -2808,11 +2820,16 @@ end
                     persPack.boolTransported = false
                 end
 
-                if distance(persPack.oldSyncedPos.x, persPack.oldSyncedPos.y,
-                persPack.oldSyncedPos.z, x, y, z) < 5 then
+                local parentMoved = distance(persPack.oldSyncedPos.x,
+                    persPack.oldSyncedPos.y, persPack.oldSyncedPos.z,
+                    x, y, z) >= 1
+                local distanceToParent = distance(mx, my, mz, x, y, z)
+
+                if not parentMoved then
                 -- Unit has stopped, test wether we are near it
-                if distance(mx, my, mz, x, y, z) < 25 then
+                if distanceToParent < 25 then
                     Command(persPack.myID, "stop", {}, {})
+                    setDecoyMoving(false)
                     return frame + 30, persPack
                 end
             end
@@ -2838,10 +2855,12 @@ end
             math.random(-10, 10), 0, math.random(-10, 10))
         end
 
-        --is not a build command
-        command = Spring.GetUnitCommands (unitID, 1)
-        if command[1] then
+        -- Follow the actual parent. The previous ambient unitID made this
+        -- depend on whichever unit script happened to call the shared helper.
+        local command = Spring.GetUnitCommands(persPack.syncedID, 1)
+        if parentMoved or distanceToParent >= 25 or command[1] then
             Command(persPack.myID, "go", {x = x, y = y, z = z})
+            setDecoyMoving(true)
         end
 
         return frame + 30, persPack

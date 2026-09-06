@@ -1145,7 +1145,7 @@ end
 function transitionToCloaked()
 	setWantCloak(true)
 	setSpeedEnv(unitID, mySpeedReductionCloaked)
-	myCollideData = setNoneCollide(unitId)
+	myCollideData = setNoneCollide(unitID)
 	StartThread(spawnDecoyCivilian)
 	return "cloaked"
 end
@@ -1459,7 +1459,6 @@ function showHideIcon(boolShowIcon)
 end
 
 -- Configuration for the trench coat bones
-
 
 
 

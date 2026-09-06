@@ -629,8 +629,8 @@ function showTSubSubSpins(pieceID, TableOfPiecesGroups, selectExt, countDown)
 end
 
 function setNoneCollide(unitId)
-    oldCol = getCollideData(unitID)
-    col = {}
+    local oldCol = getCollideData(unitId)
+    local col = {}
     col.isBlocking = false
     col.isSolidObjectCollidable = false
     col.isProjectileCollidable= false
@@ -638,7 +638,7 @@ function setNoneCollide(unitId)
     col.crushable= false
     col.blockEnemyPushing= false
     col.blockHeightChanges  = false
-    restoreCollide(unitID, col)
+    restoreCollide(unitId, col)
     return oldCol
 end
 
