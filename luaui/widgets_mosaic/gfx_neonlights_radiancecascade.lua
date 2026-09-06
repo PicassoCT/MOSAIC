@@ -35,60 +35,9 @@ local occlusionBuildingCount = 0
 local refreshAccumulator = ATLAS_REFRESH_SECONDS
 local vsx, vsy = gl.GetViewSizes()
 
-local function customParam(params, name)
-    return params[name] or params[string.lower(name)]
-end
-
-local function getOcclusionDefinition(unitDefID)
-    local unitDef = UnitDefs[unitDefID]
-    local params = unitDef and unitDef.customParams
-    if not params then
-        return nil
-    end
-
-    local atlas = customParam(params, "radianceOcclusionAtlas")
-    if not atlas or atlas == "" then
-        return nil
-    end
-
-    local sourceLayers = tonumber(customParam(params, "radianceOcclusionLayers")) or 16
-    local columns = tonumber(customParam(params, "radianceOcclusionColumns")) or 4
-    local rows = tonumber(customParam(params, "radianceOcclusionRows")) or 4
-    local height = tonumber(customParam(params, "radianceOcclusionHeight"))
-    local sizeX = tonumber(customParam(params, "radianceOcclusionSizeX"))
-    local sizeZ = tonumber(customParam(params, "radianceOcclusionSizeZ"))
-
-    if not height or not sizeX or not sizeZ or sourceLayers < 1 or columns * rows < sourceLayers then
-        Spring.Echo("NeonLight Radiance Cascade: invalid occlusion parameters for " .. unitDef.name)
-        return nil
-    end
-
-    return {
-        atlas = atlas,
-        sourceLayers = sourceLayers,
-        columns = columns,
-        rows = rows,
-        height = height,
-        sizeX = sizeX,
-        sizeZ = sizeZ,
-    }
-end
-
-local function addOcclusionBuilding(unitID, unitDefID)
-    local definition = getOcclusionDefinition(unitDefID)
-    if not definition then
-        return
-    end
-
-    occlusionBuildings[unitID] = definition
+local function receiveBuildingShadowVolumes(buildings)
+    occlusionBuildings = buildings or {}
     occlusionDirty = true
-end
-
-local function removeOcclusionBuilding(unitID)
-    if occlusionBuildings[unitID] then
-        occlusionBuildings[unitID] = nil
-        occlusionDirty = true
-    end
 end
 
 local function dayPercentToNeonPercent(percent)
@@ -122,15 +71,30 @@ local function removeSelf(message)
     widgetHandler:RemoveWidget(widget)
 end
 
-local function drawOcclusionQuad(sizeX, sizeZ, u0, v0, u1, v1)
+local function drawOcclusionQuad(sizeX, sizeZ)
     local halfX = sizeX * 0.5
     local halfZ = sizeZ * 0.5
 
     gl.BeginEnd(GL.QUADS, function()
-        gl.TexCoord(u0, v0); gl.Vertex(-halfX, -halfZ, 0)
-        gl.TexCoord(u1, v0); gl.Vertex( halfX, -halfZ, 0)
-        gl.TexCoord(u1, v1); gl.Vertex( halfX,  halfZ, 0)
-        gl.TexCoord(u0, v1); gl.Vertex(-halfX,  halfZ, 0)
+        gl.Vertex(-halfX, -halfZ, 0)
+        gl.Vertex( halfX, -halfZ, 0)
+        gl.Vertex( halfX,  halfZ, 0)
+        gl.Vertex(-halfX,  halfZ, 0)
+    end)
+end
+
+local function drawOcclusionEllipse(sizeX, sizeZ)
+    local segments = 20
+    gl.BeginEnd(GL.TRIANGLE_FAN, function()
+        gl.Vertex(0, 0, 0)
+        for i = 0, segments do
+            local angle = i * math.pi * 2 / segments
+            gl.Vertex(
+                math.cos(angle) * sizeX * 0.5,
+                math.sin(angle) * sizeZ * 0.5,
+                0
+            )
+        end
     end)
 end
 
@@ -142,7 +106,7 @@ local function drawOcclusionLayer(layerIndex)
     gl.DepthMask(false)
     gl.Blending(false)
     gl.Culling(false)
-    gl.AlphaTest(GL.GREATER, 0.5)
+    gl.Texture(false)
     gl.Color(1, 1, 1, 1)
 
     gl.MatrixMode(GL.PROJECTION)
@@ -154,49 +118,48 @@ local function drawOcclusionLayer(layerIndex)
     gl.PushMatrix()
     gl.LoadIdentity()
 
-    for unitID, definition in pairs(occlusionBuildings) do
-        local x, baseY, z = Spring.GetUnitPosition(unitID)
-        if x and worldY >= baseY and worldY < baseY + definition.height then
-            local normalizedHeight = (worldY - baseY) / definition.height
-            local sourceLayer = math.min(
-                definition.sourceLayers - 1,
-                math.floor(normalizedHeight * definition.sourceLayers)
-            )
-            local tileX = sourceLayer % definition.columns
-            local tileY = math.floor(sourceLayer / definition.columns)
-            local u0 = tileX / definition.columns
-            local v0 = tileY / definition.rows
-            local u1 = (tileX + 1) / definition.columns
-            local v1 = (tileY + 1) / definition.rows
-            local heading = Spring.GetUnitHeading(unitID) or 0
-            local angle = heading * 360 / 65536
+    for _, volumes in pairs(occlusionBuildings) do
+        for i = 1, #volumes do
+            local volume = volumes[i]
+            local halfY = volume.sy * 0.5
+            local relativeY = (worldY - volume.y) / halfY
 
-            gl.Texture(definition.atlas)
-            gl.PushMatrix()
-            gl.Translate(x, z, 0)
-            gl.Rotate(-angle, 0, 0, 1)
-            drawOcclusionQuad(definition.sizeX, definition.sizeZ, u0, v0, u1, v1)
-            gl.PopMatrix()
+            if relativeY >= -1 and relativeY <= 1 then
+                local sizeX = volume.sx
+                local sizeZ = volume.sz
+                local rounded = volume.volumeType ~= 2
+
+                -- Ellipsoid/sphere sections shrink towards their top and bottom.
+                if volume.volumeType == 0 or volume.volumeType == 3 then
+                    local sectionScale = math.sqrt(math.max(0, 1 - relativeY * relativeY))
+                    sizeX = sizeX * sectionScale
+                    sizeZ = sizeZ * sectionScale
+                end
+
+                gl.PushMatrix()
+                gl.Translate(volume.x, volume.z, 0)
+                gl.Rotate(-(volume.heading or 0) * 360 / 65536, 0, 0, 1)
+                if rounded then
+                    drawOcclusionEllipse(sizeX, sizeZ)
+                else
+                    drawOcclusionQuad(sizeX, sizeZ)
+                end
+                gl.PopMatrix()
+            end
         end
     end
 
-    gl.Texture(false)
     gl.PopMatrix()
     gl.MatrixMode(GL.PROJECTION)
     gl.PopMatrix()
     gl.MatrixMode(GL.MODELVIEW)
-    gl.AlphaTest(false)
     gl.Color(1, 1, 1, 1)
 end
 
 local function rebuildOcclusionAtlas()
     occlusionBuildingCount = 0
-    for unitID in pairs(occlusionBuildings) do
-        if Spring.ValidUnitID(unitID) and not Spring.GetUnitIsDead(unitID) then
-            occlusionBuildingCount = occlusionBuildingCount + 1
-        else
-            occlusionBuildings[unitID] = nil
-        end
+    for _ in pairs(occlusionBuildings) do
+        occlusionBuildingCount = occlusionBuildingCount + 1
     end
 
     for layerIndex = 0, OCCLUSION_LAYER_COUNT - 1 do
@@ -210,7 +173,7 @@ end
 
 function widget:Initialize()
     if not gl.RenderToTexture or not gl.CreateTexture or not gl.UnitPiece
-        or not gl.BeginEnd or not gl.AlphaTest
+        or not gl.BeginEnd
     then
         removeSelf("required FBO or unit-piece drawing API is unavailable")
         return
@@ -244,37 +207,19 @@ function widget:Initialize()
         end
     end
 
-    local allUnits = Spring.GetAllUnits()
-    for i = 1, #allUnits do
-        local unitID = allUnits[i]
-        addOcclusionBuilding(unitID, Spring.GetUnitDefID(unitID))
-    end
-
     widgetHandler:RegisterGlobal(
         "RecieveAllNeonUnitsPieces",
         recieveNeonHoloLightPiecesByUnit
+    )
+    widgetHandler:RegisterGlobal(
+        "ReceiveBuildingShadowVolumes",
+        receiveBuildingShadowVolumes
     )
 
     Spring.Echo(
         "NeonLight Radiance Cascade: L0 debug atlas enabled (" ..
         ATLAS_SIZE .. "x" .. ATLAS_SIZE .. ", 10 Hz)"
     )
-end
-
-function widget:UnitCreated(unitID, unitDefID)
-    addOcclusionBuilding(unitID, unitDefID)
-end
-
-function widget:UnitDestroyed(unitID)
-    removeOcclusionBuilding(unitID)
-end
-
-function widget:UnitGiven(unitID, unitDefID)
-    addOcclusionBuilding(unitID, unitDefID)
-end
-
-function widget:UnitTaken(unitID)
-    removeOcclusionBuilding(unitID)
 end
 
 function widget:ViewResize()
@@ -423,6 +368,7 @@ end
 
 function widget:Shutdown()
     widgetHandler:DeregisterGlobal("RecieveAllNeonUnitsPieces")
+    widgetHandler:DeregisterGlobal("ReceiveBuildingShadowVolumes")
 
     if topDownTex then
         gl.DeleteTexture(topDownTex)
