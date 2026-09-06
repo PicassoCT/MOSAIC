@@ -1244,7 +1244,7 @@ function buildAnimation()
     local builtT = TablesOfPiecesGroups["Build"]
     if buildAnimationEarlyOut(builtT) then
         if GG.MarkBuildingShadowVolumeDirty then
-            GG.MarkBuildingShadowVolumeDirty(unitID)
+            GG.MarkBuildingShadowVolumeDirty(unitID, ToShowTable)
         end
         return
     end
@@ -1298,7 +1298,7 @@ function buildAnimation()
     hideT(TablesOfPiecesGroups["BuildCrane"])
     hideT(TablesOfPiecesGroups["BuildDeco"])
     if GG.MarkBuildingShadowVolumeDirty then
-        GG.MarkBuildingShadowVolumeDirty(unitID)
+        GG.MarkBuildingShadowVolumeDirty(unitID, ToShowTable)
     end
 end
 
