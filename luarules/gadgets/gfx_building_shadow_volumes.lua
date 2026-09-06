@@ -10,134 +10,188 @@ function gadget:GetInfo()
     }
 end
 
-if not gadgetHandler:IsSyncedCode() then
-    return
-end
+if gadgetHandler:IsSyncedCode() then
+    local shadowVolumes = {}
+    local pendingUnits = {}
 
-local shadowVolumes = {}
-local pendingUnits = {}
-local dirty = true
-
-local function throwsShadow(unitDefID)
-    local unitDef = UnitDefs[unitDefID]
-    local params = unitDef and unitDef.customParams
-    local value = params and (params.throwsshadow or params.throwsShadow)
-    return value == true or value == 1 or value == "1" or value == "true"
-end
-
-local function addVolume(volumes, x, y, z, heading, sx, sy, sz,
-        ox, oy, oz, volumeType, primaryAxis, disabled)
-    if not sx or disabled then
-        return
+    local function throwsShadow(unitDefID)
+        local unitDef = UnitDefs[unitDefID]
+        local params = unitDef and unitDef.customParams
+        local value = params and (params.throwsshadow or params.throwsShadow)
+        return value == true or value == 1 or value == "1" or value == "true"
     end
 
-    volumes[#volumes + 1] = {
-        x = x + (ox or 0),
-        y = y + (oy or 0),
-        z = z + (oz or 0),
-        heading = heading or 0,
-        sx = sx,
-        sy = sy,
-        sz = sz,
-        volumeType = volumeType or 2,
-        primaryAxis = primaryAxis or 1,
-    }
-end
+    local function sendVolume(unitID, volumes, x, y, z, heading, sx, sy, sz,
+            ox, oy, oz, volumeType, primaryAxis, disabled)
+        if not sx or disabled then
+            return
+        end
 
-local function rebuildUnit(unitID)
-    local unitDefID = Spring.GetUnitDefID(unitID)
-    if not unitDefID or not throwsShadow(unitDefID) then
-        shadowVolumes[unitID] = nil
-        return
+        local volume = {
+            x = x + (ox or 0),
+            y = y + (oy or 0),
+            z = z + (oz or 0),
+            heading = heading or 0,
+            sx = sx,
+            sy = sy,
+            sz = sz,
+            volumeType = volumeType or 2,
+            primaryAxis = primaryAxis or 1,
+        }
+        volumes[#volumes + 1] = volume
+
+        SendToUnsynced(
+            "buildingShadowVolumeAdd",
+            unitID,
+            volume.x, volume.y, volume.z, volume.heading,
+            volume.sx, volume.sy, volume.sz,
+            volume.volumeType, volume.primaryAxis
+        )
     end
 
-    local volumes = {}
-    local heading = Spring.GetUnitHeading(unitID) or 0
-    local pieceMap = Spring.GetUnitPieceMap(unitID) or {}
+    local function rebuildUnit(unitID)
+        local unitDefID = Spring.GetUnitDefID(unitID)
+        if not unitDefID or not throwsShadow(unitDefID) then
+            shadowVolumes[unitID] = nil
+            SendToUnsynced("buildingShadowVolumeRemove", unitID)
+            return
+        end
 
-    for _, pieceID in pairs(pieceMap) do
-        local sx, sy, sz, ox, oy, oz, volumeType, _, primaryAxis, disabled =
-            Spring.GetUnitPieceCollisionVolumeData(unitID, pieceID)
+        local volumes = {}
+        local heading = Spring.GetUnitHeading(unitID) or 0
+        local pieceMap = Spring.GetUnitPieceMap(unitID) or {}
+        SendToUnsynced("buildingShadowVolumeBegin", unitID)
 
-        if sx and not disabled then
-            local x, y, z = Spring.GetUnitPiecePosDir(unitID, pieceID)
+        for _, pieceID in pairs(pieceMap) do
+            local sx, sy, sz, ox, oy, oz, volumeType, _, primaryAxis, disabled =
+                Spring.GetUnitPieceCollisionVolumeData(unitID, pieceID)
+
+            if sx and not disabled then
+                local x, y, z = Spring.GetUnitPiecePosDir(unitID, pieceID)
+                if x then
+                    sendVolume(
+                        unitID, volumes, x, y, z, heading,
+                        sx, sy, sz, ox, oy, oz,
+                        volumeType, primaryAxis, disabled
+                    )
+                end
+            end
+        end
+
+        if #volumes == 0 then
+            local x, y, z = Spring.GetUnitBasePosition(unitID)
+            local sx, sy, sz, ox, oy, oz, volumeType, _, primaryAxis, disabled =
+                Spring.GetUnitCollisionVolumeData(unitID)
+
             if x then
-                addVolume(
-                    volumes, x, y, z, heading,
+                sendVolume(
+                    unitID, volumes, x, y, z, heading,
                     sx, sy, sz, ox, oy, oz,
                     volumeType, primaryAxis, disabled
                 )
             end
         end
+
+        shadowVolumes[unitID] = volumes
+        SendToUnsynced("buildingShadowVolumeEnd", unitID)
     end
 
-    if #volumes == 0 then
-        local x, y, z = Spring.GetUnitBasePosition(unitID)
-        local sx, sy, sz, ox, oy, oz, volumeType, _, primaryAxis, disabled =
-            Spring.GetUnitCollisionVolumeData(unitID)
-
-        if x then
-            addVolume(
-                volumes, x, y, z, heading,
-                sx, sy, sz, ox, oy, oz,
-                volumeType, primaryAxis, disabled
-            )
+    local function markDirty(unitID)
+        if Spring.ValidUnitID(unitID) then
+            pendingUnits[unitID] = true
+        else
+            shadowVolumes[unitID] = nil
+            SendToUnsynced("buildingShadowVolumeRemove", unitID)
         end
     end
 
-    shadowVolumes[unitID] = volumes
-end
+    function gadget:Initialize()
+        GG.BuildingShadowVolume = shadowVolumes
+        GG.MarkBuildingShadowVolumeDirty = markDirty
 
-local function markDirty(unitID)
-    if Spring.ValidUnitID(unitID) then
-        pendingUnits[unitID] = true
-    else
-        shadowVolumes[unitID] = nil
-    end
-    dirty = true
-end
-
-function gadget:Initialize()
-    GG.BuildingShadowVolume = shadowVolumes
-    GG.MarkBuildingShadowVolumeDirty = markDirty
-
-    local allUnits = Spring.GetAllUnits()
-    for i = 1, #allUnits do
-        pendingUnits[allUnits[i]] = true
-    end
-end
-
-function gadget:UnitCreated(unitID)
-    markDirty(unitID)
-end
-
-function gadget:UnitFinished(unitID)
-    markDirty(unitID)
-end
-
-function gadget:UnitDestroyed(unitID)
-    pendingUnits[unitID] = nil
-    shadowVolumes[unitID] = nil
-    dirty = true
-end
-
-function gadget:GameFrame()
-    if not dirty then
-        return
+        local allUnits = Spring.GetAllUnits()
+        for i = 1, #allUnits do
+            pendingUnits[allUnits[i]] = true
+        end
     end
 
-    for unitID in pairs(pendingUnits) do
-        rebuildUnit(unitID)
+    function gadget:UnitCreated(unitID)
+        markDirty(unitID)
+    end
+
+    function gadget:UnitFinished(unitID)
+        markDirty(unitID)
+    end
+
+    function gadget:UnitDestroyed(unitID)
         pendingUnits[unitID] = nil
+        shadowVolumes[unitID] = nil
+        SendToUnsynced("buildingShadowVolumeRemove", unitID)
     end
 
-    if Script.LuaUI("ReceiveBuildingShadowVolumes") then
-        Script.LuaUI.ReceiveBuildingShadowVolumes(shadowVolumes)
-        dirty = false
+    function gadget:GameFrame()
+        for unitID in pairs(pendingUnits) do
+            rebuildUnit(unitID)
+            pendingUnits[unitID] = nil
+        end
     end
-end
 
-function gadget:Shutdown()
-    GG.BuildingShadowVolume = nil
-    GG.MarkBuildingShadowVolumeDirty = nil
+    function gadget:Shutdown()
+        GG.BuildingShadowVolume = nil
+        GG.MarkBuildingShadowVolumeDirty = nil
+    end
+else
+    local shadowVolumes = {}
+    local changed = false
+
+    local function beginVolume(_, unitID)
+        shadowVolumes[unitID] = {}
+    end
+
+    local function addVolume(_, unitID, x, y, z, heading, sx, sy, sz,
+            volumeType, primaryAxis)
+        local volumes = shadowVolumes[unitID]
+        if not volumes then
+            volumes = {}
+            shadowVolumes[unitID] = volumes
+        end
+
+        volumes[#volumes + 1] = {
+            x = x, y = y, z = z,
+            heading = heading,
+            sx = sx, sy = sy, sz = sz,
+            volumeType = volumeType,
+            primaryAxis = primaryAxis,
+        }
+    end
+
+    local function endVolume()
+        changed = true
+    end
+
+    local function removeVolume(_, unitID)
+        shadowVolumes[unitID] = nil
+        changed = true
+    end
+
+    function gadget:Initialize()
+        gadgetHandler:AddSyncAction("buildingShadowVolumeBegin", beginVolume)
+        gadgetHandler:AddSyncAction("buildingShadowVolumeAdd", addVolume)
+        gadgetHandler:AddSyncAction("buildingShadowVolumeEnd", endVolume)
+        gadgetHandler:AddSyncAction("buildingShadowVolumeRemove", removeVolume)
+    end
+
+    function gadget:GameFrame()
+        if changed and Script.LuaUI("ReceiveBuildingShadowVolumes") then
+            Script.LuaUI.ReceiveBuildingShadowVolumes(shadowVolumes)
+            changed = false
+        end
+    end
+
+    function gadget:Shutdown()
+        gadgetHandler:RemoveSyncAction("buildingShadowVolumeBegin")
+        gadgetHandler:RemoveSyncAction("buildingShadowVolumeAdd")
+        gadgetHandler:RemoveSyncAction("buildingShadowVolumeEnd")
+        gadgetHandler:RemoveSyncAction("buildingShadowVolumeRemove")
+    end
 end
