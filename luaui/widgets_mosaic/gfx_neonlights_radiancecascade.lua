@@ -20,6 +20,8 @@ local DEBUG_VIEW_FRACTION = 0.40
 
 local neonUnitTables = {}
 local neonLightPercent = 0.0
+local neonUnitCount = 0
+local neonPieceCount = 0
 local topDownTex
 local refreshAccumulator = ATLAS_REFRESH_SECONDS
 local vsx, vsy = gl.GetViewSizes()
@@ -41,6 +43,13 @@ end
 -- Keep the misspelled public name for compatibility with gfx_neonHolograms.lua.
 local function recieveNeonHoloLightPiecesByUnit(unitPiecesTable)
     neonUnitTables = unitPiecesTable or {}
+    neonUnitCount = 0
+    neonPieceCount = 0
+
+    for _, pieces in pairs(neonUnitTables) do
+        neonUnitCount = neonUnitCount + 1
+        neonPieceCount = neonPieceCount + #pieces
+    end
 end
 
 local function removeSelf(message)
@@ -96,7 +105,10 @@ local function drawNeonPieces()
     gl.Blending(false)
     gl.Culling(false)
     gl.Texture(false)
-    gl.Color(neonLightPercent, neonLightPercent, neonLightPercent, 1.0)
+    -- The debug atlas must remain readable during daytime, when the real
+    -- emission factor is intentionally zero.
+    local drawIntensity = DEBUG_VIEW and 1.0 or neonLightPercent
+    gl.Color(drawIntensity, drawIntensity, drawIntensity, 1.0)
 
     -- Map Spring world X/Z onto atlas X/Y without touching the player camera.
     gl.MatrixMode(GL.PROJECTION)
@@ -164,6 +176,19 @@ function widget:DrawScreen()
     gl.Texture(topDownTex)
     gl.TexRect(margin, margin, margin + debugSize, margin + debugSize, 0, 0, 1, 1)
     gl.Texture(false)
+
+    gl.Text(
+        string.format(
+            "L0 debug | units: %d | pieces: %d | day emission: %.2f",
+            neonUnitCount,
+            neonPieceCount,
+            neonLightPercent
+        ),
+        margin,
+        margin + debugSize + 8,
+        13,
+        "o"
+    )
 end
 
 function widget:Shutdown()
