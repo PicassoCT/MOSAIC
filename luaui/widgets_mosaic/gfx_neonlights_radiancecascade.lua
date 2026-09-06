@@ -18,14 +18,27 @@ local DAYLENGTH = 28800
 local MORNING_OFFSET = DAYLENGTH * 0.5
 local DEBUG_VIEW = true
 local DEBUG_VIEW_FRACTION = 0.40
+local OCCLUSION_ATLAS_SIZE = 512
+local OCCLUSION_LAYER_COUNT = 16
+local OCCLUSION_WORLD_HEIGHT = 2048
+local DEBUG_OCCLUSION_LAYER = 4
 
 local neonUnitTables = {}
 local neonLightPercent = 0.0
 local neonUnitCount = 0
 local neonPieceCount = 0
 local topDownTex
+local occlusionTex = {}
+local occlusionBuildings = {}
+local occlusionDirty = true
+local occlusionBuildingCount = 0
 local refreshAccumulator = ATLAS_REFRESH_SECONDS
 local vsx, vsy = gl.GetViewSizes()
+
+local function receiveBuildingShadowVolumes(buildings)
+    occlusionBuildings = buildings or {}
+    occlusionDirty = true
+end
 
 local function dayPercentToNeonPercent(percent)
     if percent < 0.25 then
@@ -58,8 +71,110 @@ local function removeSelf(message)
     widgetHandler:RemoveWidget(widget)
 end
 
+local function drawOcclusionQuad(sizeX, sizeZ)
+    local halfX = sizeX * 0.5
+    local halfZ = sizeZ * 0.5
+
+    gl.BeginEnd(GL.QUADS, function()
+        gl.Vertex(-halfX, -halfZ, 0)
+        gl.Vertex( halfX, -halfZ, 0)
+        gl.Vertex( halfX,  halfZ, 0)
+        gl.Vertex(-halfX,  halfZ, 0)
+    end)
+end
+
+local function drawOcclusionEllipse(sizeX, sizeZ)
+    local segments = 20
+    gl.BeginEnd(GL.TRIANGLE_FAN, function()
+        gl.Vertex(0, 0, 0)
+        for i = 0, segments do
+            local angle = i * math.pi * 2 / segments
+            gl.Vertex(
+                math.cos(angle) * sizeX * 0.5,
+                math.sin(angle) * sizeZ * 0.5,
+                0
+            )
+        end
+    end)
+end
+
+local function drawOcclusionLayer(layerIndex)
+    local worldY = (layerIndex + 0.5) * OCCLUSION_WORLD_HEIGHT / OCCLUSION_LAYER_COUNT
+
+    gl.Clear(GL.COLOR_BUFFER_BIT, 0, 0, 0, 0)
+    gl.DepthTest(false)
+    gl.DepthMask(false)
+    gl.Blending(false)
+    gl.Culling(false)
+    gl.Texture(false)
+    gl.Color(1, 1, 1, 1)
+
+    gl.MatrixMode(GL.PROJECTION)
+    gl.PushMatrix()
+    gl.LoadIdentity()
+    gl.Ortho(0, Game.mapSizeX, 0, Game.mapSizeZ, -1, 1)
+
+    gl.MatrixMode(GL.MODELVIEW)
+    gl.PushMatrix()
+    gl.LoadIdentity()
+
+    for _, volumes in pairs(occlusionBuildings) do
+        for i = 1, #volumes do
+            local volume = volumes[i]
+            local halfY = volume.sy * 0.5
+            local relativeY = (worldY - volume.y) / halfY
+
+            if relativeY >= -1 and relativeY <= 1 then
+                local sizeX = volume.sx
+                local sizeZ = volume.sz
+                local rounded = volume.volumeType ~= 2
+
+                -- Ellipsoid/sphere sections shrink towards their top and bottom.
+                if volume.volumeType == 0 or volume.volumeType == 3 then
+                    local sectionScale = math.sqrt(math.max(0, 1 - relativeY * relativeY))
+                    sizeX = sizeX * sectionScale
+                    sizeZ = sizeZ * sectionScale
+                end
+
+                gl.PushMatrix()
+                gl.Translate(volume.x, volume.z, 0)
+                gl.Rotate(-(volume.heading or 0) * 360 / 65536, 0, 0, 1)
+                if rounded then
+                    drawOcclusionEllipse(sizeX, sizeZ)
+                else
+                    drawOcclusionQuad(sizeX, sizeZ)
+                end
+                gl.PopMatrix()
+            end
+        end
+    end
+
+    gl.PopMatrix()
+    gl.MatrixMode(GL.PROJECTION)
+    gl.PopMatrix()
+    gl.MatrixMode(GL.MODELVIEW)
+    gl.Color(1, 1, 1, 1)
+end
+
+local function rebuildOcclusionAtlas()
+    occlusionBuildingCount = 0
+    for _ in pairs(occlusionBuildings) do
+        occlusionBuildingCount = occlusionBuildingCount + 1
+    end
+
+    for layerIndex = 0, OCCLUSION_LAYER_COUNT - 1 do
+        gl.RenderToTexture(occlusionTex[layerIndex + 1], function()
+            drawOcclusionLayer(layerIndex)
+        end)
+    end
+
+    occlusionDirty = false
+end
+
 function widget:Initialize()
-    if not gl.RenderToTexture or not gl.CreateTexture or not gl.UnitPiece then
+    if not gl.RenderToTexture or not gl.CreateTexture or not gl.UnitPiece
+        or not gl.BeginEnd
+    then
         removeSelf("required FBO or unit-piece drawing API is unavailable")
         return
     end
@@ -77,9 +192,28 @@ function widget:Initialize()
         return
     end
 
+    for layer = 1, OCCLUSION_LAYER_COUNT do
+        occlusionTex[layer] = gl.CreateTexture(OCCLUSION_ATLAS_SIZE, OCCLUSION_ATLAS_SIZE, {
+            min_filter = GL.NEAREST,
+            mag_filter = GL.NEAREST,
+            wrap_s = GL.CLAMP_TO_EDGE,
+            wrap_t = GL.CLAMP_TO_EDGE,
+            fbo = true,
+        })
+
+        if not occlusionTex[layer] then
+            removeSelf("could not create occlusion layer " .. layer)
+            return
+        end
+    end
+
     widgetHandler:RegisterGlobal(
         "RecieveAllNeonUnitsPieces",
         recieveNeonHoloLightPiecesByUnit
+    )
+    widgetHandler:RegisterGlobal(
+        "ReceiveBuildingShadowVolumes",
+        receiveBuildingShadowVolumes
     )
 
     Spring.Echo(
@@ -160,6 +294,10 @@ function widget:DrawWorldPreUnit()
 
     refreshAccumulator = refreshAccumulator % ATLAS_REFRESH_SECONDS
     gl.RenderToTexture(topDownTex, drawNeonPieces)
+
+    if occlusionDirty then
+        rebuildOcclusionAtlas()
+    end
 end
 
 function widget:DrawScreen()
@@ -192,13 +330,55 @@ function widget:DrawScreen()
         13,
         "o"
     )
+
+    local occlusionLayer = math.max(1, math.min(OCCLUSION_LAYER_COUNT, DEBUG_OCCLUSION_LAYER))
+    local occlusionX = margin + debugSize + margin
+    gl.Color(0, 0, 0, 0.75)
+    gl.Rect(
+        occlusionX - 2,
+        margin - 2,
+        occlusionX + debugSize + 2,
+        margin + debugSize + 2
+    )
+
+    gl.Color(1, 1, 1, 1)
+    gl.Texture(occlusionTex[occlusionLayer])
+    gl.TexRect(
+        occlusionX,
+        margin,
+        occlusionX + debugSize,
+        margin + debugSize,
+        0, 1, 1, 0
+    )
+    gl.Texture(false)
+    gl.Text(
+        string.format(
+            "Occlusion slice %d/%d | y=%.0f | buildings: %d",
+            occlusionLayer,
+            OCCLUSION_LAYER_COUNT,
+            (occlusionLayer - 0.5) * OCCLUSION_WORLD_HEIGHT / OCCLUSION_LAYER_COUNT,
+            occlusionBuildingCount
+        ),
+        occlusionX,
+        margin + debugSize + 8,
+        13,
+        "o"
+    )
 end
 
 function widget:Shutdown()
     widgetHandler:DeregisterGlobal("RecieveAllNeonUnitsPieces")
+    widgetHandler:DeregisterGlobal("ReceiveBuildingShadowVolumes")
 
     if topDownTex then
         gl.DeleteTexture(topDownTex)
         topDownTex = nil
     end
+
+    for layer = 1, #occlusionTex do
+        if occlusionTex[layer] then
+            gl.DeleteTexture(occlusionTex[layer])
+        end
+    end
+    occlusionTex = {}
 end

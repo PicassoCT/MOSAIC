@@ -2,7 +2,7 @@
 local Building = Unit:New{
 
 	canMove 					= false,
-	explodeAs          			= "mechexplode",
+	explodeAs         			= "mechexplode",
 
 	footprintX					= 4,
 	footprintZ 					= 4,
@@ -15,6 +15,7 @@ local Building = Unit:New{
 	metalStorage = 2500,
 	
 	customparams = {
+		throwsShadow = true,
     },
 }
 	
