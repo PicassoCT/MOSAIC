@@ -11,6 +11,7 @@ function gadget:GetInfo()
 end
 
 if gadgetHandler:IsSyncedCode() then
+    local MAX_VOLUMES_PER_UNIT = 128
     local shadowVolumes = {}
     local pendingUnits = {}
 
@@ -52,8 +53,10 @@ if gadgetHandler:IsSyncedCode() then
     local function rebuildUnit(unitID)
         local unitDefID = Spring.GetUnitDefID(unitID)
         if not unitDefID or not throwsShadow(unitDefID) then
-            shadowVolumes[unitID] = nil
-            SendToUnsynced("buildingShadowVolumeRemove", unitID)
+            if shadowVolumes[unitID] then
+                shadowVolumes[unitID] = nil
+                SendToUnsynced("buildingShadowVolumeRemove", unitID)
+            end
             return
         end
 
@@ -63,6 +66,14 @@ if gadgetHandler:IsSyncedCode() then
         SendToUnsynced("buildingShadowVolumeBegin", unitID)
 
         for _, pieceID in pairs(pieceMap) do
+            if #volumes >= MAX_VOLUMES_PER_UNIT then
+                Spring.Echo(
+                    "Building Shadow Volumes: capped unit " ..
+                    unitID .. " at " .. MAX_VOLUMES_PER_UNIT .. " volumes"
+                )
+                break
+            end
+
             local sx, sy, sz, ox, oy, oz, volumeType, _, primaryAxis, disabled =
                 Spring.GetUnitPieceCollisionVolumeData(unitID, pieceID)
 
