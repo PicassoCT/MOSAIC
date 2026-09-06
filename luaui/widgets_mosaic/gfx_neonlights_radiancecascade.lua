@@ -1,195 +1,58 @@
 function widget:GetInfo()
     return {
         name = "NeonLight Radiance Cascade",
-        desc = "Produces a topdown fbo neonlightmap of the city in cameraview via radiance cascade ",
+        desc = "Builds a top-down neon emission atlas for later radiance propagation",
         author = "Picasso",
         date = "2023",
         license = "GNU GPL, v2 or later",
         layer = -9,
-        enabled = false, --  loaded by default?
-        hidden = false
+        enabled = true,
+        hidden = false,
     }
 end
--------------------------------------------------------------------------------
--- Config
---------------------------------------------------------------------------------
 
-local DEBUG_VIEW = "L0"
-local ATLAS_SIZE = 2048        -- start small
-local CAMERA_HEIGHT = 10000
-
+-- L0 only: first prove a stable top-down neon emission atlas.
+local ATLAS_SIZE = 1024
+local ATLAS_REFRESH_SECONDS = 0.10
 local DAYLENGTH = 28800
+local DEBUG_VIEW = true
+local DEBUG_VIEW_FRACTION = 0.40
 
---[[--------------------------------------------------------------------------
--- RADIANCE CASCADE STAGE 1 (DISABLED)
---
--- This stage introduces multi-scale light propagation in 2.5D.
--- Do NOT enable until the base atlas is visually correct and stable.
-----------------------------------------------------------------------------]]
-
--- local CASCADE_COUNT = 3
--- local CASCADE_BASE_RES = ATLAS_SIZE
--- local CASCADE_SCALE = 2
-
--- local cascadeTex = {}   -- cascadeTex[0] = emission atlas
--- local cascadeFBO = {}
-
---------------------------------------------------------------------------------
--- State
---------------------------------------------------------------------------------
-
-local vsx, vsy = gl.GetViewSizes()
 local neonUnitTables = {}
-local neonLightPercent = 0
-
+local neonLightPercent = 0.0
 local topDownTex
-local topDownFBO
-local mapMinX, mapMaxX
-local mapMinZ, mapMaxZ
-local orthoWidth
-local orthoHeight
-local perspShader
+local refreshAccumulator = ATLAS_REFRESH_SECONDS
+local vsx, vsy = gl.GetViewSizes()
 
---------------------------------------------------------------------------------
--- Utils
---------------------------------------------------------------------------------
-local glOrtho                = gl.Ortho
-
-local function dayPercentToNeonPercent(p)
-    if p < 0.25 then return 1 - p / 0.25 end
-    if p > 0.75 then return 1 - (1 - p) / 0.25 end
-    return 0
+local function dayPercentToNeonPercent(percent)
+    if percent < 0.25 then
+        return 1.0 - percent / 0.25
+    end
+    if percent > 0.75 then
+        return 1.0 - (1.0 - percent) / 0.25
+    end
+    return 0.0
 end
 
 local function getDayPercent()
-    local f = (Spring.GetGameFrame() % DAYLENGTH) / DAYLENGTH
-    return f
+    return (Spring.GetGameFrame() % DAYLENGTH) / DAYLENGTH
 end
 
---[[--------------------------------------------------------------------------
--- Allocate cascade textures
--- Each cascade is half resolution of the previous
-----------------------------------------------------------------------------]]
-
--- local function initRadianceCascades()
---     local res = CASCADE_BASE_RES
---     for i = 1, CASCADE_COUNT do
---         cascadeTex[i] = gl.CreateTexture(res, res, {
---             min_filter = GL.LINEAR,
---             mag_filter = GL.LINEAR,
---             wrap_s = GL.CLAMP_TO_EDGE,
---             wrap_t = GL.CLAMP_TO_EDGE,
---             fbo = true,
---         })
---         res = math.floor(res / CASCADE_SCALE)
---     end
--- end
-
-
---------------------------------------------------------------------------------
--- Top-down camera
---------------------------------------------------------------------------------
-
-local function pushCamera()
-    return Spring.GetCameraState()
-end
-
-local function popCamera(state)
-    Spring.SetCameraState(state, 0)
-end
-
-
-local function setTopDownCamera()
-    Spring.SetCameraState({
-        name = "pos",
-        mode = 0,
-        px = (mapMinX + mapMaxX) * 0.5,
-        py = CAMERA_HEIGHT,
-        pz = (mapMinZ + mapMaxZ) * 0.5,
-        dx = 0, dy = -1, dz = 0,
-        rx = 0, ry = 0, rz = 0,
-        fov = 45,
-    }, 0)
-end
-
---------------------------------------------------------------------------------
--- Perspective shader
---------------------------------------------------------------------------------
---[[--------------------------------------------------------------------------
--- Radiance propagation shader
---
--- Input : previous cascade
--- Output: current cascade
--- Behavior:
---  - Sample neighborhood
---  - Attenuate by distance
---  - Accumulate conservatively
-----------------------------------------------------------------------------]]
-
--- fragment shader pseudocode:
---
--- vec3 sum = vec3(0);
--- for each offset in kernel:
---     sum += texture(prevCascade, uv + offset).rgb * weight;
--- output = sum * falloff;
-
-local function initPerspectiveShader()
-    perspShader = gl.CreateShader({
-        vertex = [[
-            #version 150
-            in vec3 position;
-            uniform mat4 viewProjectionMatrix;
-            out vec3 worldPos;
-            void main() {
-                worldPos = position;
-                gl_Position = viewProjectionMatrix * vec4(position, 1.0);
-            }
-        ]],
-        fragment = [[
-            #version 150
-            uniform sampler2D uLightTex;
-            uniform vec2 worldMin;
-            uniform vec2 worldMax;
-            in vec3 worldPos;
-            out vec4 fragColor;
-            void main() {
-                vec2 uv = (worldPos.xz - worldMin) / (worldMax - worldMin);
-                vec3 light = texture(uLightTex, uv).rgb;
-                fragColor = vec4(light, 1.0);
-            }
-        ]],
-        uniformInt = {
-            uLightTex = 0,
-        },
-    })
-
-    if not perspShader then
-        Spring.Echo("NeonLight: shader compile failed")
-        Spring.Echo("NeonLight:"..gl.GetShaderLog())
-        widgetHandler:RemoveWidget(self)
-    end
-
-    if DEBUG_VIEW then 
-        Spring.Echo("Neonligth: shader has Debugview activated with ".. DEBUG_VIEW)
-    end
-end
-
---------------------------------------------------------------------------------
--- Initialization
---------------------------------------------------------------------------------
-
+-- Keep the misspelled public name for compatibility with gfx_neonHolograms.lua.
 local function recieveNeonHoloLightPiecesByUnit(unitPiecesTable)
     neonUnitTables = unitPiecesTable or {}
 end
 
-function widget:Initialize()
-    mapMinX = 0
-    mapMinZ = 0
-    mapMaxX = Game.mapSizeX
-    mapMaxZ = Game.mapSizeZ
-    orthoWidth = (mapMaxX - mapMinX) * 0.5
-    orthoHeight = (mapMaxZ - mapMinZ) * 0.5
+local function removeSelf(message)
+    Spring.Echo("NeonLight Radiance Cascade: " .. message)
+    widgetHandler:RemoveWidget(widget)
+end
 
+function widget:Initialize()
+    if not gl.RenderToTexture or not gl.CreateTexture or not gl.UnitPiece then
+        removeSelf("required FBO or unit-piece drawing API is unavailable")
+        return
+    end
 
     topDownTex = gl.CreateTexture(ATLAS_SIZE, ATLAS_SIZE, {
         min_filter = GL.LINEAR,
@@ -199,138 +62,115 @@ function widget:Initialize()
         fbo = true,
     })
 
-    initPerspectiveShader()
+    if not topDownTex then
+        removeSelf("could not create the L0 emission texture")
+        return
+    end
 
-    widgetHandler:RegisterGlobal("RecieveAllNeonUnitsPieces", recieveNeonHoloLightPiecesByUnit)
+    widgetHandler:RegisterGlobal(
+        "RecieveAllNeonUnitsPieces",
+        recieveNeonHoloLightPiecesByUnit
+    )
+
+    Spring.Echo(
+        "NeonLight Radiance Cascade: L0 debug atlas enabled (" ..
+        ATLAS_SIZE .. "x" .. ATLAS_SIZE .. ", 10 Hz)"
+    )
 end
 
---------------------------------------------------------------------------------
--- Top-down emission pass
---------------------------------------------------------------------------------
-
-local function renderTopDownAtlas()
-    local camState = pushCamera()
-    setTopDownCamera()
-     -- A: Orthogonal Topdown shader: 0) From ortho camera produce a depthmap Render a topdownview of all Neonsigns, lightsources in the size of cameraviewWidth x Scenedepth
-    glOrtho(orthoWidth, orthoHeight, -orthoWidth, orthoWidth) --> https://github.com/beyond-all-reason/Beyond-All-Reason/blob/8e6f934ab10e549f17438061eb6e1d4e267d995e/luarules/gadgets/unit_icongenerator.lua#L669
-   
-    gl.RenderToTexture(topDownTex, function()
-        gl.Clear(0, 0, 0, 1)
-        gl.DepthTest(true)
-        gl.Color(neonLightPercent, neonLightPercent, neonLightPercent, 1)
-
-        for unitID, pieces in pairs(neonUnitTables) do
-            gl.PushMatrix()
-            gl.UnitMultMatrix(unitID)
-            for _, pieceID in ipairs(pieces) do
-                gl.PushMatrix()
-                gl.UnitPieceMultMatrix(unitID, pieceID)
-             
-                gl.UnitPiece(unitID, pieceID)
-                gl.PopMatrix()
-            end
-            gl.PopMatrix()
-        end
-    end)
-
-    popCamera(camState)
+function widget:ViewResize()
+    vsx, vsy = gl.GetViewSizes()
 end
-
---[[--------------------------------------------------------------------------
--- Build cascades from emission atlas
-----------------------------------------------------------------------------]]
--- local function buildRadianceCascades()
---     local prevTex = topDownTex  -- L0 emission
---
---     for i = 1, CASCADE_COUNT do
---         gl.RenderToTexture(cascadeTex[i], function()
---             gl.UseShader(propagationShader)
---             gl.Texture(0, prevTex)
---             gl.Uniform(propagationShader, "radius", i * 4)
---             gl.TexRect(-1, -1, 1, 1)
---             gl.UseShader(0)
---             gl.Texture(0, false)
---         end)
---
---         prevTex = cascadeTex[i]
---     end
--- end
-
---[[--------------------------------------------------------------------------
--- Combine cascades into a final light atlas
--- This is intentionally explicit for debugging
-----------------------------------------------------------------------------]]
-
--- local function combineCascades()
---     gl.RenderToTexture(finalLightTex, function()
---         gl.Clear(0,0,0,1)
---         gl.Blending(GL.ONE, GL.ONE)
---
---         gl.Texture(0, topDownTex) -- L0
---         gl.TexRect(-1,-1,1,1)
---
---         for i = 1, CASCADE_COUNT do
---             gl.Texture(0, cascadeTex[i])
---             gl.TexRect(-1,-1,1,1)
---         end
---
---         gl.Blending(false)
---         gl.Texture(0, false)
---     end)
--- end
-
-
---------------------------------------------------------------------------------
--- Update
---------------------------------------------------------------------------------
 
 function widget:Update(dt)
     neonLightPercent = dayPercentToNeonPercent(getDayPercent())
+    refreshAccumulator = refreshAccumulator + dt
 end
 
---------------------------------------------------------------------------------
--- Draw
---------------------------------------------------------------------------------
+local function drawNeonPieces()
+    gl.Clear(GL.COLOR_BUFFER_BIT, 0, 0, 0, 0)
+    gl.Clear(GL.DEPTH_BUFFER_BIT, 1)
+
+    gl.DepthTest(true)
+    gl.DepthMask(true)
+    gl.Blending(false)
+    gl.Culling(false)
+    gl.Texture(false)
+    gl.Color(neonLightPercent, neonLightPercent, neonLightPercent, 1.0)
+
+    -- Map Spring world X/Z onto atlas X/Y without touching the player camera.
+    gl.MatrixMode(GL.PROJECTION)
+    gl.PushMatrix()
+    gl.LoadIdentity()
+    gl.Ortho(0, Game.mapSizeX, 0, Game.mapSizeZ, -100000, 100000)
+
+    gl.MatrixMode(GL.MODELVIEW)
+    gl.PushMatrix()
+    gl.LoadIdentity()
+    gl.Rotate(-90, 1, 0, 0)
+
+    for unitID, pieces in pairs(neonUnitTables) do
+        if Spring.ValidUnitID(unitID) and not Spring.GetUnitIsDead(unitID) then
+            gl.PushMatrix()
+            gl.UnitMultMatrix(unitID)
+
+            for i = 1, #pieces do
+                local pieceID = pieces[i]
+                if pieceID then
+                    gl.PushMatrix()
+                    gl.UnitPieceMultMatrix(unitID, pieceID)
+                    gl.UnitPiece(unitID, pieceID)
+                    gl.PopMatrix()
+                end
+            end
+
+            gl.PopMatrix()
+        end
+    end
+
+    gl.PopMatrix()
+    gl.MatrixMode(GL.PROJECTION)
+    gl.PopMatrix()
+    gl.MatrixMode(GL.MODELVIEW)
+
+    gl.Color(1, 1, 1, 1)
+    gl.DepthMask(false)
+    gl.DepthTest(false)
+    gl.Blending(false)
+    gl.Texture(false)
+end
 
 function widget:DrawWorldPreUnit()
-    renderTopDownAtlas()
-end
-
---[[--------------------------------------------------------------------------
--- Debug cascade visualization
-----------------------------------------------------------------------------]]
-function widget:DrawScreen()
-    if DEBUG_VIEW then
-        if DEBUG_VIEW == "L0" then gl.Texture(topDownTex) end
-        if DEBUG_VIEW == "L1" then gl.Texture(cascadeTex[1]) end
-        if DEBUG_VIEW == "L2" then gl.Texture(cascadeTex[2]) end
-        if DEBUG_VIEW == "L3" then gl.Texture(cascadeTex[3]) end
-        gl.TexRect(0, vsy, vsx, 0)
-        gl.Texture(false)
+    if not topDownTex or refreshAccumulator < ATLAS_REFRESH_SECONDS then
+        return
     end
+
+    refreshAccumulator = refreshAccumulator % ATLAS_REFRESH_SECONDS
+    gl.RenderToTexture(topDownTex, drawNeonPieces)
 end
 
-function widget:DrawWorld()
-    if DEBUG_VIEW then return end
+function widget:DrawScreen()
+    if not DEBUG_VIEW or not topDownTex then
+        return
+    end
 
-    gl.UseShader(perspShader)
-    gl.Texture(0, topDownTex)
-    gl.Uniform(perspShader, "worldMin", mapMinX, mapMinZ)
-    gl.Uniform(perspShader, "worldMax", mapMaxX, mapMaxZ)
+    local debugSize = math.floor(math.min(vsx, vsy) * DEBUG_VIEW_FRACTION)
+    local margin = 16
 
-    gl.Blending(GL.ONE, GL.ONE)
-    gl.TexRect(-1, -1, 1, 1)
+    gl.Color(0, 0, 0, 0.75)
+    gl.Rect(margin - 2, margin - 2, margin + debugSize + 2, margin + debugSize + 2)
 
-    gl.UseShader(0)
-    gl.Texture(0, false)
-    gl.Blending(false)
+    gl.Color(1, 1, 1, 1)
+    gl.Texture(topDownTex)
+    gl.TexRect(margin, margin, margin + debugSize, margin + debugSize, 0, 0, 1, 1)
+    gl.Texture(false)
 end
-
---------------------------------------------------------------------------------
--- Shutdown
---------------------------------------------------------------------------------
 
 function widget:Shutdown()
-    if topDownTex then gl.DeleteTexture(topDownTex) end
-    if perspShader then gl.DeleteShader(perspShader) end
+    widgetHandler:DeregisterGlobal("RecieveAllNeonUnitsPieces")
+
+    if topDownTex then
+        gl.DeleteTexture(topDownTex)
+        topDownTex = nil
+    end
 end
