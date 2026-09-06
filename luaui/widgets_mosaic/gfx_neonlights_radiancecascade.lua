@@ -15,6 +15,7 @@ end
 local ATLAS_SIZE = 1024
 local ATLAS_REFRESH_SECONDS = 0.10
 local DAYLENGTH = 28800
+local MORNING_OFFSET = DAYLENGTH * 0.5
 local DEBUG_VIEW = true
 local DEBUG_VIEW_FRACTION = 0.40
 
@@ -37,7 +38,7 @@ local function dayPercentToNeonPercent(percent)
 end
 
 local function getDayPercent()
-    return (Spring.GetGameFrame() % DAYLENGTH) / DAYLENGTH
+    return ((Spring.GetGameFrame() + MORNING_OFFSET) % DAYLENGTH) / DAYLENGTH
 end
 
 -- Keep the misspelled public name for compatibility with gfx_neonHolograms.lua.
@@ -181,7 +182,7 @@ function widget:DrawScreen()
 
     gl.Text(
         string.format(
-            "L0 debug | units: %d | pieces: %d | day emission: %.2f",
+            "L0 debug | units: %d | pieces: %d | neon emission: %.2f",
             neonUnitCount,
             neonPieceCount,
             neonLightPercent
