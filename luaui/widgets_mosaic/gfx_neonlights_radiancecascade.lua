@@ -174,7 +174,9 @@ function widget:DrawScreen()
 
     gl.Color(1, 1, 1, 1)
     gl.Texture(topDownTex)
-    gl.TexRect(margin, margin, margin + debugSize, margin + debugSize, 0, 0, 1, 1)
+    -- Render-to-texture and screen space use opposite vertical origins.
+    -- Flip only the preview; keep atlas UVs aligned with world X/Z.
+    gl.TexRect(margin, margin, margin + debugSize, margin + debugSize, 0, 1, 1, 0)
     gl.Texture(false)
 
     gl.Text(
