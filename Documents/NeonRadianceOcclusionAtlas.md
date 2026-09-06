@@ -1,46 +1,39 @@
-# Neon radiance occlusion atlases
+# Neon radiance collision-volume atlas
 
-Buildings can provide a coarse vertical occupancy model for neon-light
-raymarching. The LuaUI radiance widget composites those building-local assets
-into sixteen shared world-space slices whenever the building set changes.
-
-## UnitDef contract
-
-Add these values to the building's `customParams`:
+Buildings opt into hologram-light occlusion through the shared building base
+class:
 
 ```lua
-radianceOcclusionAtlas   = "unittextures/occlusion/house_arab_01.png",
-radianceOcclusionLayers  = 16,
-radianceOcclusionColumns = 4,
-radianceOcclusionRows    = 4,
-radianceOcclusionHeight  = 720,
-radianceOcclusionSizeX   = 480,
-radianceOcclusionSizeZ   = 360,
+customParams = {
+    throwsShadow = true,
+}
 ```
 
-`Height`, `SizeX`, and `SizeZ` are in world units. The atlas dimensions
-describe the building-local X/Z rectangle represented by every tile.
+`gfx_building_shadow_volumes.lua` snapshots the unit's enabled piece
+collision volumes. If no enabled piece volume exists, it falls back to the
+unit-level collision volume. The cache is stored in
+`GG.BuildingShadowVolume[unitID]`.
 
-## Texture layout
+The cache is sent to LuaUI only after a structural change. The radiance widget
+then rasterizes the primitives into sixteen shared 512x512 world-space slices
+covering Y=0 through Y=2048. Normal rendering only samples those textures; it
+does not iterate collision volumes.
 
-The default asset is a 4x4 tile sheet containing sixteen bottom-to-top
-occupancy slices. Layer zero is the lower-left tile in OpenGL texture
-coordinates. Layers advance left-to-right, then bottom-to-top.
+## Dirty updates
 
-Pixels representing solid structure must be opaque. Empty space must have
-alpha below 0.5. RGB should be white so the debug view is readable.
+Creation, completion, and destruction are handled automatically. A gadget that
+changes a building's structural pieces or collision volumes must call:
 
-The tiles must use hard edges and padding should be avoided: the compositor
-uses nearest filtering and exact tile UVs.
+```lua
+GG.MarkBuildingShadowVolumeDirty(unitID)
+```
 
-## Runtime behavior
+This rebuilds that unit's cached primitives and then rebuilds the shared atlas
+once. It must not be called every frame.
 
-- Only units declaring `radianceOcclusionAtlas` participate.
-- Position and heading come from the live unit.
-- The shared atlas rebuilds on creation, destruction, giving, or taking.
-- Sixteen 512x512 world slices cover Y=0 through Y=2048.
-- The diagnostic view currently displays slice 4 at Y=448.
+## Current approximation
 
-Animated structural changes are not tracked yet. A later building-to-widget
-dirty notification can rebuild the cache after doors, walls, or major pieces
-change.
+Box volumes rasterize as rotated rectangles. Ellipsoid and sphere cross
+sections shrink toward the top and bottom. Cylinders use an elliptical
+cross-section. Piece positions are live, but piece-local rotations are not yet
+applied; the unit heading is applied to every primitive.
