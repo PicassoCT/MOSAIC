@@ -120,18 +120,7 @@ if gadgetHandler:IsSyncedCode() then
         GG.BuildingShadowVolume = shadowVolumes
         GG.MarkBuildingShadowVolumeDirty = markDirty
 
-        local allUnits = Spring.GetAllUnits()
-        for i = 1, #allUnits do
-            pendingUnits[allUnits[i]] = true
-        end
-    end
-
-    function gadget:UnitCreated(unitID)
-        markDirty(unitID)
-    end
-
-    function gadget:UnitFinished(unitID)
-        markDirty(unitID)
+        -- Houses opt in only after their procedural build animation is stable.
     end
 
     function gadget:UnitDestroyed(unitID)
