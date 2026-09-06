@@ -50,7 +50,7 @@ if gadgetHandler:IsSyncedCode() then
         )
     end
 
-    local function rebuildUnit(unitID)
+    local function rebuildUnit(unitID, selectedPieces)
         local unitDefID = Spring.GetUnitDefID(unitID)
         if not unitDefID or not throwsShadow(unitDefID) then
             if shadowVolumes[unitID] then
@@ -62,10 +62,19 @@ if gadgetHandler:IsSyncedCode() then
 
         local volumes = {}
         local heading = Spring.GetUnitHeading(unitID) or 0
-        local pieceMap = Spring.GetUnitPieceMap(unitID) or {}
+        local seenPieces = {}
         SendToUnsynced("buildingShadowVolumeBegin", unitID)
 
-        for _, pieceID in pairs(pieceMap) do
+        for key, value in pairs(selectedPieces or {}) do
+            local pieceID
+            if type(value) == "number" then
+                pieceID = value
+            elseif type(key) == "number" and value then
+                pieceID = key
+            end
+
+            if pieceID and not seenPieces[pieceID] then
+                seenPieces[pieceID] = true
             if #volumes >= MAX_VOLUMES_PER_UNIT then
                 Spring.Echo(
                     "Building Shadow Volumes: capped unit " ..
@@ -87,6 +96,7 @@ if gadgetHandler:IsSyncedCode() then
                     )
                 end
             end
+            end
         end
 
         if #volumes == 0 then
@@ -107,9 +117,9 @@ if gadgetHandler:IsSyncedCode() then
         SendToUnsynced("buildingShadowVolumeEnd", unitID)
     end
 
-    local function markDirty(unitID)
+    local function markDirty(unitID, selectedPieces)
         if Spring.ValidUnitID(unitID) then
-            pendingUnits[unitID] = true
+            pendingUnits[unitID] = selectedPieces or {}
         else
             shadowVolumes[unitID] = nil
             SendToUnsynced("buildingShadowVolumeRemove", unitID)
@@ -130,8 +140,8 @@ if gadgetHandler:IsSyncedCode() then
     end
 
     function gadget:GameFrame()
-        for unitID in pairs(pendingUnits) do
-            rebuildUnit(unitID)
+        for unitID, selectedPieces in pairs(pendingUnits) do
+            rebuildUnit(unitID, selectedPieces)
             pendingUnits[unitID] = nil
         end
     end
