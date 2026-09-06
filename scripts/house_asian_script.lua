@@ -1814,7 +1814,7 @@ function buildBuilding(boolIsReconstruction)
 	
 	addGroundPlaceables()
     boolDoneShowing = true
-
+    GG.MarkBuildingShadowVolumeDirty(unitID)
 	initAllPieces()
 end
 
