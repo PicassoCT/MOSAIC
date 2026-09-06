@@ -13,12 +13,7 @@ local Building = Unit:New{
 	usepiececollisionvolumes 	= true,
 	
 	metalStorage = 2500,
-	
-	customparams = {
-		throwsShadow = true,
-    },
 }
-	
 
 return {
 	Building = Building

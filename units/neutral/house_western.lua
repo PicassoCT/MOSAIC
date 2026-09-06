@@ -30,6 +30,7 @@ local house_western = Building:New{
 	
 
 	customparams = {	
+		throwsShadow = true,
 		normaltex = "unittextures/house_europe_normal.dds",
 		helptext			= "Civilian Building",
 		baseclass			= "Building", -- TODO: hacks
