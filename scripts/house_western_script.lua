@@ -1242,7 +1242,12 @@ end
 
 function buildAnimation()
     local builtT = TablesOfPiecesGroups["Build"]
-    if buildAnimationEarlyOut(builtT) then return end
+    if buildAnimationEarlyOut(builtT) then
+        if GG.MarkBuildingShadowVolumeDirty then
+            GG.MarkBuildingShadowVolumeDirty(unitID)
+        end
+        return
+    end
     showBuildCompanysLogo()
     axis = _z_axis
 
@@ -1292,6 +1297,9 @@ function buildAnimation()
     hideT(TablesOfPiecesGroups["Build01Sub"])
     hideT(TablesOfPiecesGroups["BuildCrane"])
     hideT(TablesOfPiecesGroups["BuildDeco"])
+    if GG.MarkBuildingShadowVolumeDirty then
+        GG.MarkBuildingShadowVolumeDirty(unitID)
+    end
 end
 
 materialColourNameGround = nil
