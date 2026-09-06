@@ -972,7 +972,9 @@ function buildAnimation()
         hideT(TablesOfPiecesGroups["BuildCrane"])
         while boolDoneShowing == false do Sleep(100) end
         showT(ToShowTable)
-
+        if GG.MarkBuildingShadowVolumeDirty then
+            GG.MarkBuildingShadowVolumeDirty(unitID)
+        end
         return
     end
     StartThread(PlaySoundByUnitDefID, unitDefID, "sounds/building/construction/construction"..math.random(1,7)..".ogg", 1.0, 20000, 3, 0)
@@ -1020,6 +1022,9 @@ function buildAnimation()
     hideT(builT)
     hideT(TablesOfPiecesGroups["Build01Sub"])
     hideT(TablesOfPiecesGroups["BuildCrane"])
+    if GG.MarkBuildingShadowVolumeDirty then
+        GG.MarkBuildingShadowVolumeDirty(unitID)
+    end
 end
 
 function buildBuilding()
