@@ -22,6 +22,9 @@ local OCCLUSION_ATLAS_SIZE = 512
 local OCCLUSION_LAYER_COUNT = 16
 local OCCLUSION_WORLD_HEIGHT = 2048
 local DEBUG_OCCLUSION_LAYER = 4
+local DIRECT_LIGHT_SIZE = 512
+local DIRECT_LIGHT_RANGE = 1800
+local DIRECT_LIGHT_STEPS = 48
 
 local neonUnitTables = {}
 local neonLightPercent = 0.0
@@ -32,6 +35,13 @@ local occlusionTex = {}
 local occlusionBuildings = {}
 local occlusionDirty = true
 local occlusionBuildingCount = 0
+local directLightTex
+local directLightShader
+local directEmitterUVLoc
+local directEmitterHeightLoc
+local directMapSizeLoc
+local directRangeLoc
+local directLightReady = false
 local refreshAccumulator = ATLAS_REFRESH_SECONDS
 local vsx, vsy = gl.GetViewSizes()
 
@@ -171,6 +181,135 @@ local function rebuildOcclusionAtlas()
     occlusionDirty = false
 end
 
+
+local directLightFragmentShader = [[
+#version 150 compatibility
+
+uniform sampler2D occ0;
+uniform sampler2D occ1;
+uniform sampler2D occ2;
+uniform sampler2D occ3;
+uniform sampler2D occ4;
+uniform sampler2D occ5;
+uniform sampler2D occ6;
+uniform sampler2D occ7;
+uniform sampler2D occ8;
+uniform sampler2D occ9;
+uniform sampler2D occ10;
+uniform sampler2D occ11;
+uniform sampler2D occ12;
+uniform sampler2D occ13;
+uniform sampler2D occ14;
+uniform sampler2D occ15;
+uniform vec2 emitterUV;
+uniform float emitterHeight;
+uniform vec2 mapSize;
+uniform float lightRange;
+
+float sampleOcclusion(int layer, vec2 uv)
+{
+    if (layer <= 0) return texture2D(occ0, uv).r;
+    if (layer == 1) return texture2D(occ1, uv).r;
+    if (layer == 2) return texture2D(occ2, uv).r;
+    if (layer == 3) return texture2D(occ3, uv).r;
+    if (layer == 4) return texture2D(occ4, uv).r;
+    if (layer == 5) return texture2D(occ5, uv).r;
+    if (layer == 6) return texture2D(occ6, uv).r;
+    if (layer == 7) return texture2D(occ7, uv).r;
+    if (layer == 8) return texture2D(occ8, uv).r;
+    if (layer == 9) return texture2D(occ9, uv).r;
+    if (layer == 10) return texture2D(occ10, uv).r;
+    if (layer == 11) return texture2D(occ11, uv).r;
+    if (layer == 12) return texture2D(occ12, uv).r;
+    if (layer == 13) return texture2D(occ13, uv).r;
+    if (layer == 14) return texture2D(occ14, uv).r;
+    return texture2D(occ15, uv).r;
+}
+
+void main()
+{
+    vec2 receiverUV = gl_TexCoord[0].st;
+    vec2 worldDelta = (emitterUV - receiverUV) * mapSize;
+    float distanceToLight = length(worldDelta);
+    float visibility = 1.0;
+
+    for (int stepIndex = 1; stepIndex < ]] .. DIRECT_LIGHT_STEPS .. [[; ++stepIndex) {
+        float t = float(stepIndex) / float(]] .. DIRECT_LIGHT_STEPS .. [[);
+        vec2 rayUV = mix(receiverUV, emitterUV, t);
+        float rayHeight = mix(8.0, emitterHeight, t);
+        int layer = int(clamp(
+            floor(rayHeight * ]] .. OCCLUSION_LAYER_COUNT .. [[.0 / ]] .. OCCLUSION_WORLD_HEIGHT .. [[.0),
+            0.0,
+            ]] .. (OCCLUSION_LAYER_COUNT - 1) .. [[.0
+        ));
+
+        if (sampleOcclusion(layer, rayUV) > 0.5) {
+            visibility = 0.0;
+            break;
+        }
+    }
+
+    float attenuation = max(0.0, 1.0 - distanceToLight / lightRange);
+    attenuation *= attenuation;
+    gl_FragColor = vec4(vec3(visibility * attenuation), 1.0);
+}
+]]
+
+local function getDebugEmitter()
+    for unitID, pieces in pairs(neonUnitTables) do
+        if Spring.ValidUnitID(unitID) and not Spring.GetUnitIsDead(unitID) then
+            for i = 1, #pieces do
+                local x, y, z = Spring.GetUnitPiecePosDir(unitID, pieces[i])
+                if x then
+                    return x / Game.mapSizeX, z / Game.mapSizeZ, y
+                end
+            end
+        end
+    end
+end
+
+local function drawDirectLight()
+    local emitterU, emitterV, emitterY = getDebugEmitter()
+    if not emitterU then
+        gl.Clear(GL.COLOR_BUFFER_BIT, 0, 0, 0, 1)
+        directLightReady = false
+        return
+    end
+
+    gl.Clear(GL.COLOR_BUFFER_BIT, 0, 0, 0, 1)
+    gl.Blending(false)
+    gl.DepthTest(false)
+    gl.Texture(false)
+
+    for layer = 1, OCCLUSION_LAYER_COUNT do
+        gl.Texture(layer - 1, occlusionTex[layer])
+    end
+
+    gl.UseShader(directLightShader)
+    gl.Uniform(directEmitterUVLoc, emitterU, emitterV)
+    gl.Uniform(directEmitterHeightLoc, emitterY)
+    gl.Uniform(directMapSizeLoc, Game.mapSizeX, Game.mapSizeZ)
+    gl.Uniform(directRangeLoc, DIRECT_LIGHT_RANGE)
+
+    gl.MatrixMode(GL.PROJECTION)
+    gl.PushMatrix()
+    gl.LoadIdentity()
+    gl.MatrixMode(GL.MODELVIEW)
+    gl.PushMatrix()
+    gl.LoadIdentity()
+    gl.TexRect(-1, -1, 1, 1, 0, 0, 1, 1)
+    gl.PopMatrix()
+    gl.MatrixMode(GL.PROJECTION)
+    gl.PopMatrix()
+    gl.MatrixMode(GL.MODELVIEW)
+
+    gl.UseShader(0)
+    for layer = 1, OCCLUSION_LAYER_COUNT do
+        gl.Texture(layer - 1, false)
+    end
+    directLightReady = true
+end
+
 function widget:Initialize()
     if not gl.RenderToTexture or not gl.CreateTexture or not gl.UnitPiece
         or not gl.BeginEnd
@@ -204,6 +343,47 @@ function widget:Initialize()
         if not occlusionTex[layer] then
             removeSelf("could not create occlusion layer " .. layer)
             return
+        end
+    end
+
+
+    if gl.CreateShader then
+        directLightTex = gl.CreateTexture(DIRECT_LIGHT_SIZE, DIRECT_LIGHT_SIZE, {
+            min_filter = GL.LINEAR,
+            mag_filter = GL.LINEAR,
+            wrap_s = GL.CLAMP_TO_EDGE,
+            wrap_t = GL.CLAMP_TO_EDGE,
+            fbo = true,
+        })
+
+        directLightShader = gl.CreateShader({
+            fragment = directLightFragmentShader,
+            uniformInt = {
+                occ0 = 0, occ1 = 1, occ2 = 2, occ3 = 3,
+                occ4 = 4, occ5 = 5, occ6 = 6, occ7 = 7,
+                occ8 = 8, occ9 = 9, occ10 = 10, occ11 = 11,
+                occ12 = 12, occ13 = 13, occ14 = 14, occ15 = 15,
+            },
+        })
+
+        if directLightTex and directLightShader then
+            directEmitterUVLoc = gl.GetUniformLocation(directLightShader, "emitterUV")
+            directEmitterHeightLoc = gl.GetUniformLocation(directLightShader, "emitterHeight")
+            directMapSizeLoc = gl.GetUniformLocation(directLightShader, "mapSize")
+            directRangeLoc = gl.GetUniformLocation(directLightShader, "lightRange")
+        else
+            Spring.Echo(
+                "NeonLight Radiance Cascade: direct-light debug pass disabled: " ..
+                (gl.GetShaderLog() or "shader/FBO creation failed")
+            )
+            if directLightShader then
+                gl.DeleteShader(directLightShader)
+                directLightShader = nil
+            end
+            if directLightTex then
+                gl.DeleteTexture(directLightTex)
+                directLightTex = nil
+            end
         end
     end
 
@@ -298,6 +478,10 @@ function widget:DrawWorldPreUnit()
     if occlusionDirty then
         rebuildOcclusionAtlas()
     end
+
+    if directLightShader and directLightTex then
+        gl.RenderToTexture(directLightTex, drawDirectLight)
+    end
 end
 
 function widget:DrawScreen()
@@ -342,7 +526,7 @@ function widget:DrawScreen()
     )
 
     gl.Color(1, 1, 1, 1)
-    gl.Texture(occlusionTex[occlusionLayer])
+    gl.Texture(directLightReady and directLightTex or occlusionTex[occlusionLayer])
     gl.TexRect(
         occlusionX,
         margin,
@@ -352,13 +536,18 @@ function widget:DrawScreen()
     )
     gl.Texture(false)
     gl.Text(
-        string.format(
-            "Occlusion slice %d/%d | y=%.0f | buildings: %d",
-            occlusionLayer,
-            OCCLUSION_LAYER_COUNT,
-            (occlusionLayer - 0.5) * OCCLUSION_WORLD_HEIGHT / OCCLUSION_LAYER_COUNT,
-            occlusionBuildingCount
-        ),
+        directLightReady
+            and string.format(
+                "Direct hologram light | one emitter | buildings: %d",
+                occlusionBuildingCount
+            )
+            or string.format(
+                "Occlusion slice %d/%d | y=%.0f | buildings: %d",
+                occlusionLayer,
+                OCCLUSION_LAYER_COUNT,
+                (occlusionLayer - 0.5) * OCCLUSION_WORLD_HEIGHT / OCCLUSION_LAYER_COUNT,
+                occlusionBuildingCount
+            ),
         occlusionX,
         margin + debugSize + 8,
         13,
@@ -373,6 +562,15 @@ function widget:Shutdown()
     if topDownTex then
         gl.DeleteTexture(topDownTex)
         topDownTex = nil
+    end
+
+    if directLightShader then
+        gl.DeleteShader(directLightShader)
+        directLightShader = nil
+    end
+    if directLightTex then
+        gl.DeleteTexture(directLightTex)
+        directLightTex = nil
     end
 
     for layer = 1, #occlusionTex do
