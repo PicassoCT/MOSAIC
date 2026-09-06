@@ -973,7 +973,7 @@ function buildAnimation()
         while boolDoneShowing == false do Sleep(100) end
         showT(ToShowTable)
         if GG.MarkBuildingShadowVolumeDirty then
-            GG.MarkBuildingShadowVolumeDirty(unitID)
+            GG.MarkBuildingShadowVolumeDirty(unitID, ToShowTable)
         end
         return
     end
@@ -1023,7 +1023,7 @@ function buildAnimation()
     hideT(TablesOfPiecesGroups["Build01Sub"])
     hideT(TablesOfPiecesGroups["BuildCrane"])
     if GG.MarkBuildingShadowVolumeDirty then
-        GG.MarkBuildingShadowVolumeDirty(unitID)
+        GG.MarkBuildingShadowVolumeDirty(unitID, ToShowTable)
     end
 end
 
