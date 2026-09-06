@@ -1695,7 +1695,7 @@ function buildAnimation(boolIsReconstruction)
     end
     GG.ManualRenderedBuildingWithWindowsVisiblePieces[unitID] = toShowDict
     if GG.MarkBuildingShadowVolumeDirty then
-        GG.MarkBuildingShadowVolumeDirty(unitID)
+        GG.MarkBuildingShadowVolumeDirty(unitID, toShowDict)
     end
 end
 
