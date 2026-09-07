@@ -565,7 +565,7 @@ function updatePrinterCrane(step, speed, boolWait, slice, index)
         WMove(Printer, x_axis, position, speed)
     end 
     if slice then
-        Hide(sice)
+        Hide(slice)
         Move(slice, x_axis, 6, 0)
         Show(slice)
         Move(slice, x_axis, 0, 0.125)
