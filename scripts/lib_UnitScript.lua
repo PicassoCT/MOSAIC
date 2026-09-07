@@ -1456,7 +1456,10 @@ function getADryWalkAbleSpot()
 end
 
 function setupFairnessQuadrants(eventName)
-map = {minX = 1, minZ  = 1, maxX =Game.mapSizeX, maxY = Game.mapSizeZ}
+-- These 2D Y bounds represent world Z, as consumed by getQuadrantIndex.
+local map = {minX = 0, minY = 0, maxX = Game.mapSizeX, maxY = Game.mapSizeZ}
+local midX = (map.minX + map.maxX) * 0.5
+local midY = (map.minY + map.maxY) * 0.5
 local quadrants = {
     {minX = map.minX, maxX = midX, minY = map.minY, maxY = midY, counter = 0}, -- Q1
     {minX = midX,     maxX = map.maxX, minY = map.minY, maxY = midY, counter = 0}, -- Q2

@@ -150,7 +150,9 @@ else
     -- Recoil 105.1 and later
     ---------------------------------------------------------------------------
 
-    local spGetUnitDrawPosition = Spring.GetUnitDrawPosition
+    -- Older Recoil builds do not expose GetUnitDrawPosition.
+    -- GetUnitPosition supplies the world-space root position in that case.
+    local spGetUnitDrawPosition = Spring.GetUnitDrawPosition or Spring.GetUnitPosition
 
     local glPushMatrix = gl.PushMatrix
     local glPopMatrix = gl.PopMatrix
