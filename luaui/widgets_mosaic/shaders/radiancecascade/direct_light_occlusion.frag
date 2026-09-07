@@ -22,6 +22,10 @@ uniform float emitterHeight;
 uniform vec2 mapSize;
 uniform float lightRange;
 
+// Do not let the emitter's host building occlude the ray at its endpoint.
+// This is world-space distance, not UV distance.
+const float EMITTER_OCCLUSION_CLEARANCE = 128.0;
+
 float sampleOcclusion(int layer, vec2 uv)
 {
     if (layer <= 0) return texture2D(occ0, uv).r;
@@ -59,7 +63,11 @@ void main()
             OCCLUSION_LAYER_COUNT - 1.0
         ));
 
-        if (sampleOcclusion(layer, rayUV) > 0.5) {
+        vec2 remainingWorldDelta = (emitterUV - rayUV) * mapSize;
+        bool outsideEmitterClearance =
+            length(remainingWorldDelta) > EMITTER_OCCLUSION_CLEARANCE;
+
+        if (outsideEmitterClearance && sampleOcclusion(layer, rayUV) > 0.5) {
             visibility = 0.0;
             break;
         }
