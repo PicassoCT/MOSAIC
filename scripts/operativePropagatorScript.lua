@@ -148,10 +148,10 @@ function externalAimFunction(targetPosT, remainderRotationRad, boolIsMoving)
      if boolOldIsMoving ~= boolIsMoving then
     	boolOldIsMoving = boolIsMoving
     	if boolIsMoving then     
-			setOverrideAnimationState(eAnimState.aiming, nil,  true, lowerBodyPieces, false)
-			setOverrideAnimationState(nil, eAnimState.walking,  true, upperBodyPieces, false)
+			setOverrideAnimationState(eAnimState.aiming, nil,  true, nil, false)
+			setOverrideAnimationState(nil, eAnimState.walking,  true, nil, false)
 		else
-			setOverrideAnimationState(eAnimState.aiming, nil,  true, {[Torso]= Torso}, false)
+			setOverrideAnimationState(eAnimState.aiming, nil,  true, nil, false)
 		end
     end
    	SwayCoatWithTorso(remainderRotationRad)
