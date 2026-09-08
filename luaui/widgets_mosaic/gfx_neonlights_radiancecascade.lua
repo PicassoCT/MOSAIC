@@ -36,6 +36,11 @@ local occlusionBuildings = {}
 local occlusionDirty = true
 local occlusionBuildingCount = 0
 local directLightTex
+local unoccludedTex, firstHitTex
+local debugModeLoc, clearanceLoc
+local lockedUnit, lockedPiece
+local emitterU, emitterV, emitterY
+local diagnosticClearance = 0
 local directLightShader
 local directEmitterUVLoc
 local directEmitterHeightLoc
@@ -203,20 +208,50 @@ local function loadDirectLightFragmentShader()
 end
 
 local function getDebugEmitter()
-    for unitID, pieces in pairs(neonUnitTables) do
-        if Spring.ValidUnitID(unitID) and not Spring.GetUnitIsDead(unitID) then
-            for i = 1, #pieces do
-                local x, y, z = Spring.GetUnitPiecePosDir(unitID, pieces[i])
-                if x then
-                    return x / Game.mapSizeX, z / Game.mapSizeZ, y
-                end
+    local function position(unitID, pieceID)
+        if unitID and Spring.ValidUnitID(unitID) and not Spring.GetUnitIsDead(unitID) then
+            local x, y, z = Spring.GetUnitPiecePosDir(unitID, pieceID)
+            if x then return x / Game.mapSizeX, z / Game.mapSizeZ, y end
+        end
+    end
+    if lockedUnit then
+        for _, pieceID in ipairs(neonUnitTables[lockedUnit] or {}) do
+            if pieceID == lockedPiece then
+                local u, v, y = position(lockedUnit, lockedPiece)
+                if u then return u, v, y end
+            end
+        end
+    end
+    lockedUnit, lockedPiece = nil, nil
+    local ids = {}
+    for id in pairs(neonUnitTables) do ids[#ids + 1] = id end
+    table.sort(ids)
+    for _, id in ipairs(ids) do
+        for _, pieceID in ipairs(neonUnitTables[id]) do
+            local u, v, y = position(id, pieceID)
+            if u then
+                lockedUnit, lockedPiece = id, pieceID
+                Spring.Echo("Radiance debug: locked unit " .. id .. " piece " .. pieceID)
+                return u, v, y
             end
         end
     end
 end
 
-local function drawDirectLight()
-    local emitterU, emitterV, emitterY = getDebugEmitter()
+function widget:TextCommand(command)
+    if command == "radiancedebug reset" then
+        lockedUnit, lockedPiece = nil, nil
+        return true
+    end
+    local clearance = command:match("^radiancedebug clearance (%d+)$")
+    if clearance then
+        diagnosticClearance = math.min(512, tonumber(clearance))
+        return true
+    end
+end
+
+local function drawDirectLight(mode)
+    emitterU, emitterV, emitterY = getDebugEmitter()
     if not emitterU then
         gl.Clear(GL.COLOR_BUFFER_BIT, 0, 0, 0, 1)
         directLightReady = false
@@ -237,6 +272,8 @@ local function drawDirectLight()
     gl.Uniform(directEmitterHeightLoc, emitterY)
     gl.Uniform(directMapSizeLoc, Game.mapSizeX, Game.mapSizeZ)
     gl.Uniform(directRangeLoc, DIRECT_LIGHT_RANGE)
+    gl.UniformInt(debugModeLoc, mode or 0)
+    gl.Uniform(clearanceLoc, diagnosticClearance)
 
     gl.MatrixMode(GL.PROJECTION)
     gl.PushMatrix()
@@ -303,6 +340,11 @@ function widget:Initialize()
             fbo = true,
         })
 
+        local options = {min_filter = GL.LINEAR, mag_filter = GL.LINEAR,
+            wrap_s = GL.CLAMP_TO_EDGE, wrap_t = GL.CLAMP_TO_EDGE, fbo = true}
+        unoccludedTex = gl.CreateTexture(DIRECT_LIGHT_SIZE, DIRECT_LIGHT_SIZE, options)
+        firstHitTex = gl.CreateTexture(DIRECT_LIGHT_SIZE, DIRECT_LIGHT_SIZE, options)
+
         directLightShader = gl.CreateShader({
             fragment = loadDirectLightFragmentShader(),
             uniformInt = {
@@ -313,11 +355,13 @@ function widget:Initialize()
             },
         })
 
-        if directLightTex and directLightShader then
+        if directLightTex and directLightShader and unoccludedTex and firstHitTex then
             directEmitterUVLoc = gl.GetUniformLocation(directLightShader, "emitterUV")
             directEmitterHeightLoc = gl.GetUniformLocation(directLightShader, "emitterHeight")
             directMapSizeLoc = gl.GetUniformLocation(directLightShader, "mapSize")
             directRangeLoc = gl.GetUniformLocation(directLightShader, "lightRange")
+            debugModeLoc = gl.GetUniformLocation(directLightShader, "debugMode")
+            clearanceLoc = gl.GetUniformLocation(directLightShader, "emitterClearance")
         else
             Spring.Echo(
                 "NeonLight Radiance Cascade: direct-light debug pass disabled: " ..
@@ -427,82 +471,47 @@ function widget:DrawWorldPreUnit()
     end
 
     if directLightShader and directLightTex then
-        gl.RenderToTexture(directLightTex, drawDirectLight)
+        gl.RenderToTexture(directLightTex, function() drawDirectLight(0) end)
+        gl.RenderToTexture(unoccludedTex, function() drawDirectLight(1) end)
+        gl.RenderToTexture(firstHitTex, function() drawDirectLight(2) end)
     end
 end
 
 function widget:DrawScreen()
-    if not DEBUG_VIEW or not topDownTex then
-        return
+    if not DEBUG_VIEW or not topDownTex then return end
+    local size = math.floor(math.min(vsy * 0.28, (vsx - 80) / 4))
+    local layer = math.max(1, math.min(OCCLUSION_LAYER_COUNT,
+        math.floor((emitterY or 0) * OCCLUSION_LAYER_COUNT / OCCLUSION_WORLD_HEIGHT) + 1))
+    local textures = {unoccludedTex or topDownTex, occlusionTex[layer],
+        directLightTex or topDownTex, firstHitTex or topDownTex}
+    local titles = {"No occlusion (unit intensity)", "Occupancy at emitter layer " .. layer,
+        "Occluded (clearance " .. diagnosticClearance .. ")", "First hit: red=near receiver, blue=near emitter"}
+    gl.UseShader(0)
+    gl.Blending(false)
+    for i = 1, 4 do
+        local x, y = 16 + (i - 1) * (size + 16), 16
+        gl.Color(1, 1, 1, 1)
+        gl.Texture(textures[i])
+        gl.TexRect(x, y, x + size, y + size, 0, 1, 1, 0)
+        gl.Texture(false)
+        if emitterU then
+            local px, py = x + emitterU * size, y + (1 - emitterV) * size
+            gl.Color(0, 1, 0, 1)
+            gl.Rect(px - 4, py - 1, px + 4, py + 1)
+            gl.Rect(px - 1, py - 4, px + 1, py + 4)
+        end
+        gl.Color(1, 1, 1, 1)
+        gl.Text(titles[i], x, y + size + 6, 11, "o")
     end
-
-    local debugSize = math.floor(math.min(vsx, vsy) * DEBUG_VIEW_FRACTION)
-    local margin = 16
-
-    gl.Color(0, 0, 0, 0.75)
-    gl.Rect(margin - 2, margin - 2, margin + debugSize + 2, margin + debugSize + 2)
-
-    gl.Color(1, 1, 1, 1)
-    gl.Texture(topDownTex)
-    -- Render-to-texture and screen space use opposite vertical origins.
-    -- Flip only the preview; keep atlas UVs aligned with world X/Z.
-    gl.TexRect(margin, margin, margin + debugSize, margin + debugSize, 0, 1, 1, 0)
-    gl.Texture(false)
-
-    gl.Text(
-        string.format(
-            "L0 debug | units: %d | pieces: %d | neon emission: %.2f",
-            neonUnitCount,
-            neonPieceCount,
-            neonLightPercent
-        ),
-        margin,
-        margin + debugSize + 8,
-        13,
-        "o"
-    )
-
-    local occlusionLayer = math.max(1, math.min(OCCLUSION_LAYER_COUNT, DEBUG_OCCLUSION_LAYER))
-    local occlusionX = margin + debugSize + margin
-    gl.Color(0, 0, 0, 0.75)
-    gl.Rect(
-        occlusionX - 2,
-        margin - 2,
-        occlusionX + debugSize + 2,
-        margin + debugSize + 2
-    )
-
-    gl.Color(1, 1, 1, 1)
-    gl.Texture(directLightReady and directLightTex or occlusionTex[occlusionLayer])
-    gl.TexRect(
-        occlusionX,
-        margin,
-        occlusionX + debugSize,
-        margin + debugSize,
-        0, 1, 1, 0
-    )
-    gl.Texture(false)
-    gl.Text(
-        directLightReady
-            and string.format(
-                "Direct hologram light | one emitter | buildings: %d",
-                occlusionBuildingCount
-            )
-            or string.format(
-                "Occlusion slice %d/%d | y=%.0f | buildings: %d",
-                occlusionLayer,
-                OCCLUSION_LAYER_COUNT,
-                (occlusionLayer - 0.5) * OCCLUSION_WORLD_HEIGHT / OCCLUSION_LAYER_COUNT,
-                occlusionBuildingCount
-            ),
-        occlusionX,
-        margin + debugSize + 8,
-        13,
-        "o"
-    )
+    gl.Text(string.format("Radiance diagnostics | unit %s piece %s | height %.1f | buildings %d | real emission %.2f",
+        tostring(lockedUnit), tostring(lockedPiece), emitterY or 0, occlusionBuildingCount, neonLightPercent),
+        16, size + 44, 13, "o")
+    gl.Blending(GL.SRC_ALPHA, GL.ONE_MINUS_SRC_ALPHA)
 end
 
 function widget:Shutdown()
+    if unoccludedTex then gl.DeleteTexture(unoccludedTex) end
+    if firstHitTex then gl.DeleteTexture(firstHitTex) end
     widgetHandler:DeregisterGlobal("RecieveAllNeonUnitsPieces")
     widgetHandler:DeregisterGlobal("ReceiveBuildingShadowVolumes")
 
