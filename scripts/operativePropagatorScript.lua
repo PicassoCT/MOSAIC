@@ -1,3 +1,21 @@
+-- Independent filters for the two animation channels; callback remains argument 4.
+local upperOverrideMask, lowerOverrideMask
+local upperMaskState, lowerMaskState
+
+local function mergeAnimationMasks(existing, additional)
+    if not additional then return existing end
+    local merged = {}
+    for id, value in pairs(existing or {}) do merged[id] = value end
+    for id, value in pairs(additional) do
+        if value then merged[id] = value end
+    end
+    return merged
+end
+
+local function playMaskedAnimation(mask, name, existing, speed)
+    return PlayAnimation(name, mergeAnimationMasks(existing, mask), speed)
+end
+
 include "lib_OS.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
@@ -143,18 +161,19 @@ end
 
 boolOldIsMoving = nil
 function externalAimFunction(targetPosT, remainderRotationRad, boolIsMoving)
-	showFireArm()
+    showFireArm()
+    
     Turn(Torso, 3, remainderRotationRad, 55)
-     if boolOldIsMoving ~= boolIsMoving then
-    	boolOldIsMoving = boolIsMoving
-    	if boolIsMoving then     
-			setOverrideAnimationState(eAnimState.aiming, nil,  true, nil, false)
-			setOverrideAnimationState(nil, eAnimState.walking,  true, nil, false)
-		else
-			setOverrideAnimationState(eAnimState.aiming, nil,  true, nil, false)
-		end
+    local lowerState = boolIsMoving and eAnimState.walking or eAnimState.standing
+    if boolOldIsMoving ~= boolIsMoving or upperMaskState ~= eAnimState.aiming
+        or lowerMaskState ~= lowerState or not upperOverrideMask then
+        boolOldIsMoving = boolIsMoving
+        local upperMask = mergeAnimationMasks(lowerBodyPieces, {[Torso] = true})
+        local lowerMask = mergeAnimationMasks(upperBodyPieces, {[Torso] = true})
+        setOverrideAnimationState(eAnimState.aiming, lowerState, true, nil, false,
+            upperMask, lowerMask)
     end
-   	SwayCoatWithTorso(remainderRotationRad)
+    SwayCoatWithTorso(remainderRotationRad)
 end
 
 function closeCombatOS()
@@ -784,7 +803,17 @@ function setOverrideAnimationStateOnDiff( AnimationstateUpperOverride, Animation
 	end
 end
 
-function setOverrideAnimationState( AnimationstateUpperOverride, AnimationstateLowerOverride,  boolInstantOverride, conditionFunction, boolDecoupledStates)
+function setOverrideAnimationState( AnimationstateUpperOverride, AnimationstateLowerOverride,  boolInstantOverride, conditionFunction, boolDecoupledStates, upperPieceMask, lowerPieceMask)
+    assert(conditionFunction == nil or type(conditionFunction) == "function",
+        "setOverrideAnimationState: argument 4 must be a callback or nil")
+    assert(upperPieceMask == nil or type(upperPieceMask) == "table")
+    assert(lowerPieceMask == nil or type(lowerPieceMask) == "table")
+    if AnimationstateUpperOverride then
+        upperOverrideMask, upperMaskState = upperPieceMask, AnimationstateUpperOverride
+    end
+    if AnimationstateLowerOverride then
+        lowerOverrideMask, lowerMaskState = lowerPieceMask, AnimationstateLowerOverride
+    end
 	boolDecoupled = boolDecoupledStates
 	locAnimationstateUpperOverride = AnimationstateUpperOverride
 	locAnimationstateLowerOverride = AnimationstateLowerOverride
@@ -897,8 +926,8 @@ end
 
 
 UpperAnimationStateFunctions ={
-  [eAnimState.fighting] = function()
-                    PlayAnimation("FIGHTING", lowerBodyPieces, 1.0)
+  [eAnimState.fighting] = function(pieceMask)
+                    playMaskedAnimation(pieceMask, "FIGHTING", lowerBodyPieces, 1.0)
 
                     if boolInClosedCombat then
                         return eAnimState.fighting
@@ -906,7 +935,7 @@ UpperAnimationStateFunctions ={
                         return eAnimState.standing
                     end
                 end,
-[eAnimState.standing] = 	function () 								
+[eAnimState.standing] = 	function(pieceMask) 								
 								if boolFlying == true then return eAnimState.standing end
 								resetT(lowerBodyPieces, 10)													
 								while true do 		
@@ -915,24 +944,24 @@ UpperAnimationStateFunctions ={
 	
 								return eAnimState.standing
 							end,
-[eAnimState.walking] = 	function () 
+[eAnimState.walking] = 	function(pieceMask) 
 								if boolFlying == true then return eAnimState.walking end
 								
 								boolDecoupled = false
 				
 						return eAnimState.walking
 					end,
-[eAnimState.slaved] = 	function () 
+[eAnimState.slaved] = 	function(pieceMask) 
 						Sleep(100)
 						return eAnimState.slaved
 					end,
-[eAnimState.aiming] = 	function () 
+[eAnimState.aiming] = 	function(pieceMask) 
 						Hide(FoldtopUnfolded)
 						Show(FoldtopFolded)
 						if boolPistol == true and isInvestigator then
-							PlayAnimation("UPBODY_AIM_PISTOL")
+							playMaskedAnimation(pieceMask, "UPBODY_AIM_PISTOL")
 						else	
-							PlayAnimation("UPBODY_AIMING", nil, 3.0)
+							playMaskedAnimation(pieceMask, "UPBODY_AIMING", nil, 3.0)
 						end
 						Sleep(100)
 						return eAnimState.aiming 
@@ -940,33 +969,33 @@ UpperAnimationStateFunctions ={
 } 
 
 LowerAnimationStateFunctions ={
- [eAnimState.riding] = 			function()
-						PlayAnimation(randT(lowerBodyAnimations[eAnimState.riding]), {})
+ [eAnimState.riding] = 			function(pieceMask)
+						playMaskedAnimation(pieceMask, randT(lowerBodyAnimations[eAnimState.riding]), {})
 					 
 						return eAnimState.riding
 					end,
-[eAnimState.walking] = function()
+[eAnimState.walking] = function(pieceMask)
 						if boolFlying == true then return eAnimState.walking end
 						if not boolAiming then reset(center, 1.3, false) end
-						PlayAnimation(randT(lowerBodyAnimations[eAnimState.walking]))					
+						playMaskedAnimation(pieceMask, randT(lowerBodyAnimations[eAnimState.walking]))					
 						return eAnimState.walking
 						end,
-[eAnimState.standing] = 	function () 
+[eAnimState.standing] = 	function(pieceMask) 
 						if boolFlying == true then return eAnimState.standing end
 
 						resetT(lowerBodyPieces, 12)
 						Sleep(100)
 						return eAnimState.standing
 					end,
-[eAnimState.aiming] = 	function () 
+[eAnimState.aiming] = 	function(pieceMask) 
 						AimDelay=AimDelay+100
 						--Spring.Echo("AimDelay:"..AimDelay)
 						if boolWalking == true  or AimDelay > 400 then
 							AimDelay=0	
-							PlayAnimation(randT(lowerBodyAnimations[eAnimState.walking]),upperBodyPieces)	
+							playMaskedAnimation(pieceMask, randT(lowerBodyAnimations[eAnimState.walking]),upperBodyPieces)	
 						elseif AimDelay <= 400 then		
 
-							PlayAnimation(randT(lowerBodyAnimations[eAnimState.standing]),upperBodyPieces)	
+							playMaskedAnimation(pieceMask, randT(lowerBodyAnimations[eAnimState.standing]),upperBodyPieces)	
 						end
 						Sleep(100)
 						return eAnimState.aiming
@@ -990,7 +1019,7 @@ local animationTable = AnimationTable
 	while true do
 		assert(LowerAnimationState)
 		assert(animationTable[LowerAnimationState], "Animationstate not existing "..LowerAnimationState)
-		LowerAnimationState = animationTable[LowerAnimationState]()
+		LowerAnimationState = animationTable[LowerAnimationState](LowerAnimationState == lowerMaskState and lowerOverrideMask or nil)
 		
 		--Sync Animations
 		--echoNFrames("Unit "..unitID.." :LStatMach :"..LowerAnimationState, 500)
@@ -1023,7 +1052,7 @@ local animationTable = AnimationTable
 		assert(UpperAnimationState)
 		assert(animationTable[UpperAnimationState], "Upper Animationstate not existing "..UpperAnimationState)
 
-		UpperAnimationState = animationTable[UpperAnimationState]()
+		UpperAnimationState = animationTable[UpperAnimationState](UpperAnimationState == upperMaskState and upperOverrideMask or nil)
 		--echoNFrames("Unit "..unitID.." :UStatMach :"..UpperAnimationState, 500)
 		--Sync Animations
 		if boolUpperStateWaitForEnd == true then
