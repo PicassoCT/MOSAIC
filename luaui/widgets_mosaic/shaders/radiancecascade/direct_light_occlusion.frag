@@ -24,7 +24,8 @@ uniform float lightRange;
 
 // Do not let the emitter's host building occlude the ray at its endpoint.
 // This is world-space distance, not UV distance.
-const float EMITTER_OCCLUSION_CLEARANCE = 128.0;
+uniform float emitterClearance;
+uniform int debugMode;
 
 float sampleOcclusion(int layer, vec2 uv)
 {
@@ -52,6 +53,13 @@ void main()
     vec2 worldDelta = (emitterUV - receiverUV) * mapSize;
     float distanceToLight = length(worldDelta);
     float visibility = 1.0;
+    float attenuation = max(0.0, 1.0 - distanceToLight / lightRange);
+    attenuation *= attenuation;
+    if (debugMode == 1 || distanceToLight >= lightRange) {
+        gl_FragColor = vec4(vec3(attenuation), 1.0);
+        return;
+    }
+    float firstHit = -1.0;
 
     for (int stepIndex = 1; stepIndex < DIRECT_LIGHT_STEPS; ++stepIndex) {
         float t = float(stepIndex) / float(DIRECT_LIGHT_STEPS);
@@ -65,15 +73,20 @@ void main()
 
         vec2 remainingWorldDelta = (emitterUV - rayUV) * mapSize;
         bool outsideEmitterClearance =
-            length(remainingWorldDelta) > EMITTER_OCCLUSION_CLEARANCE;
+            length(remainingWorldDelta) > emitterClearance;
 
         if (outsideEmitterClearance && sampleOcclusion(layer, rayUV) > 0.5) {
             visibility = 0.0;
+            firstHit = t;
             break;
         }
     }
 
-    float attenuation = max(0.0, 1.0 - distanceToLight / lightRange);
-    attenuation *= attenuation;
+    if (debugMode == 2) {
+        vec3 color = firstHit < 0.0 ? vec3(0.0, attenuation, 0.0)
+            : vec3(1.0 - firstHit, 0.0, firstHit);
+        gl_FragColor = vec4(color, 1.0);
+        return;
+    }
     gl_FragColor = vec4(vec3(visibility * attenuation), 1.0);
 }
