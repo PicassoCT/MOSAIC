@@ -41,6 +41,8 @@ local debugModeLoc, clearanceLoc
 local lockedUnit, lockedPiece
 local emitterU, emitterV, emitterY
 local diagnosticClearance = 0
+local debugVolumeUnit
+local debugVolumeSummary = ""
 local directLightShader
 local directEmitterUVLoc
 local directEmitterHeightLoc
@@ -239,6 +241,23 @@ local function getDebugEmitter()
 end
 
 function widget:TextCommand(command)
+    if command == "radiancedebug volumes off" then
+        debugVolumeUnit = nil
+        return true
+    end
+    local requested = command:match("^radiancedebug volumes (%d+)$")
+    if command == "radiancedebug volumes" or requested then
+        local unitID = tonumber(requested) or (Spring.GetSelectedUnits() or {})[1]
+        local volumes = unitID and occlusionBuildings[unitID]
+        if not volumes then
+            Spring.Echo("Radiance volumes: select a completed shadow house, or use /radiancedebug volumes UNITID")
+            return true
+        end
+        debugVolumeUnit = unitID
+        Spring.Echo("Radiance volumes: locked house " .. unitID ..
+            "; cyan = exported bounds, compare with engine collision debug; /radiancedebug volumes off to hide")
+        return true
+    end
     if command == "radiancedebug reset" then
         lockedUnit, lockedPiece = nil, nil
         return true
@@ -477,6 +496,57 @@ function widget:DrawWorldPreUnit()
     end
 end
 
+
+-- Show the actual exported cache, without re-reading or correcting engine data.
+-- Rounded volumes use their enclosing bounds; these are NOT additional blockers.
+local function drawVolumeBounds(volume)
+    local x, y, z = volume.sx * 0.5, volume.sy * 0.5, volume.sz * 0.5
+    gl.PushMatrix()
+    gl.Translate(volume.x, volume.y, volume.z)
+    -- Equivalent to the atlas's negative rotation in the X/Z plane.
+    gl.Rotate((volume.heading or 0) * 360 / 65536, 0, 1, 0)
+    gl.BeginEnd(GL.LINES, function()
+        for _, h in ipairs({-y, y}) do
+            gl.Vertex(-x, h, -z); gl.Vertex(x, h, -z)
+            gl.Vertex(x, h, -z); gl.Vertex(x, h, z)
+            gl.Vertex(x, h, z); gl.Vertex(-x, h, z)
+            gl.Vertex(-x, h, z); gl.Vertex(-x, h, -z)
+        end
+        for _, a in ipairs({-x, x}) do
+            for _, b in ipairs({-z, z}) do
+                gl.Vertex(a, -y, b); gl.Vertex(a, y, b)
+            end
+        end
+    end)
+    gl.PopMatrix()
+end
+
+function widget:DrawWorld()
+    if not debugVolumeUnit then return end
+    local volumes = occlusionBuildings[debugVolumeUnit]
+    if not volumes or not Spring.ValidUnitID(debugVolumeUnit) then
+        debugVolumeUnit = nil
+        return
+    end
+    local sx, sy, sz = 0, 0, 0
+    gl.UseShader(0)
+    gl.Texture(false)
+    gl.DepthTest(false)
+    gl.DepthMask(false)
+    gl.LineWidth(2)
+    gl.Color(0, 1, 1, 1)
+    for _, volume in ipairs(volumes) do
+        sx, sy, sz = math.max(sx, volume.sx), math.max(sy, volume.sy), math.max(sz, volume.sz)
+        drawVolumeBounds(volume)
+    end
+    debugVolumeSummary = string.format(
+        "Shadow house %d | %d exported volumes | largest dimensions X/Y/Z %.1f / %.1f / %.1f | cyan: enclosing bounds",
+        debugVolumeUnit, #volumes, sx, sy, sz)
+    gl.LineWidth(1)
+    gl.Color(1, 1, 1, 1)
+    gl.DepthTest(true)
+end
+
 function widget:DrawScreen()
     if not DEBUG_VIEW or not topDownTex then return end
     local size = math.floor(math.min(vsy * 0.28, (vsx - 80) / 4))
@@ -506,6 +576,9 @@ function widget:DrawScreen()
     gl.Text(string.format("Radiance diagnostics | unit %s piece %s | height %.1f | buildings %d | real emission %.2f",
         tostring(lockedUnit), tostring(lockedPiece), emitterY or 0, occlusionBuildingCount, neonLightPercent),
         16, size + 44, 13, "o")
+    if debugVolumeUnit then
+        gl.Text(debugVolumeSummary, 16, size + 64, 13, "o")
+    end
     gl.Blending(GL.SRC_ALPHA, GL.ONE_MINUS_SRC_ALPHA)
 end
 
