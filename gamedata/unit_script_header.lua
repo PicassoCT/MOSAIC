@@ -17,56 +17,8 @@ local EmitSfx = UnitScript.EmitSfx
 local Explode = UnitScript.Explode
 local GetUnitValue = UnitScript.GetUnitValue
 local SetUnitValue = UnitScript.SetUnitValue
-
--- Recoil is strict about piece handles: Show/Hide must receive a numeric
--- piece ID.  Keep malformed piece groups/functions from reaching the engine,
--- but log enough context to find the actual caller on the next test run.
-local RawHide = UnitScript.Hide
-local RawShow = UnitScript.Show
-
-local function ReportInvalidPiece(operation, value)
-    local valueType = type(value)
-    local unitName = (unitDef and unitDef.name) or tostring(unitDefID)
-    local detail = tostring(value)
-
-    if valueType == "table" then
-        local pieceList = Spring.GetUnitPieceList(unitID) or {}
-        local names = {}
-        for _, pieceID in pairs(value) do
-            if type(pieceID) == "number" then
-                names[#names + 1] = pieceList[pieceID] or tostring(pieceID)
-            else
-                names[#names + 1] = tostring(pieceID) .. " (" .. type(pieceID) .. ")"
-            end
-        end
-        detail = "{" .. table.concat(names, ", ") .. "}"
-    end
-
-    Spring.Echo(
-        "Invalid PieceNumber in " .. operation .. " in " .. unitName ..
-        ": expected number, got " .. valueType .. " " .. detail
-    )
-
-    if debug and debug.traceback then
-        Spring.Echo(debug.traceback("Invalid piece caller", 2))
-    end
-end
-
-local Hide = function(piece)
-    if type(piece) ~= "number" then
-        ReportInvalidPiece("Hide", piece)
-        return
-    end
-    return RawHide(piece)
-end
-
-local Show = function(piece)
-    if type(piece) ~= "number" then
-        ReportInvalidPiece("Show", piece)
-        return
-    end
-    return RawShow(piece)
-end
+local Hide = UnitScript.Hide
+local Show = UnitScript.Show
 
 local Move = UnitScript.Move
 local Turn = UnitScript.Turn
