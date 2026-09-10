@@ -103,11 +103,36 @@ if gadgetHandler:IsSyncedCode() then
         return teams, table.concat(keys, ",")
     end
 
+    -- SendToUnsynced only accepts primitive values. Keep the wire format
+    -- deliberately tiny: activeTeams is a set of numeric team IDs, encoded as
+    -- "0|2|5". This mirrors the lightweight table transport used by the
+    -- hologram/dynamic-lighting code without sending a Lua table across the
+    -- synced -> unsynced boundary.
+    local function serializeActiveTeams(teams)
+        local teamIDs = {}
+
+        for teamID, isActive in pairs(teams or {}) do
+            if isActive then
+                teamIDs[#teamIDs + 1] = tonumber(teamID) or teamID
+            end
+        end
+
+        table.sort(teamIDs, function(a, b)
+            return tonumber(a) < tonumber(b)
+        end)
+
+        for i = 1, #teamIDs do
+            teamIDs[i] = tostring(teamIDs[i])
+        end
+
+        return table.concat(teamIDs, "|")
+    end
+
     local function sendSlowMoState()
         SendToUnsynced(
             "setSlowMoState",
             slowMoActive,
-            activeTeams,
+            serializeActiveTeams(activeTeams),
             TARGET_SLOWMO_SPEED
         )
     end
@@ -277,11 +302,27 @@ if gadgetHandler:IsSyncedCode() then
 else
     local reportTimer = 0
 
-    local function setSlowMoState(_, active, teams, targetSpeed)
+    local function deserializeActiveTeams(serializedTeams)
+        local teams = {}
+
+        if type(serializedTeams) ~= "string" or serializedTeams == "" then
+            return teams
+        end
+
+        for token in string.gmatch(serializedTeams, "[^|]+") do
+            local teamID = tonumber(token)
+            if teamID ~= nil then
+                teams[teamID] = true
+            end
+        end
+
+        return teams
+    end
+
+    local function setSlowMoState(_, active, serializedTeams, targetSpeed)
+        local teams = deserializeActiveTeams(serializedTeams)
         local myTeamID = Spring.GetMyTeamID()
-        local privileged = active == true
-            and type(teams) == "table"
-            and teams[myTeamID] == true
+        local privileged = active == true and teams[myTeamID] == true
 
         Spring.SendLuaUIMsg(
             string.format(
