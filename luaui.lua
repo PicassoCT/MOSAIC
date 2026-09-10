@@ -16,9 +16,22 @@ LUAUI_DIRNAME = 'LuaUI/'
 VFS.DEF_MODE = VFS.RAW_FIRST
 local STARTUP_FILENAME = LUAUI_DIRNAME .. 'mosaicmain.lua'
 
---TODO: This crashes my port of the BAR-GUI framework.. find out why and fix- as this is the prerequisit for the shaders like the bloom shader
---which only works with recoil
---VFS.Include("modules/graphics/init.lua").Init(gl)
+-- Recoil-only graphics helpers used by the deferred bloom and newer shader
+-- widgets. Keep initialization guarded so a missing optional graphics feature
+-- cannot take down the entire UI.
+do
+  local ok, graphicsModule = pcall(VFS.Include, "modules/graphics/init.lua")
+  if ok and graphicsModule and graphicsModule.Init then
+    local initOK, initResult, initError = pcall(graphicsModule.Init, gl)
+    if not initOK then
+      Spring.Log("LuaUI", LOG.ERROR, "Graphics helper initialization failed: " .. tostring(initResult))
+    elseif initResult == false then
+      Spring.Log("LuaUI", LOG.ERROR, "Graphics helper initialization failed: " .. tostring(initError))
+    end
+  else
+    Spring.Log("LuaUI", LOG.WARNING, "Unable to load optional graphics helpers: " .. tostring(graphicsModule))
+  end
+end
 
 
 --------------------------------------------------------------------------------
