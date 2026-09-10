@@ -173,7 +173,7 @@ end
 function closeCombatOS()
     Sleep(5)
     oldState = 1
-    setOverrideAnimationState(eAnimState.fighting, eAnimState.walking, true, nil, function() return boolInClosedCombat end,    false)  
+    setOverrideAnimationState(eAnimState.fighting, eAnimState.walking, true, function() return boolInClosedCombat end,    false)
     while true do
         if boolInClosedCombat == true then
              Hide(backpack)
@@ -311,7 +311,7 @@ function transportControl()
 
         	if  motorBikeTypeTable[transporterdefID] then boolTransportedNoFiring = true end
 
-            setOverrideAnimationState(eAnimState.slaved, eAnimState.riding, true, nil, function() return isTransported(unitID) end,    false)     
+            setOverrideAnimationState(eAnimState.slaved, eAnimState.riding, true, function() return isTransported(unitID) end,    false)
 	           
             while isTransported(unitID) == true do    
                 Sleep(100)
