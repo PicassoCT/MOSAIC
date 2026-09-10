@@ -301,7 +301,7 @@ if gadgetHandler:IsSyncedCode() then
 
 else
     local reportTimer = 0
-
+    local GetLastUpdateSeconds = Spring.GetLastUpdateSeconds
     local function deserializeActiveTeams(serializedTeams)
         local teams = {}
 
@@ -359,7 +359,8 @@ else
         gadgetHandler:RemoveSyncAction("setSlowMoState")
     end
 
-    function gadget:Update(dt)
+    function gadget:Update()
+        local dt = GetLastUpdateSeconds()
         reportTimer = reportTimer + dt
         if reportTimer >= 0.25 then
             reportTimer = 0
