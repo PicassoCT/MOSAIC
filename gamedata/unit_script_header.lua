@@ -20,6 +20,29 @@ local SetUnitValue = UnitScript.SetUnitValue
 local Hide = UnitScript.Hide
 local Show = UnitScript.Show
 
+-- Keep these helpers local to each compiled unit-script chunk.  The old
+-- lib_UnitScript versions stored pieceMap globally and could overwrite the
+-- script environment while another thread was using it.
+local function hideAll(id)
+    local targetID = id or unitID
+    local pieceMap = Spring.GetUnitPieceMap(targetID)
+    if not pieceMap then return end
+
+    for _, pieceID in pairs(pieceMap) do
+        Hide(pieceID)
+    end
+end
+
+local function showAll(id)
+    local targetID = id or unitID
+    local pieceMap = Spring.GetUnitPieceMap(targetID)
+    if not pieceMap then return end
+
+    for _, pieceID in pairs(pieceMap) do
+        Show(pieceID)
+    end
+end
+
 local Move = UnitScript.Move
 local Turn = UnitScript.Turn
 local Spin = UnitScript.Spin
