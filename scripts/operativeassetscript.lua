@@ -183,7 +183,7 @@ function closeCombatOS()
     Hide(Gun)
     StartThread(delayedPieceDrop, Pistol, math.random(3,12)*1000)
     oldState = 1
-    setOverrideAnimationState(eAnimState.fighting, eAnimState.walking, true, nil, function() return boolInClosedCombat end,    false)  
+    setOverrideAnimationState(eAnimState.fighting, eAnimState.walking, true, function() return boolInClosedCombat end,    false)
     while true do
         if boolInClosedCombat then
             --Spring.Echo("Operativeasset: Is now in close combat")
@@ -191,9 +191,9 @@ function closeCombatOS()
                 newState = math.random(1,3) 
                 if newState ~= oldState then
                     if newState == 1   then 
-                        setOverrideAnimationState(eAnimState.fighting, eAnimState.standing, true, nil, function() return boolInClosedCombat end,    false)  
+                        setOverrideAnimationState(eAnimState.fighting, eAnimState.standing, true, function() return boolInClosedCombat end,    false)
                     else
-                        setOverrideAnimationState(eAnimState.fighting, eAnimState.walking, true, nil, function() return boolInClosedCombat end,    false) 
+                        setOverrideAnimationState(eAnimState.fighting, eAnimState.walking, true, function() return boolInClosedCombat end,    false)
                     end
                 end
                 oldState = newState
@@ -367,7 +367,7 @@ function transportControl()
 
             if  motorBikeTypeTable[transporterdefID] then
                 boolTransportedNoFiring = true 
-                setOverrideAnimationState(eAnimState.slaved, eAnimState.riding, true, nil, function() return isTransported(unitID) end,    false)     
+                setOverrideAnimationState(eAnimState.slaved, eAnimState.riding, true, function() return isTransported(unitID) end,    false)
             end
                
             while isTransported(unitID) == true do    
