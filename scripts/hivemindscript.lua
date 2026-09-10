@@ -4,113 +4,194 @@ include "lib_Animation.lua"
 include "lib_mosaic.lua"
 
 local TablesOfPiecesGroups = {}
-GameConfig = getGameConfig()
+local GameConfig = getGameConfig()
 
 local IntegrationRadius = GameConfig.integrationRadius
+local CHARGE_PER_MEMBER_MS = GameConfig.addSlowMoTimeInMsPerCitizen or 150
+local TIME_MAX = GameConfig.maxNumberIntegratedIntoHive * CHARGE_PER_MEMBER_MS
 local innerLimit = 96
 local center = piece "center"
 local Icon = piece "Icon"
 
-myTeamID = Spring.GetUnitTeam(unitID)
-level = 0
+local myTeamID = Spring.GetUnitTeam(unitID)
+local level = 0
 
-function script.Create()
-    Spring.SetUnitBlocking(unitID, false, false, false)
-
-    generatepiecesTableAndArrayCode(unitID)
-    TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
-    hideT(TablesOfPiecesGroups["body"])
-    StartThread(integrateNewMembers)
-
-    intI = 0
-    if TablesOfPiecesGroups["cable"] then
-        foreach(TablesOfPiecesGroups["cable"], function(id)
-            randoVal = math.random(-10, 10) / 5
-            val = intI * ((360 / 8) + math.pi * randoVal)
-            Turn(id, y_axis, math.rad(val), 0)
-            intI = intI + 1
-        end)
+local function instantiate()
+    if not GG.HiveMind then GG.HiveMind = {} end
+    if not GG.HiveMind[myTeamID] then
+        GG.HiveMind[myTeamID] = {teamActive = false}
     end
-    StartThread(showState)
+    if not GG.HiveMind[myTeamID][unitID] then
+        GG.HiveMind[myTeamID][unitID] = {
+            rewindMilliSeconds = 0,
+            boolActive = false
+        }
+    end
+    return GG.HiveMind[myTeamID][unitID]
 end
 
-function script.Killed(recentDamage, _) return 1 end
-
-membersIntegrated= 0
+local function addTemporalCharge()
+    local state = instantiate()
+    state.rewindMilliSeconds = math.min(
+        TIME_MAX,
+        state.rewindMilliSeconds + CHARGE_PER_MEMBER_MS
+    )
+end
 
 function integrateNewMembers()
     waitTillComplete(unitID)
-    x, y, z = Spring.GetUnitPosition(unitID)
-    local integrateAbleUnits = getCultureUnitModelTypes(  GG.GameConfig.instance.culture, "civilian", UnitDefs)
-    px, py, pz = Spring.GetUnitPosition(unitID)
-    members = {}
+
+    local x, _, z = Spring.GetUnitPosition(unitID)
+    local px, py, pz = Spring.GetUnitPosition(unitID)
+    local integrateAbleUnits = getCultureUnitModelTypes(
+        GG.GameConfig.instance.culture, "civilian", UnitDefs
+    )
+
     while true do
-        if  membersIntegrated < GameConfig.maxNumberIntegratedIntoHive  then
-              aerosolUnits =   GG.AerosolAffectedCivilians[id] or {}
-        foreach(getAllInCircle(x, z, IntegrationRadius), 
-            function(id)
-                team = Spring.GetUnitTeam(id)
-                if team == myTeamID then
-                    return nil
+        local state = instantiate()
+        if state.rewindMilliSeconds < TIME_MAX then
+            local aerosolUnits = GG.AerosolAffectedCivilians or {}
+
+            foreach(
+                getAllInCircle(x, z, IntegrationRadius),
+                function(id)
+                    local team = Spring.GetUnitTeam(id)
+                    if team == myTeamID then
+                        return nil
+                    end
+                    if GG.DisguiseCivilianFor[id] then
+                        return GG.DisguiseCivilianFor[id]
+                    end
+                    return id
+                end,
+                function(id)
+                    local currentState = instantiate()
+                    if currentState.rewindMilliSeconds >= TIME_MAX then
+                        return nil
+                    end
+
+                    local defID = Spring.GetUnitDefID(id)
+                    if integrateAbleUnits[defID] and not isTransport(id) then
+                        if aerosolUnits[id] then
+                            return nil
+                        end
+
+                        Spring.SetUnitPosition(id, px, py, pz)
+                        Spring.DestroyUnit(id, false, true)
+                        addTemporalCharge()
+                    end
                 end
-                if GG.DisguiseCivilianFor[id] then
-                  return GG.DisguiseCivilianFor[id]
-                end
-                
-                return id
-            end, 
-            function(id)
-                defId = Spring.GetUnitDefID(id)
-                if integrateAbleUnits[defId] and not isTransport(id) then      
-                    if aerosolUnits[id] then return nil end     
-                    Spring.SetUnitPosition(id, px, py, pz)
-                    Spring.DestroyUnit(id, false, true)
-                    membersIntegrated = membersIntegrated  + 1
-                end
-            end
             )
         end
         Sleep(100)
     end
 end
 
-maxTurn = 6 * 90
-function showState()
-    --Spring.SetUnitBuildSpeed ( unitID, 0.25)
-    description = "Provides information warfare capability"
-    Spring.SetUnitTooltip(unitID, description .. level.. " / "..GameConfig.maxNumberIntegratedIntoHive ..")")
-    bodyCount = count(TablesOfPiecesGroups["body"])
-    for i = 1, innerLimit, 1 do
-        degIndex = (i % 64) * (360 / 64)
-        randOffset = (math.random(-4, 4) / 2) * math.pi
-        Turn(TablesOfPiecesGroups["body"][i], y_axis,
-             math.rad(10 * degIndex + randOffset), 0)
+function script.Create()
+    Spring.SetUnitBlocking(unitID, false, false, false)
+
+    instantiate()
+    generatepiecesTableAndArrayCode(unitID)
+    TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
+    hideT(TablesOfPiecesGroups["body"])
+
+    local intI = 0
+    if TablesOfPiecesGroups["cable"] then
+        foreach(TablesOfPiecesGroups["cable"], function(id)
+            local randoVal = math.random(-10, 10) / 5
+            local val = intI * ((360 / 8) + math.pi * randoVal)
+            Turn(id, y_axis, math.rad(val), 0)
+            intI = intI + 1
+        end)
     end
 
-    for i = innerLimit, #TablesOfPiecesGroups["body"], 1 do
-        degIndex = ((i % 96) % 16) * (360 / 16)
-        randOffset = (math.random(-4, 4) / 8) * math.pi
-        Turn(TablesOfPiecesGroups["body"][i], y_axis, math.rad(10 * degIndex + randOffset), 0)
-    end    
- 
-    oldLevel = level
-    hideT(TablesOfPiecesGroups["body"])
+    StartThread(showState)
+    StartThread(integrateNewMembers)
+end
+
+function script.Killed(recentDamage, _)
+    if GG.HiveMind and GG.HiveMind[myTeamID] then
+        GG.HiveMind[myTeamID][unitID] = nil
+    end
+    return 1
+end
+
+local maxTurn = 6 * 90
+
+function showState()
+    local description = "Temporal reserve: "
+    local bodies = TablesOfPiecesGroups["body"] or {}
+    local bodyCount = #bodies
+
+    for i = 1, math.min(innerLimit, bodyCount) do
+        local degIndex = (i % 64) * (360 / 64)
+        local randOffset = (math.random(-4, 4) / 2) * math.pi
+        Turn(bodies[i], y_axis, math.rad(10 * degIndex + randOffset), 0)
+    end
+
+    for i = innerLimit + 1, bodyCount do
+        local degIndex = ((i % 96) % 16) * (360 / 16)
+        local randOffset = (math.random(-4, 4) / 8) * math.pi
+        Turn(bodies[i], y_axis, math.rad(10 * degIndex + randOffset), 0)
+    end
+
+    hideT(bodies)
+
+    local oldLevel = -1
     while true do
-        level = membersIntegrated 
+        local state = instantiate()
+        local charge = state.rewindMilliSeconds or 0
+
+        level = 0
+        if bodyCount > 0 and TIME_MAX > 0 and charge > 0 then
+            level = math.ceil((charge / TIME_MAX) * bodyCount)
+        end
 
         if level ~= oldLevel then
-            Spring.SetUnitTooltip(unitID, description .. level.. " / "..GameConfig.maxNumberIntegratedIntoHive ..")")
-            oldLevel = level 
-            showT(TablesOfPiecesGroups["body"], 1, (level/GameConfig.maxNumberIntegratedIntoHive) * #TablesOfPiecesGroups["body"]) 
-            workTimeToSet = clamp(0.25,level/GameConfig.maxNumberIntegratedIntoHive, 1.0)
-            --Spring.SetUnitBuildSpeed ( unitID, workTimeToSet)
+            hideT(bodies)
+            if level > 0 then
+                showT(bodies, 1, level)
+            end
+            oldLevel = level
         end
-       
-        Sleep(100)
+
+        Spring.SetUnitTooltip(
+            unitID,
+            description ..
+            string.format("%.1fs / %.1fs", charge / 1000, TIME_MAX / 1000)
+        )
+
+        Sleep(250)
     end
 end
 
-boolLocalCloaked = false
+function setActive()
+    local state = instantiate()
+    if state.rewindMilliSeconds > 0 then
+        state.boolActive = true
+        return true
+    end
+
+    state.boolActive = false
+    return false
+end
+
+function setPassiv()
+    instantiate().boolActive = false
+end
+
+function script.Activate()
+    setActive()
+    return 1
+end
+
+function script.Deactivate()
+    setPassiv()
+    return 0
+end
+
+local boolLocalCloaked = false
+
 function showHideIcon(boolCloaked)
     boolLocalCloaked = boolCloaked
     if boolCloaked == true then
@@ -118,27 +199,23 @@ function showHideIcon(boolCloaked)
         Show(Icon)
     else
         showAll(unitID)
-        if TablesOfPiecesGroups then hideT(TablesOfPiecesGroups["body"]) end
+        if TablesOfPiecesGroups then
+            hideT(TablesOfPiecesGroups["body"])
+        end
         Hide(Icon)
     end
 end
 
-function script.Activate()  
-    return 1
+function script.StartBuilding()
+    SetUnitValue(COB.INBUILDSTANCE, 1)
 end
 
-function script.Deactivate()    
-    return 0
+function script.StopBuilding()
+    SetUnitValue(COB.INBUILDSTANCE, 0)
 end
 
-function script.StartBuilding() 
-    SetUnitValue(COB.INBUILDSTANCE, 1) 
+function script.QueryBuildInfo()
+    return center
 end
-
-function script.StopBuilding() 
-    SetUnitValue(COB.INBUILDSTANCE, 0) 
-end
-
-function script.QueryBuildInfo() return center end
 
 Spring.SetUnitNanoPieces(unitID, {center})
