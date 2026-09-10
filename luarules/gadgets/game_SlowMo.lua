@@ -1,283 +1,328 @@
 function gadget:GetInfo()
     return {
         name = "Slowmotion gadget",
-        desc = "This gadget coordinates gamespeed sets by hiveMinds and AI-Cores",
+        desc = "Coordinates temporal dilation for Hiveminds and AI-Cores",
         author = "PicassoCT",
-        date = "Juli. 2017",
+        date = "September 2026",
         license = "GNU GPL, v2 or later",
         layer = 0,
-        version = 1,
+        version = 2,
         enabled = true
     }
 end
 
-if (gadgetHandler:IsSyncedCode()) then
-    VFS.Include("scripts/lib_UnitScript.lua")
+if gadgetHandler:IsSyncedCode() then
+    local TARGET_SLOWMO_SPEED = 0.40
+    local DRAIN_INTERVAL_FRAMES = 3
+    local DRAIN_MS = 100
 
-    local boolPreviouslyActive = false
-    function detectRisingEdge(boolValue)
-        boolResult = false
-        if boolPreviouslyActive == false and boolValue == true then
-            boolResult = true
+    local slowMoActive = false
+    local activeTeams = {}
+    local activeTeamSignature = ""
+    local reportedWantedSpeed = 1.0
+    local reportedActualSpeed = 1.0
+    local savedGameSpeed = 1.0
+
+    local function isTemporalNodeData(data)
+        return type(data) == "table"
+            and data.rewindMilliSeconds ~= nil
+            and data.boolActive ~= nil
+    end
+
+    local function getSelectedNode(uTab, requireActive)
+        local selectedUnit
+        local selectedData
+
+        for unitID, data in pairs(uTab or {}) do
+            if isTemporalNodeData(data)
+                and (data.rewindMilliSeconds or 0) > 0
+                and ((not requireActive) or data.boolActive == true)
+            then
+                if selectedUnit == nil or unitID < selectedUnit then
+                    selectedUnit = unitID
+                    selectedData = data
+                end
+            end
         end
-        
-        boolPreviouslyActive = boolValue
-        return boolResult
+
+        return selectedUnit, selectedData
     end
-    
-    local boolPreviouslyActiveV2 = false
-    function detectFallingEdge(boolValue)
-        boolResult = false
-        if boolPreviouslyActiveV2 == true and boolValue == false then
-            boolResult = true
+
+    local function anySlowMoRequested()
+        if not GG.HiveMind then
+            return false
         end
-        
-        boolPreviouslyActiveV2 = boolValue
-        return boolResult
+
+        for _, uTab in pairs(GG.HiveMind) do
+            local _, data = getSelectedNode(uTab, true)
+            if data then
+                return true
+            end
+        end
+
+        return false
     end
 
-    local startFrame = -2
-    local endFrame = -1
-    local InitialFrame = Spring.GetGameFrame()
- 
-    function gadget:Initialize()
-        if not GG.HiveMind then GG.HiveMind = {} end
-        SendToUnsynced("Initialize")
-        InitialFrame = Spring.GetGameFrame()
-        GG.GameSpeed = 1.0
-    end
-
-    function gadget:GameFrame(n)      
-
-        if frame == InitialFrame then 
-            SendToUnsynced("setSlowMoShaderActive", false) 
+    local function activateChargedTeams()
+        if not GG.HiveMind then
+            GG.HiveMind = {}
             return
         end
 
-        handleSlowMoStateMachine(n)
+        for _, uTab in pairs(GG.HiveMind) do
+            if type(uTab) == "table" then
+                local selectedUnit, selectedData = getSelectedNode(uTab, true)
+                if not selectedData then
+                    selectedUnit, selectedData = getSelectedNode(uTab, false)
+                end
+
+                for unitID, data in pairs(uTab) do
+                    if isTemporalNodeData(data) then
+                        data.boolActive = selectedData ~= nil and unitID == selectedUnit
+                    end
+                end
+            end
+        end
     end
 
-    -- check for active HiveMinds and AI Nodes
-    function areHiveMindsActive()
+    local function rebuildActiveTeams()
+        local teams = {}
+        local keys = {}
+
+        if GG.HiveMind then
+            for teamID, uTab in pairs(GG.HiveMind) do
+                local _, data = getSelectedNode(uTab, true)
+                if data then
+                    teams[teamID] = true
+                    keys[#keys + 1] = tostring(teamID)
+                end
+            end
+        end
+
+        table.sort(keys)
+        return teams, table.concat(keys, ",")
+    end
+
+    local function sendSlowMoState()
+        SendToUnsynced(
+            "setSlowMoState",
+            slowMoActive,
+            activeTeams,
+            TARGET_SLOWMO_SPEED
+        )
+    end
+
+    local function enterSlowMo()
+        activateChargedTeams()
+        activeTeams, activeTeamSignature = rebuildActiveTeams()
+
+        if next(activeTeams) == nil then
+            return
+        end
+
+        savedGameSpeed = tonumber(reportedWantedSpeed) or 1.0
+        if savedGameSpeed <= 0 then
+            savedGameSpeed = 1.0
+        end
+
+        slowMoActive = true
+        GG.GameSpeed = reportedActualSpeed
+        Spring.SetGameRulesParam("slowMoActive", 1)
+        Spring.SetGameRulesParam("slowMoTargetSpeed", TARGET_SLOWMO_SPEED)
+
+        Spring.SendCommands("setSpeed " .. TARGET_SLOWMO_SPEED)
+        Spring.PlaySoundFile("sounds/HiveMind/StartLoop.ogg", 1.0)
+        sendSlowMoState()
+    end
+
+    local function stopAllTemporalNodes()
         if not GG.HiveMind then
-            GG.HiveMind = {};
-            return false, {}
+            return
         end
 
-        tableTeamsActive = {}
-        boolActive = false
-        for team, uTab in pairs(GG.HiveMind) do
-            if uTab then
-                for unit, data in pairs(uTab) do
-                    if type(data) ~= "boolean" then
-                        if data.boolActive == true then
-                            tableTeamsActive[team] = unit
-                            boolActive = true
-                        end
+        for _, uTab in pairs(GG.HiveMind) do
+            if type(uTab) == "table" then
+                for _, data in pairs(uTab) do
+                    if isTemporalNodeData(data) then
+                        data.boolActive = false
                     end
                 end
             end
         end
-        return boolActive, tableTeamsActive
     end
 
-    -- if active ones, find others that could be active
-    function activateOtherHiveminds(tableTeamsActive)
-        hiveMindMaxTime = DurationInSeconds * 1000
-        if not GG.HiveMind then GG.HiveMind = {} end
+    local function leaveSlowMo()
+        slowMoActive = false
+        activeTeams = {}
+        activeTeamSignature = ""
 
-        for team, uTab in pairs(GG.HiveMind) do
-            if not tableTeamsActive[team] then
-                for unit, data in pairs(uTab) do
-                    hiveMindMaxTime = math.max(hiveMindMaxTime,
-                                               data.rewindMilliSeconds)
-                    if data.rewindMilliSeconds > 0 then
-                        env = Spring.UnitScript.GetScriptEnv(unit)
-                        if env then
-                            Spring.UnitScript.CallAsUnit(unit, env.setActive)
-                            tableTeamsActive[team] = unit
-                        end
-                        break
-                    end
+        stopAllTemporalNodes()
+
+        Spring.SetGameRulesParam("slowMoActive", 0)
+        Spring.SetGameRulesParam("slowMoTargetSpeed", TARGET_SLOWMO_SPEED)
+        Spring.SendCommands("setSpeed " .. savedGameSpeed)
+        Spring.PlaySoundFile("sounds/HiveMind/EndLoop.ogg", 1.0)
+        sendSlowMoState()
+    end
+
+    local function drainTemporalCharge()
+        if not GG.HiveMind then
+            return
+        end
+
+        for _, uTab in pairs(GG.HiveMind) do
+            local selectedUnit, data = getSelectedNode(uTab, true)
+            if selectedUnit and data then
+                data.rewindMilliSeconds = math.max(
+                    0,
+                    (data.rewindMilliSeconds or 0) - DRAIN_MS
+                )
+
+                if data.rewindMilliSeconds <= 0 then
+                    data.boolActive = false
                 end
             end
         end
-        return tableTeamsActive, hiveMindMaxTime
     end
 
-    oldGameSpeed = 1.0
-    targetSlowMoSpeed = 0.4
-    DurationInSeconds = 30 * 40
-    -- set SlowMotion effect
+    function gadget:Initialize()
+        if not GG.HiveMind then
+            GG.HiveMind = {}
+        end
 
-    currentSpeed = 1.0
-    
-    activeHiveMinds = {}
-    local State = {
-        NotActive = "NotActive",
-        Starting = "Starting",
-        SlowMotion = "SlowMotion",
-        Ending ="Ending"
-    }
-   local slowMoStateMachine = {
-        ["NotActive"]  = function (frame, previousState)
-                        boolSlowMoRequested, activeHiveMinds = areHiveMindsActive()
-                        if detectRisingEdge(boolSlowMoRequested) then
-                            SendToUnsynced("setSlowMoShaderActive", true)
-                            Spring.PlaySoundFile("sounds/HiveMind/StartLoop.ogg", 1.0)
-                            activeHiveMinds, MaxTimeInMs = activateOtherHiveminds(activeHiveMinds)
-                            deactivateCursorForNormalTeams(activeHiveMinds)
-                            oldGameSpeed = currentSpeed
-                            startFrame = frame + 1
-                            endFrame = (frame + (math.ceil(MaxTimeInMs / 1000) * 30))
-
-                            return State.Starting
-                        end
-                    
-                        return State.NotActive
-                    end,
-     
-        ["Starting"]  = function (frame, previousState)
-            
-                            if frame % 10 == 0 and currentSpeed > targetSlowMoSpeed - 0.11 then --SlowDown
-                                 Spring.Echo("slowdown to " .. currentSpeed)
-                                 Spring.SendCommands("slowdown")
-                                return State.Starting
-                            end
-          
-                           if currentSpeed <= targetSlowMoSpeed - 0.11 then
-                             return State.SlowMotion
-                           end
-              
-                            return State.Starting
-                        end, 
-     
-        ["SlowMotion"]  = function (frame, previousState)
-
-                        
-                        if frame - startFrame > 0 and frame - startFrame % 210 == 0 then
-                            if side == "antagon" then
-                                Spring.PlaySoundFile("sounds/HiveMind/Antagonloop.ogg", 1.0)
-                            else
-                                Spring.PlaySoundFile("sounds/HiveMind/Protagonloop.ogg", 1.0)
-                            end
-                        end                       
-            
-                        if frame < startFrame or frame > endFrame or detectFallingEdge(boolSlowMoRequested) then 
-                            SendToUnsynced("setSlowMoShaderActive", false)
-                            restoreCursorNonActiveTeams(activeHiveMinds)
-                            SendToUnsynced("setDefaultGameSpeed", frame)
-                            Spring.PlaySoundFile("sounds/HiveMind/EndLoop.ogg", 1.0)
-                            return State.Ending
-                        end
-            
-                        return State.SlowMotion
-                    end,   
-        ["Ending"]  = function (frame, previousState)
-                         
-                        if frame % 10 == 0 and currentSpeed < oldGameSpeed  then
-                            Spring.Echo("speedup to from " .. currentSpeed.. " to ".. oldGameSpeed)
-                            Spring.SendCommands("speedup ")
-                            return State.Ending
-                        end
-
-                        if currentSpeed>= oldGameSpeed then
-                            startFrame = frame -1
-                            endFrame = frame -2    
-                            return State.NotActive
-                         end          
-        
-                        return State.Ending
-                    end      
-    
-    }
-    local currentState = "NotActive"
-    local lastState = "NotActive"
-    function handleSlowMoStateMachine(frame)        
-        currentState = slowMoStateMachine[currentState](frame, lastState)
-        lastState = currentState
+        GG.GameSpeed = 1.0
+        Spring.SetGameRulesParam("slowMoActive", 0)
+        Spring.SetGameRulesParam("slowMoTargetSpeed", TARGET_SLOWMO_SPEED)
+        sendSlowMoState()
     end
 
-    -- for teams without a active node or no node at all - hide the cursor during the slowMotionPhase
-    function deactivateCursorForNormalTeams(tableTeamsActive)
-        foreach(Spring.GetTeamList(), function(team)
-            if not tableTeamsActive[team] then
-                SendToUnsynced("hideCursor", team)
+    function gadget:GameFrame(frame)
+        if not slowMoActive then
+            if anySlowMoRequested() then
+                enterSlowMo()
             end
-        end)
+            return
+        end
+
+        if frame % DRAIN_INTERVAL_FRAMES == 0 then
+            drainTemporalCharge()
+        end
+
+        local newActiveTeams, newSignature = rebuildActiveTeams()
+        activeTeams = newActiveTeams
+
+        if next(activeTeams) == nil then
+            leaveSlowMo()
+            return
+        end
+
+        if newSignature ~= activeTeamSignature then
+            activeTeamSignature = newSignature
+            sendSlowMoState()
+        end
     end
 
-    -- restore Cursor for non-active teams
-    function restoreCursorNonActiveTeams(tableTeamsActive)
-        foreach(Spring.GetTeamList(), function(team)
-            if not tableTeamsActive[team] then
-                SendToUnsynced("restoreCursor", team)
-            end
-        end)
+    function gadget:AllowCommand(
+        unitID,
+        unitDefID,
+        unitTeam,
+        cmdID,
+        cmdParams,
+        cmdOptions,
+        cmdTag,
+        arg8,
+        arg9,
+        arg10
+    )
+        if not slowMoActive or activeTeams[unitTeam] then
+            return true
+        end
+
+        -- Recoil has had both AllowCommand signatures in circulation:
+        -- (..., cmdTag, synced, fromLua)
+        -- (..., cmdTag, playerID, fromSynced, fromLua)
+        local fromSynced
+        local fromLua
+
+        if arg10 ~= nil then
+            fromSynced = arg9
+            fromLua = arg10
+        else
+            fromSynced = arg8
+            fromLua = arg9
+        end
+
+        -- Internal Lua/synced orders keep running. Player-issued orders from
+        -- teams outside the temporal field are rejected while time is dilated.
+        if fromLua == true or fromSynced == true then
+            return true
+        end
+
+        return false
     end
 
     function gadget:RecvLuaMsg(msg, playerID)
-        start, ends = string.find(msg, "CurrentGameSpeed:")
-        if ends then
-            currentSpeed = tonumber(string.sub(msg, ends + 1, #msg))
-            GG.GameSpeed = currentSpeed
+        local wanted, actual = string.match(
+            msg,
+            "^CurrentGameSpeed:([%d%.%-]+):([%d%.%-]+)$"
+        )
+
+        if wanted then
+            reportedWantedSpeed = tonumber(wanted) or reportedWantedSpeed
+            reportedActualSpeed = tonumber(actual) or reportedActualSpeed
+            GG.GameSpeed = reportedActualSpeed
         end
     end
 
-else -- Unsynced
-    local formerCommandTable = {}
-    local alt, ctrl, meta, shift, left, right = 0, 0, 0, 0, 0, 0
-    local side
-    local myTeam
-    -- deactivate mouse icon
+else
+    local reportTimer = 0
 
-    local boolShaderActive = false
+    local function setSlowMoState(_, active, teams, targetSpeed)
+        local myTeamID = Spring.GetMyTeamID()
+        local privileged = active == true
+            and type(teams) == "table"
+            and teams[myTeamID] == true
 
-    local function restoreCursor(_, team)
-        myTeam = Spring.GetMyTeamID()
-        if myTeam == team then
-
-            oldCommand = Spring.GetActiveCommand()
-            formerCommandTable[team] = oldCommand
-
-            alt, ctrl, meta, shift = Spring.GetModKeyState()
-            local _, _, left, _, right = Spring.GetMouseState()
-        end
+        Spring.SendLuaUIMsg(
+            string.format(
+                "SlowMoShader|%d|%d|%.3f",
+                active and 1 or 0,
+                privileged and 1 or 0,
+                targetSpeed or 0.40
+            ),
+            "a"
+        )
     end
 
-    local function setDefaultGameSpeed(_, n)
-        if n % 5 == 0 then
-            currentGameSpeed = Spring.GetGameSpeed() or 1.0
-            Spring.SendLuaRulesMsg("CurrentGameSpeed:" .. currentGameSpeed)
+    local function reportGameSpeed()
+        local wantedSpeed, actualSpeed = Spring.GetGameSpeed()
+        if not wantedSpeed or not actualSpeed then
+            return
         end
-    end
 
-    local function hideCursor(_, team)
-        myTeam = Spring.GetMyTeamID()
-        if myTeam == team then
-            Spring.SetActiveCommand(formerCommandTable[team], 1, left, right,
-                                    alt, ctrl, meta, shift)
-        end
+        Spring.SendLuaRulesMsg(
+            string.format(
+                "CurrentGameSpeed:%.4f:%.4f",
+                wantedSpeed,
+                actualSpeed
+            )
+        )
     end
-
-    local function setSlowMoShaderActive(_, boolActivate)
-            if boolActivate == true then
-                Spring.SendLuaUIMsg("SlowMoShader_Active","a")
-            else
-                Spring.SendLuaUIMsg("SlowMoShader_Deactivated","a")
-            end
-        end
 
     function gadget:Initialize()
-        gadgetHandler:AddSyncAction("Initialize", Initialize)
-        gadgetHandler:AddSyncAction("setSlowMoShaderActive",setSlowMoShaderActive)
-        gadgetHandler:AddSyncAction("restoreCursor", restoreCursor)
-        gadgetHandler:AddSyncAction("hideCursor", hideCursor)
-        gadgetHandler:AddSyncAction("setDefaultGameSpeed", setDefaultGameSpeed)
+        gadgetHandler:AddSyncAction("setSlowMoState", setSlowMoState)
+        reportGameSpeed()
+    end
 
+    function gadget:Shutdown()
+        gadgetHandler:RemoveSyncAction("setSlowMoState")
+    end
 
-        local playerID = Spring.GetMyPlayerID()
-        local tteam = select(4,Spring.GetPlayerInfo(playerID))
-        side    = select(5,Spring.GetTeamInfo(tteam)) or "antagon"
+    function gadget:Update(dt)
+        reportTimer = reportTimer + dt
+        if reportTimer >= 0.25 then
+            reportTimer = 0
+            reportGameSpeed()
+        end
     end
 end

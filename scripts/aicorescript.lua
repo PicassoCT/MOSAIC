@@ -1,21 +1,20 @@
 include "lib_OS.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
---include "lib_Build.lua"
 include "lib_mosaic.lua"
 
 local TablesOfPiecesGroups = {}
 local GameConfig = getGameConfig()
 
-IntegrationRadius = GameConfig.integrationRadius
-TIME_MAX = GameConfig.maxNumberIntegratedIntoHive * 1000
-bodyMax = 128
-innerLimit = 96
-Icon = piece "Icon"
-Eye = piece "Eye"
+local IntegrationRadius = GameConfig.integrationRadius
+local CHARGE_PER_MEMBER_MS = GameConfig.addSlowMoTimeInMsPerCitizen or 150
+local TIME_MAX = GameConfig.maxNumberIntegratedIntoHive * CHARGE_PER_MEMBER_MS
+local Icon = piece "Icon"
+local Eye = piece "Eye"
 
-teamID = Spring.GetUnitTeam(unitID)
-function instanciate()
+local teamID = Spring.GetUnitTeam(unitID)
+
+local function instantiate()
     if not GG.HiveMind then GG.HiveMind = {} end
     if not GG.HiveMind[teamID] then
         GG.HiveMind[teamID] = {teamActive = false}
@@ -26,35 +25,54 @@ function instanciate()
             boolActive = false
         }
     end
+    return GG.HiveMind[teamID][unitID]
 end
-membersIntegrated= 0
+
+local function addTemporalCharge()
+    local state = instantiate()
+    state.rewindMilliSeconds = math.min(
+        TIME_MAX,
+        state.rewindMilliSeconds + CHARGE_PER_MEMBER_MS
+    )
+end
 
 function integrateNewMembers()
     waitTillComplete(unitID)
-    x, y, z = Spring.GetUnitPosition(unitID)
-    local integrateAbleUnits = getCultureUnitModelTypes(  GG.GameConfig.instance.culture, "truck", UnitDefs)
-    px, py, pz = Spring.GetUnitPosition(unitID)
-    members = {}
+
+    local x, _, z = Spring.GetUnitPosition(unitID)
+    local px, py, pz = Spring.GetUnitPosition(unitID)
+    local integrateAbleUnits = getCultureUnitModelTypes(
+        GG.GameConfig.instance.culture, "truck", UnitDefs
+    )
+
     while true do
-        if  membersIntegrated < GameConfig.maxNumberIntegratedIntoHive  then
-        foreach(getAllInCircle(x, z, IntegrationRadius), 
-            function(id)
-                team = Spring.GetUnitTeam(id)
-                if team == myTeamID then
-                    return nil
+        local state = instantiate()
+        if state.rewindMilliSeconds < TIME_MAX then
+            foreach(
+                getAllInCircle(x, z, IntegrationRadius),
+                function(id)
+                    local team = Spring.GetUnitTeam(id)
+                    if team == teamID then
+                        return nil
+                    end
+                    if GG.DisguiseCivilianFor[id] then
+                        return GG.DisguiseCivilianFor[id]
+                    end
+                    return id
+                end,
+                function(id)
+                    local currentState = instantiate()
+                    if currentState.rewindMilliSeconds >= TIME_MAX then
+                        return nil
+                    end
+
+                    local defID = Spring.GetUnitDefID(id)
+                    if integrateAbleUnits[defID] and not isTransport(id) then
+                        Spring.SetUnitPosition(id, px, py, pz)
+                        Spring.DestroyUnit(id, false, true)
+                        addTemporalCharge()
+                    end
                 end
-                if GG.DisguiseCivilianFor[id] then
-                  return GG.DisguiseCivilianFor[id]
-                end
-                return id
-            end, 
-            function(id)
-                if integrateAbleUnits[Spring.GetUnitDefID(id)] and not isTransport(id) then           
-                    Spring.SetUnitPosition(id, px, py, pz)
-                    Spring.DestroyUnit(id, false, true)
-                    membersIntegrated = membersIntegrated  + 1
-                end
-            end
             )
         end
         Sleep(100)
@@ -64,113 +82,106 @@ end
 function script.Create()
     Spring.SetUnitBlocking(unitID, false, false, false)
 
-    instanciate()
+    instantiate()
     generatepiecesTableAndArrayCode(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     hideT(TablesOfPiecesGroups["body"])
+
     StartThread(wiggleEye)
     StartThread(showState)
     StartThread(integrateNewMembers)
 end
 
 function wiggleEye()
-
     while true do
-        napTime = math.random(200, 2500)
+        local napTime = math.random(200, 2500)
         Sleep(napTime)
 
-        EyeSpeed = math.random(20, 100) / 50
-        reset(Eye, EyeSpeed)
+        local eyeSpeed = math.random(20, 100) / 50
+        reset(Eye, eyeSpeed)
         Sleep(500)
-        turnPieceRandDir(Eye, EyeSpeed)
+        turnPieceRandDir(Eye, eyeSpeed)
     end
 end
 
-function script.Killed(recentDamage, _) return 1 end
+function script.Killed(recentDamage, _)
+    if GG.HiveMind and GG.HiveMind[teamID] then
+        GG.HiveMind[teamID][unitID] = nil
+    end
+    return 1
+end
 
-heigthPagode = 369
-maxTurn = 6 * 90
 function showState()
+    local bodies = TablesOfPiecesGroups["body"] or {}
+    local bodyCount = #bodies
+    local oldLevel = -1
 
-    instanciate()
     while true do
-        level = math.ceil(GG.HiveMind[teamID][unitID].rewindMilliSeconds /
-                              TIME_MAX) * (#TablesOfPiecesGroups["body"] or 1)
-        hideT(TablesOfPiecesGroups["body"])
-        if level > 1 then showT(TablesOfPiecesGroups["body"], 1, level) end
-        Sleep(100)
-    end
-end
+        local state = instantiate()
+        local charge = state.rewindMilliSeconds or 0
+        local level = 0
 
-SIG_SLOWMO = 2
-function slowMo()
-    SetSignalMask(SIG_SLOWMO)
-    GG.HiveMind[teamID][unitID].boolActive = true
-    modulator = 0
-
-    x, y, z = Spring.GetUnitPosition(unitID)
-    team = Spring.GetUnitTeam(unitID)
-
-    while GG.HiveMind[teamID][unitID].rewindMilliSeconds > 0 do
-        Sleep(100)
-        modulator = inc(modulator)
-        if modulator % 3 == 0 then
-            selectbody = TablesOfPiecesGroups["body"][math.random(1,
-                                                                  #TablesOfPiecesGroups["body"])]
-            Hide(selectbody)
+        if bodyCount > 0 and TIME_MAX > 0 and charge > 0 then
+            level = math.ceil((charge / TIME_MAX) * bodyCount)
         end
-        GG.HiveMind[teamID][unitID].rewindMilliSeconds =
-            math.max(0, GG.HiveMind[teamID][unitID].rewindMilliSeconds - 100)
-    end
 
-    GG.HiveMind[teamID][unitID].boolActive = false
-
-end
-
-function lookForOtherActiveHives()
-    boolOneOtherActive = false
-    other = nil
-    for team, utab in pairs(GG.HiveMind) do
-        for unit, utab in pairs(utab) do
-            if utab.boolActive == true then
-                boolOneOtherActive = true
-                other = unit
+        if level ~= oldLevel then
+            hideT(bodies)
+            if level > 0 then
+                showT(bodies, 1, level)
             end
+            oldLevel = level
         end
+
+        Spring.SetUnitTooltip(
+            unitID,
+            "Temporal reserve: " ..
+            string.format("%.1fs / %.1fs", charge / 1000, TIME_MAX / 1000)
+        )
+
+        Sleep(250)
     end
 end
 
-function setActive() StartThread(slowMo) end
+function setActive()
+    local state = instantiate()
+    if state.rewindMilliSeconds > 0 then
+        state.boolActive = true
+        return true
+    end
 
-function setPassiv() GG.HiveMind[teamID][unitID].boolActive = false end
+    state.boolActive = false
+    return false
+end
+
+function setPassiv()
+    instantiate().boolActive = false
+end
 
 function script.Activate()
-    instanciate()
-    if GG.HiveMind[teamID][unitID].rewindMilliSeconds > 0 then setActive() end
+    setActive()
     return 1
 end
 
 function script.Deactivate()
-    Signal(SIG_SLOWMO)
-    GG.HiveMind[teamID][unitID].boolActive = false
-
+    setPassiv()
     return 0
 end
 
-boolLocalCloaked = false
+local boolLocalCloaked = false
+
 function showHideIcon(boolCloaked)
     boolLocalCloaked = boolCloaked
     if boolCloaked == true then
-
         hideAll(unitID)
         Show(Icon)
         Show(Eye)
     else
         showAll(unitID)
-        if TablesOfPiecesGroups then hideT(TablesOfPiecesGroups["body"]) end
+        if TablesOfPiecesGroups then
+            hideT(TablesOfPiecesGroups["body"])
+        end
         Hide(Icon)
         Hide(Eye)
     end
-
 end
-
