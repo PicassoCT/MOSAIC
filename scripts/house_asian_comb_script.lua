@@ -258,4 +258,8 @@ boolHouseHidden = false
 function traceRayRooftop( vector_position, vector_direction)
     return GetRayIntersectPiecesPosition(unitID, RoofTop, vector_position, vector_direction)
 end
- 
+
+-- Read by the synced rooftop movement controller.
+function getRooftopPieces()
+    return RoofTopPieces or {}
+end

@@ -36,7 +36,6 @@ SIG_STAB = 256
 SIG_ROOF_TOP = 512
 SIG_SNIPER_LASER=1024
 local Animations = include('animation_assasin_male.lua')
-boolStartRoofTopThread = false
 local center = piece('center');
 local Torso = piece('Torso');
 local Pistol = piece('Pistol');
@@ -66,7 +65,7 @@ speedWalking            = GameConfig.assetSpeedWalking
 local runningTimeInMS = 0
 local gaiaTeamID = Spring.GetGaiaTeamID()
 local houseTypeTable = getHouseTypeTable(UnitDefs)
-local climbAbleHouseTypeTable = getClimbableHouseTypeTable(Unitefs)
+local climbAbleHouseTypeTable = getClimbableHouseTypeTable(UnitDefs)
 westernHouseDefID= UnitDefNames["house_western0"].id
 
 
@@ -128,11 +127,44 @@ local FAR_SIGHTED= 1.0
 local NEAR_SIGHTED = 0.4
 local CLOSE_COMBAT_SIGHTED = 0.1
 
+-- The gadget owns movement and cancellation; these callbacks only own visuals.
+local rooftopMotion
 function onRooftop()
-    --Spring.Echo("Is on Rooftop")
     setViewRadius(unitID, FAR_SIGHTED)
     boolOnRoof = true
-    boolStartRoofTopThread = true
+end
+
+function rooftopGrappleAnimation()
+    -- TODO: user-authored grappling-hook animation.
+end
+
+local SIG_ROOFTOP_ANIMATION = 2048
+local function rooftopAnimation(mode)
+    SetSignalMask(SIG_ROOFTOP_ANIMATION)
+    Signal(SIG_STOP)
+    if mode == "grapple" then
+        Signal(SIG_UP)
+        Signal(SIG_LOW)
+        boolWalking = false
+        -- Placeholder: add the grappling-hook animation here.
+        -- Position is animated by game_sniperPosition.lua.
+        -- This thread may Sleep; setRooftopMotion cancels it on completion/interruption.
+        rooftopGrappleAnimation()
+    else
+        boolWalking = mode == "walk"
+        Turn(Torso, x_axis, 0, 5)
+        setOverrideAnimationState(boolWalking and eAnimState.slaved or eAnimState.standing,
+            boolWalking and eAnimState.walking or eAnimState.standing,
+            true, nil, false)
+    end
+end
+
+function setRooftopMotion(mode)
+    Signal(SIG_ROOFTOP_ANIMATION)
+    rooftopMotion = mode
+    boolOnRoof = mode ~= nil
+    setViewRadius(unitID, boolOnRoof and FAR_SIGHTED or NEAR_SIGHTED)
+    StartThread(rooftopAnimation, mode)
 end
 
 if not GG.OperativesDiscovered then GG.OperativesDiscovered = {} end
@@ -597,12 +629,7 @@ boolPistol = true
 function threadStarter()
     Sleep(100)
     while true do
-        if boolStartRoofTopThread == true then
-            boolStartRoofTopThread = false
-            StartThread(onRoof)
-            --echo("Start Thread on Roof")
-        end
-        if boolStartThread == true then
+        if boolStartThread == true and rooftopMotion ~= "grapple" then
             boolStartThread = false
             StartThread(deferedOverrideAnimationState,
                         locAnimationstateUpperOverride,
@@ -906,29 +933,10 @@ end
     
 
 
-function onRoof()
-    Signal(SIG_ROOF_TOP)
-    SetSignalMask(SIG_ROOF_TOP)
-    echo("operative: on Roof")
-    boolHasMoveCommand = getUnitMoveGoal(unitID, 1)
-    boolVisiblyForced= true
-    while not boolHasMoveCommand  do
-        Sleep(15)
-       boolHasMoveCommand = getUnitMoveGoal(unitID, 1)
-    end
-    boolVisiblyForced = false
-    transporter = Spring.GetUnitTransporter(unitID)
-    if transporter then
-        transporterDefID = Spring.GetUnitDefID(transporter)
-        if climbAbleHouseTypeTable[transporterDefID] then
-            Spring.UnitDetach(unitID)
-        end
-    end
-    setViewRadius(unitID, NEAR_SIGHTED)
-    boolOnRoof= false
-end
 
 function script.StartMoving()
+    if rooftopMotion then return end
+    Signal(SIG_STOP)
     boolWalking = true
     Turn(center, y_axis, math.rad(5), 12)
 
@@ -937,7 +945,7 @@ function script.StartMoving()
 end
 
 function script.StopMoving() 
-
+    if rooftopMotion then return end
     StartThread(delayedStop) 
 end
 
@@ -1038,7 +1046,7 @@ function cloakLoop()
         ["cloaked"] = function(boolCloakRequest, boolPreviouslyCloaked,
                                visibleForced)
             boolCloakRequest = getWantCloak()
-            boolVisiblyForced = (boolIsBuilding == true) or
+            boolVisiblyForced = boolOnRoof or (boolIsBuilding == true) or
                                     (boolFireForcedVisible == true) or
                                     (not OperativesDiscovered() == false)
             boolPreviouslyCloaked = (previousState == "cloaked")
@@ -1062,7 +1070,7 @@ function cloakLoop()
         end,
         ["decloaked"] = function()
             boolCloakRequest = getWantCloak()
-            boolVisiblyForced = (boolIsBuilding == true) or
+            boolVisiblyForced = boolOnRoof or (boolIsBuilding == true) or
                                     (boolFireForcedVisible == true) or
                                     (not OperativesDiscovered() == false)
             boolPreviouslyCloaked = (previousState == "cloaked")
@@ -1331,6 +1339,12 @@ end
 lastShownWeapon = Pistol
 gunMaxRange = WeaponDefNames["submachingegun"].range
 function script.AimWeapon(weaponID, heading, pitch)
+     if rooftopMotion == "grapple" or rooftopMotion == "walk" then return false end
+     local kind, _, target = Spring.GetUnitWeaponTarget(unitID, weaponID)
+     if kind == 1 then
+         local def = UnitDefs[Spring.GetUnitDefID(target)]
+         if def and (def.isBuilding or houseTypeTable[def.id]) then return false end
+     end
      if weaponID == 4 then 
       --  Spring.Echo("weaponAim:"..weaponID.." targetType"..targetType)
         return true
@@ -1410,4 +1424,12 @@ function showHideIcon(boolCloaked)
         hideT(TablesOfPiecesGroups["Shell"])
         Hide(Icon)
     end
+end
+
+-- Also reject automatic building targets and targets acquired after aiming.
+function script.BlockShot(weaponID, targetID)
+    if rooftopMotion == "grapple" or rooftopMotion == "walk" then return true end
+    local defID = targetID and Spring.GetUnitDefID(targetID)
+    local def = defID and UnitDefs[defID]
+    return def and (def.isBuilding or houseTypeTable[defID]) or false
 end

@@ -12,3 +12,5 @@ CMD_BUILDSPEED = 33455 -- future unit_buildspeed gadget
 
 -- 36000 - 36999:  AI related
 -- dynamically injected
+
+CMD_ASSET_ROOFTOP = 33456 -- queued asset roof movement
