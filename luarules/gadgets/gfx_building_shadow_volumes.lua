@@ -13,12 +13,21 @@ end
 if gadgetHandler:IsSyncedCode() then
     local MAX_PIECES_PER_UNIT = 128
     local pendingUnits = {}
+    local lastSelectedPieces = {}
 
     local function throwsShadow(unitDefID)
         local unitDef = UnitDefs[unitDefID]
         local params = unitDef and unitDef.customParams
         local value = params and (params.throwsshadow or params.throwsShadow)
         return value == true or value == 1 or value == "1" or value == "true"
+    end
+
+    local function copySelection(selectedPieces)
+        local copy = {}
+        for key, value in pairs(selectedPieces or {}) do
+            copy[key] = value
+        end
+        return copy
     end
 
     local function rebuildUnit(unitID, selectedPieces)
@@ -62,11 +71,22 @@ if gadgetHandler:IsSyncedCode() then
     end
 
     local function markDirty(unitID, selectedPieces)
-        if Spring.ValidUnitID(unitID) then
-            pendingUnits[unitID] = selectedPieces or {}
-        else
+        if not Spring.ValidUnitID(unitID) then
             pendingUnits[unitID] = nil
+            lastSelectedPieces[unitID] = nil
             SendToUnsynced("buildingShadowPieceRemove", unitID)
+            return
+        end
+
+        if selectedPieces ~= nil then
+            local snapshot = copySelection(selectedPieces)
+            lastSelectedPieces[unitID] = snapshot
+            pendingUnits[unitID] = snapshot
+        elseif lastSelectedPieces[unitID] then
+            -- A few older building scripts still issue a parameterless dirty mark.
+            -- Reuse the last explicit visible-piece set instead of falling back to
+            -- every model piece (which would reintroduce hidden/placeable geometry).
+            pendingUnits[unitID] = lastSelectedPieces[unitID]
         end
     end
 
@@ -77,6 +97,7 @@ if gadgetHandler:IsSyncedCode() then
 
     function gadget:UnitDestroyed(unitID)
         pendingUnits[unitID] = nil
+        lastSelectedPieces[unitID] = nil
         SendToUnsynced("buildingShadowPieceRemove", unitID)
     end
 
@@ -91,26 +112,28 @@ if gadgetHandler:IsSyncedCode() then
         GG.MarkBuildingShadowVolumeDirty = nil
     end
 else
-    local function callLuaUI(name, ...)
-        if Script.LuaUI(name) then
-            Script.LuaUI[name](...)
+    local function beginPieces(_, unitID, unitDefID)
+        if Script.LuaUI("ReceiveBuildingShadowBegin") then
+            Script.LuaUI.ReceiveBuildingShadowBegin(unitID, unitDefID)
         end
     end
 
-    local function beginPieces(_, unitID, unitDefID)
-        callLuaUI("ReceiveBuildingShadowBegin", unitID, unitDefID)
-    end
-
     local function addPiece(_, unitID, pieceID)
-        callLuaUI("ReceiveBuildingShadowPiece", unitID, pieceID)
+        if Script.LuaUI("ReceiveBuildingShadowPiece") then
+            Script.LuaUI.ReceiveBuildingShadowPiece(unitID, pieceID)
+        end
     end
 
     local function endPieces(_, unitID)
-        callLuaUI("ReceiveBuildingShadowEnd", unitID)
+        if Script.LuaUI("ReceiveBuildingShadowEnd") then
+            Script.LuaUI.ReceiveBuildingShadowEnd(unitID)
+        end
     end
 
     local function removePieces(_, unitID)
-        callLuaUI("ReceiveBuildingShadowRemove", unitID)
+        if Script.LuaUI("ReceiveBuildingShadowRemove") then
+            Script.LuaUI.ReceiveBuildingShadowRemove(unitID)
+        end
     end
 
     function gadget:Initialize()
