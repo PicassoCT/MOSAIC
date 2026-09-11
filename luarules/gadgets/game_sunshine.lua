@@ -325,21 +325,15 @@ if gadgetHandler:IsSyncedCode() then
         if math.random(1, 10) > 5 and (timeFrame == DAWN_FRAME or timeFrame == DUSK_FRAME) then
 
             if (GameConfig.instance.culture == "arabic") then    
-            Spring.PlaySoundFile("sounds/civilian/arabic/callToPrayer" .. math.random(1, 6) .. ".ogg", 0.9)
+                local prayers = VFS.DirList("sounds/civilian/arabic", "*.ogg", false)
+                Spring.PlaySoundFile(prayers[math.random(1,#prayers)], 0.9)
             end
             if (GameConfig.instance.culture == "international") then    
             Spring.PlaySoundFile("sounds/civilian/international/callToPrayer" .. math.random(1, 4) .. ".ogg", 0.9)
             end
         end
         config = getDefaultConfg({r = 0.5, g = 0.5, b = 0.5, a = 0.5})
-        -- if GG.SunConfig and GG.SunConfig[1] then
-        -- config= GG.SunConfig[1]
-        -- GG.SunConfig[1].lifeTime= GG.SunConfig[1].lifeTime-32
-        -- if GG.SunConfig[1].lifeTime <= 0 then
-        -- GG.SunConfig[1]= nil
-        -- end
-        -- else
-
+        
         rgba = getgroundAmbientColor(percent)
 
         config.groundAmbientColor = {rgba.r, rgba.g, rgba.b}
