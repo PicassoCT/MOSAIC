@@ -751,7 +751,7 @@ end
 -- > Shows all Pieces of a a Unit in 
 function showAll(id)
     if not unitID then unitID = id end
-    pieceMap = Spring.GetUnitPieceMap(unitID)
+    local pieceMap = Spring.GetUnitPieceMap(unitID)
     for k, v in pairs(pieceMap) do Show(v) end
 end
 
@@ -759,7 +759,7 @@ end
 function hideAll(id)
     if not unitID then unitID = id end
 
-    pieceMap = Spring.GetUnitPieceMap(unitID)
+    local pieceMap = Spring.GetUnitPieceMap(unitID)
     for k, v in pairs(pieceMap) do Hide(v) end
 end
 
