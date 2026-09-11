@@ -2530,9 +2530,27 @@ end
             end
 	         
 
-            function isPrayerTime()
-                hours, minutes, seconds, percent = getDayTime()
-                return GG.GameConfig.instance.culture == Cultures.arabic and equal(percent, 0.25, 0.025) or equal(percent, 0.75, 0.025)
+            function getPrayerSlot(frame)
+                if GG.GameConfig.instance.culture ~= Cultures.arabic then
+                    return nil
+                end
+
+                local dayLength = GG.GameConfig.daylength
+                local shiftedFrame = (frame or Spring.GetGameFrame()) + (dayLength / 2)
+                local dayIndex = math.floor(shiftedFrame / dayLength)
+                local percent = (shiftedFrame % dayLength) / dayLength
+
+                if equal(percent, 0.25, 0.025) then
+                    return dayIndex * 2
+                end
+                if equal(percent, 0.75, 0.025) then
+                    return dayIndex * 2 + 1
+                end
+                return nil
+            end
+
+            function isPrayerTime(frame)
+                return getPrayerSlot(frame) ~= nil
             end
 
             function getDayTime()
@@ -3851,11 +3869,22 @@ end
         end
 
         function setCivilianUnitInternalStateMode(unitID, State, behaviour)
-            if not GG.CivilianUnitInternalLogicActive then GG.CivilianUnitInternalLogicActive = {} end
-            if GG.CivilianUnitInternalLogicActive[unitID] and  GG.CivilianUnitInternalLogicActive[unitID].behaviour then 
-                echo("Overriding internal state".. GG.CivilianUnitInternalLogicActive[unitID].behaviour .. " with ".. behaviour or "no behavour name") 
+            assert(State)
+            if not GG.CivilianUnitInternalLogicActive then
+                GG.CivilianUnitInternalLogicActive = {}
             end
-            GG.CivilianUnitInternalLogicActive[unitID] = {state = state, behaviour = behaviour or "no behavour name"} 
+
+            local behaviourName = behaviour or "no behaviour name"
+            local currentState = GG.CivilianUnitInternalLogicActive[unitID]
+            if type(currentState) == "table" and currentState.behaviour then
+                echo("Overriding internal state " .. currentState.behaviour ..
+                     " with " .. behaviourName)
+            end
+
+            GG.CivilianUnitInternalLogicActive[unitID] = {
+                state = State,
+                behaviour = behaviourName,
+            }
         end
 
 
