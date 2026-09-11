@@ -11,20 +11,22 @@ function widget:GetInfo()
     }
 end
 
+local DaeVoxel = VFS.Include("luaui/widgets_mosaic/radiance_dae_voxel.lua")
+
 -- L0 only: first prove a stable top-down neon emission atlas.
 local ATLAS_SIZE = 1024
 local ATLAS_REFRESH_SECONDS = 0.10
 local DAYLENGTH = 28800
 local MORNING_OFFSET = DAYLENGTH * 0.5
 local DEBUG_VIEW = true
-local DEBUG_VIEW_FRACTION = 0.40
 local OCCLUSION_ATLAS_SIZE = 512
 local OCCLUSION_LAYER_COUNT = 16
 local OCCLUSION_WORLD_HEIGHT = 2048
-local DEBUG_OCCLUSION_LAYER = 4
 local DIRECT_LIGHT_SIZE = 512
 local DIRECT_LIGHT_RANGE = 1800
 local DIRECT_LIGHT_STEPS = 48
+local BUILDING_VOXEL_SIZE = 16
+local MAX_VOXELS_PER_BUILDING = 16000
 
 local neonUnitTables = {}
 local neonLightPercent = 0.0
@@ -33,6 +35,7 @@ local neonPieceCount = 0
 local topDownTex
 local occlusionTex = {}
 local occlusionBuildings = {}
+local pendingBuildingPieces = {}
 local occlusionDirty = true
 local occlusionBuildingCount = 0
 local directLightTex
@@ -41,8 +44,8 @@ local debugModeLoc, clearanceLoc
 local lockedUnit, lockedPiece
 local emitterU, emitterV, emitterY
 local diagnosticClearance = 0
-local debugVolumeUnit
-local debugVolumeSummary = ""
+local debugVoxelUnit
+local debugVoxelSummary = ""
 local directLightShader
 local directEmitterUVLoc
 local directEmitterHeightLoc
@@ -52,8 +55,69 @@ local directLightReady = false
 local refreshAccumulator = ATLAS_REFRESH_SECONDS
 local vsx, vsy = gl.GetViewSizes()
 
-local function receiveBuildingShadowVolumes(buildings)
-    occlusionBuildings = buildings or {}
+local function receiveBuildingShadowBegin(unitID, unitDefID)
+    pendingBuildingPieces[unitID] = {
+        unitDefID = unitDefID,
+        pieces = {},
+    }
+end
+
+local function receiveBuildingShadowPiece(unitID, pieceID)
+    local pending = pendingBuildingPieces[unitID]
+    if pending then
+        pending.pieces[#pending.pieces + 1] = pieceID
+    end
+end
+
+local function receiveBuildingShadowEnd(unitID)
+    local pending = pendingBuildingPieces[unitID]
+    pendingBuildingPieces[unitID] = nil
+    if not pending then return end
+
+    if not Spring.ValidUnitID(unitID) or Spring.GetUnitIsDead(unitID) then
+        occlusionBuildings[unitID] = nil
+        occlusionDirty = true
+        return
+    end
+
+    local ok, building, errorMessage = pcall(
+        DaeVoxel.BuildUnitVoxels,
+        unitID,
+        pending.unitDefID,
+        pending.pieces,
+        BUILDING_VOXEL_SIZE,
+        MAX_VOXELS_PER_BUILDING
+    )
+
+    if not ok then
+        Spring.Echo("Radiance voxelizer: unit " .. unitID .. " failed: " .. tostring(building))
+        occlusionBuildings[unitID] = nil
+    elseif not building then
+        Spring.Echo("Radiance voxelizer: unit " .. unitID .. " skipped: " .. tostring(errorMessage))
+        occlusionBuildings[unitID] = nil
+    else
+        occlusionBuildings[unitID] = building
+        Spring.Echo(string.format(
+            "Radiance voxelizer: unit %d | %d/%d pieces | %d triangles | %d voxels%s | %s",
+            unitID,
+            building.matchedPieceCount,
+            building.selectedPieceCount,
+            building.triangleCount,
+            building.voxelCount,
+            building.truncated and " (capped)" or "",
+            building.modelPath
+        ))
+    end
+    occlusionDirty = true
+end
+
+local function receiveBuildingShadowRemove(unitID)
+    pendingBuildingPieces[unitID] = nil
+    occlusionBuildings[unitID] = nil
+    if debugVoxelUnit == unitID then
+        debugVoxelUnit = nil
+        debugVoxelSummary = ""
+    end
     occlusionDirty = true
 end
 
@@ -100,23 +164,10 @@ local function drawOcclusionQuad(sizeX, sizeZ)
     end)
 end
 
-local function drawOcclusionEllipse(sizeX, sizeZ)
-    local segments = 20
-    gl.BeginEnd(GL.TRIANGLE_FAN, function()
-        gl.Vertex(0, 0, 0)
-        for i = 0, segments do
-            local angle = i * math.pi * 2 / segments
-            gl.Vertex(
-                math.cos(angle) * sizeX * 0.5,
-                math.sin(angle) * sizeZ * 0.5,
-                0
-            )
-        end
-    end)
-end
-
 local function drawOcclusionLayer(layerIndex)
-    local worldY = (layerIndex + 0.5) * OCCLUSION_WORLD_HEIGHT / OCCLUSION_LAYER_COUNT
+    local layerHeight = OCCLUSION_WORLD_HEIGHT / OCCLUSION_LAYER_COUNT
+    local layerBottom = layerIndex * layerHeight
+    local layerTop = layerBottom + layerHeight
 
     gl.Clear(GL.COLOR_BUFFER_BIT, 0, 0, 0, 0)
     gl.DepthTest(false)
@@ -135,32 +186,17 @@ local function drawOcclusionLayer(layerIndex)
     gl.PushMatrix()
     gl.LoadIdentity()
 
-    for _, volumes in pairs(occlusionBuildings) do
-        for i = 1, #volumes do
-            local volume = volumes[i]
-            local halfY = volume.sy * 0.5
-            local relativeY = (worldY - volume.y) / halfY
-
-            if relativeY >= -1 and relativeY <= 1 then
-                local sizeX = volume.sx
-                local sizeZ = volume.sz
-                local rounded = volume.volumeType ~= 2
-
-                -- Ellipsoid/sphere sections shrink towards their top and bottom.
-                if volume.volumeType == 0 or volume.volumeType == 3 then
-                    local sectionScale = math.sqrt(math.max(0, 1 - relativeY * relativeY))
-                    sizeX = sizeX * sectionScale
-                    sizeZ = sizeZ * sectionScale
-                end
-
+    for _, building in pairs(occlusionBuildings) do
+        local voxelSize = building.voxelSize
+        local half = voxelSize * 0.5
+        local heading = building.heading or 0
+        for i = 1, #building.voxels do
+            local voxel = building.voxels[i]
+            if voxel.y + half >= layerBottom and voxel.y - half <= layerTop then
                 gl.PushMatrix()
-                gl.Translate(volume.x, volume.z, 0)
-                gl.Rotate(-(volume.heading or 0) * 360 / 65536, 0, 0, 1)
-                if rounded then
-                    drawOcclusionEllipse(sizeX, sizeZ)
-                else
-                    drawOcclusionQuad(sizeX, sizeZ)
-                end
+                gl.Translate(voxel.x, voxel.z, 0)
+                gl.Rotate(-heading * 360 / 65536, 0, 0, 1)
+                drawOcclusionQuad(voxelSize, voxelSize)
                 gl.PopMatrix()
             end
         end
@@ -187,7 +223,6 @@ local function rebuildOcclusionAtlas()
 
     occlusionDirty = false
 end
-
 
 local DIRECT_LIGHT_SHADER_PATH =
     "luaui/widgets_mosaic/shaders/radiancecascade/direct_light_occlusion.frag"
@@ -216,6 +251,7 @@ local function getDebugEmitter()
             if x then return x / Game.mapSizeX, z / Game.mapSizeZ, y end
         end
     end
+
     if lockedUnit then
         for _, pieceID in ipairs(neonUnitTables[lockedUnit] or {}) do
             if pieceID == lockedPiece then
@@ -224,10 +260,12 @@ local function getDebugEmitter()
             end
         end
     end
+
     lockedUnit, lockedPiece = nil, nil
     local ids = {}
     for id in pairs(neonUnitTables) do ids[#ids + 1] = id end
     table.sort(ids)
+
     for _, id in ipairs(ids) do
         for _, pieceID in ipairs(neonUnitTables[id]) do
             local u, v, y = position(id, pieceID)
@@ -241,27 +279,34 @@ local function getDebugEmitter()
 end
 
 function widget:TextCommand(command)
-    if command == "radiancedebug volumes off" then
-        debugVolumeUnit = nil
+    if command == "radiancedebug voxels off" or command == "radiancedebug volumes off" then
+        debugVoxelUnit = nil
+        debugVoxelSummary = ""
         return true
     end
-    local requested = command:match("^radiancedebug volumes (%d+)$")
-    if command == "radiancedebug volumes" or requested then
+
+    local requested = command:match("^radiancedebug voxels (%d+)$")
+        or command:match("^radiancedebug volumes (%d+)$")
+    if command == "radiancedebug voxels" or command == "radiancedebug volumes" or requested then
         local unitID = tonumber(requested) or (Spring.GetSelectedUnits() or {})[1]
-        local volumes = unitID and occlusionBuildings[unitID]
-        if not volumes then
-            Spring.Echo("Radiance volumes: select a completed shadow house, or use /radiancedebug volumes UNITID")
+        local building = unitID and occlusionBuildings[unitID]
+        if not building then
+            Spring.Echo("Radiance voxels: select a completed shadow house, or use /radiancedebug voxels UNITID")
             return true
         end
-        debugVolumeUnit = unitID
-        Spring.Echo("Radiance volumes: locked house " .. unitID ..
-            "; cyan = exported bounds, compare with engine collision debug; /radiancedebug volumes off to hide")
+        debugVoxelUnit = unitID
+        Spring.Echo(
+            "Radiance voxels: locked house " .. unitID ..
+            "; voxel cells are drawn directly over the rendered building; /radiancedebug voxels off to hide"
+        )
         return true
     end
+
     if command == "radiancedebug reset" then
         lockedUnit, lockedPiece = nil, nil
         return true
     end
+
     local clearance = command:match("^radiancedebug clearance (%d+)$")
     if clearance then
         diagnosticClearance = math.min(512, tonumber(clearance))
@@ -314,8 +359,13 @@ local function drawDirectLight(mode)
 end
 
 function widget:Initialize()
+    if not DaeVoxel or not DaeVoxel.BuildUnitVoxels then
+        removeSelf("DAE voxelizer failed to load")
+        return
+    end
+
     if not gl.RenderToTexture or not gl.CreateTexture or not gl.UnitPiece
-        or not gl.BeginEnd
+        or not gl.BeginEnd or not gl.UnitMultMatrix
     then
         removeSelf("required FBO or unit-piece drawing API is unavailable")
         return
@@ -349,7 +399,6 @@ function widget:Initialize()
         end
     end
 
-
     if gl.CreateShader then
         directLightTex = gl.CreateTexture(DIRECT_LIGHT_SIZE, DIRECT_LIGHT_SIZE, {
             min_filter = GL.LINEAR,
@@ -359,8 +408,13 @@ function widget:Initialize()
             fbo = true,
         })
 
-        local options = {min_filter = GL.LINEAR, mag_filter = GL.LINEAR,
-            wrap_s = GL.CLAMP_TO_EDGE, wrap_t = GL.CLAMP_TO_EDGE, fbo = true}
+        local options = {
+            min_filter = GL.LINEAR,
+            mag_filter = GL.LINEAR,
+            wrap_s = GL.CLAMP_TO_EDGE,
+            wrap_t = GL.CLAMP_TO_EDGE,
+            fbo = true,
+        }
         unoccludedTex = gl.CreateTexture(DIRECT_LIGHT_SIZE, DIRECT_LIGHT_SIZE, options)
         firstHitTex = gl.CreateTexture(DIRECT_LIGHT_SIZE, DIRECT_LIGHT_SIZE, options)
 
@@ -397,18 +451,15 @@ function widget:Initialize()
         end
     end
 
-    widgetHandler:RegisterGlobal(
-        "RecieveAllNeonUnitsPieces",
-        recieveNeonHoloLightPiecesByUnit
-    )
-    widgetHandler:RegisterGlobal(
-        "ReceiveBuildingShadowVolumes",
-        receiveBuildingShadowVolumes
-    )
+    widgetHandler:RegisterGlobal("RecieveAllNeonUnitsPieces", recieveNeonHoloLightPiecesByUnit)
+    widgetHandler:RegisterGlobal("ReceiveBuildingShadowBegin", receiveBuildingShadowBegin)
+    widgetHandler:RegisterGlobal("ReceiveBuildingShadowPiece", receiveBuildingShadowPiece)
+    widgetHandler:RegisterGlobal("ReceiveBuildingShadowEnd", receiveBuildingShadowEnd)
+    widgetHandler:RegisterGlobal("ReceiveBuildingShadowRemove", receiveBuildingShadowRemove)
 
     Spring.Echo(
-        "NeonLight Radiance Cascade: L0 debug atlas enabled (" ..
-        ATLAS_SIZE .. "x" .. ATLAS_SIZE .. ", 10 Hz)"
+        "NeonLight Radiance Cascade: DAE voxel occlusion enabled (" ..
+        BUILDING_VOXEL_SIZE .. " elmo voxels, " .. OCCLUSION_LAYER_COUNT .. " layers)"
     )
 end
 
@@ -430,12 +481,9 @@ local function drawNeonPieces()
     gl.Blending(false)
     gl.Culling(false)
     gl.Texture(false)
-    -- The debug atlas must remain readable during daytime, when the real
-    -- emission factor is intentionally zero.
     local drawIntensity = DEBUG_VIEW and 1.0 or neonLightPercent
     gl.Color(drawIntensity, drawIntensity, drawIntensity, 1.0)
 
-    -- Map Spring world X/Z onto atlas X/Y without touching the player camera.
     gl.MatrixMode(GL.PROJECTION)
     gl.PushMatrix()
     gl.LoadIdentity()
@@ -496,66 +544,114 @@ function widget:DrawWorldPreUnit()
     end
 end
 
+local function emitVoxelFaces(voxel, half)
+    local x0, x1 = voxel.mx - half, voxel.mx + half
+    local y0, y1 = voxel.my - half, voxel.my + half
+    local z0, z1 = voxel.mz - half, voxel.mz + half
 
--- Show the actual exported cache, without re-reading or correcting engine data.
--- Rounded volumes use their enclosing bounds; these are NOT additional blockers.
-local function drawVolumeBounds(volume)
-    local x, y, z = volume.sx * 0.5, volume.sy * 0.5, volume.sz * 0.5
-    gl.PushMatrix()
-    gl.Translate(volume.x, volume.y, volume.z)
-    -- Equivalent to the atlas's negative rotation in the X/Z plane.
-    gl.Rotate((volume.heading or 0) * 360 / 65536, 0, 1, 0)
-    gl.BeginEnd(GL.LINES, function()
-        for _, h in ipairs({-y, y}) do
-            gl.Vertex(-x, h, -z); gl.Vertex(x, h, -z)
-            gl.Vertex(x, h, -z); gl.Vertex(x, h, z)
-            gl.Vertex(x, h, z); gl.Vertex(-x, h, z)
-            gl.Vertex(-x, h, z); gl.Vertex(-x, h, -z)
-        end
-        for _, a in ipairs({-x, x}) do
-            for _, b in ipairs({-z, z}) do
-                gl.Vertex(a, -y, b); gl.Vertex(a, y, b)
-            end
-        end
-    end)
-    gl.PopMatrix()
+    gl.Vertex(x0, y0, z0); gl.Vertex(x1, y0, z0); gl.Vertex(x1, y1, z0); gl.Vertex(x0, y1, z0)
+    gl.Vertex(x1, y0, z1); gl.Vertex(x0, y0, z1); gl.Vertex(x0, y1, z1); gl.Vertex(x1, y1, z1)
+    gl.Vertex(x0, y0, z1); gl.Vertex(x0, y0, z0); gl.Vertex(x0, y1, z0); gl.Vertex(x0, y1, z1)
+    gl.Vertex(x1, y0, z0); gl.Vertex(x1, y0, z1); gl.Vertex(x1, y1, z1); gl.Vertex(x1, y1, z0)
+    gl.Vertex(x0, y1, z0); gl.Vertex(x1, y1, z0); gl.Vertex(x1, y1, z1); gl.Vertex(x0, y1, z1)
+    gl.Vertex(x0, y0, z1); gl.Vertex(x1, y0, z1); gl.Vertex(x1, y0, z0); gl.Vertex(x0, y0, z0)
+end
+
+local function emitVoxelLines(voxel, half)
+    local x0, x1 = voxel.mx - half, voxel.mx + half
+    local y0, y1 = voxel.my - half, voxel.my + half
+    local z0, z1 = voxel.mz - half, voxel.mz + half
+
+    gl.Vertex(x0, y0, z0); gl.Vertex(x1, y0, z0)
+    gl.Vertex(x1, y0, z0); gl.Vertex(x1, y0, z1)
+    gl.Vertex(x1, y0, z1); gl.Vertex(x0, y0, z1)
+    gl.Vertex(x0, y0, z1); gl.Vertex(x0, y0, z0)
+    gl.Vertex(x0, y1, z0); gl.Vertex(x1, y1, z0)
+    gl.Vertex(x1, y1, z0); gl.Vertex(x1, y1, z1)
+    gl.Vertex(x1, y1, z1); gl.Vertex(x0, y1, z1)
+    gl.Vertex(x0, y1, z1); gl.Vertex(x0, y1, z0)
+    gl.Vertex(x0, y0, z0); gl.Vertex(x0, y1, z0)
+    gl.Vertex(x1, y0, z0); gl.Vertex(x1, y1, z0)
+    gl.Vertex(x1, y0, z1); gl.Vertex(x1, y1, z1)
+    gl.Vertex(x0, y0, z1); gl.Vertex(x0, y1, z1)
 end
 
 function widget:DrawWorld()
-    if not debugVolumeUnit then return end
-    local volumes = occlusionBuildings[debugVolumeUnit]
-    if not volumes or not Spring.ValidUnitID(debugVolumeUnit) then
-        debugVolumeUnit = nil
+    if not debugVoxelUnit then return end
+
+    local building = occlusionBuildings[debugVoxelUnit]
+    if not building or not Spring.ValidUnitID(debugVoxelUnit) or Spring.GetUnitIsDead(debugVoxelUnit) then
+        debugVoxelUnit = nil
+        debugVoxelSummary = ""
         return
     end
-    local sx, sy, sz = 0, 0, 0
+
+    local half = building.voxelSize * 0.5
     gl.UseShader(0)
     gl.Texture(false)
     gl.DepthTest(false)
     gl.DepthMask(false)
-    gl.LineWidth(2)
-    gl.Color(0, 1, 1, 1)
-    for _, volume in ipairs(volumes) do
-        sx, sy, sz = math.max(sx, volume.sx), math.max(sy, volume.sy), math.max(sz, volume.sz)
-        drawVolumeBounds(volume)
-    end
-    debugVolumeSummary = string.format(
-        "Shadow house %d | %d exported volumes | largest dimensions X/Y/Z %.1f / %.1f / %.1f | cyan: enclosing bounds",
-        debugVolumeUnit, #volumes, sx, sy, sz)
+    gl.Culling(false)
+    gl.Blending(GL.SRC_ALPHA, GL.ONE_MINUS_SRC_ALPHA)
+
+    gl.PushMatrix()
+    gl.UnitMultMatrix(debugVoxelUnit)
+
+    gl.Color(0.1, 0.9, 1.0, 0.10)
+    gl.BeginEnd(GL.QUADS, function()
+        for i = 1, #building.voxels do
+            emitVoxelFaces(building.voxels[i], half)
+        end
+    end)
+
+    gl.LineWidth(1.25)
+    gl.Color(0.1, 0.95, 1.0, 0.80)
+    gl.BeginEnd(GL.LINES, function()
+        for i = 1, #building.voxels do
+            emitVoxelLines(building.voxels[i], half)
+        end
+    end)
+
+    gl.PopMatrix()
+
+    debugVoxelSummary = string.format(
+        "Shadow house %d | DAE %s | unit meter %.6g | pieces %d/%d | triangles %d | voxels %d @ %d%s",
+        debugVoxelUnit,
+        building.modelPath,
+        building.daeUnitMeter,
+        building.matchedPieceCount,
+        building.selectedPieceCount,
+        building.triangleCount,
+        building.voxelCount,
+        building.voxelSize,
+        building.truncated and " [CAPPED]" or ""
+    )
+
     gl.LineWidth(1)
     gl.Color(1, 1, 1, 1)
+    gl.Blending(GL.SRC_ALPHA, GL.ONE_MINUS_SRC_ALPHA)
     gl.DepthTest(true)
 end
 
 function widget:DrawScreen()
     if not DEBUG_VIEW or not topDownTex then return end
+
     local size = math.floor(math.min(vsy * 0.28, (vsx - 80) / 4))
     local layer = math.max(1, math.min(OCCLUSION_LAYER_COUNT,
         math.floor((emitterY or 0) * OCCLUSION_LAYER_COUNT / OCCLUSION_WORLD_HEIGHT) + 1))
-    local textures = {unoccludedTex or topDownTex, occlusionTex[layer],
-        directLightTex or topDownTex, firstHitTex or topDownTex}
-    local titles = {"No occlusion (unit intensity)", "Occupancy at emitter layer " .. layer,
-        "Occluded (clearance " .. diagnosticClearance .. ")", "First hit: red=near receiver, blue=near emitter"}
+    local textures = {
+        unoccludedTex or topDownTex,
+        occlusionTex[layer],
+        directLightTex or topDownTex,
+        firstHitTex or topDownTex,
+    }
+    local titles = {
+        "No occlusion (unit intensity)",
+        "Voxel occupancy at emitter layer " .. layer,
+        "Occluded (clearance " .. diagnosticClearance .. ")",
+        "First hit: red=near receiver, blue=near emitter",
+    }
+
     gl.UseShader(0)
     gl.Blending(false)
     for i = 1, 4 do
@@ -573,20 +669,28 @@ function widget:DrawScreen()
         gl.Color(1, 1, 1, 1)
         gl.Text(titles[i], x, y + size + 6, 11, "o")
     end
-    gl.Text(string.format("Radiance diagnostics | unit %s piece %s | height %.1f | buildings %d | real emission %.2f",
-        tostring(lockedUnit), tostring(lockedPiece), emitterY or 0, occlusionBuildingCount, neonLightPercent),
-        16, size + 44, 13, "o")
-    if debugVolumeUnit then
-        gl.Text(debugVolumeSummary, 16, size + 64, 13, "o")
+
+    gl.Text(string.format(
+        "Radiance diagnostics | unit %s piece %s | height %.1f | voxel buildings %d | real emission %.2f",
+        tostring(lockedUnit), tostring(lockedPiece), emitterY or 0, occlusionBuildingCount, neonLightPercent
+    ), 16, size + 44, 13, "o")
+
+    if debugVoxelUnit then
+        gl.Text(debugVoxelSummary, 16, size + 64, 13, "o")
     end
+
     gl.Blending(GL.SRC_ALPHA, GL.ONE_MINUS_SRC_ALPHA)
 end
 
 function widget:Shutdown()
+    widgetHandler:DeregisterGlobal("RecieveAllNeonUnitsPieces")
+    widgetHandler:DeregisterGlobal("ReceiveBuildingShadowBegin")
+    widgetHandler:DeregisterGlobal("ReceiveBuildingShadowPiece")
+    widgetHandler:DeregisterGlobal("ReceiveBuildingShadowEnd")
+    widgetHandler:DeregisterGlobal("ReceiveBuildingShadowRemove")
+
     if unoccludedTex then gl.DeleteTexture(unoccludedTex) end
     if firstHitTex then gl.DeleteTexture(firstHitTex) end
-    widgetHandler:DeregisterGlobal("RecieveAllNeonUnitsPieces")
-    widgetHandler:DeregisterGlobal("ReceiveBuildingShadowVolumes")
 
     if topDownTex then
         gl.DeleteTexture(topDownTex)
