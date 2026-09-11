@@ -1077,6 +1077,10 @@ end
 function testClampRoute(Route, defID) return Route end
 
 function issueArrivedUnitsCommands()
+    if not GG.UnitArrivedAtTarget or next(GG.UnitArrivedAtTarget) == nil then
+        return
+    end
+
     --assertTable(GG.UnitArrivedAtTarget)
     for id, bArrived in pairs(GG.UnitArrivedAtTarget) do
         if id and GG.CivilianTable[id] then
