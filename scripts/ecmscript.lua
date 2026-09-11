@@ -15,6 +15,27 @@ function script.HitByWeapon(x, z, weaponDefID, damage) end
 GameConfig= getGameConfig()
 speedfactor = 2.0
 
+local function isTruthyCustomParam(value)
+    return value == true or value == 1 or value == "1" or value == "true"
+end
+
+local function isECMHackableUnit(defID)
+    local unitDef = defID and UnitDefs[defID]
+    return unitDef and unitDef.customParams and isTruthyCustomParam(unitDef.customParams.ecmhackable)
+end
+
+local function hackUnit(id)
+    local targetTeamID = Spring.GetUnitTeam(id)
+    if not targetTeamID or targetTeamID == myTeamID then
+        return false
+    end
+
+    Spring.TransferUnit(id, myTeamID)
+    Spring.SetUnitNeutral(id, false)
+    spawnCegAtUnit(id, "orangematrix", 0, 0, 0)
+    return true
+end
+
 function script.Create()
     -- generatepiecesTableAndArrayCode(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
@@ -35,6 +56,14 @@ function eatECMcon()
 				if stunnableUnitTypes[defID] then
 					stunUnit(unitID, 0.5)
 				end
+
+                -- Physical surveillance devices may opt into ECM capture via
+                -- customParams.ecmhackable. Ownership persists until another
+                -- ECM unit captures the device again.
+                if isECMHackableUnit(defID) then
+                    hackUnit(id)
+                    return
+                end
 
                 if ecmIconTypes[defID] then
                     if Spring.GetUnitTeam(id) ~= myTeamID then
