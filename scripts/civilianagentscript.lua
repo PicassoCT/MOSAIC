@@ -595,12 +595,26 @@ function script.HitByWeapon(x, z, weaponDefID, damage)
 end
 
 function setCivilianUnitInternalStateMode(unitID, State, name)
-     assert(State)
-     assert(name)
-     if not GG.CivilianUnitInternalLogicActive then GG.CivilianUnitInternalLogicActive = {} end
-     conditionalEcho(boolDebugActive, unitID.."civilian internal logic "..State.." "..(name or "unknown"))
-     GG.CivilianUnitInternalLogicActive[unitID] = State 
- end
+    assert(State)
+    if not GG.CivilianUnitInternalLogicActive then
+        GG.CivilianUnitInternalLogicActive = {}
+    end
+
+    local behaviour = name or "unknown"
+    local currentState = GG.CivilianUnitInternalLogicActive[unitID]
+    if type(currentState) == "table" and currentState.behaviour == "pray" and
+       (State ~= GameConfig.STATE_STARTED or behaviour ~= "pray") then
+        -- A signal can terminate pray() before its normal speed cleanup.
+        setSpeedEnv(unitID, NORMAL_WALK_SPEED)
+    end
+
+    conditionalEcho(boolDebugActive, unitID .. " civilian internal logic " ..
+                    State .. " " .. behaviour)
+    GG.CivilianUnitInternalLogicActive[unitID] = {
+        state = State,
+        behaviour = behaviour,
+    }
+end
 
 filmLocation = {}
 boolStartFilming = false
@@ -731,27 +745,28 @@ end
 function pray()
     Signal(SIG_INTERNAL)
     SetSignalMask(SIG_INTERNAL)
-    local prayTime= frameToMs(getPrayDurationInFrames())
+
+    local prayerEndFrame = Spring.GetGameFrame() + getPrayDurationInFrames()
     setSpeedEnv(unitID, 0.0)
 
-    while prayTime > 0 do
-        
-        durationFrames = PlayAnimation("UPBODY_PRAY", lowerBodyPieces, 1.0)         
+    repeat
+        PlayAnimation("UPBODY_PRAY", lowerBodyPieces, 1.0)
         WaitForTurns(upperBodyPieces)
-        if not GG.PrayerRotationRad then 
-            val = math.random(0,360)
-            GG.PrayerRotationRad =  math.rad(val)
-         end
+
+        if not GG.PrayerRotationRad then
+            local val = math.random(0, 360)
+            GG.PrayerRotationRad = math.rad(val)
+        end
 
         Spring.SetUnitRotation(unitID, 0, GG.PrayerRotationRad, 0)
-        prayTime = prayTime - frameToMs(durationFrames) -500
         WaitForTurns(upperBodyPieces)
         WaitForTurns(lowerBodyPieces)
         Sleep(500)
-    end
+    until Spring.GetGameFrame() >= prayerEndFrame
+
     setSpeedEnv(unitID, NORMAL_WALK_SPEED)
     resetUpperBodyNoTPose()
-    Move(center,z_axis, 0, 2500)
+    Move(center, z_axis, 0, 2500)
     setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_ENDED, "pray")
 end
 
