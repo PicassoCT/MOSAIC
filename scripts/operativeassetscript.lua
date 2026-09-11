@@ -55,6 +55,9 @@ local Eye1 = piece('Eye1');
 local Eye2 = piece('Eye2');
 local backpack = piece('backpack');
 local GameConfig = getGameConfig()
+
+local GrapplingHook = piece("GrapplinHook")
+local RopeTable = {}
 local civilianWalkingTypeTable = getCultureUnitModelTypes(
                                      GameConfig.instance.culture, "civilian",
                                      UnitDefs)
@@ -135,6 +138,16 @@ function onRooftop()
 end
 
 function rooftopGrappleAnimation()
+    Show(GrapplingHook)
+    for i=1, #RopeTable do
+        n= i-1
+        WMove(RopeTable[i], y_axis, n *-1000, 0)
+        Show(RopeTable[i])
+    end
+    resetT(RopeTable, 1000)
+    WaitForMoves(RopeTable)
+    hideT(RopeTable)
+    Hide(GrapplingHook)
     -- TODO: user-authored grappling-hook animation.
 end
 
@@ -284,7 +297,10 @@ function script.Create()
     GG.OperativesDiscovered[unitID] = nil
     hideGun()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
+    RopeTable = TablesOfPiecesGroups["Rope"]
+    hideT(RopeTable)
     hideT(TablesOfPiecesGroups["Shell"])
+    Hide(GrapplingHook)
     shownPieces = randShowHide(unpack(TablesOfPiecesGroups["HeadDeco"]))
     Hide(backpack)
     Hide(piece("MuzzleFlashSniperRifle"))
