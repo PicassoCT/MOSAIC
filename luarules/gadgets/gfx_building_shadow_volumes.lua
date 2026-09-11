@@ -1,7 +1,7 @@
 function gadget:GetInfo()
     return {
-        name = "Building Shadow Volumes",
-        desc = "Caches collision volumes for radiance-cascade occlusion",
+        name = "Building Shadow Geometry",
+        desc = "Forwards completed building piece IDs to LuaUI for DAE voxelization",
         author = "Picasso, Codex",
         date = "2026",
         license = "GNU GPL, v2 or later",
@@ -11,8 +11,7 @@ function gadget:GetInfo()
 end
 
 if gadgetHandler:IsSyncedCode() then
-    local MAX_VOLUMES_PER_UNIT = 128
-    local shadowVolumes = {}
+    local MAX_PIECES_PER_UNIT = 128
     local pendingUnits = {}
 
     local function throwsShadow(unitDefID)
@@ -22,48 +21,15 @@ if gadgetHandler:IsSyncedCode() then
         return value == true or value == 1 or value == "1" or value == "true"
     end
 
-    local function sendVolume(unitID, volumes, x, y, z, heading, sx, sy, sz,
-            ox, oy, oz, volumeType, primaryAxis, disabled)
-        if not sx or disabled then
-            return
-        end
-
-        local volume = {
-            x = x + (ox or 0),
-            y = y + (oy or 0),
-            z = z + (oz or 0),
-            heading = heading or 0,
-            sx = sx,
-            sy = sy,
-            sz = sz,
-            volumeType = volumeType or 2,
-            primaryAxis = primaryAxis or 1,
-        }
-        volumes[#volumes + 1] = volume
-
-        SendToUnsynced(
-            "buildingShadowVolumeAdd",
-            unitID,
-            volume.x, volume.y, volume.z, volume.heading,
-            volume.sx, volume.sy, volume.sz,
-            volume.volumeType, volume.primaryAxis
-        )
-    end
-
     local function rebuildUnit(unitID, selectedPieces)
         local unitDefID = Spring.GetUnitDefID(unitID)
         if not unitDefID or not throwsShadow(unitDefID) then
-            if shadowVolumes[unitID] then
-                shadowVolumes[unitID] = nil
-                SendToUnsynced("buildingShadowVolumeRemove", unitID)
-            end
+            SendToUnsynced("buildingShadowPieceRemove", unitID)
             return
         end
 
-        local volumes = {}
-        local heading = Spring.GetUnitHeading(unitID) or 0
+        local pieces = {}
         local seenPieces = {}
-        SendToUnsynced("buildingShadowVolumeBegin", unitID)
 
         for key, value in pairs(selectedPieces or {}) do
             local pieceID
@@ -75,68 +41,43 @@ if gadgetHandler:IsSyncedCode() then
 
             if pieceID and not seenPieces[pieceID] then
                 seenPieces[pieceID] = true
-            if #volumes >= MAX_VOLUMES_PER_UNIT then
-                Spring.Echo(
-                    "Building Shadow Volumes: capped unit " ..
-                    unitID .. " at " .. MAX_VOLUMES_PER_UNIT .. " volumes"
-                )
-                break
-            end
-
-            local sx, sy, sz, ox, oy, oz, volumeType, _, primaryAxis, disabled =
-                Spring.GetUnitPieceCollisionVolumeData(unitID, pieceID)
-
-            if sx and not disabled then
-                local x, y, z = Spring.GetUnitPiecePosDir(unitID, pieceID)
-                if x then
-                    sendVolume(
-                        unitID, volumes, x, y, z, heading,
-                        sx, sy, sz, ox, oy, oz,
-                        volumeType, primaryAxis, disabled
+                pieces[#pieces + 1] = pieceID
+                if #pieces >= MAX_PIECES_PER_UNIT then
+                    Spring.Echo(
+                        "Building Shadow Geometry: capped unit " .. unitID ..
+                        " at " .. MAX_PIECES_PER_UNIT .. " pieces"
                     )
+                    break
                 end
             end
-            end
         end
 
-        if #volumes == 0 then
-            local x, y, z = Spring.GetUnitBasePosition(unitID)
-            local sx, sy, sz, ox, oy, oz, volumeType, _, primaryAxis, disabled =
-                Spring.GetUnitCollisionVolumeData(unitID)
-
-            if x then
-                sendVolume(
-                    unitID, volumes, x, y, z, heading,
-                    sx, sy, sz, ox, oy, oz,
-                    volumeType, primaryAxis, disabled
-                )
-            end
+        -- Keep every synced -> unsynced payload primitive-only. LuaUI reconstructs
+        -- the short piece list locally, then reads the DAE and live piece matrices.
+        SendToUnsynced("buildingShadowPieceBegin", unitID, unitDefID)
+        for i = 1, #pieces do
+            SendToUnsynced("buildingShadowPieceAdd", unitID, pieces[i])
         end
-
-        shadowVolumes[unitID] = volumes
-        SendToUnsynced("buildingShadowVolumeEnd", unitID)
+        SendToUnsynced("buildingShadowPieceEnd", unitID)
     end
 
     local function markDirty(unitID, selectedPieces)
         if Spring.ValidUnitID(unitID) then
             pendingUnits[unitID] = selectedPieces or {}
         else
-            shadowVolumes[unitID] = nil
-            SendToUnsynced("buildingShadowVolumeRemove", unitID)
+            pendingUnits[unitID] = nil
+            SendToUnsynced("buildingShadowPieceRemove", unitID)
         end
     end
 
     function gadget:Initialize()
-        GG.BuildingShadowVolume = shadowVolumes
         GG.MarkBuildingShadowVolumeDirty = markDirty
-
         -- Houses opt in only after their procedural build animation is stable.
     end
 
     function gadget:UnitDestroyed(unitID)
         pendingUnits[unitID] = nil
-        shadowVolumes[unitID] = nil
-        SendToUnsynced("buildingShadowVolumeRemove", unitID)
+        SendToUnsynced("buildingShadowPieceRemove", unitID)
     end
 
     function gadget:GameFrame()
@@ -147,61 +88,42 @@ if gadgetHandler:IsSyncedCode() then
     end
 
     function gadget:Shutdown()
-        GG.BuildingShadowVolume = nil
         GG.MarkBuildingShadowVolumeDirty = nil
     end
 else
-    local shadowVolumes = {}
-    local changed = false
-
-    local function beginVolume(_, unitID)
-        shadowVolumes[unitID] = {}
-    end
-
-    local function addVolume(_, unitID, x, y, z, heading, sx, sy, sz,
-            volumeType, primaryAxis)
-        local volumes = shadowVolumes[unitID]
-        if not volumes then
-            volumes = {}
-            shadowVolumes[unitID] = volumes
+    local function callLuaUI(name, ...)
+        if Script.LuaUI(name) then
+            Script.LuaUI[name](...)
         end
-
-        volumes[#volumes + 1] = {
-            x = x, y = y, z = z,
-            heading = heading,
-            sx = sx, sy = sy, sz = sz,
-            volumeType = volumeType,
-            primaryAxis = primaryAxis,
-        }
     end
 
-    local function endVolume()
-        changed = true
+    local function beginPieces(_, unitID, unitDefID)
+        callLuaUI("ReceiveBuildingShadowBegin", unitID, unitDefID)
     end
 
-    local function removeVolume(_, unitID)
-        shadowVolumes[unitID] = nil
-        changed = true
+    local function addPiece(_, unitID, pieceID)
+        callLuaUI("ReceiveBuildingShadowPiece", unitID, pieceID)
+    end
+
+    local function endPieces(_, unitID)
+        callLuaUI("ReceiveBuildingShadowEnd", unitID)
+    end
+
+    local function removePieces(_, unitID)
+        callLuaUI("ReceiveBuildingShadowRemove", unitID)
     end
 
     function gadget:Initialize()
-        gadgetHandler:AddSyncAction("buildingShadowVolumeBegin", beginVolume)
-        gadgetHandler:AddSyncAction("buildingShadowVolumeAdd", addVolume)
-        gadgetHandler:AddSyncAction("buildingShadowVolumeEnd", endVolume)
-        gadgetHandler:AddSyncAction("buildingShadowVolumeRemove", removeVolume)
-    end
-
-    function gadget:GameFrame()
-        if changed and Script.LuaUI("ReceiveBuildingShadowVolumes") then
-            Script.LuaUI.ReceiveBuildingShadowVolumes(shadowVolumes)
-            changed = false
-        end
+        gadgetHandler:AddSyncAction("buildingShadowPieceBegin", beginPieces)
+        gadgetHandler:AddSyncAction("buildingShadowPieceAdd", addPiece)
+        gadgetHandler:AddSyncAction("buildingShadowPieceEnd", endPieces)
+        gadgetHandler:AddSyncAction("buildingShadowPieceRemove", removePieces)
     end
 
     function gadget:Shutdown()
-        gadgetHandler:RemoveSyncAction("buildingShadowVolumeBegin")
-        gadgetHandler:RemoveSyncAction("buildingShadowVolumeAdd")
-        gadgetHandler:RemoveSyncAction("buildingShadowVolumeEnd")
-        gadgetHandler:RemoveSyncAction("buildingShadowVolumeRemove")
+        gadgetHandler:RemoveSyncAction("buildingShadowPieceBegin")
+        gadgetHandler:RemoveSyncAction("buildingShadowPieceAdd")
+        gadgetHandler:RemoveSyncAction("buildingShadowPieceEnd")
+        gadgetHandler:RemoveSyncAction("buildingShadowPieceRemove")
     end
 end
