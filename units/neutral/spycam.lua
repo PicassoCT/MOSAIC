@@ -29,6 +29,7 @@ local Spycam = Building:New{
 	customparams = {
 		helptext		= "surveils the surrounding area",
 		baseclass		= "Building",
+		ecmhackable		= true,
     },
 	
 	
