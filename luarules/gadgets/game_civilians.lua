@@ -961,7 +961,7 @@ function travelInPeaceTimes(evtID, frame, persPack, startFrame, myID)
 end
 
 CivilianInternalDebugStateStartTabel = {}
-local PRAYER_STATE_GRACE_FRAMES = 5 * 30
+local PRAYER_STATE_GRACE_FRAMES = 15 * 30
 
 function unitInternalLogic(evtID, frame, persPack, startFrame, myID)
     local activeStates = GG.CivilianUnitInternalLogicActive

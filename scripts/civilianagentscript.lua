@@ -745,27 +745,28 @@ end
 function pray()
     Signal(SIG_INTERNAL)
     SetSignalMask(SIG_INTERNAL)
-    local prayTime= frameToMs(getPrayDurationInFrames())
+
+    local prayerEndFrame = Spring.GetGameFrame() + getPrayDurationInFrames()
     setSpeedEnv(unitID, 0.0)
 
-    while prayTime > 0 do
-        
-        durationFrames = PlayAnimation("UPBODY_PRAY", lowerBodyPieces, 1.0)         
+    repeat
+        PlayAnimation("UPBODY_PRAY", lowerBodyPieces, 1.0)
         WaitForTurns(upperBodyPieces)
-        if not GG.PrayerRotationRad then 
-            val = math.random(0,360)
-            GG.PrayerRotationRad =  math.rad(val)
-         end
+
+        if not GG.PrayerRotationRad then
+            local val = math.random(0, 360)
+            GG.PrayerRotationRad = math.rad(val)
+        end
 
         Spring.SetUnitRotation(unitID, 0, GG.PrayerRotationRad, 0)
-        prayTime = prayTime - frameToMs(durationFrames) -500
         WaitForTurns(upperBodyPieces)
         WaitForTurns(lowerBodyPieces)
         Sleep(500)
-    end
+    until Spring.GetGameFrame() >= prayerEndFrame
+
     setSpeedEnv(unitID, NORMAL_WALK_SPEED)
     resetUpperBodyNoTPose()
-    Move(center,z_axis, 0, 2500)
+    Move(center, z_axis, 0, 2500)
     setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_ENDED, "pray")
 end
 
