@@ -91,26 +91,28 @@ if gadgetHandler:IsSyncedCode() then
         GG.MarkBuildingShadowVolumeDirty = nil
     end
 else
-    local function callLuaUI(name, ...)
-        if Script.LuaUI(name) then
-            Script.LuaUI[name](...)
+    local function beginPieces(_, unitID, unitDefID)
+        if Script.LuaUI("ReceiveBuildingShadowBegin") then
+            Script.LuaUI.ReceiveBuildingShadowBegin(unitID, unitDefID)
         end
     end
 
-    local function beginPieces(_, unitID, unitDefID)
-        callLuaUI("ReceiveBuildingShadowBegin", unitID, unitDefID)
-    end
-
     local function addPiece(_, unitID, pieceID)
-        callLuaUI("ReceiveBuildingShadowPiece", unitID, pieceID)
+        if Script.LuaUI("ReceiveBuildingShadowPiece") then
+            Script.LuaUI.ReceiveBuildingShadowPiece(unitID, pieceID)
+        end
     end
 
     local function endPieces(_, unitID)
-        callLuaUI("ReceiveBuildingShadowEnd", unitID)
+        if Script.LuaUI("ReceiveBuildingShadowEnd") then
+            Script.LuaUI.ReceiveBuildingShadowEnd(unitID)
+        end
     end
 
     local function removePieces(_, unitID)
-        callLuaUI("ReceiveBuildingShadowRemove", unitID)
+        if Script.LuaUI("ReceiveBuildingShadowRemove") then
+            Script.LuaUI.ReceiveBuildingShadowRemove(unitID)
+        end
     end
 
     function gadget:Initialize()
