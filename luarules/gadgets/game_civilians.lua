@@ -79,29 +79,31 @@ local chanceOfCivilianSpawningFromTruck = GameConfig.chanceOfCivilianSpawningFro
 
 
 function startInternalBehaviourOfState(unitID, name, ...)
-     if not GG.CivilianUnitInternalLogicActive then GG.CivilianUnitInternalLogicActive = {} end
-     if GG.CivilianUnitInternalLogicActive[unitID] and GG.CivilianUnitInternalLogicActive[unitID].state == GameConfig.STATE_STARTED then
-        return
-     end
-
-    local arg = arg;
-    if (not arg) then
-        arg = {...};
-        arg.n = #arg
+    if not GG.CivilianUnitInternalLogicActive then
+        GG.CivilianUnitInternalLogicActive = {}
     end
 
-    env = Spring.UnitScript.GetScriptEnv(unitID)
-
-    if env and env.setOverrideAnimationState then
-       result= Spring.UnitScript.CallAsUnit(unitID, 
-                                     env[name],
-                                     arg[1] or nil,
-                                     arg[2] or nil,
-                                     arg[3] or nil,
-                                     arg[4] or nil
-                                     )
-       --assert(result==true, name)
+    local internalState = GG.CivilianUnitInternalLogicActive[unitID]
+    local state = internalState
+    if type(internalState) == "table" then
+        state = internalState.state
     end
+    if state == GameConfig.STATE_STARTED then
+        return false
+    end
+
+    local args = {...}
+    local env = Spring.UnitScript.GetScriptEnv(unitID)
+    if env and env[name] then
+        return Spring.UnitScript.CallAsUnit(unitID,
+                                            env[name],
+                                            args[1],
+                                            args[2],
+                                            args[3],
+                                            args[4])
+    end
+
+    return false
 end
 
 function callInternalFunction(uitID, name)
@@ -825,22 +827,28 @@ end
 
 
 function snychronizedSocialEvents(evtID, frame, persPack, startFrame, myID)
-    if  maRa() and isPrayerTime() and civilianWalkingTypeTable[persPack.mydefID] then
-        Command(myID, "stop")
-        persPack.deactivateStuckDetectionValue = -20       
-        startInternalBehaviourOfState(myID, "startPraying")
-        return true, frame + 1, persPack   
-    end 
+    local prayerSlot = getPrayerSlot(frame)
+    if prayerSlot and civilianWalkingTypeTable[persPack.mydefID] and
+       persPack.lastPrayerSlot ~= prayerSlot then
+        -- Decide once per civilian and prayer window. A failed roll must not
+        -- be retried every event-stream tick throughout the same window.
+        persPack.lastPrayerSlot = prayerSlot
+        if maRa() and startInternalBehaviourOfState(myID, "startPraying") then
+            Command(myID, "stop")
+            persPack.deactivateStuckDetectionValue = 0
+            return true, frame + 1, persPack
+        end
+    end
 
-	if GG.SocialEngineeredPeople and GG.SocialEngineeredPeople[myID] and GG.SocialEngineers[GG.SocialEngineeredPeople[myID]] then 
-		Command(myID, "stop")
-       persPack.deactivateStuckDetectionValue = -10 
+    if GG.SocialEngineeredPeople and GG.SocialEngineeredPeople[myID] and GG.SocialEngineers[GG.SocialEngineeredPeople[myID]] then
+        Command(myID, "stop")
+        persPack.deactivateStuckDetectionValue = -10
         startInternalBehaviourOfState(myID, "startPeacefullProtest", GG.SocialEngineeredPeople[myID])
-		return true, frame + 1, persPack   
-	end
-	   
+        return true, frame + 1, persPack
+    end
+
     return false, nil, persPack
-end  
+end
 
 local metaStuckDetection = {}
 function resetStuckDetection(myID, persPack, waitValue)
@@ -953,31 +961,77 @@ function travelInPeaceTimes(evtID, frame, persPack, startFrame, myID)
 end
 
 CivilianInternalDebugStateStartTabel = {}
+local PRAYER_STATE_GRACE_FRAMES = 5 * 30
 
 function unitInternalLogic(evtID, frame, persPack, startFrame, myID)
-
-
-    if GG.CivilianUnitInternalLogicActive[myID] then
-        if GG.CivilianUnitInternalLogicActive[myID].state == GameConfig.STATE_STARTED then
-            if not CivilianInternalDebugStateStartTabel[myID] then  CivilianInternalDebugStateStartTabel[myID] = Spring.GetGameFrame()  end
-            
-            return true, frame + 15, persPack
-        end
-
-        if GG.CivilianUnitInternalLogicActive[myID].state == GameConfig.STATE_ENDED then
-            durationFrames = Spring.GetGameFrame() - CivilianInternalDebugStateStartTabel[myID]
-            echo(myID .. "internal state ".. CivilianUnitInternalLogicActive[myID].behaviour .." lasted" .. (durationFrames/30) .." ms")
-            Command(myID, "go", {
-                x = math.ceil(persPack.goalList[persPack.goalIndex].x),
-                y = math.ceil(persPack.goalList[persPack.goalIndex].y),
-                z = math.ceil(persPack.goalList[persPack.goalIndex].z)
-            }, {})
-
-            GG.CivilianUnitInternalLogicActive[myID] = nil
-            return true, frame + 15, persPack
-        end
+    local activeStates = GG.CivilianUnitInternalLogicActive
+    local internalState = activeStates and activeStates[myID]
+    if not internalState then
+        return false, nil, persPack
     end
 
+    -- Accept legacy scalar states during migration, but all current writers
+    -- publish { state = ..., behaviour = ... } records.
+    local state = internalState
+    local behaviour = "unknown"
+    if type(internalState) == "table" then
+        state = internalState.state
+        behaviour = internalState.behaviour or behaviour
+    end
+
+    local currentFrame = Spring.GetGameFrame()
+    if state == GameConfig.STATE_STARTED then
+        local stateStartFrame = CivilianInternalDebugStateStartTabel[myID]
+        if not stateStartFrame then
+            stateStartFrame = currentFrame
+            CivilianInternalDebugStateStartTabel[myID] = stateStartFrame
+        end
+
+        local prayerTimedOut = behaviour == "pray" and
+            currentFrame - stateStartFrame >
+                getPrayDurationInFrames() + PRAYER_STATE_GRACE_FRAMES
+
+        if not prayerTimedOut then
+            return true, frame + 15, persPack
+        end
+
+        echo(myID .. " prayer state timed out; restoring civilian movement")
+        setSpeedEnv(myID, GameConfig.civilian_walking_speedfactor)
+        state = GameConfig.STATE_ENDED
+    end
+
+    if state == GameConfig.STATE_ENDED then
+        local stateStartFrame = CivilianInternalDebugStateStartTabel[myID]
+        if stateStartFrame then
+            local durationFrames = currentFrame - stateStartFrame
+            echo(myID .. " internal state " .. behaviour .. " lasted " ..
+                 (durationFrames / 30) .. " s")
+        end
+
+        if behaviour == "pray" then
+            -- Also covers a prayer thread that was signalled before cleanup.
+            setSpeedEnv(myID, GameConfig.civilian_walking_speedfactor)
+        end
+
+        local goal = persPack.goalList and persPack.goalList[persPack.goalIndex]
+        if goal then
+            Command(myID, "go", {
+                x = math.ceil(goal.x),
+                y = math.ceil(goal.y),
+                z = math.ceil(goal.z)
+            }, {})
+        end
+
+        activeStates[myID] = nil
+        CivilianInternalDebugStateStartTabel[myID] = nil
+        persPack.deactivateStuckDetectionValue = 0
+        persPack.stuckCounter = 0
+        return true, frame + 15, persPack
+    end
+
+    echo(myID .. " has invalid civilian internal state; clearing it")
+    activeStates[myID] = nil
+    CivilianInternalDebugStateStartTabel[myID] = nil
     return false, nil, persPack
 end
 

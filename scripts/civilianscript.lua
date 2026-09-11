@@ -615,12 +615,26 @@ function script.HitByWeapon(x, z, weaponDefID, damage)
 end
 
 function setCivilianUnitInternalStateMode(unitID, State, name)
-     assert(State)
-     if State == STATE_STARTED then     assert(name) end
-     if not GG.CivilianUnitInternalLogicActive then GG.CivilianUnitInternalLogicActive = {} end
-     conditionalEcho(boolDebugActive, unitID.."civilian internal logic "..State.." "..(name or "unknown"))
-     GG.CivilianUnitInternalLogicActive[unitID] = State 
- end
+    assert(State)
+    if not GG.CivilianUnitInternalLogicActive then
+        GG.CivilianUnitInternalLogicActive = {}
+    end
+
+    local behaviour = name or "unknown"
+    local currentState = GG.CivilianUnitInternalLogicActive[unitID]
+    if type(currentState) == "table" and currentState.behaviour == "pray" and
+       (State ~= GameConfig.STATE_STARTED or behaviour ~= "pray") then
+        -- A signal can terminate pray() before its normal speed cleanup.
+        setSpeedEnv(unitID, NORMAL_WALK_SPEED)
+    end
+
+    conditionalEcho(boolDebugActive, unitID .. " civilian internal logic " ..
+                    State .. " " .. behaviour)
+    GG.CivilianUnitInternalLogicActive[unitID] = {
+        state = State,
+        behaviour = behaviour,
+    }
+end
 
 filmLocation = {}
 boolStartFilming = false
