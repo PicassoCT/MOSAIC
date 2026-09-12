@@ -325,11 +325,12 @@ if gadgetHandler:IsSyncedCode() then
         if math.random(1, 10) > 5 and (timeFrame == DAWN_FRAME or timeFrame == DUSK_FRAME) then
 
             if (GameConfig.instance.culture == "arabic") then    
-                local prayers = VFS.DirList("sounds/civilian/arabic", "*.ogg", false)
+                local prayers = VFS.DirList("sounds/civilian/arabic", "*.ogg")
                 Spring.PlaySoundFile(prayers[math.random(1,#prayers)], 0.9)
             end
             if (GameConfig.instance.culture == "international") then    
-            Spring.PlaySoundFile("sounds/civilian/international/callToPrayer" .. math.random(1, 4) .. ".ogg", 0.9)
+                local prayers = VFS.DirList("sounds/civilian/international", "*.ogg")
+                Spring.PlaySoundFile(prayers[math.random(1,#prayers)], 0.9)            
             end
         end
         config = getDefaultConfg({r = 0.5, g = 0.5, b = 0.5, a = 0.5})
