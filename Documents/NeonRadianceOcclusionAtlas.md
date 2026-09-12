@@ -54,3 +54,56 @@ the label shows their count and size. `/radiancedebug voxels off` hides it.
 
 The disabled Recoil shader framework is unrelated to this interface and remains
 disabled.
+
+## Prepared next step: authored structural boxes
+
+`VoxelizeBuildingBoxes(boxes, voxelSize)` converts script-authored axis-aligned
+boxes to the same array format. Each box has `minX`, `minY`, `minZ`, `maxX`,
+`maxY`, `maxZ` in model-local elmos. The grid is anchored at the model origin.
+Intersected cells are filled; overlaps are deduplicated. Empty space between
+separate boxes remains empty. Non-grid-aligned edges can expand by less than
+one cell on each side.
+
+The helper preflights all boxes and limits total candidate cell visits to
+100000, including overlaps. It separately limits output to 16000 cells and
+input to 256 boxes. Invalid input or budget overflow returns `nil, error`;
+partial geometry is never returned. It reads no engine geometry and does not
+change the shader framework. The placeholder cube now exercises this helper
+and still returns the same 64 cells.
+
+Example provider for a small L-shaped footprint:
+
+```lua
+function GetBuildingShadowVoxels()
+    local size = 16
+    local voxels, err = VoxelizeBuildingBoxes({
+        {minX=0, minY=0, minZ=0, maxX=64, maxY=64, maxZ=32},
+        {minX=0, minY=0, minZ=0, maxX=32, maxY=64, maxZ=64},
+    }, size)
+    assert(voxels, err)
+    return voxels, size
+end
+```
+
+### Asian-house integration checkpoint
+
+The assembly script uses `cubeDim.length = 770` and `cubeDim.heigth = 595.4`.
+These are assembly coordinates, not yet verified as the final model-local
+elmos required by this interface. Do not copy them into voxel bounds or infer
+scale from the DAE.
+
+Before replacing the Asian placeholder:
+
+1. Verify one placed structural tile's origin, width and floor height against
+   the rendered building and the engine collision-volume overlay (Alt+V).
+2. Record a box only after successful structural placement in
+   `buildDecorateGroundLvl` and `buildDecorateLvl`; record roof thickness
+   separately in `addRoofDeocrate`. Exclude yard props, holograms and animations.
+3. Reset the recorded boxes before procedural rebuilding; supply the array
+   after assembly settles using the existing dirty notification.
+4. Check two different floor plans, a rotated house and a reconstructed house
+   with `/radiancedebug voxels UNITID`. Verify scale, roof height and empty
+   courtyards before extending the provider to Arab and Western houses.
+
+Run `lua tests/building_voxels.lua` from the repository root to check the helper
+without the engine. This does not replace the placement checks above.
