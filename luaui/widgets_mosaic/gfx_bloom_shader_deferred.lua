@@ -27,7 +27,7 @@ function widget:GetInfo()
 		date      = "2018-05-13",
 		license   = "GNU GPL, v2 or later",
 		layer     = 99999,
-		enabled   = not isPotatoGpu,
+		enabled   = false --not isPotatoGpu,
 	}
 end
 
