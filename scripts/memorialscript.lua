@@ -12,9 +12,9 @@ function script.Create()
     Spring.SetUnitNoSelect(unitID, true)
     Spring.SetUnitBlocking(unitID, false)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
-    hideAll(unitID)
     x,y,z = Spring.GetUnitPosition(unitID)
     StartThread(buildMemorial)
+    
 end
 
 function candleLightFlickering(candleLight)
@@ -67,6 +67,7 @@ maxIndex = 4
 sizeOfField= 60
 candleGrid = makeTable(false, maxIndex, maxIndex)
 function buildMemorial()
+    StartThread(   hideAll, unitID)
     attempts = 0
     val = math.random(-360, 360)
 
@@ -85,7 +86,7 @@ function buildMemorial()
                 for rIndX = math.random(-4, 4), 4 do
                     rIndY = math.random(-4, 4)               
                     if candleGrid[rIndX] and candleGrid[rIndX][rIndY] == false  then
-                       placeCandle(candle, rIndX, rIndY, maxIndex, sizeOfField)
+                        placeCandle(candle, rIndX, rIndY, maxIndex, sizeOfField)
                         popularity = popularity -1
                         boolPlaced= true
                         break
@@ -95,7 +96,7 @@ function buildMemorial()
                 for rIndX = -4, 4 do
                     rIndY = math.random(-4, 4)
                     if candleGrid[rIndX] and candleGrid[rIndX][rIndY] == false  then
-                       placeCandle(candle, rIndX, rIndY, maxIndex, sizeOfField)
+                        placeCandle(candle, rIndX, rIndY, maxIndex, sizeOfField)
                         popularity = popularity -1
                         boolPlaced = true
                         break

@@ -1381,7 +1381,6 @@ function threadStateStarter()
             boolStartAnarchyBehaviour = false
             StartThread(anarchyBehaviour)
         end
-        todo("Hunt revealed antagon agents?")
 
          if boolStartAerosolBehaviour == true then
             boolStartAerosolBehaviour = false
