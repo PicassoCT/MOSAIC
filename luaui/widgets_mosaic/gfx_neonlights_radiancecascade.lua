@@ -11,8 +11,6 @@ function widget:GetInfo()
     }
 end
 
-local DaeVoxel = VFS.Include("luaui/widgets_mosaic/radiance_dae_voxel.lua")
-
 -- L0 only: first prove a stable top-down neon emission atlas.
 local ATLAS_SIZE = 1024
 local ATLAS_REFRESH_SECONDS = 0.10
@@ -25,8 +23,6 @@ local OCCLUSION_WORLD_HEIGHT = 2048
 local DIRECT_LIGHT_SIZE = 512
 local DIRECT_LIGHT_RANGE = 1800
 local DIRECT_LIGHT_STEPS = 48
-local BUILDING_VOXEL_SIZE = 16
-local MAX_VOXELS_PER_BUILDING = 16000
 
 local neonUnitTables = {}
 local neonLightPercent = 0.0
@@ -35,7 +31,7 @@ local neonPieceCount = 0
 local topDownTex
 local occlusionTex = {}
 local occlusionBuildings = {}
-local pendingBuildingPieces = {}
+local pendingBuildingVoxels = {}
 local occlusionDirty = true
 local occlusionBuildingCount = 0
 local directLightTex
@@ -55,64 +51,48 @@ local directLightReady = false
 local refreshAccumulator = ATLAS_REFRESH_SECONDS
 local vsx, vsy = gl.GetViewSizes()
 
-local function receiveBuildingShadowBegin(unitID, unitDefID)
-    pendingBuildingPieces[unitID] = {
+local function receiveBuildingShadowBegin(unitID, unitDefID, voxelSize)
+    pendingBuildingVoxels[unitID] = {
         unitDefID = unitDefID,
-        pieces = {},
+        voxelSize = voxelSize,
+        voxels = {},
     }
 end
 
-local function receiveBuildingShadowPiece(unitID, pieceID)
-    local pending = pendingBuildingPieces[unitID]
+local function receiveBuildingShadowVoxel(unitID, x, y, z)
+    local pending = pendingBuildingVoxels[unitID]
     if pending then
-        pending.pieces[#pending.pieces + 1] = pieceID
+        pending.voxels[#pending.voxels + 1] = {mx = x, my = y, mz = z}
     end
 end
 
 local function receiveBuildingShadowEnd(unitID)
-    local pending = pendingBuildingPieces[unitID]
-    pendingBuildingPieces[unitID] = nil
-    if not pending then return end
+    local building = pendingBuildingVoxels[unitID]
+    pendingBuildingVoxels[unitID] = nil
+    if not building then return end
 
-    if not Spring.ValidUnitID(unitID) or Spring.GetUnitIsDead(unitID) then
-        occlusionBuildings[unitID] = nil
-        occlusionDirty = true
-        return
-    end
-
-    local ok, building, errorMessage = pcall(
-        DaeVoxel.BuildUnitVoxels,
-        unitID,
-        pending.unitDefID,
-        pending.pieces,
-        BUILDING_VOXEL_SIZE,
-        MAX_VOXELS_PER_BUILDING
-    )
-
-    if not ok then
-        Spring.Echo("Radiance voxelizer: unit " .. unitID .. " failed: " .. tostring(building))
-        occlusionBuildings[unitID] = nil
-    elseif not building then
-        Spring.Echo("Radiance voxelizer: unit " .. unitID .. " skipped: " .. tostring(errorMessage))
-        occlusionBuildings[unitID] = nil
-    else
-        occlusionBuildings[unitID] = building
-        Spring.Echo(string.format(
-            "Radiance voxelizer: unit %d | %d/%d pieces | %d triangles | %d voxels%s | %s",
-            unitID,
-            building.matchedPieceCount,
-            building.selectedPieceCount,
-            building.triangleCount,
-            building.voxelCount,
-            building.truncated and " (capped)" or "",
-            building.modelPath
-        ))
-    end
+    occlusionBuildings[unitID] = nil
     occlusionDirty = true
+    if not Spring.ValidUnitID(unitID) or Spring.GetUnitIsDead(unitID) then return end
+    local ux, uy, uz = Spring.GetUnitBasePosition(unitID)
+    local front, up, right = Spring.GetUnitVectors(unitID)
+    if not ux or not front or not up or not right then return end
+
+    -- Same model-to-world basis used by the existing voxel overlay.
+    for i = 1, #building.voxels do
+        local v = building.voxels[i]
+        local x, y, z = v.mx, v.my, v.mz
+        v.x = ux - right[1] * x + up[1] * y + front[1] * z
+        v.y = uy - right[2] * x + up[2] * y + front[2] * z
+        v.z = uz - right[3] * x + up[3] * y + front[3] * z
+    end
+    building.heading = Spring.GetUnitHeading(unitID) or 0
+    building.voxelCount = #building.voxels
+    occlusionBuildings[unitID] = building
 end
 
 local function receiveBuildingShadowRemove(unitID)
-    pendingBuildingPieces[unitID] = nil
+    pendingBuildingVoxels[unitID] = nil
     occlusionBuildings[unitID] = nil
     if debugVoxelUnit == unitID then
         debugVoxelUnit = nil
@@ -359,11 +339,6 @@ local function drawDirectLight(mode)
 end
 
 function widget:Initialize()
-    if not DaeVoxel or not DaeVoxel.BuildUnitVoxels then
-        removeSelf("DAE voxelizer failed to load")
-        return
-    end
-
     if not gl.RenderToTexture or not gl.CreateTexture or not gl.UnitPiece
         or not gl.BeginEnd or not gl.UnitMultMatrix
     then
@@ -453,13 +428,13 @@ function widget:Initialize()
 
     widgetHandler:RegisterGlobal("RecieveAllNeonUnitsPieces", recieveNeonHoloLightPiecesByUnit)
     widgetHandler:RegisterGlobal("ReceiveBuildingShadowBegin", receiveBuildingShadowBegin)
-    widgetHandler:RegisterGlobal("ReceiveBuildingShadowPiece", receiveBuildingShadowPiece)
+    widgetHandler:RegisterGlobal("ReceiveBuildingShadowVoxel", receiveBuildingShadowVoxel)
     widgetHandler:RegisterGlobal("ReceiveBuildingShadowEnd", receiveBuildingShadowEnd)
     widgetHandler:RegisterGlobal("ReceiveBuildingShadowRemove", receiveBuildingShadowRemove)
 
     Spring.Echo(
-        "NeonLight Radiance Cascade: DAE voxel occlusion enabled (" ..
-        BUILDING_VOXEL_SIZE .. " elmo voxels, " .. OCCLUSION_LAYER_COUNT .. " layers)"
+        "NeonLight Radiance Cascade: building-script voxel occlusion enabled (" ..
+        OCCLUSION_LAYER_COUNT .. " layers)"
     )
 end
 
@@ -615,16 +590,8 @@ function widget:DrawWorld()
     gl.PopMatrix()
 
     debugVoxelSummary = string.format(
-        "Shadow house %d | DAE %s | unit meter %.6g | pieces %d/%d | triangles %d | voxels %d @ %d%s",
-        debugVoxelUnit,
-        building.modelPath,
-        building.daeUnitMeter,
-        building.matchedPieceCount,
-        building.selectedPieceCount,
-        building.triangleCount,
-        building.voxelCount,
-        building.voxelSize,
-        building.truncated and " [CAPPED]" or ""
+        "Shadow house %d | script voxels %d @ %g elmos",
+        debugVoxelUnit, building.voxelCount, building.voxelSize
     )
 
     gl.LineWidth(1)
@@ -685,7 +652,7 @@ end
 function widget:Shutdown()
     widgetHandler:DeregisterGlobal("RecieveAllNeonUnitsPieces")
     widgetHandler:DeregisterGlobal("ReceiveBuildingShadowBegin")
-    widgetHandler:DeregisterGlobal("ReceiveBuildingShadowPiece")
+    widgetHandler:DeregisterGlobal("ReceiveBuildingShadowVoxel")
     widgetHandler:DeregisterGlobal("ReceiveBuildingShadowEnd")
     widgetHandler:DeregisterGlobal("ReceiveBuildingShadowRemove")
 

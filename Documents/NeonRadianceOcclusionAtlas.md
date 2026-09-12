@@ -1,83 +1,56 @@
-# Neon radiance DAE voxel atlas
+# Neon radiance building-script voxel atlas
 
-Buildings opt into hologram-light occlusion through the shared building base
-class:
+Buildings opt in with `customParams.throwsShadow = true`. Once their procedural
+build is stable, they notify the gadget:
 
 ```lua
-customParams = {
-    throwsShadow = true,
-}
+GG.MarkBuildingShadowVolumeDirty(unitID)
 ```
 
-The occluder is no longer inferred from collision volumes.
-`gfx_building_shadow_volumes.lua` receives the building script's final visible
-piece set and forwards only primitive values across the synced/unsynced
-boundary:
+The gadget calls `GetBuildingShadowVoxels()` in that unit's script environment.
+The function returns a dense array of model-local voxel centers in elmos, then
+the common voxel edge length:
+
+```lua
+function GetBuildingShadowVoxels()
+    return {
+        {x = -8, y = 8, z = 0},
+        {x =  8, y = 8, z = 0},
+    }, 16
+end
+```
+
+The Asian, Arab and Western building scripts currently include
+`scripts/lib_building_voxels.lua`. Its placeholder returns 64 cells forming a
+solid 64-elmo cube: X/Z bounds -32 to 32, Y bounds 0 to 64, with 16-elmo cells.
+Replace the provider in each building script with an array describing the
+assembled building. Model-local positions already include any desired piece
+placement; no piece matrix or DAE transform is applied by the consumer.
+
+The gadget accepts at most 16000 cells and requires finite coordinates and a
+positive finite edge length. Invalid results remove the previous occluder.
+An empty array clears the geometry. Dirty notifications in one frame coalesce.
+Notify again after changing the supplied geometry or the building's transform;
+do not notify every frame.
+
+The array remains in synced Lua. The gadget forwards only primitive arguments:
 
 ```text
-begin(unitID, unitDefID)
-piece(unitID, pieceID)
-piece(unitID, pieceID)
+buildingShadowVoxelBegin(unitID, unitDefID, voxelSize)
+buildingShadowVoxelAdd(unitID, x, y, z)
 ...
-end(unitID)
+buildingShadowVoxelEnd(unitID)
 ```
 
-LuaUI reads the unit's COLLADA (`.dae`) geometry once per model and caches it.
-The DAE supplies the actual piece-local triangle mesh. Recoil's live
-`Spring.GetUnitPieceMatrix` supplies the cumulative piece transform, including
-the authored node transform / COLLADA unit scale as imported by the engine and
-any final script movement or rotation.
+LuaUI assembles the array and transforms its centers to world space using the
+unit's base position and orientation. Existing atlas rendering uses sixteen
+512x512 slices over world Y=0 through Y=2048. Destruction removes the occluder.
+There is no DAE loading, mesh parsing, or triangle voxelization.
 
-The transformed triangle surfaces are conservatively voxelized on a 16-elmo
-model-space grid. The current safety cap is 16000 occupied cells per building.
-The voxel cells are transformed to world space once after the procedural build
-has settled, then rasterized into sixteen shared 512x512 world-space slices
-covering Y=0 through Y=2048. Normal lighting samples those textures; it does not
-walk the DAE mesh or voxels every frame.
+Select a completed building and use `/radiancedebug voxels`, or specify
+`/radiancedebug voxels UNITID`. The cyan overlay shows the script-supplied cells;
+the label shows their count and size. `/radiancedebug voxels off` hides it.
+`radiancedebug volumes` remains an alias.
 
-## Dirty updates
-
-Building scripts should pass the exact visible structural piece set after their
-procedural build is stable:
-
-```lua
-GG.MarkBuildingShadowVolumeDirty(unitID, visiblePieces)
-```
-
-This rebuilds that unit's voxel shell and the shared atlas once. It must not be
-called every frame.
-
-A parameterless dirty mark is retained only for older scripts: if an explicit
-piece set has already been supplied for that unit, the gadget reuses that last
-snapshot. It deliberately does **not** fall back to every model piece, because
-hidden construction/placeable pieces were the source of the old oversized and
-offset shadow volumes.
-
-## Debugging
-
-Select a completed shadow building and run:
-
-```text
-/radiancedebug voxels
-```
-
-or lock a specific unit:
-
-```text
-/radiancedebug voxels UNITID
-```
-
-The generated cells are drawn as a translucent cyan voxel shell directly over
-the rendered building, with depth testing disabled so scale/offset mistakes are
-immediately visible. The diagnostics line shows the DAE path, COLLADA `unit`
-value, matched piece count, triangle count, voxel count, and whether the safety
-cap was hit.
-
-Disable the overlay with:
-
-```text
-/radiancedebug voxels off
-```
-
-The old `radiancedebug volumes` spelling remains as an alias while this branch
-is being tested.
+The disabled Recoil shader framework is unrelated to this interface and remains
+disabled.
