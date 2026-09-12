@@ -1,7 +1,7 @@
 function gadget:GetInfo()
     return {
         name = "Building Shadow Geometry",
-        desc = "Forwards completed building piece IDs to LuaUI for DAE voxelization",
+        desc = "Forwards completed building-script voxel arrays to LuaUI",
         author = "Picasso, Codex",
         date = "2026",
         license = "GNU GPL, v2 or later",
@@ -11,9 +11,8 @@ function gadget:GetInfo()
 end
 
 if gadgetHandler:IsSyncedCode() then
-    local MAX_PIECES_PER_UNIT = 128
+    local MAX_VOXELS_PER_UNIT = 16000
     local pendingUnits = {}
-    local lastSelectedPieces = {}
 
     local function throwsShadow(unitDefID)
         local unitDef = UnitDefs[unitDefID]
@@ -22,72 +21,52 @@ if gadgetHandler:IsSyncedCode() then
         return value == true or value == 1 or value == "1" or value == "true"
     end
 
-    local function copySelection(selectedPieces)
-        local copy = {}
-        for key, value in pairs(selectedPieces or {}) do
-            copy[key] = value
-        end
-        return copy
+    local function finite(value)
+        return type(value) == "number" and value == value and math.abs(value) < math.huge
     end
 
-    local function rebuildUnit(unitID, selectedPieces)
+    local function rebuildUnit(unitID)
         local unitDefID = Spring.GetUnitDefID(unitID)
         if not unitDefID or not throwsShadow(unitDefID) then
-            SendToUnsynced("buildingShadowPieceRemove", unitID)
+            SendToUnsynced("buildingShadowVoxelRemove", unitID)
             return
         end
-
-        local pieces = {}
-        local seenPieces = {}
-
-        for key, value in pairs(selectedPieces or {}) do
-            local pieceID
-            if type(value) == "number" then
-                pieceID = value
-            elseif type(key) == "number" and value then
-                pieceID = key
-            end
-
-            if pieceID and not seenPieces[pieceID] then
-                seenPieces[pieceID] = true
-                pieces[#pieces + 1] = pieceID
-                if #pieces >= MAX_PIECES_PER_UNIT then
-                    Spring.Echo(
-                        "Building Shadow Geometry: capped unit " .. unitID ..
-                        " at " .. MAX_PIECES_PER_UNIT .. " pieces"
-                    )
-                    break
-                end
+        local env = Spring.UnitScript.GetScriptEnv(unitID)
+        if not env or type(env.GetBuildingShadowVoxels) ~= "function" then
+            SendToUnsynced("buildingShadowVoxelRemove", unitID)
+            return
+        end
+        local voxels, voxelSize = Spring.UnitScript.CallAsUnit(unitID, env.GetBuildingShadowVoxels)
+        if type(voxels) ~= "table" or #voxels > MAX_VOXELS_PER_UNIT or
+           not finite(voxelSize) or voxelSize <= 0 then
+            Spring.Echo("Building Shadow Geometry: invalid voxel array for unit " .. unitID)
+            SendToUnsynced("buildingShadowVoxelRemove", unitID)
+            return
+        end
+        for i = 1, #voxels do
+            local v = voxels[i]
+            if type(v) ~= "table" or not finite(v.x) or not finite(v.y) or not finite(v.z) then
+                Spring.Echo("Building Shadow Geometry: invalid voxel for unit " .. unitID)
+                SendToUnsynced("buildingShadowVoxelRemove", unitID)
+                return
             end
         end
-
-        -- Keep every synced -> unsynced payload primitive-only. LuaUI reconstructs
-        -- the short piece list locally, then reads the DAE and live piece matrices.
-        SendToUnsynced("buildingShadowPieceBegin", unitID, unitDefID)
-        for i = 1, #pieces do
-            SendToUnsynced("buildingShadowPieceAdd", unitID, pieces[i])
+        -- Tables stay in synced Lua. Every cross-boundary argument is primitive.
+        SendToUnsynced("buildingShadowVoxelBegin", unitID, unitDefID, voxelSize)
+        for i = 1, #voxels do
+            local v = voxels[i]
+            SendToUnsynced("buildingShadowVoxelAdd", unitID, v.x, v.y, v.z)
         end
-        SendToUnsynced("buildingShadowPieceEnd", unitID)
+        SendToUnsynced("buildingShadowVoxelEnd", unitID)
     end
 
-    local function markDirty(unitID, selectedPieces)
+    local function markDirty(unitID)
         if not Spring.ValidUnitID(unitID) then
             pendingUnits[unitID] = nil
-            lastSelectedPieces[unitID] = nil
-            SendToUnsynced("buildingShadowPieceRemove", unitID)
+            SendToUnsynced("buildingShadowVoxelRemove", unitID)
             return
         end
-
-        if selectedPieces ~= nil then
-            local snapshot = copySelection(selectedPieces)
-            lastSelectedPieces[unitID] = snapshot
-            pendingUnits[unitID] = snapshot
-        elseif lastSelectedPieces[unitID] then
-            -- A few older building scripts still issue a parameterless dirty mark.
-            -- Reuse the last explicit visible-piece set instead of falling back to
-            -- every model piece (which would reintroduce hidden/placeable geometry).
-            pendingUnits[unitID] = lastSelectedPieces[unitID]
-        end
+        pendingUnits[unitID] = true
     end
 
     function gadget:Initialize()
@@ -97,13 +76,12 @@ if gadgetHandler:IsSyncedCode() then
 
     function gadget:UnitDestroyed(unitID)
         pendingUnits[unitID] = nil
-        lastSelectedPieces[unitID] = nil
-        SendToUnsynced("buildingShadowPieceRemove", unitID)
+        SendToUnsynced("buildingShadowVoxelRemove", unitID)
     end
 
     function gadget:GameFrame()
-        for unitID, selectedPieces in pairs(pendingUnits) do
-            rebuildUnit(unitID, selectedPieces)
+        for unitID in pairs(pendingUnits) do
+            rebuildUnit(unitID)
             pendingUnits[unitID] = nil
         end
     end
@@ -112,41 +90,41 @@ if gadgetHandler:IsSyncedCode() then
         GG.MarkBuildingShadowVolumeDirty = nil
     end
 else
-    local function beginPieces(_, unitID, unitDefID)
+    local function beginVoxels(_, unitID, unitDefID, voxelSize)
         if Script.LuaUI("ReceiveBuildingShadowBegin") then
-            Script.LuaUI.ReceiveBuildingShadowBegin(unitID, unitDefID)
+            Script.LuaUI.ReceiveBuildingShadowBegin(unitID, unitDefID, voxelSize)
         end
     end
 
-    local function addPiece(_, unitID, pieceID)
-        if Script.LuaUI("ReceiveBuildingShadowPiece") then
-            Script.LuaUI.ReceiveBuildingShadowPiece(unitID, pieceID)
+    local function addVoxel(_, unitID, x, y, z)
+        if Script.LuaUI("ReceiveBuildingShadowVoxel") then
+            Script.LuaUI.ReceiveBuildingShadowVoxel(unitID, x, y, z)
         end
     end
 
-    local function endPieces(_, unitID)
+    local function endVoxels(_, unitID)
         if Script.LuaUI("ReceiveBuildingShadowEnd") then
             Script.LuaUI.ReceiveBuildingShadowEnd(unitID)
         end
     end
 
-    local function removePieces(_, unitID)
+    local function removeVoxels(_, unitID)
         if Script.LuaUI("ReceiveBuildingShadowRemove") then
             Script.LuaUI.ReceiveBuildingShadowRemove(unitID)
         end
     end
 
     function gadget:Initialize()
-        gadgetHandler:AddSyncAction("buildingShadowPieceBegin", beginPieces)
-        gadgetHandler:AddSyncAction("buildingShadowPieceAdd", addPiece)
-        gadgetHandler:AddSyncAction("buildingShadowPieceEnd", endPieces)
-        gadgetHandler:AddSyncAction("buildingShadowPieceRemove", removePieces)
+        gadgetHandler:AddSyncAction("buildingShadowVoxelBegin", beginVoxels)
+        gadgetHandler:AddSyncAction("buildingShadowVoxelAdd", addVoxel)
+        gadgetHandler:AddSyncAction("buildingShadowVoxelEnd", endVoxels)
+        gadgetHandler:AddSyncAction("buildingShadowVoxelRemove", removeVoxels)
     end
 
     function gadget:Shutdown()
-        gadgetHandler:RemoveSyncAction("buildingShadowPieceBegin")
-        gadgetHandler:RemoveSyncAction("buildingShadowPieceAdd")
-        gadgetHandler:RemoveSyncAction("buildingShadowPieceEnd")
-        gadgetHandler:RemoveSyncAction("buildingShadowPieceRemove")
+        gadgetHandler:RemoveSyncAction("buildingShadowVoxelBegin")
+        gadgetHandler:RemoveSyncAction("buildingShadowVoxelAdd")
+        gadgetHandler:RemoveSyncAction("buildingShadowVoxelEnd")
+        gadgetHandler:RemoveSyncAction("buildingShadowVoxelRemove")
     end
 end

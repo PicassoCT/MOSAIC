@@ -1,3 +1,4 @@
+include "lib_building_voxels.lua"
 include "createCorpse.lua"
 include "lib_OS.lua"
 include "lib_UnitScript.lua"
@@ -1244,7 +1245,7 @@ function buildAnimation()
     local builtT = TablesOfPiecesGroups["Build"]
     if buildAnimationEarlyOut(builtT) then
         if GG.MarkBuildingShadowVolumeDirty then
-            GG.MarkBuildingShadowVolumeDirty(unitID, ToShowTable)
+            GG.MarkBuildingShadowVolumeDirty(unitID)
         end
         return
     end
@@ -1298,7 +1299,7 @@ function buildAnimation()
     hideT(TablesOfPiecesGroups["BuildCrane"])
     hideT(TablesOfPiecesGroups["BuildDeco"])
     if GG.MarkBuildingShadowVolumeDirty then
-        GG.MarkBuildingShadowVolumeDirty(unitID, ToShowTable)
+        GG.MarkBuildingShadowVolumeDirty(unitID)
     end
 end
 

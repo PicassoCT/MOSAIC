@@ -1,3 +1,4 @@
+include "lib_building_voxels.lua"
 include "createCorpse.lua"
 include "lib_OS.lua"
 include "lib_UnitScript.lua"
@@ -1695,7 +1696,7 @@ function buildAnimation(boolIsReconstruction)
     end
     GG.ManualRenderedBuildingWithWindowsVisiblePieces[unitID] = toShowDict
     if GG.MarkBuildingShadowVolumeDirty then
-        GG.MarkBuildingShadowVolumeDirty(unitID, toShowDict)
+        GG.MarkBuildingShadowVolumeDirty(unitID)
     end
 end
 
