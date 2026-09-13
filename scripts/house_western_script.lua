@@ -1308,7 +1308,7 @@ end
 materialColourNameGround = nil
 materialColourNameWall = nil
 function buildBuilding()
-    initializeBuildingShadowVoxels(cubeDim.length, cubeDim.heigth, 4)
+    initializeBuildingShadowVoxels(cubeDim.length, cubeDim.heigth)
     boolDoneShowing = false
    --echo(getScriptName() .. "buildBuilding")
     StartThread(buildAnimation)
@@ -1416,3 +1416,4 @@ end
 function getRooftopPieces()
     return RoofTopPieces or {}
 end
+
