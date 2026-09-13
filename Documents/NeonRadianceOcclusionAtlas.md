@@ -160,24 +160,24 @@ the solid-wall leakage seen with plain bilinear merging. It is still a finite
 resolution approximation: thin geometry and angular detail require in-engine
 evaluation. This is single-band, direct radiance transport, not 3D multi-bounce GI.
 
-The emission source is the existing untextured neon-piece geometry capture, so
-the preview is currently monochrome. Actual hologram material colors and scene
-lighting composition are subsequent steps. The day/night-scaled panel may be
+The emission source samples the registered neon pieces' model diffuse RGB.
+Both the previews and the scene pass below consume this coloured field. The day/night-scaled panel may be
 black in daylight while the unit-intensity panel remains useful for debugging.
 
 Refresh is bounded to 5 Hz. Cascade work depends on fixed texture/probe counts,
-not a separate ray pass for every emitter. Four cascade buffers plus two 512x512
-resolve buffers use about 6 MiB of additional RGBA16F texel storage, excluding
+not a separate ray pass for every emitter. Four cascade buffers plus three 512x512
+resolve buffers (including the independent scene-band cache) use about 8 MiB of additional RGBA16F texel storage, excluding
 driver overhead. No previous-frame radiance feedback is retained, so removing
 an emitter clears its illumination at the next refresh. The three old direct
 diagnostic passes run only when their view is selected. Shader/FBO setup failure
 cleans up propagation resources and falls back to the existing diagnostics.
 
 `WG.NeonRadiance` exposes `texture` (day/night scaled), `unitTexture`,
-`ready`, `heightMin`, `heightMax`, `mapSizeX` and `mapSizeZ` for a future scene
-consumer. UV is world X/Z divided by map X/Z size. Only sample while `ready` is
+`ready`, `heightMin`, `heightMax`, `mapSizeX` and `mapSizeZ` for other
+consumers. UV is world X/Z divided by map X/Z size. Only sample while `ready` is
 true; the widget owns and deletes these textures and removes its WG entry on
-shutdown. No scene overlay is applied in this stage.
+shutdown. Scene lighting uses unit-intensity radiance and applies day/night once
+in its own composition shader.
 
 Additional checks, from repository root:
 
@@ -229,9 +229,70 @@ It is a conservative approximation: thin faces can extend by about one atlas
 texel on either side. It needs no extra textures or scene capture passes, but
 adds geometry-shader work to the existing capture. Validate performance in-game.
 
-Capture is still monochrome, based on registered whole-piece geometry, and this
-stage still displays previews rather than applying lighting to the scene.
+Capture uses registered whole-piece geometry and its base colour texture.
+Animated hologram interference, view-dependent effects and transparency pulses
+are not reproduced in the emission atlas.
 Self-illuminated house pieces could use this capture path once registered as
 sources; selective glowing windows on a shared wall mesh need an emission mask.
 That registration/masking extension is not implemented by this change.
 
+
+### Coloured scene lighting
+
+The scene pass is enabled by default with strength 2 and world height 0–128.
+It adds propagated RGB illumination to visible surfaces in that band. The scene
+band is independent of debug emitter selection, zoom, exposure and preview band.
+This remains a single horizontal height band, not full 3D or multi-bounce GI.
+Surfaces outside the selected scene band receive no contribution.
+
+In daytime, test the effect with `/radiancelight test on`, then turn that override
+off again. A persistent on-screen label marks full-intensity testing, including
+when the diagnostic panels are hidden.
+
+| Command | Effect |
+| --- | --- |
+| `/radiancelight on` / `/radiancelight off` | Enable/disable scene lighting for comparison |
+| `/radiancelight test on` / `/radiancelight test off` | Override scene night intensity to 1 / restore the game clock |
+| `/radiancelight strength 2` | Artistic scene gain, clamped to 0–8; unrelated to preview exposure |
+| `/radiancelight height 128` | Select scene band 128–256; default is height 0 |
+| `/radiancedebug off` / `/radiancedebug on` | Hide/show diagnostic panels without disabling lighting |
+
+Coloured emission uses the same `%unitDefID:0` model texture as the hologram
+renderer. Broad surfaces interpolate texture UVs; widened edge-on faces use
+several samples over the clipped face to average the collapsed vertical colour
+variation. Black texels do not emit. Texture alpha is deliberately ignored,
+matching the existing hologram renderer's use of RGB rather than diffuse alpha.
+Missing model texture bindings retain the previous white-source fallback.
+
+Composition prefers the engine's map/model depth, normal and diffuse buffers.
+It chooses the closer opaque receiver, reconstructs its world position using the
+engine inverse matrices, checks map/height bounds, and samples radiance outside
+wall columns along their outward normal. Occupied samples remain dark. It adds
+`(1-exp(-radiance*strength))*nightIntensity*albedo` with ONE/ONE blending.
+Preview exposure is never used. No scene colour is read from the render target,
+and sky, below-water geometry and receivers outside the scene band are skipped.
+
+If deferred buffers/settings are unavailable, a depth-only screen copy provides
+positions and derivative normals with a neutral 0.5 reflectance approximation.
+This avoids redrawing terrain/models and does not change engine configuration.
+Transparent surfaces absent from depth/G-buffers have no independent lighting
+receiver. This is approximate diffuse illumination, without BRDF directionality
+or material-correct colour-space conversion; tune its appearance in Recoil.
+
+The preferred path allocates no screen-size textures. The depth fallback owns
+one DEPTH_COMPONENT24 texture, conservatively budgeted at four bytes per pixel:
+about 8 MiB at 1920×1080, capped at 16 MiB. Unsupported/failed allocations disable
+only composition and leave previews usable; failed sizes are not retried every
+frame. Resize and shutdown release owned resources.
+
+When scene and preview bands match, they share the existing cascade solve.
+Inspecting another preview band performs one additional capture and solve at
+5 Hz into a fixed 512×512 RGBA16F scene cache (2 MiB, included in the 8 MiB above).
+The scene shader draws once per frame and skips work at zero night intensity.
+Return the preview to the scene band for representative performance comparisons.
+
+The GPU suite checks coloured broad/edge-on sources, RGB propagation, receiver
+selection, sky/height/occupancy rejection, both clip-depth conventions and depth
+fallback. Lua checks cover scene toggles, independent bands, buffer reuse,
+viewport offsets, allocation limits, resize/failure recovery and GL cleanup.
+Recoil/NVIDIA visual validation is still required for this composition stage.

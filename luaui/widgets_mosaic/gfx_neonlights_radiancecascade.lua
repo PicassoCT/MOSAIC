@@ -54,6 +54,11 @@ local propagation
 local propagationView = true
 local propagationLayer = 1
 local previewSpan = 0 -- world elmos; zero shows the whole map
+local scene
+local sceneEnabled, sceneTest = true, false
+local sceneStrength, sceneLayer = 2, 1
+local sceneRadiance, sceneReady
+local previewVisible = true
 local previewExposure = 4
 
 -- Flat x/z/base/mask values: four numbers per occupied column.
@@ -321,6 +326,29 @@ local function focusPreview(unitID, pieceID)
 end
 
 function widget:TextCommand(command)
+    if command == "radiancelight on" or command == "radiancelight off" then
+        sceneEnabled = command == "radiancelight on"
+        sceneReady = false; refreshAccumulator = ATLAS_REFRESH_SECONDS
+        return true
+    end
+    if command == "radiancelight test on" or command == "radiancelight test off" then
+        sceneTest = command == "radiancelight test on"
+        Spring.Echo("Neon scene: full-intensity daytime test " .. (sceneTest and "ON" or "OFF"))
+        return true
+    end
+    local strength = command:match("^radiancelight strength ([%d%.]+)$")
+    if strength and tonumber(strength) then
+        sceneStrength = math.max(0,math.min(8,tonumber(strength))); return true
+    end
+    local sceneHeight = command:match("^radiancelight height (%d+)$")
+    if sceneHeight then
+        sceneLayer = math.max(1,math.min(OCCLUSION_LAYER_COUNT,
+            math.floor(tonumber(sceneHeight)*OCCLUSION_LAYER_COUNT/OCCLUSION_WORLD_HEIGHT)+1))
+        sceneReady = false; refreshAccumulator = ATLAS_REFRESH_SECONDS; return true
+    end
+    if command == "radiancedebug off" or command == "radiancedebug on" then
+        previewVisible = command == "radiancedebug on"; return true
+    end
     if command == "radiancedebug zoom off" then previewSpan = 0; return true end
     local span = command:match("^radiancedebug zoom (%d+)$")
     if command == "radiancedebug zoom" or span then
@@ -543,6 +571,12 @@ function widget:Initialize()
     end
     if propagation then
         WG.NeonRadiance = propagation
+        local ok, factory = pcall(VFS.Include,"luaui/widgets_mosaic/include/radiance_scene.lua")
+        if ok and type(factory)=="function" then
+            local reason
+            scene,reason=factory()
+            if not scene then Spring.Echo("Neon scene disabled: "..tostring(reason)) end
+        else Spring.Echo("Neon scene module could not load: "..tostring(factory)) end
     else
         propagationView = false
     end
@@ -561,6 +595,7 @@ end
 
 function widget:ViewResize()
     vsx, vsy = gl.GetViewSizes()
+    if scene then scene:Resize() end
 end
 
 function widget:Update(dt)
@@ -568,7 +603,8 @@ function widget:Update(dt)
     refreshAccumulator = refreshAccumulator + dt
 end
 
-local function drawNeonPieces()
+local function drawNeonPieces(captureLayer)
+    captureLayer = captureLayer or propagationLayer
     gl.Clear(GL.COLOR_BUFFER_BIT, 0, 0, 0, 0)
     gl.Clear(GL.DEPTH_BUFFER_BIT, 1)
 
@@ -583,7 +619,7 @@ local function drawNeonPieces()
         local bandHeight = OCCLUSION_WORLD_HEIGHT / OCCLUSION_LAYER_COUNT
         gl.UseShader(propagation.emissionShader)
         gl.Uniform(propagation.atlasSizeLoc, ATLAS_SIZE, ATLAS_SIZE)
-        gl.Uniform(propagation.heightLoc, (propagationLayer-1)*bandHeight, propagationLayer*bandHeight)
+        gl.Uniform(propagation.heightLoc, (captureLayer-1)*bandHeight, captureLayer*bandHeight)
     end
 
     gl.MatrixMode(GL.PROJECTION)
@@ -598,6 +634,12 @@ local function drawNeonPieces()
 
     for unitID, pieces in pairs(neonUnitTables) do
         if Spring.ValidUnitID(unitID) and not Spring.GetUnitIsDead(unitID) then
+            if propagation then
+                local defID = Spring.GetUnitDefID(unitID)
+                local bound = defID and gl.Texture(0,string.format("%%%d:0",defID))
+                if not bound then gl.Texture(0,false) end
+                gl.UniformInt(propagation.texturedLoc,bound and 1 or 0)
+            end
             gl.PushMatrix()
             gl.UnitMultMatrix(unitID)
 
@@ -634,16 +676,26 @@ function widget:DrawWorldPreUnit()
     end
 
     refreshAccumulator = refreshAccumulator % ATLAS_REFRESH_SECONDS
-    gl.RenderToTexture(topDownTex, drawNeonPieces)
-
+    sceneReady = false
     if occlusionDirty then
         rebuildOcclusionAtlas()
     end
 
+    local bandHeight = OCCLUSION_WORLD_HEIGHT / OCCLUSION_LAYER_COUNT
+    if propagation and scene and sceneEnabled and sceneLayer ~= propagationLayer then
+        gl.RenderToTexture(topDownTex, drawNeonPieces, sceneLayer)
+        propagation:Draw(topDownTex,occlusionTex[sceneLayer],1,
+            (sceneLayer-1)*bandHeight,sceneLayer*bandHeight,true)
+        sceneRadiance = propagation.sceneTexture
+    end
+    gl.RenderToTexture(topDownTex, drawNeonPieces, propagationLayer)
     if propagation then
-        local bandHeight = OCCLUSION_WORLD_HEIGHT / OCCLUSION_LAYER_COUNT
         propagation:Draw(topDownTex, occlusionTex[propagationLayer], neonLightPercent,
             (propagationLayer-1)*bandHeight, propagationLayer*bandHeight)
+        if scene and sceneEnabled then
+            if sceneLayer == propagationLayer then sceneRadiance = propagation.unitTexture end
+            sceneReady = true
+        end
     end
 
     if not propagationView and directLightShader and directLightTex then
@@ -666,6 +718,11 @@ local function emitDebugLines(building, x0, y0, z0, x1, y1, z1)
 end
 
 function widget:DrawWorld()
+    if scene and sceneEnabled and sceneReady then
+        local bandHeight=OCCLUSION_WORLD_HEIGHT/OCCLUSION_LAYER_COUNT
+        scene:Draw(sceneRadiance,occlusionTex[sceneLayer],(sceneLayer-1)*bandHeight,sceneLayer*bandHeight,
+            sceneStrength,sceneTest and 1 or neonLightPercent)
+    end
     if not debugVoxelUnit then return end
 
     local building = occlusionBuildings[debugVoxelUnit]
@@ -706,7 +763,12 @@ function widget:DrawWorld()
 end
 
 function widget:DrawScreen()
-    if not DEBUG_VIEW or not topDownTex then return end
+    if sceneTest and sceneEnabled then
+        gl.Color(1,0.8,0.2,1)
+        gl.Text("NEON SCENE TEST: full intensity | /radiancelight test off",16,vsy-40,14,"o")
+        gl.Color(1,1,1,1)
+    end
+    if not DEBUG_VIEW or not previewVisible or not topDownTex then return end
 
     local size = math.floor(math.min(vsy * 0.28, (vsx - 80) / 4))
     local layer = math.max(1, math.min(OCCLUSION_LAYER_COUNT,
@@ -776,14 +838,21 @@ function widget:DrawScreen()
         ), 16, size + 44, 13, "o")
     end
 
+    if scene then
+        gl.Text(string.format("Scene %s | %s | height %d–%d | strength %.2f%s",
+            sceneEnabled and "ON" or "OFF",scene.mode,(sceneLayer-1)*128,sceneLayer*128,
+            sceneStrength,sceneTest and " | FULL INTENSITY TEST" or ""),16,size+60,12,"o")
+    end
     if debugVoxelUnit then
-        gl.Text(debugVoxelSummary, 16, size + 64, 13, "o")
+        gl.Text(debugVoxelSummary, 16, size + 76, 13, "o")
     end
 
     gl.Blending(GL.SRC_ALPHA, GL.ONE_MINUS_SRC_ALPHA)
 end
 
 function widget:Shutdown()
+    sceneReady=false
+    if scene then scene:Shutdown();scene=nil end
     if propagation then
         if WG.NeonRadiance == propagation then WG.NeonRadiance = nil end
         propagation:Shutdown()

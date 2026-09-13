@@ -175,3 +175,58 @@ e.write(source_before)
 assert ctx.error=='GL_NO_ERROR' 
 print('PASS: production shaders compile; emission spreads; wall blocks; parent visibility; night scaling; source removal; emission height bands; edge-on footprints; preview exposure')
 print('Behind-wall radiance ratio:',float(blocked[:,:56,:3].sum()/open_light[:,:56,:3].sum()))
+
+# Textured emission: retain source hue for broad and edge-on geometry.
+source_data=np.zeros((8,8,3),np.float32);source_data[:]=[0.1,0.6,0.9]
+source_tex=texture(source_data);source_tex.use(0)
+emission_program['sourceTex']=0;emission_program['textured']=1
+colored=capture_triangle(vertical,(0,0.5))
+active=colored[:,:,2]>0
+assert active.any() and np.allclose(colored[:,:,:3][active],[0.1,0.6,0.9],atol=1e-6)
+back_colored=capture_triangle(list(reversed(vertical)),(0,0.5))
+assert np.allclose(back_colored,colored), 'Back-facing emitter lost colour'
+e.write(colored.tobytes());colored_light=render(empty)
+assert np.allclose(colored_light[:,:,0]*9,colored_light[:,:,2],atol=1e-5)
+source_tex.write(np.zeros_like(source_data).tobytes());source_tex.use(0)
+assert capture_triangle(vertical,(0,0.5))[:,:,:3].max()==0, 'Black source texels emitted light'
+emission_program['textured']=0
+
+# Actual scene shader: world reconstruction in both depth conventions,
+# nearest opaque receiver, height bounds, colour, gain and day/night once.
+scene_program=ctx.program(vertex_shader=vertex,fragment_shader=(root/'scene.frag').read_text())
+scene_inputs=[texture(np.full((N,N,3),[0.2,0.05,0.1],np.float32)),texture(empty),
+ texture(np.full((N,N,1),0.25,np.float32)),texture(np.ones((N,N,1),np.float32)),
+ texture(np.full((N,N,3),[0.5,1,0.5],np.float32)),texture(np.full((N,N,3),[0.5,1,0.5],np.float32)),
+ texture(np.full((N,N,3),0.5,np.float32)),texture(np.full((N,N,3),0.5,np.float32))]
+for i,name in enumerate(('radianceTex','occupancyTex','mapDepthTex','modelDepthTex','mapNormalTex','modelNormalTex','mapDiffuseTex','modelDiffuseTex')):
+ scene_program[name]=i
+scene_program['mapSize']=(128,128);scene_program['heightRange']=(0,128)
+scene_program['strength']=2;scene_program['nightIntensity']=0.25;scene_program['deferred']=1
+scene_program['inverseView'].write(np.eye(4,dtype='f4').T.tobytes())
+def scene_render(clip=0):
+ projection=np.array([[64,0,0,64],[0,0,128 if clip else 64,0 if clip else 64],[0,64,0,64],[0,0,0,1]],dtype='f4')
+ scene_program['inverseProjection'].write(projection.T.tobytes());scene_program['clipZeroToOne']=clip
+ for i,t in enumerate(scene_inputs):t.use(i)
+ ctx.framebuffer([out]).use();ctx.viewport=(0,0,N,N);ctx.clear(0,0,0,0);quad(scene_program)
+ return np.frombuffer(out.read(),dtype='f4').reshape(N,N,4).copy()
+scene_light=scene_render()
+expected=(1-np.exp(-np.array([0.2,0.05,0.1])*2))*0.25*0.5
+assert np.allclose(scene_light[:,:,:3],expected,atol=1e-6), 'Scene colour/gain/intensity mismatch'
+assert np.allclose(scene_light,scene_render(1),atol=1e-6), 'Clip-depth convention shifted lighting'
+scene_program['nightIntensity']=0
+assert scene_render()[:,:,:3].max()==0, 'Scene lit in daytime'
+scene_program['nightIntensity']=0.25;scene_program['heightRange']=(40,128)
+assert scene_render()[:,:,:3].max()==0, 'Light painted outside height band'
+scene_program['heightRange']=(16,64)
+scene_inputs[3].write(np.full((N,N,1),0.1,np.float32).tobytes())
+assert scene_render()[:,:,:3].max()==0, 'Lit terrain painted through closer model outside band'
+scene_inputs[3].write(np.ones((N,N,1),np.float32).tobytes())
+scene_inputs[2].write(np.ones((N,N,1),np.float32).tobytes())
+assert scene_render()[:,:,:3].max()==0, 'Sky lit'
+scene_inputs[2].write(np.full((N,N,1),0.25,np.float32).tobytes())
+scene_inputs[1].write(np.ones_like(empty).tobytes())
+assert scene_render()[:,:,:3].max()==0, 'Occupied receiver lit'
+scene_inputs[1].write(empty.tobytes());scene_program['deferred']=0
+assert np.allclose(scene_render()[:,:,:3],expected,atol=1e-6), 'Depth-copy fallback failed'
+assert ctx.error=='GL_NO_ERROR'
+print('PASS: textured coloured capture, RGB propagation, scene depth/height/sky/occlusion, day/night, both clip conventions and depth fallback')
