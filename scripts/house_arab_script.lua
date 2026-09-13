@@ -18,6 +18,7 @@ local cubeDim = {
     heigth = 13.65 * 0.75 * 1.45,
     roofHeigth = 2
 }
+
 supriseChances = {
     roof = 0.5,
     yard = 0.6,
@@ -38,6 +39,18 @@ boringChances = {
     windowwall = 0.5,
     streetwall = 0.1
 }
+local voxels = {}
+local voxelSize = cubeDim.length
+
+
+
+function addShadowVoxel(x, z, y)
+    voxels[#voxels + 1] = {x = x, y = y, z = z}
+end
+
+function GetBuildingShadowVoxels()
+    return voxels, voxelSize
+end
 
 decoChances = boringChances
 x, y, z = Spring.GetUnitPosition(unitID)
@@ -686,6 +699,7 @@ function buildDecorateGroundLvl()
                 Move(element, _x_axis, xRealLoc, 0)
                 Move(element, _z_axis, zRealLoc, 0)
                 Move(element, _y_axis, gridOffset[xLoc][zLoc] , 0)
+                addShadowVoxel(xRealLoc, zRealLoc,  gridOffset[xLoc][zLoc])
                 ToShowTable[#ToShowTable + 1] = element
 				LevelPieces = houseAddDestructionTable(LevelPieces, 1, element)
                 if countElements == 24 then
@@ -764,6 +778,7 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
                 Move(element, _x_axis, xRealLoc, 0)
                 Move(element, _z_axis, zRealLoc, 0)
                 Move(element, _y_axis, gridOffset[xLoc][zLoc] + Level * cubeDim.heigth, 0)
+                addShadowVoxel(xRealLoc, zRealLoc,  gridOffset[xLoc][zLoc] + Level * cubeDim.heigth)
                 WaitForMoves(element)
                 Turn(element, _z_axis, math.rad(rotation), 0)
                 -- echo("Adding Element to level"..Level)
