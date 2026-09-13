@@ -1110,6 +1110,7 @@ function buildDecorateGroundLvl(materialColourName)
                 floorBuildMaterial = removeElementFromBuildMaterial(element, floorBuildMaterial)
                 Move(element, _x_axis, xRealLoc, 0)
                 Move(element, _z_axis, zRealLoc, 0)
+                addShadowVoxel(xRealLoc, zRealLoc, 0)
 				WaitForMoves(element)
                 Sleep(1)
                 rotation = getOutsideFacingRotationOfBlockFromPlan(i)
@@ -1224,6 +1225,7 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
                 Move(element, _x_axis, xRealLoc, 0)
                 Move(element, _z_axis, zRealLoc, 0)
                 Move(element, _y_axis, Level * cubeDim.heigth, 0)
+                addShadowVoxel(xRealLoc, zRealLoc, Level * cubeDim.heigth)
                 lvlPlaced[index] = element
                 WaitForMoves(element)
 				--assert(rotation)
@@ -1776,6 +1778,8 @@ function threadStarter()
 end
 
 function buildBuilding(boolIsReconstruction)
+    initializeBuildingShadowVoxels(cubeDim.length, cubeDim.heigth, 4)
+    boolDoneShowing = false
     StartThread(buildAnimation, boolIsReconstruction)
     StartThread(threadStarter)
     lecho( "buildBuilding")
@@ -1817,8 +1821,8 @@ function buildBuilding(boolIsReconstruction)
     end
 	
 	addGroundPlaceables()
+    -- buildAnimation publishes the completed array after showing the building.
     boolDoneShowing = true
-    GG.MarkBuildingShadowVolumeDirty(unitID)
 	initAllPieces()
 end
 
