@@ -1,4 +1,4 @@
-include "lib_building_voxels.lua"
+--include "lib_building_voxels.lua"
 include "createCorpse.lua"
 include "lib_OS.lua"
 include "lib_UnitScript.lua"
@@ -41,7 +41,6 @@ boringChances = {
 }
 local voxels = {}
 local voxelSize = cubeDim.length
-
 
 
 function addShadowVoxel(x, z, y)
@@ -907,6 +906,7 @@ function addRoofDeocrate(Level, buildMaterial)
                 Move(element, _x_axis, xRealLoc, 0)
                 Move(element, _z_axis, zRealLoc, 0)
                 Move(element, _y_axis, gridOffset[xLoc][zLoc] + Level * cubeDim.heigth - 0.5, 0)
+                --TODO:AddRooftopDecoration
                 RoofTopPieces[i]= element
                 WaitForMoves(element)
                 Turn(element, _z_axis, math.rad(rotation), 0)
@@ -956,7 +956,7 @@ end
 
 function  SunbathingConditons()
     hours, minutes, seconds, percent = getDayTime()
-    return not isRaining() and not( hours > 19 and hours < 6)
+    return not isRaining() and not( hours > 19 or hours < 6)
 end
 
 function hideSunBathersInBadWeather()
@@ -1058,6 +1058,7 @@ function buildBuilding()
     end
 
     addRoofDeocrate(3, TablesOfPiecesGroups[materialColourName .. "Roof"])
+    --TODO Register hook for voxellization complete
     boolDoneShowing = true
 end
 
