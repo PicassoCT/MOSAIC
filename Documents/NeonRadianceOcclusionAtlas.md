@@ -46,7 +46,7 @@ The Arab, Asian and Western scripts include `scripts/lib_building_voxels.lua`.
 At the start of each build they call:
 
 ```lua
-initializeBuildingShadowVoxels(cubeDim.length, cubeDim.heigth)
+initializeBuildingShadowVoxels(cubeDim.length, cubeDim.heigth, scriptToModelScale)
 ```
 
 The existing placement hooks stay unchanged:
@@ -55,9 +55,19 @@ The existing placement hooks stay unchanged:
 addShadowVoxel(xRealLoc, zRealLoc, floorBaseY)
 ```
 
+The optional third initializer argument converts script movement units into
+model-local elmos at the getter. It defaults to 1. The current Asian and Western
+DAEs declare `asset/unit meter="0.025400"`, so their scripts pass 0.0254;
+the Arab DAE declares 1.0 and keeps the default. The conversion applies once to
+cell size, floor height, grid origins and terrain bases, never to occupancy
+counts or masks. The gadget, atlas and debug overlay all consume the converted
+geometry. There is no runtime DAE parsing. Update this constant if the DAE unit
+metadata changes. Expected six-cell footprint widths are 117.348 elmos (Asian),
+127.28448 (Western) and 125.28 (Arab), rather than 4620/5011.2 for the first two.
+
 Despite its legacy name, this records one occupied floor in a compact column.
 It does not generate subvoxels. X/Z identify the block center; Y identifies its
-base. Blocks must share a horizontal grid and a floor spacing within each
+base, in the same script movement units used by the building's placement calls. Blocks must share a horizontal grid and a floor spacing within each
 column. Duplicate floor calls are idempotent; out-of-order floors, terrain base
 heights and missing floors are preserved. Reinitializing clears previous data.
 The getter produces the public grid with optional offsets/masks as needed.
