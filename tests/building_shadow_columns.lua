@@ -130,3 +130,37 @@ for _,dim in ipairs({{20.88,14.844375,3},{770,595.4,4},{835.2,683.6,3}}) do
  assert(n==20 and not g.masks and not g.baseHeights)
 end
 print('PASS: offsets, masks, gaps, duplicate/reset, validation, primitive transfer, coalescing, atlas/debug rendering, rotation, replacement/removal and typical house grids')
+
+-- DAE import-unit regression: scale every spatial component once, never masks.
+local function near(a,b) assert(math.abs(a-b)<1e-8, tostring(a).." ~= "..tostring(b)) end
+for _,d in ipairs({{770,595.4,0.0254,117.348},{835.2,683.6,0.0254,127.28448},{20.88,14.844375,1,125.28}}) do
+ provider.initializeBuildingShadowVoxels(d[1],d[2],d[3])
+ for x=0,5 do for z=0,5 do
+  if x==0 or x==5 or z==0 or z==5 then
+   provider.addShadowVoxel((x-2.5)*d[1],(z-2.5)*d[1],7)
+   provider.addShadowVoxel((x-2.5)*d[1],(z-2.5)*d[1],7+2*d[2])
+  end
+ end end
+ local g=provider.GetBuildingShadowColumns()
+ near(g.cellSize,d[1]*d[3]);near(g.levelHeight,d[2]*d[3])
+ near(g.cellSize*#g.columns,d[4])
+ near(g.originX,-2.5*d[1]*d[3]);near(g.originZ,-2.5*d[1]*d[3])
+ near(g.baseHeights[1][1],7*d[3]);assert(g.columns[1][1]==3 and g.masks[1][1]==5)
+ local again=provider.GetBuildingShadowColumns();near(again.originX,g.originX)
+ -- Exercise both drawing paths with the converted data.
+ ui.begin(42,1,g.cellSize,g.levelHeight)
+ ui.add(42,g.originX,g.originZ,g.baseHeights[1][1],g.masks[1][1]);ui.finish(42)
+ local b=ui.buildings[42]
+ local count=0
+ ui.runs(b,function(_,x0,y0,z0,x1,y1,z1)
+  count=count+1
+  near(x1-x0,d[1]*d[3]);near(z1-z0,d[1]*d[3]);near(y1-y0,d[2]*d[3])
+ end)
+ assert(count==2)
+end
+provider.initializeBuildingShadowVoxels(20,10)
+provider.addShadowVoxel(0,0,0)
+near(provider.GetBuildingShadowColumns().cellSize,20) -- default scale resets
+assert(not pcall(provider.initializeBuildingShadowVoxels,20,10,0))
+assert(not pcall(provider.initializeBuildingShadowVoxels,20,10,math.huge))
+print('PASS: DAE unit scaling, footprint bounds, offsets, heights, masks, renderer inputs and default-scale reset')
