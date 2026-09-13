@@ -908,8 +908,9 @@ function widget:Update(dt)
 		end
 		options[getOptionByID('sndvolmaster')].value = tonumber(Spring.GetConfigInt("snd_volmaster",40) or 40)	-- update value because other widgets can adjust this too
 		if getOptionByID('sndvolmusic') then
-			if WG['music'] and WG['music'].GetMusicVolume then
-				options[getOptionByID('sndvolmusic')].value = WG['music'].GetMusicVolume()
+			local music = WG.Music or WG['music']
+			if music and music.GetMusicVolume then
+				options[getOptionByID('sndvolmusic')].value = music.GetMusicVolume()
 			else
 				options[getOptionByID('sndvolmusic')].value = tonumber(Spring.GetConfigInt("snd_volmusic",20) or 20)
 			end
@@ -2259,8 +2260,9 @@ function init()
 		{id="sndvolmusic", group="snd", basic=true, name="Music volume", type="slider", min=0, max=50, step=1, value=tonumber(Spring.GetConfigInt("snd_volmusic",20) or 20),
 		 onload = function(i) end,
 		 onchange = function(i, value)
-			 if WG['music'] and WG['music'].SetMusicVolume then
-				 WG['music'].SetMusicVolume(value)
+			 local music = WG.Music or WG['music']
+			 if music and music.SetMusicVolume then
+				 music.SetMusicVolume(value)
 			 else
 				 Spring.SetConfigInt("snd_volmusic", value)
 			 end
@@ -4242,3 +4244,4 @@ function widget:SetConfigData(data)
 		useNetworkSmoothing = data.useNetworkSmoothing
 	end
 end
+
