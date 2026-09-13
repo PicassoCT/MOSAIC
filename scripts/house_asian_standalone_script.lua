@@ -30,9 +30,9 @@ local cubeDim = {
 }
 
 -- Standalone models need authored/model-specific voxels, not procedural blocks.
--- Future implementation: populate model-local voxel centers and a common size.
-function GetBuildingShadowVoxels()
-    return {}, 16
+-- Future implementation: supply a floor grid, column heights and optional masks.
+function GetBuildingShadowColumns()
+    return {columns = {}, cellSize = 16, levelHeight = 16}
 end
 
 local function buildStandaloneShadowVoxels()
@@ -597,3 +597,4 @@ end
 function getRooftopPieces()
     return RoofTopPieces or {}
 end
+
