@@ -53,6 +53,8 @@ local vsx, vsy = gl.GetViewSizes()
 local propagation
 local propagationView = true
 local propagationLayer = 1
+local previewSpan = 0 -- world elmos; zero shows the whole map
+local previewExposure = 4
 
 -- Flat x/z/base/mask values: four numbers per occupied column.
 local function receiveBuildingShadowBegin(unitID, unitDefID, cellSize, levelHeight)
@@ -298,7 +300,54 @@ local function getDebugEmitter()
     end
 end
 
+local function focusPreview(unitID, pieceID)
+    local pieces = unitID and neonUnitTables[unitID]
+    if pieces then
+        local found = false
+        for _, id in ipairs(pieces) do
+            if not pieceID or id == pieceID then lockedUnit, lockedPiece = unitID, id; found = true; break end
+        end
+        if not found then return false end
+    elseif unitID then
+        return false
+    end
+    emitterU, emitterV, emitterY = getDebugEmitter()
+    if not emitterU then return false end
+    propagationLayer = math.max(1, math.min(OCCLUSION_LAYER_COUNT,
+        math.floor(emitterY * OCCLUSION_LAYER_COUNT / OCCLUSION_WORLD_HEIGHT) + 1))
+    refreshAccumulator = ATLAS_REFRESH_SECONDS
+    if propagation then propagation.ready = false end
+    return true
+end
+
 function widget:TextCommand(command)
+    if command == "radiancedebug zoom off" then previewSpan = 0; return true end
+    local span = command:match("^radiancedebug zoom (%d+)$")
+    if command == "radiancedebug zoom" or span then
+        local selected = (Spring.GetSelectedUnits() or {})[1]
+        if focusPreview(selected) then
+            previewSpan = math.max(128, math.min(tonumber(span) or 1024, math.min(Game.mapSizeX,Game.mapSizeZ)))
+            propagationView = true
+        else
+            Spring.Echo("Radiance preview: select a registered neon building, or deselect to use the current emitter")
+        end
+        return true
+    end
+    local unit, piece = command:match("^radiancedebug emitter (%d+) (%d+)$")
+    unit = unit or command:match("^radiancedebug emitter (%d+)$")
+    if unit then
+        if focusPreview(tonumber(unit),tonumber(piece)) then
+            previewSpan = previewSpan > 0 and previewSpan or 1024
+            propagationView = true
+        else Spring.Echo("Radiance preview: that unit/piece is not a registered emitter") end
+        return true
+    end
+    local exposure = command:match("^radiancedebug exposure ([%d%.]+)$")
+    if exposure then
+        exposure = tonumber(exposure)
+        if exposure then previewExposure = math.max(0.125, math.min(64,exposure)) end
+        return true
+    end
     if command == "radiancedebug propagation" then
         propagationView = true
         return true
@@ -533,6 +582,7 @@ local function drawNeonPieces()
     if propagation then
         local bandHeight = OCCLUSION_WORLD_HEIGHT / OCCLUSION_LAYER_COUNT
         gl.UseShader(propagation.emissionShader)
+        gl.Uniform(propagation.atlasSizeLoc, ATLAS_SIZE, ATLAS_SIZE)
         gl.Uniform(propagation.heightLoc, (propagationLayer-1)*bandHeight, propagationLayer*bandHeight)
     end
 
@@ -680,16 +730,32 @@ function widget:DrawScreen()
             "Propagated radiance (unit intensity)", "Radiance with day/night intensity"}
     end
 
+    local u0,v0,u1,v1 = 0,0,1,1
+    if propagationView then
+        emitterU, emitterV, emitterY = getDebugEmitter()
+        if previewSpan > 0 and emitterU then
+            local du = math.min(1,previewSpan/Game.mapSizeX)
+            local dv = math.min(1,previewSpan/Game.mapSizeZ)
+            u0 = math.max(0, math.min(1-du,emitterU-du*0.5))
+            v0 = math.max(0, math.min(1-dv,emitterV-dv*0.5))
+            u1,v1 = u0+du,v0+dv
+        end
+    end
     gl.UseShader(0)
     gl.Blending(false)
     for i = 1, 4 do
         local x, y = 16 + (i - 1) * (size + 16), 16
         gl.Color(1, 1, 1, 1)
         gl.Texture(textures[i])
-        gl.TexRect(x, y, x + size, y + size, 0, 1, 1, 0)
+        if propagationView and propagation and propagation.ready and i ~= 2 then
+            gl.UseShader(propagation.previewShader)
+            gl.Uniform(propagation.previewExposureLoc,previewExposure)
+        end
+        gl.TexRect(x, y, x + size, y + size, u0, v1, u1, v0)
+        gl.UseShader(0)
         gl.Texture(false)
-        if not propagationView and emitterU then
-            local px, py = x + emitterU * size, y + (1 - emitterV) * size
+        if emitterU and emitterU >= u0 and emitterU <= u1 and emitterV >= v0 and emitterV <= v1 then
+            local px, py = x + (emitterU-u0)/(u1-u0) * size, y + (v1-emitterV)/(v1-v0) * size
             gl.Color(0, 1, 0, 1)
             gl.Rect(px - 4, py - 1, px + 4, py + 1)
             gl.Rect(px - 1, py - 4, px + 1, py + 4)
@@ -699,9 +765,10 @@ function widget:DrawScreen()
     end
 
     if propagationView and propagation then
-        gl.Text(string.format("Radiance propagation | height %.0f–%.0f | buildings %d | emission %.2f | range %.0f elmos",
+        gl.Text(string.format("Radiance propagation | height %.0f–%.0f | buildings %d | emission %.2f | range %.0f elmos | preview %.0f elmos, exposure %.2fx | unit %s piece %s",
             propagation.heightMin or 0, propagation.heightMax or 128, occlusionBuildingCount,
-            neonLightPercent, (propagation.baseInterval or 0)*85),16,size+44,13,"o")
+            neonLightPercent, (propagation.baseInterval or 0)*85,
+            previewSpan,previewExposure,tostring(lockedUnit),tostring(lockedPiece)),16,size+44,13,"o")
     else
         gl.Text(string.format(
             "Radiance diagnostics | unit %s piece %s | height %.1f | column buildings %d | real emission %.2f",
