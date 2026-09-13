@@ -183,11 +183,18 @@ Additional checks, from repository root:
 
 ```sh
 lua5.4 tests/neon_radiance_lifecycle.lua
-MESA_GL_VERSION_OVERRIDE=3.3COMPAT python tests/neon_radiance_gpu.py
+python3 -m pip install numpy moderngl glfw
+python3 tests/neon_radiance_gpu.py
+# Headless Mesa CI only:
+MESA_GL_VERSION_OVERRIDE=3.3COMPAT python3 tests/neon_radiance_gpu.py --context egl
 ```
 
-The GPU test requires NumPy, ModernGL and Mesa EGL. It compiles the actual GLSL
-in a compatibility context and exercises propagation, wall rejection, visibility
+The GPU test defaults to a hidden GLFW window with an explicit OpenGL 3.3
+compatibility profile, including on NVIDIA. Run it from a graphical desktop.
+The optional EGL mode is for headless Mesa CI; the Mesa profile override does
+not configure NVIDIA's driver. The test verifies the profile before drawing,
+reports the driver and per-cascade output, and checks GL errors at every draw.
+It compiles the actual GLSL in a compatibility context and exercises propagation, wall rejection, visibility
 merging, intensity, source removal and emission-band clipping. The lifecycle
 test checks coarse-to-fine ordering, absence of render-target feedback, texture
 bindings and cleanup at each shader/texture allocation failure. These checks
