@@ -40,15 +40,41 @@ boringChances = {
     streetwall = 0.1
 }
 local voxels = {}
-local voxelSize = cubeDim.length
+local shadowSubdivisions = 4
+local voxelSize = cubeDim.length / shadowSubdivisions
 
-
+-- Same placement contract as the build calls: X/Z are the block center,
+-- Y is its base, all in model-local elmos. Fill the rectangular floor block
+-- with common-sized cubes; never add the unit's world position here.
 function addShadowVoxel(x, z, y)
-    voxels[#voxels + 1] = {x = x, y = y, z = z}
+    local layers = math.ceil(cubeDim.heigth / voxelSize)
+    -- Fit both vertical bounds exactly. A small overlap between layers avoids
+    -- gaps without extending the occluder below the floor or above its ceiling.
+    local yStep = (cubeDim.heigth - voxelSize) / (layers - 1)
+    local firstOffset = -cubeDim.length / 2 + voxelSize / 2
+    for ix = 0, shadowSubdivisions - 1 do
+        for iz = 0, shadowSubdivisions - 1 do
+            for iy = 0, layers - 1 do
+                voxels[#voxels + 1] = {
+                    x = x + firstOffset + ix * voxelSize,
+                    y = y + voxelSize / 2 + iy * yStep,
+                    z = z + firstOffset + iz * voxelSize,
+                }
+            end
+        end
+    end
 end
 
 function GetBuildingShadowVoxels()
     return voxels, voxelSize
+end
+
+-- Called by either construction-animation completion path, after the assembled
+-- building is visible. The gadget sends only primitives across the sync boundary.
+local function finalizeBuildingShadowVoxels()
+    if GG.MarkBuildingShadowVolumeDirty then
+        GG.MarkBuildingShadowVolumeDirty(unitID)
+    end
 end
 
 decoChances = boringChances
@@ -988,9 +1014,7 @@ function buildAnimation()
         hideT(TablesOfPiecesGroups["BuildCrane"])
         while boolDoneShowing == false do Sleep(100) end
         showT(ToShowTable)
-        if GG.MarkBuildingShadowVolumeDirty then
-            GG.MarkBuildingShadowVolumeDirty(unitID)
-        end
+        finalizeBuildingShadowVoxels()
         return
     end
     StartThread(PlaySoundByUnitDefID, unitDefID, "sounds/building/construction/construction"..math.random(1,7)..".ogg", 1.0, 20000, 3, 0)
@@ -1038,9 +1062,7 @@ function buildAnimation()
     hideT(builT)
     hideT(TablesOfPiecesGroups["Build01Sub"])
     hideT(TablesOfPiecesGroups["BuildCrane"])
-    if GG.MarkBuildingShadowVolumeDirty then
-        GG.MarkBuildingShadowVolumeDirty(unitID)
-    end
+    finalizeBuildingShadowVoxels()
 end
 
 function buildBuilding()
@@ -1058,7 +1080,7 @@ function buildBuilding()
     end
 
     addRoofDeocrate(3, TablesOfPiecesGroups[materialColourName .. "Roof"])
-    --TODO Register hook for voxellization complete
+    -- Releases buildAnimation, which publishes voxels after construction finishes.
     boolDoneShowing = true
 end
 
