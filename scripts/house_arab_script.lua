@@ -1,4 +1,4 @@
---include "lib_building_voxels.lua"
+include "lib_building_voxels.lua"
 include "createCorpse.lua"
 include "lib_OS.lua"
 include "lib_UnitScript.lua"
@@ -39,35 +39,7 @@ boringChances = {
     windowwall = 0.5,
     streetwall = 0.1
 }
-local voxels = {}
-local shadowSubdivisions = 4
-local voxelSize = cubeDim.length / shadowSubdivisions
-
--- Same placement contract as the build calls: X/Z are the block center,
--- Y is its base, all in model-local elmos. Fill the rectangular floor block
--- with common-sized cubes; never add the unit's world position here.
-function addShadowVoxel(x, z, y)
-    local layers = math.ceil(cubeDim.heigth / voxelSize)
-    -- Fit both vertical bounds exactly. A small overlap between layers avoids
-    -- gaps without extending the occluder below the floor or above its ceiling.
-    local yStep = (cubeDim.heigth - voxelSize) / (layers - 1)
-    local firstOffset = -cubeDim.length / 2 + voxelSize / 2
-    for ix = 0, shadowSubdivisions - 1 do
-        for iz = 0, shadowSubdivisions - 1 do
-            for iy = 0, layers - 1 do
-                voxels[#voxels + 1] = {
-                    x = x + firstOffset + ix * voxelSize,
-                    y = y + voxelSize / 2 + iy * yStep,
-                    z = z + firstOffset + iz * voxelSize,
-                }
-            end
-        end
-    end
-end
-
-function GetBuildingShadowVoxels()
-    return voxels, voxelSize
-end
+initializeBuildingShadowVoxels(cubeDim.length, cubeDim.heigth, 4)
 
 -- Called by either construction-animation completion path, after the assembled
 -- building is visible. The gadget sends only primitives across the sync boundary.
