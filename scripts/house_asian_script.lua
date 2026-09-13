@@ -1778,7 +1778,7 @@ function threadStarter()
 end
 
 function buildBuilding(boolIsReconstruction)
-    initializeBuildingShadowVoxels(cubeDim.length, cubeDim.heigth, 4)
+    initializeBuildingShadowVoxels(cubeDim.length, cubeDim.heigth)
     boolDoneShowing = false
     StartThread(buildAnimation, boolIsReconstruction)
     StartThread(threadStarter)
@@ -1842,3 +1842,4 @@ end
 function getRooftopPieces()
     return RoofTopPieces or {}
 end
+
