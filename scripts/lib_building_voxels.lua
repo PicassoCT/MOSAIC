@@ -1,7 +1,9 @@
 -- Compact building shadow geometry. No expanded voxel arrays are retained.
--- Public placement hook stays addShadowVoxel(x, z, baseY), in model-local elmos.
+-- Placement inputs stay in script movement units; output is model-local elmos.
+-- Exporter unit conversion is configured once and applied only by the getter.
 local cells = {}
 local cellSize, levelHeight
+local scriptToModelScale = 1
 local originX, originZ
 local minX, maxX, minZ, maxZ
 local MAX_LEVELS = 30
@@ -10,8 +12,11 @@ local function finite(n)
     return type(n) == "number" and n == n and math.abs(n) < math.huge
 end
 
-function initializeBuildingShadowVoxels(length, height)
+function initializeBuildingShadowVoxels(length, height, unitScale)
     assert(finite(length) and length > 0 and finite(height) and height > 0)
+    unitScale = unitScale or 1
+    assert(finite(unitScale) and unitScale > 0)
+    scriptToModelScale = unitScale
     cellSize, levelHeight = length, height
     cells = {}
     originX, originZ, minX, maxX, minZ, maxZ = nil, nil, nil, nil, nil, nil
@@ -52,10 +57,14 @@ end
 -- Normal case: 2D height array plus two dimensions. Optional sparse tables
 -- preserve terrain offsets and missing intermediate floors without voxelization.
 function GetBuildingShadowColumns()
-    local result = {columns = {}, cellSize = cellSize or 16, levelHeight = levelHeight or 16}
+    local result = {
+        columns = {},
+        cellSize = (cellSize or 16) * scriptToModelScale,
+        levelHeight = (levelHeight or 16) * scriptToModelScale,
+    }
     if not minX then return result end
-    result.originX = originX + minX * cellSize
-    result.originZ = originZ + minZ * cellSize
+    result.originX = (originX + minX * cellSize) * scriptToModelScale
+    result.originZ = (originZ + minZ * cellSize) * scriptToModelScale
     for ix = minX, maxX do
         local outX = ix - minX + 1
         local row = {}
@@ -67,7 +76,7 @@ function GetBuildingShadowColumns()
             if cell and cell.base ~= 0 then
                 result.baseHeights = result.baseHeights or {}
                 result.baseHeights[outX] = result.baseHeights[outX] or {}
-                result.baseHeights[outX][outZ] = cell.base
+                result.baseHeights[outX][outZ] = cell.base * scriptToModelScale
             end
             if cell and cell.mask ~= 2 ^ cell.levels - 1 then
                 result.masks = result.masks or {}
