@@ -175,7 +175,7 @@ function gadget:GameFrame(frame)
         local cmd,_,tag = Spring.GetUnitCurrentCommand(id)
         if not alive(id) or not alive(s.house) then
             release(id)
-        elseif (s.phase ~= "idle" and tag ~= s.tag) or (s.phase == "idle" and cmd and cmd ~= ROOF) then
+        elseif (s.phase ~= "idle" and tag ~= s.tag) or (s.phase == "idle" and cmd and cmd ~= ROOF and cmd ~= CMD.ATTACK) then
             release(id)
         elseif s.phase == "approach" then
             local here = position(id)

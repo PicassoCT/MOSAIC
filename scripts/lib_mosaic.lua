@@ -226,6 +226,11 @@ function getGameConfig()
           maxNr = 8,
           maxDispatchTime = 2000,
           minSpawnDistance = 2200,
+          reportDelayFrames = 8 * 30,
+          escapeFrames = 30 * 30,
+          searchFrames = 45 * 30,
+          sightRange = 650,
+          searchRadius = 600,
         },
 
         teargasRadius = 200,
@@ -507,22 +512,13 @@ end
     end
 
  function getLoudLongRangeWeaponTypes(WeaponDefs)
-    assert(WeaponDefs)
-     nameOfGun={
-        "javelinrocket",
-    	"mortar",
-    	"orbitalrailgun",
-    	"railgun",
-    	"sniperrifle ",
-    	"tankcannon"
-	}
-    longRangeLoudWeaponTypes ={}
-	for defId,def in pairs(WeaponDefs) do
-	   if nameOfGun[def.name] then
-		longRangeLoudWeaponTypes[defId] = def.name
-	   end
-	end
-	return longRangeLoudWeaponTypes
+    local names = {javelinrocket=true, mortar=true, orbitalrailgun=true,
+        railgun=true, sniperrifle=true, slowsniperrifle=true, tankcannon=true}
+    local result = {}
+    for id, def in pairs(WeaponDefs) do
+        if names[def.name] then result[id] = true end
+    end
+    return result
  end
 
   function getLaunchablePayloadTypes(UnitDefs)
