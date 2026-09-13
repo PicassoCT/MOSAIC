@@ -31,7 +31,7 @@ local neonPieceCount = 0
 local topDownTex
 local occlusionTex = {}
 local occlusionBuildings = {}
-local pendingBuildingVoxels = {}
+local pendingBuildingColumns = {}
 local occlusionDirty = true
 local occlusionBuildingCount = 0
 local directLightTex
@@ -51,54 +51,67 @@ local directLightReady = false
 local refreshAccumulator = ATLAS_REFRESH_SECONDS
 local vsx, vsy = gl.GetViewSizes()
 
-local function receiveBuildingShadowBegin(unitID, unitDefID, voxelSize)
-    pendingBuildingVoxels[unitID] = {
-        unitDefID = unitDefID,
-        voxelSize = voxelSize,
-        voxels = {},
+-- Flat x/z/base/mask values: four numbers per occupied column.
+local function receiveBuildingShadowBegin(unitID, unitDefID, cellSize, levelHeight)
+    pendingBuildingColumns[unitID] = {
+        unitDefID = unitDefID, cellSize = cellSize, levelHeight = levelHeight,
+        columns = {},
     }
 end
 
-local function receiveBuildingShadowVoxel(unitID, x, y, z)
-    local pending = pendingBuildingVoxels[unitID]
-    if pending then
-        pending.voxels[#pending.voxels + 1] = {mx = x, my = y, mz = z}
-    end
+local function receiveBuildingShadowColumn(unitID, x, z, base, mask)
+    local building = pendingBuildingColumns[unitID]
+    if not building then return end
+    local c = building.columns
+    local n = #c
+    c[n + 1], c[n + 2], c[n + 3], c[n + 4] = x, z, base, mask
 end
 
 local function receiveBuildingShadowEnd(unitID)
-    local building = pendingBuildingVoxels[unitID]
-    pendingBuildingVoxels[unitID] = nil
+    local building = pendingBuildingColumns[unitID]
+    pendingBuildingColumns[unitID] = nil
     if not building then return end
-
     occlusionBuildings[unitID] = nil
     occlusionDirty = true
-    if not Spring.ValidUnitID(unitID) or Spring.GetUnitIsDead(unitID) then return end
+    if #building.columns == 0 or not Spring.ValidUnitID(unitID) or Spring.GetUnitIsDead(unitID) then return end
     local ux, uy, uz = Spring.GetUnitBasePosition(unitID)
     local front, up, right = Spring.GetUnitVectors(unitID)
     if not ux or not front or not up or not right then return end
-
-    -- Same model-to-world basis used by the existing voxel overlay.
-    for i = 1, #building.voxels do
-        local v = building.voxels[i]
-        local x, y, z = v.mx, v.my, v.mz
-        v.x = ux - right[1] * x + up[1] * y + front[1] * z
-        v.y = uy - right[2] * x + up[2] * y + front[2] * z
-        v.z = uz - right[3] * x + up[3] * y + front[3] * z
-    end
-    building.heading = Spring.GetUnitHeading(unitID) or 0
-    building.voxelCount = #building.voxels
+    building.ux, building.uy, building.uz = ux, uy, uz
+    building.front, building.up, building.right = front, up, right
+    building.columnCount = #building.columns / 4
     occlusionBuildings[unitID] = building
 end
 
 local function receiveBuildingShadowRemove(unitID)
-    pendingBuildingVoxels[unitID] = nil
+    pendingBuildingColumns[unitID] = nil
     occlusionBuildings[unitID] = nil
     if debugVoxelUnit == unitID then
         debugVoxelUnit = nil
         debugVoxelSummary = ""
     end
     occlusionDirty = true
+end
+
+-- Collapse consecutive occupied floors to prisms without allocating geometry.
+local function forEachColumnRun(building, emit, bottom, top)
+    local c, half, height = building.columns, building.cellSize * 0.5, building.levelHeight
+    for i = 1, #c, 4 do
+        local x, z, base, mask = c[i], c[i + 1], c[i + 2], c[i + 3]
+        local level = 0
+        while mask > 0 do
+            if mask % 2 == 0 then
+                mask, level = math.floor(mask / 2), level + 1
+            else
+                local first = level
+                repeat
+                    mask, level = math.floor(mask / 2), level + 1
+                until mask % 2 == 0
+                emit(building, x - half, base + first * height, z - half,
+                    x + half, base + level * height, z + half, bottom, top)
+            end
+        end
+    end
 end
 
 local function dayPercentToNeonPercent(percent)
@@ -132,16 +145,53 @@ local function removeSelf(message)
     widgetHandler:RemoveWidget(widget)
 end
 
-local function drawOcclusionQuad(sizeX, sizeZ)
-    local halfX = sizeX * 0.5
-    local halfZ = sizeZ * 0.5
+local function emitBoxFaces(vertex, building, x0, y0, z0, x1, y1, z1)
 
-    gl.BeginEnd(GL.QUADS, function()
-        gl.Vertex(-halfX, -halfZ, 0)
-        gl.Vertex( halfX, -halfZ, 0)
-        gl.Vertex( halfX,  halfZ, 0)
-        gl.Vertex(-halfX,  halfZ, 0)
-    end)
+    vertex(building, x0, y0, z0); vertex(building, x1, y0, z0); vertex(building, x1, y1, z0); vertex(building, x0, y1, z0)
+    vertex(building, x1, y0, z1); vertex(building, x0, y0, z1); vertex(building, x0, y1, z1); vertex(building, x1, y1, z1)
+    vertex(building, x0, y0, z1); vertex(building, x0, y0, z0); vertex(building, x0, y1, z0); vertex(building, x0, y1, z1)
+    vertex(building, x1, y0, z0); vertex(building, x1, y0, z1); vertex(building, x1, y1, z1); vertex(building, x1, y1, z0)
+    vertex(building, x0, y1, z0); vertex(building, x1, y1, z0); vertex(building, x1, y1, z1); vertex(building, x0, y1, z1)
+    vertex(building, x0, y0, z1); vertex(building, x1, y0, z1); vertex(building, x1, y0, z0); vertex(building, x0, y0, z0)
+end
+
+local function emitBoxLines(vertex, building, x0, y0, z0, x1, y1, z1)
+
+    vertex(building, x0, y0, z0); vertex(building, x1, y0, z0)
+    vertex(building, x1, y0, z0); vertex(building, x1, y0, z1)
+    vertex(building, x1, y0, z1); vertex(building, x0, y0, z1)
+    vertex(building, x0, y0, z1); vertex(building, x0, y0, z0)
+    vertex(building, x0, y1, z0); vertex(building, x1, y1, z0)
+    vertex(building, x1, y1, z0); vertex(building, x1, y1, z1)
+    vertex(building, x1, y1, z1); vertex(building, x0, y1, z1)
+    vertex(building, x0, y1, z1); vertex(building, x0, y1, z0)
+    vertex(building, x0, y0, z0); vertex(building, x0, y1, z0)
+    vertex(building, x1, y0, z0); vertex(building, x1, y1, z0)
+    vertex(building, x1, y0, z1); vertex(building, x1, y1, z1)
+    vertex(building, x0, y0, z1); vertex(building, x0, y1, z1)
+end
+
+local function projectedVertex(building, x, y, z)
+    local r, u, f = building.right, building.up, building.front
+    gl.Vertex(building.ux - r[1] * x + u[1] * y + f[1] * z,
+        building.uz - r[3] * x + u[3] * y + f[3] * z, 0)
+end
+
+local function emitOcclusionRun(building, x0, y0, z0, x1, y1, z1, bottom, top)
+    local r, u, f = building.right, building.up, building.front
+    local midY = building.uy - r[2] * (x0 + x1) * 0.5 +
+        u[2] * (y0 + y1) * 0.5 + f[2] * (z0 + z1) * 0.5
+    local extentY = (math.abs(r[2]) * (x1 - x0) + math.abs(u[2]) * (y1 - y0) +
+        math.abs(f[2]) * (z1 - z0)) * 0.5
+    if midY + extentY < bottom or midY - extentY > top then return end
+    -- Full prism projection is exact for upright houses and conservative for tilt.
+    emitBoxFaces(projectedVertex, building, x0, y0, z0, x1, y1, z1)
+end
+
+local function emitOcclusionColumns(bottom, top)
+    for _, building in pairs(occlusionBuildings) do
+        forEachColumnRun(building, emitOcclusionRun, bottom, top)
+    end
 end
 
 local function drawOcclusionLayer(layerIndex)
@@ -166,21 +216,8 @@ local function drawOcclusionLayer(layerIndex)
     gl.PushMatrix()
     gl.LoadIdentity()
 
-    for _, building in pairs(occlusionBuildings) do
-        local voxelSize = building.voxelSize
-        local half = voxelSize * 0.5
-        local heading = building.heading or 0
-        for i = 1, #building.voxels do
-            local voxel = building.voxels[i]
-            if voxel.y + half >= layerBottom and voxel.y - half <= layerTop then
-                gl.PushMatrix()
-                gl.Translate(voxel.x, voxel.z, 0)
-                gl.Rotate(-heading * 360 / 65536, 0, 0, 1)
-                drawOcclusionQuad(voxelSize, voxelSize)
-                gl.PopMatrix()
-            end
-        end
-    end
+    -- One BeginEnd callback per layer, not one allocation per voxel.
+    gl.BeginEnd(GL.QUADS, emitOcclusionColumns, layerBottom, layerTop)
 
     gl.PopMatrix()
     gl.MatrixMode(GL.PROJECTION)
@@ -277,7 +314,7 @@ function widget:TextCommand(command)
         debugVoxelUnit = unitID
         Spring.Echo(
             "Radiance voxels: locked house " .. unitID ..
-            "; voxel cells are drawn directly over the rendered building; /radiancedebug voxels off to hide"
+            "; occupied column runs are drawn directly over the rendered building; /radiancedebug voxels off to hide"
         )
         return true
     end
@@ -427,13 +464,13 @@ function widget:Initialize()
     end
 
     widgetHandler:RegisterGlobal("RecieveAllNeonUnitsPieces", recieveNeonHoloLightPiecesByUnit)
-    widgetHandler:RegisterGlobal("ReceiveBuildingShadowBegin", receiveBuildingShadowBegin)
-    widgetHandler:RegisterGlobal("ReceiveBuildingShadowVoxel", receiveBuildingShadowVoxel)
-    widgetHandler:RegisterGlobal("ReceiveBuildingShadowEnd", receiveBuildingShadowEnd)
-    widgetHandler:RegisterGlobal("ReceiveBuildingShadowRemove", receiveBuildingShadowRemove)
+    widgetHandler:RegisterGlobal("ReceiveBuildingShadowColumnsBegin", receiveBuildingShadowBegin)
+    widgetHandler:RegisterGlobal("ReceiveBuildingShadowColumn", receiveBuildingShadowColumn)
+    widgetHandler:RegisterGlobal("ReceiveBuildingShadowColumnsEnd", receiveBuildingShadowEnd)
+    widgetHandler:RegisterGlobal("ReceiveBuildingShadowColumnsRemove", receiveBuildingShadowRemove)
 
     Spring.Echo(
-        "NeonLight Radiance Cascade: building-script voxel occlusion enabled (" ..
+        "NeonLight Radiance Cascade: compact building-column occlusion enabled (" ..
         OCCLUSION_LAYER_COUNT .. " layers)"
     )
 end
@@ -519,36 +556,16 @@ function widget:DrawWorldPreUnit()
     end
 end
 
-local function emitVoxelFaces(voxel, half)
-    local x0, x1 = voxel.mx - half, voxel.mx + half
-    local y0, y1 = voxel.my - half, voxel.my + half
-    local z0, z1 = voxel.mz - half, voxel.mz + half
-
-    gl.Vertex(x0, y0, z0); gl.Vertex(x1, y0, z0); gl.Vertex(x1, y1, z0); gl.Vertex(x0, y1, z0)
-    gl.Vertex(x1, y0, z1); gl.Vertex(x0, y0, z1); gl.Vertex(x0, y1, z1); gl.Vertex(x1, y1, z1)
-    gl.Vertex(x0, y0, z1); gl.Vertex(x0, y0, z0); gl.Vertex(x0, y1, z0); gl.Vertex(x0, y1, z1)
-    gl.Vertex(x1, y0, z0); gl.Vertex(x1, y0, z1); gl.Vertex(x1, y1, z1); gl.Vertex(x1, y1, z0)
-    gl.Vertex(x0, y1, z0); gl.Vertex(x1, y1, z0); gl.Vertex(x1, y1, z1); gl.Vertex(x0, y1, z1)
-    gl.Vertex(x0, y0, z1); gl.Vertex(x1, y0, z1); gl.Vertex(x1, y0, z0); gl.Vertex(x0, y0, z0)
+local function modelVertex(_, x, y, z)
+    gl.Vertex(x, y, z)
 end
 
-local function emitVoxelLines(voxel, half)
-    local x0, x1 = voxel.mx - half, voxel.mx + half
-    local y0, y1 = voxel.my - half, voxel.my + half
-    local z0, z1 = voxel.mz - half, voxel.mz + half
+local function emitDebugFaces(building, x0, y0, z0, x1, y1, z1)
+    emitBoxFaces(modelVertex, building, x0, y0, z0, x1, y1, z1)
+end
 
-    gl.Vertex(x0, y0, z0); gl.Vertex(x1, y0, z0)
-    gl.Vertex(x1, y0, z0); gl.Vertex(x1, y0, z1)
-    gl.Vertex(x1, y0, z1); gl.Vertex(x0, y0, z1)
-    gl.Vertex(x0, y0, z1); gl.Vertex(x0, y0, z0)
-    gl.Vertex(x0, y1, z0); gl.Vertex(x1, y1, z0)
-    gl.Vertex(x1, y1, z0); gl.Vertex(x1, y1, z1)
-    gl.Vertex(x1, y1, z1); gl.Vertex(x0, y1, z1)
-    gl.Vertex(x0, y1, z1); gl.Vertex(x0, y1, z0)
-    gl.Vertex(x0, y0, z0); gl.Vertex(x0, y1, z0)
-    gl.Vertex(x1, y0, z0); gl.Vertex(x1, y1, z0)
-    gl.Vertex(x1, y0, z1); gl.Vertex(x1, y1, z1)
-    gl.Vertex(x0, y0, z1); gl.Vertex(x0, y1, z1)
+local function emitDebugLines(building, x0, y0, z0, x1, y1, z1)
+    emitBoxLines(modelVertex, building, x0, y0, z0, x1, y1, z1)
 end
 
 function widget:DrawWorld()
@@ -561,7 +578,6 @@ function widget:DrawWorld()
         return
     end
 
-    local half = building.voxelSize * 0.5
     gl.UseShader(0)
     gl.Texture(false)
     gl.DepthTest(false)
@@ -573,25 +589,17 @@ function widget:DrawWorld()
     gl.UnitMultMatrix(debugVoxelUnit)
 
     gl.Color(0.1, 0.9, 1.0, 0.10)
-    gl.BeginEnd(GL.QUADS, function()
-        for i = 1, #building.voxels do
-            emitVoxelFaces(building.voxels[i], half)
-        end
-    end)
+    gl.BeginEnd(GL.QUADS, forEachColumnRun, building, emitDebugFaces)
 
     gl.LineWidth(1.25)
     gl.Color(0.1, 0.95, 1.0, 0.80)
-    gl.BeginEnd(GL.LINES, function()
-        for i = 1, #building.voxels do
-            emitVoxelLines(building.voxels[i], half)
-        end
-    end)
+    gl.BeginEnd(GL.LINES, forEachColumnRun, building, emitDebugLines)
 
     gl.PopMatrix()
 
     debugVoxelSummary = string.format(
-        "Shadow house %d | script voxels %d @ %g elmos",
-        debugVoxelUnit, building.voxelCount, building.voxelSize
+        "Shadow house %d | columns %d | cell %g, floor %g elmos",
+        debugVoxelUnit, building.columnCount, building.cellSize, building.levelHeight
     )
 
     gl.LineWidth(1)
@@ -614,7 +622,7 @@ function widget:DrawScreen()
     }
     local titles = {
         "No occlusion (unit intensity)",
-        "Voxel occupancy at emitter layer " .. layer,
+        "Column occupancy at emitter layer " .. layer,
         "Occluded (clearance " .. diagnosticClearance .. ")",
         "First hit: red=near receiver, blue=near emitter",
     }
@@ -638,7 +646,7 @@ function widget:DrawScreen()
     end
 
     gl.Text(string.format(
-        "Radiance diagnostics | unit %s piece %s | height %.1f | voxel buildings %d | real emission %.2f",
+        "Radiance diagnostics | unit %s piece %s | height %.1f | column buildings %d | real emission %.2f",
         tostring(lockedUnit), tostring(lockedPiece), emitterY or 0, occlusionBuildingCount, neonLightPercent
     ), 16, size + 44, 13, "o")
 
@@ -651,10 +659,10 @@ end
 
 function widget:Shutdown()
     widgetHandler:DeregisterGlobal("RecieveAllNeonUnitsPieces")
-    widgetHandler:DeregisterGlobal("ReceiveBuildingShadowBegin")
-    widgetHandler:DeregisterGlobal("ReceiveBuildingShadowVoxel")
-    widgetHandler:DeregisterGlobal("ReceiveBuildingShadowEnd")
-    widgetHandler:DeregisterGlobal("ReceiveBuildingShadowRemove")
+    widgetHandler:DeregisterGlobal("ReceiveBuildingShadowColumnsBegin")
+    widgetHandler:DeregisterGlobal("ReceiveBuildingShadowColumn")
+    widgetHandler:DeregisterGlobal("ReceiveBuildingShadowColumnsEnd")
+    widgetHandler:DeregisterGlobal("ReceiveBuildingShadowColumnsRemove")
 
     if unoccludedTex then gl.DeleteTexture(unoccludedTex) end
     if firstHitTex then gl.DeleteTexture(firstHitTex) end
@@ -679,4 +687,7 @@ function widget:Shutdown()
         end
     end
     occlusionTex = {}
+    occlusionBuildings = {}
+    pendingBuildingColumns = {}
 end
+
