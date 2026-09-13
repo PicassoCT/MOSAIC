@@ -1007,51 +1007,37 @@ if (gadgetHandler:IsSyncedCode()) then
                         end
             end)
         end
-        if loudLongRangeWeaponTypes[projWeaponDefID] then
-            distToOwner = math.huge
-            nearest = proOwnerID
-            gameFrame = spGetGameFrame()
-            allUnitsNearby = foreach(  getAllNearUnit(proID, 1024, gaiaTeamID),
-                        function(id)
-                            defID= spGetUnitDefID(id)
-                            if houseTypeTable[defID]then
-                                return id
-                            end
-                        end,
-                        function(id)
-                            if not civilianBuildingBirdTimer[id] then return id end
-                            if civilianBuildingBirdTimer[id].frame < gameFrame + coolDownTimerCrowsInFramethen then return id end
-                        end,
-                        function(id)
-                            newDistance= distUnitToUnit(id, projOwnerID) 
-                            if newDistance < distToOwner then
-                                nearest = id
-                                distToOwner= newDistance
-                            end
-                        end
-                        )
-            if nearest ~= projOwnerID then
-                id = nil
-                civilianBuildingBirdTimer[nearest] = {frame = gameFrame, boolIsAtSea = isBuildingNearSea(nearest)}
-                if civilianBuildingBirdTimer[nearest].boolIsAtSea then
-                    id = createUnitAtUnit(gaiaTeamID, "gullswarm", nearest)
-                else
-                    id = createUnitAtUnit(gaiaTeamID, "ravenswarm", nearest)
+        if loudLongRangeWeaponTypes[projWeaponDefID] and GG.GlobalGameState == "normal" then
+            local x,y,z = Spring.GetProjectilePosition(proID)
+            if not x then return end
+            local frame = spGetGameFrame()
+            local nearest, best
+            for _, house in ipairs(Spring.GetUnitsInCylinder(x,z,1024,GaiaTeamID) or {}) do
+                if houseTypeTable[spGetUnitDefID(house)] and
+                    frame >= (civilianBuildingBirdTimer[house] or 0) then
+                    local hx,hy,hz = Spring.GetUnitPosition(house)
+                    local d = (hx-x)^2 + (hz-z)^2
+                    if not best or d < best or (d == best and house < nearest) then
+                        nearest, best = house, d
+                    end
                 end
-                px,py,pz = Spring.GetProjectilePosition(proID)
-                genericCallUnitFunctionPassArgs(unitID, setShotNearby, {value = 0, x= px, y= py, z= pz, proOwnerID = proOwnerID})
+            end
+            if nearest then
+                local hx,hy,hz = Spring.GetUnitPosition(nearest)
+                local low, high = getExtremasInArea(hx-768,hz-768,hx+768,hz+768,512)
+                local birdType = low.value <= 1 and high.value < 50 and "gullswarm" or "ravenswarm"
+                local height = Spring.GetUnitHeight(nearest) or 200
+                local swarm = Spring.CreateUnit(birdType,hx,hy+height,hz,0,GaiaTeamID)
+                if swarm then
+                    civilianBuildingBirdTimer[nearest] = frame + coolDownTimerCrowsInFrame
+                    genericCallUnitFunctionPassArgs(swarm, "setShotNearby",
+                        {x=x,y=y,z=z, height=hy+height})
+                end
             end
         end
     end
     coolDownTimerCrowsInFrame = 8*60*30
     civilianBuildingBirdTimer = {}
-
-    function isBuildingNearSea(buildingId)
-        x,y,z = spGetUnitPosition(buildingId)
-        local TestAreaDimension = 768
-        min, max = getExtremasInArea(x -TestAreaDimension, z-TestAreaDimension, x +TestAreaDimension, z+ TestAreaDimension, (TestAreaDimension*2)/3)
-        return min <= 1 and max < 50
-    end
 
     function handleFleeingCivilians(n)
         flightFunction = function(evtID, frame, persPack, startFrame)
@@ -1148,21 +1134,10 @@ if (gadgetHandler:IsSyncedCode()) then
         end
     end
 
-    local oldGameState= "normal"
-    function DeActivateLoudLongRangeWeaponDefs (boolActivate)
-        for k,v in pairs(loudLongRangeWeaponTypes) do
-            Script.SetWatchWeapon(k, boolActivate)  
-        end
+    -- Keep callbacks registered; gate only the bird effect by game state.
+    for weaponID in pairs(loudLongRangeWeaponTypes) do
+        Script.SetWatchWeapon(weaponID, true)
     end
 
-    function gadget:GameFrame(frame)
-        if frame % 90 == 0 then
-            local gameState = GG.GlobalGameState 
-            if oldGameState ~= gameState then
-                DeActivateLoudLongRangeWeaponDefs(gameState == "normal" )
-                oldGameState = gameState
-            end
-        end
-    end
 end
 

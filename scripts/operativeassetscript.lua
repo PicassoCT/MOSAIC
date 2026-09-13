@@ -1043,6 +1043,9 @@ function transitionToCloaked()
 end
 
 function OperativesDiscovered()
+    if GG.PoliceExposureUntil and (GG.PoliceExposureUntil[unitID] or 0) > Spring.GetGameFrame() then
+        return true
+    end
     if GG.OperativesDiscovered == nil then return false end
 
     if GG.OperativesDiscovered[unitID] == nil then
@@ -1091,7 +1094,10 @@ function cloakLoop()
                                     (not OperativesDiscovered() == false)
             boolPreviouslyCloaked = (previousState == "cloaked")
 
-            if boolVisiblyForced == true then return "decloaked" end
+            if boolVisiblyForced == true then
+                setWantCloak(false)
+                return "decloaked"
+            end
 
             if boolInClosedCombat == true then 
                 return "decloaked"

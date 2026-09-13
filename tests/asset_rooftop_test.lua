@@ -59,6 +59,9 @@ tick(100)
 assert(attached[1]==10 and modes[1]=='idle','approach, grapple, walk, attach')
 local _,done=order(ray,1); assert(done)
 current[1]=nil; tick(3); assert(attached[1]==10,'empty queue stays on roof')
+current[1]={CMD.ATTACK,99}; tick(3)
+assert(attached[1]==10 and modes[1]=='idle','attack preserves roof attachment')
+current[1]=nil; tick(1)
 -- Same roof retarget starts at the current roof position without ground teleport.
 local before=pos[1][2]
 order({10,480,1000,0,0,-1,0},2)
