@@ -18,7 +18,7 @@ return function(emissionSize)
     local self = {textures = {}, ready = false}
     function self:Shutdown()
         self.ready = false
-        for _, key in ipairs({"cascadeShader","resolveShader","emissionShader"}) do
+        for _, key in ipairs({"cascadeShader","resolveShader","emissionShader","previewShader"}) do
             if self[key] then gl.DeleteShader(self[key]); self[key] = nil end
         end
         for i = 1, #self.textures do gl.DeleteTexture(self.textures[i]) end
@@ -36,6 +36,8 @@ return function(emissionSize)
     end
     local cascadeSource, resolveSource = source("propagate.frag"), source("resolve.frag")
     local emissionVertex, emissionFragment = source("emission_slice.vert"), source("emission_slice.frag")
+    local emissionGeometry, previewSource = source("emission_slice.geom"), source("preview.frag")
+    if not emissionGeometry or not previewSource then return fail("missing capture/preview shader source") end
     if not cascadeSource or not resolveSource or not emissionVertex or not emissionFragment then
         return fail("missing propagation shader source")
     end
@@ -47,8 +49,10 @@ return function(emissionSize)
     self.resolveShader = gl.CreateShader({fragment = resolveSource,
         uniformInt = {cascadeTex=0, occupancyTex=1, emissionTex=2}})
     if not self.resolveShader then return fail("resolve shader: " .. (gl.GetShaderLog() or "failed")) end
-    self.emissionShader = gl.CreateShader({vertex=emissionVertex,fragment=emissionFragment})
+    self.emissionShader = gl.CreateShader({vertex=emissionVertex,geometry=emissionGeometry,fragment=emissionFragment})
     if not self.emissionShader then return fail("emission slice shader: " .. (gl.GetShaderLog() or "failed")) end
+    self.previewShader = gl.CreateShader({fragment=previewSource,uniformInt={previewTex=0}})
+    if not self.previewShader then return fail("preview shader: " .. (gl.GetShaderLog() or "failed")) end
     local options = {format = GL.RGBA16F or 0x881A, min_filter=GL.NEAREST, mag_filter=GL.NEAREST,
         wrap_s=GL.CLAMP_TO_EDGE, wrap_t=GL.CLAMP_TO_EDGE, fbo=true}
     for i=1,COUNT do
@@ -60,6 +64,8 @@ return function(emissionSize)
     self.texture=gl.CreateTexture(RESOLVE_SIZE,RESOLVE_SIZE,options)
     if not self.unitTexture or not self.texture then return fail("resolve FBO allocation failed") end
     local function loc(shader,name) return gl.GetUniformLocation(shader,name) end
+    self.previewExposureLoc=loc(self.previewShader,"exposure")
+    self.atlasSizeLoc=loc(self.emissionShader,"atlasSize")
     self.heightLoc=loc(self.emissionShader,"heightRange")
     local indexLoc=loc(self.cascadeShader,"cascadeIndex")
     local parentLoc=loc(self.cascadeShader,"hasParent")
