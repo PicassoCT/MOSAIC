@@ -50,7 +50,7 @@ local function exercise(failShader,failTexture)
 end
 exercise()
 for i=1,4 do exercise(i,nil) end
-for i=1,6 do exercise(nil,i) end
+for i=1,7 do exercise(nil,i) end
 print('PASS: cascade ordering, no framebuffer feedback, intensity, readiness, bindings and cleanup at every allocation failure')
 
 -- Whole widget wiring: default preview runs cascades, direct diagnostics are
@@ -62,6 +62,8 @@ local env=setmetatable({widget={},WG={},Game={mapSizeX=8192,mapSizeZ=8192},GL={}
  ValidUnitID=function() return true end,GetUnitIsDead=function() return false end,
  GetGameFrame=function() return 0 end,GetUnitPiecePosDir=function() return table.unpack(previewPosition) end,
  GetSelectedUnits=function() return {42} end,
+ GetUnitDefID=function() return 7 end,
+ GetViewGeometry=function() return 1280,720,0,0 end,
  Echo=function() end,
 },widgetHandler={RegisterGlobal=function(_,n,f) globals[n]=f end,
  DeregisterGlobal=function(_,n) globals[n]=nil end,RemoveWidget=function() error('Unexpected removal') end}}, {__index=_G})
@@ -73,6 +75,7 @@ env.gl=setmetatable({GetViewSizes=function() return 1280,720 end,
  UniformInt=function(name,...) captureUniforms[name]={...} end,
  RenderToTexture=function(_,fn,...) renders=renders+1;fn(...) end,
  BeginEnd=function(_,fn,...) fn(...) end,
+ Texture=function() return true end,
  TexRect=function(...) previewRects[#previewRects+1]={...} end,
  GetShaderLog=function() return '' end,
 }, {__index=function() return function() end end})
@@ -89,7 +92,7 @@ assert(captureUniforms.heightRange[1]==256 and captureUniforms.heightRange[2]==3
 assert(env.WG.NeonRadiance.heightMin==256)
 env.widget:DrawScreen()
 env.widget:TextCommand('radiancedebug direct');renders=0
-env.widget:Update(1);env.widget:DrawWorldPreUnit();assert(renders==10)
+env.widget:Update(1);env.widget:DrawWorldPreUnit();assert(renders==16)
 env.widget:DrawScreen()
 -- All diagnostic panels must use the same bounded crop; exposure stays in preview.
 env.widget:TextCommand('radiancedebug zoom 1024')
@@ -114,5 +117,84 @@ env.widget:TextCommand('radiancedebug zoom off');checkPreview(false)
 previewPosition={100,300,200}
 env.widget:TextCommand('radiancedebug emitter 42 1')
 env.widget:DrawWorldPreUnit();assert(env.WG.NeonRadiance.heightMin==256)
+-- Scene consumes its independent 0–128 band even after preview focus at 300.
+env.widget:TextCommand('radiancelight test on')
+env.widget:DrawWorld()
+assert(captureUniforms.heightRange[1]==0 and captureUniforms.heightRange[2]==128)
+assert(captureUniforms.nightIntensity[1]==1 and captureUniforms.strength[1]==2)
+assert(captureUniforms.textured[1]==1)
+env.widget:TextCommand('radiancelight strength 3');env.widget:DrawWorld()
+assert(captureUniforms.strength[1]==3)
+env.widget:TextCommand('radiancelight off')
+captureUniforms.nightIntensity=nil;env.widget:DrawWorld();assert(not captureUniforms.nightIntensity)
+env.widget:TextCommand('radiancelight on');env.widget:DrawWorldPreUnit();env.widget:DrawWorld()
+assert(captureUniforms.nightIntensity[1]==1)
+env.widget:TextCommand('radiancedebug off');previewRects={};env.widget:DrawScreen();assert(#previewRects==0)
+env.widget:TextCommand('radiancelight test off')
+captureUniforms.nightIntensity=nil;env.widget:DrawWorld();assert(not captureUniforms.nightIntensity)
 env.widget:Shutdown();assert(not env.WG.NeonRadiance and next(globals)==nil)
 print('PASS: widget propagation/default view, lazy direct diagnostics, height selection, day/night intensity, WG ownership and shutdown')
+
+-- Deferred mode owns no screen textures; depth fallback owns at most one.
+local function checkScene()
+ local dimensions={1280,720,12,34}
+ local deferred=false
+ local textures,deleted,bound,uniforms={},{},{},{}
+ local allocations,copies,draws=0,0,0
+ local failAllocation=false
+ local lastBlend,lastDepthMask,lastShader
+ local sceneEnv=setmetatable({GL={ONE=1,SRC_ALPHA=2,ONE_MINUS_SRC_ALPHA=3},
+  Game={mapSizeX=8192,mapSizeZ=8192},Platform={glSupportClipSpaceControl=true},
+  VFS={LoadFile=read},Spring={
+   GetViewGeometry=function() return table.unpack(dimensions) end,
+   GetConfigInt=function() return deferred and 1 or 0 end,
+   Echo=function() end,
+  }},{__index=_G})
+ sceneEnv.gl=setmetatable({
+  CreateShader=function() return 1 end,DeleteShader=function(id) assert(id==1) end,
+  GetUniformLocation=function(_,name) return name end,
+  TextureInfo=function() return {xsize=dimensions[1],ysize=dimensions[2]} end,
+  CreateTexture=function(x,y,opt)
+   allocations=allocations+1;assert(x*y<=4*1024*1024 and not opt.fbo)
+   if failAllocation then return nil end
+   local id='depth'..allocations;textures[id]=true;return id
+  end,
+  DeleteTexture=function(id) assert(textures[id] and not deleted[id]);deleted[id]=true end,
+  CopyToTexture=function(id,tx,ty,vpx,vpy,sx,sy)
+   assert(textures[id] and not deleted[id] and tx==0 and ty==0)
+   assert(vpx==12 and vpy==34 and sx==dimensions[1] and sy==dimensions[2]);copies=copies+1
+  end,
+  Uniform=function(name,...) uniforms[name]={...} end,
+  UniformInt=function(name,...) uniforms[name]={...} end,
+  UniformMatrix=function(name,value) uniforms[name]=value end,
+  UseShader=function(id) lastShader=id end,
+  Texture=function(unit,id) bound[unit]=id end,
+  Blending=function(a,b) lastBlend={a,b} end,
+  DepthMask=function(v) lastDepthMask=v end,
+  TexRect=function()
+   draws=draws+1;assert(bound[0]=='radiance' and bound[1]=='occupancy')
+   assert(lastBlend[1]==1 and lastBlend[2]==1 and lastDepthMask==false)
+   assert(uniforms.inverseProjection=='projectioninverse' and uniforms.inverseView=='viewinverse')
+  end,
+ },{__index=function() return function() end end})
+ local factory=assert(load(read('luaui/widgets_mosaic/include/radiance_scene.lua'),'scene','t',sceneEnv))()
+ local obj=assert(factory())
+ local function draw(intensity) obj:Draw('radiance','occupancy',0,128,2,intensity or 0.25) end
+ draw(0);assert(draws==0 and allocations==0)
+ draw();assert(obj.mode=='depth copy' and copies==1 and allocations==1)
+ draw();assert(copies==2 and allocations==1)
+ assert(uniforms.nightIntensity[1]==0.25 and uniforms.clipZeroToOne[1]==1)
+ for i=0,7 do assert(bound[i]==false) end
+ assert(lastShader==0 and lastDepthMask==true and lastBlend[1]==2 and lastBlend[2]==3)
+ deferred=true;draw();assert(obj.mode=='deferred' and deleted.depth1 and copies==2)
+ assert(uniforms.deferred[1]==1 and allocations==1)
+ deferred=false;dimensions={4096,2160,12,34};draw();draw()
+ assert(obj.mode=='unavailable' and allocations==1,'Oversize depth texture allocated')
+ dimensions={1920,1080,12,34};failAllocation=true;draw();draw()
+ assert(allocations==2,'Failed allocation retried every frame')
+ obj:Resize();failAllocation=false;draw();assert(allocations==3 and copies==3)
+ obj:Shutdown();obj:Shutdown()
+ for id in pairs(textures) do assert(deleted[id],'Leaked scene texture') end
+end
+checkScene()
+print('PASS: scene buffer reuse, depth fallback, viewport, memory cap, failure recovery, day skip and GL cleanup')

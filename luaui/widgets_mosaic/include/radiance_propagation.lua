@@ -23,7 +23,7 @@ return function(emissionSize)
         end
         for i = 1, #self.textures do gl.DeleteTexture(self.textures[i]) end
         self.textures = {}
-        for _, key in ipairs({"texture","unitTexture"}) do
+        for _, key in ipairs({"texture","unitTexture","sceneTexture"}) do
             if self[key] then gl.DeleteTexture(self[key]); self[key] = nil end
         end
     end
@@ -49,7 +49,7 @@ return function(emissionSize)
     self.resolveShader = gl.CreateShader({fragment = resolveSource,
         uniformInt = {cascadeTex=0, occupancyTex=1, emissionTex=2}})
     if not self.resolveShader then return fail("resolve shader: " .. (gl.GetShaderLog() or "failed")) end
-    self.emissionShader = gl.CreateShader({vertex=emissionVertex,geometry=emissionGeometry,fragment=emissionFragment})
+    self.emissionShader = gl.CreateShader({vertex=emissionVertex,geometry=emissionGeometry,fragment=emissionFragment,uniformInt={sourceTex=0,textured=0}})
     if not self.emissionShader then return fail("emission slice shader: " .. (gl.GetShaderLog() or "failed")) end
     self.previewShader = gl.CreateShader({fragment=previewSource,uniformInt={previewTex=0}})
     if not self.previewShader then return fail("preview shader: " .. (gl.GetShaderLog() or "failed")) end
@@ -62,9 +62,11 @@ return function(emissionSize)
     end
     self.unitTexture=gl.CreateTexture(RESOLVE_SIZE,RESOLVE_SIZE,options)
     self.texture=gl.CreateTexture(RESOLVE_SIZE,RESOLVE_SIZE,options)
-    if not self.unitTexture or not self.texture then return fail("resolve FBO allocation failed") end
+    self.sceneTexture=gl.CreateTexture(RESOLVE_SIZE,RESOLVE_SIZE,options)
+    if not self.sceneTexture or not self.unitTexture or not self.texture then return fail("resolve FBO allocation failed") end
     local function loc(shader,name) return gl.GetUniformLocation(shader,name) end
     self.previewExposureLoc=loc(self.previewShader,"exposure")
+    self.texturedLoc=loc(self.emissionShader,"textured")
     self.atlasSizeLoc=loc(self.emissionShader,"atlasSize")
     self.heightLoc=loc(self.emissionShader,"heightRange")
     local indexLoc=loc(self.cascadeShader,"cascadeIndex")
@@ -87,9 +89,11 @@ return function(emissionSize)
         gl.Uniform(intensityLoc,intensity)
         fullscreen()
     end
-    function self:Draw(emission, occupancy, intensity, heightMin, heightMax)
-        self.ready = false
-        self.heightMin, self.heightMax = heightMin, heightMax
+    function self:Draw(emission, occupancy, intensity, heightMin, heightMax, sceneOnly)
+        if not sceneOnly then
+            self.ready = false
+            self.heightMin, self.heightMax = heightMin, heightMax
+        end
         self.mapSizeX, self.mapSizeZ = Game.mapSizeX, Game.mapSizeZ
         self.baseInterval = 2 * math.min(Game.mapSizeX,Game.mapSizeZ) / emissionSize
         gl.DepthTest(false); gl.DepthMask(false); gl.Blending(false); gl.Culling(false)
@@ -101,11 +105,15 @@ return function(emissionSize)
             gl.RenderToTexture(self.textures[index+1],cascadePass,index)
         end
         gl.Texture(0,self.textures[1]); gl.Texture(1,occupancy); gl.Texture(2,emission)
-        gl.RenderToTexture(self.unitTexture,resolvePass,1)
-        gl.RenderToTexture(self.texture,resolvePass,intensity)
+        if sceneOnly then
+            gl.RenderToTexture(self.sceneTexture,resolvePass,1)
+        else
+            gl.RenderToTexture(self.unitTexture,resolvePass,1)
+            gl.RenderToTexture(self.texture,resolvePass,intensity)
+        end
         gl.UseShader(0)
         for unit=0,2 do gl.Texture(unit,false) end
-        self.ready=true
+        if not sceneOnly then self.ready=true end
     end
     return self
 end
