@@ -121,3 +121,75 @@ This exercises the real provider, gadget, unsynced forwarder and widget with
 mocked engine/OpenGL calls. It covers masks, terrain offsets, input validation,
 replacement/removal, primitive-only transfer, coalescing, rotated projection and
 debug rendering. It does not replace an in-engine atlas/alignment check.
+
+
+## Occlusion-aware radiance propagation
+
+The widget now runs four 2D radiance cascades coarse-to-fine, using emission from
+all registered neon pieces and the selected occupancy height band. The old
+unreferenced `topDownNeonLightRadianceCascadeShader.frag` remains unused; the live
+implementation is in `shaders/radiancecascade/propagate.frag` and `resolve.frag`,
+managed by `include/radiance_propagation.lua`.
+
+Default preview panels:
+
+1. Neon geometry emission at unit intensity, filtered to the selected height band.
+2. Building occupancy in that band.
+3. Propagated radiance at unit intensity.
+4. The same result with day/night neon intensity applied once.
+
+Controls:
+
+- `/radiancedebug propagation`: show the propagation panels (default).
+- `/radiancedebug direct`: return to the original single-emitter diagnostics.
+- `/radiancedebug height 128`: select the occupancy band containing world Y=128.
+  Bands remain 128 elmos tall; the default is Y=0 through Y=128.
+- Existing voxel/volume overlay and direct-emitter clearance commands remain.
+
+Each cascade has a 256x256 RGBA16F texture. Probe resolution halves per axis
+while angular resolution quadruples (4, 16, 64, 256 directions). Non-overlapping
+distance intervals grow by four; their total range is 85 times the base interval
+(two emission texels on the shorter map axis). For an 8192x8192 map this is
+1360 elmos. Near and far intervals merge as `Lnear + Tnear * Lfar`, with
+transmittance multiplied. Occupied samples terminate propagation. Emitting
+samples take priority over occupancy at the same surface.
+
+Parent interpolation tests visibility to parent interval entry points, and
+resolve interpolation tests visibility to its neighboring probes. This avoids
+the solid-wall leakage seen with plain bilinear merging. It is still a finite
+resolution approximation: thin geometry and angular detail require in-engine
+evaluation. This is single-band, direct radiance transport, not 3D multi-bounce GI.
+
+The emission source is the existing untextured neon-piece geometry capture, so
+the preview is currently monochrome. Actual hologram material colors and scene
+lighting composition are subsequent steps. The day/night-scaled panel may be
+black in daylight while the unit-intensity panel remains useful for debugging.
+
+Refresh is bounded to 5 Hz. Cascade work depends on fixed texture/probe counts,
+not a separate ray pass for every emitter. Four cascade buffers plus two 512x512
+resolve buffers use about 6 MiB of additional RGBA16F texel storage, excluding
+driver overhead. No previous-frame radiance feedback is retained, so removing
+an emitter clears its illumination at the next refresh. The three old direct
+diagnostic passes run only when their view is selected. Shader/FBO setup failure
+cleans up propagation resources and falls back to the existing diagnostics.
+
+`WG.NeonRadiance` exposes `texture` (day/night scaled), `unitTexture`,
+`ready`, `heightMin`, `heightMax`, `mapSizeX` and `mapSizeZ` for a future scene
+consumer. UV is world X/Z divided by map X/Z size. Only sample while `ready` is
+true; the widget owns and deletes these textures and removes its WG entry on
+shutdown. No scene overlay is applied in this stage.
+
+Additional checks, from repository root:
+
+```sh
+lua5.4 tests/neon_radiance_lifecycle.lua
+MESA_GL_VERSION_OVERRIDE=3.3COMPAT python tests/neon_radiance_gpu.py
+```
+
+The GPU test requires NumPy, ModernGL and Mesa EGL. It compiles the actual GLSL
+in a compatibility context and exercises propagation, wall rejection, visibility
+merging, intensity, source removal and emission-band clipping. The lifecycle
+test checks coarse-to-fine ordering, absence of render-target feedback, texture
+bindings and cleanup at each shader/texture allocation failure. These checks
+do not substitute for Recoil driver/performance and visual testing.
+
