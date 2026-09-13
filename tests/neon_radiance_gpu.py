@@ -1,12 +1,41 @@
-"""Headless shader tests. Dependencies: numpy, moderngl; Mesa EGL compatibility.
-Run from repo root: MESA_GL_VERSION_OVERRIDE=3.3COMPAT python tests/neon_radiance_gpu.py
+"""Shader tests (Linux): numpy, moderngl, glfw.
+Desktop/NVIDIA: python3 tests/neon_radiance_gpu.py
+Headless Mesa: MESA_GL_VERSION_OVERRIDE=3.3COMPAT python3 tests/neon_radiance_gpu.py --context egl
+GLFW requests a real compatibility context in a hidden window; EGL mode is for Mesa CI.
 """
+import atexit
+import argparse
 import ctypes
 from pathlib import Path
 import numpy as np
 import moderngl
 
-ctx=moderngl.create_standalone_context(backend='egl',require=330)
+parser=argparse.ArgumentParser(description=__doc__)
+parser.add_argument('--context',choices=('glfw','egl'),default='glfw')
+args=parser.parse_args()
+if args.context=='egl':
+ ctx=moderngl.create_standalone_context(backend='egl',require=330)
+else:
+ try:
+  import glfw
+ except ImportError:
+  raise SystemExit('Desktop tests need GLFW: python3 -m pip install glfw')
+ if not glfw.init():
+  raise RuntimeError('GLFW initialization failed. Run from your graphical desktop; '
+                     'headless Mesa CI can use --context egl with MESA_GL_VERSION_OVERRIDE=3.3COMPAT.')
+ atexit.register(glfw.terminate)
+ glfw.window_hint(glfw.VISIBLE,glfw.FALSE)
+ glfw.window_hint(glfw.CONTEXT_VERSION_MAJOR,3)
+ glfw.window_hint(glfw.CONTEXT_VERSION_MINOR,3)
+ glfw.window_hint(glfw.OPENGL_PROFILE,glfw.OPENGL_COMPAT_PROFILE)
+ glfw.window_hint(glfw.OPENGL_FORWARD_COMPAT,glfw.FALSE)
+ window=glfw.create_window(32,32,'Neon radiance shader test',None,None)
+ if not window:
+  raise RuntimeError('Could not create an OpenGL 3.3 compatibility context: '+str(glfw.get_error()))
+ atexit.register(glfw.destroy_window,window)
+ glfw.make_context_current(window)
+ ctx=moderngl.create_context(require=330)
+atexit.register(ctx.release)
 print('OpenGL:', ctx.info['GL_VENDOR'], '|', ctx.info['GL_RENDERER'], '|', ctx.info['GL_VERSION'], flush=True)
 root=Path(__file__).resolve().parents[1]/'luaui/widgets_mosaic/shaders/radiancecascade'
 
@@ -20,8 +49,8 @@ profile=ctypes.c_int()
 gl.glGetIntegerv(0x9126,ctypes.byref(profile)) # GL_CONTEXT_PROFILE_MASK
 check_gl('Context profile query')
 if not profile.value & 0x00000002: # GL_CONTEXT_COMPATIBILITY_PROFILE_BIT
- raise RuntimeError('This test uses compatibility OpenGL draw calls, but EGL created a core context. '
-                    'On Mesa run with MESA_GL_VERSION_OVERRIDE=3.3COMPAT. '
+ raise RuntimeError('This test requires compatibility OpenGL, but the driver created a core context. '
+                    'Use the default GLFW desktop mode on NVIDIA; for --context egl on Mesa use MESA_GL_VERSION_OVERRIDE=3.3COMPAT. '
                     'That override does not configure non-Mesa drivers.')
 
 vertex='#version 150 compatibility\nvoid main(){gl_Position=gl_Vertex;gl_TexCoord[0]=gl_MultiTexCoord0;}'
