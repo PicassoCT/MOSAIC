@@ -772,6 +772,7 @@ function buildDecorateGroundLvl()
                                                                buildMaterial)
                 Move(element, _x_axis, xRealLoc, 0)
                 Move(element, _z_axis, zRealLoc, 0)
+                addShadowVoxel(xRealLoc, zRealLoc, 0)
                 ToShowTable[#ToShowTable + 1] = element
 				LevelPieces = houseAddDestructionTable(LevelPieces, 1, element)
                 if countElements == 24 then
@@ -881,6 +882,7 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
                 Move(element, _x_axis, xRealLoc, 0)
                 Move(element, _z_axis, zRealLoc, 0)
                 Move(element, _y_axis, Level * cubeDim.heigth, 0)
+                addShadowVoxel(xRealLoc, zRealLoc, Level * cubeDim.heigth)
                 WaitForMoves(element)
                 Turn(element, _z_axis, math.rad(rotation), 0)
                 -- echo("Adding Element to level"..Level)
@@ -1306,6 +1308,8 @@ end
 materialColourNameGround = nil
 materialColourNameWall = nil
 function buildBuilding()
+    initializeBuildingShadowVoxels(cubeDim.length, cubeDim.heigth, 4)
+    boolDoneShowing = false
    --echo(getScriptName() .. "buildBuilding")
     StartThread(buildAnimation)
 
