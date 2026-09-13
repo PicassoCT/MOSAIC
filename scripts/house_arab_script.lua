@@ -39,8 +39,6 @@ boringChances = {
     windowwall = 0.5,
     streetwall = 0.1
 }
-initializeBuildingShadowVoxels(cubeDim.length, cubeDim.heigth, 4)
-
 -- Called by either construction-animation completion path, after the assembled
 -- building is visible. The gadget sends only primitives across the sync boundary.
 local function finalizeBuildingShadowVoxels()
@@ -1038,6 +1036,8 @@ function buildAnimation()
 end
 
 function buildBuilding()
+    initializeBuildingShadowVoxels(cubeDim.length, cubeDim.heigth)
+    boolDoneShowing = false
     StartThread(buildAnimation)
     selectBase()
     selectBackYard()
@@ -1078,3 +1078,4 @@ end
 function getRooftopPieces()
     return RoofTopPieces or {}
 end
+
