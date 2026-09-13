@@ -29,6 +29,21 @@ local cubeDim = {
     roofHeigth = 50
 }
 
+-- Standalone models need authored/model-specific voxels, not procedural blocks.
+-- Future implementation: populate model-local voxel centers and a common size.
+function GetBuildingShadowVoxels()
+    return {}, 16
+end
+
+local function buildStandaloneShadowVoxels()
+    -- TODO: insert voxel geometry for the selected pieces in toShowDict.
+end
+
+local function registerStandaloneShadowVoxels()
+    -- TODO: enable registration once standalone voxel geometry is implemented.
+    -- GG.MarkBuildingShadowVolumeDirty(unitID)
+end
+
 local RoofTopPieces ={}
 function registerRooftopSubPieces(pieceToShow)
     name = pieceNr_pieceName[pieceToShow].."Roof"
@@ -531,6 +546,8 @@ function buildBuilding()
     boolDoneShowing = true
     showHouse()
     Hide(Icon)
+    buildStandaloneShadowVoxels()
+    registerStandaloneShadowVoxels()
     return
 end
 
