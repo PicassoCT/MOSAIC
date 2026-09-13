@@ -49,16 +49,19 @@ local function exercise(failShader,failTexture)
     for id in pairs(allocations) do assert(deleted[id], 'Leaked '..id) end
 end
 exercise()
-for i=1,3 do exercise(i,nil) end
+for i=1,4 do exercise(i,nil) end
 for i=1,6 do exercise(nil,i) end
 print('PASS: cascade ordering, no framebuffer feedback, intensity, readiness, bindings and cleanup at every allocation failure')
 
 -- Whole widget wiring: default preview runs cascades, direct diagnostics are
 -- opt-in, height changes reach capture/resolve, and WG/globals are removed.
 local renders, captureUniforms, globals, serial=0, {}, {}, 0
+local previewRects={}
+local previewPosition={100,51,200}
 local env=setmetatable({widget={},WG={},Game={mapSizeX=8192,mapSizeZ=8192},GL={},Spring={
  ValidUnitID=function() return true end,GetUnitIsDead=function() return false end,
- GetGameFrame=function() return 0 end,GetUnitPiecePosDir=function() return 100,51,200 end,
+ GetGameFrame=function() return 0 end,GetUnitPiecePosDir=function() return table.unpack(previewPosition) end,
+ GetSelectedUnits=function() return {42} end,
  Echo=function() end,
 },widgetHandler={RegisterGlobal=function(_,n,f) globals[n]=f end,
  DeregisterGlobal=function(_,n) globals[n]=nil end,RemoveWidget=function() error('Unexpected removal') end}}, {__index=_G})
@@ -70,6 +73,7 @@ env.gl=setmetatable({GetViewSizes=function() return 1280,720 end,
  UniformInt=function(name,...) captureUniforms[name]={...} end,
  RenderToTexture=function(_,fn,...) renders=renders+1;fn(...) end,
  BeginEnd=function(_,fn,...) fn(...) end,
+ TexRect=function(...) previewRects[#previewRects+1]={...} end,
  GetShaderLog=function() return '' end,
 }, {__index=function() return function() end end})
 env.VFS={LoadFile=read,Include=function(path) return assert(load(read(path),path,'t',env))() end}
@@ -87,5 +91,28 @@ env.widget:DrawScreen()
 env.widget:TextCommand('radiancedebug direct');renders=0
 env.widget:Update(1);env.widget:DrawWorldPreUnit();assert(renders==10)
 env.widget:DrawScreen()
+-- All diagnostic panels must use the same bounded crop; exposure stays in preview.
+env.widget:TextCommand('radiancedebug zoom 1024')
+env.widget:DrawWorldPreUnit()
+assert(captureUniforms.atlasSize[1]==1024 and captureUniforms.atlasSize[2]==1024)
+assert(env.WG.NeonRadiance.heightMin==0)
+local function checkPreview(cropped)
+ previewRects={};env.widget:DrawScreen()
+ assert(#previewRects==4)
+ local first=previewRects[1]
+ for _,rect in ipairs(previewRects) do
+  for j=5,8 do assert(rect[j]==first[j] and rect[j]>=0 and rect[j]<=1) end
+ end
+ assert(math.abs(first[7]-first[5]-(cropped and 0.125 or 1))<1e-9)
+ assert(captureUniforms.exposure[1]==8)
+end
+env.widget:TextCommand('radiancedebug exposure 8')
+checkPreview(true)
+-- Moving to the far map edge preserves crop size instead of stretching it.
+previewPosition={8190,51,8190};checkPreview(true)
+env.widget:TextCommand('radiancedebug zoom off');checkPreview(false)
+previewPosition={100,300,200}
+env.widget:TextCommand('radiancedebug emitter 42 1')
+env.widget:DrawWorldPreUnit();assert(env.WG.NeonRadiance.heightMin==256)
 env.widget:Shutdown();assert(not env.WG.NeonRadiance and next(globals)==nil)
 print('PASS: widget propagation/default view, lazy direct diagnostics, height selection, day/night intensity, WG ownership and shutdown')

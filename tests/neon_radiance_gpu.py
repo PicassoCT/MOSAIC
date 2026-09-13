@@ -58,7 +58,8 @@ shader=(root/'propagate.frag').read_text().replace('#version 150 compatibility',
  '#version 150 compatibility\n#define BASE_PROBES 16\n#define CASCADE_COUNT 4\n#define MAX_TRACE_STEPS 256')
 program=ctx.program(vertex_shader=vertex,fragment_shader=shader)
 resolve=ctx.program(vertex_shader=vertex,fragment_shader=(root/'resolve.frag').read_text())
-emission_program=ctx.program(vertex_shader=(root/'emission_slice.vert').read_text(),fragment_shader=(root/'emission_slice.frag').read_text())
+emission_program=ctx.program(vertex_shader=(root/'emission_slice.vert').read_text(),geometry_shader=(root/'emission_slice.geom').read_text(),fragment_shader=(root/'emission_slice.frag').read_text())
+preview_program=ctx.program(vertex_shader=vertex,fragment_shader=(root/'preview.frag').read_text())
 # Also compile the production constants, not only the smaller numerical fixture.
 ctx.program(vertex_shader=vertex,fragment_shader=shader.replace('BASE_PROBES 16','BASE_PROBES 128'))
 for name,args in {'glUseProgram':[ctypes.c_uint],'glBegin':[ctypes.c_uint],
@@ -132,12 +133,45 @@ assert np.max(render(empty)[:,:,:3])==0, 'Removed emitter left persistent light'
 ctx.framebuffer([out]).use();ctx.viewport=(0,0,N,N)
 gl.glMatrixMode(0x1701);gl.glLoadIdentity();gl.glMatrixMode(0x1700);gl.glLoadIdentity()
 gl.glColor4f(1,1,1,1);emission_program['heightRange']=(0,0.5)
+emission_program['atlasSize']=(N,N)
 for z,expected in [(-0.25,True),(0.25,False),(-0.75,False)]:
- ctx.clear(0,0,0,0);gl.glUseProgram(emission_program.glo);gl.glBegin(7)
- for x,y in [(-1,-1),(1,-1),(1,1),(-1,1)]:gl.glVertex3f(x,y,z)
+ ctx.clear(0,0,0,0);gl.glUseProgram(emission_program.glo);gl.glBegin(4)
+ for x,y in [(-1,-1),(1,-1),(1,1),(-1,-1),(1,1),(-1,1)]:gl.glVertex3f(x,y,z)
  gl.glEnd();gl.glUseProgram(0)
  data=np.frombuffer(out.read(),dtype='f4')
  assert (data.max()>0)==expected, 'Emission height-band filtering failed'
-assert ctx.error=='GL_NO_ERROR'
-print('PASS: production shaders compile; emission spreads; wall blocks; parent visibility; night scaling; source removal; emission height bands')
+# A truly edge-on vertical face previously rasterized zero fragments.
+def capture_triangle(vertices, band):
+ emission_program['heightRange']=band
+ ctx.clear(0,0,0,0);gl.glUseProgram(emission_program.glo);gl.glBegin(4)
+ for v in vertices: gl.glVertex3f(*v)
+ gl.glEnd();gl.glUseProgram(0);check_gl('Footprint capture')
+ return np.frombuffer(out.read(),dtype='f4').reshape(N,N,4).copy()
+vertical=[(-0.5,0,-0.1),(0.5,0,-0.1),(0.5,0,-0.9)]
+footprint=capture_triangle(vertical,(0,0.5))
+assert footprint[:,:,:3].sum()>0, 'Edge-on emitter vanished'
+rows=np.where(footprint[:,:,0].max(axis=1)>0)[0]
+assert len(rows)<=3, 'Minimum footprint grew beyond a narrow ribbon'
+assert footprint[:,:,0].max()==1, 'Footprint changed source intensity'
+e.write(footprint.tobytes())
+vertical_light=render(empty)
+assert vertical_light[:,:,:3][footprint[:,:,0]==0].sum()>0, 'Captured edge-on source failed to propagate'
+assert capture_triangle(vertical,(1,2))[:,:,:3].max()==0, 'Footprint escaped its height band'
+assert capture_triangle([(x,y,-0.5) for x,y,z in vertical],(0,0.5))[:,:,:3].max()==0, 'Upper band boundary included'
+# A sloping thin triangle must only expand the segment inside the band.
+clipped=capture_triangle([(-0.8,0,0),(0.8,0,-1),(0.8,0.001,-1)],(0.25,0.5))
+cols=np.where(clipped[:,:,0].max(axis=0)>0)[0]
+assert len(cols)>0 and cols.min()>=36 and cols.max()<=65, 'Expanded before height clipping'
+# Preview exposure is monotonic and never writes into the propagation texture.
+source_before=e.read();e.use(0);preview_program['previewTex']=0
+values=[]
+e.write(np.full_like(emitted,0.1).tobytes())
+for exposure in (1,4):
+ preview_program['exposure']=exposure;quad(preview_program)
+ values.append(np.frombuffer(out.read(),dtype='f4').reshape(N,N,4)[:,:,:3].mean())
+assert values[1]>values[0]>0
+assert np.allclose(np.frombuffer(e.read(),dtype='f4'),0.1), 'Preview modified emission'
+e.write(source_before)
+assert ctx.error=='GL_NO_ERROR' 
+print('PASS: production shaders compile; emission spreads; wall blocks; parent visibility; night scaling; source removal; emission height bands; edge-on footprints; preview exposure')
 print('Behind-wall radiance ratio:',float(blocked[:,:56,:3].sum()/open_light[:,:56,:3].sum()))

@@ -200,3 +200,38 @@ test checks coarse-to-fine ordering, absence of render-target feedback, texture
 bindings and cleanup at each shader/texture allocation failure. These checks
 do not substitute for Recoil driver/performance and visual testing.
 
+
+### Emitter inspection and thin-surface capture
+
+Select a registered neon building, then use:
+
+- `/radiancedebug zoom`: center all four panels on its first registered emitter
+  in a 1024-elmo square, and select the height band containing the piece origin.
+  With no selection, use the current emitter (or the first registered emitter).
+- `/radiancedebug zoom 512`: choose a smaller world-space window (minimum 128).
+- `/radiancedebug emitter UNITID PIECEID`: inspect a particular registered piece;
+  omit PIECEID to use that unit's first emitter.
+- `/radiancedebug exposure 8`: change preview exposure (0.125–64, default 4).
+- `/radiancedebug zoom off`: restore the whole-map view.
+- `/radiancedebug height 128`: manually override the captured height band.
+
+All four panels use the same UV crop. A green cross marks the emitter piece
+origin, which may differ from the center of its geometry. Crops clamp at map
+edges without changing their world-space size. Radiance previews use
+`1-exp(-radiance*exposure)`; occupancy remains a raw binary view. Exposure and
+zoom do not change the propagation textures exposed through WG.NeonRadiance.
+
+The emission geometry shader clips triangles to the selected height band,
+then widens projected surfaces thinner than two atlas texels into a narrow
+ribbon. Broad triangles retain their original footprint. This makes vertical
+billboard faces visible to top-down capture without amplifying source intensity.
+It is a conservative approximation: thin faces can extend by about one atlas
+texel on either side. It needs no extra textures or scene capture passes, but
+adds geometry-shader work to the existing capture. Validate performance in-game.
+
+Capture is still monochrome, based on registered whole-piece geometry, and this
+stage still displays previews rather than applying lighting to the scene.
+Self-illuminated house pieces could use this capture path once registered as
+sources; selective glowing windows on a shared wall mesh need an emission mask.
+That registration/masking extension is not implemented by this change.
+
