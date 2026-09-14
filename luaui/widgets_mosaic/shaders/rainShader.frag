@@ -67,6 +67,8 @@ uniform sampler2D dephtCopyTex;
 uniform float time;		
 uniform float timePercent;
 uniform float rainPercent;
+uniform float clipZeroToOne;
+uniform float reflectionDebug;
 uniform vec3 eyePos;
 uniform vec3 eyeDir;
 uniform vec3 sunCol;
@@ -198,19 +200,14 @@ float absinthTime()
 
 vec3 GetWorldPosAtUV(vec2 uvs, float depthPixel)
 {
-	vec4 ppos = vec4( vec3(uvs* 2. - 1., depthPixel), 1.0);
-	//vec4 ppos =  vec4(vec3(uvs, depthPixel)* 2. - 1., 1.0);
-	vec4 worldPos4 = viewProjectionInv * ppos;
-	worldPos4.xyz /= worldPos4.w;
-
-	if (depthAtPixel == 1.0) 
-	{
-		vec3 forward = normalize(worldPos4.xyz - eyePos);
-		float a = max(MAX_HEIGTH_RAIN - eyePos.y, eyePos.y - MIN_HEIGHT_RAIN) / forward.y;
-		return eyePos + forward.xyz * abs(a);		
-	}
-	return worldPos4.xyz;
+    float ndcDepth = mix(depthPixel * 2.0 - 1.0, depthPixel, clipZeroToOne);
+    vec4 position = viewProjectionInv * vec4(uvs * 2.0 - 1.0, ndcDepth, 1.0);
+    // Only background pixels can lie at an infinite far plane.
+    if (abs(position.w) < 0.0000001)
+        return eyePos + normalize(eyeDir) * 100000.0;
+    return position.xyz / position.w;
 }
+
 //https://virtexedgedesign.wordpress.com/2018/06/24/shader-series-basic-screen-space-reflections/
 //https://github.com/maorachow/monogameMinecraft/blob/1bb43fefb63819db91f89500db736cb90ecd9115/Content/ssreffect.fx#L81
 
@@ -251,7 +248,7 @@ float getDayPercent()
 	}
 	else
 	{
-		1-((timePercent - 0.5)*2.0);
+		return 1.0 - ((timePercent - 0.5) * 2.0);
 	}
 }
 
@@ -330,15 +327,13 @@ float getZoomFactor()
 	return max(1.0, eyePos.y / 128.0);
 }
 
-vec4 GetGroundPondRainRipples(vec2 groundUVs) 
-{   
-	float zoomFactor = getZoomFactor();
-	float f = noise(  zoomFactor * 64.0 * uv, 0.6125); 
-	vec3 normal = vec3(-dFdx(f), -dFdy(f), 0.5) + 0.5;
-	float avgVal= (normal.x+normal.y+normal.z)/3.0;
-	return vec4(vec3(avgVal), 0.75);
-	float dotProduct = max(dot(normal, sunDir), 0.0);
-	return vec4(vec3(dotProduct), 0.75);
+vec4 GetGroundPondRainRipples(vec2 groundUVs)
+{
+    // Eight world units per noise cell; camera translation/zoom must not move ripples.
+    float f = noise(groundUVs * 0.125, 0.6125);
+    vec3 normal = vec3(-dFdx(f), -dFdy(f), 0.5) + 0.5;
+    float avgVal = (normal.x + normal.y + normal.z) / 3.0;
+    return vec4(vec3(avgVal), 0.75);
 }
 
 bool getRivuletMask(vec3 normalAtPos)
@@ -365,37 +360,29 @@ return( isAbsInIntervallAround(sinX, rivUv.y, sizeIntervall) ||
 #define OFFSET_Y 1
 #define DEPTH	 5.5
 
-vec3 GetGroundVertexNormal(vec2 theUV, out bool IsOnGround, out bool IsOnUnit, out bool IsWaterPuddle, out bool IsSky) 
+vec3 GetGroundVertexNormal(vec2 theUV, out bool IsOnGround, out bool IsOnUnit,
+                          out bool IsWaterPuddle, out bool IsSky)
 {
-	vec4 unitVertexNormal = texture2D(normalunittex, theUV);
-	vec4 groundVertexNormal= texture2D(normaltex, theUV);
+    vec4 unitNormal = texture2D(normalunittex, theUV);
+    vec4 groundNormal = texture2D(normaltex, theUV);
+    float groundDepth = texture2D(mapDepthTex, theUV).r;
+    float unitDepth = texture2D(modelDepthTex, theUV).r;
+    bool hasGround = groundDepth < 0.999999 && dot(groundNormal.rgb, groundNormal.rgb) > 0.0;
+    bool hasUnit = unitDepth < 0.999999 && unitNormal.a > 0.5
+                   && dot(unitNormal.rgb, unitNormal.rgb) > 0.0;
 
-	IsOnGround = groundVertexNormal != BLACK;
-	IsOnUnit = false;	
-	IsOnGround = false;
-	IsWaterPuddle =groundVertexNormal.g >= Y_NORMAL_CUTOFFVALUE ;
-	IsSky = groundVertexNormal.rgb == BLACK.rgb && unitVertexNormal.rgb == BLACK.rgb;
-
-	if (unitVertexNormal.rgb != BLACK.rgb && unitVertexNormal.a > 0.5) 
-	{
-		if (mapDepth.r <= modelDepth.r  )
-		{
-			IsOnGround = true;
-			return groundVertexNormal.rgb;
-		}
-		IsOnUnit = true;
-		IsOnGround = false;
-		IsWaterPuddle =unitVertexNormal.g > Y_NORMAL_CUTOFFVALUE;
-		return unitVertexNormal.rgb;	
-	}
-	IsOnGround = true;
-	return groundVertexNormal.rgb;
+    IsOnUnit = hasUnit && (!hasGround || unitDepth < groundDepth);
+    IsOnGround = hasGround && !IsOnUnit;
+    IsSky = !IsOnGround && !IsOnUnit;
+    // Keep encoded values for the existing material masks; decode for lighting/reflection.
+    vec3 encodedNormal = IsOnUnit ? unitNormal.rgb : groundNormal.rgb;
+    IsWaterPuddle = !IsSky && encodedNormal.g >= Y_NORMAL_CUTOFFVALUE;
+    return encodedNormal;
 }
-
 
 vec3 sampleNormal(const int x, const int y, in vec2 fragCoord)
 {
-	vec2 ouv = (uv + vec2(x, y)) / viewPortSize.xy;
+	vec2 ouv = fragCoord + vec2(x, y) / viewPortSize.xy;
 	bool IsOnGround = false;
 	bool IsOnUnit = false;
 	bool IsWaterPuddle = false;
@@ -425,125 +412,99 @@ vec3 GetNormals(in vec2 fragCoord)
 
 vec4 GetShrinkWrappedSheen(vec3 pixelWorldPos)
 {
-	vec3 n = GetNormals(uv);
-	//Add screen normals to add detail
-	n =  n+ SobelNormalFromScreen(uv);
-	detailNormals = n;
-	vec3 actualSunPos = sunPos*8192.0;
-	vec3 color = vertexNormal * dot(n, normalize(actualSunPos - pixelWorldPos));
-    float e = 64.;
-	color += pow(clamp(dot(normalize(reflect(actualSunPos - pixelWorldPos, n)), 
-					   normalize(pixelWorldPos - eyePos)), 0., 1.), e);	
-
-	float greyValue = 0.2989* color.r + 0.5870* color.g + 0.1140 *color.b;
-	return vec4(vec3(greyValue * skyCol), 1);
+    vec3 screenDetail = GetNormals(uv) + SobelNormalFromScreen(uv);
+    vec3 n = normalize(vertexNormal * 2.0 - 1.0);
+    // Screen derivatives are directions: rotate them before adding to a world normal.
+    n = normalize(n + 0.15 * mat3(viewInv) * vec3(screenDetail.xy, 0.0));
+    detailNormals = n * 0.5 + 0.5;
+    vec3 lightDir = normalize(sunDir);
+    vec3 toEye = normalize(eyePos - pixelWorldPos);
+    float diffuse = max(dot(n, lightDir), 0.0);
+    float specular = pow(max(dot(reflect(-lightDir, n), toEye), 0.0), 64.0);
+    return vec4(skyCol * (0.15 * diffuse + specular), 1.0);
 }
 
  
-const vec2 SAMPLE_OFFSETS[4] = vec2[4](
-    vec2(1.0, 0.0),  // Right
-    vec2(-1.0, 0.0), // Left
-    vec2(0.0, 1.0),  // Up
-    vec2(0.0, -1.0)  // Down
-);
-//viewspacedirectional offset vectors
+// Bounded screen-space reflection tracing. All distances below are world/view units.
+const int REFLECTION_STEPS = 32;
+const int REFLECTION_REFINE_STEPS = 6;
+const float REFLECTION_DISTANCE = 1024.0;
+const float REFLECTION_THICKNESS = 3.0;
 
-void findAlignedOffsets(vec2 direction, out vec2 alignedOffset[2]) 
+bool reflectionDepthDelta(vec3 position, out vec2 screenUV, out float delta)
 {
-    // Initialize variables to hold the most aligned offsets
-    float maxDotProduct1 = -1.0;
-    float maxDotProduct2 = -1.0;
+    vec4 projected = viewProjection * vec4(position, 1.0);
+    if (projected.w <= 0.00001) return false;
+    vec3 ndc = projected.xyz / projected.w;
+    screenUV = ndc.xy * 0.5 + 0.5;
+    float nearDepth = mix(-1.0, 0.0, clipZeroToOne);
+    if (any(lessThanEqual(screenUV, vec2(0.0))) ||
+        any(greaterThanEqual(screenUV, vec2(1.0))) ||
+        ndc.z < nearDepth || ndc.z > 1.0) return false;
 
-    // Iterate through each offset in the array
-    for (int i = 0; i < 4; ++i) {
-        // Calculate the dot product of the given vector and the current offset
-        float dotProduct = dot(normalize(direction), normalize(SAMPLE_OFFSETS[i]));
-
-        // Check if the dot product is greater than the previous maximums
-        if (dotProduct > maxDotProduct1) {
-            // Shift previous maximum to second maximum
-            alignedOffset[1] = alignedOffset[0];
-            maxDotProduct2 = maxDotProduct1;
-
-            // Update first maximum
-            alignedOffset[0] = SAMPLE_OFFSETS[i];
-            maxDotProduct1 = dotProduct;
-        } else if (dotProduct > maxDotProduct2) {
-            // Update second maximum
-            alignedOffset[1] = SAMPLE_OFFSETS[i];
-            maxDotProduct2 = dotProduct;
-        }
-    }
+    float depth = texture2D(dephtCopyTex, screenUV).r;
+    // Empty background is in front of any potential later geometry intersection.
+    delta = -1.0e20;
+    if (depth >= 0.999999) return true;
+    vec3 surface = GetWorldPosAtUV(screenUV, depth);
+    float rayDepth = -(viewMatrix * vec4(position, 1.0)).z;
+    float surfaceDepth = -(viewMatrix * vec4(surface, 1.0)).z;
+    delta = rayDepth - surfaceDepth;
+    return true;
 }
 
 vec4 rayMarchForReflection(vec3 reflectionPosition, vec3 reflectDir)
 {
-
-	const float DepthCheckBias = 0.000125;//0.000125;;
-	int loops = 16;
-	// The Current Position in 3D
-	vec3 curPos = reflectionPosition;
-	vec2 HalfPixel = vec2(1.0 / viewPortSize.x, 1.0/ viewPortSize.y)* PI * 4.0;//(eyePos.z/2048.0)*PI; 
-	
-	// The Current UV
-	vec3 curUV = vec3(0.);
-	 
-	// The Current Length
-	float curLength = 0.5; 
-
-    for (int i = 0; i < loops; i++)
+    float previousDistance = 0.0;
+    bool wasInFront = false;
+    for (int i = 1; i <= REFLECTION_STEPS; ++i)
     {
-        // Update the Current Position of the Ray in world
-        curPos = reflectionPosition + reflectDir * curLength ;
-        // Get the UV Coordinates of the current Ray
-        curUV = GetUVAtPosInView(curPos);
-        // The Depth of the Current Pixel
-        float curDepth = texture2D(dephtCopyTex, curUV.xy).r;
+        float fraction = float(i) / float(REFLECTION_STEPS);
+        float distanceAlongRay = 0.5 + REFLECTION_DISTANCE * fraction * fraction;
+        vec2 hitUV;
+        float delta;
+        if (!reflectionDepthDelta(reflectionPosition + reflectDir * distanceAlongRay,
+                                  hitUV, delta)) return NONE;
 
-        //Sobelsample at cursor to close uvholes
-        for (int j = 0; j < 4; j++)
+        if (delta >= 0.0 && wasInFront)
         {
-            if (abs(curUV.z - curDepth) < DepthCheckBias)
+            float low = previousDistance;
+            float high = distanceAlongRay;
+            for (int j = 0; j < REFLECTION_REFINE_STEPS; ++j)
             {
-                bool IsOnGround = false;
-                bool IsOnUnit = false;
-                bool IsPuddle = false;
-                bool IsSky = false;
-           
-                vec3 normal = GetGroundVertexNormal(curUV.xy,  IsOnGround,  IsOnUnit, IsPuddle, IsSky);
-                //Detect the sky and avoid reflecting rooftops
-                if (IsSky ) {return vec4(skyCol, 0.5);} //not mirrored on the ground
-               
-                //return GREEN;
-               return texture2D(screentex, curUV.xy) ;
+                float middle = 0.5 * (low + high);
+                vec2 middleUV;
+                float middleDelta;
+                if (!reflectionDepthDelta(reflectionPosition + reflectDir * middle,
+                                          middleUV, middleDelta)) return NONE;
+                if (middleDelta >= 0.0) high = middle;
+                else low = middle;
             }
-            curDepth = texture2D(dephtCopyTex, curUV.xy + SAMPLE_OFFSETS[j].xy * HalfPixel).r;
+            if (!reflectionDepthDelta(reflectionPosition + reflectDir * high,
+                                      hitUV, delta)) return NONE;
+            // Reject discontinuities rather than reflecting through a foreground edge.
+            if (delta < 0.0 || delta > REFLECTION_THICKNESS) return NONE;
+            vec2 edgeDistance = min(hitUV, vec2(1.0) - hitUV);
+            float fade = smoothstep(0.0, 0.05, min(edgeDistance.x, edgeDistance.y));
+            fade *= 1.0 - smoothstep(REFLECTION_DISTANCE * 0.8, REFLECTION_DISTANCE, high);
+            return vec4(texture2D(screentex, hitUV).rgb * fade, fade);
         }
-
-        // Get the New Position and Vector
-        curLength = length(reflectionPosition - GetWorldPosAtUV(curUV.xy, curDepth ));        
+        wasInFront = delta < 0.0;
+        previousDistance = distanceAlongRay;
     }
     return NONE;
-    //return NONE; //No reflection
 }
 
 vec4 getReflection(vec3 reflectionPosition)
 {
-	if (!NormalIsWaterPuddle) return NONE;
+    if (!NormalIsWaterPuddle) return NONE;
+    if (getRandomFactor(reflectionPosition.xz / 512.0) >= rainPercent) return NONE;
 
-	if (getRandomFactor(reflectionPosition.xz /512.0) < rainPercent) //Puddles
-    {
-	 	// Calculate reflection direction
-	    vec3 viewDir = normalize(gl_FragCoord.xyz - (eyePos)); // Calculate view direction
-    	    
-	    // Assuming ground is flat, normal is (0,1,0)
-	    vec3 reflectDir = reflect(viewDir, vertexNormal); // Calculate reflection direction
-	    //return vec4(reflectDir, 1.0); //TODO: Remove debug for gfx debugging
-
-	  	return rayMarchForReflection(reflectionPosition ,  reflectDir);
-    	
-    }	
-    return NONE;
+    // G-buffer normals are world-space normals encoded as normal * 0.5 + 0.5.
+    vec3 normal = normalize(vertexNormal * 2.0 - 1.0);
+    vec3 incidentDir = normalize(reflectionPosition - eyePos);
+    vec3 reflectDir = normalize(reflect(incidentDir, normal));
+    return rayMarchForReflection(reflectionPosition + normal * 0.25, reflectDir);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -651,7 +612,7 @@ float calculateLightReflectionFactor()
     angleCos = clamp(angleCos, -1.0, 1.0);
     
     // Calculate the reflection coefficient using the angle between the vectors
-    float reflection = pow(angleCos, 4.0); // Adjust the exponent as needed
+    float reflection = pow(abs(angleCos), 4.0); // Adjust the exponent as needed
     
     // Clamp the reflection value between 0 and 1
     reflection = clamp(reflection, 0.0, 1.0);
@@ -737,6 +698,12 @@ void main(void)
 	worldPos = GetWorldPosAtUV(uv, depthAtPixel.r);
 
 	vertexNormal = GetGroundVertexNormal(uv,  NormalIsOnGround,  NormalIsOnUnit, NormalIsWaterPuddle, NormalIsSky);
+
+    if (reflectionDebug > 0.5)
+    {
+        gl_FragColor = vec4(getReflection(worldPos).rgb, 1.0);
+        return;
+    }
 
 	cameraZoomFactor = max(0.0,min(eyePos.y/2048.0, 1.0));
 	//Debug code
