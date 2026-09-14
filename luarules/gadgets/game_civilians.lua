@@ -813,11 +813,14 @@ function sozialize(evtID, frame, persPack, startFrame, myID)
             Command(myID, "stop")
             Command(partnerID, "stop")
             displayConversationTextAt(myID, partnerID)
-            timeChattingInFrames =math.max(persPack.maxTimeChattingInFrames  ,
-                                        math.random(GameConfig.minConversationLengthFrames,
-                                       GameConfig.maxConversationLengthFrames))
-            startInternalBehaviourOfState(myID, "startChatting", timeChattingInFrames*33, partnerID)
-            startInternalBehaviourOfState(partnerID, "startChatting", timeChattingInFrames*33, myID)
+            -- Readiness controls when to chat, not how long the conversation lasts.
+            -- Bias toward shorter chats without ever going below the minimum.
+            local timeChattingInFrames = GameConfig.minConversationLengthFrames + math.floor(
+                (GameConfig.maxConversationLengthFrames - GameConfig.minConversationLengthFrames) *
+                math.random() * math.random() + 0.5)
+            local timeChattingInMs = frameToMs(timeChattingInFrames)
+            startInternalBehaviourOfState(myID, "startChatting", timeChattingInMs, partnerID)
+            startInternalBehaviourOfState(partnerID, "startChatting", timeChattingInMs, myID)
             persPack.maxTimeChattingInFrames  = 0
             return true, frame + timeChattingInFrames, persPack
         end    
@@ -1191,5 +1194,4 @@ function gadget:GameFrame(frame)
 
     OpimizationFleeing.accumulatedCivilianDamage = math.max(0, OpimizationFleeing.accumulatedCivilianDamage  - 1)
 end
-
 

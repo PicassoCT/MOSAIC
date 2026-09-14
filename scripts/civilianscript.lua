@@ -923,7 +923,7 @@ function chatting()
         chattingTime > 0 and 
         doesUnitExistAlive(chatPartner) and 
         distanceUnitToUnit(unitID, chatPartner) < GameConfig.generalInteractionDistance do
-        durationFrames = 0
+        local iterationStartFrame = spGetGameFrame()
         if maRa() then
             if randChance(75) then
                 durationFrames = PlayAnimation("UPBODY_NORMAL_TALK", lowerBodyPieces, math.random(10,20)/10)
@@ -935,9 +935,9 @@ function chatting()
         end
         turnUnitTowardsUnit(accumulated, startRotation)
 
-       chattingTime = chattingTime - 100 - frameToMs(durationFrames)
        accumulated = accumulated + turnStep
-       Sleep(100)       
+       Sleep(100)
+       chattingTime = chattingTime - frameToMs(spGetGameFrame() - iterationStartFrame)
     end
     conditionalEcho(boolDebugActive, "civilian "..unitID.. " chat has ended")
 
