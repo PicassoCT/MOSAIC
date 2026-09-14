@@ -322,17 +322,6 @@ if gadgetHandler:IsSyncedCode() then
         --echo("Daytime:"..getDayTimeString(timeFrame%WholeDay, WholeDay))
         percent = ((timeFrame % (WholeDay)) / (WholeDay))
 
-        if math.random(1, 10) > 5 and (timeFrame == DAWN_FRAME or timeFrame == DUSK_FRAME) then
-
-            if (GameConfig.instance.culture == "arabic") then    
-                local prayers = VFS.DirList("sounds/civilian/arabic", "*.ogg")
-                Spring.PlaySoundFile(prayers[math.random(1,#prayers)], 0.9)
-            end
-            if (GameConfig.instance.culture == "international") then    
-                local prayers = VFS.DirList("sounds/civilian/international", "*.ogg")
-                Spring.PlaySoundFile(prayers[math.random(1,#prayers)], 0.9)            
-            end
-        end
         config = getDefaultConfg({r = 0.5, g = 0.5, b = 0.5, a = 0.5})
         
         rgba = getgroundAmbientColor(percent)
@@ -372,9 +361,39 @@ if gadgetHandler:IsSyncedCode() then
     DUSK_FRAME = math.ceil((DAYLENGTH / EVERY_NTH_FRAME) * 0.75) *
                      EVERY_NTH_FRAME
     local HALF_DAY_OFFSET = DAYLENGTH * 0.5
+
+    local prayerCalls = {}
+    if GameConfig.instance.culture == "arabic" or GameConfig.instance.culture == "international" then
+        local directory = "sounds/civilian/" .. GameConfig.instance.culture
+        for _, path in ipairs(VFS.DirList(directory, "callToPrayer*.ogg")) do
+            local index = tonumber(path:match("/callToPrayer(%d+)%.ogg$"))
+            if index then prayerCalls[#prayerCalls + 1] = {path = path, index = index} end
+        end
+        table.sort(prayerCalls, function(a, b) return a.index < b.index end)
+    end
+
+    local lastPrayerSlot
+    local function updatePrayerCall(frame)
+        local slot = getPrayerSlot(frame)
+        if slot == nil then
+            GG.ActivePrayerCall = nil
+            return
+        end
+        if slot == lastPrayerSlot then return end
+        lastPrayerSlot = slot
+        GG.ActivePrayerCall = nil
+        -- Choose once per window, in synced code. Publish the actual filename
+        -- index before civilians start; never infer it from directory ordering.
+        if #prayerCalls > 0 and math.random(1, 10) > 5 then
+            local call = prayerCalls[math.random(1, #prayerCalls)]
+            GG.ActivePrayerCall = {slot = slot, index = call.index, startFrame = frame}
+            Spring.PlaySoundFile(call.path, 0.9)
+        end
+    end
     -- set the sun
     function gadget:GameFrame(n)
         if n % EVERY_NTH_FRAME == 0 then
+            updatePrayerCall(n)
             aDay(n + HALF_DAY_OFFSET, DAYLENGTH)
         end
         setSunArc(n + HALF_DAY_OFFSET)

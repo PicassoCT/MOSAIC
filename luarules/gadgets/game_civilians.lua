@@ -828,12 +828,13 @@ end
 
 function snychronizedSocialEvents(evtID, frame, persPack, startFrame, myID)
     local prayerSlot = getPrayerSlot(frame)
-    if prayerSlot and civilianWalkingTypeTable[persPack.mydefID] and
+    local prayerCall = GG.ActivePrayerCall
+    if prayerSlot and prayerCall and prayerCall.slot == prayerSlot and civilianWalkingTypeTable[persPack.mydefID] and
        persPack.lastPrayerSlot ~= prayerSlot then
         -- Decide once per civilian and prayer window. A failed roll must not
         -- be retried every event-stream tick throughout the same window.
         persPack.lastPrayerSlot = prayerSlot
-        if maRa() and startInternalBehaviourOfState(myID, "startPraying") then
+        if maRa() and startInternalBehaviourOfState(myID, "startPraying", prayerCall.index) then
             Command(myID, "stop")
             persPack.deactivateStuckDetectionValue = 0
             return true, frame + 1, persPack

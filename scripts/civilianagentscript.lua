@@ -7,6 +7,8 @@ include "lib_physics.lua"
 include "lib_staticstring.lua"
 
 local Animations = include('animations_civilian_female.lua')
+local PrayerAnimations = include('animations_civilian_prayers.lua')
+PrayerAnimations.register(Animations)
 local signMessages = include('protestSignMessages.lua')
 local map = Spring.GetUnitPieceMap(unitID)
 local parentPieceMap = getParentPieceMap(unitID)
@@ -734,8 +736,17 @@ function resetUpperBodyNoTPose(boolWait)
     end
 end
 
+local prayerAnimationName = PrayerAnimations.name(1)
+
+local function isPraying()
+    local state = GG.CivilianUnitInternalLogicActive and GG.CivilianUnitInternalLogicActive[unitID]
+    return type(state) == "table" and state.behaviour == "pray" and
+           state.state == GameConfig.STATE_STARTED
+end
+
 boolStartPraying = false
-function startPraying()
+function startPraying(callIndex)
+    prayerAnimationName = PrayerAnimations.name(callIndex)
     setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_STARTED, "pray")
     boolStartPraying = true
     return true
@@ -748,25 +759,18 @@ function pray()
 
     local prayerEndFrame = Spring.GetGameFrame() + getPrayDurationInFrames()
     setSpeedEnv(unitID, 0.0)
+    -- Cancel any upper-body idle already in progress. The replacement waits
+    -- on the shared state, so interruption/watchdog cleanup also releases it.
+    StartThread(animationStateMachineUpper, UpperAnimationStateFunctions)
 
     repeat
-        PlayAnimation("UPBODY_PRAY", lowerBodyPieces, 1.0)
+        PlayAnimation(prayerAnimationName, nil, 1.0)
         WaitForTurns(upperBodyPieces)
-
-        if not GG.PrayerRotationRad then
-            local val = math.random(0, 360)
-            GG.PrayerRotationRad = math.rad(val)
-        end
-
-        Spring.SetUnitRotation(unitID, 0, GG.PrayerRotationRad, 0)
-        WaitForTurns(upperBodyPieces)
-        WaitForTurns(lowerBodyPieces)
         Sleep(500)
-    until Spring.GetGameFrame() >= prayerEndFrame
+    until Spring.GetGameFrame() >= prayerEndFrame or not isPraying()
 
     setSpeedEnv(unitID, NORMAL_WALK_SPEED)
     resetUpperBodyNoTPose()
-    Move(center, z_axis, 0, 2500)
     setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_ENDED, "pray")
 end
 
@@ -1067,7 +1071,9 @@ function PlayAnimation(animname, piecesToFilterOutTable, speed)
                     randoffset = math.random(randLowVal, randUpVal) / 100
                 end
 
-                if not piecesToFilterOutTable[cmd.p] then
+                if not piecesToFilterOutTable[cmd.p] and
+                   not (isPraying() and upperBodyPieces[cmd.p] and
+                        animname ~= prayerAnimationName) then
                     animCmd[cmd.c](cmd.p, cmd.a,
                                    axisSign[cmd.a] * (cmd.t + randoffset),
                                    cmd.s * speedFactor)
@@ -1764,6 +1770,7 @@ function animationStateMachineUpper(AnimationTable)
     local animationTable = AnimationTable
 
     while true do
+        while isPraying() do Sleep(33) end
         assert(UpperAnimationState)
         assert(animationTable[UpperAnimationState],
                "Upper Animationstate not existing " .. UpperAnimationState)

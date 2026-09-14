@@ -2527,7 +2527,8 @@ end
 	         
 
             function getPrayerSlot(frame)
-                if GG.GameConfig.instance.culture ~= Cultures.arabic then
+                local culture = GG.GameConfig.instance.culture
+                if culture ~= "arabic" and culture ~= "international" then
                     return nil
                 end
 
