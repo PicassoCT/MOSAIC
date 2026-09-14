@@ -9,6 +9,8 @@ include "lib_mosaic.lua"
 
 local boolDebugActive = GG.BoolDebug and false
 local Animations = include('animations_civilian_female.lua')
+local PrayerAnimations = include('animations_civilian_prayers.lua')
+PrayerAnimations.register(Animations)
 local signMessages = include('protestSignMessages.lua')
 local peacfulProtestSignMessages = include('PeacefullProtestSignMessages.lua')
 
@@ -757,8 +759,17 @@ function resetUpperBodyNoTPose(boolWait)
     end
 end
 
+local prayerAnimationName = PrayerAnimations.name(1)
+
+local function isPraying()
+    local state = GG.CivilianUnitInternalLogicActive and GG.CivilianUnitInternalLogicActive[unitID]
+    return type(state) == "table" and state.behaviour == "pray" and
+           state.state == GameConfig.STATE_STARTED
+end
+
 boolStartPraying = false
-function startPraying()
+function startPraying(callIndex)
+    prayerAnimationName = PrayerAnimations.name(callIndex)
     setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_STARTED, "pray")
     boolStartPraying = true
     queueEventThread("behaviour", threadStateStarter, 250)
@@ -771,25 +782,18 @@ function pray()
 
     local prayerEndFrame = Spring.GetGameFrame() + getPrayDurationInFrames()
     setSpeedEnv(unitID, 0.0)
+    -- Cancel any upper-body idle already in progress. The replacement waits
+    -- on the shared state, so interruption/watchdog cleanup also releases it.
+    StartThread(animationStateMachineUpper, UpperAnimationStateFunctions)
 
     repeat
-        PlayAnimation("UPBODY_PRAY", lowerBodyPieces, 1.0)
+        PlayAnimation(prayerAnimationName, nil, 1.0)
         WaitForTurns(upperBodyPieces)
-
-        if not GG.PrayerRotationRad then
-            local val = math.random(0, 360)
-            GG.PrayerRotationRad = math.rad(val)
-        end
-
-        Spring.SetUnitRotation(unitID, 0, GG.PrayerRotationRad, 0)
-        WaitForTurns(upperBodyPieces)
-        WaitForTurns(lowerBodyPieces)
         Sleep(500)
-    until Spring.GetGameFrame() >= prayerEndFrame
+    until Spring.GetGameFrame() >= prayerEndFrame or not isPraying()
 
     setSpeedEnv(unitID, NORMAL_WALK_SPEED)
     resetUpperBodyNoTPose()
-    Move(center, z_axis, 0, 2500)
     setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_ENDED, "pray")
 end
 
@@ -930,7 +934,7 @@ function chatting()
         chattingTime > 0 and 
         doesUnitExistAlive(chatPartner) and 
         distanceUnitToUnit(unitID, chatPartner) < GameConfig.generalInteractionDistance do
-        durationFrames = 0
+        local iterationStartFrame = spGetGameFrame()
         if maRa() then
             if randChance(75) then
                 durationFrames = PlayAnimation("UPBODY_NORMAL_TALK", lowerBodyPieces, math.random(10,20)/10)
@@ -942,9 +946,9 @@ function chatting()
         end
         turnUnitTowardsUnit(accumulated, startRotation)
 
-       chattingTime = chattingTime - 100 - frameToMs(durationFrames)
        accumulated = accumulated + turnStep
-       Sleep(100)       
+       Sleep(100)
+       chattingTime = chattingTime - frameToMs(spGetGameFrame() - iterationStartFrame)
     end
     conditionalEcho(boolDebugActive, "civilian "..unitID.. " chat has ended")
 
@@ -1107,7 +1111,9 @@ function PlayAnimation(animname, piecesToFilterOutTable, speed)
                     randoffset = math.random(randLowVal, randUpVal) / 100
                 end
 
-                if not piecesToFilterOutTable[cmd.p] then
+                if not piecesToFilterOutTable[cmd.p] and
+                   not (isPraying() and upperBodyPieces[cmd.p] and
+                        animname ~= prayerAnimationName) then
                     animCmd[cmd.c](cmd.p, cmd.a,
                                    axisSign[cmd.a] * (cmd.t + randoffset),
                                    cmd.s * speedFactor)
@@ -1810,6 +1816,7 @@ function animationStateMachineUpper(AnimationTable)
     local animationTable = AnimationTable
 
     while true do
+        while isPraying() do Sleep(33) end
         assert(UpperAnimationState)
         assert(animationTable[UpperAnimationState],
                "Upper Animationstate not existing " .. UpperAnimationState)

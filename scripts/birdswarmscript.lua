@@ -19,13 +19,30 @@ local function flight()
     Sleep(33)
     Spring.MoveCtrl.Enable(unitID)
     local x,y,z = Spring.GetUnitPosition(unitID)
+    sx,sy, sz = x,y,z
     local floor = launchHeight or y
+    local milliSeconds = 0
     for step=1,900 do
-        x,z = x+fleeX*2,z+fleeZ*2
-        y = math.max(floor + math.min(180,step*0.8), Spring.GetGroundHeight(x,z)+40)
-        Spring.MoveCtrl.SetPosition(unitID,x,y,z)
+        if milliSeconds < 10000 then
+            x,z = x+fleeX*2,z+fleeZ*2
+            y = math.max(floor + math.min(180,step*0.8), Spring.GetGroundHeight(x,z)+40)
+            Spring.MoveCtrl.SetPosition(unitID,x,y,z)
+        else
+            Spring.MoveCtrl.Disable(unitID)
+            Spring.SetUnitMoveGoal(unitID, sx+ math.random(-250,250), y, sz+ math.random(-250,250))
+            Sleep(5000)
+        end        
+        milliSeconds = milliSeconds + 33
         Sleep(33)
     end
+    Spring.MoveCtrl.Enable(unitID)
+    x,y,z = Spring.GetUnitPosition(unitID)
+    gh = Spring.GetGroundHeight(x,z) +  (12 * 3) --buildingheight
+    for h = y, gh , -1 do
+        Spring.MoveCtrl.SetPosition(unitID,x, h,z)
+        Sleep(33)
+    end
+    
     Spring.DestroyUnit(unitID,false,true)
 end
 

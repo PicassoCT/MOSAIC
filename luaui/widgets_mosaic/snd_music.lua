@@ -116,6 +116,26 @@ local function isNight()
 end
 
 
+-- F10 and playback share the persisted 0-100 music-channel setting.
+local function GetMusicVolume()
+	return math.max(0, math.min(100, Spring.GetConfigInt("snd_volmusic", 20)))
+end
+
+local function SetMusicVolume(value)
+	value = tonumber(value)
+	if not value or value ~= value then return end
+	value = math.floor(math.max(0, math.min(100, value)) + 0.5)
+	Spring.SetConfigInt("snd_volmusic", value)
+	Spring.SetSoundStreamVolume(value / 100)
+end
+
+local function PlayMusicStream(track)
+	-- Keep source gain at unity: the channel applies the user's volume once.
+	-- Older engines bypass channel gain on start, so reapply it after playback.
+	Spring.PlaySoundStream(track, 1)
+	Spring.SetSoundStreamVolume(GetMusicVolume() / 100)
+end
+
 local function StartLoopingTrack(trackInit, trackLoop)
 	if not (VFS.FileExists(trackInit) and VFS.FileExists(trackLoop)) then
 		Spring.Log(widget:GetInfo().name, LOG.ERROR, "Missing one or both tracks for looping")
@@ -126,7 +146,7 @@ local function StartLoopingTrack(trackInit, trackLoop)
 	
 	curTrack = trackInit
 	loopTrack = trackLoop
-	Spring.PlaySoundStream(trackInit, WG.music_volume or 0.5)
+	PlayMusicStream(trackInit)
 	looping = 0.5
 end
 
@@ -185,9 +205,8 @@ local function StartTrack(track)
 		-- Spring.Echo("Song changed but unable to get the artist and title info")
 	-- end
 	curTrack = newTrack
-	Spring.PlaySoundStream(newTrack,WG.music_volume or 0.5)
+	PlayMusicStream(newTrack)
 	
-	WG.music_start_volume = WG.music_volume
 end
 
 local function StopTrack(noContinue)
@@ -257,7 +276,7 @@ function widget:Update(dt)
 				looping = 1
 			elseif playedTime >= totalTime - LOOP_BUFFER then
 				Spring.StopSoundStream()
-				Spring.PlaySoundStream(loopTrack,WG.music_volume or 0.5)
+				PlayMusicStream(loopTrack)
 			end
 		end
 		timeframetimer_short = 0
@@ -439,8 +458,7 @@ local function PlayGameOverMusic(gameWon)
 	end
 	looping = false
 	Spring.StopSoundStream()
-	Spring.PlaySoundStream(track,WG.music_volume or 0.5)
-	WG.music_start_volume = WG.music_volume
+	PlayMusicStream(track)
 end
 
 function widget:GameOver()
@@ -449,6 +467,8 @@ end
 
 function widget:Initialize()
 	WG.Music = WG.Music or {}
+	WG.Music.GetMusicVolume = GetMusicVolume
+	WG.Music.SetMusicVolume = SetMusicVolume
 	WG.Music.StartTrack = StartTrack
 	WG.Music.StartLoopingTrack = StartLoopingTrack
 	WG.Music.StopTrack = StopTrack

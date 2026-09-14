@@ -213,7 +213,9 @@ function getGameConfig()
 
         generalInteractionDistance = 110,
         minConversationLengthFrames = 15 * 30,
-        maxConversationLengthFrames = 120 * 30,
+        -- Duration uses the product of two uniform draws: mean = min + (max-min)/4.
+        -- 15--35 seconds gives a 20-second mean, with occasional longer chats.
+        maxConversationLengthFrames = 35 * 30,
 
         inHundredChanceOfInterestInDisaster = 35,
         inHundredChanceOfDisasterWailing = 75,
@@ -2527,7 +2529,8 @@ end
 	         
 
             function getPrayerSlot(frame)
-                if GG.GameConfig.instance.culture ~= Cultures.arabic then
+                local culture = GG.GameConfig.instance.culture
+                if culture ~= "arabic" and culture ~= "international" then
                     return nil
                 end
 

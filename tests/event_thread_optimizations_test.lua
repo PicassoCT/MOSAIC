@@ -113,6 +113,8 @@ for _,path in ipairs({'scripts/civilianscript.lua','scripts/civilianagentscript.
     local r=runtime(); local e=r.unit(1); local animations, behaviours={},{}
     e.setCivilianUnitInternalStateMode=function() end
     e.GameConfig={STATE_STARTED=1}
+    e.x_axis, e.y_axis, e.z_axis = 1, 2, 3
+    e.PrayerAnimations = run(read('scripts/animations_civilian_prayers.lua'), e)
     e.conditionalEcho=function() end; e.locationstring=function() return 'test' end
     e.deferedOverrideAnimationState=function(...)
         animations[#animations+1]={...}; e.Sleep(33)
@@ -130,7 +132,8 @@ for _,path in ipairs({'scripts/civilianscript.lua','scripts/civilianagentscript.
     run('local behaviourDispatcherClosed=false\n'..fn(path,'threadStateStarter')..'\n'..
         fn(path,'startWailing')..'\n'..fn(path,'startFleeing')..'\n'..
         fn(path,'startPraying')..'\n'..fn(path,'startAerosolBehaviour'),e)
-    r.call(e,e.startPraying)
+    r.call(e,e.startPraying,3)
+    assert(e.prayerAnimationName == 'UPBODY_PRAYER_3')
     r.call(e,e.startFleeing,123)
     r.call(e,e.startWailing,500)
     assert(r.pending()==1)

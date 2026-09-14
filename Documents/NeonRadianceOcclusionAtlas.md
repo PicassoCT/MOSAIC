@@ -46,7 +46,7 @@ The Arab, Asian and Western scripts include `scripts/lib_building_voxels.lua`.
 At the start of each build they call:
 
 ```lua
-initializeBuildingShadowVoxels(cubeDim.length, cubeDim.heigth)
+initializeBuildingShadowVoxels(cubeDim.length, cubeDim.heigth, scriptToModelScale)
 ```
 
 The existing placement hooks stay unchanged:
@@ -55,9 +55,19 @@ The existing placement hooks stay unchanged:
 addShadowVoxel(xRealLoc, zRealLoc, floorBaseY)
 ```
 
+The optional third initializer argument converts script movement units into
+model-local elmos at the getter. It defaults to 1. The current Asian and Western
+DAEs declare `asset/unit meter="0.025400"`, so their scripts pass 0.0254;
+the Arab DAE declares 1.0 and keeps the default. The conversion applies once to
+cell size, floor height, grid origins and terrain bases, never to occupancy
+counts or masks. The gadget, atlas and debug overlay all consume the converted
+geometry. There is no runtime DAE parsing. Update this constant if the DAE unit
+metadata changes. Expected six-cell footprint widths are 117.348 elmos (Asian),
+127.28448 (Western) and 125.28 (Arab), rather than 4620/5011.2 for the first two.
+
 Despite its legacy name, this records one occupied floor in a compact column.
 It does not generate subvoxels. X/Z identify the block center; Y identifies its
-base. Blocks must share a horizontal grid and a floor spacing within each
+base, in the same script movement units used by the building's placement calls. Blocks must share a horizontal grid and a floor spacing within each
 column. Duplicate floor calls are idempotent; out-of-order floors, terrain base
 heights and missing floors are preserved. Reinitializing clears previous data.
 The getter produces the public grid with optional offsets/masks as needed.
@@ -111,3 +121,178 @@ This exercises the real provider, gadget, unsynced forwarder and widget with
 mocked engine/OpenGL calls. It covers masks, terrain offsets, input validation,
 replacement/removal, primitive-only transfer, coalescing, rotated projection and
 debug rendering. It does not replace an in-engine atlas/alignment check.
+
+
+## Occlusion-aware radiance propagation
+
+The widget now runs four 2D radiance cascades coarse-to-fine, using emission from
+all registered neon pieces and the selected occupancy height band. The old
+unreferenced `topDownNeonLightRadianceCascadeShader.frag` remains unused; the live
+implementation is in `shaders/radiancecascade/propagate.frag` and `resolve.frag`,
+managed by `include/radiance_propagation.lua`.
+
+Default preview panels:
+
+1. Neon geometry emission at unit intensity, filtered to the selected height band.
+2. Building occupancy in that band.
+3. Propagated radiance at unit intensity.
+4. The same result with day/night neon intensity applied once.
+
+Controls:
+
+- `/radiancedebug propagation`: show the propagation panels (default).
+- `/radiancedebug direct`: return to the original single-emitter diagnostics.
+- `/radiancedebug height 128`: select the occupancy band containing world Y=128.
+  Bands remain 128 elmos tall; the default is Y=0 through Y=128.
+- Existing voxel/volume overlay and direct-emitter clearance commands remain.
+
+Each cascade has a 256x256 RGBA16F texture. Probe resolution halves per axis
+while angular resolution quadruples (4, 16, 64, 256 directions). Non-overlapping
+distance intervals grow by four; their total range is 85 times the base interval
+(two emission texels on the shorter map axis). For an 8192x8192 map this is
+1360 elmos. Near and far intervals merge as `Lnear + Tnear * Lfar`, with
+transmittance multiplied. Occupied samples terminate propagation. Emitting
+samples take priority over occupancy at the same surface.
+
+Parent interpolation tests visibility to parent interval entry points, and
+resolve interpolation tests visibility to its neighboring probes. This avoids
+the solid-wall leakage seen with plain bilinear merging. It is still a finite
+resolution approximation: thin geometry and angular detail require in-engine
+evaluation. This is single-band, direct radiance transport, not 3D multi-bounce GI.
+
+The emission source samples the registered neon pieces' model diffuse RGB.
+Both the previews and the scene pass below consume this coloured field. The day/night-scaled panel may be
+black in daylight while the unit-intensity panel remains useful for debugging.
+
+Refresh is bounded to 5 Hz. Cascade work depends on fixed texture/probe counts,
+not a separate ray pass for every emitter. Four cascade buffers plus three 512x512
+resolve buffers (including the independent scene-band cache) use about 8 MiB of additional RGBA16F texel storage, excluding
+driver overhead. No previous-frame radiance feedback is retained, so removing
+an emitter clears its illumination at the next refresh. The three old direct
+diagnostic passes run only when their view is selected. Shader/FBO setup failure
+cleans up propagation resources and falls back to the existing diagnostics.
+
+`WG.NeonRadiance` exposes `texture` (day/night scaled), `unitTexture`,
+`ready`, `heightMin`, `heightMax`, `mapSizeX` and `mapSizeZ` for other
+consumers. UV is world X/Z divided by map X/Z size. Only sample while `ready` is
+true; the widget owns and deletes these textures and removes its WG entry on
+shutdown. Scene lighting uses unit-intensity radiance and applies day/night once
+in its own composition shader.
+
+Additional checks, from repository root:
+
+```sh
+lua5.4 tests/neon_radiance_lifecycle.lua
+python3 -m pip install numpy moderngl glfw
+python3 tests/neon_radiance_gpu.py
+# Headless Mesa CI only:
+MESA_GL_VERSION_OVERRIDE=3.3COMPAT python3 tests/neon_radiance_gpu.py --context egl
+```
+
+The GPU test defaults to a hidden GLFW window with an explicit OpenGL 3.3
+compatibility profile, including on NVIDIA. Run it from a graphical desktop.
+The optional EGL mode is for headless Mesa CI; the Mesa profile override does
+not configure NVIDIA's driver. The test verifies the profile before drawing,
+reports the driver and per-cascade output, and checks GL errors at every draw.
+It compiles the actual GLSL in a compatibility context and exercises propagation, wall rejection, visibility
+merging, intensity, source removal and emission-band clipping. The lifecycle
+test checks coarse-to-fine ordering, absence of render-target feedback, texture
+bindings and cleanup at each shader/texture allocation failure. These checks
+do not substitute for Recoil driver/performance and visual testing.
+
+
+### Emitter inspection and thin-surface capture
+
+Select a registered neon building, then use:
+
+- `/radiancedebug zoom`: center all four panels on its first registered emitter
+  in a 1024-elmo square, and select the height band containing the piece origin.
+  With no selection, use the current emitter (or the first registered emitter).
+- `/radiancedebug zoom 512`: choose a smaller world-space window (minimum 128).
+- `/radiancedebug emitter UNITID PIECEID`: inspect a particular registered piece;
+  omit PIECEID to use that unit's first emitter.
+- `/radiancedebug exposure 8`: change preview exposure (0.125–64, default 4).
+- `/radiancedebug zoom off`: restore the whole-map view.
+- `/radiancedebug height 128`: manually override the captured height band.
+
+All four panels use the same UV crop. A green cross marks the emitter piece
+origin, which may differ from the center of its geometry. Crops clamp at map
+edges without changing their world-space size. Radiance previews use
+`1-exp(-radiance*exposure)`; occupancy remains a raw binary view. Exposure and
+zoom do not change the propagation textures exposed through WG.NeonRadiance.
+
+The emission geometry shader clips triangles to the selected height band,
+then widens projected surfaces thinner than two atlas texels into a narrow
+ribbon. Broad triangles retain their original footprint. This makes vertical
+billboard faces visible to top-down capture without amplifying source intensity.
+It is a conservative approximation: thin faces can extend by about one atlas
+texel on either side. It needs no extra textures or scene capture passes, but
+adds geometry-shader work to the existing capture. Validate performance in-game.
+
+Capture uses registered whole-piece geometry and its base colour texture.
+Animated hologram interference, view-dependent effects and transparency pulses
+are not reproduced in the emission atlas.
+Self-illuminated house pieces could use this capture path once registered as
+sources; selective glowing windows on a shared wall mesh need an emission mask.
+That registration/masking extension is not implemented by this change.
+
+
+### Coloured scene lighting
+
+The scene pass is enabled by default with strength 2 and world height 0–128.
+It adds propagated RGB illumination to visible surfaces in that band. The scene
+band is independent of debug emitter selection, zoom, exposure and preview band.
+This remains a single horizontal height band, not full 3D or multi-bounce GI.
+Surfaces outside the selected scene band receive no contribution.
+
+In daytime, test the effect with `/radiancelight test on`, then turn that override
+off again. A persistent on-screen label marks full-intensity testing, including
+when the diagnostic panels are hidden.
+
+| Command | Effect |
+| --- | --- |
+| `/radiancelight on` / `/radiancelight off` | Enable/disable scene lighting for comparison |
+| `/radiancelight test on` / `/radiancelight test off` | Override scene night intensity to 1 / restore the game clock |
+| `/radiancelight strength 2` | Artistic scene gain, clamped to 0–8; unrelated to preview exposure |
+| `/radiancelight height 128` | Select scene band 128–256; default is height 0 |
+| `/radiancedebug off` / `/radiancedebug on` | Hide/show diagnostic panels without disabling lighting |
+
+Coloured emission uses the same `%unitDefID:0` model texture as the hologram
+renderer. Broad surfaces interpolate texture UVs; widened edge-on faces use
+several samples over the clipped face to average the collapsed vertical colour
+variation. Black texels do not emit. Texture alpha is deliberately ignored,
+matching the existing hologram renderer's use of RGB rather than diffuse alpha.
+Missing model texture bindings retain the previous white-source fallback.
+
+Composition prefers the engine's map/model depth, normal and diffuse buffers.
+It chooses the closer opaque receiver, reconstructs its world position using the
+engine inverse matrices, checks map/height bounds, and samples radiance outside
+wall columns along their outward normal. Occupied samples remain dark. It adds
+`(1-exp(-radiance*strength))*nightIntensity*albedo` with ONE/ONE blending.
+Preview exposure is never used. No scene colour is read from the render target,
+and sky, below-water geometry and receivers outside the scene band are skipped.
+
+If deferred buffers/settings are unavailable, a depth-only screen copy provides
+positions and derivative normals with a neutral 0.5 reflectance approximation.
+This avoids redrawing terrain/models and does not change engine configuration.
+Transparent surfaces absent from depth/G-buffers have no independent lighting
+receiver. This is approximate diffuse illumination, without BRDF directionality
+or material-correct colour-space conversion; tune its appearance in Recoil.
+
+The preferred path allocates no screen-size textures. The depth fallback owns
+one DEPTH_COMPONENT24 texture, conservatively budgeted at four bytes per pixel:
+about 8 MiB at 1920×1080, capped at 16 MiB. Unsupported/failed allocations disable
+only composition and leave previews usable; failed sizes are not retried every
+frame. Resize and shutdown release owned resources.
+
+When scene and preview bands match, they share the existing cascade solve.
+Inspecting another preview band performs one additional capture and solve at
+5 Hz into a fixed 512×512 RGBA16F scene cache (2 MiB, included in the 8 MiB above).
+The scene shader draws once per frame and skips work at zero night intensity.
+Return the preview to the scene band for representative performance comparisons.
+
+The GPU suite checks coloured broad/edge-on sources, RGB propagation, receiver
+selection, sky/height/occupancy rejection, both clip-depth conventions and depth
+fallback. Lua checks cover scene toggles, independent bands, buffer reuse,
+viewport offsets, allocation limits, resize/failure recovery and GL cleanup.
+Recoil/NVIDIA visual validation is still required for this composition stage.

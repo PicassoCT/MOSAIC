@@ -1304,7 +1304,9 @@ end
 materialColourNameGround = nil
 materialColourNameWall = nil
 function buildBuilding()
-    initializeBuildingShadowVoxels(cubeDim.length, cubeDim.heigth)
+    -- objects3d/house_western.dae declares asset/unit meter="0.025400".
+    -- Move() offsets inherit that import scale; shadow geometry must match it.
+    initializeBuildingShadowVoxels(cubeDim.length, cubeDim.heigth, 0.0254)
     boolDoneShowing = false
    --echo(getScriptName() .. "buildBuilding")
     StartThread(buildAnimation)

@@ -14,15 +14,18 @@ end
 
 ------------------------------------------
 
-Spring.SetSoundStreamVolume(1)
+local function playMusicStream(track)
+	Spring.PlaySoundStream(track, 1)
+	Spring.SetSoundStreamVolume(math.max(0, math.min(100,
+		Spring.GetConfigInt("snd_volmusic", 20))) / 100)
+end
 
 
 local musicfiles = VFS.DirList("sounds/music/briefing/", "*.ogg")
 local function playMusicFile()
 	if (#musicfiles > 0) then
 		index=math.random(1,#musicfiles)
-		Spring.PlaySoundStream(musicfiles[ index ], 1)
-		Spring.SetSoundStreamVolume(1)
+		playMusicStream(musicfiles[ index ])
 	end
 end
 
@@ -30,7 +33,7 @@ local advertisementFiles = VFS.DirList("sounds/advertising/", "*.ogg")
 local function playAdvertisementFile()
 	if (#advertisementFiles > 0) then
 		index=math.random(1,#advertisementFiles)
-		Spring.PlaySoundStream(advertisementFiles[ index ], 1)
+		playMusicStream(advertisementFiles[ index ])
 	end
 end
 
@@ -56,5 +59,5 @@ end
 
 function addon.Shutdown()
 	Spring.StopSoundStream()
-	Spring.SetSoundStreamVolume(1)
 end
+
