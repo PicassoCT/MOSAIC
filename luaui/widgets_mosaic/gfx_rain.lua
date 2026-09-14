@@ -15,7 +15,9 @@ end
 --------------------------------------------------------------------------------
 
 -- > debugEchoT(
-local boolDebugActive = false  --TODODO
+local boolDebugActive = false
+local reflectionDebug = false
+local savedRainPercent
 local rainShader = nil
 
 --------------------------------------------------------------------------------
@@ -125,6 +127,7 @@ local GL_FUNC_ADD = 0x8006
 local GL_FUNC_REVERSE_SUBTRACT = 0x800B
 
 local timePercentLoc
+local reflectionDebugLoc
 local rainPercentLoc
 local rainPercent = 0.0
 local timePercent = 0
@@ -158,9 +161,8 @@ local emitmaptexIndex       = 10
 local emitunittexIndex      = 11
 local eyePos = {spGetCameraPosition()}
 local eyeDir = {spGetCameraDirection()}
---TODO: Rain is - highly Directional and reflects only from the ground
--- directional- should instead reflect in all camera directions
--- Debugstep: render only reflection, debug till it works for all diretions
+-- /rainreflection on isolates wet-surface reflections and temporarily forces rain.
+-- /rainreflection off restores the weather amount that was active before debugging.
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -172,7 +174,7 @@ local function errorOutIfNotInitialized(value, name)
 end
 
 function widget:ViewResize()
-    vsx, vsy = gl.GetViewSizes()
+    vsx, vsy, vpx, vpy = Spring.GetViewGeometry()
 
   --[[  if (modelDepthTex ~= nil ) then
         glDeleteTexture(modelDepthTex)
@@ -258,7 +260,7 @@ local function init()
     errorOutIfNotInitialized(glCreateShader, "no shader support")
 
     --https://www.shadertoy.com/view/wd2GDG inspiration
-    local fragmentShader =  VFS.LoadFile(shaderFilePath .. "rainShader.frag") 
+    local fragmentShader = VFS.LoadFile(shaderFilePath .. "rainShader.frag") 
     local vertexShader = VFS.LoadFile(shaderFilePath .. "rainShader.vert") 
     --local fragmentShaderAddSource = VFS.LoadFile(shaderFilePath .. "rainShaderReflectionSource.c") 
 	--fragmentShader = string.replace(fragmentShader, "REFLECTIONMARCH", fragmentShaderAddSource)
@@ -286,6 +288,8 @@ local function init()
             uniform = {
                 timePercent = 0,
                 rainPercent= 0,
+                clipZeroToOne = (Platform and Platform.glSupportClipSpaceControl) and 1 or 0,
+                reflectionDebug = 0,
                 time = diffTime,
                 scale = 0,
             },
@@ -312,6 +316,7 @@ local function init()
 
     timePercentLoc                  = glGetUniformLocation(rainShader, "timePercent")
     rainPercentLoc                  = glGetUniformLocation(rainShader, "rainPercent")
+    reflectionDebugLoc              = glGetUniformLocation(rainShader, "reflectionDebug")
     uniformViewPortSize             = glGetUniformLocation(rainShader, "viewPortSize")
     cityCenterLoc                   = glGetUniformLocation(rainShader, "cityCenter")
     uniformTime                     = glGetUniformLocation(rainShader, "time")
@@ -456,6 +461,7 @@ local function updateUniforms()
     diffTime = diffTime - pausedTime
     --Spring.Echo("Time passed:"..diffTime)
     glUniform(rainPercentLoc, rainPercent)
+    glUniform(reflectionDebugLoc, reflectionDebug and 1 or 0)
     glUniform(timePercentLoc, timePercent)
     glUniform(uniformViewPortSize, vsx, vsy )
     glUniform(uniformTime, diffTime )
@@ -504,7 +510,7 @@ local function prepareTextures()
     glTexture(modelDepthTexIndex,"$model_gbuffer_zvaltex")
     glTexture(mapDepthTexIndex,"$map_gbuffer_zvaltex")
     glTexture(rainDroplettTexIndex, rainDroplettextureFilePath);
-    glCopyToTexture(screentex, 0, 0, 0, 0, vsx, vsy)
+    glCopyToTexture(screentex, 0, 0, vpx, vpy, vsx, vsy)
     glTexture(screentexIndex, screentex)
     glTexture(normaltexIndex,"$map_gbuffer_normtex")
     glTexture(normalunittexIndex,"$model_gbuffer_normtex")
@@ -596,3 +602,22 @@ function widget:GameFrame()
 end
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
+
+
+function widget:TextCommand(command)
+    if command == "rainreflection on" then
+        if not reflectionDebug then savedRainPercent = rainPercent end
+        reflectionDebug = true
+        boolDebugActive = true
+        rainPercent = 1.0
+        Spring.Echo("Rain: reflection-only view enabled")
+        return true
+    elseif command == "rainreflection off" then
+        reflectionDebug = false
+        boolDebugActive = false
+        if savedRainPercent then rainPercent = savedRainPercent end
+        savedRainPercent = nil
+        Spring.Echo("Rain: normal rendering restored")
+        return true
+    end
+end
