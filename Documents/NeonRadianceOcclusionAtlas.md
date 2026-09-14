@@ -296,3 +296,68 @@ selection, sky/height/occupancy rejection, both clip-depth conventions and depth
 fallback. Lua checks cover scene toggles, independent bands, buffer reuse,
 viewport offsets, allocation limits, resize/failure recovery and GL cleanup.
 Recoil/NVIDIA visual validation is still required for this composition stage.
+
+### Camera-local detail and wall-aware reconstruction
+
+Scene lighting now enables a camera-local field and spatial smoothing by default.
+The existing DrawWorld composition path is retained from the working version;
+the later experimental screen-effects diagnostics are not included.
+
+The centre camera ray selects a ground focus. Near views use a 1024-elmo square
+with a 1024² emission capture, 512² occupancy capture, 128² base probes and a
+512² resolved field: 1-elmo emission texels, 2-elmo occupancy/lighting cells and
+8-elmo probe spacing. Medium views cover 2048 elmos at the same texture sizes.
+Distant views or a camera ray that misses the ground use only the whole-map field.
+
+The domain moves in whole probe steps (also whole emission/occupancy texels),
+and zoom thresholds have hysteresis to reduce switching. Map-edge clamping keeps
+the domain inside the map. Domain metadata is published only after its capture
+and solve finish, so the compositor never combines old pixels with a new origin.
+
+Rays use fine emission/occupancy inside the patch and the current scene-band
+whole-map captures outside it. They retain the whole-map world-space cascade
+intervals, so lights outside the patch can still contribute. Marching remains
+bounded by the existing 256-step limit: distant small features remain approximate.
+Scene and preview height bands stay independent; the local solve runs while the
+whole-map emission texture still contains the scene band, before a different
+preview band overwrites that texture.
+
+Composition samples the fine field in the centre and fades to the whole-map
+field over the outer 18% of the patch. Each field uses its own occupancy-cell
+size for wall-normal offsets. Wall-aware bilinear filtering rejects occupied
+sample centres and connectors crossing occupancy before renormalizing weights;
+simply enabling hardware linear filtering would leak light through walls.
+
+| Command | Effect |
+| --- | --- |
+| `/radiancelight detail off` / `detail on` | Compare the whole-map field with automatic camera-local detail |
+| `/radiancelight smooth off` / `smooth on` | Compare nearest sampling with wall-aware reconstruction |
+
+The diagnostic status displays the active local span and cell size. Existing
+preview panels still show the whole-map solve (cropping them does not switch
+their source texture); the finer field is used by actual scene lighting.
+
+Local detail allocates lazily on the first near-camera solve and reuses fixed
+textures: four 256² RGBA16F cascades, one 512² RGBA16F resolve, a 1024² RGBA8
+emission capture and a 512² RGBA8 occupancy capture. This adds about 9 MiB of
+texel storage, excluding driver/shader overhead. Allocation failure disables
+local detail and retains whole-map lighting. Zooming out reuses the allocation
+later rather than churning GPU objects; shutdown releases it.
+
+The extra capture and solve run at the existing 5 Hz refresh, adding two capture
+passes and five cascade/resolve passes while local detail is active. This is
+bounded work, but it still costs GPU time; use detail off for comparison.
+
+Regression cases were added for external-patch sources and blockers, smoothing
+across walls, centre/border blending, domain snapping, zoom hysteresis, map edges,
+scene-band routing, texture reuse and cleanup. The changed Lua files were syntax
+parsed during implementation. The execution environment was unavailable, so the
+new Lua lifecycle and GPU tests have NOT been run here. Run both before merging:
+
+```sh
+lua5.4 tests/neon_radiance_lifecycle.lua
+python3 tests/neon_radiance_gpu.py
+```
+
+The GPU command uses the previously tested NVIDIA/GLFW compatibility-context
+setup. Headless Mesa requires the documented --context egl variant.

@@ -230,3 +230,51 @@ scene_inputs[1].write(empty.tobytes());scene_program['deferred']=0
 assert np.allclose(scene_render()[:,:,:3],expected,atol=1e-6), 'Depth-copy fallback failed'
 assert ctx.error=='GL_NO_ERROR'
 print('PASS: textured coloured capture, RGB propagation, scene depth/height/sky/occlusion, day/night, both clip conventions and depth fallback')
+
+# Local rays retain sources beyond the fine capture by reading coarse inputs.
+program['coarseEmissionTex']=3;program['coarseOccupancyTex']=4
+program['localField']=1;program['domainOrigin']=(32,32);program['worldSize']=(128,128)
+program['mapSize']=(64,64)
+outside=np.zeros_like(emitted);outside[56:72,104:120,:3]=1
+coarse_e=texture(outside);coarse_o=texture(empty);coarse_e.use(3);coarse_o.use(4)
+e.write(np.zeros_like(emitted).tobytes())
+local_open=render(empty)
+assert local_open[:,:,:3].sum()>0, 'Local solve lost an emitter outside its capture'
+coarse_wall=empty.copy();coarse_wall[:,98:102]=1
+coarse_o.write(coarse_wall.tobytes());coarse_o.use(4)
+local_blocked=render(empty)
+assert local_blocked[:,:,:3].sum()<local_open[:,:,:3].sum()*1e-6, 'Outside-patch wall leaked into fine field'
+program['localField']=0;program['mapSize']=(128,128)
+
+# Bilinear reconstruction must not average through a thin occupancy wall.
+step_field=np.zeros((16,16,3),np.float32);step_field[:,8:]=1
+scene_inputs[0]=texture(step_field)
+scene_wall=empty.copy();scene_wall[:,63:65]=1
+scene_inputs[1].write(scene_wall.tobytes());scene_program['smoothing']=1
+smoothed=scene_render()
+assert smoothed[:,:63,:3].max()==0, 'Smoothing crossed the wall'
+assert smoothed[:,63:65,:3].max()==0, 'Smoothing lit an occupied receiver'
+# With no wall, the step is interpolated smoothly between its sample centres.
+scene_inputs[1].write(empty.tobytes());smoothed=scene_render()
+assert 0<smoothed[64,63,0]<smoothed[64,72,0]
+scene_program['smoothing']=0
+nearest=scene_render()
+assert nearest[64,63,0]==0
+
+# Fine field replaces the centre and fades to the coarse field at its boundary.
+scene_program['smoothing']=1
+scene_inputs[0]=texture(np.full((N,N,3),[0.2,0.05,0.1],np.float32))
+fine=texture(np.full((N,N,3),[0.6,0.2,0.05],np.float32));fine_occ=texture(empty)
+scene_program['localRadianceTex']=8;scene_program['localOccupancyTex']=9
+scene_program['localActive']=1;scene_program['localOrigin']=(32,32);scene_program['localSpan']=64
+fine.use(8);fine_occ.use(9)
+detail=scene_render()
+fine_expected=(1-np.exp(-np.array([0.6,0.2,0.05])*2))*0.25*0.5
+assert np.allclose(detail[64,64,:3],fine_expected,atol=1e-6)
+assert np.allclose(detail[16,16,:3],expected,atol=1e-6)
+# The first interior sample should still be predominantly coarse.
+assert np.linalg.norm(detail[64,32,:3]-expected)<np.linalg.norm(fine_expected-expected)*0.02
+scene_program['localActive']=0
+assert np.allclose(scene_render()[:,:,:3],expected,atol=1e-6)
+assert ctx.error=='GL_NO_ERROR'
+print('PASS: camera-local external sources/walls, wall-aware smoothing, local centre/border and coarse fallback')

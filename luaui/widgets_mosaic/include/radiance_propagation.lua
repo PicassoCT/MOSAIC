@@ -13,7 +13,7 @@ local function fullscreen()
     gl.MatrixMode(GL.MODELVIEW)
 end
 
-return function(emissionSize)
+return function(emissionSize, singleOutput)
     emissionSize = emissionSize or 1024
     local self = {textures = {}, ready = false}
     function self:Shutdown()
@@ -44,7 +44,7 @@ return function(emissionSize)
     local defines = string.format("#define BASE_PROBES %d\n#define CASCADE_COUNT %d\n#define MAX_TRACE_STEPS %d\n", PROBES, COUNT, MAX_STEPS)
     cascadeSource = cascadeSource:gsub("#version 150 compatibility", "#version 150 compatibility\n" .. defines, 1)
     self.cascadeShader = gl.CreateShader({fragment = cascadeSource,
-        uniformInt = {emissionTex=0, occupancyTex=1, parentTex=2}})
+        uniformInt = {emissionTex=0, occupancyTex=1, parentTex=2, coarseEmissionTex=3, coarseOccupancyTex=4}})
     if not self.cascadeShader then return fail("cascade shader: " .. (gl.GetShaderLog() or "failed")) end
     self.resolveShader = gl.CreateShader({fragment = resolveSource,
         uniformInt = {cascadeTex=0, occupancyTex=1, emissionTex=2}})
@@ -61,9 +61,13 @@ return function(emissionSize)
         self.textures[i]=tex
     end
     self.unitTexture=gl.CreateTexture(RESOLVE_SIZE,RESOLVE_SIZE,options)
-    self.texture=gl.CreateTexture(RESOLVE_SIZE,RESOLVE_SIZE,options)
-    self.sceneTexture=gl.CreateTexture(RESOLVE_SIZE,RESOLVE_SIZE,options)
-    if not self.sceneTexture or not self.unitTexture or not self.texture then return fail("resolve FBO allocation failed") end
+    if not singleOutput then
+        self.texture=gl.CreateTexture(RESOLVE_SIZE,RESOLVE_SIZE,options)
+        self.sceneTexture=gl.CreateTexture(RESOLVE_SIZE,RESOLVE_SIZE,options)
+    end
+    if not self.unitTexture or (not singleOutput and (not self.sceneTexture or not self.texture)) then
+        return fail("resolve FBO allocation failed")
+    end
     local function loc(shader,name) return gl.GetUniformLocation(shader,name) end
     self.previewExposureLoc=loc(self.previewShader,"exposure")
     self.texturedLoc=loc(self.emissionShader,"textured")
@@ -72,13 +76,20 @@ return function(emissionSize)
     local indexLoc=loc(self.cascadeShader,"cascadeIndex")
     local parentLoc=loc(self.cascadeShader,"hasParent")
     local mapLoc=loc(self.cascadeShader,"mapSize")
+    local localLoc=loc(self.cascadeShader,"localField")
+    local originLoc=loc(self.cascadeShader,"domainOrigin")
+    local worldLoc=loc(self.cascadeShader,"worldSize")
+    local domain
     local intervalLoc=loc(self.cascadeShader,"baseInterval")
     local intensityLoc=loc(self.resolveShader,"intensity")
     local function cascadePass(index)
         gl.UseShader(self.cascadeShader)
         gl.UniformInt(indexLoc,index)
         gl.UniformInt(parentLoc,index < COUNT-1 and 1 or 0)
-        gl.Uniform(mapLoc,Game.mapSizeX,Game.mapSizeZ)
+        gl.Uniform(mapLoc,domain and domain.span or Game.mapSizeX,domain and domain.span or Game.mapSizeZ)
+        gl.UniformInt(localLoc,domain and 1 or 0)
+        gl.Uniform(originLoc,domain and domain.x or 0,domain and domain.z or 0)
+        gl.Uniform(worldLoc,Game.mapSizeX,Game.mapSizeZ)
         -- Two emission texels on the shorter map axis; highest interval needs
         -- at most 256 half-texel steps even for rectangular maps.
         gl.Uniform(intervalLoc,self.baseInterval)
@@ -89,16 +100,18 @@ return function(emissionSize)
         gl.Uniform(intensityLoc,intensity)
         fullscreen()
     end
-    function self:Draw(emission, occupancy, intensity, heightMin, heightMax, sceneOnly)
+    function self:Draw(emission, occupancy, intensity, heightMin, heightMax, sceneOnly, localDomain, coarseEmission, coarseOccupancy)
         if not sceneOnly then
             self.ready = false
             self.heightMin, self.heightMax = heightMin, heightMax
         end
+        domain=localDomain
         self.mapSizeX, self.mapSizeZ = Game.mapSizeX, Game.mapSizeZ
         self.baseInterval = 2 * math.min(Game.mapSizeX,Game.mapSizeZ) / emissionSize
         gl.DepthTest(false); gl.DepthMask(false); gl.Blending(false); gl.Culling(false)
         gl.Color(1,1,1,1)
         gl.Texture(0,emission); gl.Texture(1,occupancy)
+        gl.Texture(3,coarseEmission or emission);gl.Texture(4,coarseOccupancy or occupancy)
         for index=COUNT-1,0,-1 do
             -- Never sample the texture attached to the current target FBO.
             gl.Texture(2,index < COUNT-1 and self.textures[index+2] or emission)
@@ -109,10 +122,10 @@ return function(emissionSize)
             gl.RenderToTexture(self.sceneTexture,resolvePass,1)
         else
             gl.RenderToTexture(self.unitTexture,resolvePass,1)
-            gl.RenderToTexture(self.texture,resolvePass,intensity)
+            if not singleOutput then gl.RenderToTexture(self.texture,resolvePass,intensity) end
         end
         gl.UseShader(0)
-        for unit=0,2 do gl.Texture(unit,false) end
+        for unit=0,4 do gl.Texture(unit,false) end
         if not sceneOnly then self.ready=true end
     end
     return self

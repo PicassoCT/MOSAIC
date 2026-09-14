@@ -8,6 +8,29 @@ uniform int cascadeIndex;
 uniform int hasParent;
 uniform float baseInterval;
 
+uniform int localField;
+uniform vec2 domainOrigin;
+uniform vec2 worldSize;
+uniform sampler2D coarseEmissionTex;
+uniform sampler2D coarseOccupancyTex;
+bool insidePatch(vec2 uv) {
+    return all(greaterThanEqual(uv,vec2(0))) && all(lessThan(uv,vec2(1)));
+}
+bool validPosition(vec2 uv) {
+    if(localField==0) return insidePatch(uv);
+    vec2 world=domainOrigin+uv*mapSize;
+    return all(greaterThanEqual(world,vec2(0))) && all(lessThan(world,worldSize));
+}
+vec3 emissionAt(vec2 uv) {
+    if(localField==0 || insidePatch(uv)) return texture2D(emissionTex,uv).rgb;
+    return texture2D(coarseEmissionTex,(domainOrigin+uv*mapSize)/worldSize).rgb;
+}
+float occupancyAt(vec2 uv) {
+    if(localField==0 || insidePatch(uv)) return texture2D(occupancyTex,uv).r;
+    return texture2D(coarseOccupancyTex,(domainOrigin+uv*mapSize)/worldSize).r;
+}
+
+
 // Injected: BASE_PROBES, CASCADE_COUNT, MAX_TRACE_STEPS.
 // Each cascade occupies the same texture area: quarter the probes, four times
 // the angular samples. Direction tiles prevent filtering across directions.
@@ -28,8 +51,8 @@ vec4 visibleParentTap(vec2 originUV, ivec2 probe, int probes, ivec2 tile, int di
     for(int i=0;i<MAX_TRACE_STEPS;++i) {
         if(i>=steps) break;
         vec2 uv=mix(originUV,entryUV,(float(i)+0.5)/float(steps));
-        if(any(lessThan(uv,vec2(0.0))) || any(greaterThanEqual(uv,vec2(1.0)))) return vec4(0.0);
-        if(texture2D(occupancyTex,uv).r>0.5) return vec4(0.0);
+        if(!validPosition(uv)) return vec4(0.0);
+        if(occupancyAt(uv)>0.5) return vec4(0.0);
     }
     return value;
 }
@@ -73,17 +96,17 @@ void main()
         if (i>=steps) break;
         float distance = start + (float(i)+0.5) * interval / float(steps);
         vec2 uv = originUV + ray * distance / mapSize;
-        if (any(lessThan(uv,vec2(0.0))) || any(greaterThanEqual(uv,vec2(1.0)))) {
+        if (!validPosition(uv)) {
             result.a=0.0; // no clamped edge emission and no out-of-map parent
             break;
         }
-        vec3 emitted = texture2D(emissionTex,uv).rgb;
+        vec3 emitted = emissionAt(uv);
         // An emitting surface may occupy the same cell as its host building.
         if (max(emitted.r,max(emitted.g,emitted.b)) > 0.001) {
             result=vec4(emitted,0.0);
             break;
         }
-        if (texture2D(occupancyTex,uv).r > 0.5) {
+        if (occupancyAt(uv) > 0.5) {
             result.a=0.0;
             break;
         }

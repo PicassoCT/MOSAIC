@@ -55,6 +55,7 @@ local propagationView = true
 local propagationLayer = 1
 local previewSpan = 0 -- world elmos; zero shows the whole map
 local scene
+local localDetail
 local sceneEnabled, sceneTest = true, false
 local sceneStrength, sceneLayer = 2, 1
 local sceneRadiance, sceneReady
@@ -204,7 +205,7 @@ local function emitOcclusionColumns(bottom, top)
     end
 end
 
-local function drawOcclusionLayer(layerIndex)
+local function drawOcclusionLayer(layerIndex, domain)
     local layerHeight = OCCLUSION_WORLD_HEIGHT / OCCLUSION_LAYER_COUNT
     local layerBottom = layerIndex * layerHeight
     local layerTop = layerBottom + layerHeight
@@ -220,7 +221,8 @@ local function drawOcclusionLayer(layerIndex)
     gl.MatrixMode(GL.PROJECTION)
     gl.PushMatrix()
     gl.LoadIdentity()
-    gl.Ortho(0, Game.mapSizeX, 0, Game.mapSizeZ, -1, 1)
+    gl.Ortho(domain and domain.x or 0, domain and domain.x+domain.span or Game.mapSizeX,
+        domain and domain.z or 0, domain and domain.z+domain.span or Game.mapSizeZ, -1, 1)
 
     gl.MatrixMode(GL.MODELVIEW)
     gl.PushMatrix()
@@ -326,6 +328,18 @@ local function focusPreview(unitID, pieceID)
 end
 
 function widget:TextCommand(command)
+    if command == "radiancelight detail off" or command == "radiancelight detail on" then
+        if localDetail then
+            localDetail.enabled=command == "radiancelight detail on"
+            localDetail.ready=false
+        end
+        refreshAccumulator=ATLAS_REFRESH_SECONDS
+        return true
+    end
+    if command == "radiancelight smooth off" or command == "radiancelight smooth on" then
+        if scene then scene.smoothing=command == "radiancelight smooth on" end
+        return true
+    end
     if command == "radiancelight on" or command == "radiancelight off" then
         sceneEnabled = command == "radiancelight on"
         sceneReady = false; refreshAccumulator = ATLAS_REFRESH_SECONDS
@@ -571,6 +585,9 @@ function widget:Initialize()
     end
     if propagation then
         WG.NeonRadiance = propagation
+        local detailOK, detailModule=pcall(VFS.Include,"luaui/widgets_mosaic/include/radiance_local.lua")
+        if detailOK and type(detailModule)=="table" then localDetail=detailModule.New()
+        else Spring.Echo("Neon local detail module unavailable: "..tostring(detailModule)) end
         local ok, factory = pcall(VFS.Include,"luaui/widgets_mosaic/include/radiance_scene.lua")
         if ok and type(factory)=="function" then
             local reason
@@ -603,7 +620,7 @@ function widget:Update(dt)
     refreshAccumulator = refreshAccumulator + dt
 end
 
-local function drawNeonPieces(captureLayer)
+local function drawNeonPieces(captureLayer, domain)
     captureLayer = captureLayer or propagationLayer
     gl.Clear(GL.COLOR_BUFFER_BIT, 0, 0, 0, 0)
     gl.Clear(GL.DEPTH_BUFFER_BIT, 1)
@@ -625,7 +642,8 @@ local function drawNeonPieces(captureLayer)
     gl.MatrixMode(GL.PROJECTION)
     gl.PushMatrix()
     gl.LoadIdentity()
-    gl.Ortho(0, Game.mapSizeX, 0, Game.mapSizeZ, -100000, 100000)
+    gl.Ortho(domain and domain.x or 0, domain and domain.x+domain.span or Game.mapSizeX,
+        domain and domain.z or 0, domain and domain.z+domain.span or Game.mapSizeZ, -100000, 100000)
 
     gl.MatrixMode(GL.MODELVIEW)
     gl.PushMatrix()
@@ -677,6 +695,7 @@ function widget:DrawWorldPreUnit()
 
     refreshAccumulator = refreshAccumulator % ATLAS_REFRESH_SECONDS
     sceneReady = false
+    if localDetail then localDetail.ready=false end
     if occlusionDirty then
         rebuildOcclusionAtlas()
     end
@@ -687,13 +706,21 @@ function widget:DrawWorldPreUnit()
         propagation:Draw(topDownTex,occlusionTex[sceneLayer],1,
             (sceneLayer-1)*bandHeight,sceneLayer*bandHeight,true)
         sceneRadiance = propagation.sceneTexture
+        if localDetail then
+            localDetail:Refresh(sceneLayer,topDownTex,occlusionTex[sceneLayer],drawNeonPieces,drawOcclusionLayer)
+        end
     end
     gl.RenderToTexture(topDownTex, drawNeonPieces, propagationLayer)
     if propagation then
         propagation:Draw(topDownTex, occlusionTex[propagationLayer], neonLightPercent,
             (propagationLayer-1)*bandHeight, propagationLayer*bandHeight)
         if scene and sceneEnabled then
-            if sceneLayer == propagationLayer then sceneRadiance = propagation.unitTexture end
+            if sceneLayer == propagationLayer then
+                sceneRadiance = propagation.unitTexture
+                if localDetail then
+                    localDetail:Refresh(sceneLayer,topDownTex,occlusionTex[sceneLayer],drawNeonPieces,drawOcclusionLayer)
+                end
+            end
             sceneReady = true
         end
     end
@@ -721,7 +748,7 @@ function widget:DrawWorld()
     if scene and sceneEnabled and sceneReady then
         local bandHeight=OCCLUSION_WORLD_HEIGHT/OCCLUSION_LAYER_COUNT
         scene:Draw(sceneRadiance,occlusionTex[sceneLayer],(sceneLayer-1)*bandHeight,sceneLayer*bandHeight,
-            sceneStrength,sceneTest and 1 or neonLightPercent)
+            sceneStrength,sceneTest and 1 or neonLightPercent,localDetail)
     end
     if not debugVoxelUnit then return end
 
@@ -838,6 +865,10 @@ function widget:DrawScreen()
         ), 16, size + 44, 13, "o")
     end
 
+    if localDetail and localDetail.ready then
+        gl.Text(string.format("Local detail: %.0f elmos | %.1f-elmo cells",localDetail.domain.span,
+            localDetail.domain.span/512),16,size+92,12,"o")
+    end
     if scene then
         gl.Text(string.format("Scene %s | %s | height %d–%d | strength %.2f%s",
             sceneEnabled and "ON" or "OFF",scene.mode,(sceneLayer-1)*128,sceneLayer*128,
@@ -851,6 +882,7 @@ function widget:DrawScreen()
 end
 
 function widget:Shutdown()
+    if localDetail then localDetail:Shutdown();localDetail=nil end
     sceneReady=false
     if scene then scene:Shutdown();scene=nil end
     if propagation then

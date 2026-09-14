@@ -15,6 +15,38 @@ uniform int clipZeroToOne;
 uniform int deferred;
 uniform float strength;
 uniform float nightIntensity;
+uniform int smoothing;
+uniform int localActive;
+uniform sampler2D localRadianceTex;
+uniform sampler2D localOccupancyTex;
+uniform vec2 localOrigin;
+uniform float localSpan;
+vec3 filteredLight(sampler2D field,sampler2D occupancy,vec2 uv)
+{
+    if(any(lessThan(uv,vec2(0))) || any(greaterThanEqual(uv,vec2(1)))) return vec3(0);
+    if(texture2D(occupancy,uv).r>0.5) return vec3(0);
+    if(smoothing==0) return max(texture2D(field,uv).rgb,vec3(0));
+    ivec2 size=textureSize(field,0);
+    vec2 p=uv*vec2(size)-0.5, weight=fract(p);
+    ivec2 base=ivec2(floor(p));
+    vec3 sum=vec3(0);float total=0.0;
+    for(int y=0;y<2;++y) for(int x=0;x<2;++x) {
+        ivec2 tap=clamp(base+ivec2(x,y),ivec2(0),size-ivec2(1));
+        vec2 target=(vec2(tap)+0.5)/vec2(size);
+        bool visible=texture2D(occupancy,target).r<=0.5;
+        float distance=length((target-uv)*vec2(textureSize(occupancy,0)));
+        int steps=min(8,max(1,int(ceil(distance*2.0))));
+        for(int i=0;i<8;++i) {
+            if(i>=steps || !visible) break;
+            visible=texture2D(occupancy,mix(uv,target,(float(i)+0.5)/float(steps))).r<=0.5;
+        }
+        if(visible) {
+            float w=(x==0 ? 1.0-weight.x : weight.x)*(y==0 ? 1.0-weight.y : weight.y);
+            sum+=max(texelFetch(field,tap,0).rgb,vec3(0))*w;total+=w;
+        }
+    }
+    return total>0.00001 ? sum/total : vec3(0);
+}
 vec3 worldPosition(vec2 uv,float depth)
 {
     float z=clipZeroToOne!=0 ? depth : depth*2.0-1.0;
@@ -57,8 +89,17 @@ void main()
     vec2 sampleUV=(world.xz+normal.xz*cell*1.25)/mapSize;
     if(any(lessThan(world.xz,vec2(0))) || any(greaterThanEqual(world.xz,mapSize))) discard;
     if(any(lessThan(sampleUV,vec2(0))) || any(greaterThanEqual(sampleUV,vec2(1)))) discard;
-    if(texture2D(occupancyTex,sampleUV).r>0.5) discard;
-    vec3 light=max(texture2D(radianceTex,sampleUV).rgb,vec3(0));
+    vec3 light=filteredLight(radianceTex,occupancyTex,sampleUV);
+    if(localActive!=0) {
+        vec2 localCell=vec2(localSpan)/vec2(textureSize(localOccupancyTex,0));
+        vec2 localUV=(world.xz+normal.xz*localCell*1.25-localOrigin)/localSpan;
+        float edge=min(min(localUV.x,localUV.y),min(1.0-localUV.x,1.0-localUV.y));
+        float blend=smoothstep(0.0,0.18,edge);
+        if(blend>0.0) {
+            vec3 detail=filteredLight(localRadianceTex,localOccupancyTex,localUV);
+            light=mix(light,detail,blend);
+        }
+    }
     // Propagation supplies UNIT intensity. Day/night is applied exactly once,
     // after bounded artistic gain. Preview exposure does not enter this pass.
     vec3 added=(vec3(1)-exp(-light*strength))*clamp(nightIntensity,0.0,1.0)*clamp(albedo,0.0,1.0);

@@ -13,12 +13,12 @@ return function()
     local source=VFS.LoadFile(PATH)
     if not source or not gl.UniformMatrix then return nil,"missing scene shader/matrix API" end
     local shader=gl.CreateShader({fragment=source,uniformInt={radianceTex=0,occupancyTex=1,
-        mapDepthTex=2,modelDepthTex=3,mapNormalTex=4,modelNormalTex=5,mapDiffuseTex=6,modelDiffuseTex=7}})
+        mapDepthTex=2,modelDepthTex=3,mapNormalTex=4,modelNormalTex=5,mapDiffuseTex=6,modelDiffuseTex=7,localRadianceTex=8,localOccupancyTex=9}})
     if not shader then return nil,gl.GetShaderLog() or "scene shader failed" end
-    local self={shader=shader,mode="pending"}
+    local self={shader=shader,mode="pending",smoothing=true}
     local loc={}
     for _,name in ipairs({"inverseProjection","inverseView","mapSize","heightRange","clipZeroToOne",
-        "deferred","strength","nightIntensity"}) do loc[name]=gl.GetUniformLocation(shader,name) end
+        "deferred","strength","nightIntensity","smoothing","localActive","localOrigin","localSpan"}) do loc[name]=gl.GetUniformLocation(shader,name) end
     function self:Resize()
         if self.depth then gl.DeleteTexture(self.depth);self.depth=nil end
         self.width,self.height=nil,nil
@@ -38,7 +38,7 @@ return function()
         end
         return true
     end
-    function self:Draw(texture,occupancy,heightMin,heightMax,strength,intensity)
+    function self:Draw(texture,occupancy,heightMin,heightMax,strength,intensity,detail)
         if not self.shader or not texture or intensity<=0 or strength<=0 then return end
         local useDeferred=buffersAvailable()
         local sx,sy,vpx,vpy=Spring.GetViewGeometry()
@@ -70,7 +70,14 @@ return function()
         end
         gl.Texture(0,texture);gl.Texture(1,occupancy)
         for i,name in ipairs(BUFFERS) do gl.Texture(i+1,useDeferred and name or self.depth) end
+        local useLocal=detail and detail.ready
+        gl.Texture(8,useLocal and detail.texture or texture)
+        gl.Texture(9,useLocal and detail.occupancy or occupancy)
         gl.UseShader(self.shader)
+        gl.UniformInt(loc.smoothing,self.smoothing and 1 or 0)
+        gl.UniformInt(loc.localActive,useLocal and 1 or 0)
+        gl.Uniform(loc.localOrigin,useLocal and detail.domain.x or 0,useLocal and detail.domain.z or 0)
+        gl.Uniform(loc.localSpan,useLocal and detail.domain.span or 1)
         gl.UniformMatrix(loc.inverseProjection,"projectioninverse")
         gl.UniformMatrix(loc.inverseView,"viewinverse")
         gl.Uniform(loc.mapSize,Game.mapSizeX,Game.mapSizeZ)
@@ -82,7 +89,7 @@ return function()
         gl.Blending(GL.ONE,GL.ONE);gl.Color(1,1,1,1)
         fullscreen()
         gl.UseShader(0)
-        for i=0,7 do gl.Texture(i,false) end
+        for i=0,9 do gl.Texture(i,false) end
         gl.Blending(GL.SRC_ALPHA,GL.ONE_MINUS_SRC_ALPHA)
         gl.DepthMask(true);gl.DepthTest(true);gl.Color(1,1,1,1)
     end
