@@ -329,8 +329,9 @@ float getZoomFactor()
 
 vec4 GetGroundPondRainRipples(vec2 groundUVs)
 {
-    // Eight world units per noise cell; camera translation/zoom must not move ripples.
-    float f = noise(groundUVs * 0.125, 0.6125);
+    // 8/3 world units per noise cell: one-third the original ripple size.
+    // Keep the pattern anchored to the ground at every camera zoom.
+    float f = noise(groundUVs * 0.375, 0.6125);
     vec3 normal = vec3(-dFdx(f), -dFdy(f), 0.5) + 0.5;
     float avgVal = (normal.x + normal.y + normal.z) / 3.0;
     return vec4(vec3(avgVal), 0.75);
