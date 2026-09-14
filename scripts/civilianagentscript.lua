@@ -1,3 +1,4 @@
+local bagAlignment = include "lib_bag_alignment.lua"
 local queueEventThread = include "lib_event_threads.lua"
 
 include "createCorpse.lua"
@@ -190,9 +191,16 @@ end
 
 function externalPickUpHandbag()
     bodyConfig.boolHandbag = true
-    if Handbag then Hide(Handbag) end
+    if Handbag then
+        Hide(Handbag)
+        bagAlignment.remove(Handbag)
+    end
     Handbag = randomMultipleByNameOrDefault("Handbag")
-    Show(Handbag)
+    handBagConfig = nil
+    if Handbag then
+        Show(Handbag)
+        handBagConfig = bagAlignment.add(unitID, Handbag, parentPieceMap, math.pi/2, 3)
+    end
 end
 
 orgHousePosTable = {}
@@ -457,9 +465,9 @@ function bodyBuild()
     if bodyConfig.boolLoaded == true and bodyConfig.boolWounded == false then
        if  bodyConfig.boolHandbag then
             if Handbag then
-                handBagConfig  = initializePendulumConfig(unitID, Handbag, parentPieceMap, math.pi/2, 3)
+                handBagConfig  = bagAlignment.add(unitID, Handbag, parentPieceMap, math.pi/2, 3)
                 assert(handBagConfig)
-                StartThread(swingPendulum, unitID, handBagConfig) 
+                bagAlignment.wake(1000) 
             end
 
             if maRa() then
@@ -469,9 +477,9 @@ function bodyBuild()
 
         if carriesShoppingBag() then
 	    Show(ShoppingBag);
-            shoppingBagConfig  = initializePendulumConfig(unitID, ShoppingBag, parentPieceMap, math.pi/2, 3)
+            shoppingBagConfig  = bagAlignment.add(unitID, ShoppingBag, parentPieceMap, math.pi/2, 3)
             assert(shoppingBagConfig)
-            StartThread(swingPendulum, unitID, shoppingBagConfig) 
+            bagAlignment.wake(1000) 
             return
         end
 
@@ -1077,9 +1085,10 @@ function PlayAnimation(animname, piecesToFilterOutTable, speed)
                     randoffset = math.random(randLowVal, randUpVal) / 100
                 end
 
-                if not piecesToFilterOutTable[cmd.p] and
+                if not bagAlignment.owns(cmd.p) and not piecesToFilterOutTable[cmd.p] and
                    not (isPraying() and upperBodyPieces[cmd.p] and
                         animname ~= prayerAnimationName) then
+                    bagAlignment.poseCommand(cmd.p, cmd.a, axisSign[cmd.a] * (cmd.t + randoffset), cmd.s * speedFactor, cmd.c)
                     animCmd[cmd.c](cmd.p, cmd.a,
                                    axisSign[cmd.a] * (cmd.t + randoffset),
                                    cmd.s * speedFactor)
@@ -1098,6 +1107,7 @@ function PlayAnimation(animname, piecesToFilterOutTable, speed)
 end
 
 function addBagsSwingImpulse()
+    bagAlignment.wake(1000)
     --has handbag
     if carriesShoppingBag() and shoppingBagConfig  then  shoppingBagConfig.iterations = shoppingBagConfig.iterations + 2 end
     if bodyConfig.boolHandbag and handBagConfig then handBagConfig.iterations = handBagConfig.iterations + 2 end
