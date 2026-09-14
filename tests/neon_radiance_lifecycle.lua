@@ -1,7 +1,7 @@
 -- Run from repo root with Lua 5.4. Engine calls are mocked.
 local function read(path) local f=assert(io.open(path));local s=f:read('*a');f:close();return s end
 local source=read('luaui/widgets_mosaic/include/radiance_propagation.lua')
-local function exercise(failShader,failTexture)
+local function exercise(failShader,failTexture,singleOutput)
     local allocations, deleted, bound, passes={}, {}, {}, {}
     local shaders, textures=0,0
     local activeShader
@@ -34,14 +34,18 @@ local function exercise(failShader,failTexture)
     setmetatable(gl,{__index=function() return function() end end})
     local env=setmetatable({gl=gl,GL={},Game={mapSizeX=8192,mapSizeZ=4096},VFS={LoadFile=function(path) return read(path) end}},{__index=_G})
     local factory=assert(load(source,'module','t',env))()
-    local obj,reason=factory()
+    local obj,reason=factory(1024,singleOutput)
     if failShader or failTexture then assert(not obj and reason) else
         assert(obj and not obj.ready)
-        obj:Draw('emission','occupancy',0.3,128,256)
+        local domain=singleOutput and {x=1024,z=512,span=1024} or nil
+        obj:Draw('emission','occupancy',0.3,128,256,false,domain,'coarseE','coarseO')
         assert(obj.ready and obj.heightMin==128 and obj.heightMax==256)
-        assert(obj.baseInterval==8 and #passes==6)
+        assert(obj.baseInterval==8 and #passes==(singleOutput and 5 or 6))
         for i=1,4 do assert(passes[i].index==4-i and passes[i].target==obj.textures[5-i]) end
-        assert(uniforms['shader2:intensity'][1]==0.3)
+        assert(uniforms['shader2:intensity'][1]==(singleOutput and 1 or 0.3))
+        assert(uniforms['shader1:localField'][1]==(singleOutput and 1 or 0))
+        assert(uniforms['shader1:mapSize'][1]==(singleOutput and 1024 or 8192))
+        assert(not bound[3] and not bound[4])
         assert(not bound[0] and not bound[1] and not bound[2] and activeShader==0)
         obj:Shutdown();assert(not obj.ready and not obj.texture and not obj.unitTexture)
         obj:Shutdown() -- idempotent cleanup
@@ -49,6 +53,8 @@ local function exercise(failShader,failTexture)
     for id in pairs(allocations) do assert(deleted[id], 'Leaked '..id) end
 end
 exercise()
+exercise(nil,nil,true)
+for i=1,5 do exercise(nil,i,true) end
 for i=1,4 do exercise(i,nil) end
 for i=1,7 do exercise(nil,i) end
 print('PASS: cascade ordering, no framebuffer feedback, intensity, readiness, bindings and cleanup at every allocation failure')
@@ -184,7 +190,7 @@ local function checkScene()
  draw();assert(obj.mode=='depth copy' and copies==1 and allocations==1)
  draw();assert(copies==2 and allocations==1)
  assert(uniforms.nightIntensity[1]==0.25 and uniforms.clipZeroToOne[1]==1)
- for i=0,7 do assert(bound[i]==false) end
+ for i=0,9 do assert(bound[i]==false) end
  assert(lastShader==0 and lastDepthMask==true and lastBlend[1]==2 and lastBlend[2]==3)
  deferred=true;draw();assert(obj.mode=='deferred' and deleted.depth1 and copies==2)
  assert(uniforms.deferred[1]==1 and allocations==1)
@@ -198,3 +204,46 @@ local function checkScene()
 end
 checkScene()
 print('PASS: scene buffer reuse, depth fallback, viewport, memory cap, failure recovery, day skip and GL cleanup')
+
+-- Camera-local domain stability, one-time allocations and coarse input routing.
+do
+ local allocated,deleted,solves,captures=0,{},0,{}
+ local zoom=1000
+ local localEnv=setmetatable({Game={mapSizeX=8192,mapSizeZ=4096},GL={},
+  Spring={Echo=function() end,TraceScreenRay=function() return "ground",{2560,0,2048} end,
+   GetCameraPosition=function() return 2560,zoom,2048 end},
+  gl={GetViewSizes=function() return 1280,720 end,
+   CreateTexture=function(w,h) allocated=allocated+1;return "capture"..allocated end,
+   DeleteTexture=function(id) assert(not deleted[id]);deleted[id]=true end,
+   RenderToTexture=function(target,fn,...) fn(...) end},
+  VFS={Include=function()
+   return function(size,minimal)
+    assert(size==1024 and minimal)
+    return {unitTexture="fine",Shutdown=function() deleted.solver=true end,
+     Draw=function(_,e,o,intensity,lo,hi,sceneOnly,domain,ce,co)
+      solves=solves+1;assert(domain.span==1024 or domain.span==2048)
+      assert(ce=="coarse-emission" and co=="coarse-occupancy" and lo==128 and hi==256)
+     end}
+   end
+  end}},{__index=_G})
+ local module=assert(load(read('luaui/widgets_mosaic/include/radiance_local.lua'),'local','t',localEnv))()
+ local a=module.ChooseDomain(2560,2048,1000)
+ local b=module.ChooseDomain(2563,2050,1000,1024)
+ assert(a.x==b.x and a.z==b.z and a.span/512==2)
+ assert(module.ChooseDomain(2560,2048,1500,1024).span==1024)
+ assert(module.ChooseDomain(2560,2048,1700,1024).span==2048)
+ assert(not module.ChooseDomain(2560,2048,4000,2048))
+ local edge=module.ChooseDomain(8191,4095,1000)
+ assert(edge.x+edge.span<=8192 and edge.z+edge.span<=4096)
+ local detail=module.New()
+ local function capture(layer,domain) captures[#captures+1]=layer end
+ local function refresh() detail:Refresh(2,"coarse-emission","coarse-occupancy",capture,capture) end
+ refresh();assert(detail.ready and allocated==2 and solves==1)
+ assert(captures[1]==2 and captures[2]==1)
+ refresh();assert(allocated==2 and solves==2)
+ zoom=4000;refresh();assert(not detail.ready and solves==2)
+ zoom=1000;refresh();assert(detail.ready and allocated==2)
+ detail.enabled=false;refresh();assert(not detail.ready)
+ detail:Shutdown();detail:Shutdown();assert(deleted.solver and deleted.capture1 and deleted.capture2)
+end
+print('PASS: local patch snapping, zoom hysteresis, map-edge bounds, scene-band capture, reuse and cleanup')
