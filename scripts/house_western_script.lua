@@ -1,3 +1,5 @@
+local queueEventThread = include "lib_event_threads.lua"
+
 include "lib_building_voxels.lua"
 include "createCorpse.lua"
 include "lib_OS.lua"
@@ -82,7 +84,6 @@ pericodicRotationYPieces = {}
 pericodicMovingZPieces = {}
 
 
-
 function timeOfDay()
     WholeDay = GameConfig.daylength
     timeFrame = Spring.GetGameFrame() + (WholeDay * 0.25)
@@ -96,7 +97,6 @@ end
 
 function script.Create()
     TablesOfPiecesGroups = GetSetSharedOneTimeResult("house_western_script_PiecesTable", GetPieceTableGroups)
-    StartThread(threadStarter)
     x, y, z = spGetUnitPosition(unitID)
     StartThread(removeFeaturesInCircle,x,z, GameConfig.houseSizeZ/2)
     math.randomseed(x + y + z)
@@ -124,7 +124,7 @@ end
 
 local accumulatedStun = 0
 
-boolStartStunThread = false
+local stunAnimationRunning = false
 function stunAnimation()
     Signal(SIG_STUN)
     SetSignalMask(SIG_STUN)
@@ -135,23 +135,19 @@ function stunAnimation()
         accumulatedStun = accumulatedStun - stunInterval
         Sleep(stunInterval) 
     end
+    accumulatedStun = 0
+    stunAnimationRunning = false
 end
 stunInterval = 1000
 function stunHouse(lengthToStun, interval)
     accumulatedStun = accumulatedStun + lengthToStun
-    stunInterval = interval
-    boolStartThread = true
-end
-
-function threadStarter()
-    while true do
-        Sleep(1000)
-        if boolStartStunThread == true then 
-            StartThread(stunAnimation)
-            boolStartStunThread = false
-        end
+    stunInterval = math.max(1, interval or 1000)
+    if not stunAnimationRunning then
+        stunAnimationRunning = true
+        queueEventThread("stun", stunAnimation, 1)
     end
 end
+
 
 function rotations()
     periodicFunc = function(p, v)

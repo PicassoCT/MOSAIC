@@ -1,3 +1,6 @@
+local queueEventThread = include "lib_event_threads.lua"
+local newMotionSampler = include "lib_vehicle_motion.lua"
+
 include "createCorpse.lua"
 include "lib_OS.lua"
 include "lib_UnitScript.lua"
@@ -132,7 +135,9 @@ function turnTrailerLoop()
     px,py,pz = spGetUnitPiecePosDir(unitID, DetectPiece)
     val  = 0
     local headRad = 0
+    local sampleMotion = newMotionSampler(unitID)
     while true do
+        boolMoving, boolTurning, boolTurnLeft = sampleMotion()
         px,py,pz = spGetUnitPiecePosDir(unitID, DetectPiece)
         if boolMoving == true  then          
             _, rot, _ = Spring.UnitScript.GetPieceRotation(PayloadCenter)
@@ -168,24 +173,6 @@ function turnTrailerLoop()
     end
 end
 
-function hcdetector()
-    TurnCount = 0
-    local spGetUnitHeading = Spring.GetUnitHeading
-    headingOfOld = spGetUnitHeading(unitID)
-    while true do
-        Sleep(50)
- 
-        tempHead = spGetUnitHeading(unitID)
-        --if boolDebugPrintDiff then Spring.Echo("Current Heading"..tempHead) end
-        if tempHead ~= headingOfOld then
-            boolTurning = true
-        else
-            boolTurning = false
-        end
-        boolTurnLeft = headingOfOld > tempHead
-        headingOfOld = tempHead
-    end
-end
 
 local loadOutUnitID
 function script.Create()
@@ -196,21 +183,9 @@ function script.Create()
 
     showAndTell()
 
-    StartThread(hcdetector)
     StartThread(turnTrailerLoop)
-    StartThread(monitorMoving)
 end
 
-function threadStateStarter()
-    Sleep(100)
-    while true do
-        if boolStartFleeing == true then
-            boolStartFleeing = false
-            StartThread(fleeEnemy, attackerID)
-        end
-        Sleep(250)   
-    end
-end
 
 function fleeEnemy(enemyID)
     Signal(SIG_INTERNAL)
@@ -231,10 +206,10 @@ function fleeEnemy(enemyID)
 end
 
 attackerID = 0
-boolStartFleeing = false 
-function startFleeing(attackerID)
-    if not attackerID then return end
-    boolStartFleeing = true
+
+function startFleeing(enemyID)
+    if not enemyID then return end
+    queueEventThread("flee", fleeEnemy, 250, enemyID)
 end
 
 function script.TransportDrop(passengerID, x, y, z)
@@ -263,28 +238,8 @@ end
     end
 
 
-
 ox,oy, oz = 0,0,0
-function monitorMoving()
-    local spGetUnitPosition = Spring.GetUnitPosition
-    ox,oy,oz = spGetUnitPosition(unitID)
-    nx,ny,nz = ox,oy,oz
-    boolPlayerUnit = isPlayerUnit(unitID)
-    while true do
-            ox,oy,oz = nx,ny,nz  
-            nx,ny,nz = spGetUnitPosition(unitID)        
-            diff= math.abs(ox - nx) + math.abs(oz-nz) 
-            oldState = boolMoving
-            if diff >  5  then
-                boolMoving = true
-            else
-                boolMoving = false
-            end    
-            if oldState ~= boolMoving and boolPlayerUnit then echo("Movestate Changed to ".. selectValue(boolMoving, " moving", " not moving")) end
-        Sleep(125)    
 
-    end
-end
 
 boolMoving = false
 function script.StartMoving()    

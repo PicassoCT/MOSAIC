@@ -1,3 +1,5 @@
+local queueEventThread = include "lib_event_threads.lua"
+
 include "createCorpse.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
@@ -97,7 +99,6 @@ local loc_doesUnitExistAlive = doesUnitExistAlive
 local civilianWalkingTypeTable = getCultureUnitModelTypes(
                                      GameConfig.instance.culture, "civilian",
                                      UnitDefs)
-
 
 
 local eAnimState = getCivilianAnimationStates()
@@ -238,8 +239,6 @@ function script.Create()
 
     setOverrideAnimationState(eAnimState.standing, eAnimState.standing, true, nil, false)
     --StartThread(animationTestLoop)
-    StartThread(threadStarter)
-    StartThread(threadStateStarter)
     StartThread(headAnimationLoop)
     StartThread(speedControl)
     StartThread(noCapesControl, LowArm1, LowArm2)
@@ -645,6 +644,7 @@ function startFilmLocation(ux, uy, uz, time)
     filmLocation.z=uz
     filmLocation.time = time
     boolStartFilming = true
+    queueEventThread("behaviour", threadStateStarter, 250)
     return true
 end
 
@@ -654,6 +654,7 @@ function startWailing(time)
     setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_STARTED, "wailing")
     wailingTime = time
     boolStartWailing = true
+    queueEventThread("behaviour", threadStateStarter, 250)
     return true
 end
 
@@ -665,6 +666,7 @@ function startChatting(time, chatPartners)
     chattingTime = time
     chatPartner = chatPartners
     boolStartChatting = true
+    queueEventThread("behaviour", threadStateStarter, 250)
     return true
 end
 
@@ -674,6 +676,7 @@ function startFleeing(enemyID)
     attackerID = enemyID
     setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_STARTED, "fleeing")
     boolStartFleeing = true
+    queueEventThread("behaviour", threadStateStarter, 250)
     return true
 end
 
@@ -683,6 +686,7 @@ function startPeacefullProtest( id)
     setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_STARTED, "protest")
 	socialEngineerID= id
     boolStartPeaceFullProtest = true
+    queueEventThread("behaviour", threadStateStarter, 250)
     return true
 end
 
@@ -757,6 +761,7 @@ boolStartPraying = false
 function startPraying()
     setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_STARTED, "pray")
     boolStartPraying = true
+    queueEventThread("behaviour", threadStateStarter, 250)
     return true
 end
 
@@ -792,6 +797,7 @@ boolStartAnarchyBehaviour = false
 function startAnarchyBehaviour()
     setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_STARTED, "anarchy")
     boolStartAnarchyBehaviour = true
+    queueEventThread("behaviour", threadStateStarter, 250)
     return true
 end
 
@@ -832,6 +838,7 @@ boolStartAerosolBehaviour = false
 aeroSolType = "undefinedAerosolState"
 function startAerosolBehaviour(extAerosolStateToSet)
     boolStartAerosolBehaviour= true
+    queueEventThread("behaviour", threadStateStarter, 250)
     aeroSolType = extAerosolStateToSet
     setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_STARTED, "aerosol")
 end
@@ -1153,7 +1160,7 @@ local locAnimationstateUpperOverride
 local locAnimationstateLowerOverride
 local locBoolInstantOverride
 local locConditionFunction
-local boolStartThread = false
+
 
 function attachToTruckNearby()
     T = foreach(getAllNearUnit(unitID, 100),
@@ -1329,65 +1336,49 @@ normalBehavourStateMachine = {
     end
 }
 
-function threadStarter()
-    Sleep(100)
-    while true do
-        if boolStartThread == true then
-            boolStartThread = false
-            StartThread(deferedOverrideAnimationState,
-                        locAnimationstateUpperOverride,
-                        locAnimationstateLowerOverride, locBoolInstantOverride,
-                        locConditionFunction)
-            while boolStartThread == false do Sleep(33) end
-        end
-        Sleep(33)
-    end
-end
 
+local behaviourDispatcherClosed = false
 function threadStateStarter()
-    Sleep(100)
-    while true do
-        if boolStartFilming == true then
-            boolStartFilming = false
-            conditionalEcho(boolDebugActive,"Starting filming at location "..locationstring(unitID))
-            StartThread(filmingLocation)
-        end
-        if boolStartWailing == true then
-            boolStartWailing = false
-            StartThread(wailing)
-        end
+    if behaviourDispatcherClosed then return end
+    if boolStartFilming == true then
+        boolStartFilming = false
+        conditionalEcho(boolDebugActive,"Starting filming at location "..locationstring(unitID))
+        StartThread(filmingLocation)
+    end
+    if boolStartWailing == true then
+        boolStartWailing = false
+        StartThread(wailing)
+    end
 
-        if boolStartChatting == true then
-            boolStartChatting = false
-            StartThread(chatting)
-        end
+    if boolStartChatting == true then
+        boolStartChatting = false
+        StartThread(chatting)
+    end
 
-        if boolStartFleeing == true then
-            boolStartFleeing = false
-            StartThread(fleeEnemy, attackerID)
-        end
+    if boolStartFleeing == true then
+        boolStartFleeing = false
+        StartThread(fleeEnemy, attackerID)
+    end
 
-        if boolStartPraying == true then
-            boolStartPraying = false
-            StartThread(pray)
-        end
-		
-		if boolStartPeaceFullProtest == true then
-			boolStartPeaceFullProtest = false
-			StartThread(peacefullProtest)
-		end
+    if boolStartPraying == true then
+        boolStartPraying = false
+        StartThread(pray)
+    end
 
-        if boolStartAnarchyBehaviour == true then
-            boolStartAnarchyBehaviour = false
-            StartThread(anarchyBehaviour)
-        end
+    if boolStartPeaceFullProtest == true then
+        boolStartPeaceFullProtest = false
+        StartThread(peacefullProtest)
+    end
 
-         if boolStartAerosolBehaviour == true then
-            boolStartAerosolBehaviour = false
-             StartThread(aeroSolStateBehaviour)
-             while true do Sleep(10000); end
-        end
-        Sleep(250)   
+    if boolStartAnarchyBehaviour == true then
+        boolStartAnarchyBehaviour = false
+        StartThread(anarchyBehaviour)
+    end
+
+    if boolStartAerosolBehaviour == true then
+        behaviourDispatcherClosed = true
+        boolStartAerosolBehaviour = false
+        StartThread(aeroSolStateBehaviour)
     end
 end
 
@@ -1462,7 +1453,9 @@ function setOverrideAnimationState(AnimationstateUpperOverride,
     locAnimationstateLowerOverride = AnimationstateLowerOverride
     locBoolInstantOverride = boolInstantOverride or false
     locConditionFunction = conditionFunction or (function() return true end)
-    boolStartThread = true
+    queueEventThread("animation", deferedOverrideAnimationState, 33,
+                     locAnimationstateUpperOverride, locAnimationstateLowerOverride,
+                     locBoolInstantOverride, locConditionFunction)
 end
 
 -- </Exposed Function>
@@ -2116,7 +2109,6 @@ function ExplosiveDeath(dx, dz)
     Sleep(500)
 
 end
-
 
 
 lastDamageDirX, lastDamageDirZ = randNVec(), randNVec()

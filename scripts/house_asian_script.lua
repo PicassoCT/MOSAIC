@@ -1,3 +1,5 @@
+local queueEventThread = include "lib_event_threads.lua"
+
 include "lib_building_voxels.lua"
 include "createCorpse.lua"
 include "lib_OS.lua"
@@ -9,7 +11,6 @@ local ToShowTable = {}
 IDGroupsDirection = { 
     "u", --upright
     "l"} -- lengthwise
-
 
 
 IDGroups_Trad_Office_Direction = { 
@@ -743,7 +744,6 @@ function showOneDeterministic(T, index)
 end
 
 
-
 function showOne(T)
     if not T then return end
     dice = math.random(1, count(T))
@@ -920,7 +920,6 @@ function DecorateBlockWall(xRealLoc, zRealLoc, level, DecoMaterial, yoffset, mat
             showSubsAnimateSpinsByPiecename(piecename)
         end
     end
-
 
 
     return DecoMaterial, Deco
@@ -1749,7 +1748,7 @@ function addGroundPlaceables()
 end
 
 local accumulatedStun = 0
-boolStartStunThread = false
+local stunAnimationRunning = false
 function stunAnimation()
     Signal(SIG_STUN)
     SetSignalMask(SIG_STUN)
@@ -1759,29 +1758,24 @@ function stunAnimation()
         accumulatedStun = accumulatedStun - stunInteval
         Sleep(stunInteval) 
     end
+    accumulatedStun = 0
+    stunAnimationRunning = false
 end
 stunInteval = 1000
 function stunHouse(lengthToStun, interval)
     accumulatedStun = accumulatedStun + lengthToStun
-    stunInteval = interval
-    boolStartThread = true
-end
-
-function threadStarter()
-    while true do
-        Sleep(1000)
-        if boolStartStunThread == true then 
-            StartThread(stunAnimation)
-            boolStartStunThread = false
-        end
+    stunInteval = math.max(1, interval or 1000)
+    if not stunAnimationRunning then
+        stunAnimationRunning = true
+        queueEventThread("stun", stunAnimation, 1)
     end
 end
+
 
 function buildBuilding(boolIsReconstruction)
     initializeBuildingShadowVoxels(cubeDim.length, cubeDim.heigth)
     boolDoneShowing = false
     StartThread(buildAnimation, boolIsReconstruction)
-    StartThread(threadStarter)
     lecho( "buildBuilding")
      
     --lecho( "selectBase")

@@ -121,35 +121,17 @@ center = piece "center"
 aimpiece = piece "center"
 boolTurnLeft = false
 boolTurning = false
-boolUpdateRequestFlag = false
 
-function ManualTriggeredHeadingChangeDetector()
-    TurnCount = 0
-    headingOfOld = Spring.GetUnitHeading(unitID)
-    while true do
-        Sleep(250)
-        while boolManualUpdate == false do
-            Sleep(15)
-        end
-        boolManualUpdate = false
-        tempHead = Spring.GetUnitHeading(unitID)
---        Spring.Echo("Current Heading"..tempHead) 
-        if tempHead ~= headingOfOld then
-            boolManualUpdate= true
-            TurnCount = TurnCount + 1
-            if TurnCount > 2 then
-                boolManualUpdate = false
-                boolTurning = true
-            end
-        else
-            TurnCount = 0
-            boolTurning = false
-        end
-        if tempHead ~= nil then
-            boolTurnLeft = headingOfOld > tempHead
-            headingOfOld = tempHead
-        end
-    end
+
+-- Called only by AimWeapon's existing coroutine. No request flag or idle
+-- detector: measure the body's turn over one short, bounded interval.
+function sampleHeadingForAim()
+    local previousHeading = Spring.GetUnitHeading(unitID)
+    Sleep(100)
+    local heading = Spring.GetUnitHeading(unitID)
+    local delta = (heading - previousHeading + 32768) % 65536 - 32768
+    boolTurning = delta ~= 0
+    boolTurnLeft = delta < 0
 end
 
 
@@ -159,18 +141,7 @@ function script.Create()
     Hide(aimrot)
     Hide(emitfire)
     StartThread(walkAnimationLoop)
-    StartThread(ManualTriggeredHeadingChangeDetector, unitID, boolTurnLeft, boolTurning, boolUpdateRequestFlag)
-    StartThread(resetHeadingIfNotAiming)
 
-end
-
-function resetHeadingIfNotAiming()
-    while true do
-        Sleep(1000)
-        if boolAiming == false then
-            WTurn(aimrot, y_axis, math.rad(0), math.pi)
-        end
-    end
 end
 
 
@@ -397,12 +368,11 @@ boolPrioritizeGround = false
 function script.AimWeapon1(Heading, pitch)
     if boolTransported == true then return false end
 
-    StartThread(delayedDeactivateAiming)
+    Signal(SIG_AIM)
     boolAiming = true
     boolPrioritizeGround = true
     if boolWalking == true then
-        boolUpdateRequestFlag = true
-        while boolUpdateRequestFlag == true do Sleep(100) end
+        sampleHeadingForAim()
         if boolTurning == true then
             if boolTurnLeft == true then
                 PlayAnimation("SIDEWALK_RIGHT", nil, 2.0)
@@ -415,6 +385,7 @@ function script.AimWeapon1(Heading, pitch)
     end
 
     WTurn(aimrot, y_axis, Heading, math.pi)
+    StartThread(delayedDeactivateAiming)
 
     return true
 end
@@ -431,6 +402,8 @@ function delayedDeactivateAiming()
     Sleep(500)
     boolAiming = false
     boolPrioritizeGround = false
+    -- The next aim request cancels this same SIG_AIM thread.
+    WTurn(aimrot, y_axis, 0, math.pi)
 end
 
 function fireFlash()

@@ -1,3 +1,5 @@
+local queueEventThread = include "lib_event_threads.lua"
+
 include "lib_building_voxels.lua"
 include "createCorpse.lua"
 include "lib_OS.lua"
@@ -119,12 +121,12 @@ function script.Create()
 
     StartThread(rotations)
     StartThread(decorateCity)
-    StartThread(threadStarter)
 end
 
+local SIG_STUN = 2
 local accumulatedStun = 0
 
-boolStartStunThread = false
+local stunAnimationRunning = false
 function stunAnimation()
     Signal(SIG_STUN)
     SetSignalMask(SIG_STUN)
@@ -134,21 +136,16 @@ function stunAnimation()
         spawnCegAtPiece(unitID, randPiece, "electric_arc")
         accumulatedStun = accumulatedStun - stunInterval
     end
+    accumulatedStun = 0
+    stunAnimationRunning = false
 end
 stunInterval = 1000
 function stunHouse(lengthToStun, interval)
     accumulatedStun = accumulatedStun + lengthToStun
-    stunInterval =  interval
-    boolStartThread = true
-end
-
-function threadStarter()
-    while true do
-        Sleep(1000)
-        if boolStartStunThread == true then 
-            StartThread(stunAnimation)
-            boolStartStunThread = false
-        end
+    stunInterval = math.max(1, interval or 1000)
+    if not stunAnimationRunning then
+        stunAnimationRunning = true
+        queueEventThread("stun", stunAnimation, 1)
     end
 end
 

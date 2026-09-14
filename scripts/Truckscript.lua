@@ -1,3 +1,6 @@
+local queueEventThread = include "lib_event_threads.lua"
+local newMotionSampler = include "lib_vehicle_motion.lua"
+
 include "createCorpse.lua"
 include "lib_OS.lua"
 include "lib_UnitScript.lua"
@@ -92,41 +95,7 @@ end
 boolMoving = false
 boolTurnLeft = false
 boolTurning = false
-function monitorMoving()
-    local spGetUnitPosition = Spring.GetUnitPosition
-    ox,oy,oz = spGetUnitPosition(unitID)
-    nx,ny,nz = ox,oy,oz
-    while true do
-            ox,oy,oz = nx,ny,nz  
-            nx,ny,nz = spGetUnitPosition(unitID)        
-            diff= math.abs(ox - nx) + math.abs(oz-nz) 
-            if diff >  5  then
-                boolMoving = true
-            else
-                boolMoving = false
-            end    
-        Sleep(125)    
-    end
-end
 
-function hcdetector()
-    TurnCount = 0
-    local spGetUnitHeading = Spring.GetUnitHeading
-    local headingOfOld = spGetUnitHeading(unitID)
-    while true do
-        Sleep(50)
- 
-        tempHead = spGetUnitHeading(unitID)
-        --if boolDebugPrintDiff then Spring.Echo("Current Heading"..tempHead) end
-        if tempHead ~= headingOfOld then
-            boolTurning = true
-        else
-            boolTurning = false
-        end
-        boolTurnLeft = headingOfOld > tempHead
-        headingOfOld = tempHead
-    end
-end
 
 function turnDeadGuyLoop(PayloadCenter)
     Signal(SIG_DEADGUY)
@@ -134,8 +103,6 @@ function turnDeadGuyLoop(PayloadCenter)
     boolMoving = false
     boolTurnLeft = false
     boolTurning = false
-    StartThread(monitorMoving)
-    StartThread(hcdetector)
     local spGetUnitPiecePosDir = Spring.GetUnitPiecePosDir
     local spGetGroundHeight = Spring.GetGroundHeight
     turnRatePerSecondDegree = (300*0.16)/4
@@ -143,7 +110,9 @@ function turnDeadGuyLoop(PayloadCenter)
     px,py,pz = spGetUnitPiecePosDir(unitID, DetectPiece)
     val  = 0
     oldPitch, oldYaw, OldRoll = Spring.GetUnitRotation(unitID)
+    local sampleMotion = newMotionSampler(unitID)
     while true do
+        boolMoving, boolTurning, boolTurnLeft = sampleMotion()
         px,py,pz = Spring.GetUnitPiecePosDir(unitID, DetectPiece)
         pitch,yaw,roll = Spring.GetUnitRotation(unitID)
        -- echo("Unit  "..pitch.."/"..yaw.."/"..roll)
@@ -238,7 +207,6 @@ function script.Create()
     Hide(center)
 
     showAndTell()
-    StartThread(observeTeamChange)
     if boolTowsGuyInAnarchy then
         StartThread(waitForAnarchy, goingIntoAnarchy, goingOutOfAnarchy )
     end
@@ -256,19 +224,17 @@ function showLamboWindow()
     end
 end
 
-function observeTeamChange()
-    myTeam = Spring.GetUnitTeam(unitID)
-    while true do
-        newTeam = Spring.GetUnitTeam(unitID)
-        if newTeam ~= myTeam then -- Team changed
-            if doesUnitExistAlive( loadOutUnitID) == true then
-                transferUnitTeam(loadOutUnitID, newTeam)
-            end
-            myTeam = newTeam
-        end
-       delay = math.random(10,15)*50
-       Sleep(delay)
+local function updateLoadOutOwnership()
+    local newTeam = Spring.GetUnitTeam(unitID)
+    if doesUnitExistAlive(loadOutUnitID) then
+        transferUnitTeam(loadOutUnitID, newTeam)
     end
+    myTeam = newTeam
+end
+
+-- Called by the synced ownership-event bridge, including external captures.
+function onUnitGivenEvent(unitDefID, newTeam, oldTeam)
+    queueEventThread("ownership", updateLoadOutOwnership, 1)
 end
 
 allOrderTypes = {}
@@ -335,16 +301,6 @@ function tranferOrdersToLoadedUnit(passengerID)
     end
 end
 
-function threadStateStarter()
-    Sleep(100)
-    while true do
-        if boolStartFleeing == true then
-            boolStartFleeing = false
-            StartThread(fleeEnemy, attackerID)
-        end
-        Sleep(250)   
-    end
-end
 
 function fleeEnemy(enemyID)
     Signal(SIG_INTERNAL)
@@ -364,10 +320,10 @@ function fleeEnemy(enemyID)
 end
 
 attackerID = 0
-boolStartFleeing = false 
-function startFleeing(attackerID)
-    if not attackerID then return end
-    boolStartFleeing = true
+
+function startFleeing(enemyID)
+    if not enemyID then return end
+    queueEventThread("flee", fleeEnemy, 250, enemyID)
 end
 
 function script.TransportDrop(passengerID, x, y, z)
