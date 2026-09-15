@@ -49,7 +49,7 @@ else
     --
     -- Recoil 105.1 and later:
     --     Hide the engine-rendered model and explicitly redraw it during
-    --     DrawWorld with explicitly bound model textures and alpha blending.
+    --     DrawWorld with explicitly bound model textures and additive blending.
     ---------------------------------------------------------------------------
 
     local engineVersionString = Engine.version or "0"
@@ -231,9 +231,9 @@ else
         gl.DepthTest(true)
         glDepthMask(false)
         gl.Culling(false)
-        glBlending(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+        glBlending(GL_SRC_ALPHA, GL_ONE)
         gl.UseShader(iconShader)
-        gl.Uniform(uniforms.opacity, 0.65)
+        gl.Uniform(uniforms.opacity, 0.25) -- restrained additive emission
         gl.Uniform(uniforms.time, Spring.GetGameSeconds())
 
         for _, unit in ipairs(visible) do
@@ -245,8 +245,13 @@ else
             gl.Texture(1, string.format("%%%d:1", unit.def))
 
             glPushMatrix()
-            glTranslate(unit.x, unit.y, unit.z)
-            -- Preserve the explicit world position that fixed icons at 0/0.
+            if unit.def == emcDefID then
+                -- Include MoveCtrl yaw so the deliberate turn is visible.
+                -- AlwaysUpdateMatrix is enabled when this unit is registered.
+                gl.UnitMultMatrix(unit.id)
+            else
+                glTranslate(unit.x, unit.y, unit.z)
+            end
             -- UnitRaw supplies the animated local-piece transforms only.
             glUnitRaw(unit.id, true)
             glPopMatrix()

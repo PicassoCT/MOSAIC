@@ -42,7 +42,7 @@ function script.Create()
     hideT(TablesOfPiecesGroups["Data"])
     Spring.SetUnitNeutral(unitID,true)
     Spring.SetUnitBlocking(unitID,false)
-    StartThread(hoverAboveGrounds, GameConfig.iconHoverGroundOffset, 5*speedfactor, true)    
+    StartThread(hoverAboveGrounds, GameConfig.iconHoverGroundOffset)
     StartThread(eatECMcon)
 end
 
@@ -102,7 +102,6 @@ function moveParticle(pieceID, distances, speed)
     Hide(pieceID)
 end
 
-onMoveCounter = 0
 SIG_PARTICLE = 1
 SIG_SFX =2
 function showParticles()
@@ -128,61 +127,72 @@ function showParticles()
     end
 end
 
-function hoverAboveGrounds( distanceToHover, step, boolTurnTowardsGoal)
-    if not step then step = 0.1 end
-    local spGetGroundHeight = Spring.GetGroundHeight
-    local spGetUnitPosition = Spring.GetUnitPosition
-    Spring.MoveCtrl.Enable(unitID, true)
-    Spring.MoveCtrl.SetRotation(unitID, 0,0,0)
-    boolAlreadyStarted = false
-    while true do
-        x,y,z = spGetUnitPosition(unitID)
-        orgx, orgz = x,z
-        CommandTable = Spring.GetUnitCommands(unitID, 1)
-        if CommandTable and CommandTable[1] then
-            gx,_, gz = GetCommandPos(CommandTable[1]) 
-           
-            if gx and gx ~= -10 or gz and gz ~= -10 then
-              if math.abs(gx - x) > 10 then
-                        if gx < x then
-                            x = x -step
-                        elseif gx > x then
-                             x = x +step
-                        end
+-- Tune the deliberate aiming phase separately from the charge.
+local ECM_TURN_RATE = math.rad(20) -- radians per simulation second
+local ECM_CHARGE_SPEED = 1800      -- elmos per simulation second
+local ECM_ARRIVAL_RADIUS = 10
 
-                StartThread(showParticles)
-                onMoveCounter = onMoveCounter + 1
-              end
-              if math.abs(gz - z) > 10 then
-                if gz < z then
-                    z = z -step
-                elseif gz > z then
-                     z = z +step
-                end
-              end
-            end
-        else
-              onMoveCounter = onMoveCounter-1
-        end
-
-
-        if onMoveCounter <=  0  then
-            Signal(SIG_PARTICLE)
-            hideT(TablesOfPiecesGroups["Data"])
-        end
-
-        _,orgRot,_ = Spring.GetUnitRotation(unitID ) 
-        rot = math.atan2(orgx-x, -(orgz-z))
-        rot = mix(rot, orgRot, 0.95)
-        Spring.MoveCtrl.SetRotation(unitID, 0,rot,0)
-
-        gh = spGetGroundHeight(x,z)
-        Spring.MoveCtrl.SetPosition(unitID, x, math.max(0,gh) + distanceToHover, z)
-        Sleep(29)
-    end
+local function wrapAngle(angle)
+    return (angle + math.pi) % (2 * math.pi) - math.pi
 end
 
+function hoverAboveGrounds(distanceToHover)
+    local dt = 1 / Game.gameSpeed
+    local turnStep = ECM_TURN_RATE * dt
+    local chargeStep = ECM_CHARGE_SPEED * dt
+    local _, yaw = Spring.GetUnitRotation(unitID)
+    yaw = yaw or 0
+    local charging = false
+    Spring.MoveCtrl.Enable(unitID)
+    Spring.MoveCtrl.SetVelocity(unitID, 0, 0, 0)
 
+    while true do
+        local x, _, z = Spring.GetUnitPosition(unitID)
+        local commands = Spring.GetUnitCommands(unitID, 1)
+        local command = commands and commands[1]
+        local moving = false
+        if command then
+            local gx, _, gz = GetCommandPos(command)
+            if gx and gz and gx ~= -10 and gz ~= -10 then
+                local dx, dz = gx - x, gz - z
+                local distance = math.sqrt(dx * dx + dz * dz)
+                if distance > ECM_ARRIVAL_RADIUS then
+                    -- MoveCtrl Euler yaw uses the opposite sign to heading.
+                    local targetYaw = math.atan2(-dx, dz)
+                    local delta = wrapAngle(targetYaw - yaw)
+                    if math.abs(delta) > turnStep then
+                        -- Re-aim in place, including after a mid-charge redirect.
+                        yaw = wrapAngle(yaw + (delta > 0 and turnStep or -turnStep))
+                    else
+                        yaw = targetYaw
+                        local travel = math.min(chargeStep, distance)
+                        x, z = x + dx / distance * travel, z + dz / distance * travel
+                        moving = true
+                    end
+                elseif command.id == CMD.MOVE and command.tag then
+                    -- MoveCtrl bypasses normal move completion. Remove only the
+                    -- reached order, preserving queued moves and unit targets.
+                    Spring.GiveOrderToUnit(unitID, CMD.REMOVE, {command.tag}, {})
+                end
+            end
+        end
+
+        if moving ~= charging then
+            charging = moving
+            if charging then
+                StartThread(showParticles)
+            else
+                Signal(SIG_PARTICLE)
+                hideT(TablesOfPiecesGroups["Data"])
+            end
+        end
+
+        Spring.MoveCtrl.SetRotation(unitID, 0, yaw, 0)
+        local ground = Spring.GetGroundHeight(x, z)
+        Spring.MoveCtrl.SetPosition(unitID, x, math.max(0, ground) + distanceToHover, z)
+        Sleep(30) -- one simulation frame at the engine's 30 Hz base rate
+    end
+end
 
 function script.StartMoving() 
 end
