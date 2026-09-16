@@ -7,9 +7,9 @@ local blackHawk = VTOL:New{
     script = "air_black_hawk_script.lua",
     --buildPic = "chunterchopper.png",
     --cost
-    buildCostMetal = 260,
-    buildCostEnergy = 130,
-    buildTime = 26,
+    buildCostMetal = 1400,
+    buildCostEnergy = 900,
+    buildTime = 90,
     --Health
     maxDamage = 1950,
     idleAutoHeal = 0,
@@ -81,8 +81,8 @@ local blackHawk = VTOL:New{
     },
     weapons = {
         [1] = {
-            name = "cgunshipmg",
-            onlyTargetCategory = [[ LAND]],
+            name = "supportgunshipmg",
+            onlyTargetCategory = [[GROUND]],
             MainDir = [[0 0 1]],
             MaxAngleDif = 90
         }

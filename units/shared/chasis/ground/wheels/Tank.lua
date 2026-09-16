@@ -1,9 +1,9 @@
 local ground_tank_day = Tank:New{
 	name = "Tank",
-	description = "Heavily Armoured <Redundant Vehicle>",
+	description = "Armoured breacher: opens walls; needs anti-air and close escort",
 	
 	corpse				= "",
-	maxDamage = 1250,
+	maxDamage = 4000,
 	mass = 60000,
 	buildCostEnergy = 5000,
 	buildCostMetal = 5000,
@@ -45,7 +45,7 @@ local ground_tank_day = Tank:New{
 	},
 	
 	weapons = {
-				[1]={name  = "tankcannon",
+				[1]={name  = "breachingcannon",
 					onlyTargetCategory = [[BUILDING GROUND]],
 			  },					
 		},	
@@ -61,10 +61,10 @@ local ground_tank_day = Tank:New{
 
  ground_tank_night = Tank:New{
 		name = "Tank",
-	description = "Heavily Armoured <Redundant Vehicle>",
+	description = "Armoured breacher: opens walls; needs anti-air and close escort",
 	
 	corpse				= "",
-	maxDamage = 1500,
+	maxDamage = 4000,
 	mass = 60000,
 	buildCostEnergy = 5000,
 	buildCostMetal = 5000,
@@ -107,7 +107,7 @@ local ground_tank_day = Tank:New{
 	},
 	
 				weapons = {
-				[1]={name  = "tankcannon",
+				[1]={name  = "breachingcannon",
 					onlyTargetCategory = [[BUILDING GROUND]],
 					},
 					

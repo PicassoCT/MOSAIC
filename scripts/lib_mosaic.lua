@@ -515,7 +515,8 @@ end
 
  function getLoudLongRangeWeaponTypes(WeaponDefs)
     local names = {javelinrocket=true, mortar=true, orbitalrailgun=true,
-        railgun=true, sniperrifle=true, slowsniperrifle=true, tankcannon=true}
+        railgun=true, sniperrifle=true, slowsniperrifle=true, tankcannon=true,
+        breachingcannon=true, supportmortar=true, campaignrocket=true, militaryantitank=true}
     local result = {}
     for id, def in pairs(WeaponDefs) do
         if names[def.name] then result[id] = true end

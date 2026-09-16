@@ -1,18 +1,18 @@
 local AIR_ROCKET = AIRCRAFT:New{
 
 	name = "Predator VII",
-	Description = "rocket drone",
+	Description = "Area-strike drone: salvo attacks punish concentrations; vulnerable to AA",
 	objectName = "air_plane_rocket.dae",
 	script = "airplanerocketscript.lua",
 	buildPic = "air_sniper.png",
 	iconType = "air_sniper",
 	--floater = true,
 	--cost
-	buildCostMetal = 750,
+	buildCostMetal = 1250,
 	buildCostEnergy = 1000,
 	buildTime =  2*60,
 	--Health
-	maxDamage = 500,
+	maxDamage = 900,
 	idleAutoHeal = 0,
 	--Movement
 	
@@ -30,7 +30,7 @@ local AIR_ROCKET = AIRCRAFT:New{
 	turnRadius		  	= 8,
 	dontLand		 	= true,
 	Acceleration = 0.5,
-	MaxVelocity = 2.5,
+	MaxVelocity = 5.0,
 	MaxWaterDepth = 0,
 	MovementClass = "AIRUNIT",
 	TurnRate = 350,
@@ -66,7 +66,7 @@ local AIR_ROCKET = AIRCRAFT:New{
 	  },
 
 	weapons={	
-			[1]={name  = "s16rocket",
+			[1]={name  = "campaignrocket",
 				onlyTargetCategory = [[GROUND]],
 				turret= false
 			},

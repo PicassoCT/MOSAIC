@@ -30,6 +30,14 @@ local myLoadOutType = LoadOutTypes[unitDefID]
 local loadOutUnitID
 local map = Spring.GetUnitPieceMap(unitID)
 
+-- Destroying a conventional truck's weapon buys an actual opening. Leave
+-- concealed/SSIED delivery vehicles on their existing loadout behaviour.
+local conventionalLoadoutRecovery = {
+    civilian_truck_mg = true, civilian_truck_mortar = true,
+    ground_truck_mg = true, ground_truck_mortar = true,
+    ground_truck_antiarmor = true, ground_truck_rocket = true,
+}
+
 
 function showOne(T, bNotDelayd)
     if not T then return end
@@ -256,6 +264,9 @@ function loadLoadOutLoop()
         Sleep(100)
 
         if doesUnitExistAlive(loadOutUnitID) == false then
+            if conventionalLoadoutRecovery[UnitDefs[unitDefID].name] then
+                Sleep(8000)
+            end
             myTeam = Spring.GetUnitTeam(unitID)
             loadOutUnitID = createUnitAtUnit(myTeam, myLoadOutType, unitID, 0,
                                              10, 0)
@@ -386,4 +397,3 @@ function script.Deactivate() return 0 end
 function script.QueryBuildInfo() return center end
 
 Spring.SetUnitNanoPieces(unitID, {center})
-

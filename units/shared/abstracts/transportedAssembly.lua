@@ -1,7 +1,14 @@
 local unitName = "transportedassembly"
+local doctrine = VFS.Include("luarules/configs/mobile_assembly_doctrine.lua")
+local buildOptions = {}
+for _, group in ipairs({"common", "protagon", "antagon"}) do
+    for _, name in ipairs(doctrine[group]) do
+        buildOptions[#buildOptions + 1] = name
+    end
+end
 local unitDef = {
     name = "Mobile Assembly",
-    Description = "",
+    Description = "Mobile production follows the owning faction; aircraft campaigns require an army base",
     objectName = "mobile_assembly.dae",
 
     script = "transportedassemblyscript.lua",
@@ -42,15 +49,7 @@ local unitDef = {
     ShowNanoSpray = true,
     CanBeAssisted = true,
     workerTime = 0.54,
-    buildoptions = {
-        --air
-        "air_copter_mg", "air_copter_antiarmor", "air_copter_ssied",        
-        "air_plane_sniper", "air_plane_rocket","air_copter_scoutlett",
-        --ground    
-        "ground_turret_mg", "ground_turret_antiarmor", "ground_turret_ssied",
-        "ground_walker_mg", "ground_walker_grenade", "brehmerwall",
-        "ground_turret_cm_airstrike", "ground_turret_cm_transport", "ground_turret_cm_antiarmor"
-    },
+    buildoptions = buildOptions,
     usebuildinggrounddecal = false,
     Category = [[NOTARGET]],
     EnergyStorage = 0,

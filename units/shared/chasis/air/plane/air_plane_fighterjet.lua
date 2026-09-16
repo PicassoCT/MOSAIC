@@ -8,9 +8,9 @@ local AIR_F35 =
     iconType = "air_sniper",
     --floater = true,
     --cost
-    buildCostMetal = 15000,
-    buildCostEnergy = 10000,
-    buildTime = 4 * 60,
+    buildCostMetal = 6000,
+    buildCostEnergy = 4500,
+    buildTime = 3 * 60,
     --Health
     maxDamage = 1500,
     idleAutoHeal = 0,
@@ -62,12 +62,12 @@ local AIR_F35 =
     },
     weapons = {
         [1] = {
-            name = "s16rocket",
+            name = "interceptormissile",
             onlyTargetCategory = [[AIR]],
             turret = false
         },
         [2] = {
-            name = "s16rocket",
+            name = "fightergroundmissile",
             onlyTargetCategory = [[GROUND BUILDING]],
             turret = false
         }

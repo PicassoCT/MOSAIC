@@ -39,15 +39,13 @@ function modeChangeOS()
     Move(slider, z_axis, 0, 50)
     Turn(turret, x_axis, math.rad(0), math.pi)
     while true do
-        buildID = Spring.GetUnitIsBuilding(unitID)
+        local buildID = Spring.GetUnitIsBuilding(unitID)
         if buildID then
             boolBuilding = true
             producedUnits[buildID]=  buildID
             StartThread(goToSpaceMode)
-            waitTillComplete(builID)
-            if doesUnitExistAlive(builID) then
-                goToFireMode()
-            end
+            waitTillComplete(buildID)
+            goToFireMode()
             boolBuilding = false
         end
         Sleep(100)
@@ -96,10 +94,11 @@ function script.AimWeapon1(Heading, pitch)
     Turn(center, y_axis, Heading, 0.4)
     Turn(turret, x_axis, -pitch, 0.8)
     WaitForTurns(center, turret)
-    return false
+    return not boolBuilding and not boolOrbitalRailGunAiming
 end
 
-function script.FireWeapon1() 
+function script.FireWeapon1()
+    GG.RevealNimrodOnFire(unitID)
     shiverHologramsNearby()
     spawnCegNearUnitGround(unitID, "railgunshine", 0, 0, 10)
     return true 
@@ -128,7 +127,8 @@ function script.AimWeapon2(Heading, pitch)
     return true
 end
 
-function script.FireWeapon2() 
+function script.FireWeapon2()
+    GG.RevealNimrodOnFire(unitID)
     shiverHologramsNearby()
     spawnCegNearUnitGround(unitID, "railgunshine", 0, 0, 10)
     return true 
@@ -174,6 +174,9 @@ end
 
 boolLocalCloaked = false
 function showHideIcon(boolCloaked)
+    if Spring.GetUnitRulesParam(unitID, "nimrod_fired") == 1 then
+        boolCloaked = false
+    end
     boolLocalCloaked = boolCloaked
     if boolCloaked == true then
         hideAll(unitID)
