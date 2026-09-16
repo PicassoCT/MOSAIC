@@ -21,7 +21,7 @@ local Brehmerwall = Building:New{
 	buildingMask = 1,
 	maxSlope = 50.0,
 	levelGround = false,
-	blocking =false,
+	blocking =true,
 	MetalStorage = 2500,
 	upright  = false,
 
@@ -32,7 +32,7 @@ local Brehmerwall = Building:New{
 	objectName        	= "brehmerwall.dae",
 
 	name = "Wall",
-	description = " divides & conquers",
+	description = "Area denial: blocks ground movement; vulnerable to breaching cannon",
 	buildPic = "Brehmerwall.png",
 	
 	customparams = {

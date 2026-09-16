@@ -31,7 +31,7 @@ local Barricade = Building:New{
 	pushResistant = true,
 
 	name = "Add hoc fortification",
-	description = " divides & conquers",
+	description = "Area denial: channels ground forces into defended approaches",
 	buildPic = "Brehmerwall.png",
 	
 	customparams = {

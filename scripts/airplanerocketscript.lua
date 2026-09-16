@@ -20,8 +20,8 @@ RocketPod = piece "RocketPod"
 TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
 
 function unfold()
-    SetSignalMask(SIG_FOLD)
     Signal(SIG_FOLD)
+    SetSignalMask(SIG_FOLD)
     Turn(TablesOfPiecesGroups["Wing"][3],3, math.rad(-120),1)
     Turn(TablesOfPiecesGroups["Wing"][4],3, math.rad(120),1)
     WaitForTurns(TablesOfPiecesGroups["Wing"][3],TablesOfPiecesGroups["Wing"][4])
@@ -32,8 +32,8 @@ function unfold()
 end
 
 function fold()
-    SetSignalMask(SIG_FOLD)
     Signal(SIG_FOLD)
+    SetSignalMask(SIG_FOLD)
     WTurn(TablesOfPiecesGroups["Wing"][1],z_axis, math.rad(0),1)
     WTurn(TablesOfPiecesGroups["Wing"][2],z_axis, math.rad(0),1)
 
@@ -96,16 +96,20 @@ function script.QueryWeapon1()
     return FireEmit1 
 end
 
-counter =  #TablesOfPiecesGroups["Rocket"]
+local counter = #TablesOfPiecesGroups["Rocket"]
+local reloading = false
 function script.AimWeapon1(Heading, pitch)
-     if counter == 1 then StartThread(reloadRoutine) end
-    return counter > 0 
+    return counter > 0 and not reloading
 end
 
 function script.FireWeapon1()
     counter = math.max(0, counter-1)
     hideT(TablesOfPiecesGroups["Rocket"])
-    showT(TablesOfPiecesGroups["Rocket"], 1, counter)     
+    showT(TablesOfPiecesGroups["Rocket"], 1, counter)
+    if counter == 0 and not reloading then
+        reloading = true
+        StartThread(reloadRoutine)
+    end
     return true
 end
 
@@ -123,8 +127,8 @@ end
 function script.FireWeapon2() return true end
 
 function reloadRoutine()
-    SetSignalMask(SIG_RELOAD)
     Signal(SIG_RELOAD)
+    SetSignalMask(SIG_RELOAD)
     boolTargetLaserActive= false
     WTurn(RocketPod,z_axis, math.rad(0),1)
     StartThread(PlaySoundByUnitDefID, unitDefID, "sounds/plane/eagle.wav", 1.0, 5000, 1)
@@ -133,6 +137,7 @@ function reloadRoutine()
     WTurn(RocketPod,z_axis, math.rad(-90),1)
     showT(TablesOfPiecesGroups["Rocket"])
     boolTargetLaserActive = true
+    reloading = false
 end
 
 

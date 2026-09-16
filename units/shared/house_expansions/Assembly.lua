@@ -57,46 +57,34 @@ local Assembly = Building:New{
 	category = [[GROUND BUILDING RAIDABLE]],
 	}
 
-local antagonAssembly = Assembly
-antagonAssembly.name = "Antagon Automated Assembly"
-antagonAssembly.buildOptions = {
-	--chassis
-	--air
-		 --copter  --jet -- bomber --long range rocket
-		"air_copter_scoutlett", 		"ground_truck_assembly", 	"ground_turret_cm_transport",
-		"air_copter_mg",				"air_copter_antiarmor", 	"air_copter_ssied",			 
-	--ground
-		--turrets
-		"ground_turret_mg",				"ground_turret_antiarmor",	"ground_turret_ssied",			
-		"ground_turret_dronegrenade" , 	"ground_turret_rocket", 	"ground_turret_sniper",
-		--walkers
-		"ground_walker_mg",				"ground_walker_grenade", 	
-		--vehicles
-		"civilian_truck_mg", 			"civilian_truck_rocket", 	"civilian_truck_mortar", 
-	--weapon
-	}
-	
-local protagonAssembly = Assembly
-protagonAssembly.name = "Protagon Automated Assembly"
-protagonAssembly.buildOptions =  {
-	--chassis
-	--air
-		 --copter  --jet -- bomber --long range rocket
-		"air_copter_scoutlett", 		"ground_truck_assembly", 	"ground_turret_cm_transport",
-		"air_copter_mg",				"air_copter_antiarmor", 	"air_copter_ssied",			 
-	--ground
-		--turrets
-		"ground_turret_mg",				"ground_turret_antiarmor",	"ground_turret_ssied",			
-		"ground_turret_dronegrenade" , 	"ground_turret_rocket", 	"ground_turret_sniper",
-		--walkers
-		"ground_walker_mg",				"ground_walker_grenade", 	
-		--vehicles
+-- Clone before assigning menus: assigning the same table erased Antagon's roster.
+local antagonAssembly = Assembly:New{
+    name = "Antagon Automated Assembly",
+    description = "Dispersed ambush production: walkers, technicals and expendable drones",
+    buildoptions = {
+        "air_copter_scoutlett", "ground_truck_assembly", "ground_turret_cm_transport",
+        "air_copter_antiarmor", "air_copter_ssied",
+        "ground_turret_mg", "ground_turret_antiarmor", "ground_turret_ssied",
+        "ground_turret_dronegrenade", "ground_turret_rocket", "ground_turret_sniper",
+        "ground_walker_mg", "ground_walker_grenade",
+        "civilian_truck_mg", "civilian_truck_mortar", "civilian_truck_ssied",
+        "ground_turret_mortar",
+    },
+}
 
-	--weapon
-	}
+local protagonAssembly = Assembly:New{
+    name = "Protagon Automated Assembly",
+    description = "Containment and raid support: escorts, gunships and layered air defence",
+    buildoptions = {
+        "air_copter_scoutlett", "ground_truck_assembly", "ground_turret_cm_transport",
+        "air_copter_mg", "air_copter_antiarmor",
+        "ground_turret_mg", "ground_turret_antiarmor", "ground_turret_rocket",
+        "ground_turret_sniper", "ground_walker_mg",
+        "ground_truck_mg", "ground_truck_rocket",
+    },
+}
 
 return lowerkeys({
-	--Temp
-	["antagonassembly"] = antagonAssembly:New(),
-	["protagonassembly"] = protagonAssembly:New()
+    antagonassembly = antagonAssembly,
+    protagonassembly = protagonAssembly,
 })

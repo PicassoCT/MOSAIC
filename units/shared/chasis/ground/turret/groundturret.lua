@@ -134,10 +134,10 @@ local groundturretmg =  Turret:New{
 				},
 				
 		weapons = {
-		[1]={name  = "heavymachinegun",
+		[1]={name  = "covermachinegun",
 			onlyTargetCategory = [[GROUND BUILDING]]
 			},	
-		[2]={name  = "aamachinegun",
+		[2]={name  = "escortantiair",
 			onlyTargetCategory = [[AIR]]
 			},				
 		},	
@@ -204,7 +204,7 @@ local groundturretmortar =  Turret:New{
 				},
 				
 		weapons = {
-		[1]={name  = "mortar",
+		[1]={name  = "supportmortar",
 			onlyTargetCategory = [[GROUND BUILDING]]
 			},	
 		},	
@@ -294,7 +294,7 @@ local ground_turret_antiarmor =  Turret:New{
 	buildCostMetal= 1000,
 	buildTime = 35,
 	--Health
-	maxDamage = 50,
+	maxDamage = 350,
 	idleAutoHeal = 0,
 	--Movement
 	mass = 750,
@@ -344,7 +344,7 @@ local ground_turret_antiarmor =  Turret:New{
 				},
 				
 	weapons = {
-		[1]={name  = "javelinrocket",
+		[1]={name  = "militaryantitank",
 			onlyTargetCategory = [[BUILDING GROUND VEHICLE]],
 			},
 			
@@ -427,7 +427,7 @@ local ground_turret_rocket =  Turret:New{
 	-- This is a anti-tank drone body, deployed after flight
 	--capable to one-time launch a projectile 
 	-- It has 4 SubScout Air-Drones which seperate at deploy Time and relay target information
-	Description = "Deployed Anti Armor Projectile ",
+	Description = "Dedicated air defence; needs ground escorts",
 	mass = 2500,
 	objectName = "ground_turret_missile.dae",
 	script = "ground_turret_rocketscript.lua",
@@ -439,7 +439,7 @@ local ground_turret_rocket =  Turret:New{
 	buildCostMetal= 500,
 	buildTime = 35,
 	--Health
-	maxDamage = 50,
+	maxDamage = 450,
 	idleAutoHeal = 0,
 	--Movement
 	
@@ -489,7 +489,7 @@ local ground_turret_rocket =  Turret:New{
 				
 	weapons = {
 		[1]={
-			name  = "s16rocket",
+			name  = "militaryantiair",
 			onlyTargetCategory = [[AIR]],
 			},			
 		},	

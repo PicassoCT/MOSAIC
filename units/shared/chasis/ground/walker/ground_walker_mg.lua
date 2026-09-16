@@ -1,12 +1,12 @@
 local ground_walker_mg = Walker:New{
 	name = "Weevil",
-	description = "Walker Machine Gun<spot-class>",
+	description = "Raid escort: close covering fire and short-range drone defence",
 	
 	corpse = "",
 	maxDamage = 800,
 	mass = 600,
-	buildCostEnergy = 750,
-	buildCostMetal = 1000,
+	buildCostEnergy = 500,
+	buildCostMetal = 650,
 	buildTime = 45,
 	explodeAs = "none",
 	maxVelocity		= 3.15 , --14.3, --86kph/20
@@ -52,10 +52,10 @@ local ground_walker_mg = Walker:New{
 	
 				weapons = {
 
-				[1]={name  = "submachingegun",
+				[1]={name  = "escortmachinegun",
 				onlyTargetCategory = [[BUILDING GROUND]], 
 				},
-				[2]={name  = "aamachinegun",
+				[2]={name  = "escortantiair",
 				onlyTargetCategory = [[AIR]],
 				turret = true
 				},				

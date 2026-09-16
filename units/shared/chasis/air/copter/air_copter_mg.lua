@@ -69,7 +69,7 @@ local AIRC_COPTER_MG = VTOL:New{
 				},
 				
 				weapons = {
-				[1]={name  = "machinegun",
+				[1]={name  = "covermachinegun",
 					onlyTargetCategory = [[BUILDING GROUND]],
 					},
 					
