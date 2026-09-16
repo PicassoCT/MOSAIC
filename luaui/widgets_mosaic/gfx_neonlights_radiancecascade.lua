@@ -59,7 +59,7 @@ local localDetail
 local sceneEnabled, sceneTest = true, false
 local sceneStrength, sceneLayer = 2, 1
 local sceneRadiance, sceneReady
-local previewVisible = true
+local previewVisible = false
 local previewExposure = 4
 
 -- Flat x/z/base/mask values: four numbers per occupied column.
@@ -125,12 +125,16 @@ local function forEachColumnRun(building, emit, bottom, top)
     end
 end
 
+-- Extend the lighting window by one in-game hour at dawn and dusk.
+-- Fade from full intensity at midnight to zero at 07:00, then back from 17:00.
 local function dayPercentToNeonPercent(percent)
-    if percent < 0.25 then
-        return 1.0 - percent / 0.25
+    local dawnEnd = 7 / 24
+    local duskStart = 17 / 24
+    if percent < dawnEnd then
+        return 1.0 - percent / dawnEnd
     end
-    if percent > 0.75 then
-        return 1.0 - (1.0 - percent) / 0.25
+    if percent > duskStart then
+        return 1.0 - (1.0 - percent) / (1.0 - duskStart)
     end
     return 0.0
 end
