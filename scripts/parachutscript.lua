@@ -1,4 +1,3 @@
-local parachuteSway = include "lib_parachute_sway.lua"
 include "createCorpse.lua"
 include "lib_OS.lua"
 include "lib_UnitScript.lua"
@@ -16,10 +15,6 @@ testOffset = 300
 stationaryDropRate = 2.0
 travellingDropRate = 0.5
 dropRate = travellingDropRate
-
-local windX, windZ = 0, 0
-local steeringX, steeringZ = 0, 0
-local WIND_DRIFT = 0.12 -- per existing movement tick; steering is 1.52
 
 function script.Create()
     -- generatepiecesTableAndArrayCode(unitID)
@@ -136,12 +131,7 @@ function fallingDown()
     while isPieceAboveGround(unitID, center, 15) == true do    
         x, y, z = Spring.GetUnitPosition(unitID)
         xOff, zOff = getComandOffset(passengerID, x, z, 1.52)
-        steeringX, steeringZ = xOff, zOff
-        local driftX, driftZ = 0, 0
-        if xOff == 0 and zOff == 0 then
-            driftX, driftZ = windX*WIND_DRIFT, windZ*WIND_DRIFT
-        end
-        Spring.MoveCtrl.SetPosition(unitID, x + xOff + driftX, y - dropRate, z + zOff + driftZ)
+        Spring.MoveCtrl.SetPosition(unitID, x + xOff, y - dropRate, z + zOff)
         Sleep(1)
     end
     for i=2,#TablesOfPiecesGroups["Cord"] do
@@ -161,38 +151,52 @@ function pieceOrder(i)
     return 0
 end
 
--- One worker for all strands; no per-strand threads, hide/show cycles or RNG.
-function Strandanimation()
-    local strands = TablesOfPiecesGroups["Rotator"] or {}
-    local ids = {}
-    for index, strand in pairs(strands) do
-        if type(index) == "number" then ids[#ids+1] = index end
-    end
-    table.sort(ids)
-    local flowX, flowZ = 0, 0
-    local previousFrame = Spring.GetGameFrame()
-    local phase = (unitID % 31)*0.19
-    for _, index in ipairs(ids) do Show(strands[index]) end
+local semaphore = {}
+function strandMotion(index,strand, yValue, xStart, xEndValue, speed)
+    semaphore[index] = true  
+    Turn(strand, x_axis, math.rad(xStart), 0)
+    Turn(strand, y_axis, math.rad(yValue), 0)
+    Show(strand)
+    WTurn(strand, x_axis, math.rad(xEndValue), speed)
+    Hide(strand)
+    semaphore[index] = nil
+end
+
+function sinusWaveThread(start, ends)
+    local Fract = TablesOfPiecesGroups["Rotator"]
+
     while true do
-        local frame = Spring.GetGameFrame()
-        local dt = math.max(0, (frame-previousFrame)/30)
-        previousFrame = frame
-        local wx, _, wz = Spring.GetWind()
-        windX, windZ = parachuteSway.wind(wx or 0, wz or 0, Game.windMax or 0)
-        -- Relative airflow: wind bends downwind, commanded travel trails backward.
-        local heading = Spring.GetUnitHeading(unitID)*math.pi/32768
-        local dx, dz = windX*0.45-steeringX/1.52, windZ*0.45-steeringZ/1.52
-        local c, s = math.cos(heading), math.sin(heading)
-        local blend = 1-math.exp(-dt/0.65)
-        flowX = flowX + (c*dx-s*dz-flowX)*blend
-        flowZ = flowZ + (s*dx+c*dz-flowZ)*blend
-        for ordinal, index in ipairs(ids) do
-            local pitch, yaw, roll = parachuteSway.pose(frame/30+phase, ordinal, #ids, flowX, flowZ)
-            Turn(strands[index], x_axis, pitch, 1.8)
-            Turn(strands[index], y_axis, yaw, 1.8)
-            Turn(strands[index], z_axis, roll, 1.8)
+        -- one animation cycle
+        sintime = ((Spring.GetGameFrame() % 300) / 300)
+        
+        for i = start, ends do
+            local strand = Fract[i]
+            circleVal = ((i - start)+1) * (360/(ends- start)) + math.random(-5,5)
+
+            if not semaphore[i] then
+                startValue =  math.random(15,30)
+                endValue = -15
+                StartThread(strandMotion, i, strand, circleVal, startValue,endValue, 1 )               
+            end
         end
         Sleep(100)
+    end
+end
+
+function Fibonacci_tail_call(n)
+    local function inner(m, a, b)
+        if m == 0 then return a end
+        return inner(m - 1, b, a + b)
+    end
+    return inner(n, 0, 1)
+end
+
+function Strandanimation()
+    local Fract = TablesOfPiecesGroups["Rotator"]
+    for i = 1, #Fract do
+        if i % 15 == 1 and Fract[i] and Fract[i+15] then
+            StartThread(sinusWaveThread, i, i + 15) 
+        end
     end
 end
 
