@@ -1,4 +1,6 @@
-local versionNumber = "v1.5.4"
+local versionNumber = "v1.6.0"
+local headlights
+local forceHeadlights = false
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
@@ -345,6 +347,7 @@ end
 --------------------------------------------------------------------------------
 
 function widget:Initialize()
+  headlights = VFS.Include("luaui/widgets_mosaic/include/vehicle_headlights.lua")()
   currDayTime = startDayTime
   UpdateColors()
   vsx, vsy = widgetHandler:GetViewSizes()
@@ -363,6 +366,7 @@ function widget:Initialize()
 end
 
 function widget:Shutdown()
+  if headlights then headlights:Shutdown(); headlights = nil end
   widgetHandler:RemoveAction("night_preunit")
   widgetHandler:RemoveAction("night_basetype")
   widgetHandler:RemoveAction("night_beam")
@@ -371,6 +375,7 @@ function widget:Shutdown()
 end
 
 function widget:ViewResize(viewSizeX, viewSizeY)
+  if headlights then headlights:Resize() end
   vsx = viewSizeX
   vsy = viewSizeY
 end
@@ -384,8 +389,28 @@ function widget:Update(dt)
   end
 end
 
+function widget:UnitDestroyed(unitID)
+  if headlights then headlights:Forget(unitID) end
+end
+
+function widget:TextCommand(command)
+  if command == "headlights test on" or command == "headlights test off" then
+    forceHeadlights = command == "headlights test on"
+    return true
+  end
+end
+
 function widget:DrawWorld()
-  if (searchlightStrength > 0 and (hours  < 7 or hours > 18)) then
+  if searchlightStrength <= 0 then return end
+  if headlights then
+    local _, _, _, percent = getDayTime()
+    -- Match the extended neon lighting window, with full headlights at night.
+    local hour = percent * 24
+    local fade = hour < 7 and math.min(1, 7-hour) or
+        (hour > 17 and math.min(1, hour-17) or 0)
+    if forceHeadlights then fade = 1 end
+    headlights:Draw(lightList, math.min(2, searchlightStrength / 0.6) * fade, drawBeam, baseType > 0)
+  elseif hours < 7 or hours > 18 then
     DrawSearchlights(hours, minutes)
   end
 end
