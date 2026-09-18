@@ -1,5 +1,9 @@
 # Headlight cones in radiance cascades
 
+**Update:** [HeadlightLiveMotion.md](HeadlightLiveMotion.md) supersedes the
+refresh, memory and direct-light composition details below. This document
+records the initial working 5 Hz cone integration.
+
 This corrects the earlier independent screen-space implementation. The Night
 widget now supplies paired cone footprints as geometry to the existing neon
 emission capture. Soft cone intensity is written into the same atlas as hologram

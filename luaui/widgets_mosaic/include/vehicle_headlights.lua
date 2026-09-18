@@ -42,8 +42,13 @@ return function()
     end
     function self:Forget(id) self.pieces[id] = nil end
     local function lamps(id, def, front, up, right)
-        local x, y, z = Spring.GetUnitPosition(id)
-        if not x then return end
+        local sx0,sy0,sz0=Spring.GetUnitPosition(id)
+        if not sx0 then return end
+        local x,y,z=sx0,sy0,sz0
+        if Spring.GetUnitViewPosition then
+            local vx,vy,vz=Spring.GetUnitViewPosition(id)
+            if vx then x,y,z=vx,vy,vz end
+        end
         local sx, sy, sz, ox, oy, oz = Spring.GetUnitCollisionVolumeData(id)
         sx, sy, sz = sx or 40, sy or 30, sz or 70
         local cp = def.customParams or {}
@@ -64,7 +69,11 @@ return function()
             local p = pieces[i]
             if p then
                 local px, py, pz = Spring.GetUnitPiecePosDir(id, p)
-                if px then if i == 1 then a = {px,py,pz} else b = {px,py,pz} end end
+                if px then
+                    -- Piece API uses simulation position; apply the engine draw offset.
+                    local pos={px+x-sx0,py+y-sy0,pz+z-sz0}
+                    if i == 1 then a=pos else b=pos end
+                end
             end
         end
         local range = clamp(tonumber(cp.headlight_range) or sz * 3.5, 100, 360)
@@ -128,7 +137,7 @@ return function()
         gl.Vertex(p[1]+fx*range-fz*width,y,p[3]+fz*range+fx*width)
     end
     local captureFrame, captureLights
-    capture=function(bottom,top)
+    capture=function(bottom,top,gain)
         if not self.coneShader or emissionStrength<=0 then return end
         -- Whole-map and local captures use exactly the same vehicle snapshot.
         local frame=Spring.GetDrawFrame()
@@ -136,7 +145,7 @@ return function()
         gl.DepthTest(false);gl.DepthMask(false);gl.Blending(GL.ONE,GL.ONE)
         gl.UseShader(self.coneShader)
         gl.Uniform(coneLoc.mapSize,Game.mapSizeX,Game.mapSizeZ)
-        gl.Uniform(coneLoc.strength,emissionStrength)
+        gl.Uniform(coneLoc.strength,emissionStrength*(gain or 1))
         for i=1,math.min(#captureLights,48) do
             local l=captureLights[i]
             local length=math.sqrt(l.front[1]^2+l.front[3]^2)
@@ -240,5 +249,6 @@ return function()
     end
     return self
 end
+
 
 

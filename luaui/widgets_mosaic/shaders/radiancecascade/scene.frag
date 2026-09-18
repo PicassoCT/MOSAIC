@@ -21,6 +21,12 @@ uniform sampler2D localRadianceTex;
 uniform sampler2D localOccupancyTex;
 uniform vec2 localOrigin;
 uniform float localSpan;
+uniform sampler2D headlightTex;
+uniform sampler2D headlightLocalTex;
+uniform int headlightActive;
+uniform int headlightLocalActive;
+uniform vec2 headlightOrigin;
+uniform float headlightSpan;
 vec3 filteredLight(sampler2D field,sampler2D occupancy,vec2 uv)
 {
     if(any(lessThan(uv,vec2(0))) || any(greaterThanEqual(uv,vec2(1)))) return vec3(0);
@@ -100,8 +106,25 @@ void main()
             light=mix(light,detail,blend);
         }
     }
+    if(headlightActive!=0) {
+        vec3 direct=vec3(0);
+        // Cone emission has already been ray-clipped against building occupancy.
+        if(texture2D(occupancyTex,sampleUV).r<=0.5)
+            direct=max(texture2D(headlightTex,sampleUV).rgb,vec3(0));
+        if(headlightLocalActive!=0) {
+            vec2 hu=(world.xz+normal.xz*cell*1.25-headlightOrigin)/headlightSpan;
+            float edge=min(min(hu.x,hu.y),min(1.0-hu.x,1.0-hu.y));
+            float blend=smoothstep(0.0,0.18,edge);
+            if(blend>0.0 && texture2D(occupancyTex,sampleUV).r<=0.5)
+                direct=mix(direct,max(texture2D(headlightLocalTex,hu).rgb,vec3(0)),blend);
+        }
+        // Slow vehicle emission is only 8% spill. Max, rather than addition,
+        // preserves full direct intensity without counting it twice.
+        light=max(light,direct);
+    }
     // Propagation supplies UNIT intensity. Day/night is applied exactly once,
     // after bounded artistic gain. Preview exposure does not enter this pass.
     vec3 added=(vec3(1)-exp(-light*strength))*clamp(nightIntensity,0.0,1.0)*clamp(albedo,0.0,1.0);
     gl_FragColor=vec4(added,0.0);
 }
+

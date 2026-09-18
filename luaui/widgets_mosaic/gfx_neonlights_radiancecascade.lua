@@ -56,6 +56,7 @@ local propagationLayer = 1
 local previewSpan = 0 -- world elmos; zero shows the whole map
 local scene
 local localDetail
+local liveHeadlights
 local sceneEnabled, sceneTest = true, false
 local sceneStrength, sceneLayer = 2, 1
 local sceneRadiance, sceneReady
@@ -332,6 +333,14 @@ local function focusPreview(unitID, pieceID)
 end
 
 function widget:TextCommand(command)
+    if command == "headlights motion on" or command == "headlights motion off" then
+        if liveHeadlights then
+            liveHeadlights.enabled=command == "headlights motion on"
+            liveHeadlights.ready=false;liveHeadlights.localReady=false;liveHeadlights.age=1
+            refreshAccumulator=ATLAS_REFRESH_SECONDS
+        end
+        return true
+    end
     if command == "radiancelight detail off" or command == "radiancelight detail on" then
         if localDetail then
             localDetail.enabled=command == "radiancelight detail on"
@@ -632,6 +641,11 @@ function widget:Initialize()
         propagationView = false
     end
 
+    if scene then
+        liveHeadlights=VFS.Include("luaui/widgets_mosaic/include/headlight_live_field.lua")()
+        if not liveHeadlights then Spring.Echo("Headlights: live atlas allocation failed; retaining 5 Hz cone lighting") end
+    end
+
     widgetHandler:RegisterGlobal("RecieveAllNeonUnitsPieces", recieveNeonHoloLightPiecesByUnit)
     widgetHandler:RegisterGlobal("ReceiveBuildingShadowColumnsBegin", receiveBuildingShadowBegin)
     widgetHandler:RegisterGlobal("ReceiveBuildingShadowColumn", receiveBuildingShadowColumn)
@@ -652,6 +666,7 @@ end
 function widget:Update(dt)
     neonLightPercent = dayPercentToNeonPercent(getDayPercent())
     refreshAccumulator = refreshAccumulator + dt
+    if liveHeadlights then liveHeadlights:Update(dt) end
 end
 
 local function drawNeonPieces(captureLayer, domain)
@@ -711,7 +726,8 @@ local function drawNeonPieces(captureLayer, domain)
 
     if propagation and WG.CaptureVehicleHeadlightEmission then
         local bandHeight=OCCLUSION_WORLD_HEIGHT/OCCLUSION_LAYER_COUNT
-        WG.CaptureVehicleHeadlightEmission((captureLayer-1)*bandHeight,captureLayer*bandHeight)
+        WG.CaptureVehicleHeadlightEmission((captureLayer-1)*bandHeight,captureLayer*bandHeight,
+            liveHeadlights and liveHeadlights.enabled and 0.08 or 1)
     end
 
     gl.PopMatrix()
@@ -784,10 +800,16 @@ local function emitDebugLines(building, x0, y0, z0, x1, y1, z1)
 end
 
 function widget:DrawWorld()
+    if liveHeadlights then
+        local bandHeight=OCCLUSION_WORLD_HEIGHT/OCCLUSION_LAYER_COUNT
+        local domain=localDetail and localDetail:CameraDomain()
+        liveHeadlights:Draw(WG.CaptureVehicleHeadlightEmission,(sceneLayer-1)*bandHeight,sceneLayer*bandHeight,
+            domain,sceneEnabled and sceneReady and (sceneTest or neonLightPercent>0))
+    end
     if scene and sceneEnabled and sceneReady then
         local bandHeight=OCCLUSION_WORLD_HEIGHT/OCCLUSION_LAYER_COUNT
         scene:Draw(sceneRadiance,occlusionTex[sceneLayer],(sceneLayer-1)*bandHeight,sceneLayer*bandHeight,
-            sceneStrength,sceneTest and 1 or neonLightPercent,localDetail)
+            sceneStrength,sceneTest and 1 or neonLightPercent,localDetail,liveHeadlights)
     end
     if not debugVoxelUnit then return end
 
@@ -921,6 +943,7 @@ function widget:DrawScreen()
 end
 
 function widget:Shutdown()
+    if liveHeadlights then liveHeadlights:Shutdown();liveHeadlights=nil end
     if WG.IsVehicleHeadlightCascadeActive == vehicleHeadlightCascadeActive then WG.IsVehicleHeadlightCascadeActive=nil end
     if WG.GetRainRadiance == getRainLighting then WG.GetRainRadiance = nil end
     if WG.GetVehicleLightOcclusion == getVehicleLightOcclusion then WG.GetVehicleLightOcclusion = nil end
@@ -964,6 +987,7 @@ function widget:Shutdown()
     occlusionBuildings = {}
     pendingBuildingColumns = {}
 end
+
 
 
 

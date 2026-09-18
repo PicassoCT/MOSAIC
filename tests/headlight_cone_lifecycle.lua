@@ -37,5 +37,25 @@ WG.IsVehicleHeadlightCascadeActive=function() return true end
 renderer:Draw({[1]=true},1,false,true);assert(copies==0,'duplicate screen-space lighting')
 WG.IsVehicleHeadlightCascadeActive=function() return false end
 renderer:Draw({[1]=true},1,false,true);assert(copies==1,'standalone fallback missing')
+-- Draw positions update between simulation steps; orientation follows the
+-- engine basis each draw rather than the 5 Hz emission snapshot.
+local lamps, directions = {}, {}
+gl.Uniform=function(name,...)
+ if name=='lamp' then lamps[#lamps+1]={...} end
+ if name=='forward' then directions[#directions+1]={...} end
+end
+frame=4;capture(0,128,0.08)
+local firstX=lamps[1][1]
+Spring.GetUnitViewPosition=function() return 271,0,64 end
+frame=5;capture(0,128,1)
+assert(math.abs(lamps[3][1]-firstX-15)<.001,'render position offset ignored')
+Spring.GetUnitVectors=function() return {1,0,0},{0,1,0},{0,0,-1} end
+frame=6;capture(0,128,1)
+assert(directions[#directions][1]==1 and directions[#directions][2]==0,'render heading stale')
+-- Named anchors use simulation coordinates and need the same draw offset.
+Spring.GetUnitPieceMap=function() return {headlight_left=1,headlight_right=2} end
+Spring.GetUnitPiecePosDir=function(_,piece) return 250+piece,10,90 end
+renderer:Forget(1);frame=7;capture(0,128,1)
+assert(lamps[#lamps][1]==267,'named anchor missing/duplicating render offset')
 renderer:Shutdown();assert(WG.CaptureVehicleHeadlightEmission==nil,'stale capture after shutdown')
 print('PASS: shared capture, layer rejection, cloak/disable, standalone suppression/fallback, cleanup')
