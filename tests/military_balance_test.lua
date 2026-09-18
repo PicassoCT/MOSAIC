@@ -55,6 +55,11 @@ assert(weapons.breachingcannon.areaofeffect < weapons.supportmortar.areaofeffect
 assert(dofile('weapons/submachinegun.lua').submachingegun.reloadtime == 7, 'shared operative weapon stays unchanged')
 assert(dofile('weapons/guidedrocket.lua').s16rocket.damage.default == 512, 'police missile stays unchanged')
 assert(dofile('weapons/javelinrocket.lua').javelinrocket.damage.default == 1600, 'ambush weapon stays unchanged')
+local fighter = dofile('units/shared/chasis/air/plane/air_plane_fighterjet.lua').air_plane_fighterjet
+assert(fighter.weapons[1].name == 'interceptormissile' and fighter.weapons[1].onlytargetcategory == 'AIR')
+assert(not weapons.interceptormissile.canattackground)
+assert(fighter.weapons[2].name == 'fighterareabomb' and fighter.weapons[2].onlytargetcategory == 'GROUND BUILDING')
+assert(weapons.fighterareabomb.weapontype == 'AircraftBomb' and weapons.fighterareabomb.burst == 1)
 local tanks = dofile('units/shared/chasis/ground/wheels/Tank.lua')
 assert(tanks.ground_tank_day.maxdamage == 4000 and tanks.ground_tank_night.maxdamage == 4000)
 assert(tanks.ground_tank_day.weapons[1].name == 'breachingcannon')

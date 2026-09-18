@@ -141,3 +141,25 @@ Before merging, playtest:
 No new smoke system, damage-reduction aura, global armour taxonomy or minigame
 rewrite is included. Argus/sniper behaviour and strategic Godrod timing need
 live assessment alongside this first pass before further tuning.
+
+## F35 bomb sorties
+
+The F35 retains its air-only interceptor missile and replaces the light ground
+missile with one AircraftBomb: 900 centre damage, 240 blast radius, 15% edge
+damage and the existing rocket projectile as a temporary model. Replace `model`
+in `weapons/military_support.lua` when the bomb mesh is ready.
+
+After dropping its bomb, it automatically guards the nearest completed,
+non-stunned Armybase belonging to its current team. Rearming takes 15 continuous
+seconds within 300 horizontal units of that base. This is an airborne holding
+circle, not a runway landing. Leaving the zone resets progress. No base means
+no replacement bomb; it retries when a usable base appears. Losing/capturing the
+base cancels service and selects another. The air-to-air missile remains usable.
+The player can redirect the aircraft, but cannot replenish its bomb away from
+base. After rearming it remains guarding the base until given new orders.
+
+Playtest: bomb a moving ground group, confirm exactly one projectile, check the
+blast/falloff, then watch automatic return and verify that the holding circle
+stays within the service zone. Cancel return, destroy/capture the base, and test
+AA while empty. AircraftBomb release trajectory and actual holding-circle size
+require an in-engine check; standalone tests only cover definitions and logic.

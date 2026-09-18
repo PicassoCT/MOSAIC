@@ -1,7 +1,7 @@
 local AIR_F35 =
     AIRCRAFT:New {
     name = "F35 Fighterjet",
-    Description = " ",
+    Description = "Air-superiority fighter; one area bomb, rearms near an Armybase",
     objectName = "air_plane_F35.dae",
     script = "airplanefighterjetscript.lua",
     buildPic = "air_sniper.png",
@@ -67,7 +67,7 @@ local AIR_F35 =
             turret = false
         },
         [2] = {
-            name = "fightergroundmissile",
+            name = "fighterareabomb",
             onlyTargetCategory = [[GROUND BUILDING]],
             turret = false
         }
