@@ -497,6 +497,11 @@ local function getVehicleLightOcclusion(height)
     return occlusionTex[layer], (layer-1)*band, layer*band
 end
 
+local function vehicleHeadlightCascadeActive()
+    return sceneEnabled and sceneReady and sceneRadiance ~= nil and
+        WG.CaptureVehicleHeadlightEmission ~= nil
+end
+
 -- Borrowed textures, valid only until the next update/resize/shutdown.
 local rainLighting = {}
 local function getRainLighting()
@@ -513,6 +518,7 @@ end
 
 function widget:Initialize()
     WG.GetVehicleLightOcclusion = getVehicleLightOcclusion
+    WG.IsVehicleHeadlightCascadeActive = vehicleHeadlightCascadeActive
     WG.GetRainRadiance = getRainLighting
     if not gl.RenderToTexture or not gl.CreateTexture or not gl.UnitPiece
         or not gl.BeginEnd or not gl.UnitMultMatrix
@@ -701,6 +707,11 @@ local function drawNeonPieces(captureLayer, domain)
 
             gl.PopMatrix()
         end
+    end
+
+    if propagation and WG.CaptureVehicleHeadlightEmission then
+        local bandHeight=OCCLUSION_WORLD_HEIGHT/OCCLUSION_LAYER_COUNT
+        WG.CaptureVehicleHeadlightEmission((captureLayer-1)*bandHeight,captureLayer*bandHeight)
     end
 
     gl.PopMatrix()
@@ -910,6 +921,7 @@ function widget:DrawScreen()
 end
 
 function widget:Shutdown()
+    if WG.IsVehicleHeadlightCascadeActive == vehicleHeadlightCascadeActive then WG.IsVehicleHeadlightCascadeActive=nil end
     if WG.GetRainRadiance == getRainLighting then WG.GetRainRadiance = nil end
     if WG.GetVehicleLightOcclusion == getVehicleLightOcclusion then WG.GetVehicleLightOcclusion = nil end
     if localDetail then localDetail:Shutdown();localDetail=nil end
@@ -952,6 +964,7 @@ function widget:Shutdown()
     occlusionBuildings = {}
     pendingBuildingColumns = {}
 end
+
 
 
 

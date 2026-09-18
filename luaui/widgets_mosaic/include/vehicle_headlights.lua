@@ -13,11 +13,16 @@ return function()
     self.shader = gl.CreateShader({fragment = VFS.LoadFile(PATH .. 'spotlight.frag'),
         uniformInt = {depthTex = 0, occupancyTex = 1}})
     self.glow = gl.CreateShader({fragment = VFS.LoadFile(PATH .. 'glow.frag')})
+    self.coneShader = gl.CreateShader({vertex=VFS.LoadFile(PATH .. 'cone_emission.vert'),
+        fragment=VFS.LoadFile(PATH .. 'cone_emission.frag'),uniformInt={buildingOccupancy=0}})
+    local capture
     function self:Resize()
         if self.depth then gl.DeleteTexture(self.depth) end
         self.depth, self.width, self.height, self.failedSize = nil, nil, nil, nil
     end
     function self:Shutdown()
+        if WG.CaptureVehicleHeadlightEmission == capture then WG.CaptureVehicleHeadlightEmission = nil end
+        if self.coneShader then gl.DeleteShader(self.coneShader); self.coneShader=nil end
         self:Resize()
         if self.shader then gl.DeleteShader(self.shader) end
         if self.glow then gl.DeleteShader(self.glow) end
@@ -80,8 +85,12 @@ return function()
         if x1<0 or y1<0 or x0>w or y0>h then return end
         return clamp(x0/w*2-1,-1,1),clamp(y0/h*2-1,-1,1),clamp(x1/w*2-1,-1,1),clamp(y1/h*2-1,-1,1)
     end
-    function self:Draw(lightList, intensity, drawGlow, drawSurface)
-        if intensity <= 0 then return end
+    local lightTypes, emissionStrength = {}, 1
+    function self:SetEmissionOptions(types, strength, enabled)
+        lightTypes=types
+        emissionStrength=enabled and math.max(0,strength) or 0
+    end
+    local function collectLights(lightList)
         local lights = {}
         local cx,cy,cz = Spring.GetCameraPosition()
         for _, id in ipairs(Spring.GetVisibleUnits(-1, nil, false) or {}) do
@@ -101,8 +110,62 @@ return function()
                 end
             end
         end
-        if #lights == 0 then return end
+        if #lights == 0 then return lights end
         table.sort(lights,function(a,b) return a.d2<b.d2 end)
+        return lights
+    end
+    local coneLoc={}
+    if self.coneShader then
+        for _,name in ipairs({'mapSize','lamp','forward','lightRange','strength','hasOccupancy'}) do
+            coneLoc[name]=gl.GetUniformLocation(self.coneShader,name)
+        end
+    end
+    local function coneVertices(p,fx,fz,range,y)
+        local width=3+range*0.42
+        gl.Vertex(p[1]-fz*3,y,p[3]+fx*3)
+        gl.Vertex(p[1]+fz*3,y,p[3]-fx*3)
+        gl.Vertex(p[1]+fx*range+fz*width,y,p[3]+fz*range-fx*width)
+        gl.Vertex(p[1]+fx*range-fz*width,y,p[3]+fz*range+fx*width)
+    end
+    local captureFrame, captureLights
+    capture=function(bottom,top)
+        if not self.coneShader or emissionStrength<=0 then return end
+        -- Whole-map and local captures use exactly the same vehicle snapshot.
+        local frame=Spring.GetDrawFrame()
+        if captureFrame~=frame then captureLights=collectLights(lightTypes);captureFrame=frame end
+        gl.DepthTest(false);gl.DepthMask(false);gl.Blending(GL.ONE,GL.ONE)
+        gl.UseShader(self.coneShader)
+        gl.Uniform(coneLoc.mapSize,Game.mapSizeX,Game.mapSizeZ)
+        gl.Uniform(coneLoc.strength,emissionStrength)
+        for i=1,math.min(#captureLights,48) do
+            local l=captureLights[i]
+            local length=math.sqrt(l.front[1]^2+l.front[3]^2)
+            if length>0.001 then
+                local fx,fz=l.front[1]/length,l.front[3]/length
+                for _,p in ipairs({l.a,l.b}) do
+                    local y=math.max(0,Spring.GetGroundHeight(p[1],p[3]))+1
+                    if y>=bottom and y<top then
+                        local atlas=WG.GetVehicleLightOcclusion and WG.GetVehicleLightOcclusion(y)
+                        gl.Texture(0,atlas or false)
+                        gl.Uniform(coneLoc.hasOccupancy,atlas and 1 or 0)
+                        gl.Uniform(coneLoc.lamp,unpack(p));gl.Uniform(coneLoc.forward,fx,fz)
+                        gl.Uniform(coneLoc.lightRange,l.range)
+                        gl.BeginEnd(GL.QUADS,coneVertices,p,fx,fz,l.range,y)
+                    end
+                end
+            end
+        end
+        gl.UseShader(0);gl.Texture(0,false);gl.Blending(false)
+    end
+    if self.coneShader then WG.CaptureVehicleHeadlightEmission=capture end
+    function self:Draw(lightList, intensity, drawGlow, drawSurface)
+        if intensity<=0 then return end
+        local lights=collectLights(lightList)
+        if #lights==0 then return end
+        local cx,cy,cz=Spring.GetCameraPosition()
+        if WG.IsVehicleHeadlightCascadeActive and WG.IsVehicleHeadlightCascadeActive() then
+            drawSurface=false -- avoid duplicate road lighting and its scene depth copy
+        end
         local w,h,vpx,vpy = Spring.GetViewGeometry()
         if not w or w<1 or h<1 then return end
         local surface = false
@@ -177,4 +240,5 @@ return function()
     end
     return self
 end
+
 

@@ -383,6 +383,7 @@ end
 local hours = 0
 local minutes = 0
 function widget:Update(dt)
+  if headlights then headlights:SetEmissionOptions(lightList, math.min(2,searchlightStrength/0.6), baseType>0) end
   hours, minutes = getDayTime()  
   local _, speedFactor, paused = GetGameSpeed()
   if (not paused) then
@@ -414,3 +415,4 @@ function widget:DrawWorld()
     DrawSearchlights(hours, minutes)
   end
 end
+
