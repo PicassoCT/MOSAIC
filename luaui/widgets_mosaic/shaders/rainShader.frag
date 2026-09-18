@@ -621,7 +621,7 @@ float calculateLightReflectionFactor()
     return reflection;
 }
 
-vec4 getDroplettTexture(vec2 rotatedUV, float rainspeed, float timeOffset)
+vec4 getDroplettTexture(vec2 rotatedUV, float rainspeed, float timeOffset, out float coverage)
 {
 	rotatedUV.y = -1.0 * rotatedUV.y - (time + timeOffset) * rainspeed; 
 	float scaleDownFactor = ((mod(time + timeOffset, sixSeconds)/sixSeconds)*0.9)+ 0.1;
@@ -630,6 +630,7 @@ vec4 getDroplettTexture(vec2 rotatedUV, float rainspeed, float timeOffset)
 	rainColor = vec4(1.0 - rainColor.r);
 	vec4 resultColor = rainColor * GetDeterministicRainColor(rotatedUV.xy);
 	resultColor.a = mix(0, resultColor.a, generate_wave(sixSeconds));
+    coverage = clamp(rainColor.r * generate_wave(sixSeconds), 0.0, 1.0);
 	float sunlightReflectionFactor = calculateLightReflectionFactor();
 	if (sunlightReflectionFactor > 0.1) 
 	{
@@ -665,17 +666,20 @@ vec2 getRoatedUV()
     return rotatedUV.xy;
 }
 
-vec4 drawShrinkingDroplets(vec2 roatedUV, float rainspeed)
+vec4 drawShrinkingDroplets(vec2 roatedUV, float rainspeed, out float coverage)
 {
-	vec4 droplettTex = getDroplettTexture(roatedUV * DROPLETT_SCALE, rainspeed, eyePos.y);
-	droplettTex += getDroplettTexture(roatedUV * DROPLETT_SCALE, rainspeed, eyePos.y + sixSeconds/2.0);
+	float firstCoverage, secondCoverage;
+	vec4 droplettTex = getDroplettTexture(roatedUV * DROPLETT_SCALE, rainspeed, eyePos.y, firstCoverage);
+	droplettTex += getDroplettTexture(roatedUV * DROPLETT_SCALE, rainspeed, eyePos.y + sixSeconds/2.0, secondCoverage);
+    coverage = clamp(firstCoverage + secondCoverage, 0.0, 1.0);
 	return droplettTex;
 }
 
-vec4 drawRainInSpainOnPlane( vec2 rotatedUV, float rainspeed)
+vec4 drawRainInSpainOnPlane( vec2 rotatedUV, float rainspeed, out float coverage)
 {
 	vec2 scale = vec2(8.0, 4.0);
 	vec4 raindropColor = getRainTexture(rotatedUV.xy * scale, rainspeed, eyePos.y);
+    coverage = clamp(raindropColor.a, 0.0, 1.0);
 	vec4 finalColor =vec4(raindropColor.rgb, raindropColor.a)  * GetDeterministicRainColor(rotatedUV.xy);
 	float sunlightReflectionFactor = calculateLightReflectionFactor();
 	finalColor.a *= 2.0;
@@ -687,6 +691,8 @@ vec4 drawRainInSpainOnPlane( vec2 rotatedUV, float rainspeed)
 }
 
 
+
+// RAIN_LIGHT_GLITTER
 
 void main(void)
 {
@@ -752,14 +758,21 @@ void main(void)
 	//TODO, should pulsate depending on look vector due to the dropletss
 
 	
-	accumulatedLightColorRayDownward = mix( screen(accumulatedLightColorRayDownward, drawRainInSpainOnPlane(sourceRotatedUV, 3.0)), 
-										    screen(accumulatedLightColorRayDownward, drawShrinkingDroplets(sourceRotatedUV, 0.03)),
-											1.0-upwardnessFactor 
-											) ;
-	
-	gl_FragColor = mix(NONE, accumulatedLightColorRayDownward, rainPercent);
+    float streakCoverage, dropCoverage;
+    vec4 streaks = drawRainInSpainOnPlane(sourceRotatedUV, 3.0, streakCoverage);
+    vec4 drops = drawShrinkingDroplets(sourceRotatedUV, 0.03, dropCoverage);
+    float dropBlend = clamp(1.0-upwardnessFactor, 0.0, 1.0);
+    accumulatedLightColorRayDownward = mix(screen(accumulatedLightColorRayDownward, streaks),
+        screen(accumulatedLightColorRayDownward, drops), dropBlend);
+    vec3 glitter = mix(rainDropGlitter(worldPos, streakCoverage, 16.0),
+        rainDropGlitter(worldPos, dropCoverage, 64.0), dropBlend);
+    accumulatedLightColorRayDownward.rgb += glitter;
+    accumulatedLightColorRayDownward.a = clamp(accumulatedLightColorRayDownward.a +
+        max(glitter.r,max(glitter.g,glitter.b)) * 0.15, 0.0, 1.0);
+    gl_FragColor = mix(NONE, accumulatedLightColorRayDownward, rainPercent);
 
 	//vec4 upWardrainColor = origColor;
 	//https://www.youtube.com/watch?v=W0_zQ-WdxH4
 
 }
+

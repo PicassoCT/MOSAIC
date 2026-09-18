@@ -60,6 +60,8 @@ assert np.allclose(render(),lit), 'missing atlas fallback'
 program['wetness'].value=1
 wet=render()
 assert np.isfinite(wet).all() and wet.sum()>=lit.sum(), 'wet surface highlight'
+program['glitterTime'].value=0.7
+assert abs(render()-wet).max()>1e-7, 'wet highlights did not shimmer'
 program['wetness'].value=0
 # Equivalent zero-to-one depth convention.
 projection[1,2]=200; projection[1,3]=-300
@@ -69,3 +71,4 @@ depth.write(np.ones((h,w),'f4').tobytes())
 assert render().max()==0, 'sky must not receive light'
 print('PASS: shader compilation, paired road light, direction, range, dawn fade, building shadow, atlas fallback, wetness, both depth conventions, sky rejection')
 print('Renderer:',ctx.info['GL_RENDERER'],'unoccluded RGB sum:',float(lit.sum()))
+

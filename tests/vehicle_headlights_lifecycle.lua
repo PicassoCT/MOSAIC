@@ -16,6 +16,7 @@ VFS={LoadFile=function() return '' end}
 WG={}; Game={mapSizeX=512,mapSizeZ=512}; Platform={}
 UnitDefs={[1]={speed=50,customParams={}}}
 Spring={
+ GetGameSeconds=function() return 0 end,
  Echo=function() end,
  GetCameraPosition=function() return 0,100,0 end,
  GetVisibleUnits=function() return units end,
@@ -61,3 +62,4 @@ gl.CreateShader=function() return nil end
 gl.GetShaderLog=function() return 'expected fixture failure' end
 assert(constructor()==nil,'shader failure did not select legacy fallback')
 print('PASS: visibility, construction, daytime, light cap, one depth copy, resize/failure recovery, cleanup, shader fallback')
+

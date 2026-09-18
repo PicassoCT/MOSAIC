@@ -14,6 +14,7 @@ uniform vec3 up;
 uniform float lightRange;
 uniform float intensity;
 uniform float wetness;
+uniform float glitterTime;
 uniform int clipZeroToOne;
 uniform int occlusionActive;
 uniform vec2 occlusionHeight;
@@ -39,7 +40,13 @@ float visibility(vec3 lamp, vec3 world) {
     }
     return 1.0;
 }
-vec3 spotlight(vec3 lamp, vec3 world, vec3 normal, vec3 viewDir) {
+// One procedural wet normal per surface pixel, shared by both lamps.
+float wetHash(vec2 p) {
+    vec3 q = fract(vec3(p.xyx) * 0.1031);
+    q += dot(q, q.yzx + 33.33);
+    return fract((q.x + q.y) * q.z);
+}
+vec3 spotlight(vec3 lamp, vec3 world, vec3 normal, vec3 viewDir, vec3 wetNormal, float sparkle) {
     vec3 delta = world - lamp;
     float along = dot(delta, forward);
     if (along <= 0.0 || along >= lightRange) return vec3(0);
@@ -61,7 +68,8 @@ vec3 spotlight(vec3 lamp, vec3 world, vec3 normal, vec3 viewDir) {
     // Wet highlights only on upward-facing surfaces; no invented reflections
     // of the whole vehicle and no full-screen bloom pass.
     float specular = wetness * smoothstep(0.55, 0.95, normal.y) *
-        pow(max(dot(normal, H), 0.0), 48.0) * (0.4 + fresnel * 2.0);
+        (pow(max(dot(normal, H), 0.0), 32.0) * 0.45 +
+         pow(max(dot(wetNormal, H), 0.0), 96.0) * sparkle) * (0.4 + fresnel * 2.0);
     return vec3(1.0, 0.91, 0.76) * energy * (diffuse * 0.85 + specular * 2.0) * visibility(lamp, world);
 }
 void main() {
@@ -77,6 +85,20 @@ void main() {
     if (dot(n, n) < 1e-12) discard;
     vec3 normal = normalize(n);
     if (dot(normal, viewDir) < 0.0) normal = -normal;
-    vec3 light = spotlight(lampLeft, world, normal, viewDir) + spotlight(lampRight, world, normal, viewDir);
+    vec3 wetNormal = normal;
+    float sparkle = 0.0;
+    if (wetness > 0.001 && normal.y > 0.55) {
+        vec2 cell = floor(world.xz * 0.65);
+        float seed = wetHash(cell);
+        // Fade subpixel facets instead of producing distant temporal noise.
+        float detail = 1.0 - smoothstep(0.6, 2.0, max(fwidth(world.x), fwidth(world.z)) * 0.65);
+        vec2 slope = vec2(seed, wetHash(cell + 17.0)) * 2.0 - 1.0;
+        float ripple = 0.75 + 0.25 * sin(glitterTime * 4.0 + seed * 25.0);
+        wetNormal = normalize(normal + vec3(slope.x, 0.0, slope.y) * 0.22 * detail * ripple);
+        sparkle = detail * smoothstep(0.65, 0.96, seed) * (0.8 + 1.2 * ripple);
+    }
+    vec3 light = spotlight(lampLeft, world, normal, viewDir, wetNormal, sparkle) +
+                 spotlight(lampRight, world, normal, viewDir, wetNormal, sparkle);
     gl_FragColor = vec4((vec3(1.0) - exp(-light * 2.0)) * intensity, 0.0);
 }
+

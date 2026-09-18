@@ -497,8 +497,23 @@ local function getVehicleLightOcclusion(height)
     return occlusionTex[layer], (layer-1)*band, layer*band
 end
 
+-- Borrowed textures, valid only until the next update/resize/shutdown.
+local rainLighting = {}
+local function getRainLighting()
+    if not sceneEnabled or not sceneReady or not sceneRadiance or occlusionDirty then return nil end
+    local intensity = sceneTest and 1 or neonLightPercent
+    if intensity <= 0 or sceneStrength <= 0 then return nil end
+    local band = OCCLUSION_WORLD_HEIGHT / OCCLUSION_LAYER_COUNT
+    rainLighting.texture, rainLighting.occupancy = sceneRadiance, occlusionTex[sceneLayer]
+    rainLighting.bottom, rainLighting.top = (sceneLayer-1)*band, sceneLayer*band
+    rainLighting.intensity, rainLighting.strength = intensity, sceneStrength
+    rainLighting.detail = localDetail and localDetail.ready and localDetail or nil
+    return rainLighting
+end
+
 function widget:Initialize()
     WG.GetVehicleLightOcclusion = getVehicleLightOcclusion
+    WG.GetRainRadiance = getRainLighting
     if not gl.RenderToTexture or not gl.CreateTexture or not gl.UnitPiece
         or not gl.BeginEnd or not gl.UnitMultMatrix
     then
@@ -895,6 +910,7 @@ function widget:DrawScreen()
 end
 
 function widget:Shutdown()
+    if WG.GetRainRadiance == getRainLighting then WG.GetRainRadiance = nil end
     if WG.GetVehicleLightOcclusion == getVehicleLightOcclusion then WG.GetVehicleLightOcclusion = nil end
     if localDetail then localDetail:Shutdown();localDetail=nil end
     sceneReady=false
@@ -936,6 +952,7 @@ function widget:Shutdown()
     occlusionBuildings = {}
     pendingBuildingColumns = {}
 end
+
 
 
 

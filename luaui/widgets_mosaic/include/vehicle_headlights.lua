@@ -29,7 +29,7 @@ return function()
     local loc = {}
     for _, name in ipairs({'inverseProjection','inverseView','viewport','viewportOrigin','mapSize',
         'lampLeft','lampRight','forward','right','up','lightRange','intensity','wetness',
-        'clipZeroToOne','occlusionActive','occlusionHeight'}) do
+        'clipZeroToOne','occlusionActive','occlusionHeight','glitterTime'}) do
         loc[name] = gl.GetUniformLocation(self.shader, name)
     end
     local function add(p, v, amount)
@@ -135,6 +135,7 @@ return function()
             gl.Uniform(loc.viewport,w,h); gl.Uniform(loc.viewportOrigin,vpx or 0,vpy or 0)
             gl.Uniform(loc.mapSize,Game.mapSizeX,Game.mapSizeZ)
             gl.Uniform(loc.intensity,intensity)
+            gl.Uniform(loc.glitterTime,Spring.GetGameSeconds())
             gl.Uniform(loc.wetness,clamp((WG.GetVehicleHeadlightWetness and tonumber(WG.GetVehicleHeadlightWetness())) or 0,0,1))
             gl.UniformInt(loc.clipZeroToOne,Platform and Platform.glSupportClipSpaceControl and 1 or 0)
             -- Nearest 48 vehicles get road lighting; every visible vehicle retains bulbs.
@@ -176,3 +177,4 @@ return function()
     end
     return self
 end
+

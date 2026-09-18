@@ -19,6 +19,8 @@ local boolDebugActive = false
 local reflectionDebug = false
 local savedRainPercent
 local rainShader = nil
+local bindRainLighting
+local glitterEnabled = true
 
 --------------------------------------------------------------------------------
 --------------------------Configuration Components -----------------------------
@@ -262,6 +264,9 @@ local function init()
 
     --https://www.shadertoy.com/view/wd2GDG inspiration
     local fragmentShader = VFS.LoadFile(shaderFilePath .. "rainShader.frag") 
+    fragmentShader = fragmentShader:gsub("// RAIN_LIGHT_GLITTER", function()
+        return VFS.LoadFile(shaderFilePath .. "rainLightGlitter.glsl")
+    end, 1)
     local vertexShader = VFS.LoadFile(shaderFilePath .. "rainShader.vert") 
     --local fragmentShaderAddSource = VFS.LoadFile(shaderFilePath .. "rainShaderReflectionSource.c") 
 	--fragmentShader = string.replace(fragmentShader, "REFLECTIONMARCH", fragmentShaderAddSource)
@@ -277,7 +282,9 @@ local function init()
         raincanvastex = raincanvastexIndex,
         noisetex = noisetexIndex,
         raintex = raintexIndex,
-        dephtCopyTex = dephtCopyTexIndex
+        dephtCopyTex = dephtCopyTexIndex,
+        rainRadianceTex = 10, rainOccupancyTex = 11,
+        rainLocalRadianceTex = 12, rainLocalOccupancyTex = 13
     }
 
     rainShader =
@@ -332,6 +339,7 @@ local function init()
     uniformSunColor                 = glGetUniformLocation(rainShader, 'sunCol')
     uniformSkyColor                 = glGetUniformLocation(rainShader, 'skyCol')
     uniformSunPos                   = glGetUniformLocation(rainShader, 'sunPos')
+    bindRainLighting = VFS.Include("luaui/widgets_mosaic/include/rain_lighting.lua")(rainShader)
     Spring.Echo("gfx_rain:Initialize ended")
 end
 
@@ -503,6 +511,7 @@ end
 local function cleanUp()    
     glResetState()
     glUseShader(0)
+    for slot=10,13 do glTexture(slot,false) end
     glBlending(true)
 end
 
@@ -534,6 +543,7 @@ local function DrawRain()
     prepareTextures()
     glUseShader(rainShader)
     updateUniforms()
+    bindRainLighting(glitterEnabled and rainPercent > 0.001)
 
     glRenderToTexture(raincanvastex, renderToTextureFunc);
     local osClock = os.clock()
@@ -543,6 +553,7 @@ local function DrawRain()
 end
 
 function widget:DrawScreenEffects()
+    if rainPercent <= 0.001 or not rainShader then return end
     glBlending(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA) 
     glTexture(0, raincanvastex)
     glTexRect(0, vsy, vsx, 0)
@@ -576,6 +587,7 @@ local function cameraIsUnchanged()
     end
 
 function widget:DrawWorld()
+    if rainPercent <= 0.001 or not rainShader then return end
     local _, _, isPaused = Spring.GetGameSpeed()
     if isPaused and cameraIsUnchanged()then
        local currentTime = Spring.GetTimer() 
@@ -608,6 +620,10 @@ end
 
 
 function widget:TextCommand(command)
+    if command == "rainglitter on" or command == "rainglitter off" then
+        glitterEnabled = command == "rainglitter on"
+        return true
+    end
     if command == "rainreflection on" then
         if not reflectionDebug then savedRainPercent = rainPercent end
         reflectionDebug = true
@@ -624,4 +640,5 @@ function widget:TextCommand(command)
         return true
     end
 end
+
 
