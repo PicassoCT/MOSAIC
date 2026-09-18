@@ -44,7 +44,7 @@ local PanicAbleCivliansTable = getPanicableCiviliansTypeTable(UnitDefs)
 
 local closeCombatArenaDefID = UnitDefNames["closecombatarena"].id
 
-GG.BusesTable = {}
+GG.BusesTable = GG.BusesTable or {}
 GG.CivilianTable = {} -- [id ] ={ defID, startNodeID }
 GG.UnitArrivedAtTarget = {} -- [id] = true UnitID -- Units report back once they reach this target
 GG.CivilianUnitInternalLogicActive = {} -- {string state, string behaviour}

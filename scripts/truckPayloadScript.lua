@@ -216,6 +216,7 @@ function selectPayloadPiece()
 	  if (displayedPiece == fireTruck or displayedPiece == EMT) then StartThread(FireTruckEmergencyBehaviour) end
 	  if displayedPiece == GarbageTruck then StartThread(GarbageTruckBehaviour) end
 	  if busPieces[displayedPiece] then
+	  	GG.BusesTable = GG.BusesTable or {}
 	  	GG.BusesTable[unitID] = unitID
 	  end
 end
