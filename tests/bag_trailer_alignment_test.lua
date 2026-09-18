@@ -69,15 +69,18 @@ local file=assert(io.open("scripts/LongTruckscript.lua")); local source=file:rea
 local code=assert(source:match("(local function wrapTrailerAngle.-)\n\nlocal loadOutUnitID"))
 local function trailer(headings,moving)
     local index,yaw=1,0
-    local e={math=math,unitID=1,PayloadCenter=1,DetectPiece=2,x_axis=1,y_axis=2}
+    local e={math=math,unitID=1,PayloadCenter=1,DetectPiece=2,x_axis=1,y_axis=2,z_axis=3}
     e.clamp=function(v,a,b) return math.max(a,math.min(b,v)) end
     e.newMotionSampler=function() return function() return moving,true,false end end
     e.Spring={GetUnitHeading=function() return headings[index] end,
         GetGameFrame=function() return (index-1)*3 end,
         GetUnitPiecePosDir=function() return 0,7,0 end,
         GetGroundHeight=function() return 0 end,
-        UnitScript={GetPieceRotation=function() return 0,yaw,0 end}}
-    e.Turn=function(_,axis,target) if axis==2 then yaw=target end end
+        UnitScript={GetPieceRotation=function() return 0,0,yaw end}}
+    e.Turn=function(_,axis,target)
+        assert(axis~=2, "Trailer steering must not use local Y")
+        if axis==3 then yaw=target end
+    end
     e.Sleep=function() coroutine.yield() end
     if _VERSION=="Lua 5.1" then local f=assert(loadstring(code)); setfenv(f,e); f()
     else assert(load(code,"trailer","t",e))() end
@@ -90,4 +93,38 @@ near(trailer({0,-1000,-2000},false),2000*math.pi/32768)
 near(trailer({32760,-32760},false),-16*math.pi/32768)
 near(trailer({-32760,32760},false),16*math.pi/32768)
 near(trailer({0,1000,2000},true),-trailer({0,-1000,-2000},true))
+
+-- Verify the steering axis against the authored model, not an identity parent.
+local modelFile=assert(io.open("objects3d/truck_western3.dae"))
+local model=modelFile:read("*a"); modelFile:close()
+local function authoredRotation(name)
+    local values={}
+    local matrix=assert(model:match('<node name="'..name..'"[^>]*><matrix[^>]*>([^<]+)'))
+    for value in matrix:gmatch("%S+") do values[#values+1]=tonumber(value) end
+    local rotation={{values[1],values[2],values[3]},
+                    {values[5],values[6],values[7]},
+                    {values[9],values[10],values[11]}}
+    for column=1,3 do
+        local length=math.sqrt(rotation[1][column]^2+rotation[2][column]^2+rotation[3][column]^2)
+        for row=1,3 do rotation[row][column]=rotation[row][column]/length end
+    end
+    return rotation
+end
+local authored=multiply(authoredRotation("center"),authoredRotation("PayloadCenter"))
+local up=apply(authored,{0,0,1})
+near(up[1],0); near(up[2],1); near(up[3],0)
+for _,headings in ipairs({
+    {0,8192,16384}, {0,-8192,-16384},
+    {32760,-32760}, {-32760,32760},
+    {12000,14000,14000,14000},
+}) do
+    local yaw=trailer(headings,false)
+    local start=multiply(M.rotation(0,headings[1]*math.pi/32768,0),authored)
+    local finish=multiply(M.rotation(0,headings[#headings]*math.pi/32768,0),
+                          multiply(authored,M.rotation(0,0,yaw)))
+    for row=1,3 do for column=1,3 do near(finish[row][column],start[row][column]) end end
+end
+assert(math.abs(trailer({0,8192,8192,8192},true))<
+       math.abs(trailer({0,8192,8192,8192},false)),
+       "Physical movement should straighten the trailer")
 print("bag and trailer alignment tests passed")
