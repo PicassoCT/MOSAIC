@@ -145,7 +145,10 @@ function turnTrailerLoop()
         local dt = (frame - previousFrame) / 30
         previousHeading, previousFrame = heading, frame
 
-        local _, yaw = Spring.UnitScript.GetPieceRotation(PayloadCenter)
+        local _, _, yaw = Spring.UnitScript.GetPieceRotation(PayloadCenter)
+        -- truck_western3.dae: center has a baked -90 degree X rotation,
+        -- so PayloadCenter's local +Z is model/world up on level ground.
+        -- Local Y would roll the trailer instead of counter-steering it.
         -- Preserve world orientation when the tractor rotates beneath the hitch.
         -- Both directions and the signed-heading boundary use the same rule.
         yaw = wrapTrailerAngle(yaw - delta)
@@ -153,7 +156,7 @@ function turnTrailerLoop()
             -- Continuous relaxation toward the tractor; never round radians.
             yaw = yaw * math.exp(-dt / 6)
         end
-        Turn(PayloadCenter, y_axis, yaw, 0)
+        Turn(PayloadCenter, z_axis, yaw, 0)
 
         local px, py, pz = Spring.GetUnitPiecePosDir(unitID, DetectPiece)
         local groundHeight = Spring.GetGroundHeight(px, pz)
