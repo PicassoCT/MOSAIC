@@ -130,6 +130,7 @@ local timePercentLoc
 local reflectionDebugLoc
 local rainPercentLoc
 local rainPercent = 0.0
+local function getHeadlightWetness() return rainPercent end
 local timePercent = 0
 local hours = 12
 local minutes = 0
@@ -443,6 +444,7 @@ function widget:Update(dt)
 end
 
 function widget:Shutdown()
+    if WG.GetVehicleHeadlightWetness == getHeadlightWetness then WG.GetVehicleHeadlightWetness = nil end
     if glDeleteTexture then
         glDeleteTexture(depthtex or "")
         glDeleteTexture(rainDroplettex or "")
@@ -548,6 +550,7 @@ function widget:DrawScreenEffects()
 end
 
 function widget:Initialize()
+    WG.GetVehicleHeadlightWetness = getHeadlightWetness
     if (not gl.RenderToTexture) then --super bad graphic driver
         return
     end
@@ -621,3 +624,4 @@ function widget:TextCommand(command)
         return true
     end
 end
+

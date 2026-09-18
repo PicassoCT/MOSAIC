@@ -489,7 +489,16 @@ local function drawDirectLight(mode)
     directLightReady = true
 end
 
+local function getVehicleLightOcclusion(height)
+    if occlusionDirty then return nil end
+    local band = OCCLUSION_WORLD_HEIGHT / OCCLUSION_LAYER_COUNT
+    local layer = math.floor(height / band) + 1
+    if layer < 1 or layer > OCCLUSION_LAYER_COUNT then return nil end
+    return occlusionTex[layer], (layer-1)*band, layer*band
+end
+
 function widget:Initialize()
+    WG.GetVehicleLightOcclusion = getVehicleLightOcclusion
     if not gl.RenderToTexture or not gl.CreateTexture or not gl.UnitPiece
         or not gl.BeginEnd or not gl.UnitMultMatrix
     then
@@ -886,6 +895,7 @@ function widget:DrawScreen()
 end
 
 function widget:Shutdown()
+    if WG.GetVehicleLightOcclusion == getVehicleLightOcclusion then WG.GetVehicleLightOcclusion = nil end
     if localDetail then localDetail:Shutdown();localDetail=nil end
     sceneReady=false
     if scene then scene:Shutdown();scene=nil end
@@ -926,5 +936,6 @@ function widget:Shutdown()
     occlusionBuildings = {}
     pendingBuildingColumns = {}
 end
+
 
 
