@@ -128,47 +128,48 @@ end
 boolTurnLeft = false
 boolTurning = false
 
-local function wrapTrailerAngle(angle)
-    return (angle + math.pi) % (2 * math.pi) - math.pi
-end
-
 function turnTrailerLoop()
+    local spGetUnitPiecePosDir = Spring.GetUnitPiecePosDir
+    local spGetGroundHeight = Spring.GetGroundHeight
+    _,lastOrientation,_  = Spring.UnitScript.GetPieceRotation(PayloadCenter)
+    px,py,pz = spGetUnitPiecePosDir(unitID, DetectPiece)
+    val  = 0
+    local headRad = 0
     local sampleMotion = newMotionSampler(unitID)
-    local previousHeading = Spring.GetUnitHeading(unitID)
-    local previousFrame = Spring.GetGameFrame()
-    local val = 0
     while true do
         boolMoving, boolTurning, boolTurnLeft = sampleMotion()
-        local frame = Spring.GetGameFrame()
-        local heading = Spring.GetUnitHeading(unitID)
-        local delta = ((heading - previousHeading + 32768) % 65536 - 32768) * math.pi / 32768
-        local dt = (frame - previousFrame) / 30
-        previousHeading, previousFrame = heading, frame
-
-        local _, _, yaw = Spring.UnitScript.GetPieceRotation(PayloadCenter)
-        -- truck_western3.dae: center has a baked -90 degree X rotation,
-        -- so PayloadCenter's local +Z is model/world up on level ground.
-        -- Local Y would roll the trailer instead of counter-steering it.
-        -- Preserve world orientation when the tractor rotates beneath the hitch.
-        -- Both directions and the signed-heading boundary use the same rule.
-        yaw = wrapTrailerAngle(yaw - delta)
-        if boolMoving then
-            -- Continuous relaxation toward the tractor; never round radians.
-            yaw = yaw * math.exp(-dt / 6)
-        end
-        Turn(PayloadCenter, z_axis, yaw, 0)
-
-        local px, py, pz = Spring.GetUnitPiecePosDir(unitID, DetectPiece)
-        local groundHeight = Spring.GetGroundHeight(px, pz)
-        local diff = math.max(math.abs((py - 7) - groundHeight), 0.0125)
-        if py - 7 > groundHeight then
-            val = val - diff / 10
+        px,py,pz = spGetUnitPiecePosDir(unitID, DetectPiece)
+        if boolMoving == true  then          
+            _, rot, _ = Spring.UnitScript.GetPieceRotation(PayloadCenter)
+            goal = math.ceil(rot * 0.98)
+            Turn(PayloadCenter,y_axis, goal, 1.125)
+            lastOrientation = goal
         else
-            val = val + diff / 10
+            if boolTurning == true then                
+                x,y,z = spGetUnitPiecePosDir(unitID, PayloadCenter)
+                dx,  dz = px-x, pz-z
+                headRad = math.pi - math.atan2(dx, dz)
+
+                Turn(PayloadCenter,y_axis, headRad, 1)
+                lastOrientation = headRad
+            end
+        end     
+
+        groundHeigth =   spGetGroundHeight(px,pz)
+        diff = math.max(math.abs((py - 7) -groundHeigth), 0.0125)
+        if py - 7 > groundHeigth then
+            val = val - (diff/10)
+        else
+            val = val + (diff/10)
         end
-        val = clamp(val, -5, 5)
-        Turn(PayloadCenter, x_axis, math.rad(val), 0.881)
-        Sleep(boolMoving and 125 or 50)
+        radYaw = math.rad(clamp( val, -5, 5))
+        Turn(PayloadCenter, x_axis, radYaw, 0.881)   
+
+        if boolMoving == true then
+            Sleep(125)
+        else
+            Sleep(50)
+        end
     end
 end
 

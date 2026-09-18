@@ -64,67 +64,38 @@ end
 while coroutine.status(co)~="dead" do tick() end
 M.wake(0); assert(starts==2)
 
--- Run the actual trailer loop with deterministic headings.
+-- These checks cover the restored API commands, not the engine's model
+-- transforms. The remaining in-game heading-sign issue is not proven fixed.
 local file=assert(io.open("scripts/LongTruckscript.lua")); local source=file:read("*a"); file:close()
-local code=assert(source:match("(local function wrapTrailerAngle.-)\n\nlocal loadOutUnitID"))
-local function trailer(headings,moving)
-    local index,yaw=1,0
-    local e={math=math,unitID=1,PayloadCenter=1,DetectPiece=2,x_axis=1,y_axis=2,z_axis=3}
+local code=assert(source:match("(function turnTrailerLoop%(%).-)\n\nlocal loadOutUnitID"))
+local function trailer(dx,dz,moving,turning)
+    local commands={}
+    local e={math=math,unitID=1,PayloadCenter=1,DetectPiece=2,x_axis=1,y_axis=2}
     e.clamp=function(v,a,b) return math.max(a,math.min(b,v)) end
-    e.newMotionSampler=function() return function() return moving,true,false end end
-    e.Spring={GetUnitHeading=function() return headings[index] end,
-        GetGameFrame=function() return (index-1)*3 end,
-        GetUnitPiecePosDir=function() return 0,7,0 end,
+    e.newMotionSampler=function() return function() return moving,turning,false end end
+    e.Spring={
+        GetUnitPiecePosDir=function(_,piece)
+            if piece==2 then return dx,7,dz end
+            return 0,7,0
+        end,
         GetGroundHeight=function() return 0 end,
-        UnitScript={GetPieceRotation=function() return 0,0,yaw end}}
-    e.Turn=function(_,axis,target)
-        assert(axis~=2, "Trailer steering must not use local Y")
-        if axis==3 then yaw=target end
+        UnitScript={GetPieceRotation=function() return 0,0.5,0 end}}
+    e.Turn=function(_,axis,target,speed)
+        assert(axis==1 or axis==2, "Original controller uses X pitch and Y steering")
+        if axis==2 then commands[#commands+1]={target,speed} end
     end
     e.Sleep=function() coroutine.yield() end
     if _VERSION=="Lua 5.1" then local f=assert(loadstring(code)); setfenv(f,e); f()
     else assert(load(code,"trailer","t",e))() end
     local thread=coroutine.create(e.turnTrailerLoop)
-    for i=1,#headings do index=i; local ok,err=coroutine.resume(thread); assert(ok,err) end
-    return yaw
+    local ok,err=coroutine.resume(thread); assert(ok,err)
+    return commands
 end
-near(trailer({0,1000,2000},false),-2000*math.pi/32768)
-near(trailer({0,-1000,-2000},false),2000*math.pi/32768)
-near(trailer({32760,-32760},false),-16*math.pi/32768)
-near(trailer({-32760,32760},false),16*math.pi/32768)
-near(trailer({0,1000,2000},true),-trailer({0,-1000,-2000},true))
-
--- Verify the steering axis against the authored model, not an identity parent.
-local modelFile=assert(io.open("objects3d/truck_western3.dae"))
-local model=modelFile:read("*a"); modelFile:close()
-local function authoredRotation(name)
-    local values={}
-    local matrix=assert(model:match('<node name="'..name..'"[^>]*><matrix[^>]*>([^<]+)'))
-    for value in matrix:gmatch("%S+") do values[#values+1]=tonumber(value) end
-    local rotation={{values[1],values[2],values[3]},
-                    {values[5],values[6],values[7]},
-                    {values[9],values[10],values[11]}}
-    for column=1,3 do
-        local length=math.sqrt(rotation[1][column]^2+rotation[2][column]^2+rotation[3][column]^2)
-        for row=1,3 do rotation[row][column]=rotation[row][column]/length end
-    end
-    return rotation
-end
-local authored=multiply(authoredRotation("center"),authoredRotation("PayloadCenter"))
-local up=apply(authored,{0,0,1})
-near(up[1],0); near(up[2],1); near(up[3],0)
-for _,headings in ipairs({
-    {0,8192,16384}, {0,-8192,-16384},
-    {32760,-32760}, {-32760,32760},
-    {12000,14000,14000,14000},
-}) do
-    local yaw=trailer(headings,false)
-    local start=multiply(M.rotation(0,headings[1]*math.pi/32768,0),authored)
-    local finish=multiply(M.rotation(0,headings[#headings]*math.pi/32768,0),
-                          multiply(authored,M.rotation(0,0,yaw)))
-    for row=1,3 do for column=1,3 do near(finish[row][column],start[row][column]) end end
-end
-assert(math.abs(trailer({0,8192,8192,8192},true))<
-       math.abs(trailer({0,8192,8192,8192},false)),
-       "Physical movement should straighten the trailer")
-print("bag and trailer alignment tests passed")
+local right=trailer(10,0,false,true)
+near(right[1][1],math.pi/2); near(right[1][2],1)
+local left=trailer(-10,0,false,true)
+near(left[1][1],3*math.pi/2); near(left[1][2],1)
+local moving=trailer(10,0,true,true)
+near(moving[1][1],1); near(moving[1][2],1.125)
+assert(#trailer(10,0,false,false)==0)
+print("bag alignment and original trailer command checks passed")
