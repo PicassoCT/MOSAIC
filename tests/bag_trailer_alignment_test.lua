@@ -67,7 +67,7 @@ M.wake(0); assert(starts==2)
 -- These checks cover the restored API commands, not the engine's model
 -- transforms. The remaining in-game heading-sign issue is not proven fixed.
 local file=assert(io.open("scripts/LongTruckscript.lua")); local source=file:read("*a"); file:close()
-local code=assert(source:match("(function turnTrailerLoop%(%).-)\n\nlocal loadOutUnitID"))
+local code=assert(source:match("(local function holdTrailerYaw%(%).-)\n\nlocal loadOutUnitID"))
 local function trailer(dx,dz,moving,turning)
     local commands={}
     local e={math=math,unitID=1,PayloadCenter=1,DetectPiece=2,x_axis=1,y_axis=2}
@@ -89,6 +89,11 @@ local function trailer(dx,dz,moving,turning)
     else assert(load(code,"trailer","t",e))() end
     local thread=coroutine.create(e.turnTrailerLoop)
     local ok,err=coroutine.resume(thread); assert(ok,err)
+    -- After an idle transition the outstanding target must be overwritten.
+    moving,turning=false,false
+    local ok,err=coroutine.resume(thread); assert(ok,err)
+    near(commands[#commands][1],0.5)
+    assert(commands[#commands][2]>0, "TurnNow would leave the old animation active")
     return commands
 end
 local right=trailer(10,0,false,true)
@@ -97,5 +102,6 @@ local left=trailer(-10,0,false,true)
 near(left[1][1],3*math.pi/2); near(left[1][2],1)
 local moving=trailer(10,0,true,true)
 near(moving[1][1],1); near(moving[1][2],1.125)
-assert(#trailer(10,0,false,false)==0)
+local idle=trailer(10,0,false,false)
+near(idle[1][1],0.5); assert(idle[1][2]>0)
 print("bag alignment and original trailer command checks passed")

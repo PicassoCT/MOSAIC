@@ -129,6 +129,13 @@ end
 boolTurnLeft = false
 boolTurning = false
 
+local function holdTrailerYaw()
+    local _, yaw = Spring.UnitScript.GetPieceRotation(PayloadCenter)
+    -- A nonzero-speed Turn replaces the pending animation target. Turn(..., 0)
+    -- only sets the pose in Recoil and does not cancel an existing turn.
+    Turn(PayloadCenter, y_axis, yaw, 1)
+end
+
 function turnTrailerLoop()
     local spGetUnitPiecePosDir = Spring.GetUnitPiecePosDir
     local spGetGroundHeight = Spring.GetGroundHeight
@@ -153,6 +160,8 @@ function turnTrailerLoop()
 
                 Turn(PayloadCenter,y_axis, headRad, 1)
                 lastOrientation = headRad
+            else
+                holdTrailerYaw()
             end
         end     
 
@@ -259,6 +268,7 @@ function honkIfHorny()
 end
 
 function script.StopMoving() 
+    holdTrailerYaw()
     stopSpinT(TablesOfPiecesGroups["Wheel"], x_axis, 3) 
     stopSpinT(TablesOfPiecesGroups["LimoWheel"], x_axis, 3) 
     StartThread(honkIfHorny)
