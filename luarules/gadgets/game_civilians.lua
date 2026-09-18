@@ -999,7 +999,7 @@ function unitInternalLogic(evtID, frame, persPack, startFrame, myID)
             return true, frame + 15, persPack
         end
 
-        echo(myID .. " prayer state timed out; restoring civilian movement")
+       --echo(myID .. " prayer state timed out; restoring civilian movement")
         setSpeedEnv(myID, GameConfig.civilian_walking_speedfactor)
         state = GameConfig.STATE_ENDED
     end
@@ -1008,7 +1008,7 @@ function unitInternalLogic(evtID, frame, persPack, startFrame, myID)
         local stateStartFrame = CivilianInternalDebugStateStartTabel[myID]
         if stateStartFrame then
             local durationFrames = currentFrame - stateStartFrame
-            echo(myID .. " internal state " .. behaviour .. " lasted " ..
+          --  echo(myID .. " internal state " .. behaviour .. " lasted " ..
                  (durationFrames / 30) .. " s")
         end
 
