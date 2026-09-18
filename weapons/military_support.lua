@@ -123,16 +123,26 @@ weapons.interceptormissile = copy(weapons.militaryantiair)
 weapons.interceptormissile.name = "F35 interceptor missile"
 weapons.interceptormissile.range = 1200
 
-weapons.fightergroundmissile = variant("weapons/guidedrocket.lua", "s16rocket", {
-    name = "F35 light ground-attack missile",
-    canattackground = true,
+-- Replace this placeholder model when the dedicated bomb mesh is available.
+weapons.fighterareabomb = {
+    name = "F35 area bomb",
+    weapontype = "AircraftBomb",
+    model = "unaimedRocketProjectile.s3o",
     range = 600,
-    damage = {default = 200},
-    areaofeffect = 32,
-    reloadtime = 18,
+    reloadtime = 1, -- Ammunition is gated by the unit script, not this timer.
+    burst = 1,
+    damage = {default = 900},
+    areaofeffect = 240,
+    edgeeffectiveness = 0.15,
+    canattackground = true,
+    turret = false,
     avoidfriendly = true,
-    firestarter = 0,
+    noselfdamage = true,
+    cratermult = 0,
+    impulsefactor = 0,
+    explosiongenerator = "custom:missile_explosion",
+    soundhit = "sounds/weapons/rocket/impact.wav",
     customparams = {wall_damage_multiplier = 0.25},
-})
+}
 
 return lowerkeys(weapons)
