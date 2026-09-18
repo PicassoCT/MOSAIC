@@ -5,9 +5,12 @@ local callback, text, vertices = nil, {}, {}
 local currentColor, currentMode
 local function finite(n) return type(n) == 'number' and n == n and math.abs(n) < math.huge end
 widget = {}
-GL = {LINES=1, LINE_STRIP=2, LINE_LOOP=3, SRC_ALPHA=4, ONE_MINUS_SRC_ALPHA=5}
-UnitDefs = {[1]={speed=2}, [2]={speed=0, isBuilding=true}}
+GL = {LINES=1, LINE_STRIP=2, LINE_LOOP=3, SRC_ALPHA=4, ONE_MINUS_SRC_ALPHA=5, TRIANGLE_FAN=6}
+Game = {mapName="Dhubai", mapSizeX=8192, mapSizeZ=8192}
+local culture = "international"
+UnitDefs = {[1]={name="operativeasset",speed=2}, [2]={name="protagonsafehouse",speed=0,isBuilding=true}}
 Spring = {
+    GetGameRulesParam=function(key) assert(key=="culture"); return culture end,
     GetGameFrame=function() return frame end,
     GetUnitIsDead=function(id) return dead[id] or false end,
     WorldToScreenCoords=function(x,y,z) return x, z+y, x < 0 and 2 or 0.5 end,
@@ -53,6 +56,7 @@ callback(payload(1200))
 draw()
 frame=130; draw()
 assert(has('SOURCE') and has('RECRUITER') and has('RECRUITED') and has('BUILT'))
+assert(has('TEL +0145-16978/9998'), 'map/culture telephone format changed')
 assert(has('HANDLER') and has('ASSET') and has('SAFEHOUSE') and has('9 s'))
 -- Purple link runs from parent to source; orange links run out from source.
 local purple, orange = {}, {}
@@ -78,5 +82,42 @@ draw(); assert(#text==0)
 callback('return {[8]={x=200,y=0,z=200,teamID=1,endFrame=600,revealedUnits={[12]={pos={x=200,y=0,z=200},defID=2,name="Same place"}}}}')
 draw(); frame=530; draw(); assert(has('BUILT'))
 callback('return {}'); draw(); assert(#text==0)
+-- Every requested role renders a distinct polygon silhouette, independent of
+-- parent/child status. Includes armed civilian-derived military units.
+local names = {"operativepropagator", "operativeinvestigator", "civilianagent",
+    "antagonsafehouse", "ground_tank_day", "operativeasset"}
+local silhouettes = {}
+local function single(defID, parent)
+    callback('return {[8]={x=800,y=0,z=200,teamID=1,endFrame=900,revealedUnits={' ..
+        '[10]={pos={x=200,y=0,z=200},defID=' .. defID .. ',boolIsParent=' .. tostring(parent) .. ',name="Test"}}}}')
+    draw()
+    local signature={}
+    for _,v in ipairs(vertices) do
+        if v.mode==GL.TRIANGLE_FAN then signature[#signature+1]=v[1]..","..v[2] end
+    end
+    assert(#signature>0, "missing polygon chess piece")
+    return table.concat(signature, ";")
+end
+for i,name in ipairs(names) do
+    UnitDefs[10+i]={name=name,speed=2}
+    local signature=single(10+i, false)
+    assert(not silhouettes[signature], "chess roles share a silhouette")
+    silhouettes[signature]=true
+    assert(single(10+i,true)==signature, "relationship must not change unit role")
+end
+UnitDefs[20]={name="civilian_suicidebomber",speed=2}
+assert(single(20,false)==single(15,false), "suicide bomber must be knight")
+UnitDefs[21]={name="civilian_truck_mg",speed=2}
+assert(single(21,false)==single(15,false), "technical must be knight")
+-- Repeated reveals and widget reloads preserve identity without consuming RNG.
+math.random=function() error("telephone generation must not consume RNG") end
+single(11,false)
+assert(has('TEL +0145-16978/9998'))
+widget:Shutdown(); assert(callback==nil)
+widget={}; dofile('luaui/widgets_mosaic/gui_RevealedGraph.lua'); widget:Initialize()
+single(11,false); assert(has('TEL +0145-16978/9998'))
+for _,value in ipairs({"arabic","western","asian","international","unknown"}) do
+    culture=value; single(11,false)
+end
 widget:Shutdown(); assert(callback==nil)
 print('PASS: reveal roles, direction, sparse data, refresh, death, expiry, GUI hiding, projection, cleanup')
