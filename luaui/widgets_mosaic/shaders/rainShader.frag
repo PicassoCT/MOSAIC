@@ -532,35 +532,32 @@ vec4 paintRainSky(vec2 rotatedUV)
 	}
 }
 
+// SURFACE_WATER
 vec4 GetGroundReflectionRipples(vec3 pixelPos)
 {
-	bool rivuletRunning = false;
-	float groundMixFactor = 1.0;
-	if (!NormalIsWaterPuddle) 
-	{
-		//rivulets
-		if (!(vertexNormal.g  > 0.95)) return NONE;
+    vec3 n = vertexNormal*2.0-1.0;
+    n /= max(length(n),0.00001);
+    vec2 water = surfaceWaterWeights(n.y);
+    // Evaluate derivative-based masks before any slope-dependent early return.
+    float rivulets = getSurfaceRivulets(pixelPos,n);
+    vec4 ripples = GetGroundPondRainRipples(pixelPos.xz);
+    vec4 sheen = GetShrinkWrappedSheen(pixelPos);
+    float coverage = water.x * mix(rivulets,1.0,water.y);
+    if (coverage <= 0.0001) return NONE;
 
-		rivuletRunning = getRivuletMask(vertexNormal); //TODO get ground coord 
-		if (!rivuletRunning) return NONE;
-
-		groundMixFactor= (abs(vertexNormal.r) + abs(vertexNormal.g) + abs(vertexNormal.b))/1.73205;
-	}
-
-	vec4 workingColorLayer = MIRRORED_REFLECTION_FACTOR * BLUE;
-	workingColorLayer = screen(workingColorLayer,  GetShrinkWrappedSheen(pixelPos));
-	//Masked blend in for ReflectionColor TODO Test & Optimize
- 	workingColorLayer = dodge(workingColorLayer, getReflection(worldPos));	//, !(reflectionColor == NONE)
- 	workingColorLayer = dodge(workingColorLayer, ADD_POND_RIPPLE_FACTOR * GetGroundPondRainRipples(pixelPos.xz));
-	
-	vec4 maskedColor = mix(	NONE,
-			   				workingColorLayer,
-			  				mix(groundMixFactor, extractRoughnessFromNormal(detailNormals), (0.9-rainPercent)+absinthTime()*0.1));
-
-	//clamp alpha
-	maskedColor.a = max(0.15, min(0.25, maskedColor.a));
-	
-	return maskedColor;
+    vec4 workingColorLayer = MIRRORED_REFLECTION_FACTOR * BLUE;
+    workingColorLayer = screen(workingColorLayer,sheen);
+    workingColorLayer = dodge(workingColorLayer,getReflection(pixelPos));
+    // Preserve flat-surface ripples; expose stream highlights on sloped surfaces.
+    vec4 waterDetail = mix(vec4(vec3(0.65),0.75),ripples,water.y);
+    workingColorLayer = dodge(workingColorLayer,ADD_POND_RIPPLE_FACTOR*waterDetail);
+    float materialMix = mix(1.0,extractRoughnessFromNormal(detailNormals),
+                            (0.9-rainPercent)+absinthTime()*0.1);
+    vec4 maskedColor = mix(NONE,workingColorLayer,materialMix);
+    // Apply slope/channel coverage AFTER the old alpha floor, otherwise walls
+    // retain the former minimum 0.15 water opacity.
+    maskedColor.a = clamp(maskedColor.a,0.15,0.25)*coverage;
+    return maskedColor;
 }
 
 ///////////////////////////////////FOG ///////////////////////////////////////////////////////////

@@ -24,6 +24,17 @@ Spring/Recoil world-up is Y, even if imported model authoring uses Z-up.
 Legacy screen-texture precipitation is no longer called, including the fallback
 that previously painted rain over non-puddle surfaces.
 
+## Sloped surface runoff
+
+`surfaceWater.glsl` adds world-space meandering rivulets. Highlights travel along
+gravity projected onto the surface tangent plane. Decoded normal Y blends
+puddles/ripples to channels across 0.995–0.94 (roughly 6–20 degrees from flat).
+Channel wetness fades across normal Y 0.92–0.45 (roughly 23–63 degrees), reaching
+zero on steep walls/down-facing surfaces. Terrain and unit roofs share the same
+selected normal. Reflection eligibility stays at its original strict threshold;
+the broader slope transition is only for surface water. Coverage multiplies
+alpha after the original alpha floor so walls cannot retain a minimum water veil.
+
 ## Validation
 
 Run `python tests/world_rain_gpu.py` (stdlib, libEGL and libGL only). Tests compile

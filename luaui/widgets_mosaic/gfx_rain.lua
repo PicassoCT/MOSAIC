@@ -270,6 +270,9 @@ local function init()
     fragmentShader = fragmentShader:gsub("// WORLD_RAIN", function()
         return VFS.LoadFile(shaderFilePath .. "worldRain.glsl")
     end, 1)
+    fragmentShader = fragmentShader:gsub("// SURFACE_WATER", function()
+        return VFS.LoadFile(shaderFilePath .. "surfaceWater.glsl")
+    end, 1)
     local vertexShader = VFS.LoadFile(shaderFilePath .. "rainShader.vert") 
     --local fragmentShaderAddSource = VFS.LoadFile(shaderFilePath .. "rainShaderReflectionSource.c") 
 	--fragmentShader = string.replace(fragmentShader, "REFLECTIONMARCH", fragmentShaderAddSource)
@@ -643,5 +646,4 @@ function widget:TextCommand(command)
         return true
     end
 end
-
 

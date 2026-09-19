@@ -42,7 +42,7 @@ def program(v,f):
     assert ok.value,log.value.decode()
     return p
 root=Path(__file__).resolve().parents[1]/'luaui/widgets_mosaic/shaders'
-frag=(root/'rainShader.frag').read_text().replace('// RAIN_LIGHT_GLITTER',(root/'rainLightGlitter.glsl').read_text()).replace('// WORLD_RAIN',(root/'worldRain.glsl').read_text())
+frag=(root/'rainShader.frag').read_text().replace('// RAIN_LIGHT_GLITTER',(root/'rainLightGlitter.glsl').read_text()).replace('// WORLD_RAIN',(root/'worldRain.glsl').read_text()).replace('// SURFACE_WATER',(root/'surfaceWater.glsl').read_text())
 vert=(root/'rainShader.vert').read_text()
 program(vert,frag)
 prefix=frag[:frag.index('void main(void)')]
@@ -134,3 +134,26 @@ for y in range(64):
         ia=(y*64+x+1)*4; ib=(y*64+x)*4
         assert a[ia:ia+4]==b[ib:ib+4],('camera anchoring',x,y)
 print('PASS: camera pan preserves identical world-ray precipitation (63x64 pixel overlap)')
+
+water_program=program(vert,prefix+'''
+uniform float testUp;
+void main(){vec2 w=surfaceWaterWeights(testUp);
+float r=getSurfaceRivulets(vec3(gl_FragCoord.x*0.25,0,gl_FragCoord.y*0.25),
+                          normalize(vec3(0.4,0.9,0.2)));
+gl_FragColor=vec4(w,r,1);}
+''')
+use(water_program)
+last=(-1,-1)
+for upwardness in [0,.3,.45,.6,.8,.92,.94,.96,.98,.995,1]:
+    uf(loc(water_program,b'testUp'),upwardness)
+    pixels=render(water_program); wet,puddle=pixels[:2]
+    assert wet>=last[0] and puddle>=last[1],('nonmonotonic slope blend',upwardness)
+    if upwardness<=.45: assert wet==0 and puddle==0
+    if upwardness==1: assert wet==1 and puddle==1
+    if upwardness==.96: assert 0<puddle<1
+    last=(wet,puddle)
+a=render(water_program)
+uf(loc(water_program,b'time'),.3); b=render(water_program)
+assert max(a[2::4])>0 and min(a[2::4])==0,'channels do not resolve'
+assert a[2::4]!=b[2::4],'rivulets not animated'
+print('PASS: flat puddles -> partial blend -> rivulets -> dry walls; animated sparse channels')
