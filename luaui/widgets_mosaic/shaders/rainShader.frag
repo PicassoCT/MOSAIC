@@ -693,6 +693,7 @@ vec4 drawRainInSpainOnPlane( vec2 rotatedUV, float rainspeed, out float coverage
 
 // RAIN_LIGHT_GLITTER
 // WORLD_RAIN
+// RAIN_SPLASHBACK
 
 void main(void)
 {
@@ -718,6 +719,10 @@ void main(void)
     vec3 rayDir = normalize(rayPoint - eyePos);
     float sceneDistance = depthAtPixel.r < 0.999999 ? length(worldPos-eyePos) : 1.0e6;
     vec4 rain = drawWorldRain(rayDir, sceneDistance);
+    vec4 splash = drawRainSplashback(worldPos, vertexNormal, rayDir, sceneDistance, NormalIsSky);
+    float wetAlpha = splash.a + surfaceFX.a * (1.0-splash.a);
+    surfaceFX = vec4((splash.rgb*splash.a + surfaceFX.rgb*surfaceFX.a*(1.0-splash.a))
+                     / max(wetAlpha,0.00001), wetAlpha);
     float combinedAlpha = rain.a + surfaceFX.a * (1.0-rain.a);
     vec3 combinedRGB = (rain.rgb*rain.a + surfaceFX.rgb*surfaceFX.a*(1.0-rain.a))
                        / max(combinedAlpha,0.00001);

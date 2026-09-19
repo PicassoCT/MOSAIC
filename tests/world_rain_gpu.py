@@ -42,7 +42,7 @@ def program(v,f):
     assert ok.value,log.value.decode()
     return p
 root=Path(__file__).resolve().parents[1]/'luaui/widgets_mosaic/shaders'
-frag=(root/'rainShader.frag').read_text().replace('// RAIN_LIGHT_GLITTER',(root/'rainLightGlitter.glsl').read_text()).replace('// WORLD_RAIN',(root/'worldRain.glsl').read_text()).replace('// SURFACE_WATER',(root/'surfaceWater.glsl').read_text())
+frag=(root/'rainShader.frag').read_text().replace('// RAIN_LIGHT_GLITTER',(root/'rainLightGlitter.glsl').read_text()).replace('// WORLD_RAIN',(root/'worldRain.glsl').read_text()).replace('// SURFACE_WATER',(root/'surfaceWater.glsl').read_text()).replace('// RAIN_SPLASHBACK',(root/'rainSplashback.glsl').read_text())
 vert=(root/'rainShader.vert').read_text()
 program(vert,frag)
 prefix=frag[:frag.index('void main(void)')]

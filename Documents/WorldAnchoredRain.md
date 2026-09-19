@@ -35,6 +35,30 @@ selected normal. Reflection eligibility stays at its original strict threshold;
 the broader slope transition is only for surface water. Coverage multiplies
 alpha after the original alpha floor so walls cannot retain a minimum water veil.
 
+## Splashback
+
+`rainSplashback.glsl` adds sparse three-droplet bursts using the existing ripple
+cell seeds and birth phase. Initial velocity follows the combined terrain/unit
+normal plus a small tangent spread; world gravity returns droplets to the surface
+within 0.375 seconds (roughly one world unit peak height). This does not simulate
+collisions with the falling streaks. The existing ripple animation is unchanged.
+
+The fullscreen pass gathers a bounded 3x3 ripple-cell neighbourhood. Inactive
+impacts are rejected before texture reads; source depth and normal checks reject
+hidden or discontinuous surfaces. Droplets are clipped against scene depth and
+lit at their airborne positions by the existing atmosphere and radiance fields.
+No particle objects, new textures, render targets or CPU per-unit work are added.
+Intensity follows weather; density is sparse and the entire layer fades between
+450 and 1100 world units from the camera. Steep surfaces and grazing views fade
+out to keep the small gather bounded. Ripples, rivulets and reflections retain
+their existing behaviour.
+
+This is a conservative screen-space effect: it cannot seed hidden surfaces or
+extend reliably beyond roof silhouettes. It also shares the existing rain's lack
+of a full 3D shelter mask, so it cannot guarantee dry ground beneath an overhang.
+Moving units sample the world-anchored ripple field rather than carrying persistent
+object-local particles. Actual Recoil appearance and GPU cost need an in-game check.
+
 ## Validation
 
 Run `python tests/world_rain_gpu.py` (stdlib, libEGL and libGL only). Tests compile
@@ -43,6 +67,13 @@ check wall/ground depth ordering and empty sky, render cardinal/oblique rain,
 test deterministic time, depth rejection and animation, and compare a shifted
 orthographic camera's overlapping pixels for identical world-ray precipitation.
 `rain_light_glitter_gpu.py` also assembles the new include.
+
+Run `python tests/rain_splashback_gpu.py` for the above suite plus rendered
+splashback tests: ground and alpha-zero unit roofs, sparse animated droplets,
+walls/sky/no-rain/distance rejection, hidden source and foreground-depth rejection,
+both clip-depth conventions, camera-pan overlap, radiance colour/occupancy,
+perspective reconstruction and sloped surfaces. These use Mesa software OpenGL;
+they do not measure target-hardware performance.
 
 Still required in Recoil: camera orbit/zoom and paused pan; rooftop and ground
 ripples; day/night and neon/headlight glitter; low-angle horizon views; density
