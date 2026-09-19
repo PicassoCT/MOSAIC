@@ -150,7 +150,7 @@ for upwardness in [0,.3,.45,.6,.8,.92,.94,.96,.98,.995,1]:
     assert wet>=last[0] and puddle>=last[1],('nonmonotonic slope blend',upwardness)
     if upwardness<=.45: assert wet==0 and puddle==0
     if upwardness==1: assert wet==1 and puddle==1
-    if upwardness==.96: assert 0<puddle<1
+    if upwardness==.98: assert 0<puddle<1
     last=(wet,puddle)
 a=render(water_program)
 uf(loc(water_program,b'time'),.3); b=render(water_program)

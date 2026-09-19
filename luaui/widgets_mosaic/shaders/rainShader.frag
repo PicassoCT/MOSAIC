@@ -34,6 +34,9 @@
 #define NIGHT_RAIN_DARK_COL vec4(0.14,0.14,0.12,1.0)
 #define MIRRORED_REFLECTION_FACTOR 0.275f
 #define ADD_POND_RIPPLE_FACTOR 0.75f
+// Shared by ripple rings and the sparse splashback impact subset.
+#define RAIN_RIPPLE_SCALE 1.125
+#define RAIN_RIPPLE_SPEED 1.5
 
 //Functions
 #define NORM2SNORM(value) (value * 2.0 - 1.0)
@@ -329,9 +332,9 @@ float getZoomFactor()
 
 vec4 GetGroundPondRainRipples(vec2 groundUVs)
 {
-    // 8/3 world units per noise cell: one-third the original ripple size.
+    // 8/9 world units per noise cell: one-third the previous ring diameter.
     // Keep the pattern anchored to the ground at every camera zoom.
-    float f = noise(groundUVs * 0.375, 0.6125);
+    float f = noise(groundUVs * RAIN_RIPPLE_SCALE, RAIN_RIPPLE_SPEED);
     vec3 normal = vec3(-dFdx(f), -dFdy(f), 0.5) + 0.5;
     float avgVal = (normal.x + normal.y + normal.z) / 3.0;
     return vec4(vec3(avgVal), 0.75);
@@ -532,6 +535,7 @@ vec4 paintRainSky(vec2 rotatedUV)
 	}
 }
 
+// RAIN_LIGHT_GLITTER
 // SURFACE_WATER
 vec4 GetGroundReflectionRipples(vec3 pixelPos)
 {
@@ -549,7 +553,14 @@ vec4 GetGroundReflectionRipples(vec3 pixelPos)
     workingColorLayer = screen(workingColorLayer,sheen);
     workingColorLayer = dodge(workingColorLayer,getReflection(pixelPos));
     // Preserve flat-surface ripples; expose stream highlights on sloped surfaces.
-    vec4 waterDetail = mix(vec4(vec3(0.65),0.75),ripples,water.y);
+    // Channels need their own visible highlight, not just a near-transparent
+    // coverage mask. Sample local lighting once per wet surface pixel.
+    vec3 runoffLight = max(sunCol,vec3(0)) + max(skyCol,vec3(0))*0.35;
+    float runoffBrightness = dot(runoffLight,vec3(0.2126,0.7152,0.0722));
+    runoffLight *= max(1.0,0.25/max(runoffBrightness,0.0001));
+    if (rainLightActive > 0.5 && water.y < 0.999 && coverage > 0.001)
+        runoffLight += rainLocalLight(pixelPos + n*0.5);
+    vec4 waterDetail = mix(vec4(runoffLight*(0.8+1.2*rivulets),0.75),ripples,water.y);
     workingColorLayer = dodge(workingColorLayer,ADD_POND_RIPPLE_FACTOR*waterDetail);
     float materialMix = mix(1.0,extractRoughnessFromNormal(detailNormals),
                             (0.9-rainPercent)+absinthTime()*0.1);
@@ -691,7 +702,6 @@ vec4 drawRainInSpainOnPlane( vec2 rotatedUV, float rainspeed, out float coverage
 
 
 
-// RAIN_LIGHT_GLITTER
 // WORLD_RAIN
 // RAIN_SPLASHBACK
 
@@ -721,7 +731,12 @@ void main(void)
     vec4 rain = drawWorldRain(rayDir, sceneDistance);
     vec4 splash = drawRainSplashback(worldPos, vertexNormal, rayDir, sceneDistance, NormalIsSky);
     float wetAlpha = splash.a + surfaceFX.a * (1.0-splash.a);
-    surfaceFX = vec4((splash.rgb*splash.a + surfaceFX.rgb*surfaceFX.a*(1.0-splash.a))
+    // Spray contributes reflected light. A dim sky-coloured opaque dot would
+    // instead darken bright roofs. Restore the background covered by its alpha
+    // so this remains additive through the existing straight-alpha compositor.
+    vec3 splashBackground = splash.a > 0.0001 ? texture2D(screentex,uv).rgb : vec3(0);
+    surfaceFX = vec4((splash.rgb*splash.a + surfaceFX.rgb*surfaceFX.a
+                     + splashBackground*splash.a*(1.0-surfaceFX.a))
                      / max(wetAlpha,0.00001), wetAlpha);
     float combinedAlpha = rain.a + surfaceFX.a * (1.0-rain.a);
     vec3 combinedRGB = (rain.rgb*rain.a + surfaceFX.rgb*surfaceFX.a*(1.0-rain.a))

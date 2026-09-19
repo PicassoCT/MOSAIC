@@ -1,10 +1,12 @@
 // Sparse, analytic impact droplets. No particles, history or additional targets.
-// The seed and phase match noise(..., 0.6125), the existing puddle rings.
-const float SPLASH_CELL = 8.0 / 3.0;
+// One selected small ripple per coarse cell keeps the gather at 3x3 even as
+// ripple diameters shrink. The selected ring and splash share seed and phase.
+const float SPLASH_CELL = 3.0 / RAIN_RIPPLE_SCALE;
 const float SPLASH_GRAVITY = 64.0;
 
 float splashAge(vec3 seed) {
-    return mod(time * 1.225 - (seed.x + seed.y) * 5.0, 2.0 * PI) / 1.225;
+    float speed = RAIN_RIPPLE_SPEED * 2.0;
+    return mod(time * speed - (seed.x + seed.y) * 5.0, 2.0 * PI) / speed;
 }
 
 vec3 splashOffset(vec3 normal, vec3 tangent, float age, float speed) {
@@ -19,26 +21,32 @@ vec4 drawRainSplashback(vec3 surface, vec3 encodedNormal, vec3 rayDir,
     vec3 n = encodedNormal * 2.0 - 1.0;
     n /= max(length(n), 0.00001);
     float distanceToSurface = length(surface - eyePos);
-    float fade = (1.0 - smoothstep(450.0, 1100.0, distanceToSurface));
+    float fade = (1.0 - smoothstep(1200.0, 2600.0, distanceToSurface));
     fade *= smoothstep(0.8, 0.97, n.y);
     // A bounded neighbourhood cannot cover arbitrarily grazing views. Fade
     // before the expanded shell could reach outside the 3x3 cell neighbourhood.
-    fade *= smoothstep(0.65, 0.85, dot(n, -rayDir));
+    float facing = dot(n, -rayDir);
+    fade *= smoothstep(0.3, 0.5, facing);
+    fade *= 1.0-smoothstep(1.0,2.0,pixelAngle*distanceToSurface);
     if (isSky || rainPercent <= 0.0 || depthAtPixel.r >= 0.999999 || fade <= 0.0)
         return NONE;
 
-    vec2 cell = floor(surface.xz / SPLASH_CELL);
+    // Centre the gather below the middle of the airborne shell. Looking at a
+    // 45-degree roof must not miss droplets simply because they project uphill.
+    vec3 shellBase = surface - rayDir*(0.56/max(facing,0.3)) - n*0.56;
+    vec2 cell = floor(shellBase.xz / SPLASH_CELL);
     float sumAlpha = 0.0;
     vec3 sumRGB = vec3(0.0);
     for (int z = -1; z <= 1; ++z) for (int x = -1; x <= 1; ++x) {
         vec2 candidate = cell + vec2(x, z);
-        vec3 seed = hash3(candidate);
+        vec2 rippleCell = candidate*3.0 + floor(hash3(candidate+vec2(17,43)).xy*3.0);
+        vec3 seed = hash3(rippleCell);
         // Thin the impacts, not their opacity; the compositor applies rain once.
-        if (seed.z > 0.45 * clamp(rainPercent, 0.0, 1.0)) continue;
+        if (seed.z > 0.85 * clamp(rainPercent, 0.0, 1.0)) continue;
         float age = splashAge(seed);
         if (age <= 0.0 || age >= 0.375) continue;
 
-        vec2 impactXZ = (candidate + seed.xy) * SPLASH_CELL;
+        vec2 impactXZ = (rippleCell + seed.xy) / RAIN_RIPPLE_SCALE;
         vec3 impact = vec3(impactXZ.x,
             surface.y - dot(impactXZ - surface.xz, n.xz) / n.y, impactXZ.y);
         vec4 projected = viewProjection * vec4(impact, 1.0);
@@ -57,7 +65,8 @@ vec4 drawRainSplashback(vec3 surface, vec3 encodedNormal, vec3 rayDir,
         vec3 sourcePosition = GetWorldPosAtUV(sourceUV, sourceDepth);
         // Plane distance tolerates pixel quantisation on slopes, but rejects a
         // hidden floor/roof or a foreground edge. Never expand an unseen surface.
-        if (abs(dot(sourcePosition-impact, sourceN)) > 0.3) continue;
+        float planeTolerance = 0.3 + min(pixelAngle*distanceToSurface,0.5);
+        if (abs(dot(sourcePosition-impact, sourceN)) > planeTolerance) continue;
         impact.y = sourcePosition.y - dot(impactXZ-sourcePosition.xz, sourceN.xz)/sourceN.y;
         vec3 tangentX = normalize(vec3(sourceN.y, -sourceN.x, 0.0));
         vec3 tangentZ = cross(sourceN, tangentX);
@@ -72,16 +81,20 @@ vec4 drawRainSplashback(vec3 surface, vec3 encodedNormal, vec3 rayDir,
             float t = dot(drop-eyePos, rayDir);
             if (t <= 0.0 || t >= sceneDistance) continue;
             float separation = length(eyePos + rayDir*t - drop);
-            float footprint = clamp(pixelAngle*t, 0.025, 0.6);
-            float radius = 0.055;
+            float footprint = clamp(pixelAngle*t, 0.025, 0.8);
+            float radius = 0.14;
             float coverage = (1.0-smoothstep(radius, radius+footprint, separation))
                              * radius/(radius+footprint);
-            coverage *= fade * smoothstep(0.0, 0.10, height)
+            coverage *= 1.8 * fade * smoothstep(0.0, 0.10, height)
                         * smoothstep(0.0, 0.12, sceneDistance-t);
             if (coverage <= 0.0001) continue;
             vec3 tint = mix(sunCol*DAY_RAIN_HIGH_COL.rgb,
                             sunCol*NIGHT_RAIN_HIGH_COL.rgb, getDayPercent());
-            tint = max(tint + max(skyCol, vec3(0))*0.15, vec3(0.025));
+            tint = max(tint,vec3(0)) + max(skyCol,vec3(0))*0.35;
+            // Raise visibility without a per-channel grey floor bleaching the
+            // atmosphere's blue night/orange day tint. Zero light stays black.
+            float brightness = dot(tint,vec3(0.2126,0.7152,0.0722));
+            tint *= max(1.0,0.18/max(brightness,0.0001));
             if (rainLightActive > 0.5) {
                 float glint = smoothstep(0.55, 0.95,
                     0.5+0.5*sin(glitterTime*5.0 + seed.x*31.0 + float(j)));

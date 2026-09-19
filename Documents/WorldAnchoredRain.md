@@ -15,7 +15,8 @@ the existing local/global fields and sampled at each actual visible streak.
 The existing occupancy field rejects light in occupied cells; it is not a full
 3D roof/shelter mask and does not promise dry interiors.
 
-Wet-surface reflection tracing, sheen, ripple scale and ripple animation remain.
+Wet-surface reflection tracing and sheen remain. Ripple diameter is now one-third
+of the previous branch version; the shorter impact period also drives splashback.
 Ground/model normal selection still chooses the nearest available surface by
 depth, with the original nonblack-normal eligibility restored instead of
 requiring deferred depth to be populated. Normal alpha no longer rejects unit
@@ -28,7 +29,10 @@ that previously painted rain over non-puddle surfaces.
 
 `surfaceWater.glsl` adds world-space meandering rivulets. Highlights travel along
 gravity projected onto the surface tangent plane. Decoded normal Y blends
-puddles/ripples to channels across 0.995–0.94 (roughly 6–20 degrees from flat).
+puddles/ripples to channels across 0.9995–0.975 (roughly 2–13 degrees from flat).
+Channels are spaced eight world units apart with a single screen-footprint fade,
+so thin highlights survive ordinary gameplay zoom. Runoff receives atmosphere
+and radiance colour rather than relying solely on a weak alpha mask.
 Channel wetness fades across normal Y 0.92–0.45 (roughly 23–63 degrees), reaching
 zero on steep walls/down-facing surfaces. Terrain and unit roofs share the same
 selected normal. Reflection eligibility stays at its original strict threshold;
@@ -38,10 +42,11 @@ alpha after the original alpha floor so walls cannot retain a minimum water veil
 ## Splashback
 
 `rainSplashback.glsl` adds sparse three-droplet bursts using the existing ripple
-cell seeds and birth phase. Initial velocity follows the combined terrain/unit
+cell seeds and birth phase. One small ripple per coarse cell supplies splashback,
+keeping its gather fixed despite the smaller rings. Initial velocity follows the combined terrain/unit
 normal plus a small tangent spread; world gravity returns droplets to the surface
 within 0.375 seconds (roughly one world unit peak height). This does not simulate
-collisions with the falling streaks. The existing ripple animation is unchanged.
+collisions with the falling streaks. Ripple and splash phases use the same shared speed constant.
 
 The fullscreen pass gathers a bounded 3x3 ripple-cell neighbourhood. Inactive
 impacts are rejected before texture reads; source depth and normal checks reject
@@ -49,9 +54,14 @@ hidden or discontinuous surfaces. Droplets are clipped against scene depth and
 lit at their airborne positions by the existing atmosphere and radiance fields.
 No particle objects, new textures, render targets or CPU per-unit work are added.
 Intensity follows weather; density is sparse and the entire layer fades between
-450 and 1100 world units from the camera. Steep surfaces and grazing views fade
-out to keep the small gather bounded. Ripples, rivulets and reflections retain
-their existing behaviour.
+1200 and 2600 world units from the camera. Steep surfaces and grazing views fade
+out to keep the small gather bounded. The gather is centred underneath the middle
+of the airborne layer, allowing normal oblique RTS camera angles. Pixel-sized
+filtering and a larger droplet radius preserve visibility; a footprint fade
+removes unresolved distant spray. Skylight is added independently of radiance,
+with brightness adjustment preserving the supplied blue/orange atmosphere hue. Surface water and reflections remain independently
+composited beneath falling rain. Spray highlights add reflected light rather than
+painting dim opaque dots onto bright roofs.
 
 This is a conservative screen-space effect: it cannot seed hidden surfaces or
 extend reliably beyond roof silhouettes. It also shares the existing rain's lack
@@ -79,3 +89,12 @@ Still required in Recoil: camera orbit/zoom and paused pan; rooftop and ground
 ripples; day/night and neon/headlight glitter; low-angle horizon views; density
 and GPU timing at native resolution on the target NVIDIA 1050 Ti. No speedup is
 claimed over the old cheap 2D rain textures. No new render targets are allocated.
+
+## Visibility regression checks
+
+`python tests/rain_visibility_gpu.py` also renders at map coordinates (7492,1466),
+30/45/60-degree cameras, distances 500/1000/1500 and corresponding gameplay pixel
+footprints. It requires visible splash coverage rather than merely nonzero
+floats, checks blue/orange sky-only lighting, and checks separated runoff channels
+on a shallow incline. These are synthetic rendering checks, not an in-game
+screenshot or a target-GPU performance measurement.

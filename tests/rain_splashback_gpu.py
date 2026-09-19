@@ -58,7 +58,7 @@ texture(1,up); texture(3,(.4,0,0,0)); assert render(splash)==a,'unit normal alph
 texture(1,wall); assert max(render(splash)[3::4])==0,'wall splashes'
 texture(0,empty); texture(1,empty); assert max(render(splash)[3::4])==0,'sky splashes'
 texture(0,up); texture(3,(1,0,0,0))
-for name,value,restore in [('rainPercent',0,1),('testDistance',40,50),('testHeight',1200,50)]:
+for name,value,restore in [('rainPercent',0,1),('testDistance',40,50),('testHeight',2800,50)]:
     sf(name,value); assert max(render(splash)[3::4])==0,name
     sf(name,restore)
 # The source is hidden by another surface or unavailable, even though the
