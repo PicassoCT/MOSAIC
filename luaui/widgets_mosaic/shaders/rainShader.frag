@@ -368,9 +368,11 @@ vec3 GetGroundVertexNormal(vec2 theUV, out bool IsOnGround, out bool IsOnUnit,
     vec4 groundNormal = texture2D(normaltex, theUV);
     float groundDepth = texture2D(mapDepthTex, theUV).r;
     float unitDepth = texture2D(modelDepthTex, theUV).r;
-    bool hasGround = groundDepth < 0.999999 && dot(groundNormal.rgb, groundNormal.rgb) > 0.0;
-    bool hasUnit = unitDepth < 0.999999 && unitNormal.a > 0.5
-                   && dot(unitNormal.rgb, unitNormal.rgb) > 0.0;
+    // Restore the original normal-buffer eligibility. Normal alpha is not a
+    // portable presence flag; a populated normal must not disappear just because
+    // the corresponding deferred depth is clear/unavailable on this render path.
+    bool hasGround = dot(groundNormal.rgb, groundNormal.rgb) > 0.0;
+    bool hasUnit = dot(unitNormal.rgb, unitNormal.rgb) > 0.0;
 
     IsOnUnit = hasUnit && (!hasGround || unitDepth < groundDepth);
     IsOnGround = hasGround && !IsOnUnit;
@@ -537,10 +539,10 @@ vec4 GetGroundReflectionRipples(vec3 pixelPos)
 	if (!NormalIsWaterPuddle) 
 	{
 		//rivulets
-		if (!(vertexNormal.g  > 0.95)) return  paintRainSky(sourceRotatedUV);
+		if (!(vertexNormal.g  > 0.95)) return NONE;
 
 		rivuletRunning = getRivuletMask(vertexNormal); //TODO get ground coord 
-		if (!rivuletRunning) return  paintRainSky(sourceRotatedUV);
+		if (!rivuletRunning) return NONE;
 
 		groundMixFactor= (abs(vertexNormal.r) + abs(vertexNormal.g) + abs(vertexNormal.b))/1.73205;
 	}
@@ -693,6 +695,7 @@ vec4 drawRainInSpainOnPlane( vec2 rotatedUV, float rainspeed, out float coverage
 
 
 // RAIN_LIGHT_GLITTER
+// WORLD_RAIN
 
 void main(void)
 {
@@ -712,67 +715,14 @@ void main(void)
         return;
     }
 
-	cameraZoomFactor = max(0.0,min(eyePos.y/2048.0, 1.0));
-	//Debug code
-
-	AABB box;
-	box.Min = vMinima;
-	box.Max = vMaxima;
-	float t1, t2;
-
-	Ray r;
-	r.Origin = eyePos;
-	r.Dir = worldPos - eyePos;
-
-	if (!IntersectBox(r, box, t1, t2))	
-	{
-		gl_FragColor = vec4(0.);
-		return;
-	}
-	sourceRotatedUV = getRoatedUV();
-
-
-	t1 = clamp(t1, 0.0, 1.0);
-	t2 = clamp(t2, 0.0, 1.0);
-	vec3 startPos = r.Dir * t1 + eyePos;
-	vec3 endPos   = r.Dir * t2 + eyePos;
-	pixelDir = normalize(startPos - endPos);
-
-	if (NormalIsSky)
-	{
-		gl_FragColor = paintRainSky(sourceRotatedUV);		  
-		return;
-	}
-
-	//gl_FragColor = getReflection(worldPos);
-	//gl_FragColor = lind(depthAtPixel.rrrr);
-	//return;
-
-	vec4 accumulatedLightColorRayDownward = GetGroundReflection(startPos,  endPos); // should be eyepos + eyepos *offset*vector for deter
-
-	float upwardnessFactor = 0.0;
-	upwardnessFactor = GetUpwardnessFactorOfVector(eyeDir); //[0..1] 1 being up orthogonal to ground and upwards
-
-
-	
-	//TODO, should pulsate depending on look vector due to the dropletss
-
-	
-    float streakCoverage, dropCoverage;
-    vec4 streaks = drawRainInSpainOnPlane(sourceRotatedUV, 3.0, streakCoverage);
-    vec4 drops = drawShrinkingDroplets(sourceRotatedUV, 0.03, dropCoverage);
-    float dropBlend = clamp(1.0-upwardnessFactor, 0.0, 1.0);
-    accumulatedLightColorRayDownward = mix(screen(accumulatedLightColorRayDownward, streaks),
-        screen(accumulatedLightColorRayDownward, drops), dropBlend);
-    vec3 glitter = mix(rainDropGlitter(worldPos, streakCoverage, 16.0),
-        rainDropGlitter(worldPos, dropCoverage, 64.0), dropBlend);
-    accumulatedLightColorRayDownward.rgb += glitter;
-    accumulatedLightColorRayDownward.a = clamp(accumulatedLightColorRayDownward.a +
-        max(glitter.r,max(glitter.g,glitter.b)) * 0.15, 0.0, 1.0);
-    gl_FragColor = mix(NONE, accumulatedLightColorRayDownward, rainPercent);
-
-	//vec4 upWardrainColor = origColor;
-	//https://www.youtube.com/watch?v=W0_zQ-WdxH4
-
+    // Surface effects remain independent of the precipitation volume.
+    vec4 surfaceFX = NormalIsSky ? NONE : GetGroundReflectionRipples(worldPos);
+    vec3 rayPoint = GetWorldPosAtUV(uv, 0.5);
+    vec3 rayDir = normalize(rayPoint - eyePos);
+    float sceneDistance = depthAtPixel.r < 0.999999 ? length(worldPos-eyePos) : 1.0e6;
+    vec4 rain = drawWorldRain(rayDir, sceneDistance);
+    float combinedAlpha = rain.a + surfaceFX.a * (1.0-rain.a);
+    vec3 combinedRGB = (rain.rgb*rain.a + surfaceFX.rgb*surfaceFX.a*(1.0-rain.a))
+                       / max(combinedAlpha,0.00001);
+    gl_FragColor = vec4(combinedRGB, combinedAlpha * rainPercent);
 }
-

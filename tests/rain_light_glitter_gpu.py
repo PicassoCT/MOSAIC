@@ -10,7 +10,8 @@ root=Path(__file__).resolve().parents[1]/'luaui/widgets_mosaic/shaders'
 ctx=moderngl.create_standalone_context(backend='egl',require=330)
 helper=(root/'rainLightGlitter.glsl').read_text()
 ctx.program(vertex_shader=(root/'rainShader.vert').read_text(),fragment_shader=
-    (root/'rainShader.frag').read_text().replace('// RAIN_LIGHT_GLITTER',helper))
+    (root/'rainShader.frag').read_text().replace('// RAIN_LIGHT_GLITTER',helper)
+    .replace('// WORLD_RAIN',(root/'worldRain.glsl').read_text()))
 vertex='#version 150 compatibility\nvoid main(){gl_Position=gl_Vertex;}'
 ctx.program(vertex_shader=vertex,fragment_shader=(root/'headlights/spotlight.frag').read_text())
 program=ctx.program(vertex_shader=vertex,fragment_shader='''#version 150 compatibility
