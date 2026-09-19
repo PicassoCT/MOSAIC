@@ -17,6 +17,7 @@ end
 -- > debugEchoT(
 local boolDebugActive = false
 local reflectionDebug = false
+local rainDetailDebug = 0
 local savedRainPercent
 local rainShader = nil
 local bindRainLighting
@@ -130,6 +131,7 @@ local GL_FUNC_REVERSE_SUBTRACT = 0x800B
 
 local timePercentLoc
 local reflectionDebugLoc
+local rainDetailDebugLoc
 local rainPercentLoc
 local rainPercent = 0.0
 local function getHeadlightWetness() return rainPercent end
@@ -229,6 +231,7 @@ function widget:ViewResize()
             wrap_s = GL.CLAMP_TO_EDGE,
             wrap_t = GL.CLAMP_TO_EDGE,
             fbo = true,
+            format = GL.RGBA16F or 0x881A,
         }
     )
     errorOutIfNotInitialized(raincanvastex, "raincanvastex not existing")
@@ -307,6 +310,7 @@ local function init()
                 rainPercent= 0,
                 clipZeroToOne = (Platform and Platform.glSupportClipSpaceControl) and 1 or 0,
                 reflectionDebug = 0,
+                rainDetailDebug = 0,
                 time = diffTime,
                 scale = 0,
             },
@@ -334,6 +338,7 @@ local function init()
     timePercentLoc                  = glGetUniformLocation(rainShader, "timePercent")
     rainPercentLoc                  = glGetUniformLocation(rainShader, "rainPercent")
     reflectionDebugLoc              = glGetUniformLocation(rainShader, "reflectionDebug")
+    rainDetailDebugLoc              = glGetUniformLocation(rainShader, "rainDetailDebug")
     uniformViewPortSize             = glGetUniformLocation(rainShader, "viewPortSize")
     cityCenterLoc                   = glGetUniformLocation(rainShader, "cityCenter")
     uniformTime                     = glGetUniformLocation(rainShader, "time")
@@ -481,6 +486,7 @@ local function updateUniforms()
     --Spring.Echo("Time passed:"..diffTime)
     glUniform(rainPercentLoc, rainPercent)
     glUniform(reflectionDebugLoc, reflectionDebug and 1 or 0)
+    glUniform(rainDetailDebugLoc, rainDetailDebug)
     glUniform(timePercentLoc, timePercent)
     glUniform(uniformViewPortSize, vsx, vsy )
     glUniform(uniformTime, diffTime )
@@ -629,6 +635,13 @@ end
 
 
 function widget:TextCommand(command)
+    local detailViews = { ["rainview off"] = 0, ["rainview rain"] = 1,
+                          ["rainview runoff"] = 2, ["rainview normals"] = 3 }
+    if detailViews[command] ~= nil then
+        rainDetailDebug = detailViews[command]
+        Spring.Echo("Rain detail view: " .. command .. " (uses current weather)")
+        return true
+    end
     if command == "rainglitter on" or command == "rainglitter off" then
         glitterEnabled = command == "rainglitter on"
         return true
@@ -649,4 +662,3 @@ function widget:TextCommand(command)
         return true
     end
 end
-

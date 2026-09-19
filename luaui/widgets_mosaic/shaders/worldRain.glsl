@@ -41,43 +41,50 @@ vec4 drawWorldRain(vec3 direction, float sceneDistance) {
     vec3 sumRGB = vec3(0);
     float sumAlpha = 0.0;
     float cellEntry = nearT;
+    vec3 atmosphere = max(mix(sunCol * DAY_RAIN_HIGH_COL.rgb,
+                         sunCol * NIGHT_RAIN_HIGH_COL.rgb, getDayPercent()),vec3(0));
+    atmosphere += max(skyCol,vec3(0))*0.5;
+    // Preserve atmosphere hue; don't turn blue skylight into a grey RGB floor.
+    float brightness = dot(atmosphere,vec3(0.2126,0.7152,0.0722));
+    atmosphere *= max(1.0,0.35/max(brightness,0.0001));
     for (int i = 0; i < RAIN_CELL_LIMIT; ++i) {
         if (cellEntry >= farT) break;
         float cellExit = min(farT, min(nextT.x, min(nextT.y, nextT.z)));
-        vec3 seed = rainCellSeed(cell);
-        if (seed.z < 0.65) {
-            // Keep the complete streak and its AA footprint inside its cell.
-            vec3 centre = (cell + 0.25 + seed * 0.5) * RAIN_CELL + drift;
-            vec3 offset = eyePos - centre;
-            float alongRay = dot(offset, direction);
-            float alongStreak = dot(offset, axis);
-            float halfLength = 7.0 + seed.y * 3.0;
-            float t = (parallel * alongStreak - alongRay) /
-                      max(1.0 - parallel * parallel, 0.00001);
-            float s = clamp(alongStreak + parallel*t, -halfLength, halfLength);
-            t = clamp(parallel*s - alongRay, cellEntry, cellExit);
-            s = clamp(alongStreak + parallel*t, -halfLength, halfLength);
-            vec3 drop = centre + axis*s;
-            float separation = length(eyePos + direction*t - drop);
-            float footprint = clamp(pixelAngle * t, 0.08, 2.0);
-            float radius = 0.20;
-            float coverage = (1.0-smoothstep(radius, radius+footprint, separation))
-                             * radius / (radius+footprint);
-            coverage *= smoothstep(0.0, 6.0, t);
-            coverage *= 1.0-smoothstep(RAIN_RANGE*0.8, RAIN_RANGE, t-nearT);
-            coverage *= smoothstep(0.0, 1.0, sceneDistance-t);
-            if (coverage > 0.0001 && drop.y >= MIN_HEIGHT_RAIN && drop.y <= MAX_HEIGTH_RAIN) {
-                // Same atmosphere/day-night palette; local radiance is sampled
-                // at the actual streak, not at an offset from the ground.
-                vec3 tint = mix(sunCol * DAY_RAIN_HIGH_COL.rgb,
-                                sunCol * NIGHT_RAIN_HIGH_COL.rgb, getDayPercent());
-                tint += max(skyCol, vec3(0))*0.15;
-                vec3 light = vec3(0);
-                if (rainLightActive > 0.5) light = rainLocalLight(drop);
-                float pulse = smoothstep(0.55,0.95,
-                    0.5+0.5*sin(glitterTime*5.0 + seed.x*31.0));
-                sumRGB += (max(tint,vec3(0.025)) + light*(0.15+pulse*0.7))*coverage;
-                sumAlpha += coverage;
+        // Two independent streaks per visited cell improve foreground coverage
+        // without adding DDA steps or texture reads for empty pixels.
+        for (int streak = 0; streak < 2; ++streak) {
+            vec3 seed = rainCellSeed(cell + vec3(19,37,53)*float(streak));
+            if (seed.z < 0.65) {
+                // Keep the complete streak and its AA footprint inside its cell.
+                vec3 centre = (cell + 0.25 + seed * 0.5) * RAIN_CELL + drift;
+                vec3 offset = eyePos - centre;
+                float alongRay = dot(offset, direction);
+                float alongStreak = dot(offset, axis);
+                float halfLength = 4.0 + seed.y * 3.0;
+                float t = (parallel * alongStreak - alongRay) /
+                          max(1.0 - parallel * parallel, 0.00001);
+                float s = clamp(alongStreak + parallel*t, -halfLength, halfLength);
+                t = clamp(parallel*s - alongRay, cellEntry, cellExit);
+                s = clamp(alongStreak + parallel*t, -halfLength, halfLength);
+                vec3 drop = centre + axis*s;
+                float separation = length(eyePos + direction*t - drop);
+                float footprint = clamp(pixelAngle * t, 0.08, 2.0);
+                float radius = 0.24;
+                float coverage = (1.0-smoothstep(radius, radius+footprint, separation))
+                                 * 1.6 * radius / (radius+footprint);
+                coverage *= smoothstep(0.0, 6.0, t);
+                coverage *= 1.0-smoothstep(RAIN_RANGE*0.8, RAIN_RANGE, t-nearT);
+                coverage *= smoothstep(0.0, 1.0, sceneDistance-t);
+                if (coverage > 0.0001 && drop.y >= MIN_HEIGHT_RAIN && drop.y <= MAX_HEIGTH_RAIN) {
+                    // Same atmosphere/day-night palette; local radiance is sampled
+                    // at the actual streak, not at an offset from the ground.
+                    vec3 light = vec3(0);
+                    if (rainLightActive > 0.5) light = rainLocalLight(drop);
+                    float pulse = smoothstep(0.55,0.95,
+                        0.5+0.5*sin(glitterTime*5.0 + seed.x*31.0));
+                    sumRGB += (atmosphere + light*(0.15+pulse*0.7))*coverage;
+                    sumAlpha += coverage;
+                }
             }
         }
         // Advance tied axes together (including exact vertical/horizontal rays).

@@ -72,6 +72,7 @@ uniform float timePercent;
 uniform float rainPercent;
 uniform float clipZeroToOne;
 uniform float reflectionDebug;
+uniform float rainDetailDebug;
 uniform vec3 eyePos;
 uniform vec3 eyeDir;
 uniform vec3 sunCol;
@@ -139,6 +140,8 @@ vec4 origColor;
 vec3 vertexNormal;
 vec3 sunDir;
 vec3 detailNormals;
+vec3 runoffEnergy = vec3(0);
+float runoffCoverage = 0.0;
 float cameraZoomFactor;
 float screenScaleFactorY = 0.1;
 bool  NormalIsOnGround = false;
@@ -544,6 +547,7 @@ vec4 GetGroundReflectionRipples(vec3 pixelPos)
     vec2 water = surfaceWaterWeights(n.y);
     // Evaluate derivative-based masks before any slope-dependent early return.
     float rivulets = getSurfaceRivulets(pixelPos,n);
+    runoffCoverage = water.x*(1.0-water.y)*rivulets;
     vec4 ripples = GetGroundPondRainRipples(pixelPos.xz);
     vec4 sheen = GetShrinkWrappedSheen(pixelPos);
     float coverage = water.x * mix(rivulets,1.0,water.y);
@@ -560,7 +564,10 @@ vec4 GetGroundReflectionRipples(vec3 pixelPos)
     runoffLight *= max(1.0,0.25/max(runoffBrightness,0.0001));
     if (rainLightActive > 0.5 && water.y < 0.999 && coverage > 0.001)
         runoffLight += rainLocalLight(pixelPos + n*0.5);
-    vec4 waterDetail = mix(vec4(runoffLight*(0.8+1.2*rivulets),0.75),ripples,water.y);
+    // Keep channel light separate from surface alpha: otherwise narrow runoff
+    // gets masked once here and then again by the translucent wet-surface layer.
+    runoffEnergy = runoffLight*runoffCoverage*0.8;
+    vec4 waterDetail = mix(vec4(vec3(0.65),0.75),ripples,water.y);
     workingColorLayer = dodge(workingColorLayer,ADD_POND_RIPPLE_FACTOR*waterDetail);
     float materialMix = mix(1.0,extractRoughnessFromNormal(detailNormals),
                             (0.9-rainPercent)+absinthTime()*0.1);
@@ -705,6 +712,18 @@ vec4 drawRainInSpainOnPlane( vec2 rotatedUV, float rainspeed, out float coverage
 // WORLD_RAIN
 // RAIN_SPLASHBACK
 
+vec4 composeRainEffects(vec3 background, vec4 surfaceFX, vec4 rain, vec4 splash,
+                        vec3 runoff) {
+    float alpha = 1.0-(1.0-surfaceFX.a)*(1.0-rain.a)*(1.0-splash.a);
+    // Preserve existing surface blending while adding reflected light from
+    // airborne water and runoff. The half-float target preserves RGB > 1 until
+    // the final straight-alpha blend; an 8-bit target clips these highlights.
+    vec3 premultiplied = surfaceFX.rgb*surfaceFX.a
+        + background*(alpha-surfaceFX.a)
+        + rain.rgb*rain.a + splash.rgb*splash.a + runoff;
+    return vec4(premultiplied/max(alpha,0.00001),alpha*rainPercent);
+}
+
 void main(void)
 {
 	uv = gl_FragCoord.xy / viewPortSize;
@@ -730,16 +749,13 @@ void main(void)
     float sceneDistance = depthAtPixel.r < 0.999999 ? length(worldPos-eyePos) : 1.0e6;
     vec4 rain = drawWorldRain(rayDir, sceneDistance);
     vec4 splash = drawRainSplashback(worldPos, vertexNormal, rayDir, sceneDistance, NormalIsSky);
-    float wetAlpha = splash.a + surfaceFX.a * (1.0-splash.a);
-    // Spray contributes reflected light. A dim sky-coloured opaque dot would
-    // instead darken bright roofs. Restore the background covered by its alpha
-    // so this remains additive through the existing straight-alpha compositor.
-    vec3 splashBackground = splash.a > 0.0001 ? texture2D(screentex,uv).rgb : vec3(0);
-    surfaceFX = vec4((splash.rgb*splash.a + surfaceFX.rgb*surfaceFX.a
-                     + splashBackground*splash.a*(1.0-surfaceFX.a))
-                     / max(wetAlpha,0.00001), wetAlpha);
-    float combinedAlpha = rain.a + surfaceFX.a * (1.0-rain.a);
-    vec3 combinedRGB = (rain.rgb*rain.a + surfaceFX.rgb*surfaceFX.a*(1.0-rain.a))
-                       / max(combinedAlpha,0.00001);
-    gl_FragColor = vec4(combinedRGB, combinedAlpha * rainPercent);
+    if (rainDetailDebug > 2.5) {
+        gl_FragColor = vec4(NormalIsSky ? vec3(0) : vertexNormal,1);
+    } else if (rainDetailDebug > 1.5) {
+        gl_FragColor = vec4(vec3(runoffCoverage),1);
+    } else if (rainDetailDebug > 0.5) {
+        gl_FragColor = vec4(rain.rgb*rain.a*4.0,1);
+    } else {
+        gl_FragColor = composeRainEffects(texture2D(screentex,uv).rgb,surfaceFX,rain,splash,runoffEnergy);
+    }
 }
