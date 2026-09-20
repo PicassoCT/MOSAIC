@@ -239,3 +239,29 @@ It does not include that shader's screen-wide refraction, fog, heart or lightnin
 coverage in four directions, and rejection on terrain/flat/vertical surfaces.
 The surface-art regression also passes. Actual game appearance/performance remains
 to be checked; this adds a nine-cell procedural evaluation on runoff roofs.
+
+## Curved-surface projection repair (2026-09-20)
+
+The earlier pixel-footprint correction did not fix the pattern coordinates
+themselves. Dotting world position with a normal-dependent tangent is not a
+valid general UV parameterization: on a sphere centred at the origin, both
+coordinates collapse to zero. A translated sphere also develops severe distortion.
+A fixed-camera dome regression reproduces this failure in commit 54b042f; the old
+rotated-plane tests alone could not detect it.
+
+Runoff and roof droplets now share fixed vertical world projections, selecting
+XZ-facing charts by the dominant horizontal normal component. Across coordinates
+stay fixed within each chart; the along coordinate uses negative world height,
+so motion descends on every slope orientation. This avoids continuously rotating
+pattern coordinates. There may be a seam where the dominant chart changes, and
+features stretch on very shallow slopes; this is still procedural surface flow.
+
+Runoff frequency is doubled again to make finer channels. Roof bead radii are
+about 2.2–2.3 times larger, with proportional cap height and a wider pixel-filter
+visibility range. Beads align to the finer building lanes. Pond ripple shading,
+size and timing are unchanged.
+
+The new dome test checks eight azimuth sectors from a fixed camera for both
+terrain and building patterns. It fails with the previous shader and passes with
+this repair. Roof bead, runoff and surface-art tests also pass. In-game appearance
+and the specific reported orientation problem still need confirmation.

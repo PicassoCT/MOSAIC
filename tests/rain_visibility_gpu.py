@@ -59,7 +59,7 @@ print('PASS: splash visibility at 30/45/60 degrees and 500/1000/1500 distance; b
 runoff=program(vert,prefix+'''
 uniform float testPixelWorld;
 void main(){vec3 n=normalize(vec3(0.1,1,0));
-float channel=getSurfaceRivulets(vec3(gl_FragCoord.x*testPixelWorld,0,gl_FragCoord.y*testPixelWorld),n);
+float channel=getSurfaceRivulets(vec3(gl_FragCoord.x*testPixelWorld,-0.1*gl_FragCoord.x*testPixelWorld,gl_FragCoord.y*testPixelWorld),n);
 gl_FragColor=vec4(vec3(channel*(1.0-surfaceWaterWeights(n.y).y)),1);}
 ''')
 use(runoff)
