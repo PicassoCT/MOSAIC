@@ -7,30 +7,32 @@ vec2 surfaceWaterWeights(float upwardness) {
     return vec2(wet,puddle);
 }
 
+// Fixed world charts avoid position*dNormal phase distortion on curved roofs.
+// Height always increases uphill, so downward animation works for every azimuth.
+// Choose the less foreshortened vertical projection; chart boundaries can seam.
+vec3 runoffChartAcross(vec3 normal) {
+    return abs(normal.x)>abs(normal.z) ? vec3(0,0,normal.x>=0.0 ? -1.0 : 1.0)
+                                    : vec3(normal.z>=0.0 ? 1.0 : -1.0,0,0);
+}
+vec2 runoffChart(vec3 p, vec3 across) {
+    return vec2(dot(p,across),-p.y*1.41421356);
+}
 float getSurfaceRivulets(vec3 p, vec3 normal, bool building) {
-    // Use the actual surface tangent, including height, so steep roofs do not
-    // compress their flow into almost stationary bands in the XZ plane.
-    vec3 downhill = vec3(0,-1,0)+normal*normal.y;
-    if (dot(downhill,downhill)<0.00001) downhill=vec3(1,0,0);
-    downhill=normalize(downhill);
-    vec3 across=normalize(cross(normal,downhill));
-    // Double spatial frequency: runoff features are half their former size.
-    float along=dot(p,downhill)*2.0;
-    float crossSlope=dot(p,across)*2.0;
-    // Measure the pixel on the surface, holding its local frame fixed. Taking
-    // derivatives of dot(worldPosition, varyingNormal) introduces a spurious
-    // worldPosition*dNormal term, erasing channels on curved/quantized slopes.
-    vec3 pixelX=dFdx(p)*2.0, pixelY=dFdy(p)*2.0;
-    vec2 uvX=vec2(dot(pixelX,across)/5.0,dot(pixelX,downhill)/18.0);
-    vec2 uvY=vec2(dot(pixelY,across)/5.0,dot(pixelY,downhill)/18.0);
+    vec3 across=runoffChartAcross(normal);
+    vec2 at=runoffChart(p,across);
+    // Finer runoff only; pond ripple scale is independent.
+    float along=at.y*4.0;
+    float crossSlope=at.x*4.0;
+    vec2 pixelX=runoffChart(dFdx(p),across)*4.0;
+    vec2 pixelY=runoffChart(dFdy(p),across)*4.0;
+    vec2 uvX=pixelX/vec2(5,18), uvY=pixelY/vec2(5,18);
     float footprint=max(length(uvX),length(uvY));
     float travel=along*0.65-time*5.0+0.7*sin(crossSlope*0.23);
     float beads=0.4+0.6*pow(0.5+0.5*sin(travel),3.0);
     if(building) {
-        // Manufactured surfaces shed into mostly straight, gently wandering lanes.
         float lane=crossSlope*0.125+sin(along*0.075)*0.16;
         float distance=abs(fract(lane+0.5)-0.5);
-        float lanePixel=max(abs(dot(pixelX,across)),abs(dot(pixelY,across)))*0.125;
+        float lanePixel=max(abs(pixelX.x),abs(pixelY.x))*0.125;
         float channel=1.0-smoothstep(0.045,0.10+max(lanePixel*0.5,0.005),distance);
         return channel*beads*(1.0-smoothstep(0.35,0.9,lanePixel));
     }
@@ -51,7 +53,7 @@ float getSurfaceRivulets(vec3 p, vec3 normal, bool building) {
 
     float width=0.035+0.025*(0.5+0.5*sin(along*0.19+crossSlope*0.31));
     float channel=1.0-smoothstep(width,width+max(footprint*0.65,0.018),edge);
-    channel*=1.0-smoothstep(0.35,0.9,footprint);
+    channel*=1.0-smoothstep(0.5,1.25,footprint);
     return channel*beads;
 }
 
@@ -66,14 +68,14 @@ float getSurfaceRivulets(vec3 p, vec3 normal) {
 vec4 roofWaterBeads(vec3 p, vec3 normal, bool building) {
     vec2 water=surfaceWaterWeights(normal.y);
     float eligible=building ? water.x*(1.0-water.y) : 0.0;
-    vec3 gravity=vec3(0,-1,0)+normal*normal.y;
-    if(dot(gravity,gravity)<0.00001) gravity=vec3(1,0,0);
-    vec3 down=normalize(gravity), across=normalize(cross(normal,down));
-    vec2 at=vec2(dot(p,across),dot(p,down));
+    vec3 chartAcross=runoffChartAcross(normal);
+    vec2 at=runoffChart(p,chartAcross);
+    vec3 across=chartAcross-normal*dot(normal,chartAcross);
+    vec3 down=(vec3(0,-1,0)+normal*normal.y)*1.41421356;
     float pixel=max(length(dFdx(p)),length(dFdy(p)));
-    float resolved=1.0-smoothstep(0.3,0.9,pixel);
+    float resolved=1.0-smoothstep(0.6,1.8,pixel);
     if(eligible*resolved<0.0001) return vec4(0);
-    vec2 cell=floor(at/vec2(4,6));
+    vec2 cell=floor(at/vec2(2,4));
     vec3 gradient=vec3(0);
     float mask=0.0;
     for(int y=-1;y<=1;++y) for(int x=-1;x<=1;++x) {
@@ -82,17 +84,17 @@ vec4 roofWaterBeads(vec3 p, vec3 normal, bool building) {
         float age=fract(time*(0.24+0.12*seed.x)+seed.z);
         // Grow in place, then accelerate downhill; fade before the reset.
         float slide=max(age-0.3,0.0)/0.7;
-        float head=id.y*6.0+0.3+5.2*slide*slide;
-        float centre=id.x*4.0-0.64*sin(head*0.15);
+        float head=id.y*4.0+0.3+3.2*slide*slide;
+        float centre=id.x*2.0-0.32*sin(head*0.3);
         vec2 delta=at-vec2(centre,head);
-        vec2 radius=vec2(0.12+0.10*seed.y,0.18+0.16*seed.x);
+        vec2 radius=vec2(0.28+0.22*seed.y,0.42+0.32*seed.x);
         radius*=mix(0.45,1.0,smoothstep(0.0,0.3,age));
         vec2 filtered=sqrt(radius*radius+vec2(pixel*pixel*0.16));
         vec2 q=delta/filtered;
         float cap=max(1.0-dot(q,q),0.0);
         float life=smoothstep(0.0,0.12,age)*(1.0-smoothstep(0.85,1.0,age));
         float energy=radius.x*radius.y/(filtered.x*filtered.y);
-        vec2 slope=-4.0*q/filtered*cap*0.055*life*energy;
+        vec2 slope=-4.0*q/filtered*cap*0.12*life*energy;
         gradient+=across*slope.x+down*slope.y;
         float wakeLength=0.2+1.0*slide;
         float behind=-delta.y;

@@ -35,3 +35,28 @@ for building in [0,1]:
  patterns.append(frames[0])
 assert sum(abs(a-b)>.1 for a,b in zip(patterns[0][::4],patterns[1][::4]))>400,'building/terrain patterns identical'
 print('PASS: all four compass directions match; building lanes differ from terrain Voronoi; curved normals at map coordinates retain coverage')
+
+# A fixed camera looking at a dome exercises changing normals across one mesh.
+# Rotating a plane/camera together cannot catch a collapsing tangent projection.
+dome=program(vert,prefix+'''
+uniform int building;
+void main(){
+ vec2 xz=(gl_FragCoord.xy-32.0)*0.2;
+ float y=sqrt(max(64.0-dot(xz,xz),0.001));
+ vec3 pos=vec3(xz.x,y,xz.y),n=normalize(pos);
+ float r=getSurfaceRivulets(pos,n,building!=0);
+ gl_FragColor=vec4(r,r,r,1);
+}
+''')
+for building in [0,1]:
+ use(dome);ui(loc(dome,b'building'),building);uf(loc(dome,b'time'),1.7)
+ a=render(dome);sectors=[[] for _ in range(8)]
+ for y in range(64):
+  for x in range(64):
+   dx=(x+.5-32)*.2;dz=(y+.5-32)*.2
+   if 3<math.hypot(dx,dz)<6:
+    sector=int((math.atan2(dz,dx)+math.pi)/(2*math.pi)*8)%8
+    sectors[sector].append(a[(y*64+x)*4])
+ for i,values in enumerate(sectors):
+  assert max(values)>.1 and max(values)-min(values)>.1,('collapsed dome channels',building,i)
+print('PASS: fixed-camera dome has resolved channels in all eight azimuth sectors')
