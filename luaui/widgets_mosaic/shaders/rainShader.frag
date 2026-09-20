@@ -333,16 +333,6 @@ float getZoomFactor()
 	return max(1.0, eyePos.y / 128.0);
 }
 
-vec4 GetGroundPondRainRipples(vec2 groundUVs)
-{
-    // 8/9 world units per noise cell: one-third the previous ring diameter.
-    // Keep the pattern anchored to the ground at every camera zoom.
-    float f = noise(groundUVs * RAIN_RIPPLE_SCALE, RAIN_RIPPLE_SPEED);
-    vec3 normal = vec3(-dFdx(f), -dFdy(f), 0.5) + 0.5;
-    float avgVal = (normal.x + normal.y + normal.z) / 3.0;
-    return vec4(vec3(avgVal), 0.75);
-}
-
 bool getRivuletMask(vec3 normalAtPos)
 {
 	float treshold = 0.01;
@@ -542,40 +532,34 @@ vec4 paintRainSky(vec2 rotatedUV)
 // SURFACE_WATER
 vec4 GetGroundReflectionRipples(vec3 pixelPos)
 {
-    vec3 n = vertexNormal*2.0-1.0;
-    n /= max(length(n),0.00001);
+    vec3 n = normalize(vertexNormal*2.0-1.0);
     vec2 water = surfaceWaterWeights(n.y);
-    // Evaluate derivative-based masks before any slope-dependent early return.
-    float rivulets = getSurfaceRivulets(pixelPos,n);
-    runoffCoverage = water.x*(1.0-water.y)*rivulets;
-    vec4 ripples = GetGroundPondRainRipples(pixelPos.xz);
-    vec4 sheen = GetShrinkWrappedSheen(pixelPos);
-    float coverage = water.x * mix(rivulets,1.0,water.y);
+    float channels = getSurfaceRivulets(pixelPos,n);
+    vec2 rings = surfaceRippleProfile(pixelPos.xz);
+    float puddle = surfacePuddleMask(pixelPos.xz);
+    runoffCoverage = water.x*(1.0-water.y)*channels;
+    float coverage = water.x*mix(channels,0.35+0.65*puddle,water.y);
     if (coverage <= 0.0001) return NONE;
 
-    vec4 workingColorLayer = MIRRORED_REFLECTION_FACTOR * BLUE;
-    workingColorLayer = screen(workingColorLayer,sheen);
-    workingColorLayer = dodge(workingColorLayer,getReflection(pixelPos));
-    // Preserve flat-surface ripples; expose stream highlights on sloped surfaces.
-    // Channels need their own visible highlight, not just a near-transparent
-    // coverage mask. Sample local lighting once per wet surface pixel.
-    vec3 runoffLight = max(sunCol,vec3(0)) + max(skyCol,vec3(0))*0.35;
-    float runoffBrightness = dot(runoffLight,vec3(0.2126,0.7152,0.0722));
-    runoffLight *= max(1.0,0.25/max(runoffBrightness,0.0001));
-    if (rainLightActive > 0.5 && water.y < 0.999 && coverage > 0.001)
-        runoffLight += rainLocalLight(pixelPos + n*0.5);
-    // Keep channel light separate from surface alpha: otherwise narrow runoff
-    // gets masked once here and then again by the translucent wet-surface layer.
-    runoffEnergy = runoffLight*runoffCoverage*0.8;
-    vec4 waterDetail = mix(vec4(vec3(0.65),0.75),ripples,water.y);
-    workingColorLayer = dodge(workingColorLayer,ADD_POND_RIPPLE_FACTOR*waterDetail);
-    float materialMix = mix(1.0,extractRoughnessFromNormal(detailNormals),
-                            (0.9-rainPercent)+absinthTime()*0.1);
-    vec4 maskedColor = mix(NONE,workingColorLayer,materialMix);
-    // Apply slope/channel coverage AFTER the old alpha floor, otherwise walls
-    // retain the former minimum 0.15 water opacity.
-    maskedColor.a = clamp(maskedColor.a,0.15,0.25)*coverage;
-    return maskedColor;
+    vec3 scene = texture2D(screentex,uv).rgb;
+    vec3 lighting = max(sunCol,vec3(0))*0.4 + max(skyCol,vec3(0))*0.6;
+    if (rainLightActive > 0.5) lighting += rainLocalLight(pixelPos+n*0.5);
+    // Bound highlights without bleaching blue/orange/neon hue.
+    float luminance = dot(lighting,vec3(0.2126,0.7152,0.0722));
+    lighting *= max(1.0,0.22/max(luminance,0.0001));
+    lighting /= 1.0+max(luminance,0.22);
+    vec3 toEye = normalize(eyePos-pixelPos);
+    float fresnel = 0.08+0.55*pow(1.0-max(dot(n,toEye),0.0),3.0);
+    vec4 reflected = getReflection(pixelPos);
+    // Dark wet substrate + patchy reflection replaces the old uniform blue veil.
+    vec3 target = scene*mix(0.68,0.86,water.y) + max(skyCol,vec3(0))*fresnel*0.08;
+    target = mix(target,reflected.rgb/max(reflected.a,0.0001),
+                 reflected.a*water.y*puddle*(0.3+fresnel));
+    // A dark trough beside the crest makes a ring readable on bright roofs too.
+    target *= 1.0-rings.y*water.y*0.5;
+    float ringWetness = water.x*water.y*(0.4+0.6*puddle);
+    runoffEnergy = lighting*(rings.x*ringWetness + runoffCoverage*(2.0*channels*channels*channels));
+    return vec4(max(target,vec3(0)),coverage*0.65);
 }
 
 ///////////////////////////////////FOG ///////////////////////////////////////////////////////////
