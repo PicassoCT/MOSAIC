@@ -141,11 +141,13 @@ end
 base1 = piece("base1")
 base2 = piece("base2")
 base3 = piece("base3")
+base4 = piece("base4")
 Plate = piece("Plate")
 chasingWaterfalls  = {
     [base1] = "base1Water",
     [base2] = "base2Water",
     [base3] = "base3Water",
+    [base4] = "base3Water",
     [Plate] = "PlateWater"
 }
 
@@ -160,6 +162,7 @@ function buildBuilding()
         RoofTopPieces = TablesOfPieceGroups["RoofTopCircle"]
     end
 
+    if base == base4 then RoofTopPieces = TablesOfPieceGroups["RoofTopSquare"] end
     if base == base2 then RoofTopPieces = TablesOfPieceGroups["RoofTopSquare"] end
     if base == base3 then RoofTopPieces = TablesOfPieceGroups["RoofTopUpright"] end
     boolDoneShowing = true
