@@ -636,9 +636,15 @@ end
 
 function widget:TextCommand(command)
     local detailViews = { ["rainview off"] = 0, ["rainview rain"] = 1,
-                          ["rainview runoff"] = 2, ["rainview normals"] = 3 }
+                          ["rainview runoff"] = 2, ["rainview normals"] = 3,
+                          ["rainview scale"] = 4, ["rainview beads"] = 5 }
     if detailViews[command] ~= nil then
         rainDetailDebug = detailViews[command]
+        if rainDetailDebug == 4 then
+            Spring.Echo("Rain scale: 4 engine units per projected square; cyan models, orange terrain")
+        elseif rainDetailDebug == 5 then
+            Spring.Echo("Rain beads: roof droplet/wake coverage, 4x display gain")
+        end
         Spring.Echo("Rain detail view: " .. command .. " (uses current weather)")
         return true
     end

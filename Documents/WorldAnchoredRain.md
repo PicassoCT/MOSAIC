@@ -265,3 +265,31 @@ The new dome test checks eight azimuth sectors from a fixed camera for both
 terrain and building patterns. It fails with the previous shader and passes with
 this repair. Roof bead, runoff and surface-art tests also pass. In-game appearance
 and the specific reported orientation problem still need confirmation.
+
+## Continuous channel lighting and bead visibility (2026-09-20)
+
+Removed the effective fourth-power runoff brightness response that turned mild
+flow modulation into bright dashes and almost-dark gaps. Channels retain a steady
+lit contribution, with 8% shape modulation and a small additional lighting change.
+World-anchored channel hashes vary pulse speed, wavelength and phase. They no
+longer all share the same clock frequency. This is a lit-water approximation,
+not a new reflection ray-tracing pass.
+
+Roof beads retain their size but fade over 2–5 world units per pixel instead of
+0.6–1.8. Their rounded shading now includes a broad lit response and a subtle dark
+body, so visibility does not depend entirely on a narrow directional glint.
+Existing building rivulets and terrain channels remain distinct; pond ripples
+and falling rain are unchanged.
+
+During rain, `/rainview scale` displays a checkerboard with four engine units per
+square along the selected world projection axes: cyan models, orange terrain.
+Squares can stretch along sloped surfaces because these are projected lengths,
+not geodesic surface distances. `/rainview beads` displays roof bead/wake coverage
+at 4x gain. `/rainview off` restores rendering. Both new views default to off and
+use the current weather; they do not force rain.
+
+Tests check continuous runoff coverage through a cycle, roof bead coverage at
+0.6/1.2/2.0 units per pixel, and actual final surface composition with versus
+without beads on bright/dark backgrounds. Curved-surface and material tests pass.
+These synthetic GPU checks cannot establish a match to the concept render or
+replace in-game review.

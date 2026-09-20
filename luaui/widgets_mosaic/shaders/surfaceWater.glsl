@@ -27,8 +27,11 @@ float getSurfaceRivulets(vec3 p, vec3 normal, bool building) {
     vec2 pixelY=runoffChart(dFdy(p),across)*4.0;
     vec2 uvX=pixelX/vec2(5,18), uvY=pixelY/vec2(5,18);
     float footprint=max(length(uvX),length(uvY));
-    float travel=along*0.65-time*5.0+0.7*sin(crossSlope*0.23);
-    float beads=0.4+0.6*pow(0.5+0.5*sin(travel),3.0);
+    // Independently timed channels, with only a gentle swell over a wet baseline.
+    float laneID=floor(at.x/(building ? 2.0 : 1.25)+0.5);
+    vec3 timing=hash3(vec2(laneID,building ? 31.0 : 59.0));
+    float travel=along*(0.48+0.25*timing.y)-time*(2.5+2.0*timing.x)+timing.z*6.2831853;
+    float beads=0.92+0.08*pow(0.5+0.5*sin(travel),3.0);
     if(building) {
         float lane=crossSlope*0.125+sin(along*0.075)*0.16;
         float distance=abs(fract(lane+0.5)-0.5);
@@ -73,7 +76,7 @@ vec4 roofWaterBeads(vec3 p, vec3 normal, bool building) {
     vec3 across=chartAcross-normal*dot(normal,chartAcross);
     vec3 down=(vec3(0,-1,0)+normal*normal.y)*1.41421356;
     float pixel=max(length(dFdx(p)),length(dFdy(p)));
-    float resolved=1.0-smoothstep(0.6,1.8,pixel);
+    float resolved=1.0-smoothstep(2.0,5.0,pixel);
     if(eligible*resolved<0.0001) return vec4(0);
     vec2 cell=floor(at/vec2(2,4));
     vec3 gradient=vec3(0);

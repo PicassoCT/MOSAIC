@@ -60,3 +60,15 @@ for building in [0,1]:
  for i,values in enumerate(sectors):
   assert max(values)>.1 and max(values)-min(values)>.1,('collapsed dome channels',building,i)
 print('PASS: fixed-camera dome has resolved channels in all eight azimuth sectors')
+
+# Existing channel pixels remain wet between gently varying swells.
+use(p);uf(loc(p,b'heading'),0);uf(loc(p,b'worldOffset'),0);uf(loc(p,b'normalVariation'),0)
+for building in [0,1]:
+ ui(loc(p,b'building'),building)
+ frames=[]
+ for tick in range(12):
+  uf(loc(p,b'time'),tick*.37);frames.append(render(p)[::4])
+ for samples in zip(*frames):
+  if max(samples)>.1:
+   assert min(samples)>=.92*max(samples)-.008,'channel blinks between swells'
+print('PASS: runoff stays continuously visible through its animation cycle')
