@@ -36,7 +36,8 @@ for label,background,sun,sky in [('day',.7,(.8,.7,.5),(.5,.6,.8)),('night',.12,(
   a=render(p)
   brightness=[sum(a[i:i+3])/3 for i in range(0,len(a),4)]
   contrast=max(brightness)-min(brightness)
-  assert contrast>.025,(label,slope,contrast)
+  assert contrast>(.008 if slope==0 else .025),(label,slope,contrast)
+  if slope==0: assert contrast<.15,("outlined/cartoon ripple contrast",label,contrast)
   assert min(brightness)<background,'missing dark wet substrate/trough'
   uf(loc(p,b'time'),1.9);b=render(p)
   assert a!=b,('static water',label,slope)
@@ -46,4 +47,16 @@ for label,background,sun,sky in [('day',.7,(.8,.7,.5),(.5,.6,.8)),('night',.12,(
    raw=bytes(round(max(0,min(1,x))*255) for x in a)
    im=Image.frombytes('RGBA',(64,64),raw).convert('RGB').transpose(Image.Transpose.FLIP_TOP_BOTTOM)
    im.resize((512,512),Image.Resampling.NEAREST).save('/tmp/rain-surface-'+label+'-'+str(slope)+'.png')
-print('PASS: animated high-contrast rings and runoff on bright/day and dark/night surfaces, including steep roofs; no radiance required')
+print('PASS: animated softly shaded rings and runoff on bright/day and dark/night surfaces, including steep roofs; no radiance required')
+
+# Reversing the light must exchange raised/dark ridge faces, not just tint rings.
+use(p)
+texture(4,(.5,.5,.5,1))
+u3(loc(p,b'testNormal'),0,1,0);uf(loc(p,b'testScale'),.05)
+u3(loc(p,b'eyePos'),0,30,0)
+u3(loc(p,b'sunCol'),.7,.7,.7);u3(loc(p,b'skyCol'),.3,.3,.3)
+u3(loc(p,b'sunPos'),.8,.6,0);a=render(p)
+u3(loc(p,b'sunPos'),-.8,.6,0);b=render(p)
+delta=[a[i]-b[i] for i in range(0,len(a),4)]
+assert max(delta)>.015 and min(delta)<-.015,('no directional ripple relief',min(delta),max(delta))
+print('PASS: ripple light/dark faces reverse with illumination direction')

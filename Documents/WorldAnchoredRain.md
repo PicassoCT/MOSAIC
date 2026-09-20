@@ -160,3 +160,44 @@ steep-surface contrast and animation tests without radiance. Optional `--preview
 writes enlarged synthetic shader samples under /tmp for inspection. The existing
 visibility and final-composition suites remain applicable. In-game review of
 materials, reflection artefacts and target-hardware performance is still required.
+
+## Geometry-driven drainage and softer ripple relief (2026-09-20)
+
+This revision supersedes the outlined-ring treatment above. Ripples retain their
+impact seeds, ages and sizes, but use an analytic Gaussian ridge gradient to
+perturb the water normal. Directional highlights and opposing dark faces replace
+uniform crest emission and the dark outlined trough. Pixel filtering attenuates
+unresolved slopes. Falling-rain and splash helper files are unchanged.
+
+The stock Recoil [map shader](https://github.com/beyond-all-reason/RecoilEngine/blob/master/cont/base/springcontent/shaders/GLSL/SMFFragProg.glsl)
+and [model shader](https://github.com/beyond-all-reason/RecoilEngine/blob/master/cont/base/springcontent/shaders/GLSL/ModelFragProgGL4.glsl)
+encode world normals in RGB with the same signed-to-unsigned mapping. These are
+shading normals, however, and can contain texture perturbations or interpolated
+model normals. They are not a reliable drainage slope. This does not establish
+which custom material caused the reported in-game mismatch.
+
+For the visible surface, reconstruct geometry from its selected map/model depth
+buffer. Choose the shorter valid tangent on each screen axis to avoid bridging
+roof silhouettes; orient the cross product toward the camera. Flat roofs and
+flat ground now use the same geometry-based puddle classification, independent
+of material normal detail. Missing/degenerate depth retains the previous decoded
+normal as a fallback. Normal alpha remains irrelevant to surface eligibility.
+The normals diagnostic now displays the reconstructed geometry normal.
+
+Runoff uses elongated, warped Voronoi UV cells in the surface downhill/across
+basis. Cell boundaries provide varied channel widths, forks and junctions;
+travelling pulses move downhill through this stationary pattern. This is a
+procedural local surface effect, not a hydraulic simulation or tracked flow
+between meshes. Rapidly varying geometry normals can still change the local
+pattern orientation. The wetness fade extends to normal Y 0.05–0.65 so steep
+exposed banks can carry runoff; exactly flat surfaces remain puddled and vertical
+walls remain dry.
+
+`python tests/rain_geometry_gpu.py` renders both depth conventions and both
+perspective/orthographic cameras, deliberately wrong shading normals, identical
+map/model planes, flat roofs, shallow/steep banks, silhouette boundaries and the
+missing-depth fallback. The surface-art test checks bounded ring contrast,
+day/night animation and reversal of ripple light/dark faces with light direction.
+These are production GLSL tests on synthetic buffers, not screenshots of the
+running game. Engine appearance and GPU cost still require in-game review; the
+geometry reconstruction adds four neighboring depth samples per visible pixel.
