@@ -130,3 +130,33 @@ sky-only blue/orange illumination and radiance-only green illumination. It also
 renders final composition into an RGBA16F target, then checks the straight-alpha
 result against bright/dark backgrounds, preserving surface blending and applying
 weather once. This complements mask tests; in-game confirmation remains necessary.
+
+## Surface-water art pass (2026-09-20)
+
+The active surface path now replaces the old screen-derivative grey ripple sheen
+with explicit expanding ring crests and neighbouring dark troughs. Nine seeded
+impact cells supply the rings; phase matches splashback and maximum radius stays
+within the approved 8/9-unit scale. Pixel filtering fades unresolved rings rather
+than enlarging them with zoom.
+
+A world-anchored, smoothly varying puddle mask controls wet darkening and existing
+screen-space reflections. The uniform blue/grey surface veil and image-derived
+sheen are no longer used in this path. Ring and runoff highlights receive both
+atmosphere and radiance, with bounded, hue-preserving exposure for day/night.
+
+Runoff uses the full 3D downhill tangent (including height). Dark channels with
+travelling bright beads supply contrast on bright roofs as well as at night.
+Wetness now fades across normal Y 0.25–0.8, allowing steep sloped roofs while
+keeping vertical walls dry; flat normals still use puddles. Runoff remains a
+surface effect, not a projected overlay from other buildings.
+
+Falling streaks are thinner with tapered ends and compressed highlight intensity.
+Splash size, positions and density remain unchanged; splash brightness is reduced
+to avoid white confetti competing with small rings. These are artistic changes
+towards the concept preview, not a claim to reproduce its architecture/materials.
+
+Run `python tests/rain_surface_art_gpu.py` for rendered day/night, flat/shallow/
+steep-surface contrast and animation tests without radiance. Optional `--preview`
+writes enlarged synthetic shader samples under /tmp for inspection. The existing
+visibility and final-composition suites remain applicable. In-game review of
+materials, reflection artefacts and target-hardware performance is still required.

@@ -100,7 +100,7 @@ vec4 drawRainSplashback(vec3 surface, vec3 encodedNormal, vec3 rayDir,
                     0.5+0.5*sin(glitterTime*5.0 + seed.x*31.0 + float(j)));
                 tint += rainLocalLight(drop) * (0.15 + glint*0.7);
             }
-            sumRGB += tint*coverage;
+            sumRGB += tint*coverage*0.6;
             sumAlpha += coverage;
         }
     }

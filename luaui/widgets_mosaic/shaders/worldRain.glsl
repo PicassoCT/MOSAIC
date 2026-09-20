@@ -47,6 +47,7 @@ vec4 drawWorldRain(vec3 direction, float sceneDistance) {
     // Preserve atmosphere hue; don't turn blue skylight into a grey RGB floor.
     float brightness = dot(atmosphere,vec3(0.2126,0.7152,0.0722));
     atmosphere *= max(1.0,0.35/max(brightness,0.0001));
+    atmosphere /= 1.0+dot(atmosphere,vec3(0.2126,0.7152,0.0722));
     for (int i = 0; i < RAIN_CELL_LIMIT; ++i) {
         if (cellEntry >= farT) break;
         float cellExit = min(farT, min(nextT.x, min(nextT.y, nextT.z)));
@@ -69,9 +70,10 @@ vec4 drawWorldRain(vec3 direction, float sceneDistance) {
                 vec3 drop = centre + axis*s;
                 float separation = length(eyePos + direction*t - drop);
                 float footprint = clamp(pixelAngle * t, 0.08, 2.0);
-                float radius = 0.24;
+                float radius = 0.13;
                 float coverage = (1.0-smoothstep(radius, radius+footprint, separation))
-                                 * 1.6 * radius / (radius+footprint);
+                                 * radius / (radius+footprint);
+                coverage *= 1.0-smoothstep(0.45,1.0,abs(s)/halfLength);
                 coverage *= smoothstep(0.0, 6.0, t);
                 coverage *= 1.0-smoothstep(RAIN_RANGE*0.8, RAIN_RANGE, t-nearT);
                 coverage *= smoothstep(0.0, 1.0, sceneDistance-t);
