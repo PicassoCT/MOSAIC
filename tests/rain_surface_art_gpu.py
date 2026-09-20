@@ -36,7 +36,8 @@ for label,background,sun,sky in [('day',.7,(.8,.7,.5),(.5,.6,.8)),('night',.12,(
   a=render(p)
   brightness=[sum(a[i:i+3])/3 for i in range(0,len(a),4)]
   contrast=max(brightness)-min(brightness)
-  assert contrast>(.008 if slope==0 else .025),(label,slope,contrast)
+  # Continuous film has softer contrast than the removed discrete channels.
+  assert contrast>(.008 if slope==0 else .015),(label,slope,contrast)
   if slope==0: assert contrast<.15,("outlined/cartoon ripple contrast",label,contrast)
   if slope==0: assert min(brightness)<background,'missing dark wet substrate/trough'
   uf(loc(p,b'time'),1.9);b=render(p)

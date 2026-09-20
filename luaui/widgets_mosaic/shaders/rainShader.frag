@@ -567,7 +567,7 @@ vec4 GetGroundReflectionRipples(vec3 pixelPos)
     float channels = NormalIsOnUnit ? 0.0 : getSurfaceRivulets(pixelPos,n,false);
     vec2 rippleSlope = surfaceRippleProfile(pixelPos.xz);
     vec4 roofBeads = roofWaterBeads(pixelPos,n,NormalIsOnUnit);
-    vec3 channelGradient=runoffHeightGradient(channels*0.06,pixelPos,n)*water.x*(1.0-water.y)*step(0.0,pixelPos.y);
+    vec3 channelGradient=runoffHeightGradient(channels*0.12,pixelPos,n)*water.x*(1.0-water.y)*step(0.0,pixelPos.y);
     float puddle = surfacePuddleMask(pixelPos.xz);
     runoffCoverage = water.x*(1.0-water.y)*channels;
     float coverage = water.x*mix(channels,0.35+0.65*puddle,water.y);
