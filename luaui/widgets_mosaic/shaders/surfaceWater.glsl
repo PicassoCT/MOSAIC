@@ -17,6 +17,7 @@ vec3 runoffChartAcross(vec3 normal) {
 vec2 runoffChart(vec3 p, vec3 across) {
     return vec2(dot(p,across),-p.y*1.41421356);
 }
+float surfaceWetNoise(vec2 p);
 float getSurfaceRivulets(vec3 p, vec3 normal, bool building) {
     vec3 across=runoffChartAcross(normal);
     vec2 at=runoffChart(p,across);
@@ -36,7 +37,9 @@ float getSurfaceRivulets(vec3 p, vec3 normal, bool building) {
         float lane=crossSlope*0.125+sin(along*0.075)*0.16;
         float distance=abs(fract(lane+0.5)-0.5);
         float lanePixel=max(abs(pixelX.x),abs(pixelY.x))*0.125;
-        float channel=1.0-smoothstep(0.045,0.10+max(lanePixel*0.5,0.005),distance);
+        float widthScale=mix(0.45,1.8,timing.z);
+        widthScale*=mix(0.8,1.2,surfaceWetNoise(vec2(laneID,at.y*0.18)));
+        float channel=1.0-smoothstep(0.045*widthScale,0.10*widthScale+max(lanePixel*0.5,0.005),distance);
         return channel*beads*(1.0-smoothstep(0.35,0.9,lanePixel));
     }
     // A stationary, elongated UV Voronoi network supplies irregular channels,
@@ -54,7 +57,7 @@ float getSurfaceRivulets(vec3 p, vec3 normal, bool building) {
     }
     float edge=sqrt(second)-sqrt(nearest);
 
-    float width=0.035+0.025*(0.5+0.5*sin(along*0.19+crossSlope*0.31));
+    float width=mix(0.018,0.09,surfaceWetNoise(flowUV*0.7+vec2(13,37)));
     float channel=1.0-smoothstep(width,width+max(footprint*0.65,0.018),edge);
     channel*=1.0-smoothstep(0.5,1.25,footprint);
     return channel*beads;
