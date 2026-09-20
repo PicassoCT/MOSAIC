@@ -70,22 +70,37 @@ vec4 drawRainSplashback(vec3 surface, vec3 encodedNormal, vec3 rayDir,
         impact.y = sourcePosition.y - dot(impactXZ-sourcePosition.xz, sourceN.xz)/sourceN.y;
         vec3 tangentX = normalize(vec3(sourceN.y, -sourceN.x, 0.0));
         vec3 tangentZ = cross(sourceN, tangentX);
-        for (int j = 0; j < 3; ++j) {
+        for (int j = -1; j < 6; ++j) {
             float angle = seed.z * 31.0 + float(j) * (2.0*PI/3.0);
             vec3 tangent = tangentX*cos(angle) + tangentZ*sin(angle);
-            float speed = 10.0 + 2.0*fract(seed.x + float(j)*0.37);
-            vec3 offset = splashOffset(sourceN, tangent, age, speed);
+            // -1: brief impact core; 0: rebound bead; 1..5: fine outward spray.
+            float speed = j == 0 ? 11.0 : 6.0+4.0*fract(seed.x+float(j)*0.37);
+            vec3 offset = splashOffset(sourceN, tangent*(j == 0 ? 0.1 : 1.5), age, speed);
+            if(j == -1) offset=sourceN*0.06;
+            float stage = j == -1 ? 1.0-smoothstep(0.015,0.085,age) : 1.0;
+            if(stage<=0.0) continue;
             float height = dot(offset, sourceN);
             if (height <= 0.0) continue;
             vec3 drop = impact + offset;
+            // A short water column pinches off into the rebound bead.
+            // Closest ray/segment point keeps the jet three-dimensional.
+            if(j == 0 && age < 0.11) {
+                vec3 base=impact+sourceN*0.04;
+                vec3 axis=drop-base;
+                vec3 origin=eyePos-base;
+                float ar=dot(axis,rayDir);
+                float q=clamp((dot(axis,origin)-ar*dot(rayDir,origin)) /
+                              max(dot(axis,axis)-ar*ar,0.00001),0.0,1.0);
+                drop=mix(base,drop,q);
+            }
             float t = dot(drop-eyePos, rayDir);
             if (t <= 0.0 || t >= sceneDistance) continue;
             float separation = length(eyePos + rayDir*t - drop);
             float footprint = clamp(pixelAngle*t, 0.025, 0.8);
-            float radius = 0.14;
+            float radius = j == -1 ? 0.22 : (j == 0 ? 0.13 : 0.055+0.035*fract(seed.y+float(j)*0.41));
             float coverage = (1.0-smoothstep(radius, radius+footprint, separation))
                              * radius/(radius+footprint);
-            coverage *= 1.8 * fade * smoothstep(0.0, 0.10, height)
+            coverage *= 1.8 * fade * stage * (j == -1 ? 1.0 : smoothstep(0.0, 0.10, height))
                         * smoothstep(0.0, 0.12, sceneDistance-t);
             if (coverage <= 0.0001) continue;
             vec3 tint = mix(sunCol*DAY_RAIN_HIGH_COL.rgb,
@@ -104,8 +119,8 @@ vec4 drawRainSplashback(vec3 surface, vec3 encodedNormal, vec3 rayDir,
             float rim=clamp(separation/(radius+footprint*0.25),0.0,1.0);
             float facing=sqrt(max(1.0-rim*rim,0.0));
             float fresnel=0.02+0.98*pow(1.0-facing,5.0);
-            sumRGB += tint*coverage*(0.16+0.44*fresnel);
-            sumAlpha += coverage*(0.25+0.3*fresnel);
+            sumRGB += tint*coverage*(j == -1 ? 2.0 : 0.16+0.44*fresnel);
+            sumAlpha += coverage*(j == -1 ? 0.12 : 0.18+0.25*fresnel);
         }
     }
     return vec4(sumRGB/max(sumAlpha, 0.00001), min(sumAlpha, 0.22));

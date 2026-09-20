@@ -21,15 +21,16 @@ float surfaceWetNoise(vec2 p);
 float getSurfaceRivulets(vec3 p, vec3 normal, bool building) {
     vec3 across=runoffChartAcross(normal);
     vec2 at=runoffChart(p,across);
-    // Finer runoff only; pond ripple scale is independent.
-    float along=at.y*4.0;
-    float crossSlope=at.x*4.0;
-    vec2 pixelX=runoffChart(dFdx(p),across)*4.0;
-    vec2 pixelY=runoffChart(dFdy(p),across)*4.0;
+    // Independent world scales: fine building lanes, broad terrain channels.
+    float scale=building ? 8.0 : 1.0;
+    float along=at.y*scale;
+    float crossSlope=at.x*scale;
+    vec2 pixelX=runoffChart(dFdx(p),across)*scale;
+    vec2 pixelY=runoffChart(dFdy(p),across)*scale;
     vec2 uvX=pixelX/vec2(5,18), uvY=pixelY/vec2(5,18);
     float footprint=max(length(uvX),length(uvY));
     // Independently timed channels, with only a gentle swell over a wet baseline.
-    float laneID=floor(at.x/(building ? 2.0 : 1.25)+0.5);
+    float laneID=floor(at.x/(building ? 1.0 : 5.0)+0.5);
     vec3 timing=hash3(vec2(laneID,building ? 31.0 : 59.0));
     float travel=along*(0.48+0.25*timing.y)-time*(2.5+2.0*timing.x)+timing.z*6.2831853;
     float beads=0.92+0.08*pow(0.5+0.5*sin(travel),3.0);
@@ -48,19 +49,26 @@ float getSurfaceRivulets(vec3 p, vec3 normal, bool building) {
     flowUV.x += 0.18*sin(flowUV.y*2.3)+0.09*sin(flowUV.y*5.1+1.7);
     vec2 cell=floor(flowUV), local=fract(flowUV);
     float nearest=100.0, second=100.0;
+    vec2 nearOffset=vec2(0), secondOffset=vec2(0);
     for(int y=-1;y<=1;++y) for(int x=-1;x<=1;++x) {
         vec2 id=cell+vec2(x,y);
         vec2 offset=vec2(x,y)+0.15+0.7*hash3(id).xy-local;
         float distance=dot(offset,offset);
-        if(distance<nearest) { second=nearest; nearest=distance; }
-        else second=min(second,distance);
+        if(distance<nearest) {
+            second=nearest; secondOffset=nearOffset;
+            nearest=distance; nearOffset=offset;
+        } else if(distance<second) { second=distance; secondOffset=offset; }
     }
     float edge=sqrt(second)-sqrt(nearest);
 
     float width=mix(0.018,0.09,surfaceWetNoise(flowUV*0.7+vec2(13,37)));
     float channel=1.0-smoothstep(width,width+max(footprint*0.65,0.018),edge);
     channel*=1.0-smoothstep(0.5,1.25,footprint);
-    return channel*beads;
+    // Boundary tangent must have a downhill component: avoid a glowing wire mesh.
+    vec2 edgeNormal=normalize(secondOffset-nearOffset+vec2(0.00001));
+    float downhill=smoothstep(0.2,0.75,abs(edgeNormal.x));
+    float surge=pow(0.5+0.5*sin(travel+surfaceWetNoise(flowUV)*2.0),3.0);
+    return channel*downhill*(0.72+0.28*surge);
 }
 
 // Terrain default for standalone surface probes.
@@ -81,26 +89,26 @@ vec4 roofWaterBeads(vec3 p, vec3 normal, bool building) {
     float pixel=max(length(dFdx(p)),length(dFdy(p)));
     float resolved=1.0-smoothstep(2.0,5.0,pixel);
     if(eligible*resolved<0.0001) return vec4(0);
-    vec2 cell=floor(at/vec2(2,4));
+    vec2 cell=floor(at/vec2(3,6));
     vec3 gradient=vec3(0);
     float mask=0.0;
     for(int y=-1;y<=1;++y) for(int x=-1;x<=1;++x) {
         vec2 id=cell+vec2(x,y);
         vec3 seed=hash3(id+vec2(71,19));
-        float age=fract(time*(0.24+0.12*seed.x)+seed.z);
+        float age=fract(time*(0.14+0.08*seed.x)+seed.z);
         // Grow in place, then accelerate downhill; fade before the reset.
-        float slide=max(age-0.3,0.0)/0.7;
-        float head=id.y*4.0+0.3+3.2*slide*slide;
-        float centre=id.x*2.0-0.32*sin(head*0.3);
+        float slide=max(age-0.55,0.0)/0.45;
+        float head=id.y*6.0+0.4+4.8*slide*slide;
+        float centre=id.x*3.0+(seed.y-0.5)*1.2-0.16*sin(head*0.6);
         vec2 delta=at-vec2(centre,head);
-        vec2 radius=vec2(0.28+0.22*seed.y,0.42+0.32*seed.x);
-        radius*=mix(0.45,1.0,smoothstep(0.0,0.3,age));
+        vec2 radius=vec2(0.45+0.35*seed.y,0.67+0.51*seed.x);
+        radius*=mix(0.45,1.0,smoothstep(0.0,0.55,age));
         vec2 filtered=sqrt(radius*radius+vec2(pixel*pixel*0.16));
         vec2 q=delta/filtered;
         float cap=max(1.0-dot(q,q),0.0);
         float life=smoothstep(0.0,0.12,age)*(1.0-smoothstep(0.85,1.0,age));
         float energy=radius.x*radius.y/(filtered.x*filtered.y);
-        vec2 slope=-4.0*q/filtered*cap*0.12*life*energy;
+        vec2 slope=-4.0*q/filtered*cap*0.22*life*energy;
         gradient+=across*slope.x+down*slope.y;
         float wakeLength=0.2+1.0*slide;
         float behind=-delta.y;

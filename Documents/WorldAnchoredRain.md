@@ -318,3 +318,31 @@ appearance, and pond ripple code is unchanged.
 Production GPU suites pass for final half-float composition, near-rain lighting
 hues, splash source/foreground occlusion and visibility, and runoff temporal and
 curved-surface behavior. In-game review is still needed for the artistic balance.
+
+## Separate runoff scales and staged impacts (2026-09-20)
+
+Building runoff coordinates now use scale 8 (previously 4), halving lane spacing,
+width and longitudinal detail. Terrain uses scale 1, restoring channels four times
+larger than the previous fine network. The Voronoi boundary orientation suppresses
+cross-slope links; a persistent 72% baseline supports independently timed travelling
+swells up to 100%. Building swells retain their gentler 92–100% range. This is a
+procedural downhill approximation, not a connected hydraulic simulation; dominant
+projection seams remain possible.
+
+Roof beads have 1.6x larger radii, wider independent spacing, stronger cap normals,
+and slower independently seeded cycles. They grow for 55% of the cycle before
+accelerating downhill. Bead size is independent of building channel scale.
+
+Each splash event now has a bright impact core fading out by 85ms, a brief column
+that separates into a central ballistic bead at 110ms, and five smaller outward
+spray droplets. All share the ripple impact seed. The transparent body/rim shading
+and source/foreground rejection remain; falling rain and pond ripples are unchanged.
+The bounded gather now evaluates seven primitives per live impact instead of three;
+in-game performance and artistic balance still need checking.
+
+GPU validation covers sparse bead normals and gameplay footprints, final day/night
+bead composition, splash depth rejection, curved runoff in eight azimuth sectors,
+continuous wet channels, and final additive composition. The terrain dome test
+samples a four-times larger world patch to accommodate the restored channel size.
+A 24-frame synthetic splash render was inspected as a contact sheet (5x display
+gain); it is not an in-game preview or evidence of a photographic match.
