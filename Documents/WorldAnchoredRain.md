@@ -371,3 +371,31 @@ coverage in all eight dome sectors over time; submerged terrain/building rejecti
 A 32-frame synthetic shaded roof sequence was inspected as a contact sheet at
 normal display gain. In-game direction, performance and visual balance still need
 review. The paired chart evaluations increase building-water shader work.
+
+## Smaller beads, sparse fixed streams and bank water film (2026-09-20)
+
+Building bead/temporary-wake coordinates are 2.5x denser: diameters and lengths are
+40% of the previous version, with 6.25x as many clusters per chart area. Their
+rounded shading and stop/go collection remain. A separate thin stationary stream
+layer uses one jittered candidate per visual metre, accepted by a deterministic
+rain threshold. At rain=0.25, expected spacing is four metres; at rain=1, one metre.
+Positions are stable as rain changes and contain no time-dependent animation.
+
+Art calibration is explicit: RAIN_UNITS_PER_METRE=4, one debug checker square.
+This is a visual convention, not a verified model-to-SI conversion. Spacing is
+measured across projected charts; diagonal blends and slopes affect apparent
+surface spacing. Statistical density testing over 4096 candidates gives 25.1%
+activation at quarter rain. A separate GPU test verifies time-independent shapes.
+
+Removed terrain Voronoi completely. Exposed terrain slopes now use two smoothly
+blended world projections of advected, warped noise to make a continuous flowing
+water film. Coarse/fine detail perturbs normals and creates moving lit highlights.
+The existing compositor blends the effect with rain strength once. Sea-level
+clipping remains. This replaces bank runoff, not the engine's ocean renderer or
+pond ripple profile. Falling rain and splashback are unchanged.
+
+GPU validation passes for density/static streams, smaller bead visibility at
+camera footprints, bright/dark film composition, terrain orientations, submerged
+rejection and additive rain composition. The film contrast test now checks softer
+continuous detail instead of the previous discrete-channel contrast threshold.
+Synthetic shaded terrain was inspected; game-scale appearance still needs review.

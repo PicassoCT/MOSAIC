@@ -154,6 +154,6 @@ for upwardness in [0,.3,.45,.6,.8,.92,.94,.96,.98,.995,1]:
     last=(wet,puddle)
 a=render(water_program)
 uf(loc(water_program,b'time'),.3); b=render(water_program)
-assert max(a[2::4])>0 and min(a[2::4])==0,'channels do not resolve'
+assert max(a[2::4])-min(a[2::4])>.05,'flowing film detail does not resolve'
 assert a[2::4]!=b[2::4],'rivulets not animated'
-print('PASS: flat puddles -> partial blend -> rivulets -> dry walls; animated sparse channels')
+print('PASS: flat puddles -> partial blend -> rivulets -> dry walls; animated terrain film')

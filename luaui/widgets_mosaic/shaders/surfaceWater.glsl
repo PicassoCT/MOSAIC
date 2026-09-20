@@ -19,49 +19,22 @@ vec2 runoffChart(vec3 p, vec3 across) {
 }
 float surfaceWetNoise(vec2 p);
 vec4 roofWaterBeads(vec3 p, vec3 normal, bool building);
+// Animated film over exposed banks: advected, warped noise, no cell edges.
+float terrainWaterFilm(vec2 at, float pixel) {
+    vec2 flow=vec2(at.x*0.8,at.y*0.45-time*0.75);
+    float broad=surfaceWetNoise(flow);
+    vec2 fine=flow*2.7+vec2(broad*1.7,time*0.31);
+    float detail=surfaceWetNoise(fine);
+    float resolved=1.0-smoothstep(0.35,1.4,pixel);
+    return 0.35+0.40*broad+0.25*detail*resolved;
+}
 float getSurfaceRivulets(vec3 p, vec3 normal, bool building) {
-    vec3 across=runoffChartAcross(normal);
-    vec2 at=runoffChart(p,across);
-    // Independent world scales: fine building lanes, broad terrain channels.
-    float scale=building ? 8.0 : 1.0;
-    float along=at.y*scale;
-    float crossSlope=at.x*scale;
-    vec2 pixelX=runoffChart(dFdx(p),across)*scale;
-    vec2 pixelY=runoffChart(dFdy(p),across)*scale;
-    vec2 uvX=pixelX/vec2(5,18), uvY=pixelY/vec2(5,18);
-    float footprint=max(length(uvX),length(uvY));
-    // Independently timed channels, with only a gentle swell over a wet baseline.
-    float laneID=floor(at.x/(building ? 1.0 : 5.0)+0.5);
-    vec3 timing=hash3(vec2(laneID,building ? 31.0 : 59.0));
-    float travel=along*(0.48+0.25*timing.y)-time*(2.5+2.0*timing.x)+timing.z*6.2831853;
-    float beads=0.92+0.08*pow(0.5+0.5*sin(travel),3.0);
     if(building) return roofWaterBeads(p,normal,true).w;
-    // A stationary, elongated UV Voronoi network supplies irregular channels,
-    // forks and junctions. Only the water pulses move, monotonically downhill.
-    vec2 flowUV=vec2(crossSlope/5.0,along/18.0);
-    flowUV.x += 0.18*sin(flowUV.y*2.3)+0.09*sin(flowUV.y*5.1+1.7);
-    vec2 cell=floor(flowUV), local=fract(flowUV);
-    float nearest=100.0, second=100.0;
-    vec2 nearOffset=vec2(0), secondOffset=vec2(0);
-    for(int y=-1;y<=1;++y) for(int x=-1;x<=1;++x) {
-        vec2 id=cell+vec2(x,y);
-        vec2 offset=vec2(x,y)+0.15+0.7*hash3(id).xy-local;
-        float distance=dot(offset,offset);
-        if(distance<nearest) {
-            second=nearest; secondOffset=nearOffset;
-            nearest=distance; nearOffset=offset;
-        } else if(distance<second) { second=distance; secondOffset=offset; }
-    }
-    float edge=sqrt(second)-sqrt(nearest);
-
-    float width=mix(0.018,0.09,surfaceWetNoise(flowUV*0.7+vec2(13,37)));
-    float channel=1.0-smoothstep(width,width+max(footprint*0.65,0.018),edge);
-    channel*=1.0-smoothstep(0.5,1.25,footprint);
-    // Boundary tangent must have a downhill component: avoid a glowing wire mesh.
-    vec2 edgeNormal=normalize(secondOffset-nearOffset+vec2(0.00001));
-    float downhill=smoothstep(0.2,0.75,abs(edgeNormal.x));
-    float surge=pow(0.5+0.5*sin(travel+surfaceWetNoise(flowUV)*2.0),3.0);
-    return channel*downhill*(0.72+0.28*surge)*step(0.0,p.y);
+    float pixel=max(length(dFdx(p)),length(dFdy(p)));
+    float weight=smoothstep(0.2,0.8,normal.z*normal.z/max(dot(normal.xz,normal.xz),0.00001));
+    float a=terrainWaterFilm(vec2(p.x,-p.y*1.41421356),pixel);
+    float b=terrainWaterFilm(vec2(p.z,-p.y*1.41421356),pixel);
+    return mix(b,a,weight)*step(0.0,p.y);
 }
 
 // Terrain default for standalone surface probes.
@@ -127,6 +100,31 @@ vec4 roofChartWater(vec2 at, float pixel) {
     }
     return water;
 }
+// Art calibration: one visual metre is four engine units (one debug square).
+const float RAIN_UNITS_PER_METRE=4.0;
+float permanentStreamEnabled(float lane, float rain) {
+    return step(hash3(vec2(lane,163)).x,clamp(rain,0.0,1.0))*step(0.00001,rain);
+}
+vec4 permanentRoofStreams(vec2 at, float pixel) {
+    float lane=floor(at.x/RAIN_UNITS_PER_METRE);
+    vec4 water=vec4(0);
+    for(int i=-1;i<=1;++i) {
+        float id=lane+float(i);
+        vec3 seed=hash3(vec2(id,163));
+        float enabled=permanentStreamEnabled(id,rainPercent);
+        // Stable paths and nested rain thresholds: no time-dependent motion.
+        vec2 path=roofPath(at.y*0.35,seed);
+        float centre=(id+0.2+0.6*seed.y)*RAIN_UNITS_PER_METRE+path.x*0.4;
+        float width=0.035+0.025*seed.z;
+        float filtered=sqrt(width*width+pixel*pixel*0.16);
+        float q=(at.x-centre)/filtered;
+        float h=exp(-q*q)*0.016*width/filtered*enabled;
+        float gx=-2.0*q/filtered*h;
+        water+=vec4(gx,-gx*path.y*0.14,h,h/0.08);
+    }
+    return water;
+}
+
 // Two fixed world projections crossfade instead of abruptly switching axes.
 // Both use -worldY: a travelling head can only move down in world height.
 vec4 roofWaterBeads(vec3 p, vec3 normal, bool building) {
@@ -136,8 +134,10 @@ vec4 roofWaterBeads(vec3 p, vec3 normal, bool building) {
     float resolved=1.0-smoothstep(2.0,5.0,pixel);
     if(eligible*resolved<0.0001) return vec4(0);
     float weight=smoothstep(0.2,0.8,normal.z*normal.z/max(dot(normal.xz,normal.xz),0.00001));
-    vec4 a=roofChartWater(vec2(p.x,-p.y*1.41421356),pixel);
-    vec4 b=roofChartWater(vec2(p.z,-p.y*1.41421356),pixel);
+    vec2 uvA=vec2(p.x,-p.y*1.41421356),uvB=vec2(p.z,-p.y*1.41421356);
+    // 40% of the previous diameter, 6.25x the cluster density.
+    vec4 a=roofChartWater(uvA*2.5,pixel*2.5)+permanentRoofStreams(uvA,pixel);
+    vec4 b=roofChartWater(uvB*2.5,pixel*2.5)+permanentRoofStreams(uvB,pixel);
     vec3 gradient=vec3(a.x*weight,-mix(b.y,a.y,weight)*1.41421356,b.x*(1.0-weight));
     gradient-=normal*dot(normal,gradient);
     return vec4(gradient,clamp(mix(b.w,a.w,weight),0.0,1.0))*eligible*resolved;
