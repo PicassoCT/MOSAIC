@@ -566,9 +566,11 @@ vec4 GetGroundReflectionRipples(vec3 pixelPos)
     vec2 water = surfaceWaterWeights(n.y);
     float channels = getSurfaceRivulets(pixelPos,n,NormalIsOnUnit);
     vec2 rippleSlope = surfaceRippleProfile(pixelPos.xz);
+    vec4 roofBeads = roofWaterBeads(pixelPos,n,NormalIsOnUnit);
     float puddle = surfacePuddleMask(pixelPos.xz);
     runoffCoverage = water.x*(1.0-water.y)*channels;
     float coverage = water.x*mix(channels,0.35+0.65*puddle,water.y);
+    coverage=max(coverage,roofBeads.w);
     if (coverage <= 0.0001) return NONE;
 
     vec3 scene = texture2D(screentex,uv).rgb;
@@ -596,6 +598,12 @@ vec4 GetGroundReflectionRipples(vec3 pixelPos)
     target*=1.0-0.65*max(-curvedLight,0.0)-0.22*max(-glint,0.0);
     runoffEnergy=lighting*(0.65*max(curvedLight,0.0)+0.45*max(glint,0.0)
                          +runoffCoverage*(1.2*channels*channels*channels));
+    vec3 beadNormal=normalize(n-roofBeads.xyz);
+    float beadLight=dot(beadNormal-n,lightDirection);
+    float beadGlint=max(0.0,pow(max(dot(beadNormal,halfDirection),0.0),48.0)
+                              -pow(max(dot(n,halfDirection),0.0),48.0));
+    target*=1.0-0.45*max(-beadLight,0.0);
+    runoffEnergy+=lighting*(0.65*max(beadLight,0.0)+0.5*beadGlint);
     return vec4(max(target,vec3(0)),coverage*0.65);
 }
 

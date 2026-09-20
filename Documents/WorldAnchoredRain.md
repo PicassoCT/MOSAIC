@@ -219,3 +219,23 @@ confirmation of the particular in-game banks still requires an engine capture.
 slopes, distinct building/terrain patterns and retained coverage with varying
 normals at large map coordinates. Geometry, surface-art and visibility regression
 suites also pass. The patterns remain procedural local flow, not a simulation.
+
+## Additional roof droplets (2026-09-20)
+
+Added sparse rounded beads and short wet wakes alongside the existing building
+rivulets. Beads briefly gather, then accelerate downhill and fade before their
+cycle resets. World-space tangent coordinates align bead centres with the roof
+lanes. Analytic cap gradients provide curved highlights and dark faces using the
+existing sky/sun/radiance lighting. Pixel filtering attenuates unresolved beads.
+Terrain, flat puddles and vertical walls are excluded by the building/runoff mask;
+existing rivulets and pond ripple functions are unchanged.
+
+Visual reference: Martijn Steinrucken (BigWings), Heartfelt (2017),
+https://www.shadertoy.com/view/ltffzl. This is a new analytic ellipsoidal-cap
+implementation; no code from the supplied CC BY-NC-SA glass shader was copied.
+It does not include that shader's screen-wide refraction, fog, heart or lightning.
+
+`python tests/rain_roof_beads_gpu.py` verifies rounded gradients, sparse animated
+coverage in four directions, and rejection on terrain/flat/vertical surfaces.
+The surface-art regression also passes. Actual game appearance/performance remains
+to be checked; this adds a nine-cell procedural evaluation on runoff roofs.

@@ -60,6 +60,49 @@ float getSurfaceRivulets(vec3 p, vec3 normal) {
     return getSurfaceRivulets(p,normal,false);
 }
 
+// Original roof-space bead model, visually inspired by BigWings' Heartfelt.
+// Analytic ellipsoidal caps and short wakes; no screen-glass shader code used.
+// xyz: world-space height gradient, w: bead/wake coverage.
+vec4 roofWaterBeads(vec3 p, vec3 normal, bool building) {
+    vec2 water=surfaceWaterWeights(normal.y);
+    float eligible=building ? water.x*(1.0-water.y) : 0.0;
+    vec3 gravity=vec3(0,-1,0)+normal*normal.y;
+    if(dot(gravity,gravity)<0.00001) gravity=vec3(1,0,0);
+    vec3 down=normalize(gravity), across=normalize(cross(normal,down));
+    vec2 at=vec2(dot(p,across),dot(p,down));
+    float pixel=max(length(dFdx(p)),length(dFdy(p)));
+    float resolved=1.0-smoothstep(0.3,0.9,pixel);
+    if(eligible*resolved<0.0001) return vec4(0);
+    vec2 cell=floor(at/vec2(4,6));
+    vec3 gradient=vec3(0);
+    float mask=0.0;
+    for(int y=-1;y<=1;++y) for(int x=-1;x<=1;++x) {
+        vec2 id=cell+vec2(x,y);
+        vec3 seed=hash3(id+vec2(71,19));
+        float age=fract(time*(0.24+0.12*seed.x)+seed.z);
+        // Grow in place, then accelerate downhill; fade before the reset.
+        float slide=max(age-0.3,0.0)/0.7;
+        float head=id.y*6.0+0.3+5.2*slide*slide;
+        float centre=id.x*4.0-0.64*sin(head*0.15);
+        vec2 delta=at-vec2(centre,head);
+        vec2 radius=vec2(0.12+0.10*seed.y,0.18+0.16*seed.x);
+        radius*=mix(0.45,1.0,smoothstep(0.0,0.3,age));
+        vec2 filtered=sqrt(radius*radius+vec2(pixel*pixel*0.16));
+        vec2 q=delta/filtered;
+        float cap=max(1.0-dot(q,q),0.0);
+        float life=smoothstep(0.0,0.12,age)*(1.0-smoothstep(0.85,1.0,age));
+        float energy=radius.x*radius.y/(filtered.x*filtered.y);
+        vec2 slope=-4.0*q/filtered*cap*0.055*life*energy;
+        gradient+=across*slope.x+down*slope.y;
+        float wakeLength=0.2+1.0*slide;
+        float behind=-delta.y;
+        float wake=(1.0-smoothstep(0.035,0.08+pixel*0.3,abs(delta.x)))
+                  *smoothstep(0.0,0.12,behind)*(1.0-smoothstep(0.1,wakeLength,behind));
+        mask=max(mask,(cap*cap*energy+wake*0.25)*life);
+    }
+    return vec4(gradient,clamp(mask,0.0,1.0))*eligible*resolved;
+}
+
 // Stable broad puddles, separate from the fine impact pattern.
 float surfaceWetNoise(vec2 p) {
     vec2 cell=floor(p), f=fract(p);
