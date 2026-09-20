@@ -7,15 +7,33 @@ vec2 surfaceWaterWeights(float upwardness) {
     return vec2(wet,puddle);
 }
 
-float getSurfaceRivulets(vec3 p, vec3 normal) {
+float getSurfaceRivulets(vec3 p, vec3 normal, bool building) {
     // Use the actual surface tangent, including height, so steep roofs do not
     // compress their flow into almost stationary bands in the XZ plane.
     vec3 downhill = vec3(0,-1,0)+normal*normal.y;
     if (dot(downhill,downhill)<0.00001) downhill=vec3(1,0,0);
     downhill=normalize(downhill);
     vec3 across=normalize(cross(normal,downhill));
-    float along=dot(p,downhill);
-    float crossSlope=dot(p,across);
+    // Double spatial frequency: runoff features are half their former size.
+    float along=dot(p,downhill)*2.0;
+    float crossSlope=dot(p,across)*2.0;
+    // Measure the pixel on the surface, holding its local frame fixed. Taking
+    // derivatives of dot(worldPosition, varyingNormal) introduces a spurious
+    // worldPosition*dNormal term, erasing channels on curved/quantized slopes.
+    vec3 pixelX=dFdx(p)*2.0, pixelY=dFdy(p)*2.0;
+    vec2 uvX=vec2(dot(pixelX,across)/5.0,dot(pixelX,downhill)/18.0);
+    vec2 uvY=vec2(dot(pixelY,across)/5.0,dot(pixelY,downhill)/18.0);
+    float footprint=max(length(uvX),length(uvY));
+    float travel=along*0.65-time*5.0+0.7*sin(crossSlope*0.23);
+    float beads=0.4+0.6*pow(0.5+0.5*sin(travel),3.0);
+    if(building) {
+        // Manufactured surfaces shed into mostly straight, gently wandering lanes.
+        float lane=crossSlope*0.125+sin(along*0.075)*0.16;
+        float distance=abs(fract(lane+0.5)-0.5);
+        float lanePixel=max(abs(dot(pixelX,across)),abs(dot(pixelY,across)))*0.125;
+        float channel=1.0-smoothstep(0.045,0.10+max(lanePixel*0.5,0.005),distance);
+        return channel*beads*(1.0-smoothstep(0.35,0.9,lanePixel));
+    }
     // A stationary, elongated UV Voronoi network supplies irregular channels,
     // forks and junctions. Only the water pulses move, monotonically downhill.
     vec2 flowUV=vec2(crossSlope/5.0,along/18.0);
@@ -30,13 +48,16 @@ float getSurfaceRivulets(vec3 p, vec3 normal) {
         else second=min(second,distance);
     }
     float edge=sqrt(second)-sqrt(nearest);
-    float footprint=max(length(dFdx(flowUV)),length(dFdy(flowUV)));
+
     float width=0.035+0.025*(0.5+0.5*sin(along*0.19+crossSlope*0.31));
     float channel=1.0-smoothstep(width,width+max(footprint*0.65,0.018),edge);
     channel*=1.0-smoothstep(0.35,0.9,footprint);
-    float travel=along*0.65-time*5.0+0.7*sin(crossSlope*0.23);
-    float beads=0.4+0.6*pow(0.5+0.5*sin(travel),3.0);
     return channel*beads;
+}
+
+// Terrain default for standalone surface probes.
+float getSurfaceRivulets(vec3 p, vec3 normal) {
+    return getSurfaceRivulets(p,normal,false);
 }
 
 // Stable broad puddles, separate from the fine impact pattern.
