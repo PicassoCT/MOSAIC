@@ -75,7 +75,7 @@ void main(){
  gl_FragColor=vec4(wet.rgb*wet.a+texture2D(screentex,uv).rgb*(1.0-wet.a)+runoffEnergy,1);
 }
 '''
-without=prefix.replace('vec4 roofWaterBeads(', 'vec4 unusedRoofWaterBeads(')
+without=prefix.replace('vec4 roofWaterBeads(', 'vec4 unusedRoofWaterBeads(').replace('return roofWaterBeads(', 'return unusedRoofWaterBeads(')
 without=without.replace('vec4 GetGroundReflectionRipples(', 'vec4 roofWaterBeads(vec3 p,vec3 n,bool b){return vec4(0);}\nvec4 GetGroundReflectionRipples(')
 bead_programs=[program(vert,without+body),program(vert,prefix+body)]
 for background in [.12,.7]:

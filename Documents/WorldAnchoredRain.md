@@ -346,3 +346,28 @@ continuous wet channels, and final additive composition. The terrain dome test
 samples a four-times larger world patch to accommodate the restored channel size.
 A 24-frame synthetic splash render was inspected as a contact sheet (5x display
 gain); it is not an in-game preview or evidence of a photographic match.
+
+## Bead collection and relief shading (2026-09-20)
+
+Building runoff replaces persistent lanes with seeded bead-and-wake events.
+Beads grow in place; a larger head advances in three downhill bursts separated by
+rests, clears the beads it passes, and leaves a short meandering wake that fades.
+The head grows with travel to suggest collection. This is analytic visual
+collection, not conserved water mass or a history buffer. Timing and path offsets
+vary by event. Two fixed world charts crossfade over changing roof normals; both
+advance along negative world Y, avoiding an abrupt dominant-axis switch.
+
+Beads and wakes use rounded cap gradients, the ripple lighting scale, and opposing
+highlight/shadow faces. Terrain channels also perturb the normal. Removed the
+uniform additive channel/bead colour which made runoff look like painted stripes.
+Terrain paths retain the previous Voronoi layout; this change addresses their
+shading, not a new hydraulic path solver. Runoff and building beads are clipped at
+world Y=0 (the engine sea plane), including the terrain gradient contribution.
+Pond ripple profiles, falling rain and splashback are unchanged.
+
+Validation: production shader compile/link; composition and lighting tests;
+bead coverage at gameplay footprints; monotone paused downhill travel; building
+coverage in all eight dome sectors over time; submerged terrain/building rejection.
+A 32-frame synthetic shaded roof sequence was inspected as a contact sheet at
+normal display gain. In-game direction, performance and visual balance still need
+review. The paired chart evaluations increase building-water shader work.
