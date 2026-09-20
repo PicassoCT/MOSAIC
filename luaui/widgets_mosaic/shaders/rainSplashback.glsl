@@ -100,9 +100,13 @@ vec4 drawRainSplashback(vec3 surface, vec3 encodedNormal, vec3 rayDir,
                     0.5+0.5*sin(glitterTime*5.0 + seed.x*31.0 + float(j)));
                 tint += rainLocalLight(drop) * (0.15 + glint*0.7);
             }
-            sumRGB += tint*coverage*0.6;
-            sumAlpha += coverage;
+            // Transparent body with a reflective rim, rather than a filled dot.
+            float rim=clamp(separation/(radius+footprint*0.25),0.0,1.0);
+            float facing=sqrt(max(1.0-rim*rim,0.0));
+            float fresnel=0.02+0.98*pow(1.0-facing,5.0);
+            sumRGB += tint*coverage*(0.16+0.44*fresnel);
+            sumAlpha += coverage*(0.25+0.3*fresnel);
         }
     }
-    return vec4(sumRGB/max(sumAlpha, 0.00001), min(sumAlpha, 0.45));
+    return vec4(sumRGB/max(sumAlpha, 0.00001), min(sumAlpha, 0.22));
 }

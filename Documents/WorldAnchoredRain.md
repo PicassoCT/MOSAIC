@@ -293,3 +293,28 @@ Tests check continuous runoff coverage through a cycle, roof bead coverage at
 without beads on bright/dark backgrounds. Curved-surface and material tests pass.
 These synthetic GPU checks cannot establish a match to the concept render or
 replace in-game review.
+
+## Variable widths and transparent water highlights (2026-09-20)
+
+Building lane widths now use deterministic channel seeds (0.45–1.8 width factor)
+and smooth local variation along each lane. Terrain Voronoi boundary widths use
+smooth world-anchored noise instead of a regular sinusoidal width. The continuous
+lit baseline and independently timed gentle swells remain.
+
+Splashback has a weaker body contribution and a stronger edge response from an
+approximate rounded water cross-section. Alpha contribution is reduced and capped
+at 0.22 instead of 0.45, while edge highlights retain their former peak lighting
+factor. The compositor already preserves the background additively, so reduced
+body light, not alpha alone, supplies the less opaque appearance. Splash geometry,
+size, timing and source occlusion are unchanged.
+
+Foreground rain adds rounded cross-section normals, directional highlights and a
+Schlick air/water Fresnel approximation (F0=0.02). This treatment is strongest
+within 80 world units and fades to the established streak lighting by 240 units.
+It uses the existing sky/sun/radiance illumination; it is not environment-map
+reflection or physically traced refraction. Distant precipitation keeps its prior
+appearance, and pond ripple code is unchanged.
+
+Production GPU suites pass for final half-float composition, near-rain lighting
+hues, splash source/foreground occlusion and visibility, and runoff temporal and
+curved-surface behavior. In-game review is still needed for the artistic balance.

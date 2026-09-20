@@ -12,6 +12,11 @@ vec3 rainCellSeed(vec3 cell) {
     return fract((q.xxy + q.yzz) * q.zyx);
 }
 
+// Schlick approximation for an air/water interface (F0 approximately 2%).
+float rainWaterFresnel(float facing) {
+    return 0.02+0.98*pow(1.0-clamp(facing,0.0,1.0),5.0);
+}
+
 vec4 drawWorldRain(vec3 direction, float sceneDistance) {
     // Evaluate derivatives before divergent branches/loops.
     float pixelAngle = max(length(dFdx(direction)), length(dFdy(direction)));
@@ -84,8 +89,26 @@ vec4 drawWorldRain(vec3 direction, float sceneDistance) {
                     if (rainLightActive > 0.5) light = rainLocalLight(drop);
                     float pulse = smoothstep(0.55,0.95,
                         0.5+0.5*sin(glitterTime*5.0 + seed.x*31.0));
-                    sumRGB += (atmosphere + light*(0.15+pulse*0.7))*coverage;
-                    sumAlpha += coverage;
+                    vec3 dropLight=atmosphere+light*(0.15+pulse*0.7);
+                    float opacity=1.0;
+                    // Resolve a rounded water cross-section only for foreground
+                    // streaks; preserve the distant rain's established appearance.
+                    float closeDetail=1.0-smoothstep(80.0,240.0,t);
+                    if(closeDetail>0.001) {
+                        vec3 radial=eyePos+direction*t-drop;
+                        float rim=clamp(separation/(radius+footprint*0.25),0.0,1.0);
+                        float facing=sqrt(max(1.0-rim*rim,0.0));
+                        vec3 waterNormal=normalize(radial/max(separation,0.0001)*rim-direction*max(facing,0.001));
+                        float fresnel=rainWaterFresnel(facing);
+                        vec3 l=dot(sunPos,sunPos)>0.001 ? normalize(sunPos) : vec3(0,1,0);
+                        vec3 h=normalize(l-direction+vec3(0,0.0001,0));
+                        float glint=pow(max(dot(waterNormal,h),0.0),64.0);
+                        vec3 reflected=(atmosphere+light)*(0.22+0.78*fresnel)+atmosphere*glint*0.5;
+                        dropLight=mix(dropLight,reflected,closeDetail);
+                        opacity=mix(1.0,0.3+0.7*fresnel,closeDetail);
+                    }
+                    sumRGB += dropLight*coverage;
+                    sumAlpha += coverage*opacity;
                 }
             }
         }
