@@ -148,7 +148,7 @@ for upwardness in [0,.3,.45,.6,.8,.92,.94,.96,.98,.995,1]:
     uf(loc(water_program,b'testUp'),upwardness)
     pixels=render(water_program); wet,puddle=pixels[:2]
     assert wet>=last[0] and puddle>=last[1],('nonmonotonic slope blend',upwardness)
-    if upwardness<=.25: assert wet==0 and puddle==0
+    if upwardness<=.05: assert wet==0 and puddle==0
     if upwardness==1: assert wet==1 and puddle==1
     if upwardness==.98: assert 0<puddle<1
     last=(wet,puddle)

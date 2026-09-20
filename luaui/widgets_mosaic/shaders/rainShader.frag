@@ -379,6 +379,36 @@ vec3 GetGroundVertexNormal(vec2 theUV, out bool IsOnGround, out bool IsOnUnit,
     return encodedNormal;
 }
 
+// G-buffer normals describe shading (including material normal maps), not
+// necessarily drainage geometry. Reconstruct the same world-space slope for
+// map and model surfaces. Shorter one-sided tangents avoid crossing silhouettes.
+float rainSurfaceDepth(vec2 at, bool unitSurface) {
+    return unitSurface ? texture2D(modelDepthTex,at).r : texture2D(mapDepthTex,at).r;
+}
+vec3 rainGeometryNormal(vec2 at, bool unitSurface, vec3 fallback) {
+    if(min(viewPortSize.x,viewPortSize.y)<1.0) return fallback;
+    float depth=rainSurfaceDepth(at,unitSurface);
+    if(depth>=0.999999) return fallback;
+    vec2 texel=1.0/viewPortSize;
+    vec3 p=GetWorldPosAtUV(at,depth);
+    vec3 tangents[4];
+    for(int i=0;i<4;++i) {
+        vec2 offset=i==0 ? vec2(texel.x,0) : i==1 ? vec2(-texel.x,0)
+                    : i==2 ? vec2(0,texel.y) : vec2(0,-texel.y);
+        vec2 neighbor=at+offset;
+        float d=rainSurfaceDepth(neighbor,unitSurface);
+        bool valid=d<0.999999 && all(greaterThanEqual(neighbor,vec2(0)))
+                                  && all(lessThanEqual(neighbor,vec2(1)));
+        tangents[i]=valid ? GetWorldPosAtUV(neighbor,d)-p : vec3(1.0e10);
+    }
+    vec3 dx=dot(tangents[0],tangents[0])<dot(tangents[1],tangents[1]) ? tangents[0] : -tangents[1];
+    vec3 dy=dot(tangents[2],tangents[2])<dot(tangents[3],tangents[3]) ? tangents[2] : -tangents[3];
+    vec3 n=cross(dx,dy);
+    if(dot(n,n)<1.0e-12 || max(dot(dx,dx),dot(dy,dy))>1.0e18) return fallback;
+    n=normalize(n);
+    return dot(n,eyePos-p)<0.0 ? -n : n;
+}
+
 vec3 sampleNormal(const int x, const int y, in vec2 fragCoord)
 {
 	vec2 ouv = fragCoord + vec2(x, y) / viewPortSize.xy;
@@ -535,7 +565,7 @@ vec4 GetGroundReflectionRipples(vec3 pixelPos)
     vec3 n = normalize(vertexNormal*2.0-1.0);
     vec2 water = surfaceWaterWeights(n.y);
     float channels = getSurfaceRivulets(pixelPos,n);
-    vec2 rings = surfaceRippleProfile(pixelPos.xz);
+    vec2 rippleSlope = surfaceRippleProfile(pixelPos.xz);
     float puddle = surfacePuddleMask(pixelPos.xz);
     runoffCoverage = water.x*(1.0-water.y)*channels;
     float coverage = water.x*mix(channels,0.35+0.65*puddle,water.y);
@@ -555,10 +585,17 @@ vec4 GetGroundReflectionRipples(vec3 pixelPos)
     vec3 target = scene*mix(0.68,0.86,water.y) + max(skyCol,vec3(0))*fresnel*0.08;
     target = mix(target,reflected.rgb/max(reflected.a,0.0001),
                  reflected.a*water.y*puddle*(0.3+fresnel));
-    // A dark trough beside the crest makes a ring readable on bright roofs too.
-    target *= 1.0-rings.y*water.y*0.5;
     float ringWetness = water.x*water.y*(0.4+0.6*puddle);
-    runoffEnergy = lighting*(rings.x*ringWetness + runoffCoverage*(2.0*channels*channels*channels));
+    vec3 rippleNormal=normalize(n-vec3(rippleSlope.x,0,rippleSlope.y)*ringWetness);
+    vec3 lightDirection=dot(sunPos,sunPos)>0.001 ? normalize(sunPos) : normalize(vec3(0.4,0.7,0.3));
+    vec3 halfDirection=normalize(lightDirection+toEye+vec3(0,0.0001,0));
+    float curvedLight=dot(rippleNormal-n,lightDirection)*2.5;
+    float glint=pow(max(dot(rippleNormal,halfDirection),0.0),32.0)
+               -pow(max(dot(n,halfDirection),0.0),32.0);
+    // Opposing light/dark faces give the ridge relief without a drawn outline.
+    target*=1.0-0.65*max(-curvedLight,0.0)-0.22*max(-glint,0.0);
+    runoffEnergy=lighting*(0.65*max(curvedLight,0.0)+0.45*max(glint,0.0)
+                         +runoffCoverage*(1.2*channels*channels*channels));
     return vec4(max(target,vec3(0)),coverage*0.65);
 }
 
@@ -719,6 +756,12 @@ void main(void)
 	worldPos = GetWorldPosAtUV(uv, depthAtPixel.r);
 
 	vertexNormal = GetGroundVertexNormal(uv,  NormalIsOnGround,  NormalIsOnUnit, NormalIsWaterPuddle, NormalIsSky);
+    if(!NormalIsSky) {
+        vec3 geometryNormal=rainGeometryNormal(uv,NormalIsOnUnit,normalize(vertexNormal*2.0-1.0));
+        vertexNormal=geometryNormal*0.5+0.5;
+        NormalIsWaterPuddle=geometryNormal.y>=0.99;
+    }
+
 
     if (reflectionDebug > 0.5)
     {
