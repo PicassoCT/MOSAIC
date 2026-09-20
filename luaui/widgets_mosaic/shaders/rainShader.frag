@@ -597,13 +597,13 @@ vec4 GetGroundReflectionRipples(vec3 pixelPos)
     // Opposing light/dark faces give the ridge relief without a drawn outline.
     target*=1.0-0.65*max(-curvedLight,0.0)-0.22*max(-glint,0.0);
     runoffEnergy=lighting*(0.65*max(curvedLight,0.0)+0.45*max(glint,0.0)
-                         +runoffCoverage*(1.2*channels*channels*channels));
+                         +runoffCoverage*(0.42+0.08*channels));
     vec3 beadNormal=normalize(n-roofBeads.xyz);
     float beadLight=dot(beadNormal-n,lightDirection);
     float beadGlint=max(0.0,pow(max(dot(beadNormal,halfDirection),0.0),48.0)
                               -pow(max(dot(n,halfDirection),0.0),48.0));
-    target*=1.0-0.45*max(-beadLight,0.0);
-    runoffEnergy+=lighting*(0.65*max(beadLight,0.0)+0.5*beadGlint);
+    target*=1.0-0.45*max(-beadLight,0.0)-0.12*roofBeads.w;
+    runoffEnergy+=lighting*(0.65*max(beadLight,0.0)+0.5*beadGlint+0.28*roofBeads.w);
     return vec4(max(target,vec3(0)),coverage*0.65);
 }
 
@@ -770,6 +770,23 @@ void main(void)
         NormalIsWaterPuddle=geometryNormal.y>=0.99;
     }
 
+
+    if(rainDetailDebug>3.5) {
+        if(NormalIsSky) { gl_FragColor=vec4(0,0,0,1); return; }
+        vec3 n=normalize(vertexNormal*2.0-1.0);
+        if(rainDetailDebug>4.5) {
+            vec4 beads=roofWaterBeads(worldPos,n,NormalIsOnUnit);
+            gl_FragColor=vec4(vec3(clamp(beads.w*4.0,0.0,1.0)),1);
+        } else {
+            // Four engine units along each selected world projection axis.
+            vec3 an=abs(n);
+            vec2 chart=an.y>=max(an.x,an.z) ? worldPos.xz : an.x>an.z ? worldPos.zy : worldPos.xy;
+            float check=mod(floor(chart.x/4.0)+floor(chart.y/4.0),2.0);
+            vec3 tint=NormalIsOnUnit ? vec3(0.1,0.8,0.9) : vec3(1.0,0.5,0.12);
+            gl_FragColor=vec4(mix(tint*0.2,tint,check),1);
+        }
+        return;
+    }
 
     if (reflectionDebug > 0.5)
     {

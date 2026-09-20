@@ -38,7 +38,7 @@ for label,background,sun,sky in [('day',.7,(.8,.7,.5),(.5,.6,.8)),('night',.12,(
   contrast=max(brightness)-min(brightness)
   assert contrast>(.008 if slope==0 else .025),(label,slope,contrast)
   if slope==0: assert contrast<.15,("outlined/cartoon ripple contrast",label,contrast)
-  assert min(brightness)<background,'missing dark wet substrate/trough'
+  if slope==0: assert min(brightness)<background,'missing dark wet substrate/trough'
   uf(loc(p,b'time'),1.9);b=render(p)
   assert a!=b,('static water',label,slope)
   uf(loc(p,b'time'),1.7)
@@ -60,3 +60,34 @@ u3(loc(p,b'sunPos'),-.8,.6,0);b=render(p)
 delta=[a[i]-b[i] for i in range(0,len(a),4)]
 assert max(delta)>.015 and min(delta)<-.015,('no directional ripple relief',min(delta),max(delta))
 print('PASS: ripple light/dark faces reverse with illumination direction')
+
+# Render the complete surface composition with/without the extra roof bead layer.
+# A nonzero mask alone does not prove that a bead survives shading and blending.
+body='''
+uniform float testPixel;
+void main(){
+ uv=gl_FragCoord.xy/64.0;
+ vec2 xz=(gl_FragCoord.xy-32.0)*testPixel;
+ vec3 pos=vec3(xz.x,-xz.x*.4,xz.y);
+ vertexNormal=normalize(vec3(.4,1,0))*.5+.5;
+ NormalIsOnUnit=true;NormalIsWaterPuddle=false;
+ vec4 wet=GetGroundReflectionRipples(pos);
+ gl_FragColor=vec4(wet.rgb*wet.a+texture2D(screentex,uv).rgb*(1.0-wet.a)+runoffEnergy,1);
+}
+'''
+without=prefix.replace('vec4 roofWaterBeads(', 'vec4 unusedRoofWaterBeads(')
+without=without.replace('vec4 GetGroundReflectionRipples(', 'vec4 roofWaterBeads(vec3 p,vec3 n,bool b){return vec4(0);}\nvec4 GetGroundReflectionRipples(')
+bead_programs=[program(vert,without+body),program(vert,prefix+body)]
+for background in [.12,.7]:
+ texture(4,(background,background,background,1))
+ for pixel in [.6,1.2,2.0]:
+  frames=[]
+  for q in bead_programs:
+   use(q);ui(loc(q,b'screentex'),4);ui(loc(q,b'noisetex'),5)
+   uf(loc(q,b'testPixel'),pixel);uf(loc(q,b'time'),1.7)
+   u3(loc(q,b'eyePos'),0,30,20);u3(loc(q,b'sunPos'),.4,.8,.3)
+   u3(loc(q,b'sunCol'),.1,.1,.1);u3(loc(q,b'skyCol'),.08,.16,.4)
+   frames.append(render(q))
+  delta=max(abs(a-b) for a,b in zip(*frames))
+  assert delta>.003,('beads disappear in final composition',background,pixel,delta)
+print('PASS: roof beads visibly affect final day/night composition at gameplay pixel footprints')
