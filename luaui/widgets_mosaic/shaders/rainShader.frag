@@ -564,9 +564,10 @@ vec4 GetGroundReflectionRipples(vec3 pixelPos)
 {
     vec3 n = normalize(vertexNormal*2.0-1.0);
     vec2 water = surfaceWaterWeights(n.y);
-    float channels = getSurfaceRivulets(pixelPos,n,NormalIsOnUnit);
+    float channels = NormalIsOnUnit ? 0.0 : getSurfaceRivulets(pixelPos,n,false);
     vec2 rippleSlope = surfaceRippleProfile(pixelPos.xz);
     vec4 roofBeads = roofWaterBeads(pixelPos,n,NormalIsOnUnit);
+    vec3 channelGradient=runoffHeightGradient(channels*0.06,pixelPos,n)*water.x*(1.0-water.y)*step(0.0,pixelPos.y);
     float puddle = surfacePuddleMask(pixelPos.xz);
     runoffCoverage = water.x*(1.0-water.y)*channels;
     float coverage = water.x*mix(channels,0.35+0.65*puddle,water.y);
@@ -597,13 +598,13 @@ vec4 GetGroundReflectionRipples(vec3 pixelPos)
     // Opposing light/dark faces give the ridge relief without a drawn outline.
     target*=1.0-0.65*max(-curvedLight,0.0)-0.22*max(-glint,0.0);
     runoffEnergy=lighting*(0.65*max(curvedLight,0.0)+0.45*max(glint,0.0)
-                         +runoffCoverage*(0.42+0.08*channels));
-    vec3 beadNormal=normalize(n-roofBeads.xyz);
-    float beadLight=dot(beadNormal-n,lightDirection);
-    float beadGlint=max(0.0,pow(max(dot(beadNormal,halfDirection),0.0),48.0)
-                              -pow(max(dot(n,halfDirection),0.0),48.0));
-    target*=1.0-0.45*max(-beadLight,0.0)-0.12*roofBeads.w;
-    runoffEnergy+=lighting*(0.65*max(beadLight,0.0)+0.5*beadGlint+0.28*roofBeads.w);
+                         );
+    vec3 beadNormal=normalize(n-roofBeads.xyz-channelGradient);
+    float beadLight=dot(beadNormal-n,lightDirection)*2.5;
+    float beadGlint=max(0.0,pow(max(dot(beadNormal,halfDirection),0.0),32.0)
+                              -pow(max(dot(n,halfDirection),0.0),32.0));
+    target*=1.0-0.65*max(-beadLight,0.0);
+    runoffEnergy+=lighting*(0.65*max(beadLight,0.0)+0.45*beadGlint);
     return vec4(max(target,vec3(0)),coverage*0.65);
 }
 

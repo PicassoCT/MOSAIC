@@ -18,6 +18,7 @@ vec2 runoffChart(vec3 p, vec3 across) {
     return vec2(dot(p,across),-p.y*1.41421356);
 }
 float surfaceWetNoise(vec2 p);
+vec4 roofWaterBeads(vec3 p, vec3 normal, bool building);
 float getSurfaceRivulets(vec3 p, vec3 normal, bool building) {
     vec3 across=runoffChartAcross(normal);
     vec2 at=runoffChart(p,across);
@@ -34,15 +35,7 @@ float getSurfaceRivulets(vec3 p, vec3 normal, bool building) {
     vec3 timing=hash3(vec2(laneID,building ? 31.0 : 59.0));
     float travel=along*(0.48+0.25*timing.y)-time*(2.5+2.0*timing.x)+timing.z*6.2831853;
     float beads=0.92+0.08*pow(0.5+0.5*sin(travel),3.0);
-    if(building) {
-        float lane=crossSlope*0.125+sin(along*0.075)*0.16;
-        float distance=abs(fract(lane+0.5)-0.5);
-        float lanePixel=max(abs(pixelX.x),abs(pixelY.x))*0.125;
-        float widthScale=mix(0.45,1.8,timing.z);
-        widthScale*=mix(0.8,1.2,surfaceWetNoise(vec2(laneID,at.y*0.18)));
-        float channel=1.0-smoothstep(0.045*widthScale,0.10*widthScale+max(lanePixel*0.5,0.005),distance);
-        return channel*beads*(1.0-smoothstep(0.35,0.9,lanePixel));
-    }
+    if(building) return roofWaterBeads(p,normal,true).w;
     // A stationary, elongated UV Voronoi network supplies irregular channels,
     // forks and junctions. Only the water pulses move, monotonically downhill.
     vec2 flowUV=vec2(crossSlope/5.0,along/18.0);
@@ -68,7 +61,7 @@ float getSurfaceRivulets(vec3 p, vec3 normal, bool building) {
     vec2 edgeNormal=normalize(secondOffset-nearOffset+vec2(0.00001));
     float downhill=smoothstep(0.2,0.75,abs(edgeNormal.x));
     float surge=pow(0.5+0.5*sin(travel+surfaceWetNoise(flowUV)*2.0),3.0);
-    return channel*downhill*(0.72+0.28*surge);
+    return channel*downhill*(0.72+0.28*surge)*step(0.0,p.y);
 }
 
 // Terrain default for standalone surface probes.
@@ -76,47 +69,88 @@ float getSurfaceRivulets(vec3 p, vec3 normal) {
     return getSurfaceRivulets(p,normal,false);
 }
 
-// Original roof-space bead model, visually inspired by BigWings' Heartfelt.
-// Analytic ellipsoidal caps and short wakes; no screen-glass shader code used.
-// xyz: world-space height gradient, w: bead/wake coverage.
-vec4 roofWaterBeads(vec3 p, vec3 normal, bool building) {
-    vec2 water=surfaceWaterWeights(normal.y);
-    float eligible=building ? water.x*(1.0-water.y) : 0.0;
-    vec3 chartAcross=runoffChartAcross(normal);
-    vec2 at=runoffChart(p,chartAcross);
-    vec3 across=chartAcross-normal*dot(normal,chartAcross);
-    vec3 down=(vec3(0,-1,0)+normal*normal.y)*1.41421356;
-    float pixel=max(length(dFdx(p)),length(dFdy(p)));
-    float resolved=1.0-smoothstep(2.0,5.0,pixel);
-    if(eligible*resolved<0.0001) return vec4(0);
+// Stop-and-go motion is monotone: each smooth burst is separated by a rest.
+float roofTravel(float age) {
+    return 0.30*smoothstep(0.40,0.52,age)
+         + 0.35*smoothstep(0.61,0.72,age)
+         + 0.35*smoothstep(0.80,0.94,age);
+}
+vec2 roofPath(float y, vec3 seed) {
+    float phase=seed.z*6.2831853;
+    return vec2(0.28*sin(y*0.85+phase)+0.12*sin(y*1.9+phase),
+                0.238*cos(y*0.85+phase)+0.228*cos(y*1.9+phase));
+}
+// Analytic cap: xyz is the chart-space gradient and height; w is coverage.
+vec4 roofCap(vec2 delta, vec2 radius, float pixel) {
+    vec2 filtered=sqrt(radius*radius+vec2(pixel*pixel*0.16));
+    vec2 q=delta/filtered;
+    float cap=max(1.0-dot(q,q),0.0);
+    float energy=radius.x*radius.y/(filtered.x*filtered.y);
+    return vec4(-4.0*q/filtered*cap*0.08*energy,
+                cap*cap*0.08*energy,cap*cap*energy);
+}
+vec4 roofChartWater(vec2 at, float pixel) {
     vec2 cell=floor(at/vec2(3,6));
-    vec3 gradient=vec3(0);
-    float mask=0.0;
+    vec4 water=vec4(0);
     for(int y=-1;y<=1;++y) for(int x=-1;x<=1;++x) {
         vec2 id=cell+vec2(x,y);
         vec3 seed=hash3(id+vec2(71,19));
-        float age=fract(time*(0.14+0.08*seed.x)+seed.z);
-        // Grow in place, then accelerate downhill; fade before the reset.
-        float slide=max(age-0.55,0.0)/0.45;
-        float head=id.y*6.0+0.4+4.8*slide*slide;
-        float centre=id.x*3.0+(seed.y-0.5)*1.2-0.16*sin(head*0.6);
-        vec2 delta=at-vec2(centre,head);
-        vec2 radius=vec2(0.45+0.35*seed.y,0.67+0.51*seed.x);
-        radius*=mix(0.45,1.0,smoothstep(0.0,0.55,age));
-        vec2 filtered=sqrt(radius*radius+vec2(pixel*pixel*0.16));
-        vec2 q=delta/filtered;
-        float cap=max(1.0-dot(q,q),0.0);
-        float life=smoothstep(0.0,0.12,age)*(1.0-smoothstep(0.85,1.0,age));
-        float energy=radius.x*radius.y/(filtered.x*filtered.y);
-        vec2 slope=-4.0*q/filtered*cap*0.22*life*energy;
-        gradient+=across*slope.x+down*slope.y;
-        float wakeLength=0.2+1.0*slide;
-        float behind=-delta.y;
-        float wake=(1.0-smoothstep(0.035,0.08+pixel*0.3,abs(delta.x)))
-                  *smoothstep(0.0,0.12,behind)*(1.0-smoothstep(0.1,wakeLength,behind));
-        mask=max(mask,(cap*cap*energy+wake*0.25)*life);
+        float age=fract(time*(0.10+0.07*seed.x)+seed.z);
+        float travel=roofTravel(age);
+        float head=id.y*6.0+travel*5.5;
+        float base=id.x*3.0+(seed.y-0.5)*1.3;
+        float life=1.0-smoothstep(0.95,1.0,age);
+        // Stationary beads are cleared as the head passes their position.
+        for(int b=0;b<3;++b) {
+            float by=id.y*6.0+0.8+float(b)*1.65
+                     +0.45*(hash3(id+vec2(float(b)*17.0,93)).x-0.5);
+            vec2 path=roofPath(by,seed);
+            float collected=smoothstep(by-0.25,by+0.25,head);
+            float grow=smoothstep(0.0,0.24+0.04*float(b),age);
+            vec2 radius=vec2(0.35+0.18*seed.y,0.48+0.18*seed.x)*mix(0.4,1.0,grow);
+            water+=roofCap(at-vec2(base+path.x,by),radius,pixel)*grow*(1.0-collected)*life;
+        }
+        vec2 headPath=roofPath(head,seed);
+        float moving=smoothstep(0.37,0.42,age)*life;
+        water+=roofCap(at-vec2(base+headPath.x,head),vec2(0.48,0.64)*(0.8+0.4*travel),pixel)*moving;
+        // Temporary meandering wake, limited to the recently traversed path.
+        vec2 path=roofPath(at.y,seed);
+        float dx=at.x-base-path.x;
+        float width=0.055+seed.y*0.045;
+        float filtered=sqrt(width*width+pixel*pixel*0.16);
+        float q=dx/filtered;
+        float behind=head-at.y;
+        float window=smoothstep(0.0,0.25,behind)*(1.0-smoothstep(0.5,1.8,behind));
+        float h=exp(-q*q)*0.035*width/filtered*window*moving;
+        float gx=-2.0*q/filtered*h;
+        water+=vec4(gx,-gx*path.y,h,h/0.08);
     }
-    return vec4(gradient,clamp(mask,0.0,1.0))*eligible*resolved;
+    return water;
+}
+// Two fixed world projections crossfade instead of abruptly switching axes.
+// Both use -worldY: a travelling head can only move down in world height.
+vec4 roofWaterBeads(vec3 p, vec3 normal, bool building) {
+    vec2 wet=surfaceWaterWeights(normal.y);
+    float eligible=building ? wet.x*(1.0-wet.y)*step(0.0,p.y) : 0.0;
+    float pixel=max(length(dFdx(p)),length(dFdy(p)));
+    float resolved=1.0-smoothstep(2.0,5.0,pixel);
+    if(eligible*resolved<0.0001) return vec4(0);
+    float weight=smoothstep(0.2,0.8,normal.z*normal.z/max(dot(normal.xz,normal.xz),0.00001));
+    vec4 a=roofChartWater(vec2(p.x,-p.y*1.41421356),pixel);
+    vec4 b=roofChartWater(vec2(p.z,-p.y*1.41421356),pixel);
+    vec3 gradient=vec3(a.x*weight,-mix(b.y,a.y,weight)*1.41421356,b.x*(1.0-weight));
+    gradient-=normal*dot(normal,gradient);
+    return vec4(gradient,clamp(mix(b.w,a.w,weight),0.0,1.0))*eligible*resolved;
+}
+
+// Convert a sampled height field into a world tangent gradient. Clamp silhouette
+// discontinuities; the channel mask itself is never used as emitted colour.
+vec3 runoffHeightGradient(float height, vec3 p, vec3 n) {
+    vec3 dx=dFdx(p),dy=dFdy(p);
+    vec3 a=cross(dy,n),b=cross(n,dx);
+    float det=dot(dx,a);
+    vec3 gradient=(a*dFdx(height)+b*dFdy(height))/(abs(det)>0.00001 ? det : 1.0);
+    return gradient/max(1.0,length(gradient)/0.25);
 }
 
 // Stable broad puddles, separate from the fine impact pattern.
