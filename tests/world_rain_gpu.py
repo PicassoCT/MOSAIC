@@ -138,7 +138,7 @@ print('PASS: camera pan preserves identical world-ray precipitation (63x64 pixel
 water_program=program(vert,prefix+'''
 uniform float testUp;
 void main(){vec2 w=surfaceWaterWeights(testUp);
-float r=getSurfaceRivulets(vec3(gl_FragCoord.x*0.25,0,gl_FragCoord.y*0.25),
+float r=getSurfaceRivulets(vec3(gl_FragCoord.x*0.25,20,gl_FragCoord.y*0.25),
                           normalize(vec3(0.4,0.9,0.2)));
 gl_FragColor=vec4(w,r,1);}
 ''')

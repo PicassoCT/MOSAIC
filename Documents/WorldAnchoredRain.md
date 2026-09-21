@@ -399,3 +399,27 @@ camera footprints, bright/dark film composition, terrain orientations, submerged
 rejection and additive rain composition. The film contrast test now checks softer
 continuous detail instead of the previous discrete-channel contrast threshold.
 Synthetic shaded terrain was inspected; game-scale appearance still needs review.
+
+## Rain progression refinement (September 21)
+
+Building stationary and moving bead radii are halved again without rescaling
+cluster positions or rivulet widths. Temporary runoff activates by stable seeded
+rain thresholds, leaving more resting beads at light rain. Fixed stream density
+retains the calibrated linear rule (0.1 through 1.0 streams/visual metre).
+
+Terrain film now contains softly filtered, elongated Voronoi ridges, continuously
+advected downhill inside the existing noise film. Both world projections blend
+smoothly and use the building/ripple normal-lighting treatment. The film fades
+across 1.5 engine units above sea level and is absent below water. This supersedes
+the preceding noise-only terrain treatment; ocean rendering remains independent.
+
+A cheap three-sheet angular distant-rain layer supplements world-space rain at
+900/1350/1800 units, clipped by scene depth and the rain-height slab. It is an
+approximate 2D atmosphere effect, not world-anchored particles. Visibility scales
+once with rainPercent in the compositor. Near rain and splashback are unchanged.
+
+Validation: production GLSL compile/link and GPU suites for beads, fixed streams,
+terrain directions, surface lighting, composition, distant depth/animation and
+rain values 0.0–1.0. Rain-distance checks allow 8-bit readback quantization.
+The ten-panel generated concept sheet is an artistic target, not a GPU result
+or an engine capture. In-game scale, performance and appearance need review.
