@@ -71,6 +71,8 @@ return function(emissionSize, singleOutput)
     local function loc(shader,name) return gl.GetUniformLocation(shader,name) end
     self.previewExposureLoc=loc(self.previewShader,"exposure")
     self.texturedLoc=loc(self.emissionShader,"textured")
+    self.emissionStrengthLoc=loc(self.emissionShader,"emissionStrength")
+    self.projectToBandLoc=loc(self.emissionShader,"projectToBand")
     self.atlasSizeLoc=loc(self.emissionShader,"atlasSize")
     self.heightLoc=loc(self.emissionShader,"heightRange")
     local indexLoc=loc(self.cascadeShader,"cascadeIndex")

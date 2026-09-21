@@ -37,13 +37,13 @@ function setup()
     hideDebugPieces()
     HideRadiancePieces(TablesOfPiecesGroups["CoolDown"])
     hideT(TablesOfPiecesGroups["Down"])
-    hideT(TablesOfPiecesGroups["Slice1Sub"])
-    hideT(TablesOfPiecesGroups["WeldSpot"])
+    HideRadiancePieces(TablesOfPiecesGroups["Slice1Sub"])
+    HideRadiancePieces(TablesOfPiecesGroups["WeldSpot"])
     hideT(TablesOfPiecesGroups["DeptSensor"])
-    hideT(TablesOfPiecesGroups["Arm1Drop"])
-    hideT(TablesOfPiecesGroups["Arm2Drop"])
-    hideT(TablesOfPiecesGroups["Arm3Drop"])
-    hideT(TablesOfPiecesGroups["Arm4Drop"])
+    HideRadiancePieces(TablesOfPiecesGroups["Arm1Drop"])
+    HideRadiancePieces(TablesOfPiecesGroups["Arm2Drop"])
+    HideRadiancePieces(TablesOfPiecesGroups["Arm3Drop"])
+    HideRadiancePieces(TablesOfPiecesGroups["Arm4Drop"])
     Hide(center)
     Hide(Boat)
     Hide( SensorRotator)
@@ -277,7 +277,7 @@ function GenerateContainerShipSlices()
 end
 
 function EmitSparks(armNr, slice)
-  hideT(TablesOfPiecesGroups["Arm"..armNr.."Drop"])
+  HideRadiancePieces(TablesOfPiecesGroups["Arm"..armNr.."Drop"])
   while Spring.UnitScript.IsInMove(slice, x_axis)  do
 
       for i=1,4 do
@@ -299,7 +299,7 @@ function EmitSparks(armNr, slice)
     end
   WaitMoveHidesT(TablesOfPiecesGroups["Arm"..armNr.."Drop"])
   resetT(TablesOfPiecesGroups["Arm"..armNr.."Drop"])
-  hideT(TablesOfPiecesGroups["Arm"..armNr.."Drop"])
+  HideRadiancePieces(TablesOfPiecesGroups["Arm"..armNr.."Drop"])
 end
 
 function weldLights(signal, weld, weldAlt)
@@ -422,7 +422,7 @@ function hideConstruction()
     HideRadiancePieces(ship)
     HideRadiancePieces(cool)
     HideRadiancePieces(slice)
-    hideT(TablesOfPiecesGroups["Slice1Sub"])
+    HideRadiancePieces(TablesOfPiecesGroups["Slice1Sub"])
 end
 
 travellDistancePrinter = 250 + (250*(1/37)) 
@@ -580,11 +580,11 @@ function updatePrinterCrane(step, speed, boolWait, slice, index)
     end
     if slice then
         WMove(slice, x_axis, 0, 0.125)
-        hideT(TablesOfPiecesGroups["Arm1Drop"])
-        hideT(TablesOfPiecesGroups["Arm2Drop"])
-        hideT(TablesOfPiecesGroups["Arm3Drop"])
-        hideT(TablesOfPiecesGroups["Arm4Drop"])
-        hideT(TablesOfPiecesGroups["WeldSpot"])
+        HideRadiancePieces(TablesOfPiecesGroups["Arm1Drop"])
+        HideRadiancePieces(TablesOfPiecesGroups["Arm2Drop"])
+        HideRadiancePieces(TablesOfPiecesGroups["Arm3Drop"])
+        HideRadiancePieces(TablesOfPiecesGroups["Arm4Drop"])
+        HideRadiancePieces(TablesOfPiecesGroups["WeldSpot"])
     end
     WMove(Printer, x_axis, position, speed)
 end
@@ -642,7 +642,7 @@ function coolYourShips(step, coolDownMap)
     -- 2. Move older hot slices into cooled state
     local coolIndex = step - slicesHot
     if coolIndex == 1 then
-        hideT(TablesOfPiecesGroups["Slice1Sub"])
+        HideRadiancePieces(TablesOfPiecesGroups["Slice1Sub"])
     end
 
 
@@ -671,7 +671,7 @@ function coolYourShips(step, coolDownMap)
        end 
        if ship[shipIndex] then 
            assert(cool[shipIndex], "ship[shipIndex]"..shipIndex)
-           ShowRadiancePiece(ship[shipIndex])
+           Show(ship[shipIndex])
        end
     end
 end
