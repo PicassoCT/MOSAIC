@@ -1008,8 +1008,7 @@ function unitInternalLogic(evtID, frame, persPack, startFrame, myID)
         local stateStartFrame = CivilianInternalDebugStateStartTabel[myID]
         if stateStartFrame then
             local durationFrames = currentFrame - stateStartFrame
-          --  echo(myID .. " internal state " .. behaviour .. " lasted " ..
-                 (durationFrames / 30) .. " s")
+          --  echo(myID .. " internal state " .. behaviour .. " lasted " ..                 (durationFrames / 30) .. " s")
         end
 
         if behaviour == "pray" then
