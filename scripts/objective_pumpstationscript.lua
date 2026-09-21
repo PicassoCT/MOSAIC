@@ -2,6 +2,7 @@ include "createCorpse.lua"
 include "lib_OS.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
+include "lib_radiance_emitters.lua"
 
 TablesOfPiecesGroups = {}
 function script.HitByWeapon(x, z, weaponDefID, damage) end
@@ -84,7 +85,7 @@ local function collapseAndFade(pieces)
     end
 
     Sleep(800)
-    hideT(pieces)
+    HideRadiancePieces(pieces)
 end
 
 SIG_FLAME = 2
@@ -108,7 +109,7 @@ function reignition()
     for i=1,#FlameT do
         Move(FlameT[i], 3, -FLAME_HEIGHT, 0)
     end
-       showT(FlameTips)
+    ShowRadiancePieces(FlameTips)
     showFlames()
     Move(FlameT[1], 3, 0, 0)
     Sleep(100)    
@@ -121,7 +122,7 @@ function reignition()
 end
 
 function flameOut()
-    hideT(FlameTips)
+    HideRadiancePieces(FlameTips)
 
     -- column collapses
     for i=1,#FlameT do
@@ -136,11 +137,11 @@ function flameOut()
     Move(Flame, 2, dz, 10)
     WaitForMoves(FlameT)
     Sleep(600)
-    hideT(TablesOfPiecesGroups["FlameA"])
+    HideRadiancePieces(TablesOfPiecesGroups["FlameA"])
     Sleep(300)
-    hideT(TablesOfPiecesGroups["FlameB"])
+    HideRadiancePieces(TablesOfPiecesGroups["FlameB"])
     Sleep(200)
-    hideT(TablesOfPiecesGroups["FlameC"])
+    HideRadiancePieces(TablesOfPiecesGroups["FlameC"])
     resetT(FlameT)
 end
 
@@ -154,7 +155,7 @@ function showExplosions()
         function(id)
             if maRa() then
                 spinRand(id, math.random(-420,-1), math.random(0,420))
-                Show(id)
+                ShowRadiancePiece(id)
             end
         end)
     end
@@ -175,7 +176,7 @@ res = {
 
      foreach(res,
         function(id)
-            Show(id)
+            ShowRadiancePiece(id)
             --Spin(id, 2, math.rad(42)*randSign(), 0) 
         end
         )
@@ -187,7 +188,7 @@ FireRotor = piece("FireRotor")
 BaseFlame = piece("Flame1")
 function burning()
     flameTongue = showFlames()
-    Show(Flame)
+    ShowRadiancePiece(Flame)
     BurnAxis = 3
     SWAY_MAX = 80
     FLICKER = 15
@@ -215,7 +216,7 @@ function burning()
         spinRand(flameTip, -FLICKER, FLICKER, 20)
 
        if math.random() < 0.02 then
-           Hide(flameTip)
+           HideRadiancePiece(flameTip)
            return         
        end
         Sleep(1)
@@ -230,9 +231,9 @@ function burning()
        -- reset(flameTip, 10)
         Sleep(1)
         WaitForMoves(FlameT)
-        hideT(flameTongue)
+        HideRadiancePieces(flameTongue)
         flameTongue = showFlames()
-        Hide(flameTip)
+        HideRadiancePiece(flameTip)
         stopSpins(flameTip, 0)  
     end
 end
@@ -273,12 +274,12 @@ Igniter  = piece("Igniter")
 explosionStem  = piece("ExplosionStem")
 function explosionLoop()
     Sleep(100)
-    Show(Igniter)
+    ShowRadiancePiece(Igniter)
     StartThread(flicker, Igniter)
     explosionTable = TablesOfPiecesGroups["Explosion"]
     cloudRadius = 750
     driftTimeInMs = 3000
-    hideT(TablesOfPiecesGroups["Flame"])
+    HideRadiancePieces(TablesOfPiecesGroups["Flame"])
     Hide(SmokeStem)
  
 
@@ -341,7 +342,7 @@ function explosionLoop()
 end
 
 function resetHide(T)
-    hideT(T)
+    HideRadiancePieces(T)
     resetT(T)
 end
 
