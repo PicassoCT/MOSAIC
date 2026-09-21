@@ -423,3 +423,17 @@ terrain directions, surface lighting, composition, distant depth/animation and
 rain values 0.0–1.0. Rain-distance checks allow 8-bit readback quantization.
 The ten-panel generated concept sheet is an artistic target, not a GPU result
 or an engine capture. In-game scale, performance and appearance need review.
+
+## Screenshot-driven follow-up
+
+User released the previous numeric density constraints. Fixed stream candidate
+spacing is now 2.5 engine units, with a rain^1.35 activation curve and soft seeded
+thresholds. Shapes remain stationary; heavy rain adds more paths. Small bead
+radii are preserved. Terrain cell ridges are wider, weaker and interrupted by
+advected noise so they do not form a complete polygon mesh.
+
+Surface position now uses the selected deferred map/model depth, matching the
+normal source, rather than always using copied scene depth (potential water
+plane). This addresses a plausible cause of submerged bank patterns; actual
+engine verification is still needed. GPU surface contrast floor was reduced
+from .015 to .012 for the intentionally softer ridges.
