@@ -21,32 +21,54 @@ float surfaceWetNoise(vec2 p);
 vec4 roofWaterBeads(vec3 p, vec3 normal, bool building);
 // Fixed drainage network. Neither cell positions nor channel centres depend on
 // time or rain; rain only widens the existing paths.
-float terrainChannelMask(vec2 at, float pixel) {
+// x: coverage, yz: coordinates along/across the nearest edge, w: downhill speed.
+// The unordered nearest-site pair gives the same frame on both banks.
+vec4 terrainChannelFrame(vec2 at, float pixel) {
     vec2 network=at*vec2(0.32,0.18);
     network.x+=0.32*sin(network.y*1.7)+0.25*surfaceWetNoise(network*0.7);
     vec2 cell=floor(network);
     float first=100.0,second=100.0;
+    vec2 siteA=vec2(0),siteB=vec2(1);
     for(int y=-1;y<=1;++y) for(int x=-1;x<=1;++x) {
         vec2 id=cell+vec2(x,y);
-        vec2 delta=id+0.2+0.6*hash3(id+vec2(51,87)).xy-network;
+        vec2 site=id+0.2+0.6*hash3(id+vec2(51,87)).xy;
+        vec2 delta=site-network;
         float d=dot(delta,delta);
-        second=min(second,max(first,d)); first=min(first,d);
+        if(d<first) {
+            second=first;siteB=siteA;first=d;siteA=site;
+        } else if(d<second) {second=d;siteB=site;}
     }
     float edge=sqrt(second)-sqrt(first);
     float width=mix(0.025,0.14,clamp(rainPercent,0.0,1.0));
     float aa=max(pixel*0.16,0.002);
-    return 1.0-smoothstep(width,width+aa,edge);
+    float channel=1.0-smoothstep(width,width+aa,edge);
+    vec2 across=normalize(siteB-siteA);
+    vec2 tangent=vec2(-across.y,across.x);
+    if(tangent.y<0.0 || (abs(tangent.y)<0.00001 && tangent.x<0.0)) tangent=-tangent;
+    vec2 centre=(siteA+siteB)*0.5;
+    vec2 relative=network-centre;
+    // Global height phase remains continuous at junctions. Project to the edge
+    // centreline so wavefronts cross the channel, rather than sliding across it.
+    float along=centre.y+dot(relative,tangent)*tangent.y;
+    float crossEdge=dot(relative,vec2(tangent.y,-tangent.x));
+    return vec4(channel,along,crossEdge,tangent.y);
+}
+float terrainChannelMask(vec2 at, float pixel) {
+    return terrainChannelFrame(at,pixel).x;
 }
 float terrainWaterFilm(vec2 at, float pixel) {
-    float channel=terrainChannelMask(at,pixel);
-    // Negative chart Y is uphill: advection toward positive Y runs downhill.
-    // Only the water relief moves, inside the stationary Voronoi mask.
-    vec2 flow=at*vec2(0.32,0.18)-vec2(0,time*0.28);
-    float waves=surfaceWetNoise(flow*2.7);
-    float fine=surfaceWetNoise(flow*6.1+vec2(7,13));
-    float resolved=1.0-smoothstep(0.35,1.4,pixel);
-    float relief=0.20+0.14*waves+0.06*fine*resolved;
-    return 0.36+channel*relief;
+    vec4 channel=terrainChannelFrame(at,pixel);
+    // Continuous ripple trains in a fixed network. Height phase makes crests
+    // meet at junctions; the cross-channel quadratic gently bows each crest.
+    float phase=channel.y*5.5-time*0.85+channel.z*channel.z*2.0;
+    float footprint=max(fwidth(phase),pixel*0.18*5.5);
+    float resolved=1.0-smoothstep(0.30,0.85,footprint);
+    float wave=0.5+0.5*cos(6.2831853*phase);
+    float crest=wave*wave*wave;
+    // Nearly level links retain wet relief but don't imply flowing uphill.
+    float flowing=smoothstep(0.03,0.20,channel.w);
+    float relief=0.20+0.22*crest*resolved*flowing;
+    return 0.36+channel.x*relief;
 }
 float getSurfaceRivulets(vec3 p, vec3 normal, bool building) {
     if(building) return roofWaterBeads(p,normal,true).w;
@@ -213,3 +235,4 @@ vec2 surfaceRippleProfile(vec2 position) {
     }
     return gradient*resolved;
 }
+
