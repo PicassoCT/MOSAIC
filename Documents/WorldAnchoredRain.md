@@ -437,3 +437,15 @@ normal source, rather than always using copied scene depth (potential water
 plane). This addresses a plausible cause of submerged bank patterns; actual
 engine verification is still needed. GPU surface contrast floor was reduced
 from .015 to .012 for the intentionally softer ridges.
+
+## Stable landscape drainage network
+
+Clarified target: Voronoi lines are stationary drainage paths. Removed time from
+network coordinates and restored continuous paths. terrainChannelMask widens
+those same lines from 0.025 to 0.14 chart-distance units as rain rises from zero
+to full. The separate advected water-relief field animates only inside this mask;
+outside it the wet-film baseline is constant. Existing terrain projection blend,
+waterline fade and normal lighting remain. Building water is unchanged.
+GPU checks cover stationary masks across time, monotonically nested channel
+widths at rain 0.1–1.0, and animation confined to the network. Terrain orientation
+and bright/dark surface composition suites also pass; engine review remains.

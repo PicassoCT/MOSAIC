@@ -19,26 +19,34 @@ vec2 runoffChart(vec3 p, vec3 across) {
 }
 float surfaceWetNoise(vec2 p);
 vec4 roofWaterBeads(vec3 p, vec3 normal, bool building);
-// Advected soft Voronoi ridges embedded in the continuous wet film.
-// Fixed charts and continuous advection avoid cell resets and normal-driven seams.
-float terrainWaterFilm(vec2 at, float pixel) {
-    vec2 flow=at*vec2(0.32,0.18)-vec2(0,time*0.28);
-    flow.x+=0.32*sin(flow.y*1.7)+0.25*surfaceWetNoise(flow*0.7);
-    vec2 cell=floor(flow);
+// Fixed drainage network. Neither cell positions nor channel centres depend on
+// time or rain; rain only widens the existing paths.
+float terrainChannelMask(vec2 at, float pixel) {
+    vec2 network=at*vec2(0.32,0.18);
+    network.x+=0.32*sin(network.y*1.7)+0.25*surfaceWetNoise(network*0.7);
+    vec2 cell=floor(network);
     float first=100.0,second=100.0;
     for(int y=-1;y<=1;++y) for(int x=-1;x<=1;++x) {
         vec2 id=cell+vec2(x,y);
-        vec2 delta=id+0.2+0.6*hash3(id+vec2(51,87)).xy-flow;
+        vec2 delta=id+0.2+0.6*hash3(id+vec2(51,87)).xy-network;
         float d=dot(delta,delta);
         second=min(second,max(first,d)); first=min(first,d);
     }
     float edge=sqrt(second)-sqrt(first);
-    float width=sqrt(0.14*0.14+pixel*pixel*0.0256);
-    float ridge=exp(-edge*edge/(width*width))*0.14/width;
-    float film=surfaceWetNoise(flow*2.7+vec2(0,time*0.13));
-    // Break closed cell outlines into intermittent wet ridges.
-    float broken=smoothstep(0.3,0.7,surfaceWetNoise(flow*3.1+vec2(time*0.12,0)));
-    return 0.36+0.20*film+0.20*ridge*broken;
+    float width=mix(0.025,0.14,clamp(rainPercent,0.0,1.0));
+    float aa=max(pixel*0.16,0.002);
+    return 1.0-smoothstep(width,width+aa,edge);
+}
+float terrainWaterFilm(vec2 at, float pixel) {
+    float channel=terrainChannelMask(at,pixel);
+    // Negative chart Y is uphill: advection toward positive Y runs downhill.
+    // Only the water relief moves, inside the stationary Voronoi mask.
+    vec2 flow=at*vec2(0.32,0.18)-vec2(0,time*0.28);
+    float waves=surfaceWetNoise(flow*2.7);
+    float fine=surfaceWetNoise(flow*6.1+vec2(7,13));
+    float resolved=1.0-smoothstep(0.35,1.4,pixel);
+    float relief=0.20+0.14*waves+0.06*fine*resolved;
+    return 0.36+channel*relief;
 }
 float getSurfaceRivulets(vec3 p, vec3 normal, bool building) {
     if(building) return roofWaterBeads(p,normal,true).w;
