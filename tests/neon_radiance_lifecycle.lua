@@ -89,10 +89,27 @@ env.VFS={LoadFile=read,Include=function(path) return assert(load(read(path),path
 sourceEnv=assert(load(read('luaui/widgets_mosaic/gfx_neonlights_radiancecascade.lua'),'widget','t',env));sourceEnv()
 env.widget:Initialize();assert(env.WG.NeonRadiance and not env.WG.NeonRadiance.ready)
 globals.RecieveAllNeonUnitsPieces({[42]={1}})
+local captured={}
+env.gl.UnitPiece=function(unit,piece)
+ captured[#captured+1]={unit=unit,piece=piece,strength=captureUniforms.emissionStrength[1],project=captureUniforms.projectToBand[1]}
+end
+globals.ReceiveObjectiveRadiancePieces({[43]={[7]=7}})
+
 env.widget:Update(1);env.widget:DrawWorldPreUnit()
 assert(renders==23 and env.WG.NeonRadiance.ready)
+local objective,neon=false,false
+for _,c in ipairs(captured) do
+ if c.unit==43 then assert(c.strength==1 and c.project==1);objective=true end
+ if c.unit==42 then assert(c.strength==0 and c.project==0);neon=true end
+end
+assert(objective and neon, 'daytime objective missing from emission capture')
+globals.ReceiveObjectiveRadiancePieces({})
+captured={}
+env.widget:Update(1);env.widget:DrawWorldPreUnit()
+for _,c in ipairs(captured) do assert(c.unit~=43,'hidden objective still captured') end
+
 assert(captureUniforms.heightRange[1]==0 and captureUniforms.heightRange[2]==128)
-assert(captureUniforms.intensity[1]==0)
+assert(captureUniforms.intensity[1]==1) -- source intensity is applied during capture
 env.widget:TextCommand('radiancedebug height 256');env.widget:DrawWorldPreUnit()
 assert(captureUniforms.heightRange[1]==256 and captureUniforms.heightRange[2]==384)
 assert(env.WG.NeonRadiance.heightMin==256)
@@ -105,6 +122,7 @@ env.widget:TextCommand('radiancedebug zoom 1024')
 env.widget:DrawWorldPreUnit()
 assert(captureUniforms.atlasSize[1]==1024 and captureUniforms.atlasSize[2]==1024)
 assert(env.WG.NeonRadiance.heightMin==0)
+env.widget:TextCommand('radiancedebug on')
 local function checkPreview(cropped)
  previewRects={};env.widget:DrawScreen()
  assert(#previewRects==4)
@@ -137,7 +155,8 @@ env.widget:TextCommand('radiancelight on');env.widget:DrawWorldPreUnit();env.wid
 assert(captureUniforms.nightIntensity[1]==1)
 env.widget:TextCommand('radiancedebug off');previewRects={};env.widget:DrawScreen();assert(#previewRects==0)
 env.widget:TextCommand('radiancelight test off')
-captureUniforms.nightIntensity=nil;env.widget:DrawWorld();assert(not captureUniforms.nightIntensity)
+captureUniforms.nightIntensity=nil;env.widget:DrawWorld();assert(captureUniforms.nightIntensity[1]==1)
+assert(captureUniforms.headlightIntensity[1]==0)
 env.widget:Shutdown();assert(not env.WG.NeonRadiance and next(globals)==nil)
 print('PASS: widget propagation/default view, lazy direct diagnostics, height selection, day/night intensity, WG ownership and shutdown')
 

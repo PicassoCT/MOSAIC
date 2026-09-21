@@ -15,6 +15,7 @@ uniform int clipZeroToOne;
 uniform int deferred;
 uniform float strength;
 uniform float nightIntensity;
+uniform float headlightIntensity;
 uniform int smoothing;
 uniform int localActive;
 uniform sampler2D localRadianceTex;
@@ -120,9 +121,9 @@ void main()
         }
         // Slow vehicle emission is only 8% spill. Max, rather than addition,
         // preserves full direct intensity without counting it twice.
-        light=max(light,direct);
+        light=max(light,direct*headlightIntensity);
     }
-    // Propagation supplies UNIT intensity. Day/night is applied exactly once,
+    // Emission carries per-source intensity. Apply scene gain once,
     // after bounded artistic gain. Preview exposure does not enter this pass.
     vec3 added=(vec3(1)-exp(-light*strength))*clamp(nightIntensity,0.0,1.0)*clamp(albedo,0.0,1.0);
     gl_FragColor=vec4(added,0.0);

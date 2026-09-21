@@ -71,7 +71,7 @@ local function driftCloud(stem, dirX, dirZ, timeMs)
 end
 
 local function collapseAndFade(pieces)
-    hideT(TablesOfPiecesGroups["FireRotor"])
+    HideRadiancePieces(TablesOfPiecesGroups["FireRotor"])
     for i = 1, #pieces do
         local p = pieces[i]
 
@@ -212,7 +212,8 @@ function burning()
         end
 
 
-        local flameTip = showOnePiece(FlameTips, math.random(0,15))   
+        local flameTip = showOnePiece(FlameTips, math.random(0,15))
+        ShowRadiancePiece(flameTip)
         spinRand(flameTip, -FLICKER, FLICKER, 20)
 
        if math.random() < 0.02 then
@@ -334,7 +335,7 @@ function explosionLoop()
         resetHide(TablesOfPiecesGroups["Flames"])
         -- collapse + fade
         collapseAndFade(explosionTable)
-        hideT(TablesOfPiecesGroups["FireRotor"])
+        HideRadiancePieces(TablesOfPiecesGroups["FireRotor"])
         Hide(explosionStem)
         Sleep(15000)
 
@@ -363,7 +364,7 @@ function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     FlameT = TablesOfPiecesGroups["Flame"]
     FlameTips = TablesOfPiecesGroups["Flames"]
-    hideT(TablesOfPiecesGroups["FireRotor"])
+    HideRadiancePieces(TablesOfPiecesGroups["FireRotor"])
     Hide(explosionStem)
     Hide(LightOn)
     StartThread(nightLightsLoop,LightOn, LightOff, restTime)
