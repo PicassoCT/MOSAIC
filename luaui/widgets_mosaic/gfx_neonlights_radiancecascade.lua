@@ -25,6 +25,7 @@ local DIRECT_LIGHT_RANGE = 1800
 local DIRECT_LIGHT_STEPS = 48
 
 local neonUnitTables = {}
+local objectiveRadianceUnitTables = {}
 local neonLightPercent = 0.0
 local neonUnitCount = 0
 local neonPieceCount = 0
@@ -154,6 +155,10 @@ local function recieveNeonHoloLightPiecesByUnit(unitPiecesTable)
         neonUnitCount = neonUnitCount + 1
         neonPieceCount = neonPieceCount + #pieces
     end
+end
+
+local function receiveObjectiveRadiancePieces(unitPiecesTable)
+    objectiveRadianceUnitTables = unitPiecesTable or {}
 end
 
 local function removeSelf(message)
@@ -647,6 +652,7 @@ function widget:Initialize()
     end
 
     widgetHandler:RegisterGlobal("RecieveAllNeonUnitsPieces", recieveNeonHoloLightPiecesByUnit)
+    widgetHandler:RegisterGlobal("ReceiveObjectiveRadiancePieces", receiveObjectiveRadiancePieces)
     widgetHandler:RegisterGlobal("ReceiveBuildingShadowColumnsBegin", receiveBuildingShadowBegin)
     widgetHandler:RegisterGlobal("ReceiveBuildingShadowColumn", receiveBuildingShadowColumn)
     widgetHandler:RegisterGlobal("ReceiveBuildingShadowColumnsEnd", receiveBuildingShadowEnd)
@@ -699,7 +705,7 @@ local function drawNeonPieces(captureLayer, domain)
     gl.LoadIdentity()
     gl.Rotate(-90, 1, 0, 0)
 
-    for unitID, pieces in pairs(neonUnitTables) do
+    local function drawUnitPieces(unitID, pieces)
         if Spring.ValidUnitID(unitID) and not Spring.GetUnitIsDead(unitID) then
             if propagation then
                 local defID = Spring.GetUnitDefID(unitID)
@@ -710,8 +716,7 @@ local function drawNeonPieces(captureLayer, domain)
             gl.PushMatrix()
             gl.UnitMultMatrix(unitID)
 
-            for i = 1, #pieces do
-                local pieceID = pieces[i]
+            for _, pieceID in pairs(pieces) do
                 if pieceID then
                     gl.PushMatrix()
                     gl.UnitPieceMultMatrix(unitID, pieceID)
@@ -722,6 +727,13 @@ local function drawNeonPieces(captureLayer, domain)
 
             gl.PopMatrix()
         end
+    end
+
+    for unitID, pieces in pairs(neonUnitTables) do
+        drawUnitPieces(unitID, pieces)
+    end
+    for unitID, pieces in pairs(objectiveRadianceUnitTables) do
+        drawUnitPieces(unitID, pieces)
     end
 
     if propagation and WG.CaptureVehicleHeadlightEmission then
@@ -956,6 +968,7 @@ function widget:Shutdown()
         propagation = nil
     end
     widgetHandler:DeregisterGlobal("RecieveAllNeonUnitsPieces")
+    widgetHandler:DeregisterGlobal("ReceiveObjectiveRadiancePieces")
     widgetHandler:DeregisterGlobal("ReceiveBuildingShadowColumnsBegin")
     widgetHandler:DeregisterGlobal("ReceiveBuildingShadowColumn")
     widgetHandler:DeregisterGlobal("ReceiveBuildingShadowColumnsEnd")
@@ -987,7 +1000,6 @@ function widget:Shutdown()
     occlusionBuildings = {}
     pendingBuildingColumns = {}
 end
-
 
 
 

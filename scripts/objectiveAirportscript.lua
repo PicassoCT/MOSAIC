@@ -3,6 +3,7 @@ include "lib_OS.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 include "lib_mosaic.lua"
+include "lib_radiance_emitters.lua"
 
 local TablesOfPiecesGroups = {}
 Airport = piece "Airport"
@@ -140,7 +141,7 @@ function cturnT(t, axis, degs, speed, boolInstantUpdate, boolWait)
 end
 
 function blink()
-    showT(TablesOfPiecesGroups["SwitchLight"])
+    ShowRadiancePieces(TablesOfPiecesGroups["SwitchLight"])
     upaxis = 1
     while true do
         upaxis = (upaxis % 3 + 1)
@@ -494,15 +495,15 @@ function showThruster(nr, timeMs, boolRampUpSpeed)
         else
             speedFactor = math.min(speedFactor - 0.2)
         end
-        Show(thrusterNr)
+        ShowRadiancePiece(thrusterNr)
         startValue = math.random(0, 5)
         Move(thrusterNr, z_axis, startValue, 0)
         value = math.random(2,8)*-1
         WMove(thrusterNr, z_axis, value, value * speedFactor)
-        Hide(thrusterNr)
+        HideRadiancePiece(thrusterNr)
         Sleep(25)
     end
-     Hide(thrusterNr)
+     HideRadiancePiece(thrusterNr)
      StopSpin(thrusterNr, z_axis, 0)
 end
 
@@ -543,15 +544,15 @@ function PlaneLights()
     while boolCircling == true do
         boolLightFlipFlop = not boolLightFlipFlop
         if boolLightFlipFlop == true then
-            Show(TablesOfPiecesGroups["SignalLightOn"][1])
-            Show(TablesOfPiecesGroups["SignalLightOff"][2])
+            ShowRadiancePiece(TablesOfPiecesGroups["SignalLightOn"][1])
+            ShowRadiancePiece(TablesOfPiecesGroups["SignalLightOff"][2])
         else
-            Show(TablesOfPiecesGroups["SignalLightOff"][1])
-            Show(TablesOfPiecesGroups["SignalLightOn"][2])
+            ShowRadiancePiece(TablesOfPiecesGroups["SignalLightOff"][1])
+            ShowRadiancePiece(TablesOfPiecesGroups["SignalLightOn"][2])
         end
         Sleep(1000)
-        hideT(TablesOfPiecesGroups["SignalLightOn"])
-        hideT(TablesOfPiecesGroups["SignalLightOff"])
+        HideRadiancePieces(TablesOfPiecesGroups["SignalLightOn"])
+        HideRadiancePieces(TablesOfPiecesGroups["SignalLightOff"])
     end
 end
 
