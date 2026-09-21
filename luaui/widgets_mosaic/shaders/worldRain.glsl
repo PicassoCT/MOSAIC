@@ -122,3 +122,29 @@ vec4 drawWorldRain(vec3 direction, float sceneDistance) {
     // Straight-alpha result: the existing fullscreen compositor applies alpha.
     return vec4(sumRGB/max(sumAlpha,0.00001),alpha);
 }
+
+// Cheap distant angular sheets supplement the resolved world-space streaks.
+// Depth clips each sheet; no overlay on nearby buildings. Weather is applied
+// once by composeRainEffects, exactly as for the foreground rain.
+vec4 drawDistantRain(vec3 direction, float sceneDistance) {
+    vec2 chart=direction.xz/max(0.25,abs(direction.y)+0.25);
+    float mask=0.0;
+    for(int layer=0;layer<3;++layer) {
+        float distanceToSheet=900.0+float(layer)*450.0;
+        float visible=smoothstep(distanceToSheet,distanceToSheet+160.0,sceneDistance);
+        vec3 samplePos=eyePos+direction*distanceToSheet;
+        visible*=smoothstep(MIN_HEIGHT_RAIN,MIN_HEIGHT_RAIN+24.0,samplePos.y)
+                *(1.0-smoothstep(MAX_HEIGTH_RAIN-24.0,MAX_HEIGTH_RAIN,samplePos.y));
+        vec2 p=chart*(110.0+float(layer)*37.0);
+        p+=vec2(float(layer)*13.7,time*(6.0+float(layer)*1.3));
+        p.x+=p.y*0.12;
+        vec2 id=floor(p),f=fract(p);
+        vec3 seed=hash3(id+float(layer)*31.0);
+        float aa=max(fwidth(p.x),0.025);
+        float streak=(1.0-smoothstep(0.025,0.025+aa,abs(f.x-0.5)))
+                     *smoothstep(0.0,0.12,f.y)*(1.0-smoothstep(0.4,0.9,f.y));
+        mask+=streak*step(seed.z,0.55)*visible*0.055;
+    }
+    vec3 light=max(skyCol*0.65+sunCol*0.35,vec3(0.015));
+    return vec4(light,clamp(mask,0.0,0.2));
+}

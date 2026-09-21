@@ -801,6 +801,9 @@ void main(void)
     vec3 rayDir = normalize(rayPoint - eyePos);
     float sceneDistance = depthAtPixel.r < 0.999999 ? length(worldPos-eyePos) : 1.0e6;
     vec4 rain = drawWorldRain(rayDir, sceneDistance);
+    vec4 distantRain=drawDistantRain(rayDir,sceneDistance);
+    float rainAlpha=1.0-(1.0-rain.a)*(1.0-distantRain.a);
+    rain=vec4((rain.rgb*rain.a+distantRain.rgb*distantRain.a)/max(rainAlpha,0.00001),rainAlpha);
     vec4 splash = drawRainSplashback(worldPos, vertexNormal, rayDir, sceneDistance, NormalIsSky);
     if (rainDetailDebug > 2.5) {
         gl_FragColor = vec4(NormalIsSky ? vec3(0) : vertexNormal,1);

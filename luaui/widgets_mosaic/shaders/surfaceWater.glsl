@@ -19,14 +19,24 @@ vec2 runoffChart(vec3 p, vec3 across) {
 }
 float surfaceWetNoise(vec2 p);
 vec4 roofWaterBeads(vec3 p, vec3 normal, bool building);
-// Animated film over exposed banks: advected, warped noise, no cell edges.
+// Advected soft Voronoi ridges embedded in the continuous wet film.
+// Fixed charts and continuous advection avoid cell resets and normal-driven seams.
 float terrainWaterFilm(vec2 at, float pixel) {
-    vec2 flow=vec2(at.x*0.8,at.y*0.45-time*0.75);
-    float broad=surfaceWetNoise(flow);
-    vec2 fine=flow*2.7+vec2(broad*1.7,time*0.31);
-    float detail=surfaceWetNoise(fine);
-    float resolved=1.0-smoothstep(0.35,1.4,pixel);
-    return 0.35+0.40*broad+0.25*detail*resolved;
+    vec2 flow=at*vec2(0.32,0.18)-vec2(0,time*0.28);
+    flow.x+=0.16*sin(flow.y*1.7)+0.12*surfaceWetNoise(flow*0.7);
+    vec2 cell=floor(flow);
+    float first=100.0,second=100.0;
+    for(int y=-1;y<=1;++y) for(int x=-1;x<=1;++x) {
+        vec2 id=cell+vec2(x,y);
+        vec2 delta=id+0.2+0.6*hash3(id+vec2(51,87)).xy-flow;
+        float d=dot(delta,delta);
+        second=min(second,max(first,d)); first=min(first,d);
+    }
+    float edge=sqrt(second)-sqrt(first);
+    float width=sqrt(0.075*0.075+pixel*pixel*0.0256);
+    float ridge=exp(-edge*edge/(width*width))*0.075/width;
+    float film=surfaceWetNoise(flow*2.7+vec2(0,time*0.13));
+    return 0.36+0.20*film+0.38*ridge;
 }
 float getSurfaceRivulets(vec3 p, vec3 normal, bool building) {
     if(building) return roofWaterBeads(p,normal,true).w;
@@ -34,7 +44,7 @@ float getSurfaceRivulets(vec3 p, vec3 normal, bool building) {
     float weight=smoothstep(0.2,0.8,normal.z*normal.z/max(dot(normal.xz,normal.xz),0.00001));
     float a=terrainWaterFilm(vec2(p.x,-p.y*1.41421356),pixel);
     float b=terrainWaterFilm(vec2(p.z,-p.y*1.41421356),pixel);
-    return mix(b,a,weight)*step(0.0,p.y);
+    return mix(b,a,weight)*smoothstep(0.0,1.5,p.y);
 }
 
 // Terrain default for standalone surface probes.
@@ -69,7 +79,8 @@ vec4 roofChartWater(vec2 at, float pixel) {
         vec2 id=cell+vec2(x,y);
         vec3 seed=hash3(id+vec2(71,19));
         float age=fract(time*(0.10+0.07*seed.x)+seed.z);
-        float travel=roofTravel(age);
+        float activeRunoff=smoothstep(hash3(id+vec2(113,29)).z-0.08,hash3(id+vec2(113,29)).z+0.08,0.15+0.85*clamp(rainPercent,0.0,1.0));
+        float travel=roofTravel(age)*activeRunoff;
         float head=id.y*6.0+travel*5.5;
         float base=id.x*3.0+(seed.y-0.5)*1.3;
         float life=1.0-smoothstep(0.95,1.0,age);
@@ -80,12 +91,12 @@ vec4 roofChartWater(vec2 at, float pixel) {
             vec2 path=roofPath(by,seed);
             float collected=smoothstep(by-0.25,by+0.25,head);
             float grow=smoothstep(0.0,0.24+0.04*float(b),age);
-            vec2 radius=vec2(0.35+0.18*seed.y,0.48+0.18*seed.x)*mix(0.4,1.0,grow);
+            vec2 radius=0.5*vec2(0.35+0.18*seed.y,0.48+0.18*seed.x)*mix(0.4,1.0,grow);
             water+=roofCap(at-vec2(base+path.x,by),radius,pixel)*grow*(1.0-collected)*life;
         }
         vec2 headPath=roofPath(head,seed);
-        float moving=smoothstep(0.37,0.42,age)*life;
-        water+=roofCap(at-vec2(base+headPath.x,head),vec2(0.48,0.64)*(0.8+0.4*travel),pixel)*moving;
+        float moving=smoothstep(0.37,0.42,age)*life*activeRunoff;
+        water+=roofCap(at-vec2(base+headPath.x,head),vec2(0.24,0.32)*(0.8+0.4*travel),pixel)*moving;
         // Temporary meandering wake, limited to the recently traversed path.
         vec2 path=roofPath(at.y,seed);
         float dx=at.x-base-path.x;
