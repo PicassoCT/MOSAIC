@@ -796,7 +796,13 @@ void main(void)
     }
 
     // Surface effects remain independent of the precipitation volume.
-    vec4 surfaceFX = NormalIsSky ? NONE : GetGroundReflectionRipples(worldPos);
+    // Use position and normal from the same deferred surface. The copied
+    // scene depth may be the water plane while map normals describe the bank.
+    vec3 surfacePos=worldPos;
+    float surfaceDepth=NormalIsOnUnit ? modelDepth.r : mapDepth.r;
+    if(surfaceDepth>0.0 && surfaceDepth<0.999999)
+        surfacePos=GetWorldPosAtUV(uv,surfaceDepth);
+    vec4 surfaceFX = NormalIsSky ? NONE : GetGroundReflectionRipples(surfacePos);
     vec3 rayPoint = GetWorldPosAtUV(uv, 0.5);
     vec3 rayDir = normalize(rayPoint - eyePos);
     float sceneDistance = depthAtPixel.r < 0.999999 ? length(worldPos-eyePos) : 1.0e6;

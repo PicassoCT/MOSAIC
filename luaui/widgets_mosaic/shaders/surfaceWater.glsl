@@ -23,7 +23,7 @@ vec4 roofWaterBeads(vec3 p, vec3 normal, bool building);
 // Fixed charts and continuous advection avoid cell resets and normal-driven seams.
 float terrainWaterFilm(vec2 at, float pixel) {
     vec2 flow=at*vec2(0.32,0.18)-vec2(0,time*0.28);
-    flow.x+=0.16*sin(flow.y*1.7)+0.12*surfaceWetNoise(flow*0.7);
+    flow.x+=0.32*sin(flow.y*1.7)+0.25*surfaceWetNoise(flow*0.7);
     vec2 cell=floor(flow);
     float first=100.0,second=100.0;
     for(int y=-1;y<=1;++y) for(int x=-1;x<=1;++x) {
@@ -33,10 +33,12 @@ float terrainWaterFilm(vec2 at, float pixel) {
         second=min(second,max(first,d)); first=min(first,d);
     }
     float edge=sqrt(second)-sqrt(first);
-    float width=sqrt(0.075*0.075+pixel*pixel*0.0256);
-    float ridge=exp(-edge*edge/(width*width))*0.075/width;
+    float width=sqrt(0.14*0.14+pixel*pixel*0.0256);
+    float ridge=exp(-edge*edge/(width*width))*0.14/width;
     float film=surfaceWetNoise(flow*2.7+vec2(0,time*0.13));
-    return 0.36+0.20*film+0.38*ridge;
+    // Break closed cell outlines into intermittent wet ridges.
+    float broken=smoothstep(0.3,0.7,surfaceWetNoise(flow*3.1+vec2(time*0.12,0)));
+    return 0.36+0.20*film+0.20*ridge*broken;
 }
 float getSurfaceRivulets(vec3 p, vec3 normal, bool building) {
     if(building) return roofWaterBeads(p,normal,true).w;
@@ -113,11 +115,13 @@ vec4 roofChartWater(vec2 at, float pixel) {
 }
 // Art calibration: one visual metre is four engine units (one debug square).
 const float RAIN_UNITS_PER_METRE=4.0;
+const float ROOF_STREAM_SPACING=2.5; // Art-directed spacing, independent of metre calibration.
 float permanentStreamEnabled(float lane, float rain) {
-    return step(hash3(vec2(lane,163)).x,clamp(rain,0.0,1.0))*step(0.00001,rain);
+    float density=pow(clamp(rain,0.0,1.0),1.35);
+    return smoothstep(hash3(vec2(lane,163)).x-0.035,hash3(vec2(lane,163)).x+0.035,density)*smoothstep(0.0,0.05,rain);
 }
 vec4 permanentRoofStreams(vec2 at, float pixel) {
-    float lane=floor(at.x/RAIN_UNITS_PER_METRE);
+    float lane=floor(at.x/ROOF_STREAM_SPACING);
     vec4 water=vec4(0);
     for(int i=-1;i<=1;++i) {
         float id=lane+float(i);
@@ -125,7 +129,7 @@ vec4 permanentRoofStreams(vec2 at, float pixel) {
         float enabled=permanentStreamEnabled(id,rainPercent);
         // Stable paths and nested rain thresholds: no time-dependent motion.
         vec2 path=roofPath(at.y*0.35,seed);
-        float centre=(id+0.2+0.6*seed.y)*RAIN_UNITS_PER_METRE+path.x*0.4;
+        float centre=(id+0.2+0.6*seed.y)*ROOF_STREAM_SPACING+path.x*0.4;
         float width=0.035+0.025*seed.z;
         float filtered=sqrt(width*width+pixel*pixel*0.16);
         float q=(at.x-centre)/filtered;
