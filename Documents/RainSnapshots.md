@@ -1,0 +1,61 @@
+# Repeatable rain screenshots
+
+Position the camera near a steady light, wait for the desired time of day, and enter:
+
+```
+/rainsnap
+```
+
+This pauses the simulation at its current time, holds the camera, and saves **11 PNGs**:
+a dry reference and rain amounts 0.1 through 1.0. Each image gets a two-second settling
+period and at least two rendered frames. The sequence takes approximately 22 seconds
+plus file-writing time. Previous rain/debug settings, camera and pause state are
+restored on completion, cancellation or a detected failure.
+
+```
+/rainsnap 2 3
+```
+
+This saves **33 PNGs**, three per intensity. Rain shader phases are exactly 30.00,
+30.25 and 30.50 seconds for every intensity, making adjacent images a short motion
+sequence. Increase the last number up to 10 for more phases. The first argument is
+the wall-clock settling period per image (0.25-30 seconds). The default single frame
+always uses phase 30.00. Animation time is held at each phase during settling;
+this is deterministic sampling, not a real-time video recording.
+
+```
+/rainsnap cancel
+```
+
+Output is under the engine's writable data directory:
+
+```
+Screenshots/rain_YYYYMMDD_HHMMSS_f<gameframe>_<run>/
+    rain_000_frame_01.png
+    rain_010_frame_01.png
+    ...
+    rain_100_frame_01.png
+    manifest.txt
+```
+
+The manifest records map, camera, viewport, game frame, rain shader time of day,
+sun/sky colour, sun direction, glitter setting and each successful image's intensity
+and animation phase. Images include the final composited scene and current UI; hide
+the HUD beforehand if desired. Keep resolution, graphics settings and the light
+source unchanged between runs. Supply the whole directory when comparing results.
+
+This is a **local rain-renderer override**, not a synced weather command. The dry
+reference disables this rain widget and its shared headlight wetness; it does not
+remove independent hologram rain or other water effects. Simulation-driven lighting
+and units are frozen by pause. Other widgets with real-time animation, such as
+animated adverts, are not globally frozen. Use a stationary, steady light for a
+controlled comparison. No changes are made to exposure, bloom or shader appearance.
+
+In multiplayer, pause the game before using the command; it will not automatically
+pause a running game with another active human player. An already-paused game stays
+paused afterward. Resuming the simulation or resizing the viewport aborts the run.
+The command checks screenshot-write results and reports partial runs in the manifest.
+
+Validation: `lua tests/rain_capture_lifecycle.lua` checks the capture lifecycle with
+mocked engine APIs. Actual framebuffer contents and engine pause/camera behaviour
+still require an in-game run.
