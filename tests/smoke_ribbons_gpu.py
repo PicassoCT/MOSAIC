@@ -1,0 +1,69 @@
+"""MESA_GL_VERSION_OVERRIDE=3.3COMPAT python tests/smoke_ribbons_gpu.py
+Compiles and renders the actual production shaders in a headless GL context.
+Requires moderngl and numpy. Optional --preview /absolute/path.png.
+"""
+import ctypes
+from pathlib import Path
+import sys
+import moderngl
+import numpy as np
+
+ctx = moderngl.create_standalone_context(backend='egl', require=330)
+root = Path(__file__).resolve().parents[1] / 'luarules/gadgets/shaders'
+p = ctx.program(vertex_shader=(root/'smokeRibbon.vert').read_text(),
+                fragment_shader=(root/'smokeRibbon.frag').read_text())
+gl = ctypes.CDLL('libGL.so.1')
+gl.glUseProgram.argtypes = [ctypes.c_uint]
+gl.glBegin.argtypes = [ctypes.c_uint]
+gl.glVertex3f.argtypes = [ctypes.c_float]*3
+gl.glEnd.argtypes = []
+w,h=256,512
+out=ctx.texture((w,h),4,dtype='f4'); fbo=ctx.framebuffer([out]); fbo.use()
+ctx.enable(moderngl.BLEND)
+ctx.blend_func=(moderngl.ONE,moderngl.ONE_MINUS_SRC_ALPHA)
+for name,value in dict(origin=(0,-0.9,0),direction=(0,1,0),cameraPosition=(0,0,5),
+    effectTime=1.0,plumeLength=1.7,plumeWidth=0.35,curl=0.8,seed=3.0,
+    colorStart=(0.7,0.7,0.7,0.8),colorEnd=(0.7,0.7,0.7,0),
+    emission=(0,0),ambient=(0.3,0.3,0.3),strandOpacity=1.6/3).items():
+    p[name].value=value
+
+def render():
+    fbo.clear(); gl.glUseProgram(p.glo)
+    for strand in range(3):
+        gl.glBegin(5)
+        for i in range(49):
+            gl.glVertex3f(i/48,-1,strand); gl.glVertex3f(i/48,1,strand)
+        gl.glEnd()
+    gl.glUseProgram(0)
+    assert ctx.error=='GL_NO_ERROR',ctx.error
+    result=np.frombuffer(out.read(),dtype='f4').reshape(h,w,4).copy()
+    assert np.isfinite(result).all()
+    return result
+
+a=render()
+assert a[...,3].sum()>20, 'smoke is invisible'
+assert a[:20].max()==0 and a[-5:].max()<0.001, 'ribbon escapes endpoints'
+assert a[:,:,:3].max()<=a[:,:,3].max(), 'unpremultiplied colour'
+p['effectTime'].value=2.0
+b=render(); assert np.abs(a-b).sum()>5, 'motion is frozen'
+assert np.array_equal(b,render()), 'same time is not deterministic'
+p['emission'].value=(1,1)
+lit=render()
+assert np.allclose(lit[...,:3],b[...,:3]/0.3,atol=1e-5), 'self-illumination is incorrect'
+assert np.allclose(lit[...,3],b[...,3]), 'emission changed density'
+p['colorStart'].value=(1,0,0,0.8);p['colorEnd'].value=(0,0,1,0.5)
+gradient=render()
+assert gradient[30:120,:,0].sum()>gradient[30:120,:,2].sum(), 'source colour reversed'
+assert gradient[330:440,:,2].sum()>gradient[330:440,:,0].sum(), 'tail colour reversed'
+p['colorStart'].value=(0.7,0.7,0.7,0);p['colorEnd'].value=(0.7,0.7,0.7,0)
+assert render().max()==0, 'zero alpha still glows'
+p['colorStart'].value=(0.7,0.7,0.7,0.8);p['colorEnd'].value=(0.7,0.7,0.7,0)
+# Camera collinear with plume and very small scale must not generate NaNs.
+p['cameraPosition'].value=(0,5,0); render()
+p['plumeWidth'].value=0.00035;p['plumeLength'].value=0.0017;render()
+if '--preview' in sys.argv:
+    from PIL import Image
+    rgb=lit[...,:3]+np.array([0.025,0.035,0.05])*(1-lit[...,3:4])
+    Image.fromarray((np.clip(rgb[::-1],0,1)**(1/2.2)*255).astype('uint8')).save(sys.argv[sys.argv.index('--preview')+1])
+print('PASS: GLSL compile/render, finite output, endpoints, advection, deterministic pause, colour gradient, emission, alpha, camera-axis fallback, small scale')
+print('Renderer:',ctx.info['GL_RENDERER'])
