@@ -18,7 +18,7 @@ return function()
     local self={shader=shader,mode="pending",smoothing=true}
     local loc={}
     for _,name in ipairs({"inverseProjection","inverseView","mapSize","heightRange","clipZeroToOne",
-        "deferred","strength","nightIntensity","smoothing","localActive","localOrigin","localSpan","headlightActive","headlightLocalActive","headlightOrigin","headlightSpan"}) do loc[name]=gl.GetUniformLocation(shader,name) end
+        "deferred","strength","nightIntensity","smoothing","localActive","localOrigin","localSpan","headlightActive","headlightLocalActive","headlightOrigin","headlightSpan","headlightIntensity"}) do loc[name]=gl.GetUniformLocation(shader,name) end
     function self:Resize()
         if self.depth then gl.DeleteTexture(self.depth);self.depth=nil end
         self.width,self.height=nil,nil
@@ -38,7 +38,7 @@ return function()
         end
         return true
     end
-    function self:Draw(texture,occupancy,heightMin,heightMax,strength,intensity,detail,headlights)
+    function self:Draw(texture,occupancy,heightMin,heightMax,strength,intensity,detail,headlights,headlightIntensity)
         if not self.shader or not texture or intensity<=0 or strength<=0 then return end
         local useDeferred=buffersAvailable()
         local sx,sy,vpx,vpy=Spring.GetViewGeometry()
@@ -90,6 +90,7 @@ return function()
         gl.UniformMatrix(loc.inverseView,"viewinverse")
         gl.Uniform(loc.mapSize,Game.mapSizeX,Game.mapSizeZ)
         gl.Uniform(loc.heightRange,heightMin,heightMax)
+        gl.Uniform(loc.headlightIntensity,headlightIntensity or 1)
         gl.Uniform(loc.strength,strength);gl.Uniform(loc.nightIntensity,intensity)
         gl.UniformInt(loc.deferred,useDeferred and 1 or 0)
         gl.UniformInt(loc.clipZeroToOne,Platform and Platform.glSupportClipSpaceControl and 1 or 0)

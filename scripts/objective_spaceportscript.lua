@@ -2,6 +2,7 @@ include "createCorpse.lua"
 include "lib_OS.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
+include "lib_radiance_emitters.lua"
 include "lib_debug.lua"
 --include "lib_Build.lua"
 
@@ -293,11 +294,11 @@ travelAxis = y_axis
 function PrepareUnloadBooster()
     Move(LoadCrane, travelAxis, 1000, 0)
     Hide(PickUpBoosterDay)
-    Hide(PickUpBoosterNight)
+    HideRadiancePiece(PickUpBoosterNight)
     Hide(LoadCraneDay)
-    Show(LoadCraneNight)
+    ShowRadiancePiece(LoadCraneNight)
     WMove(LoadCrane,travelAxis, 500, 100)
-    Hide(LoadCraneNight)
+    HideRadiancePiece(LoadCraneNight)
     Show(LoadCraneDay)
     WMove(LoadCrane,travelAxis, 0, 100)
 end
@@ -305,10 +306,10 @@ end
 function UnloadBooster()
     Show(PickUpBoosterDay)
     WMove(LoadCrane, travelAxis, 500, 100)
-    Show(LoadCraneNight)
+    ShowRadiancePiece(LoadCraneNight)
     Hide(LoadCraneDay)
     Hide(PickUpBoosterDay)
-    Show(PickUpBoosterNight)
+    ShowRadiancePiece(PickUpBoosterNight)
     WMove(LoadCrane,travelAxis, 1000, 100)
     Hide(PickUpBoosterDay)
     PrepareUnloadBooster()
@@ -327,9 +328,9 @@ function showBoosterSmokeRing(nr, LandCone)
     boosterSmokeRingHeight = 1500
     Move(TableOfPiecesGroups[CrawlerSmokeRingN][nr], downAxis, -boosterSmokeRingHeight, 0)
     Sleep(500)
-    Show(LandCone)
+    ShowRadiancePiece(LandCone)
     Sleep(350)
-    Show(TableOfPiecesGroups[CrawlerBoosterGasRingN][nr]) 
+    ShowRadiancePiece(TableOfPiecesGroups[CrawlerBoosterGasRingN][nr])
     Show(TableOfPiecesGroups[CrawlerBoosterRingN][nr]) 
     Sleep(500)
     val = math.random(42, 80) * randSign()
@@ -346,8 +347,8 @@ function showBoosterSmokeRing(nr, LandCone)
     Move(TableOfPiecesGroups[CrawlerSmokeRingN][nr], downAxis, -boosterSmokeRingHeight, boosterSmokeRingHeight/5)
     WaitForMoves(TableOfPiecesGroups[CrawlerSmokeRingN][nr])
     Hide(TableOfPiecesGroups[CrawlerSmokeRingN][nr])
-    Hide(TableOfPiecesGroups[CrawlerBoosterGasRingN][nr]) 
-    Hide(LandCone)  
+    HideRadiancePiece(TableOfPiecesGroups[CrawlerBoosterGasRingN][nr])
+    HideRadiancePiece(LandCone)
 end
 
 boolBackDoorOpen = false
@@ -414,11 +415,11 @@ function landBooster(boostNr)
     end  
    
 
-    Hide(TableOfPiecesGroups[CrawlerBoosterGasRingN][boosterNr])
+    HideRadiancePiece(TableOfPiecesGroups[CrawlerBoosterGasRingN][boosterNr])
     
     assert(plums)
     hideT(plums)
-    Hide(LandCone)
+    HideRadiancePiece(LandCone)
     Hide(booster)
     Show(TableOfPiecesGroups[LandedBoosterN][boosterNr])
 
@@ -435,9 +436,9 @@ end
 
 ArenaSmoke = piece("ArenaSmoke")
 function plattFormFireBloom()
-    Show(LaunchCone)
+    ShowRadiancePiece(LaunchCone)
     Move(fireCloud, y_axis, -250, 0)
-    Show(fireCloud)
+    ShowRadiancePiece(fireCloud)
     Move(fireCloud, y_axis, 3000, 1200)
 
     while launchState == "launching"  do
@@ -454,34 +455,34 @@ function plattFormFireBloom()
             turnVal = shift*i + randoVal
             Turn(rotator, z_axis, math.rad(turnVal), 9000)
             Spin(cycle,z_axis, math.rad(1800), 1200)
-            Show(cycle)       
+            ShowRadiancePiece(cycle)
         end       
         Sleep(800)
         stopSpinT(TableOfPiecesGroups["FireFlower"], z_axis)
         resetT(TableOfPiecesGroups["FireFlower"])
     end
-    hideT(TableOfPiecesGroups["FireFlower"])
+    HideRadiancePieces(TableOfPiecesGroups["FireFlower"])
 end
 
 function plattformFireBloomCleanup()
     foreach(
         TableOfPiecesGroups["FireFlower"],
         function(id)
-            Hide(id)
+            HideRadiancePiece(id)
             StopSpin(id, x_axis, 0)
         end
     )
-    Hide(LaunchCone)
-    Hide(fireCloud)
-    Hide(GroundHeatedGasRing1)
-    Hide(GroundHeatedGasRing2)
-    hideT(TableOfPiecesGroups["FireFlower"])
+    HideRadiancePiece(LaunchCone)
+    HideRadiancePiece(fireCloud)
+    HideRadiancePiece(GroundHeatedGasRing1)
+    HideRadiancePiece(GroundHeatedGasRing2)
+    HideRadiancePieces(TableOfPiecesGroups["FireFlower"])
     hideT(TableOfPiecesGroups["FireFlowerRotator"])
 end
 
 
 function liftRocketShowStage(distanceUp, timeUp, cloud, spinValue, startValue)
-    Show(cloud)
+    ShowRadiancePiece(cloud)
     Spin(cloud, y_axis, math.rad(spinValue), startValue)
     mSyncIn(Rocket, 0, distanceUp, 0, timeUp)
     WaitForMoves(Rocket)
@@ -495,7 +496,7 @@ function spinUpTurbine()
     Spin(turbine, y_axis, math.rad(42), 0.1)
     Show(turbineCold)
     Sleep(4000)
-    Show(turbineHot)
+    ShowRadiancePiece(turbineHot)
     Hide(turbineCold)
     
 
@@ -639,9 +640,9 @@ function launchAnimation()
             
             destroyUnitsNearby()        
 
-            Show(GroundHeatedGasRing1)
+            ShowRadiancePiece(GroundHeatedGasRing1)
             Spin(GroundHeatedGasRing1,y_axis,math.rad(66),0)
-            Show(GroundHeatedGasRing2)
+            ShowRadiancePiece(GroundHeatedGasRing2)
             Spin(GroundHeatedGasRing2,y_axis,math.rad(66)*randSign(),0)
             destroyUnitsNearby()
 
@@ -670,14 +671,14 @@ function launchAnimation()
                 plumageTable, 
                 TableOfPiecesGroups["RocketPlumeB"] )
             --Slight Slowdown
-            Show(RocketFusionPlume)
+            ShowRadiancePiece(RocketFusionPlume)
             Sleep(500)
             --Fusion Engine kicks in 
             
             launchState = "recovery"
             WMove(MainStage, y_axis, 92000, 16000)
             Sleep(9000)
-            Hide(RocketFusionPlume)
+            HideRadiancePiece(RocketFusionPlume)
             HideRocket()
 --            echo("launch complete waiting for return")
             --Moving CrawlerMain back to reassembly
@@ -759,22 +760,22 @@ end
 function cloudFallingDown(cloudMovers, cloudGoingUp, cloudCoolingDown)
     --showBubbleSmoke()
     showT(cloudGoingUp)
-    hideT(TableOfPiecesGroups["FireFlower"])
+    HideRadiancePieces(TableOfPiecesGroups["FireFlower"])
     Move(Rocket,y_axis, 0, 100)
     for i =  1, #cloudMovers do
-        Hide(cloudGoingUp[i])
-        Show(cloudCoolingDown[i])
+        HideRadiancePiece(cloudGoingUp[i])
+        ShowRadiancePiece(cloudCoolingDown[i])
         if cloudMovers[i+1] then
             Move(cloudMovers[i+1], y_axis, i*4500, 4500)
         end
         WMove(cloudMovers[i], y_axis, -i*4500, 5500)
-        Hide(cloudCoolingDown[i])
+        HideRadiancePiece(cloudCoolingDown[i])
     end
-    hideT(cloudCoolingDown)
+    HideRadiancePieces(cloudCoolingDown)
     --resetSmokeBubbles()
     Move(ArenaSmoke, y_axis, -2900, 290)
     Sleep(4000)
-    Hide(turbineHot)
+    HideRadiancePiece(turbineHot)
     Show(turbineCold)
     StopSpin(turbine, y_axis, 0.0001)
     Sleep(9000)

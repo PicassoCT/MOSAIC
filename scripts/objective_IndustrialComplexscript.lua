@@ -2,6 +2,7 @@ include "createCorpse.lua"
 include "lib_OS.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
+include "lib_radiance_emitters.lua"
 
 IndustrialComplex = piece"IndustrialComplex"
 MeltingPot = piece"MeltingPot"
@@ -42,7 +43,7 @@ function sparkles()
             end
             if spark then
                 reset(spark)
-                Show(spark)
+                ShowRadiancePiece(spark)
                 speed = math.rad(math.random(270, 360))
                 Turn(spark, truckAxis, math.rad(179), speed)
             end
@@ -51,7 +52,7 @@ function sparkles()
         for i=1, #TablesOfPiecesGroups["SparkRotator"] do
             spark = TablesOfPiecesGroups["Spark"][i]
             WaitForTurns(spark)
-            Hide(spark)
+            HideRadiancePiece(spark)
         end
         Sleep(100)
     end
@@ -158,8 +159,11 @@ function Cranes(index)
             end
         end
         if index == 2 then
-            Hide(one)
+            HideRadiancePiece(one)
             one = showOnePiece(TablesOfPiecesGroups["CoolDown"])
+            if GG and GG.SetObjectiveRadiancePieceVisible then
+                GG.SetObjectiveRadiancePieceVisible(unitID, one, true)
+            end
             reset(one)
             Move(one, rotationAxis, -300, 3)
         end
@@ -214,8 +218,8 @@ end
 function flickerWeld()
     Signal(SIG_WELD)
     SetSignalMask(SIG_WELD)
-    Show(Weld)
-    showT(TablesOfPiecesGroups["ArcWeld"])
+    ShowRadiancePiece(Weld)
+    ShowRadiancePieces(TablesOfPiecesGroups["ArcWeld"])
     weldPieces = {Weld, TablesOfPiecesGroups["ArcWeld"][1], TablesOfPiecesGroups["ArcWeld"][2]}
     while true do
         for k, p in pairs(weldPieces) do           
@@ -233,7 +237,7 @@ end
 function Melting()
     Show(IndustrialComplex)
     Show(MeltingPot)
-    Show(Lava)
+    ShowRadiancePiece(Lava)
     Show(MeltSpin4)
     showT(MeltSpinnerT)
     lavaStream = TablesOfPiecesGroups["Lavastream"]
@@ -252,12 +256,12 @@ function Melting()
         WMove(Lava, rotationAxis, -5000, 500)
         hideT(lavaStream)
         Signal(SIG_SPARK)
-        hideT(TablesOfPiecesGroups["Spark"])
+        HideRadiancePieces(TablesOfPiecesGroups["Spark"])
         Sleep(5000)
         Signal(SIG_WELD)
         Sleep(1000)
-        Hide(Weld)
-        hideT(TOPG["ArcWeld"])
+        HideRadiancePiece(Weld)
+        HideRadiancePieces(TOPG["ArcWeld"])
         trainValue = trainValue + 5
         Turn(MeltSpin4, rotationAxis, trainValue, 0.125)
     end

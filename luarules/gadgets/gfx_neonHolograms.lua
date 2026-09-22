@@ -28,6 +28,25 @@ if (gadgetHandler:IsSyncedCode()) then
 	local SO_SHTRAN_FLAG = 32
 	local SO_DRICON_FLAG = 128
     local boolDebugActive = false
+    local objectiveRadiancePieces = {}
+
+    function GG.SetObjectiveRadiancePieceVisible(unitID, pieceID, visible)
+        if not unitID or not pieceID then return end
+        local pieces = objectiveRadiancePieces[unitID]
+        if visible then
+            if not pieces then
+                pieces = {}
+                objectiveRadiancePieces[unitID] = pieces
+            end
+            if pieces[pieceID] then return end
+            pieces[pieceID] = pieceID
+        else
+            if not pieces or not pieces[pieceID] then return end
+            pieces[pieceID] = nil
+            if not next(pieces) then objectiveRadiancePieces[unitID] = nil end
+        end
+        SendToUnsynced("setObjectiveRadiancePiece", unitID, pieceID, visible and 1 or 0)
+    end
 
     -- TODO: Add bloomstage - write to low level aphabitmask
     -- Texture back to resolution
@@ -171,6 +190,10 @@ if (gadgetHandler:IsSyncedCode()) then
     end
 
     function gadget:UnitDestroyed(unitID, unitDefID)
+        if objectiveRadiancePieces[unitID] then
+            objectiveRadiancePieces[unitID] = nil
+            SendToUnsynced("unsetObjectiveRadianceUnit", unitID)
+        end
         if neonHologramTypeTable[unitDefID] then
             neonUnitDataTransfer[unitID] = nil
             for i=#allNeonUnits, 1, -1 do
@@ -373,6 +396,22 @@ end
 
     local counterNeonUnits = 0
     local neonHoloParts= {}
+    local objectiveRadiancePieces = {}
+
+    local function setObjectiveRadiancePiece(_, unitID, pieceID, visible)
+        local pieces = objectiveRadiancePieces[unitID]
+        if visible == 1 then
+            if not pieces then pieces = {}; objectiveRadiancePieces[unitID] = pieces end
+            pieces[pieceID] = pieceID
+        elseif pieces then
+            pieces[pieceID] = nil
+            if not next(pieces) then objectiveRadiancePieces[unitID] = nil end
+        end
+    end
+
+    local function unsetObjectiveRadianceUnit(_, unitID)
+        objectiveRadiancePieces[unitID] = nil
+    end
 
     local function setUnitNeonLuaDraw(callname, unitID, unitDefID)
         Spring.UnitRendering.SetUnitLuaDraw(unitID, false) 
@@ -472,6 +511,9 @@ end
         if Script.LuaUI('RecieveAllNeonUnitsPieces') then
             local message = Script.LuaUI.RecieveAllNeonUnitsPieces(neonUnitTables)
         end
+        if Script.LuaUI('ReceiveObjectiveRadiancePieces') then
+            Script.LuaUI.ReceiveObjectiveRadiancePieces(objectiveRadiancePieces)
+        end
         updateRainPercent()
     end
  
@@ -482,6 +524,8 @@ end
         gadgetHandler:AddSyncAction("setUnitNeonLuaDraw", setUnitNeonLuaDraw)
         gadgetHandler:AddSyncAction("updateUnitNeonLuaDraw", updateUnitNeonLuaDraw)
         gadgetHandler:AddSyncAction("unsetUnitNeonLuaDraw", unsetUnitNeonLuaDraw) --TODO debug
+        gadgetHandler:AddSyncAction("setObjectiveRadiancePiece", setObjectiveRadiancePiece)
+        gadgetHandler:AddSyncAction("unsetObjectiveRadianceUnit", unsetObjectiveRadianceUnit)
 		frameGameStart = Spring.GetGameFrame()+1
 
         if blurtex ~= nil then glDeleteTexture(blurtex) end
@@ -683,5 +727,7 @@ end
         gadgetHandler.RemoveSyncAction("setUnitNeonLuaDraw")
         gadgetHandler.RemoveSyncAction("updateUnitNeonLuaDraw")
         gadgetHandler.RemoveSyncAction("unsetUnitNeonLuaDraw")
+        gadgetHandler.RemoveSyncAction("setObjectiveRadiancePiece")
+        gadgetHandler.RemoveSyncAction("unsetObjectiveRadianceUnit")
     end
 end

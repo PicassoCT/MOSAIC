@@ -25,6 +25,7 @@ local DIRECT_LIGHT_RANGE = 1800
 local DIRECT_LIGHT_STEPS = 48
 
 local neonUnitTables = {}
+local objectiveRadianceUnitTables = {}
 local neonLightPercent = 0.0
 local neonUnitCount = 0
 local neonPieceCount = 0
@@ -154,6 +155,10 @@ local function recieveNeonHoloLightPiecesByUnit(unitPiecesTable)
         neonUnitCount = neonUnitCount + 1
         neonPieceCount = neonPieceCount + #pieces
     end
+end
+
+local function receiveObjectiveRadiancePieces(unitPiecesTable)
+    objectiveRadianceUnitTables = unitPiecesTable or {}
 end
 
 local function removeSelf(message)
@@ -515,7 +520,7 @@ end
 local rainLighting = {}
 local function getRainLighting()
     if not sceneEnabled or not sceneReady or not sceneRadiance or occlusionDirty then return nil end
-    local intensity = sceneTest and 1 or neonLightPercent
+    local intensity = 1 -- each emitter carries its own day/night scale
     if intensity <= 0 or sceneStrength <= 0 then return nil end
     local band = OCCLUSION_WORLD_HEIGHT / OCCLUSION_LAYER_COUNT
     rainLighting.texture, rainLighting.occupancy = sceneRadiance, occlusionTex[sceneLayer]
@@ -647,6 +652,7 @@ function widget:Initialize()
     end
 
     widgetHandler:RegisterGlobal("RecieveAllNeonUnitsPieces", recieveNeonHoloLightPiecesByUnit)
+    widgetHandler:RegisterGlobal("ReceiveObjectiveRadiancePieces", receiveObjectiveRadiancePieces)
     widgetHandler:RegisterGlobal("ReceiveBuildingShadowColumnsBegin", receiveBuildingShadowBegin)
     widgetHandler:RegisterGlobal("ReceiveBuildingShadowColumn", receiveBuildingShadowColumn)
     widgetHandler:RegisterGlobal("ReceiveBuildingShadowColumnsEnd", receiveBuildingShadowEnd)
@@ -699,19 +705,20 @@ local function drawNeonPieces(captureLayer, domain)
     gl.LoadIdentity()
     gl.Rotate(-90, 1, 0, 0)
 
-    for unitID, pieces in pairs(neonUnitTables) do
+    local function drawUnitPieces(unitID, pieces, objective)
         if Spring.ValidUnitID(unitID) and not Spring.GetUnitIsDead(unitID) then
             if propagation then
                 local defID = Spring.GetUnitDefID(unitID)
                 local bound = defID and gl.Texture(0,string.format("%%%d:0",defID))
                 if not bound then gl.Texture(0,false) end
                 gl.UniformInt(propagation.texturedLoc,bound and 1 or 0)
+                gl.Uniform(propagation.emissionStrengthLoc, objective and 1 or (sceneTest and 1 or neonLightPercent))
+                gl.UniformInt(propagation.projectToBandLoc, objective and 1 or 0)
             end
             gl.PushMatrix()
             gl.UnitMultMatrix(unitID)
 
-            for i = 1, #pieces do
-                local pieceID = pieces[i]
+            for _, pieceID in pairs(pieces) do
                 if pieceID then
                     gl.PushMatrix()
                     gl.UnitPieceMultMatrix(unitID, pieceID)
@@ -724,10 +731,17 @@ local function drawNeonPieces(captureLayer, domain)
         end
     end
 
+    for unitID, pieces in pairs(neonUnitTables) do
+        drawUnitPieces(unitID, pieces)
+    end
+    for unitID, pieces in pairs(objectiveRadianceUnitTables) do
+        drawUnitPieces(unitID, pieces, true)
+    end
+
     if propagation and WG.CaptureVehicleHeadlightEmission then
         local bandHeight=OCCLUSION_WORLD_HEIGHT/OCCLUSION_LAYER_COUNT
         WG.CaptureVehicleHeadlightEmission((captureLayer-1)*bandHeight,captureLayer*bandHeight,
-            liveHeadlights and liveHeadlights.enabled and 0.08 or 1)
+            (liveHeadlights and liveHeadlights.enabled and 0.08 or 1) * (sceneTest and 1 or neonLightPercent))
     end
 
     gl.PopMatrix()
@@ -767,7 +781,7 @@ function widget:DrawWorldPreUnit()
     end
     gl.RenderToTexture(topDownTex, drawNeonPieces, propagationLayer)
     if propagation then
-        propagation:Draw(topDownTex, occlusionTex[propagationLayer], neonLightPercent,
+        propagation:Draw(topDownTex, occlusionTex[propagationLayer], 1,
             (propagationLayer-1)*bandHeight, propagationLayer*bandHeight)
         if scene and sceneEnabled then
             if sceneLayer == propagationLayer then
@@ -809,7 +823,7 @@ function widget:DrawWorld()
     if scene and sceneEnabled and sceneReady then
         local bandHeight=OCCLUSION_WORLD_HEIGHT/OCCLUSION_LAYER_COUNT
         scene:Draw(sceneRadiance,occlusionTex[sceneLayer],(sceneLayer-1)*bandHeight,sceneLayer*bandHeight,
-            sceneStrength,sceneTest and 1 or neonLightPercent,localDetail,liveHeadlights)
+            sceneStrength,1,localDetail,liveHeadlights,sceneTest and 1 or neonLightPercent)
     end
     if not debugVoxelUnit then return end
 
@@ -956,6 +970,7 @@ function widget:Shutdown()
         propagation = nil
     end
     widgetHandler:DeregisterGlobal("RecieveAllNeonUnitsPieces")
+    widgetHandler:DeregisterGlobal("ReceiveObjectiveRadiancePieces")
     widgetHandler:DeregisterGlobal("ReceiveBuildingShadowColumnsBegin")
     widgetHandler:DeregisterGlobal("ReceiveBuildingShadowColumn")
     widgetHandler:DeregisterGlobal("ReceiveBuildingShadowColumnsEnd")
@@ -987,7 +1002,6 @@ function widget:Shutdown()
     occlusionBuildings = {}
     pendingBuildingColumns = {}
 end
-
 
 
 

@@ -18,7 +18,8 @@ end
 local boolDebugActive = false
 local reflectionDebug = false
 local rainDetailDebug = 0
-local savedRainPercent
+local weathermanActive = false
+local naturalRainPercent = 0.0
 local rainShader = nil
 local bindRainLighting
 local glitterEnabled = true
@@ -167,7 +168,8 @@ local emitunittexIndex      = 11
 local eyePos = {spGetCameraPosition()}
 local eyeDir = {spGetCameraDirection()}
 -- /rainreflection on isolates wet-surface reflections and temporarily forces rain.
--- /rainreflection off restores the weather amount that was active before debugging.
+-- /rainreflection off restores the current weather amount.
+-- /Weatherman on forces full rain locally; off restores the natural weather cycle.
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -444,12 +446,11 @@ local rainCapture = VFS.Include("luaui/widgets_mosaic/include/rain_capture.lua")
     ready = function() return rainShader ~= nil end,
     save = function()
         return {rain = rainPercent, debug = boolDebugActive, reflection = reflectionDebug,
-            detail = rainDetailDebug, savedRain = savedRainPercent}
+            detail = rainDetailDebug}
     end,
     restore = function(state)
         rainPercent, boolDebugActive = state.rain, state.debug
         reflectionDebug, rainDetailDebug = state.reflection, state.detail
-        savedRainPercent = state.savedRain
     end,
     prepare = function()
         boolDebugActive, reflectionDebug, rainDetailDebug = false, false, 0
@@ -467,7 +468,14 @@ local rainCapture = VFS.Include("luaui/widgets_mosaic/include/rain_capture.lua")
 
 function widget:Update(dt)  
     if rainCapture.update(dt) then return end
-    accumulatedDT = accumulatedDT + dt 
+    accumulatedDT = accumulatedDT + dt
+    -- Keep the natural cycle running underneath visual overrides.
+    if isRaining() then
+        naturalRainPercent = math.min(1.0, naturalRainPercent + 0.0002)
+    else
+        naturalRainPercent = math.max(0.0, naturalRainPercent - 0.0001)
+    end
+    rainPercent = (weathermanActive or boolDebugActive) and 1.0 or naturalRainPercent
     if boolDebugActive then  
         rainPercent = 1.0
         return 
@@ -480,14 +488,6 @@ function widget:Update(dt)
         end
         Spring.PlaySoundFile("LuaUi/sounds/weather/rain.ogg", math.min(1.0, 2.0 * rainPercent), 'ui')
         lastActiveRainSoundDt= accumulatedDT
-    end
-
-    if isRaining() == true   then--isRaining() then
-        rainPercent = math.min(1.0, rainPercent + 0.0002)
-        --Spring.Echo("Rainvalue:".. rainPercent)
-    else
-        rainPercent = math.max(0.0, rainPercent - 0.0001)
-        --Spring.Echo("Rainvalue:".. rainPercent)
     end
 end
 
@@ -614,11 +614,7 @@ function widget:Initialize()
         return
     end
     boolIsMapNameOverride = isMapNameRainyOverride(Game.mapName)
-    if not isRainyArea() then
-       Spring.Echo("Is not a rainy area:"..tostring(boolRainyArea))
-        widgetHandler:RemoveWidget(self)
-        return
-    end
+    -- Stay loaded on dry maps so Weatherman can override their weather.
     lastFrametime = Spring.GetTimer()
     startOsClock = os.clock()
     init()
@@ -669,8 +665,19 @@ end
 
 function widget:TextCommand(command)
     if rainCapture.command(command) then return true end
-    if rainCapture.active() and command:match("^rain") then
+    local weatherCommand = command:lower():match("^%s*(.-)%s*$")
+    if rainCapture.active() and (weatherCommand:match("^rain") or weatherCommand:match("^weatherman")) then
         Spring.Echo("Rain capture: finish or /rainsnap cancel before changing rain debug settings")
+        return true
+    end
+    if weatherCommand == "weatherman on" or weatherCommand == "weatherman off" then
+        weathermanActive = weatherCommand == "weatherman on"
+        rainPercent = (weathermanActive or boolDebugActive) and 1.0 or naturalRainPercent
+        Spring.Echo(weathermanActive and "Weatherman: rain forced on (local visuals)"
+            or "Weatherman: natural weather restored")
+        return true
+    elseif weatherCommand == "weatherman" or weatherCommand:match("^weatherman%s") then
+        Spring.Echo("Usage: /Weatherman on | /Weatherman off")
         return true
     end
     local detailViews = { ["rainview off"] = 0, ["rainview rain"] = 1,
@@ -691,7 +698,6 @@ function widget:TextCommand(command)
         return true
     end
     if command == "rainreflection on" then
-        if not reflectionDebug then savedRainPercent = rainPercent end
         reflectionDebug = true
         boolDebugActive = true
         rainPercent = 1.0
@@ -700,8 +706,7 @@ function widget:TextCommand(command)
     elseif command == "rainreflection off" then
         reflectionDebug = false
         boolDebugActive = false
-        if savedRainPercent then rainPercent = savedRainPercent end
-        savedRainPercent = nil
+        rainPercent = weathermanActive and 1.0 or naturalRainPercent
         Spring.Echo("Rain: normal rendering restored")
         return true
     end
