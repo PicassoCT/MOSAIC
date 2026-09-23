@@ -442,7 +442,32 @@ end
 local accumulatedDT = 0
 local lastActiveRainSoundDt = 0
 
+local rainCapture = VFS.Include("luaui/widgets_mosaic/include/rain_capture.lua")({
+    ready = function() return rainShader ~= nil end,
+    save = function()
+        return {rain = rainPercent, debug = boolDebugActive, reflection = reflectionDebug,
+            detail = rainDetailDebug}
+    end,
+    restore = function(state)
+        rainPercent, boolDebugActive = state.rain, state.debug
+        reflectionDebug, rainDetailDebug = state.reflection, state.detail
+    end,
+    prepare = function()
+        boolDebugActive, reflectionDebug, rainDetailDebug = false, false, 0
+        hours, minutes, seconds, timePercent = getDayTime()
+        sunCol, skyCol = {gl.GetAtmosphere("sunColor")}, {gl.GetAtmosphere("skyColor")}
+        sunPos = {gl.GetSun("pos")}
+    end,
+    setRain = function(amount) rainPercent = amount end,
+    metadata = function()
+        return string.format("time_percent\t%.8f\nsun_rgb\t%s\nsky_rgb\t%s\nsun_direction\t%s\nglitter\t%s\n",
+            timePercent, table.concat(sunCol, ","), table.concat(skyCol, ","),
+            table.concat(sunPos, ","), tostring(glitterEnabled))
+    end,
+})
+
 function widget:Update(dt)  
+    if rainCapture.update(dt) then return end
     accumulatedDT = accumulatedDT + dt
     -- Keep the natural cycle running underneath visual overrides.
     if isRaining() then
@@ -467,6 +492,7 @@ function widget:Update(dt)
 end
 
 function widget:Shutdown()
+    rainCapture.shutdown()
     if WG.GetVehicleHeadlightWetness == getHeadlightWetness then WG.GetVehicleHeadlightWetness = nil end
     if glDeleteTexture then
         glDeleteTexture(depthtex or "")
@@ -484,6 +510,7 @@ local function updateUniforms()
     onTresholdCrossWriteToMapTexture()
     diffTime = Spring.DiffTimers(lastFrametime, startTimer) 
     diffTime = diffTime - pausedTime
+    diffTime = rainCapture.shaderTime() or diffTime
     --Spring.Echo("Time passed:"..diffTime)
     glUniform(rainPercentLoc, rainPercent)
     glUniform(reflectionDebugLoc, reflectionDebug and 1 or 0)
@@ -576,6 +603,11 @@ function widget:DrawScreenEffects()
     glTexture(0, false);
 end
 
+-- Capture after the complete scene, effects and UI, not the intermediate rain FBO.
+function widget:DrawScreenPost()
+    rainCapture.draw()
+end
+
 function widget:Initialize()
     WG.GetVehicleHeadlightWetness = getHeadlightWetness
     if (not gl.RenderToTexture) then --super bad graphic driver
@@ -632,7 +664,12 @@ end
 
 
 function widget:TextCommand(command)
+    if rainCapture.command(command) then return true end
     local weatherCommand = command:lower():match("^%s*(.-)%s*$")
+    if rainCapture.active() and (weatherCommand:match("^rain") or weatherCommand:match("^weatherman")) then
+        Spring.Echo("Rain capture: finish or /rainsnap cancel before changing rain debug settings")
+        return true
+    end
     if weatherCommand == "weatherman on" or weatherCommand == "weatherman off" then
         weathermanActive = weatherCommand == "weatherman on"
         rainPercent = (weathermanActive or boolDebugActive) and 1.0 or naturalRainPercent
