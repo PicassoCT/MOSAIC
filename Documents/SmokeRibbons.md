@@ -104,6 +104,30 @@ which shares this unit script, retains its previous CEG behaviour.
 
 ## Cost and rendering limits
 
+### Objective flames
+
+`scripts/lib_objective_ribbon_flames.lua` holds three animation-driven presets:
+
+| Objective | Anchor | Active period | Length / width |
+| --- | --- | --- | --- |
+| Pump station | `Flame1` | Reignition through burning; stops at flame-out or forced collapse | 120 / 20 |
+| Industrial complex | `Lava` in the melting pot | Pouring/melting phase; stops when the lava finishes lowering | 85 / 16 |
+| Spaceport ship | `RocketFusionPlume`, a child of the moving main stage | Launch ignition until `HideRocket()` | 320 / 42 |
+
+Each objective uses one slot, so repeated cycles replace rather than accumulate
+emitters. Death removes the effect and blocks restart during the death animation.
+The industrial flame follows the molten surface; this model has no dedicated
+flare-stack piece. Pump and furnace flames rise with warm self-lit gradients;
+the ship exhaust points downward, with a pale blue base fading through orange.
+Wind is enabled for all three, with reduced influence on the rocket jet.
+Unit-motion trailing is disabled: the spaceship is an animated model piece of
+the stationary spaceport, and the plume follows that piece directly.
+Existing mesh effects and their radiance registrations remain in place; the
+new ribbons are self-lit but do not themselves inject radiance-cascade light.
+Sizes are initial world-unit presets and still need in-game visual validation.
+
+### Rendering budget
+
 - Size-dependent distance culling: the default cutoff is 40 times the larger
   of scaled length and twice scaled width, measured from camera to emitter.
   A default 60-unit plume disappears at 2400 units; half scale disappears at
@@ -142,6 +166,7 @@ From the repository root:
 ```sh
 lua tests/smoke_ribbons_lifecycle.lua
 lua tests/smoke_cigarette_lifecycle.lua
+lua tests/objective_ribbon_flames_lifecycle.lua
 MESA_GL_VERSION_OVERRIDE=3.3COMPAT python tests/smoke_ribbons_gpu.py
 ```
 
