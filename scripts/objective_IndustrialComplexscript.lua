@@ -3,6 +3,7 @@ include "lib_OS.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 include "lib_radiance_emitters.lua"
+local gasFlare = include('lib_objective_ribbon_flames.lua')(unitID, 'industrial')
 
 IndustrialComplex = piece"IndustrialComplex"
 MeltingPot = piece"MeltingPot"
@@ -248,12 +249,14 @@ function Melting()
         WTurn(MeltingPot, rotationAxis, math.rad(-60), 5)
         StartThread(flickerWeld)
         reset(MeltingPot)
+        gasFlare.Start(Lava)
         Sleep(300)
         showT(lavaStream)
         Spin(lavaStream[2], rotationAxis, math.rad(42)*randSign(),0)
         Spin(lavaStream[1], rotationAxis, math.rad(42)*randSign(),0)
         StartThread(sparkles)
         WMove(Lava, rotationAxis, -5000, 500)
+        gasFlare.Stop()
         hideT(lavaStream)
         Signal(SIG_SPARK)
         HideRadiancePieces(TablesOfPiecesGroups["Spark"])
@@ -372,6 +375,7 @@ end
 
 
 function script.Killed(recentDamage, _)
+    gasFlare.Shutdown()
     return 1
 end
 

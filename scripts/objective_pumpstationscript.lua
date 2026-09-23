@@ -3,6 +3,7 @@ include "lib_OS.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 include "lib_radiance_emitters.lua"
+local gasFlare = include('lib_objective_ribbon_flames.lua')(unitID, 'pump')
 
 TablesOfPiecesGroups = {}
 function script.HitByWeapon(x, z, weaponDefID, damage) end
@@ -103,6 +104,7 @@ FlameTips = {}
 
 
 function reignition()
+    gasFlare.Start(Flame)
  
 
     -- collapse
@@ -122,6 +124,7 @@ function reignition()
 end
 
 function flameOut()
+    gasFlare.Stop()
     HideRadiancePieces(FlameTips)
 
     -- column collapses
@@ -328,6 +331,7 @@ function explosionLoop()
   
         Sleep(3000)
         Signal(SIG_FLAME)
+        gasFlare.Stop()
         resetHide(TablesOfPiecesGroups["FlameA"])
         resetHide(TablesOfPiecesGroups["FlameB"])
         resetHide(TablesOfPiecesGroups["FlameC"])
@@ -374,6 +378,7 @@ function script.Create()
 end
 
 function script.Killed(recentDamage, _)
+    gasFlare.Shutdown()
     return 1
 end
 

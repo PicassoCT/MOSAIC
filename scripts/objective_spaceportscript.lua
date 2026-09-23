@@ -3,6 +3,7 @@ include "lib_OS.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 include "lib_radiance_emitters.lua"
+local launchFlame = include('lib_objective_ribbon_flames.lua')(unitID, 'launch')
 include "lib_debug.lua"
 --include "lib_Build.lua"
 
@@ -431,6 +432,7 @@ function landBooster(boostNr)
 end
 
 function script.Killed(recentDamage, _)
+    launchFlame.Shutdown()
     return 1
 end
 
@@ -622,6 +624,7 @@ function launchAnimation()
             craneLoadToPlatform()
             --echoEnter("showHotColdTurbine")
             launchState = "launching"
+            launchFlame.Start(RocketFusionPlume)
             StartThread(spinUpTurbine)
             --Inginition
             -- plattform firebloom
@@ -785,6 +788,7 @@ end
 
 
 function HideRocket()
+    launchFlame.Stop()
     Hide(MainStage)
     Hide(CapsuleRocket)
     Hide(MainStageRocket)
