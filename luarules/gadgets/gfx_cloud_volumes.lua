@@ -62,6 +62,7 @@ else
         if not renderer then Spring.Echo('Cloud volumes disabled: '..tostring(err));gadgetHandler:RemoveGadget(self) end
     end
     function gadget:DrawWorld()
+        if Script.LuaUI('MosaicPerfDrawEnabled') and not Script.LuaUI.MosaicPerfDrawEnabled('clouds') then return end
         if not renderer then return end
         if revision~=SYNCED.CloudVolumeRevision then
             revision=SYNCED.CloudVolumeRevision

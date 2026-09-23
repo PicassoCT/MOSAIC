@@ -711,6 +711,7 @@ end
 
     --function gadget:DrawWorld(deferredPass, drawReflection, drawRefraction)
     function gadget:DrawWorld()
+        if Script.LuaUI('MosaicPerfDrawEnabled') and not Script.LuaUI.MosaicPerfDrawEnabled('holograms') then return end
         RenderAllNeonUnitsDrawWorld()
         --RenderBlurApplyBlur()
     end
