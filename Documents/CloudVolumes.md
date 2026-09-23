@@ -57,3 +57,9 @@ MESA_GL_VERSION_OVERRIDE=3.3COMPAT python tests/cloud_volumes_gpu.py --preview /
 ```
 
 GPU tests require moderngl and numpy, plus Pillow for the optional image. They compile the production shader and check opacity, emission, cooling, turbulence, foreground occlusion and camera/depth conventions. Tested headlessly with Mesa llvmpipe; no in-game runtime is available here.
+
+## Diagnose unchanged solid pieces
+
+Select the affected unit and enter `/cloudvolumes`. This reports shader initialization, the synced registry, matching piece names, active registrations, and up to six precise bounds rejection reasons. It remains available if GPU initialization fails. Also search infolog.txt for `Cloud piece fallback` or `Cloud volumes disabled`.
+
+Commit `4b351f4b` contains the first spaceport implementation but predates pump integration `174f9f94`; merge the updated `gfx/cloud-volumes` branch before testing the pump. Missing pump integration explains solid pump meshes on that revision, but does not explain the spaceport's visible legacy meshes. Runtime status/logs are required to distinguish registration rejection from a missing/disabled gadget or another visibility writer.

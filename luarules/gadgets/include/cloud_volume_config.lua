@@ -16,11 +16,15 @@ M.finite=finite
 function M.Preset(name) return M.presets[name] end
 function M.Bounds(id,piece)
     local info=Spring.GetUnitPieceInfo(id,piece)
-    if not info or info.isEmpty or not info.min or not info.max then return end
+    if not info then return nil,'piece info unavailable' end
+    if info.isEmpty then return nil,'engine reports empty geometry' end
+    if not info.min or not info.max then return nil,'piece bounds unavailable' end
     local center,half={},{}
     for i=1,3 do
         local a,b=info.min[i],info.max[i]
-        if not finite(a) or not finite(b) or b<a then return end
+        if not finite(a) or not finite(b) or b<a then
+            return nil,'invalid bounds on axis '..i..': '..tostring(a)..' / '..tostring(b)
+        end
         center[i]=(a+b)*.5; half[i]=math.max((b-a)*.5, .1)
     end
     -- Enlarge the proxy to leave room for noise-eroded silhouettes.
