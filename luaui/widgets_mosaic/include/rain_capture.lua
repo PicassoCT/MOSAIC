@@ -29,6 +29,9 @@ return function(api)
         local c = capture
         capture = nil
         api.restore(c.saved)
+        if c.guiHidden ~= nil then
+            Spring.SendCommands("hideinterface " .. (c.guiHidden and "1" or "0"))
+        end
         Spring.SetCameraState(c.camera, 0)
         if c.manifest then
             c.manifest:write("result\t", reason, "\n")
@@ -91,6 +94,7 @@ return function(api)
         if not manifest then echo("cannot write " .. directory); return true end
         capture = {
             directory = directory, manifest = manifest, saved = api.save(),
+            guiHidden = Spring.IsGUIHidden and Spring.IsGUIHidden(),
             camera = Spring.GetCameraState(), ownsPause = not wasPaused,
             delay = delay, frames = frames, level = 0, sample = 1, count = 0,
             timer = Spring.GetTimer(), draws = 0, waiting = true,
@@ -106,6 +110,7 @@ return function(api)
         manifest:write("width\t", capture.width, "\nheight\t", capture.height, "\n")
         manifest:flush()
         echo("capturing dry + 0.1-1.0 at this camera/time; /rainsnap cancel to stop")
+        if capture.guiHidden ~= nil then Spring.SendCommands("hideinterface 1") end
         if not wasPaused then Spring.SendCommands("pause 1") end
         return true
     end

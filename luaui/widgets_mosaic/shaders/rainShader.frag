@@ -571,7 +571,9 @@ vec4 GetGroundReflectionRipples(vec3 pixelPos)
     float puddle = surfacePuddleMask(pixelPos.xz);
     runoffCoverage = water.x*(1.0-water.y)*channels;
     float coverage = water.x*mix(channels,0.35+0.65*puddle,water.y);
-    coverage=max(coverage,roofBeads.w);
+    float roofFilm=roofWetFilm(pixelPos,n,NormalIsOnUnit);
+    coverage=max(coverage,roofBeads.w)+roofFilm;
+    coverage=min(coverage,1.0);
     if (coverage <= 0.0001) return NONE;
 
     vec3 scene = texture2D(screentex,uv).rgb;
@@ -587,7 +589,7 @@ vec4 GetGroundReflectionRipples(vec3 pixelPos)
     // Dark wet substrate + patchy reflection replaces the old uniform blue veil.
     vec3 target = scene*mix(0.68,0.86,water.y) + max(skyCol,vec3(0))*fresnel*0.08;
     target = mix(target,reflected.rgb/max(reflected.a,0.0001),
-                 reflected.a*water.y*puddle*(0.3+fresnel));
+                 reflected.a*max(water.y*puddle,roofFilm)*(0.3+fresnel));
     float ringWetness = water.x*water.y*(0.4+0.6*puddle);
     vec3 rippleNormal=normalize(n-vec3(rippleSlope.x,0,rippleSlope.y)*ringWetness);
     vec3 lightDirection=dot(sunPos,sunPos)>0.001 ? normalize(sunPos) : normalize(vec3(0.4,0.7,0.3));
@@ -603,6 +605,11 @@ vec4 GetGroundReflectionRipples(vec3 pixelPos)
     float beadLight=dot(beadNormal-n,lightDirection)*2.5;
     float beadGlint=max(0.0,pow(max(dot(beadNormal,halfDirection),0.0),32.0)
                               -pow(max(dot(n,halfDirection),0.0),32.0));
+    // Broader curved highlight for roof water; preserve the narrow glint too.
+    float broadGlint=NormalIsOnUnit ? max(0.0,
+        pow(max(dot(beadNormal,halfDirection),0.0),10.0)
+        -pow(max(dot(n,halfDirection),0.0),10.0)) : 0.0;
+    beadGlint+=0.45*broadGlint;
     target*=1.0-0.65*max(-beadLight,0.0);
     runoffEnergy+=lighting*(0.65*max(beadLight,0.0)+0.45*beadGlint);
     return vec4(max(target,vec3(0)),coverage*0.65);
@@ -821,3 +828,4 @@ void main(void)
         gl_FragColor = composeRainEffects(texture2D(screentex,uv).rgb,surfaceFX,rain,splash,runoffEnergy);
     }
 }
+

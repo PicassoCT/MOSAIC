@@ -123,18 +123,20 @@ vec4 roofChartWater(vec2 at, float pixel) {
         float age=fract(time*(0.10+0.07*seed.x)+seed.z);
         float activeRunoff=roofClusterRivulet(id,rainPercent);
         float travel=roofTravel(age)*activeRunoff;
-        float head=id.y*6.0+travel*5.5;
-        float base=id.x*3.0+(seed.y-0.5)*1.3;
+        float originY=id.y*6.0+(seed.x-0.5)*1.4;
+        float head=originY+travel*5.5;
+        float base=id.x*3.0+(seed.y-0.5)*2.2;
         float life=1.0-smoothstep(0.95,1.0,age);
         // Stationary beads are cleared as the head passes their position.
         for(int b=0;b<3;++b) {
-            float by=id.y*6.0+0.8+float(b)*1.65
-                     +0.45*(hash3(id+vec2(float(b)*17.0,93)).x-0.5);
+            vec3 beadSeed=hash3(id+vec2(float(b)*17.0,93));
+            float by=originY+0.8+float(b)*1.65+1.2*(beadSeed.x-0.5);
+            float side=(beadSeed.y-0.5)*0.9;
             vec2 path=roofPath(by,seed);
             float collected=smoothstep(by-0.25,by+0.25,head);
             float grow=smoothstep(0.0,0.24+0.04*float(b),age);
             vec2 radius=0.5*vec2(0.35+0.18*seed.y,0.48+0.18*seed.x)*mix(0.4,1.0,grow);
-            water+=roofCap(at-vec2(base+path.x,by),radius,pixel)*grow*(1.0-collected)*life*(1.0-activeRunoff);
+            water+=roofCap(at-vec2(base+path.x+side,by),radius,pixel)*grow*(1.0-collected)*life*(1.0-activeRunoff);
         }
         vec2 headPath=roofPath(head,seed);
         float moving=smoothstep(0.37,0.42,age)*life*activeRunoff;
@@ -144,9 +146,9 @@ vec4 roofChartWater(vec2 at, float pixel) {
         float dx=at.x-base-path.x;
         // Independent stable sizes: mostly fine threads, occasional broader runs.
         vec3 sizeSeed=hash3(id+vec2(197,53));
-        float width=mix(0.045,0.18,sizeSeed.x*sizeSeed.x);
+        float width=mix(0.12,0.38,sizeSeed.x*sizeSeed.x);
         float length=mix(1.4,4.8,sizeSeed.y);
-        float start=id.y*6.0+0.3+sizeSeed.z*(5.4-length);
+        float start=originY+0.3+sizeSeed.z*(5.4-length);
         // Finite channels stay wet between moving swells, without pulsing off.
         float channelWindow=smoothstep(start,start+0.3,at.y)
             *(1.0-smoothstep(start+length-0.35,start+length,at.y));
@@ -155,7 +157,7 @@ vec4 roofChartWater(vec2 at, float pixel) {
         float behind=head-at.y;
         float window=smoothstep(0.0,0.25,behind)*(1.0-smoothstep(0.5,1.8,behind));
         float relief=channelWindow*activeRunoff*(0.8+0.2*window*moving);
-        float h=exp(-q*q)*0.035*width/filtered*relief;
+        float h=exp(-q*q)*(0.035+width*0.08)*width/filtered*relief;
         float gx=-2.0*q/filtered*h;
         water+=vec4(gx,-gx*path.y,h,h/0.08);
     }
@@ -178,7 +180,7 @@ vec4 permanentRoofStreams(vec2 at, float pixel) {
         // Stable paths and nested rain thresholds: no time-dependent motion.
         vec2 path=roofPath(at.y*0.35,seed);
         float centre=(id+0.2+0.6*seed.y)*ROOF_STREAM_SPACING+path.x*0.4;
-        float width=0.035+0.025*seed.z;
+        float width=0.065+0.10*seed.z*seed.z;
         float filtered=sqrt(width*width+pixel*pixel*0.16);
         float q=(at.x-centre)/filtered;
         float h=exp(-q*q)*0.016*width/filtered*enabled;
@@ -204,6 +206,15 @@ vec4 roofWaterBeads(vec3 p, vec3 normal, bool building) {
     vec3 gradient=vec3(a.x*weight,-mix(b.y,a.y,weight)*1.41421356,b.x*(1.0-weight));
     gradient-=normal*dot(normal,gradient);
     return vec4(gradient,clamp(mix(b.w,a.w,weight),0.0,1.0))*eligible*resolved;
+}
+
+// Low-amplitude connected wet film under building runoff; world-anchored and
+// rain-scaled. It changes the material response without filling every channel.
+float roofWetFilm(vec3 p, vec3 n, bool building) {
+    vec2 wet=surfaceWaterWeights(n.y);
+    float pattern=surfaceWetNoise(p.xz/9.0+vec2(p.y*0.07));
+    return (building ? 1.0 : 0.0)*wet.x*(1.0-wet.y)*smoothstep(0.0,1.5,p.y)
+        *clamp(rainPercent,0.0,1.0)*(0.08+0.14*pattern);
 }
 
 // Convert a sampled height field into a world tangent gradient. Clamp silhouette
