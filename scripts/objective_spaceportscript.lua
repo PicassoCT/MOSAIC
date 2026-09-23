@@ -3,6 +3,7 @@ include "lib_OS.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 include "lib_radiance_emitters.lua"
+local cloudPieces = include('lib_cloud_pieces.lua')
 local launchFlame = include('lib_objective_ribbon_flames.lua')(unitID, 'launch')
 include "lib_debug.lua"
 --include "lib_Build.lua"
@@ -317,10 +318,8 @@ function UnloadBooster()
 end
 
 function lightUpPad(cone, lengthOfTimeMs)
-    for w = 1, lengthOfTimeMs, 300 do
-        EmitSfx(cone,1024)
-        Sleep(300)
-    end
+    -- Landing cone now supplies the luminous volume; no repeated light CEG.
+    Sleep(lengthOfTimeMs)
 end
 
 function showBoosterSmokeRing(nr, LandCone)    
@@ -432,6 +431,7 @@ function landBooster(boostNr)
 end
 
 function script.Killed(recentDamage, _)
+    cloudPieces.Shutdown()
     launchFlame.Shutdown()
     return 1
 end

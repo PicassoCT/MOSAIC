@@ -176,3 +176,5 @@ Lifecycle tests cover API validation, copying, reload, visibility, anchor draw
 offsets, direction modes, simulation clock, local preview and resource cleanup.
 They also check size-dependent distance cutoffs, fading and re-entry into range.
 The tests do not replace an in-game check on Recoil and the target GPU.
+
+The pump-station ribbon now runs continuously on the Igniter anchor until unit death; its old mesh flame-out cycle no longer toggles the ribbon. Spaceport mesh clouds and impact/payload volumes are documented in [CloudVolumes.md](CloudVolumes.md).

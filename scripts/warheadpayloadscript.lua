@@ -90,32 +90,33 @@ function createCrater(x,y,z,defID)
     if GG.DynRefMap == nil then GG.DynRefMap = {} end
     GG.DynDefMap[#GG.DynDefMap + 1] = { creator=UnitDefs[defID].name, 
     x = x / 8, z = z / 8, 
-	Size = size, 
+	Size = 1024,
 	blendType = "sub", 
 	filterType = "borderblur" }
-    GG.DynRefMap[#GG.DynRefMap + 1] = prepareDeformTable(1024, -8, -4)
+    GG.DynRefMap[#GG.DynRefMap + 1] = prepareDeformCraterTable(1024, -8, -4)
     GG.boolForceLandLordUpdate = true
 end
 
+local detonated=false
+local function payloadCloudAtUnit(id, preset, yOffset)
+    local x,y,z=Spring.GetUnitPosition(id)
+    if x and GG.CloudVolume then GG.CloudVolume.Burst(preset,x,y+(yOffset or 0),z) end
+end
+
 function mightyBadaBoom(lastAttackerTeam)
+if detonated then return end
+detonated=true
 
 if UnitDefs[unitDefID].name == "physicspayload" then
  	x,y,z = Spring.GetUnitPosition(unitID)
 
-	             Spring.SetProjectileAlwaysVisible (id, true)
+	             -- Detonation has a world-space visual; there is no projectile ID here.
 	             protagonT = getAllTeamsOfType("protagon", UnitDefs)
 	             antagonT = getAllTeamsOfType("antagon", UnitDefs)
 	             local rubbleDefID = UnitDefNames["gcscrapheap"].id
 	             x, y, z = Spring.GetUnitPosition(unitID)
-				Spring.SpawnCeg("nukeshroom", x ,y + 10, z )
-				Spring.SpawnCeg("nuclearexplosionbig", x ,y + 100, z )
-	             createCrater(x,y,z, unitDefID)
-	             for i=1, GameConfig.visuals.falloutParticlesMax do 
-	            	valx = math.random(-768, 768)
-	            	valz =  math.random(-768, 768)
-
-	            	Spring.SpawnCeg("ashflakes", x + valx, y + 1024 +  math.random(-128, 128), z + valz)
-	             end
+                payloadCloudAtUnit(unitID, 'nuclear')
+                createCrater(x,y,z, unitDefID)
 	             foreach(getAllNearUnit(unitID, GameConfig.payloadDestructionRange ),
 	             	function(id)
 	             		if not( Spring.GetUnitDefID(id) == rubbleDefID) then
@@ -129,8 +130,8 @@ if UnitDefs[unitDefID].name == "physicspayload" then
                		  GG.UnitsToKill:PushKillUnit(id, true, false)
 					end
 					)
-	              id = createUnitAtUnit(gaiaTeamID, unitID, "nukedecalfactory")
-	              Spring.SetUnitAlwaysVisible(id, true)
+	              local decalID = createUnitAtUnit(gaiaTeamID, "nukedecalfactory", unitID)
+	              if decalID then Spring.SetUnitAlwaysVisible(decalID, true) end
 
 end
 
@@ -143,9 +144,7 @@ if UnitDefs[unitDefID].name == "biopayload" then
                                     not GG.AerosolAffectedCivilians[id] then -- you can only get infected once
                                 if setAerosolCivilianBehaviour(id,  AerosolTypes.wanderlost) == true then
                                 GG.AerosolAffectedCivilians[id] = AerosolTypes.wanderlost
-								for i=1,3 do
-									spawnCegAtUnit(id, "wanderlost", math.random(10,35)*randSign(), 50, math.random(10,35)*randSign())
-								end
+                                payloadCloudAtUnit(id, 'bio', 10)
 
 								return id
                               end
@@ -166,11 +165,11 @@ if UnitDefs[unitDefID].name == "informationpayload" then
 
                              if automationPayloadDisabledType[defID] then
                                 stunUnit(id, GameConfig.Warhead.automationPayloadStunTimeSeconds)
-                                spawnCegAtUnit(id, "electric_explosion",0, 50, 0)
+                                payloadCloudAtUnit(id, 'electric', 50)
                               end  
 								
 							 if automationPayloadDestroyedType[defID] then
-								spawnCegAtUnit(id, "electric_explosion")
+								payloadCloudAtUnit(id, 'electric')
 							 	GG.UnitsToKill:PushKillUnit(id, false, true)                             
                               end
                         	end)
@@ -186,7 +185,7 @@ function script.HitByWeapon(x, z, weaponDefID, damage)
     hp,maxHp= Spring.GetUnitHealth(unitID)
         if hp - damage < maxHp/2 then
            lastAttacker = Spring.GetUnitLastAttacker(unitID)
-           attackerTeam = Spring.GetUnitTeam(lastAttacker)
+           attackerTeam = lastAttacker and Spring.GetUnitTeam(lastAttacker)
            mightyBadaBoom(attackerTeam)
         end
 return damage

@@ -104,7 +104,6 @@ FlameTips = {}
 
 
 function reignition()
-    gasFlare.Start(Flame)
  
 
     -- collapse
@@ -124,7 +123,6 @@ function reignition()
 end
 
 function flameOut()
-    gasFlare.Stop()
     HideRadiancePieces(FlameTips)
 
     -- column collapses
@@ -331,7 +329,6 @@ function explosionLoop()
   
         Sleep(3000)
         Signal(SIG_FLAME)
-        gasFlare.Stop()
         resetHide(TablesOfPiecesGroups["FlameA"])
         resetHide(TablesOfPiecesGroups["FlameB"])
         resetHide(TablesOfPiecesGroups["FlameC"])
@@ -372,6 +369,8 @@ function script.Create()
     Hide(explosionStem)
     Hide(LightOn)
     StartThread(nightLightsLoop,LightOn, LightOff, restTime)
+    -- Steady burner anchor: Flame1 moves during the old flame-out animation.
+    gasFlare.Start(Igniter)
     StartThread(explosionLoop)
     StartThread(nightLight)
     Spring.SetUnitBlocking(unitID, false)
