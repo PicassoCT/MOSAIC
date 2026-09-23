@@ -63,15 +63,7 @@ local AIR_COPTER_AEROSOL = VTOL:New{
 	  normaltex = "unittextures/component_atlas_normal.dds",
 	  },
 	  
-	 sfxtypes = {
-		explosiongenerators = {
-							"custom:depressol" ,
-							"custom:tollwutox" ,
-							"custom:orgyanyl"  ,
-							"custom:wanderlost",
-							
-							  },
-				},
+
 
 }
 

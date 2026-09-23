@@ -39,7 +39,7 @@ if gadgetHandler:IsSyncedCode() then
 else
     local renderer, revision, preview
     local fields={'unitID','piece','directionSpace','scale','length','width','curl','speed','seed','strands','enabled','distanceFactor',
-        'windAffected','motionAffected','windInfluence','motionInfluence','trailTime'}
+        'groundDirected','windAffected','motionAffected','windInfluence','motionInfluence','trailTime'}
     function gadget:Initialize()
         local err
         renderer,err=VFS.Include('luarules/gadgets/include/smoke_ribbon_renderer.lua')()

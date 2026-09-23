@@ -51,6 +51,10 @@ return function()
                     if Spring.GetUnitViewPosition then vx,vy,vz = Spring.GetUnitViewPosition(id) end
                     if ux and vx then x,y,z = x+vx-ux,y+vy-uy,z+vz-uz end
                     local length,width = r.length*r.scale,r.width*r.scale
+                    -- Terrain fit stays local to rendering: no per-frame synced updates.
+                    if r.groundDirected then
+                        length = math.max(0.01, y - math.max(0, Spring.GetGroundHeight(x,z)))
+                    end
                     local cutoff = math.max(length,2*width)*(r.distanceFactor or 40)
                     local anchorD2 = (cx-x)^2+(cy-y)^2+(cz-z)^2
                     -- Reject before direction work, frustum tests, sorting and GPU submission.
@@ -71,6 +75,7 @@ return function()
                                     right[3]*dx+up[3]*dy+front[3]*dz
                             end
                         end
+                        if r.groundDirected then dx,dy,dz = 0,-1,0 end
                         local magnitude = dx and math.sqrt(dx*dx+dy*dy+dz*dz) or 0
                         if magnitude > 1e-6 then
                             dx,dy,dz = dx/magnitude,dy/magnitude,dz/magnitude
@@ -89,12 +94,18 @@ return function()
                                 driftY=driftY-(velocity[2] or 0)*gain
                                 driftZ=driftZ-(velocity[3] or 0)*gain
                             end
+                            -- Vertical wind/climb must not pull a ground spray away from the surface.
+                            if r.groundDirected then driftY=0 end
                             local driftLength=math.sqrt(driftX*driftX+driftY*driftY+driftZ*driftZ)
                             -- Bound extreme speeds/wind to retain predictable overdraw and culling.
                             if driftLength>length*2 then
                                 local cap=length*2/driftLength
                                 driftX,driftY,driftZ=driftX*cap,driftY*cap,driftZ*cap
                                 driftLength=length*2
+                            end
+                            if r.groundDirected then
+                                local ground = math.max(0, Spring.GetGroundHeight(x+driftX,z+driftZ))
+                                length = math.max(0.01,y-ground)
                             end
                             local mx,my,mz = x+(dx*length+driftX)*0.5,y+(dy*length+driftY)*0.5,z+(dz*length+driftZ)*0.5
                             -- Includes maximum curl, axial displacement and ribbon half-width.

@@ -34,6 +34,7 @@ function M.Normalize(unitID, piece, options)
         curl = number(o.curl, 0.8, 0, 2),
         speed = number(o.speed, 1, 0, 20),
         distanceFactor = number(o.distanceFactor, 40, 1, 200),
+        groundDirected = o.groundDirected == true,
         windAffected = o.windAffected ~= false,
         motionAffected = o.motionAffected == true,
         windInfluence = number(o.windInfluence, 0.3, 0, 10),
