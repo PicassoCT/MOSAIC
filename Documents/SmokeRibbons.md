@@ -176,3 +176,19 @@ Lifecycle tests cover API validation, copying, reload, visibility, anchor draw
 offsets, direction modes, simulation clock, local preview and resource cleanup.
 They also check size-dependent distance cutoffs, fading and re-entry into range.
 The tests do not replace an in-game check on Recoil and the target GPU.
+
+## Aerosol drones
+
+All four aerosol drones use the hidden `emitor` piece for downward ribbons in
+place of their spray CEGs. Blue Depressol, pink Tollwutox, orange Orgyanyl and
+green Wanderlost retain their colour identities. The existing airborne/tank
+condition controls registration and removal; chemical effects and consumption
+are unchanged. Death removes the plume.
+
+`groundDirected = true` forces world-down emission and fits length to terrain
+(or water at zero height). Wind and motion bend it horizontally; vertical drift
+is suppressed. The renderer samples terrain under the emitter for size culling
+and at the displaced tail for its final length. This requires no synced height
+updates. The ribbon fades toward the surface; it does not collide with buildings
+or simulate pooling or terrain-following smoke on steep slopes. Width is 22,
+with three strands, zero self-illumination and the usual size-based cutoff.

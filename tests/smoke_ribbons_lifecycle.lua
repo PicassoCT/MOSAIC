@@ -7,6 +7,7 @@ local drawn,deleted,lastOrigin,lastDirection,lastTime=0,0
 local cameraY,cameraZ,frustumTests,lastOpacity=10,100,0,0
 local wind,velocity,lastDrift={0,0,0},{0,0,0},{}
 local windCalls,velocityCalls=0,0
+local lastLength
 GG={}; Game={gameSpeed=30}; gadget={}
 gadgetHandler={IsSyncedCode=function() return synced end,RemoveGadget=function() error('unexpected removal') end}
 VFS={Include=function(p) return dofile(p) end,LoadFile=function() return '' end}
@@ -32,6 +33,7 @@ gl=setmetatable({CreateShader=function() return 1 end,GetUniformLocation=functio
         if n=='origin' then lastOrigin={...} elseif n=='direction' then lastDirection={...}
         elseif n=='effectTime' then lastTime=(...)
         elseif n=='strandOpacity' then lastOpacity=(...)
+        elseif n=='plumeLength' then lastLength=(...)
         elseif n=='directionalDrift' then lastDrift={...} end
     end}, {__index=function() return function() end end})
 local path='luarules/gadgets/gfx_smoke_ribbons.lua'
@@ -93,6 +95,18 @@ cameraZ=100;velocity={1000,0,0};gadget:DrawWorld()
 assert(math.abs(lastDrift[1])<=120+1e-8,'unbounded motion drift')
 velocity={0,0,0};wind={0,0,0};gadget:DrawWorld()
 assert(lastDrift[1]==0,'stationary plume retained motion drift')
+-- Ground-fit configuration survives the synced/unsynced snapshot.
+Spring.GetUnitPiecePosDir=function() return 0,128,0,1,0,0 end
+Spring.GetGroundHeight=function(gx,gz) return gx > 0 and 30 or 10 end
+wind={10,20,0};velocity={0,2,0}
+assert(api.Set(7,'a','smoke',{groundDirected=true,windInfluence=1,trailTime=1,motionAffected=true}))
+gadget:DrawWorld()
+assert(lastDirection[2]==-1 and lastDrift[2]==0,'ground spray tilted by climb/wind')
+assert(lastLength==98,'ground spray does not reach displaced terrain')
+Spring.GetGroundHeight=function() return -100 end
+gadget:DrawWorld();assert(lastLength==128,'ground spray ends below water')
+cameraZ=6000;hidden('ground plume ignored distance culling');cameraZ=100
+assert(api.Set(7,'a','smoke',{}));wind={0,0,0};velocity={0,0,0}
 gadget:Shutdown();gadget={};dofile(path);gadget:Initialize()
 local n=drawn;gadget:DrawWorld();assert(drawn==n+1,'reload lost registered effect')
 api.Remove(7,'a');hidden('removed effect survives')
