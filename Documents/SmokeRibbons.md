@@ -24,6 +24,11 @@ local ok, err = GG.SmokeRibbon.Set(unitID, "exhaust", smokeEmitter, {
     curl = 0.8,
     speed = 1,
     distanceFactor = 40,           -- cutoff = factor * max(length, 2*width) * scale
+    windAffected = true,          -- default: on
+    motionAffected = false,       -- default: off; turn on to trail behind movement
+    windInfluence = 0.3,
+    motionInfluence = 1,
+    trailTime = 0.7,               -- response scale in simulation seconds
     colorStart = {0.65, 0.68, 0.72, 0.5}, -- RGBA at emitter
     colorEnd = {0.4, 0.43, 0.48, 0},      -- RGBA at far end
     emission = {0, 0},             -- illumination at emitter / far end
@@ -65,7 +70,37 @@ name (or numeric piece index). `/smokeribbon PIECE_NAME glow` previews pink
 luminous wisps; `/smokeribbon PIECE_NAME steam` previews broad white steam.
 `/smokeribbon off` removes the local preview. No cheat mode or synced changes
 are required. The preview obeys the same visibility rules as registered effects.
-No existing unit is automatically assigned an emitter by this change.
+
+## Wind, movement and the propagator cigarette
+
+Wind is enabled by default. Set `windAffected=false` for sheltered effects.
+Set `motionAffected=true` to bend the plume behind the unit's current velocity.
+The two influences combine in world space after resolving the base direction:
+
+`tailOffset = (windVector * windInfluence - velocityPerSecond * motionInfluence) * trailTime`
+
+The shader applies this offset gradually as `age²`, keeping the emitter attached
+and the initial direction intact. Unit velocity is converted from engine units
+per frame to units per simulation second. The wind vector uses engine wind
+strength units, with `windInfluence` providing the visual conversion. Tail offset
+is capped at twice the plume length to bound geometry and overdraw. Frustum
+bounds include that offset; the configured distance cutoff remains size-based.
+Wind is sampled at most once per draw and velocity once per emitting unit,
+only after distance culling. Zero strengths or `trailTime=0` remove the influence.
+
+This is a current-velocity directional approximation, not stored smoke history:
+the bend changes when the unit stops or turns, and teleporting moves the entire
+plume. `speed=0` freezes the procedural curls but does not freeze attachment,
+wind or motion response.
+
+The propagator now emits subtle grey smoke from the currently shown cigarette
+(`HeadDeco5` or one of the `Cig` burn-stage pieces), replacing its old head-centred
+smoke bursts. Both wind and movement response are enabled for this preset.
+Its 18-unit length gives a default 720-unit draw cutoff. The existing Show/Hide
+and icon-mode events manage the effect without a new polling thread. Death
+removes it and prevents the animation from registering it again. Cloaking also
+suppresses drawing through the renderer's visibility filter. The investigator,
+which shares this unit script, retains its previous CEG behaviour.
 
 ## Cost and rendering limits
 
@@ -106,6 +141,7 @@ From the repository root:
 
 ```sh
 lua tests/smoke_ribbons_lifecycle.lua
+lua tests/smoke_cigarette_lifecycle.lua
 MESA_GL_VERSION_OVERRIDE=3.3COMPAT python tests/smoke_ribbons_gpu.py
 ```
 

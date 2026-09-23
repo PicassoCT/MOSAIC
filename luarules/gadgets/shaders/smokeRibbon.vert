@@ -1,5 +1,6 @@
 #version 150 compatibility
 uniform vec3 origin, direction, cameraPosition;
+uniform vec3 directionalDrift;
 uniform float effectTime, plumeLength, plumeWidth, curl, seed;
 out vec2 ribbonUV;
 out float ribbonSeed;
@@ -16,7 +17,8 @@ vec3 centre(float t, float strand, vec3 u, vec3 v) {
     coil += vec2(bend, sin(t * 7.0 - effectTime * 0.57 + s)) * 0.45;
     // Axial modulation folds the upper wisps as they roll away from the source.
     float axial = t * plumeLength + radius * 0.4 * sin(p + 0.7);
-    return origin + direction * axial + radius * (u * coil.x + v * coil.y);
+    return origin + direction * axial + radius * (u * coil.x + v * coil.y)
+        + directionalDrift * (t*t);
 }
 void main() {
     float t = gl_Vertex.x;

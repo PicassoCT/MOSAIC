@@ -24,7 +24,7 @@ ctx.blend_func=(moderngl.ONE,moderngl.ONE_MINUS_SRC_ALPHA)
 for name,value in dict(origin=(0,-0.9,0),direction=(0,1,0),cameraPosition=(0,0,5),
     effectTime=1.0,plumeLength=1.7,plumeWidth=0.35,curl=0.8,seed=3.0,
     colorStart=(0.7,0.7,0.7,0.8),colorEnd=(0.7,0.7,0.7,0),
-    emission=(0,0),ambient=(0.3,0.3,0.3),strandOpacity=1.6/3).items():
+    emission=(0,0),ambient=(0.3,0.3,0.3),strandOpacity=1.6/3,directionalDrift=(0,0,0)).items():
     p[name].value=value
 
 def render():
@@ -51,6 +51,15 @@ p['emission'].value=(1,1)
 lit=render()
 assert np.allclose(lit[...,:3],b[...,:3]/0.3,atol=1e-5), 'self-illumination is incorrect'
 assert np.allclose(lit[...,3],b[...,3]), 'emission changed density'
+def centroid_x(im):
+    a=im[...,3]; return (a*np.arange(w)[None,:]).sum()/a.sum()
+p['directionalDrift'].value=(0.5,0,0)
+right=render()
+p['directionalDrift'].value=(-0.5,0,0)
+left=render()
+assert centroid_x(right)>centroid_x(lit)>centroid_x(left), 'drift does not bend in requested direction'
+p['directionalDrift'].value=(0,0,0)
+assert np.allclose(render(),lit), 'disabling drift does not restore the plume'
 p['colorStart'].value=(1,0,0,0.8);p['colorEnd'].value=(0,0,1,0.5)
 gradient=render()
 assert gradient[30:120,:,0].sum()>gradient[30:120,:,2].sum(), 'source colour reversed'
@@ -65,5 +74,5 @@ if '--preview' in sys.argv:
     from PIL import Image
     rgb=lit[...,:3]+np.array([0.025,0.035,0.05])*(1-lit[...,3:4])
     Image.fromarray((np.clip(rgb[::-1],0,1)**(1/2.2)*255).astype('uint8')).save(sys.argv[sys.argv.index('--preview')+1])
-print('PASS: GLSL compile/render, finite output, endpoints, advection, deterministic pause, colour gradient, emission, alpha, camera-axis fallback, small scale')
+print('PASS: GLSL compile/render, finite output, endpoints, advection, deterministic pause, colour gradient, emission, alpha, directional drift, camera-axis fallback, small scale')
 print('Renderer:',ctx.info['GL_RENDERER'])

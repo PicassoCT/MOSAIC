@@ -32,6 +32,7 @@ SIG_STAB = 16
 SIG_AIM = 32
 deg_1 = 3.141592653589793 / 180.0
 local isInvestigator = unitDefID == UnitDefNames["operativeinvestigator"].id
+local cigaretteSmoke = include('lib_smoke_ribbon_cigarette.lua')(unitID, not isInvestigator)
 local Animations = {}
 local axisSign ={
 	[x_axis]=1,
@@ -223,6 +224,9 @@ function showBody()
 	showT(lowerBodyPieces)
 	Show(FoldtopFolded)
 	showT(shownPieces)
+    for _,shown in ipairs(shownPieces) do
+        if shown == TablesOfPiecesGroups["HeadDeco"][5] then cigaretteSmoke.Show(shown) end
+    end
 	Hide(MuzzleFlashPistol)
 end
 
@@ -500,6 +504,7 @@ function cigDrag()
 	cigIndex = (cigIndex % #cigTable )+ 1
 	hideT(cigTable)
 	Show(cigTable[cigIndex])
+    cigaretteSmoke.Show(cigTable[cigIndex])
 end
 
 
@@ -524,6 +529,7 @@ function breathing()
 		    	StartThread(rightArmPoses, math.pi)		
             	StartThread(leftArmPoses, math.pi)		
             	Hide(TablesOfPiecesGroups["HeadDeco"][5])
+                cigaretteSmoke.Hide(TablesOfPiecesGroups["HeadDeco"][5])
         	end
 		end
 
@@ -573,6 +579,7 @@ function dropHatIfWorrn()
 end
 
 function script.Killed(recentDamage, _)
+    cigaretteSmoke.Shutdown()
 	if doesUnitExistAlive(civilianID) == true then
 		Spring.DestroyUnit(civilianID,true,true) 
 	end
@@ -916,6 +923,9 @@ end
 
 function cigarettGlowAndSmoke()
 	cigDrag()
+    -- Propagator now has continuous piece-attached smoke; keep the shared
+    -- investigator script's existing CEG behaviour unchanged.
+    if not isInvestigator and GG.SmokeRibbon then return end
 	timeInTotal = (60/30)
 	cigarettDragMs = math.ceil(timeInTotal/2) * 1000
     Sleep(cigarettDragMs)
@@ -1473,6 +1483,7 @@ function script.AimWeapon(weaponID, heading, pitch)
 end
 
 function showHideIcon(boolShowIcon)
+    cigaretteSmoke.SetIconMode(boolShowIcon)
     if  boolShowIcon == true then
         hideAll(unitID)
         Show(Icon)
@@ -1488,6 +1499,4 @@ function showHideIcon(boolShowIcon)
 end
 
 -- Configuration for the trench coat bones
-
-
 

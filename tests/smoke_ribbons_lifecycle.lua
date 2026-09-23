@@ -5,10 +5,14 @@ local dead,cloak,nodraw,inlos,fullview,visible=false,false,false,true,false,true
 local x,viewX,frame=0,0,30
 local drawn,deleted,lastOrigin,lastDirection,lastTime=0,0
 local cameraY,cameraZ,frustumTests,lastOpacity=10,100,0,0
+local wind,velocity,lastDrift={0,0,0},{0,0,0},{}
+local windCalls,velocityCalls=0,0
 GG={}; Game={gameSpeed=30}; gadget={}
 gadgetHandler={IsSyncedCode=function() return synced end,RemoveGadget=function() error('unexpected removal') end}
 VFS={Include=function(p) return dofile(p) end,LoadFile=function() return '' end}
 Spring={ValidUnitID=function(id) return id==7 end,GetUnitIsDead=function() return dead end,
+    GetWind=function() windCalls=windCalls+1;return unpack(wind) end,
+    GetUnitVelocity=function() velocityCalls=velocityCalls+1;return unpack(velocity) end,
     GetUnitPieceMap=function() return {smoke=2,root=1} end,
     GetCameraPosition=function() return 0,cameraY,cameraZ end,GetSpectatingState=function() return false,fullview end,
     GetMyAllyTeamID=function() return 0 end,GetUnitLosState=function() return {los=inlos,radar=true} end,
@@ -27,7 +31,8 @@ gl=setmetatable({CreateShader=function() return 1 end,GetUniformLocation=functio
     Uniform=function(n,...)
         if n=='origin' then lastOrigin={...} elseif n=='direction' then lastDirection={...}
         elseif n=='effectTime' then lastTime=(...)
-        elseif n=='strandOpacity' then lastOpacity=(...) end
+        elseif n=='strandOpacity' then lastOpacity=(...)
+        elseif n=='directionalDrift' then lastDrift={...} end
     end}, {__index=function() return function() end end})
 local path='luarules/gadgets/gfx_smoke_ribbons.lua'
 dofile(path); local producer=gadget;producer:Initialize()
@@ -69,6 +74,25 @@ assert(api.Set(7,'a','smoke',{length=10,width=50}));cameraZ=3000;before=drawn
 gadget:DrawWorld();assert(drawn==before+1,'wide plume size ignored')
 assert(api.Set(7,'a','smoke',{distanceFactor=10}));cameraZ=600;hidden('custom distance factor lost')
 cameraZ=100;before=drawn;gadget:DrawWorld();assert(drawn==before+1,'plume failed to return in range')
+-- Default wind, optional motion, both together and one sample per unit/draw.
+wind={4,0,0};assert(api.Set(7,'a','smoke',{}));gadget:DrawWorld()
+assert(math.abs(lastDrift[1]-0.84)<1e-8,'default wind disabled or incorrectly scaled')
+assert(api.Set(7,'a','smoke',{windAffected=false}));gadget:DrawWorld()
+assert(lastDrift[1]==0,'wind opt-out ignored')
+velocity={0.2,0,0}
+assert(api.Set(7,'a','smoke',{windAffected=false,motionAffected=true,trailTime=1}))
+gadget:DrawWorld();assert(lastDrift[1]==-6,'motion must trail opposite velocity with frame conversion')
+assert(api.Set(7,'a','smoke',{motionAffected=true,trailTime=1,windInfluence=1}))
+gadget:DrawWorld();assert(lastDrift[1]==-2,'wind and motion do not combine')
+assert(api.Set(7,'b','smoke',{motionAffected=true}));local wc,vc=windCalls,velocityCalls
+gadget:DrawWorld();assert(windCalls==wc+1 and velocityCalls==vc+1,'duplicate wind/velocity reads')
+api.Remove(7,'b');cameraZ=3000;wc,vc=windCalls,velocityCalls
+hidden('distance culling failed with drift')
+assert(windCalls==wc and velocityCalls==vc,'culled plume sampled wind or velocity')
+cameraZ=100;velocity={1000,0,0};gadget:DrawWorld()
+assert(math.abs(lastDrift[1])<=120+1e-8,'unbounded motion drift')
+velocity={0,0,0};wind={0,0,0};gadget:DrawWorld()
+assert(lastDrift[1]==0,'stationary plume retained motion drift')
 gadget:Shutdown();gadget={};dofile(path);gadget:Initialize()
 local n=drawn;gadget:DrawWorld();assert(drawn==n+1,'reload lost registered effect')
 api.Remove(7,'a');hidden('removed effect survives')
@@ -78,4 +102,4 @@ gadget:TextCommand('smokeribbon smoke glow');n=drawn;gadget:DrawWorld();assert(d
 gadget:TextCommand('smokeribbon off');hidden('preview did not stop')
 gadget:Shutdown();assert(deleted==16,'mesh resources leaked')
 producer:Shutdown();assert(GG.SmokeRibbon==nil)
-print('PASS: API validation, copied parameters, registration/update/reload/removal, destruction, visibility, draw interpolation, direction modes, pause, size/distance culling, fade, re-entry, local preview, cleanup')
+print('PASS: API validation, copied parameters, registration/update/reload/removal, destruction, visibility, draw interpolation, direction modes, pause, size/distance culling, fade, re-entry, wind, motion trailing, local preview, cleanup')
