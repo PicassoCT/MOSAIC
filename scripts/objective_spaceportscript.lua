@@ -3,7 +3,7 @@ include "lib_OS.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 include "lib_radiance_emitters.lua"
-local cloudPieces = include('lib_cloud_pieces.lua')
+local cloudPieces = include('lib_cloud_pieces.lua')('spaceport')
 local launchFlame = include('lib_objective_ribbon_flames.lua')(unitID, 'launch')
 include "lib_debug.lua"
 --include "lib_Build.lua"

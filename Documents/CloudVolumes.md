@@ -18,7 +18,7 @@ Three noise evaluations per sample provide density and approximate directional s
 - Godrod: the impact helper registers a 16-second world-space cloud, plays its original sounds, and removes itself after 3.5 seconds. No impact CEG/shockwave particle loop. The weapon's redundant impact CEG is explicitly empty; its flight trail is unchanged.
 - Physics warhead: 32-second expanding fireball, rising cap/stalk and ground dust, cooling to smoke. Replaces the mushroom, nuclear burst and ash CEGs.
 - Bio/information warheads: finite greenish aerosol / blue emissive volumes replace their payload-specific CEG calls on affected units. Infection, stun and kill logic remain intact.
-- Pump station: its existing ribbon starts once on the steady Igniter piece in Create and stops only on death. Old flame-out/reignition cycles no longer toggle it. The preset's colors, size, wind and speed remain unchanged. Its older mesh animation is retained.
+- Pump station: its existing ribbon starts once on the steady Igniter piece in Create and stops only on death. Old flame-out/reignition cycles no longer toggle it. The preset's colors, size, wind and speed remain unchanged. Its Smoke*/SmokeStem, Explosion*/ExplosionStem, Flame*/Flames*, FireRotor* and Igniter meshes are now replaced by volumes while retaining their piece animations. Smoke uses a dark non-emissive soot preset; explosion puffs and flame tongues are luminous.
 
 Spaceport radiance visibility registration is retained independently of hiding its old geometry. New explosion volumes are self-illuminated but do not themselves inject new light into the radiance cascade.
 
@@ -32,7 +32,7 @@ GG.CloudVolume.RemovePiece(unitID, pieceID)
 GG.CloudVolume.Burst('impact', x, y, z, 1) -- scale; independent of source lifetime
 ```
 
-Piece presets: `steam`, `fire`, `plume`, `ring`. Burst presets: `impact`, `nuclear`, `bio`, `electric`. Settings live in `cloud_volume_config.lua`. Repeated SetPiece calls with the same preset do not restart the animation. Empty geometry and invalid inputs are rejected. Unit death removes attached effects; timed bursts expire separately. Synced records support unsynced reloads, with at most 256 burst records.
+Piece presets: `steam`, `soot`, `fire`, `plume`, `ring`. Burst presets: `impact`, `nuclear`, `bio`, `electric`. Settings live in `cloud_volume_config.lua`. Repeated SetPiece calls with the same preset do not restart the animation. Empty geometry and invalid inputs are rejected. Unit death removes attached effects; timed bursts expire separately. Synced records support unsynced reloads, with at most 256 burst records.
 
 ## Cost and limits
 
@@ -42,13 +42,13 @@ Piece presets: `steam`, `fire`, `plume`, `ring`. Burst presets: `impact`, `nucle
 - Distance cutoff scales with volume size (40 times its bounding radius, allowing for an offset pivot), with a fade over the final 20%.
 - LOS, cloaking, icon, transporter, no-draw and frustum filtering for attached effects. Bursts require positional LOS or spectator full view.
 - One scene-depth copy per active draw; none if every effect is culled. Texture reused until viewport resize.
-- No CEG fallback for explosions. Piece meshes fall back to their ordinary rendering if the synced API cannot register them. A GPU shader failure is logged; it does not restore CEGs or mesh rendering on that client.
+- No CEG fallback for explosions. Piece meshes fall back to their ordinary rendering if the synced API cannot register them, with a one-time `Cloud piece fallback` log message per piece. A GPU shader failure is logged; it does not restore CEGs or mesh rendering on that client.
 
 These limits bound work; they are not a measured FPS guarantee. The earlier AI mockup is an appearance concept, not a screenshot of this shader. Actual shader images are softer and less detailed. Engine placement, transparent-surface ordering and GPU performance need an in-game check.
 
 ## Validation
 
-From repository root, run the Lua 5.1 suites `tests/cloud_volumes_lifecycle.lua`, `tests/cloud_volumes_renderer.lua`, and `tests/cloud_payloads.lua`. They exercise lifecycle, source destruction, visibility/radiance wrappers, budgets, resource cleanup, pump startup/death, and actual payload/impact entrypoints with mocked engine services.
+From repository root, run the Lua 5.1 suites `tests/cloud_volumes_lifecycle.lua`, `tests/cloud_volumes_renderer.lua`, and `tests/cloud_payloads.lua`, and `tests/cloud_pump_pieces.lua`. They exercise lifecycle, source destruction, visibility/radiance wrappers, budgets, resource cleanup, pump startup/death, and actual payload/impact entrypoints with mocked engine services.
 
 ```sh
 MESA_GL_VERSION_OVERRIDE=3.3COMPAT python tests/cloud_volumes_gpu.py

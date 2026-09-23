@@ -1,15 +1,24 @@
--- Install only in the spaceport's Lua unit-script environment. Group helpers call
+-- Install in the owning Lua unit-script environment. Group helpers call
 -- these same Show/Hide functions, so every animation path shares one lifecycle.
 local Config=VFS.Include('luarules/gadgets/include/cloud_volume_config.lua')
+return function(kind)
+local selectPreset=assert(Config.PiecePresets[kind], 'Unknown cloud piece family: '..tostring(kind))
 local rawShow,rawHide=Show,Hide
 local radianceShow=ShowRadiancePiece
-local presets,active={},{}
-for name,id in pairs(Spring.GetUnitPieceMap(unitID) or {}) do presets[id]=Config.SpaceportPreset(name) end
+local presets,active,warned={},{},{}
+for name,id in pairs(Spring.GetUnitPieceMap(unitID) or {}) do presets[id]=selectPreset(name) end
 local dead=false
 function Show(id)
     local preset=presets[id]
-    if preset and GG.CloudVolume and not dead then
-        if GG.CloudVolume.SetPiece(unitID,id,preset) then rawHide(id);active[id]=true;return end
+    if preset and not dead then
+        local ok,reason
+        if GG.CloudVolume then ok,reason=GG.CloudVolume.SetPiece(unitID,id,preset)
+        else reason='synced cloud gadget unavailable' end
+        if ok then rawHide(id);active[id]=true;return end
+        if not warned[id] then
+            warned[id]=true
+            Spring.Echo('Cloud piece fallback: unit '..unitID..', piece '..id..': '..tostring(reason or 'registration rejected'))
+        end
     end
     if not dead then rawShow(id) end
 end
@@ -43,3 +52,5 @@ return {
         active={}
     end,
 }
+
+end

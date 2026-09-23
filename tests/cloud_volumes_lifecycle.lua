@@ -33,7 +33,7 @@ ShowRadiancePiece=function(id)Show(id)end
 HideRadiancePiece=function(id)Hide(id)end
 GG.SetObjectiveRadiancePieceVisible=function(id,piece,on)lights[piece]=on end
 unitID=10
-local helper=dofile('scripts/lib_cloud_pieces.lua')
+local helper=dofile('scripts/lib_cloud_pieces.lua')('spaceport')
 ShowRadiancePiece(1)
 assert(hidden[1] and not shown[1] and _G.CloudVolumeRecords['10:1'],'mesh not replaced')
 assert(lights[1],'radiance emitter lost')
@@ -45,6 +45,9 @@ gadget:Shutdown();assert(not GG.CloudVolume)
 -- Real pump Create/Killed: worker scheduling does not control the steady ribbon.
 local starts,stops,shutdown=0,0,0
 include=function(name)
+    if name=='lib_cloud_pieces.lua' then return function(kind)
+        assert(kind=='pump');return {Shutdown=function()end}
+    end end
     if name=='lib_objective_ribbon_flames.lua' then return function()
         return {Start=function(p)starts=starts+1;assert(p==7)end,
             Stop=function()stops=stops+1 end,Shutdown=function()shutdown=shutdown+1 end}

@@ -2,6 +2,7 @@
 local M = {}
 M.presets = {
     steam = {shape=0, density=3, speed=.25, emission=0, color={.72,.75,.78}, hot={1,.7,.25}},
+    soot = {shape=0, density=3.4, speed=.3, emission=0, color={.22,.21,.2}, hot={1,.7,.25}},
     fire = {shape=0, density=4, speed=.7, emission=2.5, color={.18,.15,.13}, hot={1,.55,.12}},
     plume = {shape=1, density=3.2, speed=1.4, emission=3, color={.25,.22,.2}, hot={1,.72,.32}},
     ring = {shape=2, density=2.8, speed=.35, emission=.4, color={.62,.58,.52}, hot={1,.4,.08}},
@@ -37,4 +38,11 @@ function M.SpaceportPreset(name)
         or name:match('^CrawlerBoosterRing%d+$') or name:match('^CrawlerSmokeRing%d+$') then return 'ring' end
     if name=='ArenaSmoke' or name:match('^SmokeBubble%d+$') then return 'steam' end
 end
+function M.PumpPreset(name)
+    if name:match('^Smoke%d+$') or name=='SmokeStem' then return 'soot' end
+    if name:match('^Explosion%d+$') or name=='ExplosionStem'
+        or name:match('^FireRotor%d*$') or name=='Igniter' then return 'fire' end
+    if name:match('^Flame[ABC]?%d+$') or name:match('^Flames%d+$') then return 'plume' end
+end
+M.PiecePresets={spaceport=M.SpaceportPreset,pump=M.PumpPreset}
 return M

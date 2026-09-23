@@ -3,6 +3,7 @@ include "lib_OS.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 include "lib_radiance_emitters.lua"
+local cloudPieces = include('lib_cloud_pieces.lua')('pump')
 local gasFlare = include('lib_objective_ribbon_flames.lua')(unitID, 'pump')
 
 TablesOfPiecesGroups = {}
@@ -377,6 +378,7 @@ function script.Create()
 end
 
 function script.Killed(recentDamage, _)
+    cloudPieces.Shutdown()
     gasFlare.Shutdown()
     return 1
 end
