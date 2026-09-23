@@ -3,10 +3,22 @@ local make = dofile("luaui/widgets_mosaic/include/rain_capture.lua")
 local realIO = io
 local function scenario(options)
     options = options or {}
+    local c
+    local png = "\137PNG\r\n\26\nDATA\0\0\0\0IEND\174\66\96\130"
+    local clock = 0
     local s = {paused = options.paused or false, frame = 14400, rain = 0.63,
         width = 1280, shots = {}, commands = {}, files = {}, restores = 0}
     Game = {mapName = "capture test"}
+    VFS = {RAW_ONLY = 1, DirList = function()
+        local paths = {}
+        for path in pairs(s.files) do
+            if path:match("^screenshots/screen%d+%.png$") then paths[#paths+1] = path end
+        end
+        return paths
+    end}
     Spring = {
+        GetTimer = function() return clock end,
+        DiffTimers = function(a, b) return a - b end,
         Echo = function() end,
         GetGameSpeed = function() return 1, 1, s.paused end,
         GetGameFrame = function() return s.frame end,
@@ -21,30 +33,31 @@ local function scenario(options)
         CreateDir = function() end,
         SendCommands = function(command)
             s.commands[#s.commands + 1] = command
-            if not options.noAck then s.paused = command == "pause 1" end
+            if command == "screenshot png" then
+                if not options.saveFails then
+                    s.files["screenshots/screen" .. #s.commands .. ".png"] = options.partial and png:sub(1, 10) or png
+                end
+            elseif not options.noAck then s.paused = command == "pause 1" end
         end,
     }
     io = {open = function(path, mode)
         if options.noWrite then return nil end
-        if mode == "r" and not s.files[path] then return nil end
+        if mode:sub(1, 1) == "r" and not s.files[path] then return nil end
         s.files[path] = s.files[path] or ""
         return {
+            read = function() return s.files[path] end,
             write = function(_, ...)
+                if mode == "wb" then
+                    if options.copyFails then return nil, "disk full" end
+                    s.shots[#s.shots + 1] = {rain = s.rain, phase = c.shaderTime(), path = path}
+                end
                 local values = {...}
                 for i, value in ipairs(values) do values[i] = tostring(value) end
                 s.files[path] = s.files[path] .. table.concat(values)
+                return true
             end,
-            flush = function() end, close = function() end,
+            flush = function() end, close = function() return true end,
         }
-    end}
-    local c
-    gl = {SaveImage = function(x, y, w, h, path, opts)
-        assert(x == 10 and y == 20 and w == 1280 and h == 720)
-        assert(opts.yflip and not opts.alpha)
-        if options.saveThrows then error("disk full") end
-        if options.saveFails then return false end
-        s.shots[#s.shots + 1] = {rain = s.rain, phase = c.shaderTime(), path = path}
-        return true
     end}
     c = make({
         ready = function() return true end,
@@ -54,7 +67,7 @@ local function scenario(options)
         setRain = function(rain) s.rain = rain end,
         metadata = function() return "lighting\tfixed\n" end,
     })
-    local function tick(dt) c.update(dt or 0.25); c.draw() end
+    local function tick(dt) clock = clock + 0.25; c.update(dt or 0); if not options.noDraw then c.draw() end end
     return s, c, tick
 end
 
@@ -70,8 +83,8 @@ for _, samples in ipairs({1, 3}) do
         assert(shot.rain == level / 10 and shot.phase == 30 + sample * 0.25)
         assert(shot.path:match(string.format("rain_%03d_frame_%02d.png$", level * 10, sample + 1)))
     end
-    for _, manifest in pairs(s.files) do
-        assert(manifest:match("game_frame\t14400") and manifest:match("result\tcomplete"))
+    for path, manifest in pairs(s.files) do
+        if path:match("manifest.txt$") then assert(manifest:match("game_frame\t14400") and manifest:match("result\tcomplete")) end
     end
 end
 
@@ -81,10 +94,10 @@ do
     tick(); c.command("rainsnap cancel")
     assert(s.paused and #s.commands == 0 and s.restores == 1 and s.rain == 0.63)
 end
-for _, failure in ipairs({"saveFails", "saveThrows", "noAck"}) do
+for _, failure in ipairs({"saveFails", "copyFails", "partial", "noDraw", "noAck"}) do
     local s, c, tick = scenario({[failure] = true})
     c.command("rainsnap 0.25")
-    for i = 1, 30 do tick() end
+    for i = 1, 100 do tick() end
     assert(not c.active() and #s.shots == 0 and s.restores == 1)
     assert(s.commands[#s.commands] == "pause 0")
 end
@@ -122,3 +135,4 @@ do
 end
 io = realIO
 print("PASS: capture phases/intensities, restoration, cancellation, pause timeout, disk errors, resize, resume, multiplayer")
+

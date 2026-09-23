@@ -30,7 +30,7 @@ this is deterministic sampling, not a real-time video recording.
 Output is under the engine's writable data directory:
 
 ```
-Screenshots/rain_YYYYMMDD_HHMMSS_f<gameframe>_<run>/
+screenshots/rain_YYYYMMDD_HHMMSS_f<gameframe>_<run>/
     rain_000_frame_01.png
     rain_010_frame_01.png
     ...
@@ -59,3 +59,22 @@ The command checks screenshot-write results and reports partial runs in the mani
 Validation: `lua tests/rain_capture_lifecycle.lua` checks the capture lifecycle with
 mocked engine APIs. Actual framebuffer contents and engine pause/camera behaviour
 still require an in-game run.
+
+
+## Engine screenshot backend
+
+Capture now invokes the engine `screenshot png` command (the F12 capture path).
+It waits for a new PNG with a complete end chunk before copying it into the labelled
+run directory and advancing to the next intensity. The original `screen*.png` file
+also remains in the normal lowercase `screenshots/` directory. Avoid pressing F12
+manually during a sequence, since new engine screenshot files identify each capture.
+The manifest records the corresponding engine filename.
+
+`/rainsnap status` reports progress and the output directory. Each verified save
+prints `saved N/11` (or the requested sequence total). Failed writes, a missing render
+callback, or an engine PNG that does not complete within 15 seconds abort with an
+explicit message and restore the previous state. Timers use the real-time engine
+clock, independently of the paused simulation's update delta.
+
+The previous implementation saved through `gl.SaveImage` into uppercase `Screenshots/`,
+which is a separate directory on Linux. Those old files, if any, remain there.

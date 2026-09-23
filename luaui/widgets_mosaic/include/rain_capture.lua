@@ -3,6 +3,21 @@
 return function(api)
     local capture, serial = nil, 0
     local controller = {}
+    local function elapsed(timer)
+        return Spring.DiffTimers(Spring.GetTimer(), timer)
+    end
+    local function screenshotFiles()
+        return VFS.DirList("screenshots/", "*.png", VFS.RAW_ONLY) or {}
+    end
+    local function completePNG(path)
+        local file = io.open(path, "rb")
+        if not file then return end
+        local data = file:read("*a")
+        file:close()
+        -- Engine screenshot writes are asynchronous. Wait for the PNG end chunk.
+        if data and data:sub(1, 8) == "\137PNG\r\n\26\n" and
+           data:sub(-12) == "\0\0\0\0IEND\174\66\96\130" then return data end
+    end
 
     local function echo(message) Spring.Echo("Rain capture: " .. message) end
     local function paused()
@@ -34,6 +49,13 @@ return function(api)
             finish("cancelled")
             return true
         end
+        if args[2] == "status" then
+            echo(capture and string.format("%d saved; rain %.1f; %s; output %s", capture.count,
+                capture.level / 10, capture.pending and "waiting for engine PNG" or
+                (capture.waiting and "waiting for pause" or "settling/rendering"), capture.directory)
+                or "idle")
+            return true
+        end
         local delay = tonumber(args[2] or "2")
         local frames = tonumber(args[3] or "1")
         if not delay or delay < 0.25 or delay > 30 or not frames or
@@ -43,7 +65,7 @@ return function(api)
         end
         if capture then echo("already running; /rainsnap cancel to stop"); return true end
         if not api.ready() then echo("rain shader is unavailable"); return true end
-        if not gl.SaveImage then echo("gl.SaveImage is unavailable"); return true end
+
         local wasPaused = paused()
         if not wasPaused then
             for _, id in ipairs(Spring.GetPlayerList()) do
@@ -58,11 +80,12 @@ return function(api)
         local directory, manifest
         repeat
             serial = serial + 1
-            directory = string.format("Screenshots/rain_%s_f%d_%02d/",
+            directory = string.format("screenshots/rain_%s_f%d_%02d/",
                 os.date("%Y%m%d_%H%M%S"), Spring.GetGameFrame(), serial)
             local existing = io.open(directory .. "manifest.txt", "r")
             if existing then existing:close() else break end
         until false
+        Spring.CreateDir("screenshots")
         Spring.CreateDir(directory)
         manifest = io.open(directory .. "manifest.txt", "w")
         if not manifest then echo("cannot write " .. directory); return true end
@@ -70,7 +93,7 @@ return function(api)
             directory = directory, manifest = manifest, saved = api.save(),
             camera = Spring.GetCameraState(), ownsPause = not wasPaused,
             delay = delay, frames = frames, level = 0, sample = 1, count = 0,
-            elapsed = 0, draws = 0, waiting = true,
+            timer = Spring.GetTimer(), draws = 0, waiting = true,
             width = select(1, Spring.GetViewGeometry()),
             height = select(2, Spring.GetViewGeometry()),
         }
@@ -90,18 +113,18 @@ return function(api)
     function controller.update(dt)
         if not capture then return false end
         local c = capture
-        c.elapsed = c.elapsed + dt
+        c.elapsed = elapsed(c.timer)
         Spring.SetCameraState(c.camera, 0)
         if c.waiting then
             if not paused() then
                 if c.elapsed > 5 then finish("aborted: pause was not acknowledged") end
                 return true
             end
-            c.waiting, c.elapsed = false, 0
+            c.waiting, c.elapsed, c.timer = false, 0, Spring.GetTimer()
             c.gameFrame = Spring.GetGameFrame()
             api.prepare()
             c.manifest:write("game_frame\t", c.gameFrame, "\n", api.metadata(),
-                "\nfile\train\tshader_time\tgame_frame\n")
+                "\nfile\train\tshader_time\tgame_frame\tengine_file\n")
             c.manifest:flush()
         elseif not paused() or Spring.GetGameFrame() ~= c.gameFrame then
             finish("aborted: simulation resumed")
@@ -113,6 +136,43 @@ return function(api)
             return true
         end
         api.setRain(c.level / 10)
+        if c.pending then
+            for _, path in ipairs(screenshotFiles()) do
+                if not c.pending.before[path] then
+                    local data = completePNG(path)
+                    if data then
+                        local destination = c.directory .. c.pending.filename
+                        local file, err = io.open(destination, "wb")
+                        if not file then finish("aborted: " .. tostring(err)); return true end
+                        local ok, writeError = file:write(data)
+                        local closed, closeError = file:close()
+                        if not ok or not closed then
+                            finish("aborted: " .. tostring(writeError or closeError)); return true
+                        end
+                        if not completePNG(destination) then
+                            finish("aborted: saved PNG verification failed"); return true
+                        end
+                        c.count = c.count + 1
+                        c.manifest:write(c.pending.filename, "\t", string.format("%.1f", c.level / 10),
+                            "\t", controller.shaderTime(), "\t", c.gameFrame, "\t", path, "\n")
+                        c.manifest:flush()
+                        echo(string.format("saved %d/%d: %s", c.count, 11 * c.frames, destination))
+                        c.pending = nil
+                        c.sample = c.sample + 1
+                        if c.sample > c.frames then c.sample, c.level = 1, c.level + 1 end
+                        if c.level > 10 then finish("complete"); return true end
+                        c.timer, c.draws, c.elapsed = Spring.GetTimer(), 0, 0
+                        api.setRain(c.level / 10)
+                        return true
+                    end
+                end
+            end
+            if elapsed(c.pending.timer) > 15 then
+                finish("aborted: engine screenshot did not produce a complete PNG within 15 seconds")
+            end
+        elseif c.elapsed > c.delay + 10 then
+            finish("aborted: capture render callback did not run; check infolog.txt")
+        end
         return true
     end
 
@@ -123,7 +183,7 @@ return function(api)
     end
 
     function controller.draw()
-        if not capture or capture.waiting then return end
+        if not capture or capture.waiting or capture.pending then return end
         local c = capture
         if not paused() or Spring.GetGameFrame() ~= c.gameFrame then
             finish("aborted: simulation resumed"); return
@@ -135,21 +195,16 @@ return function(api)
             finish("aborted: viewport resized"); return
         end
         local filename = string.format("rain_%03d_frame_%02d.png", c.level * 10, c.sample)
-        local ok, saved = pcall(gl.SaveImage, x, y, width, height,
-            c.directory .. filename, {alpha = false, yflip = true})
-        if not ok or not saved then finish("aborted: screenshot write failed"); return end
-        c.count = c.count + 1
-        c.manifest:write(filename, "\t", string.format("%.1f", c.level / 10), "\t",
-            controller.shaderTime(), "\t", c.gameFrame, "\n")
-        c.manifest:flush()
-        c.sample = c.sample + 1
-        if c.sample > c.frames then c.sample, c.level = 1, c.level + 1 end
-        if c.level > 10 then finish("complete"); return end
-        c.elapsed, c.draws = 0, 0
-        -- The next intensity is applied in Update, before the next world render.
+        local before = {}
+        for _, path in ipairs(screenshotFiles()) do before[path] = true end
+        c.pending = {before = before, filename = filename, timer = Spring.GetTimer()}
+        -- Same engine command as F12; copies only a fully written PNG on a later Update.
+        -- Keep camera, rain and phase unchanged until the asynchronous save completes.
+        Spring.SendCommands("screenshot png")
     end
 
     function controller.active() return capture ~= nil end
     function controller.shutdown() finish("cancelled: widget shutdown") end
     return controller
 end
+
