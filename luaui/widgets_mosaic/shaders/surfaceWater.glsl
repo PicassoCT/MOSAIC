@@ -104,6 +104,16 @@ vec4 roofCap(vec2 delta, vec2 radius, float pixel) {
     return vec4(-4.0*q/filtered*cap*0.08*energy,
                 cap*cap*0.08*energy,cap*cap*energy);
 }
+// Stable cluster conversion: light rain beads, full rain ~80% rivulet clusters.
+// This is a population ratio, not a claim that 80% of roof pixels are wet.
+float roofRivuletShare(float rain) {
+    return 0.8*smoothstep(0.1,1.0,clamp(rain,0.0,1.0));
+}
+float roofClusterRivulet(vec2 id, float rain) {
+    float threshold=hash3(id+vec2(113,29)).z;
+    float share=roofRivuletShare(rain);
+    return smoothstep(threshold-0.02,threshold+0.02,share)*smoothstep(0.0,0.02,share);
+}
 vec4 roofChartWater(vec2 at, float pixel) {
     vec2 cell=floor(at/vec2(3,6));
     vec4 water=vec4(0);
@@ -111,7 +121,7 @@ vec4 roofChartWater(vec2 at, float pixel) {
         vec2 id=cell+vec2(x,y);
         vec3 seed=hash3(id+vec2(71,19));
         float age=fract(time*(0.10+0.07*seed.x)+seed.z);
-        float activeRunoff=smoothstep(hash3(id+vec2(113,29)).z-0.08,hash3(id+vec2(113,29)).z+0.08,0.15+0.85*clamp(rainPercent,0.0,1.0));
+        float activeRunoff=roofClusterRivulet(id,rainPercent);
         float travel=roofTravel(age)*activeRunoff;
         float head=id.y*6.0+travel*5.5;
         float base=id.x*3.0+(seed.y-0.5)*1.3;
@@ -124,20 +134,28 @@ vec4 roofChartWater(vec2 at, float pixel) {
             float collected=smoothstep(by-0.25,by+0.25,head);
             float grow=smoothstep(0.0,0.24+0.04*float(b),age);
             vec2 radius=0.5*vec2(0.35+0.18*seed.y,0.48+0.18*seed.x)*mix(0.4,1.0,grow);
-            water+=roofCap(at-vec2(base+path.x,by),radius,pixel)*grow*(1.0-collected)*life;
+            water+=roofCap(at-vec2(base+path.x,by),radius,pixel)*grow*(1.0-collected)*life*(1.0-activeRunoff);
         }
         vec2 headPath=roofPath(head,seed);
         float moving=smoothstep(0.37,0.42,age)*life*activeRunoff;
         water+=roofCap(at-vec2(base+headPath.x,head),vec2(0.24,0.32)*(0.8+0.4*travel),pixel)*moving;
-        // Temporary meandering wake, limited to the recently traversed path.
+        // Meandering rivulet with a steady body and a small travelling swell.
         vec2 path=roofPath(at.y,seed);
         float dx=at.x-base-path.x;
-        float width=0.055+seed.y*0.045;
+        // Independent stable sizes: mostly fine threads, occasional broader runs.
+        vec3 sizeSeed=hash3(id+vec2(197,53));
+        float width=mix(0.045,0.18,sizeSeed.x*sizeSeed.x);
+        float length=mix(1.4,4.8,sizeSeed.y);
+        float start=id.y*6.0+0.3+sizeSeed.z*(5.4-length);
+        // Finite channels stay wet between moving swells, without pulsing off.
+        float channelWindow=smoothstep(start,start+0.3,at.y)
+            *(1.0-smoothstep(start+length-0.35,start+length,at.y));
         float filtered=sqrt(width*width+pixel*pixel*0.16);
         float q=dx/filtered;
         float behind=head-at.y;
         float window=smoothstep(0.0,0.25,behind)*(1.0-smoothstep(0.5,1.8,behind));
-        float h=exp(-q*q)*0.035*width/filtered*window*moving;
+        float relief=channelWindow*activeRunoff*(0.8+0.2*window*moving);
+        float h=exp(-q*q)*0.035*width/filtered*relief;
         float gx=-2.0*q/filtered*h;
         water+=vec4(gx,-gx*path.y,h,h/0.08);
     }
@@ -235,4 +253,5 @@ vec2 surfaceRippleProfile(vec2 position) {
     }
     return gradient*resolved;
 }
+
 
