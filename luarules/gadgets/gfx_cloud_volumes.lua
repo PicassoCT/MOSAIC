@@ -7,13 +7,14 @@ if gadgetHandler:IsSyncedCode() then
     _G.CloudVolumeRecords=records; _G.CloudVolumeRevision=0
     local function changed() _G.CloudVolumeRevision=_G.CloudVolumeRevision+1 end
     function api.SetPiece(id,piece,preset)
-        if not Config.Preset(preset) or not Spring.ValidUnitID(id) then return false end
+        if not Config.Preset(preset) then return false,'unknown preset '..tostring(preset) end
+        if not Spring.ValidUnitID(id) then return false,'invalid unit' end
         if type(piece)=='string' then piece=(Spring.GetUnitPieceMap(id) or {})[piece] end
-        if type(piece)~='number' then return false end
+        if type(piece)~='number' then return false,'piece not found' end
         local k=id..':'..piece
         if records[k] and records[k].preset==preset then return true end
         local center,half=Config.Bounds(id,piece)
-        if not center then return false end
+        if not center then return false,half end
         records[k]={unitID=id,piece=piece,preset=preset,center=center,half=half,
             born=Spring.GetGameFrame(),seed=(id*13+piece*7)%997}
         changed(); return true
@@ -55,11 +56,40 @@ if gadgetHandler:IsSyncedCode() then
         _G.CloudVolumeRecords=nil;_G.CloudVolumeRevision=nil
     end
 else
-    local renderer,revision
+    local renderer,revision,rendererError
     function gadget:Initialize()
         local err
         renderer,err=VFS.Include('luarules/gadgets/include/cloud_volume_renderer.lua')(Config)
-        if not renderer then Spring.Echo('Cloud volumes disabled: '..tostring(err));gadgetHandler:RemoveGadget(self) end
+        rendererError=err
+        if not renderer then Spring.Echo('Cloud volumes disabled: '..tostring(err)) end
+    end
+    -- Keep this callin even after GPU initialization fails, so missing clouds
+    -- can be diagnosed without guessing from screenshots.
+    function gadget:TextCommand(command)
+        if command~='cloudvolumes' then return false end
+        Spring.Echo('Cloud volumes: renderer '..(renderer and 'ready' or ('FAILED: '..tostring(rendererError)))
+            ..'; synced registry '..(SYNCED.CloudVolumeRevision~=nil and 'ready' or 'MISSING'))
+        local selected=Spring.GetSelectedUnits() or {}
+        if #selected==0 then Spring.Echo('Select the pump station or spaceport, then /cloudvolumes');return true end
+        for _,id in ipairs(selected) do
+            local matched,registered,rejected=0,0,0
+            local details={}
+            for name,piece in pairs(Spring.GetUnitPieceMap(id) or {}) do
+                if Config.SpaceportPreset(name) or Config.PumpPreset(name) then
+                    matched=matched+1
+                    if (SYNCED.CloudVolumeRecords or {})[id..':'..piece] then registered=registered+1 end
+                    local center,reason=Config.Bounds(id,piece)
+                    if not center then
+                        rejected=rejected+1
+                        if #details<6 then details[#details+1]=name..': '..tostring(reason) end
+                    end
+                end
+            end
+            Spring.Echo('Cloud unit '..id..': '..matched..' matching pieces, '..registered
+                ..' registered now, '..rejected..' unusable bounds (hidden pieces need not be registered)')
+            for _,line in ipairs(details) do Spring.Echo('Cloud bounds: '..line) end
+        end
+        return true
     end
     function gadget:DrawWorld()
         if not renderer then return end
