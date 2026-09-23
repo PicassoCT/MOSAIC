@@ -23,6 +23,15 @@ local naturalRainPercent = 0.0
 local rainShader = nil
 local bindRainLighting
 local glitterEnabled = true
+local rainShaderFingerprint = "uncompiled"
+local function sourceFingerprint(source)
+    local a,b = 1,0
+    for i=1,#source do
+        a=(a+source:byte(i))%65521
+        b=(b+a)%65521
+    end
+    return string.format("adler32:%08x",b*65536+a)
+end
 
 --------------------------------------------------------------------------------
 --------------------------Configuration Components -----------------------------
@@ -337,6 +346,7 @@ local function init()
         Spring.Echo("gfx_rain: Shader compiled: ")
     end
 
+    rainShaderFingerprint = sourceFingerprint(fragmentShader .. vertexShader)
     timePercentLoc                  = glGetUniformLocation(rainShader, "timePercent")
     rainPercentLoc                  = glGetUniformLocation(rainShader, "rainPercent")
     reflectionDebugLoc              = glGetUniformLocation(rainShader, "reflectionDebug")
@@ -460,7 +470,7 @@ local rainCapture = VFS.Include("luaui/widgets_mosaic/include/rain_capture.lua")
     end,
     setRain = function(amount) rainPercent = amount end,
     metadata = function()
-        return string.format("time_percent\t%.8f\nsun_rgb\t%s\nsky_rgb\t%s\nsun_direction\t%s\nglitter\t%s\n",
+        return "water_revision\troof-rounded-film-v1\nshader_fingerprint\t" .. rainShaderFingerprint .. "\n" .. string.format("time_percent\t%.8f\nsun_rgb\t%s\nsky_rgb\t%s\nsun_direction\t%s\nglitter\t%s\n",
             timePercent, table.concat(sunCol, ","), table.concat(skyCol, ","),
             table.concat(sunPos, ","), tostring(glitterEnabled))
     end,
@@ -711,3 +721,4 @@ function widget:TextCommand(command)
         return true
     end
 end
+

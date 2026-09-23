@@ -7,7 +7,7 @@ local function scenario(options)
     local png = "\137PNG\r\n\26\nDATA\0\0\0\0IEND\174\66\96\130"
     local clock = 0
     local s = {paused = options.paused or false, frame = 14400, rain = 0.63,
-        width = 1280, shots = {}, commands = {}, files = {}, restores = 0}
+        hidden = options.hidden or false, width = 1280, shots = {}, commands = {}, files = {}, restores = 0}
     Game = {mapName = "capture test"}
     VFS = {RAW_ONLY = 1, DirList = function()
         local paths = {}
@@ -18,6 +18,7 @@ local function scenario(options)
     end}
     Spring = {
         GetTimer = function() return clock end,
+        IsGUIHidden = function() return s.hidden end,
         DiffTimers = function(a, b) return a - b end,
         Echo = function() end,
         GetGameSpeed = function() return 1, 1, s.paused end,
@@ -37,6 +38,7 @@ local function scenario(options)
                 if not options.saveFails then
                     s.files["screenshots/screen" .. #s.commands .. ".png"] = options.partial and png:sub(1, 10) or png
                 end
+            elseif command:match("^hideinterface") then s.hidden = command == "hideinterface 1"
             elseif not options.noAck then s.paused = command == "pause 1" end
         end,
     }
@@ -76,7 +78,7 @@ for _, samples in ipairs({1, 3}) do
     assert(c.command("rainsnap 0.25 " .. samples))
     assert(c.active() and s.paused)
     for i = 1, 100 do tick() end
-    assert(not c.active() and not s.paused and s.restores == 1)
+    assert(not c.active() and not s.paused and not s.hidden and s.restores == 1)
     assert(s.rain == 0.63 and #s.shots == 11 * samples)
     for i, shot in ipairs(s.shots) do
         local level, sample = math.floor((i - 1) / samples), (i - 1) % samples
@@ -92,7 +94,7 @@ do
     local s, c, tick = scenario({paused = true})
     c.command("rainsnap")
     tick(); c.command("rainsnap cancel")
-    assert(s.paused and #s.commands == 0 and s.restores == 1 and s.rain == 0.63)
+    assert(s.paused and not s.hidden and s.restores == 1 and s.rain == 0.63)
 end
 for _, failure in ipairs({"saveFails", "copyFails", "partial", "noDraw", "noAck"}) do
     local s, c, tick = scenario({[failure] = true})
@@ -114,12 +116,12 @@ end
 do
     local s, c = scenario({noAck = true})
     c.command("rainsnap"); c.command("rainsnap cancel")
-    assert(s.commands[1] == "pause 1" and s.commands[2] == "pause 0")
+    assert(s.commands[2] == "pause 1" and s.commands[#s.commands] == "pause 0")
 end
 do
     local s, c, tick = scenario()
     c.command("rainsnap"); tick(); c.shutdown()
-    assert(not c.active() and not s.paused and s.restores == 1)
+    assert(not c.active() and not s.paused and not s.hidden and s.restores == 1)
 end
 for _, options in ipairs({{multiplayer = true}, {noWrite = true}}) do
     local s, c = scenario(options)
@@ -132,6 +134,11 @@ do
     for _, command in ipairs({"rainsnap help", "rainsnap 0", "rainsnap 2 1.5", "rainsnap 2 11"}) do
         assert(c.command(command) and not c.active())
     end
+end
+do
+    local s, c, tick = scenario({hidden = true})
+    c.command("rainsnap"); tick(); c.command("rainsnap cancel")
+    assert(s.hidden, "already-hidden GUI must stay hidden")
 end
 io = realIO
 print("PASS: capture phases/intensities, restoration, cancellation, pause timeout, disk errors, resize, resume, multiplayer")

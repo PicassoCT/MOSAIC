@@ -40,8 +40,10 @@ screenshots/rain_YYYYMMDD_HHMMSS_f<gameframe>_<run>/
 
 The manifest records map, camera, viewport, game frame, rain shader time of day,
 sun/sky colour, sun direction, glitter setting and each successful image's intensity
-and animation phase. Images include the final composited scene and current UI; hide
-the HUD beforehand if desired. Keep resolution, graphics settings and the light
+and animation phase. It also records the water revision and an Adler-32 fingerprint
+of the compiled fragment/vertex shader sources. Captures temporarily hide the
+interface, including the console overlay, and restore its previous visibility on
+completion, cancellation or failure. Keep resolution, graphics settings and the light
 source unchanged between runs. Supply the whole directory when comparing results.
 
 This is a **local rain-renderer override**, not a synced weather command. The dry
