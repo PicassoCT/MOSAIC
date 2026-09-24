@@ -92,7 +92,6 @@ else
         return true
     end
     function gadget:DrawWorld()
-        if Script.LuaUI('MosaicPerfDrawEnabled') and not Script.LuaUI.MosaicPerfDrawEnabled('clouds') then return end
         if not renderer then return end
         if revision~=SYNCED.CloudVolumeRevision then
             revision=SYNCED.CloudVolumeRevision
