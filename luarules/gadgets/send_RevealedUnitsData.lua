@@ -68,51 +68,32 @@ local function addTestLocation()
 
   GG.RevealedLocations = locations
 end
-local storedRevealedLocationCount
-local function updateLocationData()
-    for nr, LocationData in pairs(GG.RevealedLocations) do
-        boolAtLeastOneAlive = false
-        if LocationData and type(LocationData) == "table" and LocationData.revealedUnits then
-         for id, data in pairs(LocationData.revealedUnits) do
-            if data and doesUnitExistAlive(id) == false then
-                GG.RevealedLocations[nr].revealedUnits[id] = nil
-            else
-                x,y,z = Spring.GetUnitPosition(id)
-                GG.RevealedLocations[nr].revealedUnits[id].pos= {x=x,y=y,z=z}
-                boolAtLeastOneAlive = true
+local function updateLocationData(frame)
+    local active = {}
+    for _, location in pairs(GG.RevealedLocations or {}) do
+        if type(location) == "table" and location.revealedUnits and
+            location.endFrame and location.endFrame > frame then
+            local anyAlive = false
+            for id, data in pairs(location.revealedUnits) do
+                local x,y,z = Spring.GetUnitPosition(id)
+                if not data or not x or not doesUnitExistAlive(id) then
+                    location.revealedUnits[id] = nil
+                else
+                    data.pos = {x=x,y=y,z=z}
+                    anyAlive = true
+                end
             end
-         end
+            if anyAlive then active[#active+1] = location end
         end
-         if boolAtLeastOneAlive == false then
-            GG.RevealedLocations[nr] = nil
-         end
     end
-
-    if GG.RevealedLocations then
-        local TableCopy = GG.RevealedLocations        
-        SendToUnsynced("HandleRevealedLocationUpdates", serializeTableToString(TableCopy))
-    end
-
-    if storedRevealedLocationCount ~= #GG.RevealedLocations then
-        storedRevealedLocationCount = #GG.RevealedLocations
-    end
+    GG.RevealedLocations = active
+    SendToUnsynced("HandleRevealedLocationUpdates", serializeTableToString(active))
 end
 
 startFrame = Spring.GetGameFrame()
 
 function gadget:GameFrame(frame)
-    if frame % 3 == 0 then
-        updateLocationData()
-    end
-
-    --remove outdated graph data
-    if frame % 30 == 0 then
-        for i= #GG.RevealedLocations or 1, 1, -1 do
-            if GG.RevealedLocations[i] and GG.RevealedLocations[i].endFrame < frame then
-                GG.RevealedLocations = table.remove(GG.RevealedLocations,i)
-            end
-        end
-    end
+    if frame % 3 == 0 then updateLocationData(frame) end
 
     if boolTestGraph == true and frame > 0 and frame % (60*30) == 0  then
         --Spring.Echo("Debugmode: adding TestLocation")

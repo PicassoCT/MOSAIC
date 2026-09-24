@@ -51,7 +51,7 @@ local OperativePropagator = Human:New{
 	minCloakDistance = 0,
 	initCloaked = false,
 	stealth= true,
-	canSelfDestruct = false,
+	canSelfDestruct = true, -- Ctrl+D is intercepted by the betrayal gadget
 	
 	buildoptions = 
 	{

@@ -2169,12 +2169,18 @@ function cloakLoop()
     Sleep(100)
 
     Spring.GiveOrderToUnit(unitID, CMD.FIRE_STATE, {0}, {})
-    SetUnitValue(COB.WANT_CLOAK, 1)
-    SetUnitValue(COB.CLOAKED, 1)
-    while (spGetUnitIsCloaked(unitID) == false) do Sleep(100) end
-
+    if Spring.GetUnitRulesParam(unitID, "betrayal_defector") ~= 1 and Spring.GetUnitRulesParam(unitID, "betrayal_pending") ~= 1 then
+        SetUnitValue(COB.WANT_CLOAK, 1)
+        SetUnitValue(COB.CLOAKED, 1)
+        while spGetUnitIsCloaked(unitID) == false do
+            if Spring.GetUnitRulesParam(unitID, "betrayal_defector") == 1 or Spring.GetUnitRulesParam(unitID, "betrayal_pending") == 1 then break end
+            Sleep(100)
+        end
+        if Spring.GetUnitRulesParam(unitID, "betrayal_defector") ~= 1 and Spring.GetUnitRulesParam(unitID, "betrayal_pending") ~= 1 then
+            StartThread(spawnDecoyCivilian)
+        end
+    end
     boolCloaked = spGetUnitIsCloaked(unitID)
-    StartThread(spawnDecoyCivilian)
     --	echoOverload("invisible")
     while true do
         boolCloaked = spGetUnitIsCloaked(unitID)

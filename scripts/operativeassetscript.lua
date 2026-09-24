@@ -1026,6 +1026,7 @@ end
 
 
 function setWantCloak(boolWantCloak)
+    if Spring.GetUnitRulesParam(unitID, "betrayal_defector") == 1 or Spring.GetUnitRulesParam(unitID, "betrayal_pending") == 1 then boolWantCloak = false end
     if boolWantCloak == true then
         SetUnitValue(COB.WANT_CLOAK, 1)
     else
@@ -1034,6 +1035,7 @@ function setWantCloak(boolWantCloak)
 end
 
 function transitionToCloaked()
+    if Spring.GetUnitRulesParam(unitID, "betrayal_defector") == 1 or Spring.GetUnitRulesParam(unitID, "betrayal_pending") == 1 then return transitionToUncloaked() end
     setWantCloak(true)
     boolRunningPossible = false
     setSpeedEnvCached(unitID, speedCloaked)
@@ -1043,6 +1045,7 @@ function transitionToCloaked()
 end
 
 function OperativesDiscovered()
+    if Spring.GetUnitRulesParam(unitID, "betrayal_defector") == 1 or Spring.GetUnitRulesParam(unitID, "betrayal_pending") == 1 then return true end
     if GG.PoliceExposureUntil and (GG.PoliceExposureUntil[unitID] or 0) > Spring.GetGameFrame() then
         return true
     end

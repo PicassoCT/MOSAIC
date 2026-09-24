@@ -41,6 +41,7 @@ local CivilianAgent = Human:New{
 
 	category = [[GROUND]],
 	
+	canSelfDestruct = true, -- betrayal gadget handles the countdown
 	customParams = {
 		helptext		= "Civilian ",
 		baseclass		= "Human", -- TODO: hacks
