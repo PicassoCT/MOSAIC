@@ -30,38 +30,8 @@ typeTankMap = {
     ["orgyanyl"] = 3,
     ["wanderlost"] = 4
 }
--- Keep the chemical identities of the original CEGs.
-local aerosolColours = {
-    depressol = {0.5, 0.5, 1},
-    tollwutox = {1, 0.5, 0.5},
-    orgyanyl = {1, 0.5, 0},
-    wanderlost = {0.25, 1, 0.25},
-}
-local sprayRegistered = false
-local sprayDead = false
-local function setSprayVisible(enabled)
-    local api = GG.SmokeRibbon
-    if not api then return end
-    if not enabled or sprayDead then
-        if sprayRegistered then api.Remove(unitID, "aerosol") end
-        sprayRegistered = false
-        return
-    end
-    if sprayRegistered then return end
-    local c = aerosolColours[AerosolUnitDefIDMap[unitDefID]]
-    sprayRegistered = api.Set(unitID, "aerosol", emitor, {
-        direction = {0, -1, 0}, directionSpace = "world",
-        groundDirected = true,
-        length = 128, width = 22, curl = 0.65, speed = 1.2,
-        colorStart = {c[1], c[2], c[3], 0.32},
-        colorEnd = {c[1], c[2], c[3], 0}, emission = {0, 0},
-        windAffected = true, windInfluence = 0.4,
-        motionAffected = true, motionInfluence = 0.35, trailTime = 0.8,
-        strands = 3, distanceFactor = 40,
-    })
-end
-
 AerosolUnitDefIDMap = getAerosolUnitDefIDs(UnitDefs)
+local aerosolEffects=include('lib_aerosol_effects.lua')(unitID,emitor,AerosolUnitDefIDMap[unitDefID])
 
 function colCode(searchstr)
     for name, num in pairs(typeTankMap) do
@@ -77,13 +47,12 @@ function script.Create()
     Show(TablesOfPiecesGroups["Tank"][colCode(UnitDefs[unitDefID].name)])
     timeTank = GG.GameConfig.Aerosols[AerosolUnitDefIDMap[unitDefID]]
                    .sprayTimePerUnitInMs
-    StartThread(aerosolDeployRibbons)
+    StartThread(aerosolDeploy)
     Hide(emitor)
 end
 
 function script.Killed(recentDamage, _)
-    sprayDead = true
-    setSprayVisible(false)
+    aerosolEffects.Shutdown()
     return 1
 end
 
@@ -123,7 +92,7 @@ end
 boolStopped = false
 boolDeactivated = true
 
-function aerosolDeployRibbons()
+function aerosolDeploy()
     Sleep(100)
 
     local lisUnitFlying = isUnitFlying
@@ -134,14 +103,14 @@ function aerosolDeployRibbons()
             if soundIntervall == 0  then
                 StartThread(PlaySoundByUnitDefID, unitDefID, "sounds/plane/aerosol.wav", math.random(7,10)/10, 900, 3)
             end
-            setSprayVisible(true)
+            aerosolEffects.Update()
             Sleep(100)
             timeTank = timeTank - 100
             sprayTank()
             soundIntervall = soundIntervall + 1 % 10
 
         end
-        setSprayVisible(false)
+        aerosolEffects.Stop()
         if timeTank <= 0 then
             Spring.SetUnitNoSelect(unitID, false, true)
             Spring.DestroyUnit(unitID, false, true)
@@ -181,4 +150,3 @@ end
 function script.Activate() return 1 end
 
 function script.Deactivate() return 0 end
-

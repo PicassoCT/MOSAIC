@@ -18,7 +18,7 @@ Three noise evaluations per sample provide density and approximate directional s
 - Godrod: the impact helper registers a 16-second world-space cloud, plays its original sounds, and removes itself after 3.5 seconds. No impact CEG/shockwave particle loop. The weapon's redundant impact CEG is explicitly empty; its flight trail is unchanged.
 - Physics warhead: 32-second expanding fireball, rising cap/stalk and ground dust, cooling to smoke. Replaces the mushroom, nuclear burst and ash CEGs.
 - Bio/information warheads: finite greenish aerosol / blue emissive volumes replace their payload-specific CEG calls on affected units. Infection, stun and kill logic remain intact.
-- Pump station: its existing ribbon starts once on the steady Igniter piece in Create and stops only on death. Old flame-out/reignition cycles no longer toggle it. The preset's colors, size, wind and speed remain unchanged. Its Smoke*/SmokeStem, Explosion*/ExplosionStem, Flame*/Flames*, FireRotor* and Igniter meshes are now replaced by volumes while retaining their piece animations. Smoke uses a dark non-emissive soot preset; explosion puffs and flame tongues are luminous.
+- Pump station: its existing ribbon starts once on the steady Igniter piece in Create and stops only on death. Old flame-out/reignition cycles no longer toggle it. The preset's colors, size, wind and speed remain unchanged. Its Smoke*/SmokeStem, Explosion*/ExplosionStem, Flame*/Flames*, FireRotor* and Igniter meshes are now replaced by volumes while retaining their piece animations. Rising smoke starts with emissive orange pockets and cools into dark soot; explosion puffs and flame tongues are luminous.
 
 Spaceport radiance visibility registration is retained independently of hiding its old geometry. New explosion volumes are self-illuminated but do not themselves inject new light into the radiance cascade.
 
@@ -77,12 +77,13 @@ candidate on the CPU and add no ray-march samples.
 
 ```lua
 opacityCurve = {{0,0}, {.12,.9}, {.7,.8}, {2,.45}, {4,0}},
-emissionCurve = {{0,1}, {.2,1.4}, {.8,.3}, {1.8,0}},
+emissionCurve = {{0,.8}, {.2,1.3}, {.8,1}, {1.8,.55}, {3,0}},
 ```
 
-- Pump Smoke*/SmokeStem: dark, non-emissive soot, slow expansion, 28-second
+- Pump Smoke*/SmokeStem: `risingSmoke` with hot orange pockets cooling over
+  12 seconds, slow expansion, 28-second
   visibility envelope. Explosion*/ExplosionStem: four-second gas bloom whose
-  glow dies by 1.8 seconds. Flame*/Flames*: fast onset, held while animated.
+  glow dies by three seconds. Flame*/Flames*: fast onset, held while animated.
   Igniter and FireRotor retain continuous fire; the steady pump ribbon remains on.
 - Launch vapour: pale non-emissive steam, 45-second envelope. Gas rings fade
   over 24 seconds and lose their glow by three seconds. GroundGases/FireFlower
@@ -95,7 +96,7 @@ emissionCurve = {{0,1}, {.2,1.4}, {.8,.3}, {1.8,0}},
   both respond to wind. The molten-pot ribbon remains separate.
 
 `GG.CloudVolume.ReleasePiece(id,piece)` detaches profiles marked `linger=true`
-(steam/soot), preserving their original age and freezing an enclosing world-space
+(steam/soot/risingSmoke), preserving their original age and freezing an enclosing world-space
 box before piece reset. Other profiles are removed immediately. Show/Hide
 wrappers use this automatically. `RemovePiece` remains immediate for shutdown.
 Released smoke survives source removal and expires at the original lifetime;
@@ -134,3 +135,51 @@ fails this test; the fixed header routes direct and grouped visibility through
 registration, hides original geometry, preserves structures and lights, and
 removes registrations on Hide/death. This verifies the integration bug, not
 in-game shader appearance or performance.
+
+
+## Flare brightness and aerosol identification
+
+`emission` lights the dense hot knots; optional `glow` adds `hotColor * glow`
+throughout the participating gas. Both follow `emissionCurve`. Glow defaults to
+zero and adds no noise samples or ray-march steps. It changes RGB only; the
+final opacity still multiplies RGB and alpha together. This is self-illumination,
+not an injected scene light or a bloom pass.
+
+Flame tongues use emission 6 and body glow 1.4, while the gas burst uses emission
+7 and glow 1.6 with a longer luminous phase. Pump rising smoke uses emission 3.8
+and a subtler .22 body glow, cooling completely by 12 seconds. The hot pockets
+replace the visual role of emissive mesh textures procedurally; this does not
+sample or reproduce the original texture's UV pattern. Ordinary steam and soot
+presets remain non-emissive.
+
+Aerosol drones now use `scripts/lib_aerosol_effects.lua` from their existing
+100 ms spray worker. A 120-unit downward ribbon with width 42, emission 3 to 1.6,
+wind response and motion trailing shows the nozzle spray. Every .8 seconds it
+leaves a world-space puff with a 150-unit radius / 120-unit height proxy and
+six-second expansion/fade. At most eight live puffs per continuously spraying
+drone feed the existing global registry and draw/sample budgets. Visible density
+occupies the soft interior of the proxy; these are visual dimensions, not an
+exact depiction of the unchanged 250-unit gameplay spray radius.
+
+| Aerosol | Identification colour |
+| --- | --- |
+| Depressol | Blue |
+| Tollwutox | Red |
+| Orgyanyl | Orange |
+| Wanderlost | Green |
+
+Aerosol body glow is 2.2 and holds its colour through dispersal. Puffs are
+anchored below the nozzle at emission time and remain behind a moving drone;
+they do not yet advect with wind. The attached ribbon bends with wind and
+movement. Landing or tank exhaustion stops new emission, death also blocks
+restart, and already released gas finishes its fade. Flight-driven spraying,
+tank consumption, civilian effects and their range are unchanged. The legacy
+spray CEG call and the drone's CEG declarations are removed.
+
+`tests/aerosol_effects.lua` runs the actual drone worker and registration APIs for
+all four types, checking cadence, palette, trailing positions, bounded puffs,
+landing, death and expiry. `tests/cloud_volumes_gpu.py` reads production presets
+through Lua 5.1 (`lupa`), renders their night appearance, and checks identifying
+hues, glow without extra opacity, cooling and zero-opacity output. Its optional
+preview now shows the four aerosols, flame tongue, burst, hot smoke and cooled
+smoke. Neither test is a live-engine or target-hardware performance check.

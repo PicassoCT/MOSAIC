@@ -1,5 +1,5 @@
 """Render the production volume shader: MESA_GL_VERSION_OVERRIDE=3.3COMPAT python tests/cloud_volumes_gpu.py
-Optional --preview PATH saves a contact sheet for visual review. Requires moderngl, numpy, Pillow.
+Optional --preview PATH saves a contact sheet for visual review. Requires moderngl, numpy, Pillow, lupa.
 """
 import ctypes
 from pathlib import Path
@@ -17,7 +17,7 @@ w=h=256
 out=ctx.texture((w,h),4,dtype='f4');fbo=ctx.framebuffer([out]);fbo.use()
 depth=ctx.texture((w,h),1,np.ones((h,w),dtype='f4').tobytes(),dtype='f4');depth.use(0)
 for n,v in dict(sceneDepth=0,viewportSize=(w,h),viewportOrigin=(0,0),zeroToOne=0.,effectTime=1.,seed=7.,density=4.,emission=2.5,
-                opacity=1.,phase=0.,smokeColor=(.25,.24,.23),hotColor=(1.,.55,.12),ambient=(.5,.5,.5),shape=0,steps=24,volumeAxis=1,gradientSign=1.).items():p[n].value=v
+                glow=0.,opacity=1.,phase=0.,smokeColor=(.25,.24,.23),hotColor=(1.,.55,.12),ambient=(.5,.5,.5),shape=0,steps=24,volumeAxis=1,gradientSign=1.).items():p[n].value=v
 
 def matrix(mode,m):
     gl.glMatrixMode(mode); a=(ctypes.c_float*16)(*np.asarray(m,dtype='f4').T.flatten());gl.glLoadMatrixf(a)
@@ -63,17 +63,44 @@ camera(reflect=True);assert render()[...,3].sum()>0,'mirrored transform invisibl
 camera();normal=render();camera(zero=True);zero=render()
 assert np.allclose(normal,zero,atol=.002),'clip-space convention mismatch'
 camera()
-images=[]
-for name,shape,emission,phase in [('Steam',0,0.,0.),('Exhaust',1,3.,0.),('Gas ring',2,.4,0.),('Impact ignition',3,3.5,.05),('Cooling cloud',3,3.5,.8)]:
-    images.append((name,render(shape=shape,emission=emission,phase=phase)))
+# Load the production Lua presets rather than duplicating tuned values here.
+from lupa.lua51 import LuaRuntime
+lua=LuaRuntime(unpack_returned_tuples=True)
+config=lua.execute((root.parent/'include/cloud_volume_config.lua').read_text())
+def preset(name,age,ambient=(.08,.08,.08)):
+    cfg=config.Preset(name)
+    opacity,density,emission,growth=config.Appearance(cfg,age)
+    return render(shape=cfg['shape'],density=cfg['density']*density,
+                  emission=cfg['emission']*emission,glow=(cfg['glow'] or 0)*emission,
+                  opacity=opacity,phase=age/(cfg['lifetime'] or cfg['duration'] or 1e9),
+                  effectTime=age*cfg['speed'],smokeColor=tuple(cfg['color'][i] for i in range(1,4)),
+                  hotColor=tuple(cfg['hot'][i] for i in range(1,4)),ambient=ambient)
+for name,channels in [('depressol',(2,0)),('tollwutox',(0,1)),('orgyanyl',(0,2)),('wanderlost',(1,0))]:
+    gas=preset('aerosol_'+name,2.)
+    assert gas[...,:3].sum()>100,'unreadable aerosol at night: '+name
+    assert gas[...,channels[0]].sum()>gas[...,channels[1]].sum()*3,'aerosol hue lost: '+name
+    dark=render(glow=0.)
+    assert np.allclose(gas[...,3],dark[...,3]),'glow changed aerosol opacity'
+    assert gas[...,:3].sum()>dark[...,:3].sum()*4,'weak aerosol glow: '+name
+    assert preset('aerosol_'+name,6.).max()==0,'expired aerosol leaves light'
+for name in ['fire','flameTongue','gasExplosion','risingSmoke']:
+    lit=preset(name,.8);unlit=render(emission=0.,glow=0.)
+    assert np.allclose(lit[...,3],unlit[...,3]),name+' brightness changes alpha'
+    assert lit[...,:3].sum()>unlit[...,:3].sum()*3,name+' too dark at night'
+    assert render(opacity=0.,glow=2.,emission=6.).max()==0,'invisible flame leaves glow'
+preset('risingSmoke',18.);assert p['emission'].value==0 and p['glow'].value==0,'old soot never cools'
+assert render()[...,3].sum()>0,'cooled soot disappeared prematurely'
+images=[(name,preset('aerosol_'+name,2.)) for name in ['depressol','tollwutox','orgyanyl','wanderlost']]+[
+    ('Flame tongue',preset('flameTongue',.8)),('Gas flare',preset('gasExplosion',.8)),
+    ('Hot rising smoke',preset('risingSmoke',2.)),('Cooled smoke',preset('risingSmoke',18.))]
 if '--preview' in sys.argv:
     from PIL import Image,ImageDraw
     sheet=Image.new('RGB',(w*len(images),h+30),(18,22,28));draw=ImageDraw.Draw(sheet)
     for i,(name,im) in enumerate(images):
         rgb=im[...,:3]+np.array([.025,.035,.05])*(1-im[...,3:4])
-        # Reinhard exposure for HDR preview only; production uses the game's framebuffer.
+        # Clamped HDR with display gamma for the preview; the game uses its framebuffer.
         rgb=np.clip(rgb,0,1)**(1/2.2)
         sheet.paste(Image.fromarray((rgb[::-1]*255).astype('uint8')),(i*w,30));draw.text((i*w+10,9),name,fill='white')
     sheet.save(sys.argv[sys.argv.index('--preview')+1])
-print('PASS: compile, deterministic turbulence, silhouettes, alpha/emission, cooling, foreground depth, camera inside, orthographic, mirrored transform, both clip-depth conventions')
+print('PASS: compile, deterministic turbulence, silhouettes, alpha/emission, cooling, foreground depth, camera inside, orthographic, mirrored transform, both clip-depth conventions, aerosol identification, flame and rising smoke glow')
 print(ctx.info['GL_RENDERER'])

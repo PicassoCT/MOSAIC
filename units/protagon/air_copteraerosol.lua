@@ -63,8 +63,6 @@ local AIR_COPTER_AEROSOL = VTOL:New{
 	  normaltex = "unittextures/component_atlas_normal.dds",
 	  },
 	  
-
-
 }
 
 AIR_COPTER_AEROSOL_ORGYANYL = AIR_COPTER_AEROSOL:New()

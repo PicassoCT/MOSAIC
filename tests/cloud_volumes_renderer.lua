@@ -48,6 +48,11 @@ renderer:Draw()
 local p=config.Preset('steam');local a,d,e=config.Appearance(p,2)
 assert(math.abs(uniforms.opacity-a)<.0001 and uniforms.density==p.density*d)
 assert(uniforms.emission==0,'vapour glows')
+assert(uniforms.glow==0,'vapour inherits flame glow')
+renderer.records={aerosol={preset='aerosol_tollwutox',x=0,y=10,z=0,scale=1,born=0,seed=1}}
+renderer:Draw()
+assert(uniforms.glow>2 and uniforms.emission==0,'aerosol identification glow missing')
+renderer.records={tail={preset='steam',x=0,y=0,z=0,worldHalf={3,4,3},duration=45,born=0,seed=1}}
 local before=calls.copy
 frame=45*30;renderer:Draw();assert(calls.copy==before,'invisible curve endpoint still rendered')
 frame=60
