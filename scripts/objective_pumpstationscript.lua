@@ -288,6 +288,7 @@ function explosionLoop()
 
     while true do 
         for i =  #TablesOfPiecesGroups["Smoke"], 1, -1 do      
+            Hide(TablesOfPiecesGroups["Smoke"][i]) -- release before resetting its transform
             reset(TablesOfPiecesGroups["Smoke"][i], 100)        
         end
         for i =  #TablesOfPiecesGroups["Smoke"], 1, -1 do      
@@ -350,14 +351,14 @@ function resetHide(T)
 end
 
 function nightLight()
-    nightlight = piece("nightlight")
-    Hide(nightLight)
+    local nightLightPiece = piece("nightlight")
+    Hide(nightLightPiece)
     
     while true do
         waitTillNight()
-        Show(nightLight)
+        Show(nightLightPiece)
         waitTillDay()
-        Hide(nightLight)
+        Hide(nightLightPiece)
         Sleep(100)
     end
 end

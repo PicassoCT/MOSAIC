@@ -22,8 +22,12 @@ return function(Config)
             (gl.UnitMultMatrix or gl.UnitMatrix)(r.unitID)
             gl.UnitPieceMatrix(r.unitID,r.piece)
             gl.Translate(unpack(r.center));gl.Scale(unpack(r.half))
+            gl.Scale(d.growth,d.growth,d.growth)
         else
-            gl.Translate(d.x,d.y,d.z);gl.Scale(d.radius,d.height,d.radius)
+            gl.Translate(d.x,d.y,d.z)
+            if r.worldHalf then
+                gl.Scale(r.worldHalf[1]*d.growth,r.worldHalf[2]*d.growth,r.worldHalf[3]*d.growth)
+            else gl.Scale(d.radius,d.height,d.radius) end
         end
     end
     local function rect(proj,vw,vh)
@@ -57,13 +61,14 @@ return function(Config)
         for key,r in pairs(self.records) do
             local p=Config.Preset(r.preset)
             local age=math.max(0,now-r.born/(Game.gameSpeed or 30))
-            local visible=true
+            local opacity,densityGain,emissionGain,growth=Config.Appearance(p,age)
+            local visible=opacity>0
             local x,y,z,radius,height,bound
-            local phase=0
+            local phase=p.lifetime and math.min(1,age/p.lifetime) or 0
             if r.unitID then
                 local id=r.unitID
                 local los=fullView or Spring.GetUnitLosState(id,ally)
-                visible=(fullView or (los and los.los)) and not Spring.GetUnitIsDead(id)
+                visible=visible and (fullView or (los and los.los)) and not Spring.GetUnitIsDead(id)
                     and not Spring.GetUnitIsCloaked(id) and not Spring.GetUnitNoDraw(id)
                     and not Spring.GetUnitTransporter(id) and not Spring.IsUnitIcon(id)
                 if visible then
@@ -73,15 +78,21 @@ return function(Config)
                         if m[16] then
                             local scale=math.max(math.sqrt(m[1]^2+m[2]^2+m[3]^2),
                                 math.sqrt(m[5]^2+m[6]^2+m[7]^2),math.sqrt(m[9]^2+m[10]^2+m[11]^2))
-                            radius=math.sqrt(r.half[1]^2+r.half[2]^2+r.half[3]^2)*scale
+                            radius=math.sqrt(r.half[1]^2+r.half[2]^2+r.half[3]^2)*scale*growth
                             bound=radius+math.sqrt(r.center[1]^2+r.center[2]^2+r.center[3]^2)*scale
                         end
                     end
                 end
+            elseif r.worldHalf then
+                phase=age/r.duration
+                visible=visible and phase<1 and (fullView or Spring.IsPosInLos(r.x,r.y,r.z,ally))
+                x,y,z=r.x,r.y,r.z
+                radius=math.sqrt(r.worldHalf[1]^2+r.worldHalf[2]^2+r.worldHalf[3]^2)*growth
+                bound=radius
             else
                 phase=age/p.duration
-                visible=phase<1 and (fullView or Spring.IsPosInLos(r.x,r.y,r.z,ally))
-                local grow=.15+.85*(1-math.exp(-age*.7))
+                visible=visible and phase<1 and (fullView or Spring.IsPosInLos(r.x,r.y,r.z,ally))
+                local grow=growth
                 radius=p.radius*r.scale*grow;height=p.height*r.scale*grow*.5
                 x,y,z=r.x,r.y+height*.8,r.z
                 bound=math.sqrt(radius^2*2+height^2)
@@ -92,11 +103,10 @@ return function(Config)
                 if d2<cutoff^2 and Spring.IsSphereInView(x,y,z,bound) then
                     local fade=math.max(0,math.min(1,(cutoff-math.sqrt(d2))/(cutoff*.2)))
                     fade=fade*fade*(3-2*fade)
-                    if not r.unitID then
-                        local tail=math.max(0,math.min(1,(1-phase)/.35));fade=fade*tail*tail*(3-2*tail)
-                    else fade=fade*math.min(1,age/.15) end
+                    fade=fade*opacity
                     candidates[#candidates+1]={key=key,r=r,p=p,age=age,phase=phase,x=x,y=y,z=z,
-                        radius=radius,height=height,fade=fade,d2=d2}
+                        radius=radius,height=height,fade=fade,d2=d2,growth=growth,
+                        densityGain=densityGain,emissionGain=emissionGain}
                 end
             end
         end
@@ -134,7 +144,7 @@ return function(Config)
             local d=draw[i];local p=d.p
             gl.Scissor(vx+d.rect[1],vy+d.rect[2],d.rect[3],d.rect[4])
             gl.Uniform(loc.effectTime,d.age*p.speed);gl.Uniform(loc.seed,d.r.seed)
-            gl.Uniform(loc.density,p.density);gl.Uniform(loc.emission,p.emission)
+            gl.Uniform(loc.density,p.density*d.densityGain);gl.Uniform(loc.emission,p.emission*d.emissionGain)
             gl.Uniform(loc.opacity,d.fade);gl.Uniform(loc.phase,d.phase)
             gl.Uniform(loc.smokeColor,unpack(p.color));gl.Uniform(loc.hotColor,unpack(p.hot))
             local axis,sign=2,1

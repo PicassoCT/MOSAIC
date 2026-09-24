@@ -4,6 +4,8 @@ include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 include "lib_radiance_emitters.lua"
 local gasFlare = include('lib_objective_ribbon_flames.lua')(unitID, 'industrial')
+local slagFlare = include('lib_objective_ribbon_flames.lua')(unitID, 'slagheap')
+local craneFlare = include('lib_objective_ribbon_flames.lua')(unitID, 'slagcrane')
 
 IndustrialComplex = piece"IndustrialComplex"
 MeltingPot = piece"MeltingPot"
@@ -103,7 +105,12 @@ function Cranes(index)
     local timeStep = 0.05                    -- seconds
     local t = 0
     maxtime = 25000
-    one = showOnePiece(TablesOfPiecesGroups["CoolDown"])
+    local one
+    if index == 2 then
+        one = showOnePiece(TablesOfPiecesGroups["CoolDown"])
+        slagFlare.Start(one)
+        craneFlare.Start(TablesOfPiecesGroups["Pot"][index])
+    end
     while true do
         -- random turret movement
         
@@ -165,6 +172,7 @@ function Cranes(index)
             if GG and GG.SetObjectiveRadiancePieceVisible then
                 GG.SetObjectiveRadiancePieceVisible(unitID, one, true)
             end
+            slagFlare.Start(one)
             reset(one)
             Move(one, rotationAxis, -300, 3)
         end
@@ -376,6 +384,8 @@ end
 
 function script.Killed(recentDamage, _)
     gasFlare.Shutdown()
+    slagFlare.Shutdown()
+    craneFlare.Shutdown()
     return 1
 end
 

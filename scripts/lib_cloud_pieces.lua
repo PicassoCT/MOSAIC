@@ -24,7 +24,7 @@ function Show(id)
 end
 function Hide(id)
     if active[id] then
-        if GG.CloudVolume then GG.CloudVolume.RemovePiece(unitID,id) end
+        if GG.CloudVolume then (GG.CloudVolume.ReleasePiece or GG.CloudVolume.RemovePiece)(unitID,id) end
         active[id]=nil
     end
     rawHide(id)
