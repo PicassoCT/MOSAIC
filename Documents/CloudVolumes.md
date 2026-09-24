@@ -32,7 +32,7 @@ GG.CloudVolume.RemovePiece(unitID, pieceID)
 GG.CloudVolume.Burst('impact', x, y, z, 1) -- scale; independent of source lifetime
 ```
 
-Piece presets: `steam`, `soot`, `fire`, `plume`, `ring`. Burst presets: `impact`, `nuclear`, `bio`, `electric`. Settings live in `cloud_volume_config.lua`. Repeated SetPiece calls with the same preset do not restart the animation. Empty geometry and invalid inputs are rejected. Unit death removes attached effects; timed bursts expire separately. Synced records support unsynced reloads, with at most 256 burst records.
+Piece presets include `steam`, `soot`, `fire`, `plume`, `ring` and spaceport-specific `launchVapour`, `launchGas`, `launchRing`. Burst presets: `impact`, `nuclear`, `bio`, `electric`. Settings live in `cloud_volume_config.lua`. Repeated SetPiece calls with the same preset do not restart the animation. Empty geometry and invalid inputs are rejected. Unit death removes attached effects; timed bursts expire separately. Synced records support unsynced reloads, with at most 256 burst records.
 
 ## Cost and limits
 
@@ -85,9 +85,16 @@ emissionCurve = {{0,.8}, {.2,1.3}, {.8,1}, {1.8,.55}, {3,0}},
   visibility envelope. Explosion*/ExplosionStem: four-second gas bloom whose
   glow dies by three seconds. Flame*/Flames*: fast onset, held while animated.
   Igniter and FireRotor retain continuous fire; the steady pump ribbon remains on.
-- Launch vapour: pale non-emissive steam, 45-second envelope. Gas rings fade
-  over 24 seconds and lose their glow by three seconds. GroundGases/FireFlower
-  use the short gas explosion envelope; exhaust stays continuously fed.
+- Launch vapour: ArenaSmoke, SmokeBubble* and RocketPlumeB* use `launchVapour`:
+  pale non-emissive steam, density 8.5, near-opaque from 1.2–18 seconds, with
+  a gradual fade to zero at 70 seconds. Expansion reaches 1.5 times the original
+  proxy dimensions at 14 seconds, spreading the cloud across the launch building.
+  The integrated alpha is multiplied by the opacity curve: increasing density
+  alone would still leave the ordinary steam profile's 65% opacity ceiling.
+  GroundHeatedGasRing* uses dense `launchRing`, fading over 32 seconds and
+  losing its glow by three seconds. GroundGases/FireFlower use dense `launchGas`
+  with the original four-second explosion/cooling timing. Exhaust stays fed;
+  booster landing rings and pump effects retain their existing profiles.
 - Godrod/nuclear: independently configured expansion, opacity and fast emission
   decay within their existing 16/32-second durations. Bio/electric retain their
   existing durations with finite fades.
@@ -96,7 +103,7 @@ emissionCurve = {{0,.8}, {.2,1.3}, {.8,1}, {1.8,.55}, {3,0}},
   both respond to wind. The molten-pot ribbon remains separate.
 
 `GG.CloudVolume.ReleasePiece(id,piece)` detaches profiles marked `linger=true`
-(steam/soot/risingSmoke), preserving their original age and freezing an enclosing world-space
+(steam/launchVapour/soot/risingSmoke), preserving their original age and freezing an enclosing world-space
 box before piece reset. Other profiles are removed immediately. Show/Hide
 wrappers use this automatically. `RemovePiece` remains immediate for shutdown.
 Released smoke survives source removal and expires at the original lifetime;

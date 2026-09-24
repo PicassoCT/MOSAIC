@@ -67,6 +67,25 @@ M.presets.risingSmoke=variant('soot',{
     emission=3.8, glow=.22, hot={1,.32,.045},
     emissionCurve={{0,1},{2.5,.9},{7,.35},{12,0}},
 })
+-- Launch-pad vapour must obscure the structure, not tint it through a fog veil.
+-- Opacity multiplies the integrated volume, so density alone cannot overcome
+-- the ordinary steam preset's .65 alpha ceiling. Keep this tuning spaceport-only.
+M.presets.launchVapour=variant('steam',{
+    density=8.5, color={.78,.80,.82}, lifetime=70,
+    opacityCurve={{0,0},{.6,.97},{1.2,.995},{18,.995},{28,.96},{42,.72},{58,.22},{70,0}},
+    densityCurve={{0,.85},{2,1},{28,1},{50,.65},{70,.15}},
+    expansionCurve={{0,1},{2,1.3},{14,1.5},{35,1.65},{70,1.8}},
+})
+M.presets.launchGas=variant('gasExplosion',{
+    density=8,
+    opacityCurve={{0,0},{.12,.995},{.7,.995},{2,.9},{3,.55},{4,0}},
+})
+M.presets.launchRing=variant('ring',{
+    density=8, lifetime=32,
+    opacityCurve={{0,0},{.4,.99},{8,.985},{16,.8},{32,0}},
+    densityCurve={{0,.85},{1,1},{16,.8},{32,.2}},
+    expansionCurve={{0,1},{4,1.15},{16,1.3},{32,1.4}},
+})
 for _,name in ipairs({'impact','nuclear','bio','electric'}) do
     local p=M.presets[name];local t=p.duration
     p.opacityCurve={{0,0},{math.min(.12,t*.08),1},{t*.5,.85},{t,0}}
@@ -113,14 +132,15 @@ function M.Bounds(id,piece)
     return center,half
 end
 function M.SpaceportPreset(name)
-    if name:match('^RocketPlumeB%d*$') then return 'steam' end
+    if name:match('^RocketPlumeB%d*$') then return 'launchVapour' end
     if name:match('^RocketPlumeA?%d*$') or name=='RocketFusionPlume'
         or name:match('^RocketThrustPillar%d*$') or name:match('^ReturningBooster%d+ThrusterPlum%d*$')
         or name:match('^LandCone%d*$') or name=='LaunchCone' then return 'plume' end
-    if name=='GroundGases' or name:match('^FireFlower%d+$') then return 'gasExplosion' end
-    if name:match('^GroundHeatedGasRing%d+$') or name:match('^CrawlerBoosterGasRing%d+$')
+    if name=='GroundGases' or name:match('^FireFlower%d+$') then return 'launchGas' end
+    if name:match('^GroundHeatedGasRing%d+$') then return 'launchRing' end
+    if name:match('^CrawlerBoosterGasRing%d+$')
         or name:match('^CrawlerBoosterRing%d+$') or name:match('^CrawlerSmokeRing%d+$') then return 'ring' end
-    if name=='ArenaSmoke' or name:match('^SmokeBubble%d+$') then return 'steam' end
+    if name=='ArenaSmoke' or name:match('^SmokeBubble%d+$') then return 'launchVapour' end
 end
 function M.PumpPreset(name)
     if name:match('^Smoke%d+$') or name=='SmokeStem' then return 'risingSmoke' end
