@@ -3,18 +3,30 @@
 local Config=VFS.Include('luarules/gadgets/include/cloud_volume_config.lua')
 return function(kind)
 local selectPreset=assert(Config.PiecePresets[kind], 'Unknown cloud piece family: '..tostring(kind))
-local rawShow,rawHide=Show,Hide
+local rawShow,rawHide=Spring.UnitScript.Show,Spring.UnitScript.Hide
 local radianceShow=ShowRadiancePiece
 local presets,active,warned={},{},{}
-for name,id in pairs(Spring.GetUnitPieceMap(unitID) or {}) do presets[id]=selectPreset(name) end
+local matched,registered=0,false
+for name,id in pairs(Spring.GetUnitPieceMap(unitID) or {}) do
+    presets[id]=selectPreset(name)
+    if presets[id] then matched=matched+1 end
+end
+Spring.Echo('Cloud pieces: '..kind..' unit '..unitID..', '..matched..' matching pieces; visibility wrappers installed')
 local dead=false
-function Show(id)
+local function cloudShow(id)
     local preset=presets[id]
     if preset and not dead then
         local ok,reason
         if GG.CloudVolume then ok,reason=GG.CloudVolume.SetPiece(unitID,id,preset)
         else reason='synced cloud gadget unavailable' end
-        if ok then rawHide(id);active[id]=true;return end
+        if ok then
+            rawHide(id);active[id]=true
+            if not registered then
+                registered=true
+                Spring.Echo('Cloud pieces: '..kind..' unit '..unitID..', first replacement registered and mesh hidden, piece '..id..' ('..preset..')')
+            end
+            return
+        end
         if not warned[id] then
             warned[id]=true
             Spring.Echo('Cloud piece fallback: unit '..unitID..', piece '..id..': '..tostring(reason or 'registration rejected'))
@@ -22,7 +34,7 @@ function Show(id)
     end
     if not dead then rawShow(id) end
 end
-function Hide(id)
+local function cloudHide(id)
     if active[id] then
         if GG.CloudVolume then (GG.CloudVolume.ReleasePiece or GG.CloudVolume.RemovePiece)(unitID,id) end
         active[id]=nil
@@ -32,16 +44,19 @@ end
 function ShowRadiancePiece(id)
     if not id then return end
     if presets[id] then
-        Show(id)
+        cloudShow(id)
         -- Keep the existing radiance emitter despite hiding its old solid mesh.
         if GG.SetObjectiveRadiancePieceVisible then GG.SetObjectiveRadiancePieceVisible(unitID,id,not dead) end
     else radianceShow(id) end
 end
 function HideRadiancePiece(id)
     if not id then return end
-    Hide(id)
+    cloudHide(id)
     if GG.SetObjectiveRadiancePieceVisible then GG.SetObjectiveRadiancePieceVisible(unitID,id,false) end
 end
+-- Explicit environment writes: this file also has header-local Show/Hide.
+_G.CloudPieceShow,_G.CloudPieceHide=cloudShow,cloudHide
+_G.Show,_G.Hide=cloudShow,cloudHide
 return {
     Shutdown=function()
         dead=true

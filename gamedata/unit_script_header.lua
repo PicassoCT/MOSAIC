@@ -20,6 +20,21 @@ local SetUnitValue = UnitScript.SetUnitValue
 local Hide = UnitScript.Hide
 local Show = UnitScript.Show
 
+-- Cloud-enabled units install hooks after their script header has run. Includes
+-- receive this header too, so resolve the hook at call time instead of caching
+-- a primitive that would bypass cloud registration and show the old mesh.
+-- Other unit types retain the original direct functions with no dispatch cost.
+if unitDef.customParams and unitDef.customParams.cloud_piece_volumes then
+    local env = _G
+    Show = function(piece)
+        return (env.CloudPieceShow or UnitScript.Show)(piece)
+    end
+    Hide = function(piece)
+        return (env.CloudPieceHide or UnitScript.Hide)(piece)
+    end
+end
+
+
 -- Keep these helpers local to each compiled unit-script chunk.  The old
 -- lib_UnitScript versions stored pieceMap globally and could overwrite the
 -- script environment while another thread was using it.

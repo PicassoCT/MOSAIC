@@ -28,7 +28,8 @@ local objective_spaceport_land = Building:New{
                     oooooooo]]	, 
 	                    
 
-	customparams = {	
+	customparams = {
+        cloud_piece_volumes = 1,
 		normaltex = "unittextures/house_europe_normal.dds",
 		helptext			= "Civilian Building",
 		baseclass			= "Building", -- TODO: hacks

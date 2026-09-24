@@ -80,27 +80,26 @@ if gadgetHandler:IsSyncedCode() then
         for k,r in pairs(records) do if r.unitID==id then records[k]=nil;dirty=true end end
         if dirty then changed() end
     end
-    function gadget:Initialize() GG.CloudVolume=api end
+    function gadget:Initialize()
+        GG.CloudVolume=api
+        gadgetHandler:AddChatAction('cloudvolumes',function(_,_,_,playerID)
+            SendToUnsynced('cloud_volume_report',playerID)
+            return true
+        end,'Report cloud renderer and selected piece registration')
+        Spring.Echo('Cloud volumes: synced API ready; /luarules cloudvolumes')
+    end
     function gadget:Shutdown()
+        gadgetHandler:RemoveChatAction('cloudvolumes')
         if GG.CloudVolume==api then GG.CloudVolume=nil end
         _G.CloudVolumeRecords=nil;_G.CloudVolumeRevision=nil
     end
 else
     local renderer,revision,rendererError
-    function gadget:Initialize()
-        local err
-        renderer,err=VFS.Include('luarules/gadgets/include/cloud_volume_renderer.lua')(Config)
-        rendererError=err
-        if not renderer then Spring.Echo('Cloud volumes disabled: '..tostring(err)) end
-    end
-    -- Keep this callin even after GPU initialization fails, so missing clouds
-    -- can be diagnosed without guessing from screenshots.
-    function gadget:TextCommand(command)
-        if command~='cloudvolumes' then return false end
+    local function report()
         Spring.Echo('Cloud volumes: renderer '..(renderer and 'ready' or ('FAILED: '..tostring(rendererError)))
             ..'; synced registry '..(SYNCED.CloudVolumeRevision~=nil and 'ready' or 'MISSING'))
         local selected=Spring.GetSelectedUnits() or {}
-        if #selected==0 then Spring.Echo('Select the pump station or spaceport, then /cloudvolumes');return true end
+        if #selected==0 then Spring.Echo('Select the pump station or spaceport, then /luarules cloudvolumes');return true end
         for _,id in ipairs(selected) do
             local matched,registered,rejected=0,0,0
             local details={}
@@ -121,6 +120,16 @@ else
         end
         return true
     end
+    function gadget:Initialize()
+        local err
+        renderer,err=VFS.Include('luarules/gadgets/include/cloud_volume_renderer.lua')(Config)
+        rendererError=err
+        -- Remains registered when GPU initialization fails. Selection is local.
+        gadgetHandler:AddSyncAction('cloud_volume_report',function(_,playerID)
+            if playerID==Spring.GetMyPlayerID() then report() end
+        end)
+        Spring.Echo('Cloud volumes: renderer '..(renderer and 'ready' or ('FAILED: '..tostring(err))))
+    end
     function gadget:DrawWorld()
         if not renderer then return end
         if revision~=SYNCED.CloudVolumeRevision then
@@ -137,5 +146,8 @@ else
         end
         renderer:Draw()
     end
-    function gadget:Shutdown() if renderer then renderer:Shutdown() end end
+    function gadget:Shutdown()
+        gadgetHandler:RemoveSyncAction('cloud_volume_report')
+        if renderer then renderer:Shutdown() end
+    end
 end
