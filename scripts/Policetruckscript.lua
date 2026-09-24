@@ -33,18 +33,21 @@ function spawnRiotPolice()
     if not doesUnitExistAlive(policeOfficerID) then
         policeOfficerID = createUnitAtUnit(gaiaTeamID, "riotpolice", unitID, math.random(-10,10),0 , math.random(-10,10))
          while doesUnitExistAlive(policeOfficerID) do
-            T = foreach(getAllNearUnit(policeOfficerID, 120),
-                    function(id)
-                        defID = Spring.GetUnitDefID(id)
-                        if civilianWalkingTypeTable[defID] and gaiaTeamID == Spring.GetUnitTeam(id) then
-                            return id
-                        end
-                        end
-                        )
-            if #T > 0 then
-                Command(policeOfficerID, "attack", getSafeRandom(T, unitID))
-            else
-                Command(policeOfficerID, "guard", unitID)
+            if not (GG.PoliceBribes and GG.PoliceBribes[policeOfficerID]) and
+                not (GG.PoliceInPursuit and GG.PoliceInPursuit[policeOfficerID]) then
+                T = foreach(getAllNearUnit(policeOfficerID, 120),
+                        function(id)
+                            defID = Spring.GetUnitDefID(id)
+                            if civilianWalkingTypeTable[defID] and gaiaTeamID == Spring.GetUnitTeam(id) then
+                                return id
+                            end
+                            end
+                            )
+                if #T > 0 then
+                    Command(policeOfficerID, "attack", getSafeRandom(T, unitID))
+                else
+                    Command(policeOfficerID, "guard", unitID)
+                end
             end
             Sleep(10000)  
          end
@@ -66,7 +69,8 @@ end
 function theySeeMeRollin()
     -- Active incident movement belongs to game_police; do not overwrite its orders.
     while true do
-        if not (GG.PoliceInPursuit and GG.PoliceInPursuit[unitID]) then
+        if not (GG.PoliceInPursuit and GG.PoliceInPursuit[unitID]) and
+            not (GG.PoliceBribes and GG.PoliceBribes[unitID]) then
             local x,y,z = Spring.GetUnitPosition(unitID)
             local angle = math.random()*2*math.pi
             local tx = math.max(1,math.min(Game.mapSizeX-1,x+math.cos(angle)*400))
@@ -174,4 +178,3 @@ function script.QueryWeapon2() return center end
 function script.AimWeapon2(Heading, pitch) return true end
 
 function script.FireWeapon2() return true end
-

@@ -2,10 +2,11 @@ include "createCorpse.lua"
 include "lib_OS.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
+include "lib_mosaic.lua"
 --include "lib_Build.lua"
 
 local TablesOfPiecesGroups = {}
-gameConfig = getGameConfig()
+local gameConfig = getGameConfig()
 function script.HitByWeapon(x, z, weaponDefID, damage) end
 
  DollarSign = piece "DollarSign"
@@ -20,8 +21,8 @@ function script.Create()
         Spring.SetUnitBlocking(unitID,false)
         Spring.SetUnitNoSelect(unitID,false)
         Spring.MoveCtrl.Enable(unitID)
-        ox, oy, oz = Spring.GetUnitPosition(unitID)
-        Spring.SetUnitPosition(unitID, ox, oy + GameConfig.iconHoverGroundOffset, oz)
+        local ox, oy, oz = Spring.GetUnitPosition(unitID)
+        Spring.MoveCtrl.SetPosition(unitID, ox, oy + gameConfig.iconHoverGroundOffset, oz)
         value =42*randSign()
         Spin(DollarSign,y_axis,math.rad(value),0)
         hideT(TablesOfPiecesGroups["MoneyFlying"])
@@ -35,10 +36,8 @@ function script.Create()
                 Spin(id,y_axis,math.rad(value*randSign()),0)
             end
             )
-        StartThread(hoverAboveGround, unitID, gameConfig.iconHoverGroundOffset, 0.9, false)  
-        StartThread(lifeTime, unitID, gameConfig.LifeTimeBribeIcon, true, false)
-   
-        StartThread(percentageUpdate, gameConfig.LifeTimeBribeIcon)
+        -- game_police owns movement, duration and effects after construction.
+        StartThread(percentageUpdate, gameConfig.Bribe.durationFrames * 1000 / 30)
         for i=1, #TablesOfPiecesGroups["MoneyFlying"] do
             StartThread(dropCashOnMove, TablesOfPiecesGroups["MoneyFlying"][i])
         end
@@ -46,10 +45,13 @@ function script.Create()
 end
 
 function percentageUpdate(timeMs)
-    step= math.ceil(timeMs/#TablesOfPiecesGroups["Percentage"])
-    for i=1, #TablesOfPiecesGroups["Percentage"], 1 do        
+    waitTillComplete(unitID)
+    local pieces = TablesOfPiecesGroups["Percentage"] or {}
+    if #pieces == 0 then return end
+    local step= math.ceil(timeMs/#pieces)
+    for i=1, #pieces, 1 do
         Sleep(step)
-        Hide(TablesOfPiecesGroups["Percentage"][i])
+        Hide(pieces[i])
     end
 end
 
@@ -72,4 +74,3 @@ function script.Killed(recentDamage, _)
     -- createCorpseCUnitGeneric(recentDamage)
     return 1
 end
-

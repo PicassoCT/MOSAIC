@@ -5,16 +5,23 @@ local defs={[1]=1,[2]=2,[10]=3}
 local orders,created,cloaked={},0,false
 local cfg={Police={maxNr=8,maxDispatchTime=2000,minSpawnDistance=2200,
     reportDelayFrames=240,escapeFrames=900,searchFrames=1350,sightRange=650},
+    Bribe={durationFrames=1800,radius=750,maxOfficers=3,combatGraceFrames=150,
+        safehouseRevealRange=350,safehouseRevealFrames=900},
+    CyberCrime={durationFrames=3600,policeInterruptRange=180},
     instance={culture='arabic'},GameState={anarchy='anarchy',pacification='pacification'}}
 GG={BuildingTable={[10]={x=3000,z=3000}},GlobalGameState='normal'}
 Game={mapSizeX=10000,mapSizeZ=10000}
 CMD={MOVE=10,ATTACK=20,STOP=0}
 UnitDefs={[4]={name='policetruck'}}
-UnitDefNames={policetruck={id=4}}
+UnitDefNames={policetruck={id=4},icon_cybercrime={id=8},icon_bribe={id=9}}
 WeaponDefNames={closecombat={id=5}}
-gadget={};gadgetHandler={IsSyncedCode=function() return true end};VFS={Include=function() end}
+gadget={};gadgetHandler={IsSyncedCode=function() return true end};VFS={Include=function(path)
+    if path=='luarules/gadgets/include/police_bribery.lua' then return dofile(path) end
+end}
 getGameConfig=function() return cfg end
 getPoliceTypes=function() return {[4]=true} end
+getSafeHouseTypeTable=function() return {} end
+getOperativeTypeTable=function() return {[1]=true} end
 getMobileCivilianDefIDTypeTable=function() return {[2]=true} end
 getCultureUnitModelTypes=function(_,kind) return kind=='civilian' and {[2]=true} or {} end
 getScrapheapTypeTable=function() return {} end
@@ -23,7 +30,10 @@ registerEmergency=function() end
 Spring={
  GetGaiaTeamID=function() return 0 end,GetTeamAllyTeamID=function() return 0 end,
  ValidUnitID=function(id) return pos[id]~=nil end,GetUnitIsDead=function(id) return not pos[id] end,
- GetUnitPosition=function(id) if pos[id] then return table.unpack(pos[id]) end end,
+ GetUnitPosition=function(id) if pos[id] then return (table.unpack or unpack)(pos[id]) end end,
+ GetUnitDefID=function(id) return defs[id] end,
+ GetUnitTeam=function(id) return id==1 and 1 or 0 end,
+ GetUnitsInCylinder=function() return {} end,
  GetGameFrame=function() return frame end,GetGroundHeight=function() return 0 end,
  GetUnitRadius=function() return 100 end,TestMoveOrder=function() return true end,
  GetUnitIsCloaked=function() return cloaked end,GetUnitLosState=function() return {los=true} end,
