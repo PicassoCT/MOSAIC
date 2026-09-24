@@ -58,12 +58,17 @@ local function tableConcat(t1, t2)
     return t1
 end
 
-local function lstRemove(t, i)
-    for j = i, #t - 1 do
-        t[j] = t[j + 1]
-    end
-    t[#t] = nil
-    return t
+local function remember(id)
+    if id and not unitIDs[id] then units[#units+1]=id;unitIDs[id]=#units end
+end
+local function forget(id)
+    local index=unitIDs[id]
+    if not index then return end
+    local last=units[#units]
+    units[index]=last;units[#units]=nil
+    unitIDs[id]=nil
+    if last~=id then unitIDs[last]=index end
+    time_to_forget[id]=nil
 end
 
 local function doesUnitExistAlive(id)
@@ -96,7 +101,7 @@ local function parseWaypointStrategicRelevance(waypoint)
         local x, y, z = GetUnitPosition(flag)
         assert(waypoint.x)
         local dx, dz = waypoint.x - x, waypoint.z - z
-        local r2 = (dx * dx + dz * dz) * DIST2_MULT
+        local r2 = math.max(1, (dx * dx + dz * dz) * DIST2_MULT)
         relevance = relevance + FLAG_RELEVANCE_MULT * prod / r2
      end
     end
@@ -116,7 +121,7 @@ function Intelligence.GetTarget(x, z)
 
     for i,waypoint in ipairs(frontline) do
         local dx, dz = waypoint.x - x, waypoint.z - z
-        local r2 = (dx * dx + dz * dz) * DIST2_MULT
+        local r2 = math.max(1, (dx * dx + dz * dz) * DIST2_MULT)
         local visitor_score = (strategic_relevance[waypoint] ~= nil and strategic_relevance[waypoint] or 1) / r2
         -- Spring.MarkerAddPoint(waypoint.x, waypoint.y, waypoint.z, string.format("%.2f", visitor_score))
         if visitor_score > score then
@@ -190,44 +195,39 @@ function Intelligence.UnitFinished(unitID, unitDefID, unitTeam)
     end
     for _, t in ipairs(enemyTeams) do
         if t == unitTeam then
-            units[#units + 1] = unitID
-            unitIDs[unitID] = #units
+            remember(unitID)
             return
         end
     end
 end
 
 function Intelligence.UnitDestroyed(unitID, unitDefID, unitTeam, attackerID, attackerDefID, attackerTeam)
-    if unitIDs[unitID] ~= nil then
-        units = lstRemove(units, unitIDs[unitID])
-        unitIDs[unitID] = nil
-    end
+    forget(unitID)
 end
 
 function Intelligence.UnitEnteredLos(unitID, unitTeam, allyTeam, unitDefID)
+    if allyTeam ~= myAllyTeamID then return end
     if DIFFICULTY == "hard" then
         return
     end
     for _, t in ipairs(enemyTeams) do
         if t == unitTeam then
-            units[#units + 1] = unitID
-            unitIDs[unitID] = #units
+            remember(unitID)
             return
         end
     end
 end
 
 function Intelligence.UnitLeftLos(unitID, unitTeam, allyTeam, unitDefID)
+    if allyTeam ~= myAllyTeamID then return end
     if DIFFICULTY == "hard" then
         return
     end
-    if unitIDs[unitID] ~= nil then
-        units = lstRemove(units, unitIDs[unitID])
-        unitIDs[unitID] = nil
-    end
+    forget(unitID)
 end
 
 function Intelligence.UnitDamaged(unitID, unitDefID, unitTeam, damage, paralyzer, weaponDefID, projectileID, attackerID, attackerDefID, attackerTeam)
+    if not Spring.AreTeamsAllied(myTeamID, unitTeam) and not (attackerTeam and Spring.AreTeamsAllied(myTeamID, attackerTeam)) then return end
     if DIFFICULTY ~= "medium" then
         return
     end
@@ -243,11 +243,9 @@ function Intelligence.UnitDamaged(unitID, unitDefID, unitTeam, damage, paralyzer
     end
 
     if alliedVsEnemy == 1 then
-        units[#units + 1] = unitID
-        unitIDs[unitID] = #units
+        remember(unitID)
     elseif alliedVsEnemy == -1 then
-        units[#units + 1] = attackerID
-        unitIDs[attackerID] = #units
+        remember(attackerID)
     end
 end
 

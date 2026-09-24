@@ -23,6 +23,7 @@ VFS.Include("scripts/lib_mosaic.lua")
 function CreateTeam(myTeamID, myAllyTeamID, mySide)
 
 local Team = {}
+local betrayalMgr = CreateBetrayalMgr(myTeamID)
 
 do
     local GadgetLog = gadget.Log
@@ -89,6 +90,7 @@ function Team.GameFrame(f)
         return
     end
 
+    betrayalMgr.GameFrame(f)
     baseMgr.GameFrame(f)
     flagsMgr.GameFrame(f)
     taxiMgr.GameFrame(f)

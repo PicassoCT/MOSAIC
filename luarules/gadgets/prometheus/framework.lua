@@ -13,7 +13,7 @@ function gadget:RecvLuaMsg(msg, player)
 In UNSYNCED code:
 
 function gadget:Initialize()
-function GiveOrderToUnit(unitID, cmd, params, options)
+function GiveOrderToUnit(unitID, cmd, params, options, betrayalOrder)
 TODO: function GiveOrderToUnitMap(...)
 TODO: function GiveOrderToUnitArray(...)
 TODO: function GiveOrderArrayToUnitMap(...)
@@ -106,33 +106,34 @@ do
 end
 
 
-local function DeserializeAndProcessMessage(msg)
-	local msgpos = 1 --first byte is signature
-	local msglen = msg:len()
-
-	while (msgpos < msglen) do
-		local b1, b2, b3, b4, b5 = msg:byte(msgpos+1, msgpos+5)
-		msgpos = msgpos + 5
-
-		local unitID    = b1 * 256 + b2
-		local cmd       = b3 * 256 + b4 - 32768
-		local options   = bit_and(b5, 240)
-		local numParams = bit_and(b5, 15)
-
-		local params = {}
-		for i=1,numParams do
-			b1, b2 = msg:byte(msgpos+1, msgpos+2)
-			msgpos = msgpos + 2
-			params[i] = b1 * 256 + b2 - 32768
-		end
-
-		-- unit may have died between SendLuaRulesMsg and GameFrame
-		-- worse, a new unit might have been created with same unitID
-		if ValidUnitID(unitID) and allowedTeams[GetUnitTeam(unitID)] then
-			--Log("SYNCED: DeserializeAndProcessOrder: ", unitID)
-			GiveOrderToUnit(unitID, cmd, params, options)
-		end
-	end
+local function DeserializeAndProcessMessage(msg, player)
+    local cursor, orders = 2, {}
+    -- Validate the entire packet first. Truncation must not partly execute a batch.
+    while cursor <= #msg do
+        if cursor+4 > #msg then return false end
+        local u1,u2,c1,c2,flags=msg:byte(cursor,cursor+4)
+        cursor=cursor+5
+        local count=flags%16
+        if cursor+count*2-1 > #msg then return false end
+        local params={}
+        for i=1,count do
+            local a,b=msg:byte(cursor,cursor+1);cursor=cursor+2
+            params[i]=a*256+b-32768
+        end
+        orders[#orders+1]={id=u1*256+u2,cmd=c1*256+c2-32768,params=params,options=flags-count}
+    end
+    for _,order in ipairs(orders) do
+        if ValidUnitID(order.id) then
+            local team=GetUnitTeam(order.id)
+            local _,leader=Spring.GetTeamInfo(team)
+            -- Check ownership when executing too: a queued order may predate defection.
+            if allowedTeams[team] and leader==player and
+                Spring.GetUnitRulesParam(order.id,"betrayal_runner")~=1 then
+                GiveOrderToUnit(order.id,order.cmd,order.params,order.options)
+            end
+        end
+    end
+    return true
 end
 
 --------------------------------------------------------------------------------
@@ -147,9 +148,9 @@ local function Initialize(self)
 	for _,callIn in pairs(callInList) do
 		local fun = gadget[callIn]
 		if (fun ~= nil) then
-			gadget[callIn] = function(self, ...) fun(self, ...) SendToUnsynced(callIn, ...) end
+			gadget[callIn] = function(self, ...) fun(self, ...) SendToUnsynced("Prometheus_"..callIn, ...) end
 		else
-			gadget[callIn] = function(self, ...) SendToUnsynced(callIn, ...) end
+			gadget[callIn] = function(self, ...) SendToUnsynced("Prometheus_"..callIn, ...) end
 		end
 		gadgetHandler:UpdateCallIn(callIn)
 	end
@@ -157,30 +158,26 @@ end
 
 
 local function GameFrame(self)
-	if (numMessages ~= 0) then
-		Log("SYNCED: GameFrame: processing ", numMessages, " messages")
-		local unsuccess_cmds = {}
-		for _,msg in ipairs(messageQueue) do
-			if not pcall(DeserializeAndProcessMessage, msg) then
-				Warning("Failure processing message: ", msg)
-				unsuccess_cmds[#unsuccess_cmds + 1] = msg
-			end
-		end
-		numMessages = #unsuccess_cmds
-		messageQueue = unsuccess_cmds
-	end
+    local queue=messageQueue
+    messageQueue={};numMessages=0
+    for _,entry in ipairs(queue) do
+        local ok,valid=pcall(DeserializeAndProcessMessage,entry.msg,entry.player)
+        if not ok or not valid then Warning("Dropped malformed AI command packet") end
+    end
 end
 
-
 local function RecvLuaMsg(self, msg, player)
-	-- Tried to check allowedPlayers[player] too but this breaks replays, and
-	-- Spring.IsReplay() only returns true for hosted replays, not local ones.
-	if (msg:byte() == 213) then
-		Log("SYNCED: RecvLuaMsg from player ", player)
-		-- it's not allowed to call GiveOrderToUnit here
-		numMessages = numMessages + 1
-		messageQueue[numMessages] = msg
-	end
+    if msg:byte()~=213 then return false end
+    if #msg>8192 or numMessages>=256 then return true end
+    local authorized=false
+    for team in pairs(allowedTeams) do
+        local _,leader=Spring.GetTeamInfo(team)
+        if leader==player then authorized=true;break end
+    end
+    if not authorized then return true end
+    numMessages=numMessages+1
+    messageQueue[numMessages]={msg=msg,player=player}
+    return true
 end
 
 --------------------------------------------------------------------------------
@@ -239,16 +236,19 @@ local optionStringToNumber = {
 	shift = CMD.OPT_SHIFT,
 	right = CMD.OPT_RIGHT,
 }
-local bufferSize = 1
+local bufferSize, bufferBytes = 1, 1
 local messageBuffer = {string.char(213)}
 
 
 local function SerializeOrder(unitID, cmd, params, options)
+    params,options=params or {},options or 0
+    assert(type(params)=="table" and #params<=15)
+    assert(unitID>=0 and unitID<=65535 and cmd>=-32768 and cmd<=32767)
 	-- convert the table format (e.g. '{"shift"}') for options to a number
 	if type(options) == "table" then
 		local newOptions = 0
 		for _,opt in ipairs(options) do
-			newOptions = newOptions + optionStringToNumber[opt]
+			newOptions = newOptions + (optionStringToNumber[opt] or 0)
 		end
 		options = newOptions
 	end
@@ -256,16 +256,17 @@ local function SerializeOrder(unitID, cmd, params, options)
 	cmd = cmd + 32768 --signed 16 bit integer range
 
 	local b = {
-		unitID / 256,
+		math.floor(unitID / 256),
 		unitID % 256,
-		cmd / 256,
+		math.floor(cmd / 256),
 		cmd % 256,
 		options + #params, --options are in high 4 (5) bits
 	}
 
 	for i=1,#params do
-		local param = params[i] + 32768
-		b[#b+1] = param / 256
+		local param = math.floor(params[i]+0.5) + 32768
+        assert(param>=0 and param<=65535)
+		b[#b+1] = math.floor(param / 256)
 		b[#b+1] = param % 256
 	end
 
@@ -280,13 +281,21 @@ local function SerializeOrder(unitID, cmd, params, options)
 end
 
 
-function GiveOrderToUnit(unitID, cmd, params, options)
+function GiveOrderToUnit(unitID, cmd, params, options, betrayalOrder)
+    if Spring.GetUnitRulesParam(unitID,"betrayal_runner")==1 then return end
+    if gadget.betrayalContacts and gadget.betrayalContacts[unitID] and not betrayalOrder then return end
+    if cmd==CMD.CLOAK and Spring.GetUnitRulesParam(unitID,"betrayal_defector")==1 then return end
 	--Log("UNSYNCED: GiveOrderToUnit ", unitID)
 	local status, msg = pcall(SerializeOrder, unitID, cmd, params, options)
 	if not status or msg == nil then
 		Log("Failed to serialize command", unitID, cmd)
 		return nil
 	end
+    if bufferBytes+#msg>8192 then
+        Spring.SendLuaRulesMsg(table.concat(messageBuffer))
+        bufferSize,bufferBytes=1,1;messageBuffer={string.char(213)}
+    end
+    bufferBytes=bufferBytes+#msg
 	bufferSize = bufferSize + 1
 	messageBuffer[bufferSize] = msg
 end
@@ -302,16 +311,22 @@ local function Initialize(self)
 		local fun = gadget[callIn]
 		--uncomment this to trace all callIn calls
 		--fun = function(name, ...) Spring.Echo("UNSYNCED: " .. name) gadget[callIn](name, ...) end
-		gadgetHandler:AddSyncAction(callIn, fun)
+		gadgetHandler:AddSyncAction("Prometheus_"..callIn, function(_, ...) return fun(gadget, ...) end)
 	end
 end
 
+
+local oldShutdown=gadget.Shutdown
+function gadget:Shutdown()
+    for _,callIn in ipairs(callInList) do gadgetHandler:RemoveSyncAction("Prometheus_"..callIn) end
+    if oldShutdown then oldShutdown(self) end
+end
 
 local function GameFrame(self, f)
 	if (bufferSize ~= 1) then
 		Log("UNSYNCED: GameFrame: sending ", bufferSize - 1, " orders")
 		Spring.SendLuaRulesMsg(table.concat(messageBuffer))
-		bufferSize = 1
+		bufferSize,bufferBytes = 1,1
 		messageBuffer = {string.char(213)}
 	end
 end

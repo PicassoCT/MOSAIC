@@ -23,9 +23,9 @@ end
 if (Spring.GetModOptions) then
     local modOptions = Spring.GetModOptions()
     local lookup = {"easy", "medium", "hard", "impossible"}
-    difficulty = lookup[tonumber(modOptions.craig_difficulty) or 2]
+    gadget.difficulty = lookup[tonumber(modOptions.craig_difficulty) or 2] or "medium"
 else
-    difficulty = "hard"
+    gadget.difficulty = "hard"
 end
 
 -- include configuration
@@ -63,7 +63,7 @@ end
 function gadget:GameFrame(f)
     -- Perform economy cheating, this must be done in synced code!
     if f % 128 < 0.1 then
-        for t,_ in pairs(team) do
+        for t in pairs(gadget.team or {}) do
             Refill(t, "metal")
             Refill(t, "energy")
         end
@@ -92,6 +92,8 @@ local DELTA_TRAINING_TIME = 10
 waypointMgr = {}
 base_gann = {}
 intelligences = {}  -- One per team
+gadget.waypointMgr, gadget.base_gann, gadget.intelligences = waypointMgr, base_gann, intelligences
+gadget.betrayalContacts = {}
 
 
 -- include code
@@ -103,6 +105,7 @@ include("LuaRules/Gadgets/prometheus/heatmap.lua")
 include("LuaRules/Gadgets/prometheus/intelligence.lua")
 include("LuaRules/Gadgets/prometheus/taxi.lua")
 include("LuaRules/Gadgets/prometheus/team.lua")
+include("LuaRules/Gadgets/prometheus/betrayal.lua")
 include("LuaRules/Gadgets/prometheus/pathfinder.lua")
 include("LuaRules/Gadgets/prometheus/waypoints.lua")
 include("LuaRules/Gadgets/prometheus/gann/gann.lua")
@@ -111,6 +114,7 @@ include("LuaRules/Gadgets/prometheus/gann/gann.lua")
 local prometheus_Debug_Mode =  0--1 -- Must be 0 or 1
 local team = {}
 local firstFrame = math.max(1,Spring.GetGameFrame()) + 1
+local teamsCreated = false
 local lastFrame = 0 -- To avoid repeated calls to GameFrame()
 local training_time
 
@@ -214,6 +218,9 @@ function GetConfigData()
 	end
 end
 
+Log = gadget.Log
+Warning = gadget.Warning
+
 function CreateTeamGann(teamID)
     base_gann.Procreate(teamID)
 end
@@ -232,18 +239,16 @@ end
 --  gadget:GameFrame
 
 function gadget:Initialize()
-    setmetatable(gadget, {
-        __index = function() error("Attempt to read undeclared global variable", 2) end,
-        __newindex = function() error("Attempt to write undeclared global variable", 2) end,
-    })
     SetupCmdChangeAIDebugVerbosity()
     if gadget.IsTraining() then
         training_time = MIN_TRAINING_TIME
     end
    firstFrame = math.max(1,Spring.GetGameFrame()) + 1
    if not waypointMgr.UnitCreated then waypointMgr = CreateWaypointMgr() end
+   gadget.waypointMgr = waypointMgr
 
 	base_gann = CreateGANN()
+    gadget.base_gann = base_gann
     local base_gann_inputs = VFS.Include("LuaRules/Gadgets/prometheus/base/gann_inputs.lua")
     for _, input in ipairs(base_gann_inputs) do
         base_gann.DeclareInput(input)
@@ -259,6 +264,7 @@ function gadget:GamePreload()
     Spring.Echo("gadet:GamePreload:GetConfigData")
     GetConfigData()
     waypointMgr = CreateWaypointMgr()
+    gadget.waypointMgr = waypointMgr
 end
 
 local function CreateTeams()
@@ -275,10 +281,10 @@ local function CreateTeams()
 				-- Figure out the side we're on by searching for our
 				-- startUnit in Spring's sidedata.
 				--local tteam = select(4,Spring.GetPlayerInfo(leader))
-				local side    =  string.lower(select(5,Spring.GetTeamInfo(t)))
+				local side    =  (select(5,Spring.GetTeamInfo(t)) or ""):lower()
 				Log("Team "..t.. " is of side " .. side)
 
-				if (side) then
+				if side == "antagon" or side == "protagon" then
 				   -- Intialise intelligence and the gann individual
 					    intelligences[t] = CreateIntelligence(t, at)
 					    CreateTeamGann(t)
@@ -290,7 +296,8 @@ local function CreateTeams()
 						if (not Spring.GetUnitIsDead(u)) then
 							local ud = Spring.GetUnitDefID(u)
 							team[t].UnitCreated(u, ud, t)
-							team[t].UnitFinished(u, ud, t)
+							local _,_,_,_,built = Spring.GetUnitHealth(u)
+                            if (built or 0) >= 1 then team[t].UnitFinished(u, ud, t) end
 						end
 					end
 				else
@@ -313,7 +320,8 @@ function gadget:GameFrame(f)
     end
     lastFrame = f
 
-	if  f == firstFrame then
+	if not teamsCreated and f >= firstFrame then
+        teamsCreated = true
 	        -- This is executed AFTER headquarters / commander is spawned
         Log("gadget:GameFrame 1")
         waypointMgr.GameStart()
@@ -334,6 +342,7 @@ function gadget:GameFrame(f)
 	    end
         if not  waypointMgr.GameFrame then
             waypointMgr = CreateWaypointMgr()
+            gadget.waypointMgr = waypointMgr
         end
 	    waypointMgr.GameFrame(f)
 	    for _, intelligence in pairs(intelligences) do
@@ -378,6 +387,7 @@ storedUnitCreations = {}
 function gadget:UnitCreated(unitID, unitDefID, unitTeam, builderID)
     if not waypointMgr.UnitCreated then
         waypointMgr = CreateWaypointMgr()
+        gadget.waypointMgr = waypointMgr
     end
     waypointMgr.UnitCreated(unitID, unitDefID, unitTeam, builderID)
     if team[unitTeam] then
@@ -457,18 +467,7 @@ end
 
 -- Set up LUA AI framework.
 callInList = {
-    --"GamePreload",
-    --"GameStart",
-    --"GameFrame",
-    --"TeamDied",
-    --"UnitCreated",
-    --"UnitFinished",
-    --"UnitDestroyed",
-    --"UnitTaken",
-    --"UnitGiven",
-    --"UnitIdle",
-    --"UnitEnteredLos",
-    --"UnitLeftLos",
+    "TeamDied", "UnitCreated", "UnitFinished", "UnitDestroyed", "UnitTaken", "UnitGiven",
+    "UnitIdle", "UnitLoaded", "UnitUnloaded", "UnitEnteredLos", "UnitLeftLos", "UnitDamaged",
 }
-
-VFS.Include("LuaRules/Gadgets/prometheus/framework.lua", nil, VFS.ZIP)
+return VFS.Include("LuaRules/Gadgets/prometheus/framework.lua", nil, VFS.ZIP)

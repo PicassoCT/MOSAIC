@@ -134,9 +134,9 @@ local function getEnemysAtTargetInRange(target, radius, myTeamID)
     if unitsAtTarget and #unitsAtTarget > 0 then
         --filter out gaia and myTeam
         for i=1, #unitsAtTarget do
-            local unitTeamID = unitsAtTarget[i]
+            local unitTeamID = Spring.GetUnitTeam(unitsAtTarget[i])
 
-            if unitTeamID ~= gaiaTeamID and unitTeamID ~= myTeamID and not Spring.GetUnitIsCloaked(unitsAtTarget[i]) then
+            if unitTeamID and unitTeamID ~= gaiaTeamID and not Spring.AreTeamsAllied(unitTeamID, myTeamID) and not Spring.GetUnitIsCloaked(unitsAtTarget[i]) then
                 result[#result+1] = unitsAtTarget[i]
             end
         end
@@ -150,7 +150,7 @@ local function setUnitFireState(unitID, firestateStr)
     states.returnfire = 1
     states.fireatwill = 2
     local fireState = states[lower(firestateStr)] or 0 
-    Spring.GiveOrderToUnit(unitID, CMD.FIRE_STATE, {fireState}, {})
+    GiveOrderToUnit(unitID, CMD.FIRE_STATE, {fireState}, {})
 end
 
 local function setUnitArrayFireState(unitsArray, firestateStr, nthUnit)
@@ -162,7 +162,7 @@ local function setUnitArrayFireState(unitsArray, firestateStr, nthUnit)
 
     for i=1,#unitsArray do
         if i % nthUnit == 0 then
-            Spring.GiveOrderToUnit(unitsArray[i], CMD.FIRE_STATE, {fireState}, {})
+            GiveOrderToUnit(unitsArray[i], CMD.FIRE_STATE, {fireState}, {})
         end
     end  
 end
@@ -176,8 +176,7 @@ local function assignUnitsTargetsAtTarget(target, unitsArray, normal, spread)
             local unitID = unitsArray[i]
             local enemyID = enemyUnitArray[((i+randomizedPriority) % #enemyUnitArray)+1]
            -- Spring.Echo("Prometheus: Unit "..unitID.." assigned to attack "..enemyID)
-            Spring.GiveOrderToUnit(unitID, CMD.ATTACK, {enemyID}, {})
-            GiveOrderToUnit(unitID, CMD.ATTACK, enemyID,  {"shift"})
+            GiveOrderToUnit(unitID, CMD.ATTACK, {enemyID}, {})
             boolAssignedSuccesfully = true
         end
     end
