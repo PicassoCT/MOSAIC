@@ -17,6 +17,7 @@ GG={CloudVolume={SetPiece=function(id,piece,preset)active[piece]=preset;return t
     RemovePiece=function(id,piece)active[piece]=nil end},
     SetObjectiveRadiancePieceVisible=function(id,piece,on)radiance[piece]=on end}
 dofile('scripts/lib_radiance_emitters.lua')
+Spring.UnitScript={Show=Show,Hide=Hide}
 local helper=dofile('scripts/lib_cloud_pieces.lua')('pump')
 local pieces={}
 for name,id in pairs(map)do pieces[#pieces+1]=id end

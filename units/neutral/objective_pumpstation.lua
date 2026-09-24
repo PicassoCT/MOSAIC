@@ -28,7 +28,8 @@ local objective_pumpstation = Building:New{
                     oooooooo]]	, 
 	                    
 
-	customparams = {	
+	customparams = {
+        cloud_piece_volumes = 1,
 		normaltex = "unittextures/component_atlas_normal.dds",
 		helptext			= "Civilian Building",
 		baseclass			= "Building", -- TODO: hacks

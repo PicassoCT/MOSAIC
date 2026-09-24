@@ -60,7 +60,7 @@ GPU tests require moderngl and numpy, plus Pillow for the optional image. They c
 
 ## Diagnose unchanged solid pieces
 
-Select the affected unit and enter `/cloudvolumes`. This reports shader initialization, the synced registry, matching piece names, active registrations, and up to six precise bounds rejection reasons. It remains available if GPU initialization fails. Also search infolog.txt for `Cloud piece fallback` or `Cloud volumes disabled`.
+Select the affected unit and enter `/luarules cloudvolumes`. This reports shader initialization, the synced registry, matching piece names, active registrations, and up to six precise bounds rejection reasons. It remains available if GPU initialization fails. Also search infolog.txt for `Cloud piece fallback` or `Cloud volumes disabled`.
 
 Commit `4b351f4b` contains the first spaceport implementation but predates pump integration `174f9f94`; merge the updated `gfx/cloud-volumes` branch before testing the pump. Missing pump integration explains solid pump meshes on that revision, but does not explain the spaceport's visible legacy meshes. Runtime status/logs are required to distinguish registration rejection from a missing/disabled gadget or another visibility writer.
 
@@ -111,3 +111,26 @@ cooling, detached bounds/age, idempotency and expiry. Renderer tests cover the
 curve uniforms and zero-opacity culling. Runtime appearance and placement still
 need an in-game check; these changes do not establish the cause of the earlier
 solid-mesh rendering report.
+
+The diagnostic is registered with Mosaic's chat-action dispatcher and forwarded
+to the requesting player's unsynced renderer. It does not require cheats.
+`TextCommand` is not dispatched by this project's gadget handler. Startup now
+logs synced API and renderer status. Each cloud-enabled objective also logs its
+matching piece count and its first successful registration/mesh hiding, so an
+infolog from a fresh game is useful without any manual diagnostic command.
+
+## Header-local visibility fix
+
+`unit_script.lua` prepends `gamedata/unit_script_header.lua` to both owning
+scripts and included libraries. That header localizes Show/Hide. Replacing only
+the global functions therefore left original effect meshes visible. Pump station
+and spaceport now opt in via `customparams.cloud_piece_volumes = 1`; their header
+resolves per-unit cloud visibility hooks at call time. The hooks call engine
+primitives directly to avoid recursion. Other unit types keep direct primitives.
+
+`tests/cloud_piece_header.lua` runs the real header and included group/radiance
+helpers with cached include chunks in two unit environments. The original header
+fails this test; the fixed header routes direct and grouped visibility through
+registration, hides original geometry, preserves structures and lights, and
+removes registrations on Hide/death. This verifies the integration bug, not
+in-game shader appearance or performance.

@@ -1,12 +1,13 @@
 local frame=30
 Game={gameSpeed=30};GG={};gadget={}
-gadgetHandler={IsSyncedCode=function()return true end}
+gadgetHandler={AddChatAction=function()end,RemoveChatAction=function()end,IsSyncedCode=function()return true end}
 VFS={Include=function(p)return dofile(p)end}
 Spring={GetGameFrame=function()return frame end,ValidUnitID=function()return true end,
  GetUnitPieceInfo=function()return {min={1,-2,-3},max={3,2,3}}end,
  GetUnitPiecePosDir=function()return 10,20,30 end,
  GetUnitVectors=function()return {0,0,1},{0,1,0},{-1,0,0}end,
  GetUnitPieceMatrix=function()return 1,0,0,0,0,1,0,0,0,0,1,0,9,8,7,1 end}
+Spring.Echo=Spring.Echo or function()end
 dofile('luarules/gadgets/gfx_cloud_volumes.lua');gadget:Initialize()
 local api=GG.CloudVolume
 assert(api.SetPiece(1,2,'steam'));frame=90

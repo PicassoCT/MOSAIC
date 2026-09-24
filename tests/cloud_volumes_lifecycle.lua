@@ -8,8 +8,9 @@ Spring={GetGameFrame=function() return frame end,ValidUnitID=function(id)return 
         return {min={-2,-5,-3},max={2,5,3}}
     end}
 Game={gameSpeed=30};GG={};gadget={}
-gadgetHandler={IsSyncedCode=function()return true end}
+gadgetHandler={AddChatAction=function()end,RemoveChatAction=function()end,IsSyncedCode=function()return true end}
 VFS={Include=function(p)return dofile(p)end}
+Spring.Echo=Spring.Echo or function()end
 dofile('luarules/gadgets/gfx_cloud_volumes.lua');gadget:Initialize()
 local api=GG.CloudVolume
 assert(api.SetPiece(10,'GroundGases','fire'))
@@ -33,6 +34,7 @@ ShowRadiancePiece=function(id)Show(id)end
 HideRadiancePiece=function(id)Hide(id)end
 GG.SetObjectiveRadiancePieceVisible=function(id,piece,on)lights[piece]=on end
 unitID=10
+Spring.UnitScript={Show=Show,Hide=Hide}
 local helper=dofile('scripts/lib_cloud_pieces.lua')('spaceport')
 ShowRadiancePiece(1)
 assert(hidden[1] and not shown[1] and _G.CloudVolumeRecords['10:1'],'mesh not replaced')
