@@ -12,6 +12,8 @@ local boolDebugActive = GG.BoolDebug and false
 local Animations = include('animations_civilian_female.lua')
 local PrayerAnimations = include('animations_civilian_prayers.lua')
 PrayerAnimations.register(Animations)
+local AerosolAnimations = include("animations_civilian_aerosols.lua")
+AerosolAnimations.register(Animations)
 local signMessages = include('protestSignMessages.lua')
 local peacfulProtestSignMessages = include('PeacefullProtestSignMessages.lua')
 
@@ -601,6 +603,7 @@ lowerBodyAnimations = {
 accumulatedTimeInSeconds = 5
 lastDamageDirX, lastDamageDirZ = 0, 0
 function script.HitByWeapon(x, z, weaponDefID, damage)
+    if bodyConfig.boolInfluenced then return damage end
     transportID = spGetUnitIsTransporting(unitID)
     setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_ENDED, "wounded")
     if  transportID then --if holds loot        
@@ -624,6 +627,7 @@ function script.HitByWeapon(x, z, weaponDefID, damage)
 end
 
 function setCivilianUnitInternalStateMode(unitID, State, name)
+    if bodyConfig.boolInfluenced and name ~= 'aerosol' then return end
     assert(State)
     if not GG.CivilianUnitInternalLogicActive then
         GG.CivilianUnitInternalLogicActive = {}
@@ -856,24 +860,28 @@ function startAerosolBehaviour(extAerosolStateToSet)
 end
 
 function aeroSolStateBehaviour()
-   -- Spring.Echo("Civilian "..unitID.. " starting internal aerosol behaviour")
-    centerCopy= center
-    if  spGetUnitDefID(unitID) == UnitDefNames["civilian_arab4"] then
-        centerCopy = Head1
-    end
-
-    influencedStateMachine = getAerosolInfluencedStateMachine(unitID, UnitDefs, aeroSolType, center, UpArm1, UpArm2, Head1)
-    assert(influencedStateMachine)
-    hideAllProps(bodyConfig)
+    Signal(SIG_INTERNAL)
+    Signal(SIG_COVER_WALK)
+    Signal(SIG_PISTOL)
+    Signal(SIG_MOLOTOW)
+    Signal(SIG_RPG)
     bodyConfig.boolInfluenced = true
-    newState = aeroSolType
-    oldBehaviourState = aeroSolType
-      while newState ~= "Exit" do
-        newState = influencedStateMachine(oldBehaviourState, newState, unitID)
-        Sleep(250)
-        oldBehaviourState = newState
+    bodyConfig.boolCoverWalk = false
+    bodyConfig.boolWounded = false
+    bodyConfig.aerosolType = aeroSolType
+    local influencedStateMachine = getAerosolInfluencedStateMachine(unitID, UnitDefs,
+        aeroSolType, center, UpArm1, UpArm2, Head1, bodyConfig)
+    hideAllProps(bodyConfig)
+    setOverrideAnimationState(eAnimState.standing, eAnimState.standing, true, nil, true)
+    local newState, oldState = aeroSolType, aeroSolType
+    while newState ~= "Exit" do
+        newState = influencedStateMachine(oldState, newState, unitID)
+        if newState ~= "Exit" then Sleep(250) end
+        oldState = newState
     end
-    Spring.DestroyUnit(unitID, true, false)
+    if Spring.ValidUnitID(unitID) and not Spring.GetUnitIsDead(unitID) then
+        Spring.DestroyUnit(unitID, not bodyConfig.aerosolDrowning, bodyConfig.aerosolDrowning ~= nil)
+    end
 end
 
 function wailing()
@@ -1519,6 +1527,13 @@ function playUpperBodyIdleAnimation()
     end
 end
 
+local function playAerosolAnimation(upper, moving)
+    local clip, speed = AerosolAnimations.clip(bodyConfig, upper, moving, Spring.GetGameFrame())
+    if not clip then return false end
+    PlayAnimation(clip, upper and lowerBodyPieces or upperBodyPieces, speed)
+    return true
+end
+
 UpperAnimationStateFunctions = {
     [eAnimState.catatonic] = function()
         PlayAnimation(randT(uppperBodyAnimations[eAnimState.wailing]),
@@ -1534,6 +1549,7 @@ UpperAnimationStateFunctions = {
     [eAnimState.standing] = function()
         Sleep(30)
         if bodyConfig.boolInfluenced then
+            if playAerosolAnimation(true, false) then return eAnimState.standing end
             PlayAnimation("UPBODY_STANDING_ZOMBIE")
             return eAnimState.walking
         end
@@ -1569,6 +1585,7 @@ UpperAnimationStateFunctions = {
     end,
     [eAnimState.walking] = function()
         if bodyConfig.boolInfluenced then
+            if playAerosolAnimation(true, true) then return eAnimState.walking end
             PlayAnimation("UPBODY_WALK_ZOMBIE", walkMotionExcludeTable)
             return eAnimState.walking
         end
@@ -1677,6 +1694,7 @@ UpperAnimationStateFunctions = {
 LowerAnimationStateFunctions = {
     [eAnimState.standing] = function()
         if bodyConfig.boolInfluenced then
+            if playAerosolAnimation(false, false) then return eAnimState.standing end
             PlayAnimation("LOWBODY_STANDING_ZOMBIE")
             return eAnimState.walking
         end
@@ -1698,6 +1716,7 @@ LowerAnimationStateFunctions = {
     end,
     [eAnimState.walking] = function()
         if bodyConfig.boolInfluenced then
+            if playAerosolAnimation(false, true) then return eAnimState.walking end
             if maRa() == true then
                 PlayAnimation("LOWBODY_WALKING_ZOMBIE")
                 return eAnimState.walking
@@ -2048,6 +2067,7 @@ function script.QueryWeapon(weaponID)
 end
 
 function script.AimWeapon(weaponID, heading, pitch)
+    if bodyConfig.boolInfluenced then return false end
     if boolCloaked then return false end 
 
     if WeaponsTable[weaponID] then

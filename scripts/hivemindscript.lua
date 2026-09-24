@@ -56,6 +56,9 @@ function integrateNewMembers()
                 getAllInCircle(x, z, IntegrationRadius),
                 function(id)
                     local team = Spring.GetUnitTeam(id)
+                    -- Depressol victims actively seek integration, including
+                    -- afflicted recruits belonging to this hive's team.
+                    if aerosolUnits[id] == 'depressol' then return id end
                     if team == myTeamID then
                         return nil
                     end
@@ -71,8 +74,10 @@ function integrateNewMembers()
                     end
 
                     local defID = Spring.GetUnitDefID(id)
-                    if integrateAbleUnits[defID] and not isTransport(id) then
-                        if aerosolUnits[id] then
+                    local def = UnitDefs[defID]
+                    local willingAgent = aerosolUnits[id] == 'depressol' and def and def.name == 'civilianagent'
+                    if (integrateAbleUnits[defID] or willingAgent) and not isTransport(id) then
+                        if aerosolUnits[id] and aerosolUnits[id] ~= 'depressol' then
                             return nil
                         end
 
