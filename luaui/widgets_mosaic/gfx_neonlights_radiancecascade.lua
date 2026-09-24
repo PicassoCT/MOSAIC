@@ -26,6 +26,7 @@ local DIRECT_LIGHT_STEPS = 48
 
 local neonUnitTables = {}
 local objectiveRadianceUnitTables = {}
+local CloudConfig = VFS.Include('luarules/gadgets/include/cloud_volume_config.lua')
 local neonLightPercent = 0.0
 local neonUnitCount = 0
 local neonPieceCount = 0
@@ -685,7 +686,7 @@ local function drawNeonPieces(captureLayer, domain)
     gl.Blending(false)
     gl.Culling(false)
     gl.Texture(false)
-    -- Capture unit-intensity emission; day/night intensity is applied once at resolve.
+    -- Apply each source's intensity here; objective lights also work in daylight.
     gl.Color(1, 1, 1, 1)
     if propagation then
         local bandHeight = OCCLUSION_WORLD_HEIGHT / OCCLUSION_LAYER_COUNT
@@ -705,21 +706,49 @@ local function drawNeonPieces(captureLayer, domain)
     gl.LoadIdentity()
     gl.Rotate(-90, 1, 0, 0)
 
+    local frame=Spring.GetGameFrame()+(Spring.GetFrameTimeOffset and Spring.GetFrameTimeOffset() or 0)
     local function drawUnitPieces(unitID, pieces, objective)
         if Spring.ValidUnitID(unitID) and not Spring.GetUnitIsDead(unitID) then
+            local bound, materialBound
+            local defID = Spring.GetUnitDefID(unitID)
             if propagation then
-                local defID = Spring.GetUnitDefID(unitID)
-                local bound = defID and gl.Texture(0,string.format("%%%d:0",defID))
+                bound = defID and gl.Texture(0,string.format("%%%d:0",defID))
                 if not bound then gl.Texture(0,false) end
-                gl.UniformInt(propagation.texturedLoc,bound and 1 or 0)
-                gl.Uniform(propagation.emissionStrengthLoc, objective and 1 or (sceneTest and 1 or neonLightPercent))
                 gl.UniformInt(propagation.projectToBandLoc, objective and 1 or 0)
             end
             gl.PushMatrix()
             gl.UnitMultMatrix(unitID)
 
-            for _, pieceID in pairs(pieces) do
-                if pieceID then
+            for _, record in pairs(pieces) do
+                -- Numeric entries remain supported for holograms and older senders.
+                local descriptor=type(record)=='table' and record
+                local pieceID=descriptor and descriptor.piece or record
+                local mode=descriptor and descriptor.mode or 'diffuse'
+                local strength=objective and 1 or (sceneTest and 1 or neonLightPercent)
+                local color, textured, masked=nil,bound and 1 or 0,0
+                if mode=='material' then
+                    if materialBound==nil then
+                        materialBound=not not (bound and defID and gl.Texture(1,string.format("%%%d:1",defID)))
+                    end
+                    -- Mixed structural meshes must never fall back to all-over emission.
+                    if not materialBound then strength=0 else masked=1 end
+                elseif mode=='cloud' then
+                    local preset=CloudConfig.Preset(descriptor.preset)
+                    strength=0; textured=0
+                    if preset then
+                        local age=math.max(0,(frame-(descriptor.born or frame))/(Game.gameSpeed or 30))
+                        local opacity,density,emission=CloudConfig.Appearance(preset,age)
+                        strength=opacity*density*emission*(preset.emission+(preset.glow or 0))
+                        color=preset.hot
+                    end
+                end
+                if pieceID and (strength>0 or not objective) then
+                    gl.Color(color and color[1] or 1,color and color[2] or 1,color and color[3] or 1,1)
+                    if propagation then
+                        gl.UniformInt(propagation.texturedLoc,textured)
+                        gl.UniformInt(propagation.materialMaskedLoc,masked)
+                        gl.Uniform(propagation.emissionStrengthLoc,strength)
+                    end
                     gl.PushMatrix()
                     gl.UnitPieceMultMatrix(unitID, pieceID)
                     gl.UnitPiece(unitID, pieceID)
@@ -728,6 +757,8 @@ local function drawNeonPieces(captureLayer, domain)
             end
 
             gl.PopMatrix()
+            gl.Texture(1,false)
+            gl.Color(1,1,1,1)
         end
     end
 
@@ -737,6 +768,7 @@ local function drawNeonPieces(captureLayer, domain)
     for unitID, pieces in pairs(objectiveRadianceUnitTables) do
         drawUnitPieces(unitID, pieces, true)
     end
+    if propagation then gl.UniformInt(propagation.materialMaskedLoc,0) end
 
     if propagation and WG.CaptureVehicleHeadlightEmission then
         local bandHeight=OCCLUSION_WORLD_HEIGHT/OCCLUSION_LAYER_COUNT
@@ -1002,7 +1034,6 @@ function widget:Shutdown()
     occlusionBuildings = {}
     pendingBuildingColumns = {}
 end
-
 
 
 

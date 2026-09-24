@@ -64,9 +64,10 @@ print('PASS: cascade ordering, no framebuffer feedback, intensity, readiness, bi
 local renders, captureUniforms, globals, serial=0, {}, {}, 0
 local previewRects={}
 local previewPosition={100,51,200}
+local gameFrame, captureColor, missingMaterial=0,{},false
 local env=setmetatable({widget={},WG={},Game={mapSizeX=8192,mapSizeZ=8192},GL={},Spring={
  ValidUnitID=function() return true end,GetUnitIsDead=function() return false end,
- GetGameFrame=function() return 0 end,GetUnitPiecePosDir=function() return table.unpack(previewPosition) end,
+ GetGameFrame=function() return gameFrame end,GetUnitPiecePosDir=function() return table.unpack(previewPosition) end,
  GetSelectedUnits=function() return {42} end,
  GetUnitDefID=function() return 7 end,
  GetViewGeometry=function() return 1280,720,0,0 end,
@@ -81,7 +82,8 @@ env.gl=setmetatable({GetViewSizes=function() return 1280,720 end,
  UniformInt=function(name,...) captureUniforms[name]={...} end,
  RenderToTexture=function(_,fn,...) renders=renders+1;fn(...) end,
  BeginEnd=function(_,fn,...) fn(...) end,
- Texture=function() return true end,
+ Texture=function(slot,name) return not (missingMaterial and slot==1 and name=='%7:1') end,
+ Color=function(...) captureColor={...} end,
  TexRect=function(...) previewRects[#previewRects+1]={...} end,
  GetShaderLog=function() return '' end,
 }, {__index=function() return function() end end})
@@ -91,7 +93,8 @@ env.widget:Initialize();assert(env.WG.NeonRadiance and not env.WG.NeonRadiance.r
 globals.RecieveAllNeonUnitsPieces({[42]={1}})
 local captured={}
 env.gl.UnitPiece=function(unit,piece)
- captured[#captured+1]={unit=unit,piece=piece,strength=captureUniforms.emissionStrength[1],project=captureUniforms.projectToBand[1]}
+ captured[#captured+1]={unit=unit,piece=piece,strength=captureUniforms.emissionStrength[1],project=captureUniforms.projectToBand[1],
+  mask=captureUniforms.materialMasked[1],textured=captureUniforms.textured[1],color=captureColor}
 end
 globals.ReceiveObjectiveRadiancePieces({[43]={[7]=7}})
 
@@ -103,6 +106,30 @@ for _,c in ipairs(captured) do
  if c.unit==42 then assert(c.strength==0 and c.project==0);neon=true end
 end
 assert(objective and neon, 'daytime objective missing from emission capture')
+local effects={
+ [44]={[2]={piece=2,mode='material'}},
+ [45]={[3]={piece=3,mode='cloud',preset='gasExplosion',born=0}},
+ [46]={[4]={piece=4,mode='cloud',preset='steam',born=0}},
+ [47]={[5]={piece=5,mode='cloud',preset='risingSmoke',born=0}},
+}
+local function captureEffects(frame)
+ gameFrame=frame;captured={};globals.ReceiveObjectiveRadiancePieces(effects)
+ env.widget:Update(1);env.widget:DrawWorldPreUnit()
+ local byUnit={};for _,c in ipairs(captured) do byUnit[c.unit]=c end
+ return byUnit
+end
+local hot=captureEffects(15)
+assert(hot[44].mask==1 and hot[44].textured==1 and hot[44].strength==1)
+assert(hot[45].mask==0 and hot[45].textured==0 and hot[45].color[1]==1 and hot[45].color[2]<1)
+assert(hot[45].strength>0 and hot[47].strength>0 and not hot[46])
+local cool=captureEffects(75)
+assert(cool[45].strength<hot[45].strength,'explosion radiance did not cool')
+assert(not captureEffects(120)[45],'expired explosion still emitted')
+assert(not captureEffects(390)[47],'cold rising smoke still emitted')
+missingMaterial=true
+assert(not captureEffects(15)[44],'missing mask made the whole vehicle glow')
+missingMaterial=false;gameFrame=0
+assert(captureUniforms.materialMasked[1]==0,'material mask leaked into next capture')
 globals.ReceiveObjectiveRadiancePieces({})
 captured={}
 env.widget:Update(1);env.widget:DrawWorldPreUnit()

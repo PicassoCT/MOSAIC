@@ -361,3 +361,33 @@ python3 tests/neon_radiance_gpu.py
 
 The GPU command uses the previously tested NVIDIA/GLFW compatibility-context
 setup. Headless Mesa requires the documented --context egl variant.
+
+## Spaceport and animated objective emission
+
+The spaceport's `SpaceHarbour`, three `CrawlerBooster` vehicles, `CrawlerMain`,
+`RocketCrawler`, `LoadCraneNight` and `PickUpBoosterNight` contribute light while
+shown. Their diffuse colour is multiplied by texture 2's red self-illumination
+channel and alpha coverage. This keeps ordinary bodywork dark, including on
+edge-on faces expanded during capture. A missing material texture skips that
+source instead of illuminating the whole mesh.
+
+The cloud-piece visibility hooks also register emissive launch clouds, cones,
+plumes and landing rings. Capture uses each preset's hot colour and multiplies
+emission by its opacity, density and cooling curves. Cold steam contributes no
+light. Repeated Show calls preserve the effect's age; Hide followed by Show
+starts a new lifetime. Direct Show/Hide, group helpers and radiance helpers
+share this registration, and shutdown removes the sources. This also applies
+to the pump's flame tongues and hot rising smoke.
+
+These sources use the existing 5 Hz, 2.5D capture and animated piece transforms;
+they do not add cascade passes or textures. Cloud emission uses the hidden
+proxy mesh as its lighting footprint, so it approximates the volume rather
+than integrating its noise. Hide removes this attached light, even if a smoke
+volume continues drifting after release. Building occlusion and the existing
+capture resolution still limit precision.
+
+Validated with `tests/objective_radiance_protocol.lua` (Lua 5.1),
+`tests/cloud_piece_header.lua` (Lua 5.1), `tests/neon_radiance_lifecycle.lua`
+(Lua 5.4), and `tests/objective_emission_gpu.py` (Mesa EGL compatibility GL).
+The GPU check covers both broad faces and thin ribbons. In-game visual
+verification is still required.

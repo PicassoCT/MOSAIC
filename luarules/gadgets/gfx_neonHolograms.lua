@@ -30,7 +30,7 @@ if (gadgetHandler:IsSyncedCode()) then
     local boolDebugActive = false
     local objectiveRadiancePieces = {}
 
-    function GG.SetObjectiveRadiancePieceVisible(unitID, pieceID, visible)
+    function GG.SetObjectiveRadiancePieceVisible(unitID, pieceID, visible, mode, preset)
         if not unitID or not pieceID then return end
         local pieces = objectiveRadiancePieces[unitID]
         if visible then
@@ -38,14 +38,18 @@ if (gadgetHandler:IsSyncedCode()) then
                 pieces = {}
                 objectiveRadiancePieces[unitID] = pieces
             end
-            if pieces[pieceID] then return end
-            pieces[pieceID] = pieceID
+            mode=mode or 'diffuse'
+            local previous=pieces[pieceID]
+            if previous and previous.mode==mode and previous.preset==preset then return end
+            pieces[pieceID] = {piece=pieceID,mode=mode,preset=preset,born=Spring.GetGameFrame()}
         else
             if not pieces or not pieces[pieceID] then return end
             pieces[pieceID] = nil
             if not next(pieces) then objectiveRadiancePieces[unitID] = nil end
         end
-        SendToUnsynced("setObjectiveRadiancePiece", unitID, pieceID, visible and 1 or 0)
+        local record=visible and pieces[pieceID]
+        SendToUnsynced("setObjectiveRadiancePiece", unitID, pieceID, visible and 1 or 0,
+            mode or 'diffuse', preset or '', record and record.born or 0)
     end
 
     -- TODO: Add bloomstage - write to low level aphabitmask
@@ -398,11 +402,11 @@ end
     local neonHoloParts= {}
     local objectiveRadiancePieces = {}
 
-    local function setObjectiveRadiancePiece(_, unitID, pieceID, visible)
+    local function setObjectiveRadiancePiece(_, unitID, pieceID, visible, mode, preset, born)
         local pieces = objectiveRadiancePieces[unitID]
         if visible == 1 then
             if not pieces then pieces = {}; objectiveRadiancePieces[unitID] = pieces end
-            pieces[pieceID] = pieceID
+            pieces[pieceID] = {piece=pieceID,mode=mode or 'diffuse',preset=preset,born=born or 0}
         elseif pieces then
             pieces[pieceID] = nil
             if not next(pieces) then objectiveRadiancePieces[unitID] = nil end
