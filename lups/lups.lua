@@ -968,7 +968,8 @@ local function GameFrame(_,n)
     end
   end
 
-	--// now we can remove particles
+	--// restore normal removal before draining the update buffer
+	RemoveParticles = RemoveParticles_old
 	if (#fxRemoveList>0) then
 		for i=1,#fxRemoveList do
 			RemoveParticles(fxRemoveList[i])
