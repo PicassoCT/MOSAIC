@@ -1388,15 +1388,11 @@ function raidFireFunction(weaponID, heading, pitch)
 end
 
 function pistolFireFunction(weaponID, heading, pitch)
-	StartThread(visibleAfterWeaponsFireTimer)
-	boolAiming = false
-	if boolCloaked == true then
-        Spring.PlaySoundFile("sounds/weapons/pistol/stealthpistol.ogg", 1.0)
-    else
-        Spring.PlaySoundFile("sounds/weapons/pistol/operativepistol"..math.random(1,2)..".ogg", 1.0)
-    end
-    spawnCegAtPiece(unitID, Pistol, "pistol_casing")
-	return true
+    StartThread(visibleAfterWeaponsFireTimer)
+    boolAiming = false
+    -- The stun dart's weapon definition owns its positional electrical audio.
+    -- No gunshot, shell casing or powder muzzle flash for interrogation.
+    return true
 end
 
 function stabFireFunction(weaponID)

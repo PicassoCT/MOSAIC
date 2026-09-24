@@ -1,7 +1,7 @@
 --- http://springrts.com/wiki/Weapon_Variables#Cannon_.28Plasma.29_Visuals
-local weaponName = "stunpistol" --this is the actually maschinegune of the inferno trooper
+local weaponName = "stunpistol"
 local weaponDef = {
-    name = "Stundart - Pistol",
+    name = "Interrogation stun dart",
     weaponType = [[Cannon]],
     --damage
     damage = {
@@ -9,8 +9,8 @@ local weaponDef = {
         HeavyArmor = 1,
     },
     areaOfEffect = 0,
-    explosionGenerator = "custom:gunimpact",
-    cegTag = "gunprojectile",
+    explosionGenerator = "custom:interrogation_stun",
+    -- A small dart, without a firearm tracer or explosive impact.
     texture1 = "gunshot",
     impactOnly =true,
     --physics
@@ -27,10 +27,14 @@ local weaponDef = {
     burst = 1,
     burstrate = 0.5,
 
-    soundtrigger = 1,
+    soundStart = "sounds/air/copter/electricbulletsImpact.ogg",
+    soundStartVolume = 0.25,
+    soundHit = "sounds/air/copter/electricbulletsImpact.ogg",
+    soundHitVolume = 0.8,
+    soundtrigger = true,
     SweepFire = false,
     --apperance
-    rgbColor = [[0.95 0.5  0.2]],
+    rgbColor = [[0.45 0.8 1.0]],
     size = 0.2,
     stages = 2,
     separation = 0.2,

@@ -136,6 +136,8 @@ catatonicBodyPieces = lowerBodyPieces
 catatonicBodyPieces[UpBody] = UpBody
 -- equipmentname: cellphone, shoppingbags, crates, baby, cigarett, food, stick, demonstrator sign, molotow cocktail
 
+local boolStunImpact = false
+local stunPistolDefID = WeaponDefNames.stunpistol.id
 local boolWalking = false
 local boolDecoupled = false
 local boolAiming = false
@@ -401,7 +403,7 @@ end
 
 function headAnimationLoop()
     while true do
-        if boolAiming == false then
+        if boolAiming == false and not boolStunImpact then
             WaitForTurns(Head1)
             headTurnValue = math.random(-10,10)
             if TablesOfPiecesGroups["Eye"] then
@@ -600,7 +602,42 @@ lowerBodyAnimations = {
 
 accumulatedTimeInSeconds = 5
 lastDamageDirX, lastDamageDirZ = 0, 0
+-- Called once at the start of a stun interrogation by the impact gadget.
+-- A finite thread owns the pose briefly; ordinary animation resumes afterwards.
+local function stunImpactAnimation()
+    for pulse = 1, 3 do
+        local lean = (pulse % 2 == 0) and -8 or 12
+        Turn(UpBody, x_axis, math.rad(lean), 12)
+        Turn(UpArm1, x_axis, math.rad(-40), 14)
+        Turn(UpArm2, x_axis, math.rad(-40), 14)
+        Turn(LowArm1, x_axis, math.rad(-65), 14)
+        Turn(LowArm2, x_axis, math.rad(-65), 14)
+        Turn(UpLeg1, x_axis, math.rad(-18), 10)
+        Turn(UpLeg2, x_axis, math.rad(-18), 10)
+        Turn(LowLeg1, x_axis, math.rad(30), 10)
+        Turn(LowLeg2, x_axis, math.rad(30), 10)
+        spawnCegAtPiece(unitID, UpBody, "interrogation_stun")
+        Sleep(120)
+    end
+    Turn(UpBody, x_axis, math.rad(28), 4)
+    Turn(Head1, x_axis, math.rad(20), 4)
+    Sleep(840)
+    resetT(lowerBodyPiecesNoCenter, 4)
+    resetUpperBodyNoTPose()
+    boolStunImpact = false
+    local state = boolWalking and getWalkingState() or eAnimState.standing
+    setOverrideAnimationState(state, state, true, nil, true)
+end
+
+function startInterrogationStun()
+    if boolStunImpact then return end
+    boolStunImpact = true
+    StartThread(stunImpactAnimation)
+end
+
 function script.HitByWeapon(x, z, weaponDefID, damage)
+    -- Preserve the paralyzer hit, without blood, injury or wounded walking.
+    if weaponDefID == stunPistolDefID then return damage end
     transportID = spGetUnitIsTransporting(unitID)
     setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_ENDED, "wounded")
     if  transportID then --if holds loot        
@@ -1103,6 +1140,7 @@ function PlayAnimation(animname, piecesToFilterOutTable, speed)
     if not anim then echo("animation named:"..animname .." does not exist"); return end
     local randoffset
     for i = 1, #anim do
+        while boolStunImpact do Sleep(33) end
         local commands = anim[i].commands;
         for j = 1, #commands do
             local cmd = commands[j];
@@ -1119,7 +1157,7 @@ function PlayAnimation(animname, piecesToFilterOutTable, speed)
                     randoffset = math.random(randLowVal, randUpVal) / 100
                 end
 
-                if not bagAlignment.owns(cmd.p) and not piecesToFilterOutTable[cmd.p] and
+                if not boolStunImpact and not bagAlignment.owns(cmd.p) and not piecesToFilterOutTable[cmd.p] and
                    not (isPraying() and upperBodyPieces[cmd.p] and
                         animname ~= prayerAnimationName) then
                     bagAlignment.poseCommand(cmd.p, cmd.a, axisSign[cmd.a] * (cmd.t + randoffset), cmd.s * speedFactor, cmd.c)
@@ -1464,6 +1502,7 @@ function setOverrideAnimationState(AnimationstateUpperOverride,
                                    AnimationstateLowerOverride,
                                    boolInstantOverride, conditionFunction,
                                    boolDecoupledStates)
+    if boolStunImpact then return end
     boolDecoupled = boolDecoupledStates
     locAnimationstateUpperOverride = AnimationstateUpperOverride
     locAnimationstateLowerOverride = AnimationstateLowerOverride
