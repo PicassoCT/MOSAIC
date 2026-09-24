@@ -62,6 +62,7 @@ local OperativePropagator = Human:New{
 		"spycam",
 		"air_copter_scoutlett",			
 		"icon_cybercrime",
+		"icon_bribe",
 
 		"air_parachut",
 		"stealvehicleicon",		
@@ -112,4 +113,3 @@ return lowerkeys({
 	["operativepropagator"] = OperativePropagator:New(),
 	
 })
-

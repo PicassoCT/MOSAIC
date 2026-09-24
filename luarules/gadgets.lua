@@ -155,7 +155,7 @@ local callInLists = {
 
     -- LuaRules CallIns (note: the *PreDamaged calls belong here too)
     "CommandFallback", "AllowCommand", "AllowStartPosition",
-    "AllowUnitCreation", "AllowUnitTransfer", "AllowUnitBuildStep",
+    "AllowUnitCreation", "AllowUnitTransfer", "AllowUnitBuildStep", "AllowUnitCloak",
     "AllowFeatureBuildStep", "AllowFeatureCreation", "AllowResourceLevel",
     "AllowResourceTransfer", "AllowDirectUnitControl", "AllowBuilderHoldFire",
     "MoveCtrlNotify", "TerraformComplete", "AllowWeaponTargetCheck",
@@ -1136,6 +1136,13 @@ function gadgetHandler:AllowWeaponTargetCheck(attackerID, attackerWeaponNum,
     return true
 end
 
+function gadgetHandler:AllowUnitCloak(unitID, enemyID)
+    for _, g in ipairs(self.AllowUnitCloakList) do
+        if not g:AllowUnitCloak(unitID, enemyID) then return false end
+    end
+    return true
+end
+
 function gadgetHandler:AllowWeaponTarget(attackerID, targetID,
                                          attackerWeaponNum, attackerWeaponDefID,
                                          defPriority)
@@ -1887,4 +1894,3 @@ end
 Spring.Echo("End loading gadgets.lua")
 
 gadgetHandler:Initialize()
-

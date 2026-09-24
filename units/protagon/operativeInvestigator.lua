@@ -65,7 +65,8 @@ local OperativeInvestigator = Human:New{
 
 		"stealvehicleicon",
 		"recruitcivilian",
-		"icon_cybercrime"
+		"icon_cybercrime",
+		"icon_bribe"
 	},
 
 	customParams = {
@@ -107,4 +108,3 @@ return lowerkeys({
 	["operativeinvestigator"] = OperativeInvestigator:New(),
 	
 })
-

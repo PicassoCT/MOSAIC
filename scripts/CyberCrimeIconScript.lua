@@ -22,7 +22,6 @@ function script.Create()
     Spin(DollarSign,y_axis,math.rad(42*sign),0)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     StartThread(AnimationTest)
-    StartThread(CrimeDoesPay)
     StartThread(DollarSignRisingLoop)
 end
 allDoneIndex = 0
@@ -65,16 +64,7 @@ function DollarSignRisingLoop()
     end
 end
 
-function CrimeDoesPay()
-    waitTillComplete(unitID)
-    waitTime = GameConfig.rewardWaitTimeCyberCrimeSeconds * 1000
-    Sleep(waitTime)
-
-   GG.Bank:TransferToTeam(GameConfig.RewardCyberCrime, myTeamID, unitID)  
-   Spring.AddTeamResource(myTeamID, "energy", GameConfig.RewardCyberCrime)
-    Sleep(1000)
-   Spring.DestroyUnit(unitID,true,false)
-end
+-- Payout, depletion and police interruption belong to game_cybercrime.
 
 function queuedLineMove(piecename, nr, distance, speed)
     reset(piecename, 0)
@@ -92,4 +82,3 @@ function script.Killed(recentDamage, _)
     -- createCorpseCUnitGeneric(recentDamage)
     return 1
 end
-

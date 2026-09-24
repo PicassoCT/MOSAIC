@@ -255,7 +255,33 @@ function getGameConfig()
         -- propagandaserver
         propandaServerFactor = 0.1,
 
-        --cybercrime
+        -- Building-based cybercrime. All houses share the same economy.
+        CyberCrime = {
+            buildingRange = 240,
+            durationFrames = 120 * 30,
+            payoutIntervalFrames = 10 * 30,
+            payout = 25,
+            buildingCapacity = 600,
+            recoveryPerSecond = 1,
+            safehouseRange = 500,
+            safehouseMultiplier = 2,
+            enemyDrainMultiplier = 2,
+            policeDelayFrames = 60 * 30,
+            policeInterruptRange = 180,
+            -- Temporary recovery aid: one server-sized grant per team per match.
+            comebackEnabled = true,
+            comebackMoney = 1000,
+            comebackEnergy = 1000,
+        },
+        Bribe = {
+            durationFrames = 60 * 30,
+            radius = 750,
+            maxOfficers = 3,
+            combatGraceFrames = 5 * 30,
+            safehouseRevealRange = 350,
+            safehouseRevealFrames = 30 * 30,
+        },
+        -- Legacy values retained for external consumers.
         RewardCyberCrime = 300,
         rewardWaitTimeCyberCrimeSeconds = 30,
 
@@ -364,7 +390,7 @@ function getGameConfig()
         -- Icons
         socialEngineeringRange = 256,
         socialEngineerLifetimeMs = 3*60*1000,
-        LifeTimeBribeIcon = 2*60 * 1000,
+        LifeTimeBribeIcon = 60 * 1000, -- legacy alias; active lifetime uses Bribe.durationFrames
         iconGroundOffset = 50,        
         iconHoverGroundOffset = 125,
         iconBlackHoleComDeactivateRange = 630,
@@ -3423,7 +3449,7 @@ end
 
             function isOffenceIcon(UnitDefs, defID)
                 assert(UnitDefs)
-                return UnitDefs[defID].name == "icon_bribe" or UnitDefs[defID].name == "icon_cybercrime"
+                return UnitDefs[defID].name == "icon_cybercrime"
             end
 
             function shiverAllAxis(unitID)
