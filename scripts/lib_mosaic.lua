@@ -4515,26 +4515,26 @@ function buildRunWeaterForeCast()
 
     -- 1. Play jingle
     play(jinglePath1)
-    wait(durations[jingleSet][jingleIdx])
+    wait(forecastdurations[jingleSet][jingleIdx])
 
     -- 2. Gap before forecast
     wait(3.0)
 
     -- 3. Prelude
     play(preludePath)
-    wait(durations[preludeSet][preludeIdx])
+    wait(forecastdurations[preludeSet][preludeIdx])
 
     -- 4. City name
     play(cityPath)
-    wait(durations[citySet][cityIdx])
+    wait(forecastdurations[citySet][cityIdx])
 
     -- 5. Postlude (forecast body)
     play(postPath)
-    wait(durations[postludeSet][preludeIdx])
+    wait(forecastdurations[postludeSet][postludeIdx])
 
     -- 6. Closing jingle
     play(jinglePath2)
-    wait(durations[jingleSet][jingleIdx])
+    wait(forecastdurations[jingleSet][jingleIdx])
 end
 
 function buildRunDeterministicAdvertisement()
