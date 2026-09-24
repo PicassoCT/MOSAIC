@@ -69,13 +69,13 @@ AIR_COPTER_AEROSOL_ORGYANYL = AIR_COPTER_AEROSOL:New()
 AIR_COPTER_AEROSOL_ORGYANYL.name, AIR_COPTER_AEROSOL_ORGYANYL.description ="Aerosoldrone: Orgyanyl", "Makes citizens copulate to death"
 
 AIR_COPTER_AEROSOL_WANDERLOST = AIR_COPTER_AEROSOL:New()
-AIR_COPTER_AEROSOL_WANDERLOST.name, AIR_COPTER_AEROSOL_WANDERLOST.description ="Aerosoldrone: Wanderlost", "Makes citizens wander aimless till death"
+AIR_COPTER_AEROSOL_WANDERLOST.name, AIR_COPTER_AEROSOL_WANDERLOST.description ="Aerosoldrone: Wanderlost", "Turns citizens into shambling carriers who spread Wanderlost by contact"
 
 AIR_COPTER_AEROSOL_TOLLWUTOX = AIR_COPTER_AEROSOL:New()
-AIR_COPTER_AEROSOL_TOLLWUTOX.name, AIR_COPTER_AEROSOL_TOLLWUTOX.description ="Aerosoldrone: Tollwutox", "Makes citizens dangerously aggressive"
+AIR_COPTER_AEROSOL_TOLLWUTOX.name, AIR_COPTER_AEROSOL_TOLLWUTOX.description ="Aerosoldrone: Tollwutox", "Turns citizens into frenzied attackers who pursue and maul nearby people"
 
 AIR_COPTER_AEROSOL_DEPRESSOL = AIR_COPTER_AEROSOL:New()
-AIR_COPTER_AEROSOL_DEPRESSOL.name, AIR_COPTER_AEROSOL_DEPRESSOL.description ="Aerosoldrone: Depressol", "Makes citizens catatonic till suicide"
+AIR_COPTER_AEROSOL_DEPRESSOL.name, AIR_COPTER_AEROSOL_DEPRESSOL.description ="Aerosoldrone: Depressol", "Drives despairing citizens toward hiveminds, water and hostile military units"
 
 
 return lowerkeys({

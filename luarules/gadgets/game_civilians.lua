@@ -144,7 +144,9 @@ function makePasserBysLook(unitID)
 end
 
 function gadget:UnitDestroyed(unitID, unitDefID, teamID, attackerID)
-	if GG.BusesTable[unitID] then
+    if GG.AerosolAffectedCivilians then GG.AerosolAffectedCivilians[unitID] = nil end
+    if GG.TollWutoxAfflicted then GG.TollWutoxAfflicted[unitID] = nil end
+	if GG.BusesTable and GG.BusesTable[unitID] then
 	   GG.BusesTable[unitID] =  nil
        GG.BusesTable = compress(GG.BusesTable)
 	end

@@ -405,14 +405,17 @@ function getGameConfig()
                 sprayTimePerUnitInMs = 2 * 60 * 1000,
                 VictimLiftime = 3 * 60 * 1000,
                 reinfectRange= 50,
+                searchRadius=650, shambleSpeed=.30,
             }, -- 2mins
             tollwutox = {
                 sprayTimePerUnitInMs = 2 * 60 * 1000,
-                VictimLiftime = 7 * 60 * 1000
+                VictimLiftime = 7 * 60 * 1000,
+                searchRadius=900, shambleSpeed=.40, lungeSpeed=.85, meleeDamage=30,
             }, -- 2mins
             depressol = {
                 sprayTimePerUnitInMs = 2 * 60 * 1000,
-                VictimLiftime = 3 * 60 * 1000
+                VictimLiftime = 3 * 60 * 1000,
+                searchRadius=1800, waterSearchRadius=1800, shambleSpeed=.35, meleeDamage=8,
             } -- 2mins
 
         },
@@ -3112,21 +3115,24 @@ end
     end
 
     function infectWanderlostNearby(GameConfig, AerosolTypes, aerosolAffectableUnits)
-        local AerosolAffectedCivilians = GG.AerosolAffectedCivilians 
-        for id, AerosolType in pairs (AerosolAffectedCivilians) do
-            if AerosolType == AerosolTypes.wanderlost then
-                foreach(getAllNearUnit(id, GameConfig.Aerosols.wanderlost.reinfectRange), 
-                                    function(id)
-                                         if aerosolAffectableUnits[Spring.GetUnitDefID(id)] and
-                                                not AerosolAffectedCivilians[id] then -- you can only get infected once
-                                            if setAerosolCivilianBehaviour(id,  AerosolTypes.wanderlost) == true then
-                                            GG.AerosolAffectedCivilians[id] = AerosolTypes.wanderlost
-                                            AerosolAffectedCivilians[id] = AerosolTypes.wanderlost
-                                            return id
-                                          end
-                                        end
-                                    end)
-
+        local affected = GG.AerosolAffectedCivilians or {}
+        -- Called once every two seconds by game_collateral, not once per victim.
+        -- Snapshot sources so a newly infected unit waits until the next pass.
+        local sources = {}
+        for id, kind in pairs(affected) do
+            if kind == AerosolTypes.wanderlost and Spring.ValidUnitID(id) and
+                not Spring.GetUnitIsDead(id) then sources[#sources + 1] = id end
+        end
+        table.sort(sources)
+        for _, sourceID in ipairs(sources) do
+            if not Spring.GetUnitTransporter(sourceID) then
+                for _, id in ipairs(getAllNearUnit(sourceID, GameConfig.Aerosols.wanderlost.reinfectRange) or {}) do
+                    if not affected[id] and aerosolAffectableUnits[Spring.GetUnitDefID(id)] and
+                        not Spring.GetUnitIsDead(id) and not Spring.GetUnitTransporter(id) and
+                        setAerosolCivilianBehaviour(id, AerosolTypes.wanderlost) then
+                        affected[id] = AerosolTypes.wanderlost
+                    end
+                end
             end
         end
     end
@@ -3472,15 +3478,16 @@ end
                  Command(unitID, "go", {x=sx, y= 0, z= sz})
             end
 
-            function getAerosolInfluencedStateMachine(unitID, UnitDefs, typeOfInfluence, center, ArmLeft, ArmRight, Head)
+            function getAerosolInfluencedStateMachine(unitID, UnitDefs, typeOfInfluence, center, ArmLeft, ArmRight, Head, status)
+                if typeOfInfluence=="tollwutox" or typeOfInfluence=="wanderlost" or typeOfInfluence=="depressol" then
+                    return include("lib_aerosol_behaviour.lua")(unitID,typeOfInfluence,status)
+                end
                 --assert(typeOfInfluence)
                 local AerosolTypes = getChemTrailTypes()
                 --assert(AerosolTypes[typeOfInfluence])
 
                 local InfStates = getInfluencedStates()
                 local CivilianTypes = getCivilianTypeTable(UnitDefs)
-                local civilianWalkingTypes = getCultureUnitModelTypes(
-                    getGameConfig().instance.culture, "civilian", UnitDefs)
 
                 local InfluenceStateMachines = {
                     [AerosolTypes.orgyanyl] = 
@@ -3536,144 +3543,10 @@ end
 
                             return currentState
                         end,
-                        [AerosolTypes.wanderlost] = function(lastState, currentState, unitID)
-                            if currentState == AerosolTypes.wanderlost then
-                                StartThread(lifeTime, unitID,
-                                    GG.GameConfig.Aerosols.wanderlost.VictimLiftime,
-                                false, true)
-                                currentState = InfStates.Init
-                            end
-
-                            if currentState == InfStates.Init then
-								setSpeedIntern(unitID, 2.0)
-                                currentState = InfStates.Outbreak
-                            end
-
-                            if currentState == InfStates.Outbreak then
-                                infectWanderlostNearby(GG.GameConfig, AerosolTypes, CivilianTypes)
-                                gf = Spring.GetGameFrame()					
-		
-                                if gf % 90 == 0 then
-                                   spasm(unitID, math.random(22/90, 90), math.random(1,3))
-                                end                                 
-                            end
-
-                            return currentState
-                        end,                        
-                        [AerosolTypes.tollwutox] = function(lastState, currentState, unitID)
-                            if currentState == AerosolTypes.tollwutox then
-                                StartThread(lifeTime, unitID, GG.GameConfig.Aerosols.tollwutox.VictimLiftime, false, true)
-                                if not GG.TollWutoxAfflicted then GG.TollWutoxAfflicted = {} end
-                                GG.TollWutoxAfflicted[unitID] = unitID
-                                currentState = InfStates.Init
-                                if math.random(0, 10) > 7 then
-                                    currentState = InfStates.Standalone
-                                end
-                            end
-
-                            local gf = Spring.GetGameFrame()
-                            -- random shivers
-                            if gf % 30 == 0 and gf % 90 ~= 0 and maRa() then
-                                local allPieces = Spring.GetUnitPieceMap(unitID) or {}
-                                for i = 1, 3 do
-                                    local val = (math.random(-100, 100) / 100) * 12
-                                    for _, pieceID in pairs(allPieces) do
-                                        Spin(pieceID, i, math.rad(val), 30.125)
-                                    end
-                                   
-                                end
-                            end
-
-                            if gf % 90 == 0 then
-                                local allPieces = Spring.GetUnitPieceMap(unitID) or {}
-                                for i = 1, 3 do
-                                    for _, pieceID in pairs(allPieces) do
-                                        StopSpin(pieceID, i, 30.125)
-                                    end
-                                end
-                            end
-                            local headVal = math.random(-10, 25)
-                            Turn(Head,x_axis, math.rad(headVal),3)
-
-                            local afflicted = GG.AerosolAffectedCivilians or {}
-                            local tollwutoxAfflicted = GG.TollWutoxAfflicted or {}
-                            local nearestDistance, nearestID, nearestIsAlly = math.huge, nil, false
-                            for _, id in ipairs(getAllNearUnit(unitID, 750) or {}) do
-                                if id ~= unitID and civilianWalkingTypes[Spring.GetUnitDefID(id)]
-                                    and not Spring.GetUnitIsDead(id) then
-                                    local distance = distanceUnitToUnit(unitID, id)
-                                    if distance and distance < nearestDistance then
-                                        nearestDistance, nearestID = distance, id
-                                        nearestIsAlly = afflicted[id] and tollwutoxAfflicted[id]
-                                    end
-                                end
-                            end
-                            if nearestID then 
-                                if not nearestIsAlly then
-                                    Spring.SetUnitNeutral(unitID, false)
-                                    assaultNearby(unitID, nearestID, center, ArmLeft, ArmRight, Head)
-                                else
-                                    Command(unitID, "guard", nearestID )
-                                end
-                            end               
-                           
-                           return currentState                            
-                        end,
-                        [AerosolTypes.depressol] = function(lastState, currentState, unitID)
-                            if currentState == AerosolTypes.depressol then
-                                StartThread(lifeTime, unitID,
-                                    GG.GameConfig.Aerosols.depressol.VictimLiftime,
-                                false, true)
-                                stunUnit(unitID, 2)
-                                currentState = InfStates.Init
-                            end
-                      
-                            gf = Spring.GetGameFrame()
-                            if gf % 90 == 0 then
-                            setOverrideAnimationState(eAnimState.standing, eAnimState.wailing,  true, nil, true)
-                                bombTypeTable = getBombTypeTable(UnitDefs)
-                                if currentState == InfStates.Init then
-                                    bombsNearby = foreach(getAllNearUnit(unitID, 512),
-                                                            function(id)
-                                                                defID = Spring.GetUnitDefID(id)
-                                                                if bombTypeTable[defID] then
-                                                                    return id
-                                                                end
-                                                            end
-                                                         )
-
-                                    if #bombsNearby > 0 then 
-                                        if distanceUnitToUnit(unitID, bombsNearby[1]) < 50 then
-                                            Spring.DestroyUnit(bombsNearby[1], false, true)
-                                            Spring.DestroyUnit(unitID, true, false)
-                                        end
-                                        
-                                        ex,ey,ez = spGetUnitPosition(bombsNearby[1])
-                                        Command(unitID, "go", {x = ex,y = ey,z = ez }, {"shift"})
-                                    end
-                                end
-                            end
-                                return currentState
-                            end
                     }
 
                     assert(InfluenceStateMachines[typeOfInfluence], typeOfInfluence)
                     return InfluenceStateMachines[typeOfInfluence]
-                end
-
-                function assaultNearby(attackerID, targetID, center, ArmLeft, ArmRight, Head)
-                    local enemyDistance = distanceUnitToUnit(attackerID, targetID)
-                    if enemyDistance and enemyDistance < 20 then
-                        closeCombatAnimation(center, ArmLeft, ArmRight, Head)
-                        -- The animation yields; the target may have died meanwhile.
-                        if Spring.ValidUnitID(targetID) and not Spring.GetUnitIsDead(targetID) then
-                            Spring.AddUnitDamage(targetID, 30)
-                            spawnCegAtUnit(targetID, "bloodslay")
-                        end
-                    else                      
-                        local x,y,z = Spring.GetUnitPosition(targetID)
-                        if x then Command(attackerID, "go", {x=x,y=y,z=z}, {"shift"}) end
-                    end
                 end
 
                 function headShake(shakeNr, Head)
