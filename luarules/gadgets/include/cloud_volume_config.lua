@@ -3,7 +3,7 @@ local M = {}
 M.presets = {
     steam = {shape=0, density=3, speed=.25, emission=0, color={.72,.75,.78}, hot={1,.7,.25}},
     soot = {shape=0, density=3.4, speed=.3, emission=0, color={.22,.21,.2}, hot={1,.7,.25}},
-    fire = {shape=0, density=4, speed=.7, emission=2.5, color={.18,.15,.13}, hot={1,.55,.12}},
+    fire = {shape=0, density=4, speed=.7, emission=5.5, glow=1.2, color={.18,.15,.13}, hot={1,.55,.12}},
     plume = {shape=1, density=3.2, speed=1.4, emission=3, color={.25,.22,.2}, hot={1,.72,.32}},
     ring = {shape=2, density=2.8, speed=.35, emission=.4, color={.62,.58,.52}, hot={1,.4,.08}},
     impact = {shape=3, density=5, speed=.3, emission=3.5, color={.24,.21,.18}, hot={1,.5,.1}, duration=16, radius=460, height=700},
@@ -50,14 +50,22 @@ M.presets.ring.opacityCurve={{0,0},{.6,.65},{8,.5},{24,0}}
 M.presets.ring.emissionCurve={{0,1},{1,.4},{3,0}}
 M.presets.ring.lifetime=24
 M.presets.gasExplosion=variant('fire',{
+    emission=7, glow=1.6,
     lifetime=4, opacityCurve={{0,0},{.12,.9},{.7,.8},{2,.45},{4,0}},
-    emissionCurve={{0,1},{.2,1.4},{.8,.3},{1.8,0}},
+    emissionCurve={{0,.8},{.2,1.3},{.8,1},{1.8,.55},{3,0}},
     densityCurve={{0,1},{1,.8},{4,.15}},
     expansionCurve={{0,.65},{.6,1},{4,1.2}},
 })
 M.presets.flameTongue=variant('plume',{
-    opacityCurve={{0,0},{.06,.8},{.5,.7}},
-    emissionCurve={{0,.7},{.1,1},{.6,.8}},
+    emission=6, glow=1.4, hot={1,.58,.12},
+    opacityCurve={{0,0},{.06,.9},{.5,.85}},
+    emissionCurve={{0,.8},{.1,1},{.6,.9}},
+})
+-- The original pump smoke texture contains emissive patches. Preserve their
+-- visual role as embedded fire which cools before the long-lived soot clears.
+M.presets.risingSmoke=variant('soot',{
+    emission=3.8, glow=.22, hot={1,.32,.045},
+    emissionCurve={{0,1},{2.5,.9},{7,.35},{12,0}},
 })
 for _,name in ipairs({'impact','nuclear','bio','electric'}) do
     local p=M.presets[name];local t=p.duration
@@ -65,6 +73,23 @@ for _,name in ipairs({'impact','nuclear','bio','electric'}) do
     p.densityCurve={{0,1},{t*.3,1},{t,.2}}
     p.emissionCurve={{0,1},{t*.04,1},{t*.22,0}}
     p.expansionCurve={{0,.15},{t*.06,.65},{t*.3,1},{t,1.1}}
+end
+-- Keep the established aerosol identification colours saturated, including at
+-- night. Glow lights the whole gas body; it is independent of combustion heat.
+M.aerosolColors={
+    depressol={.18,.32,1}, tollwutox={1,.07,.035},
+    orgyanyl={1,.42,.025}, wanderlost={.12,1,.2},
+}
+for kind,color in pairs(M.aerosolColors) do
+    M.presets['aerosol_'..kind]={
+        shape=0, density=1.8, speed=.3, emission=0, glow=2.2,
+        color=color, hot=color, duration=6, radius=150, height=120,
+        centerOffset=0, -- Burst position is the cloud centre, not an explosion base.
+        opacityCurve={{0,0},{.25,.6},{1.8,.55},{4,.25},{6,0}},
+        densityCurve={{0,.8},{1,1},{6,.3}},
+        emissionCurve={{0,1},{2.5,1},{6,.45}},
+        expansionCurve={{0,.35},{1,.7},{3,1},{6,1.15}},
+    }
 end
 local function finite(v) return type(v)=='number' and v==v and math.abs(v)<1e9 end
 M.finite=finite
@@ -98,7 +123,7 @@ function M.SpaceportPreset(name)
     if name=='ArenaSmoke' or name:match('^SmokeBubble%d+$') then return 'steam' end
 end
 function M.PumpPreset(name)
-    if name:match('^Smoke%d+$') or name=='SmokeStem' then return 'soot' end
+    if name:match('^Smoke%d+$') or name=='SmokeStem' then return 'risingSmoke' end
     if name:match('^Explosion%d+$') or name=='ExplosionStem' then return 'gasExplosion' end
     if name:match('^FireRotor%d*$') or name=='Igniter' then return 'fire' end
     if name:match('^Flame[ABC]?%d+$') or name:match('^Flames%d+$') then return 'flameTongue' end

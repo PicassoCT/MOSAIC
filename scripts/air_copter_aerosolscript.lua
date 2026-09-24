@@ -30,14 +30,8 @@ typeTankMap = {
     ["orgyanyl"] = 3,
     ["wanderlost"] = 4
 }
-defIDTypeTankMap = {
-    [UnitDefNames["air_copter_aerosol_depressol"].id] = 1,
-    [UnitDefNames["air_copter_aerosol_tollwutox"].id] = 2,
-    [UnitDefNames["air_copter_aerosol_orgyanyl"].id] = 3,
-    [UnitDefNames["air_copter_aerosol_wanderlost"].id] = 4
-}
-
 AerosolUnitDefIDMap = getAerosolUnitDefIDs(UnitDefs)
+local aerosolEffects=include('lib_aerosol_effects.lua')(unitID,emitor,AerosolUnitDefIDMap[unitDefID])
 
 function colCode(searchstr)
     for name, num in pairs(typeTankMap) do
@@ -53,11 +47,14 @@ function script.Create()
     Show(TablesOfPiecesGroups["Tank"][colCode(UnitDefs[unitDefID].name)])
     timeTank = GG.GameConfig.Aerosols[AerosolUnitDefIDMap[unitDefID]]
                    .sprayTimePerUnitInMs
-    StartThread(aerosolDeployCegs)
+    StartThread(aerosolDeploy)
     Hide(emitor)
 end
 
-function script.Killed(recentDamage, _) return 1 end
+function script.Killed(recentDamage, _)
+    aerosolEffects.Shutdown()
+    return 1
+end
 
 -- aimining & fire weapon
 function script.AimFromWeapon1() return aimpiece end
@@ -95,7 +92,7 @@ end
 boolStopped = false
 boolDeactivated = true
 
-function aerosolDeployCegs()
+function aerosolDeploy()
     Sleep(100)
 
     local lisUnitFlying = isUnitFlying
@@ -106,14 +103,14 @@ function aerosolDeployCegs()
             if soundIntervall == 0  then
                 StartThread(PlaySoundByUnitDefID, unitDefID, "sounds/plane/aerosol.wav", math.random(7,10)/10, 900, 3)
             end
-            EmitSfx(emitor, 1023 + defIDTypeTankMap[unitDefID])
+            aerosolEffects.Update()
             Sleep(100)
-            spinRand(emitor, -90, 90, 0.5)
             timeTank = timeTank - 100
             sprayTank()
             soundIntervall = soundIntervall + 1 % 10
 
         end
+        aerosolEffects.Stop()
         if timeTank <= 0 then
             Spring.SetUnitNoSelect(unitID, false, true)
             Spring.DestroyUnit(unitID, false, true)
@@ -153,4 +150,3 @@ end
 function script.Activate() return 1 end
 
 function script.Deactivate() return 0 end
-

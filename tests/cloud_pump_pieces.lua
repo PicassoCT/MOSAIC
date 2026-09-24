@@ -29,7 +29,7 @@ for name,id in pairs(map)do
         assert(radiance[id], 'light registration lost: '..name)
     else assert(shown[id] and not active[id], 'structure replaced: '..name)end
 end
-assert(active[map.Smoke1]=='soot' and active[map.FlameA1]=='flameTongue' and active[map.Explosion1]=='gasExplosion')
+assert(active[map.Smoke1]=='risingSmoke' and active[map.FlameA1]=='flameTongue' and active[map.Explosion1]=='gasExplosion')
 HideRadiancePieces(pieces);assert(not next(active),'hidden cloud stayed active')
 ShowRadiancePieces(pieces);helper.Shutdown();assert(not next(active),'death leaked clouds')
 Show(map.Flame1);assert(not next(active),'dead pump restarted')

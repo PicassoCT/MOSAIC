@@ -1,7 +1,7 @@
 #version 150 compatibility
 uniform sampler2D sceneDepth;
 uniform vec2 viewportSize, viewportOrigin;
-uniform float effectTime, seed, density, emission, opacity, phase;
+uniform float effectTime, seed, density, emission, glow, opacity, phase;
 uniform vec3 smokeColor, hotColor, ambient;
 uniform int shape, steps, volumeAxis;
 uniform float gradientSign;
@@ -85,6 +85,9 @@ void main() {
         float alpha=1.0-exp(-d*stepSize*3.0);
         vec3 smoke=smokeColor*(ambient*.4+vec3(light*.8));
         vec3 color=mix(smoke,hotColor*emission,clamp(heat*min(emission,1.0),0.0,1.0));
+        // Broad self-illumination keeps flames and identifying aerosol colours
+        // readable outside the hottest knots. Alpha still gates all emitted RGB.
+        color+=hotColor*glow;
         result.rgb+=(1.0-result.a)*alpha*color;
         result.a+=(1.0-result.a)*alpha;
     }

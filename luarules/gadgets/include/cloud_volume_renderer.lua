@@ -6,7 +6,7 @@ return function(Config)
     if not shader then return nil,gl.GetShaderLog() end
     local self={records={}}
     local loc={}
-    for _,n in ipairs({'viewportSize','viewportOrigin','zeroToOne','effectTime','seed','density','emission',
+    for _,n in ipairs({'viewportSize','viewportOrigin','zeroToOne','effectTime','seed','density','emission','glow',
         'opacity','phase','smokeColor','hotColor','ambient','shape','steps','volumeAxis','gradientSign'}) do loc[n]=gl.GetUniformLocation(shader,n) end
     local depth,w,h
     local quad=gl.CreateList(function() gl.BeginEnd(GL.QUADS,function()
@@ -94,7 +94,7 @@ return function(Config)
                 visible=visible and phase<1 and (fullView or Spring.IsPosInLos(r.x,r.y,r.z,ally))
                 local grow=growth
                 radius=p.radius*r.scale*grow;height=p.height*r.scale*grow*.5
-                x,y,z=r.x,r.y+height*.8,r.z
+                x,y,z=r.x,r.y+height*(p.centerOffset or .8),r.z
                 bound=math.sqrt(radius^2*2+height^2)
             end
             if visible and x and radius and radius>.01 then
@@ -145,6 +145,7 @@ return function(Config)
             gl.Scissor(vx+d.rect[1],vy+d.rect[2],d.rect[3],d.rect[4])
             gl.Uniform(loc.effectTime,d.age*p.speed);gl.Uniform(loc.seed,d.r.seed)
             gl.Uniform(loc.density,p.density*d.densityGain);gl.Uniform(loc.emission,p.emission*d.emissionGain)
+            gl.Uniform(loc.glow,(p.glow or 0)*d.emissionGain)
             gl.Uniform(loc.opacity,d.fade);gl.Uniform(loc.phase,d.phase)
             gl.Uniform(loc.smokeColor,unpack(p.color));gl.Uniform(loc.hotColor,unpack(p.hot))
             local axis,sign=2,1
