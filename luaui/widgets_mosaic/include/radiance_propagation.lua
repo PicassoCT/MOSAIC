@@ -49,7 +49,8 @@ return function(emissionSize, singleOutput)
     self.resolveShader = gl.CreateShader({fragment = resolveSource,
         uniformInt = {cascadeTex=0, occupancyTex=1, emissionTex=2}})
     if not self.resolveShader then return fail("resolve shader: " .. (gl.GetShaderLog() or "failed")) end
-    self.emissionShader = gl.CreateShader({vertex=emissionVertex,geometry=emissionGeometry,fragment=emissionFragment,uniformInt={sourceTex=0,textured=0}})
+    self.emissionShader = gl.CreateShader({vertex=emissionVertex,geometry=emissionGeometry,fragment=emissionFragment,
+        uniformInt={sourceTex=0,materialTex=1,textured=0,materialMasked=0}})
     if not self.emissionShader then return fail("emission slice shader: " .. (gl.GetShaderLog() or "failed")) end
     self.previewShader = gl.CreateShader({fragment=previewSource,uniformInt={previewTex=0}})
     if not self.previewShader then return fail("preview shader: " .. (gl.GetShaderLog() or "failed")) end
@@ -71,6 +72,7 @@ return function(emissionSize, singleOutput)
     local function loc(shader,name) return gl.GetUniformLocation(shader,name) end
     self.previewExposureLoc=loc(self.previewShader,"exposure")
     self.texturedLoc=loc(self.emissionShader,"textured")
+    self.materialMaskedLoc=loc(self.emissionShader,"materialMasked")
     self.emissionStrengthLoc=loc(self.emissionShader,"emissionStrength")
     self.projectToBandLoc=loc(self.emissionShader,"projectToBand")
     self.atlasSizeLoc=loc(self.emissionShader,"atlasSize")

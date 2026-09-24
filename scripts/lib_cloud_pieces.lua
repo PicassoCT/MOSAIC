@@ -6,14 +6,29 @@ local selectPreset=assert(Config.PiecePresets[kind], 'Unknown cloud piece family
 local rawShow,rawHide=Spring.UnitScript.Show,Spring.UnitScript.Hide
 local radianceShow=ShowRadiancePiece
 local presets,active,warned={},{},{}
+local radianceModes,lit={},{}
 local matched,registered=0,false
 for name,id in pairs(Spring.GetUnitPieceMap(unitID) or {}) do
     presets[id]=selectPreset(name)
     if presets[id] then matched=matched+1 end
+    local p=presets[id] and Config.Preset(presets[id])
+    if p and (p.emission>0 or (p.glow or 0)>0) then radianceModes[id]='cloud' end
+    if kind=='spaceport' and (name=='SpaceHarbour' or name:match('^CrawlerBooster%d+$')
+        or name=='CrawlerMain' or name=='RocketCrawler'
+        or name=='LoadCraneNight' or name=='PickUpBoosterNight') then
+        radianceModes[id]='material'
+    end
 end
 Spring.Echo('Cloud pieces: '..kind..' unit '..unitID..', '..matched..' matching pieces; visibility wrappers installed')
 local dead=false
+local function light(id,on)
+    if GG.SetObjectiveRadiancePieceVisible then
+        GG.SetObjectiveRadiancePieceVisible(unitID,id,on,radianceModes[id],presets[id])
+        lit[id]=on or nil
+    end
+end
 local function cloudShow(id)
+    if not dead and radianceModes[id] then light(id,true) end
     local preset=presets[id]
     if preset and not dead then
         local ok,reason
@@ -35,6 +50,7 @@ local function cloudShow(id)
     if not dead then rawShow(id) end
 end
 local function cloudHide(id)
+    if lit[id] or radianceModes[id] then light(id,false) end
     if active[id] then
         if GG.CloudVolume then (GG.CloudVolume.ReleasePiece or GG.CloudVolume.RemovePiece)(unitID,id) end
         active[id]=nil
@@ -43,16 +59,14 @@ local function cloudHide(id)
 end
 function ShowRadiancePiece(id)
     if not id then return end
-    if presets[id] then
+    if presets[id] or radianceModes[id] then
         cloudShow(id)
-        -- Keep the existing radiance emitter despite hiding its old solid mesh.
-        if GG.SetObjectiveRadiancePieceVisible then GG.SetObjectiveRadiancePieceVisible(unitID,id,not dead) end
-    else radianceShow(id) end
+    elseif not dead then radianceShow(id);lit[id]=true end
 end
 function HideRadiancePiece(id)
     if not id then return end
     cloudHide(id)
-    if GG.SetObjectiveRadiancePieceVisible then GG.SetObjectiveRadiancePieceVisible(unitID,id,false) end
+    light(id,false)
 end
 -- Explicit environment writes: this file also has header-local Show/Hide.
 _G.CloudPieceShow,_G.CloudPieceHide=cloudShow,cloudHide
@@ -62,8 +76,8 @@ return {
         dead=true
         for id in pairs(active) do
             if GG.CloudVolume then GG.CloudVolume.RemovePiece(unitID,id) end
-            if GG.SetObjectiveRadiancePieceVisible then GG.SetObjectiveRadiancePieceVisible(unitID,id,false) end
         end
+        for id in pairs(lit) do light(id,false) end
         active={}
     end,
 }

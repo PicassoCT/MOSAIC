@@ -8,7 +8,9 @@ out vec2 sourceUV;
 flat out vec3 ribbonColor;
 flat out int ribbon;
 uniform sampler2D sourceTex;
+uniform sampler2D materialTex;
 uniform int textured;
+uniform int materialMasked = 0;
 out float worldHeight;
 uniform vec2 heightRange;
 uniform vec2 atlasSize;
@@ -19,6 +21,15 @@ float h[6];
 vec2 uv[6];
 vec3 averageColor;
 int count;
+vec3 sampleEmission(vec2 coord)
+{
+    vec3 color=textureLod(sourceTex,coord,0.0).rgb;
+    if(materialMasked!=0) {
+        vec4 material=textureLod(materialTex,coord,0.0);
+        color*=material.r*material.a;
+    }
+    return color;
+}
 void clipHeight(float plane, bool lower)
 {
     vec4 q[6]; float heights[6]; vec2 coords[6]; int n=0;
@@ -87,10 +98,10 @@ void main()
     if(textured!=0) {
         vec2 center=vec2(0.0);
         for(int i=0;i<6;++i) { if(i>=count) break; center+=uv[i]/float(count); }
-        averageColor=textureLod(sourceTex,center,0.0).rgb;
+        averageColor=sampleEmission(center);
         for(int i=0;i<6;++i) {
             if(i>=count) break;
-            averageColor+=textureLod(sourceTex,mix(center,uv[i],0.75),0.0).rgb;
+            averageColor+=sampleEmission(mix(center,uv[i],0.75));
         }
         averageColor/=float(count+1);
     }
