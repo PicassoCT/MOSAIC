@@ -1152,7 +1152,12 @@ function startRevealedUnitsChatEventStream(idA, idB)
         idB = idB, 
         startFrame = Spring.GetGameFrame(),
         rate = 3 * 30,
-        conversation = generate_conversation(idA, idB, teamName),
+        -- Most intercepted calls remain operational chatter. Occasionally the
+        -- listener catches a civilian-style conspiracy rant instead. Generate it
+        -- once here so the entire intercepted stream stays internally consistent.
+        conversation = ((conversationHash % 100) < 12)
+            and getShizoBabbleRant(18)
+            or generate_conversation(idA, idB, teamName),
         gaiaTeamID = Spring.GetGaiaTeamID()
         }
 
