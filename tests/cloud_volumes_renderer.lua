@@ -1,5 +1,7 @@
 -- Unsynced renderer lifecycle and resource/culling tests; run from repository root.
 local calls,visible,far={},true,false
+local frame=60
+local uniforms={}
 local units={}
 local function count(k)calls[k]=(calls[k] or 0)+1 end
 Game={gameSpeed=30};Platform={glSupportClipSpaceControl=true}
@@ -8,7 +10,7 @@ local proj={2,0,0,0, 0,2,0,0, 0,0,-1,-1, 0,0,-.2,0}
 local mv={1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,-4,1}
 Spring={GetViewGeometry=function()return 256,256,0,0 end,GetCameraPosition=function()return 0,0,far and 100000 or 20 end,
     GetSpectatingState=function()return false,false end,GetMyAllyTeamID=function()return 0 end,
-    GetGameFrame=function()return 60 end,GetFrameTimeOffset=function()return 0 end,
+    GetGameFrame=function()return frame end,GetFrameTimeOffset=function()return 0 end,
     GetUnitLosState=function()return {los=visible}end,IsPosInLos=function()return visible end,
     GetUnitIsDead=function()return false end,GetUnitIsCloaked=function()return false end,
     GetUnitNoDraw=function()return false end,GetUnitTransporter=function()return nil end,
@@ -28,7 +30,7 @@ gl={CreateShader=function()return 1 end,GetUniformLocation=function(_,n)return n
     GetSun=function()return .5,.5,.5 end,
     PushMatrix=function()matrixDepth=matrixDepth+1 end,PopMatrix=function()matrixDepth=matrixDepth-1 end,
     PushAttrib=function()attribDepth=attribDepth+1 end,PopAttrib=function()attribDepth=attribDepth-1 end,
-    Uniform=function()end,UniformInt=function(n,v)if n=='steps' then lastSteps=v end end,
+    Uniform=function(n,v)uniforms[n]=v end,UniformInt=function(n,v)if n=='steps' then lastSteps=v end end,
     CallList=function()count('draw');samples=samples+area*lastSteps end,
     Scissor=function(x,y,w,h)area=w*h end,
     Translate=noop,Scale=noop,UnitMultMatrix=noop,UnitPieceMatrix=noop,DepthTest=noop,DepthMask=noop,
@@ -41,6 +43,14 @@ visible=false;renderer:Draw();assert(not calls.copy and not calls.draw,'LOS leak
 visible=true;far=true;renderer:Draw();assert(not calls.copy and not calls.draw,'distance culling late')
 far=false;renderer:Draw();assert(calls.draw==1 and calls.copy==1 and calls.alloc==1)
 renderer:Draw();assert(calls.alloc==1,'depth texture reallocates every frame')
+renderer.records={tail={preset='steam',x=0,y=0,z=0,worldHalf={3,4,3},duration=45,born=0,seed=1}}
+renderer:Draw()
+local p=config.Preset('steam');local a,d,e=config.Appearance(p,2)
+assert(math.abs(uniforms.opacity-a)<.0001 and uniforms.density==p.density*d)
+assert(uniforms.emission==0,'vapour glows')
+local before=calls.copy
+frame=45*30;renderer:Draw();assert(calls.copy==before,'invisible curve endpoint still rendered')
+frame=60
 renderer.records={}
 for i=1,100 do renderer.records[tostring(i)]={preset='nuclear',x=i,y=0,z=0,born=0,scale=1,seed=i} end
 calls.draw=0;samples=0

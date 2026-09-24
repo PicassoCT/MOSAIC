@@ -288,6 +288,7 @@ function explosionLoop()
 
     while true do 
         for i =  #TablesOfPiecesGroups["Smoke"], 1, -1 do      
+            Hide(TablesOfPiecesGroups["Smoke"][i]) -- release before resetting its transform
             reset(TablesOfPiecesGroups["Smoke"][i], 100)        
         end
         for i =  #TablesOfPiecesGroups["Smoke"], 1, -1 do      

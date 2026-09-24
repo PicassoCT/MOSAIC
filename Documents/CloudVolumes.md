@@ -63,3 +63,51 @@ GPU tests require moderngl and numpy, plus Pillow for the optional image. They c
 Select the affected unit and enter `/cloudvolumes`. This reports shader initialization, the synced registry, matching piece names, active registrations, and up to six precise bounds rejection reasons. It remains available if GPU initialization fails. Also search infolog.txt for `Cloud piece fallback` or `Cloud volumes disabled`.
 
 Commit `4b351f4b` contains the first spaceport implementation but predates pump integration `174f9f94`; merge the updated `gfx/cloud-volumes` branch before testing the pump. Missing pump integration explains solid pump meshes on that revision, but does not explain the spaceport's visible legacy meshes. Runtime status/logs are required to distinguish registration rejection from a missing/disabled gadget or another visibility writer.
+
+## Per-effect time curves
+
+Presets accept `opacityCurve`, `densityCurve`, `emissionCurve`, and
+`expansionCurve`. Each is a sorted array of `{seconds, multiplier}` keys,
+measured from the first Show/Burst. Interpolation uses smoothstep; values hold
+before the first and after the last key. Missing curves default to 1. Opacity
+multiplies both premultiplied RGB and alpha, so zero opacity leaves no glow.
+Density changes optical thickness independently; emission changes glow without
+changing alpha. Expansion also updates culling bounds. Curves run once per
+candidate on the CPU and add no ray-march samples.
+
+```lua
+opacityCurve = {{0,0}, {.12,.9}, {.7,.8}, {2,.45}, {4,0}},
+emissionCurve = {{0,1}, {.2,1.4}, {.8,.3}, {1.8,0}},
+```
+
+- Pump Smoke*/SmokeStem: dark, non-emissive soot, slow expansion, 28-second
+  visibility envelope. Explosion*/ExplosionStem: four-second gas bloom whose
+  glow dies by 1.8 seconds. Flame*/Flames*: fast onset, held while animated.
+  Igniter and FireRotor retain continuous fire; the steady pump ribbon remains on.
+- Launch vapour: pale non-emissive steam, 45-second envelope. Gas rings fade
+  over 24 seconds and lose their glow by three seconds. GroundGases/FireFlower
+  use the short gas explosion envelope; exhaust stays continuously fed.
+- Godrod/nuclear: independently configured expansion, opacity and fast emission
+  decay within their existing 16/32-second durations. Bio/electric retain their
+  existing durations with finite fades.
+- Industrial complex: independent upward ribbons follow the selected CoolDown
+  slagheap and Pot2 of the slag crane. The latter also responds to unit motion;
+  both respond to wind. The molten-pot ribbon remains separate.
+
+`GG.CloudVolume.ReleasePiece(id,piece)` detaches profiles marked `linger=true`
+(steam/soot), preserving their original age and freezing an enclosing world-space
+box before piece reset. Other profiles are removed immediately. Show/Hide
+wrappers use this automatically. `RemovePiece` remains immediate for shutdown.
+Released smoke survives source removal and expires at the original lifetime;
+repeated Hide does not duplicate it. Its world-aligned box can change the shape
+of strongly rotated or elongated smoke proxies slightly. It does not yet advect
+with wind. Continuous effects hold their final curve value; finite attached
+curves stay registered but incur no drawing after opacity reaches zero, until
+Hide removes them. Repeated Show does not restart their clock.
+
+Validation additions: `tests/cloud_volume_curves.lua` and
+`tests/cloud_volume_release.lua` cover curve interpolation, relative lifetimes,
+cooling, detached bounds/age, idempotency and expiry. Renderer tests cover the
+curve uniforms and zero-opacity culling. Runtime appearance and placement still
+need an in-game check; these changes do not establish the cause of the earlier
+solid-mesh rendering report.

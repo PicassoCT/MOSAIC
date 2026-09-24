@@ -1,14 +1,15 @@
 local records, calls = {}, 0
 GG={SmokeRibbon={Set=function(unit,slot,piece,options)
     assert(piece and options.directionSpace=='world')
-    assert(options.windAffected and not options.motionAffected)
+    assert(options.windAffected)
+    assert(options.motionAffected==(slot=='objective-slagcrane'))
     assert(options.colorEnd[4]==0 and options.emission[1]>1)
     records[unit..slot]={piece=piece,options=options};calls=calls+1
     return true
 end,Remove=function(unit,slot) records[unit..slot]=nil end}}
 Spring={Echo=function(message) error(message) end}
 local create=dofile('scripts/lib_objective_ribbon_flames.lua')
-for i,kind in ipairs({'pump','industrial','launch'}) do
+for i,kind in ipairs({'pump','industrial','launch','slagheap','slagcrane'}) do
     local flame=create(i,kind)
     assert(flame.Start(10+i))
     local key=i..'objective-'..kind

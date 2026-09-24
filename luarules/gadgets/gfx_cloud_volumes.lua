@@ -23,6 +23,36 @@ if gadgetHandler:IsSyncedCode() then
         local k=id..':'..tostring(piece)
         if records[k] then records[k]=nil;changed() end
     end
+    -- Freeze lingering smoke in world space before the script resets its proxy.
+    -- Only round smoke profiles opt in; fire and exhaust stop immediately.
+    function api.ReleasePiece(id,piece)
+        local k=id..':'..tostring(piece)
+        local r=records[k]
+        if not r then return end
+        local p=Config.Preset(r.preset)
+        if p.linger and Spring.GetUnitVectors and Spring.GetUnitPieceMatrix then
+            local x,y,z=Spring.GetUnitPiecePosDir(id,piece)
+            local front,up,right=Spring.GetUnitVectors(id)
+            local m={Spring.GetUnitPieceMatrix(id,piece)}
+            if x and front and up and right and m[16] then
+                local center={x,y,z};local half={0,0,0}
+                for j=1,3 do
+                    local col=(j-1)*4
+                    for axis=1,3 do
+                        -- Spring model X is opposite the unit's right vector.
+                        local v=-right[axis]*m[col+1]+up[axis]*m[col+2]+front[axis]*m[col+3]
+                        center[axis]=center[axis]+v*r.center[j]
+                        half[axis]=half[axis]+math.abs(v)*r.half[j]
+                    end
+                end
+                serial=serial+1
+                records['burst:'..(serial-256)]=nil
+                records['burst:'..serial]={preset=r.preset,born=r.born,seed=r.seed,
+                    x=center[1],y=center[2],z=center[3],worldHalf=half,duration=p.lifetime}
+            end
+        end
+        records[k]=nil;changed()
+    end
     -- World-space effects intentionally survive destruction of their source unit.
     function api.Burst(preset,x,y,z,scale)
         local p=Config.Preset(preset)
@@ -39,7 +69,7 @@ if gadgetHandler:IsSyncedCode() then
         if frame%15~=0 then return end
         local dirty=false
         for k,r in pairs(records) do
-            if not r.unitID and frame-r.born>=Config.Preset(r.preset).duration*(Game.gameSpeed or 30) then
+            if not r.unitID and frame-r.born>=(r.duration or Config.Preset(r.preset).duration)*(Game.gameSpeed or 30) then
                 records[k]=nil;dirty=true
             end
         end
@@ -98,8 +128,9 @@ else
             local records={}
             for k,s in pairs(SYNCED.CloudVolumeRecords or {}) do
                 local r={}
-                for _,f in ipairs({'unitID','piece','preset','born','seed','x','y','z','scale'}) do r[f]=s[f] end
+                for _,f in ipairs({'unitID','piece','preset','born','seed','x','y','z','scale','duration'}) do r[f]=s[f] end
                 if s.center then r.center={s.center[1],s.center[2],s.center[3]};r.half={s.half[1],s.half[2],s.half[3]} end
+                if s.worldHalf then r.worldHalf={s.worldHalf[1],s.worldHalf[2],s.worldHalf[3]} end
                 records[k]=r
             end
             renderer.records=records
