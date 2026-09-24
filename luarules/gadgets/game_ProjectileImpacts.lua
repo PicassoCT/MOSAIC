@@ -790,6 +790,17 @@ if (gadgetHandler:IsSyncedCode()) then
                 return damage
             end
 
+            -- React on the visible civilian before resolving an operative disguise.
+            -- Repeated weapon hits during the same interrogation do not replay it.
+            local suspectID = (GG.DisguiseCivilianFor and GG.DisguiseCivilianFor[unitID]) or unitID
+            if civilianWalkingTypeTable[unitDefID] and
+               not currentlyInterrogationRunning(suspectID, attackerID) then
+                local civilianEnv = Spring.UnitScript.GetScriptEnv(unitID)
+                if civilianEnv and civilianEnv.startInterrogationStun then
+                    Spring.UnitScript.CallAsUnit(unitID, civilianEnv.startInterrogationStun)
+                end
+            end
+
             if unitID ~= attackerID then stunUnit(unitID, 2.0) end
 
             -- make disguise civilians transparent
