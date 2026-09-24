@@ -837,7 +837,7 @@ function startAerosolBehaviour(extAerosolStateToSet)
 end
 
 function aeroSolStateBehaviour()
-    influencedStateMachine = getAerosolInfluencedStateMachine(UnitID, UnitDefs, aeroSolType,center, UpArm1, UpArm2, Head1)
+    influencedStateMachine = getAerosolInfluencedStateMachine(unitID, UnitDefs, aeroSolType,center, UpArm1, UpArm2, Head1)
     assert(influencedStateMachine)
     hideAllProps(bodyConfig)
     bodyConfig.boolInfluenced = true

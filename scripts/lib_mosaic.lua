@@ -3474,13 +3474,15 @@ end
 
             function getAerosolInfluencedStateMachine(unitID, UnitDefs, typeOfInfluence, center, ArmLeft, ArmRight, Head)
                 --assert(typeOfInfluence)
-                AerosolTypes = getChemTrailTypes()
+                local AerosolTypes = getChemTrailTypes()
                 --assert(AerosolTypes[typeOfInfluence])
 
-                InfStates = getInfluencedStates()
-                CivilianTypes = getCivilianTypeTable(UnitDefs)
+                local InfStates = getInfluencedStates()
+                local CivilianTypes = getCivilianTypeTable(UnitDefs)
+                local civilianWalkingTypes = getCultureUnitModelTypes(
+                    getGameConfig().instance.culture, "civilian", UnitDefs)
 
-                InfluenceStateMachines = {
+                local InfluenceStateMachines = {
                     [AerosolTypes.orgyanyl] = 
                     function(lastState, currentState, unitID)
                         if currentState == AerosolTypes.orgyanyl then
@@ -3569,63 +3571,47 @@ end
                                 end
                             end
 
-                            gf = Spring.GetGameFrame()
-                            attackDistance = 35
+                            local gf = Spring.GetGameFrame()
                             -- random shivers
                             if gf % 30 == 0 and gf % 90 ~= 0 and maRa() then
-                                allPieces = Spring.GetUnitPieceList(unitID)
+                                local allPieces = Spring.GetUnitPieceMap(unitID) or {}
                                 for i = 1, 3 do
-                                    val = (math.random(-100, 100) / 100) * 12
-                                    for p=1, #allPieces do
-                                        Spin(allPieces[p], i, math.rad(val), 30.125) 
+                                    local val = (math.random(-100, 100) / 100) * 12
+                                    for _, pieceID in pairs(allPieces) do
+                                        Spin(pieceID, i, math.rad(val), 30.125)
                                     end
                                    
                                 end
                             end
 
                             if gf % 90 == 0 then
+                                local allPieces = Spring.GetUnitPieceMap(unitID) or {}
                                 for i = 1, 3 do
-                                    val = (math.random(-100, 100) / 100) * 12
-                                    stopSpinT(Spring.GetUnitPieceList(unitID), i, 30.125)
-                                end
-                            end
-                            headVal = math.random(-10, 25)
-                            Turn(head,x_axis, math.rad(headVal),3)
-                            enemyDistance = math.huge
-                            allyDistance = math.huge
-
-                            local afflicted = GG.AerosolAffectedCivilians or {}
-                            nearestDistance = math.huge
-                            nearestID = nil
-                            Tenemy= {}
-                            Tally = {}
-                            ix,iy,iz = spGetUnitPosition(unitID)
-                            foreach(
-                                getAllNearUnit(unitID, 750),
-                                function(id)
-                                    defId = spGetUnitDefID(id)
-                                    if civilianWalkingTypeTable[defID] then return id end
-                                end,
-                                function(id)
-                                    if afflicted[id] and GG.TollWutoxAfflicted[id] then
-                                        Tally[id] = distanceUnitToUnit(id, unitID)
-                                        if Tally[id] < nearestDistance then
-                                            nearestDistance = Tally[id]
-                                            nearestID = id 
-                                        end
-                                    else
-                                        Tenemy[id] = distanceUnitToUnit(id, unitID)
-                                        if Tenemy[id] < nearestDistance then
-                                            nearestDistance = Tenemy[id]
-                                            nearestID = id 
-                                        end
+                                    for _, pieceID in pairs(allPieces) do
+                                        StopSpin(pieceID, i, 30.125)
                                     end
                                 end
-                                )
+                            end
+                            local headVal = math.random(-10, 25)
+                            Turn(Head,x_axis, math.rad(headVal),3)
+
+                            local afflicted = GG.AerosolAffectedCivilians or {}
+                            local tollwutoxAfflicted = GG.TollWutoxAfflicted or {}
+                            local nearestDistance, nearestID, nearestIsAlly = math.huge, nil, false
+                            for _, id in ipairs(getAllNearUnit(unitID, 750) or {}) do
+                                if id ~= unitID and civilianWalkingTypes[Spring.GetUnitDefID(id)]
+                                    and not Spring.GetUnitIsDead(id) then
+                                    local distance = distanceUnitToUnit(unitID, id)
+                                    if distance and distance < nearestDistance then
+                                        nearestDistance, nearestID = distance, id
+                                        nearestIsAlly = afflicted[id] and tollwutoxAfflicted[id]
+                                    end
+                                end
+                            end
                             if nearestID then 
-                                if Tenemy[nearestID] then
+                                if not nearestIsAlly then
                                     Spring.SetUnitNeutral(unitID, false)
-                                    assaultNearby(ed) 
+                                    assaultNearby(unitID, nearestID, center, ArmLeft, ArmRight, Head)
                                 else
                                     Command(unitID, "guard", nearestID )
                                 end
@@ -3675,15 +3661,18 @@ end
                     return InfluenceStateMachines[typeOfInfluence]
                 end
 
-                function assaultNearby(aid)
-                    enemyDistance = distanceUnitToUnit(aid)
+                function assaultNearby(attackerID, targetID, center, ArmLeft, ArmRight, Head)
+                    local enemyDistance = distanceUnitToUnit(attackerID, targetID)
                     if enemyDistance and enemyDistance < 20 then
-                        closeCombatAnimation(center, ArmLeft, ArmRight)
-                        Spring.AddUnitDamage(aid, 30)
-                        spawnCegAtUnit(id, "bloodslay")
+                        closeCombatAnimation(center, ArmLeft, ArmRight, Head)
+                        -- The animation yields; the target may have died meanwhile.
+                        if Spring.ValidUnitID(targetID) and not Spring.GetUnitIsDead(targetID) then
+                            Spring.AddUnitDamage(targetID, 30)
+                            spawnCegAtUnit(targetID, "bloodslay")
+                        end
                     else                      
-                        x,y,z = spGetUnitPosition(aid)
-                       Command( aid, "go",{x,y,z}, {"shift"})
+                        local x,y,z = Spring.GetUnitPosition(targetID)
+                        if x then Command(attackerID, "go", {x=x,y=y,z=z}, {"shift"}) end
                     end
                 end
 
