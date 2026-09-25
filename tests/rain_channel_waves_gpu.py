@@ -8,10 +8,10 @@ void main(){
  gl_FragColor=vec4(frame.x,h,frame.y*.05,1);
 }
 ''')
-use(p);uf(loc(p,b'rainPercent'),.7)
+use(p);uf(loc(p,b'terrainWetness'),.7)
 frames=[]
 for t in [0,.12,.24,.36]:
- uf(loc(p,b'time'),t);frames.append(render(p))
+ uf(loc(p,b'terrainFlowTime'),t);frames.append(render(p))
 for a,b in zip(frames,frames[1:]):
  assert a[::4]==b[::4], 'moving channel footprint'
  assert a[2::4]==b[2::4], 'moving channel phase coordinates'
@@ -32,10 +32,10 @@ if __name__=='__main__':
  float light=dot(n,normalize(vec3(-.5,.8,1)));
  gl_FragColor=vec4(vec3(.15,.22,.27)*(.4+light)+vec3(pow(max(light,0.0),16.0))*.45,1);}
  ''')
- use(p);uf(loc(p,b'rainPercent'),.7)
+ use(p);uf(loc(p,b'terrainWetness'),.7)
  images=[]
  for t in [0,.12,.24,.36]:
-  uf(loc(p,b'time'),t)
+  uf(loc(p,b'terrainFlowTime'),t)
   raw=bytes(round(max(0,min(1,x))*255) for x in render(p))
   images.append(Image.frombytes('RGBA',(64,64),raw).convert('RGB').transpose(Image.Transpose.FLIP_TOP_BOTTOM).resize((256,256)))
  sheet=Image.new('RGB',(1024,256))

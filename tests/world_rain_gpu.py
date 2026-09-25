@@ -1,5 +1,6 @@
-"""Standard-library-only EGL smoke/regression tests; run python tests/world_rain_gpu.py.
-Uses production GLSL and Mesa/OpenGL compatibility context; no game required.
+"""EGL smoke/regression tests; run python tests/world_rain_gpu.py.
+Uses production GLSL and Mesa/OpenGL compatibility context; Pillow loads the
+shipped bank texture. No game required.
 """
 import ctypes as C
 import os
@@ -40,6 +41,10 @@ def program(v,f):
     log=C.create_string_buffer(16384)
     fn(G,'glGetProgramInfoLog',None,U,I,P,P)(p,len(log),None,log)
     assert ok.value,log.value.decode()
+    fn(G,'glUseProgram',None,U)(p)
+    location=fn(G,'glGetUniformLocation',I,U,C.c_char_p)
+    fn(G,'glUniform1i',None,I,I)(location(p,b'terrainRunoffTex'),14)
+    fn(G,'glUniform1f',None,I,F)(location(p,b'terrainWetness'),1)
     return p
 root=Path(__file__).resolve().parents[1]/'luaui/widgets_mosaic/shaders'
 frag=(root/'rainShader.frag').read_text().replace('// RAIN_LIGHT_GLITTER',(root/'rainLightGlitter.glsl').read_text()).replace('// WORLD_RAIN',(root/'worldRain.glsl').read_text()).replace('// SURFACE_WATER',(root/'surfaceWater.glsl').read_text()).replace('// RAIN_SPLASHBACK',(root/'rainSplashback.glsl').read_text())
@@ -56,6 +61,14 @@ u3=fn(G,'glUniform3f',None,I,F,F,F)
 gen=fn(G,'glGenTextures',None,I,P); active=fn(G,'glActiveTexture',None,U)
 bind=fn(G,'glBindTexture',None,U,U); param=fn(G,'glTexParameteri',None,U,U,I)
 upload=fn(G,'glTexImage2D',None,U,I,I,I,I,I,U,U,P)
+# Match Spring's NamedTextures loader: raw PNG row order, repeat, trilinear.
+from PIL import Image
+bank=Image.open(root.parents[1]/'images/rain/terrain-runoff.png').convert('RGBA')
+bank_tex=U();gen(1,C.byref(bank_tex));active(0x84C0+14);bind(0x0DE1,bank_tex.value)
+param(0x0DE1,0x2801,0x2703);param(0x0DE1,0x2800,0x2601)
+raw=C.create_string_buffer(bank.tobytes())
+upload(0x0DE1,0,0x8058,*bank.size,0,0x1908,0x1401,raw)
+fn(G,'glGenerateMipmap',None,U)(0x0DE1)
 textures=[]
 for slot,name in enumerate(['normaltex','normalunittex','mapDepthTex','modelDepthTex']):
     t=U(); gen(1,C.byref(t)); textures.append(t)
@@ -153,7 +166,7 @@ for upwardness in [0,.3,.45,.6,.8,.92,.94,.96,.98,.995,1]:
     if upwardness==.98: assert 0<puddle<1
     last=(wet,puddle)
 a=render(water_program)
-uf(loc(water_program,b'time'),.3); b=render(water_program)
+uf(loc(water_program,b'terrainFlowTime'),.3); b=render(water_program)
 assert max(a[2::4])-min(a[2::4])>.05,'flowing film detail does not resolve'
 assert a[2::4]!=b[2::4],'rivulets not animated'
 print('PASS: flat puddles -> partial blend -> rivulets -> dry walls; animated terrain film')

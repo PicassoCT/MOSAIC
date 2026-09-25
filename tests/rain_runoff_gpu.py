@@ -17,7 +17,7 @@ void main(){
  gl_FragColor=vec4(r,r,r,1);
 }
 ''')
-use(p);uf(loc(p,b'time'),1.7)
+use(p);uf(loc(p,b'terrainFlowTime'),1.7)
 patterns=[]
 for building in [0]:
  ui(loc(p,b'building'),building)
@@ -50,7 +50,7 @@ void main(){
 }
 ''')
 for building in [0]:
- use(dome);ui(loc(dome,b'building'),building);uf(loc(dome,b'time'),1.7)
+ use(dome);ui(loc(dome,b'building'),building);uf(loc(dome,b'terrainFlowTime'),1.7)
  a=render(dome);sectors=[[] for _ in range(8)]
  for y in range(64):
   for x in range(64):
@@ -68,7 +68,7 @@ for building in [0]:
  ui(loc(p,b'building'),building)
  frames=[]
  for tick in range(12):
-  uf(loc(p,b'time'),tick*.37);frames.append(render(p)[::4])
+  uf(loc(p,b'terrainFlowTime'),tick*.37);frames.append(render(p)[::4])
  for samples in zip(*frames):
   if max(samples)>.1:
    assert min(samples)>.3,'film vanishes between flowing highlights'
@@ -79,6 +79,6 @@ void main(){vec2 xy=(gl_FragCoord.xy-32.0)*0.1;
 float r=getSurfaceRivulets(vec3(xy.x,-10.0,xy.y),normalize(vec3(.4,1,0)),false);
 gl_FragColor=vec4(r);}
 """)
-use(submerged);uf(loc(submerged,b'time'),2)
+use(submerged);uf(loc(submerged,b'terrainFlowTime'),2)
 assert max(render(submerged))==0,'submerged terrain runoff'
 print('PASS: terrain runoff is absent below sea level')

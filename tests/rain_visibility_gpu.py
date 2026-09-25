@@ -54,17 +54,18 @@ for sky,dominant in [((.08,.16,.5),2),((.6,.25,.08),0)]:
     assert all(pixels[i+dominant]>pixels[i+1] for i in visible),'skylight hue lost'
 print('PASS: splash visibility at 30/45/60 degrees and 500/1000/1500 distance; blue/orange skylight without radiance')
 
-# Rivulets must remain distinct at these footprints rather than being erased
-# by AA attenuation; a slight incline must also receive runoff coverage.
+# The actual terrain-water mask must retain wet and dry regions at RTS scale.
+# Keep the probe above sea level; negative heights intentionally clip runoff.
 runoff=program(vert,prefix+'''
 uniform float testPixelWorld;
 void main(){vec3 n=normalize(vec3(0.1,1,0));
-float channel=getSurfaceRivulets(vec3(gl_FragCoord.x*testPixelWorld,-0.1*gl_FragCoord.x*testPixelWorld,gl_FragCoord.y*testPixelWorld),n);
-gl_FragColor=vec4(vec3(channel*(1.0-surfaceWaterWeights(n.y).y)),1);}
+float channel=terrainSurfaceWater(vec3(gl_FragCoord.x*testPixelWorld,20.0-0.1*gl_FragCoord.x*testPixelWorld,gl_FragCoord.y*testPixelWorld),n).x;
+gl_FragColor=vec4(vec3(channel),1);}
 ''')
 use(runoff)
+uf(loc(runoff,b'terrainWetness'),.5)
 for footprint in [.3,.6,.9]:
     uf(loc(runoff,b'testPixelWorld'),footprint)
     pixels=render(runoff)[::4]
     assert max(pixels)>.05 and min(pixels)==0,('runoff disappeared',footprint)
-print('PASS: readable, separated rivulets on a shallow incline at gameplay pixel footprints')
+print('PASS: readable wet/dry terrain on a shallow incline at gameplay pixel footprints')

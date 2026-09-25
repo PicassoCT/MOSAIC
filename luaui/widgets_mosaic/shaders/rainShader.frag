@@ -70,6 +70,9 @@ uniform sampler2D dephtCopyTex;
 uniform float time;		
 uniform float timePercent;
 uniform float rainPercent;
+uniform float terrainWetness;
+uniform float terrainFlowTime;
+uniform sampler2D terrainRunoffTex;
 uniform float clipZeroToOne;
 uniform float reflectionDebug;
 uniform float rainDetailDebug;
@@ -527,7 +530,7 @@ vec4 rayMarchForReflection(vec3 reflectionPosition, vec3 reflectDir)
 vec4 getReflection(vec3 reflectionPosition)
 {
     if (!NormalIsWaterPuddle) return NONE;
-    if (getRandomFactor(reflectionPosition.xz / 512.0) >= rainPercent) return NONE;
+    if (getRandomFactor(reflectionPosition.xz / 512.0) >= (NormalIsOnUnit ? rainPercent : terrainWetness)) return NONE;
 
     // G-buffer normals are world-space normals encoded as normal * 0.5 + 0.5.
     vec3 normal = normalize(vertexNormal * 2.0 - 1.0);
@@ -560,9 +563,42 @@ vec4 paintRainSky(vec2 rotatedUV)
 
 // RAIN_LIGHT_GLITTER
 // SURFACE_WATER
+// Terrain water is composited by the existing rain pass from deferred ground
+// position/normal. No landscape geometry, map texture writes or extra draw pass.
+vec4 GetTerrainRainWater(vec3 p, vec3 n) {
+    vec4 water=terrainSurfaceWater(p,n);
+    runoffCoverage=water.x;
+    vec3 gradient=runoffHeightGradient(water.y*0.18,p,n);
+    vec2 rings=surfaceRippleProfile(p.xz)*surfaceWaterWeights(n.y).y*rainPercent*0.45;
+    vec3 waterNormal=normalize(n-gradient-vec3(rings.x,0,rings.y)*water.x);
+    if(water.x<=0.0001) return NONE;
+    vec3 scene=texture2D(screentex,uv).rgb;
+    vec3 lighting=max(sunCol,vec3(0))*0.4+max(skyCol,vec3(0))*0.6;
+    if(rainLightActive>0.5) lighting+=rainLocalLight(p+n*0.5);
+    lighting/=1.0+dot(lighting,vec3(0.2126,0.7152,0.0722));
+    vec3 toEye=normalize(eyePos-p);
+    vec3 lightDirection=dot(sunPos,sunPos)>0.001 ? normalize(sunPos) : normalize(vec3(0.4,0.7,0.3));
+    vec3 halfDirection=normalize(lightDirection+toEye+vec3(0,0.0001,0));
+    float curvedLight=dot(waterNormal-n,lightDirection)*2.5;
+    float glint=max(0.0,pow(max(dot(waterNormal,halfDirection),0.0),24.0)
+                       -pow(max(dot(n,halfDirection),0.0),24.0));
+    float fresnel=0.08+0.55*pow(1.0-max(dot(n,toEye),0.0),3.0);
+    vec3 target=scene*mix(0.70,0.86,clamp(water.w,0.0,1.0))
+        +max(skyCol,vec3(0))*fresnel*0.08;
+    vec4 reflected=getReflection(p);
+    target=mix(target,reflected.rgb/max(reflected.a,0.0001),
+        reflected.a*smoothstep(0.05,0.4,water.w)*(0.3+fresnel));
+    target*=1.0-0.65*max(-curvedLight,0.0);
+    float foam=smoothstep(0.65,1.0,terrainWetness)*smoothstep(0.18,0.65,water.w)
+        *smoothstep(0.55,0.9,water.z)*(1.0-surfaceWaterWeights(n.y).y);
+    runoffEnergy=lighting*water.x*(0.65*max(curvedLight,0.0)+0.45*glint+foam*0.12);
+    return vec4(max(target,vec3(0)),water.x*0.72);
+}
+
 vec4 GetGroundReflectionRipples(vec3 pixelPos)
 {
     vec3 n = normalize(vertexNormal*2.0-1.0);
+    if(!NormalIsOnUnit) return GetTerrainRainWater(pixelPos,n);
     vec2 water = surfaceWaterWeights(n.y);
     float channels = NormalIsOnUnit ? 0.0 : getSurfaceRivulets(pixelPos,n,false);
     vec2 rippleSlope = surfaceRippleProfile(pixelPos.xz);
@@ -751,14 +787,14 @@ vec4 drawRainInSpainOnPlane( vec2 rotatedUV, float rainspeed, out float coverage
 
 vec4 composeRainEffects(vec3 background, vec4 surfaceFX, vec4 rain, vec4 splash,
                         vec3 runoff) {
-    float alpha = 1.0-(1.0-surfaceFX.a)*(1.0-rain.a)*(1.0-splash.a);
-    // Preserve existing surface blending while adding reflected light from
-    // airborne water and runoff. The half-float target preserves RGB > 1 until
-    // the final straight-alpha blend; an 8-bit target clips these highlights.
-    vec3 premultiplied = surfaceFX.rgb*surfaceFX.a
-        + background*(alpha-surfaceFX.a)
-        + rain.rgb*rain.a + splash.rgb*splash.a + runoff;
-    return vec4(premultiplied/max(alpha,0.00001),alpha*rainPercent);
+    // Separate retained ground water from current precipitation. For roofs and
+    // sky this produces the same framebuffer RGB as the previous rain blend.
+    float wet=NormalIsOnGround ? terrainWetness : rainPercent;
+    float surfaceAlpha=surfaceFX.a*wet;
+    float alpha=1.0-(1.0-surfaceAlpha)*(1.0-rain.a*rainPercent)*(1.0-splash.a*rainPercent);
+    vec3 premultiplied=background*alpha+surfaceAlpha*(surfaceFX.rgb-background)
+        +rainPercent*(rain.rgb*rain.a+splash.rgb*splash.a)+runoff*wet;
+    return vec4(premultiplied/max(alpha,0.00001),alpha);
 }
 
 void main(void)
@@ -810,14 +846,18 @@ void main(void)
     if(surfaceDepth>0.0 && surfaceDepth<0.999999)
         surfacePos=GetWorldPosAtUV(uv,surfaceDepth);
     vec4 surfaceFX = NormalIsSky ? NONE : GetGroundReflectionRipples(surfacePos);
-    vec3 rayPoint = GetWorldPosAtUV(uv, 0.5);
-    vec3 rayDir = normalize(rayPoint - eyePos);
-    float sceneDistance = depthAtPixel.r < 0.999999 ? length(worldPos-eyePos) : 1.0e6;
-    vec4 rain = drawWorldRain(rayDir, sceneDistance);
-    vec4 distantRain=drawDistantRain(rayDir,sceneDistance);
-    float rainAlpha=1.0-(1.0-rain.a)*(1.0-distantRain.a);
-    rain=vec4((rain.rgb*rain.a+distantRain.rgb*distantRain.a)/max(rainAlpha,0.00001),rainAlpha);
-    vec4 splash = drawRainSplashback(worldPos, vertexNormal, rayDir, sceneDistance, NormalIsSky);
+    vec4 rain=NONE, splash=NONE;
+    // Retained ground water does not need the precipitation ray march.
+    if(rainPercent>0.001) {
+        vec3 rayPoint = GetWorldPosAtUV(uv, 0.5);
+        vec3 rayDir = normalize(rayPoint - eyePos);
+        float sceneDistance = depthAtPixel.r < 0.999999 ? length(worldPos-eyePos) : 1.0e6;
+        rain = drawWorldRain(rayDir, sceneDistance);
+        vec4 distantRain=drawDistantRain(rayDir,sceneDistance);
+        float rainAlpha=1.0-(1.0-rain.a)*(1.0-distantRain.a);
+        rain=vec4((rain.rgb*rain.a+distantRain.rgb*distantRain.a)/max(rainAlpha,0.00001),rainAlpha);
+        splash = drawRainSplashback(worldPos, vertexNormal, rayDir, sceneDistance, NormalIsSky);
+    }
     if (rainDetailDebug > 2.5) {
         gl_FragColor = vec4(NormalIsSky ? vec3(0) : vertexNormal,1);
     } else if (rainDetailDebug > 1.5) {
@@ -828,4 +868,3 @@ void main(void)
         gl_FragColor = composeRainEffects(texture2D(screentex,uv).rgb,surfaceFX,rain,splash,runoffEnergy);
     }
 }
-

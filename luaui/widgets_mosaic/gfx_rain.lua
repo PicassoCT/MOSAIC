@@ -144,7 +144,25 @@ local reflectionDebugLoc
 local rainDetailDebugLoc
 local rainPercentLoc
 local rainPercent = 0.0
-local function getHeadlightWetness() return rainPercent end
+local terrainWetness, terrainFlowTime = 0, 0
+local terrainWetnessLoc, terrainFlowTimeLoc
+local terrainRunoffPath = "luaui/images/rain/terrain-runoff.png"
+local function getHeadlightWetness() return math.max(rainPercent, terrainWetness) end
+-- Exponential response is independent of frame rate. Constants are visual
+-- fill/drain times, not rainfall rates or a simulation of a map's watershed.
+local function updateTerrainWater(dt)
+    local _, _, paused = Spring.GetGameSpeed()
+    if paused then return end
+    dt = math.max(dt, 0)
+    local tau = rainPercent > terrainWetness and 8 or 35
+    local decay = math.exp(-dt/tau)
+    local old = terrainWetness
+    terrainWetness = rainPercent + (old-rainPercent)*decay
+    -- Integrate speed instead of multiplying absolute time by changing rain;
+    -- changing weather must not teleport crests along the channels.
+    local integral = rainPercent*dt + (old-rainPercent)*tau*(1-decay)
+    terrainFlowTime = terrainFlowTime + 0.20*dt + 0.80*integral
+end
 local timePercent = 0
 local hours = 12
 local minutes = 0
@@ -307,7 +325,8 @@ local function init()
         raintex = raintexIndex,
         dephtCopyTex = dephtCopyTexIndex,
         rainRadianceTex = 10, rainOccupancyTex = 11,
-        rainLocalRadianceTex = 12, rainLocalOccupancyTex = 13
+        rainLocalRadianceTex = 12, rainLocalOccupancyTex = 13,
+        terrainRunoffTex = 14
     }
 
     rainShader =
@@ -319,6 +338,7 @@ local function init()
             uniform = {
                 timePercent = 0,
                 rainPercent= 0,
+                terrainWetness = 0, terrainFlowTime = 0,
                 clipZeroToOne = (Platform and Platform.glSupportClipSpaceControl) and 1 or 0,
                 reflectionDebug = 0,
                 rainDetailDebug = 0,
@@ -349,6 +369,8 @@ local function init()
     rainShaderFingerprint = sourceFingerprint(fragmentShader .. vertexShader)
     timePercentLoc                  = glGetUniformLocation(rainShader, "timePercent")
     rainPercentLoc                  = glGetUniformLocation(rainShader, "rainPercent")
+    terrainWetnessLoc = glGetUniformLocation(rainShader, "terrainWetness")
+    terrainFlowTimeLoc = glGetUniformLocation(rainShader, "terrainFlowTime")
     reflectionDebugLoc              = glGetUniformLocation(rainShader, "reflectionDebug")
     rainDetailDebugLoc              = glGetUniformLocation(rainShader, "rainDetailDebug")
     uniformViewPortSize             = glGetUniformLocation(rainShader, "viewPortSize")
@@ -456,11 +478,12 @@ local rainCapture = VFS.Include("luaui/widgets_mosaic/include/rain_capture.lua")
     ready = function() return rainShader ~= nil end,
     save = function()
         return {rain = rainPercent, debug = boolDebugActive, reflection = reflectionDebug,
-            detail = rainDetailDebug}
+            detail = rainDetailDebug, wetness = terrainWetness, flowTime = terrainFlowTime}
     end,
     restore = function(state)
         rainPercent, boolDebugActive = state.rain, state.debug
         reflectionDebug, rainDetailDebug = state.reflection, state.detail
+        terrainWetness, terrainFlowTime = state.wetness, state.flowTime
     end,
     prepare = function()
         boolDebugActive, reflectionDebug, rainDetailDebug = false, false, 0
@@ -468,9 +491,10 @@ local rainCapture = VFS.Include("luaui/widgets_mosaic/include/rain_capture.lua")
         sunCol, skyCol = {gl.GetAtmosphere("sunColor")}, {gl.GetAtmosphere("skyColor")}
         sunPos = {gl.GetSun("pos")}
     end,
-    setRain = function(amount) rainPercent = amount end,
+    -- Snapshot stages show settled water at each level, with a repeatable phase.
+    setRain = function(amount) rainPercent, terrainWetness = amount, amount end,
     metadata = function()
-        return "water_revision\troof-rounded-film-v1\nshader_fingerprint\t" .. rainShaderFingerprint .. "\n" .. string.format("time_percent\t%.8f\nsun_rgb\t%s\nsky_rgb\t%s\nsun_direction\t%s\nglitter\t%s\n",
+        return "water_revision\tterrain-braided-banks-v1\nshader_fingerprint\t" .. rainShaderFingerprint .. "\n" .. string.format("time_percent\t%.8f\nsun_rgb\t%s\nsky_rgb\t%s\nsun_direction\t%s\nglitter\t%s\n",
             timePercent, table.concat(sunCol, ","), table.concat(skyCol, ","),
             table.concat(sunPos, ","), tostring(glitterEnabled))
     end,
@@ -486,6 +510,7 @@ function widget:Update(dt)
         naturalRainPercent = math.max(0.0, naturalRainPercent - 0.0001)
     end
     rainPercent = (weathermanActive or boolDebugActive) and 1.0 or naturalRainPercent
+    updateTerrainWater(dt)
     if boolDebugActive then  
         rainPercent = 1.0
         return 
@@ -523,6 +548,8 @@ local function updateUniforms()
     diffTime = rainCapture.shaderTime() or diffTime
     --Spring.Echo("Time passed:"..diffTime)
     glUniform(rainPercentLoc, rainPercent)
+    glUniform(terrainWetnessLoc, terrainWetness)
+    glUniform(terrainFlowTimeLoc, rainCapture.shaderTime() or terrainFlowTime)
     glUniform(reflectionDebugLoc, reflectionDebug and 1 or 0)
     glUniform(rainDetailDebugLoc, rainDetailDebug)
     glUniform(timePercentLoc, timePercent)
@@ -564,7 +591,7 @@ end
 local function cleanUp()    
     glResetState()
     glUseShader(0)
-    for slot=10,13 do glTexture(slot,false) end
+    for slot=10,14 do glTexture(slot,false) end
     glBlending(true)
 end
 
@@ -582,6 +609,7 @@ local function prepareTextures()
     glTexture(raintexIndex, rainPicPath)
     glCopyToTexture(depthCopyTex, 0, 0, vpx, vpy, vsx, vsy)
     glTexture(dephtCopyTexIndex, depthCopyTex)
+    glTexture(14, terrainRunoffPath)
 end
 
 local function DrawRain()
@@ -596,7 +624,7 @@ local function DrawRain()
     prepareTextures()
     glUseShader(rainShader)
     updateUniforms()
-    bindRainLighting(glitterEnabled and rainPercent > 0.001)
+    bindRainLighting(glitterEnabled and math.max(rainPercent, terrainWetness) > 0.001)
 
     glRenderToTexture(raincanvastex, renderToTextureFunc);
     local osClock = os.clock()
@@ -606,7 +634,7 @@ local function DrawRain()
 end
 
 function widget:DrawScreenEffects()
-    if rainPercent <= 0.001 or not rainShader then return end
+    if math.max(rainPercent, terrainWetness) <= 0.001 or not rainShader then return end
     glBlending(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA) 
     glTexture(0, raincanvastex)
     glTexRect(0, vsy, vsx, 0)
@@ -641,7 +669,7 @@ local function cameraIsUnchanged()
     end
 
 function widget:DrawWorld()
-    if rainPercent <= 0.001 or not rainShader then return end
+    if math.max(rainPercent, terrainWetness) <= 0.001 or not rainShader then return end
     local _, _, isPaused = Spring.GetGameSpeed()
     if isPaused and cameraIsUnchanged()then
        local currentTime = Spring.GetTimer() 
