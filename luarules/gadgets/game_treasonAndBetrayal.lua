@@ -9,9 +9,11 @@ VFS.Include("scripts/lib_mosaic.lua")
 local cfg = VFS.Include("luarules/configs/betrayal.lua")
 local operatives = getOperativeTypeTable(UnitDefs)
 local safehouses = getSafeHouseTypeTable(UnitDefs)
+local houses = getHouseTypeTable(UnitDefs)
 local interrogatable = getInterrogateAbleTypeTable(UnitDefs)
 local gaia = Spring.GetGaiaTeamID()
 local runners, defectors, drops, pending, executions = {}, {}, {}, {}, {}
+local escapeReady = {}
 local roots, contacts, replacing = {}, {}, false
 local walkingDef
 for def in pairs(operatives) do if not walkingDef or def < walkingDef then walkingDef=def end end
@@ -92,7 +94,7 @@ local function chooseRecipient(oldTeam, x,z, targetDistance, receivingTeam)
             end
         end
     end
-    return best
+    return best, bestScore
 end
 local function groundPoint(x,z,defID)
     local margin = 64
@@ -135,38 +137,78 @@ local function createDrop(record)
     label(id,"Dead drop: operative contact reveals secrets; former allies can recover and suppress it")
     expose(id)
 end
-local function threatened(x,z, oldTeam)
-    for _, id in ipairs(Spring.GetUnitsInCylinder(x,z,1800)) do
-        if allied(Spring.GetUnitTeam(id),oldTeam) then
-            local def = UnitDefs[Spring.GetUnitDefID(id)]
-            local range = def and def.maxWeaponRange or 0
-            if range > 0 then
-                local ux,_,uz = Spring.GetUnitPosition(id)
-                if distance(x,z,ux,uz) < range+150 then return true end
+local function escapeObstacles(source)
+    local obstacles = {}
+    -- One snapshot per escape, not a scan per candidate or every simulation frame.
+    -- Include both sides, third parties and unarmed charges; do not depend on LOS.
+    for _, id in ipairs(Spring.GetAllUnits()) do
+        if id ~= source and alive(id) then
+            local defID = Spring.GetUnitDefID(id)
+            local range = UnitDefs[defID].maxWeaponRange or 0
+            local clearance = Spring.GetUnitTeam(id) ~= gaia and cfg.escapeUnitClearance or 0
+            if contacts[id] then clearance = math.max(clearance,cfg.escapeContactClearance) end
+            if range > 0 then clearance = math.max(clearance,range+cfg.escapeWeaponBuffer) end
+            if clearance > 0 then
+                local x,_,z = Spring.GetUnitPosition(id)
+                obstacles[#obstacles+1] = {x=x,z=z,clearance=clearance}
             end
         end
     end
-    return false
+    return obstacles
 end
-local function escapePoint(id, recipient, targetDistance, oldTeam)
+local function clearExit(x,z,obstacles)
+    for _, obstacle in ipairs(obstacles) do
+        if distance(x,z,obstacle.x,obstacle.z) < obstacle.clearance then return false end
+    end
+    return true
+end
+local function escapePoint(id, fallbackRecipient, targetDistance, oldTeam)
     local x,y,z = Spring.GetUnitPosition(id)
-    local rx,_,rz = Spring.GetUnitPosition(recipient)
     local defID = Spring.GetUnitDefID(id)
-    local best, score
-    -- One escape only. Its distance is modest; travel time is a target, not a guarantee.
-    for ring=1,2 do
-        for sector=0,15 do
-            local a = sector*math.pi/8
-            local px,py,pz = groundPoint(x+math.cos(a)*cfg.escapeDistance*ring,
-                z+math.sin(a)*cfg.escapeDistance*ring,defID)
-            if px and not threatened(px,pz,oldTeam) then
-                local cost = math.abs(distance(px,pz,rx,rz)-targetDistance)+ring*100
-                if not score or cost < score then best,score = {px,py,pz},cost end
+    local obstacles = escapeObstacles(id)
+    local nearby = Spring.GetUnitsInCylinder(x,z,cfg.escapeSearchRadius)
+    table.sort(nearby)
+    local best, bestRecipient, bestHouse, score
+    -- The house and rendezvous are chosen together. Emergence is at a walkable
+    -- edge of a real civilian building, never inside its blocking volume.
+    for _, house in ipairs(nearby) do
+        local houseDef = Spring.GetUnitDefID(house)
+        local occupant = GG.houseHasSafeHouseTable and GG.houseHasSafeHouseTable[house]
+        if houses[houseDef] and UnitDefs[houseDef].name ~= "house_ruin" and alive(house)
+            and Spring.GetUnitTeam(house) == gaia and not alive(occupant) then
+            local hp,_,_,_,built = Spring.GetUnitHealth(house)
+            if hp and hp > 0 and (built or 1) >= 1 then
+                local hx,_,hz = Spring.GetUnitPosition(house)
+                local sx,sy,sz,ox,oy,oz = Spring.GetUnitCollisionVolumeData(house)
+                local radius = math.sqrt((sx or 0)^2+(sz or 0)^2)/2
+                    + math.sqrt((ox or 0)^2+(oz or 0)^2)
+                for ring=0,1 do
+                    local exitRadius = radius+cfg.escapeExitMargin+ring*96
+                    for sector=0,15 do
+                        local a = sector*math.pi/8
+                        local px,py,pz = groundPoint(hx+math.cos(a)*exitRadius,
+                            hz+math.sin(a)*exitRadius,defID)
+                        if px then
+                            local displacement = distance(x,z,px,pz)
+                            if displacement >= cfg.minEscapeDistance and displacement <= cfg.escapeSearchRadius
+                                and clearExit(px,pz,obstacles) then
+                                local recipient, runScore = chooseRecipient(oldTeam,px,pz,targetDistance)
+                                if recipient then
+                                    local cost = runScore+displacement*0.15
+                                    if not score or cost < score then
+                                        best,bestRecipient,bestHouse,score = {px,py,pz},recipient,house,cost
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end
             end
         end
     end
-    -- No safe ground: keep the physical escape risky. The dead drop protects the intel.
-    return best or {x,y,z}
+    -- No suitable house: do not invent a building or knowingly teleport into a
+    -- trap. The witness flees from here; death/stalling still protects the intel.
+    return best or {x,y,z}, bestRecipient or fallbackRecipient, bestHouse
 end
 local function finishRunner(id, runner)
     local x,y,z = Spring.GetUnitPosition(id)
@@ -194,8 +236,9 @@ local function defect(id, record)
         expose(id)
         return
     end
+    local pos, escapeRecipient, escapeHouse = escapePoint(id,recipient,targetDistance,record.team)
+    recipient = escapeRecipient
     local team = Spring.GetUnitTeam(recipient)
-    local pos = escapePoint(id,recipient,targetDistance,record.team)
     local hp,_,paralyze = Spring.GetUnitHealth(id)
     local experience = Spring.GetUnitExperience(id)
     -- Scripts cache their team at creation. Recreate with the correct employer and
@@ -212,7 +255,7 @@ local function defect(id, record)
         return
     end
     defectors[newID] = true
-    runners[newID] = {record=record,team=team,recipient=recipient,started=Spring.GetGameFrame(),
+    runners[newID] = {record=record,team=team,recipient=recipient,escapeHouse=escapeHouse,started=Spring.GetGameFrame(),
         lastProgress=Spring.GetGameFrame(),lastX=pos[1],lastZ=pos[3]}
     Spring.SetUnitRulesParam(newID,"betrayal_defector",1,public)
     Spring.SetUnitRulesParam(newID,"betrayal_runner",1,public)
@@ -255,6 +298,9 @@ local function deliberateHit(id,team,attacker,attackerTeam)
 end
 function gadget:UnitPreDamaged(id,def,team,damage,paralyzer,weapon,projectile,attacker,attackerDef,attackerTeam)
     if drops[id] then return 0 end
+    -- Protect only the handoff to the next simulation frame. The first hit is
+    -- fully applied, including lethal damage; the chase has no damage immunity.
+    if escapeReady[id] and Spring.GetGameFrame() <= escapeReady[id] then return 0,0 end
     if damage<=0 or paralyzer or replacing then return damage end
     if deliberateHit(id,team,attacker,attackerTeam) and interrogatable[def] and not defectors[id] then
         pending[id] = pending[id] or snapshot(id,team)
@@ -266,6 +312,20 @@ function gadget:UnitPreDamaged(id,def,team,damage,paralyzer,weapon,projectile,at
         pending[safe] = pending[safe] or snapshot(safe,attackerTeam)
     end
     return damage
+end
+function gadget:UnitDamaged(id,def,team,damage,paralyzer)
+    local record = pending[id]
+    if record and operatives[def] and not record.escapeScheduled and not paralyzer and alive(id) then
+        -- Another damage handler may have absorbed the hit after our snapshot.
+        if damage <= 0 then pending[id]=nil;return end
+        local hp = Spring.GetUnitHealth(id)
+        if hp and hp > 0 then
+            record.escapeScheduled = true
+            escapeReady[id] = Spring.GetGameFrame()+1
+            Spring.SetUnitRulesParam(id,"betrayal_pending",1,public)
+            expose(id)
+        end
+    end
 end
 function gadget:AllowCommand(id,def,team,cmd,params)
     if internalOrder then return true end
@@ -298,6 +358,7 @@ end
 function gadget:AllowUnitTransfer(id) return not runners[id] and not pending[id] and not executions[id] end
 function gadget:UnitDestroyed(id,def,team,attacker,attackerDef,attackerTeam)
     contacts[id]=nil
+    escapeReady[id]=nil
     local runner = runners[id]
     if runner then createDrop(runner.record) end
     if not replacing and not runner and interrogatable[def] and team~=gaia then
@@ -322,7 +383,9 @@ function gadget:GameFrame(frame)
                 execution.record=snapshot(id,Spring.GetUnitTeam(id))
                 Spring.SetUnitRulesParam(id,"betrayal_execution_frame",0,public)
                 if operatives[Spring.GetUnitDefID(id)] then
+                    execution.record.escapeScheduled=true
                     pending[id]=execution.record
+                    escapeReady[id]=frame
                 else
                     createDrop(execution.record)
                     replacing=true;Spring.DestroyUnit(id,true,false);replacing=false
@@ -331,9 +394,20 @@ function gadget:GameFrame(frame)
             end
         end
     end
+    local attempted = {}
+    for _, id in ipairs(sortedKeys(escapeReady)) do
+        if frame >= escapeReady[id] then
+            escapeReady[id]=nil
+            attempted[id]=true
+            if pending[id] then defect(id,pending[id]) end
+        end
+    end
     if frame % cfg.updateFrames ~= 0 then return end
     for _, id in ipairs(sortedKeys(pending)) do
-        if alive(id) and operatives[Spring.GetUnitDefID(id)] then defect(id,pending[id]) end
+        if pending[id].escapeScheduled and not attempted[id] and not escapeReady[id]
+            and alive(id) and operatives[Spring.GetUnitDefID(id)] then
+            defect(id,pending[id])
+        end
     end
     for _, id in ipairs(sortedKeys(runners)) do
         local r=runners[id]

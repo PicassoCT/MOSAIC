@@ -7,8 +7,10 @@ Ctrl+D on interrogatable player units starts a five-second termination warning. 
 ## The chase
 
 - A surviving operative changes employer through a replacement unit, because existing operative scripts cache their team at creation. Health and experience survive; queued attacks, production and self-destruct commands do not.
-- There is one emergency relocation. Up to 32 terrain-valid positions 600–1200 elmos from the original location are scored against the desired run length. Nearby former-team weapon ranges are avoided. If no acceptable point exists, the runner stays at the original position. This is an abstraction of an emergency escape, not a repeatable transport ability.
-- The travel target is 35 seconds at the unit's nominal speed, clamped to 900–2400 elmos. It is an estimate from endpoint distance, not a measured path duration or a guarantee of an optimal route. Buildings, terrain, interception and a moving recipient change it.
+- The first surviving damaging hit schedules the escape for the next simulation frame. Further damage is suppressed only during that handoff, so a same-frame turret volley cannot preempt it. A lethal first hit still leaves evidence; the chase itself has no damage immunity.
+- There is one emergency relocation through a nearby, completed civilian building. Buildings occupied by a live safehouse are excluded. Up to 32 walkable emergence points outside each building's collision volume are considered, within 600–1800 elmos of the execution site. The start must be at least 900 elmos from every operator and safehouse, regardless of team, cloak, or construction progress. Weapon ranges plus a 150-elmo buffer and a 300-elmo gap from other player units (including unarmed charges) are also checked on all sides.
+- Building exits and receiving contacts are ranked together against the desired run length, with a small preference for less teleport distance and for a field operative over a safehouse. IDs and exit order break ties deterministically. If no suitable building/recipient pair exists, the runner flees from the original location; death or stalling still releases the backup. The escape is a single use abstraction of emerging from a building, not repeatable transport.
+- The travel target is 35 seconds at the unit's nominal speed, clamped to 900–2400 elmos. A longer route can still win when nearby buildings cannot offer that target. This is an estimate from endpoint distance, not a measured path duration or a guarantee of an optimal route. Buildings, terrain, interception and a moving recipient change it.
 - The runner is visible and targetable to every team, marked in the world, and permanently unable to cloak. Civilian disguise threads respect that state too. Injury causes fading blood patches on dry ground; healthy runners, water and rooftops do not create ground blood.
 - The runner moves autonomously. Its new employer chooses a field rendezvous by moving another operative into its path. A completed, functioning friendly operative or safehouse can receive the intelligence after two seconds nearby. A safehouse is not required. The chosen destination's ID is private.
 - Runners cannot be given scouting, attack, production, cloak, transport or transfer orders. After delivery, their new employer may command them normally, with their identity still permanently exposed.
@@ -24,11 +26,11 @@ The old drop script's undefined IDs, reversed CreateUnit arguments, missing coll
 
 ## Tuning and validation
 
-`luarules/configs/betrayal.lua` holds timings and distances. The presentation caps blood marks at 256 and fades them after 30 seconds. Recipient searches use an operative/safehouse roster instead of scanning the civilian population.
+`luarules/configs/betrayal.lua` holds timings, distances and escape clearances. The presentation caps blood marks at 256 and fades them after 30 seconds. Recipient searches use an operative/safehouse roster; escape hazards are snapshotted once per placement attempt and buildings are searched only within the local radius.
 
 Standalone Lua 5.1 regression checks:
 
-- `tests/betrayal_runners_test.lua`: deliberate versus splash damage, fatal hits, Ctrl+D cancellation/expiry, occupied-house destruction, delivery, remote evidence, retries, unit cap and recycled IDs.
+- `tests/betrayal_runners_test.lua`: deliberate versus splash damage, fatal hits, next-frame escape and bounded volley protection, nearby buildings and walkable exits, contact clearance on all teams, occupied/unfinished houses, weapon ranges and unarmed charges, joint destination selection, Ctrl+D cancellation/expiry, delivery, remote evidence, retries, unit cap and recycled IDs.
 - `tests/betrayal_visibility_test.lua`: reveal expiration and list holes; blood cap, movement, water, rooftops, injury and cleanup.
 
 In-game checks still required: run a turret/IED execution scenario on Last Day of Dhubai; check the route through dense streets and the appearance of blood at normal zoom; intercept with an operative away from the receiving safehouse; verify death and collection from both viewpoints. No Recoil match was available in the development environment. The 35-second target needs playtesting.

@@ -7,7 +7,8 @@ local function world()
     UnitDefs={[1]={name='operative',humanName='Operative',speed=60,maxWeaponRange=0},
         [2]={name='safehouse',humanName='Safehouse',speed=0,maxWeaponRange=0},
         [3]={name='deaddropicon',speed=0,maxWeaponRange=0},
-        [4]={name='turret',speed=0,maxWeaponRange=600},[5]={name='house',speed=0}}
+        [4]={name='turret',speed=0,maxWeaponRange=600},[5]={name='house',speed=0},
+        [6]={name='charge',speed=0,maxWeaponRange=0}}
     UnitDefNames={deaddropicon={id=3}}
     local function list(predicate)
         local out={};for id,u in pairs(w.units) do if not u.dead and predicate(id,u) then out[#out+1]=id end end
@@ -28,7 +29,9 @@ local function world()
         local u,a=self.units[id],self.units[attacker]
         a.target=direct and id or nil
         local amount=self.g:UnitPreDamaged(id,u.def,u.team,damage,false,1,nil,attacker,a.def,a.team)
+        if self.absorb then amount=0 end
         u.hp=u.hp-amount
+        self.g:UnitDamaged(id,u.def,u.team,amount,false,1,nil,attacker,a.def,a.team)
         if u.hp<=0 then self:kill(id,attacker) end
     end
     function w:runner()
@@ -39,7 +42,7 @@ local function world()
     end
     Spring={
         GetGaiaTeamID=function() return 0 end,GetGameFrame=function() return w.frame end,
-        GetAllyTeamList=function() return {0,1,2} end,GetTeamList=function() return {0,1,2} end,
+        GetAllyTeamList=function() return {0,1,2,3} end,GetTeamList=function() return {0,1,2,3} end,
         AreTeamsAllied=function(a,b) return a==b end,
         ValidUnitID=function(id) return w.units[id]~=nil end,
         GetUnitIsDead=function(id) return not w.units[id] or w.units[id].dead end,
@@ -49,12 +52,14 @@ local function world()
         GetUnitHealth=function(id) local u=w.units[id];if u then return u.hp,u.maxHP,0,0,u.built or 1 end end,
         GetUnitExperience=function(id) return w.units[id].experience end,
         GetUnitBuildFacing=function() return 0 end,
+        GetUnitCollisionVolumeData=function(id) return 130,50,130,0,15,0 end,
         GetUnitTransporter=function(id) return w.units[id].transporter end,
         GetUnitCurrentCommand=function(id) local t=w.units[id].target;if t then return CMD.ATTACK,0,0,t end end,
         GetAllUnits=function() return list(function() return true end) end,
         GetTeamUnits=function(t) return list(function(id,u) return u.team==t end) end,
         GetUnitsInCylinder=function(x,z,r) return list(function(id,u) return (x-u.x)^2+(z-u.z)^2<=r*r end) end,
-        GetGroundHeight=function() return 0 end,TestMoveOrder=function() return not w.blocked end,
+        GetGroundHeight=function(x,z) return w.ground and w.ground(x,z) or 0 end,
+        TestMoveOrder=function(def,x,y,z) return not w.blocked and (not w.walkable or w.walkable(x,z)) end,
         SetUnitCloak=function(id,b) w.units[id].cloak=b end,
         SetUnitStealth=function(id,b) w.units[id].stealth=b end,
         SetUnitAlwaysVisible=function(id,b) w.units[id].visible=b end,
@@ -80,6 +85,7 @@ local function world()
     gadgetHandler={IsSyncedCode=function() return true end}
     function getOperativeTypeTable() return {[1]=true} end
     function getSafeHouseTypeTable() return {[2]=true} end
+    function getHouseTypeTable() return {[5]=true} end
     function getInterrogateAbleTypeTable() return {[1]=true,[2]=true} end
     -- Load the production graph helpers, not another implementation of the graph.
     local f=assert(io.open('scripts/lib_mosaic.lua'));local source=f:read('*a');f:close()
@@ -97,6 +103,7 @@ local function world()
     w:add(20,1,2,5000,2000)
     w:add(21,2,2,5200,2000,20)
     w:add(30,4,1,2000,2200)
+    w:add(60,5,0,3400,3100)
     return w
 end
 local function eq(a,b,msg) assert(a==b,(msg or 'mismatch')..': '..tostring(a)..' ~= '..tostring(b)) end
@@ -114,6 +121,13 @@ assert(not w.g:AllowUnitTransport(44,4,2,runner))
 assert(not w.g:AllowCommand(44,4,2,CMD.LOAD_UNITS,{runner}))
 assert(not w.g:AllowUnitTransfer(runner))
 assert((u.x-2300)^2+(u.z-2000)^2>=600^2-0.1,'one escape away from execution point')
+eq(GG.BetrayalRunners[runner].escapeHouse,60,'escape must use a real nearby house')
+local house=w.units[60]
+assert((u.x-house.x)^2+(u.z-house.z)^2>130^2/2,'emerge outside the house collision volume')
+for _,id in ipairs({10,11,13,20,21}) do
+    local contact=w.units[id]
+    assert((u.x-contact.x)^2+(u.z-contact.z)^2>=900^2,'clearance applies to contacts on both sides')
+end
 eq(GG.RevealedLocations,nil,'no intel before rendezvous')
 -- A mobile operator can intercept the runner without exposing the safehouse.
 w.units[20].x,w.units[20].z=u.x,u.z
@@ -173,5 +187,59 @@ w:kill(originalRecipient);w:tick(30)
 assert(GG.BetrayalRunners[runner].recipient~=originalRecipient)
 w.units[21].x,w.units[21].z=u.x,u.z
 w:tick(45);w:tick(105);eq(u.rules.betrayal_delivered,1)
+
+-- First surviving damage schedules the escape for the very next frame, and a
+-- same-frame turret volley cannot execute the witness during that handoff.
+w=world();w:tick(16);w:hit(12,30,50,true);w:hit(12,30,500,true)
+eq(w.units[12].hp,350);eq(w.units[12].rules.betrayal_pending,1)
+w:tick(17);runner=assert(w:runner(),'escape cannot wait for the 15-frame update')
+eq(w.units[runner].hp,350)
+w:hit(runner,30,500,true);assert(w.units[runner].dead,'handoff protection must not cover the chase')
+
+w=world();w.absorb=true;w:hit(12,30,50,true);w:tick(15)
+eq(w:runner(),nil,'fully absorbed damage cannot start an escape')
+w.absorb=false;w:hit(12,30,50,true);w:tick(16);assert(w:runner())
+
+-- No receiving team means one short handoff, not renewable invulnerability.
+w=world();w:kill(20);w:kill(21);w:hit(12,30,50,true);w:tick(1)
+w:hit(12,30,50,true);eq(w.units[12].hp,300)
+w:hit(12,30,500,true);assert(w.units[12].dead);assert(w:drop())
+
+local function escapedHouse(w)
+    w:hit(12,30,50,true);w:tick(1)
+    return GG.BetrayalRunners[assert(w:runner())].escapeHouse
+end
+-- Candidate ranking considers the new start and receiver together, including
+-- a third team; it must not commit to the receiver nearest the desired distance
+-- from the old execution site.
+w=world();w:add(25,1,3,2300,4100)
+eq(escapedHouse(w),60)
+eq(GG.BetrayalRunners[w:runner()].recipient,20,'reconsider receiver from the chosen house')
+w=world();w.units[20].x=9000;w.units[21].x=9200
+eq(escapedHouse(w),60,'a longer-than-ideal run is still preferable to abandoning a safe escape')
+
+-- A contact close to the only candidate excludes it regardless of allegiance,
+-- cloak, completion or ability to receive secrets right now.
+for _,team in ipairs({1,2,3}) do
+    for _,def in ipairs({1,2}) do
+        w=world();w:add(25,def,team,3400,3100);w.units[25].built=0.5;w.units[25].cloak=true
+        eq(escapedHouse(w),nil,'unsafe house near a contact must be rejected')
+    end
+end
+-- Occupied houses, weapon envelopes, unarmed charges and impassable/wet exits
+-- are unsuitable. No acceptable house means no invented open-ground teleport.
+w=world();GG.houseHasSafeHouseTable={[60]=21};eq(escapedHouse(w),nil)
+for _,team in ipairs({1,2,3}) do
+    w=world();w:add(31,4,team,3400,3100);eq(escapedHouse(w),nil)
+    w=world();w:add(31,6,team,3400,3100);eq(escapedHouse(w),nil)
+end
+w=world();w:add(31,4,1,5400,3100);UnitDefs[4].maxWeaponRange=2200
+eq(escapedHouse(w),nil,'weapons outside the old 1800 search still threaten the exit')
+w=world();w.ground=function() return -10 end;eq(escapedHouse(w),nil)
+w=world();w.units[60].built=0.5;eq(escapedHouse(w),nil)
+w=world();w:kill(60);eq(escapedHouse(w),nil)
+w=world();w.units[60].x=6500;eq(escapedHouse(w),nil,'building must be nearby')
+w=world();w.walkable=function(x,z) return x>3400 end
+eq(escapedHouse(w),60);assert(w.units[w:runner()].x>3400,'choose an unblocked exit')
 
 print('PASS betrayal: execution, cancellation, escape, rendezvous, death, evidence, visibility, graph identity')
