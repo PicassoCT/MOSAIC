@@ -20,11 +20,17 @@ void main() {
     float x=ribbonUV.x, age=ribbonUV.y;
     if (hairMode > 0.5) {
         // Static longitudinal fibres; no smoke holes, scrolling or emission.
-        float fibres = 0.85+0.15*sin(x*65.0+ribbonSeed);
+        float phase = x*3.5 + ribbonSeed + 0.1*sin(age*5.0+ribbonSeed);
+        float line = abs(fract(phase)-0.5);
+        float aa = max(fwidth(phase),0.015);
+        float fibres = 1.0-smoothstep(0.28-aa,0.28+aa,line);
+        // Preserve coverage when individual fibres become smaller than a pixel.
+        fibres = mix(fibres,0.56,smoothstep(0.35,0.8,aa));
         float edge = 1.0-smoothstep(0.75,1.0,abs(x));
         vec4 color = mix(colorStart,colorEnd,age);
-        float alpha = color.a*edge*strandOpacity*(1.0-smoothstep(0.94,1.0,age));
-        gl_FragColor = vec4(color.rgb*ambient*fibres*alpha,alpha);
+        float tips = 1.0-smoothstep(0.82+0.1*sin(phase*2.0),1.0,age);
+        float alpha = color.a*edge*fibres*strandOpacity*tips;
+        gl_FragColor = vec4(color.rgb*ambient*alpha,alpha);
         return;
     }
     vec2 flow=vec2(x*2.0+ribbonSeed,age*7.0-effectTime*0.85);

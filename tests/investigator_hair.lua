@@ -14,6 +14,7 @@ assert(count==3 and driven)
 for i=1,3 do
     local r=records['hair'..i]
     assert(r.piece==i+1 and r.directionPiece==6 and not r.windAffected)
+    assert(r.hang==0.85 and r.strands==4,'investigator locks must hang with fine strands')
     assert(r.rootOffset[1]==0 and r.rootOffset[2]==0 and r.rootOffset[3]==0)
 end
 records={};count,driven=register(8,{Tail={6,7}},true)

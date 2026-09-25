@@ -153,6 +153,20 @@ rotated=false;frame=frame+1;gadget:DrawWorld()
 assert(lastDirection[1]==-1 and lastOrigin[3]==7,'driver rotation displaced scalp attachment')
 gadget:Shutdown();gadget={};dofile(path);gadget:Initialize();gadget:DrawWorld()
 assert(lastDirection[1]==-1 and lastOrigin[3]==7,'reload lost separate driver')
+-- A raised/sideways ponytail still produces hanging scalp hair, with some sway.
+assert(api.Set(7,'hair1',2,{mode='hair',directionPiece=5,hang=0.85,windAffected=false}))
+for _,raised in ipairs({true,false}) do
+    rotated=raised;frame=frame+1;gadget:DrawWorld()
+    assert(lastDirection[2]<-0.98,'ponytail lift turned scalp hair into an upward spike')
+    assert(lastOrigin[1]==6 and lastOrigin[2]==4 and lastOrigin[3]==5,'hanging hair displaced emitter')
+end
+assert(math.abs(lastDirection[1])>0.1,'hanging hair lost ponytail sway')
+gadget:Shutdown();gadget={};dofile(path);gadget:Initialize();gadget:DrawWorld()
+assert(lastDirection[2]<-0.98 and math.abs(lastDirection[1])>0.1,'reload lost hanging rest pose')
+rotated=true
+assert(api.Set(7,'hair1',2,{mode='hair',directionPiece=5,hang=0.5,windAffected=false}))
+gadget:DrawWorld();assert(lastDirection[2]==-1,'opposed driver/gravity directions produced NaN')
+rotated=false
 for i=1,3 do
     assert(api.Set(7,'hair'..i,i+1,{mode='hair',directionPiece=5,windAffected=false}))
 end
@@ -164,6 +178,6 @@ cameraZ=1000;matrixCalls={};hidden('distant hair drawn')
 assert(next(matrixCalls)==nil,'culled hair queried animated matrices')
 cameraZ=100;cloak=true;hidden('driver bypasses cloak');cloak=false
 producer:UnitDestroyed(7);hidden('destroyed hair retains driver')
-gadget:Shutdown();assert(deleted==24,'mesh resources leaked')
+gadget:Shutdown();assert(deleted==32,'mesh resources leaked')
 producer:Shutdown();assert(GG.SmokeRibbon==nil)
 print('PASS: ribbon lifecycle, hair piece transform, turn lag, pause, settling, separate driver/root transforms, driver reload, shared matrix cache and culling')

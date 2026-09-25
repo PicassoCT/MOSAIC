@@ -24,12 +24,12 @@ ctx.blend_func=(moderngl.ONE,moderngl.ONE_MINUS_SRC_ALPHA)
 for name,value in dict(origin=(0,-0.9,0),direction=(0,1,0),cameraPosition=(0,0,5),
     effectTime=1.0,plumeLength=1.7,plumeWidth=0.35,curl=0.8,seed=3.0,
     colorStart=(0.7,0.7,0.7,0.8),colorEnd=(0.7,0.7,0.7,0),
-    emission=(0,0),ambient=(0.3,0.3,0.3),strandOpacity=1.6/3,directionalDrift=(0,0,0)).items():
+    emission=(0,0),ambient=(0.3,0.3,0.3),strandOpacity=1.6/3,strandCount=3,directionalDrift=(0,0,0)).items():
     p[name].value=value
 
 def render():
     fbo.clear(); gl.glUseProgram(p.glo)
-    for strand in range(3):
+    for strand in range(round(p['strandCount'].value)):
         gl.glBegin(5)
         for i in range(49):
             gl.glVertex3f(i/48,-1,strand); gl.glVertex3f(i/48,1,strand)
@@ -77,7 +77,7 @@ p['cameraPosition'].value=(0,0,5)
 p['colorStart'].value=(0.2,0.1,0.05,1);p['colorEnd'].value=(0.2,0.1,0.05,1)
 p['strandOpacity'].value=1
 hair=render()
-assert hair[25:40,:,3].max()>0.9, 'hair roots transparent'
+assert hair[25:40,:,3].max()>0.5, 'hair roots lost antialiased fibre coverage'
 p['emission'].value=(8,8)
 assert np.array_equal(hair,render()), 'hair glows'
 p['directionalDrift'].value=(100,0,0)
@@ -86,9 +86,25 @@ assert bent[...,3].sum()>0 and bent[-5:].max()==0, 'hair disappeared or stretche
 p['directionalDrift'].value=(0,0,0)
 p['effectTime'].value=8
 assert np.abs(hair-render()).sum()>0.01, 'hair does not flex'
+# Inspect a wider, downward lock: separated fibre coverage must survive close-up.
+p['origin'].value=(0,0.85,0);p['direction'].value=(0,-1,0)
+p['plumeWidth'].value=0.65;p['strandCount'].value=4;p['effectTime'].value=1
+p['ambient'].value=(0.7,0.7,0.7)
+hanging=render()
+profile=hanging[350:390,:,3].mean(axis=0)
+peaks=np.flatnonzero((profile[1:-1]>profile[:-2]) & (profile[1:-1]>profile[2:]) & (profile[1:-1]>0.15))
+assert len(peaks)>=4, 'hair remains one solid wedge without visible fibres'
+assert hanging[-25:,:,3].max()==0, 'hanging hair extends above its root'
+p['effectTime'].value=6
+moving=render()
+assert np.allclose(hanging[469:,:,3],moving[469:,:,3],atol=1e-4), 'hair roots drift with animation'
+if '--hair-preview' in sys.argv:
+    from PIL import Image
+    rgb=hanging[...,:3]+np.array([0.55,0.58,0.62])*(1-hanging[...,3:4])
+    Image.fromarray((np.clip(rgb[::-1],0,1)**(1/2.2)*255).astype('uint8')).save(sys.argv[sys.argv.index('--hair-preview')+1])
 if '--preview' in sys.argv:
     from PIL import Image
     rgb=lit[...,:3]+np.array([0.025,0.035,0.05])*(1-lit[...,3:4])
     Image.fromarray((np.clip(rgb[::-1],0,1)**(1/2.2)*255).astype('uint8')).save(sys.argv[sys.argv.index('--preview')+1])
-print('PASS: GLSL compile/render, finite output, endpoints, advection, deterministic pause, colour gradient, emission, alpha, directional drift, camera-axis fallback, small scale, hair roots, bounded length, no glow, flex')
+print('PASS: GLSL compile/render, finite output, endpoints, advection, deterministic pause, colour gradient, emission, alpha, directional drift, camera-axis fallback, small scale, hair roots, bounded length, no glow, flex, separated fibres, hanging silhouette, stationary roots')
 print('Renderer:',ctx.info['GL_RENDERER'])

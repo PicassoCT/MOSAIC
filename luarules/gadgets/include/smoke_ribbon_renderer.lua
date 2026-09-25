@@ -7,7 +7,7 @@ return function()
     local self = {records = {}, maxVisible = 128}
     local loc, meshes, hairHistory = {}, {}, {}
     for _, name in ipairs({'origin','direction','cameraPosition','effectTime','plumeLength',
-        'plumeWidth','curl','seed','colorStart','colorEnd','emission','ambient','strandOpacity','directionalDrift','hairMode','stiffness','gravity'}) do
+        'plumeWidth','curl','seed','colorStart','colorEnd','emission','ambient','strandOpacity','strandCount','directionalDrift','hairMode','stiffness','gravity'}) do
         loc[name] = gl.GetUniformLocation(shader, name)
     end
     local function strip(segments, strand)
@@ -119,6 +119,13 @@ return function()
                         local magnitude = dx and math.sqrt(dx*dx+dy*dy+dz*dz) or 0
                         if magnitude > 1e-6 then
                             dx,dy,dz = dx/magnitude,dy/magnitude,dz/magnitude
+                            if r.mode == 'hair' and (r.hang or 0)>0 then
+                                local h=r.hang
+                                dx,dy,dz=dx*(1-h),dy*(1-h)-h,dz*(1-h)
+                                local norm=math.sqrt(dx*dx+dy*dy+dz*dz)
+                                if norm>1e-6 then dx,dy,dz=dx/norm,dy/norm,dz/norm
+                                else dx,dy,dz=0,-1,0 end
+                            end
                             local driftX,driftY,driftZ = 0,0,0
                             if r.windAffected ~= false and Spring.GetWind then
                                 if not wind then wind={Spring.GetWind()} end
@@ -210,6 +217,7 @@ return function()
             gl.Uniform(loc.gravity,r.gravity or 0.35)
             gl.Uniform(loc.effectTime,now*r.speed)
             gl.Uniform(loc.plumeLength,d.length); gl.Uniform(loc.plumeWidth,d.width)
+            gl.Uniform(loc.strandCount,r.strands)
             gl.Uniform(loc.curl,r.curl); gl.Uniform(loc.seed,r.seed)
             gl.Uniform(loc.colorStart,unpack(r.colorStart)); gl.Uniform(loc.colorEnd,unpack(r.colorEnd))
             gl.Uniform(loc.emission,unpack(r.emission)); gl.Uniform(loc.strandOpacity,(r.mode == 'hair' and 1 or 1.6/r.strands)*d.fade)

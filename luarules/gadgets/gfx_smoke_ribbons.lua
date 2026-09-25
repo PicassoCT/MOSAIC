@@ -38,7 +38,7 @@ if gadgetHandler:IsSyncedCode() then
     end
 else
     local renderer, revision, preview
-    local fields={'mode','stiffness','gravity','unitID','piece','directionPiece','directionSpace','scale','length','width','curl','speed','seed','strands','enabled','distanceFactor',
+    local fields={'mode','stiffness','gravity','hang','unitID','piece','directionPiece','directionSpace','scale','length','width','curl','speed','seed','strands','enabled','distanceFactor',
         'groundDirected','windAffected','motionAffected','windInfluence','motionInfluence','trailTime'}
     function gadget:Initialize()
         local err

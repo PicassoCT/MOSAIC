@@ -2,7 +2,7 @@
 uniform vec3 origin, direction, cameraPosition;
 uniform vec3 directionalDrift;
 uniform float effectTime, plumeLength, plumeWidth, curl, seed;
-uniform float hairMode, stiffness, gravity;
+uniform float hairMode, stiffness, gravity, strandCount;
 out vec2 ribbonUV;
 out float ribbonSeed;
 
@@ -10,15 +10,19 @@ out float ribbonSeed;
 vec3 centre(float t, float strand, vec3 u, vec3 v) {
     if (hairMode > 0.5) {
         // Fixed arc length: integrate short unit tangents; roots never advect.
-        vec3 p = origin;
+        float s = seed + strand * 2.399963;
+        float count = max(strandCount,1.0);
+        float rootRadius = plumeWidth * 0.22 * sqrt((strand+0.5)/count);
+        vec3 p = origin + rootRadius*(u*cos(s)+v*sin(s));
+        float lockLength = plumeLength * (0.88+0.12*sin(s)*sin(s));
         for (int i=0; i<12; ++i) {
             float q = t * (float(i)+0.5)/12.0;
             float flex = (1.0-stiffness)*q*q;
             float wave = sin(effectTime*2.1 + q*3.0 + seed + strand*2.4);
             vec3 bend = direction + vec3(0,-gravity*q,0)
                 + directionalDrift/max(plumeLength,0.001)*flex
-                + u*(wave*curl*flex);
-            p += normalize(bend) * (plumeLength*t/12.0);
+                + (u*wave+v*sin(effectTime*1.3+q*4.0+s))*curl*flex;
+            p += normalize(bend) * (lockLength*t/12.0);
         }
         return p;
     }
@@ -53,7 +57,8 @@ void main() {
     float spread = (0.035 + 0.55 * pow(t,0.8)) * smoothstep(0.0,0.025,t);
     float breath = 0.8 + 0.2 * sin(t*17.0-effectTime*1.7+seed+strand);
     if (hairMode > 0.5) {
-        spread = 0.5 * pow(max(0.0,1.0-t),0.65);
+        // Several narrow locks with soft, staggered ends, not one triangular card.
+        spread = 0.5/max(strandCount,1.0) * (1.0-smoothstep(0.55,1.0,t));
         breath = 1.0;
     }
     p += across * side * plumeWidth * spread * breath;

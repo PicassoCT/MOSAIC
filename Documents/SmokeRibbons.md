@@ -199,12 +199,13 @@ The pump-station ribbon now runs continuously on the Igniter anchor until unit d
 
 Use the same `GG.SmokeRibbon.Set(unitID, slot, piece, options)` API with
 `mode='hair'`. Defaults are short, dark, opaque tapered locks, one strip per slot,
-no self illumination, restrained wind and motion trailing. Smoke remains the default.
+no self illumination, restrained wind and motion trailing. Several narrow strips carry
+antialiased longitudinal fibres with varied lengths and frayed tips. Smoke remains the default.
 
 ```lua
 GG.SmokeRibbon.Set(unitID, 'hair1', 'hairemit1', {
     mode='hair', directionPiece='Tail1', direction={0,0,-1},
-    length=2.6, width=0.55, stiffness=0.65, gravity=0.18,
+    length=4.0, width=0.85, strands=4, stiffness=0.65, gravity=0.3, hang=0.85,
     windAffected=false, -- Tail1 already carries the polygon ponytail's wind motion
     distanceFactor=100,
 })
@@ -236,7 +237,10 @@ suffixes as a fallback. The current DAE exports `hairemit1`, `hairemit002`, and
 estimated Head offsets are used. Missing emitters are skipped for older models.
 
 Where the polygon ponytail is enabled, the locks use its animated Tail1 basis
-without adding engine wind a second time. The existing five-ponytail animation
+without adding engine wind a second time. `hang=0.85` blends that direction toward
+world down before motion history is sampled: the ponytail provides restrained sway,
+while the scalp locks hang instead of copying its full upward lift. `hang` defaults
+to zero for callers that want the original piece direction; one is fully downward. The existing five-ponytail animation
 budget remains in force; other investigators use the Head basis and the shader's
 small wind response. Repeated show/hide calls no longer acquire another ponytail
 slot or start another wind loop. The wind loop follows the owner's `boolWalking`

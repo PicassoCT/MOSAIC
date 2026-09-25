@@ -41,6 +41,7 @@ function M.Normalize(unitID, piece, options)
         mode = mode, rootOffset = vector(o.rootOffset, {0,0,0}, 3, -1e4, 1e4),
         stiffness = number(o.stiffness, 0.7, 0, 1),
         gravity = number(o.gravity, 0.35, 0, 1),
+        hang = number(o.hang, 0, 0, 1),
         unitID = unitID, piece = piece, directionPiece = directionPiece,
         direction = direction, directionSpace = space,
         scale = number(o.scale, 1, 0.001, 100),
