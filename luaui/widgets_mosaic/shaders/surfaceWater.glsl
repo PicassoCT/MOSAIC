@@ -19,6 +19,21 @@ vec2 runoffChart(vec3 p, vec3 across) {
 }
 float surfaceWetNoise(vec2 p);
 vec4 roofWaterBeads(vec3 p, vec3 normal, bool building);
+// A material-neutral contact edge: broad aggregate irregularity plus fine grit.
+// Both live in the fixed world chart, never in camera/time coordinates. Fade
+// each octave before it becomes subpixel so distant ground does not sparkle.
+float terrainContactWidth(vec2 at, float pixel, float width) {
+    float broadResolved=1.0-smoothstep(0.30,0.85,pixel*0.65);
+    float fineResolved=1.0-smoothstep(0.25,0.75,pixel*2.6);
+    float broad=0.0,fine=0.0;
+    if(broadResolved>0.0)
+        broad=(surfaceWetNoise(at*0.65+vec2(37,19))-0.5)*broadResolved;
+    if(fineResolved>0.0)
+        fine=(surfaceWetNoise(at*2.6+vec2(11,73))-0.5)*fineResolved;
+    // Multiplicative roughness preserves the centreline and nested rain widths:
+    // increasing rain cannot dry a previously wet pixel or relocate a channel.
+    return width*(1.0+0.70*broad+0.35*fine);
+}
 // Fixed drainage network. Neither cell positions nor channel centres depend on
 // time or rain; rain only widens the existing paths.
 // x: coverage, yz: coordinates along/across the nearest edge, w: downhill speed.
@@ -39,9 +54,14 @@ vec4 terrainChannelFrame(vec2 at, float pixel) {
         } else if(d<second) {second=d;siteB=site;}
     }
     float edge=sqrt(second)-sqrt(first);
-    float width=mix(0.025,0.14,clamp(rainPercent,0.0,1.0));
+    float width=terrainContactWidth(at,pixel,
+        mix(0.025,0.14,clamp(rainPercent,0.0,1.0)));
     float aa=max(pixel*0.16,0.002);
-    float channel=1.0-smoothstep(width,width+aa,edge);
+    float body=1.0-smoothstep(width,width+aa+width*0.25,edge);
+    // A shallow capillary fringe softens the broken contact line. This is wet
+    // coverage/relief, not an opaque stone border or a luminous foam outline.
+    float fringe=1.0-smoothstep(width,width+aa+width*0.65+0.012,edge);
+    float channel=mix(fringe,body,0.82);
     vec2 across=normalize(siteB-siteA);
     vec2 tangent=vec2(-across.y,across.x);
     if(tangent.y<0.0 || (abs(tangent.y)<0.00001 && tangent.x<0.0)) tangent=-tangent;
@@ -68,7 +88,9 @@ float terrainWaterFilm(vec2 at, float pixel) {
     // Nearly level links retain wet relief but don't imply flowing uphill.
     float flowing=smoothstep(0.03,0.20,channel.w);
     float relief=0.20+0.22*crest*resolved*flowing;
-    return 0.36+channel.x*relief;
+    // Round the banks into the underlying film; keep the travelling crests
+    // inside the fixed footprint instead of lighting a hard polygon outline.
+    return 0.36+channel.x*channel.x*relief;
 }
 float getSurfaceRivulets(vec3 p, vec3 normal, bool building) {
     if(building) return roofWaterBeads(p,normal,true).w;
