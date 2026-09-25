@@ -17,7 +17,8 @@ w=h=256
 out=ctx.texture((w,h),4,dtype='f4');fbo=ctx.framebuffer([out]);fbo.use()
 depth=ctx.texture((w,h),1,np.ones((h,w),dtype='f4').tobytes(),dtype='f4');depth.use(0)
 for n,v in dict(sceneDepth=0,viewportSize=(w,h),viewportOrigin=(0,0),zeroToOne=0.,effectTime=1.,seed=7.,density=4.,emission=2.5,
-                glow=0.,opacity=1.,phase=0.,smokeColor=(.25,.24,.23),hotColor=(1.,.55,.12),ambient=(.5,.5,.5),shape=0,steps=24,volumeAxis=1,gradientSign=1.).items():p[n].value=v
+                glow=0.,opacity=1.,phase=0.,smokeColor=(.25,.24,.23),hotColor=(1.,.55,.12),ambient=(.5,.5,.5),shape=0,steps=24,volumeAxis=1,gradientSign=1.,
+                windView=(0.,0.,0.),upView=(0.,1.,0.),windDeform=0.,proxyScale=1.).items():p[n].value=v
 
 def matrix(mode,m):
     gl.glMatrixMode(mode); a=(ctypes.c_float*16)(*np.asarray(m,dtype='f4').T.flatten());gl.glLoadMatrixf(a)
@@ -93,6 +94,49 @@ assert render()[...,3].sum()>0,'cooled soot disappeared prematurely'
 images=[(name,preset('aerosol_'+name,2.)) for name in ['depressol','tollwutox','orgyanyl','wanderlost']]+[
     ('Flame tongue',preset('flameTongue',.8)),('Gas flare',preset('gasExplosion',.8)),
     ('Hot rising smoke',preset('risingSmoke',2.)),('Cooled smoke',preset('risingSmoke',18.))]
+
+# Pump-only wind: exercise the production transform with room for deformed edges.
+cfg=config.Preset('risingSmoke'); bend=cfg['windDeform']; padding=1+bend*1.5
+def wind_camera(linear=None):
+    camera(ortho=True)
+    model=np.eye(4);model[:3,:3]=(np.eye(3) if linear is None else linear)*padding;model[2,3]=-4
+    matrix(0x1700,model)
+def centroid(im):
+    alpha=im[...,3]
+    return float((alpha*np.arange(w)[None,:]).sum()/alpha.sum())
+wind_camera();preset('risingSmoke',18.)
+calm=render(proxyScale=padding,windDeform=0.,windView=(1.,0.,0.))
+right=render(windDeform=bend)
+assert np.array_equal(right,render()),'paused wind deformation changes'
+left=render(windView=(-1.,0.,0.))
+assert centroid(right)>centroid(left)+3,'density does not bend downwind'
+assert np.abs(right-calm).sum()>10,'wind changes no smoke shape'
+later=render(effectTime=7.,windView=(1.,0.,0.))
+assert np.abs(later-right).sum()>10,'rolling smoke frozen'
+# Sample enlarged proxy face-on: its density must die before every screen edge.
+for transform in [np.eye(3),np.diag([-1.,1.,1.]),
+                  np.array([[0.,-.8,0.],[1.2,0.,0.],[0.,0.,.7]])]:
+    wind_camera(transform)
+    right=render(windView=(1.,0.,0.));left=render(windView=(-1.,0.,0.))
+    assert centroid(right)>centroid(left)+2,'piece transform rotated/reversed world wind'
+    assert right[:3].max()==0 and right[-3:].max()==0 and right[:,:3].max()==0 and right[:,-3:].max()==0,'wind clips at proxy edge'
+    still=render(windDeform=0.);breeze=render(windDeform=1e-6)
+    assert np.allclose(still,breeze,atol=.0001),'noise jumps when calm wind starts'
+    render(windDeform=bend)
+# A camera yaw changes view-space wind; projected drift still follows it.
+yaw=np.array([[.7071,0.,.7071],[0.,1.,0.],[-.7071,0.,.7071]])
+wind_camera(yaw)
+right=render(windView=(.7071,0.,-.7071));left=render(windView=(-.7071,0.,.7071))
+assert centroid(right)>centroid(left)+2,'camera yaw changed world wind direction'
+wind_camera();render(windView=(0.,0.,0.),windDeform=0.)
+assert render(opacity=0.).max()==0,'wind smoke survives zero opacity'
+depth.write(np.full((h,w),.01,dtype='f4').tobytes())
+assert render(opacity=.7,windDeform=bend).max()==0,'wind smoke draws through foreground'
+depth.write(np.ones((h,w),dtype='f4').tobytes())
+wind_camera();preset('risingSmoke',18.)
+wind_preview=render(proxyScale=padding,windDeform=bend,windView=(1.,0.,0.))
+images.extend([('Pump smoke: calm',calm),('Pump smoke: wind',wind_preview)])
+camera();render(windDeform=0.,proxyScale=1.)
 if '--preview' in sys.argv:
     from PIL import Image,ImageDraw
     sheet=Image.new('RGB',(w*len(images),h+30),(18,22,28));draw=ImageDraw.Draw(sheet)
@@ -104,3 +148,4 @@ if '--preview' in sys.argv:
     sheet.save(sys.argv[sys.argv.index('--preview')+1])
 print('PASS: compile, deterministic turbulence, silhouettes, alpha/emission, cooling, foreground depth, camera inside, orthographic, mirrored transform, both clip-depth conventions, aerosol identification, flame and rising smoke glow')
 print(ctx.info['GL_RENDERER'])
+print('PASS: pump wind bends density, rolling silhouette, paused wind, reversed wind, mirrored/rotated/scaled pieces, padded bounds, wind depth and alpha')

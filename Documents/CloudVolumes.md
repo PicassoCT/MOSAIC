@@ -190,3 +190,26 @@ through Lua 5.1 (`lupa`), renders their night appearance, and checks identifying
 hues, glow without extra opacity, cooling and zero-opacity output. Its optional
 preview now shows the four aerosols, flame tongue, burst, hot smoke and cooled
 smoke. Neither test is a live-engine or target-hardware performance check.
+
+## Pumpstation smoke wind deformation
+
+Only `risingSmoke` opts into `windDeform` (currently .38). The renderer reads
+Spring's world wind once per draw and scales the response against `Game.windMax`.
+The volume shader bends the density downwind more strongly toward the upper
+cloud, rolls its boundary along the radial normal, and carries its internal
+noise upward/downwind. The lower end stays anchored. The same preset also
+deforms released smoke while its existing expansion, cooling and fade continue.
+This is bounded shape motion, not unlimited transport of the cloud centre.
+
+Wind and world-up are transformed through the camera and animated piece matrices;
+rotating, mirrored and stretched pieces retain the world wind direction. The
+proxy and culling bound expand together, while density coordinates and optical
+path length compensate for the padding. The existing draw/ray-sample budgets
+still apply, and no extra noise samples or ray-march steps are added.
+
+`gasExplosion`, launch bursts, impact/nuclear explosions, flames, spaceport vapour
+and all other presets keep wind deformation disabled. They retain their own
+expansion and motion. The renderer regression test verifies this isolation;
+the GPU test checks wind direction under piece transforms, animation, padding,
+foreground depth and opacity. Live pumpstation appearance still needs an
+in-game check.

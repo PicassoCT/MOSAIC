@@ -5,6 +5,8 @@ uniform float effectTime, seed, density, emission, glow, opacity, phase;
 uniform vec3 smokeColor, hotColor, ambient;
 uniform int shape, steps, volumeAxis;
 uniform float gradientSign;
+uniform float windDeform, proxyScale;
+flat in vec3 cloudWind, cloudUp;
 noperspective in vec4 nearH;
 noperspective in vec4 farH;
 out vec4 fragColor;
@@ -19,10 +21,29 @@ float noise(vec3 p) {
                    mix(hash(i+vec3(0,1,1)),hash(i+vec3(1,1,1)),f.x),f.y),f.z);
 }
 float field(vec3 p, out float heat, out float light) {
+    p*=proxyScale;
+    // Keep world-up even in calm weather, avoiding a noise jump when wind starts.
+    vec3 flow=proxyScale>1.0 ? cloudUp+cloudWind*1.8 : vec3(0.0,1.0,0.0);
+    if(windDeform>0.0) {
+        // Backtrace the density shape: the bottom stays fed while the top bends
+        // downwind. Two travelling waves roll the silhouette along its normal.
+        float height=dot(p,cloudUp);
+        float freeSmoke=smoothstep(-.85,.8,height);
+        float gust=.85+.15*sin(effectTime*.55+seed);
+        p-=cloudWind*freeSmoke*freeSmoke*gust;
+        float roll=sin(height*5.0-effectTime*1.3+seed)
+            +.5*sin(dot(p,cloudWind)*9.0-height*3.0-effectTime*.9+seed*.37);
+        p-=p/max(length(p),.001)*(roll*.16*windDeform*freeSmoke);
+    }
     if(volumeAxis==0) p=p.yxz;
     if(volumeAxis==2) p=p.xzy;
     if(shape==1) p.y*=gradientSign;
-    vec3 q=p*3.8+vec3(seed*.37,-effectTime,seed*.13);
+    // Only the pump's round smoke opts in; all other profiles keep their flow.
+    if(proxyScale>1.0) {
+        if(volumeAxis==0) flow=flow.yxz;
+        if(volumeAxis==2) flow=flow.xzy;
+    }
+    vec3 q=p*3.8+vec3(seed*.37,0.0,seed*.13)-flow*effectTime;
     q.xz+=.35*vec2(sin(p.y*5.0+effectTime),cos(p.y*4.0-effectTime*.7));
     float n=noise(q)*.72+noise(q*2.07+7.3)*.28;
     float envelope;
@@ -82,7 +103,7 @@ void main() {
         float d=field(p,heat,light)*density;
         // Soft intersection with scene depth, measured in normalized volume units.
         d*=smoothstep(0.0,.06,exitT-t);
-        float alpha=1.0-exp(-d*stepSize*3.0);
+        float alpha=1.0-exp(-d*stepSize*proxyScale*3.0);
         vec3 smoke=smokeColor*(ambient*.4+vec3(light*.8));
         vec3 color=mix(smoke,hotColor*emission,clamp(heat*min(emission,1.0),0.0,1.0));
         // Broad self-illumination keeps flames and identifying aerosol colours

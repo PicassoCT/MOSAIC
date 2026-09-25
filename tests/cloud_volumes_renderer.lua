@@ -4,13 +4,14 @@ local frame=60
 local uniforms={}
 local units={}
 local function count(k)calls[k]=(calls[k] or 0)+1 end
-Game={gameSpeed=30};Platform={glSupportClipSpaceControl=true}
+Game={gameSpeed=30,windMax=20};Platform={glSupportClipSpaceControl=true}
 GL={QUADS=7,MODELVIEW=0x1700,PROJECTION=0x1701,NEAREST=1,CLAMP_TO_EDGE=2,ONE=1,ONE_MINUS_SRC_ALPHA=2}
 local proj={2,0,0,0, 0,2,0,0, 0,0,-1,-1, 0,0,-.2,0}
 local mv={1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,-4,1}
 Spring={GetViewGeometry=function()return 256,256,0,0 end,GetCameraPosition=function()return 0,0,far and 100000 or 20 end,
     GetSpectatingState=function()return false,false end,GetMyAllyTeamID=function()return 0 end,
     GetGameFrame=function()return frame end,GetFrameTimeOffset=function()return 0 end,
+    GetWind=function()return 20,0,0 end,
     GetUnitLosState=function()return {los=visible}end,IsPosInLos=function()return visible end,
     GetUnitIsDead=function()return false end,GetUnitIsCloaked=function()return false end,
     GetUnitNoDraw=function()return false end,GetUnitTransporter=function()return nil end,
@@ -52,6 +53,19 @@ assert(uniforms.glow==0,'vapour inherits flame glow')
 renderer.records={aerosol={preset='aerosol_tollwutox',x=0,y=10,z=0,scale=1,born=0,seed=1}}
 renderer:Draw()
 assert(uniforms.glow>2 and uniforms.emission==0,'aerosol identification glow missing')
+renderer.records={smoke={unitID=1,piece=2,preset='risingSmoke',center={0,0,0},half={3,4,3},born=0,seed=1}}
+renderer:Draw()
+assert(uniforms.windDeform==config.Preset('risingSmoke').windDeform,'pump smoke ignores wind')
+assert(uniforms.proxyScale>1.5,'deformed silhouette lacks proxy padding')
+Spring.GetWind=function()return 0,0,0 end
+renderer:Draw();assert(uniforms.windDeform==0,'calm wind still bends smoke')
+Spring.GetWind=function()return -20,0,0 end
+renderer:Draw();assert(uniforms.windDeform>0 and uniforms.windView<0,'reversed wind lost')
+for _,name in ipairs({'gasExplosion','launchGas','impact','nuclear','fire','flameTongue','launchVapour'}) do
+    renderer.records={effect={unitID=1,piece=2,preset=name,center={0,0,0},half={3,4,3},born=0,seed=1}}
+    renderer:Draw()
+    assert(uniforms.windDeform==0 and uniforms.proxyScale==1,'wind leaked into '..name)
+end
 renderer.records={tail={preset='steam',x=0,y=0,z=0,worldHalf={3,4,3},duration=45,born=0,seed=1}}
 local before=calls.copy
 frame=45*30;renderer:Draw();assert(calls.copy==before,'invisible curve endpoint still rendered')

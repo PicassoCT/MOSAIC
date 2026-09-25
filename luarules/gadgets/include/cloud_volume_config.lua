@@ -66,6 +66,8 @@ M.presets.flameTongue=variant('plume',{
 M.presets.risingSmoke=variant('soot',{
     emission=3.8, glow=.22, hot={1,.32,.045},
     emissionCurve={{0,1},{2.5,.9},{7,.35},{12,0}},
+    -- Pump smoke only. Explosions/flames keep their own expansion and motion.
+    windDeform=.38,
 })
 -- Launch-pad vapour must obscure the structure, not tint it through a fog veil.
 -- Opacity multiplies the integrated volume, so density alone cannot overcome

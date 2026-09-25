@@ -7,7 +7,8 @@ return function(Config)
     local self={records={}}
     local loc={}
     for _,n in ipairs({'viewportSize','viewportOrigin','zeroToOne','effectTime','seed','density','emission','glow',
-        'opacity','phase','smokeColor','hotColor','ambient','shape','steps','volumeAxis','gradientSign'}) do loc[n]=gl.GetUniformLocation(shader,n) end
+        'opacity','phase','smokeColor','hotColor','ambient','shape','steps','volumeAxis','gradientSign',
+        'windView','upView','windDeform','proxyScale'}) do loc[n]=gl.GetUniformLocation(shader,n) end
     local depth,w,h
     local quad=gl.CreateList(function() gl.BeginEnd(GL.QUADS,function()
         gl.Vertex(-1,-1);gl.Vertex(1,-1);gl.Vertex(1,1);gl.Vertex(-1,1)
@@ -29,6 +30,7 @@ return function(Config)
                 gl.Scale(r.worldHalf[1]*d.growth,r.worldHalf[2]*d.growth,r.worldHalf[3]*d.growth)
             else gl.Scale(d.radius,d.height,d.radius) end
         end
+        gl.Scale(d.proxyScale,d.proxyScale,d.proxyScale)
     end
     local function rect(proj,vw,vh)
         local m={gl.GetMatrixData(GL.MODELVIEW)}
@@ -60,6 +62,9 @@ return function(Config)
         local candidates={}
         for key,r in pairs(self.records) do
             local p=Config.Preset(r.preset)
+            -- Room for bounded shear and rolling lobes; the shader divides this
+            -- padding back out of the density shape, so calm smoke does not grow.
+            local proxyScale=1+(p.windDeform or 0)*1.5
             local age=math.max(0,now-r.born/(Game.gameSpeed or 30))
             local opacity,densityGain,emissionGain,growth=Config.Appearance(p,age)
             local visible=opacity>0
@@ -98,6 +103,7 @@ return function(Config)
                 bound=math.sqrt(radius^2*2+height^2)
             end
             if visible and x and radius and radius>.01 then
+                bound=bound+radius*(proxyScale-1)
                 local d2=(cx-x)^2+(cy-y)^2+(cz-z)^2
                 local cutoff=radius*40+ (bound-radius)
                 if d2<cutoff^2 and Spring.IsSphereInView(x,y,z,bound) then
@@ -106,7 +112,7 @@ return function(Config)
                     fade=fade*opacity
                     candidates[#candidates+1]={key=key,r=r,p=p,age=age,phase=phase,x=x,y=y,z=z,
                         radius=radius,height=height,fade=fade,d2=d2,growth=growth,
-                        densityGain=densityGain,emissionGain=emissionGain}
+                        densityGain=densityGain,emissionGain=emissionGain,proxyScale=proxyScale}
                 end
             end
         end
@@ -125,6 +131,13 @@ return function(Config)
             end
         end
         if #draw==0 then return end
+        -- MODELVIEW here is the camera view, before any unit/piece transform.
+        -- The vertex shader maps these vectors into each animated volume.
+        local view={gl.GetMatrixData(GL.MODELVIEW)}
+        local wx,wy,wz=0,0,0
+        if Spring.GetWind then wx,wy,wz=Spring.GetWind() end
+        wx,wy,wz=wx or 0,wy or 0,wz or 0
+        local windStrength=math.min(1,math.sqrt(wx*wx+wy*wy+wz*wz)/math.max(Game.windMax or 1,1))
         if vw~=w or vh~=h then
             if depth then gl.DeleteTexture(depth);depth=nil end
             depth=gl.CreateTexture(vw,vh,{format=GL.DEPTH_COMPONENT24 or 0x81A6,
@@ -140,6 +153,9 @@ return function(Config)
         gl.Uniform(loc.viewportSize,vw,vh);gl.Uniform(loc.viewportOrigin,vx,vy)
         gl.Uniform(loc.zeroToOne,(Platform and Platform.glSupportClipSpaceControl) and 1 or 0)
         gl.Uniform(loc.ambient,ar or .5,ag or .5,ab or .5)
+        gl.Uniform(loc.windView,view[1]*wx+view[5]*wy+view[9]*wz,
+            view[2]*wx+view[6]*wy+view[10]*wz,view[3]*wx+view[7]*wy+view[11]*wz)
+        gl.Uniform(loc.upView,view[5],view[6],view[7])
         for i=#draw,1,-1 do
             local d=draw[i];local p=d.p
             gl.Scissor(vx+d.rect[1],vy+d.rect[2],d.rect[3],d.rect[4])
@@ -147,6 +163,8 @@ return function(Config)
             gl.Uniform(loc.density,p.density*d.densityGain);gl.Uniform(loc.emission,p.emission*d.emissionGain)
             gl.Uniform(loc.glow,(p.glow or 0)*d.emissionGain)
             gl.Uniform(loc.opacity,d.fade);gl.Uniform(loc.phase,d.phase)
+            gl.Uniform(loc.windDeform,(p.windDeform or 0)*windStrength)
+            gl.Uniform(loc.proxyScale,d.proxyScale)
             gl.Uniform(loc.smokeColor,unpack(p.color));gl.Uniform(loc.hotColor,unpack(p.hot))
             local axis,sign=2,1
             if d.r.half then
