@@ -114,6 +114,56 @@ assert(api.Set(7,'a','smoke',{}));assert(api.Set(7,'b','smoke',{}))
 producer:UnitDestroyed(7);hidden('destroyed unit retains slots')
 gadget:TextCommand('smokeribbon smoke glow');n=drawn;gadget:DrawWorld();assert(drawn==n+1)
 gadget:TextCommand('smokeribbon off');hidden('preview did not stop')
-gadget:Shutdown();assert(deleted==16,'mesh resources leaked')
+-- Hair uses the full animated piece basis and carries options over reloads.
+Spring.GetUnitPiecePosDir=function() return 0,0,0,0,1,0 end
+Spring.GetUnitPieceMatrix=function() return 1,0,0,0, 0,0,1,0, 0,-1,0,0, 0,0,0,1 end
+viewX=0;x=0;wind={0,0,0};velocity={0,0,0}
+assert(not api.Set(7,'hair','smoke',{mode='invalid'}))
+assert(api.Set(7,'hair','smoke',{mode='hair',rootOffset={2,3,4},direction={0,0,1},distanceFactor=100}))
+gadget:DrawWorld()
+assert(lastOrigin[1]==3 and lastOrigin[2]==-4 and lastOrigin[3]==2,'hair root lost piece transform')
+assert(lastDirection[2]==-1 and lastLength==3,'hair direction/length lost')
+local n=drawn;cloak=true;hidden('hair reveals cloak');cloak=false
+frame=frame+1;gadget:DrawWorld()
+Spring.GetUnitPieceMatrix=function() return 1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1 end
+frame=frame+1;gadget:DrawWorld()
+assert(math.abs(lastDrift[1])+math.abs(lastDrift[2])+math.abs(lastDrift[3])>0,'head turn produces no lag')
+assert(lastDrift[1]^2+lastDrift[2]^2+lastDrift[3]^2<=(3*0.25*0.3)^2+1e-8,'hair drift unbounded')
+local paused={unpack(lastDrift)};gadget:DrawWorld()
+for i=1,3 do assert(lastDrift[i]==paused[i],'hair moves while paused') end
+for i=1,90 do frame=frame+1;gadget:DrawWorld() end
+assert(math.abs(lastDrift[1])+math.abs(lastDrift[2])+math.abs(lastDrift[3])<1e-6,'hair fails to settle')
+api.Remove(7,'hair');hidden('removed hair survives')
+-- A separate animated driver must rotate the lock without moving its scalp root.
+Spring.GetUnitPieceMap=function() return {root=1,hairemit01=2,hairemit02=3,hairemit03=4,Tail1=5} end
+local matrixCalls, rotated = {}, true
+Spring.GetUnitPiecePosDir=function(_,piece) return piece*3,4,5,0,1,0 end
+Spring.GetUnitPieceMatrix=function(_,piece)
+    matrixCalls[piece]=(matrixCalls[piece] or 0)+1
+    if piece==5 and rotated then return 1,0,0,0, 0,0,1,0, 0,-1,0,0, 900,800,700,1 end
+    return 2,0,0,0, 0,2,0,0, 0,0,2,0, 300,200,100,1
+end
+assert(not api.Set(7,'hair1',2,{mode='hair',directionPiece='missing'}),'invalid driver accepted')
+assert(not api.Set(7,'hair1',2,{directionPiece='Tail1'}),'world direction accepted a piece driver')
+assert(api.Set(7,'hair1',2,{mode='hair',directionPiece='Tail1',rootOffset={1,0,0},windAffected=false}))
+gadget:DrawWorld()
+assert(lastOrigin[1]==6 and lastOrigin[2]==4 and lastOrigin[3]==7,'root offset used driver transform')
+assert(lastDirection[2]==1,'driver basis did not rotate hair')
+rotated=false;frame=frame+1;gadget:DrawWorld()
+assert(lastDirection[1]==-1 and lastOrigin[3]==7,'driver rotation displaced scalp attachment')
+gadget:Shutdown();gadget={};dofile(path);gadget:Initialize();gadget:DrawWorld()
+assert(lastDirection[1]==-1 and lastOrigin[3]==7,'reload lost separate driver')
+for i=1,3 do
+    assert(api.Set(7,'hair'..i,i+1,{mode='hair',directionPiece=5,windAffected=false}))
+end
+matrixCalls={};local wc=windCalls;gadget:DrawWorld()
+assert(matrixCalls[5]==1 and not matrixCalls[2] and not matrixCalls[3] and not matrixCalls[4],
+    'shared driver sampled repeatedly or zero-offset roots queried matrices')
+assert(windCalls==wc,'inherited wind sampled again')
+cameraZ=1000;matrixCalls={};hidden('distant hair drawn')
+assert(next(matrixCalls)==nil,'culled hair queried animated matrices')
+cameraZ=100;cloak=true;hidden('driver bypasses cloak');cloak=false
+producer:UnitDestroyed(7);hidden('destroyed hair retains driver')
+gadget:Shutdown();assert(deleted==24,'mesh resources leaked')
 producer:Shutdown();assert(GG.SmokeRibbon==nil)
-print('PASS: API validation, copied parameters, registration/update/reload/removal, destruction, visibility, draw interpolation, direction modes, pause, size/distance culling, fade, re-entry, wind, motion trailing, local preview, cleanup')
+print('PASS: ribbon lifecycle, hair piece transform, turn lag, pause, settling, separate driver/root transforms, driver reload, shared matrix cache and culling')

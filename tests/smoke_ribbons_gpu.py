@@ -70,9 +70,25 @@ p['colorStart'].value=(0.7,0.7,0.7,0.8);p['colorEnd'].value=(0.7,0.7,0.7,0)
 # Camera collinear with plume and very small scale must not generate NaNs.
 p['cameraPosition'].value=(0,5,0); render()
 p['plumeWidth'].value=0.00035;p['plumeLength'].value=0.0017;render()
+# Hair roots stay visible, length is bounded even under extreme drift, no glow.
+p['hairMode'].value=1;p['stiffness'].value=0.65;p['gravity'].value=0.35
+p['plumeWidth'].value=0.15;p['plumeLength'].value=1.7
+p['cameraPosition'].value=(0,0,5)
+p['colorStart'].value=(0.2,0.1,0.05,1);p['colorEnd'].value=(0.2,0.1,0.05,1)
+p['strandOpacity'].value=1
+hair=render()
+assert hair[25:40,:,3].max()>0.9, 'hair roots transparent'
+p['emission'].value=(8,8)
+assert np.array_equal(hair,render()), 'hair glows'
+p['directionalDrift'].value=(100,0,0)
+bent=render()
+assert bent[...,3].sum()>0 and bent[-5:].max()==0, 'hair disappeared or stretched'
+p['directionalDrift'].value=(0,0,0)
+p['effectTime'].value=8
+assert np.abs(hair-render()).sum()>0.01, 'hair does not flex'
 if '--preview' in sys.argv:
     from PIL import Image
     rgb=lit[...,:3]+np.array([0.025,0.035,0.05])*(1-lit[...,3:4])
     Image.fromarray((np.clip(rgb[::-1],0,1)**(1/2.2)*255).astype('uint8')).save(sys.argv[sys.argv.index('--preview')+1])
-print('PASS: GLSL compile/render, finite output, endpoints, advection, deterministic pause, colour gradient, emission, alpha, directional drift, camera-axis fallback, small scale')
+print('PASS: GLSL compile/render, finite output, endpoints, advection, deterministic pause, colour gradient, emission, alpha, directional drift, camera-axis fallback, small scale, hair roots, bounded length, no glow, flex')
 print('Renderer:',ctx.info['GL_RENDERER'])

@@ -2,11 +2,26 @@
 uniform vec3 origin, direction, cameraPosition;
 uniform vec3 directionalDrift;
 uniform float effectTime, plumeLength, plumeWidth, curl, seed;
+uniform float hairMode, stiffness, gravity;
 out vec2 ribbonUV;
 out float ribbonSeed;
 
 // Analytic, advecting vortex paths: no particle buffers or integration passes.
 vec3 centre(float t, float strand, vec3 u, vec3 v) {
+    if (hairMode > 0.5) {
+        // Fixed arc length: integrate short unit tangents; roots never advect.
+        vec3 p = origin;
+        for (int i=0; i<12; ++i) {
+            float q = t * (float(i)+0.5)/12.0;
+            float flex = (1.0-stiffness)*q*q;
+            float wave = sin(effectTime*2.1 + q*3.0 + seed + strand*2.4);
+            vec3 bend = direction + vec3(0,-gravity*q,0)
+                + directionalDrift/max(plumeLength,0.001)*flex
+                + u*(wave*curl*flex);
+            p += normalize(bend) * (plumeLength*t/12.0);
+        }
+        return p;
+    }
     float s = seed + strand * 2.399963;
     float phase = t * 14.0 - effectTime * 1.7 + s;
     float envelope = t * t * (3.0 - 2.0 * t);
@@ -37,6 +52,10 @@ void main() {
     across = normalize(across);
     float spread = (0.035 + 0.55 * pow(t,0.8)) * smoothstep(0.0,0.025,t);
     float breath = 0.8 + 0.2 * sin(t*17.0-effectTime*1.7+seed+strand);
+    if (hairMode > 0.5) {
+        spread = 0.5 * pow(max(0.0,1.0-t),0.65);
+        breath = 1.0;
+    }
     p += across * side * plumeWidth * spread * breath;
     ribbonUV = vec2(side,t);
     ribbonSeed = seed + strand * 2.399963;

@@ -7,10 +7,8 @@ local rawShow,rawHide=Spring.UnitScript.Show,Spring.UnitScript.Hide
 local radianceShow=ShowRadiancePiece
 local presets,active,warned={},{},{}
 local radianceModes,lit={},{}
-local matched,registered=0,false
 for name,id in pairs(Spring.GetUnitPieceMap(unitID) or {}) do
     presets[id]=selectPreset(name)
-    if presets[id] then matched=matched+1 end
     local p=presets[id] and Config.Preset(presets[id])
     if p and (p.emission>0 or (p.glow or 0)>0) then radianceModes[id]='cloud' end
     if kind=='spaceport' and (name=='SpaceHarbour' or name:match('^CrawlerBooster%d+$')
@@ -19,7 +17,6 @@ for name,id in pairs(Spring.GetUnitPieceMap(unitID) or {}) do
         radianceModes[id]='material'
     end
 end
-Spring.Echo('Cloud pieces: '..kind..' unit '..unitID..', '..matched..' matching pieces; visibility wrappers installed')
 local dead=false
 local function light(id,on)
     if GG.SetObjectiveRadiancePieceVisible then
@@ -36,10 +33,6 @@ local function cloudShow(id)
         else reason='synced cloud gadget unavailable' end
         if ok then
             rawHide(id);active[id]=true
-            if not registered then
-                registered=true
-                Spring.Echo('Cloud pieces: '..kind..' unit '..unitID..', first replacement registered and mesh hidden, piece '..id..' ('..preset..')')
-            end
             return
         end
         if not warned[id] then

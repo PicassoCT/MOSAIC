@@ -38,7 +38,7 @@ if gadgetHandler:IsSyncedCode() then
     end
 else
     local renderer, revision, preview
-    local fields={'unitID','piece','directionSpace','scale','length','width','curl','speed','seed','strands','enabled','distanceFactor',
+    local fields={'mode','stiffness','gravity','unitID','piece','directionPiece','directionSpace','scale','length','width','curl','speed','seed','strands','enabled','distanceFactor',
         'groundDirected','windAffected','motionAffected','windInfluence','motionInfluence','trailTime'}
     function gadget:Initialize()
         local err
@@ -55,6 +55,7 @@ else
         for k,source in pairs(SYNCED.SmokeRibbonRecords or {}) do
             local r={}
             for _,f in ipairs(fields) do r[f]=source[f] end
+            r.rootOffset={source.rootOffset[1],source.rootOffset[2],source.rootOffset[3]}
             r.direction={source.direction[1],source.direction[2],source.direction[3]}
             r.colorStart={source.colorStart[1],source.colorStart[2],source.colorStart[3],source.colorStart[4]}
             r.colorEnd={source.colorEnd[1],source.colorEnd[2],source.colorEnd[3],source.colorEnd[4]}
@@ -77,7 +78,9 @@ else
         local unitID=(Spring.GetSelectedUnits() or {})[1]
         if not unitID then Spring.Echo('Smoke ribbon: select a unit first');return true end
         local options={}
-        if preset=='glow' then
+        if preset=='hair' then
+            options={mode='hair'}
+        elseif preset=='glow' then
             options={colorStart={1,0.35,0.7,0.65},colorEnd={0.35,0.15,0.8,0},emission={2,0.3}}
         elseif preset=='steam' then
             options={colorStart={0.9,0.95,1,0.45},colorEnd={0.85,0.9,1,0},width=14,speed=0.7}

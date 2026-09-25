@@ -195,3 +195,54 @@ with three strands, zero self-illumination and the usual size-based cutoff.
 
 
 The pump-station ribbon now runs continuously on the Igniter anchor until unit death; its old mesh flame-out cycle no longer toggles the ribbon. Spaceport mesh clouds and impact/payload volumes are documented in [CloudVolumes.md](CloudVolumes.md).s
+## Hair mode
+
+Use the same `GG.SmokeRibbon.Set(unitID, slot, piece, options)` API with
+`mode='hair'`. Defaults are short, dark, opaque tapered locks, one strip per slot,
+no self illumination, restrained wind and motion trailing. Smoke remains the default.
+
+```lua
+GG.SmokeRibbon.Set(unitID, 'hair1', 'hairemit1', {
+    mode='hair', directionPiece='Tail1', direction={0,0,-1},
+    length=2.6, width=0.55, stiffness=0.65, gravity=0.18,
+    windAffected=false, -- Tail1 already carries the polygon ponytail's wind motion
+    distanceFactor=100,
+})
+```
+
+`directionSpace='piece'` (the hair default) transforms `direction` and
+`rootOffset` through the full animated piece basis. Root offsets are in imported
+piece coordinates and inherit model scale; length and width are world units times
+`scale`. Optional `directionPiece` (piece name or ID, requires `directionSpace='piece'`)
+uses a separate animated piece's basis for direction. The origin and `rootOffset`
+always stay on the emitter. For the investigator, Tail1's local -Z runs down the
+ponytail; its full basis includes Head animation, TailRotator yaw and Tail1 lift.
+Shared direction matrices are sampled once per piece per draw and only in range.
+Existing `emitter` mode retains its original
+meaning: use the emitter's forward vector.
+
+`stiffness` (0–1) controls tip flexibility; `gravity` (0–1) bends the strand toward
+world down. Twelve normalized segments bound strand length. The roots stay fixed;
+only the tips sway. Motion follows a damped rest-tip history, including head turns,
+and settles after stopping. It uses simulation time, pauses with the game, and resets
+after visibility gaps or large jumps. `windAffected=false` and
+`motionAffected=false` independently disable those influences. Hair ignores emission
+and ground targeting. Fibres are procedural, so no new texture asset is required.
+
+The investigator registers three locks at `TablesOfPiecesGroups.hairemit[1..3]`,
+with exact-name lookup of `hairemit1`–`hairemit3` and two-/three-digit zero-padded
+suffixes as a fallback. The current DAE exports `hairemit1`, `hairemit002`, and
+`hairemit003`; all three resolve through the production grouping helper. No
+estimated Head offsets are used. Missing emitters are skipped for older models.
+
+Where the polygon ponytail is enabled, the locks use its animated Tail1 basis
+without adding engine wind a second time. The existing five-ponytail animation
+budget remains in force; other investigators use the Head basis and the shader's
+small wind response. Repeated show/hide calls no longer acquire another ponytail
+slot or start another wind loop. The wind loop follows the owner's `boolWalking`
+state. The polygon hair and head decorations remain in place. Attachment and hat
+intersections still need an in-game check. Hair uses the same cloak/LOS/icon/transport checks, distance fade, render
+budget, reload snapshot, and destruction cleanup as smoke.
+
+For a selected unit, `/smokeribbon Head hair` previews a lock at the piece origin;
+`/smokeribbon off` removes the preview.

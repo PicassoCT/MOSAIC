@@ -11,7 +11,8 @@ for _,name in ipairs({"operativepropagator","operativeinvestigator","operativeas
     if UnitDefNames[name] then types[UnitDefNames[name].id]=true end
 end
 local function track(id,def)
-    if types[def] then tracked[id]={} end
+    -- DrawScreen can run before the next six-frame rules-param refresh.
+    if types[def] then tracked[id]=tracked[id] or {execution=0} end
 end
 function widget:Initialize()
     for _,id in ipairs(Spring.GetAllUnits()) do track(id,Spring.GetUnitDefID(id)) end

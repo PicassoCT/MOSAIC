@@ -1,5 +1,5 @@
 #version 150 compatibility
-uniform float effectTime, strandOpacity;
+uniform float effectTime, strandOpacity, hairMode;
 uniform vec4 colorStart, colorEnd;
 uniform vec2 emission;
 uniform vec3 ambient;
@@ -18,6 +18,15 @@ float noise(vec2 p) {
 }
 void main() {
     float x=ribbonUV.x, age=ribbonUV.y;
+    if (hairMode > 0.5) {
+        // Static longitudinal fibres; no smoke holes, scrolling or emission.
+        float fibres = 0.85+0.15*sin(x*65.0+ribbonSeed);
+        float edge = 1.0-smoothstep(0.75,1.0,abs(x));
+        vec4 color = mix(colorStart,colorEnd,age);
+        float alpha = color.a*edge*strandOpacity*(1.0-smoothstep(0.94,1.0,age));
+        gl_FragColor = vec4(color.rgb*ambient*fibres*alpha,alpha);
+        return;
+    }
     vec2 flow=vec2(x*2.0+ribbonSeed,age*7.0-effectTime*0.85);
     float broad=noise(flow);
     float detail=noise(flow*2.07+vec2(broad*1.8,0));

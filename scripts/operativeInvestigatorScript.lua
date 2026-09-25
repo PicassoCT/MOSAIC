@@ -22,6 +22,8 @@ include "lib_Animation.lua"
 include "lib_mosaic.lua"
 
 local TablesOfPiecesGroups = {}
+local registerHairRibbons = include('lib_investigator_hair.lua')
+local tailWindStarted, ponyTailChosen = false, false
 
 SIG_PISTOL = 1
 SIG_RAID = 2
@@ -217,11 +219,17 @@ function showBody()
 	showT(lowerBodyPieces)
 	Show(FoldtopFolded)
 	showT(shownPieces)
-	boolHasPonyTail = getGlobalLimitedRessource("investigatorponytail", 5)
-	if boolHasPonyTail then
-		showT(TablesOfPiecesGroups["Tail"])
-		StartThread(tailWind,TablesOfPiecesGroups["Tail"] )
-	end
+    local tail = TablesOfPiecesGroups.Tail or {}
+    if not ponyTailChosen then
+        ponyTailChosen = true
+        boolHasPonyTail = tail[1] ~= nil and getGlobalLimitedRessource("investigatorponytail", 5)
+    end
+    if boolHasPonyTail then showT(tail) end
+    if not tailWindStarted and boolHasPonyTail
+        and tail[1] ~= nil and (Spring.GetUnitPieceMap(unitID) or {}).TailRotator then
+        tailWindStarted = true
+        StartThread(tailWind, tail)
+    end
 end
 boolHasPonyTail = false
 
@@ -240,6 +248,7 @@ function script.Create()
 	shownPieces = randShowHide(unpack(TablesOfPiecesGroups["HeadDeco"]))
 	showBody()
 	setupAnimation()
+    registerHairRibbons(unitID, TablesOfPiecesGroups, boolHasPonyTail)
     Show(FoldtopUnfolded)
     Hide(MuzzleFlashPistol)
 	StartThread(flyingMonitored)
@@ -519,14 +528,14 @@ function angleDiff(a,b)
 end
 
 function tailWind(tailBones)
-	local TailRotator = piece("TailRotator")
+    local TailRotator = (Spring.GetUnitPieceMap(unitID) or {}).TailRotator
+    if not TailRotator or not tailBones or not tailBones[1] then return end
 	resetT(tailBones, 0)
 	local persistUp = 0
 	local smoothRot = 0
 	local tailBone = tailBones[1]
 	local tail = takeTableSubRange(tailBones, 2, #tailBones)
 	local maxStrength = 25
-	local lastSmoothRot = 0
 	while true do
 		local _,_,_, strength,dirX,dirY,dirZ = Spring.GetWind()
 	
@@ -534,49 +543,33 @@ function tailWind(tailBones)
 		--echo("Windstrength: "..strength, "windAngle:"..windAngle, dirX, dirY, dirZ)
 	
 		strength = strength/maxStrength
-		if not boolIsMoving then
+		if not boolWalking then
 			persistUp = persistUp * 0.92
 		else
 			persistUp = math.min(1, persistUp * 1.01)
 		end
 		persistUp = localclamp(persistUp + strength * 0.25,0,1)
-		x,y,z = Spring.GetUnitPosition(unitID)
+		local x,y,z = Spring.GetUnitPosition(unitID)
 		local dx,dy,dz = Spring.GetUnitPiecePosDir(unitID, backpack)
 		local bodyRad = math.pi - math.atan2(dx-x, dz-z)
-		lerpFactor = 1.0
-
-		 hx, hy, hz = Spring.UnitScript.GetPieceRotation(Head)
-
-		if boolIsMoving then
-			lerpFactor = 0.7
-			windTarget= windTarget* 0.9
-		else
-			lastSmoothRot= smoothRot
-			lerpFactor = 0.4
-		end
-		local windTarget = windAngle  + bodyRad -hz
+        local _, _, hz = Spring.UnitScript.GetPieceRotation(Head)
+        local windTarget = windAngle + bodyRad - hz
+        local lerpFactor = boolWalking and 0.15 or 0.4
+        if boolWalking then windTarget = windTarget * 0.9 end
 
 		local maxArc = math.rad(110)
 		local minArc = math.rad(-110)
-		targetRot = localclamp(angleDiff(windTarget,0), minArc, maxArc)
+		local targetRot = localclamp(angleDiff(windTarget,0), minArc, maxArc)
 		smoothRot = lerp(smoothRot, targetRot, lerpFactor)
-		if boolIsMoving then 
-			lastSmoothRot = lastSmoothRot *0.99
-			Turn(TailRotator, 2, lastSmoothRot, 5)
-		else
-			Turn(TailRotator, 2, smoothRot, 5)
-		end
+		Turn(TailRotator, y_axis, smoothRot, 5)
 		local lift = math.rad(persistUp * 90)
 		Turn(tailBone, x_axis, lift, 2)
-		smoothRot = lerp(smoothRot, targetRot, 0.15)
-
 		-- animate chain
 		local count = #tail
-		piPart = math.pi /#tail
-		degPart = math.rad(15)*persistUp
-		times = Spring.GetGameFrame()/4
+		local piPart = count > 0 and math.pi / count or 0
+		local degPart = math.rad(15)*persistUp
+		local times = Spring.GetGameFrame()/4
 		for i,bone in ipairs(tail) do
-			local t = (i-1)/(count-1)
 			-- deeper bones swing more
 			local rot = math.sin(times  +i* piPart)*degPart
 			Turn(bone, z_axis, rot, 20)
@@ -1481,4 +1474,3 @@ function showHideIcon(boolShowIcon)
         Hide(Icon)
     end
 end
-
