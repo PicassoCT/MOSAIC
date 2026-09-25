@@ -605,15 +605,24 @@ Singularity Psychotic escaped from st. catatonia
 https://starlink.com/support/article/45d1d256-171e-0f67-4895-5d248fa63b66
 - On the search after hidden infrastructure
 
- 
-
-System.InvalidOperationException: This instance has already started one or more requests. Properties can only be modified before sending the first request.
-
-   at System.Net.Http.HttpClient.CheckDisposedOrStarted()
-
-   at System.Net.Http.HttpClient.set_BaseAddress(Uri value)
-
-   at ROPA.BusinessAPI.Modules.Metrics.Application.Services.MetricApiClient.GetMetricRequestForAsync[O](String url, CancellationToken token) in C:\Users\fseidl-schulz\source\Ropa\ROPA.BusinessAPI\BusinessAPI\Modules\Metrics\Application\Services\MetricApiClient.cs:line 145
 
 
- 
+
+Waterheadheater Industries.
+Remember in the before war times, how VC would take over whole industries and never stop squeezing.
+You make a living selling cables or driving taxi, the market watches you and when its to good to be true, they
+takeover and you are out. And now you can have that- in reverse.
+Encrypting a company was yesterday. Today, the valuable is stealing the secret sauce.
+How they produce things, how they make things- and for that we need data, from where it matters.
+Smuggle in our devices into a company, and you are in for a percentage, when Waterheadheater Industries takes over.
+Suddenly, Next great thing 2052 is produced by us and nobody saw it coming.
+Its the future old man- robot stole my job is yesterday, robots stole my industry is today!
+Get a job- hiob! Waterheadheater Industries! We take, we make it, robbing the niche, robbing existence!
+
+
+We still have not found them all. Hidden beneath normal buildings, lurks the infrastructure of the old spysterWeb.
+Help us to find them and unwind them, unplugging the imortal 3 from the infrastructure of the world.
+Help us to unroot the unholy Cult of the Children of Elon. We still need to find the uplink stations in:
+Buenos Aires, ,Melbourne,Fortitude Valley,Malaga,Sydney,Gazipur,Brasilia,Barueri,Fortaleza,Sofia,Montreal,Calgary,Santiago,Bogota,Frankfurt,Guatemala City,Mumbai,Surabaya,Milan,Tokyo,Karen,El Marques,Auckland,Christchurch,Lekki,Muscat,Santiago de Surco,Makati,Warsaw,Doha,Singapore,Johannesburg,Madrid,London,Minneapolis,Chicago,Denver,Los Angeles,Bluffdale,New York,Seattle,Tempe,Salt Lake City,Atlanta,Dallas,Ashburn,Miami,San Jose,Kansas City.
+Find them, unwind them, close the wounds of this world and let it finally heal. There megalomaniac plans and "steering" have caused such disasters,
+there is nearly TODO Rework
