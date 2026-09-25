@@ -16,7 +16,6 @@ if (gadgetHandler:IsSyncedCode()) then
     VFS.Include("scripts/lib_UnitScript.lua")
     VFS.Include("scripts/lib_mosaic.lua")
     local gaiaTeamID = Spring.GetGaiaTeamID()
-    local spUseTeamResource = Spring.UseTeamResource
     local spAddTeamResource = Spring.AddTeamResource
     local spGetUnitTeam = Spring.GetUnitTeam
     local spGetGameFrame = Spring.GetGameFrame
@@ -24,8 +23,7 @@ if (gadgetHandler:IsSyncedCode()) then
     local spGetAllUnits = Spring.GetAllUnits
     local GameConfig = getGameConfig()
     local exemptFromRefundDefIds = getExemptFromRefundTypes(UnitDefs)
-    local houseTypeTable = getCultureUnitModelNames_Dict_DefIDName(GameConfig.instance.culture,
-                                                "house", UnitDefs)
+    local houseTypeTable = getCultureUnitModelNames_Dict_DefIDName("international", "house", UnitDefs)
     local aerosolAffectableUnits = getChemTrailInfluencedTypes(UnitDefs)
     local AerosolTypes = getChemTrailTypes()
     local accumulatedInSecond = {}
@@ -59,6 +57,21 @@ if (gadgetHandler:IsSyncedCode()) then
         end
     end
 
+    local collectionConfig = VFS.Include("luarules/configs/collateral.lua")
+    local newCollector = VFS.Include("luarules/gadgets/include/collateral_collection.lua")
+    local collector = newCollector(Spring, UnitDefNames, collectionConfig,
+        function(team, amount, debtor, source)
+            -- The offender already sees the assessed fine. Teammates see only
+            -- the money actually collected from them, not another full fine.
+            if team ~= debtor and source then
+                addInSecond(team, source, "metal", -amount)
+            end
+        end,
+        function(team, id, hp)
+            SendToUnsynced("DisplaytAtUnit", id, team,
+                "Collateral: -" .. math.ceil(hp) .. " HP", 1, 0.25, 0.1, 1)
+        end)
+
     local function TransferToTeam(self, money, reciever, data)
         self[#self + 1] = {
             Money = money,
@@ -72,66 +85,69 @@ if (gadgetHandler:IsSyncedCode()) then
     if not GG.DisguiseCivilianFor then GG.DisguiseCivilianFor = {} end
     if not GG.Propgandaservers then GG.Propgandaservers = {} end
 
-    function gadget:Intialize()
-        if not GG.Bank then GG.Bank = {TransferToTeam = TransferToTeam} end
-        if not GG.DisguiseCivilianFor then GG.DisguiseCivilianFor = {} end
-        if not GG.Propgandaservers then GG.Propgandaservers = {} end
+    function gadget:Initialize()
+        for _, team in ipairs(Spring.GetTeamList()) do
+            GG.Propgandaservers[team] = GG.Propgandaservers[team] or 0
+        end
+        collector:Initialize()
     end
 
-    allTeams = Spring.GetTeamList()
-    for i = 1, #allTeams do GG.Propgandaservers[allTeams[i]] = 0 end
+    function gadget:UnitCreated(id, defID, team)
+        collector:RegisterUnit(id, defID, team)
+    end
 
-    function gadget:UnitDestroyed(unitID, unitDefID, teamID, attackerID)
-        if attackerID  then
-            attackerTeamID = Spring.GetUnitTeam(attackerID) 
+    function gadget:UnitGiven(id, defID, newTeam)
+        collector:RegisterUnit(id, defID, newTeam)
+    end
 
-            if(GG.DisguiseCivilianFor[unitID]) and
-              teamID ~= attackerTeamID then
-                maxhp = UnitDefs[unitDefID].health or UnitDefs[unitDefID].maxDamage
-                if maxhp then
+    function gadget:UnitTaken(id, defID, oldTeam, newTeam)
+        collector:RegisterUnit(id, defID, newTeam)
+    end
 
-                    factor = 1.0
-                    if GG.Propgandaservers and GG.Propgandaservers[teamID] then
-                        factor = factor +
-                                     (GG.Propgandaservers[teamID] *
-                                         GameConfig.propandaServerFactor)
-                    end
-                    spAddTeamResource(attackerTeamID, "metal",
-                                      math.ceil(math.abs(maxhp * factor)))
-                    addInSecond(teamID, attackerID, "metal",
-                                math.ceil((maxhp * factor)))
+    local function awardOpponents(attackerTeam, amount, unitID, destroyedHouseDefID)
+        local teams = Spring.GetTeamList()
+        table.sort(teams)
+        for _, team in ipairs(teams) do
+            if team ~= gaiaTeamID and team ~= attackerTeam
+                and not Spring.AreTeamsAllied(attackerTeam, team) then
+                local factor = 1 + (GG.Propgandaservers[team] or 0) * GameConfig.propandaServerFactor
+                local reward = math.ceil(amount * factor)
+                -- Payout is unconditional, including when the offender has no
+                -- money or buildings. Collection is a separate liability.
+                spAddTeamResource(team, "metal", reward)
+                addInSecond(team, unitID, "metal", reward)
+                if destroyedHouseDefID then
+                    spawnMilitiaInHousesNearby(team, unitID, destroyedHouseDefID)
                 end
             end
+        end
+    end
 
-            if  houseTypeTable[unitDefID] then
-                for _, team in pairs(Spring.GetTeamList()) do
+    local function assessPenalty(attackerTeam, amount, source)
+        collector:Charge(attackerTeam, amount, source)
+        if source then addInSecond(attackerTeam, source, "metal", -amount) end
+    end
 
-                    if team ~= gaiaTeamID and team ~=attackerTeam then                    
-                        if not GG.Propgandaservers[team] then
-                            GG.Propgandaservers[team] = 0
-                        end
+    function gadget:UnitDestroyed(unitID, unitDefID, teamID, attackerID, attackerDefID, attackerTeam)
+        collector:RemoveUnit(unitID)
+        -- Prefer event attribution: the bombing unit may already be dead.
+        local attackerTeamID = attackerTeam or (attackerID and spGetUnitTeam(attackerID))
+        if not attackerTeamID or attackerTeamID == gaiaTeamID then return end
 
-                        factor = 1.0
-                        if GG.Propgandaservers and GG.Propgandaservers[teamID] then
-                            factor = factor +
-                                         (GG.Propgandaservers[teamID] *
-                                             GameConfig.propandaServerFactor)
-                        end
-                        spAddTeamResource(team, "metal",
-                                          math.ceil(math.abs(GameConfig.costs.DestroyedHousePropanda * factor)))
-                        addInSecond(team, unitID, "metal",
-                                    math.ceil((GameConfig.costs.DestroyedHousePropanda * factor)))
-                        
-                        spawnMilitiaInHousesNearby(team, unitID, unitDefID)
-
-                    end
-                end
-
-                   spUseTeamResource(attackerTeamID, "metal",
-                                              GameConfig.costs.DestroyedHousePropanda)
-                   addInSecond(attackerTeamID, unitID, "metal",
-                                    -1*math.ceil((GameConfig.costs.DestroyedHousePropanda)))
-
+        if houseTypeTable[unitDefID] then
+            local amount = GameConfig.costs.DestroyedHousePropanda
+            awardOpponents(attackerTeamID, amount, unitID, unitDefID)
+            assessPenalty(attackerTeamID, amount, unitID)
+        elseif GG.DisguiseCivilianFor[unitID] and teamID ~= attackerTeamID then
+            -- Preserve the existing counter-intelligence bounty, which is not
+            -- a civilian-house destruction reward.
+            local def = UnitDefs[unitDefID]
+            local maxhp = def.health or def.maxDamage
+            if maxhp then
+                local factor = 1 + (GG.Propgandaservers[teamID] or 0) * GameConfig.propandaServerFactor
+                local reward = math.ceil(math.abs(maxhp * factor))
+                spAddTeamResource(attackerTeamID, "metal", reward)
+                addInSecond(attackerTeamID, attackerID or unitID, "metal", reward)
             end
         end
     end
@@ -198,79 +214,36 @@ if (gadgetHandler:IsSyncedCode()) then
     function gadget:UnitDamaged(unitID, unitDefID, unitTeam, damage, paralyzer,
                                 weaponDefID, projectileID, attackerID,
                                 attackerDefID, attackerTeam)
-        if not attackerID and weaponDefID then
-            --ssieds are ignored - cause who know who really was the attacker
-            return damage
-        end
+        attackerTeam = attackerTeam or (attackerID and spGetUnitTeam(attackerID))
+        if not attackerTeam or attackerTeam == gaiaTeamID or unitTeam ~= gaiaTeamID
+            or exemptFromRefundDefIds[unitDefID] or not damage or damage <= 0 then return end
 
-        if attackerTeam == gaiaTeamID then
-            return damage 
-        end
-
-        -- civilian attacked by a not civilian
-        if unitTeam == gaiaTeamID and attackerID and attackerTeam ~= unitTeam then
-
-            if exemptFromRefundDefIds[unitDefID] then return end
-
-            -- attackerPlayerList = Spring.GetPlayerList(attackerTeam)
-            for _, team in pairs(Spring.GetTeamList()) do
-                -- for all teams 
-                -- if no propagandaserver registered 
-                if not GG.Propgandaservers[team] then
-                    GG.Propgandaservers[team] = 0
-                end
-
-                if team ~= gaiaTeamID then
-
-                    boolTeamsAreAllied =
-                        Spring.AreTeamsAllied(attackerTeam, team)
-                    if boolTeamsAreAllied == true then
-                        spUseTeamResource(team, "metal", damage)
-                        addInSecond(team, unitID, "metal",
-                                    -1 * math.ceil(damage))
-                    else -- get enemy Teams -- tranfer damage as budget to them
-                        factor = 1 +
-                                     (GG.Propgandaservers[team] *
-                                         GameConfig.propandaServerFactor)
-                        spAddTeamResource(team, "metal",
-                                          math.ceil(math.abs(damage * factor)))
-                        addInSecond(team, unitID, "metal",
-                                    math.ceil((damage * factor)))
-
-                    end
-                    -- This table contains per team- for each gaia Unit a entry of how much damage was done - per second
-                end
-            end
-        end
+        awardOpponents(attackerTeam, damage, unitID)
+        assessPenalty(attackerTeam, damage, unitID)
     end
 
 
     function gadget:GameFrame(frame)
-        if frame % 10 == 0 then
+        if frame % collectionConfig.collectionIntervalFrames == 0 then
             if GG.Bank and GG.Bank[1] then
                 local cur = GG.Bank
                 GG.Bank = {TransferToTeam = TransferToTeam}
-
-                for i = 1, #cur, 1 do
-                    -- assert(cur[i].Reciever, "Reciever team missing ")
-                    -- assert(cur[i].Money, "Money missing ")
-                    -- assert(cur[i].DisplayUnit, "DisplayUnit /Location missing ")
-                    if cur[i].DisplayUnit_Location then
-
-                        -- assert(Spring.GetTeamInfo(cur[i].Reciever), "DisplayUnit missing ")
-                        if cur[i].Money < 0 then
-                            spUseTeamResource(cur[i].Reciever, "metal",
-                                              math.abs(cur[i].Money))
-                        else
-                            spAddTeamResource(cur[i].Reciever, "metal",
-                                              cur[i].Money)
+                for i = 1, #cur do
+                    local entry = cur[i]
+                    if entry.Money < 0 then
+                        -- Interrogation/checkpoint propaganda fines use the
+                        -- same escalation. Income still pays without a marker.
+                        assessPenalty(entry.Reciever, -entry.Money, entry.DisplayUnit_Location)
+                    else
+                        spAddTeamResource(entry.Reciever, "metal", entry.Money)
+                        if entry.DisplayUnit_Location then
+                            addInSecond(entry.Reciever, entry.DisplayUnit_Location,
+                                "metal", entry.Money, colourWhite)
                         end
-                        addInSecond(cur[i].Reciever,
-                                    cur[i].DisplayUnit_Location, "metal",
-                                    cur[i].Money, colourWhite)
                     end
                 end
             end
+            collector:Collect()
         end
 
         if frame % 30 == 0 then
