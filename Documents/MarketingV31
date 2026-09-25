@@ -594,7 +594,26 @@ Fortress Europe- Counter Sentimemnt AI - human smuggling AI that smuggles worst 
 
 
 
+Singularity Psychotic escaped from st. catatonia
 
+-CEOs - on the run from responsibility, just a process execution scapegoat
+
+-SocialDefinition Psychotics - "Im made of glass" - everyone must respect my madness as real
+
+ 
+
+https://starlink.com/support/article/45d1d256-171e-0f67-4895-5d248fa63b66
+- On the search after hidden infrastructure
+
+ 
+
+System.InvalidOperationException: This instance has already started one or more requests. Properties can only be modified before sending the first request.
+
+   at System.Net.Http.HttpClient.CheckDisposedOrStarted()
+
+   at System.Net.Http.HttpClient.set_BaseAddress(Uri value)
+
+   at ROPA.BusinessAPI.Modules.Metrics.Application.Services.MetricApiClient.GetMetricRequestForAsync[O](String url, CancellationToken token) in C:\Users\fseidl-schulz\source\Ropa\ROPA.BusinessAPI\BusinessAPI\Modules\Metrics\Application\Services\MetricApiClient.cs:line 145
 
 
  
