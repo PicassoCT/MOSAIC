@@ -21,7 +21,10 @@ local ArcoT= {}
 local ProjectT = {}
 local Mega = {}
 local isArcology = false
-local isProject = UnitDefs[unitDefID].name =="Project"
+-- UnitDefs.name is the internal name; "Project" is the display name.
+local isProject = UnitDefs[unitDefID].name == "house_asian3"
+local arcologyMinimum = 3
+GG.StandaloneArcologyCount = GG.StandaloneArcologyCount or 0
 local Icon = piece("Icon")
 local cubeDim = {
     length = factor * 22,
@@ -254,9 +257,11 @@ function filterOutMegaBuilding()
                         if not Mega[id] then return id end
                     end)
 
-    ProjectT[#ProjectT +1] = TablesOfPieceGroups["Project"][3]
-    ProjectT[#ProjectT +1] = TablesOfPieceGroups["Project"][4]
-    ProjectT[#ProjectT +1] = TablesOfPieceGroups["Project"][5]
+    -- Preserve the weighting without putting excluded mega models back in.
+    for i = 3, 5 do
+        local id = TablesOfPieceGroups["Project"][i]
+        if id and not Mega[id] then ProjectT[#ProjectT + 1] = id end
+    end
 end
 
 if not GG.MegaBuildingCount then GG.MegaBuildingCount = 0 end
@@ -433,26 +438,25 @@ end
 
 if not GG.GlobalPieceCounterArcology then GG.GlobalPieceCounterArcology = {} end
 
-function findLowestPieceInTableFromWithSuggestion(suggestedIndex, Table)
-    suggestedPiece =  getNthDictElement(Table, suggestedIndex)
-    assert(suggestedPiece, toString(suggestedIndex).." "..toString(Table))
-    for k,v in pairs(Table) do
-        if not  GG.GlobalPieceCounterArcology[v] then
-           GG.GlobalPieceCounterArcology[v] = 0
+function findLowestPieceInTableFromWithSuggestion(suggestedIndex, candidates)
+    -- Counters are shared, but eligibility belongs to this request. Searching
+    -- the whole counter table can select a Project for an Arcology (or a mega
+    -- model excluded at this location).
+    local pieces = {}
+    for _, id in pairs(candidates) do pieces[#pieces + 1] = id end
+    table.sort(pieces)
+    assert(#pieces > 0, "No eligible standalone building pieces")
+    local start = ((suggestedIndex - 1) % #pieces) + 1
+    local selected, lowestCount = nil, math.huge
+    for offset = 0, #pieces - 1 do
+        local id = pieces[((start + offset - 1) % #pieces) + 1]
+        local uses = GG.GlobalPieceCounterArcology[id] or 0
+        if uses < lowestCount then
+            selected, lowestCount = id, uses
         end
     end
-
-    lowestFoundKey, lowestFoundValue = suggestedPiece, math.huge
-    for k,v in pairs(GG.GlobalPieceCounterArcology ) do
-        if k and v and GG.GlobalPieceCounterArcology[k] and v < lowestFoundValue then --TODO fix me
-            lowestFoundKey, lowestFoundValue = k, v
-        end
-    end
-
-    if not GG.GlobalPieceCounterArcology[lowestFoundKey] then GG.GlobalPieceCounterArcology[lowestFoundKey] = 0 end
-    GG.GlobalPieceCounterArcology[lowestFoundKey] = GG.GlobalPieceCounterArcology[lowestFoundKey] + 1
-
-    return lowestFoundKey
+    GG.GlobalPieceCounterArcology[selected] = lowestCount + 1
+    return selected
 end
 
 local pieceList = Spring.GetUnitPieceList(unitID)
@@ -488,23 +492,33 @@ function buildBuilding()
     px, py, pz = Spring.GetUnitPosition(unitID)
     boolBuildingShadowIsGameRelevant = ViewShadowGameRelevant(px, pz, boolDebug) 
     --echo("Building "..unitID.." ViewShadowGameRelevant ".. toString(ViewShadowGameRelevant(px,pz)))
-    if  boolBuildingShadowIsGameRelevant or GG.MegaBuildingCount > GameConfig.MegaBuildingMax  then
+    local unitHash = getDeterministicStationaryUnitHash(unitID)
+    local uniqueSleepMs = unitHash % 1000
+    local restSleep = 6000 - uniqueSleepMs
+    Sleep(uniqueSleepMs)
+    local mapHash = getDetermenisticMapHash(Game)
+    local hash = math.ceil(unitHash) + math.ceil(mapHash)
+
+    -- Check the cap after the staggered sleep, immediately before selection.
+    if boolBuildingShadowIsGameRelevant or GG.MegaBuildingCount >= GameConfig.MegaBuildingMax then
         filterOutMegaBuilding()
     end
-    assert(count(ArcoT) > 1)
-    assert(count(ProjectT) > 1)
+    assert(count(ArcoT) > 0)
+    assert(count(ProjectT) > 0)
 
-    isArcology = (isNearCityCenter(px, pz, GameConfig) or isMapControlledBuildingPlacement()) and getDermenisticChance(unitID, 20) 
-    isArcology = isArcology and not isProject
-                    
-    unitHash = getDeterministicStationaryUnitHash(unitID)
-    uniqueSleepMs = unitHash % 1000
-    restSleep = 6000 - uniqueSleepMs
-    Sleep(uniqueSleepMs)
-    mapHash = getDetermenisticMapHash(Game)
-    
-    hash = math.ceil(unitHash) + math.ceil(mapHash)
-    --echo("Standalone hash"..toString(unitHash).. "/ "..toString(mapHash).."/"..toString(hash))
+    -- Reserve the first three arcology-capable standalones even on map-authored
+    -- cities or outside the center. Additional ones retain a per-location 20%
+    -- chance; getDermenisticChance hashes the UnitDef, identical for every copy.
+    local building = GG.BuildingTable and GG.BuildingTable[unitID]
+    local reserved = building and building.arcology
+    isArcology = not isProject and (reserved or GG.StandaloneArcologyCount < arcologyMinimum
+        or ((isNearCityCenter(px, pz, GameConfig) or isMapControlledBuildingPlacement())
+            and hash % 100 < 20))
+    if isArcology then
+        GG.StandaloneArcologyCount = GG.StandaloneArcologyCount + 1
+        if building then building.arcology = true end
+    end
+
     isDualProjectOrMix = randChance(10)
     if isArcology  then
         pieceToShow = findLowestPieceInTableFromWithSuggestion( (hash % count(ArcoT)) + 1, ArcoT)
@@ -572,6 +586,9 @@ function buildAnimation()
 end
 
 function script.Killed(recentDamage, _)
+    if isArcology then
+        GG.StandaloneArcologyCount = math.max(0, GG.StandaloneArcologyCount - 1)
+    end
     return 1
 end
 

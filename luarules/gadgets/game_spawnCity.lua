@@ -55,6 +55,13 @@ local outerCityHouseTypeTable = removeDictFromDict(houseTypeTable, getHouseTypeI
 
 local houseTypeLimitationsTable = getHouseTypeLimitations(UnitDefs)
 local houeArabicDefID = UnitDefNames["house_arab0"].id
+local arcologyDefID = UnitDefNames["house_asian1"].id
+local initialArcologyPlots = 0
+local arcologyMinimum = 3
+
+local function isCityHouse(defID)
+    return houseTypeTable[defID] or defID == arcologyDefID
+end
 
 if GameConfig.instance.culture == "arab" then
 	assert(houseTypeTable[UnitDefNames["house_arab0"].id])
@@ -77,7 +84,7 @@ function registerManuallyPlacedHouses(frame)
     foreach(Spring.GetAllUnits(),
             function(id)
                 defID = spGetUnitDefID(id)
-                if houseTypeTable[defID] and  allreadyRegistredBuilding[id] == nil then
+                if isCityHouse(defID) and allreadyRegistredBuilding[id] == nil then
                     return id
                 end
             end,
@@ -102,11 +109,11 @@ function gadget:UnitDestroyed(unitID, unitDefID, teamID, attackerID)
     --echo("UnitDestroyed:"..unitID.." a "..getUnitTypeName(unitDefID).." by "..toString(attackerID))
     -- if building, get all Civilians/Trucks nearby in random range and let them get together near the rubble
     if teamID == gaiaTeamID and attackerID then
-        if houseTypeTable[unitDefID] then
+        if isCityHouse(unitDefID) then
             rubbleHeapID = spawnRubbleHeapAt(unitID)
         end
     end
-    if houseTypeTable[unitDefID] then
+    if isCityHouse(unitDefID) then
       if GG.houseHasSafeHouseTable and  GG.houseHasSafeHouseTable[unitID] and doesUnitExistAlive(GG.houseHasSafeHouseTable[unitID]) == true then
          spDestroyUnit(GG.houseHasSafeHouseTable[unitID], true, false)
          GG.houseHasSafeHouseTable[unitID] = nil
@@ -257,7 +264,7 @@ function fillGapsWithInnerCityBlocks(cursorl, buildingType, BuildingPlaceT)
 						houseID = spawnBuilding(buildingType, 
 									orgPosX + offsx * innerCityDim.x,
 									orgPosZ + offsz * innerCityDim.z,
-									true)
+									true, true)
 						if houseID then
                            setHouseStreetNameTooltip(houseID, (cursor.x*2) + offsx, (cursor.z*2) + offsz, Game, true, UnitDefs, buisnessNeonSigns)
 						end
@@ -471,9 +478,10 @@ function checkReSpawnHouses()
             GG.BuildingTable[bID] = nil
 
             x, z = routeDataCopy.x, routeDataCopy.z
-            buildingType = getBuildingTypeWithinLimits()
-            id = spawnBuilding(buildingType, x, z, isNearCityCenter(x,z, GameConfig))
-            dataToAdd[id] = routeDataCopy
+            buildingType = routeDataCopy.arcology and arcologyDefID or getBuildingTypeWithinLimits()
+            id = spawnBuilding(buildingType, x, z, isNearCityCenter(x,z, GameConfig), false, routeDataCopy.arcology)
+            -- Keep the plot queued if creation fails (for example at unit cap).
+            dataToAdd[id or bID] = routeDataCopy
         end
     end
 
@@ -530,19 +538,25 @@ function spawnUnit(defID, x, z)
     end
 end
 
-function spawnBuilding(defID, x, z,  boolInCityCenter)
-    offset = {xRandOffset = 0, zRandOffset = 0}
+function spawnBuilding(defID, x, z, boolInCityCenter, isGapFiller, forceArcology)
+    -- Allocate real city plots, not the small blocks filling gaps between them.
+    -- Count successful placements only, so a failed CreateUnit is retried.
+    local reserveArcology = not boolInitialized and not isGapFiller
+        and initialArcologyPlots < arcologyMinimum
+    if reserveArcology or forceArcology then defID = arcologyDefID end
+    local offset = {xRandOffset = 0, zRandOffset = 0}
     if not boolInCityCenter  then
          offset = getCultureDependantRandomOffsets(GameConfig.instance.culture, {x=x, z=z})
 		 if not offset then return end
     end
-    id = spawnUnit(defID, x + math.random(-1 * offset.xRandOffset, offset.xRandOffset), 
+    local id = spawnUnit(defID, x + math.random(-1 * offset.xRandOffset, offset.xRandOffset),
                           z + math.random(-1 * offset.zRandOffset, offset.zRandOffset))
 
     if id then
         spSetUnitAlwaysVisible(id, true)
         setCityBuildingBlocking(id)
-        GG.BuildingTable[id] = {x = x, z = z}
+        GG.BuildingTable[id] = {x = x, z = z, arcology = reserveArcology or forceArcology or nil}
+        if reserveArcology then initialArcologyPlots = initialArcologyPlots + 1 end
         return id
     end
 end
