@@ -71,7 +71,7 @@ luminous wisps; `/smokeribbon PIECE_NAME steam` previews broad white steam.
 `/smokeribbon off` removes the local preview. No cheat mode or synced changes
 are required. The preview obeys the same visibility rules as registered effects.
 
-## Wind, movement and the propagator cigarette
+## Wind, movement and operator cigarettes
 
 Wind is enabled by default. Set `windAffected=false` for sheltered effects.
 Set `motionAffected=true` to bend the plume behind the unit's current velocity.
@@ -93,14 +93,18 @@ the bend changes when the unit stops or turns, and teleporting moves the entire
 plume. `speed=0` freezes the procedural curls but does not freeze attachment,
 wind or motion response.
 
-The propagator now emits subtle grey smoke from the currently shown cigarette
+The propagator emits grey smoke from the currently shown cigarette
 (`HeadDeco5` or one of the `Cig` burn-stage pieces), replacing its old head-centred
 smoke bursts. Both wind and movement response are enabled for this preset.
 Its 18-unit length gives a default 720-unit draw cutoff. The existing Show/Hide
 and icon-mode events manage the effect without a new polling thread. Death
 removes it and prevents the animation from registering it again. Cloaking also
-suppresses drawing through the renderer's visibility filter. The investigator,
-which shares this unit script, retains its previous CEG behaviour.
+suppresses drawing through the renderer's visibility filter.
+
+The female investigator uses the same smoke and ember-glow preset from her
+model's `HeadDeco7` cigarette. Her separate unit script always shows that piece
+with the body, stops the effect in icon mode or on death, and restores it when
+the body is revealed. The cigarette inherits the head's animation.
 
 ## Cost and rendering limits
 

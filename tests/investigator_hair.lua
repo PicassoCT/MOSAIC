@@ -43,6 +43,7 @@ GG.SmokeRibbon=nil;assert(register(8,groups,true)==0,'missing renderer failed')
 local file=assert(io.open('scripts/operativeInvestigatorScript.lua'));local source=file:read('*a');file:close()
 local function extract(first,last) return assert(source:match(first..'(.-)'..last)) end
 local env=setmetatable({unitID=8,Head=1,backpack=9,x_axis=1,y_axis=2,z_axis=3,
+    cigarette=11,cigaretteSmoke={Show=function()end},
     upperBodyPieces={},lowerBodyPieces={},shownPieces={},FoldtopFolded=10,
     TablesOfPiecesGroups={Tail={6,7}},boolHasPonyTail=false}, {__index=_G})
 local threads,acquires,turns,windStrength=0,0,{},10
