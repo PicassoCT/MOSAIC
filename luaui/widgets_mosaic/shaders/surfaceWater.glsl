@@ -19,78 +19,34 @@ vec2 runoffChart(vec3 p, vec3 across) {
 }
 float surfaceWetNoise(vec2 p);
 vec4 roofWaterBeads(vec3 p, vec3 normal, bool building);
-// A material-neutral contact edge: broad aggregate irregularity plus fine grit.
-// Both live in the fixed world chart, never in camera/time coordinates. Fade
-// each octave before it becomes subpixel so distant ground does not sparkle.
-float terrainContactWidth(vec2 at, float pixel, float width) {
-    float broadResolved=1.0-smoothstep(0.30,0.85,pixel*0.65);
-    float fineResolved=1.0-smoothstep(0.25,0.75,pixel*2.6);
-    float broad=0.0,fine=0.0;
-    if(broadResolved>0.0)
-        broad=(surfaceWetNoise(at*0.65+vec2(37,19))-0.5)*broadResolved;
-    if(fineResolved>0.0)
-        fine=(surfaceWetNoise(at*2.6+vec2(11,73))-0.5)*fineResolved;
-    // Multiplicative roughness preserves the centreline and nested rain widths:
-    // increasing rain cannot dry a previously wet pixel or relocate a channel.
-    return width*(1.0+0.70*broad+0.35*fine);
-}
-// Fixed drainage network. Neither cell positions nor channel centres depend on
-// time or rain; rain only widens the existing paths.
-// x: coverage, yz: coordinates along/across the nearest edge, w: downhill speed.
-// The unordered nearest-site pair gives the same frame on both banks.
+// Cached recursive split/rejoin network. RG are fixed bank/spill heights;
+// BA is a complex phase so repeated borders and mip filtering remain continuous.
+// Eight crests fit each 32-unit tile. Geometry and rain never move the banks.
 vec4 terrainChannelFrame(vec2 at, float pixel) {
-    vec2 network=at*vec2(0.32,0.18);
-    network.x+=0.32*sin(network.y*1.7)+0.25*surfaceWetNoise(network*0.7);
-    vec2 cell=floor(network);
-    float first=100.0,second=100.0;
-    vec2 siteA=vec2(0),siteB=vec2(1);
-    for(int y=-1;y<=1;++y) for(int x=-1;x<=1;++x) {
-        vec2 id=cell+vec2(x,y);
-        vec2 site=id+0.2+0.6*hash3(id+vec2(51,87)).xy;
-        vec2 delta=site-network;
-        float d=dot(delta,delta);
-        if(d<first) {
-            second=first;siteB=siteA;first=d;siteA=site;
-        } else if(d<second) {second=d;siteB=site;}
-    }
-    float edge=sqrt(second)-sqrt(first);
-    float width=terrainContactWidth(at,pixel,
-        mix(0.025,0.14,clamp(rainPercent,0.0,1.0)));
-    float aa=max(pixel*0.16,0.002);
-    float body=1.0-smoothstep(width,width+aa+width*0.25,edge);
-    // A shallow capillary fringe softens the broken contact line. This is wet
-    // coverage/relief, not an opaque stone border or a luminous foam outline.
-    float fringe=1.0-smoothstep(width,width+aa+width*0.65+0.012,edge);
-    float channel=mix(fringe,body,0.82);
-    vec2 across=normalize(siteB-siteA);
-    vec2 tangent=vec2(-across.y,across.x);
-    if(tangent.y<0.0 || (abs(tangent.y)<0.00001 && tangent.x<0.0)) tangent=-tangent;
-    vec2 centre=(siteA+siteB)*0.5;
-    vec2 relative=network-centre;
-    // Global height phase remains continuous at junctions. Project to the edge
-    // centreline so wavefronts cross the channel, rather than sliding across it.
-    float along=centre.y+dot(relative,tangent)*tangent.y;
-    float crossEdge=dot(relative,vec2(tangent.y,-tangent.x));
-    return vec4(channel,along,crossEdge,tangent.y);
+    vec4 data=texture2D(terrainRunoffTex,at/64.0);
+    float head=0.010+0.990*pow(clamp(terrainWetness,0.0,1.0),1.85);
+    float spill=2.0*data.g*data.g;
+    float aa=max(fwidth(spill)*0.6,0.004);
+    float wet=(1.0-smoothstep(head-aa,head+aa,spill))
+        *smoothstep(0.0,0.025,terrainWetness);
+    // Thresholding an averaged bank height would pop entire distant tiles.
+    // Blend unresolved detail into the atlas's calibrated mean wet coverage.
+    wet=mix(wet,0.76*pow(clamp(terrainWetness,0.0,1.0),1.65),
+            smoothstep(1.5,8.0,pixel));
+    return vec4(wet,max(head-2.0*data.r*data.r,0.0),data.ba*2.0-1.0);
+}
+float terrainCrest(vec2 phase) {
+    float t=terrainFlowTime*5.3407075;
+    // The vector shrinks under mip filtering, removing unresolved glitter.
+    float wave=0.5+0.5*dot(phase,vec2(cos(t),sin(t)));
+    return wave*wave*wave*min(dot(phase,phase),1.0);
 }
 float terrainChannelMask(vec2 at, float pixel) {
     return terrainChannelFrame(at,pixel).x;
 }
 float terrainWaterFilm(vec2 at, float pixel) {
     vec4 channel=terrainChannelFrame(at,pixel);
-    // Continuous ripple trains in a fixed network. Height phase makes crests
-    // meet at junctions; the cross-channel quadratic gently bows each crest.
-    float phase=channel.y*5.5-time*0.85+channel.z*channel.z*2.0;
-    float footprint=max(fwidth(phase),pixel*0.18*5.5);
-    float resolved=1.0-smoothstep(0.30,0.85,footprint);
-    float wave=0.5+0.5*cos(6.2831853*phase);
-    float crest=wave*wave*wave;
-    // Nearly level links retain wet relief but don't imply flowing uphill.
-    float flowing=smoothstep(0.03,0.20,channel.w);
-    float relief=0.20+0.22*crest*resolved*flowing;
-    // Round the banks into the underlying film; keep the travelling crests
-    // inside the fixed footprint instead of lighting a hard polygon outline.
-    return 0.36+channel.x*channel.x*relief;
+    return 0.36+channel.x*channel.x*(0.20+0.22*terrainCrest(channel.zw));
 }
 float getSurfaceRivulets(vec3 p, vec3 normal, bool building) {
     if(building) return roofWaterBeads(p,normal,true).w;
@@ -100,10 +56,30 @@ float getSurfaceRivulets(vec3 p, vec3 normal, bool building) {
     float b=terrainWaterFilm(vec2(p.z,-p.y*1.41421356),pixel);
     return mix(b,a,weight)*smoothstep(0.0,1.5,p.y);
 }
-
-// Terrain default for standalone surface probes.
 float getSurfaceRivulets(vec3 p, vec3 normal) {
     return getSurfaceRivulets(p,normal,false);
+}
+// x coverage, y rounded water relief/depth, z travelling crest, w local depth.
+vec4 terrainChartWater(vec2 at, float pixel) {
+    vec4 channel=terrainChannelFrame(at,pixel);
+    float crest=terrainCrest(channel.zw);
+    return vec4(channel.x,channel.x*(0.08+channel.y+0.14*crest),
+                channel.x*crest,channel.y);
+}
+vec4 terrainSurfaceWater(vec3 p, vec3 n) {
+    float pixel=max(length(dFdx(p)),length(dFdy(p)));
+    float weight=smoothstep(0.2,0.8,n.z*n.z/max(dot(n.xz,n.xz),0.00001));
+    vec4 a=terrainChartWater(vec2(p.x,-p.y*1.41421356),pixel);
+    vec4 b=terrainChartWater(vec2(p.z,-p.y*1.41421356),pixel);
+    vec4 levelWater=terrainChartWater(p.xz,pixel);
+    float puddle=surfaceWaterWeights(n.y).y;
+    // Level ground fills fixed depressions without directional travelling waves.
+    // Puddle surfaces are level: buried bank relief affects depth/coverage,
+    // not the water's shading normal. Only the meniscus rounds the contact.
+    levelWater.y=levelWater.x*0.08;
+    levelWater.z=0.0;
+    return mix(mix(b,a,weight),levelWater,puddle)
+        *surfaceWaterWeights(n.y).x*smoothstep(0.0,1.5,p.y);
 }
 
 // Stop-and-go motion is monotone: each smooth burst is separated by a rest.
@@ -286,5 +262,3 @@ vec2 surfaceRippleProfile(vec2 position) {
     }
     return gradient*resolved;
 }
-
-

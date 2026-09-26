@@ -18,7 +18,9 @@ uniform vec3 testRunoff;
 uniform vec4 testSurface;
 uniform vec4 testRain;
 uniform vec4 testSplash;
-void main(){gl_FragColor=composeRainEffects(testBackground,testSurface,testRain,testSplash,testRunoff);}
+uniform int testGround;
+void main(){NormalIsOnGround=testGround!=0;
+gl_FragColor=composeRainEffects(testBackground,testSurface,testRain,testSplash,testRunoff);}
 ''')
 u4=fn(G,'glUniform4f',None,I,F,F,F,F)
 use(p)
@@ -44,6 +46,21 @@ r=render(p)[:4]
 assert r[2]>1.1,'highlight clipped inside rain canvas'
 assert r[2]*r[3]+.8*(1-r[3])>.81,'no reflected-light contrast on bright background'
 print('PASS: half-float canvas, additive rain/splash/runoff, unchanged surface blend, weather applied once, no dark bars on bright backgrounds')
+
+# Rain stops immediately; retained water changes only the terrain surface.
+uf(loc(p,b'rainPercent'),0);uf(loc(p,b'terrainWetness'),.6)
+background=(.4,.5,.6)
+u3(loc(p,b'testBackground'),*background)
+u4(loc(p,b'testSurface'),*surface);u3(loc(p,b'testRunoff'),*runoff)
+u4(loc(p,b'testRain'),*rain);u4(loc(p,b'testSplash'),*splash)
+for ground in [0,1]:
+ ui(loc(p,b'testGround'),ground)
+ result=render(p)[:4]
+ composite=[result[i]*result[3]+background[i]*(1-result[3]) for i in range(3)]
+ expected=[background[i]+ground*.6*(surface[3]*(surface[i]-background[i])+runoff[i]) for i in range(3)]
+ assert max(abs(a-b) for a,b in zip(composite,expected))<.001,(ground,composite,expected)
+ assert (result[3]>0)==bool(ground)
+print('PASS: dry weather retains ground water without resurrecting roof water, airborne rain or splashback')
 
 # The fullscreen falling rain itself, with no hologram geometry or splashback.
 # Check atmospheric hue independently of local radiance and then the radiance path.

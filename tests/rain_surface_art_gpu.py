@@ -10,6 +10,9 @@ void main(){
  uv=gl_FragCoord.xy/64.0;
  vec2 xy=(gl_FragCoord.xy-32.0)*testScale;
  vec3 pos=vec3(xy.x,-dot(xy,testNormal.xz)/max(testNormal.y,0.01),xy.y);
+ // Above sea level and within the wet portion of the fixed bank atlas.
+ pos+=vec3(12,20,4);
+ NormalIsOnGround=true;
  vertexNormal=testNormal*0.5+0.5;
  NormalIsWaterPuddle=testNormal.y>.99;
  vec4 wet=GetGroundReflectionRipples(pos);
@@ -25,7 +28,7 @@ for slot,name in [(4,'screentex'),(5,'noisetex')]:
 texture(5,(1,1,1,1)) # isolate the actual surface treatment from SSR
 u3(loc(p,b'eyePos'),0,30,20)
 uf(loc(p,b'rainPercent'),1);uf(loc(p,b'rainLightActive'),0)
-uf(loc(p,b'time'),1.7)
+uf(loc(p,b'time'),1.7);uf(loc(p,b'terrainFlowTime'),1.7)
 for label,background,sun,sky in [('day',.7,(.8,.7,.5),(.5,.6,.8)),('night',.12,(.02,.03,.05),(.08,.15,.4))]:
  texture(4,(background,background,background,1))
  u3(loc(p,b'sunCol'),*sun);u3(loc(p,b'skyCol'),*sky)
@@ -40,9 +43,9 @@ for label,background,sun,sky in [('day',.7,(.8,.7,.5),(.5,.6,.8)),('night',.12,(
   assert contrast>(.008 if slope==0 else .012),(label,slope,contrast)
   if slope==0: assert contrast<.15,("outlined/cartoon ripple contrast",label,contrast)
   if slope==0: assert min(brightness)<background,'missing dark wet substrate/trough'
-  uf(loc(p,b'time'),1.9);b=render(p)
+  uf(loc(p,b'time'),1.9);uf(loc(p,b'terrainFlowTime'),1.9);b=render(p)
   assert a!=b,('static water',label,slope)
-  uf(loc(p,b'time'),1.7)
+  uf(loc(p,b'time'),1.7);uf(loc(p,b'terrainFlowTime'),1.7)
   if '--preview' in sys.argv:
    from PIL import Image
    raw=bytes(round(max(0,min(1,x))*255) for x in a)
