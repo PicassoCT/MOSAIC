@@ -31,7 +31,7 @@ float terrainPortCount(vec2 edge) { return 1.0+floor(terrainSeed(edge+vec2(109,6
 float terrainTributaryPort(vec2 edge,float i,float count) {
     return (i+0.25+0.5*terrainSeed(edge+vec2(i*17.0,151)))/count;
 }
-vec3 terrainPath(vec2 at) {
+vec3 terrainPathInfo(vec2 at, out vec4 traits) {
     vec2 cell=floor(at), f=fract(at);
     float seed=terrainSeed(cell+vec2(73,19));
     float t=f.y*f.y*(3.0-2.0*f.y);
@@ -66,16 +66,30 @@ vec3 terrainPath(vec2 at) {
     float width=mix(0.7+0.6*terrainSeed(cell+vec2(0,301)),
                     0.7+0.6*terrainSeed(cell+vec2(0,302)),t);
     float phase=at.y+0.055*sin(6.2831853*f.y)*bend*bend*(seed-0.5);
+    // Relative discharge: incoming tributaries share flow while separated,
+    // then concentrate it in the common throat. This is an art proxy, not CFD.
+    float incomingCount=terrainPortCount(cell);
+    float outgoingCount=terrainPortCount(cell+vec2(0,1));
+    float forkCount=mix(1.0,2.0,smoothstep(0.01,0.08,span));
+    float branches=mix(incomingCount,forkCount,smoothstep(0.0,start,f.y));
+    branches=mix(branches,outgoingCount,smoothstep(stop,1.0,f.y));
+    float joinIn=exp(-pow((f.y-start)/0.075,2.0))*step(1.5,incomingCount);
+    float joinFork=exp(-pow((f.y-stop)/0.075,2.0))*step(0.24,seed);
+    traits=vec4(incomingCount/max(branches,1.0),max(joinIn,joinFork),width,branches);
     return vec3(distance/width,phase,centre);
 }
-vec4 terrainChannelFrame(vec2 at, float pixel) {
+vec3 terrainPath(vec2 at) { vec4 traits; return terrainPathInfo(at,traits); }
+vec2 terrainFlowChart(vec2 at) {
     // Original 32-unit channel scale; randomization must not increase density.
     vec2 chart=at/32.0;
     // Smooth global warp breaks straight strip alignment without independent
     // tile rotations or offsets (which would disconnect their borders).
     chart.x+=0.24*sin(chart.y*1.13)+0.13*sin(chart.y*0.37+chart.x*0.81);
     chart.y+=0.18*sin(chart.x*1.71);
-    vec3 path=terrainPath(chart);
+    return chart;
+}
+vec4 terrainChannelFrameInfo(vec2 at, float pixel, out vec4 traits) {
+    vec3 path=terrainPathInfo(terrainFlowChart(at),traits);
     float wetness=clamp(terrainWetness,0.0,1.0);
     float radius=mix(0.009,0.19,pow(wetness,1.65));
     float aa=max(fwidth(path.x)*0.6,0.001);
@@ -86,6 +100,39 @@ vec4 terrainChannelFrame(vec2 at, float pixel) {
     float phase=path.y*50.2654825;
     float resolved=1.0-smoothstep(1.0,4.0,pixel);
     return vec4(wet,depth,vec2(cos(phase),sin(phase))*resolved);
+}
+vec4 terrainChannelFrame(vec2 at, float pixel) {
+    vec4 traits; return terrainChannelFrameInfo(at,pixel,traits);
+}
+// x: sparse waves, y: aeration. Small divided flow mainly carries glints.
+vec2 terrainFlowRegime(vec4 traits,float wetness) {
+    float pressure=traits.x/max(traits.z,0.3);
+    float foam=smoothstep(0.45,1.0,wetness)
+        *clamp(smoothstep(1.15,2.5,pressure)+traits.y*0.75,0.0,1.0);
+    float waves=smoothstep(0.8,1.5,traits.x)*(1.0-foam);
+    return vec2(waves,foam);
+}
+// A confluence alone does not launch spray. Require a receiving shoreline
+// (the available impact cue); a full obstacle/ledge field is not available.
+float terrainImpactCue(vec3 p,vec3 n) {
+    return smoothstep(0.18,0.5,length(n.xz))
+        *smoothstep(0.0,1.5,p.y)*(1.0-smoothstep(2.0,6.0,p.y));
+}
+// Derivative-free query, also safe inside the bounded airborne-spray gather.
+float terrainChartSpray(vec2 at) {
+    vec4 traits;
+    vec3 path=terrainPathInfo(terrainFlowChart(at),traits);
+    float wetness=clamp(terrainWetness,0.0,1.0);
+    float radius=mix(0.009,0.19,pow(wetness,1.65));
+    float inside=1.0-smoothstep(radius*0.65,radius,path.x);
+    return inside*traits.y*terrainFlowRegime(traits,wetness).y
+        *smoothstep(0.7,1.0,wetness);
+}
+float terrainRunoffSpray(vec3 p,vec3 n) {
+    float weight=smoothstep(0.2,0.8,n.z*n.z/max(dot(n.xz,n.xz),0.00001));
+    return mix(terrainChartSpray(vec2(p.z,-p.y*1.41421356)),
+               terrainChartSpray(vec2(p.x,-p.y*1.41421356)),weight)
+        *terrainImpactCue(p,n);
 }
 float terrainCrest(vec2 phase) {
     float t=terrainFlowTime*5.3407075;
@@ -111,12 +158,21 @@ float getSurfaceRivulets(vec3 p, vec3 normal, bool building) {
 float getSurfaceRivulets(vec3 p, vec3 normal) {
     return getSurfaceRivulets(p,normal,false);
 }
-// x coverage, y rounded water relief/depth, z travelling crest, w local depth.
+// x coverage, y rounded water relief, z broken foam coverage, w local depth.
 vec4 terrainChartWater(vec2 at, float pixel) {
-    vec4 channel=terrainChannelFrame(at,pixel);
-    float crest=terrainCrest(channel.zw);
-    return vec4(channel.x,channel.x*(0.08+channel.y+0.14*crest),
-                channel.x*crest,channel.y);
+    vec4 traits;
+    vec4 channel=terrainChannelFrameInfo(at,pixel,traits);
+    vec2 regime=terrainFlowRegime(traits,terrainWetness);
+    vec2 drift=vec2(at.x*0.7,at.y*0.45-terrainFlowTime*1.9);
+    float broken=surfaceWetNoise(drift);
+    float resolved=1.0-smoothstep(0.8,3.0,pixel);
+    float wavePatch=smoothstep(0.48,0.75,surfaceWetNoise(at/7.0));
+    float crest=terrainCrest(channel.zw)*regime.x*wavePatch;
+    float glisten=(broken-0.5)*0.05*resolved*(1.0-regime.y);
+    float foam=regime.y*smoothstep(0.38,0.66,broken);
+    // Low rounded relief: isolated wave packets, fine glints, then churn.
+    float relief=0.025+channel.y*0.18+crest*0.07+glisten;
+    return vec4(channel.x,channel.x*relief,channel.x*foam,channel.y);
 }
 // Use geometry derivatives for terrain eligibility, never the splat normal.
 vec3 terrainGeometricNormal(vec3 p) {

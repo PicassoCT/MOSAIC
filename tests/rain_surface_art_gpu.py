@@ -40,7 +40,8 @@ for label,background,sun,sky in [('day',.7,(.8,.7,.5),(.5,.6,.8)),('night',.12,(
   brightness=[sum(a[i:i+3])/3 for i in range(0,len(a),4)]
   contrast=max(brightness)-min(brightness)
   # Soft, interrupted ridges intentionally have lower contrast than closed cells.
-  assert contrast>(.008 if slope==0 else .012),(label,slope,contrast)
+  # Fine shallow flow intentionally glistens without the old regular crests.
+  assert contrast>(.008 if slope<=.2 else .012),(label,slope,contrast)
   if slope==0: assert contrast<.15,("outlined/cartoon ripple contrast",label,contrast)
   if slope==0: assert min(brightness)<background,'missing dark wet substrate/trough'
   uf(loc(p,b'time'),1.9);uf(loc(p,b'terrainFlowTime'),1.9);b=render(p)
@@ -95,3 +96,4 @@ for background in [.12,.7]:
   delta=max(abs(a-b) for a,b in zip(*frames))
   assert delta>.003,('beads disappear in final composition',background,pixel,delta)
 print('PASS: roof beads visibly affect final day/night composition at gameplay pixel footprints')
+

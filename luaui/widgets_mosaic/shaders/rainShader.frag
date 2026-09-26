@@ -575,11 +575,13 @@ vec4 GetTerrainRainWater(vec3 p, vec3 n) {
     vec3 scene=texture2D(screentex,uv).rgb;
     vec3 lighting=max(sunCol,vec3(0))*0.4+max(skyCol,vec3(0))*0.6;
     if(rainLightActive>0.5) lighting+=rainLocalLight(p+n*0.5);
-    lighting/=1.0+dot(lighting,vec3(0.2126,0.7152,0.0722));
+    float lightLevel=dot(lighting,vec3(0.2126,0.7152,0.0722));
+    lighting*=max(1.0,0.22/max(lightLevel,0.0001));
+    lighting/=1.0+max(lightLevel,0.22);
     vec3 toEye=normalize(eyePos-p);
     vec3 lightDirection=dot(sunPos,sunPos)>0.001 ? normalize(sunPos) : normalize(vec3(0.4,0.7,0.3));
     vec3 halfDirection=normalize(lightDirection+toEye+vec3(0,0.0001,0));
-    float curvedLight=dot(waterNormal-n,lightDirection)*2.5;
+    float curvedLight=dot(waterNormal-n,lightDirection)*4.5;
     float glint=max(0.0,pow(max(dot(waterNormal,halfDirection),0.0),24.0)
                        -pow(max(dot(n,halfDirection),0.0),24.0));
     float fresnel=0.08+0.55*pow(1.0-max(dot(n,toEye),0.0),3.0);
@@ -589,9 +591,14 @@ vec4 GetTerrainRainWater(vec3 p, vec3 n) {
     target=mix(target,reflected.rgb/max(reflected.a,0.0001),
         reflected.a*smoothstep(0.05,0.4,water.w)*(0.3+fresnel));
     target*=1.0-0.65*max(-curvedLight,0.0);
-    float foam=smoothstep(0.65,1.0,terrainWetness)*smoothstep(0.18,0.65,water.w)
-        *smoothstep(0.55,0.9,water.z)*(1.0-surfaceWaterWeights(n.y).y);
-    runoffEnergy=lighting*water.x*(0.65*max(curvedLight,0.0)+0.45*glint+foam*0.12);
+    float foam=clamp(water.z/max(water.x,0.0001),0.0,1.0);
+    // Foam scatters the available light rather than depending on specular angle.
+    vec3 foamLight=max(sunCol,vec3(0))*max(dot(n,lightDirection),0.0)
+                  +max(skyCol,vec3(0))*0.7;
+    if(rainLightActive>0.5) foamLight+=rainLocalLight(p+n*0.5)*0.5;
+    vec3 foamColor=vec3(0.92,0.96,1.0)*(vec3(1.0)-exp(-foamLight*2.0));
+    target=mix(target,foamColor,foam*0.85);
+    runoffEnergy=lighting*water.x*(0.65*max(curvedLight,0.0)+0.8*glint)*(1.0-foam);
     return vec4(max(target,vec3(0)),water.x*0.72);
 }
 
@@ -868,6 +875,10 @@ void main(void)
         float rainAlpha=1.0-(1.0-rain.a)*(1.0-distantRain.a);
         rain=vec4((rain.rgb*rain.a+distantRain.rgb*distantRain.a)/max(rainAlpha,0.00001),rainAlpha);
         splash = drawRainSplashback(worldPos, vertexNormal, rayDir, sceneDistance, NormalIsSky);
+        vec4 runoffSpray=drawRunoffSpray(surfacePos,vertexNormal,rayDir,sceneDistance,NormalIsOnGround);
+        float combinedSplashAlpha=1.0-(1.0-splash.a)*(1.0-runoffSpray.a);
+        splash=vec4((splash.rgb*splash.a*(1.0-runoffSpray.a)+runoffSpray.rgb*runoffSpray.a)
+                    /max(combinedSplashAlpha,0.00001),combinedSplashAlpha);
     }
     if (rainDetailDebug > 2.5) {
         gl_FragColor = vec4(NormalIsSky ? vec3(0) : vertexNormal,1);
