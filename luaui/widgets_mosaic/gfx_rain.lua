@@ -494,7 +494,7 @@ local rainCapture = VFS.Include("luaui/widgets_mosaic/include/rain_capture.lua")
     -- Snapshot stages show settled water at each level, with a repeatable phase.
     setRain = function(amount) rainPercent, terrainWetness = amount, amount end,
     metadata = function()
-        return "water_revision\tterrain-channel-flow-regimes-v4\nshader_fingerprint\t" .. rainShaderFingerprint .. "\n" .. string.format("time_percent\t%.8f\nsun_rgb\t%s\nsky_rgb\t%s\nsun_direction\t%s\nglitter\t%s\n",
+        return "water_revision\tterrain-shore-visibility-v5\nshader_fingerprint\t" .. rainShaderFingerprint .. "\n" .. string.format("time_percent\t%.8f\nsun_rgb\t%s\nsky_rgb\t%s\nsun_direction\t%s\nglitter\t%s\n",
             timePercent, table.concat(sunCol, ","), table.concat(skyCol, ","),
             table.concat(sunPos, ","), tostring(glitterEnabled))
     end,

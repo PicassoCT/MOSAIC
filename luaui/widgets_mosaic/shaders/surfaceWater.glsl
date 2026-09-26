@@ -180,8 +180,9 @@ vec3 terrainGeometricNormal(vec3 p) {
     n/=max(length(n),0.000001);
     return n.y<0.0 ? -n : n;
 }
-vec4 terrainSurfaceWater(vec3 p, vec3 shadingNormal) {
-    vec3 n=terrainGeometricNormal(p);
+// Production passes the silhouette-safe depth normal already reconstructed by
+// rainGeometryNormal; do not derive a second slope across adjacent surfaces.
+vec4 terrainSurfaceWaterGeometry(vec3 p, vec3 n) {
     vec2 eligibility=surfaceWaterWeights(n.y);
     float banks=eligibility.x*(1.0-eligibility.y);
     float pixel=max(length(dFdx(p)),length(dFdy(p)));
@@ -194,6 +195,11 @@ vec4 terrainSurfaceWater(vec3 p, vec3 shadingNormal) {
     // The rain compositor owns flat-ground puddles and impact ripples.
     // Match its slope mask so banks crossfade without a second flat film.
     return channels*banks*smoothstep(0.0,1.5,p.y);
+}
+
+// Standalone callers with a continuous analytic surface retain this helper.
+vec4 terrainSurfaceWater(vec3 p, vec3 shadingNormal) {
+    return terrainSurfaceWaterGeometry(p,terrainGeometricNormal(p));
 }
 
 // Stop-and-go motion is monotone: each smooth burst is separated by a rest.

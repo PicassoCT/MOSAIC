@@ -566,11 +566,11 @@ vec4 paintRainSky(vec2 rotatedUV)
 // Terrain water is composited by the existing rain pass from deferred ground
 // position/normal. No landscape geometry, map texture writes or extra draw pass.
 vec4 GetTerrainRainWater(vec3 p, vec3 n) {
-    vec4 water=terrainSurfaceWater(p,n);
+    vec4 water=terrainSurfaceWaterGeometry(p,n);
     runoffCoverage=water.x;
     vec3 gradient=runoffHeightGradient(water.y*0.18,p,n);
-    vec2 rings=surfaceRippleProfile(p.xz)*surfaceWaterWeights(n.y).y*rainPercent*0.45;
-    vec3 waterNormal=normalize(n-gradient-vec3(rings.x,0,rings.y)*water.x);
+    // Circular impacts belong to the separate pooled-water layer.
+    vec3 waterNormal=normalize(n-gradient);
     if(water.x<=0.0001) return NONE;
     vec3 scene=texture2D(screentex,uv).rgb;
     vec3 lighting=max(sunCol,vec3(0))*0.4+max(skyCol,vec3(0))*0.6;
@@ -606,17 +606,26 @@ vec4 GetGroundReflectionRipples(vec3 pixelPos)
 {
     vec3 n = normalize(vertexNormal*2.0-1.0);
     vec2 water = surfaceWaterWeights(n.y);
+    // Evaluate the derivative-bearing runoff once, before the flat/roof branch.
+    vec4 slopeWater=GetTerrainRainWater(pixelPos,n);
+    vec3 slopeEnergy=runoffEnergy;
+    float slopeCoverage=runoffCoverage;
+    runoffEnergy=vec3(0);
     float channels = 0.0; // Terrain channels are composited separately below.
     vec2 rippleSlope = surfaceRippleProfile(pixelPos.xz);
     vec4 roofBeads = roofWaterBeads(pixelPos,n,NormalIsOnUnit);
-    vec3 channelGradient=runoffHeightGradient(channels*0.12,pixelPos,n)*water.x*(1.0-water.y)*step(0.0,pixelPos.y);
+
     float puddle = surfacePuddleMask(pixelPos.xz);
     runoffCoverage = water.x*(1.0-water.y)*channels;
     float coverage = water.x*mix(channels,0.35+0.65*puddle,water.y);
     float roofFilm=roofWetFilm(pixelPos,n,NormalIsOnUnit);
     coverage=max(coverage,roofBeads.w)+roofFilm;
     coverage=min(coverage,1.0);
-    if (coverage <= 0.0001) return NormalIsOnUnit ? NONE : GetTerrainRainWater(pixelPos,n);
+    if (coverage <= 0.0001) {
+        runoffEnergy=NormalIsOnUnit ? vec3(0) : slopeEnergy;
+        runoffCoverage=NormalIsOnUnit ? 0.0 : slopeCoverage;
+        return NormalIsOnUnit ? NONE : slopeWater;
+    }
 
     vec3 scene = texture2D(screentex,uv).rgb;
     vec3 lighting = max(sunCol,vec3(0))*0.4 + max(skyCol,vec3(0))*0.6;
@@ -643,7 +652,7 @@ vec4 GetGroundReflectionRipples(vec3 pixelPos)
     target*=1.0-0.65*max(-curvedLight,0.0)-0.22*max(-glint,0.0);
     runoffEnergy=lighting*(0.65*max(curvedLight,0.0)+0.45*max(glint,0.0)
                          );
-    vec3 beadNormal=normalize(n-roofBeads.xyz-channelGradient);
+    vec3 beadNormal=normalize(n-roofBeads.xyz);
     float beadLight=dot(beadNormal-n,lightDirection)*2.5;
     float beadGlint=max(0.0,pow(max(dot(beadNormal,halfDirection),0.0),32.0)
                               -pow(max(dot(n,halfDirection),0.0),32.0));
@@ -660,10 +669,11 @@ vec4 GetGroundReflectionRipples(vec3 pixelPos)
     // rain-driven expansion of the channel network on banks.
     float aboveSea=smoothstep(0.0,1.5,pixelPos.y);
     flatWater.a*=aboveSea;
-    vec3 flatEnergy=runoffEnergy*aboveSea;
-    runoffEnergy=vec3(0);
-    vec4 slopeWater=GetTerrainRainWater(pixelPos,n);
-    runoffEnergy+=flatEnergy;
+    // Additive highlights must obey the same pooled-water eligibility as alpha.
+    // Otherwise a fading flat layer still paints rings across flowing banks.
+    vec3 flatEnergy=runoffEnergy*aboveSea*water.x*water.y;
+    runoffEnergy=slopeEnergy+flatEnergy;
+    runoffCoverage=slopeCoverage;
     float alpha=flatWater.a+slopeWater.a;
     return vec4((flatWater.rgb*flatWater.a+slopeWater.rgb*slopeWater.a)
                 /max(alpha,0.00001),alpha);
@@ -815,6 +825,17 @@ vec4 composeRainEffects(vec3 background, vec4 surfaceFX, vec4 rain, vec4 splash,
     return vec4(premultiplied/max(alpha,0.00001),alpha);
 }
 
+// The deferred map/model buffers can describe geometry behind visible water.
+// Compare world distances, not a fixed nonlinear depth epsilon. Missing deferred
+// depth keeps the legacy path; a genuinely occluded surface contributes nothing.
+float rainSurfaceVisibility(vec3 surface, vec3 visible, float surfaceDepth, float sceneDepth) {
+    if(surfaceDepth<=0.0 || surfaceDepth>=0.999999 || sceneDepth>=0.999999) return 1.0;
+    float distanceToSurface=length(surface-eyePos);
+    float tolerance=max(0.05,distanceToSurface*0.00002);
+    float behind=distanceToSurface-length(visible-eyePos);
+    return 1.0-smoothstep(tolerance,tolerance*2.0,behind);
+}
+
 void main(void)
 {
 	uv = gl_FragCoord.xy / viewPortSize;
@@ -863,7 +884,14 @@ void main(void)
     float surfaceDepth=NormalIsOnUnit ? modelDepth.r : mapDepth.r;
     if(surfaceDepth>0.0 && surfaceDepth<0.999999)
         surfacePos=GetWorldPosAtUV(uv,surfaceDepth);
-    vec4 surfaceFX = NormalIsSky ? NONE : GetGroundReflectionRipples(surfacePos);
+    // Keep derivatives in uniform control flow, including shoreline quads.
+    if(NormalIsSky) vertexNormal=vec3(0.5,1.0,0.5);
+    vec4 surfaceFX=GetGroundReflectionRipples(surfacePos);
+    float surfaceVisibility=NormalIsSky ? 0.0
+        : rainSurfaceVisibility(surfacePos,worldPos,surfaceDepth,depthAtPixel.r);
+    surfaceFX.a*=surfaceVisibility;
+    runoffEnergy*=surfaceVisibility;
+    runoffCoverage*=surfaceVisibility;
     vec4 rain=NONE, splash=NONE;
     // Retained ground water does not need the precipitation ray march.
     if(rainPercent>0.001) {
