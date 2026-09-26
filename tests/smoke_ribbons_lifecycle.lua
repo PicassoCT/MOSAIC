@@ -174,13 +174,15 @@ matrixCalls={};local wc=windCalls;gadget:DrawWorld()
 assert(matrixCalls[5]==1 and not matrixCalls[2] and not matrixCalls[3] and not matrixCalls[4],
     'shared driver sampled repeatedly or zero-offset roots queried matrices')
 assert(windCalls==wc,'inherited wind sampled again')
--- Actual investigator settings must respond to wind with a fixed unit and rig.
+-- Generic hair ribbons still respond to wind with a fixed unit and rig.
 producer:UnitDestroyed(7);gadget:DrawWorld()
-Spring.GetUnitPieceMap=function()
-    return {Head=1,hairemit1=2,hairemit002=3,hairemit003=4,TailRotator=6,Tail1=5}
+for i=1,3 do
+    assert(api.Set(7,'hair'..i,i+1,{
+        mode='hair',directionSpace='piece',directionPiece=5,direction={0,0,-1},
+        length=5,width=0.85,hang=0.85,windAffected=true,windInfluence=1.2,
+        trailTime=0.3,distanceFactor=100,
+    }))
 end
-local count=dofile('scripts/lib_investigator_hair.lua')(7,{hairemit={2,3,4},Tail={5}},true)
-assert(count==3)
 wind={10,0,0};velocity={0,0,0}
 local wc,vc=windCalls,velocityCalls
 frame=frame+1;gadget:DrawWorld()

@@ -612,10 +612,10 @@ function turnInTime(piecename, taxis, goalDeg, timeInMs, x_startdeg, y_startdeg,
     if absoluteDeg < 0.0001 then return end
 
     if lib_boolDebug == true then
-        echo("turn in Time:: start Deg: " .. startDeg)
-        echo("turn in Time:: goal Deg:" .. goalDeg)
-        echo("turn in Time::  absolute distance:" .. absoluteDeg ..
-                 " -> in Speed " .. Speed)
+        -- echo("turn in Time:: start Deg: " .. startDeg)
+        -- echo("turn in Time:: goal Deg:" .. goalDeg)
+        -- echo("turn in Time::  absolute distance:" .. absoluteDeg ..
+        --          " -> in Speed " .. Speed)
     end
 
     if absoluteDeg <= 180 then
@@ -653,10 +653,10 @@ function OverTurnDirection(piecename, axis, goalDeg, speed, startDeg)
         value = startDeg + 180 * dirSign
         Turn(piecename, axis, math.rad(value), speed)
         WaitForTurn(piecename, axis)
-        echo("Turn 180 °")
+        -- echo("Turn 180 °")
         Turn(piecename, axis, math.rad(goalDeg), speed)
         WaitForTurn(piecename, axis)
-        echo("Turn Final")
+        -- echo("Turn Final")
     end
     StartThread(asyncTurn)
 end
@@ -940,8 +940,8 @@ function sigN(num)
 end
 
 function echoMove(name, x, y, z)
-    Spring.Echo("Moving Piece " .. name .. " to x:" .. x .. " ,y:" .. y ..
-                    " , z:" .. z)
+    -- Spring.Echo("Moving Piece " .. name .. " to x:" .. x .. " ,y:" .. y ..
+    --                 " , z:" .. z)
 end
 
 -- >moves Piece by a exponential Decreasing or Increasing Speed to target
@@ -1151,7 +1151,7 @@ function feetThread(quadrant, degOffSet, turnDeg, nr, FirstAxisPoint, KneeT,
 
     while true do
         while GG.MovementOS_Table[unitID].boolmoving == true do
-            echo("lib_UnitScript::adaptiveAnimation::MovingTrue")
+            -- echo("lib_UnitScript::adaptiveAnimation::MovingTrue")
             -- while GG.MovementOS_Table[unitID].boolmoving==true and stableConditon(nr,quadrant) do
 
             -- feet go over knees if FeetLiftForce > totalWeight of Leg
@@ -1183,7 +1183,7 @@ end
 -- return Feet into origin position and push body above ground
 function pushBody(quadrant, degOffSet, turnDeg, nr, FirstAxisPoint, KneeT,
                   SensorPoint, Weight, Force, nr, ScriptEnviroment)
-    if lib_boolDebug == true then Spring.Echo("lib_UnitScript::pushBody") end
+    -- if lib_boolDebug == true then Spring.Echo("lib_UnitScript::pushBody") end
     Turn(FirstAxisPoint, y_axis, math.rad(degOffSet), 0.3)
     xp, yp, zp = Spring.GetUnitPiecePosDir(unitID, SensorPoint)
     dif = yp - Spring.GetGroundHeight(xp, zp)
@@ -1197,7 +1197,7 @@ end
 function liftFeedForward(quadrant, degOffSet, turnDeg, nr, FirstAxisPoint,
                          KneeT, SensorPoint, Weight, Force, LiftFunction)
     if lib_boolDebug == true then
-        Spring.Echo("lib_UnitScript::liftFeedForward")
+        -- Spring.Echo("lib_UnitScript::liftFeedForward")
     end
     GG.MovementOS_Table[unitID].quadrantMap[quadrant % 4 + 1] =
         GG.MovementOS_Table[unitID].quadrantMap[quadrant % 4 + 1] - 1
@@ -2132,7 +2132,7 @@ function TurnPieceTowardsPiece(piecename, pieceB, speed)
     dy = math.deg(math.atan2(px, pz))
     dz = math.deg(math.atan2(py, px))
 
-    echo("Turntoards point")
+    -- echo("Turntoards point")
     TurnPieceTowards(piecename, dx, dy, dz, speed)
 end
 

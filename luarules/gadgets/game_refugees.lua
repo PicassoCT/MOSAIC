@@ -52,7 +52,7 @@ local isFailedState = (( getDetermenisticMapHash(Game) % 2 ) == 0) or true
 local MAX_STUCK_COUNTER = 3
 local isPeaceTime= true
 
-Spring.Echo("Game:Civilians: Map is a failed state ".. toString(isFailedState))
+-- Spring.Echo("Game:Civilians: Map is a failed state ".. toString(isFailedState))
 
 function attachPayload(payLoadID, id)
     if payLoadID then

@@ -4423,7 +4423,7 @@ GG.Burst[gameFrame][#GG.Burst[gameFrame]+1] = stringToEcho
 end
 
 function echoEnter(state)
-    Spring.Echo("Enter: "..state)
+    -- Spring.Echo("Enter: "..state)
 end
 
 
@@ -6325,7 +6325,7 @@ return OrgT
 end
 
 function houseDestroyWithDestructionTable(LevelPieces, maxSpeed, id)
-	conditionalEcho(GG.lib_boolDebug, "Destroyed house animation") -- TODO find out why scrapheap has vertices going to infinity
+	-- conditionalEcho(GG.lib_boolDebug, "Destroyed house animation") -- TODO find out why scrapheap has vertices going to infinity
 	hideAll(id)
 	speed= 9.8
     scale = 10
@@ -6353,7 +6353,7 @@ function houseDestroyWithDestructionTable(LevelPieces, maxSpeed, id)
 		WaitForMoves(LevelPieces[i])
 		hideT(LevelPieces[i])
 	end
-	echo("End house destruction")
+	-- echo("End house destruction")
     return 1
 end
 

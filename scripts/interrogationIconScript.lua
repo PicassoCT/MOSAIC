@@ -83,7 +83,7 @@ function interrogatePercentage()
         Sleep(100)
         timer = timer + 100
         if timer > 3000 then 
-            echo("Timeout interrogationIcon")
+            -- echo("Timeout interrogationIcon")
             Spring.DestroyUnit(unitID, false, true) 
         end
     end
@@ -114,7 +114,7 @@ function visualizeProgress()
 end
 
 function script.Killed(recentDamage, _) 
-    echo("Interrogation Icon died")
+    -- echo("Interrogation Icon died")
     return 1 
 end
 

@@ -1,45 +1,5 @@
--- Lua 5.1: real registration/config and the owner's ponytail/show-body functions.
-local map={Head=1,hairemit01=2,hairemit02=3,hairemit03=4,TailRotator=5,Tail1=6,Tail2=7}
-Spring={GetUnitPieceMap=function() return map end,ValidUnitID=function() return true end,
-    GetUnitIsDead=function() return false end}
-local config=dofile('luarules/gadgets/include/smoke_ribbon_config.lua')
-local records={}
-GG={SmokeRibbon={Set=function(id,slot,piece,options)
-    records[slot]=config.Normalize(id,piece,options);return true
-end}}
-local register=dofile('scripts/lib_investigator_hair.lua')
-local groups={hairemit={2,3,4},Tail={6,7}}
-local count,driven=register(8,groups,true)
-assert(count==3 and driven)
-for i=1,3 do
-    local r=records['hair'..i]
-    assert(r.piece==i+1 and r.directionPiece==6 and r.windAffected,
-        'ponytail driver disabled stationary wind on loose locks')
-    assert(r.hang==0.85 and r.strands==4,'investigator locks must hang with fine strands')
-    assert(r.colorStart[1]>0.8 and r.colorStart[2]>0.7 and r.colorEnd[3]>0.7,
-        'investigator locks lost their light blonde colour')
-    assert(r.rootOffset[1]==0 and r.rootOffset[2]==0 and r.rootOffset[3]==0)
-end
-records={};count,driven=register(8,{Tail={6,7}},true)
-assert(count==3 and driven and records.hair3.piece==4,'named emitters not resolved')
-local paddedMap=map
-for _,names in ipairs({{'hairemit1','hairemit2','hairemit3'}, {'hairemit1','hairemit002','hairemit003'}}) do
-    map={Head=1,TailRotator=5,Tail1=6,Tail2=7}
-    for i,name in ipairs(names) do map[name]=i+1 end
-    records={};count,driven=register(8,{Tail={6,7}},true)
-    assert(count==3 and driven,'un/padded exported emitters not resolved')
-    for i=1,3 do assert(records['hair'..i].piece==i+1,'exported emitter order changed') end
-end
-map=paddedMap
-records={};count,driven=register(8,groups,false)
-assert(count==3 and not driven and records.hair1.directionPiece==1 and records.hair1.windAffected,
-    'ponytail budget fallback lacks head/wind response')
-map.hairemit02=nil;records={};count=register(8,{Tail={6,7}},true)
-assert(count==2 and records.hair3 and not records.hair2,'missing emitter truncated later roots')
-map.hairemit01=nil;map.hairemit03=nil;records={};count=register(8,{Tail={6,7}},true)
-assert(count==0 and next(records)==nil,'old model manufactured estimated roots')
-GG.SmokeRibbon=nil;assert(register(8,groups,true)==0,'missing renderer failed')
-
+-- Lua 5.1: polygon ponytail selection, reveal lifecycle and wind animation.
+local map={Head=1,TailRotator=5,Tail1=6,Tail2=7}
 local file=assert(io.open('scripts/operativeInvestigatorScript.lua'));local source=file:read('*a');file:close()
 local function extract(first,last) return assert(source:match(first..'(.-)'..last)) end
 local env=setmetatable({unitID=8,Head=1,backpack=9,x_axis=1,y_axis=2,z_axis=3,
@@ -83,4 +43,4 @@ turns={};co=coroutine.create(function()env.tailWind({6})end)
 assert(coroutine.resume(co));assert(#turns==2,'single-bone rig failed')
 env.tailWind({}) -- incomplete rig is harmless
 assert(env.windTarget==nil and env.targetRot==nil and env.times==nil,'wind leaked temporary globals')
-print('PASS: investigator named/group/sparse emitters, missing model/API, shared tail driver, budget fallback, one wind loop, moving/stopped/single-bone rig')
+print('PASS: investigator polygon ponytail, one wind loop, moving/stopped/single-bone rig')

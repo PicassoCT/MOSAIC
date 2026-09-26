@@ -76,7 +76,7 @@ function setGlobalGameState(state)
     GG.GlobalGameState = state
     Spring.SetGameRulesParam("GlobalGameState:", state)
     if oldState ~= state then
-     Spring.Echo("Global GameState: "..state)
+     -- Spring.Echo("Global GameState: "..state)
     end
 end
 

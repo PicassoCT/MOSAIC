@@ -22,7 +22,6 @@ include "lib_Animation.lua"
 include "lib_mosaic.lua"
 
 local TablesOfPiecesGroups = {}
-local registerHairRibbons = include('lib_investigator_hair.lua')
 local cigaretteSmoke = include('lib_smoke_ribbon_cigarette.lua')(unitID, true)
 local tailWindStarted, ponyTailChosen = false, false
 
@@ -253,7 +252,6 @@ function script.Create()
 	shownPieces = randShowHide(unpack(TablesOfPiecesGroups["HeadDeco"]))
 	showBody()
 	setupAnimation()
-    registerHairRibbons(unitID, TablesOfPiecesGroups, boolHasPonyTail)
     Show(FoldtopUnfolded)
     Hide(MuzzleFlashPistol)
 	StartThread(flyingMonitored)
@@ -875,7 +873,7 @@ function playUpperBodyIdleAnimation()
 		if AnimationConditions[nameOfFunc] and AnimationConditions[nameOfFunc]() == false then
 			return 
 		end
-		echo("Playing upper idle animation "..uppperBodyAnimations[eAnimState.idle][selectedIdleFunction])
+		-- echo("Playing upper idle animation "..uppperBodyAnimations[eAnimState.idle][selectedIdleFunction])
 		PlayAnimation(uppperBodyAnimations[eAnimState.idle][selectedIdleFunction], {}, math.random(1,5)/2.5)	
 end
 
@@ -1234,13 +1232,13 @@ function cloakLoop()
 end
 
 function echoState()
-	echo("============================================")
-	echo("State: "..currentCloakState)
-	echo("boolCloakRequest: ".. toString(getWantCloak()))
-	echo("boolIsBuilding: "..toString(boolIsBuilding))
-	echo("boolFireForcedVisible: "..toString(boolFireForcedVisible))
-	echo("boolPreviouslyCloaked: "..toString( (previousState == "cloaked")))
-	echo("============================================")
+	-- echo("============================================")
+	-- echo("State: "..currentCloakState)
+	-- echo("boolCloakRequest: ".. toString(getWantCloak()))
+	-- echo("boolIsBuilding: "..toString(boolIsBuilding))
+	-- echo("boolFireForcedVisible: "..toString(boolFireForcedVisible))
+	-- echo("boolPreviouslyCloaked: "..toString( (previousState == "cloaked")))
+	-- echo("============================================")
 end
 
 function script.Activate()

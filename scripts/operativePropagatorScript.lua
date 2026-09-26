@@ -1277,13 +1277,13 @@ function cloakLoop()
 end
 
 function echoState()
-	echo("============================================")
-	echo("State: "..currentCloakState)
-	echo("boolCloakRequest: ".. toString(getWantCloak()))
-	echo("boolIsBuilding: "..toString(boolIsBuilding))
-	echo("boolFireForcedVisible: "..toString(boolFireForcedVisible))
-	echo("boolPreviouslyCloaked: "..toString( (previousState == "cloaked")))
-	echo("============================================")
+	-- echo("============================================")
+	-- echo("State: "..currentCloakState)
+	-- echo("boolCloakRequest: ".. toString(getWantCloak()))
+	-- echo("boolIsBuilding: "..toString(boolIsBuilding))
+	-- echo("boolFireForcedVisible: "..toString(boolFireForcedVisible))
+	-- echo("boolPreviouslyCloaked: "..toString( (previousState == "cloaked")))
+	-- echo("============================================")
 end
 
 function script.Activate()

@@ -462,7 +462,7 @@ function buildRouteSquareFromTwoUnits(unitOne, unitTwo, uType)
 end
 
 function regenerateRoutesTable()
-    Spring.Echo("Regenerating Routes Tabel")
+    -- Spring.Echo("Regenerating Routes Tabel")
     local newRouteTabel = {}
     TruckType = randDict(TruckTypeTable)
 
@@ -525,7 +525,7 @@ function spawnAMobileCivilianUnit(defID, x, z, startID, goalID)
         and #GG.UnitArrivedAtTarget > 0 then
 
         for id, boolArrived in pairs(GG.UnitArrivedAtTarget) do
-           conditionalEcho(boolDebugCivilians, "Spawned civilian near truck "..id)
+           -- conditionalEcho(boolDebugCivilians, "Spawned civilian near truck "..id)
             if boolArrived == true and GG.CivilianTable[id].defID and TruckTypeTable[GG.CivilianTable[id].defID] then
                 x,_,z = spGetUnitPosition(id)
                 break

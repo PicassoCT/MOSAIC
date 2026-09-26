@@ -2617,7 +2617,7 @@ end
                             boolDead = Spring.GetUnitIsDead(persPack.unitID)
 
                             if boolDead and boolDead == true then
-                                echo("Aborting eventstream cause unit has died")
+                                -- echo("Aborting eventstream cause unit has died")
                                 return nil, nil
                             end
 
@@ -2757,7 +2757,7 @@ end
                     if persPack.startFrame + 1 < Spring.GetGameFrame() and
                         persPack.boolCloakedAtLeastOnce == true and
                         boolUnitIsCloaked == false then
-                        echo("DoubleAgent teamtransfer")
+                        -- echo("DoubleAgent teamtransfer")
                         --we copy kill the unit here instead of transfering to another team
                         --to prevent script incosistencies
                         copyUnit(persPack.traitorID, persPack.teamToTurnTo)
@@ -3763,11 +3763,11 @@ end
             end
 
             local behaviourName = behaviour or "no behaviour name"
-            local currentState = GG.CivilianUnitInternalLogicActive[unitID]
-            if type(currentState) == "table" and currentState.behaviour then
-                echo("Overriding internal state " .. currentState.behaviour ..
-                     " with " .. behaviourName)
-            end
+            -- local currentState = GG.CivilianUnitInternalLogicActive[unitID]
+            -- if type(currentState) == "table" and currentState.behaviour then
+            --     echo("Overriding internal state " .. currentState.behaviour ..
+            --          " with " .. behaviourName)
+            -- end
 
             GG.CivilianUnitInternalLogicActive[unitID] = {
                 state = State,

@@ -596,7 +596,7 @@ function script.HitByWeapon(x, z, weaponDefID, damage)
     bodyConfig.boolLoaded = false
     bodyConfig.boolWounded = true
     if damage > 10 and randChance(10) then
-        conditionalEcho(boolDebugActive, "Damage to civilian drawing blood at "..locationstring(unitID))
+        -- conditionalEcho(boolDebugActive, "Damage to civilian drawing blood at "..locationstring(unitID))
         bloodyHell= {"bloodspray", "bloodslay"}
         StartThread(spawnCegAtPiece, unitID, Head, bloodyHell[math.random(1,2)])
     end
@@ -620,8 +620,8 @@ function setCivilianUnitInternalStateMode(unitID, State, name)
         setSpeedEnv(unitID, NORMAL_WALK_SPEED)
     end
 
-    conditionalEcho(boolDebugActive, unitID .. " civilian internal logic " ..
-                    State .. " " .. behaviour)
+    -- conditionalEcho(boolDebugActive, unitID .. " civilian internal logic " ..
+    --                 State .. " " .. behaviour)
     GG.CivilianUnitInternalLogicActive[unitID] = {
         state = State,
         behaviour = behaviour,
@@ -920,7 +920,7 @@ end
 function chatting()
     Signal(SIG_INTERNAL)
     SetSignalMask(SIG_INTERNAL)
-    conditionalEcho(boolDebugActive, "Debugging chat civilianscript: active at ".. locationstring(unitID))
+    -- conditionalEcho(boolDebugActive, "Debugging chat civilianscript: active at ".. locationstring(unitID))
     accumulated = 0
     _, startRotation,_ = Spring.GetUnitRotation(unitID)
     timeTillFullRotatedMs = 3500
@@ -1321,7 +1321,7 @@ function threadStateStarter()
     if behaviourDispatcherClosed then return end
     if boolStartFilming == true then
         boolStartFilming = false
-        conditionalEcho(boolDebugActive,"Starting filming at location "..locationstring(unitID))
+        -- conditionalEcho(boolDebugActive,"Starting filming at location "..locationstring(unitID))
         StartThread(filmingLocation)
     end
     if boolStartWailing == true then
@@ -2099,7 +2099,7 @@ function script.Killed(recentDamage, _)
         startCookingOff()
     else
         _, maxHealth= Spring.GetUnitHealth(unitID)
-        Spring.Echo("Unit civilian got final damage ".. (recentDamage/maxHealth).." %")
+        -- Spring.Echo("Unit civilian got final damage ".. (recentDamage/maxHealth).." %")
         if (recentDamage/maxHealth) > 2.5 then
             ExplosiveDeath(lastDamageDirX, lastDamageDirZ )
             return 1 -- signal custom animation handled
@@ -2210,6 +2210,8 @@ function cloakLoop()
     end
 end
 
-function echoOverload(res) Spring.Echo("CivilianAgent: " .. res) end
+function echoOverload(res)
+    -- Spring.Echo("CivilianAgent: " .. res)
+end
 
     
