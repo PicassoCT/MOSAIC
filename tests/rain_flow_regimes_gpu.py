@@ -16,11 +16,11 @@ void main(){vec3 n=normalize(vec3(slope,1,0));
  vec3 p=vec3(gl_FragCoord.x*2,altitude,gl_FragCoord.y*2);
  gl_FragColor=vec4(terrainRunoffSpray(p,n));}
 ''')
-use(query);uf(loc(query,b'terrainWetness'),1);uf(loc(query,b'slope'),.6);uf(loc(query,b'altitude'),2)
+use(query);uf(loc(query,b'terrainWetness'),1);uf(loc(query,b'slope'),.6);uf(loc(query,b'altitude'),4)
 assert max(render(query))>.05,'no confluence shoreline sources'
-for height in [-2,20]:
+for height in [-2,1,2,20]:
  uf(loc(query,b'altitude'),height);assert max(render(query))==0,'spray without impact cue'
-uf(loc(query,b'altitude'),2);uf(loc(query,b'slope'),0)
+uf(loc(query,b'altitude'),4);uf(loc(query,b'slope'),0)
 assert max(render(query))==0,'flat ground spray'
 print('PASS: fine tributaries stay clear; strong constriction foams and suppresses crests; spray requires shoreline impact')
 

@@ -889,6 +889,10 @@ void main(void)
     vec4 surfaceFX=GetGroundReflectionRipples(surfacePos);
     float surfaceVisibility=NormalIsSky ? 0.0
         : rainSurfaceVisibility(surfacePos,worldPos,surfaceDepth,depthAtPixel.r);
+    // Fade the finished terrain contribution, after its relief derivatives.
+    // Alpha, additive glints, foam and the diagnostic mask must agree; fading
+    // only alpha leaves bright traces across the engine's shore-wave band.
+    surfaceVisibility*=NormalIsOnGround ? terrainShoreFade(surfacePos.y) : 1.0;
     surfaceFX.a*=surfaceVisibility;
     runoffEnergy*=surfaceVisibility;
     runoffCoverage*=surfaceVisibility;

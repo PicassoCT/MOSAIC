@@ -19,6 +19,14 @@ vec2 runoffChart(vec3 p, vec3 across) {
 }
 float surfaceWetNoise(vec2 p);
 vec4 roofWaterBeads(vec3 p, vec3 normal, bool building);
+// Stable handover to the engine's shore waves. Heights are engine units above
+// the same y=0 sea plane used by the existing terrain/submerged-surface masks.
+// Keep the inner surf band clear; restore land water gently further uphill.
+const float TERRAIN_SHORE_CLEAR_HEIGHT=2.0;
+const float TERRAIN_SHORE_FULL_HEIGHT=8.0;
+float terrainShoreFade(float height) {
+    return smoothstep(TERRAIN_SHORE_CLEAR_HEIGHT,TERRAIN_SHORE_FULL_HEIGHT,height);
+}
 // World-cell seeds replace the four-tile repeated bank image. Neighbouring
 // rows evaluate the same shared port; branches have zero offset/tangent at joins.
 float terrainSeed(vec2 id) {
@@ -132,7 +140,7 @@ float terrainRunoffSpray(vec3 p,vec3 n) {
     float weight=smoothstep(0.2,0.8,n.z*n.z/max(dot(n.xz,n.xz),0.00001));
     return mix(terrainChartSpray(vec2(p.z,-p.y*1.41421356)),
                terrainChartSpray(vec2(p.x,-p.y*1.41421356)),weight)
-        *terrainImpactCue(p,n);
+        *terrainImpactCue(p,n)*terrainShoreFade(p.y);
 }
 float terrainCrest(vec2 phase) {
     float t=terrainFlowTime*5.3407075;
