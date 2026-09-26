@@ -583,7 +583,7 @@ vec4 GetTerrainRainWater(vec3 p, vec3 n) {
     float glint=max(0.0,pow(max(dot(waterNormal,halfDirection),0.0),24.0)
                        -pow(max(dot(n,halfDirection),0.0),24.0));
     float fresnel=0.08+0.55*pow(1.0-max(dot(n,toEye),0.0),3.0);
-    vec3 target=scene*mix(0.70,0.86,clamp(water.w,0.0,1.0))
+    vec3 target=scene*mix(0.96,0.99,clamp(water.w,0.0,1.0))
         +max(skyCol,vec3(0))*fresnel*0.08;
     vec4 reflected=getReflection(p);
     target=mix(target,reflected.rgb/max(reflected.a,0.0001),
