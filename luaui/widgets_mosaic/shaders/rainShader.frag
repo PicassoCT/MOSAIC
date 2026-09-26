@@ -598,9 +598,8 @@ vec4 GetTerrainRainWater(vec3 p, vec3 n) {
 vec4 GetGroundReflectionRipples(vec3 pixelPos)
 {
     vec3 n = normalize(vertexNormal*2.0-1.0);
-    if(!NormalIsOnUnit) return GetTerrainRainWater(pixelPos,n);
     vec2 water = surfaceWaterWeights(n.y);
-    float channels = NormalIsOnUnit ? 0.0 : getSurfaceRivulets(pixelPos,n,false);
+    float channels = 0.0; // Terrain channels are composited separately below.
     vec2 rippleSlope = surfaceRippleProfile(pixelPos.xz);
     vec4 roofBeads = roofWaterBeads(pixelPos,n,NormalIsOnUnit);
     vec3 channelGradient=runoffHeightGradient(channels*0.12,pixelPos,n)*water.x*(1.0-water.y)*step(0.0,pixelPos.y);
@@ -610,7 +609,7 @@ vec4 GetGroundReflectionRipples(vec3 pixelPos)
     float roofFilm=roofWetFilm(pixelPos,n,NormalIsOnUnit);
     coverage=max(coverage,roofBeads.w)+roofFilm;
     coverage=min(coverage,1.0);
-    if (coverage <= 0.0001) return NONE;
+    if (coverage <= 0.0001) return NormalIsOnUnit ? NONE : GetTerrainRainWater(pixelPos,n);
 
     vec3 scene = texture2D(screentex,uv).rgb;
     vec3 lighting = max(sunCol,vec3(0))*0.4 + max(skyCol,vec3(0))*0.6;
@@ -648,7 +647,19 @@ vec4 GetGroundReflectionRipples(vec3 pixelPos)
     beadGlint+=0.45*broadGlint;
     target*=1.0-0.65*max(-beadLight,0.0);
     runoffEnergy+=lighting*(0.65*max(beadLight,0.0)+0.45*beadGlint);
-    return vec4(max(target,vec3(0)),coverage*0.65);
+    vec4 flatWater=vec4(max(target,vec3(0)),coverage*0.65);
+    if(NormalIsOnUnit) return flatWater;
+    // Complementary slope masks preserve flat-ground impacts and the existing
+    // rain-driven expansion of the channel network on banks.
+    float aboveSea=smoothstep(0.0,1.5,pixelPos.y);
+    flatWater.a*=aboveSea;
+    vec3 flatEnergy=runoffEnergy*aboveSea;
+    runoffEnergy=vec3(0);
+    vec4 slopeWater=GetTerrainRainWater(pixelPos,n);
+    runoffEnergy+=flatEnergy;
+    float alpha=flatWater.a+slopeWater.a;
+    return vec4((flatWater.rgb*flatWater.a+slopeWater.rgb*slopeWater.a)
+                /max(alpha,0.00001),alpha);
 }
 
 ///////////////////////////////////FOG ///////////////////////////////////////////////////////////
@@ -868,3 +879,4 @@ void main(void)
         gl_FragColor = composeRainEffects(texture2D(screentex,uv).rgb,surfaceFX,rain,splash,runoffEnergy);
     }
 }
+

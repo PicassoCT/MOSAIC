@@ -71,14 +71,10 @@ vec4 terrainSurfaceWater(vec3 p, vec3 n) {
     float weight=smoothstep(0.2,0.8,n.z*n.z/max(dot(n.xz,n.xz),0.00001));
     vec4 a=terrainChartWater(vec2(p.x,-p.y*1.41421356),pixel);
     vec4 b=terrainChartWater(vec2(p.z,-p.y*1.41421356),pixel);
-    vec4 levelWater=terrainChartWater(p.xz,pixel);
-    float puddle=surfaceWaterWeights(n.y).y;
-    // Level ground fills fixed depressions without directional travelling waves.
-    // Puddle surfaces are level: buried bank relief affects depth/coverage,
-    // not the water's shading normal. Only the meniscus rounds the contact.
-    levelWater.y=levelWater.x*0.08;
-    levelWater.z=0.0;
-    return mix(mix(b,a,weight),levelWater,puddle)
+    // Channels belong to inclined terrain only. Flat ground retains the
+    // separate rain-impact/puddle layer; do not project the runoff atlas there.
+    float runoff=1.0-surfaceWaterWeights(n.y).y;
+    return mix(b,a,weight)*runoff
         *surfaceWaterWeights(n.y).x*smoothstep(0.0,1.5,p.y);
 }
 
@@ -262,3 +258,4 @@ vec2 surfaceRippleProfile(vec2 position) {
     }
     return gradient*resolved;
 }
+
