@@ -75,6 +75,8 @@ uniform float terrainFlowTime;
 uniform sampler2D terrainRunoffTex;
 uniform float clipZeroToOne;
 uniform float reflectionDebug;
+// 0 normal; 1 no SSR; 2 no terrain relief; 3 no foam/runoff spray.
+uniform float rainIsolation;
 uniform float rainDetailDebug;
 uniform vec3 eyePos;
 uniform vec3 eyeDir;
@@ -514,8 +516,15 @@ vec4 rayMarchForReflection(vec3 reflectionPosition, vec3 reflectDir)
             }
             if (!reflectionDepthDelta(reflectionPosition + reflectDir * high,
                                       hitUV, delta)) return NONE;
-            // Reject discontinuities rather than reflecting through a foreground edge.
             if (delta < 0.0 || delta > REFLECTION_THICKNESS) return NONE;
+            // A depth step can bracket zero without the ray hitting either
+            // surface. Refinement must converge in depth as well as distance.
+            vec2 lowUV; float lowDelta;
+            if (!reflectionDepthDelta(reflectionPosition + reflectDir * low,
+                                      lowUV, lowDelta)) return NONE;
+            float interval=max(high-low,0.0001);
+            float continuity=max(0.10,interval*2.0);
+            if(lowDelta < -1.0e10 || delta-lowDelta>continuity) return NONE;
             vec2 edgeDistance = min(hitUV, vec2(1.0) - hitUV);
             float fade = smoothstep(0.0, 0.05, min(edgeDistance.x, edgeDistance.y));
             fade *= 1.0 - smoothstep(REFLECTION_DISTANCE * 0.8, REFLECTION_DISTANCE, high);
@@ -529,6 +538,7 @@ vec4 rayMarchForReflection(vec3 reflectionPosition, vec3 reflectDir)
 
 vec4 getReflection(vec3 reflectionPosition)
 {
+    if(rainIsolation>0.5 && rainIsolation<1.5) return NONE;
     if (!NormalIsWaterPuddle) return NONE;
     if (getRandomFactor(reflectionPosition.xz / 512.0) >= (NormalIsOnUnit ? rainPercent : terrainWetness)) return NONE;
 
@@ -568,10 +578,13 @@ vec4 paintRainSky(vec2 rotatedUV)
 vec4 GetTerrainRainWater(vec3 p, vec3 n) {
     vec4 water=terrainSurfaceWaterGeometry(p,n);
     runoffCoverage=water.x;
-    vec3 gradient=runoffHeightGradient(water.y*0.18,p,n);
+    float pixel=max(length(dFdx(p)),length(dFdy(p)));
+    if(NormalIsOnUnit || water.x<=0.0001) return NONE;
+    vec3 gradient=vec3(0);
+    if(!(rainIsolation>1.5 && rainIsolation<2.5))
+        gradient=terrainReliefGradient(p,n,water.y,pixel);
     // Circular impacts belong to the separate pooled-water layer.
     vec3 waterNormal=normalize(n-gradient);
-    if(water.x<=0.0001) return NONE;
     vec3 scene=texture2D(screentex,uv).rgb;
     vec3 lighting=max(sunCol,vec3(0))*0.4+max(skyCol,vec3(0))*0.6;
     if(rainLightActive>0.5) lighting+=rainLocalLight(p+n*0.5);
@@ -591,7 +604,7 @@ vec4 GetTerrainRainWater(vec3 p, vec3 n) {
     target=mix(target,reflected.rgb/max(reflected.a,0.0001),
         reflected.a*smoothstep(0.05,0.4,water.w)*(0.3+fresnel));
     target*=1.0-0.65*max(-curvedLight,0.0);
-    float foam=clamp(water.z/max(water.x,0.0001),0.0,1.0);
+    float foam=rainIsolation>2.5 ? 0.0 : clamp(water.z/max(water.x,0.0001),0.0,1.0);
     // Foam scatters the available light rather than depending on specular angle.
     vec3 foamLight=max(sunCol,vec3(0))*max(dot(n,lightDirection),0.0)
                   +max(skyCol,vec3(0))*0.7;
@@ -908,6 +921,7 @@ void main(void)
         rain=vec4((rain.rgb*rain.a+distantRain.rgb*distantRain.a)/max(rainAlpha,0.00001),rainAlpha);
         splash = drawRainSplashback(worldPos, vertexNormal, rayDir, sceneDistance, NormalIsSky);
         vec4 runoffSpray=drawRunoffSpray(surfacePos,vertexNormal,rayDir,sceneDistance,NormalIsOnGround);
+        if(rainIsolation>2.5) runoffSpray=NONE;
         float combinedSplashAlpha=1.0-(1.0-splash.a)*(1.0-runoffSpray.a);
         splash=vec4((splash.rgb*splash.a*(1.0-runoffSpray.a)+runoffSpray.rgb*runoffSpray.a)
                     /max(combinedSplashAlpha,0.00001),combinedSplashAlpha);
