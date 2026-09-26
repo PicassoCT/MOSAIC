@@ -128,7 +128,7 @@ frame=frame+1;gadget:DrawWorld()
 Spring.GetUnitPieceMatrix=function() return 1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1 end
 frame=frame+1;gadget:DrawWorld()
 assert(math.abs(lastDrift[1])+math.abs(lastDrift[2])+math.abs(lastDrift[3])>0,'head turn produces no lag')
-assert(lastDrift[1]^2+lastDrift[2]^2+lastDrift[3]^2<=(3*0.25*0.3)^2+1e-8,'hair drift unbounded')
+assert(lastDrift[1]^2+lastDrift[2]^2+lastDrift[3]^2<=(3*1.5)^2+1e-8,'hair drift unbounded')
 local paused={unpack(lastDrift)};gadget:DrawWorld()
 for i=1,3 do assert(lastDrift[i]==paused[i],'hair moves while paused') end
 for i=1,90 do frame=frame+1;gadget:DrawWorld() end
@@ -174,6 +174,26 @@ matrixCalls={};local wc=windCalls;gadget:DrawWorld()
 assert(matrixCalls[5]==1 and not matrixCalls[2] and not matrixCalls[3] and not matrixCalls[4],
     'shared driver sampled repeatedly or zero-offset roots queried matrices')
 assert(windCalls==wc,'inherited wind sampled again')
+-- Actual investigator settings must respond to wind with a fixed unit and rig.
+producer:UnitDestroyed(7);gadget:DrawWorld()
+Spring.GetUnitPieceMap=function()
+    return {Head=1,hairemit1=2,hairemit002=3,hairemit003=4,TailRotator=6,Tail1=5}
+end
+local count=dofile('scripts/lib_investigator_hair.lua')(7,{hairemit={2,3,4},Tail={5}},true)
+assert(count==3)
+wind={10,0,0};velocity={0,0,0}
+local wc,vc=windCalls,velocityCalls
+frame=frame+1;gadget:DrawWorld()
+assert(windCalls==wc+1 and velocityCalls==vc,'stationary hair must sample wind once, without a velocity dependency')
+assert(lastDrift[1]>3.5 and lastDrift[2]==0,'stationary wind is disabled or crushed by the drift clamp')
+local root={unpack(lastOrigin)}
+frame=frame+1;gadget:DrawWorld()
+assert(lastDrift[1]>3.5,'stationary wind stopped after the first frame')
+wind={-10,0,0};frame=frame+1;gadget:DrawWorld()
+assert(lastDrift[1]<-3.5,'stationary hair ignored wind reversal')
+for i=1,3 do assert(lastOrigin[i]==root[i],'wind displaced a scalp root') end
+wind={0,0,0};frame=frame+1;gadget:DrawWorld()
+assert(lastDrift[1]==0 and lastDrift[2]==0 and lastDrift[3]==0,'calm air retained stationary drift')
 cameraZ=1000;matrixCalls={};hidden('distant hair drawn')
 assert(next(matrixCalls)==nil,'culled hair queried animated matrices')
 cameraZ=100;cloak=true;hidden('driver bypasses cloak');cloak=false

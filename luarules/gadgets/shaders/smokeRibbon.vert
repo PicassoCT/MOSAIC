@@ -15,13 +15,19 @@ vec3 centre(float t, float strand, vec3 u, vec3 v) {
         float rootRadius = plumeWidth * 0.22 * sqrt((strand+0.5)/count);
         vec3 p = origin + rootRadius*(u*cos(s)+v*sin(s));
         float lockLength = plumeLength * (0.88+0.12*sin(s)*sin(s));
+        float airflow = min(1.0,length(directionalDrift)/max(plumeLength,0.001));
+        float gust = 1.0 + airflow*(0.18*sin(effectTime*1.7+s*0.13)
+            + 0.1*sin(effectTime*3.1+s*0.07));
         for (int i=0; i<12; ++i) {
             float q = t * (float(i)+0.5)/12.0;
             float flex = (1.0-stiffness)*q*q;
-            float wave = sin(effectTime*2.1 + q*3.0 + seed + strand*2.4);
+            float wave = 0.25*sin(q*3.0+s)
+                + airflow*sin(effectTime*2.1 + q*3.0 + s);
+            float crossWave = 0.25*sin(q*4.0+s)
+                + airflow*sin(effectTime*1.3+q*4.0+s);
             vec3 bend = direction + vec3(0,-gravity*q,0)
-                + directionalDrift/max(plumeLength,0.001)*flex
-                + (u*wave+v*sin(effectTime*1.3+q*4.0+s))*curl*flex;
+                + directionalDrift/max(plumeLength,0.001)*flex*gust
+                + (u*wave+v*crossWave)*curl*flex;
             p += normalize(bend) * (lockLength*t/12.0);
         }
         return p;

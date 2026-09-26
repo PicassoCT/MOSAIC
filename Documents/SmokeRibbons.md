@@ -205,8 +205,10 @@ antialiased longitudinal fibres with varied lengths and frayed tips. Smoke remai
 ```lua
 GG.SmokeRibbon.Set(unitID, 'hair1', 'hairemit1', {
     mode='hair', directionPiece='Tail1', direction={0,0,-1},
-    length=4.0, width=0.85, strands=4, stiffness=0.65, gravity=0.3, hang=0.85,
-    windAffected=false, -- Tail1 already carries the polygon ponytail's wind motion
+    length=4.0, width=0.85, strands=4, stiffness=0.35, gravity=0.3, hang=0.85,
+    colorStart={0.85,0.74,0.46,1}, colorEnd={1.0,0.93,0.72,1},
+    windAffected=true, windInfluence=1.2, trailTime=0.3,
+    motionAffected=true, motionInfluence=0.6,
     distanceFactor=100,
 })
 ```
@@ -236,13 +238,20 @@ suffixes as a fallback. The current DAE exports `hairemit1`, `hairemit002`, and
 `hairemit003`; all three resolve through the production grouping helper. No
 estimated Head offsets are used. Missing emitters are skipped for older models.
 
-Where the polygon ponytail is enabled, the locks use its animated Tail1 basis
-without adding engine wind a second time. `hang=0.85` blends that direction toward
+The investigator's loose locks are light blonde. Wind is sampled continuously,
+including while the unit and ponytail are stationary, and is shared across all
+visible locks in a draw. The GLSL adds wind-dependent gusts and tip flutter; in
+calm air a stationary lock retains its resting curl without continued flutter.
+Stiffness is applied once in the shader, with a separate bounded wind input.
+The fixed arc length prevents strong gusts from stretching the hair.
+
+Where the polygon ponytail is enabled, the locks also use its animated Tail1 basis.
+`hang=0.85` blends that direction toward
 world down before motion history is sampled: the ponytail provides restrained sway,
 while the scalp locks hang instead of copying its full upward lift. `hang` defaults
 to zero for callers that want the original piece direction; one is fully downward. The existing five-ponytail animation
-budget remains in force; other investigators use the Head basis and the shader's
-small wind response. Repeated show/hide calls no longer acquire another ponytail
+budget remains in force; other investigators use the Head basis and the same
+world-wind response. Repeated show/hide calls no longer acquire another ponytail
 slot or start another wind loop. The wind loop follows the owner's `boolWalking`
 state. The polygon hair and head decorations remain in place. Attachment and hat
 intersections still need an in-game check. Hair uses the same cloak/LOS/icon/transport checks, distance fade, render
