@@ -220,9 +220,8 @@ function script.StopMoving()
 end
 
 boolYouOnlyDieOnce = false
-function script.HitByWeapon(x, z, weaponDefID, damage)
-    hp = Spring.GetUnitHealth(unitID)
-    if hp and hp - damage < 0 and boolYouOnlyDieOnce == false then
+function BeginAircraftCrash()
+    if boolYouOnlyDieOnce == false then
         boolYouOnlyDieOnce = true
         StartThread(emitSmoke)
         EmitSfx(bady, rlexplode)
@@ -230,11 +229,10 @@ function script.HitByWeapon(x, z, weaponDefID, damage)
         Spin(imgoingdown, y_axis, math.rad(-250), 0.01)
         EmitSfx(bady, rlexplode)
 
-        SetUnitValue(COB.CRASHING, 1)
-        Spring.SetUnitNeutral(unitID, true)
-        Spring.SetUnitNoSelect(unitID, true)
-        return 0
     end
+end
+
+function script.HitByWeapon(x, z, weaponDefID, damage)
     return damage
 end
 
@@ -300,4 +298,3 @@ function script.FireWeapon1()
         Sleep(142)
     end
 end
-

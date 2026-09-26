@@ -75,7 +75,9 @@ end
 
 function script.FireWeapon1() 
     ammoCapacity = ammoCapacity -5
-    if ammoCapacity < 0 then Spring.DestroyUnit(unitID, true, false) end
+    if ammoCapacity < 0 and not (GG.AircraftCrash and GG.AircraftCrash(unitID)) then
+        Spring.DestroyUnit(unitID, true, false)
+    end
     return true 
 end
 
@@ -96,4 +98,3 @@ function script.Deactivate() return 0 end
 function script.QueryBuildInfo() return center end
 
 Spring.SetUnitNanoPieces(unitID, {center})
-

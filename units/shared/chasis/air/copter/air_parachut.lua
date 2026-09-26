@@ -66,6 +66,7 @@ local AIR_PARACHUT = VTOL:New{
 
 	  customParams = {
 	  	baseclass = "vtol",
+		crashable = 0, -- This is a scripted parachute carrying infantry, not an aircraft.
 	  	normaltex = "unittextures/component_atlas_normal.dds",
 	  },
 

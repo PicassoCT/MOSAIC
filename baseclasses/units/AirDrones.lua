@@ -12,7 +12,8 @@ local AIRCRAFT = Unit:New{
 	usepiececollisionvolumes 	= true,
 	
 	customparams = {
-		baseclass ="aero"
+		baseclass ="aero",
+		crashable = 1,
     },
 }
 	
@@ -32,6 +33,7 @@ local Aero = Unit:New{
 	
 	customparams = {
 		baseclass			= "aero",
+		crashable = 1,
 	},
 }
 
@@ -53,6 +55,7 @@ local VTOL = Unit:New{
 	customparams = {
 
 		baseclass			= "aircraft",
+		crashable = 1,
     },
 }
 

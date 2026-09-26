@@ -225,14 +225,6 @@ end
 
 
 function script.HitByWeapon(x, z, weaponDefID, damage)
-    hp = Spring.GetUnitHealth(unitID)
-    if hp and hp - damage < 0 then
-        Spring.SetUnitCrashing(unitID, true)
-        SetUnitValue(COB.CRASHING, 1)
-        Spring.SetUnitNeutral(unitID, true)
-        Spring.SetUnitNoSelect(unitID, true)
-        return 0
-    end
     return damage
 end
 
@@ -292,7 +284,6 @@ end
 --Avenge me by plasting the block with a 5 Minute continous add with the hoard
 function script.Killed(recentDamage, _)
     Spring.PlaySoundFile("sounds/advertising/media/GunnedDown.ogg",1.0)
-    Spring.SetUnitCrashing ( unitID, true) 
     return 1
 end
 
@@ -308,4 +299,3 @@ function script.StopMoving()
 function script.Activate() return 1 end
 
 function script.Deactivate() return 0 end
-

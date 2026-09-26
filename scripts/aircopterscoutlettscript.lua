@@ -25,8 +25,8 @@ SIG_LIFETIME =1
 startLifeTime = 1*60*1000
 lifeTimeMS = startLifeTime
 function lifeSpan()
-    SetSignalMask(SIG_LIFETIME)
     Signal(SIG_LIFETIME)
+    SetSignalMask(SIG_LIFETIME)
     Sleep(500)
     StartThread(PlaySoundByUnitDefID, unitDefID, "sounds/air/drone.ogg", 0.5, 5000, 1)
     while lifeTimeMS >0 do
@@ -34,7 +34,9 @@ function lifeSpan()
         lifeTimeMS = lifeTimeMS -1000
         updateProgressBar(math.max(0,lifeTimeMS/startLifeTime))
     end
-    Spring.DestroyUnit(unitID, true, false)
+    if not (GG.AircraftCrash and GG.AircraftCrash(unitID)) then
+        Spring.DestroyUnit(unitID, true, false)
+    end
 end
 
 function deployScoutletts()

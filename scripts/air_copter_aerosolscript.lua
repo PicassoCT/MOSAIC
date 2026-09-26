@@ -56,6 +56,12 @@ function script.Killed(recentDamage, _)
     return 1
 end
 
+function BeginAircraftCrash()
+    -- The unit remains alive during its fall; stop both infection and spray.
+    Signal(SIG_AEROSOL_DEPLOY)
+    aerosolEffects.Shutdown()
+end
+
 -- aimining & fire weapon
 function script.AimFromWeapon1() return aimpiece end
 
@@ -93,6 +99,7 @@ boolStopped = false
 boolDeactivated = true
 
 function aerosolDeploy()
+    SetSignalMask(SIG_AEROSOL_DEPLOY)
     Sleep(100)
 
     local lisUnitFlying = isUnitFlying
@@ -112,8 +119,10 @@ function aerosolDeploy()
         end
         aerosolEffects.Stop()
         if timeTank <= 0 then
-            Spring.SetUnitNoSelect(unitID, false, true)
-            Spring.DestroyUnit(unitID, false, true)
+            if not (GG.AircraftCrash and GG.AircraftCrash(unitID)) then
+                Spring.DestroyUnit(unitID, false, true)
+            end
+            return
         end
         Sleep(100)
     end

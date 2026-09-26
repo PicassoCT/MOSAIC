@@ -2,7 +2,7 @@
 local kinds={'depressol','tollwutox','orgyanyl','wanderlost'}
 for index,kind in ipairs(kinds) do
     local frame,flying,destroyed=0,false,false
-    local workers={}
+    local workers,masks,stopped={},{},{}
     local config={Aerosols={sprayRange=250}}
     config.Aerosols[kind]={sprayTimePerUnitInMs=12000}
     GG={GameConfig=config};Game={gameSpeed=30};unitID=7;unitDefID=index
@@ -31,10 +31,17 @@ for index,kind in ipairs(kinds) do
     StartThread=function(fn,...)
         if fn~=PlaySoundByUnitDefID then workers[#workers+1]=coroutine.create(fn) end
     end
+    SetSignalMask=function(mask) masks[coroutine.running()]=mask end
+    Signal=function(mask)
+        for worker,active in pairs(masks) do
+            if active==mask then stopped[worker]=true end
+        end
+    end
     Sleep=function(ms)coroutine.yield(ms)end
     dofile('scripts/air_copter_aerosolscript.lua');script.Create()
     assert(#workers==1,'extra aerosol polling worker')
     local function tick()
+        if stopped[workers[1]] then return end
         local ok,ms=coroutine.resume(workers[1]);assert(ok,ms)
         frame=frame+(ms or 0)*30/1000;cloud:GameFrame(frame)
     end
@@ -58,6 +65,10 @@ for index,kind in ipairs(kinds) do
     assert(count(SmokeRibbonRecords)==0 and count(CloudVolumeRecords)>0,'landing cleanup removed residual gas')
     flying=true
     for _=1,65 do tick();assert(count(CloudVolumeRecords)<=8,'unbounded per-drone cloud emission')end
+    local fuel=timeTank
+    BeginAircraftCrash()
+    assert(stopped[workers[1]] and count(SmokeRibbonRecords)==0,'crash leaves spray worker running')
+    tick();assert(timeTank==fuel,'crashing drone continues to consume/spray aerosol')
     script.Killed();assert(count(SmokeRibbonRecords)==0,'death leaves attached spray')
     local n=count(CloudVolumeRecords)
     tick();assert(count(CloudVolumeRecords)<=n and count(SmokeRibbonRecords)==0,'worker restarts dead emitter')
@@ -65,4 +76,4 @@ for index,kind in ipairs(kinds) do
     assert(count(CloudVolumeRecords)==0,'residual aerosol never expires')
     cloud:Shutdown();ribbon:Shutdown()
 end
-print('PASS: four aerosol types, real drone worker/APIs, larger bright spray, moving wake, bounded puffs, landing/death/expiry, unchanged gameplay cadence, no legacy CEG')
+print('PASS: four aerosol types, real drone worker/APIs, larger bright spray, moving wake, bounded puffs, landing/crash/death/expiry, unchanged gameplay cadence, no legacy CEG')
