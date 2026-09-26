@@ -19,21 +19,72 @@ vec2 runoffChart(vec3 p, vec3 across) {
 }
 float surfaceWetNoise(vec2 p);
 vec4 roofWaterBeads(vec3 p, vec3 normal, bool building);
-// Cached recursive split/rejoin network. RG are fixed bank/spill heights;
-// BA is a complex phase so repeated borders and mip filtering remain continuous.
-// Eight crests fit each 32-unit tile. Geometry and rain never move the banks.
+// World-cell seeds replace the four-tile repeated bank image. Neighbouring
+// rows evaluate the same shared port; branches have zero offset/tangent at joins.
+float terrainSeed(vec2 id) {
+    vec3 q=fract(vec3(id.xyx)*vec3(0.1031,0.1030,0.0973));
+    q+=dot(q,q.yzx+33.33);
+    return fract((q.x+q.y)*q.z);
+}
+float terrainPort(vec2 edge) { return 0.30+0.40*terrainSeed(edge); }
+float terrainPortCount(vec2 edge) { return 1.0+floor(terrainSeed(edge+vec2(109,61))*2.999); }
+float terrainTributaryPort(vec2 edge,float i,float count) {
+    return (i+0.25+0.5*terrainSeed(edge+vec2(i*17.0,151)))/count;
+}
+vec3 terrainPath(vec2 at) {
+    vec2 cell=floor(at), f=fract(at);
+    float seed=terrainSeed(cell+vec2(73,19));
+    float t=f.y*f.y*(3.0-2.0*f.y);
+    float centre=mix(terrainPort(cell),terrainPort(cell+vec2(0,1)),t);
+    float bend=sin(3.14159265*f.y);
+    centre+=0.075*sin(6.2831853*f.y+seed*6.2831853)*bend*bend;
+    float start=0.08+0.22*seed;
+    float stop=0.68+0.25*terrainSeed(cell+vec2(17,91));
+    float u=clamp((f.y-start)/(stop-start),0.0,1.0);
+    float envelope=sin(3.14159265*u); envelope*=envelope;
+    float span=(0.06+0.17*terrainSeed(cell+vec2(39,27)))*envelope;
+    // Some cells meander without a fork; others split asymmetrically then rejoin.
+    span*=step(0.24,seed);
+    float skew=0.5+terrainSeed(cell+vec2(11,57));
+    float distance=min(abs(f.x-centre-span*skew),abs(f.x-centre+span*(2.0-skew)));
+    // One to three incoming and outgoing tributaries share edge IDs with the
+    // adjacent cells. They gather into the fork, then fan out to the next row.
+    if(f.y<start || f.y>stop) {
+        distance=2.0;
+        bool incoming=f.y<start;
+        vec2 edge=cell+vec2(0,incoming ? 0.0 : 1.0);
+        float count=terrainPortCount(edge);
+        float gather=incoming ? smoothstep(0.0,start,f.y) : 1.0-smoothstep(stop,1.0,f.y);
+        for(int i=0;i<3;i++) {
+            if(float(i)<count) {
+                float port=terrainTributaryPort(edge,float(i),count);
+                float x=mix(port,centre,gather);
+                distance=min(distance,abs(f.x-x));
+            }
+        }
+    }
+    float width=mix(0.7+0.6*terrainSeed(cell+vec2(0,301)),
+                    0.7+0.6*terrainSeed(cell+vec2(0,302)),t);
+    float phase=at.y+0.055*sin(6.2831853*f.y)*bend*bend*(seed-0.5);
+    return vec3(distance/width,phase,centre);
+}
 vec4 terrainChannelFrame(vec2 at, float pixel) {
-    vec4 data=texture2D(terrainRunoffTex,at/64.0);
-    float head=0.010+0.990*pow(clamp(terrainWetness,0.0,1.0),1.85);
-    float spill=2.0*data.g*data.g;
-    float aa=max(fwidth(spill)*0.6,0.004);
-    float wet=(1.0-smoothstep(head-aa,head+aa,spill))
-        *smoothstep(0.0,0.025,terrainWetness);
-    // Thresholding an averaged bank height would pop entire distant tiles.
-    // Blend unresolved detail into the atlas's calibrated mean wet coverage.
-    wet=mix(wet,0.76*pow(clamp(terrainWetness,0.0,1.0),1.65),
-            smoothstep(1.5,8.0,pixel));
-    return vec4(wet,max(head-2.0*data.r*data.r,0.0),data.ba*2.0-1.0);
+    vec2 chart=at/24.0;
+    // Smooth global warp breaks straight strip alignment without independent
+    // tile rotations or offsets (which would disconnect their borders).
+    chart.x+=0.24*sin(chart.y*1.13)+0.13*sin(chart.y*0.37+chart.x*0.81);
+    chart.y+=0.18*sin(chart.x*1.71);
+    vec3 path=terrainPath(chart);
+    float wetness=clamp(terrainWetness,0.0,1.0);
+    float radius=mix(0.009,0.19,pow(wetness,1.65));
+    float aa=max(fwidth(path.x)*0.6,0.001);
+    float wet=(1.0-smoothstep(radius-aa,radius+aa,path.x))
+        *smoothstep(0.0,0.025,wetness);
+    float depth=max(1.0-path.x/max(radius,0.001),0.0);
+    depth=depth*depth*wetness;
+    float phase=path.y*50.2654825;
+    float resolved=1.0-smoothstep(1.0,4.0,pixel);
+    return vec4(wet,depth,vec2(cos(phase),sin(phase))*resolved);
 }
 float terrainCrest(vec2 phase) {
     float t=terrainFlowTime*5.3407075;
@@ -66,16 +117,30 @@ vec4 terrainChartWater(vec2 at, float pixel) {
     return vec4(channel.x,channel.x*(0.08+channel.y+0.14*crest),
                 channel.x*crest,channel.y);
 }
-vec4 terrainSurfaceWater(vec3 p, vec3 n) {
+// Use geometry derivatives for terrain eligibility, never the splat normal.
+vec3 terrainGeometricNormal(vec3 p) {
+    vec3 n=cross(dFdx(p),dFdy(p));
+    n/=max(length(n),0.000001);
+    return n.y<0.0 ? -n : n;
+}
+vec4 terrainSurfaceWater(vec3 p, vec3 shadingNormal) {
+    vec3 n=terrainGeometricNormal(p);
+    float slope=length(n.xz);
+    vec2 eligibility=surfaceWaterWeights(n.y);
+    float banks=eligibility.x*(1.0-eligibility.y);
     float pixel=max(length(dFdx(p)),length(dFdy(p)));
     float weight=smoothstep(0.2,0.8,n.z*n.z/max(dot(n.xz,n.xz),0.00001));
-    vec4 a=terrainChartWater(vec2(p.x,-p.y*1.41421356),pixel);
-    vec4 b=terrainChartWater(vec2(p.z,-p.y*1.41421356),pixel);
-    // Channels belong to inclined terrain only. Flat ground retains the
-    // separate rain-impact/puddle layer; do not project the runoff atlas there.
-    float runoff=1.0-surfaceWaterWeights(n.y).y;
-    return mix(b,a,weight)*runoff
-        *surfaceWaterWeights(n.y).x*smoothstep(0.0,1.5,p.y);
+    vec2 chartA=vec2(p.x,-p.y*1.41421356);
+    vec2 chartB=vec2(p.z,-p.y*1.41421356);
+    vec4 broad=mix(terrainChartWater(chartB,pixel),terrainChartWater(chartA,pixel),weight);
+    // Blend fixed world scales instead of multiplying position by a varying
+    // slope: that would tear/stretch paths whenever the bank curves.
+    vec4 fine=mix(terrainChartWater(chartB*2.0,pixel*2.0),
+                  terrainChartWater(chartA*2.0,pixel*2.0),weight);
+    vec4 channels=mix(broad,fine,smoothstep(0.20,0.65,slope));
+    // The rain compositor owns flat-ground puddles and impact ripples.
+    // Match its slope mask so banks crossfade without a second flat film.
+    return channels*banks*smoothstep(0.0,1.5,p.y);
 }
 
 // Stop-and-go motion is monotone: each smooth burst is separated by a rest.
