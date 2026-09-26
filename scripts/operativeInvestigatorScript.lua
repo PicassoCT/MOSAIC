@@ -23,6 +23,7 @@ include "lib_mosaic.lua"
 
 local TablesOfPiecesGroups = {}
 local registerHairRibbons = include('lib_investigator_hair.lua')
+local cigaretteSmoke = include('lib_smoke_ribbon_cigarette.lua')(unitID, true)
 local tailWindStarted, ponyTailChosen = false, false
 
 SIG_PISTOL = 1
@@ -48,6 +49,7 @@ local Torso = piece('Torso');
 local Pistol = piece('Pistol');
 local Gun = Pistol;
 local Head = piece('Head');
+local cigarette = piece('HeadDeco7')
 local UpLeg2 = piece('UpLeg2');
 local LowLeg2 = piece('LowLeg2');
 local UpLeg1 = piece('UpLeg1');
@@ -219,6 +221,9 @@ function showBody()
 	showT(lowerBodyPieces)
 	Show(FoldtopFolded)
 	showT(shownPieces)
+    -- This model's cigarette is HeadDeco7 (HeadDeco5 on the propagator).
+    Show(cigarette)
+    cigaretteSmoke.Show(cigarette)
     local tail = TablesOfPiecesGroups.Tail or {}
     if not ponyTailChosen then
         ponyTailChosen = true
@@ -408,6 +413,7 @@ function breathing()
 end
 
 function script.Killed(recentDamage, _)
+    cigaretteSmoke.Shutdown()
 	if doesUnitExistAlive(civilianID) == true then
 		Spring.DestroyUnit(civilianID,true,true) 
 	end
@@ -1457,6 +1463,7 @@ function script.AimWeapon(weaponID, heading, pitch)
 end
 
 function showHideIcon(boolShowIcon)
+    cigaretteSmoke.SetIconMode(boolShowIcon)
     if  boolShowIcon == true then
         hideAll(unitID)
         Show(Icon)
