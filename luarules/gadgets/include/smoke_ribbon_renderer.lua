@@ -174,7 +174,10 @@ return function()
                             if r.groundDirected then driftY=0 end
                             local driftLength=math.sqrt(driftX*driftX+driftY*driftY+driftZ*driftZ)
                             -- Bound extreme speeds/wind to retain predictable overdraw and culling.
-                            local maxDrift = r.mode == 'hair' and length*0.25*(1-r.stiffness) or length*2
+                            -- Hair already applies stiffness in GLSL and preserves
+                            -- arc length. A second stiffness-scaled clamp here made
+                            -- even strong wind almost invisible on stationary locks.
+                            local maxDrift = r.mode == 'hair' and length*1.5 or length*2
                             if driftLength>maxDrift then
                                 local cap=maxDrift/driftLength
                                 driftX,driftY,driftZ=driftX*cap,driftY*cap,driftZ*cap

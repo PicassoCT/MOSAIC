@@ -85,7 +85,7 @@ bent=render()
 assert bent[...,3].sum()>0 and bent[-5:].max()==0, 'hair disappeared or stretched'
 p['directionalDrift'].value=(0,0,0)
 p['effectTime'].value=8
-assert np.abs(hair-render()).sum()>0.01, 'hair does not flex'
+assert np.array_equal(hair,render()), 'stationary hair flutters without wind or motion'
 # Inspect a wider, downward lock: separated fibre coverage must survive close-up.
 p['origin'].value=(0,0.85,0);p['direction'].value=(0,-1,0)
 p['plumeWidth'].value=0.65;p['strandCount'].value=4;p['effectTime'].value=1
@@ -98,6 +98,23 @@ assert hanging[-25:,:,3].max()==0, 'hanging hair extends above its root'
 p['effectTime'].value=6
 moving=render()
 assert np.allclose(hanging[469:,:,3],moving[469:,:,3],atol=1e-4), 'hair roots drift with animation'
+# Hold the root, camera and rest direction fixed: only wind and time change.
+p['stiffness'].value=0.35;p['curl'].value=0.25
+p['colorStart'].value=(0.85,0.74,0.46,1);p['colorEnd'].value=(1,0.93,0.72,1)
+calm=render()
+p['directionalDrift'].value=(1.53,0,0) # strength 10, production gain 1.2*0.3, scaled 4 -> 1.7
+p['effectTime'].value=1
+wind_right=render()
+p['effectTime'].value=2.3
+wind_later=render()
+assert np.abs(wind_right-wind_later).sum()>1, 'steady wind does not animate a stationary lock'
+assert centroid_x(wind_right)-centroid_x(calm)>4, 'stationary wind has no readable deflection'
+assert np.allclose(wind_right[471:,:,3],wind_later[471:,:,3],atol=1e-4), 'wind unpinned the scalp roots'
+p['directionalDrift'].value=(-1.53,0,0)
+p['effectTime'].value=1
+assert centroid_x(render())<centroid_x(calm)-4, 'wind reversal fails to move the lock left'
+p['directionalDrift'].value=(0,0,0)
+assert np.array_equal(calm,render()), 'calm hair does not return to its rest shape'
 if '--hair-preview' in sys.argv:
     from PIL import Image
     rgb=hanging[...,:3]+np.array([0.55,0.58,0.62])*(1-hanging[...,3:4])
@@ -106,5 +123,5 @@ if '--preview' in sys.argv:
     from PIL import Image
     rgb=lit[...,:3]+np.array([0.025,0.035,0.05])*(1-lit[...,3:4])
     Image.fromarray((np.clip(rgb[::-1],0,1)**(1/2.2)*255).astype('uint8')).save(sys.argv[sys.argv.index('--preview')+1])
-print('PASS: GLSL compile/render, finite output, endpoints, advection, deterministic pause, colour gradient, emission, alpha, directional drift, camera-axis fallback, small scale, hair roots, bounded length, no glow, flex, separated fibres, hanging silhouette, stationary roots')
+print('PASS: GLSL compile/render, finite output, endpoints, advection, deterministic pause, colour gradient, emission, alpha, directional drift, camera-axis fallback, small scale, hair roots, bounded length, no glow, separated fibres, stationary wind deflection/flutter/reversal, calm rest, pinned roots')
 print('Renderer:',ctx.info['GL_RENDERER'])

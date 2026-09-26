@@ -17,12 +17,12 @@ return function(unitID, groups, useTailWind)
                 mode='hair', directionSpace='piece', directionPiece=directionPiece,
                 direction={0,0,-1}, rootOffset={0,0,0},
                 length=({4.0,4.2,5.0})[i], width=0.85, strands=4,
-                stiffness=0.65, gravity=0.3, curl=0.2, hang=0.85,
-                colorStart={0.12,0.075,0.04,1}, colorEnd={0.2,0.13,0.07,1},
-                -- Tail1 already includes TailRotator yaw, lift and head animation.
-                -- Use that as a restrained sway around a downward rest pose;
-                -- copying its full tilt makes scalp locks stand up like horns.
-                windAffected=not driven, motionAffected=true, motionInfluence=0.35,
+                stiffness=0.35, gravity=0.3, curl=0.25, hang=0.85,
+                colorStart={0.85,0.74,0.46,1}, colorEnd={1.0,0.93,0.72,1},
+                -- The rig supplies a restrained resting tilt. Loose strands also
+                -- catch world wind continuously, including on stationary units.
+                windAffected=true, windInfluence=1.2, trailTime=0.3,
+                motionAffected=true, motionInfluence=0.6,
                 distanceFactor=100, seed=i*7.13,
             })
             if ok then count = count+1 end
