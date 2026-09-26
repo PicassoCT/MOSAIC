@@ -1,6 +1,7 @@
 #version 150 compatibility
 uniform float effectTime, strandOpacity, hairMode;
 uniform vec4 colorStart, colorEnd;
+uniform vec4 sourceGlow;
 uniform vec2 emission;
 uniform vec3 ambient;
 in vec2 ribbonUV;
@@ -45,6 +46,8 @@ void main() {
     float alpha=clamp(density*fade*color.a*strandOpacity,0.0,0.98);
     float glow=mix(emission.x,emission.y,age);
     vec3 lighting=mix(ambient,vec3(1.0),clamp(glow,0.0,1.0))+vec3(max(0.0,glow-1.0));
+    // Local ember tint fades near the source, independently of the grey plume.
+    float sourceFade=1.0-smoothstep(0.0,max(sourceGlow.a,0.0001),age);
     // Premultiplied alpha: soft grey smoke and bright wisps share one blend mode.
-    gl_FragColor=vec4(color.rgb*lighting*alpha,alpha);
+    gl_FragColor=vec4((color.rgb*lighting+sourceGlow.rgb*sourceFade)*alpha,alpha);
 }

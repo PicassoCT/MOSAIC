@@ -59,6 +59,8 @@ function M.Normalize(unitID, piece, options)
         colorStart = vector(o.colorStart, hair and {0.08,0.045,0.025,1} or {0.65, 0.68, 0.72, 0.5}, 4, 0, 1),
         colorEnd = vector(o.colorEnd, hair and {0.16,0.09,0.045,1} or {0.4, 0.43, 0.48, 0}, 4, 0, 1),
         emission = vector(o.emission, {0, 0}, 2, 0, 8),
+        -- RGB self-light plus its reach as a fraction of the plume length.
+        sourceGlow = vector(o.sourceGlow, {0, 0, 0, 0}, 4, 0, 1),
         seed = number(o.seed, (unitID * 0.754877666 + piece * 0.569840296) % 100, 0, 10000),
         strands = math.floor(number(o.strands, hair and 1 or 3, 1, 4)),
         enabled = o.enabled ~= false,

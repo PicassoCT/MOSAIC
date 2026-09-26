@@ -7,7 +7,7 @@ return function()
     local self = {records = {}, maxVisible = 128}
     local loc, meshes, hairHistory = {}, {}, {}
     for _, name in ipairs({'origin','direction','cameraPosition','effectTime','plumeLength',
-        'plumeWidth','curl','seed','colorStart','colorEnd','emission','ambient','strandOpacity','strandCount','directionalDrift','hairMode','stiffness','gravity'}) do
+        'plumeWidth','curl','seed','colorStart','colorEnd','emission','sourceGlow','ambient','strandOpacity','strandCount','directionalDrift','hairMode','stiffness','gravity'}) do
         loc[name] = gl.GetUniformLocation(shader, name)
     end
     local function strip(segments, strand)
@@ -224,6 +224,7 @@ return function()
             gl.Uniform(loc.curl,r.curl); gl.Uniform(loc.seed,r.seed)
             gl.Uniform(loc.colorStart,unpack(r.colorStart)); gl.Uniform(loc.colorEnd,unpack(r.colorEnd))
             gl.Uniform(loc.emission,unpack(r.emission)); gl.Uniform(loc.strandOpacity,(r.mode == 'hair' and 1 or 1.6/r.strands)*d.fade)
+            gl.Uniform(loc.sourceGlow,unpack(r.sourceGlow))
             local segments = d.d2 > (d.length*20)^2 and 24 or 48
             gl.CallList(meshes[segments][r.strands])
         end

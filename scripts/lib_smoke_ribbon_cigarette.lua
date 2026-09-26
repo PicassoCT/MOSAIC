@@ -11,9 +11,11 @@ return function(unitID, enabled)
         if not enabled or dead or iconMode or not piece or not GG.SmokeRibbon then return end
         local ok,err=GG.SmokeRibbon.Set(unitID,slot,piece,{
             direction={0,1,0}, directionSpace='world',
-            length=18, width=2.5, curl=0.6, speed=0.65, strands=2,
-            colorStart={0.68,0.70,0.74,0.35}, colorEnd={0.55,0.58,0.62,0},
-            emission={0.1,0}, seed=unitID%100,
+            length=18, width=3.2, curl=0.6, speed=0.65, strands=2,
+            colorStart={0.78,0.80,0.84,0.65}, colorEnd={0.65,0.69,0.75,0},
+            emission={0.22,0.05}, seed=unitID%100,
+            -- Ember light only warms the first few units of the rising smoke.
+            sourceGlow={0.85,0.24,0.055,0.18},
             motionAffected=true, windAffected=true,
             motionInfluence=0.65, windInfluence=0.3, trailTime=0.55,
         })

@@ -60,6 +60,8 @@ else
             r.colorStart={source.colorStart[1],source.colorStart[2],source.colorStart[3],source.colorStart[4]}
             r.colorEnd={source.colorEnd[1],source.colorEnd[2],source.colorEnd[3],source.colorEnd[4]}
             r.emission={source.emission[1],source.emission[2]}
+            local glow=source.sourceGlow
+            r.sourceGlow=glow and {glow[1],glow[2],glow[3],glow[4]} or {0,0,0,0}
             records[k]=r
         end
         renderer.records=records
