@@ -18,6 +18,7 @@ end
 local boolDebugActive = false
 local reflectionDebug = false
 local rainDetailDebug = 0
+local rainIsolation = 0
 local weathermanActive = false
 local naturalRainPercent = 0.0
 local rainShader = nil
@@ -141,6 +142,7 @@ local GL_FUNC_REVERSE_SUBTRACT = 0x800B
 
 local timePercentLoc
 local reflectionDebugLoc
+local rainIsolationLoc
 local rainDetailDebugLoc
 local rainPercentLoc
 local rainPercent = 0.0
@@ -342,6 +344,7 @@ local function init()
                 clipZeroToOne = (Platform and Platform.glSupportClipSpaceControl) and 1 or 0,
                 reflectionDebug = 0,
                 rainDetailDebug = 0,
+                rainIsolation = 0,
                 time = diffTime,
                 scale = 0,
             },
@@ -372,6 +375,7 @@ local function init()
     terrainWetnessLoc = glGetUniformLocation(rainShader, "terrainWetness")
     terrainFlowTimeLoc = glGetUniformLocation(rainShader, "terrainFlowTime")
     reflectionDebugLoc              = glGetUniformLocation(rainShader, "reflectionDebug")
+    rainIsolationLoc = glGetUniformLocation(rainShader, "rainIsolation")
     rainDetailDebugLoc              = glGetUniformLocation(rainShader, "rainDetailDebug")
     uniformViewPortSize             = glGetUniformLocation(rainShader, "viewPortSize")
     cityCenterLoc                   = glGetUniformLocation(rainShader, "cityCenter")
@@ -478,11 +482,12 @@ local rainCapture = VFS.Include("luaui/widgets_mosaic/include/rain_capture.lua")
     ready = function() return rainShader ~= nil end,
     save = function()
         return {rain = rainPercent, debug = boolDebugActive, reflection = reflectionDebug,
-            detail = rainDetailDebug, wetness = terrainWetness, flowTime = terrainFlowTime}
+            isolation = rainIsolation, detail = rainDetailDebug, wetness = terrainWetness, flowTime = terrainFlowTime}
     end,
     restore = function(state)
         rainPercent, boolDebugActive = state.rain, state.debug
         reflectionDebug, rainDetailDebug = state.reflection, state.detail
+        rainIsolation = state.isolation or 0
         terrainWetness, terrainFlowTime = state.wetness, state.flowTime
     end,
     prepare = function()
@@ -494,7 +499,7 @@ local rainCapture = VFS.Include("luaui/widgets_mosaic/include/rain_capture.lua")
     -- Snapshot stages show settled water at each level, with a repeatable phase.
     setRain = function(amount) rainPercent, terrainWetness = amount, amount end,
     metadata = function()
-        return "water_revision\tterrain-shore-handover-v6\nshader_fingerprint\t" .. rainShaderFingerprint .. "\n" .. string.format("time_percent\t%.8f\nsun_rgb\t%s\nsky_rgb\t%s\nsun_direction\t%s\nglitter\t%s\n",
+        return "rain_isolation\t" .. rainIsolation .. "\nwater_revision\tterrain-shore-relief-v7\nshader_fingerprint\t" .. rainShaderFingerprint .. "\n" .. string.format("time_percent\t%.8f\nsun_rgb\t%s\nsky_rgb\t%s\nsun_direction\t%s\nglitter\t%s\n",
             timePercent, table.concat(sunCol, ","), table.concat(skyCol, ","),
             table.concat(sunPos, ","), tostring(glitterEnabled))
     end,
@@ -552,6 +557,7 @@ local function updateUniforms()
     glUniform(terrainFlowTimeLoc, rainCapture.shaderTime() or terrainFlowTime)
     glUniform(reflectionDebugLoc, reflectionDebug and 1 or 0)
     glUniform(rainDetailDebugLoc, rainDetailDebug)
+    glUniform(rainIsolationLoc, rainIsolation)
     glUniform(timePercentLoc, timePercent)
     glUniform(uniformViewPortSize, vsx, vsy )
     glUniform(uniformTime, diffTime )
@@ -717,6 +723,17 @@ function widget:TextCommand(command)
     elseif weatherCommand == "weatherman" or weatherCommand:match("^weatherman%s") then
         Spring.Echo("Usage: /Weatherman on | /Weatherman off")
         return true
+    end
+    local isolationViews = { ["rainview noreflections"] = 1,
+        ["rainview norelief"] = 2, ["rainview nofoam"] = 3 }
+    if isolationViews[command] then
+        rainIsolation = isolationViews[command]
+        rainDetailDebug, reflectionDebug = 0, false
+        Spring.Echo("Rain layer comparison: " .. command .. "; /rainview off restores all layers")
+        return true
+    end
+    if command == "rainview off" then
+        rainIsolation, reflectionDebug = 0, false
     end
     local detailViews = { ["rainview off"] = 0, ["rainview rain"] = 1,
                           ["rainview runoff"] = 2, ["rainview normals"] = 3,

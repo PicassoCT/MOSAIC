@@ -94,3 +94,16 @@ assert(captureAPI.save().flowTime == draining.flowTime)
 for i = 1, 240 do widget:Update(1) end
 assert(captureAPI.save().wetness < 0.001)
 print("PASS: gradual fill/drain, frame-rate independence, paused water, settled snapshots and exact water-state restoration")
+
+-- Layer isolation is retained for diagnostic snapshots and restored on cancel.
+for command,value in pairs({["rainview noreflections"]=1,["rainview norelief"]=2,["rainview nofoam"]=3}) do
+    widget:TextCommand(command)
+    assert(captureAPI.save().isolation==value and captureAPI.save().detail==0)
+    widget:TextCommand("rainsnap")
+    assert(captureAPI.save().isolation==value)
+    widget:TextCommand("rainsnap cancel")
+    assert(captureAPI.save().isolation==value)
+end
+widget:TextCommand("rainview off")
+assert(captureAPI.save().isolation==0 and not captureAPI.save().reflection)
+print("PASS: isolated layers survive captures; rainview off restores all layers")

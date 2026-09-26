@@ -96,18 +96,25 @@ vec2 terrainFlowChart(vec2 at) {
     chart.y+=0.18*sin(chart.x*1.71);
     return chart;
 }
-vec4 terrainChannelFrameInfo(vec2 at, float pixel, out vec4 traits) {
+// Derivative-free core is shared by coverage and same-surface relief queries.
+vec4 terrainChannelCore(vec2 at,float pixel,out vec4 traits) {
     vec3 path=terrainPathInfo(terrainFlowChart(at),traits);
     float wetness=clamp(terrainWetness,0.0,1.0);
     float radius=mix(0.009,0.19,pow(wetness,1.65));
-    float aa=max(fwidth(path.x)*0.6,0.001);
-    float wet=(1.0-smoothstep(radius-aa,radius+aa,path.x))
-        *smoothstep(0.0,0.025,wetness);
     float depth=max(1.0-path.x/max(radius,0.001),0.0);
     depth=depth*depth*wetness;
     float phase=path.y*50.2654825;
     float resolved=1.0-smoothstep(1.0,4.0,pixel);
-    return vec4(wet,depth,vec2(cos(phase),sin(phase))*resolved);
+    return vec4(path.x,depth,vec2(cos(phase),sin(phase))*resolved);
+}
+vec4 terrainChannelFrameInfo(vec2 at, float pixel, out vec4 traits) {
+    vec4 channel=terrainChannelCore(at,pixel,traits);
+    float wetness=clamp(terrainWetness,0.0,1.0);
+    float radius=mix(0.009,0.19,pow(wetness,1.65));
+    float aa=max(fwidth(channel.x)*0.6,0.001);
+    channel.x=(1.0-smoothstep(radius-aa,radius+aa,channel.x))
+        *smoothstep(0.0,0.025,wetness);
+    return channel;
 }
 vec4 terrainChannelFrame(vec2 at, float pixel) {
     vec4 traits; return terrainChannelFrameInfo(at,pixel,traits);
@@ -167,9 +174,7 @@ float getSurfaceRivulets(vec3 p, vec3 normal) {
     return getSurfaceRivulets(p,normal,false);
 }
 // x coverage, y rounded water relief, z broken foam coverage, w local depth.
-vec4 terrainChartWater(vec2 at, float pixel) {
-    vec4 traits;
-    vec4 channel=terrainChannelFrameInfo(at,pixel,traits);
+vec2 terrainChartRelief(vec2 at,float pixel,vec4 channel,vec4 traits) {
     vec2 regime=terrainFlowRegime(traits,terrainWetness);
     vec2 drift=vec2(at.x*0.7,at.y*0.45-terrainFlowTime*1.9);
     float broken=surfaceWetNoise(drift);
@@ -180,7 +185,13 @@ vec4 terrainChartWater(vec2 at, float pixel) {
     float foam=regime.y*smoothstep(0.38,0.66,broken);
     // Low rounded relief: isolated wave packets, fine glints, then churn.
     float relief=0.025+channel.y*0.18+crest*0.07+glisten;
-    return vec4(channel.x,channel.x*relief,channel.x*foam,channel.y);
+    return vec2(relief,foam);
+}
+vec4 terrainChartWater(vec2 at,float pixel) {
+    vec4 traits;
+    vec4 channel=terrainChannelFrameInfo(at,pixel,traits);
+    vec2 response=terrainChartRelief(at,pixel,channel,traits);
+    return vec4(channel.x,response.x,channel.x*response.y,channel.y);
 }
 // Use geometry derivatives for terrain eligibility, never the splat normal.
 vec3 terrainGeometricNormal(vec3 p) {
@@ -202,7 +213,29 @@ vec4 terrainSurfaceWaterGeometry(vec3 p, vec3 n) {
     vec4 channels=mix(terrainChartWater(chartB,pixel),terrainChartWater(chartA,pixel),weight);
     // The rain compositor owns flat-ground puddles and impact ripples.
     // Match its slope mask so banks crossfade without a second flat film.
-    return channels*banks*smoothstep(0.0,1.5,p.y);
+    float mask=banks*smoothstep(0.0,1.5,p.y);
+    // Coverage/eligibility controls compositing, never the water height gradient.
+    return vec4(channels.x*mask,channels.y,channels.z*mask,channels.w*mask);
+}
+
+// Evaluate both neighbours on this pixel's tangent plane. No adjacent screen
+// depth, silhouette, coverage or slope-mask discontinuity enters this gradient.
+float terrainReliefAt(vec3 p,vec3 n,float pixel) {
+    vec4 traitsA,traitsB;
+    vec2 a=vec2(p.x,-p.y*1.41421356),b=vec2(p.z,-p.y*1.41421356);
+    vec4 ca=terrainChannelCore(a,pixel,traitsA),cb=terrainChannelCore(b,pixel,traitsB);
+    float weight=smoothstep(0.2,0.8,n.z*n.z/max(dot(n.xz,n.xz),0.00001));
+    return mix(terrainChartRelief(b,pixel,cb,traitsB).x,
+               terrainChartRelief(a,pixel,ca,traitsA).x,weight);
+}
+vec3 terrainReliefGradient(vec3 p,vec3 n,float height,float pixel) {
+    vec3 axis=abs(n.y)<0.9 ? vec3(0,1,0) : vec3(1,0,0);
+    vec3 tx=normalize(cross(n,axis)),ty=cross(n,tx);
+    float stepSize=clamp(pixel*0.5,0.15,1.25);
+    vec2 dh=vec2(terrainReliefAt(p+tx*stepSize,n,pixel),
+                 terrainReliefAt(p+ty*stepSize,n,pixel))-height;
+    vec3 gradient=(tx*dh.x+ty*dh.y)*(0.18/stepSize);
+    return gradient/max(1.0,length(gradient)/0.25);
 }
 
 // Standalone callers with a continuous analytic surface retain this helper.
