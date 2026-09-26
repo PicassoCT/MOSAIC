@@ -113,29 +113,26 @@ function buildAnimation()
         Sleep(1000)
     end
     Hide(Icon)
-    waterPlateName = "PlateWater"
-    StartThread(waterFalls, TablesOfPieceGroups[waterPlateName])
-    waterBaseName = chasingWaterfalls[base]
-    if chasingWaterfalls[base] and TablesOfPieceGroups[waterBaseName] then
-        StartThread(waterFalls, TablesOfPieceGroups[waterBaseName])
-    end
+    setupWaterfalls()
     showHouse()
 end
 
-boolHasWaterFalls = false
-function waterFalls(waterfallT)
-    while waterfallT do
-        foreach(waterfallT,
-            function (water)
-                Show(water)
-                val = math.random(0,1)*180
-                Turn(water, x_axis, math.rad(randSign()*val),0)
-                val = math.random(0,1)*180
-                Turn(water, z_axis, math.rad(randSign()*val),0)
-            end
-            )
-    Sleep(35)
+function setupWaterfalls()
+    -- Keep the authored meshes still. The unsynced waterfall shader supplies
+    -- continuous downward flow instead of randomly flipping them every 35 ms.
+    -- Publish exact pieces so clients/reloads use only this building's variant.
+    local waterfalls = {}
+    local function addGroup(name)
+        for _, water in ipairs(TablesOfPieceGroups[name] or {}) do
+            waterfalls[#waterfalls + 1] = water
+            addToShowTable(water)
+            Spring.SetUnitRulesParam(unitID, "luxor_waterfall_piece_" .. #waterfalls,
+                water, {inlos = true})
+        end
     end
+    addGroup("PlateWater")
+    if chasingWaterfalls[base] then addGroup(chasingWaterfalls[base]) end
+    Spring.SetUnitRulesParam(unitID, "luxor_waterfall_count", #waterfalls, {inlos = true})
 end
 
 base1 = piece("base1")
@@ -251,9 +248,17 @@ function script.Activate() return 1 end
 
 function script.Deactivate() return 0 end
 
-function showHouse() boolHouseHidden = false; showT(ToShowTable) end
+function showHouse()
+    boolHouseHidden = false
+    showT(ToShowTable)
+    Spring.SetUnitRulesParam(unitID, "luxor_waterfall_visible", 1, {inlos = true})
+end
 
-function hideHouse() boolHouseHidden = true; hideT(ToShowTable) end
+function hideHouse()
+    boolHouseHidden = true
+    hideT(ToShowTable)
+    Spring.SetUnitRulesParam(unitID, "luxor_waterfall_visible", 0, {inlos = true})
+end
 
 boolDoneShowing = false
 boolHouseHidden = false
