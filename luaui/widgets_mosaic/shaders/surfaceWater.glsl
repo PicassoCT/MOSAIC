@@ -69,7 +69,8 @@ vec3 terrainPath(vec2 at) {
     return vec3(distance/width,phase,centre);
 }
 vec4 terrainChannelFrame(vec2 at, float pixel) {
-    vec2 chart=at/24.0;
+    // Original 32-unit channel scale; randomization must not increase density.
+    vec2 chart=at/32.0;
     // Smooth global warp breaks straight strip alignment without independent
     // tile rotations or offsets (which would disconnect their borders).
     chart.x+=0.24*sin(chart.y*1.13)+0.13*sin(chart.y*0.37+chart.x*0.81);
@@ -125,19 +126,15 @@ vec3 terrainGeometricNormal(vec3 p) {
 }
 vec4 terrainSurfaceWater(vec3 p, vec3 shadingNormal) {
     vec3 n=terrainGeometricNormal(p);
-    float slope=length(n.xz);
     vec2 eligibility=surfaceWaterWeights(n.y);
     float banks=eligibility.x*(1.0-eligibility.y);
     float pixel=max(length(dFdx(p)),length(dFdy(p)));
     float weight=smoothstep(0.2,0.8,n.z*n.z/max(dot(n.xz,n.xz),0.00001));
     vec2 chartA=vec2(p.x,-p.y*1.41421356);
     vec2 chartB=vec2(p.z,-p.y*1.41421356);
-    vec4 broad=mix(terrainChartWater(chartB,pixel),terrainChartWater(chartA,pixel),weight);
-    // Blend fixed world scales instead of multiplying position by a varying
-    // slope: that would tear/stretch paths whenever the bank curves.
-    vec4 fine=mix(terrainChartWater(chartB*2.0,pixel*2.0),
-                  terrainChartWater(chartA*2.0,pixel*2.0),weight);
-    vec4 channels=mix(broad,fine,smoothstep(0.20,0.65,slope));
+    // Keep a fixed world scale on every incline. Slope controls eligibility,
+    // not density; doubling this projection made the banks visually crowded.
+    vec4 channels=mix(terrainChartWater(chartB,pixel),terrainChartWater(chartA,pixel),weight);
     // The rain compositor owns flat-ground puddles and impact ripples.
     // Match its slope mask so banks crossfade without a second flat film.
     return channels*banks*smoothstep(0.0,1.5,p.y);
