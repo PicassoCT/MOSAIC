@@ -15,13 +15,14 @@ return function()
     self.glow = gl.CreateShader({fragment = VFS.LoadFile(PATH .. 'glow.frag')})
     self.coneShader = gl.CreateShader({vertex=VFS.LoadFile(PATH .. 'cone_emission.vert'),
         fragment=VFS.LoadFile(PATH .. 'cone_emission.frag'),uniformInt={buildingOccupancy=0}})
-    local capture
+    local capture, fogSources
     function self:Resize()
         if self.depth then gl.DeleteTexture(self.depth) end
         self.depth, self.width, self.height, self.failedSize = nil, nil, nil, nil
     end
     function self:Shutdown()
         if WG.CaptureVehicleHeadlightEmission == capture then WG.CaptureVehicleHeadlightEmission = nil end
+        if WG.GetVehicleHeadlightFogSources == fogSources then WG.GetVehicleHeadlightFogSources = nil end
         if self.coneShader then gl.DeleteShader(self.coneShader); self.coneShader=nil end
         self:Resize()
         if self.shader then gl.DeleteShader(self.shader) end
@@ -114,7 +115,7 @@ return function()
                     local a,b,range = lamps(id,def,front,up,right)
                     if a then
                         local d2 = (cx-a[1])^2+(cy-a[2])^2+(cz-a[3])^2
-                        lights[#lights+1] = {a=a,b=b,front=front,up=up,right=right,range=range,d2=d2}
+                        lights[#lights+1] = {unitID=id,a=a,b=b,front=front,up=up,right=right,range=range,d2=d2}
                     end
                 end
             end
@@ -137,11 +138,21 @@ return function()
         gl.Vertex(p[1]+fx*range-fz*width,y,p[3]+fz*range+fx*width)
     end
     local captureFrame, captureLights
+    local function refreshCaptureLights()
+        local frame=Spring.GetDrawFrame()
+        if captureFrame~=frame then captureLights=collectLights(lightTypes);captureFrame=frame end
+    end
+    fogSources=function()
+        if not self.coneShader or emissionStrength<=0 then return nil end
+        refreshCaptureLights()
+        local sources={}
+        for i=1,math.min(#captureLights,48) do sources[i]=captureLights[i] end
+        return sources -- same visible lamps and budget as the cone emitter
+    end
     capture=function(bottom,top,gain)
         if not self.coneShader or emissionStrength<=0 then return end
         -- Whole-map and local captures use exactly the same vehicle snapshot.
-        local frame=Spring.GetDrawFrame()
-        if captureFrame~=frame then captureLights=collectLights(lightTypes);captureFrame=frame end
+        refreshCaptureLights()
         gl.DepthTest(false);gl.DepthMask(false);gl.Blending(GL.ONE,GL.ONE)
         gl.UseShader(self.coneShader)
         gl.Uniform(coneLoc.mapSize,Game.mapSizeX,Game.mapSizeZ)
@@ -167,6 +178,7 @@ return function()
         gl.UseShader(0);gl.Texture(0,false);gl.Blending(false)
     end
     if self.coneShader then WG.CaptureVehicleHeadlightEmission=capture end
+    if self.coneShader and WG.GetVehicleHeadlightFogSources==nil then WG.GetVehicleHeadlightFogSources=fogSources end
     function self:Draw(lightList, intensity, drawGlow, drawSurface)
         if intensity<=0 then return end
         local lights=collectLights(lightList)
@@ -249,6 +261,5 @@ return function()
     end
     return self
 end
-
 
 

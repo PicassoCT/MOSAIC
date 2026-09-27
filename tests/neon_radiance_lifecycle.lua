@@ -199,7 +199,19 @@ env.widget:Update(1);env.widget:DrawWorldPreUnit()
 assert(taperCaptures>0,'automatic standalone was never captured by the widget')
 assert(env.WG.NeonRadiance.heightMin==0,'standalone zoom followed roof height instead of receiver band')
 assert(captureUniforms.buildingOrigin[1]==400 and captureUniforms.buildingOrigin[3]==600)
+-- Fog explicitly requests an on-demand envelope; ground radiance alone is never enough.
+local fogAPI=assert(env.WG.GetMosaicFogRadiance)
+env.Spring.GetUnitDefDimensions=function() return {minx=-30,maxx=30,minz=-40,maxz=40,miny=-8,maxy=392} end
+assert(not fogAPI(),'height field allocated without a fog consumer')
+env.widget:Update(0.21);env.widget:DrawWorldPreUnit()
+local field=assert(fogAPI())
+assert(field.version==1 and field.texture and field.heights and field.occupancy)
+assert(captureUniforms.sourceY[1]==892 and captureUniforms.sourceY[2]==1292,'fog ignored unit world height')
+env.widget:Update(1);env.widget:DrawWorldPreUnit();assert(not fogAPI(),'unused height field remained ready')
+env.widget:Update(0.21);env.widget:DrawWorldPreUnit();assert(fogAPI(),'fog request did not restart metadata')
+env.widget:TextCommand('radiancelight off');assert(not fogAPI(),'disabled cascade exposed stale fog light')
 env.widget:Shutdown();assert(not env.WG.NeonRadiance and next(globals)==nil)
+assert(not env.WG.GetMosaicFogRadiance,'stale fog provider after shutdown')
 print('PASS: widget propagation/default view, lazy direct diagnostics, height selection, day/night intensity, WG ownership and shutdown')
 
 -- Deferred mode owns no screen textures; depth fallback owns at most one.

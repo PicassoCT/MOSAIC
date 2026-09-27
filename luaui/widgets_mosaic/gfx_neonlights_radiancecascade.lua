@@ -65,6 +65,9 @@ local sceneStrength, sceneLayer = 2, 1
 local sceneRadiance, sceneReady
 local previewVisible = false
 local previewExposure = 4
+local fogHeights, fogSourceUnits
+local fogClock, fogRequestedUntil = 0, -1
+local fogLighting = {version=1}
 
 -- Flat x/z/base/mask values: four numbers per occupied column.
 local function receiveBuildingShadowBegin(unitID, unitDefID, cellSize, levelHeight)
@@ -555,10 +558,26 @@ local function getRainLighting()
     return rainLighting
 end
 
+-- Read-only borrowed fields. Calling this requests a height update at the next
+-- normal 5 Hz capture; no fog-specific GPU work when nobody consumes the field.
+local function getFogLighting()
+    if not sceneEnabled or not sceneReady or not sceneRadiance or occlusionDirty or sceneStrength<=0 then return nil end
+    fogRequestedUntil=fogClock+0.6
+    if not fogHeights or not fogHeights.ready then return nil end
+    fogLighting.texture=sceneRadiance
+    fogLighting.heights=fogHeights.texture
+    fogLighting.occupancy=occlusionTex[sceneLayer]
+    fogLighting.strength=sceneStrength
+    fogLighting.headlights=liveHeadlights and liveHeadlights.ready and liveHeadlights.texture or nil
+    fogLighting.headlightIntensity=sceneTest and 1 or neonLightPercent
+    return fogLighting
+end
+
 function widget:Initialize()
     WG.GetVehicleLightOcclusion = getVehicleLightOcclusion
     WG.IsVehicleHeadlightCascadeActive = vehicleHeadlightCascadeActive
     WG.GetRainRadiance = getRainLighting
+    if WG.GetMosaicFogRadiance==nil then WG.GetMosaicFogRadiance=getFogLighting end
     if not gl.RenderToTexture or not gl.CreateTexture or not gl.UnitPiece
         or not gl.BeginEnd or not gl.UnitMultMatrix
     then
@@ -700,6 +719,7 @@ function widget:ViewResize()
 end
 
 function widget:Update(dt)
+    fogClock=fogClock+dt
     neonLightPercent = dayPercentToNeonPercent(getDayPercent())
     refreshAccumulator = refreshAccumulator + dt
     if liveHeadlights then liveHeadlights:Update(dt) end
@@ -773,6 +793,9 @@ local function drawNeonPieces(captureLayer, domain)
                     end
                 end
                 if pieceID and (strength>0 or not objective) then
+                    if fogSourceUnits and captureLayer==sceneLayer and not domain and strength>0 then
+                        fogSourceUnits[unitID]=true
+                    end
                     gl.Color(color and color[1] or 1,color and color[2] or 1,color and color[3] or 1,1)
                     if propagation then
                         gl.UniformInt(propagation.texturedLoc,textured)
@@ -810,6 +833,14 @@ local function drawNeonPieces(captureLayer, domain)
         local bandHeight=OCCLUSION_WORLD_HEIGHT/OCCLUSION_LAYER_COUNT
         standaloneTaper:Draw((captureLayer-1)*bandHeight,captureLayer*bandHeight,
             domain,ATLAS_SIZE,sceneTest and 1 or neonLightPercent)
+        if fogSourceUnits and captureLayer==sceneLayer and not domain and standaloneTaper.enabled
+            and standaloneTaper.strength>0 and (standaloneTaper.test or sceneTest or neonLightPercent>0) then
+            if standaloneTaper.automatic then
+                for _,id in ipairs(standaloneTaper.units) do fogSourceUnits[id]=true end
+            elseif standaloneTaper.ready and standaloneTaper.unitID then
+                fogSourceUnits[standaloneTaper.unitID]=true
+            end
+        end
     end
 
     gl.PopMatrix()
@@ -834,6 +865,8 @@ function widget:DrawWorldPreUnit()
     -- Capture outside the atlas FBO; both global and local splats reuse it.
     if standaloneTaper then standaloneTaper:Refresh() end
     sceneReady = false
+    fogSourceUnits=fogClock<=fogRequestedUntil and {} or nil
+    if fogHeights then fogHeights.ready=false end
     if localDetail then localDetail.ready=false end
     if occlusionDirty then
         rebuildOcclusionAtlas()
@@ -863,6 +896,18 @@ function widget:DrawWorldPreUnit()
             sceneReady = true
         end
     end
+
+    if sceneReady and fogSourceUnits then
+        if not fogHeights then
+            fogHeights=VFS.Include('luaui/widgets_mosaic/include/radiance_fog_heights.lua').New()
+        end
+        local lamps
+        if (sceneTest or neonLightPercent>0) and WG.GetVehicleHeadlightFogSources then
+            lamps=WG.GetVehicleHeadlightFogSources()
+        end
+        fogHeights:Refresh(fogSourceUnits,lamps)
+    end
+    fogSourceUnits=nil
 
     if not propagationView and directLightShader and directLightTex then
         gl.RenderToTexture(directLightTex, function() drawDirectLight(0) end)
@@ -1031,6 +1076,8 @@ function widget:DrawScreen()
 end
 
 function widget:Shutdown()
+    if WG.GetMosaicFogRadiance==getFogLighting then WG.GetMosaicFogRadiance=nil end
+    if fogHeights then fogHeights:Shutdown();fogHeights=nil end
     if standaloneTaper then standaloneTaper:Shutdown();standaloneTaper=nil end
     if liveHeadlights then liveHeadlights:Shutdown();liveHeadlights=nil end
     if WG.IsVehicleHeadlightCascadeActive == vehicleHeadlightCascadeActive then WG.IsVehicleHeadlightCascadeActive=nil end
@@ -1077,4 +1124,3 @@ function widget:Shutdown()
     occlusionBuildings = {}
     pendingBuildingColumns = {}
 end
-
