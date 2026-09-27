@@ -33,3 +33,18 @@ show(42,7,false);show(42,8,false);show(42,9,false);assert(not records[42])
 local count=sends;show(42,9,false);assert(sends==count)
 show(42,7,true,'cloud','gasExplosion');remove(nil,42);assert(not records[42])
 print('PASS: objective mode/preset/clock transfer, repeated Show, new launch, preset switch, hide and unit removal')
+
+-- Rebuild static emitter records on the first unsynced frame, then retain the
+-- event-updated table. The copy must not mutate the read-only synced snapshot.
+local restore=assert(loadstring('local objectiveSnapshotPending=true\nlocal objectiveRadiancePieces={}\n'..
+    'return function()\n'..section('        if objectiveSnapshotPending and SYNCED.ObjectiveRadiancePieces then',
+        "        if Script.LuaUI('RecieveAllNeonUnitsPieces') then")..
+    '\nreturn objectiveRadiancePieces end'))
+local snapshot={[42]={[7]={piece=7,mode='material',preset='placeable:7',born=100}}}
+setfenv(restore,{SYNCED={ObjectiveRadiancePieces=snapshot},pairs=pairs})
+local restoreOnce=restore()
+local restored=restoreOnce()
+assert(restored[42][7].preset=='placeable:7' and restored[42][7].born==100)
+restored[42][7]=nil
+assert(snapshot[42][7] and not restoreOnce()[42][7],'snapshot aliased or overwrote later hide events')
+print('PASS: static objective/house light restoration after late join or unsynced reload')

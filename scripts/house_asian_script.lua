@@ -4,6 +4,7 @@ include "lib_building_voxels.lua"
 include "createCorpse.lua"
 include "lib_OS.lua"
 include "lib_UnitScript.lua"
+include "lib_radiance_emitters.lua"
 include "lib_Animation.lua"
 --include "lib_debug.lua"
 
@@ -1681,9 +1682,17 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
     end
 end
 
-function showHouse() boolHouseHidden = false; showT(ToShowTable) end
+function showHouse()
+    boolHouseHidden = false
+    showT(ToShowTable)
+    SetRadiancePlaceables(ToShowTable, true)
+end
 
-function hideHouse() boolHouseHidden = true; hideT(ToShowTable) end
+function hideHouse()
+    boolHouseHidden = true
+    hideT(ToShowTable)
+    SetRadiancePlaceables(ToShowTable, false)
+end
 
 function buildAnimation(boolIsReconstruction)
     if boolIsReconstruction then
@@ -1710,6 +1719,7 @@ function buildAnimationSequential()
     timeBudget = math.ceil((25*1000 ) /#heightSortedTable)
     for index,pieceId in pairs(heightSortedTable) do
         Show(pieceId)
+        SetRadiancePlaceables({pieceId}, true)
         Sleep(timeBudget)
     end
     GG.ManualRenderedBuildingWithWindowsVisiblePieces[unitID] = toShowDict
@@ -1738,7 +1748,8 @@ function addGroundPlaceables()
                     heightdifference = math.abs(globalHeightUnit - myHeight)
                     if myHeight < globalHeightUnit then heightdifference = -heightdifference end
 				    addToShowTable(randPlaceAbleID)
-				    Show(randPlaceAbleID)    
+				    Show(randPlaceAbleID)
+                    SetRadiancePlaceables({randPlaceAbleID}, true)
                 end
 			end	
 		
@@ -1838,4 +1849,3 @@ end
 function getRooftopPieces()
     return RoofTopPieces or {}
 end
-

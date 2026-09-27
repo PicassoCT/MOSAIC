@@ -1,6 +1,7 @@
 include "createCorpse.lua"
 include "lib_OS.lua"
 include "lib_UnitScript.lua"
+include "lib_radiance_emitters.lua"
 include "lib_Animation.lua"
 include "lib_physics.lua"
 include "lib_mosaic.lua"
@@ -228,7 +229,8 @@ function addGroundPlaceables()
                     WMove(randPlaceAbleID,y_axis, heightdifference, 0)
                     showSubs(pieceNr_pieceName[randPlaceAbleID])   
                     addToShowTable(randPlaceAbleID)
-                    Show(randPlaceAbleID)    
+                    Show(randPlaceAbleID)
+                    SetRadiancePlaceables({randPlaceAbleID}, true)
                 end
             end
             groundPiecesToPlace = groundPiecesToPlace - 1
@@ -251,12 +253,14 @@ function script.Deactivate() return 0 end
 function showHouse()
     boolHouseHidden = false
     showT(ToShowTable)
+    SetRadiancePlaceables(ToShowTable, true)
     Spring.SetUnitRulesParam(unitID, "luxor_waterfall_visible", 1, {inlos = true})
 end
 
 function hideHouse()
     boolHouseHidden = true
     hideT(ToShowTable)
+    SetRadiancePlaceables(ToShowTable, false)
     Spring.SetUnitRulesParam(unitID, "luxor_waterfall_visible", 0, {inlos = true})
 end
 

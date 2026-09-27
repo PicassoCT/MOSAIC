@@ -3,6 +3,7 @@ include "lib_OS.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 include "lib_mosaic.lua"
+include "lib_radiance_emitters.lua"
 
 local TablesOfPiecesGroups = {}
 
@@ -49,7 +50,7 @@ end
 function setup()
     airPortConnection()
     Sleep(10)
-    Show(center)
+    ShowRadiancePiece(center, 'material')
     StartThread(trainLoop, 1)
     StartThread(trainLoop, 2)
 
@@ -79,7 +80,7 @@ function deployTrack( upStart, downEnd, railP, Pillars, detectorPiece, endPoint)
     degDiff = 0
 
     WTurn(railP, upDownAxis, math.rad(upStart), 0)
-    Hide(endPoint)
+    HideRadiancePiece(endPoint)
     Hide(detectorPiece)
     Show(railP)
     for i= upStart, downEnd, -1 do
@@ -103,7 +104,7 @@ function deployTrack( upStart, downEnd, railP, Pillars, detectorPiece, endPoint)
                         end
                     end
                     )
-            Show(endPoint)
+            ShowRadiancePiece(endPoint, 'material')
     end
 
     semaphore= semaphore +1

@@ -27,6 +27,7 @@ local DIRECT_LIGHT_STEPS = 48
 local neonUnitTables = {}
 local objectiveRadianceUnitTables = {}
 local CloudConfig = VFS.Include('luarules/gadgets/include/cloud_volume_config.lua')
+local ObjectiveSources = VFS.Include('luaui/widgets_mosaic/include/radiance_objective_sources.lua')
 local neonLightPercent = 0.0
 local neonUnitCount = 0
 local neonPieceCount = 0
@@ -761,12 +762,23 @@ local function drawNeonPieces(captureLayer, domain)
                 local mode=descriptor and descriptor.mode or 'diffuse'
                 local strength=objective and 1 or (sceneTest and 1 or neonLightPercent)
                 local color, textured, masked=nil,bound and 1 or 0,0
+                local lamp
                 if mode=='material' then
                     if materialBound==nil then
                         materialBound=not not (bound and defID and gl.Texture(1,string.format("%%%d:1",defID)))
                     end
                     -- Mixed structural meshes must never fall back to all-over emission.
                     if not materialBound then strength=0 else masked=1 end
+                    local placeable = descriptor.preset and descriptor.preset:match('^placeable:(%d+)$')
+                    if placeable and (not ObjectiveSources.PlaceablesVisible(unitID)
+                        or not ObjectiveSources.PlaceableEligible(unitID, tonumber(placeable))) then
+                        strength=0
+                    end
+                elseif mode=='lamp' then
+                    lamp=ObjectiveSources.RoofLamp(unitID,pieceID,descriptor.preset)
+                    strength=lamp and lamp.strength or 0
+                    color=lamp and lamp.color
+                    textured=0
                 elseif mode=='cloud' then
                     local preset=CloudConfig.Preset(descriptor.preset)
                     strength=0; textured=0
@@ -787,10 +799,14 @@ local function drawNeonPieces(captureLayer, domain)
                         gl.UniformInt(propagation.materialMaskedLoc,masked)
                         gl.Uniform(propagation.emissionStrengthLoc,strength)
                     end
-                    gl.PushMatrix()
-                    gl.UnitPieceMultMatrix(unitID, pieceID)
-                    gl.UnitPiece(unitID, pieceID)
-                    gl.PopMatrix()
+                    if lamp then
+                        ObjectiveSources.DrawLamp(lamp)
+                    else
+                        gl.PushMatrix()
+                        gl.UnitPieceMultMatrix(unitID, pieceID)
+                        gl.UnitPiece(unitID, pieceID)
+                        gl.PopMatrix()
+                    end
                 end
             end
 

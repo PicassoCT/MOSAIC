@@ -29,6 +29,8 @@ if (gadgetHandler:IsSyncedCode()) then
 	local SO_DRICON_FLAG = 128
     local boolDebugActive = false
     local objectiveRadiancePieces = {}
+    -- Static lamps must also reach late joiners and survive an unsynced reload.
+    _G.ObjectiveRadiancePieces = objectiveRadiancePieces
 
     function GG.SetObjectiveRadiancePieceVisible(unitID, pieceID, visible, mode, preset)
         if not unitID or not pieceID then return end
@@ -401,6 +403,7 @@ end
     local counterNeonUnits = 0
     local neonHoloParts= {}
     local objectiveRadiancePieces = {}
+    local objectiveSnapshotPending = true
 
     local function setObjectiveRadiancePiece(_, unitID, pieceID, visible, mode, preset, born)
         local pieces = objectiveRadiancePieces[unitID]
@@ -512,6 +515,18 @@ end
     end
 
     function gadget:GameFrame(frame)
+        if objectiveSnapshotPending and SYNCED.ObjectiveRadiancePieces then
+            objectiveRadiancePieces = {}
+            for unitID, pieces in pairs(SYNCED.ObjectiveRadiancePieces) do
+                local copy = {}
+                for pieceID, record in pairs(pieces) do
+                    copy[pieceID] = {piece=record.piece, mode=record.mode,
+                        preset=record.preset, born=record.born}
+                end
+                objectiveRadiancePieces[unitID] = copy
+            end
+            objectiveSnapshotPending = false
+        end
         if Script.LuaUI('RecieveAllNeonUnitsPieces') then
             local message = Script.LuaUI.RecieveAllNeonUnitsPieces(neonUnitTables)
         end

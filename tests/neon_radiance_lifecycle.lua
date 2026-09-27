@@ -130,6 +130,30 @@ missingMaterial=true
 assert(not captureEffects(15)[44],'missing mask made the whole vehicle glow')
 missingMaterial=false;gameFrame=0
 assert(captureUniforms.materialMasked[1]==0,'material mask leaked into next capture')
+-- Selected street furniture is masked and size-filtered in the real capture path.
+env.unpack=table.unpack
+env.Spring.GetUnitNoDraw=function() return false end
+env.Spring.GetUnitIsCloaked=function() return false end
+env.Spring.GetSpectatingState=function() return false,false end
+env.Spring.GetUnitLosState=function() return {los=true} end
+env.Spring.GetUnitPieceInfo=function(_,p)
+ local size=p==10 and 100 or 4
+ return {min={-size,-size,-size},max={size,size,size}}
+end
+env.Spring.GetUnitPieceMatrix=function() return 1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1 end
+env.Spring.GetUnitVectors=function() return {0,0,1},{0,1,0},{-1,0,0} end
+effects={ [48]={[10]={piece=10,mode='material',preset='placeable:10'}},
+ [49]={[11]={piece=11,mode='material',preset='placeable:11'}} }
+local street=captureEffects(0)
+assert(street[48] and street[48].mask==1 and not street[49],'placeable size gate was bypassed')
+env.Spring.GetUnitLosState=function() return {los=false,radar=true} end
+assert(not captureEffects(0)[48],'placeable lit the scene outside LOS')
+local lampVertices=0
+env.gl.Vertex=function() lampVertices=lampVertices+1 end
+effects={ [50]={[12]={piece=12,mode='lamp',preset='outpost_roof'}} }
+local lamps=captureEffects(0)
+assert(lampVertices>0 and not lamps[50],'roof lamp rendered the structural mesh')
+env.Spring.GetUnitLosState=function() return {los=true} end
 globals.ReceiveObjectiveRadiancePieces({})
 captured={}
 env.widget:Update(1);env.widget:DrawWorldPreUnit()

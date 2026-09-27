@@ -2,6 +2,7 @@ include "createCorpse.lua"
 include "lib_OS.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
+include "lib_radiance_emitters.lua"
 --include "lib_Build.lua"
 
 local TablesOfPiecesGroups = {}
@@ -19,6 +20,8 @@ function script.Create()
     -- generatepiecesTableAndArrayCode(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     Spring.SetUnitBlocking(unitID,false)
+    -- The roof has no separate lamp mesh. Attach a compact warm source above it.
+    SetRadiancePiece(piece('CombatOutPost'), true, 'lamp', 'outpost_roof')
     makeWeaponsTable()
     setFireState(unitID, "returnfire")
 end

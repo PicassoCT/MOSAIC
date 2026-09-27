@@ -2,6 +2,8 @@ include "createCorpse.lua"
 include "lib_OS.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
+include "lib_radiance_emitters.lua"
+local sulfurPlume = include("lib_objective_ribbon_flames.lua")(unitID, 'sulfur')
 --include "lib_Build.lua"
 
 local TablesOfPiecesGroups = {}
@@ -18,6 +20,7 @@ function script.Create()
     StartThread(turnWindSlow)
       heightOfsset= getObjectiveAboveGroundOffset(unitID)
     Move(center,y_axis, heightOfsset + 30, 0)
+    sulfurPlume.Start(blimp)
     for i=1,#TablesOfPiecesGroups["Plane"] do
         StartThread(vtolStartLanding,TablesOfPiecesGroups["Plane"][i], TablesOfPiecesGroups["Plane"..i.."Spin"][1], TablesOfPiecesGroups["Plane"..i.."Spin"][2] )
     end
@@ -112,7 +115,7 @@ end
 function blinkLights()
     n = 1
     while true do
-        n = n + 1 % 2
+        n = (n + 1) % 2
         for i = 1, #TablesOfPiecesGroups["BlinkyLight"], 1 do
             if i % 2 == 0 then
                 Turn(TablesOfPiecesGroups["BlinkyLight"][i], z_axis,
@@ -121,10 +124,14 @@ function blinkLights()
                 Turn(TablesOfPiecesGroups["BlinkyLight"][i], z_axis,
                      math.rad(180 * (n + 1)), 0)
             end
+            -- Rotation exposes alternating light faces; do not hide the mesh.
+            SetRadiancePiece(TablesOfPiecesGroups["BlinkyLight"][i], (i + n) % 2 == 0)
         end
         Sleep(2500)
     end
 end
 
-function script.Killed(recentDamage, _) return 1 end
-
+function script.Killed(recentDamage, _)
+    sulfurPlume.Shutdown()
+    return 1
+end
