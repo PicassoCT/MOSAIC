@@ -79,10 +79,13 @@ def face(n,corners,coords=((0,0),(1,0),(1,1),(0,1))):
     for p,t in zip(corners,coords): uv(*t); vertex(*p)
     end()
 
-def capture(taper=.18,unlit=False,lid=False):
+def capture(taper=.18,unlit=False,lid=False,zero_to_one=False,correct_clip=True):
+    # Match Recoil's GL_ARB_clip_control path, not only Mesa's legacy default.
+    fn(G,'glClipControl',None,U,U)(0x8CA1,0x935F if zero_to_one else 0x935E)
     bind_fbo(0x8D40,capture_fbo); viewport(0,0,N,N)
     use(capture_program)
     ui(loc(capture_program,b'sourceTex'),0); ui(loc(capture_program,b'materialTex'),1)
+    ui(loc(capture_program,b'clipZeroToOne'),int(zero_to_one and correct_clip))
     active(0x84C0); bind(0x0DE1,source_tex); active(0x84C1); bind(0x0DE1,zero_tex if unlit else mask_tex)
     u3(loc(capture_program,b'buildingOrigin'),128,0,128)
     uf(loc(capture_program,b'taperAmount'),taper); uf(loc(capture_program,b'taperHeight'),160)
@@ -125,7 +128,16 @@ for taper in [.12,.18,.3]:
 assert max(energies)/min(energies)<1.2,('capture energy changed with taper',energies)
 assert capture(unlit=True)[0][:,:,:3].sum()==0,'unlit material emitted'
 assert capture(lid=True)[0][:,:,:3].sum()==0,'unlit roof failed to occlude windows'
+# Without depth conversion the real engine clips every above-ground facade.
+assert capture(zero_to_one=True,correct_clip=False)[0][:,:,:3].sum()==0,'missing reproduction of Recoil clipping'
+recoil_e,recoil_p=capture(zero_to_one=True)
+assert np.allclose(recoil_e,e,rtol=1e-4,atol=1e-4),'Recoil capture lost window emission/area'
+assert np.allclose(recoil_p,p,rtol=1e-4,atol=1e-4),'Recoil capture changed original source positions'
+assert capture(lid=True,zero_to_one=True)[0][:,:,:3].sum()==0,'Recoil roof failed to occlude windows'
+recoil_field=splat(recoil_e,recoil_p)
+fn(G,'glClipControl',None,U,U)(0x8CA1,0x935E)
 field=splat(e,p)
+assert np.allclose(recoil_field,field,rtol=1e-4,atol=1e-4),'Recoil capture/splat lost light'
 assert field[:,:,:3].sum()>0
 assert field[89:167,89:167,:3].max()==0,'injected inside original footprint'
 raised=p.copy(); raised[:,:,1]+=512
@@ -136,7 +148,7 @@ local=splat(e,p,origin=32,span=192)
 ratio=local[:,:,:3].sum()*(192/N)**2/field[:,:,:3].sum()
 assert .98<ratio<1.02,('global/local energy mismatch',ratio)
 assert field[:,:,:3].max()>1,'HDR accumulation clamped'
-print('PASS: GLSL compile/link; window extraction; material mask; original positions; unlit roof depth; taper area correction; outward injection; height falloff; zero intensity; HDR; global/local energy')
+print('PASS: GLSL compile/link; Recoil zero-to-one and legacy depth capture/splat; window extraction; material mask; original positions; unlit roof depth; taper area correction; outward injection; height falloff; zero intensity; HDR; global/local energy')
 print('Area-weighted capture energy at taper 0.12 / 0.18 / 0.30:',[round(x,1) for x in energies])
 
 if __name__=='__main__':

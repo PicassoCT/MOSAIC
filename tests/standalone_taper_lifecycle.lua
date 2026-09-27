@@ -19,6 +19,7 @@ local function exercise(failure)
         GetShaderLog=function() return 'fixture failure' end,
         GetUniformLocation=function(_,name) return name end,
         Uniform=function(name,...) uniforms[name]={...} end,
+        UniformInt=function(name,...) uniforms[name]={...} end,
         Texture=function(slot,name) bound[slot]=name;return failure~='material' or slot~=1 end,
         ActiveFBO=function(_,fn) passes=passes+1;fn() end,
         Unit=function(id,raw,lod,noLua)
@@ -28,6 +29,7 @@ local function exercise(failure)
     }
     setmetatable(gl,{__index=function() return function() end end})
     local env=setmetatable({gl=gl,GL={},Game={mapSizeX=8192,mapSizeZ=4096},UnitDefs={[7]={name='house_asian1'},[8]={name='civilian_arab0'}},
+        Platform={glSupportClipSpaceControl=true},
         Spring={Echo=function() end,GetSelectedUnits=function() return {selected} end,
             ValidUnitID=function(id) return id~=nil end,GetUnitIsDead=function() return dead end,
             GetUnitDefID=function(id) return id==42 and 7 or 8 end,
@@ -45,6 +47,7 @@ local function exercise(failure)
         assert(not obj.ready and not obj.enabled)
     else
         assert(obj.ready and passes==1)
+        assert(uniforms.clipZeroToOne[1]==1,'Recoil depth range was not forwarded')
         obj:Refresh();assert(passes==1,'capture cache not reused')
         obj:Draw(0,128,nil,1024,0);assert(draws==0)
         obj:Draw(0,128,nil,1024,.5);assert(draws==1 and uniforms.emissionStrength[1]==.075)
@@ -63,11 +66,12 @@ local function exercise(failure)
     obj:Shutdown();obj:Shutdown()
     for id in pairs(allocated) do assert(deleted[id],'leaked '..id) end
     if not failure then
-        -- Default activation covers every visible house_asian3, including daylight.
+        -- Default activation covers BOTH standalone definitions, including daylight.
         dead=false;visible=true;selected=42
-        env.UnitDefs[7].name='house_asian3'
+        env.UnitDefs[9]={name='house_asian3'}
+        env.Platform=nil -- legacy engine fallback
         env.Spring.GetAllUnits=function() return {42,43,99} end
-        env.Spring.GetUnitDefID=function(id) return (id==42 or id==43) and 7 or 8 end
+        env.Spring.GetUnitDefID=function(id) return id==42 and 7 or id==43 and 9 or 8 end
         local order={}
         gl.Unit=function(id,raw,lod,noLua)
             assert((id==42 or id==43) and raw and lod==-1 and noLua)
@@ -79,6 +83,8 @@ local function exercise(failure)
         auto:Draw(0,128,nil,1024,0)
         assert(draws==before+2 and order[1]==43 and order[2]==42)
         assert(uniforms.emissionStrength[1]==.15,'default daylight test inactive')
+        assert(uniforms.clipZeroToOne[1]==0,'legacy depth range was not forwarded')
+        assert(auto:GetDebugPosition(42)==400,'house_asian1 debug focus missing')
         assert(auto:GetDebugPosition(43)==400 and not auto:GetDebugPosition(99))
         auto:Focus(43);assert(auto.focusID==43)
         auto:TextCommand('radiancetaper test off');auto:Draw(0,128,nil,1024,0)
@@ -97,4 +103,4 @@ end
 exercise()
 for i=1,7 do exercise(i) end
 exercise('incomplete');exercise('material')
-print('PASS: automatic house_asian3/daylight activation, all eligible units, debug focus, manual override, lazy allocation, raw draw, global/local injection, LOS/death invalidation, failure cleanup')
+print('PASS: automatic house_asian1+3/daylight activation, Recoil/legacy depth modes, all eligible units, debug focus, manual override, lazy allocation, raw draw, global/local injection, LOS/death invalidation, failure cleanup')

@@ -1,7 +1,7 @@
 # Standalone facade emission prototype
 
-Unsynced experiment, **automatically enabled for every visible `house_asian3`
-(Project)** on this prototype branch. Based on master `8c6ba642`.
+Unsynced experiment, **automatically enabled for every visible `house_asian1`
+and `house_asian3` (Arcology / Project)** on this prototype branch. Based on master `8c6ba642`.
 
 ## Try it
 
@@ -10,7 +10,7 @@ appearing. No activation command is needed. For this experiment, facade emission
 also runs at full source intensity during daylight; other light sources retain
 their normal schedule. Use `/radiancetaper test off` to restore time-of-day scaling.
 
-To inspect a Project, select it and enter:
+To inspect an Arcology or Project, select it and enter:
 
 ```text
 /radiancetaper debug on
@@ -27,7 +27,7 @@ The small debug panel shows the **tapered source capture**, not propagated light
 
 | Command | Effect |
 | --- | --- |
-| `/radiancetaper auto` | Restore automatic emission for all visible house_asian3 |
+| `/radiancetaper auto` | Restore automatic emission for all visible house_asian1 and house_asian3 |
 | `/radiancetaper test on/off` | Toggle full-intensity daylight testing for these sources |
 | `/radiancetaper on UNITID` | Select a specific visible standalone |
 | `/radiancetaper taper 0.18` | Roof contraction, clamped to 0.03–0.40 |
@@ -50,6 +50,9 @@ the capture; cut-off surfaces contribute no light. No settings persist on reload
 * Only the offscreen vertex shader contracts X/Z with height. The capture stores
   original world positions, horizontal normals, RGB self-illumination and the
   original surface area represented by each texel.
+* The capture converts the legacy orthographic projection to Recoil's zero-to-one
+  clip depth when `Platform.glSupportClipSpaceControl` is enabled. Without this,
+  the reversed top-down depth projection clips all above-ground windows away.
 * Texture 2 red gates self-illumination and alpha gates coverage. Unlit opaque
   surfaces still write depth; roofs occlude windows beneath them. Horizontal roof
   emission is deliberately excluded from this facade experiment.
@@ -98,7 +101,7 @@ python3 tests/objective_emission_gpu.py
 
 The GPU fixture runs the production capture/splat GLSL on a synthetic windowed
 tower in a Mesa compatibility context: edge-on baseline, extracted windows,
-masking, roof depth, unchanged source positions, taper energy stability, outward
+both legacy and Recoil zero-to-one clip depth, masking, roof depth, unchanged source positions, taper energy stability, outward
 injection, height falloff, zero intensity, HDR and global/local energy agreement.
 Use `--preview PATH.png` to export the shader fixture. This is not an in-game
 screenshot. Lifecycle tests cover activation, reuse, LOS/death, state cleanup and

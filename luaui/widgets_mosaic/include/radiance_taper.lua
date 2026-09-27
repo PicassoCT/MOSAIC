@@ -1,4 +1,4 @@
--- Automatic house_asian3 experiment, with optional single-house selection.
+-- Automatic house_asian1/3 experiment, with optional single-house selection.
 -- Full intensity in daylight is enabled on this prototype branch for testing.
 -- Two 256-square floating-point capture targets + depth; allocated on demand.
 -- Capture the actual visible piece set, then splat at original facade positions.
@@ -57,7 +57,7 @@ return function()
             end)
         end)
         if not self.points then return fail("sample list allocation failed") end
-        for _,name in ipairs({"buildingOrigin", "taperAmount", "taperHeight"}) do
+        for _,name in ipairs({"buildingOrigin", "taperAmount", "taperHeight", "clipZeroToOne"}) do
             captureLoc[name]=gl.GetUniformLocation(self.captureShader,name)
         end
         for _,name in ipairs({"domainOrigin", "domainSize", "atlasSize", "heightRange", "heightFalloff", "emissionStrength", "sourceOffset"}) do
@@ -81,8 +81,7 @@ return function()
         return defID
     end
     local function automaticUnit(unitID)
-        local defID=valid(unitID)
-        return defID and UnitDefs[defID].name=="house_asian3"
+        return valid(unitID)
     end
     function self:Fit(unitID)
         local defID=valid(unitID)
@@ -115,7 +114,7 @@ return function()
         end
         if command=="radiancetaper auto" then
             self.enabled=true; self.automatic=true; self.ready=false; self.scanAge=1
-            echo("automatic house_asian3 emission ON"); return true
+            echo("automatic house_asian1/3 emission ON"); return true
         end
         if command=="radiancetaper test on" or command=="radiancetaper test off" then
             self.test=command=="radiancetaper test on"
@@ -144,7 +143,7 @@ return function()
             if key=="span" or key=="height" then self[key.."Override"]=true end
             self.age=1; self.ready=false; echo(key.." = "..self[key]); return true
         end
-        echo("automatic house_asian3; auto | off | on [UNITID] | test on/off | debug on/off | taper 0.18 | falloff 256 | strength 0.15 | span 1536 | height 1536")
+        echo("automatic house_asian1/3; auto | off | on [UNITID] | test on/off | debug on/off | taper 0.18 | falloff 256 | strength 0.15 | span 1536 | height 1536")
         return true
     end
     function self:Update(dt) self.age=self.age+dt; self.scanAge=self.scanAge+dt end
@@ -187,6 +186,7 @@ return function()
             gl.UseShader(self.captureShader)
             gl.Uniform(captureLoc.buildingOrigin,x,y,z)
             gl.Uniform(captureLoc.taperAmount,self.taper); gl.Uniform(captureLoc.taperHeight,self.height)
+            gl.UniformInt(captureLoc.clipZeroToOne,Platform and Platform.glSupportClipSpaceControl and 1 or 0)
             gl.MatrixMode(GL.PROJECTION); gl.PushMatrix(); gl.LoadIdentity()
             -- With -90 X, view Z is -world Y. Reverse the depth interval so
             -- higher roofs win GL.LESS rather than looking up from below.
@@ -241,7 +241,7 @@ return function()
         local x,y=vsx-size-20,vsy-size-64
         if not self.enabled or not self.ready or not valid(self.unitID) then
             gl.Color(1,1,1,1)
-            gl.Text(self.enabled and "Radiance taper: waiting for visible house_asian3" or "Radiance taper: OFF",x,y+size+19,14,"o")
+            gl.Text(self.enabled and "Radiance taper: waiting for visible house_asian1/3" or "Radiance taper: OFF",x,y+size+19,14,"o")
             return
         end
         gl.Color(1,1,1,1); gl.Texture(self.emission); gl.Blending(false)
