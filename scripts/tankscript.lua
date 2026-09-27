@@ -32,83 +32,97 @@ end
 isStealthTank = Spring.GetUnitDefID(unitID) == UnitDefNames["ground_tank_day"].id and randChance(10)
 dayMoveStealthTable = {}
 nightMoveStealthTable = {}
-function hideAllStealth()
+local camoRulesAccess = {inlos = true}
+local activeCamoPieces
 
+-- Only the visible canopy meshes are redrawn by the unsynced renderer. Publishing
+-- through LOS-scoped rules params also works after a LuaRules reload / late join.
+local function publishCamoPieces(pieces)
+    if activeCamoPieces == pieces then return end
+    activeCamoPieces = pieces
+    for i, id in ipairs(pieces or {}) do
+        Spring.SetUnitRulesParam(unitID, "tank_camo_piece_" .. i, id, camoRulesAccess)
+    end
+    Spring.SetUnitRulesParam(unitID, "tank_camo_count", pieces and #pieces or 0, camoRulesAccess)
+end
+
+function hideAllStealth()
     hideT(TablesOfPiecesGroups["MoveStealth"])
     hideT(TablesOfPiecesGroups["StealthShieldFold"])
     hideT(TablesOfPiecesGroups["StealthEvening"])
-    
+    publishCamoPieces(nil)
 end
 
-Halterung= nil
+Halterung = nil
 StealthBase = nil
 
 function setup()
-    boolCloaked = randChance(10)
+    -- The equipment already has a 10% variant roll. A second roll here used to
+    -- leave almost every equipped tank with a permanently inactive canopy.
+    boolCloaked = true
     Halterung = piece("Halterrung")
     StealthBase = piece("StealthBase")
     Show(Halterung)
     Show(StealthBase)
-    dayMoveStealthTable[1] = TablesOfPiecesGroups["StealthShieldFold"]
-    dayMoveStealthTable[2] = {TablesOfPiecesGroups["MoveStealth"][1]}
-    dayMoveStealthTable[3] = {TablesOfPiecesGroups["MoveStealth"][2]}
-    dayMoveStealthTable[4] = {TablesOfPiecesGroups["MoveStealth"][3]}
-    dayMoveStealthTable[5] = {TablesOfPiecesGroups["MoveStealth"][4]}
-    nightMoveStealthTable= TablesOfPiecesGroups["StealthEvening"]
+    dayMoveStealthTable = {TablesOfPiecesGroups["StealthShieldFold"]}
+    for _, id in ipairs(TablesOfPiecesGroups["MoveStealth"] or {}) do
+        dayMoveStealthTable[#dayMoveStealthTable + 1] = {id}
+    end
+    nightMoveStealthTable = {}
+    for _, id in ipairs(TablesOfPiecesGroups["StealthEvening"] or {}) do
+        nightMoveStealthTable[#nightMoveStealthTable + 1] = {id}
+    end
 end
 
-stealthMoveTable = nil
+local function showCamoPieces(pieces)
+    if activeCamoPieces == pieces then return end
+    hideAllStealth()
+    showT(pieces)
+    publishCamoPieces(pieces)
+end
+
 function runCloakAnimations()
+    local moveIndex, previousNight = 1, nil
     while boolCloaked do
-    moveIndex = 1
-    boolIsNight = isNight()
-    if boolIsNight then
-        stealthMoveTable= nightMoveStealthTable
-    else
-       stealthMoveTable=  dayMoveStealthTable 
-    end
-            hideT(stealthMoveTable[moveIndex])
-            if boolMoving  then
-                if not boolIsNight then
-                    moveIndex = (moveIndex % #stealthMoveTable) +1
-                else
-                    Sleep(5000)
-                    moveIndex = math.min(moveIndex +1, #stealthMoveTable)
-                end
-            end
-            showT(stealthMoveTable[moveIndex])
-         
-
-        Sleep(1000)
+        local night = isNight()
+        local frames = night and nightMoveStealthTable or dayMoveStealthTable
+        if #frames == 0 then frames = dayMoveStealthTable end
+        if night ~= previousNight or not boolMoving then
+            moveIndex = 1
+        elseif night then
+            moveIndex = math.min(moveIndex + 1, #frames)
+        else
+            moveIndex = moveIndex % #frames + 1
+        end
+        previousNight = night
+        showCamoPieces(frames[moveIndex])
+        Sleep(night and boolMoving and 5000 or 1000)
     end
 end
-
 
 function hideCloakAnimation()
-
-  foreach(  TablesOfPiecesGroups["StealthShieldFold"],
-    function(id)
-        WTurn(id, y_axis, math.rad(-360/#TablesOfPiecesGroups["StealthShieldFold"]),0.1)
-        end
-    )
+    local panels = TablesOfPiecesGroups["StealthShieldFold"] or {}
+    if #panels == 0 then return end
+    showCamoPieces(panels)
+    for _, id in ipairs(panels) do
+        Turn(id, x_axis, math.rad(-360 / #panels), 0.65)
+    end
+    for _, id in ipairs(panels) do WaitForTurn(id, x_axis) end
+    hideAllStealth()
 end
 
 function showCloakAnimation()
-  Show(Halterung)
-  hideT(TablesOfPiecesGroups["StealthShieldFold"])
-  foreach(  TablesOfPiecesGroups["StealthShieldFold"],
-    function(id)
-        WTurn(id, x_axis, math.rad(-360/#TablesOfPiecesGroups["StealthShieldFold"]),0)
-        Show(id)
-        end   
-    )
-  foreach(  TablesOfPiecesGroups["StealthShieldFold"],
-    function(id)
-        WTurn(id, x_axis, 0 ,0.025)
-      end
-    )
-
+    local panels = TablesOfPiecesGroups["StealthShieldFold"] or {}
+    if #panels == 0 then return end
+    Show(Halterung)
+    for _, id in ipairs(panels) do
+        Turn(id, x_axis, math.rad(-360 / #panels), 0)
+    end
+    showCamoPieces(panels)
+    for _, id in ipairs(panels) do Turn(id, x_axis, 0, 0.65) end
+    for _, id in ipairs(panels) do WaitForTurn(id, x_axis) end
 end
+
 function rotateCloake(PayloadCenter, DetectPiece)
     local spGetUnitPiecePosDir = Spring.GetUnitPiecePosDir
     local spGetGroundHeight = Spring.GetGroundHeight
@@ -163,7 +177,6 @@ function optionalStealth()
             if boolCloaked then
                 showCloakAnimation()
                 runCloakAnimations()
-                showDecloakAnimation()
                 hideCloakAnimation()
             end   
        
@@ -183,9 +196,14 @@ function script.Create()
 
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
 
-    hideAllStealth()
-    StartThread(optionalStealth)
+    -- Finish the initial reset before the unfolding thread starts turning panels.
     resetAll(unitID)
+    hideAllStealth()
+    local pieceMap = Spring.GetUnitPieceMap(unitID)
+    if pieceMap.Halterrung then Hide(pieceMap.Halterrung) end
+    if pieceMap.StealthBase then Hide(pieceMap.StealthBase) end
+    Spring.SetUnitRulesParam(unitID, "tank_camo_count", 0, camoRulesAccess)
+    StartThread(optionalStealth)
     if gaiaTeamID == myTeamID then
         Spring.SetUnitAlwaysVisible(unitID, true)
     end
@@ -193,6 +211,9 @@ function script.Create()
 end
 
 function script.Killed(recentDamage, _)
+    boolCloaked = false
+    isStealthTank = false
+    publishCamoPieces(nil)
     for groupname, list in pairs (TablesOfPiecesGroups) do
         if list then
             for i=1,#list do
