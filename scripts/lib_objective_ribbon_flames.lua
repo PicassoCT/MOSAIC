@@ -1,5 +1,12 @@
 -- Independent named ribbon emitters per objective, driven by existing animation events.
 local presets = {
+    sulfur = {
+        -- A long, narrow sulfur-coloured aerosol trail, not a luminous flame.
+        direction={0,1,0}, length=1100, width=7, curl=0.28, speed=0.55,
+        colorStart={0.86,0.78,0.28,0.55}, colorEnd={0.73,0.72,0.47,0},
+        emission={0,0}, strands=2, windAffected=true, windInfluence=2.0, trailTime=4,
+        distanceFactor=20,
+    },
     pump = {
         direction={0,1,0}, length=120, width=20, curl=0.75, speed=2.1,
         colorStart={1,0.72,0.24,0.85}, colorEnd={0.85,0.12,0.025,0},
@@ -36,6 +43,23 @@ return function(unitID, kind)
         if dead or not GG.SmokeRibbon then return false end
         local options={directionSpace='world',strands=3,motionAffected=false}
         for name,value in pairs(preset) do options[name]=value end
+        if kind == 'sulfur' then
+            -- The blimp pivot is inside its hull. Emit just beyond its long-axis
+            -- tip, using the piece basis so the outlet follows the wind animation.
+            local bounds = Spring.GetUnitPieceInfo(unitID, piece)
+            if bounds and bounds.min and bounds.max then
+                local axis = 1
+                for i=2,3 do
+                    if bounds.max[i]-bounds.min[i] > bounds.max[axis]-bounds.min[axis] then axis=i end
+                end
+                options.rootOffset = {}
+                options.direction = {0,0,0}
+                for i=1,3 do options.rootOffset[i]=(bounds.min[i]+bounds.max[i])*.5 end
+                options.rootOffset[axis]=bounds.max[axis]+(bounds.max[axis]-bounds.min[axis])*.01
+                options.direction[axis]=1
+                options.directionSpace='piece'
+            end
+        end
         local ok,err=GG.SmokeRibbon.Set(unitID,slot,piece,options)
         if not ok then Spring.Echo('Objective ribbon flame: '..tostring(err)) end
         return ok

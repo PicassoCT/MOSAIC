@@ -2,6 +2,7 @@ include "createCorpse.lua"
 include "lib_OS.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
+include "lib_radiance_emitters.lua"
 --include "lib_Build.lua"
 
 TablesOfPiecesGroups = {}
@@ -9,6 +10,7 @@ TablesOfPiecesGroups = {}
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     Spring.SetUnitBlocking(unitID, false)
+    HideRadiancePieces(TablesOfPiecesGroups["SigLightOn"])
     StartThread(AnimationTest)
 
     for nr, part in pairs(TablesOfPiecesGroups["Container"]) do
@@ -22,14 +24,14 @@ function AnimationTest()
     while true do
         i = (i + 1) % 10
         Sleep(1000)
-        showT(TablesOfPiecesGroups["SigLightOn"])
+        ShowRadiancePieces(TablesOfPiecesGroups["SigLightOn"])
         hideT(TablesOfPiecesGroups["SigLightOff"])
         Sleep(2000)
-        hideT(TablesOfPiecesGroups["SigLightOn"])
+        HideRadiancePieces(TablesOfPiecesGroups["SigLightOn"])
         showT(TablesOfPiecesGroups["SigLightOff"])
         if i == 9 then
             Sleep(5000)
-            showT(TablesOfPiecesGroups["SigLightOn"])
+            ShowRadiancePieces(TablesOfPiecesGroups["SigLightOn"])
             hideT(TablesOfPiecesGroups["SigLightOff"])
             Sleep(2000)
         end

@@ -495,15 +495,17 @@ function showThruster(nr, timeMs, boolRampUpSpeed)
         else
             speedFactor = math.min(speedFactor - 0.2)
         end
-        ShowRadiancePiece(thrusterNr)
+        -- Airborne exhaust is visual only; projecting it onto the receiver band
+        -- made high-flying aircraft illuminate the streets below.
+        Show(thrusterNr)
         startValue = math.random(0, 5)
         Move(thrusterNr, z_axis, startValue, 0)
         value = math.random(2,8)*-1
         WMove(thrusterNr, z_axis, value, value * speedFactor)
-        HideRadiancePiece(thrusterNr)
+        Hide(thrusterNr)
         Sleep(25)
     end
-     HideRadiancePiece(thrusterNr)
+     Hide(thrusterNr)
      StopSpin(thrusterNr, z_axis, 0)
 end
 
@@ -540,19 +542,21 @@ function ScramJetDeparture(nr)
 end
 
 function PlaneLights()
+    -- Keep navigation-light animation on the giant circling plane without
+    -- registering it as a ground radiance source. SwitchLight remains lit.
     boolLightFlipFlop = false
     while boolCircling == true do
         boolLightFlipFlop = not boolLightFlipFlop
         if boolLightFlipFlop == true then
-            ShowRadiancePiece(TablesOfPiecesGroups["SignalLightOn"][1])
-            ShowRadiancePiece(TablesOfPiecesGroups["SignalLightOff"][2])
+            Show(TablesOfPiecesGroups["SignalLightOn"][1])
+            Show(TablesOfPiecesGroups["SignalLightOff"][2])
         else
-            ShowRadiancePiece(TablesOfPiecesGroups["SignalLightOff"][1])
-            ShowRadiancePiece(TablesOfPiecesGroups["SignalLightOn"][2])
+            Show(TablesOfPiecesGroups["SignalLightOff"][1])
+            Show(TablesOfPiecesGroups["SignalLightOn"][2])
         end
         Sleep(1000)
-        HideRadiancePieces(TablesOfPiecesGroups["SignalLightOn"])
-        HideRadiancePieces(TablesOfPiecesGroups["SignalLightOff"])
+        hideT(TablesOfPiecesGroups["SignalLightOn"])
+        hideT(TablesOfPiecesGroups["SignalLightOff"])
     end
 end
 

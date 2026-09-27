@@ -2,6 +2,7 @@ include "createCorpse.lua"
 include "lib_OS.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
+include "lib_radiance_emitters.lua"
 
 local TablesOfPiecesGroups = {}
 local SIG_SUBANIMATIONS = 2
@@ -31,6 +32,8 @@ function script.Create()
     if boolIsAboveGround then
         Move(center, 2, gh, 0)
     end
+    -- Lamps share the platform mesh: texture-2 red selects only lit texels.
+    SetRadiancePiece(center, true, 'material')
     StartThread(oilrigAnimation, oilrigAnimationT.arg, oilrigAnimationT.method)  
     StartThread(drillAnimation)
 end
@@ -219,4 +222,3 @@ function script.Deactivate() return 0 end
 -- end
 
 -- Spring.SetUnitNanoPieces(unitID, { center })
-

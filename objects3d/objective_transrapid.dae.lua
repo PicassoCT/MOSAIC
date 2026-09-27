@@ -4,7 +4,7 @@ model = {
 	-- tex1 = "testtex1.dds",
 	-- tex2 = "testtex2.dds",
 	tex1 = "house_asian_diffuse.dds",
-	tex2 = "house_asian_normal.dds",
+	tex2 = "house_asian_selfilu_reflection.png",
 
 	--tex2 = "armtech_tex2.dds",
 	midpos = {0, 5, 0},

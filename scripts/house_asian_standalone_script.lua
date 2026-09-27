@@ -3,6 +3,7 @@ include "lib_OS.lua"
 include "lib_mosaic.lua"
 include "lib_physics.lua"
 include "lib_UnitScript.lua"
+include "lib_radiance_emitters.lua"
 
 local TablesOfPieceGroups = {}
 local boolDebug = false
@@ -429,7 +430,8 @@ function addGroundPlaceables()
                     WMove(randPlaceAbleID,y_axis, heightdifference, 0)
                     showSubs(pieceNr_pieceName[randPlaceAbleID])   
                     addToShowTable(randPlaceAbleID)
-                    Show(randPlaceAbleID)    
+                    Show(randPlaceAbleID)
+                    SetRadiancePlaceables({randPlaceAbleID}, true)
                 end
             end
             groundPiecesToPlace = groundPiecesToPlace - 1
@@ -581,17 +583,20 @@ function showHouse()
     boolHouseHidden = false
     showT(ToShowTable)
     updateWindowGeometryRevision(false)
+    SetRadiancePlaceables(ToShowTable, true)
 end
 
 function hideHouse()
     boolHouseHidden = true
     hideT(ToShowTable)
     updateWindowGeometryRevision(true)
+    SetRadiancePlaceables(ToShowTable, false)
 end
 
 function buildAnimation()
     while boolDoneShowing == false do Sleep(100) end
-    showT(ToShowTable)   
+    showT(ToShowTable)
+    SetRadiancePlaceables(ToShowTable, true)
 end
 
 function script.Killed(recentDamage, _)
