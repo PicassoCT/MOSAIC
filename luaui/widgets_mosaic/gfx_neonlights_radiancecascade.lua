@@ -90,8 +90,9 @@ local function receiveBuildingShadowEnd(unitID)
     local building = pendingBuildingColumns[unitID]
     pendingBuildingColumns[unitID] = nil
     if not building then return end
+    local previous = occlusionBuildings[unitID]
     occlusionBuildings[unitID] = nil
-    occlusionDirty = true
+    if previous then occlusionDirty = true end
     if #building.columns == 0 or not Spring.ValidUnitID(unitID) or Spring.GetUnitIsDead(unitID) then return end
     local ux, uy, uz = Spring.GetUnitBasePosition(unitID)
     local front, up, right = Spring.GetUnitVectors(unitID)
@@ -100,16 +101,20 @@ local function receiveBuildingShadowEnd(unitID)
     building.front, building.up, building.right = front, up, right
     building.columnCount = #building.columns / 4
     occlusionBuildings[unitID] = building
+    occlusionDirty = true
 end
 
 local function receiveBuildingShadowRemove(unitID)
     pendingBuildingColumns[unitID] = nil
+    -- The gadget reports every destroyed unit, including civilians and icons.
+    -- Only an existing blocker changes the atlas; no-op removals otherwise keep
+    -- restarting the incremental window bake before it can finish.
+    if occlusionBuildings[unitID] then occlusionDirty = true end
     occlusionBuildings[unitID] = nil
     if debugVoxelUnit == unitID then
         debugVoxelUnit = nil
         debugVoxelSummary = ""
     end
-    occlusionDirty = true
 end
 
 -- Collapse consecutive occupied floors to prisms without allocating geometry.

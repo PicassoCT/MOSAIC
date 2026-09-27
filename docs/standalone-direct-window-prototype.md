@@ -91,6 +91,10 @@ decorations are not continuously recaptured; this prototype targets static facad
 The explicit rebuild command remains available for manual model changes.
 
 Ground-height changes and building-occupancy changes invalidate lighting bakes.
+Removal events for units that never supplied blockers, and empty updates for
+absent blockers, leave bakes running. View culling retains its conservative radius
+after capture so small houses near the screen edge cannot repeatedly evict and
+recapture themselves, resetting every building's bake.
 Day/night and strength changes reuse the captured sources and completed fields.
 Changing range/cutoff explicitly rebuilds the caches. Partially baked fields are
 not displayed. Adding/removing a cached blocker invalidates affected generation
@@ -146,4 +150,5 @@ untapered positions, Recoil/legacy clip depth, direct projection, source height,
 wall shadowing, cutoff fading, one-time scene addition, roof rejection and terrain
 outside the cascade band. Lifecycle tests cover every allocation failure, both
 engine pixel-readback layouts, cache reuse, revision changes, LOS, terrain updates,
-and cleanup. In-game appearance is still unverified.
+bake completion during unrelated unit removals and screen-edge visibility checks,
+real blocker invalidation, and cleanup. In-game appearance is still unverified.

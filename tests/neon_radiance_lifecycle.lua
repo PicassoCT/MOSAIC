@@ -237,7 +237,15 @@ local windowCaptures=0
 env.gl.Unit=function(id) assert(id==42);windowCaptures=windowCaptures+1 end
 env.widget:TextCommand('windowlight auto')
 env.widget:Update(1);env.widget:DrawWorldPreUnit()
-for i=1,16 do env.widget:DrawWorldPreUnit() end
+-- The synced gadget sends removal for every destroyed unit, including units
+-- which never supplied any shadow columns. City activity must not restart the
+-- 16-frame window bake on every cascade refresh.
+for i=1,20 do
+ globals.ReceiveBuildingShadowColumnsRemove(99)
+ globals.ReceiveBuildingShadowColumnsBegin(98,7,16,128)
+ globals.ReceiveBuildingShadowColumnsEnd(98) -- empty, previously absent blocker
+ env.widget:Update(0.21);env.widget:DrawWorldPreUnit()
+end
 env.widget:Update(0.21);env.widget:DrawWorldPreUnit()
 assert(windowCaptures>0,'automatic standalone was never captured by the widget')
 assert(captureUniforms.captureOrigin[1]>=400 and captureUniforms.captureOrigin[3]>=600)
@@ -246,6 +254,27 @@ local windowCount=windowCaptures
 env.widget:Update(1);env.widget:DrawWorldPreUnit()
 assert(windowCaptures==windowCount,'cascade refresh recaptured static windows')
 assert(not captureUniforms.taperAmount,'removed taper still executed')
+-- Real blocker additions and removals still invalidate the completed field.
+env.Spring.GetUnitBasePosition=function()return 500,0,500 end
+local function finishChangedBlockers()
+ env.widget:Update(0.21);env.widget:DrawWorldPreUnit();env.widget:DrawWorld()
+ assert(captureUniforms.windowActive[1]==0,'changed blocker reused a stale window field')
+ for i=1,16 do env.widget:DrawWorldPreUnit() end
+ env.widget:Update(0.21);env.widget:DrawWorldPreUnit();env.widget:DrawWorld()
+ assert(captureUniforms.windowActive[1]==1,'window bake failed to recover after a real blocker change')
+ assert(windowCaptures==windowCount,'blocker update recaptured static facade geometry')
+end
+local function addBlocker()
+ globals.ReceiveBuildingShadowColumnsBegin(98,7,16,128)
+ globals.ReceiveBuildingShadowColumn(98,0,0,0,1)
+ globals.ReceiveBuildingShadowColumnsEnd(98)
+ finishChangedBlockers()
+end
+addBlocker()
+globals.ReceiveBuildingShadowColumnsRemove(98);finishChangedBlockers()
+addBlocker()
+globals.ReceiveBuildingShadowColumnsBegin(98,7,16,128)
+globals.ReceiveBuildingShadowColumnsEnd(98);finishChangedBlockers()
 -- Fog explicitly requests an on-demand envelope; ground radiance alone is never enough.
 local fogAPI=assert(env.WG.GetMosaicFogRadiance)
 env.Spring.GetUnitDefDimensions=function() return {minx=-30,maxx=30,minz=-40,maxz=40,miny=-8,maxy=392} end
