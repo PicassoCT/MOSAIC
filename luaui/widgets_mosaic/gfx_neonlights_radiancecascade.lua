@@ -59,6 +59,7 @@ local previewSpan = 0 -- world elmos; zero shows the whole map
 local scene
 local localDetail
 local liveHeadlights
+local standaloneTaper
 local sceneEnabled, sceneTest = true, false
 local sceneStrength, sceneLayer = 2, 1
 local sceneRadiance, sceneReady
@@ -339,6 +340,10 @@ local function focusPreview(unitID, pieceID)
 end
 
 function widget:TextCommand(command)
+    if standaloneTaper and standaloneTaper:TextCommand(command) then
+        refreshAccumulator=ATLAS_REFRESH_SECONDS
+        return true
+    end
     if command == "headlights motion on" or command == "headlights motion off" then
         if liveHeadlights then
             liveHeadlights.enabled=command == "headlights motion on"
@@ -543,6 +548,8 @@ function widget:Initialize()
     end
 
     topDownTex = gl.CreateTexture(ATLAS_SIZE, ATLAS_SIZE, {
+        -- Tapered facade samples add together; retain HDR energy until resolve.
+        format = GL.RGBA16F or 0x881A,
         min_filter = GL.LINEAR,
         mag_filter = GL.LINEAR,
         wrap_s = GL.CLAMP_TO_EDGE,
@@ -634,6 +641,9 @@ function widget:Initialize()
     end
     if propagation then
         WG.NeonRadiance = propagation
+        local taperOK,taperFactory=pcall(VFS.Include,"luaui/widgets_mosaic/include/radiance_taper.lua")
+        if taperOK and type(taperFactory)=="function" then standaloneTaper=taperFactory()
+        else Spring.Echo("Standalone taper prototype unavailable: "..tostring(taperFactory)) end
         local detailOK, detailModule=pcall(VFS.Include,"luaui/widgets_mosaic/include/radiance_local.lua")
         if detailOK and type(detailModule)=="table" then localDetail=detailModule.New()
         else Spring.Echo("Neon local detail module unavailable: "..tostring(detailModule)) end
@@ -674,6 +684,7 @@ function widget:Update(dt)
     neonLightPercent = dayPercentToNeonPercent(getDayPercent())
     refreshAccumulator = refreshAccumulator + dt
     if liveHeadlights then liveHeadlights:Update(dt) end
+    if standaloneTaper then standaloneTaper:Update(dt) end
 end
 
 local function drawNeonPieces(captureLayer, domain)
@@ -776,6 +787,12 @@ local function drawNeonPieces(captureLayer, domain)
             (liveHeadlights and liveHeadlights.enabled and 0.08 or 1) * (sceneTest and 1 or neonLightPercent))
     end
 
+    if standaloneTaper then
+        local bandHeight=OCCLUSION_WORLD_HEIGHT/OCCLUSION_LAYER_COUNT
+        standaloneTaper:Draw((captureLayer-1)*bandHeight,captureLayer*bandHeight,
+            domain,ATLAS_SIZE,sceneTest and 1 or neonLightPercent)
+    end
+
     gl.PopMatrix()
     gl.MatrixMode(GL.PROJECTION)
     gl.PopMatrix()
@@ -795,6 +812,8 @@ function widget:DrawWorldPreUnit()
     end
 
     refreshAccumulator = refreshAccumulator % ATLAS_REFRESH_SECONDS
+    -- Capture outside the atlas FBO; both global and local splats reuse it.
+    if standaloneTaper then standaloneTaper:Refresh() end
     sceneReady = false
     if localDetail then localDetail.ready=false end
     if occlusionDirty then
@@ -897,6 +916,7 @@ function widget:DrawWorld()
 end
 
 function widget:DrawScreen()
+    if standaloneTaper then standaloneTaper:DrawScreen() end
     if sceneTest and sceneEnabled then
         gl.Color(1,0.8,0.2,1)
         gl.Text("NEON SCENE TEST: full intensity | /radiancelight test off",16,vsy-40,14,"o")
@@ -989,6 +1009,7 @@ function widget:DrawScreen()
 end
 
 function widget:Shutdown()
+    if standaloneTaper then standaloneTaper:Shutdown();standaloneTaper=nil end
     if liveHeadlights then liveHeadlights:Shutdown();liveHeadlights=nil end
     if WG.IsVehicleHeadlightCascadeActive == vehicleHeadlightCascadeActive then WG.IsVehicleHeadlightCascadeActive=nil end
     if WG.GetRainRadiance == getRainLighting then WG.GetRainRadiance = nil end
@@ -1034,7 +1055,6 @@ function widget:Shutdown()
     occlusionBuildings = {}
     pendingBuildingColumns = {}
 end
-
 
 
 
