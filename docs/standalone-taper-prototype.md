@@ -1,29 +1,34 @@
 # Standalone facade emission prototype
 
-Opt-in, unsynced experiment for **one selected Arcology or Project**
-(`house_asian1` / `house_asian3`), based on master `8c6ba642`.
+Unsynced experiment, **automatically enabled for every visible `house_asian3`
+(Project)** on this prototype branch. Based on master `8c6ba642`.
 
 ## Try it
 
-Wait for the building's visible model to finish appearing, select it, then enter:
+Load the prototype branch and wait for the buildings' visible models to finish
+appearing. No activation command is needed. For this experiment, facade emission
+also runs at full source intensity during daylight; other light sources retain
+their normal schedule. Use `/radiancetaper test off` to restore time-of-day scaling.
+
+To inspect a Project, select it and enter:
 
 ```text
-/radiancetaper on
 /radiancetaper debug on
-/radiancelight test on
+/radiancedebug on
+/radiancedebug zoom 1024
 ```
 
-The last command temporarily enables full-intensity cascade lighting during the
-day. It affects other existing neon sources too. At night it is unnecessary.
-Compare `/radiancetaper off` and `/radiancetaper on`. Re-enabling selects the
-currently selected house and resets capture bounds to the model's extents.
-The visible building itself is never tapered.
+Compare `/radiancetaper off` and `/radiancetaper auto`. The visible building itself
+is never tapered. `/radiancetaper on` still switches to a single selected Arcology
+or Project (`house_asian1` / `house_asian3`) for isolated experiments.
 
 The small debug panel shows the **tapered source capture**, not propagated light.
 `/radiancedebug on` shows the existing cascade emission/occlusion/result panels.
 
 | Command | Effect |
 | --- | --- |
+| `/radiancetaper auto` | Restore automatic emission for all visible house_asian3 |
+| `/radiancetaper test on/off` | Toggle full-intensity daylight testing for these sources |
 | `/radiancetaper on UNITID` | Select a specific visible standalone |
 | `/radiancetaper taper 0.18` | Roof contraction, clamped to 0.03–0.40 |
 | `/radiancetaper strength 0.15` | Source intensity, 0–8 |
@@ -32,7 +37,6 @@ The small debug panel shows the **tapered source capture**, not propagated light
 | `/radiancetaper height 1536` | Height above the unit origin at full contraction |
 | `/radiancetaper debug off` | Hide the source preview |
 | `/radiancetaper off` | Remove this experimental light source |
-| `/radiancelight test off` | Restore normal time-of-day lighting |
 
 Automatic bounds include the hidden model variants. If the chosen house is tiny
 in the preview, reduce `span` until its footprint fills most of the square, and
@@ -60,9 +64,12 @@ the capture; cut-off surfaces contribute no light. No settings persist on reload
 * Both whole-map and camera-local emission textures retain HDR accumulation.
   The existing cascade solve, scene composition and day/night scaling consume it.
 
-The selected-unit capture refreshes at most once per second; the current atlas
-cadence reuses it. GPU resources are allocated only on activation: two 256×256
-RGBA32F targets, one depth target, two shader programs and one fixed point list.
+Automatic mode discovers eligible units once per second, and captures/splats each
+one into the global and local emission atlases at their refresh cadence. All
+houses share two 256×256 RGBA32F targets, one depth target, two shader programs and
+one fixed point list; memory does not grow with house count. GPU work does grow
+with the number of houses. Resources are allocated when the first source is drawn.
+Manual single-unit mode retains the once-per-second capture cache.
 Missing capabilities or allocation failures disable only the prototype. Unit
 death or lost LOS invalidates cached light. Resources are released on shutdown.
 

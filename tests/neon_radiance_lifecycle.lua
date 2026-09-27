@@ -184,6 +184,21 @@ env.widget:TextCommand('radiancedebug off');previewRects={};env.widget:DrawScree
 env.widget:TextCommand('radiancelight test off')
 captureUniforms.nightIntensity=nil;env.widget:DrawWorld();assert(captureUniforms.nightIntensity[1]==1)
 assert(captureUniforms.headlightIntensity[1]==0)
+-- Standalone sources are automatic and can focus the existing cascade zoom.
+env.UnitDefs={[7]={name='house_asian3'}}
+env.Spring.GetAllUnits=function() return {42} end
+env.Spring.GetUnitPosition=function() return 400,900,600 end
+env.gl.CreateFBO=function() return 'taper-fbo' end
+env.gl.IsValidFBO=function() return true end
+env.gl.CreateList=function() return 'taper-points' end
+env.gl.ActiveFBO=function(_,fn) fn() end
+local taperCaptures=0
+env.gl.Unit=function(id) assert(id==42);taperCaptures=taperCaptures+1 end
+env.widget:TextCommand('radiancedebug zoom 1024')
+env.widget:Update(1);env.widget:DrawWorldPreUnit()
+assert(taperCaptures>0,'automatic standalone was never captured by the widget')
+assert(env.WG.NeonRadiance.heightMin==0,'standalone zoom followed roof height instead of receiver band')
+assert(captureUniforms.buildingOrigin[1]==400 and captureUniforms.buildingOrigin[3]==600)
 env.widget:Shutdown();assert(not env.WG.NeonRadiance and next(globals)==nil)
 print('PASS: widget propagation/default view, lazy direct diagnostics, height selection, day/night intensity, WG ownership and shutdown')
 
