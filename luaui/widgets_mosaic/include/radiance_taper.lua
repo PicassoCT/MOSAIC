@@ -1,4 +1,5 @@
--- Opt-in experiment for ONE selected standalone house. No synced changes.
+-- Automatic house_asian3 experiment, with optional single-house selection.
+-- Full intensity in daylight is enabled on this prototype branch for testing.
 -- Two 256-square floating-point capture targets + depth; allocated on demand.
 -- Capture the actual visible piece set, then splat at original facade positions.
 local PATH = "luaui/widgets_mosaic/shaders/radiancecascade/"
@@ -6,8 +7,8 @@ local SIZE = 256
 local SUPPORTED = {house_asian1=true, house_asian3=true}
 
 return function()
-    local self = {enabled=false, ready=false, preview=false, taper=0.18,
-        falloff=256, strength=0.15, span=1536, height=1536, age=1}
+    local self = {enabled=true, automatic=true, test=true, units={}, ready=false, preview=false, taper=0.18,
+        falloff=256, strength=0.15, span=1536, height=1536, age=1, scanAge=1}
     local captureLoc, splatLoc = {}, {}
     local function echo(message) Spring.Echo("Radiance taper: " .. message) end
     function self:Shutdown()
@@ -79,10 +80,46 @@ return function()
         end
         return defID
     end
+    local function automaticUnit(unitID)
+        local defID=valid(unitID)
+        return defID and UnitDefs[defID].name=="house_asian3"
+    end
+    function self:Fit(unitID)
+        local defID=valid(unitID)
+        local dims=defID and Spring.GetUnitDefDimensions and Spring.GetUnitDefDimensions(defID)
+        if dims and dims.minx and dims.maxx and dims.minz and dims.maxz then
+            local rx=math.max(math.abs(dims.minx),math.abs(dims.maxx))
+            local rz=math.max(math.abs(dims.minz),math.abs(dims.maxz))
+            if not self.spanOverride then self.span=math.max(128,2.1*math.sqrt(rx*rx+rz*rz)) end
+            if not self.heightOverride then self.height=math.max(64,dims.maxy or 1536) end
+        end
+    end
+    function self:GetDebugPosition(unitID)
+        if not self.enabled then return end
+        unitID=unitID or self.focusID or self.unitID
+        if not valid(unitID) then return end
+        if self.automatic then
+            if not automaticUnit(unitID) then return end
+        elseif unitID~=self.unitID then return end
+        local x,y,z=Spring.GetUnitPosition(unitID)
+        if x then return x,y,z,unitID end
+    end
+    function self:Focus(unitID)
+        local x,y,z,id=self:GetDebugPosition(unitID)
+        if x then self.focusID=id; return x,y,z,id end
+    end
     function self:TextCommand(command)
         if not command:match("^radiancetaper%s") and command~="radiancetaper" then return false end
         if command=="radiancetaper off" then
             self.enabled=false; self.ready=false; echo("OFF"); return true
+        end
+        if command=="radiancetaper auto" then
+            self.enabled=true; self.automatic=true; self.ready=false; self.scanAge=1
+            echo("automatic house_asian3 emission ON"); return true
+        end
+        if command=="radiancetaper test on" or command=="radiancetaper test off" then
+            self.test=command=="radiancetaper test on"
+            echo("daylight test "..(self.test and "ON" or "OFF")); return true
         end
         if command=="radiancetaper debug on" or command=="radiancetaper debug off" then
             self.preview=command=="radiancetaper debug on"; return true
@@ -91,17 +128,11 @@ return function()
         if command=="radiancetaper on" or id then
             local unitID=tonumber(id) or (Spring.GetSelectedUnits() or {})[1]
             if not valid(unitID) then echo("select a visible Arcology or Project (house_asian1/3)"); return true end
-            self.unitID=unitID; self.enabled=true; self.ready=false; self.age=1
+            self.unitID=unitID; self.focusID=unitID; self.enabled=true; self.automatic=false; self.ready=false; self.age=1
             -- The model's authored radius/height are selection helpers (25/40),
             -- not its real bounds. Use imported extents, including all variants,
             -- conservatively; span/height commands can tighten a chosen variant.
-            local dims=Spring.GetUnitDefDimensions and Spring.GetUnitDefDimensions(valid(unitID))
-            if dims and dims.minx and dims.maxx and dims.minz and dims.maxz then
-                local rx=math.max(math.abs(dims.minx),math.abs(dims.maxx))
-                local rz=math.max(math.abs(dims.minz),math.abs(dims.maxz))
-                self.span=math.max(128,2.1*math.sqrt(rx*rx+rz*rz))
-                self.height=math.max(64,dims.maxy or 1536)
-            end
+            self.spanOverride=false; self.heightOverride=false; self:Fit(unitID)
             echo("ON for unit "..unitID.."; /radiancetaper debug on shows the capture")
             return true
         end
@@ -110,13 +141,30 @@ return function()
         local limits={taper={0.03,0.4},falloff={16,4096},strength={0,8},span={128,8192},height={64,8192}}
         if limits[key] and value then
             self[key]=math.max(limits[key][1],math.min(limits[key][2],value))
+            if key=="span" or key=="height" then self[key.."Override"]=true end
             self.age=1; self.ready=false; echo(key.." = "..self[key]); return true
         end
-        echo("select a standalone, then /radiancetaper on; off | debug on/off | taper 0.18 | falloff 256 | strength 0.15 | span 1536 | height 1536")
+        echo("automatic house_asian3; auto | off | on [UNITID] | test on/off | debug on/off | taper 0.18 | falloff 256 | strength 0.15 | span 1536 | height 1536")
         return true
     end
-    function self:Update(dt) self.age=self.age+dt end
+    function self:Update(dt) self.age=self.age+dt; self.scanAge=self.scanAge+dt end
     function self:Refresh()
+        if not self.enabled then return end
+        if not self.automatic then self:Capture(); return end
+        if self.scanAge>=1 then
+            self.units={}
+            for _,id in ipairs(Spring.GetAllUnits and Spring.GetAllUnits() or {}) do
+                if automaticUnit(id) then self.units[#self.units+1]=id end
+            end
+            table.sort(self.units)
+            self.scanAge=0
+        end
+        local selected=(Spring.GetSelectedUnits() or {})[1]
+        if automaticUnit(selected) then self.focusID=selected
+        elseif not automaticUnit(self.focusID) then self.focusID=self.units[1] end
+        if not valid(self.unitID) then self.ready=false end
+    end
+    function self:Capture()
         if not self.enabled then return end
         local defID=valid(self.unitID)
         if not defID then self.ready=false; return end
@@ -152,7 +200,7 @@ return function()
         gl.Texture(0,false); gl.Texture(1,false); gl.DepthMask(false); gl.DepthTest(false); gl.Blending(false)
         self.age=0; self.ready=true
     end
-    function self:Draw(bottom,top,domain,atlasSize,intensity)
+    function self:DrawCapture(bottom,top,domain,atlasSize,intensity)
         if not self.enabled or not self.ready or intensity<=0 or not valid(self.unitID) then return end
         gl.UseShader(self.splatShader)
         gl.Texture(0,self.emission); gl.Texture(1,self.position)
@@ -167,13 +215,42 @@ return function()
         gl.CallList(self.points)
         gl.UseShader(0); gl.Texture(0,false); gl.Texture(1,false); gl.Blending(false)
     end
-    function self:DrawScreen()
-        if not self.preview or not self.enabled or not self.ready or not valid(self.unitID) then return end
+    function self:Draw(bottom,top,domain,atlasSize,intensity)
+        if not self.enabled then return end
+        intensity=self.test and 1 or intensity
+        if not self.automatic then self:DrawCapture(bottom,top,domain,atlasSize,intensity); return end
+        if intensity<=0 then return end
+        -- Reuse one capture pair for all houses. Capture/splat within the caller's
+        -- atlas FBO; ActiveFBO restores that target and its viewport on return.
+        -- The focused house goes last so its source remains in the debug texture.
+        local function drawUnit(id)
+            if not automaticUnit(id) then return end
+            self.unitID=id; self.ready=false; self:Fit(id); self:Capture()
+            self:DrawCapture(bottom,top,domain,atlasSize,intensity)
+        end
+        for _,id in ipairs(self.units) do
+            if not self.enabled then break end
+            if id~=self.focusID then drawUnit(id) end
+        end
+        if self.enabled and self.focusID then drawUnit(self.focusID) end
+    end
+    function self:DrawScreen(previewShader,exposureLoc,exposure)
+        if not self.preview then return end
+        local vsx,vsy=gl.GetViewSizes()
+        local size=math.min(256,math.floor(vsy*0.28))
+        local x,y=vsx-size-20,vsy-size-64
+        if not self.enabled or not self.ready or not valid(self.unitID) then
+            gl.Color(1,1,1,1)
+            gl.Text(self.enabled and "Radiance taper: waiting for visible house_asian3" or "Radiance taper: OFF",x,y+size+19,14,"o")
+            return
+        end
         gl.Color(1,1,1,1); gl.Texture(self.emission); gl.Blending(false)
-        gl.TexRect(20,80,276,336,0,0,1,1)
+        if previewShader then gl.UseShader(previewShader);gl.Uniform(exposureLoc,exposure or 4) end
+        gl.TexRect(x,y,x+size,y+size,0,0,1,1)
+        gl.UseShader(0)
         gl.Texture(false); gl.Blending(GL.SRC_ALPHA,GL.ONE_MINUS_SRC_ALPHA)
-        gl.Text("Tapered facade emission | unit "..self.unitID,20,355,14,"o")
-        gl.Text(string.format("taper %.2f | span %.0f | falloff %.0f | strength %.2f",self.taper,self.span,self.falloff,self.strength),20,337,12,"o")
+        gl.Text("Tapered facade emission | unit "..self.unitID,x,y+size+19,14,"o")
+        gl.Text(string.format("taper %.2f | span %.0f | falloff %.0f | strength %.2f",self.taper,self.span,self.falloff,self.strength),x,y+size+1,12,"o")
     end
     return self
 end

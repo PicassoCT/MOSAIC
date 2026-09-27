@@ -286,6 +286,13 @@ local function loadDirectLightFragmentShader()
 end
 
 local function getDebugEmitter()
+    if standaloneTaper and (not lockedUnit or not lockedPiece) then
+        local x,y,z,id=standaloneTaper:GetDebugPosition(lockedUnit)
+        if x then
+            lockedUnit,lockedPiece=id,nil
+            return x/Game.mapSizeX,z/Game.mapSizeZ,y
+        end
+    end
     local function position(unitID, pieceID)
         if unitID and Spring.ValidUnitID(unitID) and not Spring.GetUnitIsDead(unitID) then
             local x, y, z = Spring.GetUnitPiecePosDir(unitID, pieceID)
@@ -320,6 +327,18 @@ local function getDebugEmitter()
 end
 
 local function focusPreview(unitID, pieceID)
+    if standaloneTaper and not pieceID then
+        local x,y,z,id=standaloneTaper:Focus(unitID)
+        if x then
+            lockedUnit,lockedPiece=id,nil
+            emitterU,emitterV,emitterY=x/Game.mapSizeX,z/Game.mapSizeZ,y
+            -- Facades project onto the receiver band, not their roof height.
+            propagationLayer=sceneLayer
+            refreshAccumulator=ATLAS_REFRESH_SECONDS
+            if propagation then propagation.ready=false end
+            return true
+        end
+    end
     local pieces = unitID and neonUnitTables[unitID]
     if pieces then
         local found = false
@@ -395,7 +414,7 @@ function widget:TextCommand(command)
             previewSpan = math.max(128, math.min(tonumber(span) or 1024, math.min(Game.mapSizeX,Game.mapSizeZ)))
             propagationView = true
         else
-            Spring.Echo("Radiance preview: select a registered neon building, or deselect to use the current emitter")
+            Spring.Echo("Radiance preview: select house_asian3 or a registered neon building, or deselect to use the current emitter")
         end
         return true
     end
@@ -916,7 +935,10 @@ function widget:DrawWorld()
 end
 
 function widget:DrawScreen()
-    if standaloneTaper then standaloneTaper:DrawScreen() end
+    if standaloneTaper then
+        standaloneTaper:DrawScreen(propagation and propagation.previewShader,
+            propagation and propagation.previewExposureLoc,previewExposure)
+    end
     if sceneTest and sceneEnabled then
         gl.Color(1,0.8,0.2,1)
         gl.Text("NEON SCENE TEST: full intensity | /radiancelight test off",16,vsy-40,14,"o")
@@ -1055,6 +1077,4 @@ function widget:Shutdown()
     occlusionBuildings = {}
     pendingBuildingColumns = {}
 end
-
-
 

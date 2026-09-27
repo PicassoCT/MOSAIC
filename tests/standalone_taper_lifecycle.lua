@@ -35,7 +35,8 @@ local function exercise(failure)
             GetUnitPosition=function() return 400,10,600 end},
         VFS={LoadFile=function(path) return read(path) end}}, {__index=_G})
     local obj=assert(load(source,'taper','t',env))()()
-    assert(serial==0 and not obj.enabled)
+    assert(serial==0 and obj.enabled and obj.automatic and obj.test)
+    obj:TextCommand('radiancetaper off');obj:TextCommand('radiancetaper test off')
     obj:Refresh();obj:Draw(0,128,nil,1024,1);assert(serial==0 and draws==0)
     selected=99;obj:TextCommand('radiancetaper on');assert(not obj.enabled)
     selected=42;obj:TextCommand('radiancetaper on');assert(obj.enabled and not obj.ready and serial==0)
@@ -61,8 +62,39 @@ local function exercise(failure)
     end
     obj:Shutdown();obj:Shutdown()
     for id in pairs(allocated) do assert(deleted[id],'leaked '..id) end
+    if not failure then
+        -- Default activation covers every visible house_asian3, including daylight.
+        dead=false;visible=true;selected=42
+        env.UnitDefs[7].name='house_asian3'
+        env.Spring.GetAllUnits=function() return {42,43,99} end
+        env.Spring.GetUnitDefID=function(id) return (id==42 or id==43) and 7 or 8 end
+        local order={}
+        gl.Unit=function(id,raw,lod,noLua)
+            assert((id==42 or id==43) and raw and lod==-1 and noLua)
+            order[#order+1]=id
+        end
+        local auto=assert(load(source,'taper','t',env))()()
+        auto:Refresh();assert(#auto.units==2 and auto.focusID==42)
+        local before=draws
+        auto:Draw(0,128,nil,1024,0)
+        assert(draws==before+2 and order[1]==43 and order[2]==42)
+        assert(uniforms.emissionStrength[1]==.15,'default daylight test inactive')
+        assert(auto:GetDebugPosition(43)==400 and not auto:GetDebugPosition(99))
+        auto:Focus(43);assert(auto.focusID==43)
+        auto:TextCommand('radiancetaper test off');auto:Draw(0,128,nil,1024,0)
+        assert(draws==before+2,'normal day/night override ignored')
+        auto:TextCommand('radiancetaper test on')
+        visible=false;auto:Draw(0,128,nil,1024,1)
+        assert(draws==before+2 and not auto:GetDebugPosition(42),'auto mode leaked stale LOS')
+        visible=true;auto:TextCommand('radiancetaper off');auto:Draw(0,128,nil,1024,1)
+        assert(draws==before+2)
+        auto:TextCommand('radiancetaper auto');auto:Refresh();auto:Draw(0,128,nil,1024,1)
+        assert(draws==before+4)
+        auto:Shutdown()
+        for id in pairs(allocated) do assert(deleted[id],'auto leaked '..id) end
+    end
 end
 exercise()
 for i=1,7 do exercise(i) end
 exercise('incomplete');exercise('material')
-print('PASS: default off, selected standalone restriction, lazy allocation, raw draw, capture reuse, global/local injection, intensity, LOS/death invalidation, commands, failure cleanup')
+print('PASS: automatic house_asian3/daylight activation, all eligible units, debug focus, manual override, lazy allocation, raw draw, global/local injection, LOS/death invalidation, failure cleanup')
