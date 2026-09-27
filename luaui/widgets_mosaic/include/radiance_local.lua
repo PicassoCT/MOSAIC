@@ -37,9 +37,10 @@ function M.New()
         local reason
         self.solver,reason=factory(1024,true)
         if self.solver then
-            local opts={format=GL.RGBA8 or 0x8058,min_filter=GL.NEAREST,mag_filter=GL.NEAREST,
+            local opts={format=GL.RGBA16F or 0x881A,min_filter=GL.NEAREST,mag_filter=GL.NEAREST,
                 wrap_s=GL.CLAMP_TO_EDGE,wrap_t=GL.CLAMP_TO_EDGE,fbo=true}
             self.emission=gl.CreateTexture(1024,1024,opts)
+            opts.format=GL.RGBA8 or 0x8058
             self.occupancy=gl.CreateTexture(512,512,opts)
         end
         if not self.solver or not self.emission or not self.occupancy then
