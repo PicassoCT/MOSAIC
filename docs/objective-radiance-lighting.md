@@ -8,7 +8,9 @@ and the direct exterior-window lighting revision notifications.
 
 - Oil rig: capture the platform's authored illumination mask, including the shared offshore variant.
 - Refugee camp: emission follows the SigLightOn show/hide cycle.
-- Combat outpost: a compact warm roof source, positioned from transformed model bounds. No whole-building emission.
+- Combat outpost: a narrow downward searchlight attached to the tower roof beside its antenna. It sweeps 65 degrees to either side over a 16-second cycle using interpolated game time. Its direct wall/terrain lighting updates every rendered frame; the cascade receives only a small fixed bulb spill, preventing stale moving pools. The old `outpost_roof` record remains accepted after LuaUI reloads.
+- UNATO/Westhem military headquarters: capture the main building and visible HyperLoop sections through the existing house_asian illumination mask. Hidden sections do not emit; the boundary section follows its actual visibility. Flying VTOLs and rotors do not enter radiance.
+- Presidential palace: eight warm exterior uplights around the selected Palast mesh, placed from its scaled, rotated bounds. They illuminate its walls above the ground cascade band and contribute local radiance at the fixtures. Unselected palace variants never register. No texture mask replacement is required.
 - Transrapid: capture the central mesh and visible endpoint stations through their illumination mask. Correct tex2 to house_asian_selfilu_reflection.png; the UnitDef normaltex remains unchanged.
 - Airport: keep runway SwitchLight emission. The giant circling aircraft's navigation lights and the scramjet thrusters retain their visible animation but no longer inject radiance into the ground receiver band.
 - Glacier piston: emission follows the rotating logo's actual flicker show/hide calls.
@@ -16,7 +18,9 @@ and the direct exterior-window lighting revision notifications.
 - house_asian procedural, standalone and comb street placeables: only selected/shown Placeable pieces and their selected children register. Capture uses their existing correct illumination mask. The parent must have a longest scaled dimension of at least 32 world units. The cutoff is placeableMinSize in luaui/widgets_mosaic/include/radiance_objective_sources.lua. Size calculations are cached per model/piece; hidden or out-of-LOS houses do not contribute.
 - Static records are restored for late joiners and after unsynced Lua reloads.
 
-The palace remains a design recommendation: warm exterior uplights around the chosen façade and entrance. It needs dedicated positioned emitters or authored lamp meshes; do not capture the entire palace as emissive. The roof-source path provides a basis for geometry-less lamps, but is not a directional façade floodlight implementation.
+Direct objective cones share the existing scene depth/normal pass and are limited to the nearest 24 fixtures. They have finite range, surface incidence and soft edges, with the existing receiver-band occupancy atlas providing approximate obstruction. They honor LOS, cloak, no-draw and unit removal. No Recoil shader framework or engine setting is enabled.
+
+The headquarters connection was committed as 404315d0 after master 9a82bed8. Testing master 9a82bed8 alone does not include the headquarters source registration.
 
 ## Material audit
 
@@ -57,6 +61,6 @@ Most affected atlases have no separately named illumination map in the repositor
 
 ## Validation and in-game check
 
-Automated coverage includes actual objective script blink/flicker events, station show/hide, mask selection, roof placement under rotated/scaled pieces, placeable parent-size and visibility gating, sulfur plume lifecycle/outlet, late-join snapshot, and the widget's real capture wiring. Existing GPU tests exercise real radiance emission and SmokeRibbon GLSL with Mesa's compatibility profile.
+Automated coverage includes actual objective script blink/flicker events, station show/hide, mask selection, lamp placement under rotated/scaled pieces, palace variant selection, interpolated searchlight motion, source budgets, placeable parent-size and visibility gating, sulfur plume lifecycle/outlet, late-join snapshot, and the widget's real capture wiring. `tests/objective_spotlights_gpu.py` exercises the actual scene shader for a narrow moving pool, source removal, range/obstruction and warm elevated facade lighting. Existing GPU tests exercise real radiance emission and SmokeRibbon GLSL with Mesa's compatibility profile.
 
-An in-game visual pass is still needed: inspect each objective, both Transrapid endpoint stations, both phases of the warning lights, the glacier logo, and a large street placeable beside an unlit small one. Confirm the sulfur plume's visual scale at the geoengineering blimp. Use /radiancedebug on and /radiancedebug zoom 1024 for source inspection, then /radiancedebug off. Verify house hide/show and a LuaUI reload leave no stale lights.
+An in-game visual pass is still needed: inspect the headquarters on a version containing 404315d0, the palace facade uplights, the outpost's full searchlight sweep, both Transrapid endpoint stations, both phases of the warning lights, the glacier logo, and a large street placeable beside an unlit small one. Confirm the sulfur plume's visual scale at the geoengineering blimp. Use /radiancedebug on and /radiancedebug zoom 1024 for source inspection, then /radiancedebug off. Verify house hide/show and a LuaUI reload leave no stale lights.

@@ -4,6 +4,7 @@ include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 include "lib_staticstring.lua"
 include "lib_mosaic.lua"
+include "lib_radiance_emitters.lua"
 
 
 
@@ -213,7 +214,10 @@ function buildShowUnit()
 	addToShowTable(showOne(TablesOfPiecesGroups["Post1Flag"]))
 	addToShowTable(showOne(TablesOfPiecesGroups["Post2Flag"]))
 	addToShowTable(showOne(TablesOfPiecesGroups["Post3Flag"]))
-	addToShowTable(showOne(TablesOfPiecesGroups["Palast"]))
+	local palace = addToShowTable(showOne(TablesOfPiecesGroups["Palast"]))
+    -- Only the selected building receives uplights. The atlas has no authored
+    -- illumination mask, so never capture the whole palace as an emitter.
+    SetRadiancePiece(palace, true, 'lamp', 'palace_facade')
 	addToShowTables(showSeveral(TablesOfPiecesGroups["PalastDeco"]))
 	addToShowTables(showSeveral(TablesOfPiecesGroups["Limo"]))
 end

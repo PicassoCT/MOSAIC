@@ -2,14 +2,19 @@ include "createCorpse.lua"
 include "lib_OS.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
+include "lib_radiance_emitters.lua"
 --include "lib_Build.lua"
 
 local TablesOfPiecesGroups = {}
+local center = piece("center")
 
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     Spring.SetUnitBlocking(unitID,false)
     resetAll(unitID)
+    -- Texture-2 red selects the building's authored lights. Flying VTOLs are
+    -- separate pieces and must not project their emission onto the ground.
+    SetRadiancePiece(center, true, 'material')
     val = math.random(-360, 360)
     rSign = randSign()*math.random(1,9)
     for i=1,#TablesOfPiecesGroups.HyperLoop do
@@ -99,7 +104,7 @@ end
 
 function delayShowAllElements()
 
-    hideT(TablesOfPiecesGroups["HyperLoop"])
+    HideRadiancePieces(TablesOfPiecesGroups["HyperLoop"])
     Sleep(10000)
 
 
@@ -108,7 +113,7 @@ function delayShowAllElements()
         x, y, z = Spring.GetUnitPiecePosDir(unitID, piecenr)
         nrsShown[nr] = false
         if not (x < 0 or x > Game.mapSizeX or z < 0 or z > Game.mapSizeZ) then
-            Show(piecenr)
+            ShowRadiancePiece(piecenr, 'material')
             nrsShown[nr] = true
         end
     end
@@ -116,7 +121,7 @@ function delayShowAllElements()
     for i=1, #nrsShown do
         if nrsShown[i]  ~= nil and nrsShown[i + 1] ~= nil  then
             if nrsShown[i] == true and nrsShown[i + 1] == false then
-                Show(TablesOfPiecesGroups["HyperLoop"][i+1])
+                ShowRadiancePiece(TablesOfPiecesGroups["HyperLoop"][i+1], 'material')
             end
         end 
     end

@@ -20,8 +20,8 @@ function script.Create()
     -- generatepiecesTableAndArrayCode(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     Spring.SetUnitBlocking(unitID,false)
-    -- The roof has no separate lamp mesh. Attach a compact warm source above it.
-    SetRadiancePiece(piece('CombatOutPost'), true, 'lamp', 'outpost_roof')
+    -- The tower searchlight sweeps in the renderer at the interpolated game time.
+    SetRadiancePiece(piece('CombatOutPost'), true, 'lamp', 'outpost_searchlight')
     makeWeaponsTable()
     setFireState(unitID, "returnfire")
 end

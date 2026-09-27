@@ -21,6 +21,8 @@ local function unit(scriptName)
     env.getCultureUnitModelNames_Dict_DefIDName=function() return {} end
     env.getDayTime=function() return 0,0,0,0 end
     env.getObjectiveAboveGroundOffset=function() return 0 end
+    env.getDetermenisticMapHash=function() return 1 end
+    env.getDeterministicStationaryUnitHash=function() return 2 end
     env.isPieceAboveGround=function() return false end
     local groups={SigLightOn={env.piece('SigLightOn001'),env.piece('SigLightOn002')},
         SigLightOff={env.piece('SigLightOff001'),env.piece('SigLightOff002')},Container={},
@@ -77,7 +79,7 @@ e.script.Killed();assert(next(smoke)==nil,'dead station retained plume')
 e,lights=unit('objective_oilrigscript.lua');e.script.Create()
 assert(lights[e.center].mode=='material','oil rig did not use its illumination mask')
 e,lights=unit('objectivecombatoutpostscript.lua');e.script.Create()
-assert(lights[e.piece('CombatOutPost')].preset=='outpost_roof')
+assert(lights[e.piece('CombatOutPost')].preset=='outpost_searchlight')
 e,lights=unit('objectivetransrapidscript.lua')
 e.isStationVisible=function() return true,0 end
 p=e.piece('EndPoint1');e.deployTrack(0,0,e.rail1,{},e.sub1,p)
@@ -112,8 +114,50 @@ for id in pairs(lights) do assert(id==runway,'airborne airport emitter illuminat
 assert(lights[runway],'aircraft cleanup removed runway emission')
 print('PASS: airport runway still emits; giant-plane navigation and scramjet effects never enter ground radiance')
 
+-- The military headquarters uses its mask and follows deployed track visibility.
+e,lights,shown,groups=unit('objectiveWestHemHQ.lua')
+groups.HyperLoop={}
+for i=1,10 do groups.HyperLoop[i]=e.piece('HyperLoop'..i) end
+e.resetAll=function() end;e.randSign=function() return 1 end
+e.Game.mapSizeX=1024;e.Game.mapSizeZ=1024
+e.Spring.GetUnitPiecePosDir=function(_,id)
+    return id==groups.HyperLoop[1] and 512 or 2048,50,512
+end
+e.script.Create()
+local headquarters=e.piece('center')
+assert(lights[headquarters].mode=='material','military headquarters lost masked emission')
+co=coroutine.create(e.delayShowAllElements)
+assert(resume(co)==10000)
+for _,id in ipairs(groups.HyperLoop) do assert(not shown[id] and not lights[id]) end
+resume(co)
+for i,id in ipairs(groups.HyperLoop) do
+    assert((lights[id]~=nil)==(shown[id]==true),'military track visibility/emission diverged')
+    assert((lights[id]~=nil)==(i<=2),'hidden track emitted or visible boundary segment was omitted')
+    if lights[id] then assert(lights[id].mode=='material') end
+end
+local plane,rotor1,rotor2=e.piece('Plane1'),e.piece('Plane1Sub1'),e.piece('Plane1Sub2')
+e.showHidePlane(true,plane,rotor1,rotor2)
+for _,id in ipairs({plane,rotor1,rotor2}) do assert(shown[id] and not lights[id]) end
+e.showHidePlane(false,plane,rotor1,rotor2)
+for _,id in ipairs({plane,rotor1,rotor2}) do assert(not shown[id] and not lights[id]) end
+assert(lights[headquarters],'VTOL visibility removed headquarters emission')
+print('PASS: military headquarters and visible boundary tracks emit through their mask; VTOLs do not')
+
+e,lights,shown,groups=unit('objective_presidentialpalacescript.lua')
+local selected=e.piece('Palast4')
+groups.Palast={selected,e.piece('Palast1')}
+for _,name in ipairs({'Street','Park','Post1Flag','Post2Flag','Post3Flag'}) do groups[name]={e.piece(name..'1')} end
+e.showOne=function(t) return t[1] end
+e.showSeveral=function() return {} end
+e.isInTable=function() return false end
+e.TablesOfPiecesGroups=groups
+e.buildShowUnit()
+assert(shown[selected] and lights[selected].preset=='palace_facade')
+assert(not lights[groups.Palast[2]] and not lights[e.Base],'unselected palace or structural base emitted')
+print('PASS: only the chosen palace variant owns facade floodlights')
+
 local scale=1
-local sourceEnv=setmetatable({Spring={
+local sourceEnv=setmetatable({Game={gameSpeed=30},Spring={
     GetUnitDefID=function(id) return id end,
     GetUnitPieceInfo=function() return {min={-20,-10,-5},max={20,10,5}} end,
     GetUnitPieceMatrix=function() return scale,0,0,0, 0,0,scale,0, 0,scale,0,0, 0,0,0,1 end,
@@ -122,18 +166,40 @@ local sourceEnv=setmetatable({Spring={
     GetUnitNoDraw=function() return false end,GetUnitIsCloaked=function() return false end,
     GetSpectatingState=function() return false,false end,
     GetUnitLosState=function() return {los=true} end,
+    GetGroundHeight=function() return 0 end,
+    ValidUnitID=function() return true end,GetUnitIsDead=function() return false end,
+    GetCameraPosition=function() return 100,50,200 end,
 }}, {__index=_G})
 local sources=loadIn('luaui/widgets_mosaic/include/radiance_objective_sources.lua',sourceEnv)
 assert(sources.PlaceableEligible(1,1))
 scale=.1;assert(not sources.PlaceableEligible(2,1),'raw DAE size bypassed world-space minimum')
 scale=1
-local lamp=sources.RoofLamp(1,1,'outpost_roof')
-assert(lamp.x==100 and lamp.y==58 and lamp.z==200,'roof lamp ignored the rotated local up axis')
+local uplights=sources.AttachedLights(1,1,'palace_facade',0)
+assert(#uplights==8)
+for _,l in ipairs(uplights) do
+    assert(l.direction[2]>0 and l.y==50 and l.range>0,'floodlight did not point up from the base')
+    assert(math.abs(l.x-100)>20 or math.abs(l.z-200)>10,'floodlight remained inside the building')
+end
+scale=.0254
+local a=sources.AttachedLights(1,1,'outpost_searchlight',0)[1]
+local b=sources.AttachedLights(1,1,'outpost_searchlight',.5)[1]
+local cycle=sources.AttachedLights(1,1,'outpost_searchlight',480)[1]
+assert(math.abs(a.x-(100+500*scale))<.001 and math.abs(a.y-(53+3300*scale))<.001)
+assert(a.direction[2]<0 and a.outerCos>.97,'searchlight lost its narrow downward cone')
+assert(math.abs(a.direction[1]-b.direction[1])>.0001,'subframe motion waited for cascade refresh')
+assert(math.abs(a.direction[1]-cycle.direction[1])<.0001,'searchlight did not return smoothly after one sweep')
+assert(a.x==b.x and a.y==b.y and a.z==b.z,'searchlight moved off its tower')
+local records={}
+for id=1,8 do records[id]={[1]={piece=1,mode='lamp',preset='palace_facade'}} end
+assert(#sources.CollectDirect(records,0)==24,'direct light budget was not enforced')
+scale=1
 assert(sources.PlaceablesVisible(1))
 sourceEnv.Spring.GetUnitLosState=function() return {los=false,radar=true} end
 assert(not sources.PlaceablesVisible(1),'radar-only house leaked lighting')
+assert(#sources.AttachedLights(1,1,'palace_facade',0)==0,'palace light leaked outside LOS')
 sourceEnv.Spring.GetSpectatingState=function() return true,true end
 assert(sources.PlaceablesVisible(1))
 sourceEnv.Spring.GetUnitNoDraw=function() return true end
 assert(not sources.PlaceablesVisible(1),'hidden house leaked lighting')
+assert(#sources.CollectDirect(records,0)==0,'hidden objective leaked direct light')
 print('PASS: imported model scale, placeable cutoff, roof placement under rotation and LOS/nodraw filtering')

@@ -762,7 +762,7 @@ local function drawNeonPieces(captureLayer, domain)
                 local mode=descriptor and descriptor.mode or 'diffuse'
                 local strength=objective and 1 or (sceneTest and 1 or neonLightPercent)
                 local color, textured, masked=nil,bound and 1 or 0,0
-                local lamp
+                local lamp,lamps
                 if mode=='material' then
                     if materialBound==nil then
                         materialBound=not not (bound and defID and gl.Texture(1,string.format("%%%d:1",defID)))
@@ -775,7 +775,8 @@ local function drawNeonPieces(captureLayer, domain)
                         strength=0
                     end
                 elseif mode=='lamp' then
-                    lamp=ObjectiveSources.RoofLamp(unitID,pieceID,descriptor.preset)
+                    lamps=ObjectiveSources.AttachedLights(unitID,pieceID,descriptor.preset,frame)
+                    lamp=lamps[1]
                     strength=lamp and lamp.strength or 0
                     color=lamp and lamp.color
                     textured=0
@@ -800,7 +801,11 @@ local function drawNeonPieces(captureLayer, domain)
                         gl.Uniform(propagation.emissionStrengthLoc,strength)
                     end
                     if lamp then
-                        ObjectiveSources.DrawLamp(lamp)
+                        for _,source in ipairs(lamps) do
+                            gl.Color(source.color[1],source.color[2],source.color[3],1)
+                            if propagation then gl.Uniform(propagation.emissionStrengthLoc,source.strength) end
+                            ObjectiveSources.DrawLamp(source)
+                        end
                     else
                         gl.PushMatrix()
                         gl.UnitPieceMultMatrix(unitID, pieceID)
@@ -927,8 +932,12 @@ function widget:DrawWorld()
     end
     if scene and sceneEnabled and sceneReady then
         local bandHeight=OCCLUSION_WORLD_HEIGHT/OCCLUSION_LAYER_COUNT
+        -- Sweep direct searchlights at render frequency; the cascade only holds
+        -- their small fixed bulb spill, so it cannot leave old searchlight pools.
+        local frame=Spring.GetGameFrame()+(Spring.GetFrameTimeOffset and Spring.GetFrameTimeOffset() or 0)
+        local objectiveLights=ObjectiveSources.CollectDirect(objectiveRadianceUnitTables,frame)
         scene:Draw(sceneRadiance,occlusionTex[sceneLayer],(sceneLayer-1)*bandHeight,sceneLayer*bandHeight,
-            sceneStrength,1,localDetail,liveHeadlights,sceneTest and 1 or neonLightPercent,windowLighting)
+            sceneStrength,1,localDetail,liveHeadlights,sceneTest and 1 or neonLightPercent,windowLighting,objectiveLights)
     end
     if windowLighting then windowLighting:DrawWorld() end
     if not debugVoxelUnit then return end
