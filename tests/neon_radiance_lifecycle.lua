@@ -150,10 +150,13 @@ env.Spring.GetUnitLosState=function() return {los=false,radar=true} end
 assert(not captureEffects(0)[48],'placeable lit the scene outside LOS')
 local lampVertices=0
 env.gl.Vertex=function() lampVertices=lampVertices+1 end
-effects={ [50]={[12]={piece=12,mode='lamp',preset='outpost_roof'}} }
+env.Spring.GetGroundHeight=function() return 0 end
+effects={ [50]={[12]={piece=12,mode='lamp',preset='outpost_searchlight'}} }
 local lamps=captureEffects(0)
-assert(lampVertices>0 and not lamps[50],'roof lamp rendered the structural mesh')
+assert(lampVertices==0,'roof lamp leaked outside LOS')
 env.Spring.GetUnitLosState=function() return {los=true} end
+lamps=captureEffects(0)
+assert(lampVertices>0 and not lamps[50],'roof lamp rendered the structural mesh')
 globals.ReceiveObjectiveRadiancePieces({})
 captured={}
 env.widget:Update(1);env.widget:DrawWorldPreUnit()
@@ -303,16 +306,21 @@ local function checkScene()
  draw(0);assert(draws==0 and allocations==0)
  draw();assert(obj.mode=='depth copy' and copies==1 and allocations==1)
  draw();assert(copies==2 and allocations==1)
+ local spot={x=10,y=80,z=30,range=300,direction={0,-1,0},outerCos=.98,color={1,.9,.7},gain=5}
+ obj:Draw('radiance','occupancy',0,128,2,1,nil,nil,nil,nil,{spot})
+ assert(uniforms.objectiveLightCount[1]==1 and uniforms['objectivePosRange[0]'][2]==80)
+ assert(uniforms['objectiveDirCos[0]'][2]==-1 and uniforms['objectiveColorGain[0]'][4]==5)
+ draw();assert(uniforms.objectiveLightCount[1]==0,'removed objective left a stale direct spotlight')
  assert(uniforms.nightIntensity[1]==0.25 and uniforms.clipZeroToOne[1]==1)
  for i=0,9 do assert(bound[i]==false) end
  assert(lastShader==0 and lastDepthMask==true and lastBlend[1]==2 and lastBlend[2]==3)
- deferred=true;draw();assert(obj.mode=='deferred' and deleted.depth1 and copies==2)
+ deferred=true;draw();assert(obj.mode=='deferred' and deleted.depth1 and copies==4)
  assert(uniforms.deferred[1]==1 and allocations==1)
  deferred=false;dimensions={4096,2160,12,34};draw();draw()
  assert(obj.mode=='unavailable' and allocations==1,'Oversize depth texture allocated')
  dimensions={1920,1080,12,34};failAllocation=true;draw();draw()
  assert(allocations==2,'Failed allocation retried every frame')
- obj:Resize();failAllocation=false;draw();assert(allocations==3 and copies==3)
+ obj:Resize();failAllocation=false;draw();assert(allocations==3 and copies==5)
  obj:Shutdown();obj:Shutdown()
  for id in pairs(textures) do assert(deleted[id],'Leaked scene texture') end
 end

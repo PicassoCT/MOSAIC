@@ -18,7 +18,14 @@ return function()
     local self={shader=shader,mode="pending",smoothing=true}
     local loc={}
     for _,name in ipairs({"inverseProjection","inverseView","mapSize","heightRange","clipZeroToOne",
-        "deferred","strength","nightIntensity","smoothing","localActive","localOrigin","localSpan","headlightActive","headlightLocalActive","headlightOrigin","headlightSpan","headlightIntensity","windowActive"}) do loc[name]=gl.GetUniformLocation(shader,name) end
+        "deferred","strength","nightIntensity","smoothing","localActive","localOrigin","localSpan","headlightActive","headlightLocalActive","headlightOrigin","headlightSpan","headlightIntensity","windowActive","objectiveLightCount"}) do loc[name]=gl.GetUniformLocation(shader,name) end
+    local objectiveLoc={}
+    for i=1,24 do
+        objectiveLoc[i]={}
+        for _,name in ipairs({'objectivePosRange','objectiveDirCos','objectiveColorGain'}) do
+            objectiveLoc[i][name]=gl.GetUniformLocation(shader,name..'['..(i-1)..']')
+        end
+    end
     function self:Resize()
         if self.depth then gl.DeleteTexture(self.depth);self.depth=nil end
         self.width,self.height=nil,nil
@@ -38,7 +45,7 @@ return function()
         end
         return true
     end
-    function self:Draw(texture,occupancy,heightMin,heightMax,strength,intensity,detail,headlights,headlightIntensity,windows)
+    function self:Draw(texture,occupancy,heightMin,heightMax,strength,intensity,detail,headlights,headlightIntensity,windows,objectiveLights)
         if not self.shader or not texture or intensity<=0 or strength<=0 then return end
         local useDeferred=buffersAvailable()
         local sx,sy,vpx,vpy=Spring.GetViewGeometry()
@@ -81,6 +88,14 @@ return function()
         gl.Texture(12,useWindows and windows.texture or texture)
         gl.Texture(13,useWindows and windows.ground or texture)
         gl.UseShader(self.shader)
+        local lightCount=math.min(24,#(objectiveLights or {}))
+        gl.UniformInt(loc.objectiveLightCount,lightCount)
+        for i=1,lightCount do
+            local l=objectiveLights[i]
+            gl.Uniform(objectiveLoc[i].objectivePosRange,l.x,l.y,l.z,l.range)
+            gl.Uniform(objectiveLoc[i].objectiveDirCos,l.direction[1],l.direction[2],l.direction[3],l.outerCos)
+            gl.Uniform(objectiveLoc[i].objectiveColorGain,l.color[1],l.color[2],l.color[3],l.gain)
+        end
         gl.UniformInt(loc.windowActive,useWindows and 1 or 0)
         gl.UniformInt(loc.headlightActive,useHeadlights and 1 or 0)
         gl.UniformInt(loc.headlightLocalActive,localHeadlights and 1 or 0)

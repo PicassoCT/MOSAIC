@@ -31,6 +31,48 @@ uniform float headlightSpan;
 uniform sampler2D windowTex;
 uniform sampler2D windowGroundTex;
 uniform int windowActive;
+// Finite 3D cones for objective floodlights/searchlights. These share the scene
+// depth and normals; no extra framebuffer, model shader or engine setting.
+const int MAX_OBJECTIVE_LIGHTS=24;
+uniform int objectiveLightCount=0;
+uniform vec4 objectivePosRange[MAX_OBJECTIVE_LIGHTS];
+uniform vec4 objectiveDirCos[MAX_OBJECTIVE_LIGHTS];
+uniform vec4 objectiveColorGain[MAX_OBJECTIVE_LIGHTS];
+float objectiveVisibility(vec3 lamp,vec3 world)
+{
+    float cell=max(mapSize.x,mapSize.y)/float(textureSize(occupancyTex,0).x);
+    float endT=max(0.0,1.0-cell*1.5/max(length(world-lamp),1.0));
+    for(int j=0;j<16;++j) {
+        vec3 p=mix(lamp,world,endT*(float(j)+0.5)/16.0);
+        // The coarse source cell may contain the tower below its roof lamp.
+        // Start testing beyond that cell, and stop before the receiver's face.
+        if(length(p-lamp)>cell*1.5 && p.y>=heightRange.x && p.y<heightRange.y &&
+           all(greaterThanEqual(p.xz,vec2(0))) && all(lessThan(p.xz,mapSize)) &&
+           texture2D(occupancyTex,p.xz/mapSize).r>0.5) return 0.0;
+    }
+    return 1.0;
+}
+vec3 objectiveLighting(vec3 world,vec3 normal)
+{
+    vec3 light=vec3(0);
+    for(int i=0;i<MAX_OBJECTIVE_LIGHTS;++i) {
+        if(i>=objectiveLightCount) break;
+        vec3 delta=world-objectivePosRange[i].xyz;
+        float distance2=dot(delta,delta),range=objectivePosRange[i].w;
+        if(distance2>=range*range || distance2<0.000001) continue;
+        float distance=sqrt(distance2);
+        vec3 ray=delta/distance;
+        float outer=objectiveDirCos[i].w;
+        float cone=smoothstep(outer,mix(outer,1.0,0.4),dot(ray,objectiveDirCos[i].xyz));
+        float incidence=max(0.0,dot(normal,-ray));
+        if(cone*incidence<0.001) continue;
+        float fade=1.0-smoothstep(range*0.65,range,distance);
+        float energy=cone*incidence*fade/(1.0+12.0*distance*distance/(range*range));
+        light+=objectiveColorGain[i].rgb*objectiveColorGain[i].a*energy*
+            objectiveVisibility(objectivePosRange[i].xyz,world);
+    }
+    return light;
+}
 vec3 filteredLight(sampler2D field,sampler2D occupancy,vec2 uv)
 {
     if(any(lessThan(uv,vec2(0))) || any(greaterThanEqual(uv,vec2(1)))) return vec3(0);
@@ -77,7 +119,7 @@ void main()
     if(depth>=0.999999) discard; // sky/cleared buffer
     vec3 world=worldPosition(uv,depth);
     bool cascadeBand=world.y>=max(0.0,heightRange.x) && world.y<heightRange.y;
-    if(!cascadeBand && windowActive==0)discard;
+    if(!cascadeBand && windowActive==0 && objectiveLightCount==0)discard;
     vec3 normal,albedo;
     if(deferred!=0) {
         vec3 encoded=model ? texture2D(modelNormalTex,uv).rgb : texture2D(mapNormalTex,uv).rgb;
@@ -128,6 +170,7 @@ void main()
         light=max(light,direct*headlightIntensity);
     }
     if(!cascadeBand)light=vec3(0);
+    light+=objectiveLighting(world,normal);
     // Direct facade light joins only here. It is NEVER a cascade emission input
     // or a fog source, and must not be projected onto roofs above the ground.
     if(windowActive!=0 && !model && normal.y>0.25 && world.y>=0.0){

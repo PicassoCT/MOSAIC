@@ -42,6 +42,8 @@ def render():
 
 def centroid(a):
  weights=a.sum(axis=2);return (weights*np.arange(256)[None,:]).sum()/weights.sum(),(weights*np.arange(256)[:,None]).sum()/weights.sum()
+# Match radiance_scene.lua: the independent live-field gain has no GLSL default.
+scene['headlightIntensity'].value=1
 draw_cone(128);first=render();assert first.sum()>10
 draw_cone(256);second=render()
 assert centroid(second)[0]-centroid(first)[0]>60,'translation waited for slow field'
