@@ -3,6 +3,7 @@
 uniform vec3 buildingOrigin;
 uniform float taperAmount;
 uniform float taperHeight;
+uniform int clipZeroToOne;
 out vec3 originalPosition;
 out vec3 originalNormal;
 out vec2 sourceUV;
@@ -18,4 +19,10 @@ void main()
     float scale = 1.0 - taperAmount * clamp(height / taperHeight, 0.0, 1.0);
     view.xy = buildingOrigin.xz + (view.xy - buildingOrigin.xz) * scale;
     gl_Position = gl_ProjectionMatrix * view;
+    // gl.Ortho builds a legacy [-w,+w] depth projection. With our top-down
+    // reversed interval, above-ground geometry has negative clip Z and is
+    // entirely clipped by Recoil's [0,+w] mode unless we convert the range.
+    // Keep the ordering: roofs must still win GL.LESS over windows below.
+    if (clipZeroToOne != 0)
+        gl_Position.z = (gl_Position.z + gl_Position.w) * 0.5;
 }

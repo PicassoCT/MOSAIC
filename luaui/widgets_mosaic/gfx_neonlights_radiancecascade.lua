@@ -414,7 +414,7 @@ function widget:TextCommand(command)
             previewSpan = math.max(128, math.min(tonumber(span) or 1024, math.min(Game.mapSizeX,Game.mapSizeZ)))
             propagationView = true
         else
-            Spring.Echo("Radiance preview: select house_asian3 or a registered neon building, or deselect to use the current emitter")
+            Spring.Echo("Radiance preview: select house_asian1/3 or a registered neon building, or deselect to use the current emitter")
         end
         return true
     end
@@ -1077,4 +1077,3 @@ function widget:Shutdown()
     occlusionBuildings = {}
     pendingBuildingColumns = {}
 end
-
