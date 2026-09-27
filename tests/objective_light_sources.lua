@@ -112,6 +112,35 @@ for id in pairs(lights) do assert(id==runway,'airborne airport emitter illuminat
 assert(lights[runway],'aircraft cleanup removed runway emission')
 print('PASS: airport runway still emits; giant-plane navigation and scramjet effects never enter ground radiance')
 
+-- The military headquarters uses its mask and follows deployed track visibility.
+e,lights,shown,groups=unit('objectiveWestHemHQ.lua')
+groups.HyperLoop={}
+for i=1,10 do groups.HyperLoop[i]=e.piece('HyperLoop'..i) end
+e.resetAll=function() end;e.randSign=function() return 1 end
+e.Game.mapSizeX=1024;e.Game.mapSizeZ=1024
+e.Spring.GetUnitPiecePosDir=function(_,id)
+    return id==groups.HyperLoop[1] and 512 or 2048,50,512
+end
+e.script.Create()
+local headquarters=e.piece('center')
+assert(lights[headquarters].mode=='material','military headquarters lost masked emission')
+co=coroutine.create(e.delayShowAllElements)
+assert(resume(co)==10000)
+for _,id in ipairs(groups.HyperLoop) do assert(not shown[id] and not lights[id]) end
+resume(co)
+for i,id in ipairs(groups.HyperLoop) do
+    assert((lights[id]~=nil)==(shown[id]==true),'military track visibility/emission diverged')
+    assert((lights[id]~=nil)==(i<=2),'hidden track emitted or visible boundary segment was omitted')
+    if lights[id] then assert(lights[id].mode=='material') end
+end
+local plane,rotor1,rotor2=e.piece('Plane1'),e.piece('Plane1Sub1'),e.piece('Plane1Sub2')
+e.showHidePlane(true,plane,rotor1,rotor2)
+for _,id in ipairs({plane,rotor1,rotor2}) do assert(shown[id] and not lights[id]) end
+e.showHidePlane(false,plane,rotor1,rotor2)
+for _,id in ipairs({plane,rotor1,rotor2}) do assert(not shown[id] and not lights[id]) end
+assert(lights[headquarters],'VTOL visibility removed headquarters emission')
+print('PASS: military headquarters and visible boundary tracks emit through their mask; VTOLs do not')
+
 local scale=1
 local sourceEnv=setmetatable({Spring={
     GetUnitDefID=function(id) return id end,

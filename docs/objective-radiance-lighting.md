@@ -9,6 +9,7 @@ and the direct exterior-window lighting revision notifications.
 - Oil rig: capture the platform's authored illumination mask, including the shared offshore variant.
 - Refugee camp: emission follows the SigLightOn show/hide cycle.
 - Combat outpost: a compact warm roof source, positioned from transformed model bounds. No whole-building emission.
+- UNATO/Westhem military headquarters: capture the main building and visible HyperLoop sections through the existing house_asian illumination mask. Hidden sections do not emit; the boundary section follows its actual visibility. Flying VTOLs and rotors do not enter radiance.
 - Transrapid: capture the central mesh and visible endpoint stations through their illumination mask. Correct tex2 to house_asian_selfilu_reflection.png; the UnitDef normaltex remains unchanged.
 - Airport: keep runway SwitchLight emission. The giant circling aircraft's navigation lights and the scramjet thrusters retain their visible animation but no longer inject radiance into the ground receiver band.
 - Glacier piston: emission follows the rotating logo's actual flicker show/hide calls.
