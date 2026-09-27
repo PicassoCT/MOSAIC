@@ -236,6 +236,7 @@ end
 local windowCaptures=0
 env.gl.Unit=function(id) assert(id==42);windowCaptures=windowCaptures+1 end
 env.widget:TextCommand('windowlight auto')
+env.widget:TextCommand('windowlight test on')
 env.widget:Update(1);env.widget:DrawWorldPreUnit()
 -- The synced gadget sends removal for every destroyed unit, including units
 -- which never supplied any shadow columns. City activity must not restart the

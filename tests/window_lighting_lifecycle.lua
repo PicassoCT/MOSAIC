@@ -2,6 +2,7 @@ local function read(path)local f=assert(io.open(path));local s=f:read('*a');f:cl
 local source=read('luaui/widgets_mosaic/include/window_lighting.lua')
 local function exercise(failure,chunked)
     local serial,draws,readbacks,matrices=0,0,0,0
+    local atlasPasses,blockerPasses,bakeChunks=0,0,0
     local allocated,deleted,bound,uniforms={},{},{},{}
     local revisions={[42]=1,[43]=1};local visible={[42]=true,[43]=true}
     local all={42,99};local selected=42;local activeFBO
@@ -25,8 +26,11 @@ local function exercise(failure,chunked)
         ActiveFBO=function(f,callback)local before=activeFBO;activeFBO=f;callback();activeFBO=before end,
         RenderToTexture=function(t,callback)
             for _,b in pairs(bound) do assert(b~=t,'framebuffer feedback')end
+            if sizes[t][1]==1024 then atlasPasses=atlasPasses+1 end
+            if sizes[t][1]==2048 then blockerPasses=blockerPasses+1 end
             local before=activeFBO;activeFBO=t;callback();activeFBO=before
         end,
+        CallList=function()bakeChunks=bakeChunks+1 end,
         Unit=function(id,raw,lod,noLua)
             assert((id==42 or id==43) and raw and lod==-1 and noLua)
             if failure=='draw' then error('draw failure')end
@@ -71,9 +75,11 @@ local function exercise(failure,chunked)
         for i=1,16 do self:Step()end
         originalRefresh(self,blockers,false,intensity)
     end
-    assert(obj.enabled and obj.automatic and obj.test and serial==0)
+    assert(obj.enabled and obj.automatic and not obj.test and serial==0)
+    originalRefresh(obj,{},false,0);assert(serial==0 and not obj.ready,'normal daytime allocated or rendered window lighting')
     obj:TextCommand('windowlight off');obj:Refresh({},false,1);assert(serial==0 and not obj.ready)
     obj:TextCommand('windowlight auto')
+    obj:TextCommand('windowlight test on')
     revisions[42]=0;obj:Refresh({},false,1);assert(serial==0,'captured construction icon')
     revisions[42]=1
     local blockers={};for i=1,16 do blockers[i]='occupancy'..i end
@@ -101,6 +107,26 @@ local function exercise(failure,chunked)
         local previousReads,previousDraws=readbacks,draws
         obj:Update(1);obj:Refresh(blockers,false,0)
         assert(readbacks==previousReads and draws==previousDraws,'static cache recaptured geometry')
+        local idleAtlas,idleChunks,idleBlockers=atlasPasses,bakeChunks,blockerPasses
+        for i=1,100 do originalRefresh(obj,blockers,false,0);obj:Step()end
+        print(string.format('Warm cache, 100 refreshes: %d atlas redraws, %d bake chunks, %d blocker packs',
+            atlasPasses-idleAtlas,bakeChunks-idleChunks,blockerPasses-idleBlockers))
+        assert(atlasPasses==idleAtlas and bakeChunks==idleChunks and blockerPasses==idleBlockers,'warm cache repeated GPU work')
+        obj:TextCommand('windowlight strength 2');obj:Refresh(blockers,false,0)
+        assert(obj.ready and atlasPasses==idleAtlas+1 and bakeChunks==idleChunks and draws==previousDraws,'gain change rebaked geometry or reused stale atlas')
+        obj:TextCommand('windowlight strength 0');obj:Refresh(blockers,false,0);obj:Step()
+        assert(not obj.ready and atlasPasses==idleAtlas+1 and bakeChunks==idleChunks,'zero strength did GPU work')
+        obj:TextCommand('windowlight strength 2');obj:Refresh(blockers,false,0)
+        assert(obj.ready and atlasPasses==idleAtlas+1,'restoring the same gain redrew the cached atlas')
+        obj:TextCommand('windowlight strength 1');obj:Refresh(blockers,false,0)
+        local fadeAtlas,fadeChunks=atlasPasses,bakeChunks
+        obj:TextCommand('windowlight test off');obj:Refresh(blockers,false,0.25)
+        assert(obj.ready and atlasPasses==fadeAtlas+1 and bakeChunks==fadeChunks,'night fade failed to update gain without rebaking')
+        obj:Refresh(blockers,false,0.25);obj:Refresh(blockers,false,0)
+        assert(not obj.ready and atlasPasses==fadeAtlas+1,'daytime rendered or unchanged fade redrew the atlas')
+        obj:Refresh(blockers,false,0.25)
+        assert(obj.ready and atlasPasses==fadeAtlas+1,'night transition failed to reuse its matching atlas')
+        obj:TextCommand('windowlight test on');obj:Refresh(blockers,false,0)
         assert(obj:GetDebugPosition(42)==400 and not obj:GetDebugPosition(99))
         obj:TextCommand('windowlight debug on');obj:DrawWorld();obj:DrawScreen();assert(draws==previousDraws+1)
         obj:TextCommand('windowlight debug off')
@@ -109,6 +135,17 @@ local function exercise(failure,chunked)
         all={42,43,99};obj:Refresh(blockers,false,1);obj:Refresh(blockers,false,1)
         assert(obj.records[43].captured and obj.records[43].fieldGeneration==obj.generation,'second standalone missing')
         assert(#obj.units==2)
+        obj:Invalidate()
+        local coldChunks,coldBlockers=bakeChunks,blockerPasses
+        originalRefresh(obj,blockers,false,1)
+        for i=1,6 do obj:Step()end
+        assert(bakeChunks==coldChunks and blockerPasses==coldBlockers,'baked while more source captures would invalidate the result')
+        originalRefresh(obj,blockers,false,1)
+        for i=1,32 do obj:Step()end
+        originalRefresh(obj,blockers,false,1)
+        assert(obj.ready and obj.records[42].fieldGeneration==obj.generation and obj.records[43].fieldGeneration==obj.generation)
+        assert(bakeChunks==coldChunks+32 and blockerPasses==coldBlockers+1,'two-house warm-up did redundant bakes or blocker packs')
+        print('Two-house cold cache: one blocker pack and exactly 32 bake chunks')
         local oldGeneration=obj.generation
         obj:TextCommand('windowlight test off');obj:Refresh(blockers,true,0);assert(not obj.ready,'daylight remained on')
         assert(obj.generation>oldGeneration,'daylight lost blocker invalidation')

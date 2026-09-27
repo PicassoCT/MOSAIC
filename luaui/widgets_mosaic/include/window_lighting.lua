@@ -36,8 +36,9 @@ local function revision(id)
     return Spring.GetUnitRulesParam and Spring.GetUnitRulesParam(id,'mosaic_window_revision')
 end
 return function()
-    local self={enabled=true,test=true,automatic=true,preview=false,strength=1,range=640,
-        cutoff=0.002,clock=0,records={},units={},generation=1,ready=false}
+    local self={enabled=true,test=false,automatic=true,preview=false,strength=1,range=640,
+        cutoff=0.002,clock=0,records={},units={},generation=1,fieldVersion=0,ready=false,
+        stats={captures=0,bakeChunks=0,blockerPacks=0,atlasUpdates=0}}
     local ownedTex,ownedFBO,ownedLists,programs,loc={},{},{},{},{}
     local function echo(s) Spring.Echo('Window light: '..s) end
     local function tex(w,h,format,linear)
@@ -90,6 +91,7 @@ return function()
         ownedTex,ownedFBO,ownedLists,programs,loc={},{},{},{},{}
         self.records={};self.allocated=false;self.ready=false
         self.texture=nil;self.ground=nil;self.blockers=nil;self.packedGeneration=nil
+        self.bakeQueue=nil;self.atlasGeneration=nil
     end
     local function dataPass(w,h,value)
         gl.UseShader(programs.data);gl.Blending(false);gl.DepthTest(false);gl.DepthMask(false)
@@ -216,7 +218,8 @@ return function()
         local exterior=Exterior.Fill(walls,SIZE)
         gl.RenderToTexture(r.exterior,function()dataPass(SIZE,SIZE,function(px,py)return unpack(exterior[py*SIZE+px+1]) end)end)
         r.fieldSpan=r.span+self.range*2;r.fieldX=r.x-r.fieldSpan/2;r.fieldZ=r.z-r.fieldSpan/2
-        r.captured=true;self.generation=self.generation+1;clean()
+        r.captured=true;self.generation=self.generation+1
+        self.stats.captures=self.stats.captures+1;clean()
     end
     local function copy(source,x0,y0,x1,y1,channel,gain,cutoff)
         gl.Texture(0,source);gl.UseShader(programs.copy)
@@ -243,7 +246,7 @@ return function()
                 end
             end)
         end)
-        self.packedGeneration=self.generation;clean()
+        self.packedGeneration=self.generation;self.stats.blockerPacks=self.stats.blockerPacks+1;clean()
     end
     function self:Bake(r)
         if r.bakeGeneration~=self.generation then r.bakeGeneration=self.generation;r.bakeStep=0 end
@@ -261,22 +264,55 @@ return function()
             gl.Blending(GL.ONE,GL.ONE);gl.CallList(self.points[r.bakeStep+1])
         end)
         clean();r.bakeStep=r.bakeStep+1
-        if r.bakeStep==BAKE_CHUNKS then r.fieldGeneration=self.generation end
+        self.stats.bakeChunks=self.stats.bakeChunks+1
+        if r.bakeStep==BAKE_CHUNKS then
+            r.fieldGeneration=self.generation;self.fieldVersion=self.fieldVersion+1
+        end
     end
     function self:Step()
-        if not self.enabled or not self.allocated or self.packedGeneration~=self.generation
-            or (self.intensity or 0)<=0 then return end
+        if not self.enabled or not self.bakeQueue or not self.allocated or self.packedGeneration~=self.generation
+            or (self.intensity or 0)<=0 or self.strength<=0 then return end
         local ok,reason=pcall(function()
-            for _,id in ipairs(self.units) do local r=self.records[id]
-                if r and r.captured and r.fieldGeneration~=self.generation and valid(id) and r.revision==revision(id) then
-                    self:Bake(r);break
+            while self.bakeIndex<=#self.bakeQueue do
+                local r=self.bakeQueue[self.bakeIndex]
+                if r.fieldGeneration~=self.generation and valid(r.id) and r.revision==revision(r.id) then
+                    self:Bake(r)
+                    if r.fieldGeneration==self.generation then self.bakeIndex=self.bakeIndex+1 end
+                    break
                 end
+                self.bakeIndex=self.bakeIndex+1
             end
+            if self.bakeIndex>#self.bakeQueue then self.bakeQueue=nil end
         end)
         if not ok then clean();self:Shutdown();self.enabled=false;echo('bake disabled: '..tostring(reason)) end
     end
+    function self:Compose()
+        local gain=self.strength*self.intensity
+        if self.atlasGeneration==self.generation and self.atlasVersion==self.fieldVersion
+            and self.atlasGain==gain and self.atlasCutoff==self.cutoff then
+            self.ready=true;return
+        end
+        local completed={}
+        for _,id in ipairs(self.units) do local r=self.records[id]
+            if r and r.fieldGeneration==self.generation then completed[#completed+1]=r end
+        end
+        if #completed==0 then return end
+        gl.RenderToTexture(self.texture,function()
+            clean();gl.Clear(GL.COLOR_BUFFER_BIT,0,0,0,0);gl.Blending(GL.ONE,GL.ONE)
+            identity(function()
+                for _,r in ipairs(completed) do
+                    copy(r.field,2*r.fieldX/Game.mapSizeX-1,2*r.fieldZ/Game.mapSizeZ-1,
+                        2*(r.fieldX+r.fieldSpan)/Game.mapSizeX-1,2*(r.fieldZ+r.fieldSpan)/Game.mapSizeZ-1,
+                        -1,gain,self.cutoff)
+                end
+            end)
+        end)
+        self.atlasGeneration=self.generation;self.atlasVersion=self.fieldVersion
+        self.atlasGain=gain;self.atlasCutoff=self.cutoff;self.ready=true
+        self.stats.atlasUpdates=self.stats.atlasUpdates+1;clean()
+    end
     function self:Refresh(occupancy,occlusionChanged,intensity)
-        self.ready=false;self.intensity=self.test and 1 or intensity
+        self.ready=false;self.bakeQueue=nil;self.intensity=self.test and 1 or intensity
         -- Remember blocker changes even while disabled or in daylight. Re-enabling
         -- must never reuse a field baked against the old occupancy.
         if occlusionChanged then self.generation=self.generation+1 end
@@ -303,6 +339,7 @@ return function()
             local selected=(Spring.GetSelectedUnits() or {})[1]
             table.sort(candidates,function(a,b)
                 if a.id==selected or b.id==selected then return a.id==selected and b.id~=selected end
+                if a.distance==b.distance then return a.id<b.id end
                 return a.distance<b.distance
             end)
             local keep={};self.units={}
@@ -319,26 +356,26 @@ return function()
                 gl.RenderToTexture(self.ground,function()dataPass(GROUND,GROUND,function(x,y)
                     return Spring.GetGroundHeight((x+0.5)*Game.mapSizeX/GROUND,(y+0.5)*Game.mapSizeZ/GROUND),0,0,1
                 end)end)
-                self.terrainDirty=false;self.generation=self.generation+1
+                self.terrainDirty=false
             end
             -- Amortise new model captures: one house per cascade refresh, no per-frame readback.
-            for _,id in ipairs(self.units) do if not self.records[id] then self:Capture(id);break end end
-            if self.packedGeneration~=self.generation then self:PackBlockers(occupancy) end
-            self:Step();if not self.enabled then return end
-            gl.RenderToTexture(self.texture,function()
-                clean();gl.Clear(GL.COLOR_BUFFER_BIT,0,0,0,0);gl.Blending(GL.ONE,GL.ONE)
-                identity(function()
-                    for _,id in ipairs(self.units) do local r=self.records[id]
-                        if r and r.fieldGeneration==self.generation then
-                            copy(r.field,2*r.fieldX/Game.mapSizeX-1,2*r.fieldZ/Game.mapSizeZ-1,
-                                2*(r.fieldX+r.fieldSpan)/Game.mapSizeX-1,2*(r.fieldZ+r.fieldSpan)/Game.mapSizeZ-1,
-                                -1,self.strength*self.intensity,self.cutoff)
-                            self.ready=true
-                        end
-                    end
-                end)
-            end)
-            clean()
+            local captured,pending=false,false
+            for _,id in ipairs(self.units) do if not self.records[id] then
+                if captured then pending=true;break end
+                self:Capture(id);captured=true
+            end end
+            -- Each capture changes the shared blocker set. Wait for this batch
+            -- before packing or baking; its intermediate results would be discarded.
+            if not pending then
+                if self.packedGeneration~=self.generation then self:PackBlockers(occupancy) end
+                local queue={}
+                for _,id in ipairs(self.units) do local r=self.records[id]
+                    if r and r.captured and r.fieldGeneration~=self.generation then queue[#queue+1]=r end
+                end
+                self.bakeQueue=#queue>0 and queue or nil;self.bakeIndex=1
+                self:Step();if not self.enabled then return end
+                self:Compose()
+            end
             if self.report then self:Report();self.report=false end
         end)
         if not ok then
@@ -367,6 +404,9 @@ return function()
         end
         echo(string.format('unit %d | %d lit pixels | span %.0f height %.0f | bake %d/%d | field peak %.6g | atlas %s',
             r.id,r.litPixels or 0,r.span,r.height,r.bakeStep or 0,BAKE_CHUNKS,peak,self.ready and 'ready' or 'waiting'))
+        local s=self.stats
+        echo(string.format('work since load: %d captures | %d bake chunks | %d blocker packs | %d atlas updates',
+            s.captures,s.bakeChunks,s.blockerPacks,s.atlasUpdates))
     end
     function self:TextCommand(command)
         if command~='windowlight' and not command:match('^windowlight%s') then return false end

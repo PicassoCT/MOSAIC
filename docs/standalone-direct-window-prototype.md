@@ -9,9 +9,12 @@ direct branch. No shader framework or DAE voxelization system is introduced.
 ## In-game check
 
 `house_asian1` and `house_asian3` activate automatically once their building
-animation finishes. Full daytime source intensity is enabled for this experiment.
+animation finishes, following the normal neon day/night intensity. For daytime
+testing, use `/windowlight test on`; `/windowlight test off` restores that cycle.
 The first view needs a cache warm-up; geometry capture is limited to one building
-per 0.2-second update, and each ground-light bake is split across 16 chunks.
+per 0.2-second update, and each ground-light bake is split across 16 chunks. Shared
+blocker packing and baking start after the pending captures finish, since each
+capture changes the blocker set and would discard any intermediate bake.
 
 Select a completed standalone and run:
 
@@ -36,7 +39,7 @@ continue to show the cascade; window light intentionally does not appear there.
 | `/windowlight on [UNITID]` | One selected/specified eligible building |
 | `/windowlight off` | Disable direct window illumination |
 | `/windowlight debug on/off` | Window classification overlay and field preview |
-| `/windowlight status` | Log selected unit, captured luminous pixels, bounds, bake progress and field peak |
+| `/windowlight status` | Log selected unit, luminous pixels, bounds, bake progress, field peak and cumulative work counters |
 | `/windowlight test on/off` | Full daytime testing / normal neon day-night curve |
 | `/windowlight strength 1` | Final direct-field gain, clamped to 0–8 |
 | `/windowlight range 640` | Maximum horizontal reach in elmos, 64–1024 |
@@ -96,6 +99,10 @@ absent blockers, leave bakes running. View culling retains its conservative radi
 after capture so small houses near the screen edge cannot repeatedly evict and
 recapture themselves, resetting every building's bake.
 Day/night and strength changes reuse the captured sources and completed fields.
+The combined atlas is reused until a completed field, blocker generation, gain or
+cutoff changes. It is not cleared or redrawn while every field is still baking.
+The per-frame bake queue becomes idle when all fields are complete. Normal daytime
+and zero strength skip window GPU work; debug overlays remain opt-in.
 Changing range/cutoff explicitly rebuilds the caches. Partially baked fields are
 not displayed. Adding/removing a cached blocker invalidates affected generation
 results conservatively, so light can disappear temporarily during a rebuild.
@@ -108,7 +115,16 @@ Capture FBOs/depth targets are temporary. Source-point lists are shared. The sel
 house is prioritized for capture and baking, so it cannot lose its place to 32
 nearer houses. Diagnostics show captured light pixels and fitted bounds; an empty
 capture is reported instead of silently retrying and starving the other houses.
-No GPU readback or model recapture occurs for an unchanged warm cache.
+No GPU readback, model recapture, blocker packing or atlas rendering occurs for
+an unchanged warm cache at constant intensity. The final scene still samples the
+cached atlas. Day/night fades update the atlas because the cutoff follows gain.
+
+The mocked lifecycle fixture measured 100 atlas redraws over 100 unchanged refreshes
+before the cache cleanup, and zero afterward. Two pending houses now require one
+blocker pack and exactly 32 bake chunks, with no discarded startup chunks. The
+`work since load` line from `/windowlight status` reports capture, bake-chunk,
+blocker-pack and atlas-update totals for checking this in-game. Status itself
+still performs an explicit field readback to report peak intensity.
 
 This is not yet a measured performance claim on the target GPU. A full synthetic
 building bake took about 3.6 seconds on software Mesa at the fixture's 128-square
@@ -151,4 +167,6 @@ wall shadowing, cutoff fading, one-time scene addition, roof rejection and terra
 outside the cascade band. Lifecycle tests cover every allocation failure, both
 engine pixel-readback layouts, cache reuse, revision changes, LOS, terrain updates,
 bake completion during unrelated unit removals and screen-edge visibility checks,
-real blocker invalidation, and cleanup. In-game appearance is still unverified.
+real blocker invalidation, unchanged-atlas reuse, gain changes, capture batching,
+and cleanup. Exterior ground-light spill has been confirmed in-game; the cache
+optimizations still need target-GPU profiling before claiming an FPS improvement.
