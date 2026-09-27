@@ -28,6 +28,9 @@ uniform int headlightActive;
 uniform int headlightLocalActive;
 uniform vec2 headlightOrigin;
 uniform float headlightSpan;
+uniform sampler2D windowTex;
+uniform sampler2D windowGroundTex;
+uniform int windowActive;
 vec3 filteredLight(sampler2D field,sampler2D occupancy,vec2 uv)
 {
     if(any(lessThan(uv,vec2(0))) || any(greaterThanEqual(uv,vec2(1)))) return vec3(0);
@@ -73,7 +76,8 @@ void main()
     }
     if(depth>=0.999999) discard; // sky/cleared buffer
     vec3 world=worldPosition(uv,depth);
-    if(world.y<max(0.0,heightRange.x) || world.y>=heightRange.y) discard;
+    bool cascadeBand=world.y>=max(0.0,heightRange.x) && world.y<heightRange.y;
+    if(!cascadeBand && windowActive==0)discard;
     vec3 normal,albedo;
     if(deferred!=0) {
         vec3 encoded=model ? texture2D(modelNormalTex,uv).rgb : texture2D(mapNormalTex,uv).rgb;
@@ -123,9 +127,17 @@ void main()
         // preserves full direct intensity without counting it twice.
         light=max(light,direct*headlightIntensity);
     }
+    if(!cascadeBand)light=vec3(0);
+    // Direct facade light joins only here. It is NEVER a cascade emission input
+    // or a fog source, and must not be projected onto roofs above the ground.
+    if(windowActive!=0 && !model && normal.y>0.25 && world.y>=0.0){
+        float ground=texture2D(windowGroundTex,world.xz/mapSize).r;
+        float tolerance=max(4.0,2.0*max(abs(dFdx(world.y)),abs(dFdy(world.y))));
+        if(abs(world.y-ground)<tolerance)
+            light+=max(texture2D(windowTex,world.xz/mapSize).rgb,vec3(0));
+    }
     // Emission carries per-source intensity. Apply scene gain once,
     // after bounded artistic gain. Preview exposure does not enter this pass.
     vec3 added=(vec3(1)-exp(-light*strength))*clamp(nightIntensity,0.0,1.0)*clamp(albedo,0.0,1.0);
     gl_FragColor=vec4(added,0.0);
 }
-

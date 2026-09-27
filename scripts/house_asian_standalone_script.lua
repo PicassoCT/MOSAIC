@@ -302,6 +302,7 @@ end
 
 local pieceName_pieceNr = Spring.GetUnitPieceMap (unitID)
 function script.Create()
+    Spring.SetUnitRulesParam(unitID, "mosaic_window_revision", 0, {inlos=true})
     TablesOfPieceGroups = getPieceTableByNameGroups(false, true)
 
     fillMegaTable()
@@ -570,14 +571,22 @@ end
 
 
 boolHouseHidden = false
+local windowGeometryRevision = 0
+local function updateWindowGeometryRevision(hidden)
+    windowGeometryRevision = windowGeometryRevision + 1
+    Spring.SetUnitRulesParam(unitID, "mosaic_window_revision",
+        hidden and -windowGeometryRevision or windowGeometryRevision, {inlos=true})
+end
 function showHouse()
     boolHouseHidden = false
     showT(ToShowTable)
+    updateWindowGeometryRevision(false)
 end
 
 function hideHouse()
     boolHouseHidden = true
     hideT(ToShowTable)
+    updateWindowGeometryRevision(true)
 end
 
 function buildAnimation()
@@ -614,4 +623,3 @@ end
 function getRooftopPieces()
     return RoofTopPieces or {}
 end
-

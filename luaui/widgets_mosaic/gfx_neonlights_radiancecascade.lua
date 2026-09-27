@@ -59,7 +59,7 @@ local previewSpan = 0 -- world elmos; zero shows the whole map
 local scene
 local localDetail
 local liveHeadlights
-local standaloneTaper
+local windowLighting
 local sceneEnabled, sceneTest = true, false
 local sceneStrength, sceneLayer = 2, 1
 local sceneRadiance, sceneReady
@@ -289,13 +289,6 @@ local function loadDirectLightFragmentShader()
 end
 
 local function getDebugEmitter()
-    if standaloneTaper and (not lockedUnit or not lockedPiece) then
-        local x,y,z,id=standaloneTaper:GetDebugPosition(lockedUnit)
-        if x then
-            lockedUnit,lockedPiece=id,nil
-            return x/Game.mapSizeX,z/Game.mapSizeZ,y
-        end
-    end
     local function position(unitID, pieceID)
         if unitID and Spring.ValidUnitID(unitID) and not Spring.GetUnitIsDead(unitID) then
             local x, y, z = Spring.GetUnitPiecePosDir(unitID, pieceID)
@@ -330,18 +323,6 @@ local function getDebugEmitter()
 end
 
 local function focusPreview(unitID, pieceID)
-    if standaloneTaper and not pieceID then
-        local x,y,z,id=standaloneTaper:Focus(unitID)
-        if x then
-            lockedUnit,lockedPiece=id,nil
-            emitterU,emitterV,emitterY=x/Game.mapSizeX,z/Game.mapSizeZ,y
-            -- Facades project onto the receiver band, not their roof height.
-            propagationLayer=sceneLayer
-            refreshAccumulator=ATLAS_REFRESH_SECONDS
-            if propagation then propagation.ready=false end
-            return true
-        end
-    end
     local pieces = unitID and neonUnitTables[unitID]
     if pieces then
         local found = false
@@ -362,7 +343,7 @@ local function focusPreview(unitID, pieceID)
 end
 
 function widget:TextCommand(command)
-    if standaloneTaper and standaloneTaper:TextCommand(command) then
+    if windowLighting and windowLighting:TextCommand(command) then
         refreshAccumulator=ATLAS_REFRESH_SECONDS
         return true
     end
@@ -417,7 +398,7 @@ function widget:TextCommand(command)
             previewSpan = math.max(128, math.min(tonumber(span) or 1024, math.min(Game.mapSizeX,Game.mapSizeZ)))
             propagationView = true
         else
-            Spring.Echo("Radiance preview: select house_asian1/3 or a registered neon building, or deselect to use the current emitter")
+            Spring.Echo("Radiance preview: select a registered neon building, or deselect to use the current emitter")
         end
         return true
     end
@@ -586,7 +567,7 @@ function widget:Initialize()
     end
 
     topDownTex = gl.CreateTexture(ATLAS_SIZE, ATLAS_SIZE, {
-        -- Tapered facade samples add together; retain HDR energy until resolve.
+        -- Retain HDR source energy until resolve.
         format = GL.RGBA16F or 0x881A,
         min_filter = GL.LINEAR,
         mag_filter = GL.LINEAR,
@@ -679,9 +660,9 @@ function widget:Initialize()
     end
     if propagation then
         WG.NeonRadiance = propagation
-        local taperOK,taperFactory=pcall(VFS.Include,"luaui/widgets_mosaic/include/radiance_taper.lua")
-        if taperOK and type(taperFactory)=="function" then standaloneTaper=taperFactory()
-        else Spring.Echo("Standalone taper prototype unavailable: "..tostring(taperFactory)) end
+        local windowOK,windowFactory=pcall(VFS.Include,"luaui/widgets_mosaic/include/window_lighting.lua")
+        if windowOK and type(windowFactory)=="function" then windowLighting=windowFactory()
+        else Spring.Echo("Direct window prototype unavailable: "..tostring(windowFactory)) end
         local detailOK, detailModule=pcall(VFS.Include,"luaui/widgets_mosaic/include/radiance_local.lua")
         if detailOK and type(detailModule)=="table" then localDetail=detailModule.New()
         else Spring.Echo("Neon local detail module unavailable: "..tostring(detailModule)) end
@@ -718,12 +699,16 @@ function widget:ViewResize()
     if scene then scene:Resize() end
 end
 
+function widget:UnsyncedHeightMapUpdate()
+    if windowLighting then windowLighting:TerrainChanged() end
+end
+
 function widget:Update(dt)
     fogClock=fogClock+dt
     neonLightPercent = dayPercentToNeonPercent(getDayPercent())
     refreshAccumulator = refreshAccumulator + dt
     if liveHeadlights then liveHeadlights:Update(dt) end
-    if standaloneTaper then standaloneTaper:Update(dt) end
+    if windowLighting then windowLighting:Update(dt) end
 end
 
 local function drawNeonPieces(captureLayer, domain)
@@ -829,20 +814,6 @@ local function drawNeonPieces(captureLayer, domain)
             (liveHeadlights and liveHeadlights.enabled and 0.08 or 1) * (sceneTest and 1 or neonLightPercent))
     end
 
-    if standaloneTaper then
-        local bandHeight=OCCLUSION_WORLD_HEIGHT/OCCLUSION_LAYER_COUNT
-        standaloneTaper:Draw((captureLayer-1)*bandHeight,captureLayer*bandHeight,
-            domain,ATLAS_SIZE,sceneTest and 1 or neonLightPercent)
-        if fogSourceUnits and captureLayer==sceneLayer and not domain and standaloneTaper.enabled
-            and standaloneTaper.strength>0 and (standaloneTaper.test or sceneTest or neonLightPercent>0) then
-            if standaloneTaper.automatic then
-                for _,id in ipairs(standaloneTaper.units) do fogSourceUnits[id]=true end
-            elseif standaloneTaper.ready and standaloneTaper.unitID then
-                fogSourceUnits[standaloneTaper.unitID]=true
-            end
-        end
-    end
-
     gl.PopMatrix()
     gl.MatrixMode(GL.PROJECTION)
     gl.PopMatrix()
@@ -857,13 +828,13 @@ local function drawNeonPieces(captureLayer, domain)
 end
 
 function widget:DrawWorldPreUnit()
+    if windowLighting and sceneEnabled then windowLighting:Step() end
     if not topDownTex or refreshAccumulator < ATLAS_REFRESH_SECONDS then
         return
     end
 
     refreshAccumulator = refreshAccumulator % ATLAS_REFRESH_SECONDS
-    -- Capture outside the atlas FBO; both global and local splats reuse it.
-    if standaloneTaper then standaloneTaper:Refresh() end
+    local windowOcclusionChanged=occlusionDirty
     sceneReady = false
     fogSourceUnits=fogClock<=fogRequestedUntil and {} or nil
     if fogHeights then fogHeights.ready=false end
@@ -872,6 +843,9 @@ function widget:DrawWorldPreUnit()
         rebuildOcclusionAtlas()
     end
 
+    if windowLighting then
+        windowLighting:Refresh(occlusionTex,windowOcclusionChanged,sceneTest and 1 or neonLightPercent)
+    end
     local bandHeight = OCCLUSION_WORLD_HEIGHT / OCCLUSION_LAYER_COUNT
     if propagation and scene and sceneEnabled and sceneLayer ~= propagationLayer then
         gl.RenderToTexture(topDownTex, drawNeonPieces, sceneLayer)
@@ -938,8 +912,9 @@ function widget:DrawWorld()
     if scene and sceneEnabled and sceneReady then
         local bandHeight=OCCLUSION_WORLD_HEIGHT/OCCLUSION_LAYER_COUNT
         scene:Draw(sceneRadiance,occlusionTex[sceneLayer],(sceneLayer-1)*bandHeight,sceneLayer*bandHeight,
-            sceneStrength,1,localDetail,liveHeadlights,sceneTest and 1 or neonLightPercent)
+            sceneStrength,1,localDetail,liveHeadlights,sceneTest and 1 or neonLightPercent,windowLighting)
     end
+    if windowLighting then windowLighting:DrawWorld() end
     if not debugVoxelUnit then return end
 
     local building = occlusionBuildings[debugVoxelUnit]
@@ -980,8 +955,8 @@ function widget:DrawWorld()
 end
 
 function widget:DrawScreen()
-    if standaloneTaper then
-        standaloneTaper:DrawScreen(propagation and propagation.previewShader,
+    if windowLighting then
+        windowLighting:DrawScreen(propagation and propagation.previewShader,
             propagation and propagation.previewExposureLoc,previewExposure)
     end
     if sceneTest and sceneEnabled then
@@ -1078,7 +1053,7 @@ end
 function widget:Shutdown()
     if WG.GetMosaicFogRadiance==getFogLighting then WG.GetMosaicFogRadiance=nil end
     if fogHeights then fogHeights:Shutdown();fogHeights=nil end
-    if standaloneTaper then standaloneTaper:Shutdown();standaloneTaper=nil end
+    if windowLighting then windowLighting:Shutdown();windowLighting=nil end
     if liveHeadlights then liveHeadlights:Shutdown();liveHeadlights=nil end
     if WG.IsVehicleHeadlightCascadeActive == vehicleHeadlightCascadeActive then WG.IsVehicleHeadlightCascadeActive=nil end
     if WG.GetRainRadiance == getRainLighting then WG.GetRainRadiance = nil end

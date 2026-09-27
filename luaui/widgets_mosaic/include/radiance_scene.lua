@@ -13,12 +13,12 @@ return function()
     local source=VFS.LoadFile(PATH)
     if not source or not gl.UniformMatrix then return nil,"missing scene shader/matrix API" end
     local shader=gl.CreateShader({fragment=source,uniformInt={radianceTex=0,occupancyTex=1,
-        mapDepthTex=2,modelDepthTex=3,mapNormalTex=4,modelNormalTex=5,mapDiffuseTex=6,modelDiffuseTex=7,localRadianceTex=8,localOccupancyTex=9,headlightTex=10,headlightLocalTex=11}})
+        mapDepthTex=2,modelDepthTex=3,mapNormalTex=4,modelNormalTex=5,mapDiffuseTex=6,modelDiffuseTex=7,localRadianceTex=8,localOccupancyTex=9,headlightTex=10,headlightLocalTex=11,windowTex=12,windowGroundTex=13}})
     if not shader then return nil,gl.GetShaderLog() or "scene shader failed" end
     local self={shader=shader,mode="pending",smoothing=true}
     local loc={}
     for _,name in ipairs({"inverseProjection","inverseView","mapSize","heightRange","clipZeroToOne",
-        "deferred","strength","nightIntensity","smoothing","localActive","localOrigin","localSpan","headlightActive","headlightLocalActive","headlightOrigin","headlightSpan","headlightIntensity"}) do loc[name]=gl.GetUniformLocation(shader,name) end
+        "deferred","strength","nightIntensity","smoothing","localActive","localOrigin","localSpan","headlightActive","headlightLocalActive","headlightOrigin","headlightSpan","headlightIntensity","windowActive"}) do loc[name]=gl.GetUniformLocation(shader,name) end
     function self:Resize()
         if self.depth then gl.DeleteTexture(self.depth);self.depth=nil end
         self.width,self.height=nil,nil
@@ -38,7 +38,7 @@ return function()
         end
         return true
     end
-    function self:Draw(texture,occupancy,heightMin,heightMax,strength,intensity,detail,headlights,headlightIntensity)
+    function self:Draw(texture,occupancy,heightMin,heightMax,strength,intensity,detail,headlights,headlightIntensity,windows)
         if not self.shader or not texture or intensity<=0 or strength<=0 then return end
         local useDeferred=buffersAvailable()
         local sx,sy,vpx,vpy=Spring.GetViewGeometry()
@@ -77,7 +77,11 @@ return function()
         local localHeadlights=useHeadlights and headlights.localReady
         gl.Texture(10,useHeadlights and headlights.texture or texture)
         gl.Texture(11,localHeadlights and headlights.localTexture or texture)
+        local useWindows=windows and windows.enabled and windows.ready
+        gl.Texture(12,useWindows and windows.texture or texture)
+        gl.Texture(13,useWindows and windows.ground or texture)
         gl.UseShader(self.shader)
+        gl.UniformInt(loc.windowActive,useWindows and 1 or 0)
         gl.UniformInt(loc.headlightActive,useHeadlights and 1 or 0)
         gl.UniformInt(loc.headlightLocalActive,localHeadlights and 1 or 0)
         gl.Uniform(loc.headlightOrigin,localHeadlights and headlights.domain.x or 0,localHeadlights and headlights.domain.z or 0)
@@ -98,10 +102,9 @@ return function()
         gl.Blending(GL.ONE,GL.ONE);gl.Color(1,1,1,1)
         fullscreen()
         gl.UseShader(0)
-        for i=0,11 do gl.Texture(i,false) end
+        for i=0,13 do gl.Texture(i,false) end
         gl.Blending(GL.SRC_ALPHA,GL.ONE_MINUS_SRC_ALPHA)
         gl.DepthMask(true);gl.DepthTest(true);gl.Color(1,1,1,1)
     end
     return self
 end
-
