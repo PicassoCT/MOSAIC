@@ -78,8 +78,16 @@ local function exercise(failure,chunked)
     revisions[42]=1
     local blockers={};for i=1,16 do blockers[i]='occupancy'..i end
     if not failure then
+        -- A house near the screen edge is accepted using the conservative
+        -- uncaptured radius. Learning its smaller real span must not evict it
+        -- on the next refresh and then capture it again forever.
+        env.Spring.IsSphereInView=function(_,__,___,radius)return radius>1000 end
         originalRefresh(obj,blockers,false,0)
         assert(not obj.ready and obj.records[42].bakeStep==1,'partial bake was exposed or not chunked')
+        local captured=obj.records[42]
+        for i=1,20 do originalRefresh(obj,blockers,false,0) end
+        assert(obj.ready and obj.records[42]==captured,'screen-edge cache churn prevented the bake from completing')
+        env.Spring.IsSphereInView=nil
     end
     obj:Refresh(blockers,false,0)
     local firstAllocations=serial

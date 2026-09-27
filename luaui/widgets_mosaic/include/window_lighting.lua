@@ -291,7 +291,11 @@ return function()
                     if rev==nil or rev>0 then
                         local x,y,z=Spring.GetUnitPosition(id)
                         local r=self.records[id]
-                        local visible=not Spring.IsSphereInView or Spring.IsSphereInView(x,y,z,(r and r.span or 1600)+self.range)
+                        -- Keep the conservative radius after capture. Shrinking
+                        -- it to the measured span makes edge-of-view houses
+                        -- alternate between capture and eviction every refresh.
+                        local radius=math.max(1600,r and r.span or 0)+self.range
+                        local visible=not Spring.IsSphereInView or Spring.IsSphereInView(x,y,z,radius)
                         if visible then candidates[#candidates+1]={id=id,distance=(x-cx)^2+(y-cy)^2+(z-cz)^2} end
                     end
                 end
