@@ -184,25 +184,42 @@ env.widget:TextCommand('radiancedebug off');previewRects={};env.widget:DrawScree
 env.widget:TextCommand('radiancelight test off')
 captureUniforms.nightIntensity=nil;env.widget:DrawWorld();assert(captureUniforms.nightIntensity[1]==1)
 assert(captureUniforms.headlightIntensity[1]==0)
--- Standalone sources are automatic and can focus the existing cascade zoom.
+-- Direct standalone sources are automatic but NEVER drawn into cascade emission.
 env.UnitDefs={[7]={name='house_asian3'}}
 env.Spring.GetAllUnits=function() return {42} end
 env.Spring.GetUnitPosition=function() return 400,900,600 end
-env.gl.CreateFBO=function() return 'taper-fbo' end
+env.gl.CreateFBO=function() return 'window-fbo' end
 env.gl.IsValidFBO=function() return true end
-env.gl.CreateList=function() return 'taper-points' end
+env.gl.CreateList=function() return 'window-points' end
 env.gl.ActiveFBO=function(_,fn) fn() end
-local taperCaptures=0
-env.gl.Unit=function(id) assert(id==42);taperCaptures=taperCaptures+1 end
-env.widget:TextCommand('radiancedebug zoom 1024')
+env.Spring.GetGroundHeight=function()return 0 end
+env.gl.ReadPixels=function(_,__,w,h)
+ local p={}
+ for x=1,w do p[x]={};for y=1,h do
+  p[x][y]=w==2 and {x-1,y-1,0,1} or w==256 and {400+x,900+y,600+y,0} or {0,0,0,0}
+ end end
+ return p
+end
+local windowCaptures=0
+env.gl.Unit=function(id) assert(id==42);windowCaptures=windowCaptures+1 end
+env.widget:TextCommand('windowlight auto')
 env.widget:Update(1);env.widget:DrawWorldPreUnit()
-assert(taperCaptures>0,'automatic standalone was never captured by the widget')
-assert(env.WG.NeonRadiance.heightMin==0,'standalone zoom followed roof height instead of receiver band')
-assert(captureUniforms.buildingOrigin[1]==400 and captureUniforms.buildingOrigin[3]==600)
+for i=1,16 do env.widget:DrawWorldPreUnit() end
+env.widget:Update(0.21);env.widget:DrawWorldPreUnit()
+assert(windowCaptures>0,'automatic standalone was never captured by the widget')
+assert(captureUniforms.captureOrigin[1]>=400 and captureUniforms.captureOrigin[3]>=600)
+env.widget:DrawWorld();assert(captureUniforms.windowActive[1]==1,'direct field was not added during scene composition')
+local windowCount=windowCaptures
+env.widget:Update(1);env.widget:DrawWorldPreUnit()
+assert(windowCaptures==windowCount,'cascade refresh recaptured static windows')
+assert(not captureUniforms.taperAmount,'removed taper still executed')
 -- Fog explicitly requests an on-demand envelope; ground radiance alone is never enough.
 local fogAPI=assert(env.WG.GetMosaicFogRadiance)
 env.Spring.GetUnitDefDimensions=function() return {minx=-30,maxx=30,minz=-40,maxz=40,miny=-8,maxy=392} end
 assert(not fogAPI(),'height field allocated without a fog consumer')
+env.widget:Update(0.21);env.widget:DrawWorldPreUnit()
+assert(not fogAPI(),'direct ground windows were incorrectly exposed as fog/cascade sources')
+globals.ReceiveObjectiveRadiancePieces({[43]={[7]=7}})
 env.widget:Update(0.21);env.widget:DrawWorldPreUnit()
 local field=assert(fogAPI())
 assert(field.version==1 and field.texture and field.heights and field.occupancy)
