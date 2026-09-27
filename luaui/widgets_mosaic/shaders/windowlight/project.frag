@@ -39,12 +39,16 @@ bool blocked(vec3 target){
         }
     }
     float worldCell=min(mapSize.x,mapSize.y)/(float(textureSize(blockerTex,0).x)/4.0);
+    // World rasterization expands this facade into coarse cells outside the
+    // actual wall. Self-occlusion is already tested above at facade resolution.
+    // Bias only that coarse test; retain nearby detailed walls and terrain.
+    float sourceBias=1.5*max(mapSize.x,mapSize.y)/(float(textureSize(blockerTex,0).x)/4.0);
     int steps=min(192,max(1,int(ceil(length(delta.xz)/(worldCell*0.5)))));
     for(int i=0;i<192;++i){
         if(i>=steps)break;
         float t=(float(i)+0.5)/float(steps);vec3 p=start+delta*t;
         if(p.y<terrain(p.xz)-1.0)return true;
-        if(p.y>=0.0 && p.y<2048.0){
+        if(p.y>=0.0 && p.y<2048.0 && length(p.xz-patchPosition.xz)>sourceBias){
             int band=int(p.y/128.0);vec2 tile=vec2(band%4,band/4);
             vec2 uv=(tile+clamp(p.xz/mapSize,vec2(0),vec2(0.999999)))/4.0;
             if(texture2D(blockerTex,uv).r>0.5)return true;

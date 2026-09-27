@@ -36,6 +36,7 @@ continue to show the cascade; window light intentionally does not appear there.
 | `/windowlight on [UNITID]` | One selected/specified eligible building |
 | `/windowlight off` | Disable direct window illumination |
 | `/windowlight debug on/off` | Window classification overlay and field preview |
+| `/windowlight status` | Log selected unit, captured luminous pixels, bounds, bake progress and field peak |
 | `/windowlight test on/off` | Full daytime testing / normal neon day-night curve |
 | `/windowlight strength 1` | Final direct-field gain, clamped to 0–8 |
 | `/windowlight range 640` | Maximum horizontal reach in elmos, 64–1024 |
@@ -48,8 +49,11 @@ continue to show the cascade; window light intentionally does not appear there.
    red gates emission and alpha gates coverage. Opaque unlit geometry writes
    depth. A dominant-normal rule assigns each wall to only one view. Each lit
    sample retains original world position, horizontal normal and represented
-   surface area. An initial capture fits the visible model variant, avoiding the
-   enormous bounds of the hidden variants in the shared standalone model.
+   surface area. Before any capture, transform the selected facade pieces' mesh
+   bounds through their actual piece and unit matrices. The script publishes the
+   piece list after construction; hidden variants and distant street furniture
+   cannot dilute the facade into a fraction of a pixel. Restart the game after
+   updating so unit scripts publish this metadata.
 2. Rasterize wall barriers in four horizontal height bands. Ignore horizontal
    roofs/floors so a courtyard floor cannot turn its yard into a solid mask.
    Conservatively thicken edge-on walls, then flood-fill empty pixels from the
@@ -67,6 +71,10 @@ continue to show the cascade; window light intentionally does not appear there.
 5. Check the source building's detailed wall masks and the existing 16-layer
    building occupancy, plus terrain height, along the source-to-ground segment.
    Cached standalone masks are also added to the packed world blockers.
+   For the first 1.5 coarse cells, detailed self-walls and terrain do the blocking;
+   the world occupancy test starts farther out, avoiding false self-shadowing
+   from a coarse raster cell extending outside its emitting wall. Other buildings
+   within that small bias region are an approximation limit.
 6. Add completed fields to a separate HDR atlas. `radiance_scene.lua` consumes
    this atlas at composition, before the existing tone response/albedo multiply.
    It does not enter propagation, fog-emitter metadata or the cascade solve.
@@ -92,7 +100,10 @@ Up to 32 nearby, view-intersecting eligible buildings are cached. Approximate
 texture storage at that limit is 46 MiB: two 256×64 RGBA32F captures, two 64×64
 RGBA8 masks and a 256×256 RGBA16F ground field per building; a 1024-square HDR
 atlas, 256-square terrain heights and a packed 2048-square R8 blocker atlas.
-Capture FBOs/depth targets are temporary. Source-point lists are shared.
+Capture FBOs/depth targets are temporary. Source-point lists are shared. The selected
+house is prioritized for capture and baking, so it cannot lose its place to 32
+nearer houses. Diagnostics show captured light pixels and fitted bounds; an empty
+capture is reported instead of silently retrying and starving the other houses.
 No GPU readback or model recapture occurs for an unchanged warm cache.
 
 This is not yet a measured performance claim on the target GPU. A full synthetic
@@ -122,6 +133,7 @@ steady-state performance still require an in-game check on Recoil/NVIDIA.
 
 ```text
 python3 tests/window_lighting_gpu.py
+lua tests/window_bounds.lua
 lua tests/window_exterior.lua
 lua tests/window_lighting_lifecycle.lua
 lua tests/neon_radiance_lifecycle.lua

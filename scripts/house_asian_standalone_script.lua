@@ -575,6 +575,19 @@ end
 boolHouseHidden = false
 local windowGeometryRevision = 0
 local function updateWindowGeometryRevision(hidden)
+    if not hidden then
+        local seen,count={},0
+        for _,id in ipairs(ToShowTable) do
+            local name=pieceNr_pieceName[id] or ''
+            -- Distant ground furniture has its own cascade emitters. It must not
+            -- enlarge the facade capture, or windows become subpixel again.
+            if not seen[id] and not name:lower():find('placeable',1,true) then
+                seen[id]=true;count=count+1
+                Spring.SetUnitRulesParam(unitID,'mosaic_window_piece_'..count,id,{inlos=true})
+            end
+        end
+        Spring.SetUnitRulesParam(unitID,'mosaic_window_piece_count',count,{inlos=true})
+    end
     windowGeometryRevision = windowGeometryRevision + 1
     Spring.SetUnitRulesParam(unitID, "mosaic_window_revision",
         hidden and -windowGeometryRevision or windowGeometryRevision, {inlos=true})

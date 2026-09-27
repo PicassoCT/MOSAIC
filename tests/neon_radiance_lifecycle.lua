@@ -212,6 +212,12 @@ assert(captureUniforms.headlightIntensity[1]==0)
 env.UnitDefs={[7]={name='house_asian3'}}
 env.Spring.GetAllUnits=function() return {42} end
 env.Spring.GetUnitPosition=function() return 400,900,600 end
+env.Spring.GetUnitRulesParam=function(_,key)
+ if key=='mosaic_window_revision' or key=='mosaic_window_piece_count' or key=='mosaic_window_piece_1' then return 1 end
+end
+env.Spring.GetUnitTransformMatrix=function()return 1,0,0,0,0,1,0,0,0,0,1,0,400,900,600,1 end
+env.Spring.GetUnitPieceMatrix=function()return 1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1 end
+env.Spring.GetUnitPieceInfo=function()return {min={-30,0,-40},max={30,400,40}}end
 env.gl.CreateFBO=function() return 'window-fbo' end
 env.gl.IsValidFBO=function() return true end
 env.gl.CreateList=function() return 'window-points' end

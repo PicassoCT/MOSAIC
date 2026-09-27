@@ -51,9 +51,15 @@ local function exercise(failure,chunked)
         Echo=function()end,ValidUnitID=function(id)return id~=nil end,GetUnitIsDead=function()return false end,
         GetUnitDefID=function(id)return id==42 and 7 or id==43 and 8 or 9 end,
         GetUnitPosition=function(id)return id==42 and 400 or 600,10,600 end,
-        GetUnitDefDimensions=function()return {minx=-500,maxx=500,minz=-500,maxz=500,miny=0,maxy=2000}end,
+        GetUnitDefDimensions=function()error('hidden-variant bounds must never size facade capture')end,
+        GetUnitTransformMatrix=function(id)return 1,0,0,0,0,1,0,0,0,0,1,0,id==42 and 400 or 600,10,600,1 end,
+        GetUnitPieceMatrix=function()return 1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1 end,
+        GetUnitPieceInfo=function()return {min={-80,0,-80},max={180,400,80}}end,
         GetUnitLosState=function(id)return {los=visible[id]}end,GetSpectatingState=function()return false,false end,
-        GetUnitRulesParam=function(id)return revisions[id]end,GetAllUnits=function()return all end,
+        GetUnitRulesParam=function(id,key)
+            if key=='mosaic_window_revision' then return revisions[id]end
+            if key=='mosaic_window_piece_count' or key=='mosaic_window_piece_1' then return 1 end
+        end,GetAllUnits=function()return all end,
         GetSelectedUnits=function()return {selected}end,GetCameraPosition=function()return 400,100,600 end,
         GetGroundHeight=function()return 10 end,
     }},{__index=_G})
@@ -80,15 +86,18 @@ local function exercise(failure,chunked)
     if failure then assert(not obj.enabled and not obj.ready,'failure did not disable prototype')
     else
         assert(obj.ready and obj.records[42].captured and #obj.units==1)
-        assert(obj.records[42].x==447.5,'rectangular readback layout broke fitted geometry')
-        assert(obj.records[42].y<10 and obj.records[42].height<2000,'hidden model bounds retained')
-        assert(draws==12,'expected two four-side captures plus four wall bands')
+        assert(obj.records[42].x==450 and obj.records[42].span<300,'visible piece bounds not used')
+        assert(obj.records[42].y<10 and obj.records[42].height<500,'hidden model bounds retained')
+        assert(draws==8,'expected one four-side capture plus four wall bands')
+        assert(obj.records[42].litPixels==64*256,'capture diagnostics did not count source pixels')
         local previousReads,previousDraws=readbacks,draws
         obj:Update(1);obj:Refresh(blockers,false,0)
         assert(readbacks==previousReads and draws==previousDraws,'static cache recaptured geometry')
         assert(obj:GetDebugPosition(42)==400 and not obj:GetDebugPosition(99))
-        obj:TextCommand('windowlight debug on');obj:DrawWorld();assert(draws==previousDraws+1)
+        obj:TextCommand('windowlight debug on');obj:DrawWorld();obj:DrawScreen();assert(draws==previousDraws+1)
         obj:TextCommand('windowlight debug off')
+        obj:TextCommand('windowlight status');obj:Refresh(blockers,false,1)
+        assert(obj.enabled and not obj.report,'status readback failed or remained queued')
         all={42,43,99};obj:Refresh(blockers,false,1);obj:Refresh(blockers,false,1)
         assert(obj.records[43].captured and obj.records[43].fieldGeneration==obj.generation,'second standalone missing')
         assert(#obj.units==2)
@@ -112,6 +121,16 @@ local function exercise(failure,chunked)
         obj:Refresh(blockers,false,1);assert(obj.records[43])
         obj:TerrainChanged();assert(obj.terrainDirty and not obj.ready)
         obj:Refresh(blockers,false,1);assert(obj.ready and not obj.terrainDirty)
+        local getParam=env.Spring.GetUnitRulesParam
+        env.Spring.GetUnitRulesParam=function(id,key)
+            if key=='mosaic_window_piece_count' then return nil end
+            return getParam(id,key)
+        end
+        obj:Invalidate(43);obj:Refresh(blockers,false,1)
+        assert(obj.enabled and obj.records[43].failed and not obj.ready,'missing piece metadata was hidden')
+        obj:TextCommand('windowlight debug on');obj:DrawWorld();obj:DrawScreen()
+        env.Spring.GetUnitRulesParam=getParam
+        obj:TextCommand('windowlight rebuild');obj:Refresh(blockers,false,1);assert(obj.ready)
         assert(not obj:TextCommand('radiancetaper on'),'removed taper command still active')
         obj:TextCommand('windowlight off');assert(not obj.ready)
     end

@@ -5,6 +5,7 @@ local BAKE_CHUNKS=16
 local SUPPORTED={house_asian1=true,house_asian3=true}
 local DIRECTIONS={{1,0},{-1,0},{0,1},{0,-1}}
 local Exterior=VFS.Include('luaui/widgets_mosaic/include/window_exterior.lua')
+local Bounds=VFS.Include('luaui/widgets_mosaic/include/window_bounds.lua')
 local unpack=unpack or table.unpack
 local function identity(fn)
     gl.MatrixMode(GL.PROJECTION);gl.PushMatrix();gl.LoadIdentity()
@@ -180,34 +181,22 @@ return function()
         clean();dropFBO(target);dropTex(depth)
     end
     function self:Capture(id)
-        local def=assert(valid(id));local x,y,z=Spring.GetUnitPosition(id)
-        local dims=Spring.GetUnitDefDimensions and Spring.GetUnitDefDimensions(def)
-        local span,height=1536,1536
-        if dims and dims.minx and dims.minz then
-            local rx=math.max(math.abs(dims.minx),math.abs(dims.maxx))
-            local rz=math.max(math.abs(dims.minz),math.abs(dims.maxz))
-            span=math.max(128,2.2*math.sqrt(rx*rx+rz*rz));height=math.max(64,(dims.maxy or height)-(dims.miny or 0))
-            y=y+(dims.miny or 0)
-        end
-        local r={id=id,x=x,y=y,z=z,span=span,height=height,revision=revision(id),built=self.clock}
+        local def=assert(valid(id));local r,reason=Bounds.Read(id)
+        r=r or {failed=reason}
+        r.id=id;r.revision=revision(id);r.built=self.clock
         self.records[id]=r -- register immediately so a failure can free partial resources
+        if r.failed then echo('unit '..id..': '..r.failed);return end
         r.emission=tex(SIZE*4,SIZE,GL.RGBA32F or 0x8814,false)
         r.position=tex(SIZE*4,SIZE,GL.RGBA32F or 0x8814,false)
         sideCapture(r,def)
-        -- Fit only the actually visible variant, not the imported union of hidden towers.
-        local positions
-        local readFBO=fbo({color0=r.position})
-        gl.ActiveFBO(readFBO,function() positions=readPixels(SIZE*4,SIZE) end);dropFBO(readFBO)
-        local lo,hi={math.huge,math.huge,math.huge},{-math.huge,-math.huge,-math.huge}
-        for _,p in ipairs(positions) do if p[1]~=0 or p[2]~=0 or p[3]~=0 then
-            for axis=1,3 do lo[axis]=math.min(lo[axis],p[axis]);hi[axis]=math.max(hi[axis],p[axis]) end
-        end end
-        if lo[1]==math.huge then self:Drop(id);return end
-        local margin=math.max(16,span/SIZE*2)
-        r.x=(lo[1]+hi[1])/2;r.z=(lo[3]+hi[3])/2;r.y=lo[2]-margin
-        r.span=math.max(128,math.max(hi[1]-lo[1],hi[3]-lo[3])+margin*2)
-        r.height=math.max(64,hi[2]-lo[2]+margin*2)
-        sideCapture(r,def)
+        local samples
+        local readFBO=fbo({color0=r.emission})
+        gl.ActiveFBO(readFBO,function() samples=readPixels(SIZE*4,SIZE) end);dropFBO(readFBO)
+        r.litPixels=0
+        for _,p in ipairs(samples) do
+            if p[4]>0 and math.max(p[1],p[2],p[3])>0 then r.litPixels=r.litPixels+1 end
+        end
+        if r.litPixels==0 then echo('unit '..id..': no luminous facade pixels captured; /windowlight debug on') end
         r.wall=tex(SIZE,SIZE,GL.RGBA8 or 0x8058,false)
         r.exterior=tex(SIZE,SIZE,GL.RGBA8 or 0x8058,false)
         r.field=tex(FIELD,FIELD,GL.RGBA16F or 0x881A,true)
@@ -307,7 +296,11 @@ return function()
                     end
                 end
             end
-            table.sort(candidates,function(a,b)return a.distance<b.distance end)
+            local selected=(Spring.GetSelectedUnits() or {})[1]
+            table.sort(candidates,function(a,b)
+                if a.id==selected or b.id==selected then return a.id==selected and b.id~=selected end
+                return a.distance<b.distance
+            end)
             local keep={};self.units={}
             for i=1,math.min(LIMIT,#candidates) do local id=candidates[i].id;keep[id]=true;self.units[#self.units+1]=id end
             local drop={}
@@ -315,7 +308,6 @@ return function()
                 if not keep[id] or r.revision~=revision(id) then drop[#drop+1]=id end
             end
             for _,id in ipairs(drop) do self:Drop(id) end
-            local selected=(Spring.GetSelectedUnits() or {})[1]
             if keep[selected] then self.focusID=selected elseif not keep[self.focusID] then self.focusID=self.units[1] end
             if #self.units==0 or self.intensity<=0 or self.strength<=0 then return end
             self:Allocate()
@@ -343,6 +335,7 @@ return function()
                 end)
             end)
             clean()
+            if self.report then self:Report();self.report=false end
         end)
         if not ok then
             clean();self:Shutdown();self.enabled=false;echo('disabled: '..tostring(reason))
@@ -358,6 +351,19 @@ return function()
         local x,y,z,unit=self:GetDebugPosition(id)
         if x then self.focusID=unit;return x,y,z,unit end
     end
+    function self:Report()
+        local r=self.records[self.focusID]
+        if not r then echo('no cached house; select a completed visible house_asian1/3');return end
+        if r.failed then echo('unit '..r.id..': '..r.failed);return end
+        local peak=0
+        if r.fieldGeneration==self.generation then
+            gl.RenderToTexture(r.field,function()
+                for _,p in ipairs(readPixels(FIELD,FIELD)) do peak=math.max(peak,p[1],p[2],p[3]) end
+            end)
+        end
+        echo(string.format('unit %d | %d lit pixels | span %.0f height %.0f | bake %d/%d | field peak %.6g | atlas %s',
+            r.id,r.litPixels or 0,r.span,r.height,r.bakeStep or 0,BAKE_CHUNKS,peak,self.ready and 'ready' or 'waiting'))
+    end
     function self:TextCommand(command)
         if command~='windowlight' and not command:match('^windowlight%s') then return false end
         if command=='windowlight off' then self.enabled=false;self.ready=false;echo('OFF');return true end
@@ -365,6 +371,7 @@ return function()
         if command=='windowlight debug on' or command=='windowlight debug off' then self.preview=command=='windowlight debug on';return true end
         if command=='windowlight test on' or command=='windowlight test off' then self.test=command=='windowlight test on';return true end
         if command=='windowlight rebuild' then self:Invalidate();return true end
+        if command=='windowlight status' then self.report=true;return true end
         local id=command:match('^windowlight on (%d+)$')
         if command=='windowlight on' or id then
             id=tonumber(id) or (Spring.GetSelectedUnits() or {})[1]
@@ -378,7 +385,7 @@ return function()
             if key~='strength' then self:Invalidate() end
             echo(key..' = '..self[key]);return true
         end
-        echo('auto | on [UNITID] | off | debug on/off | test on/off | strength 1 | range 640 | cutoff 0.002 | rebuild')
+        echo('auto | on [UNITID] | off | debug on/off | status | test on/off | strength 1 | range 640 | cutoff 0.002 | rebuild')
         return true
     end
     function self:DrawWorld()
@@ -401,6 +408,10 @@ return function()
         gl.Color(1,1,1,1)
         gl.Text('Window light | green: exterior | red: courtyard',x-75,y+size+20,13,'o')
         local r=self.records[self.focusID]
+        if r then
+            gl.Text(r.failed or string.format('Unit %d | %d lit pixels | span %.0f | height %.0f',
+                r.id,r.litPixels or 0,r.span,r.height),x-75,y-38,12,'o')
+        end
         if not self.enabled or not r or r.fieldGeneration~=self.generation then
             local cached,baked=0,0
             for _,record in pairs(self.records) do

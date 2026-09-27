@@ -124,7 +124,7 @@ walls() # restore GPU wall texture
 exterior=texture(N,N,outside)
 ground=texture(64,64);empty=np.zeros((256,256,4),dtype='f4');blockers=texture(256,256,empty)
 result=texture(FIELD,FIELD);result_fbo=framebuffer([result])
-def project(height=80,normal_angle=0,source_x=384,blocked=False,gain=1,cutoff=.00005):
+def project(height=80,normal_angle=0,source_x=384,blocked=False,gain=1,cutoff=.00005,source_wall=False):
     e=np.zeros((N,N*4,4),dtype='f4');p=e.copy()
     e[0,0]=[1*gain,.65*gain,.25*gain,128];p[0,0]=[source_x,height,256,normal_angle]
     obstacle=empty.copy()
@@ -132,6 +132,12 @@ def project(height=80,normal_angle=0,source_x=384,blocked=False,gain=1,cutoff=.0
         for band in range(16):
             # Opaque wall at x=424..448, spanning all z and height bands.
             tx,ty=(band%4)*64,(band//4)*64;obstacle[ty:ty+64,tx+53:tx+56,0]=1
+    if source_wall:
+        # Coarse world occupancy rasterizes the emitting facade into a whole
+        # 32-elmo cell, extending beyond the detailed source-wall mask.
+        obstacle=np.zeros((64,64,4),dtype='f4')
+        for band in range(16):
+            tx,ty=(band%4)*16,(band//4)*16;obstacle[ty:ty+16,tx+12,0]=1
     for slot,t,data in [(0,emission,e),(1,position,p),(4,blockers,obstacle)]:
         active(0x84C0+slot);bind(0x0DE1,t);upload(0x0DE1,0,0x8814,data.shape[1],data.shape[0],0,0x1908,0x1406,data.ctypes.data)
     for slot,t in [(2,exterior),(3,ground),(5,wall)]:active(0x84C0+slot);bind(0x0DE1,t)
@@ -144,6 +150,7 @@ def project(height=80,normal_angle=0,source_x=384,blocked=False,gain=1,cutoff=.0
     begin(0);vertex(.5/(N*4),.5/N,0);end()
     return pixels(FIELD,FIELD)
 field=project();assert field[:,:,:3].sum()>0,'accepted exterior window failed to light ground'
+assert project(source_wall=True)[:,108:,:3].sum()>0,'coarse source occupancy extinguished its own window light'
 assert field[:,:96,:3].max()==0,'window illuminated behind its facade'
 courtyard=project(source_x=224,normal_angle=0)
 assert courtyard[:,:,:3].max()==0,'courtyard emitter escaped exterior filter'

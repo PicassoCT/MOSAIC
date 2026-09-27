@@ -1462,6 +1462,12 @@ function widgetHandler:SetViewSize(vsx, vsy)
 end
 
 
+function widgetHandler:UnsyncedHeightMapUpdate(...)
+  for _,w in ipairs(self.UnsyncedHeightMapUpdateList) do
+    w:UnsyncedHeightMapUpdate(...)
+  end
+end
+
 function widgetHandler:ViewResize(vsx, vsy)
   if (type(vsx) == 'table') then
     vsy = vsx.viewSizeY
