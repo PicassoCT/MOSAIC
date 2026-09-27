@@ -57,5 +57,9 @@ Spring.GetUnitPieceMap=function() return {headlight_left=1,headlight_right=2} en
 Spring.GetUnitPiecePosDir=function(_,piece) return 250+piece,10,90 end
 renderer:Forget(1);frame=7;capture(0,128,1)
 assert(lamps[#lamps][1]==267,'named anchor missing/duplicating render offset')
+local fogSources=assert(WG.GetVehicleHeadlightFogSources())
+assert(#fogSources==1 and fogSources[1].a[2]==10 and fogSources[1].unitID==1)
+frame=8;hidden=true;assert(#WG.GetVehicleHeadlightFogSources()==0,'hidden vehicle exposed fog light')
 renderer:Shutdown();assert(WG.CaptureVehicleHeadlightEmission==nil,'stale capture after shutdown')
+assert(WG.GetVehicleHeadlightFogSources==nil,'stale fog source getter after shutdown')
 print('PASS: shared capture, layer rejection, cloak/disable, standalone suppression/fallback, cleanup')
