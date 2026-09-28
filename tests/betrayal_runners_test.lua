@@ -51,6 +51,8 @@ local function world()
         GetUnitPosition=function(id) local u=w.units[id];if u then return u.x,u.y,u.z end end,
         GetUnitHealth=function(id) local u=w.units[id];if u then return u.hp,u.maxHP,0,0,u.built or 1 end end,
         GetUnitExperience=function(id) return w.units[id].experience end,
+        GetUnitRotation=function() return 0,0,0 end,
+        SetUnitRotation=function() end,
         GetUnitBuildFacing=function() return 0 end,
         GetUnitCollisionVolumeData=function(id) return 130,50,130,0,15,0 end,
         GetUnitTransporter=function(id) return w.units[id].transporter end,
@@ -81,7 +83,7 @@ local function world()
         end,
         DestroyUnit=function(id) w:kill(id) end,
     }
-    VFS={Include=function(p) if p=='luarules/configs/betrayal.lua' then return dofile(p) end end}
+    VFS={Include=function(p) if p=='luarules/configs/betrayal.lua' or p=='scripts/lib_unit_replacement.lua' then return dofile(p) end end}
     gadgetHandler={IsSyncedCode=function() return true end}
     function getOperativeTypeTable() return {[1]=true} end
     function getSafeHouseTypeTable() return {[2]=true} end

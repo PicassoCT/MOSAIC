@@ -126,7 +126,6 @@ local AICore = Building:New{
 	buildoptions = 
 	{		
 		"icon_socialengineering",
-		"revealdoubleagent",	
 		"icon_hijacksatellite",	
 		"icon_blackout",	
 		"icon_bribe",

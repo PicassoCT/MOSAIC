@@ -5898,14 +5898,8 @@ function Command(id, command, tarGet, option)
     end
 
     if command == "cloak" then
-        currentState = GetUnitValue(COB.ACTIVATION)
-        if currentState == 0 then
-            currentState = 1
-        else
-            currentState = 0
-        end
-
-        Spring.UnitScript.SetUnitValue(COB.CLOAKED, currentState)
+        local cloaked = Spring.GetUnitIsCloaked(id)
+        Spring.GiveOrderToUnit(id, CMD.CLOAK, {cloaked and 0 or 1}, option)
     end
 end
 

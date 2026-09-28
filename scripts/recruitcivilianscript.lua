@@ -6,6 +6,7 @@ include "lib_Animation.lua"
 include "lib_mosaic.lua"
 
 local TablesOfPiecesGroups = {}
+local replaceUnit = VFS.Include("scripts/lib_unit_replacement.lua")
 
 GameConfig = getGameConfig()
 local houseTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture,
@@ -60,6 +61,7 @@ function recruiteLoop()
 
     while true do
         Sleep(100)
+        if GG.Counterintelligence and GG.Counterintelligence.IsProductionDisabled(fatherID) then endIcon() end
         foreach(getAllNearUnit(unitID, recruitmentRange), 
         function(id)
 
@@ -67,7 +69,7 @@ function recruiteLoop()
         end, 
         function(id)
             if isDisguisedRecruitableCivilian(id) == true then
-                if spGetUnitTeam(GG.DisguiseCivilianFor[id]) ~= myTeam then
+                if not Spring.AreTeamsAllied(spGetUnitTeam(GG.DisguiseCivilianFor[id]), myTeam) then
                     return GG.DisguiseCivilianFor[id] -- make unit transparent
                 else
                     return -- swallow disguised civilians of our own operatives
@@ -81,26 +83,34 @@ function recruiteLoop()
 
             if isNormalCivilian(id, recruitedDefID) == true then
                 --echo("Recruited normal civilian")
-                recruitCivilianAgent(id, x, y, z, myTeam, fatherID)
-                spDestroyUnit(id, false, true)
-                endIcon()
+                local recruited = recruitCivilianAgent(id, x, y, z, myTeam, fatherID)
+                if recruited then
+                    spDestroyUnit(id, false, true)
+                    endIcon()
+                end
             end
 
             if recruitedDefID == civilianAgentDefID then
                 --echo("Recruited civilian agent")
-                oldTeam = Spring.GetUnitTeam(id)
-                ad = copyUnit(id, teamID)
-                attachDoubleAgentToUnit(ad, oldTeam)
-                spDestroyUnit(id, false, true)
-                endIcon()
+                local oldTeam = Spring.GetUnitTeam(id)
+                local recruited = replaceUnit(id, myTeam, {preserveGraph=false})
+                if recruited then
+                    if GG.Counterintelligence then GG.Counterintelligence.AdoptRecruit(recruited, fatherID) end
+                    if doesUnitExistAlive(fatherID) then registerChild(myTeam, fatherID, recruited) end
+                    attachDoubleAgentToUnit(recruited, oldTeam)
+                    endIcon()
+                end
+                return -- never fall through to the operative branch after spawn failure
             end
 
             if operativeTypeTable[recruitedDefID] then
                 --echo("Recruited operative")
-                ad = recruitCivilianAgent(id, x, y, z, myTeam, fatherID)
-                attachDoubleAgentToUnit(ad, Spring.GetUnitTeam(id))
-                beamOperativeToNearestHouse(id)
-                endIcon()
+                local recruited = recruitCivilianAgent(id, x, y, z, myTeam, fatherID)
+                if recruited then
+                    attachDoubleAgentToUnit(recruited, Spring.GetUnitTeam(id))
+                    beamOperativeToNearestHouse(id)
+                    endIcon()
+                end
             end
 
         end)
@@ -113,34 +123,28 @@ function endIcon()
 end
 
 function recruitCivilianAgent(id, x, y, z, myTeam, fatherID)
-    ad = Spring.CreateUnit("civilianagent", x, y, z, 1, myTeam, false, false,
+    if GG.Counterintelligence and GG.Counterintelligence.IsProductionDisabled(fatherID) then return end
+    local ad = Spring.CreateUnit("civilianagent", x, y, z, 1, myTeam, false, false,
                            nil, fatherID)
+    if not ad then return end
     transferUnitStatusToUnit(id, ad)
-    transferOrders(id, ad)
     return ad
 end
 
-function beamOperativeToNearestHouse(id)
-    x, y, z = Spring.GetUnitPosition(id)
-    maxdist = math.huge
-    local jumpID
-
-    T = Spring.GetTeamUnits(gaiaTeamID)
-    for i = 1, #T do
-        id = T[i]
-        if houseTypeTable[Spring.GetUnitDefID(id)] then
-            tx, ty, tz = Spring.GetUnitPosition(id)
-            dist = distance(x, y, z, tx, ty, tz)
-            if dist < maxdist then
-                maxdist = dist
-                jumpID = id
+function beamOperativeToNearestHouse(operativeID)
+    local x,y,z = Spring.GetUnitPosition(operativeID)
+    if not x then return end
+    local nearest, bestDistance
+    for _,houseID in ipairs(Spring.GetTeamUnits(gaiaTeamID)) do
+        if houseTypeTable[Spring.GetUnitDefID(houseID)] then
+            local hx,hy,hz = Spring.GetUnitPosition(houseID)
+            local dist = (x-hx)^2 + (z-hz)^2
+            if not bestDistance or dist < bestDistance or (dist==bestDistance and houseID<nearest) then
+                nearest,bestDistance=houseID,dist
             end
         end
     end
-
-    if jumpID then
-        moveUnitToUnit(id, jumpID, 15 * randSign(), 0, 15 * randSign())
-    end
+    if nearest then moveUnitToUnit(operativeID, nearest, 15 * randSign(), 0, 15 * randSign()) end
 end
 
 function script.Killed(recentDamage, _) return 0 end
@@ -219,4 +223,3 @@ function script.Deactivate() return 0 end
 function script.QueryBuildInfo() return center end
 
 Spring.SetUnitNanoPieces(unitID, {center})
-

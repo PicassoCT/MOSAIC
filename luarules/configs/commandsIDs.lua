@@ -17,3 +17,5 @@ CMD_ASSET_ROOFTOP = 33456 -- queued asset roof movement
 
 CMD_STICKY_BUILD = 33457 -- immediate carried bomb production
 CMD_STICKY_PLANT = 33458 -- explicit unit target for planting
+CMD_INVESTIGATE = 33459 -- operative investigates another unit
+CMD_ACTIVATE_NETWORK = 33460 -- handler activates a compromised hub/individual
