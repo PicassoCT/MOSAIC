@@ -20,13 +20,18 @@ TablesOfPiecesGroups = {}
 TOPG = {}
 function script.HitByWeapon(x, z, weaponDefID, damage) 
 end
-groundOffset = 0
 x_axis = 1
 y_axis = 2
 z_axis = 3
 rotationAxis = 3
 truckAxis = 2
 horizontalAxis = 1
+
+-- TruckRotate3's baked rotation maps its local Z axis to world up.
+-- Keep terrain correction separate from TruckMove's X driving offset.
+local truckHeightAxis = z_axis
+local truckGroundClearance = 0
+local truckHeightScale = 1
 
 SIG_TRUCK_ABOVE =1
 SIG_WELD = 2
@@ -64,11 +69,16 @@ end
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     TOPG =TablesOfPiecesGroups
-    isAboveGround, x,y,z, gh =  isPieceAboveGround(unitID, TruckMove)
-    groundOffset = gh -y
     hideAll(unitID)
     resetAll(unitID)
     showT(TablesOfPiecesGroups["Claw"])
+
+    -- Preserve the model's authored clearance, including the truck pivot's
+    -- height above its wheels. Move distances are in the parent's local units.
+    local x, y, z = Spring.GetUnitPiecePosDir(unitID, Truck)
+    truckGroundClearance = y - Spring.GetGroundHeight(x, z)
+    local parentMatrix = {Spring.GetUnitPieceMatrix(unitID, TruckRotate3)}
+    truckHeightScale = parentMatrix[10]
 
     StartThread(truckComingAndGoing)
     StartThread(Melting)
@@ -298,24 +308,23 @@ horizontalAxis = 1
 function truckAboveGround()
     Signal(SIG_TRUCK_ABOVE)
     SetSignalMask(SIG_TRUCK_ABOVE)
-    val = 0
+
+    if not truckHeightScale or math.abs(truckHeightScale) < 0.000001 then
+        return
+    end
 
     while true do
-        x, y, z = Spring.GetUnitPiecePosDir(unitID, Truck)
-        groundHeight = Spring.GetGroundHeight(x, z)
-        if y > groundHeight then
-            val = val - 1
-        else
-            val = val + 1
-        end
-        Move(TruckMove, horizontalAxis, val + 200 , 100)
+        local x, y, z = Spring.GetUnitPiecePosDir(unitID, Truck)
+        local groundHeight = Spring.GetGroundHeight(x, z)
+        local _, _, height = Spring.UnitScript.GetPieceTranslation(TruckMove)
+        local correction = (groundHeight + truckGroundClearance - y) / truckHeightScale
+        Move(TruckMove, truckHeightAxis, height + correction, 100)
         Sleep(100)
     end
 end
 rotSign = -1
 outsideOffset= -100
 truckDepartingSequence = {
-    {reset, rotationAxis},
     {WTurn, TruckRotate2,truckAxis, math.rad(60 *rotSign), 0.3 },
     {Move,  TruckMove,horizontalAxis, outsideOffset, 20 },
     {StartThread,  truckAboveGround },  
