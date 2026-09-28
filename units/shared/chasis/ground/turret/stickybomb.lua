@@ -1,6 +1,6 @@
 local stickybomb =  Turret:New{
 	name = "Explosive Charge",
-	Description = "sticks to vehicles/buildings/units closest explodes after 5 seconds",
+	Description = "Stockpile on operative; Plant bomb on a chosen vehicle/building (5s fuse). Carried bombs explode 2s after operative death",
 	
 	objectName = "ground_stickybomb.dae",
 	script = "ground_stickybombscript.lua",
