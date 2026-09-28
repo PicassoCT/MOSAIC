@@ -14,3 +14,6 @@ CMD_BUILDSPEED = 33455 -- future unit_buildspeed gadget
 -- dynamically injected
 
 CMD_ASSET_ROOFTOP = 33456 -- queued asset roof movement
+
+CMD_STICKY_BUILD = 33457 -- immediate carried bomb production
+CMD_STICKY_PLANT = 33458 -- explicit unit target for planting
