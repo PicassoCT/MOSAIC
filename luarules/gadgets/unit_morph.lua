@@ -363,6 +363,7 @@ end
 
 
 local function StartMorph(unitID, unitDefID, teamID, morphDef, cmdParams)
+  if GG.Counterintelligence and GG.Counterintelligence.IsProductionDisabled(unitID) then return end
 	--[[if (UnitDefs[unitDefID].transportCapacity > 0) then
 		local unitid_x_coord, unitid_y_coord, unitid_z_coord = Spring.GetUnitPosition(unitID)
 		Spring.GiveOrderToUnit(unitID, CMD.UNLOAD_UNITS, { unitid_x_coord, unitid_y_coord, unitid_z_coord, 50 }, {})
@@ -765,6 +766,7 @@ local function FinishMorph(unitID, morphData)
   -- DESTROY UNIT, this syntax is for spring 104+ only (parameter #5 does not exist in 103)
   -- selfd = false, reclaim = true, attacker = 0, recycleID = true
   --echo("unitMorph: Destroying unit:".. unitID)
+  if GG.Counterintelligence then GG.Counterintelligence.BeginMorph(unitID) end
   Spring.DestroyUnit(unitID, false, true, 0, true)
 
   -- try to pass UnitRulesParam if asked to do so
@@ -799,11 +801,13 @@ local function FinishMorph(unitID, morphData)
         oldShieldState = oldShieldState,
         valueToPass = valueToPass,
   })
+    if GG.Counterintelligence then GG.Counterintelligence.EndMorph(unitID,newUnitID) end
     --echo("unitMorph: Created unit:".. newUnitID)
     GG.houseHasSafeHouseTable[containingHouseID] = newUnitID
 end
 
 local function UpdateMorph(unitID, morphData)
+  if GG.Counterintelligence and GG.Counterintelligence.IsProductionDisabled(unitID) then return true end
   if Spring.GetUnitTransporter(unitID) then return true end
 	
   if (Spring.UseUnitResource(unitID, morphData.def.resTable)) then
@@ -1269,6 +1273,7 @@ end
 
 
 function gadget:AllowCommand(unitID, unitDefID, teamID, cmdID, cmdParams, cmdOptions)
+  if isAMorphCmdID[cmdID] and GG.Counterintelligence and GG.Counterintelligence.IsProductionDisabled(unitID) then return false end
   local morphData = morphUnits[unitID]
   if (morphData) then
     if (cmdID==morphData.def.stopCmd)or(cmdID == CMD.STOP) then

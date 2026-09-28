@@ -55,6 +55,13 @@ function gadget:UnitCreated(id, defID)
     refresh(id, s)
 end
 function gadget:Initialize()
+    GG.TransferStickyBombInventory = function(oldID, newID)
+        local state = carriers[oldID]
+        if not state then return end
+        carriers[oldID] = nil -- replacement must not drop/detonate carried stock
+        carriers[newID] = state
+        refresh(newID, state)
+    end
     gadgetHandler:RegisterCMDID(BUILD)
     gadgetHandler:RegisterCMDID(PLANT)
     for _, id in ipairs(Spring.GetAllUnits()) do self:UnitCreated(id, Spring.GetUnitDefID(id)) end
@@ -90,6 +97,7 @@ function gadget:AllowCommand(id, defID, team, cmd, p, opts)
     -- Do not let inserted legacy build orders bypass inventory production.
     if cmd == CMD.INSERT and (p[2] == -bombDefID or p[2] == BUILD) then return false end
     if cmd == BUILD or cmd == -bombDefID then
+        if GG.Counterintelligence and GG.Counterintelligence.IsProductionDisabled(id) then return false end
         local s = carriers[id]
         if s then editQueue(id, s, opts or {}) end
         return false -- inventory production never replaces movement/attack orders
@@ -173,7 +181,7 @@ function gadget:GameFrame(frame)
     for id, s in pairs(carriers) do
         if s.queued > 0 and alive(id) then
             local stunned, _, beingBuilt = Spring.GetUnitIsStunned(id)
-            if not stunned and not beingBuilt then
+            if not stunned and not beingBuilt and not (GG.Counterintelligence and GG.Counterintelligence.IsProductionDisabled(id)) then
                 local speed = UnitDefs[Spring.GetUnitDefID(id)].buildSpeed or 0
                 local increment = math.min(1 - s.progress, speed * step / (Game.gameSpeed * bombDef.buildTime))
                 if increment > 0 and Spring.UseUnitResource(id,
@@ -207,3 +215,5 @@ end
 function gadget:UnitFinished(id)
     if carriers[id] then refresh(id, carriers[id]) end
 end
+
+function gadget:Shutdown() GG.TransferStickyBombInventory = nil end

@@ -14,7 +14,6 @@ Rotor = piece "Rotor"
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     StartThread(animation)
-    StartThread(onDeCloakNeverRecloak, unitID)
     Spin(Rotor, z_axis, math.rad(42),0)
     Hide(Rotor)
     Spring.SetUnitBlocking ( unitID, false, false, false, false, false, false, false ) 

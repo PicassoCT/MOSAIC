@@ -46,9 +46,22 @@ end
 
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
-    boolPredecessorSafehouseNearby = preventBuildingNearPreexistingSafehouse()
+    -- An ownership replacement is the existing safehouse, not another build in
+    -- an occupied house. Keep its attachment and avoid re-running the trap.
+    local replacement = GG.UnitReplacement
+    local replacingID = replacement and replacement.oldID
+    if replacingID then
+        for houseID,occupant in pairs(GG.houseHasSafeHouseTable or {}) do
+            if occupant == replacingID then
+                containingHouseID = houseID
+                GG.houseHasSafeHouseTable[houseID] = unitID
+                break
+            end
+        end
+    end
+    boolPredecessorSafehouseNearby = not replacingID and preventBuildingNearPreexistingSafehouse()
     if boolPredecessorSafehouseNearby == false then
-        StartThread(houseAttach)
+        if not containingHouseID then StartThread(houseAttach) end
         StartThread(drawMapRoom)
         Spring.SetUnitBlocking(unitID, false, false, false)
     else
@@ -260,4 +273,3 @@ function healAgentsNearbyCyle()
         Sleep(1000)
     end
 end
-

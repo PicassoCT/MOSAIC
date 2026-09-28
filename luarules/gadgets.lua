@@ -156,6 +156,7 @@ local callInLists = {
     -- LuaRules CallIns (note: the *PreDamaged calls belong here too)
     "CommandFallback", "AllowCommand", "AllowStartPosition",
     "AllowUnitCreation", "AllowUnitTransfer", "AllowUnitBuildStep", "AllowUnitCloak",
+    "AllowUnitDecloak", "AllowUnitTransport",
     "AllowFeatureBuildStep", "AllowFeatureCreation", "AllowResourceLevel",
     "AllowResourceTransfer", "AllowDirectUnitControl", "AllowBuilderHoldFire",
     "MoveCtrlNotify", "TerraformComplete", "AllowWeaponTargetCheck",
@@ -1139,6 +1140,20 @@ end
 function gadgetHandler:AllowUnitCloak(unitID, enemyID)
     for _, g in ipairs(self.AllowUnitCloakList) do
         if not g:AllowUnitCloak(unitID, enemyID) then return false end
+    end
+    return true
+end
+
+function gadgetHandler:AllowUnitDecloak(unitID, objectID, weaponNum)
+    for _, g in ipairs(self.AllowUnitDecloakList) do
+        if not g:AllowUnitDecloak(unitID, objectID, weaponNum) then return false end
+    end
+    return true
+end
+
+function gadgetHandler:AllowUnitTransport(transporterID, transporterDefID, transporterTeam, unitID, unitDefID, unitTeam)
+    for _, g in ipairs(self.AllowUnitTransportList) do
+        if not g:AllowUnitTransport(transporterID, transporterDefID, transporterTeam, unitID, unitDefID, unitTeam) then return false end
     end
     return true
 end

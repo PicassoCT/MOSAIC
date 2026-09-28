@@ -131,7 +131,7 @@ local DoubleAgent =
     --
     upright  = true,
     name = "DoubleAgent",
-    description = "switches as Double Agent to your side by decloaking",
+    description = "Activate the sleeper network with the Turn network command",
     levelGround = false,
     CanAttack = false,
     CanGuard = false,
@@ -143,8 +143,8 @@ local DoubleAgent =
     buildPic = "doubleagent.png",
     iconType = "doubleagent",
     canCloak = true,
-    cloakCost = 0.0001,
-    cloakCostMoving = 0.0001,
+    cloakCost = 0,
+    cloakCostMoving = 0,
     sightDistance = 50,
     minCloakDistance = 0,
     initCloaked = true,
@@ -152,7 +152,7 @@ local DoubleAgent =
     decloakOnFire = false,
 
     customparams = {
-        helptext = "Civilian Agent working for the opposite site",
+        helptext = "A compromised hub or individually recruited double agent. Products share the hub trigger.",
         baseclass = "Human" ,-- TODO: hacks
         normaltex = "unittextures/component_atlas_normal.dds",
     },

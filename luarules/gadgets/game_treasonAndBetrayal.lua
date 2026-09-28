@@ -7,6 +7,7 @@ if not gadgetHandler:IsSyncedCode() then return false end
 VFS.Include("scripts/lib_UnitScript.lua")
 VFS.Include("scripts/lib_mosaic.lua")
 local cfg = VFS.Include("luarules/configs/betrayal.lua")
+local replaceUnit = VFS.Include("scripts/lib_unit_replacement.lua")
 local operatives = getOperativeTypeTable(UnitDefs)
 local safehouses = getSafeHouseTypeTable(UnitDefs)
 local houses = getHouseTypeTable(UnitDefs)
@@ -162,7 +163,7 @@ local function clearExit(x,z,obstacles)
     end
     return true
 end
-local function escapePoint(id, fallbackRecipient, targetDistance, oldTeam)
+local function escapePoint(id, fallbackRecipient, targetDistance, oldTeam, receivingTeam)
     local x,y,z = Spring.GetUnitPosition(id)
     local defID = Spring.GetUnitDefID(id)
     local obstacles = escapeObstacles(id)
@@ -192,7 +193,7 @@ local function escapePoint(id, fallbackRecipient, targetDistance, oldTeam)
                             local displacement = distance(x,z,px,pz)
                             if displacement >= cfg.minEscapeDistance and displacement <= cfg.escapeSearchRadius
                                 and clearExit(px,pz,obstacles) then
-                                local recipient, runScore = chooseRecipient(oldTeam,px,pz,targetDistance)
+                                local recipient, runScore = chooseRecipient(oldTeam,px,pz,targetDistance,receivingTeam)
                                 if recipient then
                                     local cost = runScore+displacement*0.15
                                     if not score or cost < score then
@@ -227,7 +228,7 @@ local function defect(id, record)
     local defID = Spring.GetUnitDefID(id)
     local speed = UnitDefs[defID].speed or 60
     local targetDistance = math.max(cfg.minRunDistance,math.min(cfg.maxRunDistance,speed*cfg.targetRunSeconds))
-    local recipient = chooseRecipient(record.team,record.x,record.z,targetDistance)
+    local recipient = chooseRecipient(record.team,record.x,record.z,targetDistance,record.receiverTeam)
     if not recipient then
         -- No enemy contact exists. Keep the witness exposed and retry without inventing one.
         pending[id] = record
@@ -236,15 +237,23 @@ local function defect(id, record)
         expose(id)
         return
     end
-    local pos, escapeRecipient, escapeHouse = escapePoint(id,recipient,targetDistance,record.team)
+    local pos, escapeRecipient, escapeHouse = escapePoint(id,recipient,targetDistance,record.team,record.receiverTeam)
     recipient = escapeRecipient
     local team = Spring.GetUnitTeam(recipient)
-    local hp,_,paralyze = Spring.GetUnitHealth(id)
-    local experience = Spring.GetUnitExperience(id)
-    -- Scripts cache their team at creation. Recreate with the correct employer and
-    -- preserve health/experience, but never inherit build, self-destruct or attack orders.
+    -- Recreate cached-team scripts while migrating carried inventory safely.
     replacing = true
-    local newID = Spring.CreateUnit(defID,pos[1],pos[2],pos[3],Spring.GetUnitBuildFacing(id) or 0,team)
+    local newID = replaceUnit(id,team,{position=pos,preserveGraph=false,beforeDestroy=function(newID)
+        defectors[newID] = true
+        runners[newID] = {record=record,team=team,recipient=recipient,escapeHouse=escapeHouse,started=Spring.GetGameFrame(),
+            lastProgress=Spring.GetGameFrame(),lastX=pos[1],lastZ=pos[3]}
+        Spring.SetUnitRulesParam(newID,"betrayal_defector",1,public)
+        Spring.SetUnitRulesParam(newID,"betrayal_runner",1,public)
+        Spring.SetUnitRulesParam(newID,"betrayal_origin_team",record.team,public)
+        Spring.SetUnitRulesParam(newID,"betrayal_recipient",recipient,PRIVATE)
+        expose(newID)
+        label(newID,"DEFECTOR: reach a friendly operative or safehouse to deliver intelligence. Cannot cloak.")
+        pending[id],executions[id] = nil,nil
+    end})
     replacing = false
     if not newID then
         createDrop(record)
@@ -254,21 +263,6 @@ local function defect(id, record)
         expose(id)
         return
     end
-    defectors[newID] = true
-    runners[newID] = {record=record,team=team,recipient=recipient,escapeHouse=escapeHouse,started=Spring.GetGameFrame(),
-        lastProgress=Spring.GetGameFrame(),lastX=pos[1],lastZ=pos[3]}
-    Spring.SetUnitRulesParam(newID,"betrayal_defector",1,public)
-    Spring.SetUnitRulesParam(newID,"betrayal_runner",1,public)
-    Spring.SetUnitRulesParam(newID,"betrayal_origin_team",record.team,public)
-    Spring.SetUnitRulesParam(newID,"betrayal_recipient",recipient,PRIVATE)
-    Spring.SetUnitHealth(newID,{health=hp,paralyze=paralyze})
-    Spring.SetUnitExperience(newID,experience or 0)
-    expose(newID)
-    label(newID,"DEFECTOR: reach a friendly operative or safehouse to deliver intelligence. Cannot cloak.")
-    pending[id],executions[id] = nil,nil
-    replacing = true
-    Spring.DestroyUnit(id,false,true)
-    replacing = false
     removeUnit(record.team,id)
     order(newID,CMD.FIRE_STATE,{0})
     order(newID,CMD.MOVE_STATE,{0})
@@ -277,7 +271,7 @@ local function defect(id, record)
 end
 function gadget:UnitCreated(id,def,team,builder)
     if operatives[def] or safehouses[def] then contacts[id]=true end
-    if replacing or team == gaia or not interrogatable[def] then return end
+    if replacing or GG.UnitReplacement or team == gaia or not interrogatable[def] then return end
     if builder and alive(builder) then registerChild(team,builder,id); return end
     if operatives[def] and not roots[team] then
         roots[team]=id;registerParent(team,id);return
@@ -361,7 +355,7 @@ function gadget:UnitDestroyed(id,def,team,attacker,attackerDef,attackerTeam)
     escapeReady[id]=nil
     local runner = runners[id]
     if runner then createDrop(runner.record) end
-    if not replacing and not runner and interrogatable[def] and team~=gaia then
+    if not replacing and not GG.UnitReplacement and not runner and interrogatable[def] and team~=gaia then
         local record = pending[id] or (executions[id] and executions[id].record)
         if not record and attackerTeam==team then record=snapshot(id,team) end
         if record and not defectors[id] then createDrop(record) end
@@ -466,7 +460,32 @@ function gadget:Initialize()
     end
     -- Public lifecycle tables also let other synced systems avoid commandeering runners.
     GG.BetrayalRunners,GG.BetrayalDefectors=runners,defectors
+    GG.StartBetrayalRunner = function(id, receiverTeam)
+        if not alive(id) or not operatives[Spring.GetUnitDefID(id)] or defectors[id] or pending[id] then return false end
+        local record=snapshot(id,Spring.GetUnitTeam(id))
+        record.receiverTeam=receiverTeam
+        record.escapeScheduled=true
+        pending[id]=record;escapeReady[id]=Spring.GetGameFrame()+1
+        Spring.SetUnitRulesParam(id,"betrayal_pending",1,public)
+        expose(id)
+        return true
+    end
+    GG.BetrayalUnitReplaced = function(oldID,newID,oldTeam,newTeam)
+        -- Preserve real graph edges instead of inventing a nearby recruiter.
+        local graph=GG.InheritanceTable
+        if not graph then return end
+        graph[newTeam]=graph[newTeam] or {}
+        local children=graph[oldTeam] and graph[oldTeam][oldID]
+        if children then graph[oldTeam][oldID]=nil;graph[newTeam][newID]=children end
+        for _,parents in pairs(graph) do
+            for _,children in pairs(parents) do
+                if children[oldID] then children[oldID]=nil;children[newID]=true end
+            end
+        end
+        if roots[oldTeam]==oldID then roots[oldTeam]=nil end
+    end
 end
 function gadget:Shutdown()
     GG.BetrayalRunners,GG.BetrayalDefectors=nil,nil
+    GG.StartBetrayalRunner,GG.BetrayalUnitReplaced=nil,nil
 end

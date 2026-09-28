@@ -2683,100 +2683,13 @@ end
                 Spring.GetGameFrame() + 1)
             end
 
+            -- Compatibility entry point for safehouse traps and civilian recruitment.
+            -- The gadget owns the lifecycle; no per-product icons or polling threads.
             function attachDoubleAgentToUnit(traitorID, teamToTurnTo, boolRecursive)
-               -- attachingTo = traitorID.." a "..UnitDefs[Spring.GetUnitDefID(traitorID)].name.." of team "..Spring.GetUnitTeam(traitorID).." is now a double agent for team "..teamToTurnTo
-               -- echo(attachingTo)
-                if not GG.DoubleAgents then GG.DoubleAgents = {} end
-
-                hoverAboveFunc = function(persPack)
-                    boolContinue = false
-                    boolEndFunction = true
-
-                    --There can only ever be one
-                    if GG.DoubleAgents[persPack.traitorID] and
-                        GG.DoubleAgents[persPack.traitorID] ~= persPack.iconID then
-                        return boolEndFunction, nil
-                    end
-
-                    if persPack.boolDoneFor then return boolEndFunction, persPack end
-
-                    if doesUnitExistAlive(persPack.traitorID) == false then
-                       -- echo("Double Agent died "..persPack.traitorID)
-                        destroyUnitConditional(persPack.iconID, false, true)
-                        GG.DoubleAgents[persPack.traitorID] = nil
-                        return boolEndFunction, nil
-                    end
-
-                    --wait till traitor is complete
-                    if isUnitComplete(persPack.traitorID) == false then
-                        return boolContinue, persPack
-                    end
-
-                    x, y, z = Spring.GetUnitPosition(persPack.traitorID)
-
-                    if doesUnitExistAlive(persPack.iconID) == false then
---                                Spring.Echo("createUnitAtUnit ".."lib_mosaic.lua:1741") 
-                        persPack.iconID = createUnitAtUnit(persPack.teamToTurnTo, "doubleagent",
-                            persPack.traitorID, x - 1,
-                        y + persPack.heightAbove, z)
-                        Spring.MoveCtrl.Enable(persPack.iconID)
-                        GG.DoubleAgents[persPack.traitorID] = persPack.iconID
-                        return boolContinue, persPack
-                    end
-
-                    Spring.MoveCtrl.SetPosition(persPack.iconID, x - 1, y + persPack.heightAbove, z)
-                    if isUnitComplete(persPack.traitorID) == false then
-                        return boolContinue, persPack
-                    end
-
-                    --recursive part
-                    if persPack.boolRecursive and persPack.boolRecursive == true then
-                        if not persPack.ListOfBuildUnits then persPack.ListOfBuildUnits = {} end
-                        if not persPack.ListOfCompletedTurnedUnits then persPack.ListOfCompletedTurnedUnits = {} end
-                        buildID = Spring.GetUnitIsBuilding(persPack.traitorID)
-                        if buildID then
-                            persPack.ListOfBuildUnits[buildID] = buildID
-
-                            for buildID,_ in pairs(persPack.ListOfBuildUnits) do
-                                if isUnitComplete(buildID) and not persPack.ListOfCompletedTurnedUnits[buildID] then
-                                    attachDoubleAgentToUnit(buildID, persPack.teamToTurnTo, persPack.boolRecursive)
-                                    persPack.ListOfCompletedTurnedUnits[buildID]= buildID
-                                    persPack.ListOfBuildUnits[buildID]= nil
-                                end  
-                            end
-                        end
-                    end
-
-                    boolUnitIsCloaked = Spring.GetUnitIsCloaked(persPack.iconID)
-                    if not persPack.boolCloakedAtLeastOnce then
-                        persPack.boolCloakedAtLeastOnce = boolUnitIsCloaked
-                    end
-
-                    persPack.boolCloakedAtLeastOnce = persPack.boolCloakedAtLeastOnce or boolUnitIsCloaked
-
-                    if persPack.startFrame + 1 < Spring.GetGameFrame() and
-                        persPack.boolCloakedAtLeastOnce == true and
-                        boolUnitIsCloaked == false then
-                        -- echo("DoubleAgent teamtransfer")
-                        --we copy kill the unit here instead of transfering to another team
-                        --to prevent script incosistencies
-                        copyUnit(persPack.traitorID, persPack.teamToTurnTo)
-                        destroyUnitConditional(persPack.iconID, false, true)
-                        Spring.DestroyUnit(persPack.traitorID, false, true)
-                        persPack.boolDoneFor = true
-                        return boolEndFunction, persPack
-                    end
-
-                    return boolContinue, persPack
+                if GG.Counterintelligence then
+                    return GG.Counterintelligence.Register(traitorID, teamToTurnTo)
                 end
-
-                createStreamEvent(traitorID, hoverAboveFunc, 1, {
-                    startFrame = Spring.GetGameFrame(),
-                    teamToTurnTo = teamToTurnTo,
-                    traitorID = traitorID,
-                    heightAbove = GG.GameConfig.doubleAgentHeight,
-                    boolRecursive = boolRecursive
-                })
+                return false
             end
 
             function createRewardEvent(teamid, returnOfInvestmentM, returnOfInvestmentE)
