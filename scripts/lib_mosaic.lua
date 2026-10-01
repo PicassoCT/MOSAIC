@@ -744,6 +744,14 @@ end
             [UnitDefNames["objective_oilrig_sea"].id] = "water",
             [UnitDefNames["objective_industrialcomplex"].id] = "land",
             [UnitDefNames["objective_printerdock"].id] = "water",
+            [UnitDefNames["objective_civic_prison"].id] = "land",
+            [UnitDefNames["objective_civic_hospital"].id] = "land",
+            [UnitDefNames["objective_civic_university"].id] = "land",
+            [UnitDefNames["objective_civic_recycling"].id] = "land",
+            [UnitDefNames["objective_civic_courthouse"].id] = "land",
+            [UnitDefNames["objective_civic_market"].id] = "land",
+            [UnitDefNames["objective_civic_cemetery"].id] = "land",
+            [UnitDefNames["objective_civic_fire_rescue"].id] = "land",
         }
     end
 
