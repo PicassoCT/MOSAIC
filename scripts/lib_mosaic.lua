@@ -188,8 +188,19 @@ function getGameConfig()
         -- ObjectiveRewardRate
 
         Objectives = {
-            RewardCyle = 30 * 60, -- /30 frames = 1 seconds
-            Reward = 20,
+            RewardCyle = 30 * 10, -- money settlement every ten simulation seconds
+            Income = {
+                -- Whole-map budget: half a medium-success, three-server
+                -- economy, including its existing +N/server network income.
+                ReferenceServerCount = 3,
+                ServerNetworkBonus = 1,
+                StrategyIncomeFraction = 0.50,
+                BaseRiskWeight = 1,
+                ExposureRiskWeight = 1,
+                PressureRiskWeight = 1,
+                PressureSeconds = 30,
+                PressureDamageFraction = 0.20,
+            },
             RewardFortNoxDestroyed = 3000
         },
         maxNrExplosionSoundFiles = 14,
@@ -744,6 +755,14 @@ end
             [UnitDefNames["objective_oilrig_sea"].id] = "water",
             [UnitDefNames["objective_industrialcomplex"].id] = "land",
             [UnitDefNames["objective_printerdock"].id] = "water",
+            [UnitDefNames["objective_prison"].id] = "land",
+            [UnitDefNames["objective_hospital"].id] = "land",
+            [UnitDefNames["objective_university"].id] = "land",
+            [UnitDefNames["objective_recycling"].id] = "land",
+            [UnitDefNames["objective_courthouse"].id] = "land",
+            [UnitDefNames["objective_market"].id] = "land",
+            [UnitDefNames["objective_cemetery"].id] = "land",
+            [UnitDefNames["objective_fire_rescue"].id] = "land",
         }
     end
 
