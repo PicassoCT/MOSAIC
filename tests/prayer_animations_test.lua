@@ -63,7 +63,7 @@ for _, script in ipairs({"civilianscript.lua", "civilianagentscript.lua"}) do
     for index = 1, 8 do
         local frame, played, queued = 0, 0, 0
         local e = {PrayerAnimations=prayers, unitID=1, NORMAL_WALK_SPEED=1,
-            GG={CivilianUnitInternalLogicActive={}}, GameConfig={STATE_STARTED=1,STATE_ENDED=2},
+            GG={CivilianUnitInternalLogicActive={}}, GameConfig={civilians={activityStates={started=1,ended=2}}},
             upperBodyPieces={}, Signal=function() end, SetSignalMask=function() end,
             StartThread=function() end, WaitForTurns=function() end,
             -- This test executes pray() directly below; dispatch is covered
@@ -100,7 +100,7 @@ local selection = assert(sunshine:match("(    local prayerCalls = {}.-)    %-%- 
 for _, culture in ipairs({"arabic", "international"}) do
     for _, empty in ipairs({false, true}) do
         local slot, roll, sounds = 0, 10, {}
-        local e = {GameConfig={instance={culture=culture}}, GG={},
+        local e = {GameConfig={game={culture=culture}}, GG={},
             getPrayerSlot=function() return slot end,
             VFS={DirList=function()
                 if empty then return {} end

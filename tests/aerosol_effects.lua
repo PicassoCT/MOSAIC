@@ -3,8 +3,8 @@ local kinds={'depressol','tollwutox','orgyanyl','wanderlost'}
 for index,kind in ipairs(kinds) do
     local frame,flying,destroyed=0,false,false
     local workers,masks,stopped={},{},{}
-    local config={Aerosols={sprayRange=250}}
-    config.Aerosols[kind]={sprayTimePerUnitInMs=12000}
+    local config={military={aerosols={sprayRange=250}}}
+    config.military.aerosols[kind]={sprayTimePerUnitMs=12000}
     GG={GameConfig=config};Game={gameSpeed=30};unitID=7;unitDefID=index
     UnitDefs={[index]={name='air_copter_aerosol_'..kind}};UnitDefNames={};script={}
     Spring={GetGameFrame=function()return frame end,ValidUnitID=function()return true end,

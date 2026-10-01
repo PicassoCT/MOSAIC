@@ -74,7 +74,7 @@ local GameConfig = getGameConfig()
 
 function timeOfDay()
 
-    WholeDay = GameConfig.daylength
+    WholeDay = GameConfig.game.dayLengthFrames
     timeFrame = Spring.GetGameFrame() + (WholeDay * 0.25)
     -- echo(getDayTime(timeFrame%WholeDay, WholeDay))
     return ((timeFrame % (WholeDay)) / (WholeDay))
@@ -86,7 +86,7 @@ function script.Create()
     x, y, z = Spring.GetUnitPosition(unitID)
     math.randomseed(x + y + z)
     StartThread(buildHouse)
-    StartThread(removeFeaturesInCircle,x,z, GameConfig.houseSizeZ/2)
+    StartThread(removeFeaturesInCircle,x,z, GameConfig.city.buildings.sizeZ/2)
 
     spinYPieces = {
         TablesOfPiecesGroups["StreetDeco29Sub"][1],
@@ -153,7 +153,7 @@ end
 function delayedHeightMapTransform()
     value= math.random(1, 15) 
     Sleep(value)
-    smoothTerrainAtUnit(unitID,  GG.GameConfig.houseSizeX * 2, 50)
+    smoothTerrainAtUnit(unitID,  GG.GameConfig.city.buildings.sizeX * 2, 50)
 end
 
 function rotations()
@@ -235,7 +235,7 @@ function showPowerPoles()
 
     -- Turn till detecting another house
     local spGetUnitDefID = Spring.GetUnitDefID
-    local houseTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture,
+    local houseTypeTable = getCultureUnitModelTypes(GameConfig.game.culture,
                                                     "house", UnitDefs)
 
     local resultDeg
@@ -399,7 +399,7 @@ function decorateCity()
          maxDeg = minDeg + 120
         for i=1, math.random(2,5) do
          
-            types= getRuralAreaFeatureUnitsNameTable(GG.GameConfig.instance.culture, housesNearby)
+            types= getRuralAreaFeatureUnitsNameTable(GG.GameConfig.game.culture, housesNearby)
             dice = math.random(1,#types)
             createUnitInCircleAroundUnit(unitID,types[dice], math.random(250,500), minDeg, maxDeg, 0.4, 40)
         end

@@ -6,10 +6,10 @@ local function clamp(x, lo, hi) return math.max(lo, math.min(hi, x)) end
 function M.New(Spring, Game, config, serverBaseIncome, teamsBySide, transfer, getRecords, clock)
     local api = {}
     local fps = Game.gameSpeed or 30
-    local servers = math.max(1, config.ReferenceServerCount)
-    local pool = servers * (serverBaseIncome + servers * config.ServerNetworkBonus)
-        * clamp(config.StrategyIncomeFraction, 0, .95)
-    local window = config.PressureSeconds
+    local servers = math.max(1, config.referenceServerCount)
+    local pool = servers * (serverBaseIncome + servers * config.serverNetworkBonus)
+        * clamp(config.strategyIncomeFraction, 0, .95)
+    local window = config.pressureSeconds
     clock = clock or {frame=Spring.GetGameFrame()}
 
     local function teams(protagon)
@@ -43,7 +43,7 @@ function M.New(Spring, Game, config, serverBaseIncome, teamsBySide, transfer, ge
     end
 
     local function baseWeight(record)
-        return config.BaseRiskWeight + config.ExposureRiskWeight * api.Exposure(record)
+        return config.baseRiskWeight + config.exposureRiskWeight * api.Exposure(record)
     end
 
     function api.Register(record, frame)
@@ -69,8 +69,8 @@ function M.New(Spring, Game, config, serverBaseIncome, teamsBySide, transfer, ge
             if duration > 0 and #records > 0 then
                 local numerator, slope, total, totalSlope = {}, {}, 0, 0
                 for i in ipairs(records) do
-                    numerator[i] = weights[i] + config.PressureRiskWeight * math.max(0, pressures[i] - start / window)
-                    slope[i] = pressures[i] * window > start + 1e-9 and -config.PressureRiskWeight / window or 0
+                    numerator[i] = weights[i] + config.pressureRiskWeight * math.max(0, pressures[i] - start / window)
+                    slope[i] = pressures[i] * window > start + 1e-9 and -config.pressureRiskWeight / window or 0
                     total, totalSlope = total + numerator[i], totalSlope + slope[i]
                 end
                 for i, record in ipairs(records) do
@@ -110,7 +110,7 @@ function M.New(Spring, Game, config, serverBaseIncome, teamsBySide, transfer, ge
             if id == attackerTeam or Spring.AreTeamsAllied(id, attackerTeam) then return end
         end
         api.Advance(frame)
-        record.income.pressure = math.min(1, record.income.pressure + damage / (maxHealth * config.PressureDamageFraction))
+        record.income.pressure = math.min(1, record.income.pressure + damage / (maxHealth * config.pressureDamageFraction))
     end
 
     function api.Pay(record, frame)
@@ -126,10 +126,10 @@ function M.New(Spring, Game, config, serverBaseIncome, teamsBySide, transfer, ge
         api.Advance(frame)
         local total = 0
         for _, r in ipairs(getRecords()) do
-            total = total + baseWeight(r) + config.PressureRiskWeight * (r.income and r.income.pressure or 0)
+            total = total + baseWeight(r) + config.pressureRiskWeight * (r.income and r.income.pressure or 0)
         end
         if total <= 0 or not record.uid then return 0 end
-        return pool * (baseWeight(record) + config.PressureRiskWeight * (record.income and record.income.pressure or 0)) / total
+        return pool * (baseWeight(record) + config.pressureRiskWeight * (record.income and record.income.pressure or 0)) / total
     end
 
     return api

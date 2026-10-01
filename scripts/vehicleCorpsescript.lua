@@ -82,7 +82,7 @@ function script.Create()
         StartThread(onFire, fireTime, endTimes)
     end
 
-    StartThread(lifeTime, unitID, GG.GameConfig.Wreckage.lifeTime)
+    StartThread(lifeTime, unitID, GG.GameConfig.military.wreckage.lifetimeMs)
 
 end
 

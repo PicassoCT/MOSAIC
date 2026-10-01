@@ -47,7 +47,7 @@ function getCurrentPercent()
     return ((startCountDown - countDown) / startCountDown)
 end
 
-countDown = (GameConfig.InterrogationTimeInFrames / 30) * 1000
+countDown = (GameConfig.espionage.interrogation.durationFrames / 30) * 1000
 startCountDown = countDown
 OnePercent = math.ceil(countDown / 100)
 

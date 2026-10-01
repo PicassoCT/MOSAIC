@@ -1,6 +1,6 @@
 local Income=dofile('luarules/gadgets/include/objective_income.lua')
-local config={ReferenceServerCount=3,ServerNetworkBonus=1,StrategyIncomeFraction=.5,
-    BaseRiskWeight=1,ExposureRiskWeight=1,PressureRiskWeight=1,PressureSeconds=30,PressureDamageFraction=.2}
+local config={referenceServerCount=3,serverNetworkBonus=1,strategyIncomeFraction=.5,
+    baseRiskWeight=1,exposureRiskWeight=1,pressureRiskWeight=1,pressureSeconds=30,pressureDamageFraction=.2}
 local function near(a,b)assert(math.abs(a-b)<1e-6,tostring(a)..' ~= '..tostring(b))end
 local function setup(base,fps,cfg)
     local s={records={},money={},byUnit={},dead={},starts={[1]={0,500},[2]={1000,500},[3]={0,500}},
@@ -90,7 +90,7 @@ near(s.api.Exposure(home),1);home.x=0;near(s.api.Exposure(home),0)
 
 -- Future server rebalance, benchmark count and simulation speed.
 s=setup(2.5,60);home=s.new(0);s.pay(1800);near(s.total(),247.5)
-local cfg={};for k,v in pairs(config)do cfg[k]=v end;cfg.ReferenceServerCount=2
+local cfg={};for k,v in pairs(config)do cfg[k]=v end;cfg.referenceServerCount=2
 s=setup(5,30,cfg);home=s.new(0);s.pay(1800);near(s.total(),420)
 
 -- A new site joins only from its creation frame, not retroactively.

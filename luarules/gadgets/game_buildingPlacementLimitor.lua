@@ -20,7 +20,7 @@ areaDenyMapResolution = 16
 SAFEHOUSEBUILDING = 9
 areaDenyMap = {}
 GameConfig = getGameConfig()
-local houseTypeTable = getCultureUnitModelNames_Dict_DefIDName(GameConfig.instance.culture,
+local houseTypeTable = getCultureUnitModelNames_Dict_DefIDName(GameConfig.game.culture,
                                                 "house", UnitDefs)
 
 local xMax = Game.mapSizeX / areaDenyMapResolution

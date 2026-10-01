@@ -617,7 +617,7 @@ upDistance = 58000
 function launchAnimation()
     StartThread(vtolLoop)
     while true do
-        while GG.GlobalGameState == GameConfig.GameState.normal do
+        while GG.GlobalGameState == GameConfig.game.states.normal do
             local plumageTable = getRandomizedPlumageTable()
             --echo("driveOutMainStage")
             driveOutMainStage()

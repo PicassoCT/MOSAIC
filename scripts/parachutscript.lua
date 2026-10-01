@@ -100,7 +100,7 @@ function fallingDown()
     if not GG.ParachutPassengers[unitID] then
         if fatherID and operativeTypeTable[Spring.GetUnitDefID(fatherID)]  then
             tx, ty, tz = Spring.GetUnitPosition(fatherID)
-            ty = ty + GG.GameConfig.parachuteHeight
+            ty = ty + GG.GameConfig.military.parachute.height
             GG.ParachutPassengers[unitID] = {id = fatherID, x = tx, y = ty, z = tz}
         else
             if transporting and #transporting > 0 then

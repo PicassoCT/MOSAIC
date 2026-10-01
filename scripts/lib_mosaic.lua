@@ -128,347 +128,407 @@ function getModOptionCulture()
     return modOptions.culture
 end
 
+-- Configuration uses lowerCamelCase paths and explicit Frames/Ms/Seconds units.
+-- Chance = 0..1, Percent = 0..100, OneIn = inverse odds. Engine metal/energy
+-- names are confined to resource API calls; gameplay calls them money/supply.
 function getGameConfig()
     return {
-        instance = {
-            culture = getInstanceCultureOrDefaultToo(), -- "international", "western", "asian", "arabic"
-            Version = GameVersion
-        },
-
-        visuals = {
-            falloutParticlesMax = 128
-        },
-        STATE_STARTED = "STARTED",
-        STATE_ENDED = "ENDED",
-
-        numberOfBuildings = math.ceil(150 * GG.unitFactor),
-        numberOfVehicles = math.ceil(60 * GG.unitFactor),
-        numberOfPersons = math.ceil(75 * GG.unitFactor),
-        nightCivilianReductionFactor = 0.125,
-        anarchyCarReductionFactor = 0.25,
-        MegaBuildingMax= 12,
-
-        LoadDistributionMax = 5,
-
-        --truck
-        truckBreakTimeMinSec= 60,
-        truckBreakTimeMaxSec= 5*60,
-        truckHonkLoudness = 0.25,
-        chanceOfCivilianSpawningFromTruck = 0.65,
-		emergencyLocationTimeMs = 20 *1000,
-		
-        houseSizeX = 256,
-        houseSizeY = 64,
-        houseSizeZ = 256,
-        innerCitySize = 2048,
-        innerCityNeonStreet = 512,
-        houseNumberOfSameRoofIDGroupsPerCity= 4,
-        
-        minimalMoveDistanceElseStuck = 140,
-  
-        allyWaySizeX = 25,
-        allyWaySizeZ = 25,
-        bonusFirstUnitMoney_S = 12,
-        maxParallelIdleAnimations = 20,
-        SniperAttachMaxDistance = 128,
-        SuicideBomberManWaitTimeMs = 4000,
-        agentConfig = {
-            recruitmentRange = 60,
-            raidWeaponDownTimeInSeconds = 60,
-            raidComRange = 1500,
-            raidBonusFactorSatellite = 2.5
-        },
-        SnipeMiniGame = {
-            Aggressor = {StartPoints = 4},
-            Defender = {StartPoints = 4}
-                        },
-
-        parallelBuildingAnimationsActive = 25,                
-
-        -- ObjectiveRewardRate
-
-        Objectives = {
-            RewardCyle = 30 * 10, -- money settlement every ten simulation seconds
-            Income = {
-                -- Whole-map budget: half a medium-success, three-server
-                -- economy, including its existing +N/server network income.
-                ReferenceServerCount = 3,
-                ServerNetworkBonus = 1,
-                StrategyIncomeFraction = 0.50,
-                BaseRiskWeight = 1,
-                ExposureRiskWeight = 1,
-                PressureRiskWeight = 1,
-                PressureSeconds = 30,
-                PressureDamageFraction = 0.20,
+        -- Match identity, simulation clock and global phase transitions.
+        game = {
+            culture = getInstanceCultureOrDefaultToo(),
+            version = GameVersion,
+            dayLengthFrames = 28800,
+            phaseTimers = {
+                interceptionFrames = 30 * 10,
+                panicSpreadFrames = 15 * 30,
+                pacificationFrames = 30 * 90,
             },
-            RewardFortNoxDestroyed = 3000
-        },
-        maxNrExplosionSoundFiles = 14,
-        -- civilianbehaviour
-        civilian = {
-          GatheringBehaviourIntervalFrames = 3 * 60 * 30,
-          PanicRadius = 900,
-          FleeDistance = 1200,
-          MaxFlightTimeMS = 300000,
-          InterestRadius = 350, 
-          MaxWalkingDistance = 3000,
-        },
-
-        civilianGatheringBehaviourIntervalFrames = 3 * 60 * 30,
-        civilianPanicRadius = 900,
-        civilianFleeDistance = 1200,
-        civilianMaxFlightTimeMS = 300000,
-        civilianInterestRadius = 350,
-        civilian_walking_speedfactor =  0.65625,
-        civilian_running_speedfactor = 1.0,
-
-        generalInteractionDistance = 110,
-        minConversationLengthFrames = 15 * 30,
-        -- Duration uses the product of two uniform draws: mean = min + (max-min)/4.
-        -- 15--35 seconds gives a 20-second mean, with occasional longer chats.
-        maxConversationLengthFrames = 35 * 30,
-
-        inHundredChanceOfInterestInDisaster = 35,
-        inHundredChanceOfDisasterWailing = 75,
-        mainStreetModulo = 4,
-        maxIterationSteps = 2048,
-        chanceCivilianArmsItselfInHundred = 50,
-        demonstrationMarchRadius = 50,
-
-        Police = {
-          maxNr = 8,
-          maxDispatchTime = 2000,
-          minSpawnDistance = 2200,
-          reportDelayFrames = 8 * 30,
-          escapeFrames = 30 * 30,
-          searchFrames = 45 * 30,
-          sightRange = 650,
-          searchRadius = 600,
-        },
-
-        teargasRadius = 200,
-
-        maxSirenSoundFiles = 7,
-
-        --soundIntervall
-        actionIntervallFrames = math.ceil(2.5*60*30),
-        peaceIntervallFrames =  math.ceil(4*60*30),
-
-        -- safehouseConfig
-        buildSafeHouseRange = 80,
-        safeHousePieceName = "center",
-        delayTillSafeHouseEstablished = 15000,
-        safeHouseLiftimeUnattached = 500,
-
-        -- all buildings
-        buildingLiftimeUnattached = 10000,
-
-        -- propagandaserver
-        propandaServerFactor = 0.1,
-
-        -- Building-based cybercrime. All houses share the same economy.
-        CyberCrime = {
-            buildingRange = 240,
-            durationFrames = 120 * 30,
-            payoutIntervalFrames = 10 * 30,
-            payout = 25,
-            buildingCapacity = 600,
-            recoveryPerSecond = 1,
-            safehouseRange = 500,
-            safehouseMultiplier = 2,
-            enemyDrainMultiplier = 2,
-            policeDelayFrames = 60 * 30,
-            policeInterruptRange = 180,
-            -- Temporary recovery aid: one server-sized grant per team per match.
-            comebackEnabled = true,
-            comebackMoney = 1000,
-            comebackEnergy = 1000,
-        },
-        Bribe = {
-            durationFrames = 60 * 30,
-            radius = 750,
-            maxOfficers = 3,
-            combatGraceFrames = 5 * 30,
-            safehouseRevealRange = 350,
-            safehouseRevealFrames = 30 * 30,
-        },
-        -- Legacy values retained for external consumers.
-        RewardCyberCrime = 300,
-        rewardWaitTimeCyberCrimeSeconds = 30,
-
-        --closecombat
-        closeCombatHealthLosPerSecond = 10,
-
-        --groundTurretDroneProjectileIntercept
-        groundTurretDroneInterceptRate = 256,
-        groundTurretDroneMaxInterceptPerSecond = 7,
-
-        --Parachute
-        parachuteHeight = 150,
-        -- doubleAgentHeight
-        doubleAgentHeight = 64,
-
-        -- Dayproperties
-        daylength = 28800, -- in frames
-
-        --Loot 
-        lootCollectionReward = 200,
-
-        -- Interrogation
-        InterrogationTimeInSeconds = 20,
-        InterrogationTimeInFrames = 20 * 30,
-        InterrogationDistance = 185,
-        RaidDistance = 250,
-
-        --operatives
-        investigatorCloakedSpeedReduction = 0.35,
-        operativeShotFiredWaitTimeToRecloak_MS = 10000,
-        OperativeDropHeigthOffset = 900,
-
-        --motorBike
-        motorBikeSurvivalStandaloneMS = 15 * 1000,
-
-        -- checkpoint
-        checkPointRevealRange = 125,
-        checkPointPropagandaCost = 75,
-
-        raid = {
-            maxTimeToWait = 3 * 60 * 1000,
-            maxRoundLength = 15 * 1000,
-            interrogationPropagandaPrice = 1000,
-			revealGraphLifeTimeFrames = 5 * 60 * 30,
-        },
-
-        warzoneValueNormalized = 0.25,
-        -- asset
-        assetCloakedSpeedReduction = 0.175,
-        assetSpeedRunning = 1.0,
-        assetSpeedWalking = 0.6,
-        assetShotFiredWaitTimeToRecloak_MS = 6000,
-        assetMaxRunTimeInSeconds = 15,
-
-        Wreckage = {lifeTime = 7 * 60 * 1000},
-
-        -- Launcher
-        PreLaunchLeakSteps = 4, --after 5fth step
-        LaunchReadySteps = 7,
-        LauncherInterceptTimeSeconds = 20,
-        LauncherMaxHeight = 3000,
-        --Payloads
-        bioWeaponPayloadKillRadius = 1700,
-		PayloadDefusedReward = 5000,
-        payloadDestructionRange = 420,
-		
-        -- CruiseMissiles
-        CruiseMissile = {
-        heightOverGround = 42,
-        antiArmorDroplettRange = 1200,
-        chanceOfInterceptOneIn = 25,
-        reloadTimeMS = 5*60*1000,            
-        },
-        vtolInAirMax = 6,
-
-        
-        -- Game States
-        GameState = {
-            normal = "normal",
-            launchleak = "launchleak",
-            anarchy = "anarchy",
-            postlaunch = "postlaunch",
-            gameover = "gameover",
-            pacification = "pacification"
-        },
-        --Molotov FireDamage
-        fireDamagePerFrame = 3,
-
-        anarchySexCouplesEveryNSeconds = 3 * 60,
-        LifeTimeRiotPoliceSeconds = 35,
-        TimeForInterceptionInFrames = 30 * 10,
-        TimeForPanicSpreadInFrames = 15 * 30,
-        TimeForPacification = 30 * 90,
-        TimeForScrapHeapDisappearanceInMs = 5 * 60 * 1000, -- 3 Minutes off line
-
-        costs = {
-            DestroyedHousePropanda = 5000,
-        RecruitingTruck = 500},
-
-        -- startenergymetal
-        energyStartVolume = 10000,
-        energyStart = 5000,
-        metalStartVolume = 10000,
-        metalStart = 5000,
-
-        -- Icons
-        socialEngineeringRange = 256,
-        socialEngineerLifetimeMs = 3*60*1000,
-        LifeTimeBribeIcon = 60 * 1000, -- legacy alias; active lifetime uses Bribe.durationFrames
-        iconGroundOffset = 50,        
-        iconHoverGroundOffset = 125,
-        iconBlackHoleComDeactivateRange = 630,
-        LifeTimeBlackOutIcon = 5* 60 * 1000,
-        LifeTimeCarStopIconMs = 2*60*1000,
-        HedgeHog =
-        {
-            ShotgunRange = 75,
-            ShotgunDamage = 200,
-            ExplodingRange = 150,
-            ExplodingDamage = 900
-        },
-        Satellite = {
-            iconDistance = 150,
-            shrapnellDistance = 450,
-            shrapnellLifeTime = 7 * 60 * 1000,
-            shrapnellDamagePerSecond = 1000,
-            uploadTimesMs = 8000,
-            GodRodDropDistance = 50,
-            GodRodReloadTimeInMs = 10000,
-            GodRodTimeToImpactInMs= 10000,
-            SatteliteHijackTimeMs = 15000
-        },        
-
-        -- Hiveminds & AiCores
-        integrationRadius = 75,
-        maxNumberIntegratedIntoHive = 300,
-        addSlowMoTimeInMsPerCitizen = 150,
-
-        -- Aerosols
-        Aerosols = {
-            sprayRange = 250,
-            orgyanyl = {
-                sprayTimePerUnitInMs = 2 * 60 * 1000, -- 2mins
-                VictimLifetime = 1 * 60 * 1000
+            states = {
+                normal = "normal",
+                launchLeak = "launchleak",
+                anarchy = "anarchy",
+                postLaunch = "postlaunch",
+                gameOver = "gameover",
+                pacification = "pacification",
             },
-            wanderlost = {
-                sprayTimePerUnitInMs = 2 * 60 * 1000,
-                VictimLiftime = 3 * 60 * 1000,
-                reinfectRange= 50,
-                searchRadius=650, shambleSpeed=.30,
-            }, -- 2mins
-            tollwutox = {
-                sprayTimePerUnitInMs = 2 * 60 * 1000,
-                VictimLiftime = 7 * 60 * 1000,
-                searchRadius=900, shambleSpeed=.40, lungeSpeed=.85, meleeDamage=30,
-            }, -- 2mins
-            depressol = {
-                sprayTimePerUnitInMs = 2 * 60 * 1000,
-                VictimLiftime = 3 * 60 * 1000,
-                searchRadius=1800, waterSearchRadius=1800, shambleSpeed=.35, meleeDamage=8,
-            } -- 2mins
-
-        },
-        -- Defusal Time 
-        Warhead= {
-                DefusalTimeMs = 30*1000,
-                DefusalStartDistance = 75,
-                DefusalPunishment = -500,
-                automationPayloadStunTimeSeconds = 60,
         },
 
-        minutMS     = 60*1000,
-        hourMS      = 60*60*1000,
-        secondMS    = 1000,
+        -- Procedural city layout and population targets; counts scale with unitFactor.
+        city = {
+            population = {
+                buildings = math.ceil(150 * GG.unitFactor),
+                vehicles = math.ceil(60 * GG.unitFactor),
+                persons = math.ceil(75 * GG.unitFactor),
+            },
+            buildings = {
+                maxMegaBuildings = 12,
+                sizeX = 256,
+                sizeY = 64,
+                sizeZ = 256,
+                roofGroupCount = 4,
+                unattachedLifetimeMs = 10000,
+            },
+            innerRadius = 2048,
+            neonStreetRadius = 512,
+            alleys = {
+                sizeX = 25,
+                sizeZ = 25,
+            },
+            streets = {
+                mainStreetModulo = 4,
+            },
+            rubble = {
+                disappearanceTimeMs = 5 * 60 * 1000,
+                -- The city previously used the same number as frames. Keep
+                -- that effective delay while making the two clocks explicit.
+                respawnBaseDelayFrames = 300000,
+            },
+        },
+
+        -- Civilian activity, movement, conversation, emergencies and traffic.
+        civilians = {
+            activityStates = {
+                started = "STARTED",
+                ended = "ENDED",
+            },
+            population = {
+                nightReductionFactor = 0.125,
+            },
+            traffic = {
+                anarchyReductionFactor = 0.25,
+                truckBreakMinSeconds = 60,
+                truckBreakMaxSeconds = 5*60,
+                passengerSpawnChance = 0.65,
+                motorbikeUnattachedLifetimeMs = 15 * 1000,
+            },
+            emergency = {
+                locationLifetimeMs = 20 *1000,
+            },
+            movement = {
+                minProgressDistance = 140,
+                maxWalkingDistance = 3000,
+                walkingSpeedFactor = 0.65625,
+                runningSpeedFactor = 1.0,
+                warzoneThreshold = 0.25,
+            },
+            gathering = {
+                intervalFrames = 3 * 60 * 30,
+            },
+            panic = {
+                radius = 900,
+                fleeDistance = 1200,
+                maxFlightTimeMs = 300000,
+            },
+            curiosity = {
+                radius = 350,
+                disasterInterestPercent = 35,
+                disasterWailingPercent = 75,
+            },
+            conversation = {
+                range = 110,
+                minDurationFrames = 15 * 30,
+                -- Two uniform draws give mean = min + (max-min)/4: 20 seconds here.
+                maxDurationFrames = 35 * 30,
+            },
+            anarchy = {
+                armingPercent = 50,
+                coupleSpawnIntervalSeconds = 3 * 60,
+            },
+            demonstrations = {
+                marchRadius = 50,
+            },
+        },
+
+        -- Dispatch and pursuit timers are simulation frames, including durationFrames.
+        police = {
+            population = {
+                maxOfficers = 8,
+            },
+            dispatch = {
+                durationFrames = 2000,
+                minSpawnDistance = 2200,
+                reportDelayFrames = 8 * 30,
+            },
+            pursuit = {
+                escapeFrames = 30 * 30,
+                searchFrames = 45 * 30,
+                sightRange = 650,
+                searchRadius = 600,
+            },
+            teargas = {
+                radius = 200,
+            },
+            checkpoints = {
+                revealRange = 125,
+                propagandaCostMoney = 75,
+            },
+            riot = {
+                lifetimeSeconds = 35,
+            },
+        },
+
+        -- Shared money/supply rules. Ability-specific prices live with that ability.
+        economy = {
+            firstOperative = {
+                -- Sine-wave amplitude for both resources; not a constant income rate.
+                resourceOscillationAmplitude = 12,
+            },
+            rewards = {
+                fortKnoxDestructionMoney = 3000,
+                lootCollectionMoney = 200,
+            },
+            propaganda = {
+                serverMultiplier = 0.1,
+            },
+            collateral = {
+                houseDestructionMoney = 5000,
+            },
+            storage = {
+                supply = 10000,
+                money = 10000,
+            },
+            starting = {
+                supply = 5000,
+                money = 5000,
+            },
+        },
+
+        -- All sites share half a three-server economy; risk redistributes this pool.
+        objectives = {
+            payoutIntervalFrames = 30 * 10,
+            income = {
+                referenceServerCount = 3,
+                serverNetworkBonus = 1,
+                strategyIncomeFraction = 0.50,
+                baseRiskWeight = 1,
+                exposureRiskWeight = 1,
+                pressureRiskWeight = 1,
+                pressureSeconds = 30,
+                pressureDamageFraction = 0.20,
+            },
+        },
+
+        -- Covert operations: each ability keeps its own ranges, durations and costs.
+        espionage = {
+            assets = {
+                sniperAttachRange = 128,
+                cloakedSpeedReduction = 0.175,
+                runningSpeedFactor = 1.0,
+                walkingSpeedFactor = 0.6,
+                recloakDelayMs = 6000,
+                maxRunTimeSeconds = 15,
+            },
+            recruitment = {
+                range = 60,
+                truckCostMoney = 500,
+            },
+            raids = {
+                weaponDowntimeSeconds = 60,
+                communicationRange = 1500,
+                satelliteBonusFactor = 2.5,
+                range = 250,
+                maxWaitMs = 3 * 60 * 1000,
+                maxRoundDurationMs = 15 * 1000,
+                revealedGraphLifetimeFrames = 5 * 60 * 30,
+            },
+            sniping = {
+                aggressorStartPoints = 4,
+                defenderStartPoints = 4,
+            },
+            safehouses = {
+                buildRange = 80,
+                attachmentPiece = "center",
+                establishDelayMs = 15000,
+                unattachedLifetimeMs = 500,
+            },
+            counterintelligence = {
+                markerHeight = 64,
+            },
+            interrogation = {
+                durationFrames = 20 * 30,
+                range = 185,
+                propagandaPriceMoney = 1000,
+            },
+            operatives = {
+                investigatorCloakedSpeedReduction = 0.35,
+                recloakDelayMs = 10000,
+                dropHeightOffset = 900,
+            },
+            socialEngineering = {
+                range = 256,
+                lifetimeMs = 3*60*1000,
+            },
+            ecm = {
+                iconDeactivateRange = 630,
+            },
+            blackout = {
+                lifetimeMs = 5* 60 * 1000,
+            },
+            carStop = {
+                lifetimeMs = 2*60*1000,
+            },
+            satelliteHijack = {
+                durationMs = 15000,
+            },
+            hivemind = {
+                integrationRadius = 75,
+                maxMembers = 300,
+                chargePerCitizenMs = 150,
+            },
+            cybercrime = {
+                buildingRange = 240,
+                durationFrames = 120 * 30,
+                payoutIntervalFrames = 10 * 30,
+                payoutMoney = 25,
+                buildingCapacityMoney = 600,
+                recoveryMoneyPerSecond = 1,
+                safehouseRange = 500,
+                safehouseMultiplier = 2,
+                enemyDrainMultiplier = 2,
+                policeDelayFrames = 60 * 30,
+                policeInterruptRange = 180,
+                -- One server-sized recovery grant per team per match.
+                comebackEnabled = true,
+                comebackMoney = 1000,
+                comebackSupply = 1000,
+            },
+            bribe = {
+                durationFrames = 60 * 30,
+                radius = 750,
+                maxOfficers = 3,
+                combatGraceFrames = 5 * 30,
+                safehouseRevealRange = 350,
+                safehouseRevealFrames = 30 * 30,
+            },
+        },
+
+        -- Combat, strategic weapons and their effects.
+        military = {
+            suicideBomber = {
+                waitTimeMs = 4000,
+            },
+            closeCombat = {
+                healthLossPerSecond = 10,
+            },
+            droneInterception = {
+                range = 256,
+                maxPerSecond = 7,
+            },
+            parachute = {
+                height = 150,
+            },
+            wreckage = {
+                lifetimeMs = 7 * 60 * 1000,
+            },
+            launcher = {
+                preLaunchLeakSteps = 4,
+                readySteps = 7,
+                interceptTimeSeconds = 20,
+                maxHeight = 3000,
+            },
+            payloads = {
+                bioWeaponKillRadius = 1700,
+                defusedRewardMoney = 5000,
+                destructionRange = 420,
+            },
+            cruiseMissiles = {
+                heightOverGround = 42,
+                antiArmorDropletRange = 1200,
+                interceptOneIn = 25,
+                reloadTimeMs = 5*60*1000,
+            },
+            aircraft = {
+                maxVtolInAir = 6,
+            },
+            fire = {
+                damagePerFrame = 3,
+            },
+            hedgehog = {
+                shotgunRange = 75,
+                shotgunDamage = 200,
+                explosionRange = 150,
+                explosionDamage = 900,
+            },
+            satellites = {
+                shrapnel = {
+                    radius = 450,
+                    lifetimeMs = 7 * 60 * 1000,
+                    damagePerSecond = 1000,
+                },
+                uploadTimeMs = 8000,
+                godRod = {
+                    dropDistance = 50,
+                    reloadTimeMs = 10000,
+                    timeToImpactMs = 10000,
+                },
+            },
+            warheads = {
+                defusalTimeMs = 30*1000,
+                defusalStartRange = 75,
+                defusalPenaltyMoney = -500,
+                automationStunTimeSeconds = 60,
+            },
+            aerosols = {
+                sprayRange = 250,
+                orgyanyl = {
+                    sprayTimePerUnitMs = 2 * 60 * 1000,
+                    victimLifetimeMs = 1 * 60 * 1000,
+                },
+                wanderlost = {
+                    sprayTimePerUnitMs = 2 * 60 * 1000,
+                    victimLifetimeMs = 3 * 60 * 1000,
+                    reinfectRange = 50,
+                    searchRadius = 650,
+                    shambleSpeed = .30,
+                },
+                tollwutox = {
+                    sprayTimePerUnitMs = 2 * 60 * 1000,
+                    victimLifetimeMs = 7 * 60 * 1000,
+                    searchRadius = 900,
+                    shambleSpeed = .40,
+                    lungeSpeed = .85,
+                    meleeDamage = 30,
+                },
+                depressol = {
+                    sprayTimePerUnitMs = 2 * 60 * 1000,
+                    victimLifetimeMs = 3 * 60 * 1000,
+                    searchRadius = 1800,
+                    waterSearchRadius = 1800,
+                    shambleSpeed = .35,
+                    meleeDamage = 8,
+                },
+            },
+        },
+
+        -- Cosmetic settings: audio, particles and icon placement.
+        presentation = {
+            particles = {
+                maxFallout = 128,
+            },
+            audio = {
+                truckHonkVolume = 0.25,
+                explosionSoundCount = 14,
+                sirenSoundCount = 7,
+                actionIntervalFrames = math.ceil(2.5*60*30),
+                peaceIntervalFrames = math.ceil(4*60*30),
+            },
+            icons = {
+                groundOffset = 50,
+                hoverGroundOffset = 125,
+                satelliteHeight = 150,
+            },
+        },
+
+        -- Work and animation budgets.
+        performance = {
+            civilianBatchSize = 5,
+            maxIdleAnimations = 20,
+            maxBuildingAnimations = 25,
+            maxCityGenerationSteps = 2048,
+        },
+
     }
-    end
+end
 
    function getAllCultures()
 	return {
@@ -487,7 +547,7 @@ function getGameConfig()
     -- ===================================================================================================================
     function getCultureName()
         if not GG.GameConfig then  GG.GameConfig = getGameConfig() end
-        return GG.GameConfig.instance.culture
+        return GG.GameConfig.game.culture
     end
     -- ===================================================================================================================
     function getChemTrailTypes()
@@ -992,7 +1052,7 @@ end
     function isNearCityCenter(x,z, GameConfig)
         if not x or not GG.innerCityCenter or not GG.innerCityCenter.x then return false, math.huge, math.huge end
         distanceToCityCenter = distance(x, 0, z, GG.innerCityCenter.x, 0,  GG.innerCityCenter.z) 
-        return distanceToCityCenter < GameConfig.innerCitySize, distanceToCityCenter, distanceToCityCenter/GameConfig.innerCitySize, distanceToCityCenter
+        return distanceToCityCenter < GameConfig.city.innerRadius, distanceToCityCenter, distanceToCityCenter/GameConfig.city.innerRadius, distanceToCityCenter
     end
 
     function getDeterministicRotationOffsetForDistrict(districtID, cultureDeviation, xDiv1000, zDiv1000)
@@ -1666,7 +1726,7 @@ end
             end
 
             function getTruckTypeTable(UnitDefs)
-                return getCultureUnitModelTypes(GG.GameConfig.instance.culture or getCultureName(), "truck", UnitDefs)
+                return getCultureUnitModelTypes(GG.GameConfig.game.culture or getCultureName(), "truck", UnitDefs)
             end
 
             function getNotTruckLoadableTypeTable(UnitDefs)
@@ -1732,7 +1792,7 @@ end
                 end
 
                 if not hour then hour = getDayTime() end
-                dayLengthFrames = GG.GameConfig.daylength
+                dayLengthFrames = GG.GameConfig.game.dayLengthFrames
                 frames = Spring.GetGameFrame()
 
                 dayNr = frames/ dayLengthFrames
@@ -1744,7 +1804,7 @@ end
                 --DEBUG DELME
                 --echo("DELME Debug Setting override isANormalDay()")
                 --if true then return true end
-                return GG.GlobalGameState == GG.GameConfig.GameState.normal
+                return GG.GlobalGameState == GG.GameConfig.game.states.normal
             end
 
 
@@ -1753,7 +1813,7 @@ end
                 local UnitDefNames = getUnitDefNames(UnitDefs)
                 typeTable = {}
 
-                if GameConfig.instance.culture == "arabic" then
+                if GameConfig.game.culture == "arabic" then
                     if sex == "male" then
                         typeTable = {
                             "civilian_arab1",
@@ -1769,7 +1829,7 @@ end
                     end
                 end
 
-                if GameConfig.instance.culture == "western" then
+                if GameConfig.game.culture == "western" then
                     if sex == "male" then
                         typeTable = {
                             "civilian_western0",
@@ -1785,7 +1845,7 @@ end
                     end
                 end        
 
-                if GameConfig.instance.culture == "international" then  
+                if GameConfig.game.culture == "international" then
                     if sex == "male" then
                         typeTable = {
                             "civilian_arab1",
@@ -1807,7 +1867,7 @@ end
                     end
 
                 end      
-                if GameConfig.instance.culture == "asian" then  
+                if GameConfig.game.culture == "asian" then
                     if sex == "male" then
                         typeTable = {
                             "civilian_arab1",
@@ -1844,10 +1904,10 @@ end
                 GameConfig = getGameConfig()
                 local UnitDefNames = getUnitDefNames(UnitDefs)
 
-                typeTable = getTypeUnitNameTable(GameConfig.instance.culture, "truck",
+                typeTable = getTypeUnitNameTable(GameConfig.game.culture, "truck",
                 UnitDefs)
                 typeTable = mergeTables(typeTable, getTypeUnitNameTable(
-                    GameConfig.instance.culture, "civilian",
+                    GameConfig.game.culture, "civilian",
                 UnitDefs))
 
                 return getTypeTable(UnitDefNames, typeTable)
@@ -1935,9 +1995,9 @@ end
                     "operativeinvestigator", "antagonsafehouse", "protagonsafehouse",
                     "propagandaserver", "protagonassembly", "antagonassembly", "launcher", "hivemind", "aicore"
                 }
-                assert(GameConfig.instance.culture)
+                assert(GameConfig.game.culture)
                 typeTable = mergeTables(operatorTypeTable, getTypeUnitNameTable(
-                    GameConfig.instance.culture, "civilian",
+                    GameConfig.game.culture, "civilian",
                 UnitDefs))
                 UnitDefNames = getUnitDefNames(UnitDefs)
                 resultTypeTable = getTypeTable(UnitDefNames, typeTable)
@@ -1954,14 +2014,14 @@ end
                     "operativeinvestigator"
                 }
 
-                civilianTypeNamesTable = getTypeUnitNameTable( GameConfig.instance.culture, "civilian", UnitDefs)
+                civilianTypeNamesTable = getTypeUnitNameTable( GameConfig.game.culture, "civilian", UnitDefs)
                 assert(count(civilianTypeNamesTable)> 0)
                 --echo(civilianTypeNamesTable)
                 interrogationNamesTable = mergeTables(InterrogatableOperativeNamesTypeTable, civilianTypeNamesTable )  
                 
                 resultTypeTable = getTypeTable(UnitDefNames, interrogationNamesTable)
                 assert(resultTypeTable[UnitDefNames["operativeinvestigator"].id])
-                if GG.GameConfig.instance.culture == Cultures.arabic then
+                if GG.GameConfig.game.culture == Cultures.arabic then
                     assert(resultTypeTable[UnitDefNames["civilian_arab0"].id])
                 end
                 return resultTypeTable
@@ -1998,7 +2058,7 @@ end
                 }
 
                 typeTable = mergeTables(typeTable, getTypeUnitNameTable(
-                    GameConfig.instance.culture, "house",
+                    GameConfig.game.culture, "house",
                 UnitDefs))
 
                 return getTypeTable(UnitDefNames, typeTable)
@@ -2114,12 +2174,12 @@ end
                 assert(UnitDefs)
                 local UnitDefNames = getUnitDefNames(UnitDefs)
                 GameConfig = getGameConfig()
-                typeTable = getTypeUnitNameTable(GameConfig.instance.culture, "truck",
+                typeTable = getTypeUnitNameTable(GameConfig.game.culture, "truck",
                 UnitDefs)
                 typeTable = mergeTables(typeTable, getTypeUnitNameTable(
-                GameConfig.instance.culture, "house", UnitDefs))
+                GameConfig.game.culture, "house", UnitDefs))
                 typeTable = mergeTables(typeTable, getTypeUnitNameTable(
-                    GameConfig.instance.culture, "civilian",
+                    GameConfig.game.culture, "civilian",
                 UnitDefs))
 
                 local retTable = {}
@@ -2527,7 +2587,7 @@ end
                     waitPercent = 1 - percent + dayStartPercent  -- wait till next day's 6:00
                 end
 
-                local waitFrames = waitPercent * GG.GameConfig.daylength
+                local waitFrames = waitPercent * GG.GameConfig.game.dayLengthFrames
                 local waitMilliseconds = math.ceil(waitFrames / 30) * 1000  -- Assuming 30 frames per second
                 Sleep(waitMilliseconds)                
             end
@@ -2543,7 +2603,7 @@ end
                 end
 
                 local waitPercent = nightStartPercent - percent
-                local waitFrames = waitPercent * GG.GameConfig.daylength
+                local waitFrames = waitPercent * GG.GameConfig.game.dayLengthFrames
                 local waitMilliseconds = math.ceil(waitFrames / 30) * 1000  -- Assuming 30 FPS
                 Sleep(waitMilliseconds)
             end
@@ -2573,17 +2633,17 @@ end
             end
 			
             function getPrayDurationInFrames()
-                return math.ceil(0.030 * GG.GameConfig.daylength)
+                return math.ceil(0.030 * GG.GameConfig.game.dayLengthFrames)
             end
 	         
 
             function getPrayerSlot(frame)
-                local culture = GG.GameConfig.instance.culture
+                local culture = GG.GameConfig.game.culture
                 if culture ~= "arabic" and culture ~= "international" then
                     return nil
                 end
 
-                local dayLength = GG.GameConfig.daylength
+                local dayLength = GG.GameConfig.game.dayLengthFrames
                 local shiftedFrame = (frame or Spring.GetGameFrame()) + (dayLength / 2)
                 local dayIndex = math.floor(shiftedFrame / dayLength)
                 local percent = (shiftedFrame % dayLength) / dayLength
@@ -2602,7 +2662,7 @@ end
             end
 
             function getDayTime()
-                local DAYLENGTH = GG.GameConfig.daylength
+                local DAYLENGTH = GG.GameConfig.game.dayLengthFrames
                 morningOffset = (DAYLENGTH / 2)
                 Frame = (Spring.GetGameFrame() + morningOffset) % DAYLENGTH
                 percent = Frame / DAYLENGTH
@@ -3084,7 +3144,7 @@ end
         table.sort(sources)
         for _, sourceID in ipairs(sources) do
             if not Spring.GetUnitTransporter(sourceID) then
-                for _, id in ipairs(getAllNearUnit(sourceID, GameConfig.Aerosols.wanderlost.reinfectRange) or {}) do
+                for _, id in ipairs(getAllNearUnit(sourceID, GameConfig.military.aerosols.wanderlost.reinfectRange) or {}) do
                     if not affected[id] and aerosolAffectableUnits[Spring.GetUnitDefID(id)] and
                         not Spring.GetUnitIsDead(id) and not Spring.GetUnitTransporter(id) and
                         setAerosolCivilianBehaviour(id, AerosolTypes.wanderlost) then
@@ -3163,7 +3223,7 @@ end
         Location.teamID = Spring.GetUnitTeam(unitID)
         Location.radius = GetUnitDefRealRadius(unitID) or 50
         Location.revealedUnits = {}
-        Location.endFrame = Spring.GetGameFrame() + GG.GameConfig.raid.revealGraphLifeTimeFrames
+        Location.endFrame = Spring.GetGameFrame() + GG.GameConfig.espionage.raids.revealedGraphLifetimeFrames
 
         local parent = getParentOfUnit(Location.teamID, unitID)
         if parent and doesUnitExistAlive(parent) then
@@ -3338,9 +3398,9 @@ end
 
             function computateClusterNodes(housePosTable, GameConfig)
                 timeFactor = math.abs(math.sin(math.pi * Spring.GetGameFrame() /
-                GameConfig.civilian.GatheringBehaviourIntervalFrames)) -- [0 - 1]
+                GameConfig.civilians.gathering.intervalFrames)) -- [0 - 1]
 
-                goalIndexMaxDivider = getBelowPow2(GameConfig.numberOfBuildings)
+                goalIndexMaxDivider = getBelowPow2(GameConfig.city.population.buildings)
                 -- protect against min and max
                 goalIndexDivider = math.floor(goalIndexMaxDivider * timeFactor)
                 local result = cullPositionCluster(housePosTable, goalIndexDivider)
@@ -3348,7 +3408,7 @@ end
             end
 
             function computeOrgHouseTable(UnitDefs, GameConfig)
-                return getHouseClusterPoints(UnitDefs, GameConfig.instance.culture)
+                return getHouseClusterPoints(UnitDefs, GameConfig.game.culture)
             end
 
             function showHideIconEnv(unitID, arg)
@@ -3741,7 +3801,7 @@ end
 function getIdleTokken()
     if not GG.CurrentIdleNr then GG.CurrentIdleNr = 0 end
 
-    if GG.CurrentIdleNr < GG.GameConfig.maxParallelIdleAnimations then
+    if GG.CurrentIdleNr < GG.GameConfig.performance.maxIdleAnimations then
       GG.CurrentIdleNr  = GG.CurrentIdleNr + 1
       return true
     end  

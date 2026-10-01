@@ -70,8 +70,7 @@ local function world()
         return loadEnv(path,env)
     end}
     env.gadgetHandler={IsSyncedCode=function() return true end}
-    env.getGameConfig=function() return {instance={culture='western'},propandaServerFactor=0.1,
-        costs={DestroyedHousePropanda=5000}} end
+    env.getGameConfig=function() return {game={culture='western'},economy={propaganda={serverMultiplier=0.1},collateral={houseDestructionMoney=5000}}} end
     env.getExemptFromRefundTypes=function() return {[D.objective_airport]=true} end
     env.getCultureUnitModelNames_Dict_DefIDName=function(culture)
         assert(culture=='international', 'arcologies in other cultures must count as houses')

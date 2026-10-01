@@ -84,7 +84,7 @@ end
 function isInActionInterval(frame)
     if not GG.PoliceActionSoundInterVallStartFrame then return true end
 
-    if frame < GG.PoliceActionSoundInterVallStartFrame + GameConfig.actionIntervallFrames then return true end
+    if frame < GG.PoliceActionSoundInterVallStartFrame + GameConfig.presentation.audio.actionIntervalFrames then return true end
 
     return false
 end
@@ -103,7 +103,7 @@ function delayedSirens()
     framesPerSecond = 30
     startFrame = Spring.GetGameFrame()
     while true do
-        sirenDice = math.random(1, GameConfig.maxSirenSoundFiles)
+        sirenDice = math.random(1, GameConfig.presentation.audio.sirenSoundCount)
         loudness = math.max(0, math.sin(
                                 ((((Spring.GetGameFrame() - startFrame) /
                                     framesPerSecond) % seconds) / seconds) * 2 *
@@ -136,7 +136,7 @@ end
 
 function tearGasState()
     while true do
-        if boolHasBeenHitBy == true and GG.GlobalGameState ~= GameConfig.GameState.normal then
+        if boolHasBeenHitBy == true and GG.GlobalGameState ~= GameConfig.game.states.normal then
             boolHasBeenHitBy = false
             StartThread(spawnRiotPolice)
         end

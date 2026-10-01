@@ -18,7 +18,7 @@ function script.Create()
 end
 
 function stealVehicle()
-    local recruitmentRange = GameConfig.agentConfig.recruitmentRange
+    local recruitmentRange = GameConfig.espionage.recruitment.range
     local spGetUnitTeam = Spring.GetUnitTeam
     local spGetUnitDefID = Spring.GetUnitDefID
     local spGetUnitPosition = Spring.GetUnitPosition

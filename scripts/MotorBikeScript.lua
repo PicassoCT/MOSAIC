@@ -141,7 +141,7 @@ function killAfterTime()
 	Spring.AddUnitImpulse(unitID, vx * factor, vy * factor, vz * factor)
 	Sleep(2000)
 	WTurn(center, z_axis,math.rad(90 * randSign()), math.pi)
-    Sleep(GameConfig.motorBikeSurvivalStandaloneMS)
+    Sleep(GameConfig.civilians.traffic.motorbikeUnattachedLifetimeMs)
     Spring.DestroyUnit(unitID, false, true)
 end
 
@@ -240,7 +240,7 @@ function honkIfHorny()
     SetSignalMask(SIG_HONK)
     Sleep(250)
     if math.random(0,100) > 80 and boolIsCivilianTruck == true and isRushHour() == true then
-        StartThread(PlaySoundByUnitDefID, unitDefID, "sounds/car/honk"..math.random(1,7)..".ogg", GameConfig.truckHonkLoudness, 1000, 1)
+        StartThread(PlaySoundByUnitDefID, unitDefID, "sounds/car/honk"..math.random(1,7)..".ogg", GameConfig.presentation.audio.truckHonkVolume, 1000, 1)
     end
 end
 
@@ -279,18 +279,18 @@ end
 function fleeEnemy(enemyID)
     Signal(SIG_INTERNAL)
     SetSignalMask(SIG_INTERNAL)
-    setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_STARTED, "fleeing")
+    setCivilianUnitInternalStateMode(unitID, GameConfig.civilians.activityStates.started, "fleeing")
     if not enemyID then 
-        setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_ENDED, "fleeing")
+        setCivilianUnitInternalStateMode(unitID, GameConfig.civilians.activityStates.ended, "fleeing")
         return 
     end
 
-    while doesUnitExistAlive(enemyID) and distanceUnitToUnit(unitID, enemyID) < GameConfig.civilian.PanicRadius do
-        runAwayFrom(unitID, enemyID, GG.GameConfig.civilian.FleeDistance)
+    while doesUnitExistAlive(enemyID) and distanceUnitToUnit(unitID, enemyID) < GameConfig.civilians.panic.radius do
+        runAwayFrom(unitID, enemyID, GG.GameConfig.civilians.panic.fleeDistance)
         Sleep(500)
     end
 
-    setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_ENDED, "fleeing")
+    setCivilianUnitInternalStateMode(unitID, GameConfig.civilians.activityStates.ended, "fleeing")
 end
 
 attackerID = 0

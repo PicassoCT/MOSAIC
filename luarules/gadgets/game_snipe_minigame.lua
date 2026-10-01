@@ -118,12 +118,12 @@ if (gadgetHandler:IsSyncedCode()) then
             Objectives = {},
             Aggressor = {
                 team = attackerteam,
-                Points = GameConfig.SnipeMiniGame.Aggressor.StartPoints,
+                Points = GameConfig.espionage.sniping.aggressorStartPoints,
                 PlacedFigures = {}
             },
             Defender = {
                 team = defenderTeamID,
-                Points = GameConfig.SnipeMiniGame.Defender.StartPoints,
+                Points = GameConfig.espionage.sniping.defenderStartPoints,
                 PlacedFigures = {}
             }
         }

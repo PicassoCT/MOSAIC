@@ -9,10 +9,7 @@ local function scenario(kind)
  local defs={[1]={name='civilian',weapons={{}}},[2]={name='house',weapons={}},
   [3]={name='ground_tank_day',weapons={{}}},[4]={name='hivemind'},
   [5]={name='truck_western',weapons={{}}},[6]={name='air_copter_mg',canFly=true,weapons={{}}},[7]={name='ground_walker_mg',weapons={{}}}}
- local config={instance={culture='international'},integrationRadius=75,maxNumberIntegratedIntoHive=300,addSlowMoTimeInMsPerCitizen=150,
-  Aerosols={tollwutox={VictimLiftime=420000,searchRadius=900,meleeDamage=30,shambleSpeed=.4,lungeSpeed=.85},
-  wanderlost={VictimLiftime=180000,searchRadius=650,shambleSpeed=.3,reinfectRange=50},
-  depressol={VictimLiftime=180000,searchRadius=1800,shambleSpeed=.35,meleeDamage=8}}}
+ local config={game={culture='international'},espionage={hivemind={integrationRadius=75,maxMembers=300,chargePerCitizenMs=150}},military={aerosols={tollwutox={victimLifetimeMs=420000,searchRadius=900,meleeDamage=30,shambleSpeed=.4,lungeSpeed=.85},wanderlost={victimLifetimeMs=180000,searchRadius=650,shambleSpeed=.3,reinfectRange=50},depressol={victimLifetimeMs=180000,searchRadius=1800,shambleSpeed=.35,meleeDamage=8}}}}
  local e=setmetatable({GG={GameConfig=config,AerosolAffectedCivilians={},HiveMind={},DisguiseCivilianFor={}},
   Game={gameSpeed=30,mapSizeX=4096,mapSizeZ=4096},UnitDefs=defs},{__index=_G})
  e.Spring={GetGameFrame=function()return s.frame end,ValidUnitID=function(id)return s.units[id]~=nil end,
@@ -117,10 +114,10 @@ for _,file in ipairs({'civilianscript.lua','civilianagentscript.lua'})do
 end
 -- Actual hive admission, own-team Depressol recruits, and capacity limits.
 for _,charge in ipairs({0,44850})do
- local destroyed={};local gg={GameConfig={instance={culture='international'}},DisguiseCivilianFor={},
+ local destroyed={};local gg={GameConfig={game={culture='international'}},DisguiseCivilianFor={},
   AerosolAffectedCivilians={[11]='depressol',[12]='wanderlost',[13]='depressol',[16]='tollwutox'},HiveMind={[1]={[200]={rewindMilliSeconds=charge}}}}
  local e=setmetatable({unitID=200,GG=gg,UnitDefs={[2]={name='civilianagent'}},script={},include=function()end,piece=function()return 1 end,
-  getGameConfig=function()return {integrationRadius=75,addSlowMoTimeInMsPerCitizen=150,maxNumberIntegratedIntoHive=300}end,
+  getGameConfig=function()return {espionage={hivemind={integrationRadius=75,chargePerCitizenMs=150,maxMembers=300}}}end,
   getCultureUnitModelTypes=function()return {[1]=true}end,waitTillComplete=function()end,getAllInCircle=function()return {11,12,13,14,15,16}end,
   isTransport=function()return false end,Sleep=function()coroutine.yield()end,
   foreach=function(list,filter,act)for _,id in ipairs(list)do local v=filter(id);if v then act(v)end end end,

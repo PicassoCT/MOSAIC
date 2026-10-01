@@ -1,7 +1,7 @@
 -- Police-only influence. Military response types deliberately never enter this whitelist.
 local M = {}
 function M.New(config, officers, position, move, canSee)
-    local cfg = config.Bribe
+    local cfg = config.espionage.bribe
     local bribeDef = UnitDefNames.icon_bribe.id
     local eligibleTypes = {}
     for _, name in ipairs({"policetruck", "riotpolice"}) do
@@ -117,7 +117,7 @@ function M.New(config, officers, position, move, canSee)
         for id, state in pairs(officers) do
             if eligibleTypes[Spring.GetUnitDefID(id)] and canSee(id, attacker) then
                 combatUntil[id] = frame+cfg.combatGraceFrames
-                witnessed[id] = {attacker=attacker,expires=frame+(config.Police.searchFrames or 1350)}
+                witnessed[id] = {attacker=attacker,expires=frame+(config.police.pursuit.searchFrames or 1350)}
                 clearOfficer(id)
             end
         end
@@ -150,7 +150,7 @@ function M.New(config, officers, position, move, canSee)
                 local d = math.sqrt(dx*dx+dz*dz)
                 local scale = d > 0 and math.min(1, 45/d) or 0
                 local x,z = p.x+dx*scale,p.z+dz*scale
-                Spring.MoveCtrl.SetPosition(id, x, math.max(0,Spring.GetGroundHeight(x,z))+config.iconHoverGroundOffset, z)
+                Spring.MoveCtrl.SetPosition(id, x, math.max(0,Spring.GetGroundHeight(x,z))+config.presentation.icons.hoverGroundOffset, z)
                 bribe.officers = {}
             end
         end

@@ -16,11 +16,11 @@ if (gadgetHandler:IsSyncedCode()) then
     VFS.Include("scripts/lib_mosaic.lua")
     local GameConfig = getGameConfig()
     local Type_BaseTypeMap = getUnitType_BaseTypeMap(UnitDefs,
-                                               GameConfig.instance.culture)
+                                               GameConfig.game.culture)
 
-    local defIDDecalNameMap = getDecalMap(GameConfig.instance.culture)
+    local defIDDecalNameMap = getDecalMap(GameConfig.game.culture)
     local gaiaTeamID = Spring.GetGaiaTeamID()
-    local houseTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture,
+    local houseTypeTable = getCultureUnitModelTypes(GameConfig.game.culture,
                                               "house", UnitDefs)
     local objectiveTypeTable = getObjectiveTypes(UnitDefs)
 

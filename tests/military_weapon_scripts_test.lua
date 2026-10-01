@@ -4,7 +4,7 @@ local function noop() end
 include=noop; piece=function(name) return name end
 x_axis=1; y_axis=2; z_axis=3
 unitID=10; unitDefID=7; UnitDefs={}; Game={}
-getGameConfig=function() return {instance={culture='arabic'}} end
+getGameConfig=function() return {game={culture='arabic'}} end
 getCultureUnitModelTypes=function() return {} end
 getHologramTypes=function() return {} end
 Turn=noop; Move=noop; WTurn=noop; WMove=noop; WaitForTurns=noop

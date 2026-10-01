@@ -32,7 +32,7 @@ VFS.Include("scripts/lib_mosaic.lua")
 
 local MAX_MORPH = 0 --// will increase dynamically
 local GameConfig = getGameConfig()
-local houseTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "house", UnitDefs)
+local houseTypeTable = getCultureUnitModelTypes(GameConfig.game.culture, "house", UnitDefs)
 
 --------------------------------------------------------------------------------
 --  COMMON

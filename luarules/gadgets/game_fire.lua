@@ -29,9 +29,9 @@ if (gadgetHandler:IsSyncedCode()) then
     local STATE_STARTED = "STARTED"
     local STATE_ENDED = "ENDED"
     local GameConfig = getGameConfig()
-    local fireDamagePerFrame = GameConfig.fireDamagePerFrame
+    local fireDamagePerFrame = GameConfig.military.fire.damagePerFrame
     local isPanicAble = getCultureUnitModelTypes(
-                                     GameConfig.instance.culture, "civilian",
+                                     GameConfig.game.culture, "civilian",
                                      UnitDefs)
 
     function gadget:GameFrame(frame)

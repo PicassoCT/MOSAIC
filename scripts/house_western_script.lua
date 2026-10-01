@@ -85,7 +85,7 @@ pericodicMovingZPieces = {}
 
 
 function timeOfDay()
-    WholeDay = GameConfig.daylength
+    WholeDay = GameConfig.game.dayLengthFrames
     timeFrame = Spring.GetGameFrame() + (WholeDay * 0.25)
     return ((timeFrame % (WholeDay)) / (WholeDay))
 end
@@ -98,7 +98,7 @@ end
 function script.Create()
     TablesOfPiecesGroups = GetSetSharedOneTimeResult("house_western_script_PiecesTable", GetPieceTableGroups)
     x, y, z = spGetUnitPosition(unitID)
-    StartThread(removeFeaturesInCircle,x,z, GameConfig.houseSizeZ/2)
+    StartThread(removeFeaturesInCircle,x,z, GameConfig.city.buildings.sizeZ/2)
     math.randomseed(x + y + z)
     StartThread(buildHouse)
 

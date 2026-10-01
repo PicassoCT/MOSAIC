@@ -22,9 +22,7 @@ local function foreach(t, ...)
     end
     return result
 end
-local config = {MegaBuildingMax = 12, houseSizeX = 100, houseSizeY = 100,
-    houseSizeZ = 100, allyWaySizeX = 20, allyWaySizeZ = 20,
-    instance = {culture = 'western'}}
+local config = {city={buildings={maxMegaBuildings=12,sizeX=100,sizeY=100,sizeZ=100},alleys={sizeX=20,sizeZ=20}},game={culture='western'}}
 local arcPieces, projectPieces = {10,20,30,40}, {110,120,130,140,150}
 local groups = {Arcology = arcPieces, Project = projectPieces}
 local pieceNames = {}

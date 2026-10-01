@@ -18,7 +18,7 @@ VFS.Include("scripts/lib_mosaic.lua")
 
 statistics = {}
 local GameConfig = getGameConfig()
---if not Game.version then Game.version = GameConfig.instance.Version end
+--if not Game.version then Game.version = GameConfig.game.version end
 local spGetUnitPosition = Spring.GetUnitPosition
 local spGetUnitDefID = Spring.GetUnitDefID
 local spGetUnitTeam = Spring.GetUnitTeam
@@ -41,11 +41,11 @@ local spCreateUnit = Spring.CreateUnit
 local spDestroyUnit = Spring.DestroyUnit
 
 local UnitDefNames = getUnitDefNames(UnitDefs)
-local TruckTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture,
+local TruckTypeTable = getCultureUnitModelTypes(GameConfig.game.culture,
                                                 "truck", UnitDefs)
 
-local loadableTruckType = getLoadAbleTruckTypes(UnitDefs, TruckTypeTable, GameConfig.instance.culture)
-local refugeeAbleTruckType = getRefugeeAbleTruckTypes(UnitDefs, TruckTypeTable, GameConfig.instance.culture)
+local loadableTruckType = getLoadAbleTruckTypes(UnitDefs, TruckTypeTable, GameConfig.game.culture)
+local refugeeAbleTruckType = getRefugeeAbleTruckTypes(UnitDefs, TruckTypeTable, GameConfig.game.culture)
 local gaiaTeamID = Spring.GetGaiaTeamID() 
 
 local isFailedState = (( getDetermenisticMapHash(Game) % 2 ) == 0) or true
@@ -96,7 +96,7 @@ function spawnUnit(defID, x, z)
                  " with no coords")
     end
     
-    dir = getCultureDependentDiretion(GameConfig.instance.culture)
+    dir = getCultureDependentDiretion(GameConfig.game.culture)
     h = spGetGroundHeight(x, z)
     id = spCreateUnit(defID, x, h, z, dir, gaiaTeamID)
 
@@ -284,7 +284,7 @@ function refugeeStream(frame)
        --assert(payloadID)
 
        refugeeTable[id]= id   
-       Spring.SetUnitTooltip(id, "Refugee from ".. getCountryByCulture(GameConfig.instance.culture , escapeeHash + math.random(0,1)*randSign()))
+       Spring.SetUnitTooltip(id, "Refugee from ".. getCountryByCulture(GameConfig.game.culture , escapeeHash + math.random(0,1)*randSign()))
 
         offx, offz = math.random(25, 50) * randSign(), math.random(25, 50) * randSign()
         Spring.SetUnitMoveGoal(id, ex, ey, ez)
@@ -373,7 +373,7 @@ end
 
 function gadget:GameFrame(frame)
     if frame % 60 == 0 then
-        isPeaceTime = GG.GlobalGameState == GameConfig.GameState.normal
+        isPeaceTime = GG.GlobalGameState == GameConfig.game.states.normal
 
         if isFailedState or not isPeaceTime  then
             refugeeStream(frame)

@@ -41,7 +41,7 @@ function showCop()
   Show(BeatDown)
 end
 
-local timeTotal = GameConfig.LifeTimeRiotPoliceSeconds *1000
+local timeTotal = GameConfig.police.riot.lifetimeSeconds *1000
 function script.Create()
     setupPrintf(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)

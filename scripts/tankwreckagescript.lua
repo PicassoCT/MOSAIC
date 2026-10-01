@@ -69,7 +69,7 @@ function script.Create()
         endTimes = math.random(0, 500)
         StartThread(onFire, fireTime, endTimes)
     end
-    StartThread(lifeTime, unitID, GG.GameConfig.Wreckage.lifeTime*3)
+    StartThread(lifeTime, unitID, GG.GameConfig.military.wreckage.lifetimeMs*3)
     degree = math.random(-180,180)
     if GG.WreckageTurretTankRotation and GG.WreckageTurretTankRotation[unitID] then degree = GG.WreckageTurretTankRotation[unitID] end
     Turn(aimpiece, z_axis, math.rad(degree),0)

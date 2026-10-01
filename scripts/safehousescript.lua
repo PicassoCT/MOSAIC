@@ -14,7 +14,7 @@ local spGetUnitTeam = Spring.GetUnitTeam
 
 local myTeamID = Spring.GetUnitTeam(unitID)
 local spGetUnitPosition = Spring.GetUnitPosition
-local houseTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "house", UnitDefs)
+local houseTypeTable = getCultureUnitModelTypes(GameConfig.game.culture, "house", UnitDefs)
 local safeHouseUpgradeTypeTable = getSafeHouseUpgradeTypeTable(UnitDefs, unitDefID)
 local safeHouseTypeTable = getSafeHouseTypeTable(UnitDefs)
 local operativeTypeTable = getOperativeTypeTable(UnitDefs)
@@ -78,12 +78,12 @@ function killDelayed()
 end
 
 function houseAttach()
-    Sleep(GameConfig.safeHouseLiftimeUnattached)
+    Sleep(GameConfig.espionage.safehouses.unattachedLifetimeMs)
     checkPreExistingKill(unitID, unitID)
     waitTillComplete(unitID)
 
     boolJustOnce = false
-    T = foreach(getAllNearUnit(unitID, GameConfig.buildSafeHouseRange),
+    T = foreach(getAllNearUnit(unitID, GameConfig.espionage.safehouses.buildRange),
     function(id) -- filter out all the safe houses
         if houseTypeTable[Spring.GetUnitDefID(id)] and Spring.GetUnitTeam(id) == gaiaTeamID then return id end
         end, 
@@ -130,7 +130,7 @@ function houseAttach()
 end
 
 local safeHouseTypes = getSafeHouseTypeTable(UnitDefs)
-local houseTypeTable = getHouseTypeTable(UnitDefs, GameConfig.instance.culture)
+local houseTypeTable = getHouseTypeTable(UnitDefs, GameConfig.game.culture)
 
 function checkPreExistingKill(toKillId, notID)
  OtherUpgradeTypesAliveAtLocation =foreach(

@@ -128,7 +128,7 @@ function showTReg(l_tableName, l_lowLimit, l_upLimit, l_delay)
 end
 
 function timeOfDay()
-    WholeDay = GameConfig.daylength
+    WholeDay = GameConfig.game.dayLengthFrames
     timeFrame = spGetGameFrame() + (WholeDay * 0.25)
     return ((timeFrame % (WholeDay)) / (WholeDay))
 end
@@ -178,7 +178,7 @@ function restartHologram()
         StartThread(butterflyExplosion)
     end
 
-    if randChance(10) or GG.GlobalGameState ~= GameConfig.GameState.normal then
+    if randChance(10) or GG.GlobalGameState ~= GameConfig.game.states.normal then
         StartThread(pixelArt)
     end
 end

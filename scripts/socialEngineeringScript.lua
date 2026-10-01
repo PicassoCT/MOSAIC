@@ -7,7 +7,7 @@ local TablesOfPiecesGroups = {}
 local GameConfig = getGameConfig()
 local spGetUnitPosition = Spring.GetUnitPosition
 local civilianWalkingTypeTable = getCultureUnitModelTypes(
-                                     GameConfig.instance.culture, "civilian",
+                                     GameConfig.game.culture, "civilian",
                                      UnitDefs)
 local gaiaTeamID = Spring.GetGaiaTeamID()
 									 
@@ -18,7 +18,7 @@ function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     Spring.SetUnitNeutral(unitID,true)
     Spring.SetUnitBlocking(unitID,false)
-    StartThread(hoverAboveGround, unitID, GameConfig.iconHoverGroundOffset, 0.3)  
+    StartThread(hoverAboveGround, unitID, GameConfig.presentation.icons.hoverGroundOffset, 0.3)
 	StartThread(socialEngineeringPosWriteUp)
 	StartThread(ringAnimation)
 	StartThread(crowdAnimation)
@@ -89,14 +89,14 @@ function socialEngineeringPosWriteUp()
 	waitTillComplete(unitID)
 	soundnameTime= {{name = "sounds/icons/social_engineering.ogg", time = 2*60*1000}}
 	StartThread(playSoundByUnitTypOS, unitID, 0.75, soundnameTime)
-	StartThread(lifeTime, unitID, GameConfig.socialEngineerLifetimeMs, true, false)  
-    StartThread(hidePercentages, TablesOfPiecesGroups["Percentages"], GameConfig.socialEngineerLifetimeMs)  
+	StartThread(lifeTime, unitID, GameConfig.espionage.socialEngineering.lifetimeMs, true, false)
+    StartThread(hidePercentages, TablesOfPiecesGroups["Percentages"], GameConfig.espionage.socialEngineering.lifetimeMs)
 	if not GG.SocialEngineeredPeople then GG.SocialEngineeredPeople ={} end
 	if not GG.SocialEngineers then GG.SocialEngineers ={} end
 	GG.SocialEngineers[unitID] = true
 	while true do
 		x,y,z = spGetUnitPosition(unitID)
-		 foreach(getAllInCircle(x,z, GameConfig.socialEngineeringRange, unitID, gaiaTeamID),
+		 foreach(getAllInCircle(x,z, GameConfig.espionage.socialEngineering.range, unitID, gaiaTeamID),
 				function(id)
 					if GG.DisguiseCivilianFor[id] then return end
 					defID = spGetUnitDefID(id)

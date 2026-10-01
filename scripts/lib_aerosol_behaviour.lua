@@ -2,10 +2,10 @@
 -- All timers use deadlines: the worker need not land on an exact game frame.
 return function(unitID, kind, status)
     local config=GG.GameConfig or getGameConfig()
-    local settings=assert(config.Aerosols[kind])
+    local settings=assert(config.military.aerosols[kind])
     local fps=Game.gameSpeed or 30
     local born=Spring.GetGameFrame()
-    local expires=born+(settings.VictimLiftime or settings.VictimLifetime)*fps/1000
+    local expires=born+settings.victimLifetimeMs*fps/1000
     local radius=settings.searchRadius or 900
     local types=GG.AerosolBehaviourTypes
     if not types then
@@ -36,7 +36,7 @@ return function(unitID, kind, status)
         if not hive then return false end
         local _,_,_,_,build=Spring.GetUnitHealth(id)
         return (not build or build>=1) and (hive.rewindMilliSeconds or 0)<
-            config.maxNumberIntegratedIntoHive*config.addSlowMoTimeInMsPerCitizen
+            config.espionage.hivemind.maxMembers*config.espionage.hivemind.chargePerCitizenMs
     end
     local function eligible(id,mode)
         if id==unitID or not alive(id) or Spring.GetUnitTransporter(id) then return false end
@@ -187,7 +187,7 @@ return function(unitID, kind, status)
             if goalX then Command(unitID,'stop');goalX=nil end
             progressFrame=frame
             strike(target.id,frame)
-        elseif target.mode=='hive' and d2<(config.integrationRadius*.8)^2 then
+        elseif target.mode=='hive' and d2<(config.espionage.hivemind.integrationRadius*.8)^2 then
             progressFrame=frame -- wait for the hive's existing integration worker
         elseif target.mode=='herd' and d2<70^2 or kind=='wanderlost' and target.mode=='prey' and d2<28^2 then
             if goalX then Command(unitID,'stop');goalX=nil end

@@ -9,12 +9,12 @@ local TablesOfPiecesGroups = {}
 local replaceUnit = VFS.Include("scripts/lib_unit_replacement.lua")
 
 GameConfig = getGameConfig()
-local houseTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture,
+local houseTypeTable = getCultureUnitModelTypes(GameConfig.game.culture,
                                                 "house", UnitDefs)
 gaiaTeamID = Spring.GetGaiaTeamID()
 
 local civilianWalkingTypeTable = getCultureUnitModelTypes(
-                                     GameConfig.instance.culture, "civilian",
+                                     GameConfig.game.culture, "civilian",
                                      UnitDefs)
 
 function script.Create()
@@ -23,7 +23,7 @@ function script.Create()
     StartThread(recruiteLoop)
     x, y, z = Spring.GetUnitPosition(unitID)
 
-    Spring.MoveCtrl.SetPosition(unitID, x, y + GameConfig.iconGroundOffset, z)
+    Spring.MoveCtrl.SetPosition(unitID, x, y + GameConfig.presentation.icons.groundOffset, z)
 
     StartThread(animationLoop, 2)
 end
@@ -51,7 +51,7 @@ function isNormalCivilian(id, defID)
 end
 
 function recruiteLoop()
-    local recruitmentRange = GameConfig.agentConfig.recruitmentRange
+    local recruitmentRange = GameConfig.espionage.recruitment.range
     local spGetUnitTeam = Spring.GetUnitTeam
     local spGetUnitDefID = Spring.GetUnitDefID
     local spGetUnitPosition = Spring.GetUnitPosition

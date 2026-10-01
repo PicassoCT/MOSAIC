@@ -3,8 +3,7 @@ include=function()end;piece=function()return 1 end;script={};unitID=10;unitDefID
 UnitDefs={[1]={name='physicspayload'},[2]={name='gcscrapheap'}}
 UnitDefNames=setmetatable({gcscrapheap={id=2}},{__index=function()return {id=1}end})
 local bursts,killed,destroyed={},{},0
-local config={instance={culture='international'},payloadDestructionRange=100,
-    Warhead={DefusalPunishment=10,automationPayloadStunTimeSeconds=5}}
+local config={game={culture='international'},military={payloads={destructionRange=100},warheads={defusalPenaltyMoney=10,automationStunTimeSeconds=5}}}
 getGameConfig=function()return config end
 for _,name in ipairs({'getDefusalCapableTypeTable','getCultureUnitModelTypes','getLoadAbleTruckTypes',
     'getChemTrailInfluencedTypes','getAutomationPayloadDisabledType','getAutomationPayloadDestroyedType'}) do

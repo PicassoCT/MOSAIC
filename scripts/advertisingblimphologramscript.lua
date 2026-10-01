@@ -94,7 +94,7 @@ function visualizeClock()
     turnAxis = x_axis
     _, minutes, _, percent = getDayTime() 
     local fps = 30
-    daylengthInFrames = GG.GameConfig.daylength
+    daylengthInFrames = GG.GameConfig.game.dayLengthFrames
     hourPercent = ((percent % 0.5)/0.5) * math.pi*2
     Turn(hour,turnAxis, hourPercent*-1,0)
     hourInFrames = daylengthInFrames/24
@@ -462,7 +462,7 @@ function HoloGrams()
 end
 
 local GameConfig = getGameConfig()
-local civilianWalkingTypeTable = getCultureUnitModelTypes(  GameConfig.instance.culture, "civilian", UnitDefs)
+local civilianWalkingTypeTable = getCultureUnitModelTypes(  GameConfig.game.culture, "civilian", UnitDefs)
 
 function joyToTheWorld()
     lowest = math.huge

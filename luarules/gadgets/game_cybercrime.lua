@@ -6,7 +6,7 @@ if not gadgetHandler:IsSyncedCode() then return end
 VFS.Include("scripts/lib_UnitScript.lua")
 VFS.Include("scripts/lib_mosaic.lua")
 
-local cfg = getGameConfig().CyberCrime
+local cfg = getGameConfig().espionage.cybercrime
 local cyberDef = UnitDefNames.icon_cybercrime.id
 local serverDef = UnitDefNames.propagandaserver.id
 local safehouseTypes = getSafeHouseTypeTable(UnitDefs)
@@ -43,8 +43,8 @@ local function nearestBuilding(id)
 end
 local function recover(account, frame)
     if not account.node then
-        account.funds = math.min(cfg.buildingCapacity,
-            account.funds + (frame-account.updated) * cfg.recoveryPerSecond / 30)
+        account.funds = math.min(cfg.buildingCapacityMoney,
+            account.funds + (frame-account.updated) * cfg.recoveryMoneyPerSecond / 30)
     end
     account.updated = frame
 end
@@ -89,7 +89,7 @@ local function comeback(team)
     -- Store on the team, not the icon: parallel nodes, transfers and gadget reloads
     -- cannot claim the temporary recovery aid again.
     Spring.SetTeamRulesParam(team, "cybercrime_comeback_used", 1, private)
-    return cfg.comebackMoney, cfg.comebackEnergy
+    return cfg.comebackMoney, cfg.comebackSupply
 end
 local function start(id, team)
     if nodes[id] then return end
@@ -97,11 +97,11 @@ local function start(id, team)
     local frame = Spring.GetGameFrame()
     local account = building and accounts[building]
     if building and not account then
-        account = {funds = cfg.buildingCapacity, updated = frame}
+        account = {funds = cfg.buildingCapacityMoney, updated = frame}
         accounts[building] = account
     end
     if account then recover(account, frame) end
-    if not account or account.node or account.funds < cfg.payout then
+    if not account or account.node or account.funds < cfg.payoutMoney then
         -- Invalid placement/duplicate construction cannot be used as an income source.
         Spring.AddTeamResource(team, "metal", UnitDefs[cyberDef].metalCost or 0)
         Spring.DestroyUnit(id, false, true)
@@ -165,7 +165,7 @@ function gadget:GameFrame(frame)
             local account = accounts[node.building]
             local victim = enemyOccupier(node.building, node.team)
             local multiplier = not victim and supported(node.building, node.team) and cfg.safehouseMultiplier or 1
-            local amount = math.min(account.funds, cfg.payout * multiplier)
+            local amount = math.min(account.funds, cfg.payoutMoney * multiplier)
             if amount > 0 then
                 -- The victim's loss never generates a position popup or public unit parameter.
                 if victim then

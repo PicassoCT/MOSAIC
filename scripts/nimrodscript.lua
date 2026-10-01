@@ -14,7 +14,7 @@ Icon2 = piece "Icon2"
 local SIG_AIM_ORBITAL = 1
 GameConfig = getGameConfig()
 local spGetUnitDefID = Spring.GetUnitDefID
-local houseTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture,
+local houseTypeTable = getCultureUnitModelTypes(GameConfig.game.culture,
                                                 "house", UnitDefs)
 
 local hologramTypeTable = getHologramTypes(UnitDefs)

@@ -11,7 +11,7 @@ BasePlate = piece "BasePlate"
 Irrigation1 = piece "Irrigation1"
 GameConfig = getGameConfig()
 gaiaTeamID = Spring.GetGaiaTeamID()
-local houseTypeTable = getCultureUnitModelNames_Dict_DefIDName(GameConfig.instance.culture,
+local houseTypeTable = getCultureUnitModelNames_Dict_DefIDName(GameConfig.game.culture,
                                                 "house", UnitDefs)
 --assert(houseTypeTable)
 Piston = piece"Piston"

@@ -45,8 +45,8 @@ function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     hideT(TablesOfPiecesGroups["Tank"])
     Show(TablesOfPiecesGroups["Tank"][colCode(UnitDefs[unitDefID].name)])
-    timeTank = GG.GameConfig.Aerosols[AerosolUnitDefIDMap[unitDefID]]
-                   .sprayTimePerUnitInMs
+    timeTank = GG.GameConfig.military.aerosols[AerosolUnitDefIDMap[unitDefID]]
+                   .sprayTimePerUnitMs
     StartThread(aerosolDeploy)
     Hide(emitor)
 end
@@ -138,7 +138,7 @@ assert(aerosolTypeOfUnit)
 assert(type(aerosolTypeOfUnit)=="string")
 
 function sprayTank()
-            foreach(getAllNearUnit(unitID, GameConfig.Aerosols.sprayRange), 
+            foreach(getAllNearUnit(unitID, GameConfig.military.aerosols.sprayRange),
                         function(id)
                             if alreadyChecked[id] then return end
 
