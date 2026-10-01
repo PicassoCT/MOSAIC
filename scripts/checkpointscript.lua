@@ -62,7 +62,7 @@ function revelioThread()
 	while true do
 			if boolActive == true then
 			foreach(
-				 getAllNearUnit(unitID, gameConfig.checkPointRevealRange),
+				 getAllNearUnit(unitID, gameConfig.police.checkpoints.revealRange),
 				 function(id)
 				 	if id == unitID then return end
 
@@ -85,7 +85,7 @@ function revelioThread()
 					return id
 				 end,
 				 function(id)
-				 	if  not hasFunding(myTeamID, gameConfig.checkPointPropagandaCost, "m") then return end
+                    if  not hasFunding(myTeamID, gameConfig.police.checkpoints.propagandaCostMoney, "m") then return end
 				 	
 				 	defID = spGetUnitDefID(id)
 				 	if houseTypeTable[defID] then return end
@@ -103,7 +103,7 @@ function revelioThread()
 				 			sparedTeams = {[gaiaTeamID] = true }
 							transferFromTeamToAllTeamsExceptAtUnit(id, 
 								 myTeamID,
-								 gameConfig.checkPointPropagandaCost, 
+								 gameConfig.police.checkpoints.propagandaCostMoney,
 								sparedTeams
 								 )
 							cachedNonInterest[id] = spGetGameFrame()

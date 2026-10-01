@@ -4,7 +4,7 @@ for index,kind in ipairs({'depressol','tollwutox','orgyanyl','wanderlost'}) do
     local options,thread
     unitID=7;unitDefID=index;script={}
     UnitDefs={[index]={name='air_copter_aerosol_'..kind}}
-    GG={GameConfig={Aerosols={[kind]={sprayTimePerUnitInMs=300}}}}
+    GG={GameConfig={military={aerosols={[kind]={sprayTimePerUnitMs=300}}}}}
     GG.SmokeRibbon={Set=function(id,slot,piece,o)
         assert(id==7 and slot=='aerosol' and piece==2)
         sets=sets+1;options=o;return true
@@ -14,7 +14,7 @@ for index,kind in ipairs({'depressol','tollwutox','orgyanyl','wanderlost'}) do
     include=function() end;piece=function(name) return name=='emitor' and 2 or 1 end
     getChemTrailTypes=function() return {wanderlost='wanderlost'} end
     getAerosolUnitDefIDs=function() return {[index]=kind} end
-    getGameConfig=function() return {Aerosols={sprayRange=100}} end
+    getGameConfig=function() return {military={aerosols={sprayRange=100}}} end
     getChemTrailInfluencedTypes=function() return {[99]=true} end
     getPieceTableByNameGroups=function() return {Tank={1,2,3,4}} end
     hideT=function() end;Show=function() end;Hide=function() end

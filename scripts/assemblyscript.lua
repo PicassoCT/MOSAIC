@@ -15,7 +15,7 @@ MaxPlattformHeigth = 750
 Icon = piece"Icon"
 
 local GameConfig = getGameConfig()
-local houseTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture,
+local houseTypeTable = getCultureUnitModelTypes(GameConfig.game.culture,
                                                 "house", UnitDefs)
 SIG_BUILD = 1
 Tool_FoilGlue = 1

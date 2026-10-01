@@ -169,7 +169,7 @@ end
 function script.Create()
     TablesOfPieceGroups = getPieceTableByNameGroups(false, true)
     x, y, z = Spring.GetUnitPosition(unitID)
-    StartThread(removeFeaturesInCircle,x,z, GameConfig.houseSizeZ/2) 
+    StartThread(removeFeaturesInCircle,x,z, GameConfig.city.buildings.sizeZ/2)
     math.randomseed(x + y + z)
     StartThread(buildHouse)
     StartThread(addGroundPlaceables)

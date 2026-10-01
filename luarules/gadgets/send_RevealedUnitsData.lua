@@ -64,7 +64,7 @@ local function addTestLocation()
   locations[n].z = math.random(2000, 4000) --coordinates.z
   locations[n].teamID = Spring.GetUnitTeam(locationID)
   locations[n].revealedUnits = revealedUnits
-  locations[n].endFrame = Spring.GetGameFrame() + GG.GameConfig.raid.revealGraphLifeTimeFrames
+  locations[n].endFrame = Spring.GetGameFrame() + GG.GameConfig.espionage.raids.revealedGraphLifetimeFrames
 
   GG.RevealedLocations = locations
 end

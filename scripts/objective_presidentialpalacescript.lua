@@ -117,7 +117,7 @@ end
 
 function generateRidiculousTitle()
     GameConfig = getGameConfig()
-    country = getCountryByCulture(GameConfig.instance.culture ,mapHash)
+    country = getCountryByCulture(GameConfig.game.culture ,mapHash)
 
     -- Tables of possible title components
     local honorifics = {
@@ -156,7 +156,7 @@ function generateRidiculousTitle()
     }, ", ")
     
     -- Add the "name" part
-    local surName, familyName = getDeterministicCultureNames(unitID, UnitDefs, GameConfig.instance.culture, true, true)
+    local surName, familyName = getDeterministicCultureNames(unitID, UnitDefs, GameConfig.game.culture, true, true)
     local nameParts = {"I", "the Great", "Magnificent", "Invincible", "Unifier of " .. country, "the Wise", "Vanquisher of Enemies"}
     local name = "— " .. (country .. "s Supreme Sovereign " .. nameParts[random_range(1,#nameParts)]).." "..surName.." "..familyName.. "\n"
     

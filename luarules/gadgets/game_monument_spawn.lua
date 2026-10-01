@@ -43,7 +43,7 @@ if gadgetHandler:IsSyncedCode() then
     function gadget:GameFrame(n)
         if boolGameStart == true and n % 10 == 1 then 
             boolGameStart = false
-            monumentTable = getMonumentAmountDecorationTypeTable(UnitDefs, GameConfig.instance.culture)
+            monumentTable = getMonumentAmountDecorationTypeTable(UnitDefs, GameConfig.game.culture)
             for defID, data in pairs(monumentTable) do
                 if data.maxNr > 0 then
                     for i=1,data.maxNr do

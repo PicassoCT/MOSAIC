@@ -3,12 +3,7 @@ local frame,nextID=0,100
 local pos={[1]={100,0,100},[2]={300,0,300},[10]={3000,0,3000}}
 local defs={[1]=1,[2]=2,[10]=3}
 local orders,created,cloaked={},0,false
-local cfg={Police={maxNr=8,maxDispatchTime=2000,minSpawnDistance=2200,
-    reportDelayFrames=240,escapeFrames=900,searchFrames=1350,sightRange=650},
-    Bribe={durationFrames=1800,radius=750,maxOfficers=3,combatGraceFrames=150,
-        safehouseRevealRange=350,safehouseRevealFrames=900},
-    CyberCrime={durationFrames=3600,policeInterruptRange=180},
-    instance={culture='arabic'},GameState={anarchy='anarchy',pacification='pacification'}}
+local cfg={police={population={maxOfficers=8},dispatch={durationFrames=2000,minSpawnDistance=2200,reportDelayFrames=240},pursuit={escapeFrames=900,searchFrames=1350,sightRange=650}},espionage={bribe={durationFrames=1800,radius=750,maxOfficers=3,combatGraceFrames=150,safehouseRevealRange=350,safehouseRevealFrames=900},cybercrime={durationFrames=3600,policeInterruptRange=180}},game={culture='arabic',states={anarchy='anarchy',pacification='pacification'}}}
 GG={BuildingTable={[10]={x=3000,z=3000}},GlobalGameState='normal'}
 Game={mapSizeX=10000,mapSizeZ=10000}
 CMD={MOVE=10,ATTACK=20,STOP=0}

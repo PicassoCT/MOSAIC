@@ -6,9 +6,9 @@ include "lib_mosaic.lua"
 local TablesOfPiecesGroups = {}
 local GameConfig = getGameConfig()
 
-local IntegrationRadius = GameConfig.integrationRadius
-local CHARGE_PER_MEMBER_MS = GameConfig.addSlowMoTimeInMsPerCitizen or 150
-local TIME_MAX = GameConfig.maxNumberIntegratedIntoHive * CHARGE_PER_MEMBER_MS
+local IntegrationRadius = GameConfig.espionage.hivemind.integrationRadius
+local CHARGE_PER_MEMBER_MS = GameConfig.espionage.hivemind.chargePerCitizenMs or 150
+local TIME_MAX = GameConfig.espionage.hivemind.maxMembers * CHARGE_PER_MEMBER_MS
 local Icon = piece "Icon"
 local Eye = piece "Eye"
 
@@ -42,7 +42,7 @@ function integrateNewMembers()
     local x, _, z = Spring.GetUnitPosition(unitID)
     local px, py, pz = Spring.GetUnitPosition(unitID)
     local integrateAbleUnits = getCultureUnitModelTypes(
-        GG.GameConfig.instance.culture, "truck", UnitDefs
+        GG.GameConfig.game.culture, "truck", UnitDefs
     )
 
     while true do

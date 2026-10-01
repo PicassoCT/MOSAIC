@@ -6,11 +6,11 @@ include "lib_mosaic.lua"
 local spGetUnitDefID = Spring.GetUnitDefID
 local GameConfig = getGameConfig()
 local civilianWalkingTypeTable = getCultureUnitModelTypes(
-                                     GameConfig.instance.culture,
+                                     GameConfig.game.culture,
                                      "civilian", UnitDefs)
 
 local truckTypeTable = getCultureUnitModelTypes(
-                                     GameConfig.instance.culture,
+                                     GameConfig.game.culture,
                                      "truck", UnitDefs)
 
 local timeTotal = 35*1000
@@ -73,7 +73,7 @@ end
 
 function doDamage()
   while true do
-    foreach(getAllInCircle(px,pz, GameConfig.teargasRadius, unitID),
+    foreach(getAllInCircle(px,pz, GameConfig.police.teargas.radius, unitID),
                         function(id)
                            defID= spGetUnitDefID(id)
                            if civilianWalkingTypeTable[defID] then

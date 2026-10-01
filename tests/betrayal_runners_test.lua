@@ -1,7 +1,7 @@
 -- Lua 5.1+: exercise the real gadget through Spring call-ins.
 local function world()
     local w={frame=0,units={},next=100,orders={},reveals=0,blocked=false}
-    GG={GameConfig={raid={revealGraphLifeTimeFrames=9000}}}
+    GG={GameConfig={espionage={raids={revealedGraphLifetimeFrames=9000}}}}
     Game={mapSizeX=10000,mapSizeZ=10000}
     CMD={STOP=0,MOVE=10,ATTACK=20,FIRE_STATE=45,MOVE_STATE=50,CLOAK=95,SELFD=65,LOAD_UNITS=75}
     UnitDefs={[1]={name='operative',humanName='Operative',speed=60,maxWeaponRange=0},

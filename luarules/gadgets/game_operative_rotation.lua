@@ -44,7 +44,7 @@ if (gadgetHandler:IsSyncedCode()) then
     local OneSecondFrames = 30
 
     local civilianWalkingTypeTable = getCultureUnitModelTypes(
-                                         GameConfig.instance.culture,
+                                         GameConfig.game.culture,
                                          "civilian", UnitDefs)
 
     function gadget:Initialize()

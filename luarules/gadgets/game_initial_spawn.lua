@@ -346,7 +346,7 @@ if gadgetHandler:IsSyncedCode() then
 
     function gadget:GameStart()
         Spring.Echo("Starting game MOSAIC Version " ..
-                        GameConfig.instance.Version)
+                        GameConfig.game.version)
         -- ffa mode spawning
         if useFFAStartPoints and ffaStartPoints and ffaStartPoints[nAllyTeams] and
             #(ffaStartPoints[nAllyTeams]) == nAllyTeams then
@@ -474,16 +474,16 @@ if gadgetHandler:IsSyncedCode() then
         -- remove the pre-existing storage
         -- must be done after the start unit is spawned,
         -- otherwise the starting resources are lost!
-        Spring.SetTeamResource(teamID, "ms", GameConfig.metalStartVolume)
+        Spring.SetTeamResource(teamID, "ms", GameConfig.economy.storage.money)
         Spring.SetTeamResource(teamID, "m", 0)
-        Spring.AddTeamResource(teamID, "m", GameConfig.metalStart)
+        Spring.AddTeamResource(teamID, "m", GameConfig.economy.starting.money)
 
         -- remove the pre-existing storage
         -- must be done after the start unit is spawned,
         -- otherwise the starting resources are lost!
-        Spring.SetTeamResource(teamID, "es", GameConfig.energyStartVolume)
+        Spring.SetTeamResource(teamID, "es", GameConfig.economy.storage.supply)
         Spring.SetTeamResource(teamID, "e", 0)
-        Spring.AddTeamResource(teamID, "e", GameConfig.energyStart)
+        Spring.AddTeamResource(teamID, "e", GameConfig.economy.starting.supply)
 
     end
 

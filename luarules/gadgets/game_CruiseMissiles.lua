@@ -99,11 +99,11 @@ onLastPointBeforeImpactSetTargetTo = {
                     projectileTeamID = Spring.GetProjectileTeamID(projID)
                     collateralTable = {}
                     allHardTargetsInRange = foreach(
-                                            getAllInCircle(tx,tz, GameConfig.CruiseMissile.antiArmorDroplettRange),
+                                            getAllInCircle(tx,tz, GameConfig.military.cruiseMissiles.antiArmorDropletRange),
                                             function(id)
                                                 teamID = Spring.GetUnitTeam(id)
                                                 if teamID == projectileTeamID then return end
-                                                if teamID == gaiaTeamID and GG.GlobalGameState == GameConfig.GameState.normal then 
+                                                if teamID == gaiaTeamID and GG.GlobalGameState == GameConfig.game.states.normal then
                                                       collateralTable[#collateralTable + 1] = id
                                                       return 
                                                 end
@@ -258,7 +258,7 @@ function gadget:ProjectileCreated(proID, proOwnerID, proWeaponDefID)
                                 {
                                     targetX = rx,
                                     targetY = Spring.GetGroundHeight(x,z) +
-                                        GameConfig.CruiseMissile.heightOverGround + 
+                                        GameConfig.military.cruiseMissiles.heightOverGround +
                                         100,
                                     targetZ = rz,
                                     targetType = string.byte("g")
@@ -268,7 +268,7 @@ function gadget:ProjectileCreated(proID, proOwnerID, proWeaponDefID)
                     {
                         targetX = rx,
                         targetY = interpolate_Y +
-                            GameConfig.CruiseMissile.heightOverGround,
+                            GameConfig.military.cruiseMissiles.heightOverGround,
                         targetZ = rz,
                         targetType = string.byte("g")
                     }

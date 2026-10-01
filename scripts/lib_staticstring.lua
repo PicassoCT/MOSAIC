@@ -95,11 +95,11 @@ function getHouseShopName(id,  buisnessNamesTable, UnitDefs)
         x,y, z = Spring.GetUnitPosition(id)
         local houseStreetDim = {}
         local gameConfig = GG.GameConfig
-        houseStreetDim.x, houseStreetDim.y, houseStreetDim.z = gameConfig.houseSizeX + gameConfig.allyWaySizeX, gameConfig.houseSizeY, gameConfig.houseSizeZ + gameConfig.allyWaySizeZ
+        houseStreetDim.x, houseStreetDim.y, houseStreetDim.z = gameConfig.city.buildings.sizeX + gameConfig.city.alleys.sizeX, gameConfig.city.buildings.sizeY, gameConfig.city.buildings.sizeZ + gameConfig.city.alleys.sizeZ
         isLocalShop = (hash % 3 == 0) and not isNearCityCenter(x * houseStreetDim.x, z* houseStreetDim.z, gameConfig)
 		if isLocalShop then
             --ownerId = 
-            first, sur =  getDeterministicCultureNames(id+ math.random(1,3000), UnitDefs, gameConfig.instance.culture, true)
+            first, sur =  getDeterministicCultureNames(id+ math.random(1,3000), UnitDefs, gameConfig.game.culture, true)
 		    if maRa() then
                 return getFirstShopName(first)
             else
@@ -115,7 +115,7 @@ function setHouseStreetNameTooltip(id, detailXHash, detailZHash, Game, boolInner
     detailXHash = math.floor(detailXHash)
     detailZHash = math.floor(detailZHash)
 
-    region = getRegionByCulture(GG.GameConfig.instance.culture, getDetermenisticMapHash(Game))
+    region = getRegionByCulture(GG.GameConfig.game.culture, getDetermenisticMapHash(Game))
     assert(region)
     if not GG.UsedStreetNameCounterDict then
         GG.UsedStreetNameCounterDict = {}
@@ -932,8 +932,8 @@ end
 
 -- Function to generate detailed conversations
 local function generate_conversation(idA, idB, groupName)
-    firstName1, lastName1 = getDeterministicCultureNames( idA, UnitDefs, GG.GameConfig.instance.culture)
-    firstName2, lastName2 = getDeterministicCultureNames( idB, UnitDefs, GG.GameConfig.instance.culture)
+    firstName1, lastName1 = getDeterministicCultureNames( idA, UnitDefs, GG.GameConfig.game.culture)
+    firstName2, lastName2 = getDeterministicCultureNames( idB, UnitDefs, GG.GameConfig.game.culture)
     -- Conversational roles
     local calmPerson = firstName1 .. " " .. lastName1..":"
     local panickyPerson = firstName2 .. " " .. lastName2..":"
@@ -947,7 +947,7 @@ local function generate_conversation(idA, idB, groupName)
         "Long life ".. groupName,
         "Swordfish ?"
     }
-    name, family = getDeterministicCultureNames( idA+idB, UnitDefs, GG.GameConfig.instance.culture)
+    name, family = getDeterministicCultureNames( idA+idB, UnitDefs, GG.GameConfig.game.culture)
     traitor = name.." sold us out. Never should have trusted a ".. family.." ! Fuck!"
     -- Conversation topics and sentences
     local coverBlown = {
@@ -1084,7 +1084,7 @@ end
 function getDeadDropLastWords(unitID, killerId )
     teamName, isAntagon = getTeamNameIsAntagon(unitID)
     civilianId = getCivilianIdFromAgent(unitID)  or unitID
-    agentName, SurName = getDeterministicCultureNames( id, UnitDefs, GG.GameConfig.instance.culture)
+    agentName, SurName = getDeterministicCultureNames( id, UnitDefs, GG.GameConfig.game.culture)
 
     lastWords = {
         "We were brothers, "..agentName

@@ -145,9 +145,9 @@ function watchRaidIconTable()
  --[[      if GG.raidStatus[unitID].state == raidStates.WaitingForUplink then
         local scanSatDefID = UnitDefNames["satellitescan"].id
         local satelliteAlitudeTable = getSatelliteAltitudeTable(UnitDefs)
-        local raidComRange = GameConfig.agentConfig.raidComRange +  satelliteAlitudeTable[scanSatDefID]
+        local raidComRange = GameConfig.espionage.raids.communicationRange +  satelliteAlitudeTable[scanSatDefID]
 
-        local raidBonusFactorSatellite=  GameConfig.agentConfig.raidBonusFactorSatellite
+        local raidBonusFactorSatellite=  GameConfig.espionage.raids.satelliteBonusFactor
         local spGetUnitDefID = Spring.GetUnitDefID
         boolComSatelliteNearby= false
      while boolComSatelliteNearby == false do
@@ -190,7 +190,7 @@ function watchRaidIconTable()
         showRaidAbortedAnimation()
     end
 
-    Sleep(GameConfig.Satellite.uploadTimesMs)
+    Sleep(GameConfig.military.satellites.uploadTimeMs)
 
     boolRaidUploadInProgress = false
     GG.raidStatus[unitID].state =  raidStates.VictoryStateSet
@@ -327,7 +327,7 @@ upgradeTypeTable = getSafeHouseUpgradeTypeTable(UnitDefs, unitDefID)
 safeHouseTypeTable = getSafeHouseTypeTable(UnitDefs)
 raidIconTypeTable = getRaidIconTypeTable(UnitDefs)
 operativeTypeTable = getOperativeTypeTable(UnitDefs)
-houseTypeTable = getHouseTypeTable(UnitDefs, GameConfig.instance.culture)
+houseTypeTable = getHouseTypeTable(UnitDefs, GameConfig.game.culture)
 function shoveAllNonCombatantsOut()
     Sleep(1000)
     radius = 140
@@ -392,7 +392,7 @@ function raidAnimationLoop()
 
     StartThread(waveSpins)
 
-    roundStep = math.ceil(GameConfig.raid.maxRoundLength / 100)
+    roundStep = math.ceil(GameConfig.espionage.raids.maxRoundDurationMs / 100)
     hideT(step)
     totalTime = 0
 

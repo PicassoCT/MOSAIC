@@ -21,12 +21,12 @@ if (gadgetHandler:IsSyncedCode()) then
     local UnitDefNames = getUnitDefNames(UnitDefs)
     local GameConfig = getGameConfig()
     local civilianWalkingTypeTable = getCultureUnitModelTypes(
-                                         GameConfig.instance.culture,
+                                         GameConfig.game.culture,
                                          "civilian", UnitDefs)
     local loudLongRangeWeaponTypes = getLoudLongRangeWeaponTypes(WeaponDefs)
     
     local isCloseCombatCapabaleType = getCloseCombatAbleTypes(UnitDefs)
-    local houseTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture,
+    local houseTypeTable = getCultureUnitModelTypes(GameConfig.game.culture,
                                                     "house", UnitDefs)
 
     local turnCoatFactoryType = getTurnCoatFactoryType(UnitDefs)
@@ -45,7 +45,7 @@ if (gadgetHandler:IsSyncedCode()) then
     local spEcho =  Spring.Echo 
     local GaiaTeamID = Spring.GetGaiaTeamID()
     local MobileInterrogateAbleType = getMobileInterrogateAbleTypeTable(UnitDefs)
-    if GameConfig.instance.culture == "arabic" then
+    if GameConfig.game.culture == "arabic" then
         assert(MobileInterrogateAbleType[UnitDefNames["civilian_arab0"].id] ~= nil)
     end
     local RaidAbleType = getRaidAbleTypeTable(UnitDefs)
@@ -329,7 +329,7 @@ if (gadgetHandler:IsSyncedCode()) then
     -- victim -- interrogator -- boolInerrogationOngoing
 
     local civilianWalkingTypeTable = getCultureUnitModelTypes(
-                                         GameConfig.instance.culture,
+                                         GameConfig.game.culture,
                                          "civilian", UnitDefs)
     raidStates = getRaidStates()
     raidResultStates = getRaidResultStates()
@@ -419,7 +419,7 @@ if (gadgetHandler:IsSyncedCode()) then
                 end
 
                 -- check distance is still okay
-                if distanceUnitToUnit(persPack.interrogatorID, persPack.raidedSafeHouseOrHouse_ID) > GameConfig.RaidDistance then
+                if distanceUnitToUnit(persPack.interrogatorID, persPack.raidedSafeHouseOrHouse_ID) > GameConfig.espionage.raids.range then
                     conditionalEcho(boolDebugProjectile,"Raid: failed check distance is still okay5 ")
                     if doesUnitExistAlive(persPack.IconID) == true then
                     GG.raidStatus[persPack.IconID].state = raidStates.Aborted
@@ -487,12 +487,12 @@ if (gadgetHandler:IsSyncedCode()) then
                             -- Propandapunishment for Unjust Raids & Interrogations: Remember Guantanamo
                             assert(persPack.attackerTeam)
                             GG.Bank:TransferToTeam(
-                                -GameConfig.raid.interrogationPropagandaPrice,
+                                -GameConfig.espionage.interrogation.propagandaPriceMoney,
                                 persPack.attackerTeam, persPack.attackerID)
                             for i = 1, #allTeams, 1 do
                                 if allTeams[i] ~= persPack.attackerTeam then
                                     GG.Bank:TransferToTeam(
-                                        GameConfig.raid.interrogationPropagandaPrice,
+                                        GameConfig.espionage.interrogation.propagandaPriceMoney,
                                         allTeams[i], persPack.raidedSafeHouseOrHouse_ID)
                                 end
                             end
@@ -521,7 +521,7 @@ if (gadgetHandler:IsSyncedCode()) then
                         children = getChildrenOfUnit(unitTeam, persPack.raidedSafeHouseOrHouse_ID)
                         parent = getParentOfUnit(unitTeam, persPack.raidedSafeHouseOrHouse_ID)
                         GG.Bank:TransferToTeam(
-                            GameConfig.raid.interrogationPropagandaPrice,
+                            GameConfig.espionage.interrogation.propagandaPriceMoney,
                             persPack.attackerTeam, persPack.attackerID)
                         registerRevealedUnitLocation(persPack.raidedSafeHouseOrHouse_ID)
                         for childID, v in pairs(children) do
@@ -633,7 +633,7 @@ if (gadgetHandler:IsSyncedCode()) then
 
                 -- check distance is still okay
                 if distanceUnitToUnit(persPack.interrogatorID, persPack.unitID) >
-                    GameConfig.InterrogationDistance then
+                    GameConfig.espionage.interrogation.range then
                     --conditionalEcho(boolDebugProjectile,"Interogation End: Interrogator distance to big ")
                     postInterrogationCleanUp(persPack.unitID, persPack.interrogatorID, persPack.IconID)                        
                     return true, persPack
@@ -659,7 +659,7 @@ if (gadgetHandler:IsSyncedCode()) then
                     if not GG.raidStatus[persPack.IconID] then
                         GG.raidStatus[persPack.IconID] =
                             {
-                                countDown =  (spGetGameFrame() - persPack.startFrame) / GameConfig.InterrogationTimeInFrames,
+                                countDown =  (spGetGameFrame() - persPack.startFrame) / GameConfig.espionage.interrogation.durationFrames,
                                 boolInterogationComplete = false,
                                 winningTeam = nil
                             }
@@ -686,13 +686,13 @@ if (gadgetHandler:IsSyncedCode()) then
                             -- Propandapunishment for Unjust Raids & Interrogations: Remember Guantanamo
                             assert(persPack.attackerTeam)
                             GG.Bank:TransferToTeam(
-                                -GameConfig.raid.interrogationPropagandaPrice,
+                                -GameConfig.espionage.interrogation.propagandaPriceMoney,
                                 persPack.attackerTeam, persPack.attackerID)
 
                             for i = 1, #allTeams, 1 do
                                 if allTeams[i] ~= persPack.attackerTeam then
                                     GG.Bank:TransferToTeam(
-                                        GameConfig.raid.interrogationPropagandaPrice,
+                                        GameConfig.espionage.interrogation.propagandaPriceMoney,
                                         allTeams[i], persPack.unitID)
                                 end
                             end
@@ -712,7 +712,7 @@ if (gadgetHandler:IsSyncedCode()) then
                    -- if not children then conditionalEcho(boolDebugProjectile,"Unit "..persPack.unitID.. " has no children") end
                    -- if not parent then conditionalEcho(boolDebugProjectile,"Unit "..persPack.unitID.. " has no parent") end
                     GG.Bank:TransferToTeam(
-                        GameConfig.raid.interrogationPropagandaPrice,
+                        GameConfig.espionage.interrogation.propagandaPriceMoney,
                         persPack.attackerTeam, persPack.attackerID)
                         registerRevealedUnitLocation(persPack.unitID)
 

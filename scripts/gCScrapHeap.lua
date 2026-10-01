@@ -76,19 +76,19 @@ end
 function waitForAnEnd()
     hideT(ExcavatorTable)
     Sleep(10)
-    timeForMoveInSec = GameConfig.TimeForScrapHeapDisappearanceInMs/1000
+    timeForMoveInSec = GameConfig.city.rubble.disappearanceTimeMs/1000
     if GG.TimeDelayedRespawn and GG.TimeDelayedRespawn[unitID] and GG.TimeDelayedRespawn[unitID].frame  then
         timeForMoveInSec = GG.TimeDelayedRespawn[unitID].frame/30
     end 
 
     speed = distanceToGoDown / timeForMoveInSec
-    Sleep(GameConfig.minutMS)
+    Sleep(60 * 1000)
     StartThread(excavator)
 
     for i= 1, -1 * distanceToGoDown, -1 do
         WMove(center, z_axis, i, speed)
-        while boolSleepOnHit == true or GG.GlobalGameState ~= GameConfig.GameState.normal do
-            Sleep(GameConfig.minutMS)
+        while boolSleepOnHit == true or GG.GlobalGameState ~= GameConfig.game.states.normal do
+            Sleep(60 * 1000)
             boolSleepOnHit = false
         end            
     end

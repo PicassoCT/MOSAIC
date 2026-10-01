@@ -110,7 +110,7 @@ if (gadgetHandler:IsSyncedCode()) then
         for _, team in ipairs(teams) do
             if team ~= gaiaTeamID and team ~= attackerTeam
                 and not Spring.AreTeamsAllied(attackerTeam, team) then
-                local factor = 1 + (GG.Propgandaservers[team] or 0) * GameConfig.propandaServerFactor
+                local factor = 1 + (GG.Propgandaservers[team] or 0) * GameConfig.economy.propaganda.serverMultiplier
                 local reward = math.ceil(amount * factor)
                 -- Payout is unconditional, including when the offender has no
                 -- money or buildings. Collection is a separate liability.
@@ -135,7 +135,7 @@ if (gadgetHandler:IsSyncedCode()) then
         if not attackerTeamID or attackerTeamID == gaiaTeamID then return end
 
         if houseTypeTable[unitDefID] then
-            local amount = GameConfig.costs.DestroyedHousePropanda
+            local amount = GameConfig.economy.collateral.houseDestructionMoney
             awardOpponents(attackerTeamID, amount, unitID, unitDefID)
             assessPenalty(attackerTeamID, amount, unitID)
         elseif GG.DisguiseCivilianFor[unitID] and teamID ~= attackerTeamID then
@@ -144,7 +144,7 @@ if (gadgetHandler:IsSyncedCode()) then
             local def = UnitDefs[unitDefID]
             local maxhp = def.health or def.maxDamage
             if maxhp then
-                local factor = 1 + (GG.Propgandaservers[teamID] or 0) * GameConfig.propandaServerFactor
+                local factor = 1 + (GG.Propgandaservers[teamID] or 0) * GameConfig.economy.propaganda.serverMultiplier
                 local reward = math.ceil(math.abs(maxhp * factor))
                 spAddTeamResource(attackerTeamID, "metal", reward)
                 addInSecond(attackerTeamID, attackerID or unitID, "metal", reward)

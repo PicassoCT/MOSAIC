@@ -503,7 +503,7 @@ function buildBuilding()
     local hash = math.ceil(unitHash) + math.ceil(mapHash)
 
     -- Check the cap after the staggered sleep, immediately before selection.
-    if boolBuildingShadowIsGameRelevant or GG.MegaBuildingCount >= GameConfig.MegaBuildingMax then
+    if boolBuildingShadowIsGameRelevant or GG.MegaBuildingCount >= GameConfig.city.buildings.maxMegaBuildings then
         filterOutMegaBuilding()
     end
     assert(count(ArcoT) > 0)

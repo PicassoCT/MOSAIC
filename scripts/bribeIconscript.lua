@@ -22,7 +22,7 @@ function script.Create()
         Spring.SetUnitNoSelect(unitID,false)
         Spring.MoveCtrl.Enable(unitID)
         local ox, oy, oz = Spring.GetUnitPosition(unitID)
-        Spring.MoveCtrl.SetPosition(unitID, ox, oy + gameConfig.iconHoverGroundOffset, oz)
+        Spring.MoveCtrl.SetPosition(unitID, ox, oy + gameConfig.presentation.icons.hoverGroundOffset, oz)
         value =42*randSign()
         Spin(DollarSign,y_axis,math.rad(value),0)
         hideT(TablesOfPiecesGroups["MoneyFlying"])
@@ -37,7 +37,7 @@ function script.Create()
             end
             )
         -- game_police owns movement, duration and effects after construction.
-        StartThread(percentageUpdate, gameConfig.Bribe.durationFrames * 1000 / 30)
+        StartThread(percentageUpdate, gameConfig.espionage.bribe.durationFrames * 1000 / 30)
         for i=1, #TablesOfPiecesGroups["MoneyFlying"] do
             StartThread(dropCashOnMove, TablesOfPiecesGroups["MoneyFlying"][i])
         end

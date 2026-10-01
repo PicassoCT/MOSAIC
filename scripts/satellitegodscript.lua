@@ -22,7 +22,7 @@ function script.Create()
 
     --Spin(center,y_axis,math.rad(5),0.5)
     if Icon then
-        Move(Icon, y_axis, GameConfig.Satellite.iconDistance, 0);
+        Move(Icon, y_axis, GameConfig.presentation.icons.satelliteHeight, 0);
         Hide(Icon)
     end
     generatepiecesTableAndArrayCode(unitID)
@@ -97,11 +97,11 @@ function manuallyTargetingGodRod()
      
         ax,ay,az = unitHasAttackCommand()
         if ax then
-            if distance(x,0 ,z, ax, 0, az) < GameConfig.Satellite.GodRodDropDistance then
+            if distance(x,0 ,z, ax, 0, az) < GameConfig.military.satellites.godRod.dropDistance then
             StartThread(dropGodRodAt, unitID,x,y,z)
             Hide(TablesOfPiecesGroups["GodRod"][NumberOfRods])
             NumberOfRods = NumberOfRods - 1
-            Sleep(GameConfig.Satellite.GodRodReloadTimeInMs) 
+            Sleep(GameConfig.military.satellites.godRod.reloadTimeMs)
 
                 if NumberOfRods <= 0 then
                     GG.DiedPeacefully[unitID] = true
@@ -126,7 +126,7 @@ function dropGodRodAt(unitID, x,y,z)
                                 owner = unitID,
                                 team = myTeamID,
                                 spread = { math.random(-5, 5), math.random(-5, 5), math.random(-5, 5) },
-                                ttl = GameConfig.Satellite.GodRodTimeToImpactInMs,
+                                ttl = GameConfig.military.satellites.godRod.timeToImpactMs,
                                 error = { 0, 0, 0 },
                                 maxRange = 3000,
                                 gravity = Game.gravity,
@@ -139,7 +139,7 @@ function dropGodRodAt(unitID, x,y,z)
        projectileID =  Spring.SpawnProjectile(impactorWeaponDefID,ImpactorParameter)
        if projectileID then       
             Sleep(3000)
-           StartThread(PlaySoundByUnitDefID, unitDefID, "sounds/weapons/godrod/impactor.wav", 1.0, GameConfig.Satellite.GodRodTimeToImpactInMs, 5)
+           StartThread(PlaySoundByUnitDefID, unitDefID, "sounds/weapons/godrod/impactor.wav", 1.0, GameConfig.military.satellites.godRod.timeToImpactMs, 5)
         end
    end
 

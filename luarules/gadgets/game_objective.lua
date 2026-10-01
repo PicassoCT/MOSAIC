@@ -16,7 +16,7 @@ VFS.Include("scripts/lib_mosaic.lua")
 local Income = VFS.Include("luarules/gadgets/include/objective_income.lua")
 local gaiaTeamID = Spring.GetGaiaTeamID()
 local objectiveTypes = getObjectiveTypes(UnitDefs)
-local config = getGameConfig().Objectives
+local config = getGameConfig().objectives
 local server = UnitDefNames.propagandaserver
 local serverDef = server and UnitDefs[server.id]
 local serverIncome = serverDef and (serverDef.metalMake or serverDef.metalmake) or 0
@@ -52,7 +52,7 @@ local function getSites()
     return records
 end
 
-local income = Income.New(Spring, Game, config.Income, serverIncome, sides,
+local income = Income.New(Spring, Game, config.income, serverIncome, sides,
     function(amount, team, id)
         -- The bank replaces its queue after processing: always use the live API.
         GG.Bank:TransferToTeam(amount, team, id, {r=0, g=0, b=255})
@@ -196,7 +196,7 @@ function gadget:GameFrame(frame)
         if initializing then return end
     end
     if frame % (Game.gameSpeed or 30) == 0 then restorePending() end
-    if frame % config.RewardCyle == 0 then
+    if frame % config.payoutIntervalFrames == 0 then
         payAll(GG.Objectives, frame)
         payAll(GG.DeadObjectives, frame)
     end

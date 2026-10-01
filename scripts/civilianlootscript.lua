@@ -56,7 +56,7 @@ function selfDestroyDelayedOnDetach()
         foreach(getAllNearUnit(unitID, 150),
             function(id)
                 if gaiaTeamID ~= spGetUnitTeam(id) then
-                    GG.Bank:TransferToTeam(GameConfig.lootCollectionReward, unitID, id, colourBlue)
+                    GG.Bank:TransferToTeam(GameConfig.economy.rewards.lootCollectionMoney, unitID, id, colourBlue)
                     Spring.DestroyUnit(unitID, false, true)
                 end
             end)

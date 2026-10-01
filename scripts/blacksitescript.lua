@@ -18,7 +18,7 @@ if not center then
     echo("Unit of type" .. UnitDefs[Spring.GetUnitDefID(unitID)].name ..
              " has no center")
 end
-local houseTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture,
+local houseTypeTable = getCultureUnitModelTypes(GameConfig.game.culture,
                                                 "house", UnitDefs)
 
 function script.Create()

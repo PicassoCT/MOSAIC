@@ -102,7 +102,7 @@ local gaiaTeamID = Spring.GetGaiaTeamID()
 local loc_doesUnitExistAlive = doesUnitExistAlive
 
 local civilianWalkingTypeTable = getCultureUnitModelTypes(
-                                     GameConfig.instance.culture, "civilian",
+                                     GameConfig.game.culture, "civilian",
                                      UnitDefs)
 
 
@@ -148,9 +148,9 @@ home = {}
 
 local damagedCoolDown = 0
 local bodyConfig = {}
-local TruckTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "truck", UnitDefs)
-local NORMAL_WALK_SPEED =  GameConfig.civilian_walking_speedfactor
-local SPRINT_SPEED = GameConfig.civilian_running_speedfactor
+local TruckTypeTable = getCultureUnitModelTypes(GameConfig.game.culture, "truck", UnitDefs)
+local NORMAL_WALK_SPEED =  GameConfig.civilians.movement.walkingSpeedFactor
+local SPRINT_SPEED = GameConfig.civilians.movement.runningSpeedFactor
 
 function naked()
     isBeachBabe = UnitDefNames["civilian_western4"].id == unitDefID
@@ -164,7 +164,7 @@ function variousBodyConfigs()
     bodyConfig.boolTrolley = (iShoppingConfig == 3) or naked()
     bodyConfig.boolHandbag = randChance(65)
     bodyConfig.boolLoaded = (iShoppingConfig < 5)
-    bodyConfig.boolProtest = GG.GlobalGameState == GameConfig.GameState.anarchy and maRa()
+    bodyConfig.boolProtest = GG.GlobalGameState == GameConfig.game.states.anarchy and maRa()
     bodyConfig.boolHasDeco = randChance(70)
     setDefaultBodyConfig()
 end
@@ -384,9 +384,9 @@ function speedControl()
         setSpeedIntern(unitID, NORMAL_WALK_SPEED) 
     end
 
-    if GG.GlobalGameState ~= GameConfig.GameState.normal  then
+    if GG.GlobalGameState ~= GameConfig.game.states.normal  then
         setSpeedIntern(unitID, 0.85)
-        while GG.GlobalGameState ~= GameConfig.GameState.normal do
+        while GG.GlobalGameState ~= GameConfig.game.states.normal do
             Sleep(1000)
             if  GG.DamageHeatMap and GG.DamageHeatMap.getDangerAtLocation then
                 x,y, z = spGetUnitPosition(unitID)
@@ -460,7 +460,7 @@ function bodyBuild()
         showAllSubsSpinsOfPiece(TablesOfPiecesGroups, "Deco", index)
     end
 
-    if math.random(0, 4) > 3 or GG.GlobalGameState ~=  GameConfig.GameState.normal then Show(MilitiaMask) end
+    if math.random(0, 4) > 3 or GG.GlobalGameState ~=  GameConfig.game.states.normal then Show(MilitiaMask) end
 
     if bodyConfig.boolArmed == true then
         Show(MilitiaMask) 
@@ -478,7 +478,7 @@ function bodyBuild()
         return
     end
 
-    if GG.GlobalGameState == GameConfig.GameState.normal  then
+    if GG.GlobalGameState == GameConfig.game.states.normal  then
        dropLoot()
     end
  
@@ -641,7 +641,7 @@ function script.HitByWeapon(x, z, weaponDefID, damage)
     if bodyConfig.boolInfluenced then return damage end
     if weaponDefID == stunPistolDefID then return damage end
     transportID = spGetUnitIsTransporting(unitID)
-    setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_ENDED, "wounded")
+    setCivilianUnitInternalStateMode(unitID, GameConfig.civilians.activityStates.ended, "wounded")
     if  transportID then --if holds loot        
         Spring.UnitDetach(transportID)
     end
@@ -672,7 +672,7 @@ function setCivilianUnitInternalStateMode(unitID, State, name)
     local behaviour = name or "unknown"
     local currentState = GG.CivilianUnitInternalLogicActive[unitID]
     if type(currentState) == "table" and currentState.behaviour == "pray" and
-       (State ~= GameConfig.STATE_STARTED or behaviour ~= "pray") then
+       (State ~= GameConfig.civilians.activityStates.started or behaviour ~= "pray") then
         -- A signal can terminate pray() before its normal speed cleanup.
         setSpeedEnv(unitID, NORMAL_WALK_SPEED)
     end
@@ -688,7 +688,7 @@ end
 filmLocation = {}
 boolStartFilming = false
 function startFilmLocation(ux, uy, uz, time)
-    setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_STARTED, "filming")
+    setCivilianUnitInternalStateMode(unitID, GameConfig.civilians.activityStates.started, "filming")
     filmLocation.x=ux
     filmLocation.y=uy
     filmLocation.z=uz
@@ -701,7 +701,7 @@ end
 wailingTime = 0
 boolStartWailing = false
 function startWailing(time)
-    setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_STARTED, "wailing")
+    setCivilianUnitInternalStateMode(unitID, GameConfig.civilians.activityStates.started, "wailing")
     wailingTime = time
     boolStartWailing = true
     queueEventThread("behaviour", threadStateStarter, 250)
@@ -712,7 +712,7 @@ chattingTime = 0
 chatPartner = nil
 boolStartChatting = false
 function startChatting(time, chatPartners)
-    setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_STARTED, "talk")
+    setCivilianUnitInternalStateMode(unitID, GameConfig.civilians.activityStates.started, "talk")
     chattingTime = time
     chatPartner = chatPartners
     boolStartChatting = true
@@ -724,7 +724,7 @@ attackerID = 0
 boolStartFleeing = false 
 function startFleeing(enemyID)
     attackerID = enemyID
-    setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_STARTED, "fleeing")
+    setCivilianUnitInternalStateMode(unitID, GameConfig.civilians.activityStates.started, "fleeing")
     boolStartFleeing = true
     queueEventThread("behaviour", threadStateStarter, 250)
     return true
@@ -733,7 +733,7 @@ end
 boolStartPeaceFullProtest = false
 socialEngineerID = nil
 function startPeacefullProtest( id)
-    setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_STARTED, "protest")
+    setCivilianUnitInternalStateMode(unitID, GameConfig.civilians.activityStates.started, "protest")
 	socialEngineerID= id
     boolStartPeaceFullProtest = true
     queueEventThread("behaviour", threadStateStarter, 250)
@@ -795,7 +795,7 @@ function peacefullProtest()
 	GG.SocialEngineeredPeople[unitID] = nil
    resetUpperBodyNoTPose(true)
 	hideProtestSign()
-    setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_ENDED, "protest")
+    setCivilianUnitInternalStateMode(unitID, GameConfig.civilians.activityStates.ended, "protest")
 end
 
 function resetUpperBodyNoTPose(boolWait)
@@ -812,13 +812,13 @@ local prayerAnimationName = PrayerAnimations.name(1)
 local function isPraying()
     local state = GG.CivilianUnitInternalLogicActive and GG.CivilianUnitInternalLogicActive[unitID]
     return type(state) == "table" and state.behaviour == "pray" and
-           state.state == GameConfig.STATE_STARTED
+           state.state == GameConfig.civilians.activityStates.started
 end
 
 boolStartPraying = false
 function startPraying(callIndex)
     prayerAnimationName = PrayerAnimations.name(callIndex)
-    setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_STARTED, "pray")
+    setCivilianUnitInternalStateMode(unitID, GameConfig.civilians.activityStates.started, "pray")
     boolStartPraying = true
     queueEventThread("behaviour", threadStateStarter, 250)
     return true
@@ -842,35 +842,35 @@ function pray()
 
     setSpeedEnv(unitID, NORMAL_WALK_SPEED)
     resetUpperBodyNoTPose()
-    setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_ENDED, "pray")
+    setCivilianUnitInternalStateMode(unitID, GameConfig.civilians.activityStates.ended, "pray")
 end
 
 boolStartAnarchyBehaviour = false
 function startAnarchyBehaviour()
-    setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_STARTED, "anarchy")
+    setCivilianUnitInternalStateMode(unitID, GameConfig.civilians.activityStates.started, "anarchy")
     boolStartAnarchyBehaviour = true
     queueEventThread("behaviour", threadStateStarter, 250)
     return true
 end
 
 function anarchyBehaviour()   
-    oldBehaviourState = GameConfig.GameState.normal
+    oldBehaviourState = GameConfig.game.states.normal
     newState = GG.GlobalGameState
 
     if not GG.AnarchySexCoupleSpawnFrame  then GG.AnarchySexCoupleSpawnFrame = Spring.GetGameFrame() - 1 end
 
-    if GG.AnarchySexCoupleSpawnFrame  + GameConfig.anarchySexCouplesEveryNSeconds * 30 < Spring.GetGameFrame() and math.random(1,100) == 69 and maRa() ==true then
+    if GG.AnarchySexCoupleSpawnFrame  + GameConfig.civilians.anarchy.coupleSpawnIntervalSeconds * 30 < Spring.GetGameFrame() and math.random(1,100) == 69 and maRa() ==true then
         StartThread(haveSexTimeDelayed)
         return
     end
 
-    while GG.GlobalGameState ~= GameConfig.GameState.normal do
+    while GG.GlobalGameState ~= GameConfig.game.states.normal do
         normalBehavourStateMachine[newState](oldBehaviourState, GG.GlobalGameState, unitID)
         oldBehaviourState = GG.GlobalGameState
         Sleep(250)
     end
 
-    setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_ENDED, "anarchy")
+    setCivilianUnitInternalStateMode(unitID, GameConfig.civilians.activityStates.ended, "anarchy")
 end
 
 function haveSexTimeDelayed()
@@ -892,7 +892,7 @@ function startAerosolBehaviour(extAerosolStateToSet)
     boolStartAerosolBehaviour= true
     queueEventThread("behaviour", threadStateStarter, 250)
     aeroSolType = extAerosolStateToSet
-    setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_STARTED, "aerosol")
+    setCivilianUnitInternalStateMode(unitID, GameConfig.civilians.activityStates.started, "aerosol")
 end
 
 function aeroSolStateBehaviour()
@@ -931,7 +931,7 @@ function wailing()
        wailingTime = wailingTime - frameToMs(duration)
         Sleep(100)
     end
-    setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_ENDED ,"wailing")
+    setCivilianUnitInternalStateMode(unitID, GameConfig.civilians.activityStates.ended ,"wailing")
 end
 
 function blendShortestPath(goalRotation, orgRotation, factor)
@@ -985,7 +985,7 @@ function chatting()
     while 
         chattingTime > 0 and 
         doesUnitExistAlive(chatPartner) and 
-        distanceUnitToUnit(unitID, chatPartner) < GameConfig.generalInteractionDistance do
+        distanceUnitToUnit(unitID, chatPartner) < GameConfig.civilians.conversation.range do
         local iterationStartFrame = spGetGameFrame()
         if maRa() then
             if randChance(75) then
@@ -1005,7 +1005,7 @@ function chatting()
     -- conditionalEcho(boolDebugActive, "civilian "..unitID.. " chat has ended")
 
     resetUpperBodyNoTPose(true)
-    setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_ENDED, "talk")
+    setCivilianUnitInternalStateMode(unitID, GameConfig.civilians.activityStates.ended, "talk")
 end
 
 function filmingLocation()
@@ -1018,7 +1018,7 @@ function filmingLocation()
         setUnitRotationToPoint(unitID, filmLocation.x, filmLocation.y, filmLocation.z)
         Sleep(100)
     end
-    setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_ENDED, "filming")
+    setCivilianUnitInternalStateMode(unitID, GameConfig.civilians.activityStates.ended, "filming")
 end
 
 function throwArmsUp()
@@ -1033,21 +1033,21 @@ function fleeEnemy(enemyID)
     SetSignalMask(SIG_INTERNAL)
     --echo("Actually fleeing a enemy")
     if not enemyID then 
-        setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_ENDED, "fleeing")
+        setCivilianUnitInternalStateMode(unitID, GameConfig.civilians.activityStates.ended, "fleeing")
         return 
     end  
     throwPayloads()
       
-    flightTime =  GameConfig.civilian.MaxFlightTimeMS
-    while doesUnitExistAlive(enemyID) == true and flightTime > 0 and distanceUnitToUnit(unitID, enemyID) < GameConfig.civilian.PanicRadius do
+    flightTime =  GameConfig.civilians.panic.maxFlightTimeMs
+    while doesUnitExistAlive(enemyID) == true and flightTime > 0 and distanceUnitToUnit(unitID, enemyID) < GameConfig.civilians.panic.radius do
         throwArmsUp()
-        runAwayFrom(unitID, enemyID, GG.GameConfig.civilian.FleeDistance)
+        runAwayFrom(unitID, enemyID, GG.GameConfig.civilians.panic.fleeDistance)
         distribution = math.random(1,10)
         Sleep(125 + distribution)
         flightTime = flightTime - 125
     end
 
-    setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_ENDED, "fleeing")
+    setCivilianUnitInternalStateMode(unitID, GameConfig.civilians.activityStates.ended, "fleeing")
 end
 
 function delayedWoundedWalkAfterCover(timeInSeconds)
@@ -1259,11 +1259,11 @@ function tacticalAnarchy()
     end)
     nearestClusterNode.x, nearestClusterNode.z =
         nearestClusterNode.x +
-            math.random(-1 * GameConfig.demonstrationMarchRadius,
-                        GameConfig.demonstrationMarchRadius),
+            math.random(-1 * GameConfig.civilians.demonstrations.marchRadius,
+                        GameConfig.civilians.demonstrations.marchRadius),
         nearestClusterNode.z +
-            math.random(-1 * GameConfig.demonstrationMarchRadius,
-                        GameConfig.demonstrationMarchRadius)
+            math.random(-1 * GameConfig.civilians.demonstrations.marchRadius,
+                        GameConfig.civilians.demonstrations.marchRadius)
     Command(unitID, "go", nearestClusterNode, {})
 
     Sleep(1000)
@@ -1284,7 +1284,7 @@ function tacticalAnarchy()
 end
 
 normalBehavourStateMachine = {
-    [GameConfig.GameState.launchleak] = function(lastState, currentState)
+    [GameConfig.game.states.launchLeak] = function(lastState, currentState)
         -- init clause
         if lastState ~= currentState then
             if bodyConfig.boolLoaded == false then
@@ -1297,17 +1297,17 @@ normalBehavourStateMachine = {
         Command(unitID, "go", {x = home.x, y = home.y, z = home.z}, {"shift"})
 
     end,
-    [GameConfig.GameState.anarchy] = function(lastState, currentState)
+    [GameConfig.game.states.anarchy] = function(lastState, currentState)
         -- init clause
         if lastState ~= currentState then
             -- Spring.Echo("Civilian entering gamestate anarchy")
             Spring.SetUnitNeutral(unitID, false)
             Spring.SetUnitNoSelect(unitID, true)
-            if not Spring.GetUnitIsTransporting(unitID)  and  GG.GlobalGameState ~= GameConfig.GameState.normal and math.random(1,5) == 5 then
+            if not Spring.GetUnitIsTransporting(unitID)  and  GG.GlobalGameState ~= GameConfig.game.states.normal and math.random(1,5) == 5 then
                 StartThread(attachLoot)
             end
 
-            bodyConfig.boolArmed = randChance( GameConfig.chanceCivilianArmsItselfInHundred)
+            bodyConfig.boolArmed = randChance( GameConfig.civilians.anarchy.armingPercent)
                 Hide(ShoppingBag)
                 Hide(Handbag)
                 Hide(cofee)
@@ -1343,7 +1343,7 @@ normalBehavourStateMachine = {
         Sleep(500)
 
     end,
-    [GameConfig.GameState.postlaunch] = function(lastState, currentState)
+    [GameConfig.game.states.postLaunch] = function(lastState, currentState)
         Spring.SetUnitNeutral(unitID, true)
         Spring.TransferUnit(unitID, gaiaTeamID)
 
@@ -1362,12 +1362,12 @@ normalBehavourStateMachine = {
 
 
     end,
-    [GameConfig.GameState.gameover] = function(lastState, currentState)
+    [GameConfig.game.states.gameOver] = function(lastState, currentState)
         setOverrideAnimationState(eAnimState.catatonic, eAnimState.slaved, true,
                                   nil, false)
         setSpeedEnv(unitID, 0)
     end,
-    [GameConfig.GameState.pacification] = function(lastState, currentState)
+    [GameConfig.game.states.pacification] = function(lastState, currentState)
         if lastState ~= currentState then
             dropLoot()
             Spring.TransferUnit(unitID, gaiaTeamID)
@@ -2010,7 +2010,7 @@ end
 
 function akAimFunction(weaponID, heading, pitch)
     if bodyConfig.boolArmed == false or bodyConfig.boolRPGArmed == true  then return false end
-    if (myTeamID == gaiaTeamID and oldBehaviourState ~= GameConfig.GameState.anarchy) then 
+    if (myTeamID == gaiaTeamID and oldBehaviourState ~= GameConfig.game.states.anarchy) then
          return false 
      end
 
@@ -2024,7 +2024,7 @@ function akAimFunction(weaponID, heading, pitch)
 end
 
 function molotowAimFunction(weaponID, heading, pitch)
-   if (myTeamID == gaiaTeamID and oldBehaviourState ~= GameConfig.GameState.anarchy) then 
+   if (myTeamID == gaiaTeamID and oldBehaviourState ~= GameConfig.game.states.anarchy) then
         return false 
     end
         
@@ -2034,7 +2034,7 @@ end
 function rgpAimFunction(weaponID, heading, pitch)
     
     if bodyConfig.boolArmed == false or bodyConfig.boolRPGArmed == false or GG.GlobalGameState ~=
-        GameConfig.GameState.anarchy then
+        GameConfig.game.states.anarchy then
          return false 
     end
 

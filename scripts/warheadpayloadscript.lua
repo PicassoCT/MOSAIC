@@ -7,8 +7,8 @@ TablesOfPiecesGroups = {}
 local defuseCapableUnitTypes = getDefusalCapableTypeTable(Unitdefs)
 local GameConfig = getGameConfig()
 
-local TruckTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "truck", UnitDefs)
-local LoadableTruckTypeTable = getLoadAbleTruckTypes(UnitDefs, GameConfig.instance.culture)
+local TruckTypeTable = getCultureUnitModelTypes(GameConfig.game.culture, "truck", UnitDefs)
+local LoadableTruckTypeTable = getLoadAbleTruckTypes(UnitDefs, GameConfig.game.culture)
 local aerosolAffectableUnits = getChemTrailInfluencedTypes(UnitDefs)
 local spGetTeamInfo = Spring.GetTeamInfo
 local myTeamID = Spring.GetUnitTeam(unitID)
@@ -117,7 +117,7 @@ if UnitDefs[unitDefID].name == "physicspayload" then
 	             x, y, z = Spring.GetUnitPosition(unitID)
                 payloadCloudAtUnit(unitID, 'nuclear')
                 createCrater(x,y,z, unitDefID)
-	             foreach(getAllNearUnit(unitID, GameConfig.payloadDestructionRange ),
+	             foreach(getAllNearUnit(unitID, GameConfig.military.payloads.destructionRange ),
 	             	function(id)
 	             		if not( Spring.GetUnitDefID(id) == rubbleDefID) then
 	             			return id
@@ -125,7 +125,7 @@ if UnitDefs[unitDefID].name == "physicspayload" then
 	             	end,
 				   function(id)						   		
 	                    for tid, _ in pairs(protagonT) do
-	                        GG.Bank:TransferToTeam(GameConfig.Warhead.DefusalPunishment, tid, id, {r=255,g=0,b=0})
+	                        GG.Bank:TransferToTeam(GameConfig.military.warheads.defusalPenaltyMoney, tid, id, {r=255,g=0,b=0})
 	                    end
                		  GG.UnitsToKill:PushKillUnit(id, true, false)
 					end
@@ -138,7 +138,7 @@ end
 if UnitDefs[unitDefID].name == "biopayload" then
 	local AerosolTypes = getChemTrailTypes()
 
- 	foreach(getAllNearUnit(unitID, GameConfig.payloadDestructionRange), 
+    foreach(getAllNearUnit(unitID, GameConfig.military.payloads.destructionRange),
                         function(id)
                              if aerosolAffectableUnits[Spring.GetUnitDefID(id)] and
                                     not GG.AerosolAffectedCivilians[id] then -- you can only get infected once
@@ -159,12 +159,12 @@ if UnitDefs[unitDefID].name == "informationpayload" then
                         	defID = Spring.GetUnitDefID(id)
                         	 if houseTypeTable[defID] then
                         	 	distance = distanceUnitToUnit(unitID, id)
-                        	   stunUnit(id, GameConfig.Warhead.automationPayloadStunTimeSeconds)
+                               stunUnit(id, GameConfig.military.warheads.automationStunTimeSeconds)
                         	   genericCallUnitFunctionPassArgs(unitID, "stunHouse", 30000, math.max(1000, math.ceil(distance)))
                         	end	
 
                              if automationPayloadDisabledType[defID] then
-                                stunUnit(id, GameConfig.Warhead.automationPayloadStunTimeSeconds)
+                                stunUnit(id, GameConfig.military.warheads.automationStunTimeSeconds)
                                 payloadCloudAtUnit(id, 'electric', 50)
                               end  
 								
@@ -285,7 +285,7 @@ function registerBombLocationAndProducer(unitID)
                 end
 
                 Location.revealedUnits = revealedUnits 	
-				Location.endFrame = Spring.GetGameFrame()+ GG.GameConfig.raid.revealGraphLifeTimeFrames
+				Location.endFrame = Spring.GetGameFrame()+ GG.GameConfig.espionage.raids.revealedGraphLifetimeFrames
 
                 if not GG.RevealedLocations then GG.RevealedLocations = {} end
                 GG.RevealedLocations[#GG.RevealedLocations + 1] = Location
@@ -295,7 +295,7 @@ function registerBombLocationAndProducer(unitID)
 function displayProgressBar(timeInMs)
   -- display the Progressbars		
   		Show(BaseRotor)																						
-        progressBarIndex = math.ceil(#TablesOfPiecesGroups["ProgressBars"]* (timeInMs/GameConfig.Warhead.DefusalTimeMs))
+        progressBarIndex = math.ceil(#TablesOfPiecesGroups["ProgressBars"]* (timeInMs/GameConfig.military.warheads.defusalTimeMs))
         hideT(TablesOfPiecesGroups["ProgressBars"])
         showT(TablesOfPiecesGroups["ProgressBars"], 1, math.max(1,progressBarIndex))
 end
@@ -303,7 +303,7 @@ end
 function getOperatorsNearby(unitID)
 	Allies = {}
 	Enemies = {}
-	foreach(getAllNearUnit(unitID, GameConfig.Warhead.DefusalStartDistance),
+	foreach(getAllNearUnit(unitID, GameConfig.military.warheads.defusalStartRange),
 				   function(id)			
 					   defID = spGetUnitDefID(id)
 					   pTeamID = spGetUnitTeam(id) 
@@ -403,13 +403,13 @@ defuseStatesMachine = {
 						return "defuse_in_progress", persPack
 					end
 	
-					if #Allies > 0 and persPack.defuseTimeMs < GameConfig.Warhead.DefusalTimeMs then
+					if #Allies > 0 and persPack.defuseTimeMs < GameConfig.military.warheads.defusalTimeMs then
 						StartThread(showRepairIcon)
 						Spring.SetUnitAlwaysVisible(unitID, true)
 						return "repair_in_progress", persPack
 					end
 
-					if persPack.defuseTimeMs < GameConfig.Warhead.DefusalTimeMs then
+					if persPack.defuseTimeMs < GameConfig.military.warheads.defusalTimeMs then
 
 						StartThread(showDamagedIcon)
 						return "kaputt", persPack
@@ -450,7 +450,7 @@ defuseStatesMachine = {
 							-- show Graph
 							 registerBombLocationAndProducer(unitID)
 							-- Reward Defuser Team
-							GG.Bank:TransferToTeam(GameConfig.PayloadDefusedReward, Spring.GetUnitTeam(Enemies[1]), Enemies[1], {r=255,g=255,b=255})
+							GG.Bank:TransferToTeam(GameConfig.military.payloads.defusedRewardMoney, Spring.GetUnitTeam(Enemies[1]), Enemies[1], {r=255,g=255,b=255})
 							--DestroyUnit
 							Spring.DestroyUnit(unitID, false, true)
 						end
@@ -470,7 +470,7 @@ defuseStatesMachine = {
 			persPack.defuseTimeMs = persPack.defuseTimeMs + 100
 			displayProgressBar(persPack.defuseTimeMs)
 			
-			if persPack.defuseTimeMs > GameConfig.Warhead.DefusalTimeMs then
+			if persPack.defuseTimeMs > GameConfig.military.warheads.defusalTimeMs then
 				StartThread(showDormantIcon)
 				return "dormant", persPack
 			end
@@ -509,7 +509,7 @@ function defuseStateMachine()
     myTeamID = Spring.GetUnitTeam(unitID)
     currentState = "dormant"
     StartThread(showDormantIcon)
-    persPack={defuseTimeMs = GameConfig.Warhead.DefusalTimeMs}
+    persPack={defuseTimeMs = GameConfig.military.warheads.defusalTimeMs}
     while true do
      newState, persPack = defuseStatesMachine[currentState](currentState, Spring.GetGameFrame(), persPack)
      GG.WarHeadState[unitID] = newState

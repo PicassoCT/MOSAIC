@@ -20,7 +20,7 @@ upaxis = y_axis
 teamID = Spring.GetUnitTeam(unitID)
 stepIndex = 0
 rocketHeigth = 3400
-stepHeight = rocketHeigth / GameConfig.LaunchReadySteps
+stepHeight = rocketHeigth / GameConfig.military.launcher.readySteps
 rocket= piece"Step1"
 payLoadTypes= getLaunchablePayloadTypes(UnitDefs)
 local spGetUnitDefID = Spring.GetUnitDefID
@@ -62,7 +62,7 @@ function updateDescriptionDelayed()
         alreadyBuildStages = GG.Launchers[myTeamID][unitID].steps
     end
 
-    description = alreadyBuildStages.." stages completed out of "..(GameConfig.LaunchReadySteps+1).." stages. Build ICBM-stages to win the game."
+    description = alreadyBuildStages.." stages completed out of "..(GameConfig.military.launcher.readySteps+1).." stages. Build ICBM-stages to win the game."
     Spring.SetUnitTooltip(unitID, description)
 end
 
@@ -98,7 +98,7 @@ function accountForBuiltLauncherSteps()
             end
         end
 
-        if stepIndex >= GameConfig.LaunchReadySteps and boolLaunchReady == false then
+        if stepIndex >= GameConfig.military.launcher.readySteps and boolLaunchReady == false then
             prePareForLaunch()
             boolLaunchReady = true
         end
@@ -236,7 +236,7 @@ function script.Killed(recentDamage, _)
         if GG.Launchers[teamID][unitID].payload then
             name = UnitDefs[GG.Launchers[teamID][unitID].payload ].name
             if name == "biopayload" then  --infect all nearby
-                foreach(getAllNearUnit(unitID, GameConfig.bioWeaponPayloadKillRadius, gaiaTeamID),
+                foreach(getAllNearUnit(unitID, GameConfig.military.payloads.bioWeaponKillRadius, gaiaTeamID),
                         function(id)
                             defID= Spring.GetUnitDefID(id)
                             if civilianTypeTable[defID] or truckTypeTable[defID] then
@@ -282,7 +282,7 @@ function script.Killed(recentDamage, _)
                    id=  createUnitAtUnit(gaiaTeamID, "icon_socialengineering", unitID)
                    Command(id, "go",{x= x + math.random(512,1024)*randSign(), y= y, z= z + math.random(512,1024)*randSign()})
                 end
-                GG.SetGameStateTo = GameConfig.GameState.anarchy -- instigate chaos (add random social engineering)
+                GG.SetGameStateTo = GameConfig.game.states.anarchy -- instigate chaos (add random social engineering)
             end
         end
 

@@ -245,7 +245,7 @@ function rewardAudacity()
 	attackerID= Spring.GetUnitLastAttacker(transportingParent)
 	if attackerID then
 		attackerTeam = Spring.GetUnitTeam(attackerID)
-		GG.Bank:TransferToTeam(GameConfig.Objectives.RewardFortNoxDestroyed, attackerTeam, unitID)
+		GG.Bank:TransferToTeam(GameConfig.economy.rewards.fortKnoxDestructionMoney, attackerTeam, unitID)
 	end
 end
 
@@ -292,7 +292,7 @@ local corpsePrideTable = {[FeatureDefNames["bodybag"].id] = true}
 function FireTruckEmergencyBehaviour()
 	Sleep(50)
 	while true do
-		intervallTime = GameConfig.emergencyLocationTimeMs 
+		intervallTime = GameConfig.civilians.emergency.locationLifetimeMs
 		x, z = getEmergency()
 		if x then
 		 transporterID = Spring.GetUnitTransporter(unitID)

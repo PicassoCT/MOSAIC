@@ -659,7 +659,7 @@ function script.Create()
 
 	--assertPieceNamesUnique(unitID)
     x, y, z = spGetUnitPosition(unitID)
-    StartThread(removeFeaturesInCircle,x,z, GameConfig.houseSizeZ/2)
+    StartThread(removeFeaturesInCircle,x,z, GameConfig.city.buildings.sizeZ/2)
 
     math.randomseed(x + y + z)
     StartThread(buildHouse)
@@ -1238,7 +1238,7 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
                     return materialGroupName, buildMaterial
                 end          
 			
-                if (chancesAre(10) < decoChances.streetwall  or distanceToCenter < GameConfig.innerCityNeonStreet) then
+                if (chancesAre(10) < decoChances.streetwall  or distanceToCenter < GameConfig.city.neonStreetRadius) then
                     --assert(type(streetWallDecoMaterial) == "table")
                     --assert(index)
                     --assert(xRealLoc)
@@ -1587,7 +1587,7 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
 
 					   IDQueueRunning = TablesOfPiecesGroups[pieceName]
                        GG.house_asian_piece_counter[pieceName]= GG.house_asian_piece_counter[pieceName] +1
-                       if GG.house_asian_piece_counter[pieceName] > GameConfig.houseNumberOfSameRoofIDGroupsPerCity then IDQueueRunning = nil end
+                       if GG.house_asian_piece_counter[pieceName] > GameConfig.city.buildings.roofGroupCount then IDQueueRunning = nil end
 					end
 				end
 

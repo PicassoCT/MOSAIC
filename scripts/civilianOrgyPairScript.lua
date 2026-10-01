@@ -484,11 +484,11 @@ function script.Create()
     Spring.SetUnitAlwaysVisible(unitID, true)
     StartThread(FuckFest)
     StartThread(lifeTime, unitID,
-                GG.GameConfig.Aerosols.orgyanyl.VictimLifetime, false, true)
+                GG.GameConfig.military.aerosols.orgyanyl.victimLifetimeMs, false, true)
     Spring.SetUnitNeutral(unitID, true)
     Spring.SetUnitNoSelect(unitID, true)
     StartThread(creepingTowardsOneAnother)
-    StartThread(setHealthOverLifetime, GG.GameConfig.Aerosols.orgyanyl.VictimLifetime)
+    StartThread(setHealthOverLifetime, GG.GameConfig.military.aerosols.orgyanyl.victimLifetimeMs)
 end
 
 function creepingTowardsOneAnother()

@@ -19,7 +19,7 @@ VFS.Include("scripts/lib_staticstring.lua")
 local buisnessNeonSigns =  include("scripts/buissnesNamesNeonLogos.lua")
 
 local GameConfig = getGameConfig()
---if not Game.version then Game.version = GameConfig.instance.Version end
+--if not Game.version then Game.version = GameConfig.game.version end
 local spGetUnitPosition = Spring.GetUnitPosition
 local spGetGroundHeight = Spring.GetGroundHeight
 local spGetGroundNormal = Spring.GetGroundNormal
@@ -39,19 +39,19 @@ local BuildingWithWaitingRespawn = {}
 GG.BuildingTable = {} -- [BuildingUnitID] = {routeID, stationIndex}
 local houseStreetDim = {}
 local innerCityDim = {}
-houseStreetDim.x, houseStreetDim.y, houseStreetDim.z = GameConfig.houseSizeX + GameConfig.allyWaySizeX, GameConfig.houseSizeY, GameConfig.houseSizeZ + GameConfig.allyWaySizeZ
-innerCityDim.x, innerCityDim.y, innerCityDim.z = GameConfig.houseSizeX/2 , GameConfig.houseSizeY/2, GameConfig.houseSizeZ /2
+houseStreetDim.x, houseStreetDim.y, houseStreetDim.z = GameConfig.city.buildings.sizeX + GameConfig.city.alleys.sizeX, GameConfig.city.buildings.sizeY, GameConfig.city.buildings.sizeZ + GameConfig.city.alleys.sizeZ
+innerCityDim.x, innerCityDim.y, innerCityDim.z = GameConfig.city.buildings.sizeX/2 , GameConfig.city.buildings.sizeY/2, GameConfig.city.buildings.sizeZ /2
 
 local BuildingPlaceTable = makeTable(true, math.ceil(Game.mapSizeX / houseStreetDim.x), math.ceil(Game.mapSizeZ / houseStreetDim.z)) -- SizeOf Map/Divide by Size of Building
 local RouteTabel = {} -- Every start has a subtable of reachable nodes 	
 local boolInitialized = false
 
-local TruckTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture,
+local TruckTypeTable = getCultureUnitModelTypes(GameConfig.game.culture,
                                                 "truck", UnitDefs)
-local houseTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture,
+local houseTypeTable = getCultureUnitModelTypes(GameConfig.game.culture,
                                                 "house", UnitDefs)
 
-local outerCityHouseTypeTable = removeDictFromDict(houseTypeTable, getHouseTypeIsInnerCityOnly(GameConfig.instance.culture, UnitDefs))
+local outerCityHouseTypeTable = removeDictFromDict(houseTypeTable, getHouseTypeIsInnerCityOnly(GameConfig.game.culture, UnitDefs))
 
 local houseTypeLimitationsTable = getHouseTypeLimitations(UnitDefs)
 local houeArabicDefID = UnitDefNames["house_arab0"].id
@@ -63,15 +63,15 @@ local function isCityHouse(defID)
     return houseTypeTable[defID] or defID == arcologyDefID
 end
 
-if GameConfig.instance.culture == "arab" then
+if GameConfig.game.culture == "arab" then
 	assert(houseTypeTable[UnitDefNames["house_arab0"].id])
 end
 
-if GameConfig.instance.culture == "asian" then
+if GameConfig.game.culture == "asian" then
 	assert(houseTypeTable[UnitDefNames["house_asian0"].id])
 end
-local loadableTruckType = getLoadAbleTruckTypes(UnitDefs, TruckTypeTable, GameConfig.instance.culture)
-local refugeeableTruckType = getRefugeeAbleTruckTypes(UnitDefs, TruckTypeTable, GameConfig.instance.culture)
+local loadableTruckType = getLoadAbleTruckTypes(UnitDefs, TruckTypeTable, GameConfig.game.culture)
+local refugeeableTruckType = getRefugeeAbleTruckTypes(UnitDefs, TruckTypeTable, GameConfig.game.culture)
 local gaiaTeamID = Spring.GetGaiaTeamID() 
 
 local boolHasCityCenter = false 
@@ -129,7 +129,7 @@ function spawnRubbleHeapAt(id)
                                     gaiaTeamID)
         GG.TimeDelayedRespawn[rubbleHeapID] =
             {
-                frame = GameConfig.TimeForScrapHeapDisappearanceInMs * (math.random(10,100)/100),
+                frame = GameConfig.city.rubble.respawnBaseDelayFrames * (math.random(10,100)/100),
                 x = x,
                 z = z,
                 bID = id
@@ -275,8 +275,8 @@ function fillGapsWithInnerCityBlocks(cursorl, buildingType, BuildingPlaceT)
 end
 
 function cursorIsOnMainRoad(cursor, sx, sz)
-    return ((cursor.x - sx) % GameConfig.mainStreetModulo == 0) or
-               ((cursor.z - sz) % GameConfig.mainStreetModulo == 0)
+    return ((cursor.x - sx) % GameConfig.city.streets.mainStreetModulo == 0) or
+               ((cursor.z - sz) % GameConfig.city.streets.mainStreetModulo == 0)
 end
 
 function clampCursor(cursor)
@@ -318,10 +318,10 @@ end
 
 -- spawns intial buildings
 function fromMapCenterOutwards(BuildingPlaceT, startx, startz)
-    local finiteSteps = GameConfig.maxIterationSteps
+    local finiteSteps = GameConfig.performance.maxCityGenerationSteps
     local cursor = {x = startx, z = startz}
     local mirror = {x = startx, z = startz}
-    local numberOfBuildings = GameConfig.numberOfBuildings - 1
+    local numberOfBuildings = GameConfig.city.population.buildings - 1
     local cityBlockCounter = 0
 
     while finiteSteps > 0 and numberOfBuildings > 0 do
@@ -332,13 +332,13 @@ function fromMapCenterOutwards(BuildingPlaceT, startx, startz)
         boolNearCityCenter, distanceToCityCenter = isNearCityCenter(cursor.x * houseStreetDim.x, cursor.z*houseStreetDim.z, GameConfig)
         boolMirrorNearCityCenter, mirrorDistanceToCityCenter = isNearCityCenter(mirror.x * houseStreetDim.x, mirror.z*houseStreetDim.z, GameConfig)
 
-        if dice == 1 or (dice == 0 and GameConfig.instance.culture == "arabic")then -- 1 random walk into a direction doing nothing
+        if dice == 1 or (dice == 0 and GameConfig.game.culture == "arabic")then -- 1 random walk into a direction doing nothing
             cursor = randomWalk(cursor)
             cursor = clampCursor(cursor)
             mirror = mirrorCursor(cursor, startx, startz)
             mirror = clampCursor(mirror)
 
-        elseif dice == 2 or (dice == 0 and GameConfig.instance.culture ~= "arabic")  then -- 2 place a single block
+        elseif dice == 2 or (dice == 0 and GameConfig.game.culture ~= "arabic")  then -- 2 place a single block
             boolFirstPlaced = false
             dimX,dimZ = houseStreetDim.x, houseStreetDim.z
 
@@ -528,7 +528,7 @@ function spawnUnit(defID, x, z)
                  " with no coords")
     end
     
-    dir = getCultureDependentDirection(GameConfig.instance.culture, defID)
+    dir = getCultureDependentDirection(GameConfig.game.culture, defID)
     h = spGetGroundHeight(x, z)
     id = spCreateUnit(defID, x, h, z, dir, gaiaTeamID)
 
@@ -546,7 +546,7 @@ function spawnBuilding(defID, x, z, boolInCityCenter, isGapFiller, forceArcology
     if reserveArcology or forceArcology then defID = arcologyDefID end
     local offset = {xRandOffset = 0, zRandOffset = 0}
     if not boolInCityCenter  then
-         offset = getCultureDependantRandomOffsets(GameConfig.instance.culture, {x=x, z=z})
+         offset = getCultureDependantRandomOffsets(GameConfig.game.culture, {x=x, z=z})
 		 if not offset then return end
     end
     local id = spawnUnit(defID, x + math.random(-1 * offset.xRandOffset, offset.xRandOffset),
@@ -576,7 +576,7 @@ function gadget:Initialize()
     if not  GG.innerCityCenter then  GG.innerCityCenter = {} end
 
     GG.CitySpawnComplete = false
-    Spring.SetGameRulesParam ( "culture",GameConfig.instance.culture ) 
+    Spring.SetGameRulesParam ( "culture",GameConfig.game.culture )
     --killAllUnitsAtGamestart()
 originalGameFrame = Spring.GetGameFrame()
 end
@@ -610,4 +610,4 @@ end
 
 
 
-  
+

@@ -196,7 +196,7 @@ end
 do
     local w=world();node(w,20);node(w,21);assert(w.units[21].dead)
     w:tick(300);assert(w.money[1]==2025)
-    local v=world();v.config.CyberCrime.buildingCapacity=50
+    local v=world();v.config.espionage.cybercrime.buildingCapacityMoney=50
     node(v,20);v:tick(300);v:tick(600);assert(v.units[20].dead)
     node(v,21);assert(v.units[21].dead,'spamming nodes does not replenish the building')
     v:tick(1350);node(v,22);assert(not v.units[22].dead)

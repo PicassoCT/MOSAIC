@@ -73,10 +73,10 @@ local MuzzleFlashPistol = piece ("MuzzleFlashPistol")
 
 local spGetUnitWeaponTarget = Spring.GetUnitWeaponTarget
 local GameConfig = getGameConfig()
-local civilianWalkingTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "civilian", UnitDefs)
+local civilianWalkingTypeTable = getCultureUnitModelTypes(GameConfig.game.culture, "civilian", UnitDefs)
 civilianSortedBySexTable = getCivlianDisguiseBySexTypeTable(UnitDefs, getOperatorSex(UnitDefs, unitDefID))
 local disguiseDefID = randT(civilianSortedBySexTable)
-local mySpeedReductionCloaked = GameConfig.investigatorCloakedSpeedReduction
+local mySpeedReductionCloaked = GameConfig.espionage.operatives.investigatorCloakedSpeedReduction
 local spGetUnitTeam = Spring.GetUnitTeam
 local myTeamID= spGetUnitTeam(unitID)
 local spGetUnitIsCloaked = Spring.GetUnitIsCloaked
@@ -130,7 +130,7 @@ lowerBodyPieces =
 	[LowLeg2]= LowLeg2
 }
 
-local houseTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture,
+local houseTypeTable = getCultureUnitModelTypes(GameConfig.game.culture,
                                              "house", UnitDefs)
 
 local FAR_SIGHTED = 1.0
@@ -346,7 +346,7 @@ function checkFirstUnit()
 
 	x,y,z= Spring.GetUnitPosition(unitID)
 	Sleep(1)
-	giveParachutToUnit(unitID,x,y+GameConfig.OperativeDropHeigthOffset, z)
+	giveParachutToUnit(unitID,x,y+GameConfig.espionage.operatives.dropHeightOffset, z)
 	setWantCloak(false)
 
     times = 0
@@ -354,7 +354,7 @@ function checkFirstUnit()
     med = 0
     while true do
         times = (times + PIE) % 6.28318530
-        val = math.ceil(((math.sin(times) * GameConfig.bonusFirstUnitMoney_S) + med) / 2)
+        val = math.ceil(((math.sin(times) * GameConfig.economy.firstOperative.resourceOscillationAmplitude) + med) / 2)
         med = val
         if val > 0 then
             Spring.AddUnitResource(unitID, "m", val)
@@ -1323,7 +1323,7 @@ function visibleAfterWeaponsFireTimer()
 	boolFireForcedVisible = true
 	Signal(SIG_FIRE_VISIBLITY)
 	SetSignalMask(SIG_FIRE_VISIBLITY)	
-	value= GameConfig.operativeShotFiredWaitTimeToRecloak_MS
+	value= GameConfig.espionage.operatives.recloakDelayMs
 	Sleep(value)
 	boolFireForcedVisible = false
 	Spring.PlaySoundFile("sounds/weapons/pistol/pistolreload.ogg", 1.0)

@@ -9,7 +9,7 @@ local TablesOfPiecesGroups = {}
 Icon = piece "Icon"
 
 GameConfig = getGameConfig()
-local houseTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture,
+local houseTypeTable = getCultureUnitModelTypes(GameConfig.game.culture,
                                                 "house", UnitDefs)
 
 function script.Create()

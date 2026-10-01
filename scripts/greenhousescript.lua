@@ -54,7 +54,7 @@ end
 
 function timeOfDay()
 
-    WholeDay = GameConfig.daylength
+    WholeDay = GameConfig.game.dayLengthFrames
     timeFrame = Spring.GetGameFrame() + (WholeDay * 0.25)
     -- echo(getDayTime(timeFrame%WholeDay, WholeDay))
     return ((timeFrame % (WholeDay)) / (WholeDay))

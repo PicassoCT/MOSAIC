@@ -10,7 +10,7 @@ local myTeamID = Spring.GetUnitTeam(unitID)
 local gaiaTeamID = Spring.GetGaiaTeamID()
 local GameConfig = getGameConfig()
 local advertisingFilePath = "sounds/advertising/"
-local civilianWalkingTypeTable = getCultureUnitModelTypes(  GameConfig.instance.culture, 
+local civilianWalkingTypeTable = getCultureUnitModelTypes(  GameConfig.game.culture,
                                                             "civilian", UnitDefs)
 local maxSoundFiles = 65
 HoloCenter = piece("HoloCenter")

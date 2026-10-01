@@ -16,7 +16,7 @@ GameConfig = getGameConfig()
 function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     Spring.SetUnitAlwaysVisible(unitID, true)
-    StartThread(hoverAboveGround, unitID, GameConfig.iconHoverGroundOffset, 0.3)  
+    StartThread(hoverAboveGround, unitID, GameConfig.presentation.icons.hoverGroundOffset, 0.3)
     -- Spring.MoveCtrl.Enable(unitID,true)
     -- x,y,z =Spring.GetUnitPosition(unitID)
     -- Spring.MoveCtrl.SetPosition(unitID, x,y+500,z)
@@ -56,7 +56,7 @@ function hijackObservationSatellite()
     waitTillComplete(unitID)
     chosenSatellite = nil
 
-    Sleep(GameConfig.Sattelite.SatteliteHijackTimeMs)
+    Sleep(GameConfig.espionage.satelliteHijack.durationMs)
     while true do
         spySatellites = {}
         allSattelites = foreach(Spring.GetAllUnits(),

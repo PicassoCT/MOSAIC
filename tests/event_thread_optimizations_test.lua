@@ -112,7 +112,7 @@ end
 for _,path in ipairs({'scripts/civilianscript.lua','scripts/civilianagentscript.lua'}) do
     local r=runtime(); local e=r.unit(1); local animations, behaviours={},{}
     e.setCivilianUnitInternalStateMode=function() end
-    e.GameConfig={STATE_STARTED=1}
+    e.GameConfig={civilians={activityStates={started=1}}}
     e.x_axis, e.y_axis, e.z_axis = 1, 2, 3
     e.PrayerAnimations = run(read('scripts/animations_civilian_prayers.lua'), e)
     e.conditionalEcho=function() end; e.locationstring=function() return 'test' end

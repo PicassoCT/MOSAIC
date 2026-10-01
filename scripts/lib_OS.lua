@@ -1013,7 +1013,7 @@ function vtolLoop(unitID, plane, restTimeMs, timeBetweenFlightsMs, factor)
         Turn(plane,y_axis,math.rad(targetValue), 0)
         Sleep(200)        
 
-        while GG.VTOLCounter > GameConfig.vtolInAirMax do
+        while GG.VTOLCounter > GameConfig.military.aircraft.maxVtolInAir do
             Sleep(1000)
         end   
         GG.VTOLCounter = GG.VTOLCounter + 1

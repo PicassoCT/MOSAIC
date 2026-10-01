@@ -42,7 +42,7 @@ function playProjectileInterceptAnimation(projectiles, timeTotal, maxIntercept)
     for projID, wdefID in pairs(projectiles) do
         if projID then
             if not cruiseMissileProjectileType[wDefID] or 
-                cruiseMissileProjectileType[wDefID] and math.random(1,GameConfig.CruiseMissile.chanceOfInterceptOneIn) == 1  then
+                cruiseMissileProjectileType[wDefID] and math.random(1,GameConfig.military.cruiseMissiles.interceptOneIn) == 1  then
                 px, py, pz = Spring.GetProjectilePosition (projID)
                 if px then
 
@@ -86,7 +86,7 @@ function playDroneInterceptAnimation(drones, timeTotal, maxIntercept)
 end
 
 function droneDefense()
-    local droneInterceptDistance = GameConfig.groundTurretDroneInterceptRate
+    local droneInterceptDistance = GameConfig.military.droneInterception.range
     local spGetProjectileTeamID = Spring.GetProjectileTeamID
     local spGetUnitDefID = Spring.GetUnitDefID
     local myTeamID = Spring.GetUnitTeam(unitID)
@@ -114,7 +114,7 @@ function droneDefense()
             boolPlayGunSound= false
             if projectilesToIntercept and count(projectilesToIntercept) > 0 then
                 boolDroneInterceptSaturated = true
-                StartThread(playProjectileInterceptAnimation, projectilesToIntercept, 500, GameConfig.groundTurretDroneMaxInterceptPerSecond / 2)
+                StartThread(playProjectileInterceptAnimation, projectilesToIntercept, 500, GameConfig.military.droneInterception.maxPerSecond / 2)
                 boolPlayGunSound = true
 
                 boolDroneInterceptSaturated = false
@@ -129,7 +129,7 @@ function droneDefense()
                         end
                         )
                 if count(dronesToIntercept) > 0 then
-                   StartThread(playDroneInterceptAnimation, dronesToIntercept, 500, GameConfig.groundTurretDroneMaxInterceptPerSecond / 2)
+                   StartThread(playDroneInterceptAnimation, dronesToIntercept, 500, GameConfig.military.droneInterception.maxPerSecond / 2)
                     boolPlayGunSound = true
                 end
             end

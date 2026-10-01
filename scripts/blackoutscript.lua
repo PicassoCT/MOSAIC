@@ -21,18 +21,18 @@ function script.Create()
 
         Spring.SetUnitNeutral(unitID,true)
         Spring.SetUnitBlocking(unitID,false)
-        StartThread(hoverAboveGround, unitID, GameConfig.iconHoverGroundOffset, 1.0, false)    
+        StartThread(hoverAboveGround, unitID, GameConfig.presentation.icons.hoverGroundOffset, 1.0, false)
         Spin(PercentRing,y_axis,math.rad(-22),0)
 
         StartThread(animation)
         StartThread(lifeTimeAnimation)
         StartThread(blackOutCycle)
 
-        StartThread(lifeTime, unitID, GameConfig.LifeTimeBlackOutIcon, true, false )
+        StartThread(lifeTime, unitID, GameConfig.espionage.blackout.lifetimeMs, true, false )
 end
 
 function lifeTimeAnimation()
-    step = math.ceil(GameConfig.LifeTimeBlackOutIcon/#TablesOfPiecesGroups["Percentages"])
+    step = math.ceil(GameConfig.espionage.blackout.lifetimeMs/#TablesOfPiecesGroups["Percentages"])
     showT(TablesOfPiecesGroups["Percentages"])
         for i=1, #TablesOfPiecesGroups["Percentages"] do
             Sleep(step)
@@ -60,7 +60,7 @@ function script.HitByWeapon(x, z, weaponDefID, damage) end
 
 function blackOutCycle()
     while true do  
-        unitsInCircle = getAllNearUnit(unitID, GameConfig.iconBlackHoleComDeactivateRange)
+        unitsInCircle = getAllNearUnit(unitID, GameConfig.espionage.ecm.iconDeactivateRange)
         filteredUnitsInCircle = {}
         foreach(unitsInCircle,
                 function(id)

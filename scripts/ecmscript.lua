@@ -42,7 +42,7 @@ function script.Create()
     hideT(TablesOfPiecesGroups["Data"])
     Spring.SetUnitNeutral(unitID,true)
     Spring.SetUnitBlocking(unitID,false)
-    StartThread(hoverAboveGrounds, GameConfig.iconHoverGroundOffset)
+    StartThread(hoverAboveGrounds, GameConfig.presentation.icons.hoverGroundOffset)
     StartThread(eatECMcon)
 end
 

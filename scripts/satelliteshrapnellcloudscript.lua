@@ -20,7 +20,7 @@ function script.Create()
     Hide(Line001)
     Spin(center, y_axis, math.rad(1), 0.5)
     if Icon then
-        Move(Icon, y_axis, GameConfig.Satellite.iconDistance, 0);
+        Move(Icon, y_axis, GameConfig.presentation.icons.satelliteHeight, 0);
         Show(Icon)
     end
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
@@ -36,8 +36,8 @@ end
 
 function getRandShrapMoveVal()
     factor = 10
-    return math.random(-GameConfig.Satellite.shrapnellDistance * factor,
-                       GameConfig.Satellite.shrapnellDistance * factor)
+    return math.random(-GameConfig.military.satellites.shrapnel.radius * factor,
+                       GameConfig.military.satellites.shrapnel.radius * factor)
 end
 activeParticles = {}
 function dealDamageAnimate()
@@ -74,9 +74,9 @@ function dealDamageAnimate()
 end
 
 function doDamageCyclic()
-    local LifeTime = GameConfig.Satellite.shrapnellLifeTime
-    local DamagePerSecondTenth = GameConfig.Satellite.shrapnellDamagePerSecond / 100
-    local SatelliteShrapnellDistance = GameConfig.Satellite.shrapnellDistance
+    local LifeTime = GameConfig.military.satellites.shrapnel.lifetimeMs
+    local DamagePerSecondTenth = GameConfig.military.satellites.shrapnel.damagePerSecond / 100
+    local SatelliteShrapnellDistance = GameConfig.military.satellites.shrapnel.radius
 
     Spring.SetUnitNoSelect(unitID, true)
     while LifeTime > 0 do
@@ -94,7 +94,7 @@ function doDamageCyclic()
 
         hp, mHp = Spring.GetUnitHealth(unitID)
         factorHealth= hp/mHp
-        factorLifetime = LifeTime/GameConfig.Satellite.shrapnellLifeTime
+        factorLifetime = LifeTime/GameConfig.military.satellites.shrapnel.lifetimeMs
         smallestFactor = 1.0 - math.min(factorHealth, factorLifetime)
         for i=1, (#TablesOfPiecesGroups["Particle"]*smallestFactor) do
             if factorHealth < factorLifetime then

@@ -19,7 +19,7 @@ if gadgetHandler:IsSyncedCode() then
     VFS.Include("scripts/lib_Type.lua")
     local GameConfig = getGameConfig()
 
-    local DAYLENGTH = GameConfig.daylength
+    local DAYLENGTH = GameConfig.game.dayLengthFrames
     local EVERY_NTH_FRAME = 32
     local REGIONAL_MAX_ALTITUDE = 70
     local EquatorialDirectionSign = 1
@@ -27,7 +27,7 @@ if gadgetHandler:IsSyncedCode() then
     -- Initialses the sun control and sets the inital arc
     function gadget:GameStart()
         -- Spring.SetSunManualControl(true)
-        REGIONAL_MAX_ALTITUDE, EquatorialDirectionSign = getAzimuthByRegion(GameConfig.instance.culture, getDetermenisticMapHash(Game))
+        REGIONAL_MAX_ALTITUDE, EquatorialDirectionSign = getAzimuthByRegion(GameConfig.game.culture, getDetermenisticMapHash(Game))
         echo("game_daycycle: sun anzimuth:"..REGIONAL_MAX_ALTITUDE)
         echo("game_daycycle: equatorial direction sign:"..EquatorialDirectionSign)
     end
@@ -40,9 +40,9 @@ if gadgetHandler:IsSyncedCode() then
     end
 
 
-    assert(GameConfig.instance.culture)
+    assert(GameConfig.game.culture)
     assert(getDetermenisticMapHash(Game))
-    local regDayCol = getRegionDayColorBy(GameConfig.instance.culture, getDetermenisticMapHash(Game))
+    local regDayCol = getRegionDayColorBy(GameConfig.game.culture, getDetermenisticMapHash(Game))
     echo("Regional Day Colors: r:"..regDayCol.x .. " g: ".. regDayCol.y .. " b:".. regDayCol.z)
 
     -- if you want diffrent colours for your day, modify this table
@@ -363,8 +363,8 @@ if gadgetHandler:IsSyncedCode() then
     local HALF_DAY_OFFSET = DAYLENGTH * 0.5
 
     local prayerCalls = {}
-    if GameConfig.instance.culture == "arabic" or GameConfig.instance.culture == "international" then
-        local directory = "sounds/civilian/" .. GameConfig.instance.culture
+    if GameConfig.game.culture == "arabic" or GameConfig.game.culture == "international" then
+        local directory = "sounds/civilian/" .. GameConfig.game.culture
         for _, path in ipairs(VFS.DirList(directory, "callToPrayer*.ogg")) do
             local index = tonumber(path:match("/callToPrayer(%d+)%.ogg$"))
             if index then prayerCalls[#prayerCalls + 1] = {path = path, index = index} end

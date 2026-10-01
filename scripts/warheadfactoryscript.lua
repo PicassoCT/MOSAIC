@@ -17,7 +17,7 @@ IconProj = piece "IconProj"
 GameConfig = getGameConfig()
 function script.HitByWeapon(x, z, weaponDefID, damage) end
 
-local houseTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture,
+local houseTypeTable = getCultureUnitModelTypes(GameConfig.game.culture,
                                                 "house", UnitDefs)
 
 function script.Create()

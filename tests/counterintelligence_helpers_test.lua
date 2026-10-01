@@ -45,7 +45,7 @@ local function recruitment(def,team,fail)
     }
     VFS={Include=dofile}
     function include() end
-    function getGameConfig() return {instance={culture='test'},agentConfig={recruitmentRange=100}} end
+    function getGameConfig() return {game={culture='test'},espionage={recruitment={range=100}}} end
     function getCultureUnitModelTypes(_,kind) return kind=='house' and {[3]=true} or {[9]=true} end
     function getOperativeTypeTable() return {[1]=true,[4]=true} end
     function getTruckTypeTable() return {} end

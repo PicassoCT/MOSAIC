@@ -15,7 +15,7 @@ boolStartFight = false
 local fighterOne 
 local fighterTwo 
 local GameConfig = getGameConfig()
-local houseTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture, "house", UnitDefs)
+local houseTypeTable = getCultureUnitModelTypes(GameConfig.game.culture, "house", UnitDefs)
 
 attach1 = piece"attach1"
 attach2 = piece"attach2"
@@ -55,10 +55,10 @@ end
 function randomMove()
     while true do
         x,y,z =Spring.GetUnitPosition(unitID)
-        x,z = x + math.random(0,GameConfig.houseSizeX*2)*randSign(), z+ math.random(0,GameConfig.houseSizeX*2)*randSign()
+        x,z = x + math.random(0,GameConfig.city.buildings.sizeX*2)*randSign(), z+ math.random(0,GameConfig.city.buildings.sizeX*2)*randSign()
 
         houses = foreach(
-                    getAllInCircle(x,z, GameConfig.houseSizeX),
+                    getAllInCircle(x,z, GameConfig.city.buildings.sizeX),
                     function(id)
                         if houseTypeTable[Spring.GetUnitDefID(id)] then return id end
                     end
@@ -182,7 +182,7 @@ end
 
 
 function combatHealthOS()
-    amount = GameConfig.closeCombatHealthLosPerSecond/2
+    amount = GameConfig.military.closeCombat.healthLossPerSecond/2
    -- echo("Close Combat Arena created")
     while boolStartFight == false do
         Sleep(100)

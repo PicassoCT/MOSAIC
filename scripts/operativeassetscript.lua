@@ -59,12 +59,12 @@ local GameConfig = getGameConfig()
 local GrapplingHook = piece("GrapplinHook")
 local RopeTable = {}
 local civilianWalkingTypeTable = getCultureUnitModelTypes(
-                                     GameConfig.instance.culture, "civilian",
+                                     GameConfig.game.culture, "civilian",
                                      UnitDefs)
 local disguiseDefID = randT(civilianWalkingTypeTable)
-speedCloaked            = GameConfig.assetCloakedSpeedReduction
-speedRunning            = GameConfig.assetSpeedRunning
-speedWalking            = GameConfig.assetSpeedWalking
+speedCloaked            = GameConfig.espionage.assets.cloakedSpeedReduction
+speedRunning            = GameConfig.espionage.assets.runningSpeedFactor
+speedWalking            = GameConfig.espionage.assets.walkingSpeedFactor
 local runningTimeInMS = 0
 local gaiaTeamID = Spring.GetGaiaTeamID()
 local houseTypeTable = getHouseTypeTable(UnitDefs)
@@ -181,7 +181,7 @@ function setRooftopMotion(mode)
 end
 
 if not GG.OperativesDiscovered then GG.OperativesDiscovered = {} end
-local civilianWalkingTypeTable = getCultureUnitModelTypes(  GameConfig.instance.culture, 
+local civilianWalkingTypeTable = getCultureUnitModelTypes(  GameConfig.game.culture,
                                                              "civilian", UnitDefs)
 boolInClosedCombat = false
 closeCombat= {}
@@ -326,7 +326,7 @@ function script.Create()
 end
 
 function instantParanoiaOS()
-    walkingTypeTable = getCultureUnitModelTypes( GameConfig.instance.culture,  "civilian", UnitDefs)
+    walkingTypeTable = getCultureUnitModelTypes( GameConfig.game.culture,  "civilian", UnitDefs)
 
     while true do
         minutes = math.random(3,12)*60*1000
@@ -416,9 +416,9 @@ end
 
 
 function runningReactor()
-    runningTimeInMS = GameConfig.assetMaxRunTimeInSeconds*1000
+    runningTimeInMS = GameConfig.espionage.assets.maxRunTimeSeconds*1000
     while true do
-    runningTimeInMS = math.min(runningTimeInMS + 100, GameConfig.assetMaxRunTimeInSeconds*1000)
+    runningTimeInMS = math.min(runningTimeInMS + 100, GameConfig.espionage.assets.maxRunTimeSeconds*1000)
     Sleep(100)
     end
 end
@@ -442,7 +442,7 @@ function speedMonitoring()
                     setSpeedEnvCached(unitID, speedRunning)
                     runFor(50)
                 else
-                    if runningTimeInMS >= ((GameConfig.assetMaxRunTimeInSeconds*1000)) then
+                    if runningTimeInMS >= ((GameConfig.espionage.assets.maxRunTimeSeconds*1000)) then
                         boolRunningTimeOut = false
                       --  echo("Running Timeout false")
                     end
@@ -932,11 +932,11 @@ function isInBuilding()
     ux,uy,uz = Spring.GetUnitPosition(unitID)
     resultDefID= nil
     foreach( 
-            getAllNearUnit(unitID, GameConfig.houseSizeX, gaiaTeamID),
+            getAllNearUnit(unitID, GameConfig.city.buildings.sizeX, gaiaTeamID),
             function(id)
                 defID= Spring.GetUnitDefID(id)
                 if climbAbleHouseTypeTable[defID]then 
-                    if IsOnPremisesOfBuilding(unitID, id, GameConfig.houseSizeX) then
+                    if IsOnPremisesOfBuilding(unitID, id, GameConfig.city.buildings.sizeX) then
                         boolOnAtLeastOneRoof = true
                         resultDefID = defID
                     end
@@ -1240,7 +1240,7 @@ function visibleAfterWeaponsFireTimer()
     boolFireForcedVisible = true
     Signal(SIG_FIRE_VISIBLITY)
     SetSignalMask(SIG_FIRE_VISIBLITY)
-    value = GameConfig.assetShotFiredWaitTimeToRecloak_MS
+    value = GameConfig.espionage.assets.recloakDelayMs
     Sleep(value)
     boolFireForcedVisible = false
 end

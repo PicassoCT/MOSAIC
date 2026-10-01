@@ -7,7 +7,7 @@ VFS.Include("scripts/lib_UnitScript.lua")
 VFS.Include("scripts/lib_mosaic.lua")
 
 local config = getGameConfig()
-local cfg = config.Police
+local cfg = config.police
 local gaia = Spring.GetGaiaTeamID()
 local ally = Spring.GetTeamAllyTeamID(gaia)
 local policeTypes = getPoliceTypes(UnitDefs)
@@ -15,19 +15,19 @@ local responseTypes = getPoliceTypes(UnitDefs)
 local safehouseTypes = getSafeHouseTypeTable(UnitDefs)
 local cyberDef = UnitDefNames.icon_cybercrime.id
 local civilians = getMobileCivilianDefIDTypeTable(UnitDefs)
-local walking = getCultureUnitModelTypes(config.instance.culture,"civilian",UnitDefs)
-local trucks = getCultureUnitModelTypes(config.instance.culture,"truck",UnitDefs)
-local houses = getCultureUnitModelTypes(config.instance.culture,"house",UnitDefs)
+local walking = getCultureUnitModelTypes(config.game.culture,"civilian",UnitDefs)
+local trucks = getCultureUnitModelTypes(config.game.culture,"truck",UnitDefs)
+local houses = getCultureUnitModelTypes(config.game.culture,"house",UnitDefs)
 local scraps = getScrapheapTypeTable(UnitDefs)
 local incidents, officers = {}, {}
 local revealedSafehouses = {}
 local bribery
 local damageToPolice = 0
-local reportDelay = cfg.reportDelayFrames or 240
-local escapeTime = cfg.escapeFrames or 900
-local searchTime = cfg.searchFrames or 1350
-local sightRange = cfg.sightRange or 650
-local searchRadius = cfg.searchRadius or 600
+local reportDelay = cfg.dispatch.reportDelayFrames or 240
+local escapeTime = cfg.pursuit.escapeFrames or 900
+local searchTime = cfg.pursuit.searchFrames or 1350
+local sightRange = cfg.pursuit.sightRange or 650
+local searchRadius = cfg.pursuit.searchRadius or 600
 GG.PoliceInPursuit = GG.PoliceInPursuit or {}
 GG.PoliceExposureUntil = GG.PoliceExposureUntil or {}
 
@@ -57,11 +57,11 @@ for defID in pairs(bribery.types) do policeTypes[defID] = true end
 local function revealSafehouses(incidentUnit, frame)
     local p = position(incidentUnit)
     if not p then return end
-    for _, id in ipairs(Spring.GetUnitsInCylinder(p.x,p.z,config.Bribe.safehouseRevealRange)) do
+    for _, id in ipairs(Spring.GetUnitsInCylinder(p.x,p.z,config.espionage.bribe.safehouseRevealRange)) do
         if safehouseTypes[Spring.GetUnitDefID(id)] then
             local previous = revealedSafehouses[id]
             local states = Spring.GetUnitStates(id) or {}
-            revealedSafehouses[id] = {untilFrame = frame+config.Bribe.safehouseRevealFrames,
+            revealedSafehouses[id] = {untilFrame = frame+config.espionage.bribe.safehouseRevealFrames,
                 restore = previous and previous.restore or states.cloak == true or states.cloak == 1}
             Spring.SetUnitCloak(id,false)
         end
@@ -87,7 +87,7 @@ end
 local function spawnLocation(p)
     local candidates = {}
     for id,data in pairs(GG.BuildingTable or {}) do
-        if alive(id) and (data.x-p.x)^2+(data.z-p.z)^2 >= cfg.minSpawnDistance^2 then
+        if alive(id) and (data.x-p.x)^2+(data.z-p.z)^2 >= cfg.dispatch.minSpawnDistance^2 then
             candidates[#candidates+1] = id
         end
     end
@@ -119,12 +119,12 @@ local function dispatch(incident,frame)
         if not state.incident and not GG.PoliceBribes[id] and alive(id) and
             (not officer or id<officer) then officer=id end
     end
-    if not officer and count < cfg.maxNr then
+    if not officer and count < cfg.population.maxOfficers then
         local x,y,z = spawnLocation(incident.location)
         if x then
             local name = "policetruck"
-            if damageToPolice > 2500 or config.GameState.anarchy == GG.GlobalGameState or
-                config.GameState.pacification == GG.GlobalGameState then
+            if damageToPolice > 2500 or config.game.states.anarchy == GG.GlobalGameState or
+                config.game.states.pacification == GG.GlobalGameState then
                 local choices = {}
                 for defID in pairs(responseTypes) do choices[#choices+1]=defID end
                 table.sort(choices)
@@ -136,7 +136,7 @@ local function dispatch(incident,frame)
         end
     end
     if not officer then return false end
-    officers[officer] = {incident=incident,nextOrder=frame+90,expires=frame+cfg.maxDispatchTime}
+    officers[officer] = {incident=incident,nextOrder=frame+90,expires=frame+cfg.dispatch.durationFrames}
     incident.officer=officer
     GG.PoliceInPursuit[officer]=incident.attacker
     move(officer,incident.location)
@@ -149,7 +149,7 @@ local function releaseOfficer(id,frame)
     GG.PoliceInPursuit[id]=nil
     if state then
         state.incident=nil
-        state.expires=frame+cfg.maxDispatchTime
+        state.expires=frame+cfg.dispatch.durationFrames
         if not GG.PoliceBribes[id] then Spring.GiveOrderToUnit(id,CMD.STOP,{}, {}) end
     end
 end
@@ -165,7 +165,7 @@ local function reportCyberCrime(id, building, due)
     local p = position(building)
     if not p or not alive(id) then return end
     incidents[id] = {attacker=id,location=p,due=due,kind="cybercrime",
-        expires=Spring.GetGameFrame()+config.CyberCrime.durationFrames+searchTime}
+        expires=Spring.GetGameFrame()+config.espionage.cybercrime.durationFrames+searchTime}
 end
 
 function gadget:UnitFinished(id,defID,team)
@@ -196,7 +196,7 @@ end
 function gadget:UnitCreated(id,defID,team,builder)
     bribery.Created(id,defID,builder)
     if policeTypes[defID] and Spring.GetUnitTeam(id)==gaia then
-        officers[id]={expires=Spring.GetGameFrame()+cfg.maxDispatchTime}
+        officers[id]={expires=Spring.GetGameFrame()+cfg.dispatch.durationFrames}
         Spring.SetUnitNeutral(id,false)
     end
     -- Cybercrime reports only after completion, at its building, with a slow response.
@@ -266,7 +266,7 @@ function gadget:GameFrame(frame)
             -- Movement and target suppression are owned by the active bribe.
         elseif incident and incident.kind=="cybercrime" then
             local p=position(id)
-            if p and (p.x-incident.location.x)^2+(p.z-incident.location.z)^2 <= config.CyberCrime.policeInterruptRange^2 then
+            if p and (p.x-incident.location.x)^2+(p.z-incident.location.z)^2 <= config.espionage.cybercrime.policeInterruptRange^2 then
                 if GG.CyberCrime then GG.CyberCrime.Stop(incident.attacker) end
             elseif p and frame>=state.nextOrder then
                 move(id,incident.location)

@@ -18,7 +18,7 @@ VFS.Include("scripts/lib_mosaic.lua")
 VFS.Include("scripts/lib_staticstring.lua")
 
 local GameConfig = getGameConfig()
---if not Game.version then Game.version = GameConfig.instance.Version end
+--if not Game.version then Game.version = GameConfig.game.version end
 local spGetUnitPosition = Spring.GetUnitPosition
 local spGetUnitDefID = Spring.GetUnitDefID
 local spGetUnitTeam = Spring.GetUnitTeam

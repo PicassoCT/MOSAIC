@@ -16,8 +16,8 @@ function script.Create()
     -- generatepiecesTableAndArrayCode(unitID)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     StartThread(waitForCar)
-    assert(GameConfig.LifeTimeCarStopIconMs)
-    StartThread(lifeTime, GameConfig.LifeTimeCarStopIconMs)
+    assert(GameConfig.espionage.carStop.lifetimeMs)
+    StartThread(lifeTime, GameConfig.espionage.carStop.lifetimeMs)
 
 end
 

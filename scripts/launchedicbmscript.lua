@@ -16,7 +16,7 @@ function script.Create()
 end
 
 function launchMotion()
-    maxTotalInterceptPossibleTime = gameConfig.LauncherInterceptTimeSeconds * 30
+    maxTotalInterceptPossibleTime = gameConfig.military.launcher.interceptTimeSeconds * 30
     totalInterceptPossibleTime = maxTotalInterceptPossibleTime
     StageInterval = maxTotalInterceptPossibleTime/ #TablesOfPiecesGroups["Stage"]
     StageTable = {}

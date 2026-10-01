@@ -37,9 +37,9 @@ its benefiting faction, rather than multiplied by team count. An intact
 building, its destroyed marker, and its pending replacement are the same site.
 A pending replacement retains its weight but earns nothing while absent.
 
-Configuration is in `getGameConfig().Objectives.Income` in
-`scripts/lib_mosaic.lua`: `ReferenceServerCount`, `ServerNetworkBonus`, and
-`StrategyIncomeFraction`. The server's base money rate is read from its
+Configuration is in `getGameConfig().objectives.income` in
+`scripts/lib_mosaic.lua`: `referenceServerCount`, `serverNetworkBonus`, and
+`strategyIncomeFraction`. The server's base money rate is read from its
 UnitDef. If the server script's network formula changes, update the reference
 bonus formula too. Adjust the reference count after collecting representative
 match data; this implementation does not dynamically follow players' current

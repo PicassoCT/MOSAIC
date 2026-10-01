@@ -70,7 +70,7 @@ local killedAllyTeams = {}
 --------------------------------------------------------------------------------
 local GameConfig = getGameConfig()
 
- GG.GlobalGameState = GameConfig.GameState.normal
+ GG.GlobalGameState = GameConfig.game.states.normal
  oldState = nil
 function setGlobalGameState(state)
     GG.GlobalGameState = state
@@ -91,28 +91,28 @@ local GameStateMachine = {
                     for launcherID, data in pairs(launchersT) do
                         local step = data.steps
                         if doesUnitExistAlive(launcherID) == true and 
-                            step > GameConfig.PreLaunchLeakSteps then
+                            step > GameConfig.military.launcher.preLaunchLeakSteps then
                             echo("Launcher "..launcherID.." is over PreLaunchLeakSteps going to launchleak")
                             Spring.SetUnitAlwaysVisible(launcherID, true)
                             GG.GameStateMachine.Timer = frame
-                            return GameConfig.GameState.launchleak
+                            return GameConfig.game.states.launchLeak
                         end
                     end
                 end
             end
         end
 
-        return GameConfig.GameState.normal
+        return GameConfig.game.states.normal
     end,
 
     ["launchleak"] = function(frame)
-        if GG.GameStateMachine.Timer + GameConfig.TimeForPanicSpreadInFrames <
+        if GG.GameStateMachine.Timer + GameConfig.game.phaseTimers.panicSpreadFrames <
             frame then
             GG.GameStateMachine.Timer = frame
-            return GameConfig.GameState.anarchy
+            return GameConfig.game.states.anarchy
         end
 
-        return GameConfig.GameState.launchleak
+        return GameConfig.game.states.launchLeak
     end,
 
     ["postlaunch"] = function(frame)
@@ -120,16 +120,16 @@ local GameStateMachine = {
             for teamID, launchedT in pairs(LaunchedRockets) do
                 for id, launchedFrame in pairs(launchedT) do
                     if id and doesUnitExistAlive(id) == true and launchedFrame +
-                        GameConfig.TimeForInterceptionInFrames < frame then
+                        GameConfig.game.phaseTimers.interceptionFrames < frame then
                         winners = {teamID}
                         spGameOver(winners)
-                        return GameConfig.GameState.gameover
+                        return GameConfig.game.states.gameOver
                     end
                 end
             end
         end
 
-        return GameConfig.GameState.postlaunch
+        return GameConfig.game.states.postLaunch
     end,
 
     ["anarchy"] = function(frame)
@@ -140,7 +140,7 @@ local GameStateMachine = {
                 if teamID and launchersT then
                     for launcherID, data in pairs(launchersT) do
                         local step = data.steps
-                        if launcherID and doesUnitExistAlive(launcherID) and step >= GameConfig.PreLaunchLeakSteps then
+                        if launcherID and doesUnitExistAlive(launcherID) and step >= GameConfig.military.launcher.preLaunchLeakSteps then
                             boolNoReadyLaunchers = false
                         end
                     end
@@ -149,30 +149,30 @@ local GameStateMachine = {
 
             if boolNoReadyLaunchers == true then
                 GG.GameStateMachine.Timer = frame
-                return GameConfig.GameState.pacification
+                return GameConfig.game.states.pacification
             end
         end
 
-        return GameConfig.GameState.anarchy
+        return GameConfig.game.states.anarchy
     end,
 
-    ["gameover"] = function(frame) return GameConfig.GameState.gameover end,
+    ["gameover"] = function(frame) return GameConfig.game.states.gameOver end,
 
     ["pacification"] = function(frame)
 
-        if GG.GameStateMachine.Timer + GameConfig.TimeForPacification < frame then
+        if GG.GameStateMachine.Timer + GameConfig.game.phaseTimers.pacificationFrames < frame then
             GG.GameStateMachine.Timer = frame
-            return GameConfig.GameState.normal
+            return GameConfig.game.states.normal
         end
 
-        return GameConfig.GameState.pacification
+        return GameConfig.game.states.pacification
     end
 }
 
 local gameStartFrame = Spring.GetGameFrame() +1
 function gadget:Initialize()
     Spring.Echo(GetInfo().name .. " Initialization started")
-    setGlobalGameState(GameConfig.GameState.normal)
+    setGlobalGameState(GameConfig.game.states.normal)
 
     GG.Launchers = {}
     GG.GameStateMachine = GameStateMachine
@@ -325,8 +325,8 @@ function constantCheck(frame)
             if teamID and launchersT then
                 for launcherID, data in pairs(launchersT) do
                     step =data.steps
-                       -- Spring.Echo("Launcher "..launcherID.." has "..step .." of "..GameConfig.LaunchReadySteps.." steps to go")
-                    if launcherID and step >= GameConfig.LaunchReadySteps and  data.payload then
+                       -- Spring.Echo("Launcher "..launcherID.." has "..step .." of "..GameConfig.military.launcher.readySteps.." steps to go")
+                    if launcherID and step >= GameConfig.military.launcher.readySteps and  data.payload then
                         id = createUnitAtUnit(teamID, "launchedicbm",
                                               launcherID, 0, 70, 0)
                         if not LaunchedRockets[teamID] then
@@ -347,7 +347,7 @@ function constantCheck(frame)
                         GG.Launchers[teamID][launcherID] = nil
 
                         GG.GameStateMachine.Timer = frame
-                        setGlobalGameState(GameConfig.GameState.postlaunch)
+                        setGlobalGameState(GameConfig.game.states.postLaunch)
                     end
                 end
             end
@@ -387,20 +387,20 @@ end
 oldState = "normal"
 function holdSpeach(transition)
     speaches = {
-        [GameConfig.GameState.normal .. ">" .. GameConfig.GameState.launchleak] = "Transition from normal to launchleakpanic",
-        [GameConfig.GameState.launchleak .. ">" .. GameConfig.GameState.anarchy] = "Transition from launchleak to anarchy",
-        [GameConfig.GameState.anarchy .. ">" .. GameConfig.GameState.postlaunch] = "Transition from anarchy to postlaunch",
-        [GameConfig.GameState.anarchy .. ">" ..
-            GameConfig.GameState.pacification] = "Transition from anarchy to pacification",
-        [GameConfig.GameState.pacification .. ">" .. GameConfig.GameState.normal] = "Transition from pacification to normal"
+        [GameConfig.game.states.normal .. ">" .. GameConfig.game.states.launchLeak] = "Transition from normal to launchleakpanic",
+        [GameConfig.game.states.launchLeak .. ">" .. GameConfig.game.states.anarchy] = "Transition from launchleak to anarchy",
+        [GameConfig.game.states.anarchy .. ">" .. GameConfig.game.states.postLaunch] = "Transition from anarchy to postlaunch",
+        [GameConfig.game.states.anarchy .. ">" ..
+            GameConfig.game.states.pacification] = "Transition from anarchy to pacification",
+        [GameConfig.game.states.pacification .. ">" .. GameConfig.game.states.normal] = "Transition from pacification to normal"
     }
 
     sounds = {
-        [GameConfig.GameState.normal .. ">" .. GameConfig.GameState.launchleak] = nil,
-        [GameConfig.GameState.launchleak .. ">" .. GameConfig.GameState.anarchy] = {"sounds/gamestate/normal_anarchy1.ogg", "sounds/gamestate/normal_anarchy2.ogg", "sounds/gamestate/normal_anarchy3.ogg"},
-        [GameConfig.GameState.anarchy .. ">" .. GameConfig.GameState.postlaunch] = nil,
-        [GameConfig.GameState.anarchy .. ">" ..GameConfig.GameState.pacification] = {"sounds/gamestate/anarchy_pacification.ogg"},
-        [GameConfig.GameState.pacification .. ">" .. GameConfig.GameState.normal] = {"sounds/gamestate/pacification_normal.ogg"}
+        [GameConfig.game.states.normal .. ">" .. GameConfig.game.states.launchLeak] = nil,
+        [GameConfig.game.states.launchLeak .. ">" .. GameConfig.game.states.anarchy] = {"sounds/gamestate/normal_anarchy1.ogg", "sounds/gamestate/normal_anarchy2.ogg", "sounds/gamestate/normal_anarchy3.ogg"},
+        [GameConfig.game.states.anarchy .. ">" .. GameConfig.game.states.postLaunch] = nil,
+        [GameConfig.game.states.anarchy .. ">" ..GameConfig.game.states.pacification] = {"sounds/gamestate/anarchy_pacification.ogg"},
+        [GameConfig.game.states.pacification .. ">" .. GameConfig.game.states.normal] = {"sounds/gamestate/pacification_normal.ogg"}
     }
     if speaches[transition] then echo(speaches[transition]) end
     if sounds[transition] then

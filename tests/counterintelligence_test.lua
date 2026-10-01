@@ -3,7 +3,7 @@
 local function world()
     local w={units={},gadgets={},frame=0,next=100,messages={},money={[1]=100000,[2]=100000,[3]=100000},
         supply={[1]=100000,[2]=100000,[3]=100000},orders={}}
-    GG={GameConfig={raid={revealGraphLifeTimeFrames=9000}}}
+    GG={GameConfig={espionage={raids={revealedGraphLifetimeFrames=9000}}}}
     Game={gameSpeed=30,mapSizeX=10000,mapSizeZ=10000}
     CMD={STOP=0,INSERT=1,MOVE=10,ATTACK=20,REPAIR=40,FIRE_STATE=45,MOVE_STATE=50,SELFD=65,
         LOAD_UNITS=75,ONOFF=85,CLOAK=95}

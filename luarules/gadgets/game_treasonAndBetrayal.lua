@@ -50,8 +50,8 @@ local function reveal(record, x,y,z)
     if record.disclosed then return end
     record.disclosed = true
     local loc = {teamID = record.team, x = x, y = y, z = z, radius = 40, revealedUnits = {},
-        endFrame = Spring.GetGameFrame() + ((GG.GameConfig and GG.GameConfig.raid and
-            GG.GameConfig.raid.revealGraphLifeTimeFrames) or cfg.revealFrames)}
+        endFrame = Spring.GetGameFrame() + ((GG.GameConfig and GG.GameConfig.espionage.raids and
+            GG.GameConfig.espionage.raids.revealedGraphLifetimeFrames) or cfg.revealFrames)}
     for id, isParent in pairs(record.links) do
         if alive(id) then
             local ux,uy,uz = Spring.GetUnitPosition(id)

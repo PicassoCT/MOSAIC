@@ -17,7 +17,7 @@ local function unit(scriptName)
     env.Sleep=coroutine.yield
     for _,name in ipairs({'StartThread','Move','Turn','WMove','WTurn','Spin','moveT','setFireState'}) do env[name]=function() end end
     env.foreach=function(t,fn) for _,v in pairs(t) do fn(v) end end
-    env.getGameConfig=function() return {instance={culture='international'}} end
+    env.getGameConfig=function() return {game={culture='international'}} end
     env.getCultureUnitModelNames_Dict_DefIDName=function() return {} end
     env.getDayTime=function() return 0,0,0,0 end
     env.getObjectiveAboveGroundOffset=function() return 0 end

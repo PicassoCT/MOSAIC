@@ -8,7 +8,7 @@ local rotor = piece("Rotor")
 
 local GameConfig = getGameConfig()
 local civilianWalkingTypeTable = getCultureUnitModelTypes(
-    GameConfig.instance.culture,
+    GameConfig.game.culture,
     "civilian",
     UnitDefs
 )

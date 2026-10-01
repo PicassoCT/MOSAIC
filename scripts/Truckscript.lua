@@ -22,7 +22,7 @@ local attachPoint = piece "attachPoint"
 local myTeamID = Spring.GetUnitTeam(unitID)
 local boolGaiaUnit = myTeamID == Spring.GetGaiaTeamID()
 
-local truckTypeTable = getCultureUnitModelTypes(GameConfig.instance.culture,
+local truckTypeTable = getCultureUnitModelTypes(GameConfig.game.culture,
                                                 "truck", UnitDefs)
 local boolIsCivilianTruck = (truckTypeTable[unitDefID] ~= nil)
 local boolIsPoliceTruck = unitDefID == UnitDefNames["policetruck"].id
@@ -205,7 +205,7 @@ local loadOutUnitID
 function script.Create()
     myName = UnitDefs[unitDefID].name
     if boolIsCivilianTruck == false then StartThread(loadLoadOutLoop) end
-    if boolIsCivilianTruck == true then assingCivilianTruckRegistration(unitID, Game, GameConfig.instance.culture) end
+    if boolIsCivilianTruck == true then assingCivilianTruckRegistration(unitID, Game, GameConfig.game.culture) end
 
     if myName == "policetruck" then StartThread(theySeeMeRollin) end 
 
@@ -316,18 +316,18 @@ end
 function fleeEnemy(enemyID)
     Signal(SIG_INTERNAL)
     SetSignalMask(SIG_INTERNAL)
-    setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_STARTED, "fleeing")
+    setCivilianUnitInternalStateMode(unitID, GameConfig.civilians.activityStates.started, "fleeing")
     if not enemyID then 
-        setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_ENDED, "fleeing")
+        setCivilianUnitInternalStateMode(unitID, GameConfig.civilians.activityStates.ended, "fleeing")
         return 
     end
 
-    while doesUnitExistAlive(enemyID) and distanceUnitToUnit(unitID, enemyID) < GameConfig.civilian.PanicRadius do
-        runAwayFrom(unitID, enemyID, GameConfig.civilian.FleeDistance)
+    while doesUnitExistAlive(enemyID) and distanceUnitToUnit(unitID, enemyID) < GameConfig.civilians.panic.radius do
+        runAwayFrom(unitID, enemyID, GameConfig.civilians.panic.fleeDistance)
         Sleep(500)
     end
 
-    setCivilianUnitInternalStateMode(unitID, GameConfig.STATE_ENDED, "fleeings")
+    setCivilianUnitInternalStateMode(unitID, GameConfig.civilians.activityStates.ended, "fleeings")
 end
 
 attackerID = 0
@@ -380,7 +380,7 @@ function honkIfHorny()
     SetSignalMask(SIG_HONK)
     Sleep(250)
     if math.random(0,100) > 80 and boolIsCivilianTruck == true and isRushHour() == true then
-        StartThread(PlaySoundByUnitDefID, unitDefID, "sounds/car/honk"..math.random(1,7)..".ogg", GameConfig.truckHonkLoudness, 1000, 1)
+        StartThread(PlaySoundByUnitDefID, unitDefID, "sounds/car/honk"..math.random(1,7)..".ogg", GameConfig.presentation.audio.truckHonkVolume, 1000, 1)
     end
 end
 

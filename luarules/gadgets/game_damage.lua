@@ -19,7 +19,7 @@ if (gadgetHandler:IsSyncedCode()) then
 
     local  GameConfig = getGameConfig()
     UnitDefNames = getUnitDefNames(UnitDefs)
-    local houseTypeTables = getHouseTypeTable(UnitDefs, GameConfig.instance.culture)
+    local houseTypeTables = getHouseTypeTable(UnitDefs, GameConfig.game.culture)
     local NimRodDefID = UnitDefNames["nimrod"].id
     assert(NimRodDefID)
     local NimrodWeaponDefID = WeaponDefNames["railgun"].id
