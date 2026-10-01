@@ -1,6 +1,6 @@
 [
   {
-    "name": "objective_civic_prison",
+    "name": "objective_prison",
     "title": "Prison Megablock",
     "description": "Detention blocks and civic administration",
     "triangles": 1524,
@@ -26,7 +26,7 @@
     ]
   },
   {
-    "name": "objective_civic_hospital",
+    "name": "objective_hospital",
     "title": "Hospital Arcology",
     "description": "Medical wards, emergency care and staff housing",
     "triangles": 1208,
@@ -52,7 +52,7 @@
     ]
   },
   {
-    "name": "objective_civic_university",
+    "name": "objective_university",
     "title": "University Megaproject",
     "description": "Teaching, research and student housing",
     "triangles": 1540,
@@ -78,7 +78,7 @@
     ]
   },
   {
-    "name": "objective_civic_recycling",
+    "name": "objective_recycling",
     "title": "Recycling and Housing",
     "description": "Municipal materials recovery and worker housing",
     "triangles": 2084,
@@ -104,7 +104,7 @@
     ]
   },
   {
-    "name": "objective_civic_courthouse",
+    "name": "objective_courthouse",
     "title": "Courthouse and Archive",
     "description": "Civil courts and public records",
     "triangles": 2420,
@@ -130,7 +130,7 @@
     ]
   },
   {
-    "name": "objective_civic_market",
+    "name": "objective_market",
     "title": "Wholesale Food Exchange",
     "description": "Covered markets and refrigerated distribution",
     "triangles": 2208,
@@ -156,7 +156,7 @@
     ]
   },
   {
-    "name": "objective_civic_cemetery",
+    "name": "objective_cemetery",
     "title": "Vertical Cemetery",
     "description": "Columbarium towers and memorial gardens",
     "triangles": 3748,
@@ -182,7 +182,7 @@
     ]
   },
   {
-    "name": "objective_civic_fire_rescue",
+    "name": "objective_fire_rescue",
     "title": "Fire and Rescue Complex",
     "description": "Emergency services and training campus",
     "triangles": 1280,

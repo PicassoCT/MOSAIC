@@ -363,7 +363,7 @@ def main():
     manifest=[]
     (ROOT/'objects3d').mkdir(exist_ok=True)
     for build,title,description in BUILDERS:
-        m=build();name='objective_civic_'+m.name
+        m=build();name='objective_'+m.name
         verts=[v for part in m.parts.values() for v in part]
         low=[min(v[k] for v in verts) for k in range(3)]
         high=[max(v[k] for v in verts) for k in range(3)]
