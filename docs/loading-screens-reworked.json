@@ -2,8 +2,8 @@
   "created": "2026-10-03",
   "base_commit": "d5e0a314dce0ad75e88ff682b484d842ae0f16e9",
   "original_count": 45,
-  "additional_count": 15,
-  "image_count": 60,
+  "additional_count": 20,
+  "image_count": 65,
   "active_loader_changed": false,
   "images": [
     {
@@ -605,6 +605,57 @@
       "sha256": "b603193e4a63f9930fbf55ffe747eb3a4c570e75761b839dad5060a864d98c7c",
       "git_blob_sha": "a32e868e07165a2e09122fd962c860033f76683f",
       "source": "luaui/images/loadpictures/LoadScreen9.png"
+    },
+    {
+      "file": "luaui/images/loadpictures_reworked/Incident_Kola_Archive_2036.png",
+      "title": "THE KOLA ARCHIVE",
+      "width": 1672,
+      "height": 941,
+      "bytes": 2543665,
+      "sha256": "535753f619f605f4e67ee747892f1cdb3ce8f6be66e33069c8b9d05625a338cc",
+      "git_blob_sha": "6b882623169a8e8b0a19b387130c1664da5815d0",
+      "source": "Additional incident scene created 2026-10-04 (Europe/Berlin)"
+    },
+    {
+      "file": "luaui/images/loadpictures_reworked/Incident_Rotterdam_Empty_Convoys_2031.png",
+      "title": "THE EMPTY CONVOYS",
+      "width": 1672,
+      "height": 941,
+      "bytes": 2675669,
+      "sha256": "ffe55373266b65ebab0c27ee85c392ea6cc85de5e68559f0849aaa97fa905ede",
+      "git_blob_sha": "dad624f6097c543e67bdfe96458e51294d988388",
+      "source": "Additional incident scene created 2026-10-04 (Europe/Berlin)"
+    },
+    {
+      "file": "luaui/images/loadpictures_reworked/Incident_Dhubai_Night_Shift_2034.png",
+      "title": "THE NIGHT SHIFT INCIDENT",
+      "width": 1672,
+      "height": 941,
+      "bytes": 2603371,
+      "sha256": "d70c0e100ef5559251dc87f97193121d19db16238a40f3c4720b028bc6dd8ad1",
+      "git_blob_sha": "99d5cf6cc09bfa04e06a11efb8768952ae08db66",
+      "source": "Additional incident scene created 2026-10-04 (Europe/Berlin)"
+    },
+    {
+      "file": "luaui/images/loadpictures_reworked/Incident_Ceasefire_Corridor_2037.png",
+      "title": "THE CEASEFIRE CORRIDOR",
+      "width": 1672,
+      "height": 940,
+      "bytes": 2828741,
+      "sha256": "dcaa1691ee684935c9a5a3b920ad5b7cbd84a66b7744d64eba7b2c2456da4c85",
+      "git_blob_sha": "7568f188c1755ccb28a1eb0d7cf7b0e0f1791158",
+      "source": "Additional incident scene created 2026-10-04 (Europe/Berlin)"
+    },
+    {
+      "file": "luaui/images/loadpictures_reworked/Incident_Forrest_For_The_Trees_Aftermath_2035.png",
+      "title": "FORREST FOR THE TREES \u2014 AFTERMATH",
+      "width": 1672,
+      "height": 941,
+      "bytes": 2360124,
+      "sha256": "c9bfdaf4994e7e075b954e6a548df1c38895c3dbba0741ba7bfe89148bf3f9db",
+      "git_blob_sha": "4c8e3a14599257edc2bf9268440a418383307e19",
+      "source": "Additional incident scene created 2026-10-04 (Europe/Berlin)"
     }
-  ]
+  ],
+  "updated": "2026-10-04"
 }

@@ -1,6 +1,6 @@
 # Reworked loading screens
 
-60 PNG images in `luaui/images/loadpictures_reworked/`: a matching rework for each of the 45 original loading-screen files, plus 15 additional incident, warning, and factory scenes.
+65 PNG images in `luaui/images/loadpictures_reworked/`: a matching rework for each of the 45 original loading-screen files, plus 20 additional incident, warning, and factory scenes.
 
 The original assets and current loading-screen selection remain unchanged. The new folder is a separate review collection; it is not automatically included in the current rotation. The selector is in `luaintro/Addons/bg_texture.lua`. If activated later, use a PNG-only file glob.
 
