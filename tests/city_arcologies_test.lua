@@ -40,6 +40,7 @@ local function standalone(shared, id, opts)
         getPieceTableByNameGroups = function() return groups end,
         Spring = {
             GetGaiaTeamID = function() return 0 end,
+            SetUnitRulesParam = noop,
             GetUnitPieceList = function() return pieceNames end,
             GetUnitPieceMap = function() return {} end,
             GetUnitPosition = function() return opts.x or 99, 0, 0 end,
@@ -51,7 +52,7 @@ local function standalone(shared, id, opts)
         StartThread = noop, Sleep = function(ms)
             if opts.onSleep then opts.onSleep(ms) end
         end,
-        Show = noop, Hide = noop, hideAll = noop,
+        Show = noop, Hide = noop, hideAll = noop, SetRadiancePlaceables = noop,
         showT = function(t) for _, piece in ipairs(t) do shown[piece] = true end end,
         showTSubSubSpins = function() return {} end,
         showTSubSpins = function() return {} end,
@@ -122,19 +123,37 @@ assert(not cappedShown[40] and capped.MegaBuildingCount == 12)
 -- Actual city gadget with engine calls mocked. A non-Asian city gets three
 -- full-size reserved plots; fillers and failed creates do not consume them.
 local defs = {[1]={id=1,name='house_asian1'}, [2]={id=2,name='house_arab0'},
-    [3]={id=3,name='house_ruin'}, [4]={id=4,name='house_western0'}}
+    [3]={id=3,name='house_ruin'}, [4]={id=4,name='house_western0'},
+    [5]={id=5,name='house_asian0'}}
+for a=1,4 do for b=a,4 do
+    local id=#defs+1
+    defs[id]={id=id,name='house_asian_split_'..a..'_'..b,
+        customParams={house_asian_base='house_asian0'}}
+end end
 local byName = {}; for _, d in pairs(defs) do byName[d.name] = d end
 local units, nextID, fail = {}, 100, false
+local destroyed
 local city = loadEnv('luarules/gadgets/game_spawnCity.lua', {
     GG = {}, gadget = {}, UnitDefs = defs, Game = {mapSizeX=1024,mapSizeZ=1024},
     gadgetHandler = {IsSyncedCode=function() return true end},
-    VFS = {Include=noop}, include=function() return {} end,
+    VFS = {Include=function(path)
+        if path == 'scripts/lib_house_asian_split.lua' then
+            local env = {VFS={Include=dofile}}
+            setmetatable(env, {__index=_G})
+            local f
+            if setfenv then f=assert(loadfile(path));setfenv(f,env)
+            else f=assert(loadfile(path,'t',env)) end
+            return f()
+        end
+    end}, include=function() return {} end,
     getGameConfig=function() return config end,
     getUnitDefNames=function() return byName end,
     getBuildingScrapHeapTypeTable=function() return {} end,
     getBuildingRuinTypeTable=function() return {} end,
     makeTable=function() return {} end,
-    getCultureUnitModelTypes=function() return {[4]=4} end,
+    getCultureUnitModelTypes=function()
+        local houses={[4]=4};for id=5,#defs do houses[id]=id end;return houses
+    end,
     getHouseTypeIsInnerCityOnly=function() return {} end,
     removeDictFromDict=function(t) return t end,
     getHouseTypeLimitations=function() return {} end,
@@ -143,11 +162,18 @@ local city = loadEnv('luarules/gadgets/game_spawnCity.lua', {
     isMapControlledBuildingPlacement=function() return false end,
     isNearCityCenter=function() return false end,
     doesUnitExistAlive=function(id) return units[id] ~= nil end,
-    randDict=function() return 4 end,
+    randDict=function(pool)
+        for id in pairs(pool) do
+            assert(not (defs[id].customParams or {}).house_asian_base,
+                'model variants changed city building-purpose probabilities')
+        end
+        return 4
+    end,
     foreach=foreach, setHouseStreetNameTooltip=noop,
     Spring = {
         GetGaiaTeamID=function() return 0 end, GetGroundHeight=function() return 0 end,
         SetUnitAlwaysVisible=noop, SetUnitBlocking=noop,
+        DestroyUnit=function(id) units[id]=nil;destroyed=id end,
         GetUnitDefID=function(id) return units[id].def end,
         GetUnitPosition=function(id) return units[id].x,0,units[id].z end,
         GetAllUnits=function() local t={};for id in pairs(units) do t[#t+1]=id end;return t end,
@@ -180,4 +206,21 @@ assert(units[nextID].def == 1 and city.GG.BuildingTable[nextID].arcology, 'rebui
 city.GG.BuildingTable = {}
 assert(city.registerManuallyPlacedHouses(1) == count(units))
 assert(city.GG.BuildingTable[arcIDs[2]])
+
+-- Asian model choice is made before CreateUnit and committed only on success.
+local groupCount=function() return count(city.GG.HouseAsianSplitState.used) end
+fail=true
+assert(city.spawnUnit(5,750,750)==nil and groupCount()==0)
+fail=false
+local split=city.spawnBuilding(5,750,750,true,true)
+assert(defs[units[split].def].customParams.house_asian_base=='house_asian0')
+assert(groupCount()==1 and city.GG.HouseAsianUnitPlans[split])
+assert(city.GG.BuildingTable[split] and not city.GG.BuildingTable[split].arcology)
+assert(city.registerManuallyPlacedHouses(2)==1, 'split omitted from house registration')
+city.GG.houseHasSafeHouseTable={[split]=999}
+units[999]={def=0}
+city.gadget:UnitDestroyed(split,units[split].def,0,nil)
+assert(destroyed==999 and not city.GG.houseHasSafeHouseTable[split], 'split lost safehouse occupancy cleanup')
+assert(not city.GG.HouseAsianUnitPlans[split] and groupCount()==1,
+    'destruction must release the per-unit plan, not the once-per-map preference')
 print('PASS: arcology minimum, per-location chance, project identity, model pools, mega filters/cap, city plots and rebuilds')

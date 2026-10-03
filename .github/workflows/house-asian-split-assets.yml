@@ -1,0 +1,63 @@
+name: Generate and verify Asian split assets
+
+on:
+  push:
+    branches: [feat/house-asian-pre-spawn-split]
+    paths:
+      - .github/workflows/house-asian-split-assets.yml
+      - tools/house_asian_split/**
+      - scripts/house_asian_script.lua
+      - scripts/lib_house_asian_split.lua
+      - objects3d/house_asian.dae
+      - objects3d/house_asian.dae.lua
+      - tests/house_asian_split*
+
+permissions:
+  contents: write
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /*
+            !/objects3d/*
+            !/unittextures/*
+            !/sounds/*
+            !/bitmaps/*
+            !/anims/*
+            /objects3d/house_asian.dae
+            /objects3d/house_asian.dae.lua
+      - name: Generate models and check reproducibility
+        run: |
+          python3 tools/house_asian_split/generate.py
+          python3 tools/house_asian_split/generate.py --check
+      - name: Check imports, assembly, deterministic plans and gameplay
+        run: |
+          python3 -m venv /tmp/mosaic-model-tests
+          /tmp/mosaic-model-tests/bin/pip install assimp_py==1.2.0 lupa==2.8
+          /tmp/mosaic-model-tests/bin/python tests/house_asian_split_models_test.py --runtime
+          /tmp/mosaic-model-tests/bin/python - <<'PY'
+          from lupa.lua51 import LuaRuntime
+          for path in (
+              'tests/house_asian_split_test.lua',
+              'tests/house_asian_split_semantics_test.lua',
+              'tests/city_arcologies_test.lua',
+              'tests/asset_rooftop_test.lua',
+          ):
+              print(path, flush=True)
+              LuaRuntime().execute("dofile(%r)" % path)
+          PY
+      - name: Publish verified generated assets on the isolated branch
+        run: |
+          git add --sparse -- objects3d/house_asian_split_*.dae objects3d/house_asian_split_*.dae.lua scripts/house_asian_split_catalog.lua tools/house_asian_split/manifest.json
+          if ! git diff --cached --quiet; then
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git commit -m 'Generate verified Asian house split models'
+            git push origin HEAD:refs/heads/feat/house-asian-pre-spawn-split
+          fi

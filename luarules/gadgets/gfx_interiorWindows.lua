@@ -410,6 +410,9 @@ end
 
     local windowDefID = nil
     for i=1,#UnitDefs do
+        if (UnitDefs[i].customParams or {}).house_asian_base then
+            windowNameTypeIDMap[UnitDefs[i].name] = 0
+        end
         if windowNameTypeIDMap[UnitDefs[i].name] ~= nil then
             windowDefIDTypeIDMap[UnitDefs[i].id] = windowNameTypeIDMap[UnitDefs[i].name] 
             Spring.Echo("gfx_Windows.lua: Defined  types for "..UnitDefs[i].name.." as ".. windowNameTypeIDMap[UnitDefs[i].name] )

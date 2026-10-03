@@ -31,7 +31,7 @@ function widget:Initialize()
             raidIconDefID = k
         end
 
-        if string.find(v.name,"house_arab0") or string.find(v.name,"house_western0") or string.find(v.name,"house_asian0") then
+        if (v.customParams or {}).house_asian_base or string.find(v.name,"house_arab0") or string.find(v.name,"house_western0") or string.find(v.name,"house_asian0") then
             houseTypeTable[k] = k
         end
     end

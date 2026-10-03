@@ -1,5 +1,9 @@
 # Compiled Lua sources
 
+# Python asset tooling
+__pycache__/
+*.pyc
+
 # luarocks build files
 *.src.rock
 *.zip

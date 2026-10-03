@@ -1,0 +1,1704 @@
+{
+  "source": "objects3d/house_asian.dae",
+  "source_sha256": "fb581d74614e41b6d4c1d0169b4aef78929fc6b6866c1dd2dbaacda134704606",
+  "source_nodes": 1400,
+  "styles": {
+    "1": "pod",
+    "2": "industrial",
+    "3": "trad",
+    "4": "office"
+  },
+  "variants": [
+    {
+      "name": "house_asian_split_1_1",
+      "styles": [
+        1
+      ],
+      "nodes": 1040,
+      "geometries": 1036,
+      "bytes": 51336909,
+      "sha256": "be52f167e6da05e457dc800253e66cc3fc0dc7e9b268bbed09a103b5f6e8aeed"
+    },
+    {
+      "name": "house_asian_split_1_2",
+      "styles": [
+        1,
+        2
+      ],
+      "nodes": 1167,
+      "geometries": 1163,
+      "bytes": 61141235,
+      "sha256": "4e994a9e46769a8df259930cb29e87248c6dfeb4346c83d6ecd4311c73f93374"
+    },
+    {
+      "name": "house_asian_split_1_3",
+      "styles": [
+        1,
+        3
+      ],
+      "nodes": 1164,
+      "geometries": 1160,
+      "bytes": 61190585,
+      "sha256": "93431f6bffb5137a5c8805aea45df34cdc37e4d07527f5f6522edbec65318790"
+    },
+    {
+      "name": "house_asian_split_1_4",
+      "styles": [
+        1,
+        4
+      ],
+      "nodes": 1175,
+      "geometries": 1171,
+      "bytes": 57287508,
+      "sha256": "f7a46be2677fdb42e8a0da718993a193bc4665409e3080fb4e6c6b18d94b9f5e"
+    },
+    {
+      "name": "house_asian_split_2_2",
+      "styles": [
+        2
+      ],
+      "nodes": 940,
+      "geometries": 936,
+      "bytes": 52203348,
+      "sha256": "d06243c32b6bdd5b8078ebbbfcdd6670e2972afecb9bcc297847cb06d61eef47"
+    },
+    {
+      "name": "house_asian_split_2_3",
+      "styles": [
+        2,
+        3
+      ],
+      "nodes": 1146,
+      "geometries": 1142,
+      "bytes": 63975995,
+      "sha256": "2e8460368d7c0f7a19f4f1c50be0ed866aa569e171ef99e041a3ed9e0599050e"
+    },
+    {
+      "name": "house_asian_split_2_4",
+      "styles": [
+        2,
+        4
+      ],
+      "nodes": 1212,
+      "geometries": 1208,
+      "bytes": 60392238,
+      "sha256": "48b961bb63b02034a042a2e6e775e23ec52154d7fced85a3da506b235acc1a85"
+    },
+    {
+      "name": "house_asian_split_3_3",
+      "styles": [
+        3
+      ],
+      "nodes": 570,
+      "geometries": 568,
+      "bytes": 23126080,
+      "sha256": "0c27130988bff0b0c76cb6e8b82db9360fcef5722e101eefd6fb5f7cacf5d2b3"
+    },
+    {
+      "name": "house_asian_split_3_4",
+      "styles": [
+        3,
+        4
+      ],
+      "nodes": 1037,
+      "geometries": 1034,
+      "bytes": 45773970,
+      "sha256": "c71150de9b16a26d282c031d45d50f7eb8c84afdde6b0cfed094793f8b2f7bc6"
+    },
+    {
+      "name": "house_asian_split_4_4",
+      "styles": [
+        4
+      ],
+      "nodes": 734,
+      "geometries": 731,
+      "bytes": 34420249,
+      "sha256": "35b27eb2b18e0ba57fb9b2f739e41bc5d5241ab35af12a3d5efa8fabf3f22103"
+    }
+  ],
+  "groups": [
+    {
+      "id": "id_a12_pod_wallblock",
+      "styles": [
+        1
+      ],
+      "stage": "wall",
+      "rows": 4,
+      "columns": 1,
+      "pieces": [
+        "ID_a12_Pod_WallBLock01",
+        "ID_a12_Pod_WallBLock02",
+        "ID_a12_Pod_WallBLock03",
+        "ID_a12_Pod_WallBLock04"
+      ]
+    },
+    {
+      "id": "id_a13_pod_wallblock",
+      "styles": [
+        1
+      ],
+      "stage": "wall",
+      "rows": 4,
+      "columns": 1,
+      "pieces": [
+        "ID_a13_Pod_WallBLock01",
+        "ID_a13_Pod_WallBLock02",
+        "ID_a13_Pod_WallBLock03",
+        "ID_a13_Pod_WallBLock04"
+      ]
+    },
+    {
+      "id": "id_a14_pod_industrial_wallblock",
+      "styles": [
+        1,
+        2
+      ],
+      "stage": "wall",
+      "rows": 4,
+      "columns": 1,
+      "pieces": [
+        "ID_a14_Pod_Industrial_WallBLock01",
+        "ID_a14_Pod_Industrial_WallBLock02",
+        "ID_a14_Pod_Industrial_WallBLock03",
+        "ID_a14_Pod_Industrial_WallBLock04"
+      ]
+    },
+    {
+      "id": "id_a15_pod_wallblock",
+      "styles": [
+        1
+      ],
+      "stage": "wall",
+      "rows": 4,
+      "columns": 1,
+      "pieces": [
+        "ID_a15_Pod_WallBLock01",
+        "ID_a15_Pod_WallBLock02",
+        "ID_a15_Pod_WallBLock03",
+        "ID_a15_Pod_WallBLock04"
+      ]
+    },
+    {
+      "id": "id_a18_pod_office_industrial_wall",
+      "styles": [
+        1,
+        2,
+        4
+      ],
+      "stage": "wall",
+      "rows": 4,
+      "columns": 1,
+      "pieces": [
+        "ID_a18_Pod_Office_Industrial_Wall1",
+        "ID_a18_Pod_Office_Industrial_Wall2",
+        "ID_a18_Pod_Office_Industrial_Wall3",
+        "ID_a18_Pod_Office_Industrial_Wall4"
+      ]
+    },
+    {
+      "id": "id_a19_industrial_office_pod_wallblock",
+      "styles": [
+        1,
+        2,
+        4
+      ],
+      "stage": "wall",
+      "rows": 1,
+      "columns": 6,
+      "pieces": [
+        "ID_a19_Industrial_Office_Pod_WallBlock01",
+        "ID_a19_Industrial_Office_Pod_WallBlock2",
+        "ID_a19_Industrial_Office_Pod_WallBlock3",
+        "ID_a19_Industrial_Office_Pod_WallBlock4",
+        "ID_a19_Industrial_Office_Pod_WallBlock5",
+        "ID_a19_Industrial_Office_Pod_WallBlock006"
+      ]
+    },
+    {
+      "id": "id_a1_office_industrial_pod_wall",
+      "styles": [
+        1,
+        2,
+        4
+      ],
+      "stage": "wall",
+      "rows": 4,
+      "columns": 1,
+      "pieces": [
+        "ID_a1_Office_Industrial_Pod_Wall01",
+        "ID_a1_Office_Industrial_Pod_Wall2",
+        "ID_a1_Office_Industrial_Pod_Wall3",
+        "ID_a1_Office_Industrial_Pod_Wall04"
+      ]
+    },
+    {
+      "id": "id_a20_industrial_pod_wall",
+      "styles": [
+        1,
+        2
+      ],
+      "stage": "wall",
+      "rows": 4,
+      "columns": 1,
+      "pieces": [
+        "ID_a20_Industrial_Pod_Wall1",
+        "ID_a20_Industrial_Pod_Wall2",
+        "ID_A20_Industrial_Pod_Wall3",
+        "ID_a20_Industrial_Pod_Wall4"
+      ]
+    },
+    {
+      "id": "id_a22_trad_pod_wall",
+      "styles": [
+        1,
+        3
+      ],
+      "stage": "wall",
+      "rows": 4,
+      "columns": 2,
+      "pieces": [
+        "ID_a22_Trad_Pod_Wall01",
+        "ID_a22_Trad_Pod_Wall02",
+        "ID_a22_Trad_Pod_Wall03",
+        "ID_a22_Trad_Pod_Wall04",
+        "ID_a22_Trad_Pod_Wall05",
+        "ID_a22_Trad_Pod_Wall06",
+        "ID_a22_Trad_Pod_Wall07",
+        "ID_a22_Trad_Pod_Wall08"
+      ]
+    },
+    {
+      "id": "id_a24_office_pod_wall",
+      "styles": [
+        1,
+        4
+      ],
+      "stage": "wall",
+      "rows": 4,
+      "columns": 1,
+      "pieces": [
+        "ID_a24_Office_Pod_Wall1",
+        "ID_a24_Office_Pod_Wall2",
+        "ID_a24_Office_Pod_Wall3",
+        "ID_a24_Office_Pod_Wall4"
+      ]
+    },
+    {
+      "id": "id_a25_office_pod_wall",
+      "styles": [
+        1,
+        4
+      ],
+      "stage": "wall",
+      "rows": 4,
+      "columns": 2,
+      "pieces": [
+        "ID_a25_Office_pod_Wall01",
+        "ID_a25_Office_pod_Wall02",
+        "ID_a25_Office_pod_Wall03",
+        "ID_a25_Office_pod_Wall04",
+        "ID_a25_Office_pod_Wall05",
+        "ID_a25_Office_pod_Wall06",
+        "ID_a25_Office_pod_Wall07",
+        "ID_a25_Office_pod_Wall08"
+      ]
+    },
+    {
+      "id": "id_a26_office_industrial_pod_wall",
+      "styles": [
+        1,
+        2,
+        4
+      ],
+      "stage": "wall",
+      "rows": 4,
+      "columns": 1,
+      "pieces": [
+        "ID_a26_Office_Industrial_Pod_Wall01",
+        "ID_a26_Office_Industrial_Pod_Wall02",
+        "ID_a26_Office_Industrial_Pod_Wall03",
+        "ID_a26_Office_Industrial_Pod_Wall04"
+      ]
+    },
+    {
+      "id": "id_a28_office_wall",
+      "styles": [
+        4
+      ],
+      "stage": "wall",
+      "rows": 4,
+      "columns": 1,
+      "pieces": [
+        "ID_a28_Office_Wall01",
+        "ID_a28_Office_Wall02",
+        "ID_a28_Office_Wall03",
+        "ID_a28_Office_Wall04"
+      ]
+    },
+    {
+      "id": "id_a35_office_wall",
+      "styles": [
+        4
+      ],
+      "stage": "wall",
+      "rows": 4,
+      "columns": 4,
+      "pieces": [
+        "ID_a35_Office_Wall01",
+        "ID_a35_Office_Wall02",
+        "ID_a35_Office_Wall03",
+        "ID_a35_Office_Wall04",
+        "ID_a35_Office_Wall05",
+        "ID_a35_Office_Wall06",
+        "ID_a35_Office_Wall07",
+        "ID_a35_Office_Wall08",
+        "ID_a35_Office_Wall09",
+        "ID_a35_Office_Wall10",
+        "ID_a35_Office_Wall11",
+        "ID_a35_Office_Wall12",
+        "ID_a35_Office_Wall13",
+        "ID_a35_Office_Wall14",
+        "ID_a35_Office_Wall15",
+        "ID_a35_Office_Wall16"
+      ]
+    },
+    {
+      "id": "id_a38_office_wall",
+      "styles": [
+        4
+      ],
+      "stage": "wall",
+      "rows": 4,
+      "columns": 1,
+      "pieces": [
+        "ID_a38_Office_Wall01",
+        "ID_a38_Office_Wall02",
+        "ID_a38_Office_Wall03",
+        "ID_a38_Office_Wall04"
+      ]
+    },
+    {
+      "id": "id_a39_office_wall",
+      "styles": [
+        4
+      ],
+      "stage": "wall",
+      "rows": 4,
+      "columns": 1,
+      "pieces": [
+        "ID_a39_Office_Wall01",
+        "ID_a39_Office_Wall02",
+        "ID_a39_Office_Wall03",
+        "ID_a39_Office_Wall04"
+      ]
+    },
+    {
+      "id": "id_a40_office_wall",
+      "styles": [
+        4
+      ],
+      "stage": "wall",
+      "rows": 4,
+      "columns": 1,
+      "pieces": [
+        "ID_a40_Office_Wall01",
+        "ID_a40_Office_Wall02",
+        "ID_a40_Office_Wall03",
+        "ID_a40_Office_Wall04"
+      ]
+    },
+    {
+      "id": "id_a41_office_wall",
+      "styles": [
+        4
+      ],
+      "stage": "wall",
+      "rows": 4,
+      "columns": 1,
+      "pieces": [
+        "ID_a41_Office_Wall01",
+        "ID_a41_Office_Wall02",
+        "ID_a41_Office_Wall03",
+        "ID_a41_Office_Wall04"
+      ]
+    },
+    {
+      "id": "id_a42_office_wall",
+      "styles": [
+        4
+      ],
+      "stage": "wall",
+      "rows": 4,
+      "columns": 1,
+      "pieces": [
+        "ID_a42_Office_Wall01",
+        "ID_a42_Office_Wall02",
+        "ID_a42_Office_Wall03",
+        "ID_a42_Office_Wall04"
+      ]
+    },
+    {
+      "id": "id_a43_office_wall",
+      "styles": [
+        4
+      ],
+      "stage": "wall",
+      "rows": 4,
+      "columns": 1,
+      "pieces": [
+        "ID_a43_Office_Wall1",
+        "ID_a43_Office_Wall2",
+        "ID_a43_Office_Wall3",
+        "ID_a43_Office_Wall4"
+      ]
+    },
+    {
+      "id": "id_a45_office_wall",
+      "styles": [
+        4
+      ],
+      "stage": "wall",
+      "rows": 4,
+      "columns": 1,
+      "pieces": [
+        "ID_a45_Office_Wall01",
+        "ID_a45_Office_Wall02",
+        "ID_a45_Office_Wall03",
+        "ID_a45_Office_Wall04"
+      ]
+    },
+    {
+      "id": "id_a48_office_wall",
+      "styles": [
+        4
+      ],
+      "stage": "wall",
+      "rows": 4,
+      "columns": 1,
+      "pieces": [
+        "ID_a48_Office_Wall01",
+        "ID_a48_Office_Wall02",
+        "ID_a48_Office_Wall03",
+        "ID_a48_Office_Wall04"
+      ]
+    },
+    {
+      "id": "id_a49_office_wall",
+      "styles": [
+        4
+      ],
+      "stage": "wall",
+      "rows": 4,
+      "columns": 1,
+      "pieces": [
+        "ID_a49_Office_Wall01",
+        "ID_a49_Office_Wall02",
+        "ID_a49_Office_Wall03",
+        "ID_a49_Office_Wall04"
+      ]
+    },
+    {
+      "id": "id_a50_office_pod_wall",
+      "styles": [
+        1,
+        4
+      ],
+      "stage": "wall",
+      "rows": 4,
+      "columns": 1,
+      "pieces": [
+        "ID_a50_Office_Pod_Wall01",
+        "ID_a50_Office_Pod_Wall02",
+        "ID_a50_Office_Pod_Wall03",
+        "ID_a50_Office_Pod_Wall04"
+      ]
+    },
+    {
+      "id": "id_a51_office_pod_wall",
+      "styles": [
+        1,
+        4
+      ],
+      "stage": "wall",
+      "rows": 4,
+      "columns": 1,
+      "pieces": [
+        "ID_a51_Office_Pod_Wall01",
+        "ID_a51_Office_Pod_Wall02",
+        "ID_a51_Office_Pod_Wall03",
+        "ID_a51_Office_Pod_Wall04"
+      ]
+    },
+    {
+      "id": "id_a52_office_pod_wall",
+      "styles": [
+        1,
+        4
+      ],
+      "stage": "wall",
+      "rows": 4,
+      "columns": 1,
+      "pieces": [
+        "ID_a52_Office_Pod_Wall01",
+        "ID_a52_Office_Pod_Wall02",
+        "ID_a52_Office_Pod_Wall03",
+        "ID_a52_Office_Pod_Wall04"
+      ]
+    },
+    {
+      "id": "id_a53_office_pod_wall",
+      "styles": [
+        1,
+        4
+      ],
+      "stage": "wall",
+      "rows": 4,
+      "columns": 1,
+      "pieces": [
+        "ID_a53_Office_Pod_Wall01",
+        "ID_a53_Office_Pod_Wall02",
+        "ID_a53_Office_Pod_Wall03",
+        "ID_a53_Office_Pod_Wall04"
+      ]
+    },
+    {
+      "id": "id_a54_office_pod_wall",
+      "styles": [
+        1,
+        4
+      ],
+      "stage": "wall",
+      "rows": 4,
+      "columns": 1,
+      "pieces": [
+        "ID_a54_Office_Pod_Wall01",
+        "ID_a54_Office_Pod_Wall02",
+        "ID_a54_Office_Pod_Wall3",
+        "ID_a54_Office_Pod_Wall04"
+      ]
+    },
+    {
+      "id": "id_a56_office_wall",
+      "styles": [
+        4
+      ],
+      "stage": "wall",
+      "rows": 4,
+      "columns": 1,
+      "pieces": [
+        "ID_a56_Office_Wall01",
+        "ID_a56_Office_Wall02",
+        "ID_a56_Office_Wall03",
+        "ID_a56_Office_Wall04"
+      ]
+    },
+    {
+      "id": "id_a59_pod_office_wall",
+      "styles": [
+        1,
+        4
+      ],
+      "stage": "wall",
+      "rows": 4,
+      "columns": 1,
+      "pieces": [
+        "ID_a59_Pod_Office_Wall01",
+        "ID_a59_Pod_Office_Wall02",
+        "ID_a59_Pod_Office_Wall03",
+        "ID_a59_Pod_Office_Wall04"
+      ]
+    },
+    {
+      "id": "id_a60_pod_office_wall",
+      "styles": [
+        1,
+        4
+      ],
+      "stage": "wall",
+      "rows": 4,
+      "columns": 1,
+      "pieces": [
+        "ID_a60_Pod_Office_Wall01",
+        "ID_a60_Pod_Office_Wall02",
+        "ID_a60_Pod_Office_Wall03",
+        "ID_a60_Pod_Office_Wall04"
+      ]
+    },
+    {
+      "id": "id_a61_pod_office_wall",
+      "styles": [
+        1,
+        4
+      ],
+      "stage": "wall",
+      "rows": 4,
+      "columns": 1,
+      "pieces": [
+        "ID_a61_Pod_Office_Wall01",
+        "ID_a61_Pod_Office_Wall02",
+        "ID_a61_Pod_Office_Wall03",
+        "ID_a61_Pod_Office_Wall04"
+      ]
+    },
+    {
+      "id": "id_a63_trad_pod_office_wall",
+      "styles": [
+        1,
+        3,
+        4
+      ],
+      "stage": "wall",
+      "rows": 4,
+      "columns": 1,
+      "pieces": [
+        "ID_a63_Trad_Pod_Office_Wall01",
+        "ID_a63_Trad_Pod_Office_Wall02",
+        "ID_a63_Trad_Pod_Office_Wall03",
+        "ID_a63_Trad_Pod_Office_Wall04"
+      ]
+    },
+    {
+      "id": "id_a64_trad_office_wall",
+      "styles": [
+        3,
+        4
+      ],
+      "stage": "wall",
+      "rows": 4,
+      "columns": 1,
+      "pieces": [
+        "ID_a64_Trad_Office_Wall01",
+        "ID_a64_Trad_Office_Wall02",
+        "ID_a64_Trad_Office_Wall03",
+        "ID_a64_Trad_Office_Wall04"
+      ]
+    },
+    {
+      "id": "id_a67_pod_office_industrial_wall",
+      "styles": [
+        1,
+        2,
+        4
+      ],
+      "stage": "wall",
+      "rows": 4,
+      "columns": 1,
+      "pieces": [
+        "ID_a67_Pod_Office_Industrial_Wall01",
+        "ID_a67_Pod_Office_Industrial_Wall02",
+        "ID_a67_Pod_Office_Industrial_Wall03",
+        "ID_a67_Pod_Office_Industrial_Wall04"
+      ]
+    },
+    {
+      "id": "id_a68_trad_pod_wall",
+      "styles": [
+        1,
+        3
+      ],
+      "stage": "wall",
+      "rows": 4,
+      "columns": 1,
+      "pieces": [
+        "ID_a68_Trad_Pod_Wall01",
+        "ID_a68_Trad_Pod_Wall02",
+        "ID_a68_Trad_Pod_Wall03",
+        "ID_a68_Trad_Pod_Wall04"
+      ]
+    },
+    {
+      "id": "id_a69_trad_pod_wall",
+      "styles": [
+        1,
+        3
+      ],
+      "stage": "wall",
+      "rows": 4,
+      "columns": 1,
+      "pieces": [
+        "ID_a69_Trad_Pod_Wall01",
+        "ID_a69_Trad_Pod_Wall02",
+        "ID_a69_Trad_Pod_Wall03",
+        "ID_a69_Trad_Pod_Wall04"
+      ]
+    },
+    {
+      "id": "id_a6_pod_wallfloorblock",
+      "styles": [
+        1
+      ],
+      "stage": "floor",
+      "rows": 1,
+      "columns": 6,
+      "pieces": [
+        "ID_a6_Pod_WallFloorBlock1",
+        "ID_a6_Pod_WallFloorBlock002",
+        "ID_a6_Pod_WallFloorBlock003",
+        "ID_a6_Pod_WallFloorBlock004",
+        "ID_a6_Pod_WallFloorBlock005",
+        "ID_a6_Pod_WallFloorBlock006"
+      ]
+    },
+    {
+      "id": "id_a70_trad_pod_wall",
+      "styles": [
+        1,
+        3
+      ],
+      "stage": "wall",
+      "rows": 4,
+      "columns": 1,
+      "pieces": [
+        "ID_a70_Trad_Pod_Wall01",
+        "ID_a70_Trad_Pod_Wall02",
+        "ID_a70_Trad_Pod_Wall03",
+        "ID_a70_Trad_Pod_Wall04"
+      ]
+    },
+    {
+      "id": "id_a71_trad_pod_wall",
+      "styles": [
+        1,
+        3
+      ],
+      "stage": "wall",
+      "rows": 4,
+      "columns": 1,
+      "pieces": [
+        "ID_a71_Trad_Pod_Wall01",
+        "ID_a71_Trad_Pod_Wall02",
+        "ID_a71_Trad_Pod_Wall03",
+        "ID_a71_Trad_Pod_Wall04"
+      ]
+    },
+    {
+      "id": "id_a72_trad_wall",
+      "styles": [
+        3
+      ],
+      "stage": "wall",
+      "rows": 4,
+      "columns": 1,
+      "pieces": [
+        "ID_a72_Trad_Wall01",
+        "ID_a72_Trad_Wall02",
+        "ID_a72_Trad_Wall03",
+        "ID_a72_Trad_Wall04"
+      ]
+    },
+    {
+      "id": "id_a73_trad_wall",
+      "styles": [
+        3
+      ],
+      "stage": "wall",
+      "rows": 4,
+      "columns": 1,
+      "pieces": [
+        "ID_a73_Trad_Wall01",
+        "ID_a73_Trad_Wall02",
+        "ID_a73_Trad_Wall03",
+        "ID_a73_Trad_Wall04"
+      ]
+    },
+    {
+      "id": "id_a7_pod_wallblock",
+      "styles": [
+        1
+      ],
+      "stage": "wall",
+      "rows": 1,
+      "columns": 6,
+      "pieces": [
+        "ID_a7_Pod_WallBlock001",
+        "ID_a7_Pod_WallBlock002",
+        "ID_a7_Pod_WallBlock003",
+        "ID_a7_Pod_WallBlock004",
+        "ID_a7_Pod_WallBlock005",
+        "ID_a7_Pod_WallBlock006"
+      ]
+    },
+    {
+      "id": "id_a84_trad_wall",
+      "styles": [
+        3
+      ],
+      "stage": "wall",
+      "rows": 4,
+      "columns": 1,
+      "pieces": [
+        "ID_a84_Trad_Wall01",
+        "ID_a84_Trad_Wall02",
+        "ID_a84_Trad_Wall03",
+        "ID_a84_Trad_Wall04"
+      ]
+    },
+    {
+      "id": "id_a85_trad_wall",
+      "styles": [
+        3
+      ],
+      "stage": "wall",
+      "rows": 4,
+      "columns": 1,
+      "pieces": [
+        "ID_a85_Trad_Wall01",
+        "ID_a85_Trad_Wall02",
+        "ID_a85_Trad_Wall03",
+        "ID_a85_Trad_Wall04"
+      ]
+    },
+    {
+      "id": "id_a87_trad_wallfloor",
+      "styles": [
+        3
+      ],
+      "stage": "floor",
+      "rows": 1,
+      "columns": 4,
+      "pieces": [
+        "ID_a87_Trad_WallFloor01",
+        "ID_a87_Trad_WallFloor2",
+        "ID_a87_Trad_WallFloor3",
+        "ID_a87_Trad_WallFloor04"
+      ]
+    },
+    {
+      "id": "id_a89_office_wall",
+      "styles": [
+        4
+      ],
+      "stage": "wall",
+      "rows": 4,
+      "columns": 1,
+      "pieces": [
+        "ID_a89_Office_Wall01",
+        "ID_a89_Office_Wall02",
+        "ID_a89_Office_Wall03",
+        "ID_a89_Office_Wall04"
+      ]
+    },
+    {
+      "id": "id_a8_industrial_pod_wallblock",
+      "styles": [
+        1,
+        2
+      ],
+      "stage": "wall",
+      "rows": 1,
+      "columns": 6,
+      "pieces": [
+        "ID_a8_Industrial_Pod_WallBlock01",
+        "ID_a8_Industrial_Pod_WallBlock02",
+        "ID_a8_Industrial_Pod_WallBlock03",
+        "ID_a8_Industrial_Pod_WallBlock04",
+        "ID_a8_Industrial_Pod_WallBlock05",
+        "ID_a8_Industrial_Pod_WallBlock06"
+      ]
+    },
+    {
+      "id": "id_a90_office_wall",
+      "styles": [
+        4
+      ],
+      "stage": "wall",
+      "rows": 4,
+      "columns": 1,
+      "pieces": [
+        "ID_a90_Office_Wall01",
+        "ID_a90_Office_Wall02",
+        "ID_a90_Office_Wall03",
+        "ID_a90_Office_Wall04"
+      ]
+    },
+    {
+      "id": "id_a94_industrial_pod_wallfloor",
+      "styles": [
+        1,
+        2
+      ],
+      "stage": "floor",
+      "rows": 1,
+      "columns": 4,
+      "pieces": [
+        "ID_a94_Industrial_Pod_WallFloor1",
+        "ID_a94_Industrial_Pod_WallFloor002",
+        "ID_a94_Industrial_Pod_WallFloor003",
+        "ID_a94_Industrial_Pod_WallFloor004"
+      ]
+    },
+    {
+      "id": "id_a95_industrial_pod_wallfloor",
+      "styles": [
+        1,
+        2
+      ],
+      "stage": "floor",
+      "rows": 1,
+      "columns": 4,
+      "pieces": [
+        "ID_a95_Industrial_Pod_WallFloor01",
+        "ID_a95_Industrial_Pod_WallFloor02",
+        "ID_a95_Industrial_Pod_WallFloor03",
+        "ID_a95_Industrial_Pod_WallFloor04"
+      ]
+    },
+    {
+      "id": "id_a96_industrial_wall",
+      "styles": [
+        2
+      ],
+      "stage": "wall",
+      "rows": 4,
+      "columns": 1,
+      "pieces": [
+        "ID_a96_Industrial_Wall1",
+        "ID_a96_Industrial_Wall2",
+        "ID_a96_Industrial_Wall3",
+        "ID_a96_Industrial_Wall004"
+      ]
+    },
+    {
+      "id": "id_l100_industrial_roofblock",
+      "styles": [
+        2
+      ],
+      "stage": "roof",
+      "rows": 1,
+      "columns": 4,
+      "pieces": [
+        "ID_l100_Industrial_RoofBlock1",
+        "ID_l100_Industrial_RoofBlock2",
+        "ID_l100_Industrial_RoofBlock3",
+        "ID_l100_Industrial_RoofBlock4"
+      ]
+    },
+    {
+      "id": "id_l101_office_pod_industrial_roof",
+      "styles": [
+        1,
+        2,
+        4
+      ],
+      "stage": "roof",
+      "rows": 1,
+      "columns": 6,
+      "pieces": [
+        "ID_l101_Office_Pod_Industrial_Roof01",
+        "ID_l101_Office_Pod_Industrial_Roof02",
+        "ID_l101_Office_Pod_Industrial_Roof03",
+        "ID_l101_Office_Pod_Industrial_Roof04",
+        "ID_l101_Office_Pod_Industrial_Roof05",
+        "ID_l101_Office_Pod_Industrial_Roof06"
+      ]
+    },
+    {
+      "id": "id_l102_office_pod_trad_roof",
+      "styles": [
+        1,
+        3,
+        4
+      ],
+      "stage": "roof",
+      "rows": 1,
+      "columns": 3,
+      "pieces": [
+        "ID_l102_Office_Pod_Trad_Roof01",
+        "ID_l102_Office_Pod_Trad_Roof02",
+        "ID_l102_Office_Pod_Trad_Roof03"
+      ]
+    },
+    {
+      "id": "id_l16_trad_pod_wallblock",
+      "styles": [
+        1,
+        3
+      ],
+      "stage": "wall",
+      "rows": 1,
+      "columns": 4,
+      "pieces": [
+        "ID_l16_Trad_Pod_WallBlock1",
+        "ID_l16_Trad_Pod_WallBlock2",
+        "ID_l16_Trad_Pod_WallBlock3",
+        "ID_l16_Trad_Pod_WallBlock4"
+      ]
+    },
+    {
+      "id": "id_l17_trad_pod_wallblock",
+      "styles": [
+        1,
+        3
+      ],
+      "stage": "wall",
+      "rows": 1,
+      "columns": 4,
+      "pieces": [
+        "ID_l17_Trad_Pod_WallBlock1",
+        "ID_l17_Trad_Pod_WallBlock2",
+        "ID_l17_Trad_Pod_WallBlock3",
+        "ID_l17_Trad_Pod_WallBlock4"
+      ]
+    },
+    {
+      "id": "id_l23_industrial_pod_office_floor",
+      "styles": [
+        1,
+        2,
+        4
+      ],
+      "stage": "floor",
+      "rows": 1,
+      "columns": 5,
+      "pieces": [
+        "ID_l23_Industrial_Pod_Office_Floor1",
+        "ID_l23_Industrial_Pod_Office_Floor2",
+        "ID_l23_Industrial_Pod_Office_Floor3",
+        "ID_l23_Industrial_Pod_Office_Floor4",
+        "ID_l23_Industrial_Pod_Office_Floor5"
+      ]
+    },
+    {
+      "id": "id_l29_office_pod_floor",
+      "styles": [
+        1,
+        4
+      ],
+      "stage": "floor",
+      "rows": 1,
+      "columns": 4,
+      "pieces": [
+        "ID_l29_Office_Pod_Floor1",
+        "ID_l29_Office_Pod_Floor2",
+        "ID_l29_Office_Pod_Floor3",
+        "ID_l29_Office_Pod_Floor4"
+      ]
+    },
+    {
+      "id": "id_l2_office_pod_floor_block_",
+      "styles": [
+        1,
+        4
+      ],
+      "stage": "floor",
+      "rows": 1,
+      "columns": 6,
+      "pieces": [
+        "ID_l2_Office_Pod_Floor_Block_01",
+        "ID_l2_Office_Pod_Floor_Block_02",
+        "ID_l2_Office_Pod_Floor_Block_03",
+        "ID_l2_Office_Pod_Floor_Block_04",
+        "ID_l2_Office_Pod_Floor_Block_05",
+        "ID_l2_Office_Pod_Floor_Block_06"
+      ]
+    },
+    {
+      "id": "id_l3_industrial_pod_officefloorblock",
+      "styles": [
+        1,
+        2,
+        4
+      ],
+      "stage": "floor",
+      "rows": 1,
+      "columns": 6,
+      "pieces": [
+        "ID_l3_Industrial_Pod_OfficeFloorBlock1",
+        "ID_l3_Industrial_Pod_OfficeFloorBlock2",
+        "ID_l3_Industrial_Pod_OfficeFloorBlock3",
+        "ID_l3_Industrial_Pod_OfficeFloorBlock4",
+        "ID_l3_Industrial_Pod_OfficeFloorBlock5",
+        "ID_l3_Industrial_Pod_OfficeFloorBlock6"
+      ]
+    },
+    {
+      "id": "id_u10_office_wallblock",
+      "styles": [
+        4
+      ],
+      "stage": "wall",
+      "rows": 4,
+      "columns": 1,
+      "pieces": [
+        "ID_u10_Office_WallBlock01",
+        "ID_u10_Office_WallBlock02",
+        "ID_u10_Office_WallBlock03",
+        "ID_u10_Office_WallBlock04"
+      ]
+    },
+    {
+      "id": "id_u11_office_industrial_wallblock",
+      "styles": [
+        2,
+        4
+      ],
+      "stage": "wall",
+      "rows": 4,
+      "columns": 1,
+      "pieces": [
+        "ID_u11_Office_Industrial_WallBlock01",
+        "ID_u11_Office_Industrial_WallBlock02",
+        "ID_u11_Office_Industrial_WallBlock03",
+        "ID_u11_Office_Industrial_WallBlock04"
+      ]
+    },
+    {
+      "id": "id_u27_office_pod_wall",
+      "styles": [
+        1,
+        4
+      ],
+      "stage": "wall",
+      "rows": 4,
+      "columns": 1,
+      "pieces": [
+        "ID_u27_Office_Pod_Wall01",
+        "ID_u27_Office_Pod_Wall02",
+        "ID_u27_Office_Pod_Wall03",
+        "ID_u27_Office_Pod_Wall04"
+      ]
+    },
+    {
+      "id": "id_u30_trad_office_pod_wall",
+      "styles": [
+        1,
+        3,
+        4
+      ],
+      "stage": "wall",
+      "rows": 4,
+      "columns": 1,
+      "pieces": [
+        "ID_u30_Trad_Office_Pod_Wall1",
+        "ID_u30_Trad_Office_Pod_Wall2",
+        "ID_u30_Trad_Office_Pod_Wall3",
+        "ID_u30_Trad_Office_Pod_Wall4"
+      ]
+    },
+    {
+      "id": "id_u31_trad_office_pod_wall",
+      "styles": [
+        1,
+        3,
+        4
+      ],
+      "stage": "wall",
+      "rows": 4,
+      "columns": 1,
+      "pieces": [
+        "ID_u31_Trad_Office_pod_Wall01",
+        "ID_u31_Trad_Office_pod_Wall2",
+        "ID_u31_Trad_Office_pod_Wall3",
+        "ID_u31_Trad_Office_pod_Wall4"
+      ]
+    },
+    {
+      "id": "id_u32_trad_office_pod_wall",
+      "styles": [
+        1,
+        3,
+        4
+      ],
+      "stage": "wall",
+      "rows": 4,
+      "columns": 1,
+      "pieces": [
+        "ID_u32_Trad_Office_Pod_Wall1",
+        "ID_u32_Trad_Office_Pod_Wall2",
+        "ID_u32_Trad_Office_Pod_Wall3",
+        "ID_u32_Trad_Office_Pod_Wall4"
+      ]
+    },
+    {
+      "id": "id_u34_trad_office_pod_wall",
+      "styles": [
+        1,
+        3,
+        4
+      ],
+      "stage": "wall",
+      "rows": 4,
+      "columns": 1,
+      "pieces": [
+        "ID_u34_Trad_Office_Pod_Wall1",
+        "ID_u34_Trad_Office_Pod_Wall2",
+        "ID_u34_Trad_Office_Pod_Wall3",
+        "ID_u34_Trad_Office_Pod_Wall4"
+      ]
+    },
+    {
+      "id": "id_u36_office_wallfloor",
+      "styles": [
+        4
+      ],
+      "stage": "floor",
+      "rows": 1,
+      "columns": 4,
+      "pieces": [
+        "ID_u36_Office_WallFloor1",
+        "ID_u36_Office_WallFloor2",
+        "ID_u36_Office_WallFloor3",
+        "ID_u36_Office_WallFloor4"
+      ]
+    },
+    {
+      "id": "id_u46_office_wall",
+      "styles": [
+        4
+      ],
+      "stage": "wall",
+      "rows": 4,
+      "columns": 1,
+      "pieces": [
+        "ID_u46_Office_Wall01",
+        "ID_u46_Office_Wall02",
+        "ID_u46_Office_Wall03",
+        "ID_u46_Office_Wall04"
+      ]
+    },
+    {
+      "id": "id_u47_office_wall",
+      "styles": [
+        4
+      ],
+      "stage": "wall",
+      "rows": 4,
+      "columns": 1,
+      "pieces": [
+        "ID_u47_Office_Wall01",
+        "ID_u47_Office_Wall02",
+        "ID_u47_Office_Wall03",
+        "ID_u47_Office_Wall04"
+      ]
+    },
+    {
+      "id": "id_u55_office_wall",
+      "styles": [
+        4
+      ],
+      "stage": "wall",
+      "rows": 4,
+      "columns": 1,
+      "pieces": [
+        "ID_u55_Office_Wall01",
+        "ID_u55_Office_Wall02",
+        "ID_u55_Office_Wall3",
+        "ID_u55_Office_Wall4"
+      ]
+    },
+    {
+      "id": "id_u57_office_wall",
+      "styles": [
+        4
+      ],
+      "stage": "wall",
+      "rows": 4,
+      "columns": 1,
+      "pieces": [
+        "ID_u57_Office_Wall01",
+        "ID_u57_Office_Wall02",
+        "ID_u57_Office_Wall03",
+        "ID_u57_Office_Wall04"
+      ]
+    },
+    {
+      "id": "id_u58_office_wall",
+      "styles": [
+        4
+      ],
+      "stage": "wall",
+      "rows": 4,
+      "columns": 1,
+      "pieces": [
+        "ID_u58_Office_Wall01",
+        "ID_u58_Office_Wall02",
+        "ID_u58_Office_Wall03",
+        "ID_u58_Office_Wall04"
+      ]
+    },
+    {
+      "id": "id_u5_industrial_wallblock",
+      "styles": [
+        2
+      ],
+      "stage": "wall",
+      "rows": 4,
+      "columns": 1,
+      "pieces": [
+        "ID_u5_Industrial_WallBlock1",
+        "ID_u5_Industrial_WallBlock2",
+        "ID_u5_Industrial_WallBlock3",
+        "ID_u5_Industrial_WallBlock4"
+      ]
+    },
+    {
+      "id": "id_u62_pod_office_wall",
+      "styles": [
+        1,
+        4
+      ],
+      "stage": "wall",
+      "rows": 4,
+      "columns": 1,
+      "pieces": [
+        "ID_u62_Pod_Office_Wall01",
+        "ID_u62_Pod_Office_Wall02",
+        "ID_u62_Pod_Office_Wall03",
+        "ID_u62_Pod_Office_Wall04"
+      ]
+    },
+    {
+      "id": "id_u64_trad_pod_office_wall",
+      "styles": [
+        1,
+        3,
+        4
+      ],
+      "stage": "wall",
+      "rows": 4,
+      "columns": 1,
+      "pieces": [
+        "ID_u64_Trad_Pod_Office_Wall01",
+        "ID_u64_Trad_Pod_Office_Wall02",
+        "ID_u64_Trad_Pod_Office_Wall03",
+        "ID_u64_Trad_Pod_Office_Wall04"
+      ]
+    },
+    {
+      "id": "id_u65_pod_office_wall",
+      "styles": [
+        1,
+        4
+      ],
+      "stage": "wall",
+      "rows": 4,
+      "columns": 1,
+      "pieces": [
+        "ID_u65_Pod_Office_Wall01",
+        "ID_u65_Pod_Office_Wall02",
+        "ID_u65_Pod_Office_Wall03",
+        "ID_u65_Pod_Office_Wall04"
+      ]
+    },
+    {
+      "id": "id_u66_pod_office_wall",
+      "styles": [
+        1,
+        4
+      ],
+      "stage": "wall",
+      "rows": 4,
+      "columns": 1,
+      "pieces": [
+        "ID_u66_Pod_Office_Wall01",
+        "ID_u66_Pod_Office_Wall02",
+        "ID_u66_Pod_Office_Wall03",
+        "ID_u66_Pod_Office_Wall04"
+      ]
+    },
+    {
+      "id": "id_u74_trad_wall",
+      "styles": [
+        3
+      ],
+      "stage": "wall",
+      "rows": 4,
+      "columns": 1,
+      "pieces": [
+        "ID_u74_Trad_Wall01",
+        "ID_u74_Trad_Wall02",
+        "ID_u74_Trad_Wall03",
+        "ID_u74_Trad_Wall04"
+      ]
+    },
+    {
+      "id": "id_u75_trad_wall",
+      "styles": [
+        3
+      ],
+      "stage": "wall",
+      "rows": 4,
+      "columns": 1,
+      "pieces": [
+        "ID_u75_Trad_Wall01",
+        "ID_u75_Trad_Wall02",
+        "ID_u75_Trad_Wall03",
+        "ID_u75_Trad_Wall04"
+      ]
+    },
+    {
+      "id": "id_u76_trad_wall",
+      "styles": [
+        3
+      ],
+      "stage": "wall",
+      "rows": 4,
+      "columns": 1,
+      "pieces": [
+        "ID_u76_Trad_Wall01",
+        "ID_u76_Trad_Wall02",
+        "ID_u76_Trad_Wall03",
+        "ID_u76_Trad_Wall04"
+      ]
+    },
+    {
+      "id": "id_u77_trad_wall",
+      "styles": [
+        3
+      ],
+      "stage": "wall",
+      "rows": 4,
+      "columns": 1,
+      "pieces": [
+        "ID_u77_Trad_Wall01",
+        "ID_u77_Trad_Wall02",
+        "ID_u77_Trad_Wall03",
+        "ID_u77_Trad_Wall04"
+      ]
+    },
+    {
+      "id": "id_u78_trad_wall",
+      "styles": [
+        3
+      ],
+      "stage": "wall",
+      "rows": 4,
+      "columns": 1,
+      "pieces": [
+        "ID_u78_Trad_Wall01",
+        "ID_u78_Trad_Wall02",
+        "ID_u78_Trad_Wall03",
+        "ID_u78_Trad_Wall04"
+      ]
+    },
+    {
+      "id": "id_u79_trad_wall",
+      "styles": [
+        3
+      ],
+      "stage": "wall",
+      "rows": 4,
+      "columns": 1,
+      "pieces": [
+        "ID_u79_Trad_Wall01",
+        "ID_u79_Trad_Wall02",
+        "ID_u79_Trad_Wall03",
+        "ID_u79_Trad_Wall04"
+      ]
+    },
+    {
+      "id": "id_u80_trad_wall",
+      "styles": [
+        3
+      ],
+      "stage": "wall",
+      "rows": 4,
+      "columns": 1,
+      "pieces": [
+        "ID_u80_Trad_Wall01",
+        "ID_u80_Trad_Wall02",
+        "ID_u80_Trad_Wall03",
+        "ID_u80_Trad_Wall04"
+      ]
+    },
+    {
+      "id": "id_u81_trad_wall",
+      "styles": [
+        3
+      ],
+      "stage": "wall",
+      "rows": 4,
+      "columns": 1,
+      "pieces": [
+        "ID_u81_Trad_Wall01",
+        "ID_u81_Trad_Wall02",
+        "ID_u81_Trad_Wall03",
+        "ID_u81_Trad_Wall04"
+      ]
+    },
+    {
+      "id": "id_u82_trad_wall",
+      "styles": [
+        3
+      ],
+      "stage": "wall",
+      "rows": 4,
+      "columns": 1,
+      "pieces": [
+        "ID_u82_Trad_Wall01",
+        "ID_u82_Trad_Wall02",
+        "ID_u82_Trad_Wall03",
+        "ID_u82_Trad_Wall04"
+      ]
+    },
+    {
+      "id": "id_u83_trad_wall",
+      "styles": [
+        3
+      ],
+      "stage": "wall",
+      "rows": 4,
+      "columns": 1,
+      "pieces": [
+        "ID_u83_Trad_Wall01",
+        "ID_u83_Trad_Wall02",
+        "ID_u83_Trad_Wall03",
+        "ID_u83_Trad_Wall04"
+      ]
+    },
+    {
+      "id": "id_u86_trad_wall",
+      "styles": [
+        3
+      ],
+      "stage": "wall",
+      "rows": 4,
+      "columns": 1,
+      "pieces": [
+        "ID_u86_Trad_Wall001",
+        "ID_u86_Trad_Wall02",
+        "ID_u86_Trad_Wall03",
+        "ID_u86_Trad_Wall4"
+      ]
+    },
+    {
+      "id": "id_u88_office_wall",
+      "styles": [
+        4
+      ],
+      "stage": "wall",
+      "rows": 4,
+      "columns": 1,
+      "pieces": [
+        "ID_u88_Office_Wall01",
+        "ID_u88_Office_Wall02",
+        "ID_u88_Office_Wall03",
+        "ID_u88_Office_Wall04"
+      ]
+    },
+    {
+      "id": "id_u91_industrial_pod_wall",
+      "styles": [
+        1,
+        2
+      ],
+      "stage": "wall",
+      "rows": 4,
+      "columns": 1,
+      "pieces": [
+        "ID_u91_Industrial_Pod_Wall1",
+        "ID_u91_Industrial_Pod_Wall002",
+        "ID_u91_Industrial_Pod_Wall003",
+        "ID_u91_Industrial_Pod_Wall4"
+      ]
+    },
+    {
+      "id": "id_u92_industrial_pod_wall",
+      "styles": [
+        1,
+        2
+      ],
+      "stage": "wall",
+      "rows": 2,
+      "columns": 1,
+      "pieces": [
+        "ID_u92_Industrial_Pod_Wall1",
+        "ID_u92_Industrial_Pod_Wall2"
+      ]
+    },
+    {
+      "id": "id_u97_industrial_pod_wall",
+      "styles": [
+        1,
+        2
+      ],
+      "stage": "wall",
+      "rows": 4,
+      "columns": 1,
+      "pieces": [
+        "ID_u97_Industrial_Pod_Wall01",
+        "ID_u97_Industrial_Pod_Wall02",
+        "ID_u97_Industrial_Pod_Wall03",
+        "ID_u97_Industrial_Pod_Wall04"
+      ]
+    },
+    {
+      "id": "id_u98_industrial_pod_wall",
+      "styles": [
+        1,
+        2
+      ],
+      "stage": "wall",
+      "rows": 2,
+      "columns": 1,
+      "pieces": [
+        "ID_u98_Industrial_Pod_Wall1",
+        "ID_u98_Industrial_Pod_Wall2"
+      ]
+    }
+  ],
+  "excluded_groups": [
+    {
+      "id": "id_a86_trad_wall",
+      "pieces": [
+        "ID_a86_Trad_Wall01"
+      ],
+      "reason": "incomplete numbering or exceeds one facade"
+    },
+    {
+      "id": "id_a9_office_pod_wallblock",
+      "pieces": [
+        "ID_a9_Office_Pod_WallBlock1",
+        "ID_a9_Office_Pod_WallBlock2",
+        "ID_a9_Office_Pod_WallBlock3",
+        "ID_a9_Office_Pod_WallBlock4",
+        "ID_a9_Office_Pod_WallBlock7",
+        "ID_a9_Office_Pod_WallBlock8",
+        "ID_a9_Office_Pod_WallBlock9",
+        "ID_a9_Office_Pod_WallBlock10"
+      ],
+      "reason": "incomplete numbering or exceeds one facade"
+    },
+    {
+      "id": "id_l4_industrial_pod_floor_block",
+      "pieces": [
+        "ID_l4_Industrial_Pod_Floor_Block2",
+        "ID_l4_Industrial_Pod_Floor_Block3",
+        "ID_l4_Industrial_Pod_Floor_Block4",
+        "ID_l4_Industrial_Pod_Floor_Block5",
+        "ID_l4_Industrial_Pod_Floor_Block6"
+      ],
+      "reason": "incomplete numbering or exceeds one facade"
+    },
+    {
+      "id": "id_l4_industrial_podl_floor_block_",
+      "pieces": [
+        "ID_l4_Industrial_Podl_Floor_Block_1"
+      ],
+      "reason": "incomplete numbering or exceeds one facade"
+    },
+    {
+      "id": "id_u33_trad_office_pod_wall",
+      "pieces": [
+        "ID_u33_Trad_Office_Pod_Wall2",
+        "ID_u33_Trad_Office_Pod_Wall3",
+        "ID_u33_Trad_Office_Pod_Wall4"
+      ],
+      "reason": "incomplete numbering or exceeds one facade"
+    },
+    {
+      "id": "id_u44_office_wall",
+      "pieces": [
+        "ID_u44_Office_Wall01"
+      ],
+      "reason": "incomplete numbering or exceeds one facade"
+    },
+    {
+      "id": "id_u93_industrial_pod_wall",
+      "pieces": [
+        "ID_u93_Industrial_Pod_Wall2"
+      ],
+      "reason": "incomplete numbering or exceeds one facade"
+    }
+  ]
+}
