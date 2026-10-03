@@ -8,6 +8,19 @@ include "lib_radiance_emitters.lua"
 include "lib_Animation.lua"
 --include "lib_debug.lua"
 
+local splitPlanner = VFS.Include("scripts/lib_house_asian_split.lua")
+local splitParams = (UnitDefs[unitDefID] or {}).customParams or {}
+local splitPlan, splitLayout
+local reservedSplitPieces = {}
+local splitPhase
+local function optionalPieceSet(names)
+    local result, map = {}, Spring.GetUnitPieceMap(unitID)
+    for _, name in ipairs(names) do
+        if map[name] then result[map[name]] = true end
+    end
+    return result
+end
+
 local ToShowTable = {}
 IDGroupsDirection = { 
     "u", --upright
@@ -25,11 +38,10 @@ pieceLimits = {
 }
 pieceCyclicOSTable = {}
 hideDuringDayPieceNames= {}
-largeRoofPieceDecoPieces = {
-    [piece("Office_Industrial_Pod_BaseDeco6")]   = true,
-    [piece("Office_Industrial_Pod_BaseDeco007")] = true,
-    [piece("Office_Industrial_Pod_BaseDeco04")]  = true
-}
+largeRoofPieceDecoPieces = optionalPieceSet({
+    "Office_Industrial_Pod_BaseDeco6", "Office_Industrial_Pod_BaseDeco007",
+    "Office_Industrial_Pod_BaseDeco04",
+})
 
 function filterOutToShowTableElements( element)
     if boolVieShadowGameRelevant and largeRoofPieceDecoPieces[element] then return true end
@@ -100,12 +112,10 @@ decoChances = {
     streetwall = 0.1
 }
 
-holoPieces = {
-                [piece("Office_Pod_Industrial_Roof10")] = true, 
-                [piece("Office_Pod_Industrial_Roof2")] = true,
-                [piece("Office_Pod_Industrial_Roof1")] = true,
-                [piece("Roof77")] = true
-            }
+holoPieces = optionalPieceSet({
+    "Office_Pod_Industrial_Roof10", "Office_Pod_Industrial_Roof2",
+    "Office_Pod_Industrial_Roof1", "Roof77",
+})
 
 pieceID_NameMap = Spring.GetUnitPieceList(unitID)
 materialChoiceTable = {"pod", "industrial", "trad", "office"}
@@ -370,7 +380,7 @@ function factoryAnimation( set)
 	end
 end
 boolInvisibleCranes = maRa()
-cranePiece = piece("ID_a1_Office_Industrial_Pod_Wall3")
+cranePiece = pieceName_pieceNr["ID_a1_Office_Industrial_Pod_Wall3"]
 function craneAnimation(set)
     if boolInvisibleCranes then 
         Hide (set.movePiece) 
@@ -414,32 +424,32 @@ function initAllPieces()
     
   --  assertTableRange(TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock1Sub"], 1, 29, "number")
     pieceCyclicOSTable = {
-    ["Industrial_Pod_Wall5Sub1"] = {
+    ["Industrial_Pod_Wall5Sub1"] = function() return {
                     {
 					func= "wturn", 
 					arg = { y_axis,-45, 45, 0.001, boolRestAtNight= true}},                 
-                    },       
-    ["Pod_Office_Industrial_Wall1Spin1"] = {
+                    } end,
+    ["Pod_Office_Industrial_Wall1Spin1"] = function() return {
                     {func= "wturn", arg = { y_axis,-24, 25, 0.1}},                 
-                    },    
+                    } end,
     ["ID_a1_Office_Industrial_Pod_Wall3Sub1"] =
-                    {
+                    function() return {
                         {   func="func", 
                             arg= {
                             method = craneAnimation, 
                             movePiece =  piece("ID_a1_Office_Industrial_Pod_Wall3Sub1")    ,          
                              }
                         }
-                    },
+                    } end,
    
-    ["ID_l100_Industrial_RoofBlock3Sub1"] = {
+    ["ID_l100_Industrial_RoofBlock3Sub1"] = function() return {
                     {func = "wmove", arg = {x_axis, -30, 30,  3}},                 
-                    },       
-    ["ID_l100_Industrial_RoofBlock3Sub2"] = {
+                    } end,
+    ["ID_l100_Industrial_RoofBlock3Sub2"] = function() return {
                     {func = "wmove", arg = {x_axis, -30, 30,  3}},                 
-                    },   
+                    } end,
     ["ID_l100_Industrial_RoofBlock4"] = 
-            {
+            function() return {
                 {   func="func", 
                     arg= {
                     method = stampMill, 
@@ -449,9 +459,9 @@ function initAllPieces()
                     moltenPiecesT = takeTableSubRange(TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock4Sub"], 3, #TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock4Sub"])         
                     },
                 }
-            },    
+            } end,
     ["Industrial_Floor1"] = 
-        {
+        function() return {
             {   func="func", 
                 arg= {
                 method = oilrigAnimation, 
@@ -465,9 +475,9 @@ function initAllPieces()
                 crank2 =  piece("Industrial_Floor1Sub8")    				   
 			}
 	        }
-        },    
+        } end,
         ["ID_l100_Industrial_RoofBlock2"] = 
-        {
+        function() return {
             {   func="func", 
                 arg= {
                 method = factoryAnimation, 
@@ -479,9 +489,9 @@ function initAllPieces()
                 moltenPiecesT = takeTableSubRange(TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock2Sub"], 1, 8) 
                 }
             }
-        },
+        } end,
      ["ID_l100_Industrial_RoofBlock1"] = 
-        {
+        function() return {
             {
                 func="func", 
                 arg= {
@@ -496,13 +506,13 @@ function initAllPieces()
                 robot4T = takeTableSubRange(TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock1Sub"], 19, 24) 
                 }
             }
-        }
+        } end
     }
 
     Signal(SIG_SUBANIMATIONS)
     for pieceName, set in pairs (pieceCyclicOSTable) do
 		if pieceName_pieceNr[pieceName] and inToShowDict(pieceName_pieceNr[pieceName]) then
-			startPieceOS(pieceName, SIG_SUBANIMATIONS, set)
+			startPieceOS(pieceName, SIG_SUBANIMATIONS, set())
 		end
     end
 end
@@ -541,7 +551,11 @@ function getNameFilteredTableDict( MustContainOne, MustContainAll, MustContainNo
 		MustContainAllSearchTerms[string.lower(MustContainAll[i])] = true
 	end
 
-	for groupName, v in pairs(TablesOfPiecesGroups) do
+	local sortedNames = {}
+    for groupName in pairs(TablesOfPiecesGroups) do sortedNames[#sortedNames + 1] = groupName end
+    table.sort(sortedNames)
+    for _, groupName in ipairs(sortedNames) do
+        local v = TablesOfPiecesGroups[groupName]
         groupNameLower = string.lower(groupName)
 
 		boolContainedForbidden = false 
@@ -562,7 +576,7 @@ function getNameFilteredTableDict( MustContainOne, MustContainAll, MustContainNo
 				break
 			end
 		end		
-		if  boolFoundAtLeastOne == true  or #MustContainAtLeastOneTerm == 0 then  
+		if  boolFoundAtLeastOne == true  or next(MustContainAtLeastOneTerm) == nil then
 
 		boolContainedAll = true
 		for keyword,_ in pairs(MustContainAllSearchTerms) do
@@ -578,9 +592,15 @@ function getNameFilteredTableDict( MustContainOne, MustContainAll, MustContainNo
         if boolGetNameGroupedDict == true then
 			allMatchingGroups[groupName] = v    
 		else
-			for p=1, #v do
-			allMatchingGroups[#allMatchingGroups + 1] = v[p]
-			end
+            local indices = {}
+            for index in pairs(v) do indices[#indices + 1] = index end
+            table.sort(indices)
+            for _, index in ipairs(indices) do
+                local id = v[index]
+                if not reservedSplitPieces[pieceID_NameMap[id]] then
+                    allMatchingGroups[#allMatchingGroups + 1] = id
+                end
+            end
 		end
         end; end;  end;
     end
@@ -655,17 +675,17 @@ function GetPieceTableGroups()
 end
 
 function script.Create()
-    TablesOfPiecesGroups = GetSetSharedOneTimeResult("house_asian_script_PiecesTable", GetPieceTableGroups)
+    TablesOfPiecesGroups = GetSetSharedOneTimeResult("house_asian_script_PiecesTable_" .. unitDefID, GetPieceTableGroups)
 
 	--assertPieceNamesUnique(unitID)
     x, y, z = spGetUnitPosition(unitID)
     StartThread(removeFeaturesInCircle,x,z, GameConfig.city.buildings.sizeZ/2)
 
-    math.randomseed(x + y + z)
+    if not splitParams.house_asian_base then math.randomseed(x + y + z) end
     StartThread(buildHouse)
 
     vtolDeco = {
-        ["ID_l100_Industrial_RoofBlock1"] = TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock1Sub"][27],
+        ["ID_l100_Industrial_RoofBlock1"] = (TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock1Sub"] or {})[27],
         ["Roof01"] = TablesOfPiecesGroups["Roof01Sub"][1],
         ["Roof05"] = TablesOfPiecesGroups["Roof05Sub"][1]     
     }
@@ -871,6 +891,7 @@ function removeElementFromBuildMaterial(element, buildMaterial)
 end
 
 function selectGroundBuildMaterial()
+    if splitPlan then return splitPlan.groundStyle end
     nice, x,y,z = getBuildingTypeHash(unitID, #materialChoiceTable)
 
     if not nice then nice = math.random(1,4) end
@@ -938,6 +959,14 @@ function convertIndexToRoundNr(groupIndex)
 end
 
 function getRandomBuildMaterial(buildMaterial, name, index, x, z, level, buildingGroups)
+    if splitPlan then
+        local phase = buildingGroups == buildingGroupsFloor and "floor"
+            or buildingGroups == buildingGroupsLevel and "wall"
+            or (splitPhase == "roof" and buildMaterial == roofMaterial and "roof")
+        local slots = phase and splitLayout[phase][level]
+        local reserved = slots and slots[index]
+        if reserved then return assert(pieceName_pieceNr[reserved], "Missing reserved piece: " .. reserved) end
+    end
 
 --[[    if buildingGroups then
         assert(type(buildingGroups)== "table")
@@ -958,7 +987,7 @@ function getRandomBuildMaterial(buildMaterial, name, index, x, z, level, buildin
 
 	--TODO Move to total separate function, this thing is neither random nor connected with the buildMaterial handed to the function
     roundNr = convertIndexToRoundNr(index)
-    if roundNr then
+    if roundNr and not splitPlan then
         --lecho("Derived ".. toString(roundNr).." from "..toString(index))
     	isInRoundNr, piecenum = isInPositionSequenceGetPieceID(roundNr, level, name, buildingGroups) 
 
@@ -1262,7 +1291,7 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
             end
         end
 
-        if  isBackYardWall(index) == true then
+        if partOfPlan and isBackYardWall(index) == true then
             -- BackYard
             if chancesAre(10) < decoChances.yardWall and xLoc and zLoc then
                 --assert(type(yardMaterial) == "table")
@@ -1534,7 +1563,8 @@ end
 
 local RoofTopPieces = {}
 function addRoofDeocrate(Level, buildMaterial, materialColourName)
-	if not GG.house_asian_piece_counter then GG.house_asian_piece_counter = {} end
+    splitPhase = "roof"
+    if not splitPlan and not GG.house_asian_piece_counter then GG.house_asian_piece_counter = {} end
 
     lecho(":-->addRoofDeocrate")
     countElements = 0
@@ -1543,7 +1573,9 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
     end
     --assert(Level)
 
-    roofMaterial =  getNameFilteredTable({}, {"Roof"}, {"Deco", "Night"}) -- TODO materialGroupName
+    -- Untagged roofs are shared stock; Trad alone has fewer than 20 tagged
+    -- roofs, so restricting this pool to the style name leaves facade gaps.
+    roofMaterial = getNameFilteredTable({}, {"Roof"}, {"Deco", "Night"})
 	IDQueueRunning = nil
     for i = 1, 37, 1 do
         local index = i
@@ -1579,7 +1611,7 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
 			
             if element then
 				pieceName =  pieceID_NameMap[element]
-				if pieceName and (string.find(pieceName, "ID_a") or string.find(pieceName, "ID_l")) and maRa() == maRa() then
+				if not splitPlan and pieceName and (string.find(pieceName, "ID_a") or string.find(pieceName, "ID_l")) and maRa() == maRa() then
 					pieceName = removeTrailingNumbersFromName(pieceName)
                     if not GG.house_asian_piece_counter[pieceName] then GG.house_asian_piece_counter[pieceName] = 0 end
 
@@ -1784,6 +1816,18 @@ end
 
 
 function buildBuilding(boolIsReconstruction)
+    splitPlan = splitPlan or (GG.HouseAsianUnitPlans and GG.HouseAsianUnitPlans[unitID])
+    if not splitPlan and splitParams.house_asian_base then
+        local x, _, z = spGetUnitPosition(unitID)
+        splitPlan = splitPlanner.forVariant(tonumber(splitParams.house_asian_style_a),
+            tonumber(splitParams.house_asian_style_b), x, z, Game.mapName)
+    end
+    if splitPlan then
+        splitLayout, reservedSplitPieces = splitPlanner.layout(splitPlan)
+        -- Do not cut holes through the reserved authored component.
+        if splitPlan.group then boolOpenBuilding = false end
+    end
+    splitPhase = nil
     -- objects3d/house_asian.dae declares asset/unit meter="0.025400".
     -- Move() offsets inherit that import scale; shadow geometry must match it.
     initializeBuildingShadowVoxels(cubeDim.length, cubeDim.heigth, 0.0254)
@@ -1808,9 +1852,10 @@ function buildBuilding(boolIsReconstruction)
     --lecho( "selectBackYard")
     selectBackYard(materialColourName)    
 
+    materialColourName = splitPlan and splitPlan.wallStyle or materialColourName
     levelBuildMaterial = getNameFilteredTable({}, {materialColourName}, {"Floor","Roof", "Deco"})
 
-    height = math.random(2,3)
+    height = splitPlan and splitPlan.height or math.random(2,3)
 	for i = 1, height do
       --  lecho( "buildDecorateLvl start "..i)
       --  assert(levelBuildMaterial, "no material table in" ..i.." for "..materialColourName)
@@ -1821,8 +1866,9 @@ function buildBuilding(boolIsReconstruction)
         --lecho( "buildDecorateLvl ended")
     end
 
+	materialColourName = splitPlan and splitPlan.roofStyle or materialColourName
 	materialTable = getNameFilteredTable({materialColourName}, {"Roof", "Deco"}, {"Floor","Base"})
-    if materialTable and count(materialTable) > 0 then
+    if splitPlan or (materialTable and count(materialTable) > 0) then
         --lecho( "addRoofDeocrate started")
         addRoofDeocrate(height + 1, materialTable, materialColourName)
     end

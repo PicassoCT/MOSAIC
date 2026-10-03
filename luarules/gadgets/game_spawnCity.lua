@@ -30,6 +30,10 @@ local spCreateUnit = Spring.CreateUnit
 local spDestroyUnit = Spring.DestroyUnit
 local spGetUnitDefID = Spring.GetUnitDefID
 local UnitDefNames = getUnitDefNames(UnitDefs)
+local asianSplit = VFS.Include("scripts/lib_house_asian_split.lua")
+GG.HouseAsianSplitState = GG.HouseAsianSplitState or asianSplit.newState()
+local asianSplitState = GG.HouseAsianSplitState
+GG.HouseAsianUnitPlans = GG.HouseAsianUnitPlans or {}
 
 local scrapHeapTypeTable = getBuildingScrapHeapTypeTable(UnitDefs)
 local ruinTypeTable = getBuildingRuinTypeTable(UnitDefs)
@@ -51,7 +55,16 @@ local TruckTypeTable = getCultureUnitModelTypes(GameConfig.game.culture,
 local houseTypeTable = getCultureUnitModelTypes(GameConfig.game.culture,
                                                 "house", UnitDefs)
 
-local outerCityHouseTypeTable = removeDictFromDict(houseTypeTable, getHouseTypeIsInnerCityOnly(GameConfig.game.culture, UnitDefs))
+-- Variants belong to all house gameplay registries, but must not multiply the
+-- probability of selecting this building purpose in the city's spawn lottery.
+local houseSpawnTypeTable = {}
+for defID, value in pairs(houseTypeTable) do
+    if not (UnitDefs[defID].customParams or {}).house_asian_base then
+        houseSpawnTypeTable[defID] = value
+    end
+end
+
+local outerCityHouseTypeTable = removeDictFromDict(houseSpawnTypeTable, getHouseTypeIsInnerCityOnly(GameConfig.game.culture, UnitDefs))
 
 local houseTypeLimitationsTable = getHouseTypeLimitations(UnitDefs)
 local houeArabicDefID = UnitDefNames["house_arab0"].id
@@ -106,6 +119,7 @@ end
 
 
 function gadget:UnitDestroyed(unitID, unitDefID, teamID, attackerID)
+    GG.HouseAsianUnitPlans[unitID] = nil
     --echo("UnitDestroyed:"..unitID.." a "..getUnitTypeName(unitDefID).." by "..toString(attackerID))
     -- if building, get all Civilians/Trucks nearby in random range and let them get together near the rubble
     if teamID == gaiaTeamID and attackerID then
@@ -295,7 +309,7 @@ function mirrorCursor(cursor, cx, cz)
 end
 
 function getBuildingTypeWithinLimits()
-    buildingType = randDict(houseTypeTable)
+    buildingType = randDict(houseSpawnTypeTable)
     if houseTypeLimitationsTable[buildingType] then
         if houseTypeLimitationsTable[buildingType] > 0 then
             houseTypeLimitationsTable[buildingType] = houseTypeLimitationsTable[buildingType] -1 
@@ -406,7 +420,7 @@ function checkCursorInnerCityFree(cursor)
 end
 
 function placeThreeByThreeBlockAroundCursor(cursor, numberOfBuildings,  BuildingPlaceT, boolNearCityCenter, distanceToCityCenter)
-    buildingType = randDict(houseTypeTable)
+    buildingType = randDict(houseSpawnTypeTable)
 
         for offx = -1, 1, 1 do
             if BuildingPlaceT[cursor.x + offx] then
@@ -530,9 +544,20 @@ function spawnUnit(defID, x, z)
     
     dir = getCultureDependentDirection(GameConfig.game.culture, defID)
     h = spGetGroundHeight(x, z)
+    local plan
+    if UnitDefNames.house_asian0 and defID == UnitDefNames.house_asian0.id then
+        plan = asianSplit.choose(asianSplitState, x, z, Game.mapName)
+        defID = assert(UnitDefNames[plan.unitName], "Missing Asian split UnitDef: " .. plan.unitName).id
+    end
     id = spCreateUnit(defID, x, h, z, dir, gaiaTeamID)
 
     if id then
+        if plan then
+            -- buildHouse yields before assembly, so the plan is present even
+            -- when LuaUnitScript.Create runs synchronously inside CreateUnit.
+            GG.HouseAsianUnitPlans[id] = plan
+            asianSplit.commit(asianSplitState, plan)
+        end
         spSetUnitAlwaysVisible(id, true)
         return id
     end
@@ -607,7 +632,5 @@ function gadget:GameFrame(frame)
         checkReSpawnHouses()
     end
 end
-
-
 
 

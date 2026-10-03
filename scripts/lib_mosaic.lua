@@ -882,12 +882,16 @@ end
 
     function getWindowBuildingTypes(UnitDefs)
         local UnitDefNames = getUnitDefNames(UnitDefs)
-        return {
+        local result = {
                     [UnitDefNames["house_western0"].id] = true,           
                     [UnitDefNames["house_asian0"].id] = true,           
                     [UnitDefNames["house_asian1"].id] = true,           
                     [UnitDefNames["house_arab0"].id] = true       
                 }
+        for id, def in pairs(UnitDefs) do
+            if (def.customParams or {}).house_asian_base then result[id] = true end
+        end
+        return result
     end  
 
     function getBlimpHologramTypes(UnitDefs)
@@ -1629,6 +1633,13 @@ end
                     i = i + 1
                 end
 
+                if SubsetTable.name == "house_asian" then
+                    for id, def in pairs(UnitDefs) do
+                        if (def.customParams or {}).house_asian_base == "house_asian0" then
+                            expandedDictNameID[def.name] = id
+                        end
+                    end
+                end
                 return expandedDictNameID
             end
 
@@ -2075,6 +2086,12 @@ end
                 typeTable = {
                     "house_western0", "house_arab0", "house_asian0", "house_asian1", "house_asian2"
                 }
+
+                for _, def in pairs(UnitDefs) do
+                    if (def.customParams or {}).house_asian_base then
+                        typeTable[#typeTable + 1] = def.name
+                    end
+                end
 
                 return getTypeTable(UnitDefNames, typeTable)
             end

@@ -49,8 +49,20 @@ local house_asian = Building:New{
 
 }
 
-return lowerkeys({
-	--Temp
-	["house_asian0"] = house_asian:New()
-	
-})
+local definitions = {house_asian0 = house_asian:New()}
+-- Keep house_asian0 as the semantic spawn choice and authoring/debug model.
+-- These inherit every gameplay field; only the model and style metadata differ.
+for a = 1, 4 do
+    for b = a, 4 do
+        local name = "house_asian_split_" .. a .. "_" .. b
+        definitions[name] = house_asian:New{
+            objectName = name .. ".dae",
+            customparams = {
+                house_asian_base = "house_asian0",
+                house_asian_style_a = a,
+                house_asian_style_b = b,
+            },
+        }
+    end
+end
+return lowerkeys(definitions)
