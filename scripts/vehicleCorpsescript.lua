@@ -29,7 +29,6 @@ stmax = 20
 -- "custom:LightUponSmoke",
 -- "custom:vortflames",--1029
 -- "custom:volcanolightsmall",--1030
--- "custom:cburningwreckage",--1031
 
 function onFire(times, endtimes)
     Time = math.ceil(math.random(100, 160))
@@ -40,14 +39,17 @@ function onFire(times, endtimes)
         Sleep(90)
     end
     x, y, z = Spring.GetUnitPiecePosDir(unitID, emitfire)
+    -- One LOS-limited publication; rendering follows the animated emitter locally.
+    local burningSteps = math.min(times, math.max(0, endtimes - 1))
+    Spring.SetUnitRulesParam(unitID, "mosaic_fire_piece", emitfire, {inlos=true})
+    Spring.SetUnitRulesParam(unitID, "mosaic_fire_until",
+        Spring.GetGameFrame() + math.ceil(burningSteps * 200 * (Game.gameSpeed or 30) / 1000), {inlos=true})
     for i = 1, times, 1 do
         if i < endtimes then
 
             EmitSfx(emitfire, 1025)
             EmitSfx(emitfire, 1028)
             EmitSfx(emitfire, 1026)
-            randpiece = math.random(1, #explo)
-            EmitSfx(explo[randpiece], 1031)
         else
             EmitSfx(emitfire, 1028)
         end

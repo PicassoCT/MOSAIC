@@ -1,111 +1,86 @@
 function gadget:GetInfo()
-    return {
-        name = "Explosion_lights",
-        desc = "",
-        author = "Floris",
-        date = "April 2017",
-        license = "GNU GPL, v2 or later",
-        layer = 0,
-        enabled = true
-    }
+    return {name='Combat effect events', desc='Visible weapon flashes and bounded persistent Molotov fires',
+        author='Floris, MOSAIC contributors', license='GPL V2', layer=0, enabled=true}
 end
 
--------------------------------------------------------------------------------
--- Synced
--------------------------------------------------------------------------------
-
-if (gadgetHandler:IsSyncedCode()) then
-    local cannonWeapons = {}
+local types={Cannon=true,MissileLauncher=true,StarburstLauncher=true,AircraftBomb=true,
+    LaserCannon=true,BeamLaser=true,LightningCannon=true,DGun=true,Flame=true}
+local watched,wanted={},{}
+for id,wd in pairs(WeaponDefs) do
+    if types[wd.type] then watched[id]=true;wanted[#wanted+1]=id end
+end
+local molotov=WeaponDefNames.molotow and WeaponDefNames.molotow.id
+if gadgetHandler:IsSyncedCode() then
+    local fires,cursor,lastMuzzle={},0,{}
+    _G.MosaicCombatFires=fires
     function gadget:Initialize()
-        for wdid, wd in pairs(WeaponDefs) do
-            if wd.type == "Flame" then
-                Script.SetWatchWeapon(wdid, true) -- watch weapon so explosion gets called for flame weapons
-            end
-            if wd.type == "Cannon" then
-                cannonWeapons[wdid] = true
-                Script.SetWatchWeapon(wdid, true) -- might be getting too expensive
-            end
-            if wd.type == "BeamLaser" then
-                Script.SetWatchWeapon(wdid, true) -- might be getting too expensive
-            end
+        for id in pairs(watched) do Script.SetWatchWeapon(id,true) end
+    end
+    function gadget:Explosion_GetWantedWeaponDef() return wanted end
+    function gadget:Explosion(weaponID,x,y,z,ownerID)
+        if not watched[weaponID] then return end
+        SendToUnsynced('explosion_light',x,y,z,weaponID,ownerID)
+        if weaponID==molotov and y>=0 then
+            cursor=cursor%128+1
+            local frame=Spring.GetGameFrame()
+            fires[cursor]={x=x,y=y,z=z,born=frame,expires=frame+15*(Game.gameSpeed or 30)}
         end
     end
-    function gadget:Shutdown()
-        for wdid, wd in pairs(WeaponDefs) do
-            if wd.type == "Flame" then
-                Script.SetWatchWeapon(wdid, false) -- watch weapon so explosion gets called for flame weapons
-            end
-            if wd.type == "Cannon" then
-                Script.SetWatchWeapon(wdid, false) -- might be getting too expensive
-            end
+    function gadget:ProjectileCreated(projectileID,ownerID,weaponID)
+        if not watched[weaponID] then return end
+        local frame=Spring.GetGameFrame()
+        local key=ownerID or -1
+        local prior=lastMuzzle[key]
+        if prior and frame-prior<3 then return end -- at most 10 Hz per firing unit
+        local x,y,z=Spring.GetProjectilePosition(projectileID)
+        if x then
+            lastMuzzle[key]=frame
+            SendToUnsynced('barrelfire_light',x,y,z,weaponID,ownerID)
         end
     end
-
-    function gadget:Explosion(weaponID, px, py, pz, ownerID)
-        SendToUnsynced("explosion_light", px, py, pz, weaponID, ownerID)
+    function gadget:UnitDestroyed(id) lastMuzzle[id]=nil end
+    function gadget:GameFrame(frame)
+        if frame%3~=0 then return end
+        for id,r in pairs(fires) do if frame>=r.expires then fires[id]=nil end end
     end
-
-    function gadget:ProjectileCreated(projectileID, ownerID, weaponID)
-        if cannonWeapons[weaponID] then
-            local px, py, pz = Spring.GetProjectilePosition(projectileID)
-            SendToUnsynced("barrelfire_light", px, py, pz, weaponID, ownerID)
-        end
-    end
-
+    function gadget:Shutdown() _G.MosaicCombatFires=nil end
 else
-
-    -------------------------------------------------------------------------------
-    -- Unsynced
-    -------------------------------------------------------------------------------
-
-    local myAllyID = Spring.GetMyAllyTeamID()
-    local spGetUnitAllyTeam = Spring.GetUnitAllyTeam
-    local spIsPosInLos = Spring.IsPosInLos
-
-    function gadget:PlayerChanged(playerID)
-        if (playerID == Spring.GetMyPlayerID()) then
-            myAllyID = Spring.GetMyAllyTeamID()
+    local function visible(x,y,z)
+        local _,full=Spring.GetSpectatingState()
+        return full or Spring.IsPosInLos(x,y,z,Spring.GetMyAllyTeamID())
+    end
+    local function Explosion(_,x,y,z,weaponID,ownerID)
+        if visible(x,y,z) and Script.LuaUI('GadgetWeaponExplosion') then
+            Script.LuaUI.GadgetWeaponExplosion(x,y,z,weaponID,ownerID)
         end
     end
-
-    local function SpawnExplosion(_, px, py, pz, weaponID, ownerID)
-        if Script.LuaUI("GadgetWeaponExplosion") then
-            if ownerID ~= nil then
-                if (spGetUnitAllyTeam(ownerID) == myAllyID or
-                    spIsPosInLos(px, py, pz, myAllyID)) then
-                    Script.LuaUI.GadgetWeaponExplosion(px, py, pz, weaponID,
-                                                       ownerID)
-                end
-            else
-                -- dont know when this happens and if we should show the explosion...
-                Script.LuaUI.GadgetWeaponExplosion(px, py, pz, weaponID)
+    local function Muzzle(_,x,y,z,weaponID,ownerID)
+        if visible(x,y,z) and Script.LuaUI('GadgetWeaponBarrelfire') then
+            Script.LuaUI.GadgetWeaponBarrelfire(x,y,z,weaponID,ownerID)
+        end
+    end
+    local lastUpdate
+    function gadget:Update()
+        -- MOSAIC's gadget handler does not pass dt to Update.
+        local now=Spring.GetTimer()
+        if lastUpdate and Spring.DiffTimers(now,lastUpdate)<.1 then return end
+        lastUpdate=now
+        if not Script.LuaUI('GadgetCombatFire') then return end
+        local frame=Spring.GetGameFrame()
+        -- Snapshot supports LuaUI reloads and entering LOS partway through a fire.
+        -- Only visible positions cross into LuaUI. The receiver rechecks LOS.
+        for id,r in pairs(SYNCED.MosaicCombatFires or {}) do
+            if frame<r.expires and visible(r.x,r.y,r.z) then
+                Script.LuaUI.GadgetCombatFire(id,r.x,r.y,r.z,r.born,r.expires)
             end
         end
     end
-
-    local function SpawnBarrelfire(_, px, py, pz, weaponID, ownerID)
-        -- Spring.Echo(weaponID..'  '..math.random())
-        if Script.LuaUI("GadgetWeaponBarrelfire") then
-            if ownerID ~= nil then
-                if (spGetUnitAllyTeam(ownerID) == myAllyID or
-                    spIsPosInLos(px, py, pz, myAllyID)) then
-                    Script.LuaUI.GadgetWeaponBarrelfire(px, py, pz, weaponID,
-                                                        ownerID)
-                end
-            else
-                -- dont know when this happens and if we should show the explosion...
-                Script.LuaUI.GadgetWeaponBarrelfire(px, py, pz, weaponID)
-            end
-        end
-    end
-
     function gadget:Initialize()
-        gadgetHandler:AddSyncAction("explosion_light", SpawnExplosion)
-        gadgetHandler:AddSyncAction("barrelfire_light", SpawnBarrelfire)
+        gadgetHandler:AddSyncAction('explosion_light',Explosion)
+        gadgetHandler:AddSyncAction('barrelfire_light',Muzzle)
     end
-
     function gadget:Shutdown()
-        gadgetHandler.RemoveSyncAction("explosion_light")
-        gadgetHandler.RemoveSyncAction("barrelfire_light")
+        gadgetHandler:RemoveSyncAction('explosion_light')
+        gadgetHandler:RemoveSyncAction('barrelfire_light')
     end
 end
