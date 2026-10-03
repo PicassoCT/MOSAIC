@@ -2083,20 +2083,10 @@ function init()
 		 onchange = function(i, value) Spring.SetConfigInt("MaxParticles",value) end,
 		},
 
-		{id="lighteffects", group="gfx", basic=true, name="Lights", type="bool", value=GetWidgetToggleValue("Light Effects"), description='Adds lights to projectiles, lasers and explosions.\n\nRequires shaders.',
-		 onload = function(i) end,
+		{id="lighteffects", group="gfx", basic=true, name="Combat lights and fire", type="bool", value=GetWidgetToggleValue("Light Effects"), description='Weapon and fire lighting, animated flames and explosion heat distortion.',
 		 onchange = function(i, value)
-			 if value  then
-				 if widgetHandler.orderList["Deferred rendering"] ~= nil then
-					 widgetHandler:EnableWidget("Deferred rendering")
-				 end
-				 widgetHandler:EnableWidget("Light Effects")
-			 else
-				 if widgetHandler.orderList["Deferred rendering"] ~= nil then
-					 widgetHandler:DisableWidget("Deferred rendering")
-				 end
-				 widgetHandler:DisableWidget("Light Effects")
-			 end
+			 if value then widgetHandler:EnableWidget("Light Effects")
+			 else widgetHandler:DisableWidget("Light Effects") end
 		 end,
 		},
 		{id="lighteffects_life", group="gfx", name=widgetOptionColor.."   lifetime", min=0.4, max=0.9, step=0.05, type="slider", value=0.75, description='lifetime of explosion lights',
@@ -2111,15 +2101,6 @@ function init()
 		 onload = function(i) loadWidgetData("Light Effects", "lighteffects_radius", {'globalRadiusMult'}) end,
 		 onchange = function(i, value) saveOptionValue('Light Effects', 'lighteffects', 'setGlobalRadius', {'globalRadiusMult'}, value) end,
 		},
-		--{id="lighteffects_laserbrightness", group="gfx", name=widgetOptionColor.."   laser brightness", min=0.4, max=2, step=0.1, type="slider", value=1.2, description='laser lights brightness RELATIVE to global light brightness set above\n\n(only applies to real map and model lighting)',
-		--		 onload = function(i) loadWidgetData("Light Effects", "lighteffects_laserbrightness", {'globalLightMultLaser'}) end,
-		--		 onchange = function(i, value) saveOptionValue('Light Effects', 'lighteffects', 'setLaserBrightness', {'globalLightMultLaser'}, value) end,
-		--		},
-		--{id="lighteffects_laserradius", group="gfx", name=widgetOptionColor.."   laser radius", min=0.5, max=1.6, step=0.1, type="slider", value=1, description='laser lights radius RELATIVE to global light radius set above\n\n(only applies to real map and model lighting)',
-		--		 onload = function(i) loadWidgetData("Light Effects", "lighteffects_laserradius", {'globalRadiusMultLaser'}) end,
-		--		 onchange = function(i, value) saveOptionValue('Light Effects', 'lighteffects', 'setLaserRadius', {'globalRadiusMultLaser'}, value) end,
-		--		},
-
 		{id="dof", group="gfx", widget="Depth of Field", name="Depth of Field", type="bool", value=GetWidgetToggleValue("Depth of Field"), description='Applies out of focus blur'},
 		{id="dof_autofocus", group="gfx", name=widgetOptionColor.."   autofocus", type="bool", value=true, description='Disable to have mouse position focus',
 		 onload = function(i) loadWidgetData("Depth of Field", "dof_autofocus", {'autofocus'}) end,
@@ -2141,10 +2122,6 @@ function init()
 			 end
 		 end,
 		},
-		--{id="lighteffects_nanolaser", group="gfx", name=widgetOptionColor.."   beam light  (needs 'Lights')", type="bool", value=true, description='Shows a light for every build/reclaim nanolaser',
-		--		 onload = function(i) loadWidgetData("Light Effects", "lighteffects_nanolaser", {'enableNanolaser'}) end,
-		--		 onchange = function(i, value) saveOptionValue('Light Effects', 'lighteffects', 'setNanolaser', {'enableNanolaser'}, value) end,
-		--		},
 		--{id="nanobeamicon", group="gfx", name=widgetOptionColor.."   beam when uniticon", type="bool", value=tonumber(Spring.GetConfigInt("NanoLaserIcon",0) or 0) == 1, description='Shows nano beams when unit is displayed as icon',
 		--		 onload = function(i) end,
 		--		 onchange = function(i, value) Spring.SendCommands("luarules uniticonlasers "..value) end,
@@ -2179,12 +2156,6 @@ function init()
 		-- onload = function(i) end,
 		-- onchange = function(i, value) Spring.SetConfigInt("lupsreflectionrefraction",(value and 1 or 0)) end,
 		--},
-		{id="lups_jetenginefx_lights", group="gfx", name=widgetOptionColor.."   add lights  (needs 'Lights')", type="bool", value=true, description='Shows a light for air engine thrusters (fighters and scouts excluded)',
-		 onload = function(i) loadWidgetData("Light Effects", "lups_jetenginefx_lights", {'enableThrusters'}) end,
-		 onchange = function(i, value)
-			 saveOptionValue('Light Effects', 'lighteffects', 'setThrusters', {'enableThrusters'}, value)
-		 end,
-		},
 		{id="lups_jetenginefx_disablefps", group="gfx", name=widgetOptionColor.."   disable below fps", type="slider", min=0, max=80, step=1, value=25, description='disable when average FPS gets below this amount',
 		 onload = function(i) loadWidgetData("LupsManager", "lups_jetenginefx_disablefps", {'disableAtAvgFps'}) end,
 		 onchange = function(i, value) saveOptionValue('LupsManager', 'lups_jetenginefx', 'setDisableFps', {'disableAtAvgFps'}, value) end,
@@ -2203,7 +2174,7 @@ function init()
 		--},
 
 		{id="snow", group="gfx", basic=true, widget="Snow", name="Snow", type="bool", value=GetWidgetToggleValue("Snow"), description='Snow widget (By default.. maps with wintery names have snow applied)'},
-		{id="snowmap", group="gfx", name=widgetOptionColor.."   enabled on this map", type="bool", value=true, description='It will remember what you toggled for every map\n\n\(by default: maps with wintery names have this toggled)',
+		{id="snowmap", group="gfx", name=widgetOptionColor.."   enabled on this map", type="bool", value=true, description='It will remember what you toggled for every map\n\n(by default: maps with wintery names have this toggled)',
 		 onload = function(i) loadWidgetData("Snow", "snowmap", {'snowMaps',Game.mapName:lower()}) end,
 		 onchange = function(i, value) saveOptionValue('Snow', 'snow', 'setSnowMap', {'snowMaps',Game.mapName:lower()}, value) end,
 		},
@@ -2600,7 +2571,7 @@ function init()
 		--		},
 
 
-		{id="fancyselectedunits", group="ui", basic=true, widget="Fancy Selected Units", name="Selection Unit Platters", type="bool", value=GetWidgetToggleValue("Fancy Selected Units"), description='Draws a platter under selected units\n\n\NOTE: this widget can be heavy when having lots of units selected'},
+		{id="fancyselectedunits", group="ui", basic=true, widget="Fancy Selected Units", name="Selection Unit Platters", type="bool", value=GetWidgetToggleValue("Fancy Selected Units"), description='Draws a platter under selected units\n\nNOTE: this widget can be heavy when having lots of units selected'},
 		--{id="fancyselectedunits_opacity", group="ui", name=widgetOptionColor.."   line opacity", min=0.8, max=1, step=0.01, type="slider", value=0.95, description='Set the opacity of the highlight on selected units',
 		-- onload = function(i) loadWidgetData("Fancy Selected Units", "fancyselectedunits_opacity", {'spotterOpacity'}) end,
 		-- onchange = function(i, value) saveOptionValue('Fancy Selected Units', 'fancyselectedunits', 'setOpacity', {'spotterOpacity'}, value) end,
@@ -2948,7 +2919,6 @@ function init()
 		{id="factoryrepeat", group="game", basic=true, widget="Factory Auto-Repeat", name="Factory auto-repeat", type="bool", value=GetWidgetToggleValue("Factory Auto-Repeat"), description='Sets new factories on Repeat mode'},
 
 		{id="transportai", group="game", basic=true, widget="Transport AI", name="Transport AI", type="bool", value=GetWidgetToggleValue("Transport AI"), description='Transport units automatically pick up new units going to factory waypoint.'},
-		{id="settargetdefault", group="game", basic=true, widget="Set target default", name="Set-target as default", type="bool", value=GetWidgetToggleValue("Set target default"), description='Replace default attack command to a set-target command\n(when rightclicked on enemy unit)'},
 		{id="dgunnogroundenemies", group="game", widget="DGun no ground enemies", name="Dont snap DGun to ground units", type="bool", value=GetWidgetToggleValue("DGun no ground enemies"), description='Prevents dgun aim to snap onto enemy ground units.\nholding SHIFT will still target units\n\nWill still snap to air, ships and hovers (when on water)'},
 
 		{id="profiler", group="dev", widget="Widget Profiler", name="Widget profiler", type="bool", value=GetWidgetToggleValue("Widget Profiler"), description=""},
@@ -3837,14 +3807,10 @@ function init()
 		options[getOptionByID("highlightselunits_teamcolor")] = nil
 	end
 
-	if widgetHandler.knownWidgets["Light Effects"] == nil or widgetHandler.knownWidgets["Deferred rendering"] == nil then
+	if widgetHandler.knownWidgets["Light Effects"] == nil then
 		options[getOptionByID('lighteffects')] = nil
 		options[getOptionByID("lighteffects_brightness")] = nil
-		options[getOptionByID("lighteffects_laserbrightness")] = nil
 		options[getOptionByID("lighteffects_radius")] = nil
-		options[getOptionByID("lighteffects_laserradius")] = nil
-		options[getOptionByID("lighteffects_nanolaser")] = nil
-		options[getOptionByID("lups_jetenginefx_lights")] = nil
 	end
 
 	if widgetHandler.knownWidgets["TeamPlatter"] == nil then
@@ -4244,4 +4210,3 @@ function widget:SetConfigData(data)
 		useNetworkSmoothing = data.useNetworkSmoothing
 	end
 end
-

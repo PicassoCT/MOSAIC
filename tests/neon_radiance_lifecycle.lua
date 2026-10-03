@@ -210,7 +210,19 @@ assert(captureUniforms.nightIntensity[1]==1)
 env.widget:TextCommand('radiancedebug off');previewRects={};env.widget:DrawScreen();assert(#previewRects==0)
 env.widget:TextCommand('radiancelight test off')
 captureUniforms.nightIntensity=nil;env.widget:DrawWorld();assert(captureUniforms.nightIntensity[1]==1)
-assert(captureUniforms.headlightIntensity[1]==0)
+-- The shared live field now contains per-source scaling (daylight fires remain lit).
+assert(captureUniforms.headlightIntensity[1]==1)
+local carGains,combatNight={},{}
+env.WG.CaptureVehicleHeadlightEmission=function(_,_,gain) carGains[#carGains+1]=gain end
+env.WG.CaptureCombatLightEmission=function(_,_,gain,night)
+ assert(gain==1 or gain==.08);combatNight[#combatNight+1]=night
+end
+env.widget:DrawWorld()
+assert(#carGains==0 and #combatNight>0 and combatNight[#combatNight]==0,'daylight source gating')
+env.widget:TextCommand('radiancelight test on');env.widget:Update(.11);env.widget:DrawWorld()
+assert(carGains[#carGains]==1 and combatNight[#combatNight]==1,'night gain applied twice')
+env.WG.CaptureVehicleHeadlightEmission=nil;env.WG.CaptureCombatLightEmission=nil
+env.widget:TextCommand('radiancelight test off')
 -- Direct standalone sources are automatic but NEVER drawn into cascade emission.
 env.UnitDefs={[7]={name='house_asian3'}}
 env.Spring.GetAllUnits=function() return {42} end

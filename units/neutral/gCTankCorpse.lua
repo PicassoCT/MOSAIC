@@ -60,7 +60,6 @@ local unitDef = {
 					   "custom:vehsmokepillar",
 					   "custom:vortflames",--1029
 					   "custom:volcanolightsmall",--1030
-						"custom:cburningwreckage",--1031
 					},
 
 	},

@@ -32,7 +32,7 @@ return function()
         for _, group in pairs(meshes) do for _, list in pairs(group) do gl.DeleteList(list) end end
         gl.DeleteShader(shader)
     end
-    function self:Draw()
+    function self:Draw(worldEffects)
         local draw, cx,cy,cz = {}, Spring.GetCameraPosition()
         local _, fullView = Spring.GetSpectatingState()
         local ally = Spring.GetMyAllyTeamID()
@@ -199,6 +199,32 @@ return function()
                         end
                     end
                 end
+            end
+        end
+        -- Combat trails and ground fires use the same FlamePainter shader and
+        -- bounded meshes as piece-attached effects, with client-side anchors.
+        for _,r in ipairs(worldEffects or {}) do
+            local x,y,z=r.x,r.y,r.z
+            local length,width=r.length,r.width
+            local d2=(cx-x)^2+(cy-y)^2+(cz-z)^2
+            local cutoff=math.max(length,width*2)*(r.distanceFactor or 40)
+            if (fullView or Spring.IsPosInLos(x,y,z,ally)) and d2<cutoff*cutoff
+                and Spring.IsSphereInView(x,y+length*.5,z,length*2+width*3) then
+                if not wind and Spring.GetWind then wind={Spring.GetWind()} end
+                local v=r.velocity or {0,0,0}
+                local gain=(r.trailTime or .1)*(Game.gameSpeed or 30)
+                local wg=(r.windInfluence or .3)*(r.trailTime or .1)
+                local drift={}
+                local magnitude=0
+                for axis=1,3 do
+                    drift[axis]=(wind and wind[axis] or 0)*wg-(v[axis] or 0)*gain
+                    magnitude=magnitude+drift[axis]^2
+                end
+                local cap=math.min(1,length*2/math.max(.001,math.sqrt(magnitude)))
+                local fade=math.min(1,(cutoff-math.sqrt(d2))/(cutoff*.2))*(r.opacity or 1)
+                draw[#draw+1]={r=r,x=x,y=y,z=z,dx=r.direction[1],dy=r.direction[2],dz=r.direction[3],
+                    driftX=drift[1]*cap,driftY=drift[2]*cap,driftZ=drift[3]*cap,
+                    length=length,width=width,fade=fade,d2=d2}
             end
         end
         hairHistory=nextHistory

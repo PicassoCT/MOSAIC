@@ -1,6 +1,7 @@
 
 local weaponName = "aamachinegun" 
 local weaponDef = {
+    customParams = {night_tracer = 1},
        name = "M27-64",
     weaponType = [[Cannon]],
     --damage

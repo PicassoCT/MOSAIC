@@ -26,7 +26,7 @@ local weaponDef = {
  	model = "molotow.s3o",
 
     explosionGenerator="fireball",
-    CegTag="molotowTrail",
+    -- Moving fire trail is rendered by FlamePainter (Light Effects widget).
 
     --- -TARGETING
     turret = true,

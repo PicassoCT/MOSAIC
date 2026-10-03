@@ -19,14 +19,14 @@ local weapons = {}
 weapons.escortmachinegun = variant("weapons/submachinegun.lua", "submachingegun", {
     name = "Weevil escort gun",
     reloadtime = 3.5,
-    customparams = {wall_damage_multiplier = 0.05},
+    customparams = {wall_damage_multiplier = 0.05, night_tracer = 1},
 })
 
 weapons.covermachinegun = variant("weapons/heavymachinegun.lua", "heavymachinegun", {
     name = "Covering-fire machine gun",
     damage = {default = 12},
     avoidfriendly = true,
-    customparams = {wall_damage_multiplier = 0.05},
+    customparams = {wall_damage_multiplier = 0.05, night_tracer = 1},
 })
 
 weapons.escortantiair = variant("weapons/aamachinegun.lua", "aamachinegun", {
@@ -37,7 +37,7 @@ weapons.escortantiair = variant("weapons/aamachinegun.lua", "aamachinegun", {
     burstrate = 0.12,
     reloadtime = 4,
     avoidfriendly = true,
-    customparams = {wall_damage_multiplier = 0.05},
+    customparams = {wall_damage_multiplier = 0.05, night_tracer = 1},
 })
 
 weapons.militaryantiair = variant("weapons/guidedrocket.lua", "s16rocket", {
@@ -93,7 +93,7 @@ weapons.supportgunshipmg = variant("weapons/cGunShipMG.lua", "cgunshipmg", {
     burstrate = 0.12,
     reloadtime = 4,
     avoidfriendly = true,
-    customparams = {wall_damage_multiplier = 0.05},
+    customparams = {wall_damage_multiplier = 0.05, night_tracer = 1},
 })
 
 weapons.campaignrocket = variant("weapons/guidedrocket.lua", "s16rocket", {

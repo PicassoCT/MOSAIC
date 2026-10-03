@@ -187,12 +187,11 @@ if (gadgetHandler:IsSyncedCode()) then
             addz = math.random(0, 4)
             local x,y,z = persPack.px, persPack.py, persPack.pz
             dx,dy,dz= Spring.GetGroundNormal(persPack.px, persPack.pz, true)
-            spSpawnCEG("flames", x + addx * xd, y + additional, z + addz * zd, dx, dy, dz, 50, 0)
-            if maRa() == true then
-                 spSpawnCEG("vortflames", x + addx * xd, y + additional, z + addz * zd, 0, 1, 0, 50, 0)
-                   if maRa() == true then 
-                       spSpawnCEG(moltowSmokeCegs[math.random(1,#moltowSmokeCegs)], x + addx * xd, y + additional, z + addz * zd, 0, 1, 0, 50, 0)
-                   end
+            -- FlamePainter and radiance are restored from the combat-fire snapshot.
+            -- Keep smoke and all synced ignition/gameplay timing here.
+            if maRa() == true and maRa() == true then
+                spSpawnCEG(moltowSmokeCegs[math.random(1,#moltowSmokeCegs)],
+                    x + addx * xd, y + additional, z + addz * zd, 0, 1, 0, 50, 0)
             end
 
             foreach(getAllInCircle(persPack.px, persPack.pz, persPack.range),

@@ -1,6 +1,7 @@
 
 local weaponName = "submachingegun" 
 local weaponDef = {
+    customParams = {night_tracer = 1},
     name = "Boaz Submachingegun",
     weaponType = [[Cannon]],
     --damage

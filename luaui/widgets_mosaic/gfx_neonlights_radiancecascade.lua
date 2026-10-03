@@ -28,6 +28,7 @@ local neonUnitTables = {}
 local objectiveRadianceUnitTables = {}
 local CloudConfig = VFS.Include('luarules/gadgets/include/cloud_volume_config.lua')
 local ObjectiveSources = VFS.Include('luaui/widgets_mosaic/include/radiance_objective_sources.lua')
+local RadianceTime = VFS.Include('luaui/widgets_mosaic/include/radiance_time.lua')
 local neonLightPercent = 0.0
 local neonUnitCount = 0
 local neonPieceCount = 0
@@ -141,15 +142,7 @@ end
 -- Extend the lighting window by one in-game hour at dawn and dusk.
 -- Fade from full intensity at midnight to zero at 07:00, then back from 17:00.
 local function dayPercentToNeonPercent(percent)
-    local dawnEnd = 7 / 24
-    local duskStart = 17 / 24
-    if percent < dawnEnd then
-        return 1.0 - percent / dawnEnd
-    end
-    if percent > duskStart then
-        return 1.0 - (1.0 - percent) / (1.0 - duskStart)
-    end
-    return 0.0
+    return RadianceTime.Intensity(percent)
 end
 
 local function getDayPercent()
@@ -531,6 +524,19 @@ local function vehicleHeadlightCascadeActive()
         WG.CaptureVehicleHeadlightEmission ~= nil
 end
 
+-- Cars and combat lights share the two existing direct fields and scene pass.
+-- Apply night scaling per source so fires can remain luminous during the day.
+local function captureLiveLights(bottom,top,gain)
+    local night=sceneTest and 1 or neonLightPercent
+    if WG.CaptureVehicleHeadlightEmission and night>0 then
+        WG.CaptureVehicleHeadlightEmission(bottom,top,gain*night)
+    end
+    if WG.CaptureCombatLightEmission and (not WG.HasCombatLightEmission or WG.HasCombatLightEmission(night)) then
+        WG.CaptureCombatLightEmission(bottom,top,gain,night)
+    end
+end
+local liveVehicleProvider,liveCombatProvider
+
 -- Borrowed textures, valid only until the next update/resize/shutdown.
 local rainLighting = {}
 local function getRainLighting()
@@ -556,7 +562,7 @@ local function getFogLighting()
     fogLighting.occupancy=occlusionTex[sceneLayer]
     fogLighting.strength=sceneStrength
     fogLighting.headlights=liveHeadlights and liveHeadlights.ready and liveHeadlights.texture or nil
-    fogLighting.headlightIntensity=sceneTest and 1 or neonLightPercent
+    fogLighting.headlightIntensity=1 -- captures already include per-source intensity
     return fogLighting
 end
 
@@ -834,10 +840,10 @@ local function drawNeonPieces(captureLayer, domain)
     end
     if propagation then gl.UniformInt(propagation.materialMaskedLoc,0) end
 
-    if propagation and WG.CaptureVehicleHeadlightEmission then
+    if propagation and (WG.CaptureVehicleHeadlightEmission or WG.CaptureCombatLightEmission) then
         local bandHeight=OCCLUSION_WORLD_HEIGHT/OCCLUSION_LAYER_COUNT
-        WG.CaptureVehicleHeadlightEmission((captureLayer-1)*bandHeight,captureLayer*bandHeight,
-            (liveHeadlights and liveHeadlights.enabled and 0.08 or 1) * (sceneTest and 1 or neonLightPercent))
+        captureLiveLights((captureLayer-1)*bandHeight,captureLayer*bandHeight,
+            liveHeadlights and liveHeadlights.enabled and 0.08 or 1)
     end
 
     gl.PopMatrix()
@@ -932,8 +938,15 @@ function widget:DrawWorld()
     if liveHeadlights then
         local bandHeight=OCCLUSION_WORLD_HEIGHT/OCCLUSION_LAYER_COUNT
         local domain=localDetail and localDetail:CameraDomain()
-        liveHeadlights:Draw(WG.CaptureVehicleHeadlightEmission,(sceneLayer-1)*bandHeight,sceneLayer*bandHeight,
-            domain,sceneEnabled and sceneReady and (sceneTest or neonLightPercent>0))
+        if liveVehicleProvider~=WG.CaptureVehicleHeadlightEmission or liveCombatProvider~=WG.CaptureCombatLightEmission then
+            liveHeadlights.age=1 -- clear stale footprints on provider removal/reload
+            liveVehicleProvider,liveCombatProvider=WG.CaptureVehicleHeadlightEmission,WG.CaptureCombatLightEmission
+        end
+        local night=sceneTest and 1 or neonLightPercent
+        local combatActive=WG.CaptureCombatLightEmission and (not WG.HasCombatLightEmission or WG.HasCombatLightEmission(night))
+        local active=combatActive or (night>0 and WG.CaptureVehicleHeadlightEmission)
+        liveHeadlights:Draw(active and captureLiveLights or nil,(sceneLayer-1)*bandHeight,sceneLayer*bandHeight,
+            domain,sceneEnabled and sceneReady and not not active)
     end
     if scene and sceneEnabled and sceneReady then
         local bandHeight=OCCLUSION_WORLD_HEIGHT/OCCLUSION_LAYER_COUNT
@@ -942,7 +955,7 @@ function widget:DrawWorld()
         local frame=Spring.GetGameFrame()+(Spring.GetFrameTimeOffset and Spring.GetFrameTimeOffset() or 0)
         local objectiveLights=ObjectiveSources.CollectDirect(objectiveRadianceUnitTables,frame)
         scene:Draw(sceneRadiance,occlusionTex[sceneLayer],(sceneLayer-1)*bandHeight,sceneLayer*bandHeight,
-            sceneStrength,1,localDetail,liveHeadlights,sceneTest and 1 or neonLightPercent,windowLighting,objectiveLights)
+            sceneStrength,1,localDetail,liveHeadlights,1,windowLighting,objectiveLights)
     end
     if windowLighting then windowLighting:DrawWorld() end
     if not debugVoxelUnit then return end

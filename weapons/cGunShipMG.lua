@@ -1,6 +1,7 @@
 --- http://springrts.com/wiki/Weapon_Variables#Cannon_.28Plasma.29_Visuals
 local weaponName = "cgunshipmg" --this is the actually maschinegune of the inferno trooper
 local weaponDef = {
+    customParams = {night_tracer = 1},
     name = "cgunshipmg",
     weaponType = [[Cannon]],
     --damage
