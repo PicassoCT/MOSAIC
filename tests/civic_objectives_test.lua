@@ -17,6 +17,8 @@ local function def(name)
 end
 for name in src:gmatch('UnitDefNames%["([^"]+)"%]') do def(name) end
 for _,s in ipairs(specs) do def(s.name) end
+e.UnitDefs[def('ground_truck_mg')].metalCost=750
+e.UnitDefs[def('ground_tank_day')].metalCost=5000
 loadIn('scripts/lib_mosaic.lua',e)
 local registry=e.getObjectiveTypes(e.UnitDefs)
 for _,s in ipairs(specs) do assert(registry[def(s.name)]=='land',s.name) end
@@ -25,6 +27,7 @@ assert(registry[def('objective_factoryship')]=='water')
 e.VFS={Include=function(path)
     if path=='luarules/configs/civic_objectives.lua' then return specs end
     if path=='luarules/gadgets/include/objective_income.lua' then return loadIn(path,e) end
+    if path=='luarules/gadgets/include/objective_security.lua' then return loadIn(path,e) end
 end}
 e.Building={New=function(_,t) return t end};e.lowerkeys=function(t)return t end
 local defs=loadIn('units/neutral/objective_civic.lua',e)
@@ -61,12 +64,14 @@ e.getAllTeamsOfType=function(side)return {[side=='protagon' and 1 or 2]=true}end
 e.getManualObjectiveSpawnMapNames=function()return true end
 e.detectMapControlledPlacementComplete=function()end
 e.Spring.GetGaiaTeamID=function()return 0 end
+e.Spring.GetTeamAllyTeamID=function(id)return id end
 e.Spring.GetGameFrame=function()return frame end
 e.Spring.GetTeamInfo=function(id)return id,nil,false end
 e.Spring.GetTeamStartPosition=function(id)return id==1 and 0 or 4096,10,2048 end
 e.Spring.AreTeamsAllied=function(a,b)return a==b end
 e.Spring.GetUnitHealth=function()return 15000,15000 end
 e.Spring.GetUnitBuildFacing=function(id)return units[id].facing end
+e.Spring.GetUnitCollisionVolumeData=function()return 124,60,124,0,30,0 end
 e.Spring.SetUnitRulesParam=function(id,key,rate)assert(key=='objective_income' and rate>0 and rate<=12);rates[id]=rate end
 e.Spring.GetUnitDefID=function(id)return units[id] and units[id].def end
 e.Spring.GetUnitTeam=function(id)return units[id] and units[id].team end
@@ -150,5 +155,19 @@ assert(math.abs(totalRate-12)<1e-6)
 local oldTable=e.GG.Objectives;local total=count(oldTable)
 e.gadget={};loadIn('luarules/gadgets/game_objective.lua',e);e.gadget:Initialize()
 step(frame+30);assert(e.GG.Objectives==oldTable and count(oldTable)==total)
+
+-- Actual damage wiring starts security on a live objective, while attacking
+-- the destroyed marker only advances the existing restoration mechanic.
+local objective=next(e.GG.Objectives)
+local record=e.GG.Objectives[objective]
+e.gadget:UnitDamaged(objective,record.defID,0,10,false,nil,nil,999,nil,2)
+assert(e.GG.ObjectiveSecurity.sites[record.siteID])
+e.gadget:UnitDestroyed(objective);units[objective]=nil
+local marker=nextID
+local security=e.GG.ObjectiveSecurity.sites[record.siteID]
+local expires=security.expires
+frame=frame+1
+e.gadget:UnitDamaged(marker,nil,0,10,false,nil,nil,999,nil,2)
+assert(security.expires==expires)
 
 print('Civic objectives: definitions, radiance, Gaia lifecycle, rewards and restoration PASS')

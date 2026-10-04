@@ -296,6 +296,25 @@ function getGameConfig()
         -- All sites share half a three-server economy; risk redistributes this pool.
         objectives = {
             payoutIntervalFrames = 30 * 10,
+            security = {
+                -- Buy a response with five minutes of this site's current income.
+                valueSeconds = 300,
+                truck = "ground_truck_mg",
+                tank = "ground_tank_day",
+                maxVehicles = 8,
+                cooldownSeconds = 90,
+                standDownSeconds = 120,
+                orderSeconds = 3,
+                spawnRetrySeconds = 1,
+                spawnClearance = 96,
+                spawnSearchRadius = 1536,
+                pursuitRadius = 1200,
+                military = {
+                    objective_combatoutpost = true,
+                    objective_westhemhq = true,
+                    objective_military_gyland = true,
+                },
+            },
             income = {
                 referenceServerCount = 3,
                 serverNetworkBonus = 1,

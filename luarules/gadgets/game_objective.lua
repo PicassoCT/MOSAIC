@@ -17,6 +17,9 @@ local Income = VFS.Include("luarules/gadgets/include/objective_income.lua")
 local gaiaTeamID = Spring.GetGaiaTeamID()
 local objectiveTypes = getObjectiveTypes(UnitDefs)
 local config = getGameConfig().objectives
+GG.ObjectiveSecurity = GG.ObjectiveSecurity or {}
+local security = VFS.Include("luarules/gadgets/include/objective_security.lua").New(
+    Spring, Game, UnitDefs, UnitDefNames, CMD, config.security, GG.ObjectiveSecurity)
 local server = UnitDefNames.propagandaserver
 local serverDef = server and UnitDefs[server.id]
 local serverIncome = serverDef and (serverDef.metalMake or serverDef.metalmake) or 0
@@ -127,12 +130,18 @@ function gadget:UnitDamaged(id, defID, teamID, damage, paralyzer, weaponID, proj
     if not attackerTeam and attackerID then attackerTeam = Spring.GetUnitTeam(attackerID) end
     local _, maxHealth = Spring.GetUnitHealth(id)
     income.Damage(record, Spring.GetGameFrame(), damage, maxHealth, attackerTeam, paralyzer)
+    if GG.Objectives[id] then
+        security.Damage(record, Spring.GetGameFrame(), damage, attackerID, attackerTeam,
+            income.Rate)
+    end
 end
 
 function gadget:UnitDestroyed(id, defID, teamID)
+    security.Remove(id)
     local live, dead = GG.Objectives[id], GG.DeadObjectives[id]
     local record = live or dead
     if not record then return end
+    security.SiteDestroyed(record)
     -- Settle only time actually held. A flip just before a tick earns no
     -- full-interval windfall; newly captured states inherit no pressure.
     income.Pay(record, Spring.GetGameFrame())
@@ -152,6 +161,14 @@ function gadget:UnitDestroyed(id, defID, teamID)
         GG.ObjectiveRestores[#GG.ObjectiveRestores+1] = {defID=record.defID, x=record.x, y=record.y,
             z=record.z, facing=record.facing, boolProProtagon=not record.boolProProtagon, siteID=record.siteID}
     end
+end
+
+function gadget:UnitTaken(id)
+    security.Remove(id)
+end
+
+function gadget:AllowWeaponTarget(id, target, weaponNum, weaponDefID, priority)
+    return security.AllowWeaponTarget(id, target), priority
 end
 
 local function restorePending()
@@ -186,6 +203,7 @@ local function payAll(records, frame)
 end
 
 function gadget:GameFrame(frame)
+    if frame % 15 == 0 then security.Update(frame, GG.Objectives) end
     if initializing then
         if getManualObjectiveSpawnMapNames(Game.mapName) then
             detectMapControlledPlacementComplete()
