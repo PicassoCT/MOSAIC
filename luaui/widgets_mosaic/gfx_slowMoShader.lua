@@ -1,238 +1,162 @@
-----------------------------------------------------------------------------------------------------
--- Temporal dilation post process
-----------------------------------------------------------------------------------------------------
 function widget:GetInfo()
     return {
-        name      = "SlowMo Shader",
-        desc      = "Visualizes Hivemind / AI-Core temporal dilation",
-        author    = "PicassoCT",
-        date      = "September 2026",
-        license   = "GNU GPL, v2 or later",
-        layer     = math.huge,
-        handler   = true,
-        enabled   = true,
-        hidden    = true,
+        name = "SlowMo Shader",
+        desc = "Hivemind cognition and world-anchored water ripples during temporal dilation",
+        author = "PicassoCT", date = "October 2026", license = "GNU GPL, v2 or later",
+        layer = math.huge, enabled = true, hidden = true,
     }
 end
 
 local SHADER_PATH = "luaui/widgets_mosaic/shaders/slowmo/"
+local Cognition = VFS.Include("luaui/widgets_mosaic/include/hivemind_cognition.lua")
+local cognition
+local vsx, vsy, vpx, vpy = 1, 1, 0, 0
+local screencopy, depthcopy, shaderProgram
+local targetActive, targetPrivilege = false, false
+local targetSpeed, slowAmount = .40, 0
+local previewID, previewLeft
+local loc, sourceLoc = {}, {}
 
-local vsx, vsy = 1, 1
-local screencopy
-local shaderProgram
-
-local targetActive = false
-local targetPrivilege = false
-local targetSpeed = 0.40
-local slowAmount = 0.0
-
-local startTimer
-local activationTimer
-
-local resolutionLoc
-local realTimeLoc
-local slowAmountLoc
-local privilegeLoc
-local activationAgeLoc
-
-local glUseShader = gl.UseShader
-local glCopyToTexture = gl.CopyToTexture
-local glTexture = gl.Texture
-local glTexRect = gl.TexRect
-local glUniform = gl.Uniform
-
-local function clamp01(value)
-    return math.max(0.0, math.min(1.0, value or 0.0))
+local function clamp01(v) return math.max(0,math.min(1,v)) end
+local function uniform(name,...)
+    if loc[name] and loc[name] >= 0 then gl.Uniform(loc[name],...) end
 end
-
-local function setUniform(location, ...)
-    if location and location >= 0 then
-        glUniform(location, ...)
-    end
+local function deleteTextures()
+    if screencopy then gl.DeleteTexture(screencopy);screencopy=nil end
+    if depthcopy then gl.DeleteTexture(depthcopy);depthcopy=nil end
 end
-
-local function deleteScreenTexture()
-    if screencopy then
-        gl.DeleteTexture(screencopy)
-        screencopy = nil
-    end
-end
-
-local function createScreenTexture()
-    deleteScreenTexture()
-
-    screencopy = gl.CreateTexture(vsx, vsy, {
-        border = false,
-        min_filter = GL.LINEAR,
-        mag_filter = GL.LINEAR,
-        wrap_s = GL.CLAMP_TO_EDGE,
-        wrap_t = GL.CLAMP_TO_EDGE,
+local function ensureTextures()
+    if screencopy then return true end
+    screencopy = gl.CreateTexture(vsx,vsy,{
+        min_filter=GL.LINEAR,mag_filter=GL.LINEAR,
+        wrap_s=GL.CLAMP_TO_EDGE,wrap_t=GL.CLAMP_TO_EDGE,
     })
-
-    return screencopy ~= nil
+    depthcopy = gl.CreateTexture(vsx,vsy,{
+        format=GL.DEPTH_COMPONENT24 or 0x81A6,
+        min_filter=GL.NEAREST,mag_filter=GL.NEAREST,
+        wrap_s=GL.CLAMP_TO_EDGE,wrap_t=GL.CLAMP_TO_EDGE,
+    })
+    if not screencopy or not depthcopy then
+        deleteTextures()
+        Spring.Log("SlowMo Shader",LOG.ERROR,"Unable to allocate temporal color/depth textures")
+        widgetHandler:RemoveWidget(widget)
+        return false
+    end
+    return true
 end
 
-function widget:ViewResize(viewSizeX, viewSizeY)
-    if not viewSizeX or not viewSizeY then
-        viewSizeX, viewSizeY = Spring.GetViewGeometry()
-    end
-
-    vsx = math.max(1, viewSizeX)
-    vsy = math.max(1, viewSizeY)
-    createScreenTexture()
+function widget:ViewResize()
+    vsx,vsy,vpx,vpy = Spring.GetViewGeometry()
+    vsx,vsy,vpx,vpy = math.max(1,vsx),math.max(1,vsy),vpx or 0,vpy or 0
+    deleteTextures() -- Allocate lazily only when the effect next draws.
 end
 
 function widget:Initialize()
-    vsx, vsy = Spring.GetViewGeometry()
-    startTimer = Spring.GetTimer()
-    activationTimer = startTimer
-
-    if not createScreenTexture() then
-        Spring.Log(widget:GetInfo().name, LOG.ERROR, "Unable to create screen texture")
-        widgetHandler:RemoveWidget(self)
-        return
-    end
-
-    local vertexShader = VFS.LoadFile(SHADER_PATH .. "slowmo.vert")
-    local fragmentShader = VFS.LoadFile(SHADER_PATH .. "slowmo.frag")
-
-    if not vertexShader or not fragmentShader then
-        Spring.Log(widget:GetInfo().name, LOG.ERROR, "Unable to load slow-motion shader files")
-        widgetHandler:RemoveWidget(self)
-        return
-    end
-
+    self:ViewResize()
+    cognition = Cognition.New()
     shaderProgram = gl.CreateShader({
-        vertex = vertexShader,
-        fragment = fragmentShader,
-        uniformInt = {
-            screencopy = 0,
-        },
+        vertex = VFS.LoadFile(SHADER_PATH.."slowmo.vert"),
+        fragment = VFS.LoadFile(SHADER_PATH.."slowmo.frag"),
+        uniformInt = {screencopy=0,depthcopy=1,sourceCount=0},
         uniformFloat = {
-            resolution = {vsx, vsy},
-            realTime = 0.0,
-            slowAmount = 0.0,
-            temporalPrivilege = 0.0,
-            activationAge = 10.0,
+            resolution={vsx,vsy},realTime=0,slowAmount=0,temporalPrivilege=0,
+            clipZeroToOne=(Platform and Platform.glSupportClipSpaceControl) and 1 or 0,
         },
     })
-
     if not shaderProgram then
-        Spring.Log(widget:GetInfo().name, LOG.ERROR, gl.GetShaderLog())
+        Spring.Log("SlowMo Shader",LOG.ERROR,gl.GetShaderLog())
         widgetHandler:RemoveWidget(self)
         return
     end
-
-    resolutionLoc = gl.GetUniformLocation(shaderProgram, "resolution")
-    realTimeLoc = gl.GetUniformLocation(shaderProgram, "realTime")
-    slowAmountLoc = gl.GetUniformLocation(shaderProgram, "slowAmount")
-    privilegeLoc = gl.GetUniformLocation(shaderProgram, "temporalPrivilege")
-    activationAgeLoc = gl.GetUniformLocation(shaderProgram, "activationAge")
+    for _,name in ipairs({"resolution","realTime","slowAmount","temporalPrivilege","sourceCount","viewProjectionInv"}) do
+        loc[name] = gl.GetUniformLocation(shaderProgram,name)
+    end
+    for i=1,Cognition.maxSources do
+        sourceLoc[i] = gl.GetUniformLocation(shaderProgram,"rippleSources["..(i-1).."]")
+    end
 end
 
 function widget:Shutdown()
-    deleteScreenTexture()
-
-    if shaderProgram then
-        gl.DeleteShader(shaderProgram)
-        shaderProgram = nil
-    end
+    deleteTextures()
+    if shaderProgram then gl.DeleteShader(shaderProgram);shaderProgram=nil end
 end
 
-local function setTemporalState(active, privileged, newTargetSpeed)
-    local wasActive = targetActive
+function widget:UnitCreated(id,defID) if cognition then cognition:UnitCreated(id,defID) end end
+function widget:UnitEnteredLos(id) if cognition then cognition:UnitCreated(id) end end
+function widget:UnitDestroyed(id) if cognition then cognition:UnitDestroyed(id) end end
 
-    targetActive = active == true
-    targetPrivilege = privileged == true
-    targetSpeed = tonumber(newTargetSpeed) or targetSpeed
-
-    if targetSpeed >= 1.0 then
-        targetSpeed = 0.40
-    end
-
-    if targetActive and not wasActive then
-        activationTimer = Spring.GetTimer()
-    end
-end
-
-function widget:RecvLuaMsg(msg, playerID)
-    if type(msg) ~= "string" then
-        return
-    end
-
-    local active, privileged, newTargetSpeed = string.match(
-        msg,
-        "^SlowMoShader|([01])|([01])|([%d%.%-]+)$"
-    )
-
+function widget:RecvLuaMsg(msg)
+    if type(msg) ~= "string" then return end
+    local active,privileged,speed=msg:match("^SlowMoShader|([01])|([01])|([%d%.%-]+)$")
     if active then
-        setTemporalState(
-            active == "1",
-            privileged == "1",
-            tonumber(newTargetSpeed)
-        )
-        return
+        targetActive,targetPrivilege=active=="1",privileged=="1"
+        targetSpeed=tonumber(speed) or .40
     end
+end
 
-    -- Backwards compatibility while old replays / gadgets still emit the
-    -- pre-2026 binary messages.
-    if msg == "SlowMoShader_Active" then
-        setTemporalState(true, true, 0.40)
-    elseif msg == "SlowMoShader_Deactivated" then
-        setTemporalState(false, false, 0.40)
+function widget:TextCommand(command)
+    if command ~= "hivefx" and not command:match("^hivefx%s") then return false end
+    local arg=command:match("^hivefx%s+(%S+)")
+    if arg=="off" then previewID,previewLeft=nil,nil;return true end
+    for _,id in ipairs(Spring.GetSelectedUnits() or {}) do
+        if cognition and cognition.known[id] then
+            previewID,previewLeft=id,math.max(1,math.min(60,tonumber(arg) or 15))
+            Spring.Echo("Hivemind visual preview: "..previewLeft.."s (local effects only). /hivefx off to stop.")
+            return true
+        end
     end
+    Spring.Echo("Select a Hivemind or AI-Core, then /hivefx [seconds].")
+    return true
 end
 
 function widget:Update(dt)
-    local desiredAmount = 0.0
-
-    if targetActive then
-        local _, actualSpeed = Spring.GetGameSpeed()
-        actualSpeed = tonumber(actualSpeed) or 1.0
-
-        local denominator = math.max(0.001, 1.0 - targetSpeed)
-        desiredAmount = clamp01((1.0 - actualSpeed) / denominator)
-
-        -- Give immediate visual acknowledgement while the engine converges
-        -- toward the requested speed.
-        desiredAmount = math.max(0.12, desiredAmount)
+    if not cognition then return end
+    local _,actualSpeed,paused=Spring.GetGameSpeed()
+    dt=paused and 0 or math.max(0,dt or 0)
+    -- Rules params are the authority and survive a LuaUI reload/missed message.
+    local active=Spring.GetGameRulesParam("slowMoActive")
+    if active ~= nil then
+        targetActive=active==1
+        targetPrivilege=Spring.GetTeamRulesParam(Spring.GetMyTeamID(),"slowMoPrivileged")==1
+        targetSpeed=tonumber(Spring.GetGameRulesParam("slowMoTargetSpeed")) or .40
     end
-
-    local blend = math.min(1.0, math.max(0.0, (dt or 0.0) * 7.0))
-    slowAmount = slowAmount + (desiredAmount - slowAmount) * blend
-
-    if not targetActive and slowAmount < 0.001 then
-        slowAmount = 0.0
+    if previewLeft then
+        previewLeft=previewLeft-dt
+        if previewLeft<=0 then previewID,previewLeft=nil,nil end
     end
+    local desired=0
+    if previewID then desired=1
+    elseif targetActive then
+        desired=math.max(.12,clamp01((1-(tonumber(actualSpeed) or 1))/math.max(.001,1-targetSpeed)))
+    end
+    slowAmount=slowAmount+(desired-slowAmount)*math.min(1,dt*7)
+    if desired==0 and slowAmount<.001 then slowAmount=0 end
+    cognition:Update(dt,targetActive or previewID~=nil,previewID)
+end
+
+function widget:DrawWorld()
+    if cognition and slowAmount>.001 then cognition:Draw(slowAmount) end
 end
 
 function widget:DrawScreenEffects()
-    if not shaderProgram or not screencopy then
-        return
-    end
-
-    if not targetActive and slowAmount <= 0.001 then
-        return
-    end
-
-    glCopyToTexture(screencopy, 0, 0, 0, 0, vsx, vsy)
-    glTexture(0, screencopy)
-    glUseShader(shaderProgram)
-
-    local now = Spring.GetTimer()
-    local realTime = Spring.DiffTimers(now, startTimer)
-    local activationAge = targetActive
-        and Spring.DiffTimers(now, activationTimer)
-        or 10.0
-
-    setUniform(resolutionLoc, vsx, vsy)
-    setUniform(realTimeLoc, realTime)
-    setUniform(slowAmountLoc, slowAmount)
-    setUniform(privilegeLoc, targetPrivilege and 1.0 or 0.0)
-    setUniform(activationAgeLoc, activationAge)
-
-    glTexRect(0, vsy, vsx, 0)
-
-    glUseShader(0)
-    glTexture(0, false)
+    if slowAmount<=.001 or not shaderProgram or not cognition then return end
+    if not ensureTextures() then return end
+    local sources=cognition:Collect()
+    gl.CopyToTexture(screencopy,0,0,vpx,vpy,vsx,vsy)
+    gl.CopyToTexture(depthcopy,0,0,vpx,vpy,vsx,vsy)
+    gl.PushAttrib(GL.ALL_ATTRIB_BITS)
+    gl.Blending(false);gl.DepthTest(false);gl.DepthMask(false)
+    gl.Texture(0,screencopy);gl.Texture(1,depthcopy)
+    gl.UseShader(shaderProgram)
+    uniform("resolution",vsx,vsy)
+    uniform("realTime",cognition.clock)
+    uniform("slowAmount",slowAmount)
+    uniform("temporalPrivilege",(targetPrivilege or previewID) and 1 or 0)
+    gl.UniformInt(loc.sourceCount,#sources)
+    gl.UniformMatrix(loc.viewProjectionInv,"viewprojectioninverse")
+    for i,r in ipairs(sources) do gl.Uniform(sourceLoc[i],r.x,r.y,r.z,r.age) end
+    gl.TexRect(0,0,vsx,vsy,0,0,1,1)
+    gl.UseShader(0)
+    gl.Texture(1,false);gl.Texture(0,false)
+    gl.PopAttrib()
 end
