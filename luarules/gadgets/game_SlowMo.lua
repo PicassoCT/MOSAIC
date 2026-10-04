@@ -22,6 +22,33 @@ if gadgetHandler:IsSyncedCode() then
     local reportedWantedSpeed = 1.0
     local reportedActualSpeed = 1.0
     local savedGameSpeed = 1.0
+    local visualSources, visualTeams = {}, {}
+
+    -- Persistent, visibility-scoped state lets LuaUI reload during dilation.
+    -- Only transitions cross the sync boundary; all animation stays client-side.
+    local function publishVisualState(teams, sources)
+        for id in pairs(visualSources) do
+            if not sources[id] and Spring.ValidUnitID(id) then
+                Spring.SetUnitRulesParam(id, "slowMoSourceActive", 0, {inlos = true})
+            end
+        end
+        for id in pairs(sources) do
+            if not visualSources[id] and Spring.ValidUnitID(id) then
+                Spring.SetUnitRulesParam(id, "slowMoSourceActive", 1, {inlos = true})
+            end
+        end
+        for team in pairs(visualTeams) do
+            if not teams[team] then
+                Spring.SetTeamRulesParam(team, "slowMoPrivileged", 0, {allied = true})
+            end
+        end
+        for team in pairs(teams) do
+            if not visualTeams[team] then
+                Spring.SetTeamRulesParam(team, "slowMoPrivileged", 1, {allied = true})
+            end
+        end
+        visualSources, visualTeams = sources, teams
+    end
 
     local function isTemporalNodeData(data)
         return type(data) == "table"
@@ -88,19 +115,21 @@ if gadgetHandler:IsSyncedCode() then
     local function rebuildActiveTeams()
         local teams = {}
         local keys = {}
+        local sources = {}
 
         if GG.HiveMind then
             for teamID, uTab in pairs(GG.HiveMind) do
-                local _, data = getSelectedNode(uTab, true)
+                local id, data = getSelectedNode(uTab, true)
                 if data then
                     teams[teamID] = true
+                    sources[id] = true
                     keys[#keys + 1] = tostring(teamID)
                 end
             end
         end
 
         table.sort(keys)
-        return teams, table.concat(keys, ",")
+        return teams, table.concat(keys, ","), sources
     end
 
     -- SendToUnsynced only accepts primitive values. Keep the wire format
@@ -139,7 +168,9 @@ if gadgetHandler:IsSyncedCode() then
 
     local function enterSlowMo()
         activateChargedTeams()
-        activeTeams, activeTeamSignature = rebuildActiveTeams()
+        local sources
+        activeTeams, activeTeamSignature, sources = rebuildActiveTeams()
+        publishVisualState(activeTeams, sources)
 
         if next(activeTeams) == nil then
             return
@@ -180,6 +211,7 @@ if gadgetHandler:IsSyncedCode() then
         slowMoActive = false
         activeTeams = {}
         activeTeamSignature = ""
+        publishVisualState({}, {})
 
         stopAllTemporalNodes()
 
@@ -215,6 +247,16 @@ if gadgetHandler:IsSyncedCode() then
             GG.HiveMind = {}
         end
 
+        -- Clear stale visual flags when LuaRules is reloaded on existing nodes.
+        for team, nodes in pairs(GG.HiveMind) do
+            if type(nodes) == "table" then
+                visualTeams[team] = true
+                for id, data in pairs(nodes) do
+                    if isTemporalNodeData(data) then visualSources[id] = true end
+                end
+            end
+        end
+        publishVisualState({}, {})
         GG.GameSpeed = 1.0
         Spring.SetGameRulesParam("slowMoActive", 0)
         Spring.SetGameRulesParam("slowMoTargetSpeed", TARGET_SLOWMO_SPEED)
@@ -233,7 +275,8 @@ if gadgetHandler:IsSyncedCode() then
             drainTemporalCharge()
         end
 
-        local newActiveTeams, newSignature = rebuildActiveTeams()
+        local newActiveTeams, newSignature, sources = rebuildActiveTeams()
+        publishVisualState(newActiveTeams, sources)
         activeTeams = newActiveTeams
 
         if next(activeTeams) == nil then
