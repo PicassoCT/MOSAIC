@@ -204,7 +204,7 @@ end
 local function markerAtCursor(text)
 	if not text or text == "" then return end
 	local mx, my = spGetMouseState()
-	local kind, pos = spTraceScreenRay(mx, my, true)
+	local kind, pos = spTraceScreenRay(mx, my)
 	if kind == "ground" and pos then
 		spMarkerAddPoint(pos[1], pos[2], pos[3], text, true)
 	end
