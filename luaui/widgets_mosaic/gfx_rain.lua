@@ -149,6 +149,7 @@ local rainPercent = 0.0
 local terrainWetness, terrainFlowTime = 0, 0
 local terrainWetnessLoc, terrainFlowTimeLoc
 local terrainRunoffPath = "luaui/images/rain/terrain-runoff.png"
+local function getRainIntensity() return rainPercent end
 local function getHeadlightWetness() return math.max(rainPercent, terrainWetness) end
 -- Exponential response is independent of frame rate. Constants are visual
 -- fill/drain times, not rainfall rates or a simulation of a map's watershed.
@@ -533,6 +534,7 @@ end
 
 function widget:Shutdown()
     rainCapture.shutdown()
+    if WG.GetMosaicRainIntensity == getRainIntensity then WG.GetMosaicRainIntensity = nil end
     if WG.GetVehicleHeadlightWetness == getHeadlightWetness then WG.GetVehicleHeadlightWetness = nil end
     if glDeleteTexture then
         glDeleteTexture(depthtex or "")
@@ -653,6 +655,7 @@ function widget:DrawScreenPost()
 end
 
 function widget:Initialize()
+    WG.GetMosaicRainIntensity = getRainIntensity
     WG.GetVehicleHeadlightWetness = getHeadlightWetness
     if (not gl.RenderToTexture) then --super bad graphic driver
         return
