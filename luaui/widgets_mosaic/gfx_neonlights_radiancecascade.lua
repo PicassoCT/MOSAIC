@@ -846,6 +846,13 @@ local function drawNeonPieces(captureLayer, domain)
             liveHeadlights and liveHeadlights.enabled and 0.08 or 1)
     end
 
+    -- A single unsynced GPU provider, sampled in both coarse and local capture.
+    -- Its own shader clips emission to this height band; no per-wave messages.
+    if propagation and WG.CaptureShoreBioluminescence then
+        local bandHeight=OCCLUSION_WORLD_HEIGHT/OCCLUSION_LAYER_COUNT
+        WG.CaptureShoreBioluminescence((captureLayer-1)*bandHeight,captureLayer*bandHeight,domain)
+    end
+
     gl.PopMatrix()
     gl.MatrixMode(GL.PROJECTION)
     gl.PopMatrix()
