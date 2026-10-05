@@ -56,6 +56,7 @@ local spSetUnitSensorRadius = Spring.SetUnitSensorRadius
 local Satellites = {}
 local SatellitesWaiting = {}
 local orbitalState = {}
+local downlinkSpoofUntil = {}
 
 GG.DiedPeacefully = GG.DiedPeacefully or {}
 GG.NooneParent = GG.NooneParent or {}
@@ -176,6 +177,22 @@ local function publish(unitID, data)
         spSetUnitRulesParam(unitID, "orbital_pending_direction", 0, PUBLIC)
     end
 
+    local cmdDescID = Spring.FindUnitCmdDesc(unitID, CMD_ORBITAL_BAND)
+    if cmdDescID then
+        local current =
+            (data.direction == "horizontal" and "H" or "V") ..
+            tostring(data.band or 1)
+        local pending = data.pendingBand and
+            (" -> " ..
+             (data.pendingDirection == "horizontal" and "H" or "V") ..
+             tostring(data.pendingBand)) or ""
+        Spring.EditUnitCmdDesc(unitID, cmdDescID, {
+            name = "TRACK " .. current .. pending,
+            tooltip = "Orbital ground track " .. current .. pending ..
+                ". Retasking executes only during orbital downtime."
+        })
+    end
+
     local godrod = data.godrod
     spSetUnitRulesParam(unitID, "godrod_positioning", godrod and 1 or 0, PUBLIC)
     spSetUnitRulesParam(unitID, "godrod_target_band", godrod and godrod.band or 0, PUBLIC)
@@ -210,14 +227,13 @@ local function setFlightPresentation(unitID, active)
 end
 
 local function configureSatellite(unitID, data)
-    spMoveCtrlEnable(unitID, true)
-    makeOrbitPublic(unitID)
     spSetUnitBlocking(unitID, false, false, false)
     setGroundVision(unitID, data.utype, false)
     installBandCommand(unitID, data.utype)
 end
 
 local function beginFlight(unitID, data)
+    spMoveCtrlEnable(unitID, true)
     data.state = "flying"
     data.timeoutRemaining = 0
     data.timeoutTotal = 0
@@ -231,6 +247,9 @@ local function beginFlight(unitID, data)
 
     local x, z = entryPosition(data.direction, data.band)
     spMoveCtrlSetPosition(unitID, x, SatelliteAltitude[data.utype], z)
+    data.lastX, data.lastY, data.lastZ =
+        x, SatelliteAltitude[data.utype], z
+    makeOrbitPublic(unitID)
     setGroundVision(unitID, data.utype, true)
     setFlightPresentation(unitID, true)
     publish(unitID, data)
@@ -298,18 +317,22 @@ local function reachedExit(data, x, z)
 end
 
 local function updateTimeout(unitID, data)
-    data.timeoutRemaining = math.max(0, (data.timeoutRemaining or 1) - 1)
-
-    local elapsed = (data.timeoutTotal or 1) - data.timeoutRemaining
-    local t = math.max(0, math.min(1, elapsed / math.max(1, data.timeoutTotal or 1)))
-    local smooth = t * t * (3 - 2 * t)
-
+    local remainingBeforeStep = math.max(1, data.timeoutRemaining or 1)
     local tx, tz = timeoutTarget(data)
     data.shiftTargetX, data.shiftTargetZ = tx, tz
-    local x = data.shiftStartX + (tx - data.shiftStartX) * smooth
-    local z = data.shiftStartZ + (tz - data.shiftStartZ) * smooth
+
+    local x, _, z = spGetUnitPosition(unitID)
+    if not x then return end
+
+    -- Move exactly one remaining-time fraction toward the requested entry.
+    -- Retargeting therefore changes velocity, never position discontinuously.
+    x = x + (tx - x) / remainingBeforeStep
+    z = z + (tz - z) / remainingBeforeStep
+    data.timeoutRemaining = math.max(0, remainingBeforeStep - 1)
 
     spMoveCtrlSetPosition(unitID, x, SatelliteAltitude[data.utype], z)
+    data.lastX, data.lastY, data.lastZ =
+        x, SatelliteAltitude[data.utype], z
 
     if data.timeoutRemaining <= 0 then
         beginFlight(unitID, data)
@@ -330,6 +353,8 @@ local function updateDebris(unitID, data)
     end
 
     spMoveCtrlSetPosition(unitID, x, SatelliteAltitude[data.utype], z)
+    data.lastX, data.lastY, data.lastZ =
+        x, SatelliteAltitude[data.utype], z
 end
 
 local function spawnDebris(x, y, z, sourceData)
@@ -402,6 +427,17 @@ local function requestGodRodStrike(unitID, x, z)
     local needsSerial = (data.timeoutSerial or 0)
     if data.state ~= "timeout" then
         needsSerial = needsSerial + 1
+    else
+        -- The positioning warning must last one complete downtime after the
+        -- strike is committed, even if the order arrives late in an existing
+        -- downtime window.
+        data.timeoutRemaining = math.max(
+            1,
+            SatelliteTimeout[data.utype] or data.timeoutTotal or 1
+        )
+        data.timeoutTotal = data.timeoutRemaining
+        local sx, _, sz = spGetUnitPosition(unitID)
+        data.shiftStartX, data.shiftStartZ = sx or 0, sz or 0
     end
 
     data.godrod = {
@@ -455,7 +491,11 @@ local function spoofDownlink(victimTeamID, ecmID, nimrodID, untilFrame)
     if type(victimTeamID) ~= "number" then return end
     local frame = Spring.GetGameFrame()
     untilFrame = math.max(untilFrame or (frame + 30), frame + 1)
-    local seed = ((ecmID or 0) * 131 + (nimrodID or 0) * 17 + victimTeamID * 7) % 997
+    local seed =
+        ((ecmID or 0) * 131 + (nimrodID or 0) * 17 + victimTeamID * 7) % 997
+
+    downlinkSpoofUntil[victimTeamID] =
+        math.max(downlinkSpoofUntil[victimTeamID] or 0, untilFrame)
 
     spSetTeamRulesParam(victimTeamID, "orbital_spoof_until", untilFrame, PRIVATE)
     spSetTeamRulesParam(victimTeamID, "orbital_spoof_seed", seed, PRIVATE)
@@ -502,11 +542,26 @@ function gadget:UnitCreated(unitID, unitDefID)
         timeoutSerial = 0
     }
 
-    SatellitesWaiting[unitID] = data
     orbitalState[unitID] = data
     configureSatellite(unitID, data)
-    publish(unitID, data)
-    showHideIconEnv(unitID, true)
+
+    if unitDefID == shrapnelDefID then
+        -- Debris is born at the intercept/destruction point and must keep that
+        -- local position. It drifts from there; unlike launched satellites it
+        -- never snaps to an orbital entry edge and never enters downtime.
+        spMoveCtrlEnable(unitID, true)
+        data.state = "flying"
+        Satellites[unitID] = data
+        local dx, dy, dz = spGetUnitPosition(unitID)
+        data.lastX, data.lastY, data.lastZ = dx, dy, dz
+        makeOrbitPublic(unitID)
+        setFlightPresentation(unitID, true)
+        publish(unitID, data)
+    else
+        SatellitesWaiting[unitID] = data
+        publish(unitID, data)
+        showHideIconEnv(unitID, true)
+    end
 end
 
 function gadget:UnitDestroyed(unitID, unitDefID)
@@ -522,7 +577,10 @@ function gadget:UnitDestroyed(unitID, unitDefID)
 
         if not diedPeacefully then
             local x, y, z = spGetUnitPosition(unitID)
-            spawnDebris(x, y, z, data)
+        if not x and data then
+            x, y, z = data.lastX, data.lastY, data.lastZ
+        end
+        spawnDebris(x, y, z, data)
         end
     end
 end
@@ -598,11 +656,24 @@ function gadget:GameFrame(frame)
             if frame % 30 == 0 then makeOrbitPublic(unitID) end
             updateDebris(unitID, data)
         elseif data.state == "flying" then
-            if frame % 30 == 0 then makeOrbitPublic(unitID) end
+            if frame % 30 == 0 then
+                makeOrbitPublic(unitID)
+
+                if data.utype == scanDefID then
+                    local teamID = spGetUnitTeam(unitID)
+                    local spoofed =
+                        (downlinkSpoofUntil[teamID] or 0) >= frame
+                    -- A compromised Nimrod still shows where the hardware is,
+                    -- but the victim cannot use the observation feed.
+                    setGroundVision(unitID, data.utype, not spoofed)
+                end
+            end
             local x, _, z = spGetUnitPosition(unitID)
             if x then
                 x, z = flyingPosition(data, x, z)
                 spMoveCtrlSetPosition(unitID, x, SatelliteAltitude[data.utype], z)
+                data.lastX, data.lastY, data.lastZ =
+                    x, SatelliteAltitude[data.utype], z
                 if reachedExit(data, x, z) then
                     beginTimeout(unitID, data)
                 elseif frame % 30 == 0 then
