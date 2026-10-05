@@ -541,7 +541,18 @@ function gadget:AllowCommand(unitID, unitDefID, unitTeam, cmdID, cmdParams)
 
     -- Direct movement would turn orbital control back into aircraft
     -- micromanagement. The only positional control is choosing a band.
-    if cmdID == CMD.MOVE then
+    if cmdID == CMD.MOVE or cmdID == CMD.PATROL then
+        return false
+    end
+
+    -- Observation and counter-satellites act on their selected band rather
+    -- than on individually clicked targets. Godrod is the deliberate
+    -- exception and keeps ground-target attack commands.
+    if unitDefID ~= godrodDefID and
+        (cmdID == CMD.ATTACK or
+         cmdID == CMD.AREA_ATTACK or
+         cmdID == CMD.FIGHT or
+         cmdID == CMD.GUARD) then
         return false
     end
 
