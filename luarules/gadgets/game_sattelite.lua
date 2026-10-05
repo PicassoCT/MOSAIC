@@ -20,6 +20,7 @@ VFS.Include("scripts/lib_Animation.lua")
 VFS.Include("scripts/lib_mosaic.lua")
 VFS.Include("luarules/configs/commandsIDs.lua")
 
+local GameConfig = getGameConfig()
 local SatelliteTypes = getOrbitalTypes(UnitDefs)
 local SatelliteSpeed = getSatelliteTypesSpeedTable(UnitDefs)
 local SatelliteAltitude = getSatelliteAltitudeTable(UnitDefs)
@@ -122,10 +123,11 @@ local function isOperationalSatellite(defID)
     return defID == scanDefID or defID == antiDefID or defID == godrodDefID
 end
 
-local function setGroundVision(unitID, defID)
+local function setGroundVision(unitID, defID, active)
     if not spSetUnitSensorRadius then return end
-    if defID == scanDefID then
-        local radius = UnitDefs[defID].losRadius or UnitDefs[defID].sightDistance or 500
+    if defID == scanDefID and active then
+        local radius =
+            UnitDefs[defID].losRadius or UnitDefs[defID].sightDistance or 500
         spSetUnitSensorRadius(unitID, "los", radius)
     else
         spSetUnitSensorRadius(unitID, "los", 0)
@@ -197,7 +199,7 @@ local function configureSatellite(unitID, data)
     spMoveCtrlEnable(unitID, true)
     spSetUnitAlwaysVisible(unitID, true)
     spSetUnitBlocking(unitID, false, false, false)
-    setGroundVision(unitID, data.utype)
+    setGroundVision(unitID, data.utype, false)
     installBandCommand(unitID, data.utype)
 end
 
@@ -215,6 +217,7 @@ local function beginFlight(unitID, data)
 
     local x, z = entryPosition(data.direction, data.band)
     spMoveCtrlSetPosition(unitID, x, SatelliteAltitude[data.utype], z)
+    setGroundVision(unitID, data.utype, true)
     setFlightPresentation(unitID, true)
     publish(unitID, data)
 end
@@ -237,6 +240,7 @@ local function beginTimeout(unitID, data)
     data.shiftStartX, data.shiftStartZ = x or 0, z or 0
     data.shiftTargetX, data.shiftTargetZ = timeoutTarget(data)
 
+    setGroundVision(unitID, data.utype, false)
     setFlightPresentation(unitID, false)
     publish(unitID, data)
 end
