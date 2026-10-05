@@ -290,5 +290,11 @@ assert(w.units[debrisID].x ~= dx0 or w.units[debrisID].z ~= dz0,
 GG.Orbital.SpoofDownlink(1, 90, 91, 60)
 assert(w.teamRules[1].orbital_spoof_until == 60)
 assert(type(w.teamRules[1].orbital_spoof_seed) == "number")
+tick(30)
+assert(w.sensors[10].los == 0,
+    "spoofed Nimrod must suppress the victim's true scan feed")
+tick(90)
+assert(w.sensors[10].los == 500,
+    "scan feed must recover after ECM leaves and spoof expires")
 
 print("orbital bands: tasking, downtime, visibility, Godrod, Noone, debris and spoofing PASS")
