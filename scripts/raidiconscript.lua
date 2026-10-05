@@ -116,7 +116,7 @@ function script.Create()
     StartThread(setAffiliatedHouseInvisible)
     StartThread(shoveAllNonCombatantsOut)
     StartThread(ringringUpOffset)
-    updateShownPoints(3, 3)
+    updateShownPoints(GameConfig.espionage.sniping.aggressorStartPoints, GameConfig.espionage.sniping.defenderStartPoints)
     hideT(TablesOfPiecesGroups["Corner"])
     StartThread(watchRaidIconTable)
 end
@@ -131,70 +131,64 @@ function raidConversationLoop()
 end
 
 function watchRaidIconTable()
-    while not GG.raidStatus or GG.raidStatus[unitID] == nil do 
+    while not GG.raidStatus or GG.raidStatus[unitID] == nil do
         Sleep(10)
-    end 
-    
-    while (GG.raidStatus[unitID] and GG.raidStatus[unitID].boolInterogationComplete == false) do
-        Sleep(1)
     end
 
-    Show(raidNoUplink)
-    --wait for Uplink
+    -- The gadget owns the round state. The icon only animates a terminal
+    -- result once the public state leaves OnGoing.
+    while GG.raidStatus[unitID] and
+        GG.raidStatus[unitID].state == raidStates.OnGoing do
+        Sleep(50)
+    end
 
- --[[      if GG.raidStatus[unitID].state == raidStates.WaitingForUplink then
-        local scanSatDefID = UnitDefNames["satellitescan"].id
-        local satelliteAlitudeTable = getSatelliteAltitudeTable(UnitDefs)
-        local raidComRange = GameConfig.espionage.raids.communicationRange +  satelliteAlitudeTable[scanSatDefID]
+    local status = GG.raidStatus[unitID]
+    if not status then
+        showRaidAbortedAnimation()
+        return
+    end
 
-        local raidBonusFactorSatellite=  GameConfig.espionage.raids.satelliteBonusFactor
-        local spGetUnitDefID = Spring.GetUnitDefID
-        boolComSatelliteNearby= false
-     while boolComSatelliteNearby == false do
-            Sleep(100)
-            foreach(getAllNearUnitSpherical(unitID, raidComRange),
-                    function (id)
-                        defID = spGetUnitDefID(id)
-                        if myTeam == Spring.GetUnitTeam(id) and satelliteTypeTable[defID] then
-                            boolComSatelliteNearby = true
-                        end             
-                    end
-                    )
-        end
+    local result = status.result or raidResultStates.Unknown
+    local needsUplink =
+        status.state == raidStates.WaitingForUplink and
+        (result == raidResultStates.AggressorWins or
+         result == raidResultStates.DefenderWins)
 
-        GG.raidStatus[unitID].state = raidStates.UplinkCompleted
-    end--]]
-    Sleep(1000)
-    Hide(raidNoUplink)
+    if needsUplink then
+        Show(raidNoUplink)
+        Sleep(350)
+        Hide(raidNoUplink)
+        StartThread(UplinkAnimation)
+    end
 
+    hideAll(unitID)
+    StartThread(playEndAnimation)
 
-
-    if GG.raidStatus[unitID] and GG.raidStatus[unitID].result  then
-        local result = GG.raidStatus[unitID].result
-        hideAll(unitID)
-        StartThread(playEndAnimation)
-        if result ==  raidResultStates.Unknown then
-             showRaidAbortedAnimation()
-        elseif result == raidResultStates.DefenderWins then
-            StartThread(UplinkAnimation)
-            showDefenderSuccesAnimation()
-        elseif result == raidResultStates.AggressorWins then
-            StartThread(UplinkAnimation)
-            showRaidSuccesAnimation()
-        elseif  result == raidResultStates.HouseEmpty then
-            showHouseEmptyAnimation()
-        else
-            showRaidAbortedAnimation()
-        end
+    if result == raidResultStates.DefenderWins then
+        showDefenderSuccesAnimation()
+    elseif result == raidResultStates.AggressorWins then
+        showRaidSuccesAnimation()
+    elseif result == raidResultStates.HouseEmpty then
+        showHouseEmptyAnimation()
     else
         showRaidAbortedAnimation()
     end
 
-    Sleep(GameConfig.military.satellites.uploadTimeMs)
+    if needsUplink then
+        Sleep(GameConfig.military.satellites.uploadTimeMs)
+        boolRaidUploadInProgress = false
+    else
+        Sleep(1000)
+    end
 
-    boolRaidUploadInProgress = false
-    GG.raidStatus[unitID].state =  raidStates.VictoryStateSet
-    GG.raidStatus[unitID].boolAnimationComplete = true
+    status = GG.raidStatus[unitID]
+    if status then
+        if status.state ~= raidStates.Aborted then
+            status.state = raidStates.VictoryStateSet
+        end
+        status.boolAnimationComplete = true
+    end
+
     while true do
         Sleep(100)
     end
@@ -318,95 +312,81 @@ function showPercent(percent)
     showT(step, 1, percent)
 end
 
-local counter = 1
-function getRoundProgressBar() return counter end
+local counter = 0
+local roundResetSerial = 0
 
-function setRoundProgressBar(value) counter = value end
+function getRoundProgressBar()
+    return counter
+end
 
-upgradeTypeTable = getSafeHouseUpgradeTypeTable(UnitDefs, unitDefID)
-safeHouseTypeTable = getSafeHouseTypeTable(UnitDefs)
-raidIconTypeTable = getRaidIconTypeTable(UnitDefs)
-operativeTypeTable = getOperativeTypeTable(UnitDefs)
-houseTypeTable = getHouseTypeTable(UnitDefs, GameConfig.game.culture)
-function shoveAllNonCombatantsOut()
-    Sleep(1000)
-    radius = 140
-
-    while true do
-        sx, sy, sz = Spring.GetUnitPosition(unitID)
-        foreach(getAllNearUnit(unitID, radius), function(id)
-            defID = Spring.GetUnitDefID(id)
-            if houseTypeTable[defID] or upgradeTypeTable[defID] or
-                safeHouseTypeTable[defID] or 
-                raidIconTypeTable[defID] or
-                ecmIconTypes[defID] or
-                operativeTypeTable[defID] then
-            else
-                return id
-            end
-        end, function(id)
-            tx, ty, tz = Spring.GetUnitPosition(id)
-            factor = distanceUnitToUnit(id, unitID) / radius -- 0
-            factor = math.max(0.1, math.min(2, (factor)))
-
-            px, py, pz = (tx - sx), 0, (tz - sz)
-            norm = math.max(0.1, math.max(math.abs(px), math.abs(pz)))
-
-            px, pz = px / norm, pz / norm
-            px, pz = px * factor, pz * factor
-
-            Spring.AddUnitImpulse(id, px, py, pz, 0.95)
-            Command(id, "go", {
-                x = tx+math.random(50,70)*randSign(), 
-                y = ty, 
-                z = tz +math.random(50,70)*randSign()}, {}
-                )
-        end)
-        Sleep(10)
+function setRoundProgressBar(value)
+    value = tonumber(value) or 0
+    counter = value
+    if value <= 0 then
+        roundResetSerial = roundResetSerial + 1
     end
 end
 
-function waveSpins()
-    index = 0
-    foreach(ring, function(id)
-        index = index + 1
-        Spin(id, y_axis, math.rad(index * 4.2) * randSign(), 2.5)
-        if index > 3 and index < 8 then
-            StartThread(waveSpin, id, math.random(1, 4), math.random(4, 40),
-                        500, false)
-        end
-    end)
-    Spin(Progresscenter, y_axis, math.rad(42), 0.5)
-    Spin(ring[8], y_axis, math.rad(42), 0.5)
-    foreach(whirl, function(id)
-        Spin(id, y_axis, math.rad(42) * randSign(), 2.5)
-        StartThread(waveSpin, id, math.random(1, 6), math.random(4, 800), 100,
-                    true)
-    end)
+-- Fast opening, deliberately slow middle, then a visible sprint through the
+-- final 15 percent. Total round duration remains maxRoundDurationMs.
+local function nonLinearRoundProgress(timeFraction)
+    local t = math.max(0, math.min(1, timeFraction))
 
+    if t <= 0.25 then
+        local u = t / 0.25
+        return 0.35 * (1 - (1 - u) * (1 - u))
+    elseif t <= 0.90 then
+        local u = (t - 0.25) / 0.65
+        local smooth = u * u * (3 - 2 * u)
+        return 0.35 + 0.50 * smooth
+    else
+        local u = (t - 0.90) / 0.10
+        return 0.85 + 0.15 * u * u
+    end
 end
+
 function raidAnimationLoop()
     Sleep(1)
     resetAll(unitID)
     assert(type(ring) == "table", "Not a table")
 
     StartThread(waveSpins)
-
-    roundStep = math.ceil(GameConfig.espionage.raids.maxRoundDurationMs / 100)
     hideT(step)
-    totalTime = 0
+
+    local tickMs = 50
+    local roundDurationMs = math.max(
+        tickMs,
+        GameConfig.espionage.raids.maxRoundDurationMs
+    )
+    local observedReset = -1
 
     while true do
-        if counter == 0 then 
+        if observedReset ~= roundResetSerial then
+            observedReset = roundResetSerial
+            local elapsedMs = 0
+
+            counter = 0
             Hide(EvaluationPhase)
             Show(PlacementPhase)
-            placeWallAndDoors() 
-        end
-        counter = (counter + 1)
-        showPercent(counter)
+            placeWallAndDoors()
+            showPercent(0)
 
-        totalTime = totalTime + roundStep
-        Sleep(roundStep)
+            while observedReset == roundResetSerial and
+                elapsedMs < roundDurationMs do
+                counter = nonLinearRoundProgress(
+                    elapsedMs / roundDurationMs
+                ) * 100
+                showPercent(counter)
+                Sleep(tickMs)
+                elapsedMs = elapsedMs + tickMs
+            end
+
+            if observedReset == roundResetSerial then
+                counter = 100
+                showPercent(100)
+            end
+        end
+        Sleep(25)
     end
 end
 
@@ -415,12 +395,140 @@ nrWalls = 0
 lx_axis = 1
 ly_axis = 2
 lz_axis = 3
-turnAxis = 3
-function plopElementUp(pieceName, height, speed)
-        Move(pieceName, ly_axis, 0, 0) 
-        WMove(pieceName, ly_axis, height + 50, speed) 
-        Sleep(500)
-        WMove(pieceName, ly_axis, height, speed) 
+
+local roomLayouts = {
+    {
+        -- Offset L-room plus a side chamber.
+        walls = {
+            {-0.38, -0.02, 90},
+            {-0.10, -0.34, 0},
+            { 0.34,  0.18, 90},
+            { 0.10,  0.38, 0}
+        },
+        doors = {
+            {-0.08, 0.02, 90},
+            { 0.26, 0.02, 0}
+        }
+    },
+    {
+        -- Two staggered rooms connected by a bent corridor.
+        walls = {
+            {-0.34, -0.24, 90},
+            {-0.10,  0.02, 0},
+            { 0.34,  0.24, 90},
+            { 0.08, -0.38, 0},
+            { 0.12,  0.40, 0}
+        },
+        doors = {
+            {-0.08, -0.18, 0},
+            { 0.18,  0.18, 90}
+        }
+    },
+    {
+        -- T-junction: three distinct sight lines, no single safe corner.
+        walls = {
+            { 0.00, -0.30, 0},
+            { 0.00,  0.28, 0},
+            {-0.34,  0.04, 90},
+            { 0.34, -0.06, 90}
+        },
+        doors = {
+            { 0.00, 0.00, 90},
+            { 0.22, 0.30, 0}
+        }
+    },
+    {
+        -- Apartment-like central partition with two flanking rooms.
+        walls = {
+            {-0.42,  0.02, 90},
+            { 0.42, -0.02, 90},
+            {-0.10, -0.34, 0},
+            { 0.12,  0.34, 0},
+            { 0.00,  0.00, 90}
+        },
+        doors = {
+            {-0.02, -0.10, 90},
+            { 0.02,  0.18, 0}
+        }
+    }
+}
+
+function plopElementUp(pieceID, height, speed)
+    Move(pieceID, ly_axis, 0, 0)
+    WMove(pieceID, ly_axis, height + 50, speed)
+    Sleep(250)
+    WMove(pieceID, ly_axis, height, speed)
+end
+
+local function normalizedArenaPosition(
+    normalizedX,
+    normalizedZ,
+    xMin,
+    xMax,
+    zMin,
+    zMax,
+    pieceScale
+)
+    local centerX = (xMin + xMax) * 0.5
+    local centerZ = (zMin + zMax) * 0.5
+    local halfX = (xMax - xMin) * 0.5
+    local halfZ = (zMax - zMin) * 0.5
+
+    return
+        (centerX + normalizedX * halfX) * pieceScale,
+        (centerZ + normalizedZ * halfZ) * pieceScale
+end
+
+local function placeArenaPiece(
+    pieceID,
+    layoutEntry,
+    xMin,
+    xMax,
+    zMin,
+    zMax,
+    pieceScale
+)
+    if not pieceID or not layoutEntry then return end
+
+    local px, pz = normalizedArenaPosition(
+        layoutEntry[1],
+        layoutEntry[2],
+        xMin, xMax, zMin, zMax,
+        pieceScale
+    )
+
+    Move(pieceID, lx_axis, px, 0)
+    Move(pieceID, lz_axis, pz, 0)
+    Turn(pieceID, y_axis, math.rad(layoutEntry[3] or 0), 0)
+    Show(pieceID)
+    StartThread(plopElementUp, pieceID, 50, 250)
+
+    return px, pz
+end
+
+local function placeDoorPosts(
+    doorIndex,
+    px,
+    pz,
+    rotationDegrees,
+    postOffset
+)
+    local postA = DoorPost[(doorIndex - 1) * 2 + 1]
+    local postB = DoorPost[(doorIndex - 1) * 2 + 2]
+    if not postA or not postB then return end
+
+    local rotation = math.rad(rotationDegrees or 0)
+    local dx = math.cos(rotation) * postOffset
+    local dz = math.sin(rotation) * postOffset
+
+    Move(postA, lx_axis, px - dx, 0)
+    Move(postA, lz_axis, pz - dz, 0)
+    Move(postB, lx_axis, px + dx, 0)
+    Move(postB, lz_axis, pz + dz, 0)
+    Turn(postA, y_axis, rotation, 0)
+    Turn(postB, y_axis, rotation, 0)
+    Show(postA)
+    Show(postB)
 end
 
 function placeWallAndDoors()
@@ -433,86 +541,79 @@ function placeWallAndDoors()
     hideT(OutPost)
     resetT(OutPost)
 
-    xMax, xMin, zMax, zMin, height = getPlayingFieldMaxMinUnit()
-    scaleFactor = 0.85*12
-    moveScale = 2
+    local xMax, xMin, zMax, zMin = getPlayingFieldMaxMinUnit()
+    local pieceScale = 0.85 * 12 * 2
+    local layout = roomLayouts[math.random(1, #roomLayouts)]
 
-    nrDoors = math.random(0, #Door)
-    nrWalls = math.random(2, 5)
-    if nrWalls > 0 then
-        for i = 1, nrWalls do
-            if Wall[i] then
-                rx, rz = math.random(xMin * scaleFactor , xMax * scaleFactor ),
-                         math.random(zMin * scaleFactor, zMax * scaleFactor)
+    nrWalls = math.min(#Wall, #layout.walls)
+    nrDoors = math.min(#Door, #layout.doors)
 
-                Move(Wall[i], lx_axis, rx * moveScale, 0)
-                Move(Wall[i], lz_axis, rz * moveScale, 0)
-                StartThread(plopElementUp,Wall[i], 50, 250)
-                rot = math.random(0, 8) * 90
-                Turn(Wall[i], turnAxis, math.rad(rot), 0)
-                Show(Wall[i])
-                if OutPost[(i - 1) * 2 + 1] then
-                    Show(OutPost[(i - 1) * 2 + 1])
-                end
-                if OutPost[(i - 1) * 2 + 2] then
-                    Show(OutPost[(i - 1) * 2 + 2])
-                end
-            end
-        end
+    for i = 1, nrWalls do
+        local wallEntry = layout.walls[i]
+        placeArenaPiece(
+            Wall[i],
+            wallEntry,
+            xMin, xMax, zMin, zMax,
+            pieceScale
+        )
+
+        -- OutPost pairs are the model's wall endpoints used for line-of-fire.
+        -- If they are children of Wall they follow the transform; showing them
+        -- keeps the visible posts consistent with the blocking segment.
+        local postA = OutPost[(i - 1) * 2 + 1]
+        local postB = OutPost[(i - 1) * 2 + 2]
+        if postA then Show(postA) end
+        if postB then Show(postB) end
     end
 
-    if nrDoors > 0 then
-        for i = 1, nrDoors do
-            if Door[i] then
-                Show(Door[i])
+    local arenaSpan = math.min(
+        math.abs(xMax - xMin),
+        math.abs(zMax - zMin)
+    ) * pieceScale
+    local postOffset = math.max(8, arenaSpan * 0.035)
 
-                index = (i - 1) * 2 + 1
-                if DoorPost[index] then
-                    Show(DoorPost[index])
-                    StartThread(plopElementUp,DoorPost[index], 50, 250)
-                end
-                post = DoorPost[index]
-                
-                index = (i - 1) * 2 + 2
-                if DoorPost[index] then
-                    Show(DoorPost[index])                   
-                end       
+    for i = 1, nrDoors do
+        local doorEntry = layout.doors[i]
+        local px, pz = placeArenaPiece(
+            Door[i],
+            doorEntry,
+            xMin, xMax, zMin, zMax,
+            pieceScale
+        )
 
-                rx, rz = math.random(xMin * scaleFactor , xMax * scaleFactor ),math.random(zMin * scaleFactor, zMax * scaleFactor)
-
-                Move(post, lx_axis, rx * moveScale, 0)
-                Move(post, lz_axis, rz * moveScale, 0)                
-                rot = math.random(0, 4) * 90
-                Turn(Door[i], turnAxis, math.rad(rot), 0)
-            end
+        if px and pz then
+            placeDoorPosts(
+                i,
+                px,
+                pz,
+                doorEntry[3],
+                postOffset
+            )
         end
     end
 end
 
 function testTwoUnits(id, ad)
-    ix, iy, iz = Spring.GetUnitPosition(id)
-    ax, ay, az = Spring.GetUnitPosition(ad)
+    local ix, _, iz = Spring.GetUnitPosition(id)
+    local ax, _, az = Spring.GetUnitPosition(ad)
+    if not ix or not ax then return false end
     return isLineOfFireFree(ix, iz, ax, az)
 end
--- compares too world coords
+
 function isLineOfFireFree(x, z, tx, tz)
     for i = 1, nrWalls do
-        wall1, wall2 = OutPost[(i - 1) * 2 + 1], OutPost[(i - 1) * 2 + 2]
+        local wall1 = OutPost[(i - 1) * 2 + 1]
+        local wall2 = OutPost[(i - 1) * 2 + 2]
         if wall1 and wall2 then
-            w1x, _, w1z = Spring.GetUnitPiecePosDir(unitID, wall1)
-            w2x, _, w2z = Spring.GetUnitPiecePosDir(unitID, wall2)
-            ix, iz = get_line_intersection(x, z, tx, tz, w1x, w1z, w2x, w2z)
-            if ix then return false end
-        end
-    end
-
-    for i = 1, nrDoors do
-        door1, door2 = DoorPost[(i - 1) * 2 + 1], DoorPost[(i - 1) * 2 + 2]
-        if door1 and door2 then
-            w1x, _, w1z = Spring.GetUnitPiecePosDir(unitID, door1)
-            w2x, _, w2z = Spring.GetUnitPiecePosDir(unitID, door2)
-            ix, iz = get_line_intersection(x, z, tx, tz, w1x, w1z, w2x, w2z)
-            if ix then return false end
+            local w1x, _, w1z = Spring.GetUnitPiecePosDir(unitID, wall1)
+            local w2x, _, w2z = Spring.GetUnitPiecePosDir(unitID, wall2)
+            if w1x and w2x then
+                local intersectionX = get_line_intersection(
+                    x, z, tx, tz,
+                    w1x, w1z, w2x, w2z
+                )
+                if intersectionX then return false end
+            end
         end
     end
 
