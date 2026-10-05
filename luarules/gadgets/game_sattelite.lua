@@ -502,11 +502,22 @@ function gadget:UnitCreated(unitID, unitDefID)
         timeoutSerial = 0
     }
 
-    SatellitesWaiting[unitID] = data
     orbitalState[unitID] = data
     configureSatellite(unitID, data)
-    publish(unitID, data)
-    showHideIconEnv(unitID, true)
+
+    if unitDefID == shrapnelDefID then
+        -- Debris is born at the intercept/destruction point and must keep that
+        -- local position. It drifts from there; unlike launched satellites it
+        -- never snaps to an orbital entry edge and never enters downtime.
+        data.state = "flying"
+        Satellites[unitID] = data
+        setFlightPresentation(unitID, true)
+        publish(unitID, data)
+    else
+        SatellitesWaiting[unitID] = data
+        publish(unitID, data)
+        showHideIconEnv(unitID, true)
+    end
 end
 
 function gadget:UnitDestroyed(unitID, unitDefID)
