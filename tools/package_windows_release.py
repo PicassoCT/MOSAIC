@@ -93,7 +93,7 @@ def safe_name(name):
     # Reject Windows aliases as well as traversal, absolute paths and ADS names.
     p = PurePosixPath(name)
     if not name or '\\' in name or p.is_absolute() or any(
-        part in ('.', '..') or ':' in part or part.endswith((' ', '.')) or
+        part in ('', '.', '..') or re.search(r'[\x00-\x1f<>:"|?*]', part) or part.endswith((' ', '.')) or
         re.match(r'(?i)^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(?:\.|$)', part)
         for part in name.rstrip('/').split('/')
     ):

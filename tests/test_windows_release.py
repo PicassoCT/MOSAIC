@@ -180,7 +180,7 @@ class ReleaseTests(unittest.TestCase):
         self.assertFalse(self.out.exists())
 
     def test_unsafe_and_duplicate_archives(self):
-        for i, files in enumerate([{'../escaped': 'bad'}, {'A.txt': 'a', 'a.txt': 'b'}, {'C:/evil': 'bad'}, {'CON.txt': 'bad'}]):
+        for i, files in enumerate([{'../escaped': 'bad'}, {'A.txt': 'a', 'a.txt': 'b'}, {'C:/evil': 'bad'}, {'CON.txt': 'bad'}, {'a//b': 'bad'}, {'invalid?.exe': 'bad'}]):
             archive = self.archive(f'bad{i}.zip', files)
             with self.subTest(files=files), self.assertRaises(ValueError):
                 p.extract(archive, self.base / f'unpack{i}', 'zip')
