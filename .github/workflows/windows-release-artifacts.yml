@@ -1,0 +1,85 @@
+name: Windows release artifacts
+
+on:
+  pull_request:
+    paths:
+      - 'tools/package_windows_release.py'
+      - 'tests/test_windows_release.py'
+      - 'packaging/**'
+      - 'pack_mosaic*.sh'
+      - '.github/workflows/windows-release-artifacts.yml'
+      - 'scripts/lib_mosaic.lua'
+      - 'modinfo.lua'
+  push:
+    branches: [master]
+    paths:
+      - 'tools/package_windows_release.py'
+      - 'tests/test_windows_release.py'
+      - 'packaging/**'
+      - 'pack_mosaic*.sh'
+      - '.github/workflows/windows-release-artifacts.yml'
+      - 'scripts/lib_mosaic.lua'
+      - 'modinfo.lua'
+  workflow_dispatch:
+    inputs:
+      expected_version:
+        description: 'Required game version (e.g. 1.033); must match the selected ref'
+        required: true
+        type: string
+      portable:
+        description: 'Build full portable bundle using committed packaging/windows-inputs.json'
+        type: boolean
+        default: true
+
+# This workflow cannot create tags or GitHub Releases.
+permissions:
+  contents: read
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: '3.12'
+      - name: Install 7-Zip for archive regression tests
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y p7zip-full
+      - name: Packaging regression tests
+        run: python -m unittest discover -s tests -p test_windows_release.py -v
+
+  artifacts:
+    if: github.event_name == 'workflow_dispatch'
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: '3.12'
+      - name: Install archive reader
+        run: sudo apt-get update && sudo apt-get install -y p7zip-full
+      - name: Build and validate artifacts
+        env:
+          EXPECTED_VERSION: ${{ inputs.expected_version }}
+          PORTABLE: ${{ inputs.portable }}
+        shell: bash
+        run: |
+          args=(--output "$RUNNER_TEMP/mosaic-release" --expected-version "$EXPECTED_VERSION")
+          if [[ "$PORTABLE" == true ]]; then
+            args+=(--inputs packaging/windows-inputs.json)
+          fi
+          python tools/package_windows_release.py "${args[@]}"
+      - name: Upload only successful build outputs
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: mosaic-windows-release-${{ github.sha }}
+          path: ${{ runner.temp }}/mosaic-release/
+          if-no-files-found: error
+          retention-days: 14

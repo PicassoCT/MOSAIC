@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "engine": {
+    "version": "BAR105-105.1.1-1544-g058c8ea",
+    "url": null,
+    "sha256": null,
+    "format": "7z",
+    "root": ".",
+    "required_files": ["spring.exe", "unitsync.dll"]
+  },
+  "lobby": {
+    "version": null,
+    "url": null,
+    "sha256": null,
+    "format": "zip",
+    "root": ".",
+    "required_files": ["skylobby.exe"]
+  },
+  "map": {
+    "version": "LastDayOfDhubai",
+    "filename": "LastDayOfDhubai.sdz",
+    "url": null,
+    "sha256": null,
+    "format": "zip"
+  }
+}
