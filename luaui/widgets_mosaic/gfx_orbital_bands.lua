@@ -20,6 +20,7 @@ local spGetTeamColor = Spring.GetTeamColor
 local spGetGroundHeight = Spring.GetGroundHeight
 local spGetGameFrame = Spring.GetGameFrame
 local spGetGameSeconds = Spring.GetGameSeconds
+local spGetSelectedUnits = Spring.GetSelectedUnits
 
 local glBeginEnd = gl.BeginEnd
 local glVertex = gl.Vertex
@@ -131,6 +132,25 @@ local function drawTrack(direction, band, count, r, g, b, alpha, dashed)
                 end
             end
         end)
+    end
+end
+
+local function selectedOrbitalBandCount()
+    local selected = spGetSelectedUnits()
+    for i = 1, #selected do
+        local unitID = selected[i]
+        if satellites[unitID] and satellites[unitID] ~= debrisDefID then
+            return spGetUnitRulesParam(unitID, "orbital_band_count") or 5
+        end
+    end
+    return nil
+end
+
+local function drawBandLattice(count)
+    if not count then return end
+    for band = 1, count do
+        drawTrack(1, band, count, 0.46, 0.62, 0.72, 0.055, true)
+        drawTrack(2, band, count, 0.46, 0.62, 0.72, 0.055, true)
     end
 end
 
@@ -409,6 +429,8 @@ function widget:DrawWorldPreUnit()
         if timeLoc then glUniform(timeLoc, spGetGameSeconds()) end
         if pulseLoc then glUniform(pulseLoc, 0.0) end
     end
+
+    drawBandLattice(selectedOrbitalBandCount())
 
     for unitID, defID in pairs(satellites) do
         local x, _, z = spGetUnitPosition(unitID)
