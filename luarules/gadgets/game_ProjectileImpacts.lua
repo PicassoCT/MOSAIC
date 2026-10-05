@@ -484,7 +484,7 @@ if (gadgetHandler:IsSyncedCode()) then
                     local raidStateLocal = GG.raidStatus[persPack.IconID]
                     --echo("Animation completed")
                     --Aborted or EmptyHouse
-                    if raidStateLocal.result == raidResultStates.HouseEmpty or persPack.boolRaidedEmptyHouse then
+                    if raidStateLocal.result == raidResultStates.HouseEmpty then
                         if  persPack.houseTypeTable[persPack.suspectDefID] then
                             conditionalEcho(boolDebugProjectile,"Raided empty house")
                             -- Propandapunishment for Unjust Raids & Interrogations: Remember Guantanamo
