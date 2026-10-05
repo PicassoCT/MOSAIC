@@ -227,13 +227,13 @@ local function setFlightPresentation(unitID, active)
 end
 
 local function configureSatellite(unitID, data)
-    spMoveCtrlEnable(unitID, true)
     spSetUnitBlocking(unitID, false, false, false)
     setGroundVision(unitID, data.utype, false)
     installBandCommand(unitID, data.utype)
 end
 
 local function beginFlight(unitID, data)
+    spMoveCtrlEnable(unitID, true)
     data.state = "flying"
     data.timeoutRemaining = 0
     data.timeoutTotal = 0
@@ -247,6 +247,8 @@ local function beginFlight(unitID, data)
 
     local x, z = entryPosition(data.direction, data.band)
     spMoveCtrlSetPosition(unitID, x, SatelliteAltitude[data.utype], z)
+    data.lastX, data.lastY, data.lastZ =
+        x, SatelliteAltitude[data.utype], z
     makeOrbitPublic(unitID)
     setGroundVision(unitID, data.utype, true)
     setFlightPresentation(unitID, true)
@@ -329,6 +331,8 @@ local function updateTimeout(unitID, data)
     data.timeoutRemaining = math.max(0, remainingBeforeStep - 1)
 
     spMoveCtrlSetPosition(unitID, x, SatelliteAltitude[data.utype], z)
+    data.lastX, data.lastY, data.lastZ =
+        x, SatelliteAltitude[data.utype], z
 
     if data.timeoutRemaining <= 0 then
         beginFlight(unitID, data)
@@ -349,6 +353,8 @@ local function updateDebris(unitID, data)
     end
 
     spMoveCtrlSetPosition(unitID, x, SatelliteAltitude[data.utype], z)
+    data.lastX, data.lastY, data.lastZ =
+        x, SatelliteAltitude[data.utype], z
 end
 
 local function spawnDebris(x, y, z, sourceData)
@@ -543,8 +549,11 @@ function gadget:UnitCreated(unitID, unitDefID)
         -- Debris is born at the intercept/destruction point and must keep that
         -- local position. It drifts from there; unlike launched satellites it
         -- never snaps to an orbital entry edge and never enters downtime.
+        spMoveCtrlEnable(unitID, true)
         data.state = "flying"
         Satellites[unitID] = data
+        local dx, dy, dz = spGetUnitPosition(unitID)
+        data.lastX, data.lastY, data.lastZ = dx, dy, dz
         makeOrbitPublic(unitID)
         setFlightPresentation(unitID, true)
         publish(unitID, data)
@@ -568,7 +577,10 @@ function gadget:UnitDestroyed(unitID, unitDefID)
 
         if not diedPeacefully then
             local x, y, z = spGetUnitPosition(unitID)
-            spawnDebris(x, y, z, data)
+        if not x and data then
+            x, y, z = data.lastX, data.lastY, data.lastZ
+        end
+        spawnDebris(x, y, z, data)
         end
     end
 end
@@ -660,6 +672,8 @@ function gadget:GameFrame(frame)
             if x then
                 x, z = flyingPosition(data, x, z)
                 spMoveCtrlSetPosition(unitID, x, SatelliteAltitude[data.utype], z)
+                data.lastX, data.lastY, data.lastZ =
+                    x, SatelliteAltitude[data.utype], z
                 if reachedExit(data, x, z) then
                     beginTimeout(unitID, data)
                 elseif frame % 30 == 0 then
