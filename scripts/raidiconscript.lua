@@ -395,6 +395,9 @@ nrWalls = 0
 lx_axis = 1
 ly_axis = 2
 lz_axis = 3
+-- This model's exported local axes are non-standard; walls and doors rotate
+-- correctly around local Z, not world-up Y.
+turnAxis = z_axis
 
 local roomLayouts = {
     {
@@ -499,7 +502,7 @@ local function placeArenaPiece(
 
     Move(pieceID, lx_axis, px, 0)
     Move(pieceID, lz_axis, pz, 0)
-    Turn(pieceID, y_axis, math.rad(layoutEntry[3] or 0), 0)
+    Turn(pieceID, turnAxis, math.rad(layoutEntry[3] or 0), 0)
     Show(pieceID)
     StartThread(plopElementUp, pieceID, 50, 250)
 
@@ -525,8 +528,8 @@ local function placeDoorPosts(
     Move(postA, lz_axis, pz - dz, 0)
     Move(postB, lx_axis, px + dx, 0)
     Move(postB, lz_axis, pz + dz, 0)
-    Turn(postA, y_axis, rotation, 0)
-    Turn(postB, y_axis, rotation, 0)
+    Turn(postA, turnAxis, rotation, 0)
+    Turn(postB, turnAxis, rotation, 0)
     Show(postA)
     Show(postB)
 end
