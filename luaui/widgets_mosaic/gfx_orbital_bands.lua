@@ -446,10 +446,13 @@ function widget:DrawWorldPreUnit()
             local speed = spGetUnitRulesParam(unitID, "orbital_speed") or 0
 
             if defID == debrisDefID then
-                local life = spGetUnitRulesParam(unitID, "orbital_debris_life") or 1
+                local life =
+                    spGetUnitRulesParam(unitID, "orbital_debris_life") or 1
                 drawDebrisHazard(x, z, life)
-            else
-                -- Current hardware position is always truthful and visible.
+            elseif state == 1 or state == 2 then
+                -- Current in-orbit hardware position is always truthful and
+                -- visible. State 0 is pre-launch construction and is not
+                -- leaked through the orbital plotter.
                 drawGlyph(unitID, defID, x, z, r, g, b)
 
                 if state == 1 then
