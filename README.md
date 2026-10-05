@@ -76,6 +76,12 @@ Let there be light.
 
 How to play:
 
+Repository-owned Windows packaging and artifact validation are documented in
+[Windows release artifacts](docs/windows-release.md). The manual workflow builds
+an SDZ or a portable ZIP plus a manifest and checksums; publishing is separate.
+Full portable builds require verified engine, lobby and map pins in
+`packaging/windows-inputs.json` before they can succeed.
+
 1) Download and install (https://github.com/skynet-gh/skylobby/releases)
 2) In the lobby donwload the game:mosaic:stable archive
 3) Join a server, select a map
