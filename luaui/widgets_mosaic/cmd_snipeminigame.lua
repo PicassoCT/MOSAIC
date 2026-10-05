@@ -16,6 +16,7 @@ end
 
 
 local raidIconDefID = nil
+local snipeIconDefID = nil
 local houseRaidIconMap = {}
 local houseTypeTable = {}
 local spTraceScreenRay = Spring.TraceScreenRay
@@ -29,6 +30,8 @@ function widget:Initialize()
     for k, v in pairs(UnitDefs) do
         if v.name == "icon_raid" then
             raidIconDefID = k
+        elseif v.name == "snipeicon" then
+            snipeIconDefID = k
         end
 
         if (v.customParams or {}).house_asian_base or string.find(v.name,"house_arab0") or string.find(v.name,"house_western0") or string.find(v.name,"house_asian0") then
@@ -84,9 +87,15 @@ function widget:MousePress(x, y, button)
      --Spring.Echo("cmd_snipeminigame:", targType, unitID)
 
     if targType == "unit" then
-        --does not trace down to icon_raid - selects house instead.. even with house set to unselect
-        local defID = Spring.GetUnitDefID(unitID) 
+        local defID = Spring.GetUnitDefID(unitID)
 
+        if defID == snipeIconDefID then
+            boolPlacementActive = false
+            Spring.SendLuaRulesMsg("UNDO|" .. unitID)
+            return true
+        end
+
+        --does not trace down to icon_raid - selects house instead.. even with house set to unselect
 		if houseTypeTable[defID] or  defID == raidIconDefID then
 		--make houses transparent
 		if houseTypeTable[defID]  then
