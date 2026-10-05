@@ -168,6 +168,13 @@ Spring = {
         w.cmdDescs[id] = w.cmdDescs[id] or {}
         w.cmdDescs[id][desc.id] = desc
     end,
+    EditUnitCmdDesc = function(id, index, patch)
+        local descs = w.cmdDescs[id] or {}
+        for _, desc in pairs(descs) do
+            for key, value in pairs(patch) do desc[key] = value end
+            break
+        end
+    end,
     MoveCtrl = {
         Enable = function() end,
         SetPosition = function(id, x, y, z)
