@@ -370,6 +370,7 @@ local function resolveAntiSatelliteStrike(parentID, childID, targetID)
     local targetData = Satellites[targetID]
     if not parentData or parentData.utype ~= antiDefID or
         not targetData or targetData.utype == shrapnelDefID or
+        spGetUnitTeam(parentID) == spGetUnitTeam(targetID) or
         not sameActiveBand(parentData, targetData) then
         return false
     end
