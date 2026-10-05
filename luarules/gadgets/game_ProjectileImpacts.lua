@@ -402,8 +402,10 @@ if (gadgetHandler:IsSyncedCode()) then
                 -- check Target is still existing
                 if false == doesUnitExistAlive(persPack.raidedSafeHouseOrHouse_ID) then
                     conditionalEcho(boolDebugProjectile,"Raid: failed check Target is still existing ")
-                    GG.raidStatus[persPack.IconID].state = raidStates.Aborted
-                    GG.raidStatus[persPack.IconID].boolInterogationComplete = true
+                    if persPack.IconID and GG.raidStatus[persPack.IconID] then
+                        GG.raidStatus[persPack.IconID].state = raidStates.Aborted
+                        GG.raidStatus[persPack.IconID].boolInterogationComplete = true
+                    end
                     postRaidCleanup(persPack)
                     return true, persPack
                 end
@@ -411,8 +413,10 @@ if (gadgetHandler:IsSyncedCode()) then
                 -- check wether the interrogator is still alive
                 if false == doesUnitExistAlive(persPack.interrogatorID) then
                     conditionalEcho(boolDebugProjectile,"Raid: failed   check wether the interrogator is still alive")
-                    GG.raidStatus[persPack.IconID].state = raidStates.Aborted
-                    GG.raidStatus[persPack.IconID].boolInterogationComplete = true
+                    if persPack.IconID and GG.raidStatus[persPack.IconID] then
+                        GG.raidStatus[persPack.IconID].state = raidStates.Aborted
+                        GG.raidStatus[persPack.IconID].boolInterogationComplete = true
+                    end
                     postRaidCleanup(persPack)
                     return true, persPack
                 end
@@ -420,11 +424,11 @@ if (gadgetHandler:IsSyncedCode()) then
                 -- check distance is still okay
                 if distanceUnitToUnit(persPack.interrogatorID, persPack.raidedSafeHouseOrHouse_ID) > GameConfig.espionage.raids.range then
                     conditionalEcho(boolDebugProjectile,"Raid: failed check distance is still okay5 ")
-                    if doesUnitExistAlive(persPack.IconID) == true then
-                    GG.raidStatus[persPack.IconID].state = raidStates.Aborted
-                    GG.raidStatus[persPack.IconID].boolInterogationComplete = true
-                    persPack.boolRaidHasEnded = true 
-                end
+                    if persPack.IconID and GG.raidStatus[persPack.IconID] then
+                        GG.raidStatus[persPack.IconID].state = raidStates.Aborted
+                        GG.raidStatus[persPack.IconID].boolInterogationComplete = true
+                    end
+                    persPack.boolRaidHasEnded = true
                     postRaidCleanup(persPack)
                     return true, persPack
                 end
@@ -464,7 +468,7 @@ if (gadgetHandler:IsSyncedCode()) then
 
                         assert(GG.HouseRaidIconMap[persPack.civilianHouseID])
 
-                        if GG.raidStatus[persPack.IconID] then  GG.raidStatus[persPack.IconID] = {} end
+                        GG.raidStatus[persPack.IconID] = GG.raidStatus[persPack.IconID] or {}
                         GG.raidStatus[persPack.IconID].boolInterogationComplete = false
                     else
                         conditionalEcho(boolDebugProjectile,"Raid: No IconID")
@@ -474,13 +478,13 @@ if (gadgetHandler:IsSyncedCode()) then
                 end
   
                 --check 
-                if GG.raidStatus[persPack.IconID].boolAnimationComplete  then
+                if GG.raidStatus[persPack.IconID] and GG.raidStatus[persPack.IconID].boolAnimationComplete then
 
                     local allTeams = spGetTeamList()
                     local raidStateLocal = GG.raidStatus[persPack.IconID]
                     --echo("Animation completed")
                     --Aborted or EmptyHouse
-                    if raidStateLocal.result == raidResultStates.HouseEmpty or persPack.boolRaidedEmptyHouse then
+                    if raidStateLocal.result == raidResultStates.HouseEmpty then
                         if  persPack.houseTypeTable[persPack.suspectDefID] then
                             conditionalEcho(boolDebugProjectile,"Raided empty house")
                             -- Propandapunishment for Unjust Raids & Interrogations: Remember Guantanamo
@@ -510,6 +514,16 @@ if (gadgetHandler:IsSyncedCode()) then
                         persPack.boolRaidHasEnded = true
                         return true, persPack
                     end 
+
+                    -- Defender victories (including the hidden armed citizen)
+                    -- are terminal and require no target reveal/destruction.
+                    if raidStateLocal.state == raidStates.VictoryStateSet and
+                        raidStateLocal.result == raidResultStates.DefenderWins then
+                        conditionalEcho(boolDebugProjectile, "Raid: defender held the location")
+                        postRaidCleanup(persPack)
+                        persPack.boolRaidHasEnded = true
+                        return true, persPack
+                    end
 
                     --wait for uplink completed (set by the icon)
                     if raidStateLocal.state == raidStates.VictoryStateSet and
