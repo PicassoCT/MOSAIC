@@ -479,44 +479,12 @@ if gadgetHandler:IsSyncedCode() then
         local defenderPlaced = tableCount(roundRunning.Defender.PlacedFigures)
         local neutralPlaced = tableCount(roundRunning.NeutralFigures)
 
+        -- Placing nothing is a legal pass. This intentionally lets a player
+        -- burn raid time while the real-world operator remains vulnerable to
+        -- rescue/assassination outside the minigame. A pass is neither an
+        -- automatic loss nor a reason to inject a human fallback piece.
         if aggressorPlaced == 0 and defenderPlaced == 0 and neutralPlaced == 0 then
-            return finishRound(
-                raidIconID,
-                nil,
-                roundRunning,
-                raidStates.Aborted,
-                raidResultStates.Unknown
-            )
-        end
-
-        -- An empty house with the hidden citizen must resolve its volley before
-        -- any "one side did not play" shortcut is applied.
-        if not roundRunning.emptyHouseFirstRound then
-            if defenderPlaced == 0 and aggressorPlaced > 0 then
-                return finishRound(
-                    raidIconID,
-                    roundRunning.Aggressor.team,
-                    roundRunning,
-                    raidStates.WaitingForUplink,
-                    raidResultStates.AggressorWins
-                )
-            elseif aggressorPlaced == 0 and defenderPlaced > 0 then
-                return finishRound(
-                    raidIconID,
-                    roundRunning.Defender.team,
-                    roundRunning,
-                    raidStates.WaitingForUplink,
-                    raidResultStates.DefenderWins
-                )
-            end
-        elseif aggressorPlaced == 0 then
-            return finishRound(
-                raidIconID,
-                nil,
-                roundRunning,
-                raidStates.Aborted,
-                raidResultStates.Unknown
-            )
+            return nil, roundRunning, raidStates.OnGoing, false
         end
 
         local dead, participantRoles = resolveVolley(raidIconID, roundRunning)
@@ -591,13 +559,12 @@ if gadgetHandler:IsSyncedCode() then
         local nTeamID, _, isDead, isAiTeam =
             Spring.GetTeamInfo(teamID)
         if nTeamID == nil or isDead == nil or isAiTeam == nil then
-            return true
+            return false
         end
         if isDead then return false end
 
-        -- Keep the old anti-AFK behaviour deliberately: an AI team or a human
-        -- team that placed nothing receives one random fallback figure.
-        return true
+        -- Human non-placement is intentional and may be used to play for time.
+        return isAiTeam == true
     end
 
     local function doFallbackPlacement(
