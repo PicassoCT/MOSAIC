@@ -50,9 +50,18 @@ local function setAnchorsRelative(nvx, nvy)
 end
 
 local mapName = Game.mapName
+local arrivalDisplayed = false
+local drawArrivalLocation
+local function isDubaiMap()
+  local name = (Game.mapName or ""):lower():gsub("[^a-z]", "")
+  return name:find("lastdayofdubai", 1, true) or name:find("lastdayofdhubai", 1, true)
+end
 
 
 function widget:Shutdown()
+  if WG.DrawMosaicArrivalLocation == drawArrivalLocation then
+    WG.DrawMosaicArrivalLocation = nil
+  end
 end
 
 local function getRollingString(original, nrOfLetters, frames)
@@ -72,8 +81,8 @@ local function getRollingString(original, nrOfLetters, frames)
 end
 
 function widget:ViewResize(n_vsx,n_vsy)
-  scale = vsx*vsy/ (n_vsx*n_vsy) 
-  vsx,vsz = n_vsx,n_vsy
+  scale = math.min(n_vsx / 1920, n_vsy / 1080)
+  vsx,vsy = n_vsx,n_vsy
   setAnchorsRelative(vsx,vsy)
 end
 
@@ -144,8 +153,8 @@ local function setCacheBy(identifier, value)
 end
 
   local function getMapOverrideCitypart()
-    local foundDubai = string.find(Game.mapName, "LastDayOfDubai") 
-    if foundDubai ~= nil then return "Trade center"  end
+    local foundDubai = isDubaiMap()
+    if foundDubai then return "Trade center"  end
   end
 
 local function getNeighbourhoodName(country, hash)
@@ -322,8 +331,8 @@ local function getNeighbourhoodName(country, hash)
 end
 
 local function getMapOverrideCity()
-    local foundDubai = string.find(Game.mapName, "LastDayOfDubai") 
-    if foundDubai ~= nil then return "Dubai"   end
+    local foundDubai = isDubaiMap()
+    if foundDubai then return "Dubai"   end
   end
 
 local function getCityNameByProvince(provincelocal, hash)
@@ -7065,8 +7074,8 @@ local function getCityNameByProvince(provincelocal, hash)
 end
 
   local function getMapOverrideProvince()
-    local foundDubai = string.find(Game.mapName, "LastDayOfDubai") 
-    if foundDubai ~= nil then  return "Capital City"    end
+    local foundDubai = isDubaiMap()
+    if foundDubai then  return "Capital City"    end
   end
 
 local function getProvinceNameBy(countrylocal,  hash)
@@ -7609,8 +7618,8 @@ local function getCountryByRegion(region, hash)
 end
 
 local function getMapOverrideCountry()
-    local foundDubai = string.find(Game.mapName, "LastDayOfDubai") 
-    if foundDubai ~= nil then  return "Dhubay"   end
+    local foundDubai = isDubaiMap()
+    if foundDubai then  return "Dhubay"   end
   end
 
 
@@ -7633,6 +7642,7 @@ local longestString = 2
 
 
 function widget:DrawScreenEffects(vsx, vsy)
+  if arrivalDisplayed or (WG.MosaicArrival and WG.MosaicArrival.active) then return end
   local currentFrame = Spring.GetGameFrame()
   if currentFrame >= startFrame and currentFrame < endFrame + fadeOutPhaseFrames then 
     local fadeOutFactor = 1.0
@@ -7714,6 +7724,7 @@ function widget:Initialize()
   displayStaticFrameIntervallLength = math.ceil(0.3*(endFrame - startFrame))
   displayStaticFrame = startFrame+ displayStaticFrameIntervallLength
   vsx,vsy = Spring.GetViewGeometry()
+  scale = math.min(vsx / 1920, vsy / 1080)
   setAnchorsRelative(vsx,vsy)
 
   culture = Spring.GetGameRulesParam ("culture") 
@@ -7721,11 +7732,27 @@ function widget:Initialize()
   local hash = getDetermenisticHash()
   local region    = GetRegionByHash(hash)
   local country   = getCountryNameByRegion(region, hash)
-  local citypart  = getNeighbourhoodName(country, hash)
+  local citypart  = getNeighbourhoodName(persistenCountry, hash)
   local province  = getProvinceNameBy(persistenCountry ,hash)
   local cityname  = getCityNameByProvince(getCacheBy("province"), hash)
 
   local locationString = "LOCATION:|"..region.."|"..country.."|"..province.."|"..cityname.."|"..citypart
   Spring.SendLuaRulesMsg(locationString)
+  WG.DrawMosaicArrivalLocation = drawArrivalLocation
 end
 
+
+-- Called by the arrival widget after its final composite, above every cloud layer.
+drawArrivalLocation = function(width, height, elapsed, descent)
+  arrivalDisplayed = true
+  local alpha = math.min(1, elapsed / 0.7) * math.min(1, (1 - descent) / 0.15)
+  local size = math.max(18, math.min(width / 1920, height / 1080) * 44)
+  local x, y = width * 0.07, height * 0.19
+  gl.Color(0.30, 0.82, 1, alpha)
+  gl.Text(cache.city or Game.mapName, x, y, size, "o")
+  gl.Color(0.82, 0.92, 1, alpha * 0.85)
+  gl.Text((cache.country or "") .. "  /  " .. (cache.neighbourhood or ""),
+    x, y - size * 0.9, size * 0.42, "o")
+  gl.Text(getDayTimeString(), x, y - size * 1.55, size * 0.36, "o")
+  gl.Color(1, 1, 1, 1)
+end

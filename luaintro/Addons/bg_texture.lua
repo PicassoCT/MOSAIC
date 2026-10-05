@@ -1,66 +1,40 @@
-
 if addon.InGetInfo then
-	return {
-		name    = "LoadTexture",
-		desc    = "",
-		author  = "jK",
-		date    = "2012",
-		license = "GPL2",
-		layer   = 2,
-		depend  = {"LoadProgress"},
-		enabled = true,
-	}
+  return {name = "LoadTexture", desc = "Artwork to orbital arrival", author = "MOSAIC",
+    license = "GPL2", layer = 2, depend = {"LoadProgress"}, enabled = true}
 end
 
-------------------------------------------
-
-local loadscreens = VFS.DirList("luaui/images/loadpictures/")
-val=os.clock()
-
-local backgroundTexture=loadscreens[ math.min(math.max(1,math.ceil(val%#loadscreens)),#loadscreens)]
-local oldBackGroundTexture = backgroundTexture
-local aspectRatio
+local Arrival = VFS.Include("luaui/widgets_mosaic/include/orbital_arrival.lua")
+local screens = VFS.DirList("luaui/images/loadpictures/", "*.png")
+local texture = #screens > 0 and screens[math.random(1, #screens)] or ""
+local startTimer = Spring.GetTimer()
+local renderer = Arrival.newRenderer()
+local active = false
+Arrival.clearHandoff()
+function SG.IsOrbitalArrivalActive() return active end
 
 function addon.DrawLoadScreen()
-	if backgroundTexture then
-		local loadProgress = SG.GetLoadProgress()
-		local loadSteps = math.ceil(loadProgress*10)
-		backgroundTexture=loadscreens[ math.min(math.max(1,math.ceil((val+loadSteps)%#loadscreens)),#loadscreens)]
-		if oldBackGroundTexture ~= backgroundTexture then
-			gl.DeleteTexture(oldBackGroundTexture)
-			oldBackGroundTexture=backgroundTexture
-		end
-		if not aspectRatio then
-			local texInfo = gl.TextureInfo(backgroundTexture)
-			if not texInfo then return end
-			aspectRatio = texInfo.xsize / texInfo.ysize
-		end
-
-		local vsx, vsy = gl.GetViewSizes()
-		local screenAspectRatio = vsx / vsy
-
-		local xDiv = 0
-		local yDiv = 0
-		local ratioComp = screenAspectRatio / aspectRatio
-
-		if (ratioComp > 1) then
-			xDiv = (1 - (1 / ratioComp)) * 0.5;
-		elseif (math.abs(ratioComp - 1) < 0) then
-		else
-			yDiv = (1 - ratioComp) * 0.5;
-		end
-
-		-- background
-		--fade in: gl.Color(1,1,1,1 - (1 - loadProgress)^5)
-		gl.Color(1,1,1,1)
-		gl.Texture(backgroundTexture)
-		gl.TexRect(0+xDiv,0+yDiv,1-xDiv,1-yDiv)
-		gl.Texture(false)
-	end
+  local width, height = gl.GetViewSizes()
+  local age = Spring.DiffTimers(Spring.GetTimer(), startTimer)
+  local fade, descent = Arrival.loadingState(age)
+  active = renderer ~= nil and fade > 0
+  -- LuaUI initializes while LuaIntro is still alive; read this on its first draw,
+  -- not during Initialize. Shutdown retains the last *displayed* state.
+  if renderer then Arrival.writeHandoff(texture, age, fade, descent) end
+  gl.PushMatrix()
+  gl.Scale(1 / width, 1 / height, 1)
+  if renderer then
+    if not renderer:draw(width, height, texture, age, fade, descent) then
+      renderer:destroy(); renderer = nil; active = false; Arrival.clearHandoff()
+    end
+  end
+  if not renderer and texture ~= "" then
+    gl.Color(1, 1, 1, 1)
+    gl.Texture(texture); gl.TexRect(0, 0, width, height); gl.Texture(false)
+  end
+  gl.PopMatrix()
 end
 
 function addon.Shutdown()
-	if backgroundTexture then
-		gl.DeleteTexture(backgroundTexture)
-	end
+  if renderer then renderer:destroy() end
+  if texture ~= "" then gl.DeleteTexture(texture) end
 end

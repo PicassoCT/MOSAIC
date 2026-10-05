@@ -274,6 +274,7 @@ local function advance()
 end
 
 local function runTourStep()
+  if WG.MosaicArrival and WG.MosaicArrival.active then return end
 	if not tutorialActive or spGetGameFrame() < nextActionFrame then return end
 	local sideInfo = TutorialInfo[mySide]
 	if not sideInfo then return end
@@ -415,6 +416,7 @@ function widget:GameFrame(frame)
 end
 
 function widget:SelectionChanged(selectedUnits)
+  if WG.MosaicArrival and WG.MosaicArrival.active then return end
 	if not tutorialActive or not selectedUnits or #selectedUnits == 0 then return end
 	local unitID = selectedUnits[1]
 	local defID = spGetUnitDefID(unitID)
@@ -433,6 +435,7 @@ function widget:SelectionChanged(selectedUnits)
 end
 
 local function maybeAdvanceCreation(unitID, unitDefID, unitTeam)
+  if WG.MosaicArrival and WG.MosaicArrival.active then return end
 	if not tutorialActive or unitTeam ~= myTeamID then return end
 	if currentStep == 4 and unitDefID == sideSafehouseDef() then
 		setCooldown(playEntry(getInfo(unitDefID), unitID))

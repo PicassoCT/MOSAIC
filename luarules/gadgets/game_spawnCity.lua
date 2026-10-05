@@ -468,6 +468,7 @@ function spawnInitialHouses(frame)
             boolInitialized = true   
             GG.CitySpawnComplete = true
             regenerateRoutesTable()
+            Spring.SetGameRulesParam("mosaic_city_spawn_complete", 1, {public = true})
             --echo("spawnInitialHouses: Default Initialization completed")
         else
            conditionalEcho(boolDebug, "ManualPlacementInitialization::Starting")
@@ -478,6 +479,7 @@ function spawnInitialHouses(frame)
            if not boolInitializationPreqrequisitsFullfiled then return end
            GG.CitySpawnComplete = true
            regenerateRoutesTable()
+           Spring.SetGameRulesParam("mosaic_city_spawn_complete", 1, {public = true})
            boolInitialized = true
            conditionalEcho(boolDebug, "ManualPlacementInitialization::Completed")
         end
@@ -601,6 +603,7 @@ function gadget:Initialize()
     if not  GG.innerCityCenter then  GG.innerCityCenter = {} end
 
     GG.CitySpawnComplete = false
+    Spring.SetGameRulesParam("mosaic_city_spawn_complete", 0, {public = true})
     Spring.SetGameRulesParam ( "culture",GameConfig.game.culture )
     --killAllUnitsAtGamestart()
 originalGameFrame = Spring.GetGameFrame()
