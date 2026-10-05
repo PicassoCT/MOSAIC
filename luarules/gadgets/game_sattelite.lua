@@ -56,6 +56,7 @@ local spSetUnitSensorRadius = Spring.SetUnitSensorRadius
 local Satellites = {}
 local SatellitesWaiting = {}
 local orbitalState = {}
+local downlinkSpoofUntil = {}
 
 GG.DiedPeacefully = GG.DiedPeacefully or {}
 GG.NooneParent = GG.NooneParent or {}
@@ -455,7 +456,11 @@ local function spoofDownlink(victimTeamID, ecmID, nimrodID, untilFrame)
     if type(victimTeamID) ~= "number" then return end
     local frame = Spring.GetGameFrame()
     untilFrame = math.max(untilFrame or (frame + 30), frame + 1)
-    local seed = ((ecmID or 0) * 131 + (nimrodID or 0) * 17 + victimTeamID * 7) % 997
+    local seed =
+        ((ecmID or 0) * 131 + (nimrodID or 0) * 17 + victimTeamID * 7) % 997
+
+    downlinkSpoofUntil[victimTeamID] =
+        math.max(downlinkSpoofUntil[victimTeamID] or 0, untilFrame)
 
     spSetTeamRulesParam(victimTeamID, "orbital_spoof_until", untilFrame, PRIVATE)
     spSetTeamRulesParam(victimTeamID, "orbital_spoof_seed", seed, PRIVATE)
@@ -609,7 +614,18 @@ function gadget:GameFrame(frame)
             if frame % 30 == 0 then makeOrbitPublic(unitID) end
             updateDebris(unitID, data)
         elseif data.state == "flying" then
-            if frame % 30 == 0 then makeOrbitPublic(unitID) end
+            if frame % 30 == 0 then
+                makeOrbitPublic(unitID)
+
+                if data.utype == scanDefID then
+                    local teamID = spGetUnitTeam(unitID)
+                    local spoofed =
+                        (downlinkSpoofUntil[teamID] or 0) >= frame
+                    -- A compromised Nimrod still shows where the hardware is,
+                    -- but the victim cannot use the observation feed.
+                    setGroundVision(unitID, data.utype, not spoofed)
+                end
+            end
             local x, _, z = spGetUnitPosition(unitID)
             if x then
                 x, z = flyingPosition(data, x, z)
