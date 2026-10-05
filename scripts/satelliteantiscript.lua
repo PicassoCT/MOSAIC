@@ -31,7 +31,10 @@ function attachSatellite()
     -- Spring.SetUnitAlwaysVisible(id,true)
     Spring.UnitAttach(unitID, id, attachpoint)
     sendMessage(unitID, id)
-    Spring.SetUnitNoSelect(unitID, true)
+    -- The satellite itself is the orbital band-control surface. The attached
+    -- Noone turret is autonomous and should not become a second selectable unit.
+    Spring.SetUnitNoSelect(unitID, false)
+    if id then Spring.SetUnitNoSelect(id, true) end
     hp, mp = Spring.GetUnitHealth(id)
     while hp and hp > 0 do
         hp, mp = Spring.GetUnitHealth(id)
