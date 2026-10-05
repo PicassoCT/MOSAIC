@@ -48,6 +48,7 @@ if gadgetHandler:IsSyncedCode() then
 
     local allRunningRaidRounds = {}
     local playerSniperIcons = {}
+    local placedByPlayer = {}
 
     local function tableCount(t)
         local n = 0
@@ -459,11 +460,74 @@ if gadgetHandler:IsSyncedCode() then
         return winningTeam, roundRunning, publicState, true
     end
 
+    local function applyNoPlacementPenalty(roundRunning)
+        local aggressorPlaced =
+            tableCount(roundRunning.Aggressor.PlacedFigures)
+        local defenderPlaced =
+            tableCount(roundRunning.Defender.PlacedFigures)
+
+        if aggressorPlaced == 0 and
+            roundRunning.Aggressor.Points > 0 then
+            roundRunning.Aggressor.Points =
+                math.max(0, roundRunning.Aggressor.Points - 1)
+        end
+
+        -- An actually empty house has no defending player to penalize; its
+        -- hidden armed citizen is a neutral first-round hazard instead.
+        if not roundRunning.emptyHouseFirstRound and
+            defenderPlaced == 0 and
+            roundRunning.Defender.Points > 0 then
+            roundRunning.Defender.Points =
+                math.max(0, roundRunning.Defender.Points - 1)
+        end
+
+        return aggressorPlaced, defenderPlaced
+    end
+
+    local function resolvePointExhaustion(raidIconID, roundRunning)
+        if roundRunning.Aggressor.Points <= 0 then
+            -- Raid ties favour the defender: the attacker failed to complete
+            -- the intrusion before exhausting its tactical budget.
+            return finishRound(
+                raidIconID,
+                roundRunning.Defender.team,
+                roundRunning,
+                raidStates.WaitingForUplink,
+                raidResultStates.DefenderWins
+            )
+        end
+
+        if roundRunning.Defender.Points <= 0 then
+            return finishRound(
+                raidIconID,
+                roundRunning.Aggressor.team,
+                roundRunning,
+                raidStates.WaitingForUplink,
+                raidResultStates.AggressorWins
+            )
+        end
+
+        return nil
+    end
+
     local function evaluateEndedRound(raidIconID, roundRunning)
         local houseEmpty = isHouseEmptyForRaid(raidIconID)
+        local aggressorPlaced, defenderPlaced =
+            applyNoPlacementPenalty(roundRunning)
+        local neutralPlaced = tableCount(roundRunning.NeutralFigures)
+
+        updatePointData(raidIconID, roundRunning)
+
+        local exhaustedWinner, exhaustedRound, exhaustedState, exhaustedGameOver =
+            resolvePointExhaustion(raidIconID, roundRunning)
+        if exhaustedGameOver then
+            return exhaustedWinner, exhaustedRound,
+                exhaustedState, exhaustedGameOver
+        end
 
         -- If a populated safehouse disappears after the first-round citizen
-        -- decision, the raid has nothing left to discover.
+        -- decision, the raid has nothing left to discover. The pass penalty
+        -- above still applies if the player chose not to commit a figure.
         if houseEmpty == true and
             not roundRunning.emptyHouseFirstRound then
             return finishRound(
@@ -475,15 +539,18 @@ if gadgetHandler:IsSyncedCode() then
             )
         end
 
-        local aggressorPlaced = tableCount(roundRunning.Aggressor.PlacedFigures)
-        local defenderPlaced = tableCount(roundRunning.Defender.PlacedFigures)
-        local neutralPlaced = tableCount(roundRunning.NeutralFigures)
+        -- Passing is legal but finite. If nobody committed a combatant this
+        -- round there is no volley; start another round with the penalty paid.
+        if aggressorPlaced == 0 and
+            defenderPlaced == 0 and
+            neutralPlaced == 0 then
+            return nil, roundRunning, raidStates.OnGoing, false
+        end
 
-        -- Placing nothing is a legal pass. This intentionally lets a player
-        -- burn raid time while the real-world operator remains vulnerable to
-        -- rescue/assassination outside the minigame. A pass is neither an
-        -- automatic loss nor a reason to inject a human fallback piece.
-        if aggressorPlaced == 0 and defenderPlaced == 0 and neutralPlaced == 0 then
+        -- On an empty-house ambush, refusing to enter the room buys time and
+        -- pays the normal pass penalty. The hidden citizen does not score an
+        -- automatic kill against an absent raider.
+        if roundRunning.emptyHouseFirstRound and aggressorPlaced == 0 then
             return nil, roundRunning, raidStates.OnGoing, false
         end
 
@@ -514,36 +581,10 @@ if gadgetHandler:IsSyncedCode() then
             )
         end
 
-        if roundRunning.Defender.Points <= 0 or
-            roundRunning.Aggressor.Points <= 0 then
-
-            if roundRunning.Defender.Points <= 0 and
-                roundRunning.Aggressor.Points > 0 then
-                return finishRound(
-                    raidIconID,
-                    roundRunning.Aggressor.team,
-                    roundRunning,
-                    raidStates.WaitingForUplink,
-                    raidResultStates.AggressorWins
-                )
-            elseif roundRunning.Aggressor.Points <= 0 and
-                roundRunning.Defender.Points > 0 then
-                return finishRound(
-                    raidIconID,
-                    roundRunning.Defender.team,
-                    roundRunning,
-                    raidStates.WaitingForUplink,
-                    raidResultStates.DefenderWins
-                )
-            else
-                return finishRound(
-                    raidIconID,
-                    nil,
-                    roundRunning,
-                    raidStates.Aborted,
-                    raidResultStates.Unknown
-                )
-            end
+        local pointWinner, pointRound, pointState, pointGameOver =
+            resolvePointExhaustion(raidIconID, roundRunning)
+        if pointGameOver then
+            return pointWinner, pointRound, pointState, pointGameOver
         end
 
         return nil, roundRunning, raidStates.OnGoing, false
@@ -831,6 +872,7 @@ if gadgetHandler:IsSyncedCode() then
     function gadget:UnitDestroyed(unitID, unitDefID)
         if unitDefID == snipeIconDefID then
             GG.DisplayedSniperIconParent[unitID] = nil
+            placedByPlayer[unitID] = nil
             cleanupPlayerIconReference(unitID)
             for _, roundRunning in pairs(allRunningRaidRounds) do
                 roundRunning.Aggressor.PlacedFigures[unitID] = nil
@@ -909,11 +951,51 @@ if gadgetHandler:IsSyncedCode() then
             if not unitID then return end
 
             if registerSniperIconAttributes(unitID, raidIconID) then
+                placedByPlayer[unitID] = playerID
                 playerSniperIcons[playerID] = {
                     unitID = unitID,
                     raidIconID = raidIconID
                 }
             end
+            return
+        end
+
+        if string.sub(msg, 1, 5) == "UNDO|" then
+            local t = split(msg, "|")
+            local unitID = tonumber(t[2])
+            if not unitID or
+                not doesUnitExistAlive(unitID) or
+                spGetUnitDefID(unitID) ~= snipeIconDefID or
+                placedByPlayer[unitID] ~= playerID then
+                return
+            end
+
+            local raidIconID = GG.DisplayedSniperIconParent[unitID]
+            local roundRunning =
+                raidIconID and allRunningRaidRounds[raidIconID]
+            if not roundRunning or
+                roundRunning.phase ~= PhasePlacement or
+                getIconProgress(raidIconID) >= revealProgress or
+                spGetUnitTeam(unitID) ~= teamID then
+                return
+            end
+
+            local sideName = getRoundSideForTeam(roundRunning, teamID)
+            if not sideName or
+                roundRunning[sideName].PlacedFigures[unitID] ~= unitID then
+                return
+            end
+
+            -- Remove membership before DestroyUnit so UnitDestroyed cannot
+            -- make a second refund possible.
+            roundRunning[sideName].PlacedFigures[unitID] = nil
+            roundRunning[sideName].Points =
+                roundRunning[sideName].Points + 1
+            placedByPlayer[unitID] = nil
+            cleanupPlayerIconReference(unitID)
+            GG.DisplayedSniperIconParent[unitID] = nil
+            updatePointData(raidIconID, roundRunning)
+            spDestroyUnit(unitID, false, true)
             return
         end
 
