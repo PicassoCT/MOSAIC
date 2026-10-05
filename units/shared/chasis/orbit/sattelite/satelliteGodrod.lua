@@ -32,7 +32,7 @@ local satteliteGodrod = Satellite:New{
 	
 	usepiececollisionvolumes = true,
 
-	sightDistance		= 250 , 
+	sightDistance		= 0, 
 
 	fireState = 1,
 	weapons = {

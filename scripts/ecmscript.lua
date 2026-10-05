@@ -11,6 +11,7 @@ myTeamID = Spring.GetUnitTeam(unitID)
 local ecmIconTypes = getECMIconTypes(UnitDefs)
 local ecmIconSfxTypes = getECMSpecialSFXIconTypes(UnitDefs)
 local stunnableUnitTypes = getStunnedInBlackOutUnitTypes(UnitDefs)
+local nimrodDefID = UnitDefNames["nimrod"].id
 function script.HitByWeapon(x, z, weaponDefID, damage) end
 GameConfig= getGameConfig()
 speedfactor = 2.0
@@ -56,6 +57,25 @@ function eatECMcon()
 				if stunnableUnitTypes[defID] then
 					stunUnit(unitID, 0.5)
 				end
+
+                -- A Nimrod is the orbital downlink. ECM resting on an enemy
+                -- Nimrod does not transfer the building; it poisons that team's
+                -- orbital prediction feed for only as long as the ECM remains
+                -- within this proximity loop.
+                if defID == nimrodDefID then
+                    local targetTeamID = Spring.GetUnitTeam(id)
+                    if targetTeamID and targetTeamID ~= myTeamID and
+                        not Spring.AreTeamsAllied(myTeamID, targetTeamID) and
+                        GG.Orbital and GG.Orbital.SpoofDownlink then
+                        GG.Orbital.SpoofDownlink(
+                            targetTeamID,
+                            unitID,
+                            id,
+                            Spring.GetGameFrame() + 30
+                        )
+                    end
+                    return
+                end
 
                 -- Physical surveillance devices may opt into ECM capture via
                 -- customParams.ecmhackable. Ownership persists until another

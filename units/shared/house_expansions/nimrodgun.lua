@@ -59,6 +59,7 @@ showNanoFrame= true,
 		helptext		= "Nimrod Railgun",
 		baseclass		= "Building", -- TODO: hacks
 		normaltex = "unittextures/component_atlas_normal.dds",
+		orbitaldownlink = true,
     },
 	
 		buildoptions = 

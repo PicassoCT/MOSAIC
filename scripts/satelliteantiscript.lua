@@ -20,9 +20,13 @@ function attachSatellite()
     x, y, z = Spring.GetUnitPosition(unitID)
     teamID = Spring.GetUnitTeam(unitID)
     id = Spring.CreateUnit("noone", x, y, z, 1, teamID)
+    if id then
+        GG.NooneParent = GG.NooneParent or {}
+        GG.NooneParent[id] = unitID
+    end
     if Icon then
-        Move(Icon, y_axis, GameConfig.presentation.icons.satelliteHeight, 0);
-        Show(Icon)
+        Move(Icon, y_axis, GameConfig.presentation.icons.satelliteHeight, 0)
+        Hide(Icon)
     end
     -- Spring.SetUnitAlwaysVisible(id,true)
     Spring.UnitAttach(unitID, id, attachpoint)
@@ -76,6 +80,7 @@ function delayedShow()
 end
 
 function script.Killed(recentDamage, _)
+    if id and GG.NooneParent then GG.NooneParent[id] = nil end
     if id and isUnitAlive(id) == true then
         Spring.UnitDetach(id, true);
         Spring.DestroyUnit(id, true, false)
@@ -117,7 +122,7 @@ function showHideIcon(boolCloaked)
     boolLocalCloaked = boolCloaked
     if boolCloaked == true then
         hideAll(unitID)
-        Show(Icon)
+        Hide(Icon)
         boolParked = true
         boolPeep = true
     else
