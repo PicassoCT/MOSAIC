@@ -424,13 +424,11 @@ if (gadgetHandler:IsSyncedCode()) then
                 -- check distance is still okay
                 if distanceUnitToUnit(persPack.interrogatorID, persPack.raidedSafeHouseOrHouse_ID) > GameConfig.espionage.raids.range then
                     conditionalEcho(boolDebugProjectile,"Raid: failed check distance is still okay5 ")
-                    if doesUnitExistAlive(persPack.IconID) == true then
                     if persPack.IconID and GG.raidStatus[persPack.IconID] then
                         GG.raidStatus[persPack.IconID].state = raidStates.Aborted
                         GG.raidStatus[persPack.IconID].boolInterogationComplete = true
                     end
-                    persPack.boolRaidHasEnded = true 
-                end
+                    persPack.boolRaidHasEnded = true
                     postRaidCleanup(persPack)
                     return true, persPack
                 end
