@@ -487,10 +487,14 @@ if gadgetHandler:IsSyncedCode() then
     local function resolvePointExhaustion(raidIconID, roundRunning)
         if roundRunning.Aggressor.Points <= 0 then
             -- Raid ties favour the defender: the attacker failed to complete
-            -- the intrusion before exhausting its tactical budget.
+            -- the intrusion before exhausting its tactical budget. In an
+            -- empty-house ambush the defending actor is the neutral citizen.
+            local defendingWinner =
+                roundRunning.emptyHouseFirstRound and gaiaTeamID or
+                roundRunning.Defender.team
             return finishRound(
                 raidIconID,
-                roundRunning.Defender.team,
+                defendingWinner,
                 roundRunning,
                 raidStates.WaitingForUplink,
                 raidResultStates.DefenderWins
