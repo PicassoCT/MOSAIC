@@ -65,6 +65,7 @@ function eatECMcon()
                 if defID == nimrodDefID then
                     local targetTeamID = Spring.GetUnitTeam(id)
                     if targetTeamID and targetTeamID ~= myTeamID and
+                        not Spring.AreTeamsAllied(myTeamID, targetTeamID) and
                         GG.Orbital and GG.Orbital.SpoofDownlink then
                         GG.Orbital.SpoofDownlink(
                             targetTeamID,
