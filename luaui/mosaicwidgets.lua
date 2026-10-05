@@ -1408,7 +1408,13 @@ function widgetHandler:ConfigureLayout(command)
 end
 
 
+local function ArrivalActive(self)
+  local arrival = self.WG.MosaicArrival
+  return arrival and arrival.active
+end
+
 function widgetHandler:CommandNotify(id, params, options)
+  if ArrivalActive(self) then return true end
   for _,w in ipairs(self.CommandNotifyList) do
     if (w:CommandNotify(id, params, options)) then
       return true
@@ -1483,6 +1489,7 @@ end
 
 
 function widgetHandler:DrawScreen()
+  if ArrivalActive(self) then return end
   if (self.tweakMode) then
     gl.Color(0, 0, 0, 0.5)
     local sx, sy = self.xViewSize, self.yViewSize
@@ -1574,7 +1581,14 @@ end
 
 function widgetHandler:DrawScreenEffects(vsx, vsy)
   for _,w in ripairs(self.DrawScreenEffectsList) do
-    w:DrawScreenEffects(vsx, vsy)
+    local base = w.whInfo.basename
+    -- Keep scene postprocessing alive for the clean capture, suppress interface
+    -- effects (including the normal city title, drawn above the cinematic).
+    if not ArrivalActive(self) or w.whInfo.name == "Orbital Arrival"
+        or w.whInfo.arrivalWorldEffect or (base:match("^gfx_")
+          and base ~= "gfx_cursors.lua" and base ~= "gfx_guishader.lua") then
+      w:DrawScreenEffects(vsx, vsy)
+    end
   end
   return
 end
@@ -1582,7 +1596,9 @@ end
 
 function widgetHandler:DrawScreenPost()
   for _,w in ripairs(self.DrawScreenPostList) do
-    w:DrawScreenPost()
+    if not ArrivalActive(self) or w.whInfo.name == "Orbital Arrival" then
+      w:DrawScreenPost()
+    end
   end
   return
 end
@@ -1608,6 +1624,10 @@ end
 --
 
 function widgetHandler:KeyPress(key, mods, isRepeat, label, unicode)
+  if ArrivalActive(self) then
+    if key == KEYSYMS.ESCAPE then self.WG.MosaicArrival.skip() end
+    return true
+  end
   if (self.tweakMode) then
     local mo = self.mouseOwner
     if (mo and mo.TweakKeyPress) then
@@ -1630,6 +1650,7 @@ end
 
 
 function widgetHandler:KeyRelease(key, mods, label, unicode)
+  if ArrivalActive(self) then return true end
   if (self.tweakMode) then
     local mo = self.mouseOwner
     if (mo and mo.TweakKeyRelease) then
@@ -1654,6 +1675,7 @@ function widgetHandler:KeyRelease(key, mods, label, unicode)
 end
 
 function widgetHandler:TextInput(utf8, ...)
+  if ArrivalActive(self) then return true end
   if (self.tweakMode) then
     return true
   end
@@ -1711,6 +1733,7 @@ do
 end
 
 function widgetHandler:MousePress(x, y, button)
+  if ArrivalActive(self) then return true end
   local mo = self.mouseOwner
   if (not self.tweakMode) then
     if (mo) then
@@ -1743,6 +1766,7 @@ end
 
 
 function widgetHandler:MouseMove(x, y, dx, dy, button)
+  if ArrivalActive(self) then return true end
   local mo = self.mouseOwner
   if (not self.tweakMode) then
     if (mo and mo.MouseMove) then
@@ -1758,6 +1782,7 @@ end
 
 
 function widgetHandler:MouseRelease(x, y, button)
+  if ArrivalActive(self) then self.mouseOwner = nil; return -1 end
   local mo = self.mouseOwner
   local mx, my, lmb, mmb, rmb = Spring.GetMouseState()
   if (not (lmb or mmb or rmb)) then
@@ -1779,6 +1804,7 @@ end
 
 
 function widgetHandler:MouseWheel(up, value)
+  if ArrivalActive(self) then return true end
   if (not self.tweakMode) then
     for _,w in ipairs(self.MouseWheelList) do
       if (w:MouseWheel(up, value)) then
@@ -1797,6 +1823,7 @@ function widgetHandler:MouseWheel(up, value)
 end
 
 function widgetHandler:JoyAxis(axis, value)
+  if ArrivalActive(self) then return true end
 	for _,w in ipairs(self.JoyAxisList) do
 		if (w:JoyAxis(axis, value)) then
 		return true
@@ -1806,6 +1833,7 @@ function widgetHandler:JoyAxis(axis, value)
 end
 
 function widgetHandler:JoyHat(hat, value)
+  if ArrivalActive(self) then return true end
 	for _,w in ipairs(self.JoyHatList) do
 		if (w:JoyHat(hat, value)) then
 		return true
@@ -1815,6 +1843,7 @@ function widgetHandler:JoyHat(hat, value)
 end
 
 function widgetHandler:JoyButtonDown(button, state)
+  if ArrivalActive(self) then return true end
 	for _,w in ipairs(self.JoyButtonDownList) do
 		if (w:JoyButtonDown(button, state)) then
 		return true
@@ -1824,6 +1853,7 @@ function widgetHandler:JoyButtonDown(button, state)
 end
 
 function widgetHandler:JoyButtonUp(button, state)
+  if ArrivalActive(self) then return true end
 	for _,w in ipairs(self.JoyButtonUpList) do
 		if (w:JoyButtonUp(button, state)) then
 		return true
@@ -1833,6 +1863,7 @@ function widgetHandler:JoyButtonUp(button, state)
 end
 
 function widgetHandler:IsAbove(x, y)
+  if ArrivalActive(self) then return true end
   if (self.tweakMode) then
     return true
   end
@@ -1841,6 +1872,7 @@ end
 
 
 function widgetHandler:GetTooltip(x, y)
+  if ArrivalActive(self) then return " " end
   if (not self.tweakMode) then
     for _,w in ipairs(self.GetTooltipList) do
       if (w:IsAbove(x, y)) then
@@ -2448,7 +2480,6 @@ widgetHandler:Initialize()
 --------------------------------------------------------------------------------
 
 Spring.Echo("widgets.lua: Custom Widgethandler completes loading")
-
 
 
 
