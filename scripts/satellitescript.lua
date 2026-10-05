@@ -77,7 +77,7 @@ function showHideIcon(boolCloaked)
 
         hideAll(unitID)
         boolParked = true
-        Show(Icon)
+        Hide(Icon)
         boolBeep = true
     else
         showAll(unitID)
