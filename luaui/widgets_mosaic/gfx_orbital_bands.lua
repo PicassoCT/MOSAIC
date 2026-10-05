@@ -63,16 +63,21 @@ end
 
 local function spoofedPrediction(unitID, teamID, direction, band, count)
     local myTeam = Spring.GetMyTeamID()
-    if teamID == myTeam then return direction, band end
+    if not myTeam or myTeam < 0 then return direction, band end
+
     if spGetUnitRulesParam(unitID, "orbital_is_godrod") == 1 and
         spGetUnitRulesParam(unitID, "godrod_positioning") == 1 then
         -- Godrod commitment is intentionally impossible to hide or falsify.
         return direction, band
     end
 
-    local untilFrame = spGetTeamRulesParam(myTeam, "orbital_spoof_until") or 0
+    local untilFrame =
+        spGetTeamRulesParam(myTeam, "orbital_spoof_until") or 0
     if spGetGameFrame() > untilFrame then return direction, band end
 
+    -- A compromised downlink corrupts the victim's orbital plot as a whole:
+    -- own constellation, hostile contacts and scan-footprint predictions.
+    -- Current hardware glyphs remain truthful because they are directly visible.
     local seed = spGetTeamRulesParam(myTeam, "orbital_spoof_seed") or 0
     local step = ((seed + unitID * 7) % math.max(1, count - 1)) + 1
     local falseBand = ((band - 1 + step) % count) + 1
@@ -140,6 +145,20 @@ local function drawCircle(x, z, radius, r, g, b, alpha, segments)
             glVertex(px, groundY(px, pz), pz)
         end
     end)
+end
+
+local function plottedFeedPosition(unitID, teamID, x, z, direction, band, count)
+    local plottedDirection, plottedBand =
+        spoofedPrediction(unitID, teamID, direction, band, count)
+
+    if plottedDirection == direction and plottedBand == band then
+        return x, z
+    end
+
+    if plottedDirection == 1 then
+        return bandCoordinate(1, plottedBand, count), z
+    end
+    return x, bandCoordinate(2, plottedBand, count)
 end
 
 local function drawScanFootprint(x, z, r, g, b)
@@ -418,7 +437,11 @@ function widget:DrawWorldPreUnit()
                         r, g, b
                     )
                     if defID == scanDefID then
-                        drawScanFootprint(x, z, r, g, b)
+                        local feedX, feedZ = plottedFeedPosition(
+                            unitID, teamID, x, z,
+                            direction, band, count
+                        )
+                        drawScanFootprint(feedX, feedZ, r, g, b)
                     end
                 elseif state == 2 then
                     local remaining =
