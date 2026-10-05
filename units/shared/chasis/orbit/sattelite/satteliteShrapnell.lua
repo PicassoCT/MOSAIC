@@ -21,7 +21,7 @@ local SatelliteShrapnell = Satellite:New{
 	objectName 			= "satShrapnell.dae",
 
 	buildPic = "ShrapnellSatellite.png",
-	sightDistance		= 	500, --formula offset:  radius^2 =  altitude^2   + (radius+x)  ^2
+	sightDistance		= 	0, -- debris is visible but provides no ground intelligence
 	upright= true,
 
 	customparams = {
