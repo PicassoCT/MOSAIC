@@ -515,7 +515,8 @@ if (gadgetHandler:IsSyncedCode()) then
                         return true, persPack
                     end 
 
-                    --wait for uplink completed (set by the icon)
+                    -- Defender victories (including the hidden armed citizen)
+                    -- are terminal and require no target reveal/destruction.
                     if raidStateLocal.state == raidStates.VictoryStateSet and
                         raidStateLocal.result == raidResultStates.DefenderWins then
                         conditionalEcho(boolDebugProjectile, "Raid: defender held the location")
@@ -524,6 +525,7 @@ if (gadgetHandler:IsSyncedCode()) then
                         return true, persPack
                     end
 
+                    --wait for uplink completed (set by the icon)
                     if raidStateLocal.state == raidStates.VictoryStateSet and
                         raidStateLocal.result == raidResultStates.AggressorWins       
                         then
