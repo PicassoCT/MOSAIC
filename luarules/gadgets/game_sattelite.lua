@@ -36,6 +36,7 @@ local gaiaTeamID = Spring.GetGaiaTeamID()
 local mapSizeX, mapSizeZ = Game.mapSizeX, Game.mapSizeZ
 local BAND_COUNT = 5
 local ENTRY_MARGIN = 2
+local allyTeamList = Spring.GetAllyTeamList()
 
 local spGetUnitHealth = Spring.GetUnitHealth
 local spGetUnitPosition = Spring.GetUnitPosition
@@ -123,6 +124,19 @@ local function isOperationalSatellite(defID)
     return defID == scanDefID or defID == antiDefID or defID == godrodDefID
 end
 
+local function makeOrbitPublic(unitID)
+    if not alive(unitID) then return end
+    spSetUnitAlwaysVisible(unitID, true)
+    for i = 1, #allyTeamList do
+        Spring.SetUnitLosState(unitID, allyTeamList[i], {
+            los = true,
+            prevLos = true,
+            radar = true,
+            contRadar = true
+        })
+    end
+end
+
 local function setGroundVision(unitID, defID, active)
     if not spSetUnitSensorRadius then return end
     if defID == scanDefID and active then
@@ -197,7 +211,7 @@ end
 
 local function configureSatellite(unitID, data)
     spMoveCtrlEnable(unitID, true)
-    spSetUnitAlwaysVisible(unitID, true)
+    makeOrbitPublic(unitID)
     spSetUnitBlocking(unitID, false, false, false)
     setGroundVision(unitID, data.utype, false)
     installBandCommand(unitID, data.utype)
@@ -569,8 +583,10 @@ function gadget:GameFrame(frame)
         if not alive(unitID) then
             Satellites[unitID] = nil
         elseif data.utype == shrapnelDefID then
+            if frame % 30 == 0 then makeOrbitPublic(unitID) end
             updateDebris(unitID, data)
         elseif data.state == "flying" then
+            if frame % 30 == 0 then makeOrbitPublic(unitID) end
             local x, _, z = spGetUnitPosition(unitID)
             if x then
                 x, z = flyingPosition(data, x, z)
@@ -582,6 +598,7 @@ function gadget:GameFrame(frame)
                 end
             end
         elseif data.state == "timeout" then
+            if frame % 30 == 0 then makeOrbitPublic(unitID) end
             updateTimeout(unitID, data)
         end
     end
