@@ -62,6 +62,13 @@ end
 
 function script.FireWeapon1()
     StartThread(hotRadiators)
+
+    local targetType, _, targetID = Spring.GetUnitWeaponTarget(unitID, 1)
+    local parent = GG.NooneParent and GG.NooneParent[unitID]
+    if targetType and targetID and parent and
+        GG.Orbital and GG.Orbital.ResolveAntiSatelliteStrike then
+        GG.Orbital.ResolveAntiSatelliteStrike(parent, unitID, targetID)
+    end
     return true
 end
 
