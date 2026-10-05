@@ -177,6 +177,22 @@ local function publish(unitID, data)
         spSetUnitRulesParam(unitID, "orbital_pending_direction", 0, PUBLIC)
     end
 
+    local cmdDescID = Spring.FindUnitCmdDesc(unitID, CMD_ORBITAL_BAND)
+    if cmdDescID then
+        local current =
+            (data.direction == "horizontal" and "H" or "V") ..
+            tostring(data.band or 1)
+        local pending = data.pendingBand and
+            (" -> " ..
+             (data.pendingDirection == "horizontal" and "H" or "V") ..
+             tostring(data.pendingBand)) or ""
+        Spring.EditUnitCmdDesc(unitID, cmdDescID, {
+            name = "TRACK " .. current .. pending,
+            tooltip = "Orbital ground track " .. current .. pending ..
+                ". Retasking executes only during orbital downtime."
+        })
+    end
+
     local godrod = data.godrod
     spSetUnitRulesParam(unitID, "godrod_positioning", godrod and 1 or 0, PUBLIC)
     spSetUnitRulesParam(unitID, "godrod_target_band", godrod and godrod.band or 0, PUBLIC)
@@ -212,7 +228,6 @@ end
 
 local function configureSatellite(unitID, data)
     spMoveCtrlEnable(unitID, true)
-    makeOrbitPublic(unitID)
     spSetUnitBlocking(unitID, false, false, false)
     setGroundVision(unitID, data.utype, false)
     installBandCommand(unitID, data.utype)
@@ -232,6 +247,7 @@ local function beginFlight(unitID, data)
 
     local x, z = entryPosition(data.direction, data.band)
     spMoveCtrlSetPosition(unitID, x, SatelliteAltitude[data.utype], z)
+    makeOrbitPublic(unitID)
     setGroundVision(unitID, data.utype, true)
     setFlightPresentation(unitID, true)
     publish(unitID, data)
@@ -299,16 +315,18 @@ local function reachedExit(data, x, z)
 end
 
 local function updateTimeout(unitID, data)
-    data.timeoutRemaining = math.max(0, (data.timeoutRemaining or 1) - 1)
-
-    local elapsed = (data.timeoutTotal or 1) - data.timeoutRemaining
-    local t = math.max(0, math.min(1, elapsed / math.max(1, data.timeoutTotal or 1)))
-    local smooth = t * t * (3 - 2 * t)
-
+    local remainingBeforeStep = math.max(1, data.timeoutRemaining or 1)
     local tx, tz = timeoutTarget(data)
     data.shiftTargetX, data.shiftTargetZ = tx, tz
-    local x = data.shiftStartX + (tx - data.shiftStartX) * smooth
-    local z = data.shiftStartZ + (tz - data.shiftStartZ) * smooth
+
+    local x, _, z = spGetUnitPosition(unitID)
+    if not x then return end
+
+    -- Move exactly one remaining-time fraction toward the requested entry.
+    -- Retargeting therefore changes velocity, never position discontinuously.
+    x = x + (tx - x) / remainingBeforeStep
+    z = z + (tz - z) / remainingBeforeStep
+    data.timeoutRemaining = math.max(0, remainingBeforeStep - 1)
 
     spMoveCtrlSetPosition(unitID, x, SatelliteAltitude[data.utype], z)
 
@@ -403,6 +421,17 @@ local function requestGodRodStrike(unitID, x, z)
     local needsSerial = (data.timeoutSerial or 0)
     if data.state ~= "timeout" then
         needsSerial = needsSerial + 1
+    else
+        -- The positioning warning must last one complete downtime after the
+        -- strike is committed, even if the order arrives late in an existing
+        -- downtime window.
+        data.timeoutRemaining = math.max(
+            1,
+            SatelliteTimeout[data.utype] or data.timeoutTotal or 1
+        )
+        data.timeoutTotal = data.timeoutRemaining
+        local sx, _, sz = spGetUnitPosition(unitID)
+        data.shiftStartX, data.shiftStartZ = sx or 0, sz or 0
     end
 
     data.godrod = {
@@ -516,6 +545,7 @@ function gadget:UnitCreated(unitID, unitDefID)
         -- never snaps to an orbital entry edge and never enters downtime.
         data.state = "flying"
         Satellites[unitID] = data
+        makeOrbitPublic(unitID)
         setFlightPresentation(unitID, true)
         publish(unitID, data)
     else
