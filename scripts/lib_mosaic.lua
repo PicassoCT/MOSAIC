@@ -2321,9 +2321,13 @@ end
                 local UnitDefNames = getUnitDefNames(UnitDefs)
 
                 valuetable = {
-                    [UnitDefNames["satelliteanti"].id] = 2 * 90 * framesPerSecond,
-                    [UnitDefNames["satellitegodrod"].id] = 3 * 90 * framesPerSecond,
-                    [UnitDefNames["satellitescan"].id] = 90 * framesPerSecond,
+                    -- Downtime is deliberately long: one satellite cannot
+                    -- provide continuous orbital coverage by itself.
+                    [UnitDefNames["satelliteanti"].id] = 4 * 60 * framesPerSecond,
+                    [UnitDefNames["satellitegodrod"].id] = 5 * 60 * framesPerSecond,
+                    [UnitDefNames["satellitescan"].id] = 3 * 60 * framesPerSecond,
+                    -- Debris never parks; the movement gadget treats it as a
+                    -- continuously drifting orbital hazard.
                     [UnitDefNames["satelliteshrapnell"].id] = 1
                 }
 
