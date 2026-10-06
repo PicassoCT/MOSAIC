@@ -36,12 +36,14 @@ gl = {CreateShader=function() if not shaderFailure then return id() end end,
 }
 local A=VFS.Include('luaui/widgets_mosaic/include/orbital_arrival.lua')
 assert(A.loadingState(0)==0)
-local f,d=A.loadingState(60); assert(f==1 and d==A.holdDescent)
+local f,d=A.loadingState(60); assert(f==1 and d==0,'loading screen must never advance descent')
 assert(A.snapDescent(0)==0 and A.snapDescent(1)==1)
 assert(A.snapDescent(0.10)==0, 'first descent beat must hold')
 assert(A.snapDescent(0.20)>=0.16, 'snap must advance to the next scale')
-A.writeHandoff('art.png',20,1,0.16)
-local tex,age,fade,descent=A.readHandoff(); assert(tex=='art.png' and age==20 and fade==1 and descent==0.16)
+A.beginHandoff(); assert(A.introPhase()=='pending')
+A.writeHandoff('art.png',20,1,0)
+local tex,age,fade,descent=A.readHandoff(); assert(tex=='art.png' and age==20 and fade==1 and descent==0)
+A.finishIntro(); assert(A.introPhase()=='finished')
 Game.mapName='Other'; assert(A.readHandoff()==nil); Game.mapName='LastDayOfDhubai'
 local r=A.newRenderer(); assert(r)
 assert(r:draw(1920,1080,'art.png',20,1,0.16))
@@ -54,10 +56,13 @@ local function newWidget()
  widget:Initialize(); return widget
 end
 settings.FullscreenEdgeMove=0; settings.WindowedEdgeMove=1
-A.writeHandoff('art.png',20,1,0.16)
+A.beginHandoff()
+A.writeHandoff('art.png',20,1,0)
 local w=newWidget(); assert(WG.MosaicArrival.active)
+w:DrawScreenEffects(); assert(not hidden and settings.WindowedEdgeMove==1,'arrival started before LuaIntro shutdown')
+A.finishIntro()
 w:DrawScreenEffects(); assert(hidden and settings.WindowedEdgeMove==0)
-time=7; w:DrawScreenEffects(); assert(WG.MosaicArrival.descent==0.16,'Revealed unfinished city')
+time=7; w:DrawScreenEffects(); assert(WG.MosaicArrival.descent==0,'Revealed unfinished city')
 ready=1; w:DrawScreenEffects(); time=12; w:DrawScreenEffects()
 assert(not hidden and not WG.MosaicArrival and WG.MosaicArrivalFinished)
 assert(settings.FullscreenEdgeMove==0 and settings.WindowedEdgeMove==1)
@@ -93,7 +98,7 @@ widgetHandler.WG.MosaicArrival={active=true,skip=function() skipped=true end}
 assert(widgetHandler:KeyPress(65,{},false)); assert(widgetHandler:TextInput('a'))
 assert(widgetHandler:MouseWheel(true,1)); assert(widgetHandler:CommandNotify(10,{},{}))
 assert(widgetHandler:KeyPress(27,{},false) and skipped)
-print('PASS: handoff, same-frame GPU cache, city readiness/timeout, input routing, skip/failure/reload cleanup; zero camera writes')
+print('PASS: post-LuaIntro handoff, same-frame GPU cache, city readiness/timeout, input routing, skip/failure/reload cleanup; zero arrival camera writes')
 -- Exercise the real location widget on both map spellings, including resize.
 Spring.SendLuaRulesMsg=function(s) assert(s:match('City: Dubai')); end
 Spring.PlaySoundFile=function() end
