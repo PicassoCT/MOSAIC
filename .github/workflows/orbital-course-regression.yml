@@ -1,0 +1,23 @@
+name: Orbital course regression
+
+on:
+  push:
+    branches:
+      - fix/orbital-direct-course-control
+
+jobs:
+  orbital-course:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Lua 5.1
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y lua5.1
+      - name: Parse orbital Lua
+        run: |
+          luac5.1 -p luarules/gadgets/game_sattelite.lua
+          luac5.1 -p luaui/widgets_mosaic/gfx_orbital_bands.lua
+          luac5.1 -p tests/orbital_bands_test.lua
+      - name: Run orbital regression
+        run: lua5.1 tests/orbital_bands_test.lua
