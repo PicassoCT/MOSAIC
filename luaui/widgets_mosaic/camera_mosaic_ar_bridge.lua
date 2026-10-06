@@ -33,19 +33,13 @@ local lastPacketAt = -math.huge
 local lastAnnounceAt = -math.huge
 local previousCamera
 local enabled = false
+local runtime = 0
 local mapScale = Game.mapSizeX / DEFAULT_TABLE_WIDTH_M
 local mapCenterX = Game.mapSizeX * 0.5
 local mapCenterZ = Game.mapSizeZ * 0.5
 
 local function now()
-    return Spring.GetTimer and Spring.GetTimer() or os.clock()
-end
-
-local function elapsed(t0)
-    if Spring.DiffTimers and type(t0) ~= "number" then
-        return Spring.DiffTimers(Spring.GetTimer(), t0, true)
-    end
-    return now() - t0
+    return runtime
 end
 
 local function makeToken()
@@ -80,6 +74,18 @@ local function numsCSV(s, expected)
     end
     if expected and #out ~= expected then return nil end
     return out
+end
+
+local function localAddressFor(ip, port)
+    if not socket or not socket.udp then return nil end
+    local probe = socket.udp()
+    if not probe then return nil end
+    probe:settimeout(0)
+    local ok = probe:setpeername(ip, port or PORT)
+    if not ok then probe:close(); return nil end
+    local localIP = probe:getsockname()
+    probe:close()
+    return localIP
 end
 
 local function send(msg, ip, port)
@@ -212,7 +218,7 @@ local function handleLegacy(data, ip, port)
 
     if data:find("^SPRINGAR;BROADCAST;ARDEVICE;") then
         pair(ip, port, pairToken)
-        send("SPRINGAR;REPLY;HOSTIP=" .. (udp:getsockname() or "0.0.0.0"), ip, port)
+        send("SPRINGAR;REPLY;HOSTIP=" .. (localAddressFor(ip, port) or ip), ip, port)
         return
     end
 
@@ -291,6 +297,7 @@ end
 
 function widget:Update(dt)
     if not enabled then return end
+    runtime = runtime + (dt or 0)
     receiveAll()
 
     local t = now()
