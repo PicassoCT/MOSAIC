@@ -67,6 +67,13 @@ ready=1; w:DrawScreenEffects(); time=12; w:DrawScreenEffects()
 assert(not hidden and not WG.MosaicArrival and WG.MosaicArrivalFinished)
 assert(settings.FullscreenEdgeMove==0 and settings.WindowedEdgeMove==1)
 assert(settings[A.configKey]==''); assert(cameraCalls==0)
+-- Camera Remember must not mutate/rotate the live camera while arrival owns startup.
+Spring.GetCameraNames=function() return {ta=1,ov=2} end
+Spring.GetCameraState=function() return {name='ov',mode=2} end
+widget={}; WG={MosaicArrival={active=true}}
+assert(loadstring(VFS.LoadFile('luaui/widgets_mosaic/camera_remember_mode.lua')))()
+widget:SetConfigData({name='ta'}); widget:Initialize()
+assert(cameraCalls==0,'Camera Remember mutated camera underneath orbital arrival')
 -- Cancellation and errors release modal and preserve an already hidden interface.
 ready=0; time=20; hidden=true
 w=newWidget(); w:DrawScreenEffects(); WG.MosaicArrival.skip()
