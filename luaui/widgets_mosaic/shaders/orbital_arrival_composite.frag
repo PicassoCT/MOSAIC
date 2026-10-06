@@ -16,10 +16,14 @@ void main() {
     // live image's final approach small so its captured bounds stay concealed.
     float zoom = mix(1.18, 1.0, smoothstep(0.50, 0.96, descent));
     vec2 liveUV = (uv - 0.5) * zoom + 0.5;
-    vec3 live = texture2D(liveTex, liveUV).rgb;
+    // CopyToTexture framebuffer captures use the opposite vertical texture
+    // orientation from the screen-space quad. Flip Y only: never X, never roll.
+    vec2 liveSampleUV = vec2(liveUV.x, 1.0 - liveUV.y);
+    vec3 live = texture2D(liveTex, liveSampleUV).rgb;
     if (descent >= 0.96) {
         ivec2 size = textureSize(liveTex, 0);
-        live = texelFetch(liveTex, clamp(ivec2(uv * vec2(size)), ivec2(0), size - 1), 0).rgb;
+        vec2 finalUV = vec2(uv.x, 1.0 - uv.y);
+        live = texelFetch(liveTex, clamp(ivec2(finalUV * vec2(size)), ivec2(0), size - 1), 0).rgb;
     }
     vec3 scene = mix(orbit.rgb, live, arrival);
     vec3 cloud = mix(vec3(0.79, 0.85, 0.90), orbit.rgb, smoothstep(0.35, 0.42, descent));
@@ -32,6 +36,6 @@ void main() {
     vec2 artUV = (uv - 0.5) * artScale + 0.5;
     vec3 art = texture2D(artworkTex, artUV).rgb;
     scene = mix(art, scene, hasArtwork == 1 ? fade : 1.0);
-    // At descent=1 this is exactly the unmodified live framebuffer at original UV.
+    // At descent=1 this is the unmodified framebuffer replayed in screen orientation.
     gl_FragColor = vec4(scene, 1.0);
 }
