@@ -37,6 +37,9 @@ gl = {CreateShader=function() if not shaderFailure then return id() end end,
 local A=VFS.Include('luaui/widgets_mosaic/include/orbital_arrival.lua')
 assert(A.loadingState(0)==0)
 local f,d=A.loadingState(60); assert(f==1 and d==A.holdDescent)
+assert(A.snapDescent(0)==0 and A.snapDescent(1)==1)
+assert(A.snapDescent(0.10)==0, 'first descent beat must hold')
+assert(A.snapDescent(0.20)>=0.16, 'snap must advance to the next scale')
 A.writeHandoff('art.png',20,1,0.16)
 local tex,age,fade,descent=A.readHandoff(); assert(tex=='art.png' and age==20 and fade==1 and descent==0.16)
 Game.mapName='Other'; assert(A.readHandoff()==nil); Game.mapName='LastDayOfDhubai'
@@ -98,8 +101,8 @@ gl.Text=noop
 for _,name in ipairs({'LastDayOfDubai v1','LastDayOfDhubai v2'}) do
  Game.mapName=name; widget={}; WG={}; time=0;frame=0
  assert(loadstring(VFS.LoadFile('luaui/widgets_mosaic/gui_cityname.lua')))()
- widget:Initialize(); assert(type(WG.DrawMosaicArrivalLocation)=='function')
- widget:ViewResize(1280,720); WG.DrawMosaicArrivalLocation(1280,720,2,0.5)
- widget:Shutdown(); assert(WG.DrawMosaicArrivalLocation==nil)
+ widget:Initialize(); assert(WG.DrawMosaicArrivalLocation==nil)
+ widget:ViewResize(1280,720)
+ widget:Shutdown()
 end
-print('PASS: both Dubai/Dhubai location overrides and title resize/cleanup')
+print('PASS: both Dubai/Dhubai location overrides and original post-arrival title path')
