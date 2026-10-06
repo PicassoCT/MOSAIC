@@ -1,12 +1,16 @@
 # Orbital arrival
 
 Loading artwork fades into a low-orbit Earth limb after three seconds. The shader
-lingers in orbit while loading and initial city placement finish. A 3.8-second
-descent then expands an image of the real map through clouds. The existing
-location widget draws the city, country, district and time above those clouds.
+lingers in orbit while loading and initial city placement finish. A short 1.75-second staged descent advances in discrete optical scale beats:
+each snap reveals finer terrain/cloud detail instead of stretching one continuous
+zoom. The original location widget is deliberately withheld until the cinematic
+has ended, then restarts its city/region/district/time telex on the live map.
 
 Every apparent movement is in screen space. The sequence never changes the
 camera position, orientation, mode, field of view, simulation speed or pause state.
+The orbital renderer keeps a fixed horizon orientation, adds a day/night terminator,
+night-side settlement lights, water glint, elevated cloud layers and displaced
+cloud shadows, plus atmospheric limb/twilight lighting.
 The Earth surface is a procedural cinematic regional coastline, not a geographical
 atlas. It does not claim to locate the city accurately on a real globe.
 
