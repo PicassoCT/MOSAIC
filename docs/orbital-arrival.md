@@ -1,7 +1,9 @@
 # Orbital arrival
 
 Loading artwork fades into a low-orbit Earth limb after three seconds. The shader
-lingers in orbit while loading and initial city placement finish. A short 1.75-second staged descent advances in discrete optical scale beats:
+remains at zero descent for the entire lifetime of LuaIntro. Only after the loading
+screen has actually shut down does LuaUI begin the city-ready wait and the short
+1.75-second staged descent in discrete optical scale beats:
 each snap reveals finer terrain/cloud detail instead of stretching one continuous
 zoom. The original location widget is deliberately withheld until the cinematic
 has ended, then restarts its city/region/district/time telex on the live map.
@@ -17,10 +19,12 @@ atlas. It does not claim to locate the city accurately on a real globe.
 ## Handoff and readiness
 
 LuaIntro and LuaUI share the renderer and GLSL programs. LuaIntro freezes its
-chosen loading artwork, then records the last displayed age, fade and descent
-in a runtime-only configuration overlay. LuaUI reads it on its first draw:
-LuaUI initialization occurs while LuaIntro can still be rendering. No handoff
-state is written to the player's configuration file.
+chosen loading artwork, records the last displayed age/fade in a runtime-only
+configuration overlay, and marks the handoff as pending. Its Shutdown call is
+the authoritative loading-screen boundary and marks the handoff finished.
+LuaUI may initialize and receive draw call-ins earlier, but it will not start its
+timer or descent while that phase is pending. No handoff state is written to the
+player's configuration file.
 
 The city gadget exposes a public `mosaic_city_spawn_complete` flag when either
 generated or map-placed houses and their routes have been registered. This is
@@ -32,7 +36,9 @@ At descent 0.42–0.55 clouds fully cover the screen. During this interval the
 renderer switches from Earth to the live framebuffer. It captures only before
 the interface is drawn, then reuses that clean texture in DrawScreenPost to
 cover engine overlays. The expanding image plane's borders remain behind clouds.
-The final frame samples the original live pixels at native scale and orientation.
+The live framebuffer replay corrects CopyToTexture's vertical texture orientation
+while preserving X, so the handoff cannot mirror or rotate the map. The final
+frame samples the original live pixels at native scale and screen orientation.
 
 ## Interface and exits
 

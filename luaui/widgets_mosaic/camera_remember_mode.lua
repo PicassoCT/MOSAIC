@@ -24,6 +24,14 @@ function widget:SetConfigData(data)
 end
 
 function widget:Initialize()
+    -- The arrival is a screen-space cinematic and must inherit the engine's
+    -- live-map heading exactly. Restoring a camera mode here can rotate the
+    -- world underneath its framebuffer handoff, so leave the startup camera
+    -- untouched while the arrival owns presentation.
+    if WG and WG.MosaicArrival and WG.MosaicArrival.active then
+        return
+    end
+
     avoidOverviewCam(); -- bug is when you switch from overview to spring
 
     --Spring.Echo("wanted", camName)

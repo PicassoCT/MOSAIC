@@ -92,7 +92,9 @@ for descent in [0.,0.16,0.43,0.52,0.65,0.8,0.96,1.]:
  assert result[:,:,:3].min()>=0 and result[:,:,:3].max()<=1.5
  if 0.42<=descent<=0.55:assert np.allclose(e[:,:,3],1.),'Handoff cloud is not fully opaque'
  if descent==1.:
-  assert np.allclose(result,live_data,atol=2e-6),'Final composite changed live pixels or orientation'
+  expected=live_data[::-1].copy()
+  assert np.allclose(result,expected,atol=2e-6),'Final composite changed framebuffer screen orientation'
+  assert np.allclose(result[:,:,0],expected[:,:,0],atol=2e-6),'Live handoff inverted X / performed a 180-degree rotation'
  if args.preview_dir:
   from PIL import Image
   directory=Path(args.preview_dir);directory.mkdir(parents=True,exist_ok=True)

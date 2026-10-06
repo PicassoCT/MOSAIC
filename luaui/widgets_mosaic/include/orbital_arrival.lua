@@ -1,6 +1,7 @@
 -- Shared by LuaIntro and LuaUI. All movement is texture-space; no camera API.
 local M = {}
 M.configKey = "MosaicOrbitalArrivalHandoff"
+M.phaseKey = "MosaicOrbitalArrivalPhase"
 M.artSeconds, M.fadeSeconds, M.descentSeconds = 3, 1.25, 1.75
 M.holdDescent = 0.16
 
@@ -22,8 +23,25 @@ function M.snapDescent(x)
   return a + (b - a) * jump
 end
 function M.loadingState(age)
-  return M.clamp((age - M.artSeconds) / M.fadeSeconds),
-    M.holdDescent * M.clamp((age - M.artSeconds - M.fadeSeconds) / 2)
+  -- LuaIntro may fade the artwork into the orbital view, but the actual dive
+  -- must never begin until the loading screen has shut down.
+  return M.clamp((age - M.artSeconds) / M.fadeSeconds), 0
+end
+
+function M.beginHandoff()
+  Spring.SetConfigString(M.configKey, "", true)
+  Spring.SetConfigString(M.phaseKey, (Game.mapName or "") .. "\npending", true)
+end
+
+function M.finishIntro()
+  Spring.SetConfigString(M.phaseKey, (Game.mapName or "") .. "\nfinished", true)
+end
+
+function M.introPhase()
+  local raw = Spring.GetConfigString(M.phaseKey, "")
+  local mapName, phase = raw:match("^(.-)\n([^\n]+)$")
+  if mapName ~= (Game.mapName or "") then return nil end
+  return phase
 end
 
 -- Runtime-only config overlay (third argument true), never written to disk.
@@ -44,7 +62,10 @@ function M.readHandoff()
   return fields[2], math.max(0, age), M.clamp(fade), math.min(M.holdDescent, M.clamp(descent))
 end
 
-function M.clearHandoff() Spring.SetConfigString(M.configKey, "", true) end
+function M.clearHandoff()
+  Spring.SetConfigString(M.configKey, "", true)
+  Spring.SetConfigString(M.phaseKey, "", true)
+end
 
 function M.newRenderer()
   local r = {uniforms = {}}
