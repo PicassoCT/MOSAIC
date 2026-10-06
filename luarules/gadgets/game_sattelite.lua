@@ -586,6 +586,7 @@ local function resolveAntiSatelliteStrike(parentID, childID, targetID)
     local parentData = Satellites[parentID]
     local targetData = Satellites[targetID]
     if not parentData or parentData.utype ~= antiDefID or
+        parentData.interceptTarget ~= targetID or
         not targetData or targetData.utype == shrapnelDefID or
         not hostile(spGetUnitTeam(parentID), spGetUnitTeam(targetID)) or
         not sameCourseAndClose(parentID, targetID) then
@@ -851,7 +852,9 @@ function gadget:AllowWeaponTarget(attackerID, targetID, weaponNum, weaponDefID, 
 
     local parentID = GG.NooneParent[attackerID]
     local targetData = Satellites[targetID]
-    local allowed = parentID and
+    local parentData = parentID and Satellites[parentID]
+    local allowed = parentData and
+        parentData.interceptTarget == targetID and
         targetData and
         targetData.utype ~= shrapnelDefID and
         hostile(spGetUnitTeam(parentID), spGetUnitTeam(targetID)) and
