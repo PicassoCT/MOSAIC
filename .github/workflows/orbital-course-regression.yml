@@ -10,6 +10,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            luarules/gadgets/game_sattelite.lua
+            luaui/widgets_mosaic/gfx_orbital_bands.lua
+            tests/orbital_bands_test.lua
+          sparse-checkout-cone-mode: false
+          fetch-depth: 1
       - name: Install Lua 5.1
         run: |
           sudo apt-get update
