@@ -9,7 +9,7 @@ local texture = #screens > 0 and screens[math.random(1, #screens)] or ""
 local startTimer = Spring.GetTimer()
 local renderer = Arrival.newRenderer()
 local active = false
-Arrival.clearHandoff()
+Arrival.beginHandoff()
 function SG.IsOrbitalArrivalActive() return active end
 
 function addon.DrawLoadScreen()
@@ -24,7 +24,7 @@ function addon.DrawLoadScreen()
   gl.Scale(1 / width, 1 / height, 1)
   if renderer then
     if not renderer:draw(width, height, texture, age, fade, descent) then
-      renderer:destroy(); renderer = nil; active = false; Arrival.clearHandoff()
+      renderer:destroy(); renderer = nil; active = false
     end
   end
   if not renderer and texture ~= "" then
@@ -35,6 +35,9 @@ function addon.DrawLoadScreen()
 end
 
 function addon.Shutdown()
+  -- This is the authoritative loading-screen boundary. LuaUI is allowed to
+  -- start the descent only after LuaIntro has actually relinquished control.
+  Arrival.finishIntro()
   if renderer then renderer:destroy() end
   if texture ~= "" then gl.DeleteTexture(texture) end
 end
