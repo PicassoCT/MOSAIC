@@ -34,6 +34,7 @@ local lastAnnounceAt = -math.huge
 local previousCamera
 local enabled = false
 local runtime = 0
+local streamStarted = false
 local mapScale = Game.mapSizeX / DEFAULT_TABLE_WIDTH_M
 local mapCenterX = Game.mapSizeX * 0.5
 local mapCenterZ = Game.mapSizeZ * 0.5
@@ -96,7 +97,32 @@ local function send(msg, ip, port)
     end
 end
 
+local function stopFrameStream()
+    if streamStarted and Spring.StopFrameStream then
+        Spring.StopFrameStream()
+    end
+    streamStarted = false
+end
+
+local function startFrameStream(ip)
+    if streamStarted or not Spring.StartFrameStream then return end
+    local ok = Spring.StartFrameStream({
+        address = ip,
+        port = 9001,
+        width = 640,
+        height = 360,
+        fps = 20,
+    })
+    streamStarted = ok and true or false
+    if streamStarted then
+        spEcho("[MOSAIC AR] framebuffer stream ->", ip .. ":9001")
+    else
+        spEcho("[MOSAIC AR] framebuffer stream unavailable; pose bridge remains active")
+    end
+end
+
 local function unpair(reason)
+    stopFrameStream()
     if pairedIP then
         spEcho("[MOSAIC AR] disconnected:", reason or "unknown")
     end
@@ -116,6 +142,7 @@ local function pair(ip, port, token)
     pairedIP, pairedPort = ip, port
     pairToken = token or pairToken
     lastPacketAt = now()
+    startFrameStream(pairedIP)
     send(PROTOCOL .. ";PAIRED;TOKEN=" .. pairToken .. ";MAP=" .. Game.mapName ..
          ";MAPX=" .. Game.mapSizeX .. ";MAPZ=" .. Game.mapSizeZ ..
          ";SCALE=" .. string.format("%.6f", mapScale) .. ";", pairedIP, pairedPort)
