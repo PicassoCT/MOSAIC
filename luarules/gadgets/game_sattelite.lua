@@ -1,12 +1,12 @@
 function gadget:GetInfo()
     return {
-        name = "Orbital Bands",
-        desc = "Predictable orbital ground tracks, downtime retasking and orbital hazards",
+        name = "Orbital Tracks",
+        desc = "Directly steered orbital ground tracks, downtime retasking and orbital hazards",
         author = "pica",
         date = "Anno Domini 2018 / rebuilt 2026",
         license = "GNU GPL, v2 or later",
         layer = 109,
-        version = 2,
+        version = 3,
         enabled = true,
         hidden = true
     }
@@ -18,7 +18,6 @@ VFS.Include("scripts/lib_OS.lua")
 VFS.Include("scripts/lib_UnitScript.lua")
 VFS.Include("scripts/lib_Animation.lua")
 VFS.Include("scripts/lib_mosaic.lua")
-VFS.Include("luarules/configs/commandsIDs.lua")
 
 local GameConfig = getGameConfig()
 local SatelliteTypes = getOrbitalTypes(UnitDefs)
@@ -34,8 +33,14 @@ local nooneDefID = UnitDefNames["noone"].id
 
 local gaiaTeamID = Spring.GetGaiaTeamID()
 local mapSizeX, mapSizeZ = Game.mapSizeX, Game.mapSizeZ
-local BAND_COUNT = 5
 local ENTRY_MARGIN = 2
+local TURN_EDGE_MARGIN = 96
+local COURSE_SLEW_FRACTION = 0.25
+local MIN_COURSE_SLEW = 0.80
+local INTERCEPT_SLEW_MULTIPLIER = 1.25
+local INTERCEPT_SPEED_DELTA = 0.35
+local INTERCEPT_RANGE = 180
+local GODROD_TRACK_TOLERANCE = 60
 local allyTeamList = Spring.GetAllyTeamList()
 
 local spGetUnitHealth = Spring.GetUnitHealth
@@ -65,8 +70,26 @@ GG.Orbital = GG.Orbital or {}
 local PUBLIC = {public = true}
 local PRIVATE = {private = true}
 
+local function clamp(value, minimum, maximum)
+    return math.max(minimum, math.min(maximum, value))
+end
+
+local function moveToward(value, target, step)
+    if value < target then return math.min(target, value + step) end
+    if value > target then return math.max(target, value - step) end
+    return value
+end
+
 local function alive(id)
     return type(id) == "number" and doesUnitExistAlive(id) == true
+end
+
+local function hostile(teamA, teamB)
+    if teamA == nil or teamB == nil or teamA == teamB then return false end
+    if Spring.AreTeamsAllied then
+        return not Spring.AreTeamsAllied(teamA, teamB)
+    end
+    return true
 end
 
 local function directionCode(direction)
@@ -77,48 +100,45 @@ local function directionFromCode(code)
     return code == 2 and "horizontal" or "vertical"
 end
 
-local function bandCoordinate(direction, band)
-    band = math.max(1, math.min(BAND_COUNT, math.floor(band or 1)))
-    local size = direction == "vertical" and mapSizeX or mapSizeZ
-    return size * band / (BAND_COUNT + 1)
+local function trackLimit(direction)
+    return direction == "vertical" and mapSizeX or mapSizeZ
 end
 
-local function entryPosition(direction, band)
+local function alongLimit(direction)
+    return direction == "vertical" and mapSizeZ or mapSizeX
+end
+
+local function crossTrack(direction, x, z)
+    return direction == "vertical" and x or z
+end
+
+local function alongTrack(direction, x, z)
+    return direction == "vertical" and z or x
+end
+
+local function entryPosition(direction, track)
+    track = clamp(track, ENTRY_MARGIN, trackLimit(direction) - ENTRY_MARGIN)
     if direction == "vertical" then
-        return bandCoordinate(direction, band), ENTRY_MARGIN
+        return track, ENTRY_MARGIN
     end
-    return ENTRY_MARGIN, bandCoordinate(direction, band)
+    return ENTRY_MARGIN, track
 end
 
-local function exitPosition(direction, band)
-    if direction == "vertical" then
-        return bandCoordinate(direction, band), mapSizeZ - ENTRY_MARGIN
-    end
-    return mapSizeX - ENTRY_MARGIN, bandCoordinate(direction, band)
-end
-
-local function closestBandForPoint(x, z)
-    local bestDirection, bestBand, bestDistance
-    for band = 1, BAND_COUNT do
-        local vx = bandCoordinate("vertical", band)
-        local vd = math.abs(x - vx)
-        if not bestDistance or vd < bestDistance then
-            bestDirection, bestBand, bestDistance = "vertical", band, vd
-        end
-
-        local hz = bandCoordinate("horizontal", band)
-        local hd = math.abs(z - hz)
-        if hd < bestDistance then
-            bestDirection, bestBand, bestDistance = "horizontal", band, hd
-        end
-    end
-    return bestDirection, bestBand
-end
-
-local function initialBand(unitID)
-    local band = ((math.floor(unitID / 2)) % BAND_COUNT) + 1
+local function initialCourse(unitID)
     local direction = (unitID % 2 == 0) and "vertical" or "horizontal"
-    return direction, band
+    local span = trackLimit(direction)
+    local seed = (unitID * 1103515245 + 12345) % 10000
+    local fraction = 0.12 + 0.76 * (seed / 9999)
+    return direction, clamp(span * fraction, ENTRY_MARGIN, span - ENTRY_MARGIN)
+end
+
+local function courseSlewSpeed(data)
+    local base = SatelliteSpeed[data.utype] or 0
+    local slew = math.max(MIN_COURSE_SLEW, base * COURSE_SLEW_FRACTION)
+    if data.utype == antiDefID and data.interceptTarget then
+        slew = slew * INTERCEPT_SLEW_MULTIPLIER
+    end
+    return slew
 end
 
 local function isOperationalSatellite(defID)
@@ -154,68 +174,46 @@ end
 local function publish(unitID, data)
     if not data then return end
 
-    spSetUnitRulesParam(unitID, "orbital_band_count", BAND_COUNT, PUBLIC)
-    spSetUnitRulesParam(unitID, "orbital_band", data.band or 1, PUBLIC)
     spSetUnitRulesParam(unitID, "orbital_direction", directionCode(data.direction), PUBLIC)
     spSetUnitRulesParam(unitID, "orbital_state",
         data.state == "flying" and 1 or (data.state == "timeout" and 2 or 0), PUBLIC)
     spSetUnitRulesParam(unitID, "orbital_timeout_remaining", data.timeoutRemaining or 0, PUBLIC)
     spSetUnitRulesParam(unitID, "orbital_timeout_total", data.timeoutTotal or 0, PUBLIC)
     spSetUnitRulesParam(unitID, "orbital_timeout_serial", data.timeoutSerial or 0, PUBLIC)
-    spSetUnitRulesParam(unitID, "orbital_speed", SatelliteSpeed[data.utype] or 0, PUBLIC)
+    spSetUnitRulesParam(unitID, "orbital_speed",
+        data.currentSpeed or SatelliteSpeed[data.utype] or 0, PUBLIC)
+    spSetUnitRulesParam(unitID, "orbital_slew_speed", courseSlewSpeed(data), PUBLIC)
+    spSetUnitRulesParam(unitID, "orbital_track", data.track or 0, PUBLIC)
+    spSetUnitRulesParam(unitID, "orbital_target_track",
+        data.desiredTrack or data.track or 0, PUBLIC)
     spSetUnitRulesParam(unitID, "orbital_is_scan", data.utype == scanDefID and 1 or 0, PUBLIC)
     spSetUnitRulesParam(unitID, "orbital_is_anti", data.utype == antiDefID and 1 or 0, PUBLIC)
     spSetUnitRulesParam(unitID, "orbital_is_godrod", data.utype == godrodDefID and 1 or 0, PUBLIC)
     spSetUnitRulesParam(unitID, "orbital_is_debris", data.utype == shrapnelDefID and 1 or 0, PUBLIC)
 
-    if data.pendingBand then
-        spSetUnitRulesParam(unitID, "orbital_pending_band", data.pendingBand, PUBLIC)
+    if data.pendingDirection then
         spSetUnitRulesParam(unitID, "orbital_pending_direction",
             directionCode(data.pendingDirection), PUBLIC)
+        spSetUnitRulesParam(unitID, "orbital_pending_track",
+            data.pendingTrack or 0, PUBLIC)
     else
-        spSetUnitRulesParam(unitID, "orbital_pending_band", 0, PUBLIC)
         spSetUnitRulesParam(unitID, "orbital_pending_direction", 0, PUBLIC)
+        spSetUnitRulesParam(unitID, "orbital_pending_track", 0, PUBLIC)
     end
 
-    local cmdDescID = Spring.FindUnitCmdDesc(unitID, CMD_ORBITAL_BAND)
-    if cmdDescID then
-        local current =
-            (data.direction == "horizontal" and "H" or "V") ..
-            tostring(data.band or 1)
-        local pending = data.pendingBand and
-            (" -> " ..
-             (data.pendingDirection == "horizontal" and "H" or "V") ..
-             tostring(data.pendingBand)) or ""
-        Spring.EditUnitCmdDesc(unitID, cmdDescID, {
-            name = "TRACK " .. current .. pending,
-            tooltip = "Orbital ground track " .. current .. pending ..
-                ". Retasking executes only during orbital downtime."
-        })
-    end
+    local changing =
+        data.pendingDirection or
+        math.abs((data.desiredTrack or data.track or 0) - (data.track or 0)) > 1
+    spSetUnitRulesParam(unitID, "orbital_course_changing", changing and 1 or 0, PUBLIC)
 
     local godrod = data.godrod
     spSetUnitRulesParam(unitID, "godrod_positioning", godrod and 1 or 0, PUBLIC)
-    spSetUnitRulesParam(unitID, "godrod_target_band", godrod and godrod.band or 0, PUBLIC)
     spSetUnitRulesParam(unitID, "godrod_target_direction",
         godrod and directionCode(godrod.direction) or 0, PUBLIC)
-end
-
-local function orbitalCmdDesc()
-    return {
-        id = CMD_ORBITAL_BAND,
-        type = CMDTYPE.ICON_MAP,
-        name = "Orbital band",
-        action = "orbitalband",
-        cursor = "Move",
-        tooltip = "Choose a predictable ground-track band. Retasking is queued and only executed during orbital downtime."
-    }
-end
-
-local function installBandCommand(unitID, defID)
-    if defID == shrapnelDefID then return end
-    if not Spring.FindUnitCmdDesc(unitID, CMD_ORBITAL_BAND) then
-        Spring.InsertUnitCmdDesc(unitID, orbitalCmdDesc())
-    end
+    spSetUnitRulesParam(unitID, "godrod_target_track",
+        godrod and godrod.track or 0, PUBLIC)
+    spSetUnitRulesParam(unitID, "godrod_target_x", godrod and godrod.x or 0, PUBLIC)
+    spSetUnitRulesParam(unitID, "godrod_target_z", godrod and godrod.z or 0, PUBLIC)
 end
 
 local function setFlightPresentation(unitID, active)
@@ -229,7 +227,20 @@ end
 local function configureSatellite(unitID, data)
     spSetUnitBlocking(unitID, false, false, false)
     setGroundVision(unitID, data.utype, false)
-    installBandCommand(unitID, data.utype)
+end
+
+local function timeoutTarget(data)
+    if data.pendingDirection then
+        local track = data.pendingTrack or
+            clamp(data.desiredTrack or data.track or ENTRY_MARGIN,
+                  ENTRY_MARGIN,
+                  trackLimit(data.pendingDirection) - ENTRY_MARGIN)
+        return entryPosition(data.pendingDirection, track)
+    end
+
+    local track = clamp(data.desiredTrack or data.track or ENTRY_MARGIN,
+        ENTRY_MARGIN, trackLimit(data.direction) - ENTRY_MARGIN)
+    return entryPosition(data.direction, track)
 end
 
 local function beginFlight(unitID, data)
@@ -238,14 +249,25 @@ local function beginFlight(unitID, data)
     data.timeoutRemaining = 0
     data.timeoutTotal = 0
 
-    if data.pendingBand then
-        data.band = data.pendingBand
+    if data.pendingDirection then
         data.direction = data.pendingDirection
-        data.pendingBand = nil
+        data.track = clamp(
+            data.pendingTrack or data.desiredTrack or data.track or ENTRY_MARGIN,
+            ENTRY_MARGIN,
+            trackLimit(data.direction) - ENTRY_MARGIN
+        )
+        data.desiredTrack = data.track
         data.pendingDirection = nil
+        data.pendingTrack = nil
+    else
+        data.track = clamp(
+            data.desiredTrack or data.track or ENTRY_MARGIN,
+            ENTRY_MARGIN,
+            trackLimit(data.direction) - ENTRY_MARGIN
+        )
     end
 
-    local x, z = entryPosition(data.direction, data.band)
+    local x, z = entryPosition(data.direction, data.track)
     spMoveCtrlSetPosition(unitID, x, SatelliteAltitude[data.utype], z)
     data.lastX, data.lastY, data.lastZ =
         x, SatelliteAltitude[data.utype], z
@@ -255,12 +277,6 @@ local function beginFlight(unitID, data)
     publish(unitID, data)
 end
 
-local function timeoutTarget(data)
-    local direction = data.pendingDirection or data.direction
-    local band = data.pendingBand or data.band
-    return entryPosition(direction, band)
-end
-
 local function beginTimeout(unitID, data)
     if data.utype == shrapnelDefID then return end
 
@@ -268,6 +284,7 @@ local function beginTimeout(unitID, data)
     data.timeoutSerial = (data.timeoutSerial or 0) + 1
     data.timeoutTotal = math.max(1, SatelliteTimeout[data.utype] or 1)
     data.timeoutRemaining = data.timeoutTotal
+    data.currentSpeed = 0
 
     local x, _, z = spGetUnitPosition(unitID)
     data.shiftStartX, data.shiftStartZ = x or 0, z or 0
@@ -278,34 +295,189 @@ local function beginTimeout(unitID, data)
     publish(unitID, data)
 end
 
-local function updateTimeoutTarget(data)
-    if data.state ~= "timeout" then return end
-    local x, z = timeoutTarget(data)
-    data.shiftTargetX, data.shiftTargetZ = x, z
+local function requestedDirectionChange(data, x, z)
+    local xEdge = math.min(x, mapSizeX - x)
+    local zEdge = math.min(z, mapSizeZ - z)
+
+    if xEdge <= TURN_EDGE_MARGIN and xEdge <= zEdge and
+        data.direction ~= "horizontal" then
+        return "horizontal", clamp(z, ENTRY_MARGIN, mapSizeZ - ENTRY_MARGIN)
+    end
+
+    if zEdge <= TURN_EDGE_MARGIN and zEdge < xEdge and
+        data.direction ~= "vertical" then
+        return "vertical", clamp(x, ENTRY_MARGIN, mapSizeX - ENTRY_MARGIN)
+    end
+
+    return nil
 end
 
-local function queueBand(unitID, x, z)
+local function setCourse(unitID, x, z)
     local data = Satellites[unitID] or SatellitesWaiting[unitID]
     if not data or data.utype == shrapnelDefID then return false end
     if type(x) ~= "number" or type(z) ~= "number" then return false end
 
-    local direction, band = closestBandForPoint(x, z)
-    data.pendingDirection = direction
-    data.pendingBand = band
-    updateTimeoutTarget(data)
+    data.interceptTarget = nil
+    data.commandX, data.commandZ = x, z
+
+    local targetTrack = crossTrack(data.direction, x, z)
+    data.desiredTrack = clamp(
+        targetTrack,
+        ENTRY_MARGIN,
+        trackLimit(data.direction) - ENTRY_MARGIN
+    )
+
+    local pendingDirection, pendingTrack =
+        requestedDirectionChange(data, x, z)
+
+    data.pendingDirection = pendingDirection
+    data.pendingTrack = pendingTrack
+
+    if data.state == "timeout" then
+        data.shiftTargetX, data.shiftTargetZ = timeoutTarget(data)
+    end
+
     publish(unitID, data)
     return true
 end
 
-local function flyingPosition(data, x, z)
-    local speed = SatelliteSpeed[data.utype] or 0
-    if data.direction == "vertical" then
-        x = bandCoordinate("vertical", data.band)
-        z = z + speed
-    else
-        x = x + speed
-        z = bandCoordinate("horizontal", data.band)
+local function setInterceptTarget(unitID, targetID)
+    local data = Satellites[unitID]
+    local targetData = Satellites[targetID]
+    if not data or data.utype ~= antiDefID or
+        not targetData or targetData.utype == shrapnelDefID or
+        not hostile(spGetUnitTeam(unitID), spGetUnitTeam(targetID)) then
+        return false
     end
+
+    data.interceptTarget = targetID
+
+    local tx, _, tz = spGetUnitPosition(targetID)
+    if tx then
+        data.desiredTrack = clamp(
+            crossTrack(data.direction, tx, tz),
+            ENTRY_MARGIN,
+            trackLimit(data.direction) - ENTRY_MARGIN
+        )
+    end
+
+    if targetData.direction ~= data.direction and tx then
+        data.pendingDirection = targetData.direction
+        data.pendingTrack = clamp(
+            crossTrack(targetData.direction, tx, tz),
+            ENTRY_MARGIN,
+            trackLimit(targetData.direction) - ENTRY_MARGIN
+        )
+    else
+        data.pendingDirection = nil
+        data.pendingTrack = nil
+    end
+
+    if data.state == "timeout" then
+        data.shiftTargetX, data.shiftTargetZ = timeoutTarget(data)
+    end
+
+    publish(unitID, data)
+    return true
+end
+
+local function updateInterceptGuidance(unitID, data)
+    if data.utype ~= antiDefID or not data.interceptTarget then return end
+
+    local targetID = data.interceptTarget
+    local targetData = Satellites[targetID]
+    if not alive(targetID) or not targetData or
+        targetData.utype == shrapnelDefID or
+        not hostile(spGetUnitTeam(unitID), spGetUnitTeam(targetID)) then
+        data.interceptTarget = nil
+        data.pendingDirection = nil
+        data.pendingTrack = nil
+        return
+    end
+
+    local tx, _, tz = spGetUnitPosition(targetID)
+    if not tx then return end
+
+    data.desiredTrack = clamp(
+        crossTrack(data.direction, tx, tz),
+        ENTRY_MARGIN,
+        trackLimit(data.direction) - ENTRY_MARGIN
+    )
+
+    if targetData.direction ~= data.direction then
+        data.pendingDirection = targetData.direction
+        data.pendingTrack = clamp(
+            crossTrack(targetData.direction, tx, tz),
+            ENTRY_MARGIN,
+            trackLimit(targetData.direction) - ENTRY_MARGIN
+        )
+    else
+        data.pendingDirection = nil
+        data.pendingTrack = nil
+    end
+end
+
+local function signedCircularDelta(target, source, span)
+    local delta = target - source
+    if delta > span * 0.5 then
+        delta = delta - span
+    elseif delta < -span * 0.5 then
+        delta = delta + span
+    end
+    return delta
+end
+
+local function forwardSpeed(unitID, data, x, z)
+    local base = SatelliteSpeed[data.utype] or 0
+    if data.utype ~= antiDefID or not data.interceptTarget then
+        return base
+    end
+
+    local targetID = data.interceptTarget
+    local targetData = Satellites[targetID]
+    if not targetData or targetData.state ~= "flying" or
+        targetData.direction ~= data.direction then
+        return base
+    end
+
+    local tx, _, tz = spGetUnitPosition(targetID)
+    if not tx then return base end
+
+    local span = alongLimit(data.direction)
+    local delta = signedCircularDelta(
+        alongTrack(data.direction, tx, tz),
+        alongTrack(data.direction, x, z),
+        span
+    )
+    local responseWindow = math.max(600, span * 0.12)
+    local factor = clamp(delta / responseWindow,
+        -INTERCEPT_SPEED_DELTA, INTERCEPT_SPEED_DELTA)
+
+    return base * (1 + factor)
+end
+
+local function flyingPosition(unitID, data, x, z)
+    updateInterceptGuidance(unitID, data)
+
+    local speed = forwardSpeed(unitID, data, x, z)
+    local slew = courseSlewSpeed(data)
+    local desired = clamp(
+        data.desiredTrack or crossTrack(data.direction, x, z),
+        ENTRY_MARGIN,
+        trackLimit(data.direction) - ENTRY_MARGIN
+    )
+
+    if data.direction == "vertical" then
+        x = moveToward(x, desired, slew)
+        z = z + speed
+        data.track = x
+    else
+        z = moveToward(z, desired, slew)
+        x = x + speed
+        data.track = z
+    end
+
+    data.currentSpeed = speed
     return x, z
 end
 
@@ -317,6 +489,8 @@ local function reachedExit(data, x, z)
 end
 
 local function updateTimeout(unitID, data)
+    updateInterceptGuidance(unitID, data)
+
     local remainingBeforeStep = math.max(1, data.timeoutRemaining or 1)
     local tx, tz = timeoutTarget(data)
     data.shiftTargetX, data.shiftTargetZ = tx, tz
@@ -324,11 +498,13 @@ local function updateTimeout(unitID, data)
     local x, _, z = spGetUnitPosition(unitID)
     if not x then return end
 
-    -- Move exactly one remaining-time fraction toward the requested entry.
-    -- Retargeting therefore changes velocity, never position discontinuously.
+    -- Keep the existing visible "go round the planet" downtime motion: move
+    -- one remaining-time fraction toward the next entry point. Retasking during
+    -- downtime bends that path immediately instead of snapping on re-entry.
     x = x + (tx - x) / remainingBeforeStep
     z = z + (tz - z) / remainingBeforeStep
     data.timeoutRemaining = math.max(0, remainingBeforeStep - 1)
+    data.track = crossTrack(data.pendingDirection or data.direction, x, z)
 
     spMoveCtrlSetPosition(unitID, x, SatelliteAltitude[data.utype], z)
     data.lastX, data.lastY, data.lastZ =
@@ -345,13 +521,18 @@ local function updateDebris(unitID, data)
     local x, _, z = spGetUnitPosition(unitID)
     if not x then return end
 
-    x, z = flyingPosition(data, x, z)
-    if data.direction == "vertical" and z >= mapSizeZ then
-        z = ENTRY_MARGIN
-    elseif data.direction == "horizontal" and x >= mapSizeX then
-        x = ENTRY_MARGIN
+    local speed = SatelliteSpeed[data.utype] or 0
+    if data.direction == "vertical" then
+        z = z + speed
+        if z >= mapSizeZ then z = ENTRY_MARGIN end
+        data.track = x
+    else
+        x = x + speed
+        if x >= mapSizeX then x = ENTRY_MARGIN end
+        data.track = z
     end
 
+    data.currentSpeed = speed
     spMoveCtrlSetPosition(unitID, x, SatelliteAltitude[data.utype], z)
     data.lastX, data.lastY, data.lastZ =
         x, SatelliteAltitude[data.utype], z
@@ -371,19 +552,30 @@ local function spawnDebris(x, y, z, sourceData)
     local data = SatellitesWaiting[cloudID] or Satellites[cloudID]
     if data and sourceData then
         data.direction = sourceData.direction
-        data.band = sourceData.band
+        data.track = crossTrack(data.direction, x, z)
+        data.desiredTrack = data.track
         data.pendingDirection = nil
-        data.pendingBand = nil
+        data.pendingTrack = nil
         publish(cloudID, data)
     end
     return cloudID
 end
 
-local function sameActiveBand(a, b)
-    return a and b and
-        a.state == "flying" and b.state == "flying" and
-        a.direction == b.direction and
-        a.band == b.band
+local function sameCourseAndClose(parentID, targetID)
+    local a = Satellites[parentID]
+    local b = Satellites[targetID]
+    if not a or not b or
+        a.state ~= "flying" or b.state ~= "flying" or
+        a.direction ~= b.direction then
+        return false
+    end
+
+    local ax, _, az = spGetUnitPosition(parentID)
+    local bx, _, bz = spGetUnitPosition(targetID)
+    if not ax or not bx then return false end
+
+    local dx, dz = ax - bx, az - bz
+    return dx * dx + dz * dz <= INTERCEPT_RANGE * INTERCEPT_RANGE
 end
 
 local function resolveAntiSatelliteStrike(parentID, childID, targetID)
@@ -395,8 +587,8 @@ local function resolveAntiSatelliteStrike(parentID, childID, targetID)
     local targetData = Satellites[targetID]
     if not parentData or parentData.utype ~= antiDefID or
         not targetData or targetData.utype == shrapnelDefID or
-        spGetUnitTeam(parentID) == spGetUnitTeam(targetID) or
-        not sameActiveBand(parentData, targetData) then
+        not hostile(spGetUnitTeam(parentID), spGetUnitTeam(targetID)) or
+        not sameCourseAndClose(parentID, targetID) then
         return false
     end
 
@@ -419,18 +611,22 @@ local function requestGodRodStrike(unitID, x, z)
         return true
     end
 
-    local direction, band = closestBandForPoint(x, z)
-    data.pendingDirection = direction
-    data.pendingBand = band
-    updateTimeoutTarget(data)
+    local direction = data.direction
+    local track = clamp(
+        crossTrack(direction, x, z),
+        ENTRY_MARGIN,
+        trackLimit(direction) - ENTRY_MARGIN
+    )
+    data.desiredTrack = track
+    data.pendingDirection = nil
+    data.pendingTrack = nil
 
-    local needsSerial = (data.timeoutSerial or 0)
+    local needsSerial = data.timeoutSerial or 0
     if data.state ~= "timeout" then
         needsSerial = needsSerial + 1
     else
-        -- The positioning warning must last one complete downtime after the
-        -- strike is committed, even if the order arrives late in an existing
-        -- downtime window.
+        -- A Godrod warning must remain visible for one complete downtime after
+        -- commitment, even when the order arrives late in an existing downtime.
         data.timeoutRemaining = math.max(
             1,
             SatelliteTimeout[data.utype] or data.timeoutTotal or 1
@@ -444,9 +640,13 @@ local function requestGodRodStrike(unitID, x, z)
         x = x,
         z = z,
         direction = direction,
-        band = band,
+        track = track,
         requiredTimeoutSerial = needsSerial
     }
+
+    if data.state == "timeout" then
+        data.shiftTargetX, data.shiftTargetZ = timeoutTarget(data)
+    end
 
     publish(unitID, data)
     return true
@@ -460,21 +660,25 @@ local function canGodRodFire(unitID)
     end
 
     if (data.timeoutSerial or 0) < target.requiredTimeoutSerial or
-        data.direction ~= target.direction or
-        data.band ~= target.band then
+        data.direction ~= target.direction then
         return false
     end
 
     local x, _, z = spGetUnitPosition(unitID)
     if not x then return false end
 
+    local currentTrack = crossTrack(data.direction, x, z)
+    if math.abs(currentTrack - target.track) > GODROD_TRACK_TOLERANCE then
+        return false
+    end
+
     local dropDistance =
         GameConfig.military.satellites.godRod.dropDistance or 50
-    local alongTrackDistance =
+    local distanceAlong =
         data.direction == "vertical" and math.abs(z - target.z) or
         math.abs(x - target.x)
 
-    if alongTrackDistance <= dropDistance then
+    if distanceAlong <= dropDistance then
         return true, target.x, Spring.GetGroundHeight(target.x, target.z), target.z
     end
     return false
@@ -502,9 +706,8 @@ local function spoofDownlink(victimTeamID, ecmID, nimrodID, untilFrame)
 end
 
 function gadget:Initialize()
-    gadgetHandler:RegisterCMDID(CMD_ORBITAL_BAND)
-
-    GG.Orbital.QueueBand = queueBand
+    GG.Orbital.SetCourse = setCourse
+    GG.Orbital.SetInterceptTarget = setInterceptTarget
     GG.Orbital.RequestGodRodStrike = requestGodRodStrike
     GG.Orbital.CanGodRodFire = canGodRodFire
     GG.Orbital.ConsumeGodRodPositioning = consumeGodRodPositioning
@@ -521,7 +724,8 @@ end
 
 function gadget:Shutdown()
     if GG.Orbital then
-        GG.Orbital.QueueBand = nil
+        GG.Orbital.SetCourse = nil
+        GG.Orbital.SetInterceptTarget = nil
         GG.Orbital.RequestGodRodStrike = nil
         GG.Orbital.CanGodRodFire = nil
         GG.Orbital.ConsumeGodRodPositioning = nil
@@ -533,11 +737,12 @@ end
 function gadget:UnitCreated(unitID, unitDefID)
     if not SatelliteTypes[unitDefID] then return end
 
-    local direction, band = initialBand(unitID)
+    local direction, track = initialCourse(unitID)
     local data = {
         utype = unitDefID,
         direction = direction,
-        band = band,
+        track = track,
+        desiredTrack = track,
         state = "waiting",
         timeoutSerial = 0
     }
@@ -546,13 +751,16 @@ function gadget:UnitCreated(unitID, unitDefID)
     configureSatellite(unitID, data)
 
     if unitDefID == shrapnelDefID then
-        -- Debris is born at the intercept/destruction point and must keep that
-        -- local position. It drifts from there; unlike launched satellites it
-        -- never snaps to an orbital entry edge and never enters downtime.
+        -- Debris is born at the intercept/destruction point and keeps drifting
+        -- from that physical position; it never enters satellite downtime.
         spMoveCtrlEnable(unitID, true)
         data.state = "flying"
         Satellites[unitID] = data
         local dx, dy, dz = spGetUnitPosition(unitID)
+        if dx then
+            data.track = crossTrack(data.direction, dx, dz)
+            data.desiredTrack = data.track
+        end
         data.lastX, data.lastY, data.lastZ = dx, dy, dz
         makeOrbitPublic(unitID)
         setFlightPresentation(unitID, true)
@@ -577,10 +785,10 @@ function gadget:UnitDestroyed(unitID, unitDefID)
 
         if not diedPeacefully then
             local x, y, z = spGetUnitPosition(unitID)
-        if not x and data then
-            x, y, z = data.lastX, data.lastY, data.lastZ
-        end
-        spawnDebris(x, y, z, data)
+            if not x and data then
+                x, y, z = data.lastX, data.lastY, data.lastZ
+            end
+            spawnDebris(x, y, z, data)
         end
     end
 end
@@ -590,22 +798,40 @@ function gadget:AllowCommand(unitID, unitDefID, unitTeam, cmdID, cmdParams)
         return true
     end
 
-    if cmdID == CMD_ORBITAL_BAND then
+    -- Normal RTS interaction is the orbital course-control surface. There is
+    -- deliberately no custom band button: select the satellite and right-click.
+    if cmdID == CMD.MOVE or cmdID == CMD.PATROL then
         if cmdParams and #cmdParams >= 3 then
-            queueBand(unitID, cmdParams[1], cmdParams[3])
+            setCourse(unitID, cmdParams[1], cmdParams[3])
         end
         return false
     end
 
-    -- Direct movement would turn orbital control back into aircraft
-    -- micromanagement. The only positional control is choosing a band.
-    if cmdID == CMD.MOVE or cmdID == CMD.PATROL then
+    if cmdID == CMD.STOP then
+        local data = Satellites[unitID] or SatellitesWaiting[unitID]
+        if data then
+            data.interceptTarget = nil
+            data.pendingDirection = nil
+            data.pendingTrack = nil
+            local x, _, z = spGetUnitPosition(unitID)
+            if x then
+                data.track = crossTrack(data.direction, x, z)
+                data.desiredTrack = data.track
+            end
+            publish(unitID, data)
+        end
         return false
     end
 
-    -- Observation and counter-satellites act on their selected band rather
-    -- than on individually clicked targets. Godrod is the deliberate
-    -- exception and keeps ground-target attack commands.
+    if unitDefID == antiDefID and cmdID == CMD.ATTACK then
+        local targetID = cmdParams and cmdParams[1]
+        if type(targetID) == "number" and Satellites[targetID] then
+            setInterceptTarget(unitID, targetID)
+        end
+        return false
+    end
+
+    -- The Godrod deliberately keeps ordinary ground-target attack commands.
     if unitDefID ~= godrodDefID and
         (cmdID == CMD.ATTACK or
          cmdID == CMD.AREA_ATTACK or
@@ -624,12 +850,12 @@ function gadget:AllowWeaponTarget(attackerID, targetID, weaponNum, weaponDefID, 
     end
 
     local parentID = GG.NooneParent[attackerID]
-    local parentData = parentID and Satellites[parentID]
     local targetData = Satellites[targetID]
-    local allowed = parentData and
+    local allowed = parentID and
         targetData and
         targetData.utype ~= shrapnelDefID and
-        sameActiveBand(parentData, targetData)
+        hostile(spGetUnitTeam(parentID), spGetUnitTeam(targetID)) and
+        sameCourseAndClose(parentID, targetID)
 
     return allowed == true, priority
 end
@@ -663,17 +889,19 @@ function gadget:GameFrame(frame)
                     local teamID = spGetUnitTeam(unitID)
                     local spoofed =
                         (downlinkSpoofUntil[teamID] or 0) >= frame
-                    -- A compromised Nimrod still shows where the hardware is,
-                    -- but the victim cannot use the observation feed.
+                    -- ECM can poison the downlink feed, never the directly
+                    -- visible physical satellite.
                     setGroundVision(unitID, data.utype, not spoofed)
                 end
             end
+
             local x, _, z = spGetUnitPosition(unitID)
             if x then
-                x, z = flyingPosition(data, x, z)
+                x, z = flyingPosition(unitID, data, x, z)
                 spMoveCtrlSetPosition(unitID, x, SatelliteAltitude[data.utype], z)
                 data.lastX, data.lastY, data.lastZ =
                     x, SatelliteAltitude[data.utype], z
+
                 if reachedExit(data, x, z) then
                     beginTimeout(unitID, data)
                 elseif frame % 30 == 0 then
