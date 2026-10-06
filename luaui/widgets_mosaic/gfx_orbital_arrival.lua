@@ -96,9 +96,6 @@ function widget:DrawScreenPost()
   -- Reuse the CLEAN world capture after engine overlays/cursor. No feedback.
   if finished or not hasCapture then return end
   renderer:draw(width, height, texture, age + modal.elapsed, fade, descent, liveTexture)
-  if WG.DrawMosaicArrivalLocation then
-    WG.DrawMosaicArrivalLocation(width, height, modal.elapsed, descent)
-  end
 end
 
 -- Keep flex call-ins registered even when the other interface widgets are off.
