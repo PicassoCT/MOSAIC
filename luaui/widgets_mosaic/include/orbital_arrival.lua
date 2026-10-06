@@ -1,10 +1,26 @@
 -- Shared by LuaIntro and LuaUI. All movement is texture-space; no camera API.
 local M = {}
 M.configKey = "MosaicOrbitalArrivalHandoff"
-M.artSeconds, M.fadeSeconds, M.descentSeconds = 3, 1.25, 3.8
+M.artSeconds, M.fadeSeconds, M.descentSeconds = 3, 1.25, 1.75
 M.holdDescent = 0.16
 
 function M.clamp(x) return math.max(0, math.min(1, x)) end
+-- Deliberately staged rather than a long continuous zoom. Each plateau lets the
+-- eye register a new scale, while the very short ramps read as optical snaps.
+local snapStops = {0.0, 0.16, 0.34, 0.56, 0.78, 1.0}
+function M.snapDescent(x)
+  x = M.clamp(x)
+  if x >= 1 then return 1 end
+  local count = #snapStops - 1
+  local scaled = x * count
+  local index = math.min(count, math.floor(scaled) + 1)
+  local phase = scaled - math.floor(scaled)
+  local a, b = snapStops[index], snapStops[index + 1]
+  -- Hold most of each beat, then jump to the next scale in ~18% of the beat.
+  local jump = M.clamp((phase - 0.82) / 0.18)
+  jump = jump * jump * (3 - 2 * jump)
+  return a + (b - a) * jump
+end
 function M.loadingState(age)
   return M.clamp((age - M.artSeconds) / M.fadeSeconds),
     M.holdDescent * M.clamp((age - M.artSeconds - M.fadeSeconds) / 2)
@@ -59,6 +75,7 @@ function M.newRenderer()
   end
 
   function r:draw(width, height, texture, age, fade, descent, live)
+    local visualDescent = M.snapDescent(descent)
     local factor = math.min(1, 960 / width, 540 / height)
     local rw = math.max(1, math.floor(width * factor))
     local rh = math.max(1, math.floor(height * factor))
@@ -71,14 +88,14 @@ function M.newRenderer()
       self.lastAge = nil
     end
     if not self.orbitTexture then return false end
-    if self.lastAge ~= age or self.lastDescent ~= descent or self.lastAspect ~= width / height then
+    if self.lastAge ~= age or self.lastDescent ~= visualDescent or self.lastAspect ~= width / height then
       gl.RenderToTexture(self.orbitTexture, function()
       gl.MatrixMode(GL.PROJECTION); gl.PushMatrix(); gl.LoadIdentity()
       gl.MatrixMode(GL.MODELVIEW); gl.PushMatrix(); gl.LoadIdentity()
       gl.Clear(0, 0, 0, 0)
       gl.Blending(false)
       gl.UseShader(self.earth)
-      gl.Uniform(self.uniforms.descent, descent)
+      gl.Uniform(self.uniforms.descent, visualDescent)
       gl.Uniform(self.uniforms.elapsed, age)
       gl.Uniform(self.uniforms.aspect, width / height)
       gl.Color(1, 1, 1, 1)
@@ -89,7 +106,7 @@ function M.newRenderer()
       gl.MatrixMode(GL.PROJECTION); gl.PopMatrix()
       gl.MatrixMode(GL.MODELVIEW)
       end)
-      self.lastAge, self.lastDescent, self.lastAspect = age, descent, width / height
+      self.lastAge, self.lastDescent, self.lastAspect = age, visualDescent, width / height
     end
     local info = texture and texture ~= "" and gl.TextureInfo(texture)
     local sx, sy = 1, 1
@@ -101,7 +118,7 @@ function M.newRenderer()
     gl.Texture(1, info and texture or self.orbitTexture)
     gl.Texture(2, live or self.orbitTexture)
     gl.UseShader(self.composite)
-    gl.Uniform(self.uniforms.c_descent, descent)
+    gl.Uniform(self.uniforms.c_descent, visualDescent)
     gl.Uniform(self.uniforms.c_fade, fade)
     gl.UniformInt(self.uniforms.c_hasArtwork, info and 1 or 0)
     gl.UniformInt(self.uniforms.c_hasLive, live and 1 or 0)
