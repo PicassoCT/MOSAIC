@@ -1,7 +1,7 @@
 function widget:GetInfo()
     return {
         name = "Orbital Plotter",
-        desc = "Predictable orbital bands, scan footprints, debris and Godrod warnings",
+        desc = "Continuous orbital tracks, scan footprints, debris and Godrod warnings",
         author = "MOSAIC",
         date = "2026",
         license = "GNU GPL, v2 or later",
@@ -20,7 +20,6 @@ local spGetTeamColor = Spring.GetTeamColor
 local spGetGroundHeight = Spring.GetGroundHeight
 local spGetGameFrame = Spring.GetGameFrame
 local spGetGameSeconds = Spring.GetGameSeconds
-local spGetSelectedUnits = Spring.GetSelectedUnits
 
 local glBeginEnd = gl.BeginEnd
 local glVertex = gl.Vertex
@@ -51,45 +50,62 @@ local orbitalDefs = {
 local SCAN_RADIUS = 500
 local DEBRIS_RADIUS = 450
 local GROUND_EPSILON = 8
+local ENTRY_MARGIN = 2
+
+local function clamp(value, minimum, maximum)
+    return math.max(minimum, math.min(maximum, value))
+end
+
+local function moveToward(value, target, step)
+    if value < target then return math.min(target, value + step) end
+    if value > target then return math.max(target, value - step) end
+    return value
+end
 
 local function groundY(x, z)
     return spGetGroundHeight(x, z) + GROUND_EPSILON
 end
 
-local function bandCoordinate(direction, band, count)
-    count = math.max(1, count or 5)
-    local size = direction == 1 and mapSizeX or mapSizeZ
-    return size * band / (count + 1)
+local function trackSpan(direction)
+    return direction == 1 and mapSizeX or mapSizeZ
 end
 
-local function spoofedPrediction(unitID, teamID, direction, band, count)
+local function spoofedPrediction(unitID, direction, track)
     local myTeam = Spring.GetMyTeamID()
-    if not myTeam or myTeam < 0 then return direction, band end
+    if not myTeam or myTeam < 0 then return direction, track end
 
     if spGetUnitRulesParam(unitID, "orbital_is_godrod") == 1 and
         spGetUnitRulesParam(unitID, "godrod_positioning") == 1 then
-        -- Godrod commitment is intentionally impossible to hide or falsify.
-        return direction, band
+        -- A committed Godrod path remains a public warning.
+        return direction, track
     end
 
     local untilFrame =
         spGetTeamRulesParam(myTeam, "orbital_spoof_until") or 0
-    if spGetGameFrame() > untilFrame then return direction, band end
+    if spGetGameFrame() > untilFrame then return direction, track end
 
-    -- A compromised downlink corrupts the victim's orbital plot as a whole:
-    -- own constellation, hostile contacts and scan-footprint predictions.
-    -- Current hardware glyphs remain truthful because they are directly visible.
+    -- ECM lies about the predicted ground track, not the directly visible
+    -- satellite hardware. Preserve continuity instead of snapping to fake bands.
     local seed = spGetTeamRulesParam(myTeam, "orbital_spoof_seed") or 0
-    local step = ((seed + unitID * 7) % math.max(1, count - 1)) + 1
-    local falseBand = ((band - 1 + step) % count) + 1
     local falseDirection = ((seed + unitID) % 3 == 0) and
         (direction == 1 and 2 or 1) or direction
 
-    return falseDirection, falseBand
+    local sourceSpan = math.max(1, trackSpan(direction))
+    local targetSpan = math.max(1, trackSpan(falseDirection))
+    local normalized = clamp(track / sourceSpan, 0, 1)
+    local offset =
+        ((((seed + unitID * 7) % 1000) / 999) - 0.5) * 0.35
+    local falseTrack = clamp(
+        (normalized + offset) * targetSpan,
+        ENTRY_MARGIN,
+        targetSpan - ENTRY_MARGIN
+    )
+
+    return falseDirection, falseTrack
 end
 
-local function drawTrack(direction, band, count, r, g, b, alpha, dashed)
-    local coord = bandCoordinate(direction, band, count)
+local function drawTrack(direction, coord, r, g, b, alpha, dashed)
+    coord = clamp(coord, ENTRY_MARGIN, trackSpan(direction) - ENTRY_MARGIN)
     local longSize = direction == 1 and mapSizeZ or mapSizeX
     local step = dashed and 420 or 256
     local gap = dashed and 170 or 0
@@ -99,12 +115,11 @@ local function drawTrack(direction, band, count, r, g, b, alpha, dashed)
             local p = 0
             while p < longSize do
                 local p2 = math.min(longSize, p + step - gap)
+                glColor(r, g, b, alpha)
                 if direction == 1 then
-                    glColor(r, g, b, alpha)
                     glVertex(coord, groundY(coord, p), p)
                     glVertex(coord, groundY(coord, p2), p2)
                 else
-                    glColor(r, g, b, alpha)
                     glVertex(p, groundY(p, coord), coord)
                     glVertex(p2, groundY(p2, coord), coord)
                 end
@@ -115,15 +130,15 @@ local function drawTrack(direction, band, count, r, g, b, alpha, dashed)
         glBeginEnd(GL.LINE_STRIP, function()
             local p = 0
             while p <= longSize do
+                glColor(r, g, b, alpha)
                 if direction == 1 then
-                    glColor(r, g, b, alpha)
                     glVertex(coord, groundY(coord, p), p)
                 else
-                    glColor(r, g, b, alpha)
                     glVertex(p, groundY(p, coord), coord)
                 end
                 p = p + step
             end
+
             if longSize % step ~= 0 then
                 if direction == 1 then
                     glVertex(coord, groundY(coord, longSize), longSize)
@@ -132,25 +147,6 @@ local function drawTrack(direction, band, count, r, g, b, alpha, dashed)
                 end
             end
         end)
-    end
-end
-
-local function selectedOrbitalBandCount()
-    local selected = spGetSelectedUnits()
-    for i = 1, #selected do
-        local unitID = selected[i]
-        if satellites[unitID] and satellites[unitID] ~= debrisDefID then
-            return spGetUnitRulesParam(unitID, "orbital_band_count") or 5
-        end
-    end
-    return nil
-end
-
-local function drawBandLattice(count)
-    if not count then return end
-    for band = 1, count do
-        drawTrack(1, band, count, 0.46, 0.62, 0.72, 0.055, true)
-        drawTrack(2, band, count, 0.46, 0.62, 0.72, 0.055, true)
     end
 end
 
@@ -167,18 +163,18 @@ local function drawCircle(x, z, radius, r, g, b, alpha, segments)
     end)
 end
 
-local function plottedFeedPosition(unitID, teamID, x, z, direction, band, count)
-    local plottedDirection, plottedBand =
-        spoofedPrediction(unitID, teamID, direction, band, count)
+local function plottedFeedPosition(unitID, x, z, direction, track)
+    local plottedDirection, plottedTrack =
+        spoofedPrediction(unitID, direction, track)
 
-    if plottedDirection == direction and plottedBand == band then
+    if plottedDirection == direction and math.abs(plottedTrack - track) < 0.01 then
         return x, z
     end
 
     if plottedDirection == 1 then
-        return bandCoordinate(1, plottedBand, count), z
+        return plottedTrack, z
     end
-    return x, bandCoordinate(2, plottedBand, count)
+    return x, plottedTrack
 end
 
 local function drawScanFootprint(x, z, r, g, b)
@@ -282,24 +278,35 @@ local function drawTimeoutArc(x, z, remaining, total, r, g, b)
     end)
 end
 
-local function drawFutureTicks(unitID, x, z, direction, band, count, speed, r, g, b)
-    local teamID = spGetUnitTeam(unitID)
-    local predictDirection, predictBand =
-        spoofedPrediction(unitID, teamID, direction, band, count)
+local function drawFutureTicks(
+    unitID, x, z, direction, track, targetTrack, speed, slew, r, g, b
+)
+    local predictDirection, predictTrack =
+        spoofedPrediction(unitID, direction, track)
+    local targetDirection, predictTarget =
+        spoofedPrediction(unitID, direction, targetTrack)
 
-    local coord = bandCoordinate(predictDirection, predictBand, count)
+    if targetDirection ~= predictDirection then
+        predictTarget = predictTrack
+    end
+
     for tick = 1, 4 do
         local framesAhead = tick * 15 * 30
         local travel = (speed or 0) * framesAhead
+        local cross = moveToward(
+            predictTrack,
+            predictTarget,
+            (slew or 0) * framesAhead
+        )
         local px, pz
 
         if predictDirection == 1 then
-            px = coord
+            px = cross
             pz = z + travel
             if pz >= mapSizeZ then break end
         else
             px = x + travel
-            pz = coord
+            pz = cross
             if px >= mapSizeX then break end
         end
 
@@ -313,39 +320,38 @@ local function drawFutureTicks(unitID, x, z, direction, band, count, speed, r, g
         end)
     end
 
+    -- There is no lattice and no numbered band. The dashed line is simply the
+    -- continuously steerable ground track the satellite is currently seeking.
     drawTrack(
         predictDirection,
-        predictBand,
-        count,
+        predictTarget,
         r, g, b,
         0.16,
         true
     )
 end
 
-local function drawGodrodCorridor(unitID, count, r, g, b)
+local function drawGodrodCorridor(unitID, r, g, b)
     if spGetUnitRulesParam(unitID, "godrod_positioning") ~= 1 then return end
 
     local direction = spGetUnitRulesParam(unitID, "godrod_target_direction") or 0
-    local band = spGetUnitRulesParam(unitID, "godrod_target_band") or 0
-    if direction == 0 or band == 0 then return end
+    local track = spGetUnitRulesParam(unitID, "godrod_target_track") or 0
+    if direction == 0 or track <= 0 then return end
 
-    local coord = bandCoordinate(direction, band, count)
-    local width = (direction == 1 and mapSizeX or mapSizeZ) /
-        (count + 1) * 0.34
+    local width = 220
 
     if shader and pulseLoc then glUniform(pulseLoc, 1.0) end
 
     glBeginEnd(GL.QUADS, function()
         glColor(r, g, b, 0.085)
         if direction == 1 then
-            local x1, x2 = coord - width, coord + width
+            local x1, x2 = track - width, track + width
             glVertex(x1, groundY(x1, 0), 0)
             glVertex(x2, groundY(x2, 0), 0)
             glVertex(x2, groundY(x2, mapSizeZ), mapSizeZ)
             glVertex(x1, groundY(x1, mapSizeZ), mapSizeZ)
         else
-            local z1, z2 = coord - width, coord + width
+            local z1, z2 = track - width, track + width
             glVertex(0, groundY(0, z1), z1)
             glVertex(mapSizeX, groundY(mapSizeX, z1), z1)
             glVertex(mapSizeX, groundY(mapSizeX, z2), z2)
@@ -354,7 +360,7 @@ local function drawGodrodCorridor(unitID, count, r, g, b)
     end)
 
     glLineWidth(3.2)
-    drawTrack(direction, band, count, r, g, b, 0.82, false)
+    drawTrack(direction, track, r, g, b, 0.82, false)
     glLineWidth(1.0)
 
     if shader and pulseLoc then glUniform(pulseLoc, 0.0) end
@@ -430,8 +436,6 @@ function widget:DrawWorldPreUnit()
         if pulseLoc then glUniform(pulseLoc, 0.0) end
     end
 
-    drawBandLattice(selectedOrbitalBandCount())
-
     for unitID, defID in pairs(satellites) do
         local x, _, z = spGetUnitPosition(unitID)
         if x then
@@ -439,32 +443,35 @@ function widget:DrawWorldPreUnit()
             local r, g, b = spGetTeamColor(teamID)
             if not r then r, g, b = 0.8, 0.8, 0.8 end
 
-            local count = spGetUnitRulesParam(unitID, "orbital_band_count") or 5
-            local band = spGetUnitRulesParam(unitID, "orbital_band") or 1
             local direction = spGetUnitRulesParam(unitID, "orbital_direction") or 1
             local state = spGetUnitRulesParam(unitID, "orbital_state") or 0
             local speed = spGetUnitRulesParam(unitID, "orbital_speed") or 0
+            local slew = spGetUnitRulesParam(unitID, "orbital_slew_speed") or 0
+            local track = spGetUnitRulesParam(unitID, "orbital_track") or
+                (direction == 1 and x or z)
+            local targetTrack =
+                spGetUnitRulesParam(unitID, "orbital_target_track") or track
 
             if defID == debrisDefID then
                 local life =
                     spGetUnitRulesParam(unitID, "orbital_debris_life") or 1
                 drawDebrisHazard(x, z, life)
             elseif state == 1 or state == 2 then
-                -- Current in-orbit hardware position is always truthful and
-                -- visible. State 0 is pre-launch construction and is not
-                -- leaked through the orbital plotter.
+                -- The physical contact is always truthful. ECM only corrupts
+                -- prediction/footprint overlays.
                 drawGlyph(unitID, defID, x, z, r, g, b)
 
                 if state == 1 then
                     drawFutureTicks(
                         unitID, x, z,
-                        direction, band, count, speed,
+                        direction, track, targetTrack,
+                        speed, slew,
                         r, g, b
                     )
+
                     if defID == scanDefID then
                         local feedX, feedZ = plottedFeedPosition(
-                            unitID, teamID, x, z,
-                            direction, band, count
+                            unitID, x, z, direction, track
                         )
                         drawScanFootprint(feedX, feedZ, r, g, b)
                     end
@@ -475,15 +482,14 @@ function widget:DrawWorldPreUnit()
                         spGetUnitRulesParam(unitID, "orbital_timeout_total") or 1
                     drawTimeoutArc(x, z, remaining, total, r, g, b)
 
-                    local pendingBand =
-                        spGetUnitRulesParam(unitID, "orbital_pending_band") or 0
                     local pendingDirection =
                         spGetUnitRulesParam(unitID, "orbital_pending_direction") or 0
-                    if pendingBand > 0 and pendingDirection > 0 then
+                    local pendingTrack =
+                        spGetUnitRulesParam(unitID, "orbital_pending_track") or 0
+                    if pendingDirection > 0 and pendingTrack > 0 then
                         drawTrack(
                             pendingDirection,
-                            pendingBand,
-                            count,
+                            pendingTrack,
                             r, g, b,
                             0.26,
                             true
@@ -492,7 +498,7 @@ function widget:DrawWorldPreUnit()
                 end
 
                 if defID == godrodDefID then
-                    drawGodrodCorridor(unitID, count, r, g, b)
+                    drawGodrodCorridor(unitID, r, g, b)
                 end
             end
         end
