@@ -50,8 +50,7 @@ local function setAnchorsRelative(nvx, nvy)
 end
 
 local mapName = Game.mapName
-local arrivalDisplayed = false
-local drawArrivalLocation
+local arrivalWasActive = false
 local function isDubaiMap()
   local name = (Game.mapName or ""):lower():gsub("[^a-z]", "")
   return name:find("lastdayofdubai", 1, true) or name:find("lastdayofdhubai", 1, true)
@@ -59,9 +58,6 @@ end
 
 
 function widget:Shutdown()
-  if WG.DrawMosaicArrivalLocation == drawArrivalLocation then
-    WG.DrawMosaicArrivalLocation = nil
-  end
 end
 
 local function getRollingString(original, nrOfLetters, frames)
@@ -7642,8 +7638,22 @@ local longestString = 2
 
 
 function widget:DrawScreenEffects(vsx, vsy)
-  if arrivalDisplayed or (WG.MosaicArrival and WG.MosaicArrival.active) then return end
   local currentFrame = Spring.GetGameFrame()
+  if WG.MosaicArrival and WG.MosaicArrival.active then
+    arrivalWasActive = true
+    return
+  end
+  -- Arrival owns the screen first. Start the original telex/location sequence
+  -- only after the live map is actually visible, so no reveal is consumed under
+  -- the cinematic.
+  if arrivalWasActive then
+    startFrame = currentFrame
+    endFrame = startFrame + (15*30)
+    displayStaticFrameIntervallLength = math.ceil(0.3*(endFrame - startFrame))
+    displayStaticFrame = startFrame + displayStaticFrameIntervallLength
+    boolStartSound = false
+    arrivalWasActive = false
+  end
   if currentFrame >= startFrame and currentFrame < endFrame + fadeOutPhaseFrames then 
     local fadeOutFactor = 1.0
     if currentFrame > endFrame then
@@ -7738,21 +7748,4 @@ function widget:Initialize()
 
   local locationString = "LOCATION:|"..region.."|"..country.."|"..province.."|"..cityname.."|"..citypart
   Spring.SendLuaRulesMsg(locationString)
-  WG.DrawMosaicArrivalLocation = drawArrivalLocation
-end
-
-
--- Called by the arrival widget after its final composite, above every cloud layer.
-drawArrivalLocation = function(width, height, elapsed, descent)
-  arrivalDisplayed = true
-  local alpha = math.min(1, elapsed / 0.7) * math.min(1, (1 - descent) / 0.15)
-  local size = math.max(18, math.min(width / 1920, height / 1080) * 44)
-  local x, y = width * 0.07, height * 0.19
-  gl.Color(0.30, 0.82, 1, alpha)
-  gl.Text(cache.city or Game.mapName, x, y, size, "o")
-  gl.Color(0.82, 0.92, 1, alpha * 0.85)
-  gl.Text((cache.country or "") .. "  /  " .. (cache.neighbourhood or ""),
-    x, y - size * 0.9, size * 0.42, "o")
-  gl.Text(getDayTimeString(), x, y - size * 1.55, size * 0.36, "o")
-  gl.Color(1, 1, 1, 1)
 end
