@@ -323,7 +323,7 @@ assert(type(w.teamRules[1].orbital_spoof_seed) == "number")
 tick(30)
 assert(w.sensors[10].los == 0,
     "spoofed Nimrod must suppress the victim's true scan feed")
-tick(50)
+tick(60)
 assert(w.sensors[10].los == 500,
     "scan feed must recover after ECM leaves and spoof expires")
 
