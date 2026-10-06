@@ -73,7 +73,12 @@ end
 
 function widget:DrawScreenEffects()
   if finished or not renderer then return end
-  if not started then begin() end
+  if not started then
+    -- LuaUI can initialize and draw while LuaIntro is still presenting the
+    -- loading screen. Do not start a hidden timer behind it.
+    if Arrival.introPhase() == "pending" then return end
+    begin()
+  end
   local elapsed = Spring.DiffTimers(Spring.GetTimer(), timer)
   local loadingFade = Arrival.loadingState(age + elapsed)
   fade = math.max(initialFade, loadingFade)
