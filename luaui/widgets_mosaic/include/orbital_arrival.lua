@@ -8,8 +8,8 @@ M.latestStartFrame = 300 -- late LuaUI initialization is OK; mid-game reloads ar
 M.holdDescent = 0.16
 
 function M.clamp(x) return math.max(0, math.min(1, x)) end
--- Deliberately staged rather than a long continuous zoom. Each plateau lets the
--- eye register a new scale, while the very short ramps read as optical snaps.
+-- Actively magnify for 72% of each half-second beat, then settle for 28%.
+-- A 0.09-second jump looked static or like a discontinuity.
 local snapStops = {0.0, 0.16, 0.34, 0.56, 0.78, 1.0}
 M.descentSeconds = (#snapStops - 1) * M.stepSeconds
 function M.snapDescent(x)
@@ -20,8 +20,7 @@ function M.snapDescent(x)
   local index = math.min(count, math.floor(scaled) + 1)
   local phase = scaled - math.floor(scaled)
   local a, b = snapStops[index], snapStops[index + 1]
-  -- Hold most of each beat, then jump to the next scale in ~18% of the beat.
-  local jump = M.clamp((phase - 0.82) / 0.18)
+  local jump = M.clamp(phase / 0.72)
   jump = jump * jump * (3 - 2 * jump)
   return a + (b - a) * jump
 end
