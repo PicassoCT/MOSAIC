@@ -27,7 +27,9 @@ function addon.DrawLoadScreen()
     gl.TexRect(0, 0, width, height)
     gl.Texture(false)
   else
+    gl.Color(0, 0, 0, 1)
     gl.Rect(0, 0, width, height)
+    gl.Color(1, 1, 1, 1)
   end
   gl.PopMatrix()
 end
