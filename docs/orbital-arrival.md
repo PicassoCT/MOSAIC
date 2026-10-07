@@ -3,10 +3,12 @@
 Loading artwork may fade into a low-orbit Earth limb during LuaIntro, but
 **no descent runs until the simulation frame counter becomes positive**.
 At the first LuaUI screen draw with `Spring.GetGameFrame() > 0`, the
-artwork/orbit blend begins (0.5 seconds), followed by five discrete zoom
-steps of 0.5 seconds each (2.5 seconds of descent, 3 seconds total).
-Each beat reveals finer terrain/cloud detail instead of stretching one
-continuous zoom. Neither LuaIntro shutdown nor city spawn completion gates
+artwork/orbit blend begins (0.5 seconds) **concurrently with** five
+discrete zoom beats of 0.5 seconds each (2.5 seconds total).
+Each beat visibly magnifies for 0.36 seconds and holds for 0.14 seconds.
+The Earth's optical diameter expands roughly 26x as finer coastal and
+cloud detail resolves. The live city appears progressively through thinning
+clouds instead of replacing the image in one frame. Neither LuaIntro shutdown nor city spawn completion gates
 the zoom. The original location widget resumes its city/region/district/time
 telex after the cinematic releases the live map.
 
@@ -31,13 +33,14 @@ midgame joins and reloads are bypassed. A runtime-only `played` marker blocks
 replays even during those first 300 frames. No handoff state is written to disk.
 
 The city gadget still publishes `mosaic_city_spawn_complete`, but the arrival
-does not consume it: the camera blends to whatever world is actually rendered
+does not consume it: the screen-space composite blends to whatever world is actually rendered
 when the last step completes, so startup cannot wait indefinitely for generation.
 
-At descent 0.42–0.55 clouds fully cover the screen. During this interval the
-renderer switches from Earth to the live framebuffer. It captures only before
-the interface is drawn, then reuses that clean texture in DrawScreenPost to
-cover engine overlays. The expanding image plane's borders remain behind clouds.
+At descent 0.42–0.55 clouds fully cover the screen, hiding the projection
+boundary. After that the cloud bank disperses and the live framebuffer
+appears through a continuously enlarging opening. It captures only before
+the interface is drawn, then reuses that clean texture in DrawScreenPost
+to cover engine overlays. The expanding image plane's borders remain behind clouds.
 The live framebuffer replay corrects CopyToTexture's vertical texture orientation
 while preserving X, so the handoff cannot mirror or rotate the map. The final
 frame samples the original live pixels at native scale and screen orientation.
