@@ -28,6 +28,8 @@ local function finish()
   -- VFS owns the static artwork texture. It may still be used by LuaIntro
   -- during a late shutdown; never delete the shared image handle here.
   WG.MosaicArrivalFinished = true
+  Spring.Echo("[MOSAIC arrival] finished; released live map (started=" ..
+      tostring(started) .. ")")
 end
 
 function widget:Initialize()
@@ -40,6 +42,7 @@ function widget:Initialize()
   -- until the game frame counter actually starts advancing.
   modal = {active = true, skip = finish}
   WG.MosaicArrival = modal
+  Spring.Echo("[MOSAIC arrival] armed; holding loading artwork until gameframe > 0")
 end
 
 function widget:Shutdown() finish() end
@@ -74,6 +77,8 @@ local function begin()
   if not renderer then finish(); return false end
   fade, descent = 0, 0
   timer = Spring.GetTimer()
+  Spring.Echo("[MOSAIC arrival] first advancing gameframe=" ..
+      tostring(Spring.GetGameFrame()) .. "; starting one 2.5-second zoom")
   guiWasHidden = Spring.IsGUIHidden()
   started = true
   if not guiWasHidden then Spring.SendCommands("hideinterface") end
