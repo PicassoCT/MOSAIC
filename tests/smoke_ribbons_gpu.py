@@ -125,3 +125,58 @@ if '--preview' in sys.argv:
     Image.fromarray((np.clip(rgb[::-1],0,1)**(1/2.2)*255).astype('uint8')).save(sys.argv[sys.argv.index('--preview')+1])
 print('PASS: GLSL compile/render, finite output, endpoints, advection, deterministic pause, colour gradient, emission, alpha, directional drift, camera-axis fallback, small scale, hair roots, bounded length, no glow, separated fibres, stationary wind deflection/flutter/reversal, calm rest, pinned roots')
 print('Renderer:',ctx.info['GL_RENDERER'])
+
+# Exercise the production centre() function on the GPU. These are sampled
+# shader paths, not a second CPU implementation of the landing equations.
+source=(root/'smokeRibbon.vert').read_text().split('void main() {')[0]
+flight=ctx.program(vertex_shader=source+'''
+in vec2 samplePoint;
+out vec3 samplePosition;
+void main() {
+    vec3 helper = abs(direction.y) < 0.9 ? vec3(0,1,0) : vec3(1,0,0);
+    vec3 u = normalize(cross(direction,helper));
+    samplePosition = centre(samplePoint.x,samplePoint.y,u,cross(direction,u));
+}
+''', varyings=['samplePosition'])
+samples=np.array([(t,s) for s in range(4) for t in np.linspace(0,1,129)],dtype='f4')
+vbo=ctx.buffer(samples.tobytes()); capture=ctx.buffer(reserve=len(samples)*12)
+vao=ctx.vertex_array(flight,[(vbo,'2f','samplePoint')])
+for name,value in dict(origin=(0,0,0),direction=(0,-1,0),effectTime=1,
+    plumeLength=1,plumeWidth=.13125,curl=.65,seed=3,strandCount=4,
+    directionalDrift=(0,0,0),hairMode=0,landingMode=1,landingPad=(0,-2,0,1)).items():
+    flight[name].value=value
+
+def paths():
+    vao.transform(capture,vertices=len(samples))
+    result=np.frombuffer(capture.read(),dtype='f4').reshape(4,129,3).copy()
+    assert np.isfinite(result).all()
+    return result
+
+free=paths()
+assert free[:,16:49,1].max()<0, 'landing burn lost its downward core'
+assert free[:,96,1].min()>0, 'return flow does not curl upward past the nozzle'
+assert np.allclose(free[:,0,:],0), 'landing nozzle roots drifted'
+flight['landingPad'].value=(0,-.15,0,1)
+contact=paths()
+assert contact[:,:,1].min()>=-.150001, 'landing flames went through the deck'
+tips=contact[:,96,:][:,[0,2]]
+assert np.linalg.norm(tips,axis=1).min()>.5, 'pad fan failed to spread sideways'
+for i in range(4):
+    assert np.dot(tips[i],tips[(i+2)%4])<-.2, 'pad did not split exhaust into opposing directions'
+flight['landingPad'].value=(3,-.15,0,.2)
+assert np.allclose(paths(),free), 'a distant pad deflected a free jet'
+# Render the actual vertex main as well: billboard width must stay above deck.
+for name,value in dict(origin=(0,.15,0),direction=(0,-1,0),effectTime=1,
+    plumeLength=1,plumeWidth=.13125,curl=.65,seed=3,strandCount=4,
+    directionalDrift=(0,0,0),hairMode=0,landingMode=1,landingPad=(0,-.15,0,1),
+    cameraPosition=(0,0,5),colorStart=(.65,.8,1,.95),colorEnd=(1,.25,.04,0),
+    strandOpacity=.4,emission=(4,1)).items():
+    p[name].value=value
+fan=render()
+assert fan[...,3].sum()>10, 'landing fan is invisible'
+assert fan[:int(h*(1-.15)/2)-1,:,3].max()==0, 'billboard width pierced the deck'
+if '--landing-preview' in sys.argv:
+    from PIL import Image
+    rgb=fan[...,:3]+np.array([.025,.035,.05])*(1-fan[...,3:4])
+    Image.fromarray((np.clip(rgb[::-1],0,1)**(1/2.2)*255).astype('uint8')).save(sys.argv[sys.argv.index('--landing-preview')+1])
+print('PASS: landing GLSL downward core, upward return flow, four-way pad fan, deck clipping and out-of-pad free flight')

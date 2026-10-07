@@ -3,6 +3,8 @@ uniform vec3 origin, direction, cameraPosition;
 uniform vec3 directionalDrift;
 uniform float effectTime, plumeLength, plumeWidth, curl, seed;
 uniform float hairMode, stiffness, gravity, strandCount;
+uniform float landingMode;
+uniform vec4 landingPad; // deck centre XZ, surface Y, contact radius; negative disables
 out vec2 ribbonUV;
 out float ribbonSeed;
 
@@ -40,6 +42,30 @@ vec3 centre(float t, float strand, vec3 u, vec3 v) {
     float p = phase + 0.85 * sin(phase * 0.61 + s);
     vec2 coil = vec2(sin(p), cos(p * 0.91 + s)) * (0.55 + 0.25 * sin(phase * 0.47));
     coil += vec2(bend, sin(t * 7.0 - effectTime * 0.57 + s)) * 0.45;
+    if (landingMode > 0.5) {
+        // Downward core with separated return-flow lobes curling up around it.
+        // Four fixed fan directions remain stable while the wisps advect.
+        float angle = seed + strand * 6.2831853 / max(strandCount,1.0);
+        vec3 radial = vec3(cos(angle),0,sin(angle));
+        float q = smoothstep(0.28,1.0,t);
+        vec3 flow = vec3(0,-t*plumeLength,0)
+            + radial*(plumeLength*0.28*q)
+            + vec3(0,plumeLength*1.75*q*q,0);
+        bool overPad = landingPad.w > 0.0 && distance(origin.xz,landingPad.xz) < landingPad.w;
+        if (overPad) {
+            float gap = max(0.0,origin.y-landingPad.y);
+            float contact = 1.0-smoothstep(plumeLength*0.3,plumeLength*0.55,gap);
+            float hit = clamp(gap/plumeLength,0.01,0.55);
+            float spread = max(0.0,(t-hit)/(1.0-hit));
+            vec3 fan = vec3(0,-min(t*plumeLength,gap),0)
+                + radial*(plumeLength*0.9*spread)
+                + vec3(0,plumeLength*0.2*spread*spread,0);
+            flow = mix(flow,fan,contact);
+        }
+        vec3 point = origin + flow + radius*(u*coil.x+v*coil.y) + directionalDrift*(t*t);
+        if (overPad) point.y = max(point.y,landingPad.y);
+        return point;
+    }
     // Axial modulation folds the upper wisps as they roll away from the source.
     float axial = t * plumeLength + radius * 0.4 * sin(p + 0.7);
     return origin + direction * axial + radius * (u * coil.x + v * coil.y)
@@ -68,6 +94,10 @@ void main() {
         breath = 1.0;
     }
     p += across * side * plumeWidth * spread * breath;
+    if (landingMode > 0.5 && landingPad.w > 0.0 && distance(origin.xz,landingPad.xz) < landingPad.w) {
+        // Camera-facing width must not push vertices through the raised deck.
+        p.y = max(p.y,landingPad.y + plumeWidth*0.01);
+    }
     ribbonUV = vec2(side,t);
     ribbonSeed = seed + strand * 2.399963;
     gl_Position = gl_ModelViewProjectionMatrix * vec4(p,1.0);

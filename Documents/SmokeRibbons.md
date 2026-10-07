@@ -110,22 +110,37 @@ the body is revealed. The cigarette inherits the head's animation.
 
 ### Objective flames
 
-`scripts/lib_objective_ribbon_flames.lua` holds three animation-driven presets:
+`scripts/lib_objective_ribbon_flames.lua` holds animation-driven objective presets.
+`scripts/lib_spaceport_landing_flames.lua` manages independent returning-booster jets:
 
 | Objective | Anchor | Active period | Length / width |
 | --- | --- | --- | --- |
 | Pump station | `Flame1` | Reignition through burning; stops at flame-out or forced collapse | 120 / 20 |
 | Industrial complex | `Lava` in the melting pot | Pouring/melting phase; stops when the lava finishes lowering | 85 / 16 |
 | Spaceport ship | `RocketFusionPlume`, a child of the moving main stage | Launch ignition until `HideRocket()` | 320 / 42 |
+| Spaceport returning boosters | Each `ReturningBoosterNThrusterPlum` nozzle | Start of descent until touchdown | 640 / 84 |
 
-Each objective uses one slot, so repeated cycles replace rather than accumulate
-emitters. Death removes the effect and blocks restart during the death animation.
+Each objective preset uses one slot; each returning booster owns three separate
+nozzle slots. Repeated cycles replace rather than accumulate emitters. Death
+removes the effects and blocks restart during the death animation.
 The industrial flame follows the molten surface; this model has no dedicated
 flare-stack piece. Pump and furnace flames rise with warm self-lit gradients;
 the ship exhaust points downward, with a pale blue base fading through orange.
 Wind is enabled for all three, with reduced influence on the rocket jet.
-Unit-motion trailing is disabled: the spaceship is an animated model piece of
-the stationary spaceport, and the plume follows that piece directly.
+Unit-motion trailing is disabled: the spacecraft are animated model pieces of
+the stationary spaceport, and their plumes follow those pieces directly.
+The outgoing rocket burns through every ascent stage, including the final climb.
+At the final move's completion, the hull, capsule, ribbon and fusion volume are
+hidden immediately. Cloud recovery may then lower the hidden parent; the
+nine-second recovery pause no longer leaves a ship hanging in midair.
+
+Landing mode keeps a downward core with upward-curling return flow. As the
+nozzles approach their own `LandCone` pad, its transformed lower bounds define
+the raised deck contact plane. Four strands fan outward in separate directions,
+with both their paths and camera-facing edges clipped above that plane. A pad
+outside the nozzle's footprint does not deflect it. This is an analytic visual
+effect, not a fluid simulation. Pad transforms and contact blending stay local
+to rendering; the synced script only starts and stops the nine nozzle records.
 Existing mesh effects and their radiance registrations remain in place; the
 new ribbons are self-lit but do not themselves inject radiance-cascade light.
 Sizes are initial world-unit presets and still need in-game visual validation.
@@ -155,7 +170,11 @@ Sizes are initial world-unit presets and still need in-game visual validation.
   intersection pass. Viewing down the axis remains a ribbon approximation.
 - Camera-facing width follows the local curve tangent. A fallback prevents
   undefined normalisation when the camera and tangent align.
-- No drawing for radar-only, cloaked, transported, iconified or no-draw units.
+- No drawing for radar-only, cloaked, transported or no-draw units. Ordinary
+  ribbons also stop for iconified units. Active spaceport flight exhaust uses
+  `drawInIcon=true` and `distanceCulling=false`: the ground building's small
+  bounds and distance cutoff must not extinguish its airborne rocket/boosters.
+  Frustum culling, LOS and the shared 128-emitter drawing budget still apply.
   Full-view spectators bypass only LOS filtering. Plume bounds, rather than
   emitter location alone, determine camera-frustum culling.
 - Live piece coordinates plus the unit's draw-position offset track moving
@@ -171,14 +190,18 @@ From the repository root:
 lua tests/smoke_ribbons_lifecycle.lua
 lua tests/smoke_cigarette_lifecycle.lua
 lua tests/objective_ribbon_flames_lifecycle.lua
+lua tests/spaceport_flight_lifecycle.lua
 MESA_GL_VERSION_OVERRIDE=3.3COMPAT python tests/smoke_ribbons_gpu.py
 ```
 
 The GPU test requires `moderngl` and `numpy`; it compiles and renders the actual
-GLSL in EGL. `--preview /absolute/path.png` additionally requires Pillow.
+GLSL in EGL. `--preview /absolute/path.png` or
+`--landing-preview /absolute/path.png` additionally requires Pillow.
 Lifecycle tests cover API validation, copying, reload, visibility, anchor draw
 offsets, direction modes, simulation clock, local preview and resource cleanup.
 They also check size-dependent distance cutoffs, fading and re-entry into range.
+Spaceport checks cover continuous ascent, immediate disappearance, independent
+booster burns, touchdown/death cleanup, upward curls and the raised-pad fan.
 The tests do not replace an in-game check on Recoil and the target GPU.
 
 ## Aerosol drones

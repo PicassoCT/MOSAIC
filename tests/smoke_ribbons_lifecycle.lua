@@ -7,7 +7,7 @@ local drawn,deleted,lastOrigin,lastDirection,lastTime=0,0
 local cameraY,cameraZ,frustumTests,lastOpacity=10,100,0,0
 local wind,velocity,lastDrift={0,0,0},{0,0,0},{}
 local windCalls,velocityCalls=0,0
-local lastLength
+local lastLength,lastPad,lastLanding
 GG={}; Game={gameSpeed=30}; gadget={}
 gadgetHandler={IsSyncedCode=function() return synced end,RemoveGadget=function() error('unexpected removal') end}
 VFS={Include=function(p) return dofile(p) end,LoadFile=function() return '' end}
@@ -34,6 +34,8 @@ gl=setmetatable({CreateShader=function() return 1 end,GetUniformLocation=functio
         elseif n=='effectTime' then lastTime=(...)
         elseif n=='strandOpacity' then lastOpacity=(...)
         elseif n=='plumeLength' then lastLength=(...)
+        elseif n=='landingPad' then lastPad={...}
+        elseif n=='landingMode' then lastLanding=(...)
         elseif n=='directionalDrift' then lastDrift={...} end
     end}, {__index=function() return function() end end})
 local path='luarules/gadgets/gfx_smoke_ribbons.lua'
@@ -200,6 +202,33 @@ cameraZ=1000;matrixCalls={};hidden('distant hair drawn')
 assert(next(matrixCalls)==nil,'culled hair queried animated matrices')
 cameraZ=100;cloak=true;hidden('driver bypasses cloak');cloak=false
 producer:UnitDestroyed(7);hidden('destroyed hair retains driver')
-gadget:Shutdown();assert(deleted==32,'mesh resources leaked')
+-- A rocket piece remains visible above the iconified ground building, without
+-- the usual plume-distance fade. LOS/cloak/frustum rules remain in force.
+Spring.IsUnitIcon=function() return true end
+cameraZ=150000
+assert(api.Set(7,'launch',2,{length=320,distanceCulling=false,drawInIcon=true}))
+local n=drawn;gadget:DrawWorld();assert(drawn==n+1 and lastOpacity==1.6/3,'ascent exhaust faded out')
+inlos=false;hidden('icon override bypassed LOS');inlos=true
+cloak=true;hidden('icon override bypassed cloak');cloak=false
+visible=false;hidden('distance override bypassed frustum');visible=true
+api.Remove(7,'launch')
+-- Sample the actual raised pad bounds, including model scale and view offset.
+Spring.GetUnitPieceInfo=function() return {min={-20,-5,-30},max={20,15,30}} end
+Spring.GetUnitPiecePosDir=function(_,piece) return 10,100,30,0,1,0 end
+viewX=7;x=0;matrixCalls={}
+assert(not api.Set(7,'landing',2,{mode='landing'}),'missing landing pad accepted')
+assert(not api.Set(7,'landing',2,{mode='landing',padPiece='unknown'}),'unknown landing pad accepted')
+local options={mode='landing',padPiece='Tail1',direction={0,-1,0},length=640,width=84,
+    distanceCulling=false,drawInIcon=true}
+assert(api.Set(7,'landing',2,options))
+assert(api.Set(7,'landing2',3,options))
+gadget:DrawWorld()
+assert(lastLanding==1 and lastPad[1]==17 and lastPad[2]==90 and lastPad[3]==30,'pad bottom lost transform or interpolation')
+assert(math.abs(lastPad[4]-math.sqrt(40^2+60^2))<1e-8,'pad contact radius lost model scale')
+assert(matrixCalls[5]==1,'nozzles repeatedly sampled the same pad matrix')
+gadget:Shutdown();gadget={};dofile(path);gadget:Initialize()
+n=drawn;gadget:DrawWorld();assert(drawn==n+2 and lastLanding==1 and lastPad[2]==90,'reload lost landing pad/mode/visibility')
+producer:UnitDestroyed(7);hidden('destroyed booster retains landing flames')
+gadget:Shutdown();assert(deleted==40,'mesh resources leaked')
 producer:Shutdown();assert(GG.SmokeRibbon==nil)
 print('PASS: ribbon lifecycle, hair piece transform, turn lag, pause, settling, separate driver/root transforms, driver reload, shared matrix cache and culling')
