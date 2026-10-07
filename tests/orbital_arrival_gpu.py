@@ -87,8 +87,10 @@ def render(descent,live_input=live,fade=1.):
  uniform(composite,'descent',descent);uniform(composite,'fade',fade)
  return e,quad(composite,out)
 parser=argparse.ArgumentParser();parser.add_argument('--preview-dir');args=parser.parse_args()
-for descent in [0.,0.16,0.43,0.52,0.65,0.8,0.96,1.]:
+orbit_stages=[]
+for descent in [0.,0.16,0.34,0.43,0.52,0.65,0.8,0.96,1.]:
  e,result=render(descent)
+ if descent<=0.34:orbit_stages.append(e[:,:,:3].copy())
  assert result[:,:,:3].min()>=0 and result[:,:,:3].max()<=1.5
  if 0.42<=descent<=0.55:assert np.allclose(e[:,:,3],1.),'Handoff cloud is not fully opaque'
  if descent==1.:
@@ -99,7 +101,9 @@ for descent in [0.,0.16,0.43,0.52,0.65,0.8,0.96,1.]:
   from PIL import Image
   directory=Path(args.preview_dir);directory.mkdir(parents=True,exist_ok=True)
   Image.fromarray(np.uint8(np.clip(result[::-1,:,:3],0,1)*255)).save(directory/f'{descent:.2f}.png')
+assert all(np.mean(np.abs(a-b)) > 0.015 for a,b in zip(orbit_stages,orbit_stages[1:])), (
+ 'Orbital image has insufficient motion / magnification across optical beats')
 a=render(0.52,live)[1];b=render(0.52,other)[1]
 assert np.array_equal(a,b),'Cloud handoff exposes underlying projection switch'
 assert np.allclose(render(0,fade=0)[1][:,:,:3],0.25,atol=1e-6),'Artwork continuity failed'
-print('PASS: production shaders compile; finite output; fully opaque cloud handoff; exact final live pixels; artwork continuity')
+print('PASS: shaders compile; orbital scale advances; opaque cloud handoff; exact live pixels; artwork continuity')
