@@ -238,6 +238,34 @@ assert(matrixCalls[5]==1,'nozzles repeatedly sampled the same pad matrix')
 gadget:Shutdown();gadget={};dofile(path);gadget:Initialize()
 n=drawn;gadget:DrawWorld();assert(drawn==n+2 and lastLanding==1 and lastPad[2]==90,'reload lost landing pad/mode/visibility')
 producer:UnitDestroyed(7);hidden('destroyed booster retains landing flames')
+-- Launch adds a deck fan without changing the original free-flight flame.
+assert(not api.Set(7,'fan',2,{mode='pad'}),'deck-only mode accepted no pad')
+local nozzleX,nozzleY=10,100
+Spring.GetUnitPiecePosDir=function(_,piece)
+    if piece==5 then return 10,100,30,0,1,0 end
+    return nozzleX,nozzleY,30,0,1,0
+end
+options.mode='pad';options.strands=4
+assert(api.Set(7,'fan',2,options))
+n=drawn;gadget:DrawWorld()
+assert(drawn==n+1 and lastLanding==2 and math.abs(lastOpacity-0.4)<1e-8,'deck fan missing at ignition')
+nozzleY=90+640*0.425;gadget:DrawWorld()
+assert(math.abs(lastOpacity-0.2)<1e-8,'deck fan did not fade as the rocket lifted away')
+nozzleY=90+640*0.55;hidden('deck fan followed rocket into free flight')
+assert(api.Set(7,'flight',2,{direction={0,-1,0},length=320,width=42,curl=0.3,
+    distanceCulling=false,drawInIcon=true}))
+n=drawn;gadget:DrawWorld()
+assert(drawn==n+1 and lastLanding==0 and lastLength==320,'clearing the pad lost the original flight flame')
+api.Remove(7,'flight')
+nozzleY=100;nozzleX=1000;hidden('deck fan drew outside pad footprint')
+nozzleX=10
+local bounds=Spring.GetUnitPieceInfo
+Spring.GetUnitPieceInfo=function() return nil end
+hidden('deck fan drew without valid pad bounds')
+Spring.GetUnitPieceInfo=bounds
+gadget:Shutdown();gadget={};dofile(path);gadget:Initialize()
+n=drawn;gadget:DrawWorld();assert(drawn==n+1 and lastLanding==2,'reload lost deck-only fan')
+producer:UnitDestroyed(7);hidden('destroyed launch retains pad fan')
 gadget:Shutdown();assert(deleted==created,'mesh resources leaked')
 producer:Shutdown();assert(GG.SmokeRibbon==nil)
 print('PASS: ribbon lifecycle, hair piece transform, turn lag, pause, settling, separate driver/root transforms, driver reload, shared matrix cache and culling')
