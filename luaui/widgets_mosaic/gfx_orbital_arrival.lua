@@ -6,8 +6,9 @@ end
 local Arrival = VFS.Include("luaui/widgets_mosaic/include/orbital_arrival.lua")
 local renderer, liveTexture, modal
 local width, height, offsetX, offsetY
-local timer, texture, age, fade, descent, initialFade
+local timer, texture, age, fade, descent
 local guiWasHidden, hasCapture, started = false, false, false
+local artworkReady = false
 local savedEdges = {}
 local finished = false
 
@@ -24,7 +25,8 @@ local function finish()
   Arrival.clearHandoff()
   if renderer then renderer:destroy(); renderer = nil end
   if liveTexture then gl.DeleteTexture(liveTexture); liveTexture = nil end
-  if texture and texture ~= "" then gl.DeleteTexture(texture) end
+  -- VFS owns the static artwork texture. It may still be used by LuaIntro
+  -- during a late shutdown; never delete the shared image handle here.
   WG.MosaicArrivalFinished = true
 end
 
@@ -34,29 +36,52 @@ function widget:Initialize()
       or Spring.GetGameFrame() > Arrival.latestStartFrame then
     widgetHandler:RemoveWidget(self); return
   end
-  renderer = Arrival.newRenderer()
-  if not renderer then finish(); widgetHandler:RemoveWidget(self); return end
+  -- Arm the screen-covering overlay NOW, but defer expensive shader creation
+  -- until the game frame counter actually starts advancing.
   modal = {active = true, skip = finish}
   WG.MosaicArrival = modal
 end
 
 function widget:Shutdown() finish() end
 
-local function begin()
-  texture, age, initialFade = Arrival.readHandoff()
-  if not texture then
-    texture, age, initialFade = "", Arrival.artSeconds, 1
+local function readArtwork()
+  if artworkReady then return end
+  local image, handoffAge = Arrival.readHandoff()
+  if image ~= nil then
+    texture, age, artworkReady = image, handoffAge, true
   end
-  fade, descent = initialFade, 0
+end
+
+local function drawStaticArtwork()
+  readArtwork()
+  local w, h = Spring.GetViewGeometry()
+  gl.Color(0, 0, 0, 1)
+  gl.Rect(0, 0, w, h) -- never expose the live map between LuaIntro/LuaUI
+  if texture and texture ~= "" then
+    gl.Color(1, 1, 1, 1)
+    gl.Texture(texture)
+    gl.TexRect(0, 0, w, h)
+    gl.Texture(false)
+  end
+  gl.Color(1, 1, 1, 1)
+end
+
+local function begin()
+  readArtwork()
+  texture, age = texture or "", age or 0
+  -- Shader compilation here cannot slow down the loading screen.
+  renderer = Arrival.newRenderer()
+  if not renderer then finish(); return false end
+  fade, descent = 0, 0
   timer = Spring.GetTimer()
   guiWasHidden = Spring.IsGUIHidden()
   started = true
   if not guiWasHidden then Spring.SendCommands("hideinterface") end
-  -- Disable engine edge scrolling, restore the user's settings on all exits.
   for _, key in ipairs({"FullscreenEdgeMove", "WindowedEdgeMove"}) do
     savedEdges[key] = Spring.GetConfigInt(key, 1)
     Spring.SetConfigInt(key, 0, true)
   end
+  return true
 end
 
 local function capture()
@@ -73,17 +98,16 @@ local function capture()
 end
 
 function widget:DrawScreenEffects()
-  if finished or not renderer then return end
+  if finished then return end
   if not started then
-    -- The first advancing simulation frame is the ONLY descent trigger.
-    -- LuaIntro shutdown, LuaUI readiness and city spawn are not clocks.
-    if Spring.GetGameFrame() <= 0 then return end
-    begin()
+    -- Keep displaying the SAME loading artwork after LuaIntro shuts down.
+    -- Prevent the one-second glimpse of the unfinished live city.
+    if Spring.GetGameFrame() <= 0 then drawStaticArtwork(); return end
+    -- The only zoom trigger is the advancing game-frame counter.
+    if not begin() then return end
   end
   local elapsed = Spring.DiffTimers(Spring.GetTimer(), timer)
-  -- Magnify during the artwork blend: no static Earth hold after loading.
-  -- Each optical step takes exactly half a second of wall time.
-  fade = math.max(initialFade, Arrival.clamp(elapsed / Arrival.blendSeconds))
+  fade = Arrival.clamp(elapsed / Arrival.blendSeconds)
   descent = Arrival.clamp(elapsed / Arrival.descentSeconds)
   modal.elapsed, modal.descent = elapsed, descent
   if not capture() then finish(); return end
@@ -95,9 +119,14 @@ function widget:DrawScreenEffects()
 end
 
 function widget:DrawScreenPost()
+  if finished then return end
+  -- Always cover the gap between LuaIntro shutdown and the first gameframe,
+  -- including overlays drawn after DrawScreenEffects.
+  if not started then drawStaticArtwork(); return end
   -- Reuse the CLEAN world capture after engine overlays/cursor. No feedback.
-  if finished or not hasCapture then return end
-  renderer:draw(width, height, texture, age + modal.elapsed, fade, descent, liveTexture)
+  if hasCapture then
+    renderer:draw(width, height, texture, age + modal.elapsed, fade, descent, liveTexture)
+  end
 end
 
 -- Keep flex call-ins registered even when the other interface widgets are off.
