@@ -1,4 +1,5 @@
--- Shared by LuaIntro and LuaUI. All movement is texture-space; no camera API.
+-- Orbital rendering belongs exclusively to LuaUI after gameframe > 0.
+-- LuaIntro uses only the lightweight artwork handoff. No camera API.
 local M = {}
 M.configKey = "MosaicOrbitalArrivalHandoff"
 M.phaseKey = "MosaicOrbitalArrivalPhase"
@@ -25,8 +26,8 @@ function M.snapDescent(x)
   return a + (b - a) * jump
 end
 function M.loadingState(age)
-  -- LuaIntro may fade the artwork into the orbital view, but the actual dive
-  -- must never begin until the loading screen has shut down.
+  -- Legacy helper retained for tests and compatibility. LuaIntro no longer
+  -- calls this: it renders static loading artwork until shutdown.
   return M.clamp((age - M.artSeconds) / M.fadeSeconds), 0
 end
 
@@ -113,7 +114,16 @@ function M.newRenderer()
       self.lastAge = nil
     end
     if not self.orbitTexture then return false end
-    if self.lastAge ~= age or self.lastDescent ~= visualDescent or self.lastAspect ~= width / height then
+    -- The procedural Earth has multiple FBM layers; rendering it every
+    -- screen refresh can collapse low-end GPUs. Reuse the FBO between
+    -- samples, at most 12 orbital updates/sec during the 2.5-second dive.
+    -- Composite the artwork and clean live framebuffer every display frame.
+    local aspect = width / height
+    local rerender = self.lastAge == nil or age < self.lastAge
+      or (age - self.lastAge) >= (1 / 12)
+      or self.lastAspect ~= aspect
+      or (visualDescent >= 1 and self.lastDescent ~= 1)
+    if rerender then
       gl.RenderToTexture(self.orbitTexture, function()
       gl.MatrixMode(GL.PROJECTION); gl.PushMatrix(); gl.LoadIdentity()
       gl.MatrixMode(GL.MODELVIEW); gl.PushMatrix(); gl.LoadIdentity()

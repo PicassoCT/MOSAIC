@@ -1,7 +1,8 @@
 # Orbital arrival
 
-Loading artwork may fade into a low-orbit Earth limb during LuaIntro, but
-**no descent runs until the simulation frame counter becomes positive**.
+**LuaIntro displays only static artwork and the normal loading progress bar.**
+The satellite renderer never compiles or runs while the engine is loading.
+**No descent runs until the simulation frame counter becomes positive.**
 At the first LuaUI screen draw with `Spring.GetGameFrame() > 0`, the
 artwork/orbit blend begins (0.5 seconds) **concurrently with** five
 discrete zoom beats of 0.5 seconds each (2.5 seconds total).
@@ -22,10 +23,13 @@ atlas. It does not claim to locate the city accurately on a real globe.
 
 ## Handoff and readiness
 
-LuaIntro and LuaUI share the renderer and GLSL programs. LuaIntro freezes its
-chosen loading artwork and records the last displayed age/fade in runtime-only
-configuration state. LuaUI uses that artwork when available, but **does not wait**
-for a LuaIntro phase or readiness flag. The first positive game frame starts
+LuaIntro chooses one loading PNG, draws it without shaders, and passes the
+artwork's VFS path to LuaUI in runtime-only configuration state.
+The LuaUI widget arms immediately but does not compile the expensive orbital
+shaders while the frame counter is zero. It draws the exact same static artwork
+in DrawScreenEffects **and** DrawScreenPost, bridging LuaIntro shutdown without
+revealing the unfinished map. Only the first positive game frame starts the
+orbital compositor and
 the presentation clock; wall time governs the half-second beats regardless of
 simulation speed. This avoids the race where LuaUI initializes after frame 0.
 First initialization during the opening 300 game frames remains eligible;
@@ -64,8 +68,10 @@ replay it. The timer uses wall time, so a paused simulation cannot trap the UI.
 In a multiplayer start-position lobby, Escape can return to setup immediately;
 the animation cannot begin until game frames advance.
 
-The procedural pass is capped at 960×540 and reused by both composites in a
-frame. Resources are released when arrival finishes. GLSL requires the same
+The procedural pass is capped at 960×540 and cached, updating at most 12 times
+per second during the zoom, while artwork blending and the live framebuffer
+composite remain display-rate. No procedural GPU pass runs during loading.
+Resources are released when arrival finishes. GLSL requires the same
 compatibility profile used by the existing MOSAIC postprocessing shaders.
 
 ## Validation
@@ -77,7 +83,9 @@ lua5.1 tests/orbital_arrival.lua
 python3 tests/orbital_arrival_gpu.py
 ```
 
-The Lua suite covers game-frame triggering, half-second blend and steps,
+The Lua suite covers a shader-free, progress-visible LuaIntro, an artwork
+bridge before gameframe 1, 12 Hz orbital GPU caching, game-frame triggering,
+half-second blend and steps,
 late widget initialization, no replay after completion, input routing,
 skip/failure cleanup, hidden-interface preservation, both Dubai/Dhubai
 spellings and title resize. The GPU test uses NumPy and headless EGL/OpenGL on

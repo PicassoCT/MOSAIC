@@ -25,7 +25,7 @@ end
 local font = gl.LoadFont("FreeSansBold.otf", 50, 20, 1.95)
 
 function addon.DrawLoadScreen()
-	if SG.IsOrbitalArrivalActive and SG.IsOrbitalArrivalActive() then return end
+	-- Loading progress remains visible until LuaIntro finishes.
 	local loadProgress = SG.GetLoadProgress()
 
 	local vsx, vsy = gl.GetViewSizes()
