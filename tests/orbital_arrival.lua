@@ -39,7 +39,7 @@ assert(A.loadingState(0)==0)
 local f,d=A.loadingState(60); assert(f==1 and d==0,'loading screen must never advance descent')
 assert(A.snapDescent(0)==0 and A.snapDescent(1)==1)
 assert(A.blendSeconds==0.5 and A.stepSeconds==0.5 and A.descentSeconds==2.5)
-assert(A.snapDescent(0.10)==0, 'first descent beat must hold')
+assert(A.snapDescent(0.10)>0 and A.snapDescent(0.10)<0.16, 'first beat must visibly magnify')
 assert(A.snapDescent(0.20)>=0.16, 'snap must advance to the next scale')
 A.beginHandoff(); assert(A.introPhase()=='pending')
 A.writeHandoff('art.png',20,1,0)
@@ -67,16 +67,18 @@ assert(hidden and settings.WindowedEdgeMove==0 and A.introPhase()=='pending',
   'frame > 0 must start the transition even while LuaIntro is pending')
 assert(WG.MosaicArrival.descent==0)
 time=0.25; w:DrawScreenEffects()
-assert(draws.fade[1]>=0.5 and WG.MosaicArrival.descent==0, 'half-second blend')
+assert(draws.fade[1]>=0.5 and math.abs(WG.MosaicArrival.descent-0.1)<0.00001,
+  'the first optical beat starts DURING the blend')
 time=0.5; w:DrawScreenEffects()
-assert(draws.fade[1]==1 and WG.MosaicArrival.descent==0, 'start zoom after blend')
+assert(draws.fade[1]==1 and math.abs(WG.MosaicArrival.descent-0.2)<0.00001,
+  'first zoom beat must be complete at 0.5s')
 time=1.0; w:DrawScreenEffects()
-assert(math.abs(WG.MosaicArrival.descent-0.2)<0.00001, 'first half-second step')
+assert(math.abs(WG.MosaicArrival.descent-0.4)<0.00001, 'second 0.5-second step')
 time=1.5; w:DrawScreenEffects()
-assert(math.abs(WG.MosaicArrival.descent-0.4)<0.00001, 'second half-second step')
-time=3.0; w:DrawScreenEffects()
+assert(math.abs(WG.MosaicArrival.descent-0.6)<0.00001, 'third 0.5-second step')
+time=2.5; w:DrawScreenEffects()
 assert(not hidden and not WG.MosaicArrival and WG.MosaicArrivalFinished,
-  'five half-second steps must end the sequence regardless of city readiness')
+  'five half-second steps must finish in 2.5s without city readiness')
 A.finishIntro(); assert(A.introPhase()=='played','late LuaIntro shutdown clobbered completion')
 assert(settings.FullscreenEdgeMove==0 and settings.WindowedEdgeMove==1)
 assert(settings[A.configKey]==''); assert(cameraCalls==0)
@@ -128,7 +130,7 @@ widgetHandler.WG.MosaicArrival={active=true,skip=function() skipped=true end}
 assert(widgetHandler:KeyPress(65,{},false)); assert(widgetHandler:TextInput('a'))
 assert(widgetHandler:MouseWheel(true,1)); assert(widgetHandler:CommandNotify(10,{},{}))
 assert(widgetHandler:KeyPress(27,{},false) and skipped)
-print('PASS: game-frame-triggered five 0.5s snaps, LuaIntro-independent blend, cache, input routing and cleanup; zero camera writes')
+print('PASS: gameframe-triggered zoom during 0.5s blend, five 0.5s beats, input routing and cleanup; no camera writes')
 -- Exercise the real location widget on both map spellings, including resize.
 Spring.SendLuaRulesMsg=function(s) assert(s:match('City: Dubai')); end
 Spring.PlaySoundFile=function() end
