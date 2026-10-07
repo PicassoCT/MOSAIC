@@ -111,8 +111,8 @@ return function()
                     if ux and vx then x,y,z = x+vx-ux,y+vy-uy,z+vz-uz end
                     -- Full piece basis, including parent animation and model scale.
                     -- Match the model-X convention used by the cloud volume renderer.
-                    if r.directionSpace == 'piece' and
-                        (r.rootOffset[1] ~= 0 or r.rootOffset[2] ~= 0 or r.rootOffset[3] ~= 0) then
+                    -- Attachment offsets are piece-local even for world-down vapor.
+                    if r.rootOffset[1] ~= 0 or r.rootOffset[2] ~= 0 or r.rootOffset[3] ~= 0 then
                         local transform = pieceTransform(id,r.piece)
                         if transform then
                             local ox,oy,oz = transform(unpack(r.rootOffset))

@@ -29,7 +29,8 @@ local presets = {
         motionAffected=true,
     },
     launch = {
-        direction={0,-1,0}, length=320, width=42, curl=0.3, speed=3,
+        mode='landing', direction={0,-1,0}, length=640, width=84, curl=0.65, speed=3,
+        strands=4,
         colorStart={0.65,0.8,1,0.95}, colorEnd={1,0.25,0.04,0},
         emission={4,1}, windAffected=true, windInfluence=0.15, trailTime=0.5,
         -- The animated ship climbs far beyond its stationary unit's bounds.
@@ -41,10 +42,11 @@ return function(unitID, kind)
     local slot='objective-'..kind
     local dead=false
     local self={}
-    function self.Start(piece)
+    function self.Start(piece, pad)
         if dead or not GG.SmokeRibbon then return false end
         local options={directionSpace='world',strands=3,motionAffected=false}
         for name,value in pairs(preset) do options[name]=value end
+        if kind == 'launch' then options.padPiece=pad end
         if kind == 'sulfur' then
             -- The blimp pivot is inside its hull. Emit just beyond its long-axis
             -- tip, using the piece basis so the outlet follows the wind animation.
