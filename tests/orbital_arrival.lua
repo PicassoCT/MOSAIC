@@ -35,6 +35,26 @@ gl = {CreateShader=function() if not shaderFailure then return id() end end,
  CopyToTexture=noop, RenderToTexture=function(_,fn) renderCount=renderCount+1; fn(); assert(blend) end,
 }
 local A=VFS.Include('luaui/widgets_mosaic/include/orbital_arrival.lua')
+-- Loading must remain static, keep its progress bar, and never create shaders.
+local picturePasses = 0
+gl.TexRect=function() picturePasses = picturePasses + 1 end
+gl.Rect=noop; gl.Scale=noop; gl.PushMatrix=noop; gl.PopMatrix=noop
+gl.GetViewSizes=function() return 1920,1080 end
+VFS.DirList=function() return {'art.png'} end
+SG={}; addon={}
+local beforeIntro = serial
+assert(loadstring(VFS.LoadFile('luaintro/Addons/bg_texture.lua')))()
+for i=1,3 do addon.DrawLoadScreen() end
+assert(picturePasses==3,'LuaIntro did not draw static artwork on every loading frame')
+assert(serial==beforeIntro,'LuaIntro allocated orbital shader/GPU texture during load')
+assert(not SG.IsOrbitalArrivalActive(),'Loading progress was suppressed by orbital view')
+local art, age, fade = A.readHandoff()
+assert(art=='art.png' and age==0 and fade==0,'LuaIntro passed non-static handoff')
+local introMain=VFS.LoadFile('luaintro/Addons/main.lua')
+assert(not introMain:find('if SG.IsOrbitalArrivalActive and SG.IsOrbitalArrivalActive()',1,true),
+  'LuaIntro main hides the progress bar')
+addon.Shutdown()
+assert(A.introPhase()=='finished','LuaIntro did not mark its informational shutdown')
 assert(A.loadingState(0)==0)
 local f,d=A.loadingState(60); assert(f==1 and d==0,'loading screen must never advance descent')
 assert(A.snapDescent(0)==0 and A.snapDescent(1)==1)
@@ -50,6 +70,10 @@ local r=A.newRenderer(); assert(r)
 assert(r:draw(1920,1080,'art.png',20,1,0.16))
 local previous=renderCount
 assert(r:draw(1920,1080,'art.png',20,1,0.16)); assert(renderCount==previous,'Post pass repeated procedural work')
+assert(r:draw(1920,1080,'art.png',20.04,1,0.2))
+assert(renderCount==previous,'Orbital shader still runs at full screen refresh rate')
+assert(r:draw(1920,1080,'art.png',20.1,1,0.2))
+assert(renderCount==previous+1,'Orbital shader did not refresh at 12 Hz')
 r:destroy(); r:destroy()
 local function newWidget()
  WG={}; widget={}; widgetHandler={RemoveWidget=function(_,w) if w.Shutdown then w:Shutdown() end end}
@@ -60,7 +84,14 @@ settings.FullscreenEdgeMove=0; settings.WindowedEdgeMove=1
 A.beginHandoff()
 A.writeHandoff('art.png',0,0.2,0)
 local w=newWidget(); assert(WG.MosaicArrival.active)
-w:DrawScreenEffects(); assert(not hidden and settings.WindowedEdgeMove==1,
+local beforePreGame = serial
+local beforeArtwork = picturePasses
+w:DrawScreenEffects()
+w:DrawScreenPost()
+assert(picturePasses>=beforeArtwork+2,
+  'LuaUI left a gap between LuaIntro shutdown and the first gameframe')
+assert(serial==beforePreGame,'LuaUI compiled orbital shaders before game start')
+assert(not hidden and settings.WindowedEdgeMove==1,
   'the arrival must wait for the first advancing simulation frame')
 frame=1; w:DrawScreenEffects()
 assert(hidden and settings.WindowedEdgeMove==0 and A.introPhase()=='pending',
@@ -103,7 +134,10 @@ A.beginHandoff(); time=40; frame=0; w=newWidget()
 textureFailure=true; frame=1; w:DrawScreenEffects()
 assert(not hidden and not WG.MosaicArrival); textureFailure=false
 A.beginHandoff(); shaderFailure=true; frame=0
-w=newWidget(); assert(not WG.MosaicArrival and not hidden); shaderFailure=false
+w=newWidget(); assert(WG.MosaicArrival and WG.MosaicArrival.active,
+  'widget should only arm the artwork before game start')
+frame=1; w:DrawScreenEffects()
+assert(not WG.MosaicArrival and not hidden); shaderFailure=false
 A.beginHandoff(); frame=A.latestStartFrame+1; w=newWidget()
 assert(not WG.MosaicArrival,'midgame reload replayed arrival')
 -- A widget initialized just AFTER gameframe begins must still play the zoom.
@@ -130,7 +164,7 @@ widgetHandler.WG.MosaicArrival={active=true,skip=function() skipped=true end}
 assert(widgetHandler:KeyPress(65,{},false)); assert(widgetHandler:TextInput('a'))
 assert(widgetHandler:MouseWheel(true,1)); assert(widgetHandler:CommandNotify(10,{},{}))
 assert(widgetHandler:KeyPress(27,{},false) and skipped)
-print('PASS: gameframe-triggered zoom during 0.5s blend, five 0.5s beats, input routing and cleanup; no camera writes')
+print('PASS: static LuaIntro and load bar, pregame artwork bridge, gameframe-only GPU zoom, 12Hz shader cache, no map gap or camera writes')
 -- Exercise the real location widget on both map spellings, including resize.
 Spring.SendLuaRulesMsg=function(s) assert(s:match('City: Dubai')); end
 Spring.PlaySoundFile=function() end
