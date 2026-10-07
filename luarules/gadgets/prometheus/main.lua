@@ -267,45 +267,69 @@ function gadget:GamePreload()
     gadget.waypointMgr = waypointMgr
 end
 
-local function CreateTeams()
-	Spring.Echo("Prometheus:CreateTeams")
-	-- Initialise AI for all team that are set to use it
-	local sidedata = Spring.GetSideData()
-	local name = gadget:GetInfo().name
+local function ResolveSide(teamID, units)
+    -- The lobby's side is not always set, particularly for Skirmish AIs.
+    -- The initial-spawn gadget publishes the actual chosen start unit.
+    local side = select(5, Spring.GetTeamInfo(teamID))
+    side = type(side) == "string" and side:lower() or ""
+    if side == "antagon" or side == "protagon" then return side, "team" end
 
-	for _,t in ipairs(Spring.GetTeamList()) do
-		if (Spring.GetTeamLuaAI(t) == name) then
-			local _,leader,_,_,_,at = Spring.GetTeamInfo(t)
-			if (leader == MY_PLAYER_ID) then
-				local units = Spring.GetTeamUnits(t)
-				-- Figure out the side we're on by searching for our
-				-- startUnit in Spring's sidedata.
-				--local tteam = select(4,Spring.GetPlayerInfo(leader))
-				local side    =  (select(5,Spring.GetTeamInfo(t)) or ""):lower()
-				Log("Team "..t.. " is of side " .. side)
+    local startUnit = tonumber(Spring.GetTeamRulesParam(teamID, "startUnit"))
+    local propagator = UnitDefNames.operativepropagator
+    local investigator = UnitDefNames.operativeinvestigator
+    if propagator and startUnit == propagator.id then return "antagon", "startUnit" end
+    if investigator and startUnit == investigator.id then return "protagon", "startUnit" end
 
-				if side == "antagon" or side == "protagon" then
-				   -- Intialise intelligence and the gann individual
-					    intelligences[t] = CreateIntelligence(t, at)
-					    CreateTeamGann(t)
-					team[t] = CreateTeam(t, at, side)
-					team[t].GameStart()
-					-- Call UnitCreated and UnitFinished for the units we have.
-					-- (the team didn't exist when those were originally called)
-					for _,u in ipairs(units) do
-						if (not Spring.GetUnitIsDead(u)) then
-							local ud = Spring.GetUnitDefID(u)
-							team[t].UnitCreated(u, ud, t)
-							local _,_,_,_,built = Spring.GetUnitHealth(u)
-                            if (built or 0) >= 1 then team[t].UnitFinished(u, ud, t) end
-						end
-					end
-				else
-					Warning(" Startunit not found, don't know as which side I'm supposed to be playing.")
-				end			
-			end
-		end
-	end
+    -- A queued starting unit may appear after the first AI GameFrame.
+    for _, unitID in ipairs(units) do
+        if not Spring.GetUnitIsDead(unitID) then
+            local defID = Spring.GetUnitDefID(unitID)
+            if propagator and defID == propagator.id then return "antagon", "unit" end
+            if investigator and defID == investigator.id then return "protagon", "unit" end
+        end
+    end
+    return nil, "unresolved"
+end
+
+local unresolvedTeams = {}
+
+local function CreateTeams(f)
+    local name = gadget:GetInfo().name
+    local allReady = true
+    for _, t in ipairs(Spring.GetTeamList()) do
+        if Spring.GetTeamLuaAI(t) == name then
+            local _, leader, _, _, _, allyTeamID = Spring.GetTeamInfo(t)
+            if leader == MY_PLAYER_ID and not team[t] then
+                local units = Spring.GetTeamUnits(t) or {}
+                local side, source = ResolveSide(t, units)
+                if side then
+                    Spring.Echo("Prometheus: initializing team " .. t .. " as " .. side .. " (from " .. source .. ")")
+                    intelligences[t] = CreateIntelligence(t, allyTeamID)
+                    CreateTeamGann(t)
+                    team[t] = CreateTeam(t, allyTeamID, side)
+                    team[t].GameStart()
+                    for _, unitID in ipairs(units) do
+                        if not Spring.GetUnitIsDead(unitID) then
+                            local defID = Spring.GetUnitDefID(unitID)
+                            team[t].UnitCreated(unitID, defID, t)
+                            local _, _, _, _, built = Spring.GetUnitHealth(unitID)
+                            if (built or 0) >= 1 then team[t].UnitFinished(unitID, defID, t) end
+                        end
+                    end
+                    intelligences[t].GameStart()
+                    unresolvedTeams[t] = nil
+                else
+                    allReady = false
+                    -- Warn periodically rather than flooding the infolog every frame.
+                    if not unresolvedTeams[t] or f - unresolvedTeams[t] >= 150 then
+                        Warning("team " .. t .. " faction unresolved (team side/startUnit/starting unit); retrying")
+                        unresolvedTeams[t] = f
+                    end
+                end
+            end
+        end
+    end
+    return allReady
 end
 
 function gadget:GameFrame(f)
@@ -320,20 +344,14 @@ function gadget:GameFrame(f)
     end
     lastFrame = f
 
-	if not teamsCreated and f >= firstFrame then
+    if not teamsCreated and f >= firstFrame then
         teamsCreated = true
-	        -- This is executed AFTER headquarters / commander is spawned
-        Log("gadget:GameFrame 1")
         waypointMgr.GameStart()
-
-        -- We perform this only this late, and then fake UnitFinished for all units
-        -- in the team, to support random faction (implemented by swapping out HQ
-        -- in GameStart of that gadget.)
-        CreateTeams()
-
-        for _, intelligence in pairs(intelligences) do
-            intelligence.GameStart()
-        end
+    end
+    -- Retry unresolved teams after initial-spawn queues are flushed.
+    -- Successfully initialized teams are never initialized twice.
+    if teamsCreated then
+        CreateTeams(f)
     end
     if f > firstFrame  then
 	    if f % SAVE_PERIOD < 0.01 then
