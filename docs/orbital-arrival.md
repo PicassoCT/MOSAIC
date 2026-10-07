@@ -1,12 +1,14 @@
 # Orbital arrival
 
-Loading artwork fades into a low-orbit Earth limb after three seconds. The shader
-remains at zero descent for the entire lifetime of LuaIntro. Only after the loading
-screen has actually shut down does LuaUI begin the city-ready wait and the short
-1.75-second staged descent in discrete optical scale beats:
-each snap reveals finer terrain/cloud detail instead of stretching one continuous
-zoom. The original location widget is deliberately withheld until the cinematic
-has ended, then restarts its city/region/district/time telex on the live map.
+Loading artwork may fade into a low-orbit Earth limb during LuaIntro, but
+**no descent runs until the simulation frame counter becomes positive**.
+At the first LuaUI screen draw with `Spring.GetGameFrame() > 0`, the
+artwork/orbit blend begins (0.5 seconds), followed by five discrete zoom
+steps of 0.5 seconds each (2.5 seconds of descent, 3 seconds total).
+Each beat reveals finer terrain/cloud detail instead of stretching one
+continuous zoom. Neither LuaIntro shutdown nor city spawn completion gates
+the zoom. The original location widget resumes its city/region/district/time
+telex after the cinematic releases the live map.
 
 Every apparent movement is in screen space. The sequence never changes the
 camera position, orientation, mode, field of view, simulation speed or pause state.
@@ -19,18 +21,18 @@ atlas. It does not claim to locate the city accurately on a real globe.
 ## Handoff and readiness
 
 LuaIntro and LuaUI share the renderer and GLSL programs. LuaIntro freezes its
-chosen loading artwork, records the last displayed age/fade in a runtime-only
-configuration overlay, and marks the handoff as pending. Its Shutdown call is
-the authoritative loading-screen boundary and marks the handoff finished.
-LuaUI may initialize and receive draw call-ins earlier, but it will not start its
-timer or descent while that phase is pending. No handoff state is written to the
-player's configuration file.
+chosen loading artwork and records the last displayed age/fade in runtime-only
+configuration state. LuaUI uses that artwork when available, but **does not wait**
+for a LuaIntro phase or readiness flag. The first positive game frame starts
+the presentation clock; wall time governs the half-second beats regardless of
+simulation speed. This avoids the race where LuaUI initializes after frame 0.
+First initialization during the opening 300 game frames remains eligible;
+midgame joins and reloads are bypassed. A runtime-only `played` marker blocks
+replays even during those first 300 frames. No handoff state is written to disk.
 
-The city gadget exposes a public `mosaic_city_spawn_complete` flag when either
-generated or map-placed houses and their routes have been registered. This is
-two one-time parameter writes, not per-unit streaming. The arrival waits for
-this flag, with a 12-second client-side safety limit. House-script assembly can
-continue after placement; this flag is not a promise that every animation is done.
+The city gadget still publishes `mosaic_city_spawn_complete`, but the arrival
+does not consume it: the camera blends to whatever world is actually rendered
+when the last step completes, so startup cannot wait indefinitely for generation.
 
 At descent 0.42–0.55 clouds fully cover the screen. During this interval the
 renderer switches from Earth to the live framebuffer. It captures only before
@@ -57,7 +59,7 @@ Mid-match joins, saved games and LuaUI reloads during a running match bypass
 arrival. Re-enabling the widget after a completed or skipped arrival does not
 replay it. The timer uses wall time, so a paused simulation cannot trap the UI.
 In a multiplayer start-position lobby, Escape can return to setup immediately;
-the safety limit also bounds the pregame wait.
+the animation cannot begin until game frames advance.
 
 The procedural pass is capped at 960×540 and reused by both composites in a
 frame. Resources are released when arrival finishes. GLSL requires the same
@@ -72,8 +74,9 @@ lua5.1 tests/orbital_arrival.lua
 python3 tests/orbital_arrival_gpu.py
 ```
 
-The Lua suite covers the shared handoff, readiness and timeout, input routing,
-skip/failure/reload cleanup, hidden-interface preservation, both Dubai/Dhubai
+The Lua suite covers game-frame triggering, half-second blend and steps,
+late widget initialization, no replay after completion, input routing,
+skip/failure cleanup, hidden-interface preservation, both Dubai/Dhubai
 spellings and title resize. The GPU test uses NumPy and headless EGL/OpenGL on
 Linux to compile the production shaders and verify the opaque handoff, finite
 output, artwork continuity and unchanged final live pixels.

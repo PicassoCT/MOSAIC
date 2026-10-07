@@ -38,6 +38,7 @@ local A=VFS.Include('luaui/widgets_mosaic/include/orbital_arrival.lua')
 assert(A.loadingState(0)==0)
 local f,d=A.loadingState(60); assert(f==1 and d==0,'loading screen must never advance descent')
 assert(A.snapDescent(0)==0 and A.snapDescent(1)==1)
+assert(A.blendSeconds==0.5 and A.stepSeconds==0.5 and A.descentSeconds==2.5)
 assert(A.snapDescent(0.10)==0, 'first descent beat must hold')
 assert(A.snapDescent(0.20)>=0.16, 'snap must advance to the next scale')
 A.beginHandoff(); assert(A.introPhase()=='pending')
@@ -57,14 +58,26 @@ local function newWidget()
 end
 settings.FullscreenEdgeMove=0; settings.WindowedEdgeMove=1
 A.beginHandoff()
-A.writeHandoff('art.png',20,1,0)
+A.writeHandoff('art.png',0,0.2,0)
 local w=newWidget(); assert(WG.MosaicArrival.active)
-w:DrawScreenEffects(); assert(not hidden and settings.WindowedEdgeMove==1,'arrival started before LuaIntro shutdown')
-A.finishIntro()
-w:DrawScreenEffects(); assert(hidden and settings.WindowedEdgeMove==0)
-time=7; w:DrawScreenEffects(); assert(WG.MosaicArrival.descent==0,'Revealed unfinished city')
-ready=1; w:DrawScreenEffects(); time=12; w:DrawScreenEffects()
-assert(not hidden and not WG.MosaicArrival and WG.MosaicArrivalFinished)
+w:DrawScreenEffects(); assert(not hidden and settings.WindowedEdgeMove==1,
+  'the arrival must wait for the first advancing simulation frame')
+frame=1; w:DrawScreenEffects()
+assert(hidden and settings.WindowedEdgeMove==0 and A.introPhase()=='pending',
+  'frame > 0 must start the transition even while LuaIntro is pending')
+assert(WG.MosaicArrival.descent==0)
+time=0.25; w:DrawScreenEffects()
+assert(draws.fade[1]>=0.5 and WG.MosaicArrival.descent==0, 'half-second blend')
+time=0.5; w:DrawScreenEffects()
+assert(draws.fade[1]==1 and WG.MosaicArrival.descent==0, 'start zoom after blend')
+time=1.0; w:DrawScreenEffects()
+assert(math.abs(WG.MosaicArrival.descent-0.2)<0.00001, 'first half-second step')
+time=1.5; w:DrawScreenEffects()
+assert(math.abs(WG.MosaicArrival.descent-0.4)<0.00001, 'second half-second step')
+time=3.0; w:DrawScreenEffects()
+assert(not hidden and not WG.MosaicArrival and WG.MosaicArrivalFinished,
+  'five half-second steps must end the sequence regardless of city readiness')
+A.finishIntro(); assert(A.introPhase()=='played','late LuaIntro shutdown clobbered completion')
 assert(settings.FullscreenEdgeMove==0 and settings.WindowedEdgeMove==1)
 assert(settings[A.configKey]==''); assert(cameraCalls==0)
 -- Camera Remember must not mutate/rotate the live camera while arrival owns startup.
@@ -74,19 +87,29 @@ widget={}; WG={MosaicArrival={active=true}}
 assert(loadstring(VFS.LoadFile('luaui/widgets_mosaic/camera_remember_mode.lua')))()
 widget:SetConfigData({name='ta'}); widget:Initialize()
 assert(cameraCalls==0,'Camera Remember mutated camera underneath orbital arrival')
+-- A finished intro must not replay even if LuaUI reloads during early frames.
+time=4; frame=1; w=newWidget()
+assert(not WG.MosaicArrival, 'completed arrival replayed at an early game frame')
 -- Cancellation and errors release modal and preserve an already hidden interface.
-ready=0; time=20; hidden=true
-w=newWidget(); w:DrawScreenEffects(); WG.MosaicArrival.skip()
+A.beginHandoff(); time=20; frame=0; hidden=true
+w=newWidget(); frame=1; w:DrawScreenEffects(); WG.MosaicArrival.skip()
 assert(hidden and not WG.MosaicArrival)
-hidden=false; time=30
-w=newWidget(); w:DrawScreenEffects(); w:Shutdown(); assert(not hidden and not WG.MosaicArrival)
-time=40; w=newWidget(); textureFailure=true; w:DrawScreenEffects()
+A.beginHandoff(); hidden=false; time=30; frame=0
+w=newWidget(); frame=1; w:DrawScreenEffects(); w:Shutdown()
+assert(not hidden and not WG.MosaicArrival)
+A.beginHandoff(); time=40; frame=0; w=newWidget()
+textureFailure=true; frame=1; w:DrawScreenEffects()
 assert(not hidden and not WG.MosaicArrival); textureFailure=false
-shaderFailure=true; w=newWidget(); assert(not WG.MosaicArrival and not hidden); shaderFailure=false
-frame=300; w=newWidget(); assert(not WG.MosaicArrival,'Midgame reload replayed arrival')
-frame=0; ready=0; time=50; w=newWidget(); w:DrawScreenEffects()
-time=62; w:DrawScreenEffects(); time=67; w:DrawScreenEffects()
-assert(not hidden and not WG.MosaicArrival,'Readiness timeout did not release UI')
+A.beginHandoff(); shaderFailure=true; frame=0
+w=newWidget(); assert(not WG.MosaicArrival and not hidden); shaderFailure=false
+A.beginHandoff(); frame=A.latestStartFrame+1; w=newWidget()
+assert(not WG.MosaicArrival,'midgame reload replayed arrival')
+-- A widget initialized just AFTER gameframe begins must still play the zoom.
+A.beginHandoff(); frame=1; time=50; w=newWidget()
+assert(WG.MosaicArrival and WG.MosaicArrival.active)
+w:DrawScreenEffects(); assert(hidden)
+time=53; w:DrawScreenEffects()
+assert(not hidden and not WG.MosaicArrival, 'late-initialized arrival did not finish')
 -- Test the actual router functions: keys must be intercepted BEFORE bound actions.
 local source=VFS.LoadFile('luaui/mosaicwidgets.lua')
 local first=assert(source:find('local function ArrivalActive',1,true))
@@ -105,7 +128,7 @@ widgetHandler.WG.MosaicArrival={active=true,skip=function() skipped=true end}
 assert(widgetHandler:KeyPress(65,{},false)); assert(widgetHandler:TextInput('a'))
 assert(widgetHandler:MouseWheel(true,1)); assert(widgetHandler:CommandNotify(10,{},{}))
 assert(widgetHandler:KeyPress(27,{},false) and skipped)
-print('PASS: post-LuaIntro handoff, same-frame GPU cache, city readiness/timeout, input routing, skip/failure/reload cleanup; zero arrival camera writes')
+print('PASS: game-frame-triggered five 0.5s snaps, LuaIntro-independent blend, cache, input routing and cleanup; zero camera writes')
 -- Exercise the real location widget on both map spellings, including resize.
 Spring.SendLuaRulesMsg=function(s) assert(s:match('City: Dubai')); end
 Spring.PlaySoundFile=function() end

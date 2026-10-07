@@ -2,13 +2,16 @@
 local M = {}
 M.configKey = "MosaicOrbitalArrivalHandoff"
 M.phaseKey = "MosaicOrbitalArrivalPhase"
-M.artSeconds, M.fadeSeconds, M.descentSeconds = 3, 1.25, 1.75
+M.artSeconds, M.fadeSeconds = 3, 1.25
+M.blendSeconds, M.stepSeconds = 0.5, 0.5
+M.latestStartFrame = 300 -- late LuaUI initialization is OK; mid-game reloads are not
 M.holdDescent = 0.16
 
 function M.clamp(x) return math.max(0, math.min(1, x)) end
 -- Deliberately staged rather than a long continuous zoom. Each plateau lets the
 -- eye register a new scale, while the very short ramps read as optical snaps.
 local snapStops = {0.0, 0.16, 0.34, 0.56, 0.78, 1.0}
+M.descentSeconds = (#snapStops - 1) * M.stepSeconds
 function M.snapDescent(x)
   x = M.clamp(x)
   if x >= 1 then return 1 end
@@ -34,6 +37,8 @@ function M.beginHandoff()
 end
 
 function M.finishIntro()
+  -- A late LuaIntro shutdown must not undo a completed arrival.
+  if M.introPhase() == "played" then return end
   Spring.SetConfigString(M.phaseKey, (Game.mapName or "") .. "\nfinished", true)
 end
 
@@ -64,7 +69,7 @@ end
 
 function M.clearHandoff()
   Spring.SetConfigString(M.configKey, "", true)
-  Spring.SetConfigString(M.phaseKey, "", true)
+  Spring.SetConfigString(M.phaseKey, (Game.mapName or "") .. "\nplayed", true)
 end
 
 function M.newRenderer()

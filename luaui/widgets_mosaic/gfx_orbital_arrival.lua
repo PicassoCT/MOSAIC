@@ -6,7 +6,7 @@ end
 local Arrival = VFS.Include("luaui/widgets_mosaic/include/orbital_arrival.lua")
 local renderer, liveTexture, modal
 local width, height, offsetX, offsetY
-local timer, texture, age, fade, descent, initialFade, initialDescent, releaseTime
+local timer, texture, age, fade, descent, initialFade
 local guiWasHidden, hasCapture, started = false, false, false
 local savedEdges = {}
 local finished = false
@@ -30,7 +30,8 @@ end
 
 function widget:Initialize()
   -- Reloads, saved games and mid-match joins must never replay or lock the UI.
-  if WG.MosaicArrivalFinished or Spring.GetGameFrame() > 0 then
+  if WG.MosaicArrivalFinished or Arrival.introPhase() == "played"
+      or Spring.GetGameFrame() > Arrival.latestStartFrame then
     widgetHandler:RemoveWidget(self); return
   end
   renderer = Arrival.newRenderer()
@@ -42,11 +43,11 @@ end
 function widget:Shutdown() finish() end
 
 local function begin()
-  texture, age, initialFade, initialDescent = Arrival.readHandoff()
+  texture, age, initialFade = Arrival.readHandoff()
   if not texture then
-    texture, age, initialFade, initialDescent = "", Arrival.artSeconds, 1, 0
+    texture, age, initialFade = "", Arrival.artSeconds, 1
   end
-  fade, descent = initialFade, initialDescent
+  fade, descent = initialFade, 0
   timer = Spring.GetTimer()
   guiWasHidden = Spring.IsGUIHidden()
   started = true
@@ -74,20 +75,16 @@ end
 function widget:DrawScreenEffects()
   if finished or not renderer then return end
   if not started then
-    -- LuaUI can initialize and draw while LuaIntro is still presenting the
-    -- loading screen. Do not start a hidden timer behind it.
-    if Arrival.introPhase() == "pending" then return end
+    -- The first advancing simulation frame is the ONLY descent trigger.
+    -- LuaIntro shutdown, LuaUI readiness and city spawn are not clocks.
+    if Spring.GetGameFrame() <= 0 then return end
     begin()
   end
   local elapsed = Spring.DiffTimers(Spring.GetTimer(), timer)
-  local loadingFade = Arrival.loadingState(age + elapsed)
-  fade = math.max(initialFade, loadingFade)
-  if not releaseTime and (Spring.GetGameRulesParam("mosaic_city_spawn_complete") == 1
-      or elapsed >= 12) and fade >= 1 then
-    releaseTime = elapsed
-  end
-  descent = releaseTime and Arrival.clamp(initialDescent +
-    (elapsed - releaseTime) / Arrival.descentSeconds) or initialDescent
+  -- A half-second artwork -> orbit blend, then five half-second scale beats.
+  -- Wall time keeps the visual cadence fixed even if simulation FPS fluctuates.
+  fade = math.max(initialFade, Arrival.clamp(elapsed / Arrival.blendSeconds))
+  descent = Arrival.clamp((elapsed - Arrival.blendSeconds) / Arrival.descentSeconds)
   modal.elapsed, modal.descent = elapsed, descent
   if not capture() then finish(); return end
   hasCapture = true
