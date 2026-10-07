@@ -81,10 +81,10 @@ function widget:DrawScreenEffects()
     begin()
   end
   local elapsed = Spring.DiffTimers(Spring.GetTimer(), timer)
-  -- A half-second artwork -> orbit blend, then five half-second scale beats.
-  -- Wall time keeps the visual cadence fixed even if simulation FPS fluctuates.
+  -- Magnify during the artwork blend: no static Earth hold after loading.
+  -- Each optical step takes exactly half a second of wall time.
   fade = math.max(initialFade, Arrival.clamp(elapsed / Arrival.blendSeconds))
-  descent = Arrival.clamp((elapsed - Arrival.blendSeconds) / Arrival.descentSeconds)
+  descent = Arrival.clamp(elapsed / Arrival.descentSeconds)
   modal.elapsed, modal.descent = elapsed, descent
   if not capture() then finish(); return end
   hasCapture = true
