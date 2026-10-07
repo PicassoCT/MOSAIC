@@ -57,8 +57,9 @@ vec3 centre(float t, float strand, vec3 u, vec3 v) {
             float contact = 1.0-smoothstep(plumeLength*0.3,plumeLength*0.55,gap);
             float hit = clamp(gap/plumeLength,0.01,0.55);
             float spread = max(0.0,(t-hit)/(1.0-hit));
+            // Pad reach is 32% of the original 0.9; retain the core and flight curl.
             vec3 fan = vec3(0,-min(t*plumeLength,gap),0)
-                + radial*(plumeLength*0.9*spread)
+                + radial*(plumeLength*0.288*spread)
                 + vec3(0,plumeLength*0.2*spread*spread,0);
             flow = mix(flow,fan,contact);
         }
