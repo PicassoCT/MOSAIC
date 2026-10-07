@@ -37,6 +37,7 @@ end
 function addon.Shutdown()
   -- An informational marker only, NOT a gate for starting the cinematic.
   Arrival.finishIntro()
+  Spring.Echo("[MOSAIC arrival] LuaIntro finished static loading screen")
   -- The VFS artwork path belongs to the pending LuaUI handoff.
   -- Do not gl.DeleteTexture(texture) while the receiving widget needs it.
 end
