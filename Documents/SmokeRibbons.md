@@ -117,8 +117,9 @@ the body is revealed. The cigarette inherits the head's animation.
 | --- | --- | --- | --- |
 | Pump station | `Flame1` | Reignition through burning; stops at flame-out or forced collapse | 120 / 20 |
 | Industrial complex | `Lava` in the melting pot | Pouring/melting phase; stops when the lava finishes lowering | 85 / 16 |
-| Spaceport ship | `RocketFusionPlume`, a child of the moving main stage | Launch ignition until `HideRocket()` | 320 / 42 |
+| Spaceport ship | `RocketFusionPlume`, a child of the moving main stage | Launch ignition until `HideRocket()` | 640 / 84 |
 | Spaceport returning boosters | Each `ReturningBoosterNThrusterPlum` nozzle | Start of descent until touchdown | 640 / 84 |
+| Spaceport chilled tanks | Eight outlets around `MainStageRocket` | Placement on the pad until ignition | 640 / 120 |
 
 Each objective preset uses one slot; each returning booster owns three separate
 nozzle slots. Repeated cycles replace rather than accumulate emitters. Death
@@ -127,6 +128,17 @@ The industrial flame follows the molten surface; this model has no dedicated
 flare-stack piece. Pump and furnace flames rise with warm self-lit gradients;
 the ship exhaust points downward, with a pale blue base fading through orange.
 Wind is enabled for all three, with reduced influence on the rocket jet.
+The ship now uses the same four curling flame strands as the returning boosters,
+deflected by `LaunchCone` while close to the launch deck. Both use the shortened
+pad fan: radial reach is 32% of its original setting. In flight the strands
+retain their downward core and upward return curls.
+
+`scripts/lib_spaceport_cold_vapor.lua` places two rings of four condensation
+outlets just outside the tank's piece bounds. Pale blue-white, non-emissive
+ribbons curl slowly downward and drift in the wind. `ShowRocket()` starts them
+during pad preparation; ignition, hiding/resetting the rocket, and destruction
+remove them. They never follow the rocket into powered flight. The eight slots
+are registered only on these events, not updated by a synced polling loop.
 Unit-motion trailing is disabled: the spacecraft are animated model pieces of
 the stationary spaceport, and their plumes follow those pieces directly.
 The outgoing rocket burns through every ascent stage, including the final climb.
@@ -243,7 +255,9 @@ GG.SmokeRibbon.Set(unitID, 'hair1', 'hairemit1', {
 `directionSpace='piece'` (the hair default) transforms `direction` and
 `rootOffset` through the full animated piece basis. Root offsets are in imported
 piece coordinates and inherit model scale; length and width are world units times
-`scale`. Optional `directionPiece` (piece name or ID, requires `directionSpace='piece'`)
+`scale`. Root offsets also work with world/unit/emitter directions: the outlet
+still follows its piece while the direction uses its selected coordinate space.
+Optional `directionPiece` (piece name or ID, requires `directionSpace='piece'`)
 uses a separate animated piece's basis for direction. The origin and `rootOffset`
 always stay on the emitter. For the investigator, Tail1's local -Z runs down the
 ponytail; its full basis includes Head animation, TailRotator yaw and Tail1 lift.

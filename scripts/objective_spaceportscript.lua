@@ -6,6 +6,7 @@ include "lib_radiance_emitters.lua"
 local cloudPieces = include('lib_cloud_pieces.lua')('spaceport')
 local launchFlame = include('lib_objective_ribbon_flames.lua')(unitID, 'launch')
 local landingFlames = include('lib_spaceport_landing_flames.lua')(unitID)
+local coldVapor = include('lib_spaceport_cold_vapor.lua')(unitID)
 include "lib_debug.lua"
 --include "lib_Build.lua"
 
@@ -435,6 +436,7 @@ function landBooster(boostNr)
 end
 
 function script.Killed(recentDamage, _)
+    coldVapor.Shutdown()
     cloudPieces.Shutdown()
     launchFlame.Shutdown()
     landingFlames.Shutdown()
@@ -526,6 +528,7 @@ function ShowRocket()
     Show(MainStage)
     Show(MainStageRocket)
     showT(TableOfPiecesGroups[BoosterN])
+    coldVapor.Start(MainStageRocket)
 end
 crawlerRocketPosY = -63.17
 RocketOnPlatformPos = 0
@@ -629,7 +632,8 @@ function launchAnimation()
             craneLoadToPlatform()
             --echoEnter("showHotColdTurbine")
             launchState = "launching"
-            launchFlame.Start(RocketFusionPlume)
+            coldVapor.Stop()
+            launchFlame.Start(RocketFusionPlume, LaunchCone)
             ShowRadiancePiece(RocketFusionPlume)
             StartThread(spinUpTurbine)
             --Inginition
@@ -793,6 +797,7 @@ end
 
 
 function HideRocket()
+    coldVapor.Stop()
     launchFlame.Stop()
     HideRadiancePiece(RocketFusionPlume)
     Hide(MainStage)

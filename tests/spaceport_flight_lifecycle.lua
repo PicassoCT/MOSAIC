@@ -1,4 +1,4 @@
--- Execute the real unit script and both ribbon helpers with yielding move waits.
+-- Execute the real unit script and ribbon helpers with yielding move waits.
 -- Run from the repository root with Lua 5.1/LuaJIT.
 local pieces, names, shown, ribbons, groups, moves, threads = {},{},{},{},{},{},{}
 unitID=42; script={}; x_axis=1; y_axis=2; z_axis=3
@@ -22,9 +22,11 @@ GG={GlobalGameState='normal',SmokeRibbon={
     Set=function(_,slot,p,options) ribbons[slot]={piece=p,options=options};return true end,
     Remove=function(_,slot) ribbons[slot]=nil end,
 }}
-Spring={Echo=function(err) error(err) end,PlaySoundFile=function() end}
+Spring={Echo=function(err) error(err) end,PlaySoundFile=function() end,
+    GetUnitPieceInfo=function() return {min={-303,-282,-40},max={210,275,832}} end}
 include=function(name)
-    if name=='lib_objective_ribbon_flames.lua' or name=='lib_spaceport_landing_flames.lua' then
+    if name=='lib_objective_ribbon_flames.lua' or name=='lib_spaceport_landing_flames.lua'
+        or name=='lib_spaceport_cold_vapor.lua' then
         return dofile('scripts/'..name)
     elseif name=='lib_cloud_pieces.lua' then return function() return {Shutdown=function() end} end end
 end
@@ -58,8 +60,25 @@ holdsForAllBool=function() return false end
 dofile('scripts/objective_spaceportscript.lua')
 script.Create()
 assert(next(ribbons)==nil,'preparation started exhaust')
+local function count() local n=0;for _ in pairs(ribbons) do n=n+1 end;return n end
+local function checkFueling()
+    assert(count()==8 and not ribbons['objective-launch'],'fueling mixed vapor with exhaust')
+    for _,r in pairs(ribbons) do
+        local o=r.options
+        assert(r.piece==pieces.MainStageRocket,'vapor did not attach to tank')
+        assert(o.directionSpace=='world' and o.direction[2]==-1,'cold vapor must fall')
+        assert(o.emission[1]==0 and o.emission[2]==0,'cold vapor glows like fire')
+        assert(o.colorStart[3]>=o.colorStart[1] and o.speed<1,'vapor lost its cold, slow appearance')
+        local offset=o.rootOffset
+        assert((offset[1]+46.5)^2+(offset[2]+3.5)^2>250^2,'vapor buried inside the tank')
+        assert(offset[3]>-40 and offset[3]<832,'vapor outside tank height')
+    end
+end
+ShowRocket();checkFueling()
+ShowRocket();checkFueling() -- repeated show replaces the same outlets
+HideRocket();assert(count()==0,'hiding the parked rocket retained vapor')
 driveOutMainStage=function() end
-craneLoadToPlatform=function() ShowRocket();Show(pieces.CapsuleRocket) end
+craneLoadToPlatform=function() ShowRocket();Show(pieces.CapsuleRocket);Sleep(5000) end
 destroyUnitsNearby=function() end
 plattformFireBloomCleanup=function() end
 local function resume(co,...)
@@ -67,10 +86,15 @@ local function resume(co,...)
     return kind,p,axis,target
 end
 local launch=coroutine.create(launchAnimation)
+local kind,p=resume(launch)
+assert(kind=='sleep' and p==5000,'fueling interval missing');checkFueling()
 for _,height in ipairs({3000,12000,18000,32000,58000}) do
     local kind,p,axis,target=resume(launch)
     assert(kind=='move' and p==pieces.Rocket and target==height,'ascent paused or skipped a stage')
     assert(ribbons['objective-launch'] and shown[pieces.RocketFusionPlume],'powered climb lost exhaust')
+    assert(count()==1,'cold vapor continued after ignition')
+    local o=ribbons['objective-launch'].options
+    assert(o.mode=='landing' and o.padPiece==pieces.LaunchCone and o.strands==4,'launch streamers missing')
     assert(shown[pieces.MainStageRocket] and shown[pieces.CapsuleRocket])
 end
 local kind,p,axis,target=resume(launch)
@@ -91,7 +115,6 @@ assert(cloud,'cloud recovery was lost')
 resume(coroutine.create(cloud.fn),unpack(cloud.args))
 
 local boosters={}
-local function count() local n=0;for _ in pairs(ribbons) do n=n+1 end;return n end
 for nr=1,3 do
     boosters[nr]=coroutine.create(landBooster)
     resume(boosters[nr],nr)
@@ -122,10 +145,18 @@ for nr=1,3 do
 end
 -- Repeated launch and destruction must not accumulate or resurrect slots.
 local again=coroutine.create(launchAnimation);resume(again)
+checkFueling();resume(again)
 assert(count()==1 and ribbons['objective-launch'],'second launch failed to reignite')
 local returnAgain=coroutine.create(landBooster);resume(returnAgain,1)
 while not ribbons['spaceport-landing-1-1'] do resume(returnAgain) end
 script.Killed();assert(count()==0,'death retained exhaust')
 local deadLaunch=coroutine.create(launchAnimation);resume(deadLaunch)
-assert(count()==0,'death allowed launch flames to restart')
-print('PASS: powered ascent, immediate disappearance, safe parent reset, three concurrent boosters, larger jets, pad routing, touchdown, relaunch and death')
+assert(count()==0,'death allowed tank vapor to restart')
+resume(deadLaunch);assert(count()==0,'death allowed launch flames to restart')
+-- Death during fueling must also clean the eight parked-hull outlets.
+local createVapor=dofile('scripts/lib_spaceport_cold_vapor.lua')
+local vapor=createVapor(unitID)
+assert(vapor.Start(pieces.MainStageRocket));checkFueling()
+vapor.Shutdown();assert(count()==0,'death during fueling retained vapor')
+assert(not vapor.Start(pieces.MainStageRocket),'dead vapor helper restarted')
+print('PASS: cold tank vapor, ignition handoff, launch streamers, powered ascent, immediate disappearance, safe parent reset, three concurrent boosters, pad routing, touchdown, relaunch and death')

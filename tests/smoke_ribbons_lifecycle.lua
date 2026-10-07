@@ -4,6 +4,7 @@ local synced=true
 local dead,cloak,nodraw,inlos,fullview,visible=false,false,false,true,false,true
 local x,viewX,frame=0,0,30
 local drawn,deleted,lastOrigin,lastDirection,lastTime=0,0
+local created=0
 local cameraY,cameraZ,frustumTests,lastOpacity=10,100,0,0
 local wind,velocity,lastDrift={0,0,0},{0,0,0},{}
 local windCalls,velocityCalls=0,0
@@ -26,7 +27,7 @@ Spring={ValidUnitID=function(id) return id==7 end,GetUnitIsDead=function() retur
     GetFrameTimeOffset=function() return 0.5 end,GetSelectedUnits=function() return {7} end,Echo=function() end}
 GL={TRIANGLE_STRIP=5,ALL_ATTRIB_BITS=1,ONE=1,ONE_MINUS_SRC_ALPHA=2}
 gl=setmetatable({CreateShader=function() return 1 end,GetUniformLocation=function(_,n) return n end,
-    CreateList=function(fn) fn();return 1 end,BeginEnd=function(_,fn,...) fn(...) end,
+    CreateList=function(fn) created=created+1;fn();return 1 end,BeginEnd=function(_,fn,...) fn(...) end,
     CallList=function() drawn=drawn+1 end,DeleteList=function() deleted=deleted+1 end,
     GetSun=function() return 0.3,0.3,0.3 end,
     Uniform=function(n,...)
@@ -120,6 +121,14 @@ gadget:TextCommand('smokeribbon off');hidden('preview did not stop')
 Spring.GetUnitPiecePosDir=function() return 0,0,0,0,1,0 end
 Spring.GetUnitPieceMatrix=function() return 1,0,0,0, 0,0,1,0, 0,-1,0,0, 0,0,0,1 end
 viewX=0;x=0;wind={0,0,0};velocity={0,0,0}
+-- Tank outlets follow the rotated hull, but their cold vapor still falls in world space.
+assert(api.Set(7,'cold','smoke',{directionSpace='world',direction={0,-1,0},rootOffset={2,3,4}}))
+gadget:DrawWorld()
+assert(lastOrigin[1]==3 and lastOrigin[2]==-4 and lastOrigin[3]==2,'world vapor lost piece-local outlet')
+assert(lastDirection[1]==0 and lastDirection[2]==-1 and lastDirection[3]==0,'outlet transform rotated world-down flow')
+gadget:Shutdown();gadget={};dofile(path);gadget:Initialize();gadget:DrawWorld()
+assert(lastOrigin[1]==3 and lastOrigin[2]==-4 and lastOrigin[3]==2 and lastDirection[2]==-1,'reload lost vapor attachment')
+api.Remove(7,'cold');hidden('removed tank vapor survives')
 assert(not api.Set(7,'hair','smoke',{mode='invalid'}))
 assert(api.Set(7,'hair','smoke',{mode='hair',rootOffset={2,3,4},direction={0,0,1},distanceFactor=100}))
 gadget:DrawWorld()
@@ -229,6 +238,6 @@ assert(matrixCalls[5]==1,'nozzles repeatedly sampled the same pad matrix')
 gadget:Shutdown();gadget={};dofile(path);gadget:Initialize()
 n=drawn;gadget:DrawWorld();assert(drawn==n+2 and lastLanding==1 and lastPad[2]==90,'reload lost landing pad/mode/visibility')
 producer:UnitDestroyed(7);hidden('destroyed booster retains landing flames')
-gadget:Shutdown();assert(deleted==40,'mesh resources leaked')
+gadget:Shutdown();assert(deleted==created,'mesh resources leaked')
 producer:Shutdown();assert(GG.SmokeRibbon==nil)
 print('PASS: ribbon lifecycle, hair piece transform, turn lag, pause, settling, separate driver/root transforms, driver reload, shared matrix cache and culling')
