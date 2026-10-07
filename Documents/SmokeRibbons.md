@@ -121,6 +121,7 @@ the body is revealed. The cigarette inherits the head's animation.
 | Spaceport launch pad fan | `LaunchCone` deck below `RocketFusionPlume` | Ignition while exhaust is close to the deck | 640 / 84 |
 | Spaceport returning boosters | Each `ReturningBoosterNThrusterPlum` nozzle | Start of descent until touchdown | 640 / 84 |
 | Spaceport chilled tanks | Eight outlets around `MainStageRocket` | Placement on the pad until ignition | 640 / 120 |
+| Airport scramjets | Each `ScramJetNThrust` | Vertical liftoff through departure; stops when aircraft hides | 480 / 60 lifting, 900 / 54 departing |
 
 Each objective preset uses one slot, plus a separate pad-only slot for launch;
 each returning booster owns three separate
@@ -160,6 +161,17 @@ to rendering; the synced script only starts and stops the nine nozzle records.
 Existing mesh effects and their radiance registrations remain in place; the
 new ribbons are self-lit but do not themselves inject radiance-cascade light.
 Sizes are initial world-unit presets and still need in-game visual validation.
+
+Airport scramjets use `scripts/lib_airport_scramjet_flames.lua`: a compact,
+blue-white flame fading into violet-blue during vertical liftoff, then a longer,
+narrower rearward jet during acceleration. The nozzle stays attached to its own
+aircraft. Forward direction uses the hull's animated basis so the spinning old
+thrust mesh cannot sweep the ribbon sideways. Each aircraft owns one slot,
+replaced at the flight transition and removed on hide or airport destruction.
+Parked and arriving aircraft do not get this new departure effect. Like the
+spaceport exhaust, these flames remain visible beyond the ground unit's icon
+and distance bounds, but still obey LOS, cloak, frustum and the shared budget.
+They are self-lit and do not project light onto streets far below the aircraft.
 
 ### Rendering budget
 

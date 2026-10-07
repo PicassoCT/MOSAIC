@@ -4,6 +4,7 @@ include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 include "lib_mosaic.lua"
 include "lib_radiance_emitters.lua"
+local scramjetFlames = include('lib_airport_scramjet_flames.lua')(unitID)
 
 local TablesOfPiecesGroups = {}
 Airport = piece "Airport"
@@ -432,6 +433,7 @@ local distFactor = 1.0
 local slowTurnVTol = 0.125
 
 function HideScramJet(nr)
+    scramjetFlames.Stop(nr)
     local Jet = TablesOfPiecesGroups["ScramJet"][nr]
     local Gear = TablesOfPiecesGroups["ScramJetGear"][nr]
      Hide(Jet)
@@ -441,8 +443,8 @@ end
 function ShowScramJet(nr)
     local Jet = TablesOfPiecesGroups["ScramJet"][nr]
     local Gear = TablesOfPiecesGroups["ScramJetGear"][nr]
-    Hide(Jet)
-    Hide(Gear)
+    Show(Jet)
+    Show(Gear)
 end
 
 travelAltitude = math.random(3, 5) * 3000
@@ -478,9 +480,12 @@ function ScramJetArrival(nr)
     scramJetsPresent[nr] = true
 end
 thrusterPieceTable = {}
+local function scramjetThruster(nr)
+    if not thrusterPieceTable[nr] then thrusterPieceTable[nr]=piece('ScramJet'..nr..'Thrust') end
+    return thrusterPieceTable[nr]
+end
 function showThruster(nr, timeMs, boolRampUpSpeed)
-    thrusterNr = thrusterPieceTable[nf] or piece("ScramJet"..nr.."Thrust")
-    if not thrusterPieceTable[nr] then  thrusterPieceTable[nr]  = thrusterNr end
+    local thrusterNr = scramjetThruster(nr)
 
     speedFactor = 1
     if not boolRampUpSpeed then
@@ -523,18 +528,21 @@ function ScramJetDeparture(nr)
    
     Turn(Rotator, rotatorAxis, math.rad(departureVector), slowTurnVTol)
     PlaySoundAtUnitPieceLocatioin(unitID, Jet, departureSoundPath, 0.25)
+    local nozzle = scramjetThruster(nr)
+    scramjetFlames.Start(nr, nozzle, Jet, false)
     WMove(Jet, travelUpwardAxis,  travelAltitude * 0.5 * vtolFactor, vtolSpeed * 350)  
     WMove(Jet, travelUpwardAxis, nr*100 +  travelAltitude * vtolFactor, vtolSpeed * 700)  
 
     WTurn(Rotator, rotatorAxis, math.rad(departureVector), slowTurnVTol)
     Hide(Gear)
+    scramjetFlames.Start(nr, nozzle, Jet, true)
     StartThread(showThruster, nr, 5000, true)
     dist = math.random(8, 15) * 10000 
     WMove(Jet, travelForwardAxis,1000*distFactor, 150 * travelSpeed)
     WMove(Jet, travelForwardAxis,2000*distFactor, 250 * travelSpeed)
     WMove(Jet, travelForwardAxis,4000*distFactor, 500 * travelSpeed)
     WMove(Jet, travelForwardAxis,dist*distFactor, 1000 * travelSpeed)
-    Hide(Jet)
+    HideScramJet(nr)
     Sleep(5000)
     reset(Jet)  
     reset(Rotator)  
@@ -575,6 +583,7 @@ function departure()
 end
 
 function script.Killed(recentDamage, _)
+    scramjetFlames.Shutdown()
     if  GG.AirPortSemaphore == unitID then  GG.AirPortSemaphore = nil end
     return 1
 end
