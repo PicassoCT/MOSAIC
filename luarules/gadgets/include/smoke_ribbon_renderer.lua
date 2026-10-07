@@ -224,13 +224,23 @@ return function()
                             local radius = length*0.5+width*(r.curl*2+1)+driftLength*0.5
                             if r.mode == 'hair' then radius=length*1.5+width end
                             local pad
-                            if r.mode == 'landing' then
+                            if r.mode == 'landing' or r.mode == 'pad' then
                                 pad = landingPad(id, r.padPiece)
+                                if r.mode == 'pad' then
+                                    -- Deck-only streamers: no free-flight return curl.
+                                    if pad[4] <= 0 or (x-pad[1])^2+(z-pad[3])^2 >= pad[4]^2 then
+                                        fade=0
+                                    else
+                                        local gap=math.max(0,y-pad[2])
+                                        local t=math.max(0,math.min(1,(gap-length*0.3)/(length*0.25)))
+                                        fade=fade*(1-t*t*(3-2*t))
+                                    end
+                                end
                                 -- Return flow and the pad fan extend up and sideways.
                                 mx,my,mz=x,y,z
                                 radius=length*2+width*(r.curl*2+1)+driftLength
                             end
-                            if Spring.IsSphereInView(mx,my,mz,radius) then
+                            if fade > 0 and Spring.IsSphereInView(mx,my,mz,radius) then
                                 draw[#draw+1] = {r=r,x=x,y=y,z=z,dx=dx,dy=dy,dz=dz,
                                     driftX=driftX,driftY=driftY,driftZ=driftZ,
                                     length=length,width=width,fade=fade,pad=pad,d2=(cx-mx)^2+(cy-my)^2+(cz-mz)^2}
@@ -281,7 +291,7 @@ return function()
             gl.Uniform(loc.origin,d.x,d.y,d.z); gl.Uniform(loc.direction,d.dx,d.dy,d.dz)
             gl.Uniform(loc.directionalDrift,d.driftX,d.driftY,d.driftZ)
             gl.Uniform(loc.hairMode,r.mode == 'hair' and 1 or 0)
-            gl.Uniform(loc.landingMode,r.mode == 'landing' and 1 or 0)
+            gl.Uniform(loc.landingMode,r.mode == 'pad' and 2 or (r.mode == 'landing' and 1 or 0))
             gl.Uniform(loc.landingPad,unpack(d.pad or {0,0,0,-1}))
             gl.Uniform(loc.stiffness,r.stiffness or 0.7)
             gl.Uniform(loc.gravity,r.gravity or 0.35)

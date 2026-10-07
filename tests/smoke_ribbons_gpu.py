@@ -182,3 +182,17 @@ if '--landing-preview' in sys.argv:
     rgb=fan[...,:3]+np.array([.025,.035,.05])*(1-fan[...,3:4])
     Image.fromarray((np.clip(rgb[::-1],0,1)**(1/2.2)*255).astype('uint8')).save(sys.argv[sys.argv.index('--landing-preview')+1])
 print('PASS: landing GLSL downward core, upward return flow, four-way pad fan, deck clipping and out-of-pad free flight')
+
+# Launch pad streamers stay on the deck as the nozzle lifts; no airborne lobe.
+flight['landingMode'].value=2
+flight['landingPad'].value=(0,-.15,0,1)
+deck=paths()
+assert np.allclose(deck[:,0,:],(0,-.15,0)), 'launch fan roots are attached to the flying nozzle'
+assert deck[:,:,1].min()>=-.150001, 'launch fan went through the deck'
+flight['origin'].value=(0,.2,0)
+assert np.allclose(paths(),deck,atol=1e-6), 'launch streamers lifted away from the pad'
+p['landingMode'].value=2
+deck_image=render()
+assert deck_image[...,3].sum()>10, 'deck-only fan is invisible'
+assert deck_image[:int(h*(1-.15)/2)-1,:,3].max()==0, 'deck-only billboard pierced the pad'
+print('PASS: separate launch fan stays anchored to the deck and renders above its surface')
