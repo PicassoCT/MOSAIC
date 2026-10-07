@@ -21,7 +21,7 @@ function M.Normalize(unitID, piece, options)
     assert(found, 'unknown smoke emitter piece')
     local o = options or {}
     local mode = o.mode or 'smoke'
-    assert(mode == 'smoke' or mode == 'hair', 'unknown ribbon mode')
+    assert(mode == 'smoke' or mode == 'hair' or mode == 'landing', 'unknown ribbon mode')
     local hair = mode == 'hair'
     local direction = vector(o.direction, (hair and {0, 0, -1} or {0, 1, 0}), 3, -1e6, 1e6)
     local length = math.sqrt(direction[1]^2 + direction[2]^2 + direction[3]^2)
@@ -37,12 +37,19 @@ function M.Normalize(unitID, piece, options)
         for _, p in pairs(map) do if p == directionPiece then valid = true; break end end
         assert(valid, 'unknown ribbon direction piece')
     end
+    local padPiece = o.padPiece
+    if mode == 'landing' then
+        if type(padPiece) == 'string' then padPiece = map[padPiece] end
+        local valid = false
+        for _, p in pairs(map) do if p == padPiece then valid = true; break end end
+        assert(valid, 'unknown landing pad piece')
+    end
     return {
         mode = mode, rootOffset = vector(o.rootOffset, {0,0,0}, 3, -1e4, 1e4),
         stiffness = number(o.stiffness, 0.7, 0, 1),
         gravity = number(o.gravity, 0.35, 0, 1),
         hang = number(o.hang, 0, 0, 1),
-        unitID = unitID, piece = piece, directionPiece = directionPiece,
+        unitID = unitID, piece = piece, directionPiece = directionPiece, padPiece = padPiece,
         direction = direction, directionSpace = space,
         scale = number(o.scale, 1, 0.001, 100),
         length = number(o.length, hair and 3 or 60, 0.01, 2000),
@@ -50,6 +57,8 @@ function M.Normalize(unitID, piece, options)
         curl = number(o.curl, hair and 0.12 or 0.8, 0, 2),
         speed = number(o.speed, 1, 0, 20),
         distanceFactor = number(o.distanceFactor, 40, 1, 200),
+        distanceCulling = o.distanceCulling ~= false,
+        drawInIcon = o.drawInIcon == true,
         groundDirected = not hair and o.groundDirected == true,
         windAffected = o.windAffected ~= false,
         motionAffected = o.motionAffected == true or (hair and o.motionAffected ~= false),

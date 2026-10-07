@@ -32,6 +32,8 @@ local presets = {
         direction={0,-1,0}, length=320, width=42, curl=0.3, speed=3,
         colorStart={0.65,0.8,1,0.95}, colorEnd={1,0.25,0.04,0},
         emission={4,1}, windAffected=true, windInfluence=0.15, trailTime=0.5,
+        -- The animated ship climbs far beyond its stationary unit's bounds.
+        distanceCulling=false, drawInIcon=true,
     },
 }
 return function(unitID, kind)

@@ -5,6 +5,7 @@ include "lib_Animation.lua"
 include "lib_radiance_emitters.lua"
 local cloudPieces = include('lib_cloud_pieces.lua')('spaceport')
 local launchFlame = include('lib_objective_ribbon_flames.lua')(unitID, 'launch')
+local landingFlames = include('lib_spaceport_landing_flames.lua')(unitID)
 include "lib_debug.lua"
 --include "lib_Build.lua"
 
@@ -373,6 +374,8 @@ function landBooster(boostNr)
  
     local LandCone = TableOfPiecesGroups["LandCone"][boosterNr]
     local plums = getPlum(boosterNr)
+    -- Burn throughout descent. The local renderer bends the jets at the pad.
+    landingFlames.Start(boosterNr, plums, LandCone)
    
     for i = upDistance, 2000, -2000 do
         Move(booster, axis, i, 6000)
@@ -415,6 +418,7 @@ function landBooster(boostNr)
     end  
    
 
+    landingFlames.Stop(boosterNr)
     HideRadiancePiece(TableOfPiecesGroups[CrawlerBoosterGasRingN][boosterNr])
     
     assert(plums)
@@ -433,6 +437,7 @@ end
 function script.Killed(recentDamage, _)
     cloudPieces.Shutdown()
     launchFlame.Shutdown()
+    landingFlames.Shutdown()
     return 1
 end
 
@@ -625,6 +630,7 @@ function launchAnimation()
             --echoEnter("showHotColdTurbine")
             launchState = "launching"
             launchFlame.Start(RocketFusionPlume)
+            ShowRadiancePiece(RocketFusionPlume)
             StartThread(spinUpTurbine)
             --Inginition
             -- plattform firebloom
@@ -668,21 +674,19 @@ function launchAnimation()
             destroyUnitsNearby()
 
             StartThread(BoostersReturning)
-            --Launchplum sinking back into Final Stage
+            -- Keep the parent Rocket fixed until its flying main stage is gone.
+            -- cloudFallingDown lowers that parent and used to drag the ship too.
+            WMove(MainStage, y_axis, 92000, 16000)
+            HideRocket()
+            launchState = "recovery"
+
+            -- Launch plume cools only after the rocket reaches its final altitude.
             StartThread(cloudFallingDown, 
                 TableOfPiecesGroups["RocketScience"], 
                 plumageTable, 
                 TableOfPiecesGroups["RocketPlumeB"] )
-            --Slight Slowdown
-            ShowRadiancePiece(RocketFusionPlume)
-            Sleep(500)
-            --Fusion Engine kicks in 
-            
-            launchState = "recovery"
-            WMove(MainStage, y_axis, 92000, 16000)
+            -- Preserve the recovery pause with the rocket already hidden.
             Sleep(9000)
-            HideRadiancePiece(RocketFusionPlume)
-            HideRocket()
 --            echo("launch complete waiting for return")
             --Moving CrawlerMain back to reassembly
       
@@ -790,6 +794,7 @@ end
 
 function HideRocket()
     launchFlame.Stop()
+    HideRadiancePiece(RocketFusionPlume)
     Hide(MainStage)
     Hide(CapsuleRocket)
     Hide(MainStageRocket)

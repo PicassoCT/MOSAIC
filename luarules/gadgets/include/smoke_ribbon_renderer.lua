@@ -7,7 +7,8 @@ return function()
     local self = {records = {}, maxVisible = 128}
     local loc, meshes, hairHistory = {}, {}, {}
     for _, name in ipairs({'origin','direction','cameraPosition','effectTime','plumeLength',
-        'plumeWidth','curl','seed','colorStart','colorEnd','emission','sourceGlow','ambient','strandOpacity','strandCount','directionalDrift','hairMode','stiffness','gravity'}) do
+        'plumeWidth','curl','seed','colorStart','colorEnd','emission','sourceGlow','ambient','strandOpacity','strandCount','directionalDrift','hairMode','stiffness','gravity',
+        'landingMode','landingPad'}) do
         loc[name] = gl.GetUniformLocation(shader, name)
     end
     local function strip(segments, strand)
@@ -38,6 +39,7 @@ return function()
         local ally = Spring.GetMyAllyTeamID()
         local wind, velocities = nil, {}
         local transforms = {}
+        local pads = {}
         -- One animated basis query per piece/draw, shared by locks using a driver.
         local function pieceTransform(id, piece)
             local unit = transforms[id]
@@ -62,6 +64,36 @@ return function()
             unit.pieces[piece] = transform
             return transform
         end
+        local function landingPad(id, piece)
+            local key = id..':'..piece
+            if pads[key] then return pads[key] end
+            local pad = {0,0,0,-1} -- Invalid bounds: keep a free jet, never guess terrain.
+            pads[key] = pad
+            local transform = pieceTransform(id, piece)
+            local info = Spring.GetUnitPieceInfo(id, piece)
+            local x,y,z = Spring.GetUnitPiecePosDir(id, piece)
+            if transform and x and info and info.min and info.max then
+                local center, half = {}, {}
+                for i=1,3 do
+                    center[i]=(info.min[i]+info.max[i])*.5
+                    half[i]=(info.max[i]-info.min[i])*.5
+                end
+                local ox,oy,oz = transform(unpack(center))
+                local ax,ay,az = transform(half[1],0,0)
+                local bx,by,bz = transform(0,half[2],0)
+                local cx,cy,cz = transform(0,0,half[3])
+                local hx,hy,hz = math.abs(ax)+math.abs(bx)+math.abs(cx),
+                    math.abs(ay)+math.abs(by)+math.abs(cy),math.abs(az)+math.abs(bz)+math.abs(cz)
+                local ux,uy,uz = Spring.GetUnitPosition(id)
+                local vx,vy,vz
+                if Spring.GetUnitViewPosition then vx,vy,vz = Spring.GetUnitViewPosition(id) end
+                if ux and vx then x,y,z=x+vx-ux,y+vy-uy,z+vz-uz end
+                -- LandCone's bottom is the deck contact plane, not its raised pivot.
+                pad = {x+ox,y+oy-hy,z+oz,math.sqrt(hx*hx+hz*hz)}
+                pads[key] = pad
+            end
+            return pad
+        end
         local now = (Spring.GetGameFrame()+(Spring.GetFrameTimeOffset() or 0))/(Game.gameSpeed or 30)
         local nextHistory = {}
         for key, r in pairs(self.records) do
@@ -69,7 +101,7 @@ return function()
             local los = fullView or Spring.GetUnitLosState(id,ally)
             if r.enabled and (fullView or (los and los.los)) and not Spring.GetUnitIsDead(id)
                 and not Spring.GetUnitIsCloaked(id) and not Spring.GetUnitNoDraw(id)
-                and not Spring.GetUnitTransporter(id) and not Spring.IsUnitIcon(id) then
+                and not Spring.GetUnitTransporter(id) and (r.drawInIcon or not Spring.IsUnitIcon(id)) then
                 local x,y,z,ex,ey,ez = Spring.GetUnitPiecePosDir(id,r.piece)
                 if x then
                     -- Same draw translation correction as Mosaic's live headlights.
@@ -95,9 +127,9 @@ return function()
                     local cutoff = math.max(length,2*width)*(r.distanceFactor or 40)
                     local anchorD2 = (cx-x)^2+(cy-y)^2+(cz-z)^2
                     -- Reject before direction work, frustum tests, sorting and GPU submission.
-                    if anchorD2 < cutoff*cutoff then
+                    if r.distanceCulling == false or anchorD2 < cutoff*cutoff then
                         local fade = 1
-                        if anchorD2 > (cutoff*0.8)^2 then
+                        if r.distanceCulling ~= false and anchorD2 > (cutoff*0.8)^2 then
                             local t = (math.sqrt(anchorD2)/cutoff-0.8)/0.2
                             fade = 1-t*t*(3-2*t)
                         end
@@ -191,10 +223,17 @@ return function()
                             -- Includes maximum curl, axial displacement and ribbon half-width.
                             local radius = length*0.5+width*(r.curl*2+1)+driftLength*0.5
                             if r.mode == 'hair' then radius=length*1.5+width end
+                            local pad
+                            if r.mode == 'landing' then
+                                pad = landingPad(id, r.padPiece)
+                                -- Return flow and the pad fan extend up and sideways.
+                                mx,my,mz=x,y,z
+                                radius=length*2+width*(r.curl*2+1)+driftLength
+                            end
                             if Spring.IsSphereInView(mx,my,mz,radius) then
                                 draw[#draw+1] = {r=r,x=x,y=y,z=z,dx=dx,dy=dy,dz=dz,
                                     driftX=driftX,driftY=driftY,driftZ=driftZ,
-                                    length=length,width=width,fade=fade,d2=(cx-mx)^2+(cy-my)^2+(cz-mz)^2}
+                                    length=length,width=width,fade=fade,pad=pad,d2=(cx-mx)^2+(cy-my)^2+(cz-mz)^2}
                             end
                         end
                     end
@@ -242,6 +281,8 @@ return function()
             gl.Uniform(loc.origin,d.x,d.y,d.z); gl.Uniform(loc.direction,d.dx,d.dy,d.dz)
             gl.Uniform(loc.directionalDrift,d.driftX,d.driftY,d.driftZ)
             gl.Uniform(loc.hairMode,r.mode == 'hair' and 1 or 0)
+            gl.Uniform(loc.landingMode,r.mode == 'landing' and 1 or 0)
+            gl.Uniform(loc.landingPad,unpack(d.pad or {0,0,0,-1}))
             gl.Uniform(loc.stiffness,r.stiffness or 0.7)
             gl.Uniform(loc.gravity,r.gravity or 0.35)
             gl.Uniform(loc.effectTime,now*r.speed)
