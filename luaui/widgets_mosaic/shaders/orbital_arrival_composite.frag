@@ -10,32 +10,30 @@ uniform vec2 artScale;
 void main() {
     vec2 uv = gl_TexCoord[0].st;
     vec4 orbit = texture2D(orbitTex, uv);
-    // The world is an image plane. No camera, geometry or simulation movement.
-    float arrival = smoothstep(0.47, 0.55, descent) * float(hasLive);
-    // The dramatic part of the dive happens in the Earth/cloud pass. Keep the
-    // live image's final approach small so its captured bounds stay concealed.
-    float zoom = mix(1.18, 1.0, smoothstep(0.50, 0.96, descent));
+    // The city grows from the passing clouds rather than cutting in at
+    // one instant. All movement is texture-space: no camera rotation.
+    float progress = smoothstep(0.43, 1.0, descent);
+    float zoom = mix(3.0, 1.0, smoothstep(0.44, 1.0, descent));
     vec2 liveUV = (uv - 0.5) * zoom + 0.5;
-    // CopyToTexture framebuffer captures use the opposite vertical texture
-    // orientation from the screen-space quad. Flip Y only: never X, never roll.
+    // CopyToTexture flips framebuffer Y, never X.
     vec2 liveSampleUV = vec2(liveUV.x, 1.0 - liveUV.y);
     vec3 live = texture2D(liveTex, liveSampleUV).rgb;
-    if (descent >= 0.96) {
+    // Identical final framebuffer pixels, preventing image warp at release.
+    if (descent >= 0.98) {
         ivec2 size = textureSize(liveTex, 0);
         vec2 finalUV = vec2(uv.x, 1.0 - uv.y);
-        live = texelFetch(liveTex, clamp(ivec2(finalUV * vec2(size)), ivec2(0), size - 1), 0).rgb;
+        live = texelFetch(liveTex,
+            clamp(ivec2(finalUV * vec2(size)), ivec2(0), size - 1), 0).rgb;
     }
-    vec3 scene = mix(orbit.rgb, live, arrival);
-    vec3 cloud = mix(vec3(0.79, 0.85, 0.90), orbit.rgb, smoothstep(0.35, 0.42, descent));
-    // Cover the edges of the expanding image plane while it is smaller than
-    // the screen: no clamped-border smearing as the city rushes towards us.
-    vec2 distanceToEdge = min(liveUV, 1.0 - liveUV);
-    float borderCloud = 1.0 - smoothstep(0.0, 0.10, min(distanceToEdge.x, distanceToEdge.y));
-    borderCloud *= (1.0 - smoothstep(0.85, 0.96, descent)) * arrival;
-    scene = mix(scene, cloud, max(orbit.a, borderCloud));
+    vec2 bounds = min(liveUV, 1.0 - liveUV);
+    float opening = smoothstep(-0.02, 0.10, min(bounds.x, bounds.y));
+    opening = mix(opening, 1.0, smoothstep(0.85, 0.98, descent));
+    // Opaque clouds hide the different coordinate systems; thinning clouds
+    // expose the enlarged city image continuously over the final beats.
+    float reveal = progress * (1.0 - orbit.a) * opening * float(hasLive);
+    vec3 scene = mix(orbit.rgb, live, reveal);
     vec2 artUV = (uv - 0.5) * artScale + 0.5;
     vec3 art = texture2D(artworkTex, artUV).rgb;
     scene = mix(art, scene, hasArtwork == 1 ? fade : 1.0);
-    // At descent=1 this is the unmodified framebuffer replayed in screen orientation.
     gl_FragColor = vec4(scene, 1.0);
 }
