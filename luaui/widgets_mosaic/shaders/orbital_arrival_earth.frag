@@ -26,8 +26,9 @@ void main() {
 
     // Keep the horizon orientation fixed throughout the dive. Only apparent
     // altitude/scale changes; this avoids the old "camera flip" impression.
-    float dive = smoothstep(0.08, 0.92, descent);
-    float radius = mix(1.62, 7.4, dive);
+    // Planet diameter expands roughly 26x as the view descends.
+    // Center the optical axis on one coastline throughout the approach.
+    float radius = 1.62 * exp2(4.7 * descent);
     vec2 center = vec2(0.0, -1.02);
     vec2 p = (screen - center) / radius;
     float rr = dot(p, p);
@@ -43,16 +44,25 @@ void main() {
 
     // Stable regional projection: scale changes in snaps, but the surface never
     // rotates or mirrors underneath the viewer.
-    vec2 surface = p * 7.0 / (0.34 + z) + vec2(2.4, 0.35);
+    vec2 focal = vec2(0.0, 1.02 / radius);
+    vec2 surface = (p - focal) * 7.0 / (0.34 + z) + vec2(2.0, -0.5);
     float continental = fbm(surface * 0.72);
     float land = smoothstep(0.43, 0.50, continental);
     float terrain = fbm(surface * 6.5);
-    float fineTerrain = fbm(surface * 22.0);
+    float fineTerrain = fbm(surface * (22.0 + 70.0 * descent));
 
     vec3 ocean = mix(vec3(0.004, 0.030, 0.070), vec3(0.012, 0.115, 0.205), sun);
     vec3 soil = mix(vec3(0.10, 0.13, 0.075), vec3(0.52, 0.39, 0.22), terrain);
     soil *= 0.72 + fineTerrain * 0.35;
     vec3 ground = mix(ocean, soil, land);
+    // Ground details become distinguishable as optical scale increases.
+    float roadsX = abs(sin(surface.x * 31.0));
+    float roadsY = abs(sin(surface.y * 29.0));
+    float roads = exp(-20.0 * min(roadsX, roadsY));
+    float urban = smoothstep(0.47, 0.63,
+        fbm(surface * 2.5 + vec2(8.0, 1.7)));
+    ground += vec3(0.08, 0.07, 0.045) * urban * land * roads
+        * smoothstep(0.12, 0.34, descent);
 
     // Water catches a narrow solar glint from low orbit.
     vec3 viewDir = normalize(vec3(-p, max(z, 0.001)));
@@ -62,7 +72,7 @@ void main() {
 
     // High cloud field and a displaced shadow field. The offset makes clouds
     // visibly float above the surface instead of looking painted onto it.
-    vec2 wind = vec2(elapsed * 0.0012, elapsed * 0.00035);
+    vec2 wind = vec2(elapsed * 0.009, elapsed * 0.003);
     float cloudBase = fbm(surface * 2.55 + wind);
     float cloudFine = fbm(surface * 8.0 - wind * 1.7);
     float clouds = smoothstep(0.52, 0.73, cloudBase + cloudFine * 0.16);
