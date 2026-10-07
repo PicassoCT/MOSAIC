@@ -108,17 +108,23 @@ void main() {
     // During atmospheric transit, clouds become a separate near-camera layer.
     // Their scale changes at the same staged beats as the descent, revealing
     // progressively finer detail instead of one long rubber-band zoom.
-    float transitScale = mix(8.5, 1.0, smoothstep(0.18, 0.92, descent));
+    // Moving cloud parallax scales along with the ground projection.
+    // It becomes opaque across the Earth -> live-city geometry boundary,
+    // then disperses continuously as the real city grows underneath.
+    float transitScale = exp2(mix(4.6, -0.15, descent));
     vec2 transitUV = screen * transitScale;
-    float transitLarge = fbm(transitUV + vec2(4.7, 8.2) + wind * 0.4);
-    float transitFine = fbm(transitUV * 3.6 - wind);
-    float transitNoise = transitLarge * 0.82 + transitFine * 0.18;
-    float enter = smoothstep(0.20, 0.36, descent);
-    float leave = 1.0 - smoothstep(0.62, 0.97, descent);
-    float opaqueCore = 1.0 - smoothstep(0.50, 0.67, descent);
-    float strands = smoothstep(0.30, 0.70, transitNoise);
-    float cover = enter * leave * mix(strands, 1.0, opaqueCore);
-    vec3 transitCloud = vec3(0.70, 0.76, 0.82) + transitNoise * 0.19;
-
-    gl_FragColor = vec4(mix(earth, transitCloud, smoothstep(0.31, 0.39, descent)), cover);
+    vec2 flow = wind * (0.45 + descent * 2.5);
+    float transitLarge = fbm(transitUV + vec2(4.7, 8.2) + flow);
+    float transitFine = fbm(transitUV * 3.6 - flow * 1.8);
+    float transitNoise = transitLarge * 0.78 + transitFine * 0.22;
+    float sunlitEdge = fbm(transitUV + vec2(4.9, 8.0) + flow);
+    float relief = clamp(0.55 + (transitNoise - sunlitEdge) * 5.0, 0.0, 1.0);
+    vec3 transitCloud = mix(vec3(0.37, 0.50, 0.63),
+                            vec3(0.97, 0.98, 1.0), relief);
+    transitCloud *= 0.76 + transitNoise * 0.36;
+    // 0.43-0.55 stays fully opaque to conceal the projection handoff.
+    float cover = smoothstep(0.23, 0.39, descent)
+                * (1.0 - smoothstep(0.55, 0.98, descent));
+    float cloudScene = smoothstep(0.25, 0.40, descent);
+    gl_FragColor = vec4(mix(earth, transitCloud, cloudScene), cover);
 }
