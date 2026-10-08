@@ -5,7 +5,7 @@ local projectileTypes={Cannon=true,MissileLauncher=true,StarburstLauncher=true,
     LaserCannon=true,BeamLaser=true,LightningCannon=true,DGun=true,Flame=true}
 function M.Weapon(wd)
     local cp=wd.customParams or {}
-    if cp.light_skip or cp.expl_light_skip then return nil end
+    if cp.light_skip or cp.expl_light_skip or tonumber(cp.no_projectile_vfx)==1 then return nil end
     local fire=wd.type=='Flame' or wd.name=='molotow' or tonumber(cp.molotov_fire)==1
     if not projectileTypes[wd.type] and not fire then return nil end
     local v=wd.visuals or {}
@@ -16,7 +16,7 @@ function M.Weapon(wd)
 end
 
 function M.New(weaponConf)
-    local self={transient={},fires={},wrecks={},torches={},projectiles={},weaponConf=weaponConf,
+    local self={transient={},fires={},wrecks={},torches={},pyros={},projectiles={},weaponConf=weaponConf,
         brightness=1.3,radius=1.3}
     local cursor,scanAge=0,1
     local drawFrame,lights,flames,tracers
@@ -36,8 +36,13 @@ function M.New(weaponConf)
     function self:UnitCreated(id,defID)
         local name=UnitDefs[defID] and UnitDefs[defID].name
         if name=='vehiclecorpse' or name=='tankcorpse' then self.wrecks[id]=name=='tankcorpse' and 1.5 or 1 end
+        if name=='ground_walker_flame' then self.pyros[id]={} end
     end
-    function self:UnitDestroyed(id) self.wrecks[id]=nil;drawFrame=nil end
+    function self:UnitDestroyed(id)
+        self.wrecks[id]=nil
+        self.pyros[id]=nil
+        drawFrame=nil
+    end
     function self:AddExplosion(x,y,z,weaponID,muzzle)
         local p=self.weaponConf[weaponID]
         if not p or not visible(x,y,z) then return end
@@ -94,10 +99,43 @@ function M.New(weaponConf)
             sourceGlow={1,.3,.03,.5},windInfluence=.45,trailTime=trail and .1 or .6,
             distanceFactor=50,opacity=opacity or 1}
     end
+    -- Track one world-space FlamePainter jet per currently firing pyro walker.
+    -- The gameplay projectiles have no independent smoke, flash or light record.
+    local function pyroOrigin(id,record)
+        local wx,wy,wz,dx,dy,dz
+        if Spring.GetUnitWeaponVectors then
+            wx,wy,wz,dx,dy,dz=Spring.GetUnitWeaponVectors(id,1)
+        end
+        if not record.piece and Spring.GetUnitPieceMap then
+            local map=Spring.GetUnitPieceMap(id)
+            record.piece=map and map.emitfire
+        end
+        local x,y,z
+        if record.piece then
+            local px,py,pz,pdx,pdy,pdz=Spring.GetUnitPiecePosDir(id,record.piece)
+            x,y,z=px,py,pz
+            if not dx then dx,dy,dz=pdx,pdy,pdz end
+        end
+        if not x then x,y,z=wx,wy,wz end
+        if not x then return end
+        local mag=dx and dy and dz and math.sqrt(dx*dx+dy*dy+dz*dz) or 0
+        if mag<0.001 and Spring.GetUnitVectors then
+            local front=Spring.GetUnitVectors(id)
+            if front then dx,dy,dz=front[1],front[2],front[3] end
+            mag=dx and math.sqrt(dx*dx+dy*dy+dz*dz) or 0
+        end
+        if mag<0.001 then return end
+        local ux,uy,uz=Spring.GetUnitPosition(id)
+        local vx,vy,vz
+        if Spring.GetUnitViewPosition then vx,vy,vz=Spring.GetUnitViewPosition(id) end
+        if ux and vx then x,y,z=x+vx-ux,y+vy-uy,z+vz-uz end
+        return x,y,z,dx/mag,dy/mag,dz/mag
+    end
     function self:Collect()
         local stamp=Spring.GetDrawFrame()
         if drawFrame==stamp then return lights,flames,tracers end
         drawFrame=stamp;lights,flames,tracers={},{},{}
+        local extraFlames={}
         local cx,cy,cz=Spring.GetCameraPosition()
         local frame=Spring.GetGameFrame()+(Spring.GetFrameTimeOffset() or 0)
         local function add(x,y,z,radius,color,strength,nightOnly,ribbon,tracer)
@@ -120,6 +158,90 @@ function M.New(weaponConf)
             if frame<r.expires then
                 local fade=clamp((r.expires-frame)/30,0,1)
                 fire(r.x,r.y+5,r.z,1.1,id,fade)
+            end
+        end
+        -- Persistent pressurized fuel jet, refreshed by script.FireWeapon1 every
+        -- damage pulse. Each visible Cinder costs two small radiance sources;
+        -- turbulence ribbons are visuals only, never additive ground floods.
+        for id,record in pairs(self.pyros) do
+            if unitVisible(id) then
+                local untilFrame=Spring.GetUnitRulesParam(id,'mosaic_pyro_fire_until') or 0
+                local remaining=untilFrame-frame
+                if remaining>0 then
+                    local x,y,z,dx,dy,dz=pyroOrigin(id,record)
+                    if x then
+                        local opacity=clamp(remaining/5,0,1)
+                        local seed=id%10000
+                        local main=flame(x,y,z,1,seed,false,0,0,0,opacity)
+                        main.direction={dx,dy,dz}
+                        main.length=138 -- below the 175-elmo damage range
+                        main.width=17
+                        main.strands=4
+                        main.curl=.62
+                        main.speed=3.6
+                        main.trailTime=.16
+                        main.windInfluence=.15
+                        main.colorStart={1,.82,.29,.95}
+                        main.colorEnd={.83,.12,.012,0}
+                        main.emission={2.5,.3}
+                        main.sourceGlow={1,.30,.035,.58}
+                        add(x+dx*15,y+dy*15,z+dz*15,56,
+                            {1,.26,.035},.46*opacity*self.brightness/1.3,false,main)
+                        add(x+dx*75,y+dy*75,z+dz*75,62,
+                            {1,.24,.025},.24*opacity*self.brightness/1.3,false)
+                        -- Peel off short, alternating tongues along the live jet;
+                        -- deterministic phase gives motion without network traffic.
+                        local sideX,sideZ=-dz,dx
+                        local sideMag=math.sqrt(sideX*sideX+sideZ*sideZ)
+                        if sideMag>0.001 then sideX,sideZ=sideX/sideMag,sideZ/sideMag
+                        else sideX,sideZ=1,0 end
+                        for i=1,4 do
+                            local at=20+i*18
+                            local phase=frame*.09+seed*.17+i*2.5
+                            local handed=(i%2==0) and 1 or -1
+                            local bend=handed*(.22+.05*i)+math.sin(phase)*.11
+                            local ax,ay,az=dx+sideX*bend,dy*.7+.06+math.sin(phase*.7)*.035,dz+sideZ*bend
+                            local m=math.sqrt(ax*ax+ay*ay+az*az)
+                            ax,ay,az=ax/m,ay/m,az/m
+                            local ox,oy,oz=x+dx*at+sideX*handed*3,
+                                y+dy*at,z+dz*at+sideZ*handed*3
+                            local tongue=flame(ox,oy,oz,1,seed+i*41,false,0,0,0,
+                                opacity*(.42+.06*(i%2)))
+                            tongue.direction={ax,ay,az}
+                            tongue.length=19+(i%3)*7
+                            tongue.width=5
+                            tongue.strands=2
+                            tongue.curl=.82
+                            tongue.speed=3.9
+                            tongue.windInfluence=.25
+                            tongue.trailTime=.12
+                            tongue.emission={1.8,.12}
+                            tongue.sourceGlow={1,.2,.03,.22}
+                            extraFlames[#extraFlames+1]={ribbon=tongue,
+                                d2=(cx-ox)^2+(cy-oy)^2+(cz-oz)^2}
+                        end
+                        -- Near-road impingement: short lateral washes rather than
+                        -- a bright circle. No extra ray traces or radiance passes.
+                        local tx,tz=x+dx*127,z+dz*127
+                        local gy=Spring.GetGroundHeight(tx,tz)
+                        if gy and y+dy*127<gy+38 then
+                            for side=-1,1,2 do
+                                local tongue=flame(tx,gy+3,tz,1,seed+301+side,false,
+                                    0,0,0,opacity*.4)
+                                tongue.direction={sideX*side+dx*.2,.12,sideZ*side+dz*.2}
+                                tongue.length=28
+                                tongue.width=5.5
+                                tongue.strands=2
+                                tongue.curl=.9
+                                tongue.speed=2.8
+                                tongue.windInfluence=.18
+                                tongue.trailTime=.13
+                                extraFlames[#extraFlames+1]={ribbon=tongue,
+                                    d2=(cx-tx)^2+(cy-gy)^2+(cz-tz)^2}
+                            end
+                        end
+                    end
+                end
             end
         end
         -- One upward ruptured-tank torch and four smaller splashing fuel jets.
@@ -190,6 +312,12 @@ function M.New(weaponConf)
         for _,l in ipairs(lights) do
             if l.ribbon then flames[#flames+1]=l.ribbon end
             if l.tracer then tracers[#tracers+1]=l.tracer end
+        end
+        -- Side streamers have no ground-light record. Keep the nearest within
+        -- the existing 64-FlamePainter budget so massed Cinders are bounded.
+        table.sort(extraFlames,function(a,b) return a.d2<b.d2 end)
+        for i=1,math.min(#extraFlames,math.max(0,64-#flames)) do
+            flames[#flames+1]=extraFlames[i].ribbon
         end
         return lights,flames,tracers
     end
