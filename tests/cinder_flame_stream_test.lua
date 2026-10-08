@@ -3,6 +3,7 @@
 -- Engine-independent tests for Cinder's persistent visuals and no per-shot VFX.
 unpack=unpack or table.unpack
 local frame,drawFrame,los,alive,untilFrame=200,0,true,true,0
+local icon=false
 local originX,originY,originZ=50,20,60
 Game={gameSpeed=30}
 WeaponDefs={
@@ -22,6 +23,7 @@ Spring={
     ValidUnitID=function() return alive end,
     GetUnitIsDead=function() return not alive end,
     GetUnitIsCloaked=function() return false end,
+    IsUnitIcon=function() return icon end,
     GetUnitNoDraw=function() return false end,
     GetUnitTransporter=function() end,
     GetUnitPosition=function() return originX,0,originZ end,
@@ -73,6 +75,10 @@ assert(#lights==0 and #flames==0,'Cinder flame leaked across LOS')
 los=true
 lights,flames=collect()
 assert(#lights==2 and #flames>=5,'Cinder flame failed to resume on LOS reentry')
+icon=true
+lights,flames=collect()
+assert(#lights==0 and #flames==0,'distant Cinder icon still submitted its full flame')
+icon=false
 frame=untilFrame+1;fx:Update(.1)
 lights,flames=collect()
 assert(#lights==0 and #flames==0,'firing stream did not expire after 12 frames')
