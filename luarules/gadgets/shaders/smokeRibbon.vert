@@ -5,7 +5,8 @@ uniform float effectTime, plumeLength, plumeWidth, curl, seed;
 uniform float hairMode, stiffness, gravity, strandCount;
 uniform float landingMode; // 0: ordinary plume, 1: landing jet, 2: deck-only fan
 uniform vec4 landingPad; // deck centre XZ, surface Y, contact radius; negative disables
-uniform vec4 terrainGuard; // ground start/end heights, intervening crest, minimum visual clearance
+uniform vec4 terrainBandNear, terrainBandFar; // maximum sampled surface height in each 1/8 of a ribbon
+uniform float terrainPad; // nonzero only for ground-guarded combat flames
 out vec2 ribbonUV;
 out float ribbonSeed;
 
@@ -97,13 +98,14 @@ void main() {
         breath = 1.0;
     }
     p += across * side * plumeWidth * spread * breath;
-    if (terrainGuard.w > 0.0) {
-        // Cinder surface-flow records carry a conservative sampled terrain ramp.
-        // Apply AFTER vortex displacement and camera-facing width so no flame
-        // strand can disappear through the pavement it is washing over.
-        float terrain = mix(terrainGuard.x, terrainGuard.y, t)
-            + max(0.0, terrainGuard.z) * sin(t * 3.14159265);
-        p.y = max(p.y, terrain + terrainGuard.w);
+    if (terrainPad > 0.0) {
+        // The eight ceiling bands are sampled across the flame's width too.
+        // Clamp AFTER curl and billboard expansion, so the entire ribbon
+        // remains above curbs, ridges and inclined pavement.
+        int segment = int(floor(min(0.999999, max(0.0, t)) * 8.0));
+        float surface = segment < 4
+            ? terrainBandNear[segment] : terrainBandFar[segment-4];
+        p.y = max(p.y, surface + terrainPad);
     }
     if (landingMode > 0.5 && landingPad.w > 0.0 && distance(origin.xz,landingPad.xz) < landingPad.w) {
         // Camera-facing width must not push vertices through the raised deck.
