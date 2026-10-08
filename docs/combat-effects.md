@@ -33,9 +33,18 @@ renderer is not removed.
   muzzle/explosion/trail lighting is disabled. `groundwalkerscript.lua` publishes
   an LOS-scoped 12-frame firing deadline (refreshed at most every 6 frames).
   The Light Effects widget follows the animated `emitfire` piece and weapon aim
-  with one 138-elmo FlamePainter fuel stream, four turbulent split tongues,
-  and two short ground-contact deflections when near terrain. Only two compact
-  radiance sources follow the stream; tongues add no lighting passes.
+  with one visual jet extending up to the actual 175-elmo weapon range.
+  A client-side obstruction solve every five frames stops that jet before the
+  first visible terrain, unit collision volume or feature. Ground contact fans
+  into four surface-tangent, upward-curling FlamePainter tongues rather than
+  letting the core vanish underground; unit/feature colvol contact uses two
+  offset probes to favor whichever side has room to wrap around. The renderer
+  clamps the *entire turbulent ribbon*, including billboard width, above an
+  eight-band heightfield envelope sampled along and across the flame. Four
+  mid-flight split tongues are clipped before the impact. Only two compact
+  radiance sources follow the shortened jet; side tongues add no lights or
+  render passes. Older engine builds without Recoil's ray-colvol API fall back
+  to LOS-filtered approximate unit-volume intersection.
   The independent fuel-tank death torch, splashing jets, Molotov ground fire,
   and splash damage are unchanged.
 
@@ -62,6 +71,7 @@ Run from the repository root:
 ```
 texlua tests/combat_effects_lifecycle.lua
 texlua tests/cinder_flame_stream_test.lua
+texlua tests/pyro_flame_collision_test.lua
 texlua tests/combat_effect_events.lua
 texlua tests/light_effects_widget.lua
 texlua tests/night_tracers.lua
@@ -76,7 +86,9 @@ shader, falloff, color, height, wall blocking and local capture transform.
 
 In Recoil, verify Cinder fires a *single* full plume with no visible projectile dots
 or oversized yellow ground disk. Check sustained fire, brief pauses, aim direction,
-wind, grazing the street, LOS loss/re-entry, and the independent death torch.
+wind, grazing the street, a rising curb, wall/vehicle collision-volume hits,
+LOS loss/re-entry, and the independent death torch. The visual rays never
+change synced damage or reveal hidden units.
 The hologram gadget no longer attempts to set `viewPortSize` or `rainPercent`
 after the GLSL compiler optimizes them out; the hologram rendering is unchanged.
 
