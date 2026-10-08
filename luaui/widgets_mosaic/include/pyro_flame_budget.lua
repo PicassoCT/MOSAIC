@@ -271,6 +271,7 @@ return function(S,Collision)
         end
         -- Rendering reads only cached collision/surface data, with a hard
         -- reservation of 4 ribbons per detailed / 1 per simple Cinder.
+        local renderedDetailed,renderedSimple=0,0
         for _,c in ipairs(selected) do
             local r=c.record
             r.seed=c.id%10000
@@ -279,17 +280,21 @@ return function(S,Collision)
             if c.tier=='detail' then
                 if r.guard and r.length then
                     emitMain(env,r,x,y,z,dx,dy,dz,r.length,r.guard,opacity,true)
+                    renderedDetailed=renderedDetailed+1
                     local hit=r.hit
                     emitBreakup(env,r,c.origin,r.length,hit and hit.kind and 1 or 3,opacity,r.guard)
                     if hit and hit.kind then emitImpact(env,r,c.origin,hit,opacity) end
                 end
             elseif r.liteGuard then
                 emitMain(env,r,x,y,z,dx,dy,dz,r.liteLength,r.liteGuard,opacity,false)
+                renderedSimple=renderedSimple+1
             end
         end
         M.lastStats={candidateCount=#candidates,detailed=detail,simplified=simple,
-            selected=#selected,tracesThisFrame=traceCount,liteThisFrame=liteCount,
-            extraRibbons=#env.extraFlames}
+            selected=#selected,renderedDetailed=renderedDetailed,renderedSimple=renderedSimple,
+            tracesThisFrame=traceCount,liteThisFrame=liteCount,
+            extraRibbons=#env.extraFlames,
+            totalRibbons=renderedDetailed+renderedSimple+#env.extraFlames}
     end
     return M
 end
