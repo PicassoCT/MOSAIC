@@ -16,7 +16,7 @@ function M.Weapon(wd)
 end
 
 function M.New(weaponConf)
-    local self={transient={},fires={},wrecks={},projectiles={},weaponConf=weaponConf,
+    local self={transient={},fires={},wrecks={},torches={},projectiles={},weaponConf=weaponConf,
         brightness=1.3,radius=1.3}
     local cursor,scanAge=0,1
     local drawFrame,lights,flames,tracers
@@ -58,10 +58,17 @@ function M.New(weaponConf)
         self.fires[id]={x=x,y=y,z=z,born=born,expires=expires}
         drawFrame=nil
     end
+    function self:AddPyroTorch(x,y,z,id)
+        if not visible(x,y,z) then return end
+        local now=Spring.GetGameFrame()
+        self.torches[id]={x=x,y=y,z=z,born=now,expires=now+42,seed=id%10000}
+        drawFrame=nil
+    end
     function self:Update(dt)
         local frame=Spring.GetGameFrame()
         for key,r in pairs(self.transient) do if frame>=r.expires then self.transient[key]=nil end end
         for key,r in pairs(self.fires) do if frame>=r.expires then self.fires[key]=nil end end
+        for key,r in pairs(self.torches) do if frame>=r.expires then self.torches[key]=nil end end
         scanAge=scanAge+dt
         if scanAge<.1 then return end
         scanAge=0
@@ -113,6 +120,36 @@ function M.New(weaponConf)
             if frame<r.expires then
                 local fade=clamp((r.expires-frame)/30,0,1)
                 fire(r.x,r.y+5,r.z,1.1,id,fade)
+            end
+        end
+        -- One upward ruptured-tank torch and four smaller splashing fuel jets.
+        -- Direction and strength are purely visual; gameplay AoE remains in WeaponDef.
+        for id,r in pairs(self.torches) do
+            if frame<r.expires then
+                local t=clamp((frame-r.born)/(r.expires-r.born),0,1)
+                local opacity=(1-t)^1.35
+                local main=flame(r.x,r.y+21,r.z,1.2,r.seed,false,0,6,0,opacity)
+                main.direction={0,1,0}
+                main.length=95*(1-.35*t)
+                main.width=15*(1-.4*t)
+                main.speed=4.0
+                main.strands=5
+                main.windInfluence=.18
+                add(r.x,r.y+23,r.z,145,{1,.38,.055},2.1*opacity,false,main)
+                for i=1,4 do
+                    local angle=i*math.pi*.5+(r.seed%11)*.17
+                    local dx,dz=math.cos(angle),math.sin(angle)
+                    local spread=26+10*i
+                    local fx,fz=r.x+dx*spread,r.z+dz*spread
+                    local jet=flame(fx,r.y+8,fz,.55,r.seed+i*47,false,dx*4,1.7,dz*4,opacity*.75)
+                    jet.direction={dx*.9,.28,dz*.9}
+                    jet.length=32+6*(i%2)
+                    jet.width=5
+                    jet.strands=2
+                    jet.curl=.85
+                    jet.windInfluence=.3
+                    add(fx,r.y+8,fz,62,{1,.26,.035},.65*opacity,false,jet)
+                end
             end
         end
         for id,scale in pairs(self.wrecks) do
