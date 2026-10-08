@@ -28,6 +28,17 @@ renderer is not removed.
   synced snapshot restores visible ground fires after LuaUI reload or entering
   LOS. Positions are filtered before crossing into LuaUI and checked again
   when rendering.
+- **Cinder (Antagon):** its Flame weapon remains authoritative for damage and
+  ignition but the engine pellets are sub-pixel, and its per-shot
+  muzzle/explosion/trail lighting is disabled. `groundwalkerscript.lua` publishes
+  an LOS-scoped 12-frame firing deadline (refreshed at most every 6 frames).
+  The Light Effects widget follows the animated `emitfire` piece and weapon aim
+  with one 138-elmo FlamePainter fuel stream, four turbulent split tongues,
+  and two short ground-contact deflections when near terrain. Only two compact
+  radiance sources follow the stream; tongues add no lighting passes.
+  The independent fuel-tank death torch, splashing jets, Molotov ground fire,
+  and splash damage are unchanged.
+
 - Combat lighting shares the car-light textures and scene pass: whole-map
   direct field at 10 Hz, near field every rendered frame, cascade spill at 5 Hz.
   Source intensity is applied once before capture. No additional full-screen
@@ -50,6 +61,7 @@ Run from the repository root:
 
 ```
 texlua tests/combat_effects_lifecycle.lua
+texlua tests/cinder_flame_stream_test.lua
 texlua tests/combat_effect_events.lua
 texlua tests/light_effects_widget.lua
 texlua tests/night_tracers.lua
@@ -61,6 +73,12 @@ MESA_GL_VERSION_OVERRIDE=3.3COMPAT python tests/combat_light_gpu.py
 
 The GPU check uses Mesa EGL with `moderngl` and `numpy`; it tests the production
 shader, falloff, color, height, wall blocking and local capture transform.
+
+In Recoil, verify Cinder fires a *single* full plume with no visible projectile dots
+or oversized yellow ground disk. Check sustained fire, brief pauses, aim direction,
+wind, grazing the street, LOS loss/re-entry, and the independent death torch.
+The hologram gadget no longer attempts to set `viewPortSize` or `rainPercent`
+after the GLSL compiler optimizes them out; the hologram rendering is unchanged.
 
 In Recoil, compare the same camera in day and night combat, including a thrown
 Molotov and both wreckage types. Check flame extinction, LOS loss/re-entry,
