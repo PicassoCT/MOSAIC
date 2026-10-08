@@ -8,7 +8,7 @@ return function()
     local loc, meshes, hairHistory = {}, {}, {}
     for _, name in ipairs({'origin','direction','cameraPosition','effectTime','plumeLength',
         'plumeWidth','curl','seed','colorStart','colorEnd','emission','sourceGlow','ambient','strandOpacity','strandCount','directionalDrift','hairMode','stiffness','gravity',
-        'landingMode','landingPad'}) do
+        'landingMode','landingPad','terrainGuard'}) do
         loc[name] = gl.GetUniformLocation(shader, name)
     end
     local function strip(segments, strand)
@@ -293,6 +293,8 @@ return function()
             gl.Uniform(loc.hairMode,r.mode == 'hair' and 1 or 0)
             gl.Uniform(loc.landingMode,r.mode == 'pad' and 2 or (r.mode == 'landing' and 1 or 0))
             gl.Uniform(loc.landingPad,unpack(d.pad or {0,0,0,-1}))
+            if r.terrainGuard then gl.Uniform(loc.terrainGuard,unpack(r.terrainGuard))
+            else gl.Uniform(loc.terrainGuard,0,0,0,0) end
             gl.Uniform(loc.stiffness,r.stiffness or 0.7)
             gl.Uniform(loc.gravity,r.gravity or 0.35)
             gl.Uniform(loc.effectTime,now*r.speed)
