@@ -11,7 +11,8 @@ WeaponDefs={
         customParams={no_projectile_vfx='1'},visuals={}},
     {name='molotow',type='Cannon',damageAreaOfEffect=50,visuals={}},
 }
-UnitDefs={[11]={name='ground_walker_flame'},[12]={name='vehiclecorpse'}}
+UnitDefs={[11]={name='ground_walker_flame'},[12]={name='vehiclecorpse'},
+    [13]={name='policetruck'}}
 Spring={
     GetGameFrame=function() return frame end,
     GetDrawFrame=function() return drawFrame end,
@@ -92,6 +93,13 @@ assert(#lights==5 and #flames==5,'death torch should remain independent of weapo
 frame=frame+43;fx:Update(.1)
 lights,flames=collect()
 assert(#lights==0 and #flames==0,'death torch did not expire')
+-- Master already has red/blue police lightbars; the merge must preserve them.
+fx:UnitCreated(31,13)
+lights,flames=collect()
+assert(#lights==1 and lights[1].color[1]==1,'master police lightbar was lost')
+frame=frame+5
+lights,flames=collect()
+assert(#lights==1 and lights[1].color[3]==1,'police lightbar no longer alternates blue')
 
 local weaponSource=assert(io.open('weapons/walker_incendiary.lua','rb')):read('*a')
 assert(weaponSource:find('flameGfxTime = 1.0',1,true) and
