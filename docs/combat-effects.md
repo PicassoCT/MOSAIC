@@ -28,25 +28,30 @@ renderer is not removed.
   synced snapshot restores visible ground fires after LuaUI reload or entering
   LOS. Positions are filtered before crossing into LuaUI and checked again
   when rendering.
-- **Cinder (Antagon):** its Flame weapon remains authoritative for damage and
-  ignition but the engine pellets are sub-pixel, and its per-shot
-  muzzle/explosion/trail lighting is disabled. `groundwalkerscript.lua` publishes
-  an LOS-scoped 12-frame firing deadline (refreshed at most every 6 frames).
-  The Light Effects widget follows the animated `emitfire` piece and weapon aim
-  with one visual jet extending up to the actual 175-elmo weapon range.
-  A client-side obstruction solve every five frames stops that jet before the
-  first visible terrain, unit collision volume or feature. Ground contact fans
-  into four surface-tangent, upward-curling FlamePainter tongues rather than
-  letting the core vanish underground; unit/feature colvol contact uses two
-  offset probes to favor whichever side has room to wrap around. The renderer
-  clamps the *entire turbulent ribbon*, including billboard width, above an
-  eight-band heightfield envelope sampled along and across the flame. Four
-  mid-flight split tongues are clipped before the impact. Only two compact
-  radiance sources follow the shortened jet; side tongues add no lights or
-  render passes. Older engine builds without Recoil's ray-colvol API fall back
-  to LOS-filtered approximate unit-volume intersection.
-  The independent fuel-tank death torch, splashing jets, Molotov ground fire,
-  and splash damage are unchanged.
+- **Cinder (Antagon):** the synced Flame projectiles still own damage and
+  ignition. The client draws one nozzle-aligned FlamePainter jet instead of
+  per-shot pellets. A single shared budget is enforced *before* collision
+  sampling or ribbon allocation: at most 8 close detailed Cinders (within
+  1,250 elmos), 16 additional simplified Cinders (within 2,700 elmos),
+  and 48 total Cinder ribbons, sharing the 64-ribbon renderer with other fires.
+  Detail has one main jet, up to three turbulent breakup tongues, or one
+  breakup plus two colvol/terrain impact tongues. Simplified fire has one
+  wide guarded jet, nine terrain-height queries per update and no object rays.
+  The most stale detailed Cinders receive a globally limited 2 collision
+  solves per simulation frame; simplified terrain is capped at 4 solves per
+  frame. Visible non-icon units are sorted by camera distance *before* rays
+  are allocated; the 76+ remaining firing Cinders in large battles do not
+  construct cosmetic ribbons or issue collision rays.
+  Near detail still truncates to the nearest visible terrain/unit/feature
+  colvol, wraps around the contact surface, and cannot disappear underground.
+  Side breakup profiles are sliced from the *same* eight-band main terrain
+  envelope without further height queries. The two impact tongues reuse one
+  shared 17-sample radial guard. All ribbons retain post-curl shader
+  heightfield clamping, and radiance follows jet reach without additional
+  scene textures/passes. Caches persist across rendered frames and stale
+  collision samples are refreshed fairly across the globally shared budget.
+  The independent fuel-tank death torch, Molotov ground fire and synced
+  gameplay damage are unaffected.
 
 - Combat lighting shares the car-light textures and scene pass: whole-map
   direct field at 10 Hz, near field every rendered frame, cascade spill at 5 Hz.
@@ -71,6 +76,7 @@ Run from the repository root:
 ```
 texlua tests/combat_effects_lifecycle.lua
 texlua tests/cinder_flame_stream_test.lua
+texlua tests/cinder_flame_budget_test.lua
 texlua tests/pyro_flame_collision_test.lua
 texlua tests/combat_effect_events.lua
 texlua tests/light_effects_widget.lua
@@ -83,6 +89,14 @@ MESA_GL_VERSION_OVERRIDE=3.3COMPAT python tests/combat_light_gpu.py
 
 The GPU check uses Mesa EGL with `moderngl` and `numpy`; it tests the production
 shader, falloff, color, height, wall blocking and local capture transform.
+
+For interactive load diagnostics enter `/luaui cinder fxstats` to print the
+candidate count, detailed/simplified selections, submitted ribbons and
+expensive/cheap collision probes used in the latest frame. The Lua budget
+regression uses 100 simultaneously firing Cinders; it asserts fixed CPU,
+lighting and ribbon ceilings without claiming a measured in-game FPS.
+Profile frame time on the GTX 1050 Ti with 1, 10, 50 and 100 Cinders.
+Do not assume that "48 ribbons" by itself guarantees 25 FPS.
 
 In Recoil, verify Cinder fires a *single* full plume with no visible projectile dots
 or oversized yellow ground disk. Check sustained fire, brief pauses, aim direction,
