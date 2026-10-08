@@ -180,21 +180,33 @@ return function(S)
         end
         return best
     end
-    -- Sampled conservative envelope of the terrain along a ribbon. The
-    -- FlamePainter vertex shader uses this guard to lift every strip vertex
-    -- above the surface, including camera-facing width and vortex curl.
-    function M.Guard(x,z,dx,dz,length,pad)
+    -- Eight compact heightfield bands, each the *maximum* sampled terrain
+    -- elevation in that part of the ribbon, including the left/right curl.
+    -- Unlike a single sloping plane, this cannot let a nearby curb, crest or
+    -- angled ground face swallow the stream halfway through its lifetime.
+    -- Records are cached by the caller for five simulation frames.
+    function M.Guard(x,z,dx,dz,length,pad,halfWidth)
         if not S.GetGroundHeight then return nil end
-        local h0=groundHeight(x,z)
-        local h1=groundHeight(x+dx*length,z+dz*length)
-        local bump=0
-        local steps=max(1,math.ceil(length/6))
-        for i=1,steps-1 do
-            local t=i/steps
-            local actual=groundHeight(x+dx*length*t,z+dz*length*t)
-            bump=max(bump,actual-(h0+(h1-h0)*t))
+        local near,far={},{}
+        local sidewaysX,sidewaysZ=-dz,dx
+        local mag=sqrt(sidewaysX*sidewaysX+sidewaysZ*sidewaysZ)
+        if mag<.0001 then sidewaysX,sidewaysZ=1,0
+        else sidewaysX,sidewaysZ=sidewaysX/mag,sidewaysZ/mag end
+        local width=halfWidth or 7
+        for i=0,7 do
+            local h=-100000
+            for j=0,2 do
+                local t=(i+j*.5)/8
+                h=max(h,groundHeight(x+dx*length*t,z+dz*length*t))
+            end
+            local t=(i+.5)/8
+            local px,pz=x+dx*length*t,z+dz*length*t
+            h=max(h,groundHeight(px+sidewaysX*width,pz+sidewaysZ*width),
+                groundHeight(px-sidewaysX*width,pz-sidewaysZ*width))
+            local band=(i<4) and near or far
+            band[i%4+1]=h+1
         end
-        return {h0,h1,bump+2,pad or 8}
+        return {near=near,far=far,pad=pad or 9}
     end
     function M.Trace(shooter,x,y,z,dx,dy,dz,reach,ally,full)
         local ground=groundHit(x,y,z,dx,dy,dz,reach)
