@@ -16,7 +16,7 @@ for id,wd in pairs(WeaponDefs) do
 end
 local molotov=WeaponDefNames.molotow and WeaponDefNames.molotow.id
 local fuelburst=WeaponDefNames.walkerfuelburst and WeaponDefNames.walkerfuelburst.id
-local pyro=UnitDefNames.ground_walker_flame and UnitDefNames.ground_walker_flame.id
+local pyro=UnitDefNames and UnitDefNames.ground_walker_flame and UnitDefNames.ground_walker_flame.id
 if gadgetHandler:IsSyncedCode() then
     local fires,cursor,lastMuzzle={},0,{}
     _G.MosaicCombatFires=fires
