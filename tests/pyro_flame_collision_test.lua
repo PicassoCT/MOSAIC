@@ -50,8 +50,13 @@ assert(hit.y>=ground(hit.x,hit.z)+8,'ground impact submerged')
 assert(hit.normal[2]>.9,'ground normal lost')
 heightMode='ridge'
 local guard=collision.Guard(0,0,1,0,60,9)
-assert(guard[3]>27 and guard[4]==9,
-    'mid-path terrain crest not included in FlamePainter clamping envelope')
+assert(guard.pad==9 and #guard.near==4 and #guard.far==4,
+    'eight-band terrain envelope missing')
+local maxCeiling=-math.huge
+for _,part in ipairs({guard.near,guard.far}) do
+    for _,height in ipairs(part) do maxCeiling=math.max(maxCeiling,height) end
+end
+assert(maxCeiling>=29,'mid-path terrain crest not included in FlamePainter clamping envelope')
 heightMode='ramp'
 hit=fire()
 assert(hit.kind=='ground' and hit.distance>15 and hit.distance<65,
