@@ -20,6 +20,20 @@ jobs:
     timeout-minutes: 12
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Avoid pulling the large DAE/texture assets for Lua-only checks.
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            tests/
+            luaui/widgets_mosaic/include/
+            luaui/widgets_mosaic/shaders/
+            luaui/widgets_mosaic/gfx_light_effects.lua
+            luarules/gadgets/include/
+            luarules/gadgets/shaders/
+            luarules/gadgets/gfx_smoke_ribbons.lua
+            luarules/gadgets/gfx_explosion_lights.lua
+            luarules/gadgets/gfx_neonHolograms.lua
+            weapons/walker_incendiary.lua
       - name: Install Lua 5.1
         run: |
           sudo apt-get update -qq
