@@ -57,6 +57,19 @@ for _,part in ipairs({guard.near,guard.far}) do
     for _,height in ipairs(part) do maxCeiling=math.max(maxCeiling,height) end
 end
 assert(maxCeiling>=29,'mid-path terrain crest not included in FlamePainter clamping envelope')
+local beforeSlice=groundQueries
+local segment=collision.SliceGuard(guard,21,25,60,9)
+assert(groundQueries==beforeSlice and segment.pad==9 and #segment.near==4,
+    'breakup terrain lookup was repeated instead of using the shared main guard')
+local beforeFan=groundQueries
+local fan=collision.FanGuard(32,0,50,11)
+assert(groundQueries-beforeFan==17 and fan.pad==11,
+    'impact tongues must share exactly one bounded 17-sample terrain fan')
+local beforeLite=groundQueries
+local short,cheap=collision.Lite(0,20,0,1,0,0,175,12)
+assert(groundQueries-beforeLite==9 and cheap.pad==12 and short>0,
+    'simplified Cinder should sample terrain only nine times')
+
 heightMode='ramp'
 hit=fire()
 assert(hit.kind=='ground' and hit.distance>15 and hit.distance<65,
@@ -89,4 +102,4 @@ assert(hit.kind=='unit' and hit.distance>=49 and hit.distance<=51,
 seen=false
 hit=fire()
 assert(hit.kind==nil,'fallback disclosed a hidden unit')
-print('PASS: Cinder terrain intersection, hill clearance, crest clamp, unit/feature colvols, LOS, offset probes and old-engine fallback')
+print('PASS: Cinder terrain/colvols, 9-query LOD, zero-query shared side profiles, 17-query impact fan, LOS and legacy fallback')
