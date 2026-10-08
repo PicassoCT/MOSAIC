@@ -1,4 +1,5 @@
--- Flame weapons are drawn by the existing client-side FlamePainter combat ribbons.
+-- Cinder's Flame projectile is damage-only. Its entire visual jet is supplied by
+-- one unit-attached FlamePainter record (plus short deflecting tongues).
 -- A death burst is a separate WeaponDef so the engine applies genuine splash damage.
 return lowerkeys({
     walkerflamethrower = {
@@ -8,9 +9,10 @@ return lowerkeys({
         reloadtime = 0.1,
         weaponVelocity = 340,
         duration = 0.5,
-        size = 2.3,
-        sizeGrowth = 0.65,
-        flameGfxTime = 0.5,
+        -- Engine projectiles must not appear as glowing pellets or a tracer.
+        size = 0.01,
+        sizeGrowth = 0,
+        flameGfxTime = 0.01,
         sprayAngle = 420,
         tolerance = 4000,
         turret = true,
@@ -24,7 +26,7 @@ return lowerkeys({
         edgeEffectiveness = 0.35,
         craterMult = 0,
         impulseFactor = 0,
-        customparams = {wall_damage_multiplier = 0.08, light_radius = 75},
+        customparams = {wall_damage_multiplier = 0.08, no_projectile_vfx = 1},
     },
     walkerfuelburst = {
         name = "Cinder ruptured fuel tank",
