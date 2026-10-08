@@ -5,6 +5,7 @@ uniform float effectTime, plumeLength, plumeWidth, curl, seed;
 uniform float hairMode, stiffness, gravity, strandCount;
 uniform float landingMode; // 0: ordinary plume, 1: landing jet, 2: deck-only fan
 uniform vec4 landingPad; // deck centre XZ, surface Y, contact radius; negative disables
+uniform vec4 terrainGuard; // ground start/end heights, intervening crest, minimum visual clearance
 out vec2 ribbonUV;
 out float ribbonSeed;
 
@@ -96,6 +97,14 @@ void main() {
         breath = 1.0;
     }
     p += across * side * plumeWidth * spread * breath;
+    if (terrainGuard.w > 0.0) {
+        // Cinder surface-flow records carry a conservative sampled terrain ramp.
+        // Apply AFTER vortex displacement and camera-facing width so no flame
+        // strand can disappear through the pavement it is washing over.
+        float terrain = mix(terrainGuard.x, terrainGuard.y, t)
+            + max(0.0, terrainGuard.z) * sin(t * 3.14159265);
+        p.y = max(p.y, terrain + terrainGuard.w);
+    }
     if (landingMode > 0.5 && landingPad.w > 0.0 && distance(origin.xz,landingPad.xz) < landingPad.w) {
         // Camera-facing width must not push vertices through the raised deck.
         p.y = max(p.y,landingPad.y + plumeWidth*0.01);
