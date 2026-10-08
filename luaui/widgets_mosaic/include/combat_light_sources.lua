@@ -16,7 +16,7 @@ function M.Weapon(wd)
 end
 
 function M.New(weaponConf)
-    local self={transient={},fires={},wrecks={},projectiles={},weaponConf=weaponConf,
+    local self={transient={},fires={},wrecks={},police={},projectiles={},weaponConf=weaponConf,
         brightness=1.3,radius=1.3}
     local cursor,scanAge=0,1
     local drawFrame,lights,flames,tracers
@@ -36,8 +36,9 @@ function M.New(weaponConf)
     function self:UnitCreated(id,defID)
         local name=UnitDefs[defID] and UnitDefs[defID].name
         if name=='vehiclecorpse' or name=='tankcorpse' then self.wrecks[id]=name=='tankcorpse' and 1.5 or 1 end
+        if name=='policetruck' then self.police[id]=true end
     end
-    function self:UnitDestroyed(id) self.wrecks[id]=nil;drawFrame=nil end
+    function self:UnitDestroyed(id) self.wrecks[id]=nil;self.police[id]=nil;drawFrame=nil end
     function self:AddExplosion(x,y,z,weaponID,muzzle)
         local p=self.weaponConf[weaponID]
         if not p or not visible(x,y,z) then return end
@@ -127,6 +128,21 @@ function M.New(weaponConf)
                         if ux and vx then x,y,z=x+vx-ux,y+vy-uy,z+vz-uz end
                         fire(x,y+4,z,scale,id,clamp((expires-frame)/15,0,1))
                     end
+                end
+            end
+        end
+        -- Police lightbars share the normal combat-light radiance capture: no extra pass.
+        -- Two rooftop beacons alternate at 3 Hz, remaining visible by day as well.
+        for id in pairs(self.police) do
+            if unitVisible(id) then
+                local x,y,z=Spring.GetUnitPosition(id)
+                local _,_,right=Spring.GetUnitVectors(id)
+                if x and right then
+                    local phase=math.floor(frame/5)%2
+                    local side=phase==0 and -1 or 1
+                    local color=phase==0 and {1,.025,.015} or {.025,.18,1}
+                    local lx,lz=x+right[1]*side*11,z+right[3]*side*11
+                    add(lx,y+37,lz,135,color,2.4,false)
                 end
             end
         end
