@@ -119,7 +119,7 @@ the body is revealed. The cigarette inherits the head's animation.
 | Industrial complex | `Lava` in the melting pot | Pouring/melting phase; stops when the lava finishes lowering | 85 / 16 |
 | Spaceport ship | `RocketFusionPlume`, a child of the moving main stage | Launch ignition until `HideRocket()` | 320 / 42 |
 | Spaceport launch pad fan | `LaunchCone` deck below `RocketFusionPlume` | Ignition while exhaust is close to the deck | 640 / 84 |
-| Spaceport returning boosters | Each `ReturningBoosterNThrusterPlum` nozzle | Start of descent until touchdown | 640 / 84 |
+| Spaceport returning boosters | Each `ReturningBoosterNThrusterPlum` nozzle | Start of descent until touchdown | 320 / 42 |
 | Spaceport chilled tanks | Eight outlets around `MainStageRocket` | Placement on the pad until ignition | 640 / 120 |
 | Airport scramjets | Each `ScramJetNThrust` | Vertical liftoff through departure; stops when aircraft hides | 480 / 60 lifting, 900 / 54 departing |
 
