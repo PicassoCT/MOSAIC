@@ -4,6 +4,9 @@ function gadget:GetInfo()
 end
 if not gadgetHandler:IsSyncedCode() then return end
 
+VFS.Include("scripts/lib_UnitScript.lua")
+VFS.Include("scripts/lib_mosaic.lua")
+local cfg=getGameConfig()
 local SAFEHOUSE = UnitDefNames.antagonsafehouse.id
 local CIVILIAN = UnitDefNames.civilianagent.id
 local citizen = UnitDefs[CIVILIAN]
@@ -11,6 +14,7 @@ local METAL_COST = citizen.metalCost or citizen.buildCostMetal or 500
 local ENERGY_COST = citizen.energyCost or citizen.buildCostEnergy or 150
 local CMD_SHIELD = 34587
 local MAX_STOCK = 3
+local MAX_TEAM_STOCK = 6
 local PURCHASE_COOLDOWN = 30 * (Game.gameSpeed or 30)
 local MAX_PAYOUT = 2400
 local lastPurchase = {}
@@ -47,6 +51,11 @@ function gadget:AllowCommand(id,defID,team,cmd,params)
     if cmd~=CMD_SHIELD then return true end
     if defID~=SAFEHOUSE or stock[id]==nil or stock[id]>=MAX_STOCK
        or Spring.GetUnitIsDead(id) or team==gaia then return false end
+    local total=0
+    for house,amount in pairs(stock) do
+        if Spring.ValidUnitID(house) and Spring.GetUnitTeam(house)==team then total=total+amount end
+    end
+    if total>=MAX_TEAM_STOCK then return false end
     local frame=Spring.GetGameFrame()
     if lastPurchase[id] and frame-lastPurchase[id]<PURCHASE_COOLDOWN then return false end
     if not Spring.UseTeamResource(team,"metal",METAL_COST) then return false end
@@ -67,9 +76,6 @@ function gadget:UnitDestroyed(id,defID,team,attackerID,attackerDefID,attackerTea
     if n==0 or not attackerTeam or attackerTeam==gaia
        or Spring.AreTeamsAllied(team,attackerTeam) then return end
     -- Respect the existing economy configuration and bound extreme propaganda scaling.
-    VFS.Include("scripts/lib_UnitScript.lua")
-    VFS.Include("scripts/lib_mosaic.lua")
-    local cfg=getGameConfig()
     local serverMultiplier=cfg and cfg.economy and cfg.economy.propaganda
         and cfg.economy.propaganda.serverMultiplier or 0
     local servers=GG.Propgandaservers and GG.Propgandaservers[team] or 0
