@@ -8,11 +8,12 @@ return lowerkeys({
         range = 175,
         reloadtime = 0.1,
         weaponVelocity = 340,
-        duration = 0.5,
         -- Engine projectiles must not appear as glowing pellets or a tracer.
         size = 0.01,
         sizeGrowth = 0,
-        flameGfxTime = 0.01,
+        -- Flame duration also influences range in Recoil. Keep it >= 1.
+        -- Only sprite size/growth are suppressed (collisionSize is independent).
+        flameGfxTime = 1.0,
         sprayAngle = 420,
         tolerance = 4000,
         turret = true,
