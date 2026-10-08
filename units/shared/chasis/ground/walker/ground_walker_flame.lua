@@ -1,5 +1,5 @@
--- Antagon-only expendable incendiary walker. Swap objectName when the dedicated model arrives.
--- The placeholder is the existing animated Weevil chassis and requires no new asset.
+-- Antagon-only expendable incendiary walker.
+-- Requires objects3d/ground_walker_pyro.dae (sidecar committed separately).
 local def = Walker:New{
     name = "Cinder",
     description = "Fragile close-range flamethrower; volatile fuel tank",
@@ -29,7 +29,7 @@ local def = Walker:New{
     footprintX = 2,
     footprintZ = 2,
     script = "groundwalkerscript.lua",
-    objectName = "ground_walker_mg.dae", -- TODO: replace with supplied flamethrower model
+    objectName = "ground_walker_pyro.dae",
     buildPic = "ground_walker_mg.png",
     iconType = "ground_walker_mg",
     strafeToAttack = true,

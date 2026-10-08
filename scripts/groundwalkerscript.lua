@@ -9,6 +9,7 @@ local TablesOfPiecesGroups = {}
 
 local Muzzle
 local boolIsMgGroundWalker = false
+local boolIsPyroGroundWalker = UnitDefNames["ground_walker_flame"] and unitDefID == UnitDefNames["ground_walker_flame"].id
 if unitDefID == UnitDefNames["ground_walker_mg"].id then
     Muzzle = piece "Muzzle"
     boolIsMgGroundWalker = true
@@ -360,7 +361,7 @@ boolAiming = false
 function script.AimFromWeapon1() return aimpiece end
 function script.AimFromWeapon2() return aimpiece end
 
-function script.QueryWeapon1() return aimpiece end
+function script.QueryWeapon1() return (boolIsPyroGroundWalker and emitfire) or aimpiece end
 function script.QueryWeapon2() return aimpiece end
 
 boolPrioritizeGround = false
@@ -414,6 +415,7 @@ function fireFlash()
     end     
 end
 function script.FireWeapon1()
+    if boolIsPyroGroundWalker then return true end -- FlamePainter renders weapon projectiles; no MG muzzle flash/recoil.
     if boolIsMgGroundWalker == true then
        StartThread(fireFlash)
     end
