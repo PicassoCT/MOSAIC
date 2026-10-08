@@ -164,7 +164,8 @@ function M.New(weaponConf)
         -- damage pulse. Each visible Cinder costs two small radiance sources;
         -- turbulence ribbons are visuals only, never additive ground floods.
         for id,record in pairs(self.pyros) do
-            if unitVisible(id) then
+            -- Iconified units are too distant for a full ribbon and save GPU work.
+            if unitVisible(id) and (not Spring.IsUnitIcon or not Spring.IsUnitIcon(id)) then
                 local untilFrame=Spring.GetUnitRulesParam(id,'mosaic_pyro_fire_until') or 0
                 local remaining=untilFrame-frame
                 if remaining>0 then
