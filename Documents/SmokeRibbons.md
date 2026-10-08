@@ -117,21 +117,26 @@ the body is revealed. The cigarette inherits the head's animation.
 | --- | --- | --- | --- |
 | Pump station | `Flame1` | Reignition through burning; stops at flame-out or forced collapse | 120 / 20 |
 | Industrial complex | `Lava` in the melting pot | Pouring/melting phase; stops when the lava finishes lowering | 85 / 16 |
-| Spaceport ship | `RocketFusionPlume`, a child of the moving main stage | Launch ignition until `HideRocket()` | 640 / 84 |
-| Spaceport returning boosters | Each `ReturningBoosterNThrusterPlum` nozzle | Start of descent until touchdown | 640 / 84 |
+| Spaceport ship | `RocketFusionPlume`, a child of the moving main stage | Launch ignition until `HideRocket()` | 320 / 42 |
+| Spaceport launch pad fan | `LaunchCone` deck below `RocketFusionPlume` | Ignition while exhaust is close to the deck | 640 / 84 |
+| Spaceport returning boosters | Each `ReturningBoosterNThrusterPlum` nozzle | Start of descent until touchdown | 320 / 42 |
 | Spaceport chilled tanks | Eight outlets around `MainStageRocket` | Placement on the pad until ignition | 640 / 120 |
+| Airport scramjets | Each `ScramJetNThrust` | Vertical liftoff through departure; stops when aircraft hides | 480 / 60 lifting, 900 / 54 departing |
 
-Each objective preset uses one slot; each returning booster owns three separate
+Each objective preset uses one slot, plus a separate pad-only slot for launch;
+each returning booster owns three separate
 nozzle slots. Repeated cycles replace rather than accumulate emitters. Death
 removes the effects and blocks restart during the death animation.
 The industrial flame follows the molten surface; this model has no dedicated
 flare-stack piece. Pump and furnace flames rise with warm self-lit gradients;
 the ship exhaust points downward, with a pale blue base fading through orange.
 Wind is enabled for all three, with reduced influence on the rocket jet.
-The ship now uses the same four curling flame strands as the returning boosters,
-deflected by `LaunchCone` while close to the launch deck. Both use the shortened
-pad fan: radial reach is 32% of its original setting. In flight the strands
-retain their downward core and upward return curls.
+The ship retains its original three-strand flight flame, including its original
+size and curl. A separate `mode='pad'` slot draws four branching streamers from
+the `LaunchCone` deck, using the boosters' shortened fan (32% of the original
+radial reach). It fades as nozzle height grows from 30% to 55% of its configured
+length above the deck, and makes no draw call beyond that height or outside
+the pad footprint. This fan never becomes an airborne flame or upward return curl.
 
 `scripts/lib_spaceport_cold_vapor.lua` places two rings of four condensation
 outlets just outside the tank's piece bounds. Pale blue-white, non-emissive
@@ -156,6 +161,17 @@ to rendering; the synced script only starts and stops the nine nozzle records.
 Existing mesh effects and their radiance registrations remain in place; the
 new ribbons are self-lit but do not themselves inject radiance-cascade light.
 Sizes are initial world-unit presets and still need in-game visual validation.
+
+Airport scramjets use `scripts/lib_airport_scramjet_flames.lua`: a compact,
+blue-white flame fading into violet-blue during vertical liftoff, then a longer,
+narrower rearward jet during acceleration. The nozzle stays attached to its own
+aircraft. Forward direction uses the hull's animated basis so the spinning old
+thrust mesh cannot sweep the ribbon sideways. Each aircraft owns one slot,
+replaced at the flight transition and removed on hide or airport destruction.
+Parked and arriving aircraft do not get this new departure effect. Like the
+spaceport exhaust, these flames remain visible beyond the ground unit's icon
+and distance bounds, but still obey LOS, cloak, frustum and the shared budget.
+They are self-lit and do not project light onto streets far below the aircraft.
 
 ### Rendering budget
 

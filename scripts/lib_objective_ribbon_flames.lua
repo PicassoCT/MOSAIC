@@ -29,8 +29,7 @@ local presets = {
         motionAffected=true,
     },
     launch = {
-        mode='landing', direction={0,-1,0}, length=640, width=84, curl=0.65, speed=3,
-        strands=4,
+        direction={0,-1,0}, length=320, width=42, curl=0.3, speed=3,
         colorStart={0.65,0.8,1,0.95}, colorEnd={1,0.25,0.04,0},
         emission={4,1}, windAffected=true, windInfluence=0.15, trailTime=0.5,
         -- The animated ship climbs far beyond its stationary unit's bounds.
@@ -46,7 +45,6 @@ return function(unitID, kind)
         if dead or not GG.SmokeRibbon then return false end
         local options={directionSpace='world',strands=3,motionAffected=false}
         for name,value in pairs(preset) do options[name]=value end
-        if kind == 'launch' then options.padPiece=pad end
         if kind == 'sulfur' then
             -- The blimp pivot is inside its hull. Emit just beyond its long-axis
             -- tip, using the piece basis so the outlet follows the wind animation.
@@ -66,10 +64,22 @@ return function(unitID, kind)
         end
         local ok,err=GG.SmokeRibbon.Set(unitID,slot,piece,options)
         if not ok then Spring.Echo('Objective ribbon flame: '..tostring(err)) end
+        if ok and kind == 'launch' then
+            -- Keep the original airborne exhaust. Only this extra slot reacts
+            -- with the deck, and the renderer fades it out as the ship lifts away.
+            local padOptions={}
+            for name,value in pairs(options) do padOptions[name]=value end
+            padOptions.mode='pad'
+            padOptions.padPiece=pad
+            padOptions.length=640;padOptions.width=84;padOptions.curl=0.65;padOptions.strands=4
+            local padOK,padErr=GG.SmokeRibbon.Set(unitID,slot..'-pad',piece,padOptions)
+            if not padOK then Spring.Echo('Objective pad streamers: '..tostring(padErr)) end
+        end
         return ok
     end
     function self.Stop()
         if GG.SmokeRibbon then GG.SmokeRibbon.Remove(unitID,slot) end
+        if kind == 'launch' and GG.SmokeRibbon then GG.SmokeRibbon.Remove(unitID,slot..'-pad') end
     end
     function self.Shutdown() dead=true;self.Stop() end
     return self

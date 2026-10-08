@@ -92,9 +92,11 @@ for _,height in ipairs({3000,12000,18000,32000,58000}) do
     local kind,p,axis,target=resume(launch)
     assert(kind=='move' and p==pieces.Rocket and target==height,'ascent paused or skipped a stage')
     assert(ribbons['objective-launch'] and shown[pieces.RocketFusionPlume],'powered climb lost exhaust')
-    assert(count()==1,'cold vapor continued after ignition')
+    assert(count()==2,'cold vapor continued after ignition')
     local o=ribbons['objective-launch'].options
-    assert(o.mode=='landing' and o.padPiece==pieces.LaunchCone and o.strands==4,'launch streamers missing')
+    assert(o.mode==nil and o.length==320 and o.width==42 and o.curl==0.3 and o.strands==3,'original flight flame changed')
+    local fan=assert(ribbons['objective-launch-pad']).options
+    assert(fan.mode=='pad' and fan.padPiece==pieces.LaunchCone and fan.strands==4,'pad streamers missing')
     assert(shown[pieces.MainStageRocket] and shown[pieces.CapsuleRocket])
 end
 local kind,p,axis,target=resume(launch)
@@ -103,7 +105,7 @@ assert(ribbons['objective-launch'] and shown[pieces.RocketFusionPlume])
 for _,t in ipairs(threads) do assert(t.fn~=cloudFallingDown,'cloud reset started during powered flight') end
 kind,p=resume(launch)
 assert(kind=='sleep' and p==9000,'recovery timing changed')
-assert(not ribbons['objective-launch'] and not shown[pieces.RocketFusionPlume],'exhaust survived disappearance')
+assert(count()==0 and not shown[pieces.RocketFusionPlume],'exhaust survived disappearance')
 for _,name in ipairs({'MainStage','MainStageRocket','CapsuleRocket'}) do
     assert(not shown[pieces[name]],'rocket lingered at maximum altitude: '..name)
 end
@@ -126,7 +128,7 @@ for nr=1,3 do
     for i=1,3 do
         local r=assert(ribbons['spaceport-landing-'..nr..'-'..i])
         assert(r.piece==groups['ReturningBooster'..nr..'ThrusterPlum'][i])
-        assert(r.options.length==640 and r.options.width==84 and r.options.mode=='landing')
+        assert(r.options.length==320 and r.options.width==42 and r.options.mode=='landing')
         assert(r.options.padPiece==groups.LandCone[nr],'wrong landing pad')
     end
 end
@@ -146,7 +148,7 @@ end
 -- Repeated launch and destruction must not accumulate or resurrect slots.
 local again=coroutine.create(launchAnimation);resume(again)
 checkFueling();resume(again)
-assert(count()==1 and ribbons['objective-launch'],'second launch failed to reignite')
+assert(count()==2 and ribbons['objective-launch'] and ribbons['objective-launch-pad'],'second launch failed to reignite')
 local returnAgain=coroutine.create(landBooster);resume(returnAgain,1)
 while not ribbons['spaceport-landing-1-1'] do resume(returnAgain) end
 script.Killed();assert(count()==0,'death retained exhaust')

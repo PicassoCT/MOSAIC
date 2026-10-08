@@ -3,7 +3,7 @@ uniform vec3 origin, direction, cameraPosition;
 uniform vec3 directionalDrift;
 uniform float effectTime, plumeLength, plumeWidth, curl, seed;
 uniform float hairMode, stiffness, gravity, strandCount;
-uniform float landingMode;
+uniform float landingMode; // 0: ordinary plume, 1: landing jet, 2: deck-only fan
 uniform vec4 landingPad; // deck centre XZ, surface Y, contact radius; negative disables
 out vec2 ribbonUV;
 out float ribbonSeed;
@@ -56,12 +56,13 @@ vec3 centre(float t, float strand, vec3 u, vec3 v) {
             float gap = max(0.0,origin.y-landingPad.y);
             float contact = 1.0-smoothstep(plumeLength*0.3,plumeLength*0.55,gap);
             float hit = clamp(gap/plumeLength,0.01,0.55);
-            float spread = max(0.0,(t-hit)/(1.0-hit));
+            bool padOnly = landingMode > 1.5;
+            float spread = padOnly ? t : max(0.0,(t-hit)/(1.0-hit));
             // Pad reach is 32% of the original 0.9; retain the core and flight curl.
-            vec3 fan = vec3(0,-min(t*plumeLength,gap),0)
+            vec3 fan = vec3(0,-(padOnly ? gap : min(t*plumeLength,gap)),0)
                 + radial*(plumeLength*0.288*spread)
                 + vec3(0,plumeLength*0.2*spread*spread,0);
-            flow = mix(flow,fan,contact);
+            flow = padOnly ? fan : mix(flow,fan,contact);
         }
         vec3 point = origin + flow + radius*(u*coil.x+v*coil.y) + directionalDrift*(t*t);
         if (overPad) point.y = max(point.y,landingPad.y);

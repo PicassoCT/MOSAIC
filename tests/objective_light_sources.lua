@@ -38,7 +38,8 @@ local function unit(scriptName)
     env.GG.SmokeRibbon={Set=function(_,slot,p,options) smoke[slot]={piece=p,options=options};return true end,
         Remove=function(_,slot) smoke[slot]=nil end}
     env.include=function(name)
-        if name=='lib_radiance_emitters.lua' or name=='lib_objective_ribbon_flames.lua' then
+        if name=='lib_radiance_emitters.lua' or name=='lib_objective_ribbon_flames.lua'
+            or name=='lib_airport_scramjet_flames.lua' then
             return loadIn('scripts/'..name,env)
         end
     end
@@ -95,7 +96,7 @@ e.SetRadiancePlaceables({root,child},false);assert(not lights[root] and not ligh
 print('PASS: production objective blink/flicker events, masked oil/station light, roof lamp, sulfur outlet/death and placeable visibility')
 
 -- Airport aircraft remain animated, but only ground lights enter radiance.
-e,lights,shown,groups=unit('objectiveAirportscript.lua')
+e,lights,shown,groups,smoke=unit('objectiveAirportscript.lua')
 groups.Shuttle={};groups.Gateway={};groups.AirCar={};groups.SwingCenter={1,2}
 groups.SwitchLight={e.piece('SwitchLight1')}
 groups.SignalLightOn={e.piece('SignalLightOn1'),e.piece('SignalLightOn2')}
@@ -113,6 +114,49 @@ co=coroutine.create(e.showThruster);resume(co,1,500,false);resume(co)
 for id in pairs(lights) do assert(id==runway,'airborne airport emitter illuminated the ground') end
 assert(lights[runway],'aircraft cleanup removed runway emission')
 print('PASS: airport runway still emits; giant-plane navigation and scramjet effects never enter ground radiance')
+
+-- Drive actual departures through the lift/forward/hide events.
+groups.ScramJet={e.piece('ScramJet001'),e.piece('ScramJet002')}
+groups.ScramJetGear={e.piece('ScramJetGear001'),e.piece('ScramJetGear002')}
+groups.ScramJetRotator={e.piece('ScramJetRotator001'),e.piece('ScramJetRotator002')}
+e.reset=function() end;e.PlaySoundAtUnitPieceLocatioin=function() end
+e.WMove=function(p,axis,target) return coroutine.yield(target) end
+e.WTurn=function() return coroutine.yield('turn') end
+e.ShowScramJet(1)
+assert(shown[groups.ScramJet[1]] and shown[groups.ScramJetGear[1]],'ShowScramJet hid the aircraft')
+assert(next(smoke)==nil,'parked scramjet burns')
+local departures={}
+for nr=1,2 do
+    departures[nr]=coroutine.create(e.ScramJetDeparture)
+    resume(departures[nr],nr)
+    local flame=assert(smoke['airport-scramjet-'..nr])
+    local o=flame.options
+    assert(flame.piece==e.piece('ScramJet'..nr..'Thrust'),'wrong scramjet nozzle')
+    assert(o.directionSpace=='world' and o.direction[2]==-1 and o.length==480,'missing downward liftoff flame')
+    assert(o.colorStart[3]==1 and o.colorStart[2]>o.colorStart[1] and o.colorEnd[3]>o.colorEnd[1],'scramjet lost blue-white/violet palette')
+    assert(o.colorEnd[4]==0 and o.distanceCulling==false and o.drawInIcon,'flight fade/culling wrong')
+    resume(departures[nr]);assert(smoke['airport-scramjet-'..nr].options.directionSpace=='world','lift flame ended too early')
+    assert(resume(departures[nr])=='turn')
+    assert(resume(departures[nr])==1000)
+    o=smoke['airport-scramjet-'..nr].options
+    assert(o.directionSpace=='piece' and o.directionPiece==groups.ScramJet[nr] and o.length==900,'forward flame did not follow hull')
+    assert(not shown[groups.ScramJetGear[nr]],'departure did not retract gear')
+end
+for nr=1,2 do
+    resume(departures[nr]);resume(departures[nr]);resume(departures[nr])
+    assert(smoke['airport-scramjet-'..nr],'departure flame stopped while aircraft was visible')
+    assert(resume(departures[nr])==5000)
+    assert(not smoke['airport-scramjet-'..nr] and not shown[groups.ScramJet[nr]],'hidden aircraft retained flame')
+    if nr==1 then assert(smoke['airport-scramjet-2'],'one departure extinguished another') end
+    resume(departures[nr]);assert(not e.scramJetsPresent[nr])
+end
+co=coroutine.create(e.ScramJetDeparture);resume(co,1)
+assert(smoke['airport-scramjet-1'],'repeat departure failed to ignite')
+e.script.Killed();assert(next(smoke)==nil,'airport death retained flame')
+resume(co);resume(co);resume(co)
+assert(next(smoke)==nil,'forward transition restarted a dead airport flame')
+for id in pairs(lights) do assert(id==runway,'scramjet flame polluted ground radiance') end
+print('PASS: parked scramjets, visible liftoff, independent downward/forward flames, colour, heading, departure cleanup, repeat cycle and death')
 
 -- The military headquarters uses its mask and follows deployed track visibility.
 e,lights,shown,groups=unit('objectiveWestHemHQ.lua')
