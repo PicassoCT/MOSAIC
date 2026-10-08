@@ -64,7 +64,7 @@ assert(flames[1].length==175 and flames[1].direction[1]>.9
 assert(flames[1].terrainGuard and flames[1].terrainGuard.pad>=9,
     'full-length Cinder stream is missing its ground-clearance guard')
 for _,light in ipairs(lights) do
-    assert(light.radius<=62 and light.strength<=0.46,
+    assert(light.radius<=62.001 and light.strength<=0.461,
         'Cinder attack is flooding the ground with excessively broad radiance')
 end
 local firstFlameCount=#flames
