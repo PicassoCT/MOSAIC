@@ -10,7 +10,10 @@ local citizen = UnitDefs[CIVILIAN]
 local METAL_COST = citizen.metalCost or citizen.buildCostMetal or 500
 local ENERGY_COST = citizen.energyCost or citizen.buildCostEnergy or 150
 local CMD_SHIELD = 34587
-local MAX_STOCK = 8
+local MAX_STOCK = 3
+local PURCHASE_COOLDOWN = 30 * (Game.gameSpeed or 30)
+local MAX_PAYOUT = 2400
+local lastPurchase = {}
 local REWARD = METAL_COST * 1.5
 local stock = {}
 local gaia = Spring.GetGaiaTeamID()
@@ -44,12 +47,15 @@ function gadget:AllowCommand(id,defID,team,cmd,params)
     if cmd~=CMD_SHIELD then return true end
     if defID~=SAFEHOUSE or stock[id]==nil or stock[id]>=MAX_STOCK
        or Spring.GetUnitIsDead(id) or team==gaia then return false end
+    local frame=Spring.GetGameFrame()
+    if lastPurchase[id] and frame-lastPurchase[id]<PURCHASE_COOLDOWN then return false end
     if not Spring.UseTeamResource(team,"metal",METAL_COST) then return false end
     if not Spring.UseTeamResource(team,"energy",ENERGY_COST) then
         Spring.AddTeamResource(team,"metal",METAL_COST)
         return false
     end
     stock[id]=stock[id]+1
+    lastPurchase[id]=frame
     update(id)
     return false
 end
@@ -57,17 +63,21 @@ function gadget:UnitDestroyed(id,defID,team,attackerID,attackerDefID,attackerTea
     if defID~=SAFEHOUSE then return end
     local n=stock[id] or 0
     stock[id]=nil -- consume exactly once, including replayed destruction callbacks
+    lastPurchase[id]=nil
     if n==0 or not attackerTeam or attackerTeam==gaia
        or Spring.AreTeamsAllied(team,attackerTeam) then return end
-    local cfg=VFS.Include("luarules/configs/GameConfig.lua")
+    -- Respect the existing economy configuration and bound extreme propaganda scaling.
+    VFS.Include("scripts/lib_UnitScript.lua")
+    VFS.Include("scripts/lib_mosaic.lua")
+    local cfg=getGameConfig()
     local serverMultiplier=cfg and cfg.economy and cfg.economy.propaganda
         and cfg.economy.propaganda.serverMultiplier or 0
     local servers=GG.Propgandaservers and GG.Propgandaservers[team] or 0
-    local payout=math.ceil(n*REWARD*(1+servers*serverMultiplier))
+    local payout=math.min(MAX_PAYOUT,math.ceil(n*REWARD*(1+servers*serverMultiplier)))
     Spring.AddTeamResource(team,"metal",payout)
 end
 function gadget:UnitTaken(id,defID)
-    if defID==SAFEHOUSE then stock[id]=0;update(id) end
+    if defID==SAFEHOUSE then stock[id]=0;lastPurchase[id]=nil;update(id) end
 end
 function gadget:UnitGiven(id,defID)
     if defID==SAFEHOUSE and stock[id]==nil then stock[id]=0;update(id) end
