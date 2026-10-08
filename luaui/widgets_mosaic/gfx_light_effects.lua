@@ -19,7 +19,7 @@ local function loadWeaponDefs()
 	weaponConf = {}
 	for i=1, #WeaponDefs do
 		local customParams = WeaponDefs[i].customParams or {}
-		if customParams.expl_light_skip == nil then
+		if customParams.expl_light_skip == nil and tonumber(customParams.no_projectile_vfx)~=1 then
 			local params = {}
 			params.r, params.g, params.b = 1, 0.8, 0.4
 			params.radius = (WeaponDefs[i].damageAreaOfEffect*4.5) * globalRadiusMult
