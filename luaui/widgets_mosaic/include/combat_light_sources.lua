@@ -6,7 +6,7 @@ local projectileTypes={Cannon=true,MissileLauncher=true,StarburstLauncher=true,
 function M.Weapon(wd)
     local cp=wd.customParams or {}
     if cp.light_skip or cp.expl_light_skip then return nil end
-    local fire=wd.type=='Flame' or wd.name=='molotow'
+    local fire=wd.type=='Flame' or wd.name=='molotow' or tonumber(cp.molotov_fire)==1
     if not projectileTypes[wd.type] and not fire then return nil end
     local v=wd.visuals or {}
     return {fire=fire,trail=wd.name=='molotow',tracer=tonumber(cp.night_tracer)==1,
