@@ -577,7 +577,8 @@ end
                 typeDefID = 5
             },
             uniformFloat = {
-              viewPortSize = {vsx, vsy},                 
+              -- viewPortSize and rainPercent are optimized out by the active
+              -- hologram shader: do not initialize nonexistent uniforms.
               unitCenterPosition = {0,0,0},
               --vCamPositionWorld = {0,0,0}
             },
@@ -637,8 +638,8 @@ end
 
                -- neonHologramShader:SetUniformMatrix("viewInvMat", "viewinverse")
                --neonHologramShader:SetUniformFloatArray("vCamPositionWorld", {cx,cy,cz} )
-                neonHologramShader:SetUniformFloatArray("viewPortSize", {vsx, vsy} )
-                neonHologramShader:SetUniformFloat("rainPercent", rainPercent)
+                -- No viewport/rain uniform writes: their corresponding shader
+                -- expressions are currently unused (GLSL removes the uniforms).
                 local cx,cy,cz  = Spring.GetCameraPosition()
                 local timeSeconds = Spring.GetGameSeconds()
                 local _,_,_, timepercent = getDayTime()
