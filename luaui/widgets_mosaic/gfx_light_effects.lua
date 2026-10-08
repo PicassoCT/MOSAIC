@@ -180,7 +180,11 @@ end
 local function CombatFire(id,x,y,z,born,expires)
     if sources then sources:SetFire(id,x,y,z,born,expires) end
 end
-local callbacks={GadgetWeaponExplosion=WeaponExplosion,GadgetWeaponBarrelfire=WeaponBarrelfire,
+local function PyroTorchOff(x,y,z,id)
+    if sources then sources:AddPyroTorch(x,y,z,id) end
+end
+local callbacks={GadgetPyroTorchOff=PyroTorchOff,
+    GadgetWeaponExplosion=WeaponExplosion,GadgetWeaponBarrelfire=WeaponBarrelfire,
     GadgetCombatFire=CombatFire}
 
 function widget:Initialize()
