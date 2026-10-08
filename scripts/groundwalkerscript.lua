@@ -10,6 +10,7 @@ local TablesOfPiecesGroups = {}
 local Muzzle
 local boolIsMgGroundWalker = false
 local boolIsPyroGroundWalker = UnitDefNames["ground_walker_flame"] and unitDefID == UnitDefNames["ground_walker_flame"].id
+local lastPyroPublishedUntil = 0
 if unitDefID == UnitDefNames["ground_walker_mg"].id then
     Muzzle = piece "Muzzle"
     boolIsMgGroundWalker = true
@@ -418,8 +419,14 @@ function script.FireWeapon1()
     if boolIsPyroGroundWalker then
         -- Extend one client-side visual stream while invisible damage pulses fire.
         -- LOS-scoped rule allows late LOS entry / LuaUI reload without sync events.
-        Spring.SetUnitRulesParam(unitID, 'mosaic_pyro_fire_until',
-            Spring.GetGameFrame() + 12, {inlos=true})
+        local frame = Spring.GetGameFrame()
+        -- Do not replicate a rule parameter for all ten damage pulses/second.
+        -- Refresh roughly every six frames; the final plume fades out naturally.
+        if frame + 6 >= lastPyroPublishedUntil then
+            lastPyroPublishedUntil = frame + 12
+            Spring.SetUnitRulesParam(unitID, 'mosaic_pyro_fire_until',
+                lastPyroPublishedUntil, {inlos=true})
+        end
         return true -- no machine-gun muzzle CEG or recoil for a flame weapon
     end
     if boolIsMgGroundWalker == true then
