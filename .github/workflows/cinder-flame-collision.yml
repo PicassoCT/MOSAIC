@@ -4,10 +4,12 @@ on:
   pull_request:
     paths:
       - 'luaui/widgets_mosaic/include/pyro_flame_collision.lua'
+      - 'luaui/widgets_mosaic/include/pyro_flame_budget.lua'
       - 'luaui/widgets_mosaic/include/combat_light_sources.lua'
       - 'luarules/gadgets/include/smoke_ribbon_renderer.lua'
       - 'luarules/gadgets/shaders/smokeRibbon.vert'
       - 'tests/cinder_flame_stream_test.lua'
+      - 'tests/cinder_flame_budget_test.lua'
       - 'tests/pyro_flame_collision_test.lua'
       - 'tests/combat_effects_lifecycle.lua'
       - 'tests/smoke_ribbons_lifecycle.lua'
@@ -41,13 +43,16 @@ jobs:
       - name: Parse changed Lua modules and tests
         run: |
           luac5.1 -p luaui/widgets_mosaic/include/pyro_flame_collision.lua
+          luac5.1 -p luaui/widgets_mosaic/include/pyro_flame_budget.lua
           luac5.1 -p luaui/widgets_mosaic/include/combat_light_sources.lua
           luac5.1 -p luarules/gadgets/include/smoke_ribbon_renderer.lua
           luac5.1 -p tests/pyro_flame_collision_test.lua
           luac5.1 -p tests/cinder_flame_stream_test.lua
+          luac5.1 -p tests/cinder_flame_budget_test.lua
       - name: Run collision and renderer regressions
         run: |
           lua5.1 tests/pyro_flame_collision_test.lua
           lua5.1 tests/cinder_flame_stream_test.lua
+          lua5.1 tests/cinder_flame_budget_test.lua
           lua5.1 tests/combat_effects_lifecycle.lua
           lua5.1 tests/smoke_ribbons_lifecycle.lua
