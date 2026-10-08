@@ -6,6 +6,10 @@ local makePyroCollision = VFS and VFS.Include and
     VFS.Include('luaui/widgets_mosaic/include/pyro_flame_collision.lua') or
     dofile('luaui/widgets_mosaic/include/pyro_flame_collision.lua')
 local PyroCollision = makePyroCollision(Spring)
+local makePyroBudget = VFS and VFS.Include and
+    VFS.Include('luaui/widgets_mosaic/include/pyro_flame_budget.lua') or
+    dofile('luaui/widgets_mosaic/include/pyro_flame_budget.lua')
+local PyroBudget = makePyroBudget(Spring,PyroCollision)
 
 local projectileTypes={Cannon=true,MissileLauncher=true,StarburstLauncher=true,
     LaserCannon=true,BeamLaser=true,LightningCannon=true,DGun=true,Flame=true}
@@ -168,189 +172,6 @@ function M.New(weaponConf)
                 fire(r.x,r.y+5,r.z,1.1,id,fade)
             end
         end
-        -- One continuously renewed pressurized flame. Trace visual obstructions
-        -- at most every five simulation frames, or immediately on aim movement.
-        -- Only currently visible Cinders participate. Gameplay remains synced.
-        for id,record in pairs(self.pyros) do
-            if unitVisible(id) and (not Spring.IsUnitIcon or not Spring.IsUnitIcon(id)) then
-                local untilFrame=Spring.GetUnitRulesParam(id,'mosaic_pyro_fire_until') or 0
-                local remaining=untilFrame-frame
-                if remaining>0 then
-                    local x,y,z,dx,dy,dz=pyroOrigin(id,record)
-                    if x then
-                        local prior=record.sample
-                        local moved=not prior or (x-prior.x)^2+(y-prior.y)^2+(z-prior.z)^2>16
-                        local turned=not prior or dx*prior.dx+dy*prior.dy+dz*prior.dz<.995
-                        if moved or turned or frame-(record.sampleFrame or -100)>=5 then
-                            local _,full=Spring.GetSpectatingState()
-                            local ally=Spring.GetMyAllyTeamID()
-                            record.contact=PyroCollision.Trace(id,x,y,z,dx,dy,dz,175,ally,full)
-                            record.sampleFrame=frame
-                            record.sample={x=x,y=y,z=z,dx=dx,dy=dy,dz=dz}
-                            record.mainGuard=nil
-                            record.sideGuards={}
-                            record.impactGuards={}
-                        end
-                        local contact=record.contact or {distance=175}
-                        local length=math.max(2,math.min(175,contact.distance-(contact.kind and 3 or 0)))
-                        local opacity=clamp(remaining/5,0,1)
-                        local seed=id%10000
-                        local main=flame(x,y,z,1,seed,false,0,0,0,opacity)
-                        main.direction={dx,dy,dz}
-                        main.length=length
-                        main.width=17
-                        main.strands=4
-                        main.curl=.62
-                        main.speed=3.6
-                        main.trailTime=.16
-                        main.windInfluence=.15
-                        main.colorStart={1,.82,.29,.95}
-                        main.colorEnd={.83,.12,.012,0}
-                        main.emission={2.5,.3}
-                        main.sourceGlow={1,.30,.035,.58}
-                        -- The shader clamps the strip, including vortex curl and
-                        -- its camera-facing width, ABOVE the sampled terrain.
-                        -- Never let a pressurized jet disappear under a road.
-                        if not record.mainGuard then
-                            record.mainGuard=PyroCollision.Guard(x,z,dx,dz,length,9)
-                        end
-                        main.terrainGuard=record.mainGuard
-                        local baseDist=math.min(15,length*.32)
-                        local tipDist=math.max(2,length*.82)
-                        local radius1=math.min(56,math.max(20,length*.40))
-                        local radius2=math.min(62,math.max(18,length*.35))
-                        local strength=math.min(1,length/90)
-                        add(x+dx*baseDist,y+dy*baseDist,z+dz*baseDist,radius1,
-                            {1,.26,.035},.46*strength*opacity*self.brightness/1.3,false,main)
-                        add(x+dx*tipDist,y+dy*tipDist,z+dz*tipDist,radius2,
-                            {1,.24,.025},.24*strength*opacity*self.brightness/1.3,false)
-
-                        local sideX,sideZ=-dz,dx
-                        local sideMag=math.sqrt(sideX*sideX+sideZ*sideZ)
-                        if sideMag>0.001 then sideX,sideZ=sideX/sideMag,sideZ/sideMag
-                        else sideX,sideZ=1,0 end
-                        -- Mid-flight breakup is also cut short by the impact.
-                        -- Shortened strips never extend through ground or colvols.
-                        for i=1,4 do
-                            local at=20+i*18
-                            local available=length-at-3
-                            if available>9 then
-                                local phase=frame*.09+seed*.17+i*2.5
-                                local handed=(i%2==0) and 1 or -1
-                                local bend=handed*(.22+.05*i)+math.sin(phase)*.11
-                                local ax,ay,az=dx+sideX*bend,dy*.7+.06+math.sin(phase*.7)*.035,
-                                    dz+sideZ*bend
-                                local mag=math.sqrt(ax*ax+ay*ay+az*az)
-                                ax,ay,az=ax/mag,ay/mag,az/mag
-                                local ox,oy,oz=x+dx*at+sideX*handed*3,
-                                    y+dy*at,z+dz*at+sideZ*handed*3
-                                local tongue=flame(ox,oy,oz,1,seed+i*41,false,0,0,0,
-                                    opacity*(.42+.06*(i%2)))
-                                tongue.direction={ax,ay,az}
-                                tongue.length=math.min(19+(i%3)*7,available)
-                                tongue.width=5
-                                tongue.strands=2
-                                tongue.curl=.82
-                                tongue.speed=3.9
-                                tongue.windInfluence=.25
-                                tongue.trailTime=.12
-                                tongue.emission={1.8,.12}
-                                tongue.sourceGlow={1,.2,.03,.22}
-                                -- One terrain probe per cached direction per
-                                -- 5-frame sample, not per rendered frame.
-                                if not record.sideGuards[i] then
-                                    record.sideGuards[i]=PyroCollision.Guard(ox,oz,ax,az,
-                                        tongue.length,9)
-                                end
-                                tongue.terrainGuard=record.sideGuards[i]
-                                extraFlames[#extraFlames+1]={ribbon=tongue,
-                                    d2=(cx-ox)^2+(cy-oy)^2+(cz-oz)^2}
-                            end
-                        end
-
-                        if contact.kind then
-                            local nx,ny,nz=unpack(contact.normal)
-                            local ix,iz=contact.x,contact.z
-                            local iy=contact.y
-                            local surfaceFlow={}
-                            if contact.kind=='ground' then
-                                -- Project forward flow into the ground tangent.
-                                -- End streamers start ABOVE the heightfield, run
-                                -- along its slope and then curl upwards.
-                                local fDot=dx*nx+dy*ny+dz*nz
-                                local fx,fy,fz=dx-nx*fDot,dy-ny*fDot,dz-nz*fDot
-                                local fMag=math.sqrt(fx*fx+fy*fy+fz*fz)
-                                if fMag<.01 then fx,fy,fz=dx,.0,dz
-                                    fMag=math.sqrt(fx*fx+fz*fz) end
-                                if fMag<.01 then fx,fy,fz=1,0,0;fMag=1 end
-                                fx,fy,fz=fx/fMag,fy/fMag,fz/fMag
-                                local sx,sy,sz=ny*fz-nz*fy,nz*fx-nx*fz,nx*fy-ny*fx
-                                local sideMag=math.sqrt(sx*sx+sy*sy+sz*sz)
-                                sx,sy,sz=sx/sideMag,sy/sideMag,sz/sideMag
-                                for i=1,4 do
-                                    local side=(i%2==0) and 1 or -1
-                                    local scale=(i<=2) and .64 or .28
-                                    local ax,ay,az=fx+sx*side*scale+nx*.25,
-                                        fy+sy*side*scale+ny*.25,
-                                        fz+sz*side*scale+nz*.25
-                                    local m=math.sqrt(ax*ax+ay*ay+az*az)
-                                    ax,ay,az=ax/m,ay/m,az/m
-                                    local flowLength=math.min(48,18+
-                                        (175-contact.distance)*.24)+(i%2)*3
-                                    surfaceFlow[i]={x=ix+nx*2,y=iy+ny*2,z=iz+nz*2,
-                                        dx=ax,dy=ay,dz=az,length=flowLength,width=6,
-                                        guard=true}
-                                end
-                            else
-                                -- An actual unit/feature colvol hit. Wrap around
-                                -- the face rather than shoot through it.
-                                local sx,sz=-nz,nx
-                                local m=math.sqrt(sx*sx+sz*sz)
-                                if m<.01 then sx,sz=sideX,sideZ else sx,sz=sx/m,sz/m end
-                                for i=1,4 do
-                                    local side=(i%2==0) and 1 or -1
-                                    local openness=contact.open and contact.open[side]
-                                    local wrap=(i<=2) and 1 or .4
-                                    local ax,ay,az=sx*side*wrap+nx*.16,
-                                        (i<=2 and .42 or 1.1)+math.max(ny,0)*.2,
-                                        sz*side*wrap+nz*.16
-                                    local a=math.sqrt(ax*ax+ay*ay+az*az)
-                                    ax,ay,az=ax/a,ay/a,az/a
-                                    surfaceFlow[i]={x=ix+nx*7+sx*side*(i<=2 and 2 or 5),
-                                        y=iy+ny*7+3,
-                                        z=iz+nz*7+sz*side*(i<=2 and 2 or 5),
-                                        dx=ax,dy=ay,dz=az,
-                                        length=(i<=2 and (openness and 48 or 28) or 27),
-                                        width=5.5,guard=false}
-                                end
-                            end
-                            for i,surface in ipairs(surfaceFlow) do
-                                local tongue=flame(surface.x,surface.y,surface.z,1,
-                                    seed+317+i*53,false,0,0,0,opacity*.67)
-                                tongue.direction={surface.dx,surface.dy,surface.dz}
-                                tongue.length=surface.length
-                                tongue.width=surface.width
-                                tongue.strands=2
-                                tongue.curl=.65
-                                tongue.speed=3.2
-                                tongue.windInfluence=.16
-                                tongue.trailTime=.12
-                                tongue.emission={1.9,.18}
-                                if not record.impactGuards[i] then
-                                    record.impactGuards[i]=PyroCollision.Guard(surface.x,
-                                        surface.z,surface.dx,surface.dz,surface.length,11)
-                                end
-                                -- Terrain guard is applied to both ground and
-                                -- low-hanging wall tongues: no buried flame tips.
-                                tongue.terrainGuard=record.impactGuards[i]
-                                extraFlames[#extraFlames+1]={ribbon=tongue,
-                                    d2=(cx-surface.x)^2+(cy-surface.y)^2+(cz-surface.z)^2}
-                            end
-                        end
-                    end
-                end
-            end
-        end
         -- One upward ruptured-tank torch and four smaller splashing fuel jets.
         -- Direction and strength are purely visual; gameplay AoE remains in WeaponDef.
         for id,r in pairs(self.torches) do
@@ -362,7 +183,7 @@ function M.New(weaponConf)
                 main.length=95*(1-.35*t)
                 main.width=15*(1-.4*t)
                 main.speed=4.0
-                main.strands=5
+                main.strands=4 -- ribbon mesh supports at most four strands
                 main.windInfluence=.18
                 add(r.x,r.y+23,r.z,145,{1,.38,.055},2.1*opacity,false,main)
                 for i=1,4 do
@@ -429,6 +250,20 @@ function M.New(weaponConf)
                 end
             end
         end
+        -- Full/simplified Cinder LOD is chosen *after* existing combat effects,
+        -- before any collision rays or additional ribbons are built.
+        -- Never spend the shared 64-ribbon allowance on hidden/distant pyros.
+        local reserved=0
+        for _,light in ipairs(lights) do
+            if light.ribbon then reserved=reserved+1 end
+        end
+        PyroBudget.Collect(self.pyros,{
+            simFrame=Spring.GetGameFrame(),frame=frame,
+            cx=cx,cy=cy,cz=cz,otherRibbons=reserved,
+            unitVisible=unitVisible,origin=pyroOrigin,flame=flame,
+            add=add,extraFlames=extraFlames,brightness=self.brightness,
+        })
+        self.pyroStats=PyroBudget.lastStats
         table.sort(lights,function(a,b) if a.d2==b.d2 then return a.order<b.order end;return a.d2<b.d2 end)
         for i=#lights,M.maxLights+1,-1 do lights[i]=nil end
         for _,l in ipairs(lights) do
