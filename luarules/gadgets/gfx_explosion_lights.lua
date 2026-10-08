@@ -7,7 +7,12 @@ local types={Cannon=true,MissileLauncher=true,StarburstLauncher=true,AircraftBom
     LaserCannon=true,BeamLaser=true,LightningCannon=true,DGun=true,Flame=true}
 local watched,wanted={},{}
 for id,wd in pairs(WeaponDefs) do
-    if types[wd.type] then watched[id]=true;wanted[#wanted+1]=id end
+    -- Cinder fire projectiles do gameplay damage but never emit individual
+    -- muzzle/explosion light events. The unit emits one continuous ribbon.
+    local cp=wd.customParams or {}
+    if types[wd.type] and tonumber(cp.no_projectile_vfx)~=1 then
+        watched[id]=true;wanted[#wanted+1]=id
+    end
 end
 local molotov=WeaponDefNames.molotow and WeaponDefNames.molotow.id
 local fuelburst=WeaponDefNames.walkerfuelburst and WeaponDefNames.walkerfuelburst.id
