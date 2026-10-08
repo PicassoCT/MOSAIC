@@ -10,6 +10,7 @@ for id,wd in pairs(WeaponDefs) do
     if types[wd.type] then watched[id]=true;wanted[#wanted+1]=id end
 end
 local molotov=WeaponDefNames.molotow and WeaponDefNames.molotow.id
+local fuelburst=WeaponDefNames.walkerfuelburst and WeaponDefNames.walkerfuelburst.id
 if gadgetHandler:IsSyncedCode() then
     local fires,cursor,lastMuzzle={},0,{}
     _G.MosaicCombatFires=fires
@@ -20,7 +21,7 @@ if gadgetHandler:IsSyncedCode() then
     function gadget:Explosion(weaponID,x,y,z,ownerID)
         if not watched[weaponID] then return end
         SendToUnsynced('explosion_light',x,y,z,weaponID,ownerID)
-        if weaponID==molotov and y>=0 then
+        if (weaponID==molotov or weaponID==fuelburst) and y>=0 then
             cursor=cursor%128+1
             local frame=Spring.GetGameFrame()
             fires[cursor]={x=x,y=y,z=z,born=frame,expires=frame+15*(Game.gameSpeed or 30)}
