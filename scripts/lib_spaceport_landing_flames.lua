@@ -17,7 +17,7 @@ return function(unitID)
             local slot = 'spaceport-landing-'..booster..'-'..i
             local ok, err = GG.SmokeRibbon.Set(unitID, slot, nozzle, {
                 mode='landing', padPiece=pad, directionSpace='world', direction={0,-1,0},
-                length=640, width=84, curl=0.65, speed=3, strands=4,
+                length=320, width=42, curl=0.65, speed=3, strands=4,
                 colorStart={0.65,0.8,1,0.95}, colorEnd={1,0.25,0.04,0},
                 emission={4,1}, windAffected=true, windInfluence=0.15, trailTime=0.5,
                 distanceCulling=false, drawInIcon=true,

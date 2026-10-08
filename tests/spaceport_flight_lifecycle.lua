@@ -128,7 +128,7 @@ for nr=1,3 do
     for i=1,3 do
         local r=assert(ribbons['spaceport-landing-'..nr..'-'..i])
         assert(r.piece==groups['ReturningBooster'..nr..'ThrusterPlum'][i])
-        assert(r.options.length==640 and r.options.width==84 and r.options.mode=='landing')
+        assert(r.options.length==320 and r.options.width==42 and r.options.mode=='landing')
         assert(r.options.padPiece==groups.LandCone[nr],'wrong landing pad')
     end
 end
