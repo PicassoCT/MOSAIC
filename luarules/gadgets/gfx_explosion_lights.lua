@@ -11,6 +11,7 @@ for id,wd in pairs(WeaponDefs) do
 end
 local molotov=WeaponDefNames.molotow and WeaponDefNames.molotow.id
 local fuelburst=WeaponDefNames.walkerfuelburst and WeaponDefNames.walkerfuelburst.id
+local pyro=UnitDefNames.ground_walker_flame and UnitDefNames.ground_walker_flame.id
 if gadgetHandler:IsSyncedCode() then
     local fires,cursor,lastMuzzle={},0,{}
     _G.MosaicCombatFires=fires
@@ -39,7 +40,13 @@ if gadgetHandler:IsSyncedCode() then
             SendToUnsynced('barrelfire_light',x,y,z,weaponID,ownerID)
         end
     end
-    function gadget:UnitDestroyed(id) lastMuzzle[id]=nil end
+    function gadget:UnitDestroyed(id,defID)
+        lastMuzzle[id]=nil
+        if defID==pyro then
+            local x,y,z=Spring.GetUnitPosition(id)
+            if x then SendToUnsynced('pyro_torch_off',x,y,z,id) end
+        end
+    end
     function gadget:GameFrame(frame)
         if frame%3~=0 then return end
         for id,r in pairs(fires) do if frame>=r.expires then fires[id]=nil end end
@@ -53,6 +60,11 @@ else
     local function Explosion(_,x,y,z,weaponID,ownerID)
         if visible(x,y,z) and Script.LuaUI('GadgetWeaponExplosion') then
             Script.LuaUI.GadgetWeaponExplosion(x,y,z,weaponID,ownerID)
+        end
+    end
+    local function PyroTorch(_,x,y,z,id)
+        if visible(x,y,z) and Script.LuaUI('GadgetPyroTorchOff') then
+            Script.LuaUI.GadgetPyroTorchOff(x,y,z,id)
         end
     end
     local function Muzzle(_,x,y,z,weaponID,ownerID)
@@ -79,9 +91,11 @@ else
     function gadget:Initialize()
         gadgetHandler:AddSyncAction('explosion_light',Explosion)
         gadgetHandler:AddSyncAction('barrelfire_light',Muzzle)
+        gadgetHandler:AddSyncAction('pyro_torch_off',PyroTorch)
     end
     function gadget:Shutdown()
         gadgetHandler:RemoveSyncAction('explosion_light')
         gadgetHandler:RemoveSyncAction('barrelfire_light')
+        gadgetHandler:RemoveSyncAction('pyro_torch_off')
     end
 end
