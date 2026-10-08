@@ -66,7 +66,7 @@ local antagonAssembly = Assembly:New{
         "air_copter_antiarmor", "air_copter_ssied",
         "ground_turret_mg", "ground_turret_antiarmor", "ground_turret_ssied",
         "ground_turret_dronegrenade", "ground_turret_rocket", "ground_turret_sniper",
-        "ground_walker_mg", "ground_walker_grenade",
+        "ground_walker_mg", "ground_walker_grenade", "ground_walker_flame",
         "civilian_truck_mg", "civilian_truck_mortar", "civilian_truck_ssied",
         "ground_turret_mortar",
     },

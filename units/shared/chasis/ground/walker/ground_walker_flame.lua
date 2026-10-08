@@ -1,0 +1,51 @@
+-- Antagon-only expendable incendiary walker. Swap objectName when the dedicated model arrives.
+-- The placeholder is the existing animated Weevil chassis and requires no new asset.
+local def = Walker:New{
+    name = "Cinder",
+    description = "Fragile close-range flamethrower; volatile fuel tank",
+    corpse = "",
+    maxDamage = 340,
+    mass = 380,
+    buildCostEnergy = 460,
+    buildCostMetal = 440,
+    buildTime = 38,
+    explodeAs = "walkerfuelburst",
+    selfDestructAs = "walkerfuelburst",
+    maxVelocity = 3.0,
+    maxReverseVelocity = 1.5,
+    acceleration = 0.7,
+    brakeRate = 0.12,
+    turnRate = 900,
+    turnInPlace = true,
+    sightDistance = 260,
+    reclaimable = false,
+    builder = false,
+    canAttack = true,
+    canGuard = true,
+    canMove = true,
+    canPatrol = true,
+    canStop = true,
+    fireState = 1,
+    footprintX = 2,
+    footprintZ = 2,
+    script = "groundwalkerscript.lua",
+    objectName = "ground_walker_mg.dae", -- TODO: replace with supplied flamethrower model
+    buildPic = "ground_walker_mg.png",
+    iconType = "ground_walker_mg",
+    strafeToAttack = true,
+    category = "VEHICLE GROUND",
+    noChaseCategory = "AIR NOTARGET",
+    usepiececollisionvolumes = true,
+    customparams = {
+        normaltex = "unittextures/component_atlas_normal.dds",
+        baseclass = "Tank",
+        helptext = "Antagon close-range incendiary walker. Fuel tank detonates on death.",
+    },
+    weapons = {
+        [1] = {
+            name = "walkerflamethrower",
+            onlyTargetCategory = "BUILDING GROUND VEHICLE",
+        },
+    },
+}
+return lowerkeys({ground_walker_flame = def:New()})
