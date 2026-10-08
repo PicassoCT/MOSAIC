@@ -223,8 +223,19 @@ function widget:Initialize()
         getGlobalRadius=function() return globalRadiusMult end,
         getLife=function() return globalLifeMult end,
         getHeatDistortion=function() return enableHeatDistortion end,
+        getCinderBudgetStats=function() return sources and sources.pyroStats end,
     }
     WG.lighteffects=api
+end
+function widget:TextCommand(command)
+    if command~='cinder fxstats' then return false end
+    local s=sources and sources.pyroStats or {}
+    Spring.Echo(string.format(
+        'Cinder FX: candidates=%d selected=%d detailed=%d simplified=%d rendered=%d ribbons=%d rays=%d lite=%d',
+        s.candidateCount or 0,s.selected or 0,s.detailed or 0,
+        s.simplified or 0,(s.renderedDetailed or 0)+(s.renderedSimple or 0),
+        s.totalRibbons or 0,s.tracesThisFrame or 0,s.liteThisFrame or 0))
+    return true
 end
 function widget:Update(dt) if sources then sources:Update(dt) end end
 function widget:UnitCreated(id,defID) if sources then sources:UnitCreated(id,defID) end end
