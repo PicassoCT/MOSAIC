@@ -175,7 +175,8 @@ return function(S,Collision)
             end
             if record.untilFrame>env.frame and
                 (not S.IsUnitIcon or not S.IsUnitIcon(id)) then
-                local x,y,z=S.GetUnitViewPosition and S.GetUnitViewPosition(id)
+                local x,y,z
+                if S.GetUnitViewPosition then x,y,z=S.GetUnitViewPosition(id) end
                 if not x then x,y,z=S.GetUnitPosition(id) end
                 if x then
                     local d2=(env.cx-x)^2+(env.cy-y)^2+(env.cz-z)^2
