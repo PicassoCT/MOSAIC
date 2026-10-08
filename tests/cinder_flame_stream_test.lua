@@ -59,8 +59,10 @@ untilFrame=frame+12
 lights,flames=collect()
 assert(#lights==2,'Cinder must submit two bounded radiance sources, not per-shot lights')
 assert(#flames>=5 and #flames<=7,'Cinder should have one main stream and 4-6 smaller deflections')
-assert(flames[1].length==138 and flames[1].direction[1]>.9
-    and flames[1].strands==4,'main FlamePainter stream not attached to nozzle/aim')
+assert(flames[1].length==175 and flames[1].direction[1]>.9
+    and flames[1].strands==4,'main FlamePainter stream not attached to nozzle/aim/range')
+assert(flames[1].terrainGuard and flames[1].terrainGuard[4]>=9,
+    'full-length Cinder stream is missing its ground-clearance guard')
 for _,light in ipairs(lights) do
     assert(light.radius<=62 and light.strength<=0.46,
         'Cinder attack is flooding the ground with excessively broad radiance')
@@ -116,4 +118,7 @@ assert(not holoSource:find('SetUniformFloatArray%("viewPortSize"'),
     'Neon hologram is still setting an optimized-out viewport uniform')
 assert(not holoSource:find('SetUniformFloat%("rainPercent"'),
     'Neon hologram is still setting an optimized-out rain uniform')
-print('PASS: Cinder damage-only pellets, nozzle flame, deflections, bounded lighting, LOS, expiry, death torch, hologram uniforms')
+local vertexSource=assert(io.open('luarules/gadgets/shaders/smokeRibbon.vert','rb')):read('*a')
+assert(vertexSource:find('terrainGuard',1,true) and vertexSource:find('p.y = max(p.y, terrain + terrainGuard.w)',1,true),
+    'FlamePainter must keep strip vertices above terrain after turbulent offsets')
+print('PASS: Cinder damage-only pellets, range, terrain guard, nozzle flame, deflections, bounded lighting, LOS, expiry, death torch, police lights, hologram uniforms')
