@@ -415,7 +415,13 @@ function fireFlash()
     end     
 end
 function script.FireWeapon1()
-    if boolIsPyroGroundWalker then return true end -- FlamePainter renders weapon projectiles; no MG muzzle flash/recoil.
+    if boolIsPyroGroundWalker then
+        -- Extend one client-side visual stream while invisible damage pulses fire.
+        -- LOS-scoped rule allows late LOS entry / LuaUI reload without sync events.
+        Spring.SetUnitRulesParam(unitID, 'mosaic_pyro_fire_until',
+            Spring.GetGameFrame() + 12, {inlos=true})
+        return true -- no machine-gun muzzle CEG or recoil for a flame weapon
+    end
     if boolIsMgGroundWalker == true then
        StartThread(fireFlash)
     end
