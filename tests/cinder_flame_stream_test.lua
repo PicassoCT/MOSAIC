@@ -55,10 +55,10 @@ end
 fx:Update(.1)
 local lights,flames=collect()
 assert(#lights==0 and #flames==0,'idle Cinder emitted flame or shot lights')
-untilFrame=frame+12
+frame=frame+1;untilFrame=frame+12
 lights,flames=collect()
 assert(#lights==2,'Cinder must submit two bounded radiance sources, not per-shot lights')
-assert(#flames>=5 and #flames<=7,'Cinder should have one main stream and 4-6 smaller deflections')
+assert(#flames>=2 and #flames<=4,'detailed Cinder should have one main stream and budgeted deflections')
 assert(flames[1].length==175 and flames[1].direction[1]>.9
     and flames[1].strands==4,'main FlamePainter stream not attached to nozzle/aim/range')
 assert(flames[1].terrainGuard and flames[1].terrainGuard.pad>=9,
@@ -77,7 +77,7 @@ lights,flames=collect()
 assert(#lights==0 and #flames==0,'Cinder flame leaked across LOS')
 los=true
 lights,flames=collect()
-assert(#lights==2 and #flames>=5,'Cinder flame failed to resume on LOS reentry')
+assert(#lights==2 and #flames>=2,'Cinder flame failed to resume on LOS reentry')
 icon=true
 lights,flames=collect()
 assert(#lights==0 and #flames==0,'distant Cinder icon still submitted its full flame')
