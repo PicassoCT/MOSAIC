@@ -87,6 +87,10 @@ frame=frame+43;fx:Update(.1)
 lights,flames=collect()
 assert(#lights==0 and #flames==0,'death torch did not expire')
 
+local weaponSource=assert(io.open('weapons/walker_incendiary.lua','rb')):read('*a')
+assert(weaponSource:find('flameGfxTime = 1.0',1,true) and
+    weaponSource:find('size = 0.01',1,true),
+    'flame projectiles must retain their range while having sub-pixel visuals')
 local gadgetSource=assert(io.open('luarules/gadgets/gfx_explosion_lights.lua','rb')):read('*a')
 assert(gadgetSource:find('tonumber%(cp.no_projectile_vfx%)~=1'),
     'per-shot synced events are not suppressed for Cinder')
