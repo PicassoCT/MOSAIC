@@ -208,6 +208,75 @@ return function(S)
         end
         return {near=near,far=far,pad=pad or 9}
     end
+    -- Reuse the main eight-band clearance profile for breakup tongues.
+    -- No additional ground-height queries. Neighbor bands are included to
+    -- protect curled strands which extend beyond their nominal centre line.
+    function M.SliceGuard(parent,start,length,total,pad)
+        if not parent or not total or total<=0 then return nil end
+        local near,far={},{}
+        local function sample(i)
+            if i<4 then return parent.near[i+1] end
+            return parent.far[i-3]
+        end
+        for i=0,7 do
+            local a=(start+length*i/8)/total
+            local b=(start+length*(i+1)/8)/total
+            local low=max(0,min(7,math.floor(a*8)-1))
+            local high=max(low,min(7,math.floor(b*8)+1))
+            local h=-100000
+            for k=low,high do h=max(h,sample(k)) end
+            if i<4 then near[i+1]=h else far[i-3]=h end
+        end
+        return {near=near,far=far,pad=pad or parent.pad}
+    end
+
+    -- One shared conservative ground envelope at an impact point. Both
+    -- deflected tongues reuse it rather than sampling 40 heights each.
+    -- Two radial rings protect perpendicular ground flows/curbs.
+    function M.FanGuard(x,z,radius,pad)
+        if not S.GetGroundHeight then return nil end
+        local h=groundHeight(x,z)
+        for ring=1,2 do
+            local r=radius*(ring*.5)
+            for i=0,7 do
+                local a=i*math.pi*.25
+                h=max(h,groundHeight(x+math.cos(a)*r,z+math.sin(a)*r))
+            end
+        end
+        h=h+2
+        local near,far={},{}
+        for i=1,4 do near[i],far[i]=h,h end
+        return {near=near,far=far,pad=pad or 11}
+    end
+
+    -- Low-detail visual safety: eight height samples, one per band, with
+    -- a conservative ceil from the adjacent samples. No colvol rays.
+    -- This prevents low-LOD jets clipping the road without an expensive
+    -- collision solve or per-tongue ground probes.
+    function M.Lite(x,y,z,dx,dy,dz,reach,pad)
+        if not S.GetGroundHeight then return reach,nil end
+        local heights={}
+        heights[1]=groundHeight(x,z)
+        local distance=reach
+        for i=1,8 do
+            local d=reach*i/8
+            local h=groundHeight(x+dx*d,z+dz*d)
+            heights[i+1]=h
+            if distance==reach and y+dy*d<=h+CLEARANCE then
+                distance=max(2,d-reach/8)
+            end
+        end
+        local full={near={},far={},pad=pad or 12}
+        for i=1,8 do
+            local h=max(heights[i],heights[i+1])+2
+            if i<=4 then full.near[i]=h else full.far[i-4]=h end
+        end
+        if distance<reach then
+            return distance,M.SliceGuard(full,0,distance,reach,pad or 12)
+        end
+        return distance,full
+    end
+
     function M.Trace(shooter,x,y,z,dx,dy,dz,reach,ally,full)
         local ground=groundHit(x,y,z,dx,dy,dz,reach)
         local object=traceObjects(x,y,z,dx,dy,dz,reach,shooter,ally,full)
