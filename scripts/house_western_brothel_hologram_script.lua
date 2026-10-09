@@ -14,6 +14,10 @@ local sloganNamesNeonSigns = include('SlogansNewsNeonLogos.lua')
 local brothelsloganNamesNeonSigns = include('SloganBrothelNeonLogos.lua')
 local civilianTypeTable = getCivilianTypeTable(UnitDefs)
 local cachedCopyDict ={}
+local hologramBlackout = false
+local rainPiecesInFlight = {}
+local tigLilController
+local createTigLilController = include "lib_hologram_tiglil.lua"
 
 local hours   = 0
 local minutes = 0
@@ -100,36 +104,36 @@ rotatorTable ={}
  SIG_FLICKER= 256
 local GameConfig = getGameConfig()
 local pieceID_NameMap = Spring.GetUnitPieceList(unitID)
-local oldFrame = spGetGameFrame()
-local newFrame = nil
-
---This is a externally pulled function- meaning its called after all unitscripts have run by a gadget to deliver the show and hidden pieces
---consume
-function updateCheckCache()     
-    GG.VisibleUnitPieces[unitID] =  dictToTable(cachedCopyDict)     
-    newFrame = spGetGameFrame()
+-- Membership changes dirty the renderer once; the gadget consumes the flag.
+-- Comparing the last consumed frame could lose later changes in that frame.
+function updateCheckCache()
+    GG.VisibleUnitPieces = GG.VisibleUnitPieces or {}
+    local visible = dictToTable(cachedCopyDict)
+    table.sort(visible)
+    GG.VisibleUnitPieces[unitID] = visible
 end
 
---produce
 function setUpdateRequest()
-    if newFrame ~= oldFrame then
-        oldFrame = newFrame
-        GG.VisibleUnitPieceUpateStates[unitID] = true
-    end
+    GG.VisibleUnitPieceUpateStates = GG.VisibleUnitPieceUpateStates or {}
+    GG.VisibleUnitPieceUpateStates[unitID] = true
 end
 
 function ShowReg(pieceID)
-    if pieceID == nil then return end
+    if pieceID == nil or hologramBlackout then return end
     Show(pieceID)
-    cachedCopyDict[pieceID] = pieceID
-    setUpdateRequest()
+    if not cachedCopyDict[pieceID] then
+        cachedCopyDict[pieceID] = pieceID
+        setUpdateRequest()
+    end
 end
 
 function HideReg(pieceID)
-    if  pieceID  == nil then return end
-    Hide(pieceID)  
-    cachedCopyDict[pieceID] = nil
-    setUpdateRequest()
+    if pieceID == nil then return end
+    Hide(pieceID)
+    if cachedCopyDict[pieceID] then
+        cachedCopyDict[pieceID] = nil
+        setUpdateRequest()
+    end
 end
 
 local pieceMap = Spring.GetUnitPieceMap(unitID)
@@ -177,7 +181,7 @@ function showTReg(l_tableName, l_lowLimit, l_upLimit, l_delay)
 
     if l_lowLimit and l_upLimit then
         for ij = l_lowLimit, l_upLimit, 1 do
-            if l_tableName[i] then ShowReg(l_tableName[ij]) end
+            if l_tableName[ij] then ShowReg(l_tableName[ij]) end
             if l_delay and l_delay > 0 then Sleep(l_delay) end
         end
 
@@ -191,56 +195,26 @@ function showTReg(l_tableName, l_lowLimit, l_upLimit, l_delay)
 end
 
 --VFS.Include("scripts/lib_textFx.lua")
-include ("tigLilAnimation.lua")
+local tigLilAnimations = include("tigLilAnimation.lua")
 include("lib_textFx.lua")
 
-local function tiglLilLoop() 
-   conditionalEcho(boolDebugActive, "Reaching brothel tiglil")
-    if unitID % 3 ~= 0 then return end
-    if not GG.TiglilHoloTable then GG.TiglilHoloTable = {} end
-    if not GG.TiglilHoloTable[unitDefID] then GG.TiglilHoloTable[unitDefID] = {} end
-    if count(GG.TiglilHoloTable[unitDefID]) > 3  then  return end
-
-    GG.TiglilHoloTable[unitDefID][unitID] = unitID
-
-    while true do
-        if (hours > 20 or hours < 6) then
-            if maRa() then
-                skimpy = piece("skimpy")
-                ShowReg(skimpy)
-            end
-
-            StartThread(dancingTiglil, idleAnimations)
-
-            waitTillDay()
-            Signal(SIG_TIGLIL)
-            HideReg(tlpole)
-            HideReg(tldrum)
-            HideReg(tlflute)
-            hideTReg(TableOfPiecesGroups["GlowStick"])
-            hideTReg(tigLilHoloPices)
-        end
-        Sleep(1000)
-    end
+local function tiglLilLoop()
+    local techno = false
+    tigLilController = createTigLilController({
+        pieces = tigLilHoloPices,
+        glowSticks = TableOfPiecesGroups["GlowStick"],
+        skimpy = piece("skimpy"),
+        techno = techno,
+        animations = idleAnimations,
+        available = function()
+            local hour = getDayTime()
+            return (hour > 20 or hour < 6) and not hologramBlackout
+                and not (GG.BlackOutDeactivationTime and GG.BlackOutDeactivationTime[unitID])
+                and (not GG.GlobalGameState or GG.GlobalGameState == GameConfig.game.states.normal)
+        end,
+    })
+    tigLilController.run()
 end
-
-function dancingTiglil(animations, boolTechno)
-    SetSignalMask(SIG_TIGLIL)
-    if boolTechno then
-        showOne(TableOfPiecesGroups["GlowStick"])
-        showOne(TableOfPiecesGroups["GlowStick"])
-    end
-
-    while (hours > 20 or hours < 6) do
-        TigLilSetup()
-        Signal(SIG_GESTE)
-        Signal(SIG_TALKHEAD)
-        rest = math.random(512, 4096)
-        Sleep(rest)
-        animations[math.random(1,#animations)]()
-    end
-end
-
 
 --Direction = piece("Direction")
 
@@ -326,6 +300,7 @@ end
 
 boolJustOnce= true
 function restartHologram()
+    if tigLilController then tigLilController.stop() end
     Signal(SIG_CORE)
     SetSignalMask(SIG_CORE)
 
@@ -386,6 +361,7 @@ function script.Create()
     Spring.SetUnitBlocking(unitID, false)
     TableOfPiecesGroups = GetSetSharedOneTimeResult("house_western_brothel_hologram_script_PiecesTable", GetPieceTableGroups)
     restartHologram()
+    SetSignalMask(0)
     StartThread(grid)
     StartThread(emergencyWatcher)
 end
@@ -401,8 +377,10 @@ function ShowEmergencyElements ()
 end
 
 function emergencyWatcher()
+    SetSignalMask(0)
     while true do
         if GG.GlobalGameState ~= GameConfig.game.states.normal then
+            if tigLilController then tigLilController.stop() end
             Signal(SIG_CORE)
             hideAllReg(unitID)
             ShowEmergencyElements()
@@ -412,6 +390,7 @@ function emergencyWatcher()
             end
             hideAllReg(unitID)
             restartHologram()
+            SetSignalMask(0)
         end
         Sleep(3000)
     end
@@ -488,75 +467,82 @@ function grid()
 end
 
 function deployHologram()
+    rainPiecesInFlight = {}
     StartThread(HoloGrams)
     StartThread(holoGramRain)
 end
 
 function checkForBlackOut()
     while true do
-        if  GG.BlackOutDeactivationTime and  GG.BlackOutDeactivationTime[unitID] then
-            if GG.BlackOutDeactivationTime[unitID] > (spGetGameFrame() - 5*30) then
-                Signal(SIG_HOLO)
-                Sleep(500)
-                hideAll(unitID)
-                restTime = 5*60*1000
-                Sleep(restTime)
-                deployHologram()
-                GG.BlackOutDeactivationTime[unitID] = nil
-            end
+        if GG.BlackOutDeactivationTime and GG.BlackOutDeactivationTime[unitID] then
+            hologramBlackout = true
+            if tigLilController then tigLilController.stop() end
+            Signal(SIG_HOLO)
+            hideAllReg(unitID)
+            Sleep(5 * 60 * 1000)
+            GG.BlackOutDeactivationTime[unitID] = nil
+            hologramBlackout = false
+            deployHologram()
         end
-    Sleep(1000)
+        Sleep(1000)
     end
 end
 
 boolIsEverChanging= math.random(1,10) < 3 
 
+local function rainDisplayActive()
+    local hour = getDayTime()
+    return (hour > 19 or hour < 6) and not hologramBlackout
+        and isANormalDay() and isRaining(hour)
+end
+
 function RainDrop(pieceID, delayMS, speed)
     if not pieceID then return end
-    maxDistance = 4000
-    downAxis = 2
     Sleep(delayMS)
-    x,z = math.random(30,maxDistance)*randSign(), math.random(30,maxDistance)*randSign()
-    y = math.sqrt((maxDistance-x)^2 + (maxDistance-z)^2)
-    Move(pieceID, 1, x, 0)
-    Move(pieceID, 3, z, 0)
-    Move(pieceID, downAxis, y, 0)
+    if not rainDisplayActive() then
+        rainPiecesInFlight[pieceID] = nil
+        return
+    end
+    local maxDistance = 4000
+    local x = math.random(30, maxDistance) * randSign()
+    local z = math.random(30, maxDistance) * randSign()
+    local y = math.sqrt((maxDistance - x)^2 + (maxDistance - z)^2)
+    Move(pieceID, x_axis, x, 0)
+    Move(pieceID, z_axis, z, 0)
+    Move(pieceID, y_axis, y, 0)
     ShowReg(pieceID)
-    --Spin(pieceID, downAxis, math.rad(42),0)
-    WMove(pieceID, downAxis, 0, speed)
+    WMove(pieceID, y_axis, 0, speed)
     HideReg(pieceID)
+    rainPiecesInFlight[pieceID] = nil
 end
 
-function holoRain(Name, speed)
-    groupName = Name.."Rain"
-    for i=1,#TableOfPiecesGroups[groupName] do
-        delay= math.random(1,10)*50
-        StartThread(RainDrop,TableOfPiecesGroups[groupName][i], delay, speed)
+function holoRain(name, speed)
+    for _, id in ipairs(TableOfPiecesGroups[name .. "Rain"] or {}) do
+        if not rainPiecesInFlight[id] then
+            rainPiecesInFlight[id] = true
+            StartThread(RainDrop, id, math.random(1, 10) * 50, speed)
+        end
     end
 end
 
-RainCenter = piece("RainCenter")
 function holoGramRain()
+    SetSignalMask(SIG_HOLO + SIG_CORE)
     Sleep(100)
-    speed = math.pi * 2000
-    if unitID % 3 == 0 then
-        StartThread(glowWormFlight, 5.0)
-    end
+    local speed = math.pi * 2000
+    if unitID % 3 == 0 then StartThread(glowWormFlight, 5.0) end
     while true do
-        if (hours > 19 or hours < 6) and isANormalDay() then
-            rainDirectioinCopy = GG.RainDirection
-            if isRaining(hours) and rainDirectioinCopy then
-                Turn(RainCenter,x_axis,math.rad(rainDirectioinCopy.x),0)
-                Turn(RainCenter,z_axis,math.rad(rainDirectioinCopy.z),0)
-                while(hours > 19 or hours < 6) do
-                    holoRain("Brothel", speed)
-       
-                    Sleep(1000)
-                end
-                hideT(TableOfPiecesGroups["BuisnessRain"])
-                hideT(TableOfPiecesGroups["NeutralRain"])
-                hideT(TableOfPiecesGroups["BrothelRain"])
-            end           
+        if rainDisplayActive() then
+            -- isRaining initializes the direction; read it after that call.
+            local direction = GG.RainDirection
+            if direction and RainCenter then
+                Turn(RainCenter, x_axis, math.rad(direction.x), 0)
+                Turn(RainCenter, z_axis, math.rad(direction.z), 0)
+                holoRain("Brothel", speed)
+            end
+        else
+            hideTReg(TableOfPiecesGroups["BuisnessRain"])
+            hideTReg(TableOfPiecesGroups["NeutralRain"])
+            hideTReg(TableOfPiecesGroups["BrothelRain"])
         end
         Sleep(1000)
     end
@@ -800,7 +786,7 @@ function localflickerScript(flickerGroup,  NoErrorFunction, errorDrift, timeoutM
 end
 
 function HoloGrams()
-    SetSignalMask(SIG_HOLO)
+    SetSignalMask(SIG_HOLO + SIG_CORE)
 
     rotatorTable[#rotatorTable+1] = piece("brothel_spin")
     rotatorTable[#rotatorTable+1] = piece("general_spin")
@@ -886,7 +872,7 @@ end
 
 function delayedFlickerSingleLetter(letterPiece)
     Signal(SIG_FLICKER)
-    SetSignalMask(SIG_FLICKER)
+    SetSignalMask(SIG_FLICKER + SIG_HOLO + SIG_CORE)
     while true do
 
         --buildUpIntervall ever shorter
@@ -1087,12 +1073,12 @@ idleAnimations[#idleAnimations +1] = idle_stance7
 idleAnimations[#idleAnimations +1] = idle_stance8
 idleAnimations[#idleAnimations +1] = idle_stance9
 idleAnimations[#idleAnimations +1] = idle_stance_10
-idleAnimations[#idleAnimations +1] = idle_stance11
+idleAnimations[#idleAnimations +1] = tigLilAnimations.idle_stance11
 idleAnimations[#idleAnimations +1] = idle_stance_12
 idleAnimations[#idleAnimations +1] = idle_stance13
 idleAnimations[#idleAnimations +1] = idle_stance14
 idleAnimations[#idleAnimations +1] = idle_stance15
-idleAnimations[#idleAnimations +1] = idle_playBall
+idleAnimations[#idleAnimations +1] = tigLilAnimations.idle_playBall
 idleAnimations[#idleAnimations +1] = idle_stance18
 idleAnimations[#idleAnimations +1] = idle_stance17
 idleAnimations[#idleAnimations +1] = strikeAPose

@@ -2,6 +2,9 @@ include "lib_OS.lua"
 include "lib_mosaic.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
+local createPixelInterludes = include "lib_hologram_pixels.lua"
+local SIG_HOLO, SIG_CORE = 1, 2
+local hologramBlackout = false
 
 local hours   = 0
 local minutes = 0
@@ -25,26 +28,27 @@ function clock()
     end
 end
 
-local oldFrame = spGetGameFrame()
-local newFrame = nil
---This is a externally pulled function- meaning its called after all unitscripts have run by a gadget to deliver the show and hidden pieces
-function updateCheckCache()     
-    GG.VisibleUnitPieces[unitID] =  dictToTable(cachedCopyDict)     
-    newFrame = spGetGameFrame()
+-- Membership changes dirty the renderer once; the gadget consumes the flag.
+-- Comparing the last consumed frame could lose later changes in that frame.
+function updateCheckCache()
+    GG.VisibleUnitPieces = GG.VisibleUnitPieces or {}
+    local visible = dictToTable(cachedCopyDict)
+    table.sort(visible)
+    GG.VisibleUnitPieces[unitID] = visible
 end
 
 function setUpdateRequest()
-    if newFrame ~= oldFrame then
-        oldFrame = newFrame
-        GG.VisibleUnitPieceUpateStates[unitID] = true
-    end
+    GG.VisibleUnitPieceUpateStates = GG.VisibleUnitPieceUpateStates or {}
+    GG.VisibleUnitPieceUpateStates[unitID] = true
 end
 
 function ShowReg(pieceID)
-    if pieceID == nil then return end
+    if pieceID == nil or hologramBlackout then return end
     Show(pieceID)
-    cachedCopyDict[pieceID] = pieceID
-    setUpdateRequest()
+    if not cachedCopyDict[pieceID] then
+        cachedCopyDict[pieceID] = pieceID
+        setUpdateRequest()
+    end
 end
 
 function displayPieceTable(T)
@@ -59,9 +63,11 @@ end
 
 function HideReg(pieceID)
     if pieceID == nil then return end
-    Hide(pieceID)  
-    cachedCopyDict[pieceID] = nil
-    setUpdateRequest()
+    Hide(pieceID)
+    if cachedCopyDict[pieceID] then
+        cachedCopyDict[pieceID] = nil
+        setUpdateRequest()
+    end
 end
 
 local  pieceMap = Spring.GetUnitPieceMap(unitID)
@@ -178,9 +184,7 @@ function restartHologram()
         StartThread(butterflyExplosion)
     end
 
-    if randChance(10) or GG.GlobalGameState ~= GameConfig.game.states.normal then
-        StartThread(pixelArt)
-    end
+    StartThread(pixelArt)
 end
 
 function flapWing(wingPiece, wingPiece2, speedUp, speedDown)
@@ -517,227 +521,24 @@ function moveJumpScare(id)
     HideReg(id)
 end
 
-local scale = 2500
-local total = math.sqrt(36)
-local mid = (total/2)*scale
-local pixelSize = 64
-local colT = {"R","G", "B"}
-function getRandomColor()
-    return colT[math.random(1,3)]
-end
-
-
-function getRandomPixel()
-    colSelect = getRandomColor()
-    colSelectPieces = TableOfPiecesGroups[colSelect]
-    return colSelectPieces[math.random(1,#colSelectPieces)]
-end
-
-function RainDrop(pieces, delayMS, speed)
-    if not pieceID then return end
-    maxDistance = 4000
-    downAxis = 2
-    Sleep(delayMS)
-    x,z = math.random(30,maxDistance)*randSign(), math.random(30,maxDistance)*randSign()
-    y = math.sqrt((maxDistance-x)^2 + (maxDistance-z)^2)
-    local pieceID = pieces[1]
-    for i=1, #pieces do
-        local pieceID = pieces[i]
-        Move(pieceID, 1, x, 0)
-        Move(pieceID, 3, z, 0)
-        Move(pieceID, downAxis, y + (i*pixelSize), 0)
-        Move(pieceID, downAxis, 0, speed)
-        ShowReg(pieceID)
-    --Spin(pieceID, downAxis, math.rad(42),0)
-    end
-    WMove(pieceID, downAxis, 0, speed)
-    HideReg(pieceID)
-end
-
-function getRandomTimeZAxisFormula()
-    formulas = {
-        function(x, y, time, tScale) -- rings going outwards
-            return (math.sqrt(x^2 + y^2) / math.sin(time)) * tScale
-        end,
-        function(x, y, time, tScale) -- radial ripple wave
-            local dist = math.sqrt(x^2 + y^2)
-            return math.sin(dist - time * 2) * tScale
-        end,
-        function(x, y, time, tScale) -- checkerboard wave
-            return math.sin(x * 0.5 + time) * math.cos(y * 0.5 + time) * tScale
-        end,
-        function(x, y, time, tScale) -- spiraling vortex
-            local angle = math.atan2(y, x)
-            local radius = math.sqrt(x^2 + y^2)
-            return math.sin(radius + time + angle) * tScale
-        end,
-        function(x, y, time, tScale) -- sphere popping up
-            local radius = 5
-            local dist = math.sqrt(x^2 + y^2)
-            if dist <= radius then
-                return math.sin(time) * (1 - dist / radius)^2 * tScale * 2
-            else
-                return 0
-            end
-        end,
-        function(x, y, time, tScale) -- cube rising and falling
-            local size = 6
-            if math.abs(x) <= size and math.abs(y) <= size then
-                return math.abs(math.sin(time)) * tScale * 2
-            else
-                return 0
-            end
-        end,
-        function(x, y, time, tScale) -- simple face pattern
-            local z = 0
-            -- Head circle
-            local dist = math.sqrt(x^2 + y^2)
-            if dist < 6 then
-                z = z + math.sin(time) * 0.2 * tScale
-            end
-            -- Eyes
-            if (x > -3 and x < -1 and y > 1 and y < 3) or (x > 1 and x < 3 and y > 1 and y < 3) then
-                z = z + math.sin(time * 2) * 0.5 * tScale
-            end
-            -- Mouth
-            if x > -2 and x < 2 and y > -3 and y < -2 then
-                z = z - math.sin(time * 3) * 0.3 * tScale
-            end
-            return z
-        end
-    }
-
-
-    return formulas[math.random(1,#formulas)]
-end
-
-function getPixelEffect()
-    local effects = {
-        function()-- cube grid
-            tScale = 25
-            total = math.sqrt(math.floor(count(TableOfPiecesGroups["R"]) * 1.33))
-            for x=1, total do
-                for y=1, total do                    
-                    for z= 1, total do
-                        if not (x % 2 == 0 and y % 2== 0 and z % 2 == 0) then
-                            randomPixel = getRandomPixel()
-                            Move(randomPixel,x_axis, (x*tScale), 0)
-                            Move(randomPixel,y_axis, (y*tScale), 0)
-                            Move(randomPixel,z_axis, (z*tScale), 0)
-                        end
-                    end
-                end
-            end     
-        end,
-        function () -- random coloured cube      
-            randomColA = getRandomColor()
-            assert(TableOfPiecesGroups[randomColA], randomColA )
-            total = math.ceil(math.sqrt(count(TableOfPiecesGroups[randomColA]))) 
-            for x=1, total do
-                for y=1, total do
-                    for z= 1, total do
-                        randomPixel = getRandomPixel()
-                        if randomPixel then
-                            Move(randomPixel,x_axis, (x*scale)- mid, 0)
-                            Move(randomPixel,y_axis, (y*scale), 0)
-                            Move(randomPixel,z_axis, (z*scale)- mid, 0)
-                            ShowReg(randomPixel)
-                        end
-                    end
-                end
-            end
-        end,
-        function() -- plane of pixelart
-            time = math.random(10,35)* 1000
-            randomColA = getRandomColor()
-            assert(TableOfPiecesGroups[randomColA], randomColA )
-            total = math.ceil(math.sqrt(count(TableOfPiecesGroups[randomColA])))
-            timeFormula = getRandomTimeZAxisFormula()
-            interPolationStep = 125
-            tScale = 25
-            while (time > 0 ) do
-                for pxIndex = 1, #TableOfPiecesGroups[randomColA] do
-                    px = TableOfPiecesGroups[randomColA][pxIndex]
-                    for x=1, total do
-                        for y=1, total do
-                            Move(px, x_axis, (x * tScale) - mid, 0)
-                            Move(px, y_axis, (y * tScale), 0)
-                            Move(px, z_axis, timeFormula(x - total*0.5, y - total*0.5, time, tScale), 0)
-                            ShowReg(px)
-                        end
-                    end
-                end           
-                Sleep(interPolationStep)
-                time = time - interPolationStep
-            end
-        end,
-        function() -- pixel line error
-            direction = math.random(1,3)
-            otherValues = {}
-            for x=1,3 do otherValues[x] = scale*(math.random(-10,10)/10) end
-            for i=1, 32 do
-                randomPixel = getRandomPixel()
-                for k=1,3 do
-                    if randomPixel then
-                        if k ~= direction then
-                            Move(randomPixel,direction, (i*pixelSize), 0)
-                        else
-                            Move(randomPixel,k, otherValues[k], 0)
-                        end
-                        ShowReg(randomPixel)
-                    end
-                end
-            end
-        end,
-        function () -- chase the rain 
-             while isRaining(hours) do
-              
-                color = colT[math.random(1,3)]
-                    
-                local delayMS = math.random(1,5)*1000
-
-                RainDrop(TableOfPiecesGroups[color], delayMS, math.pi * 2000)
-                Sleep(100)
-            end
-        end   ,
-        function()-- cached copy artifacts
-            for k, cachedPiece in pairs(cachedCopyDict) do
-                if cachedPiece then
-                    pieceInfo = Spring.GetUnitPieceInfo(unitID, cachedPiece) 
-                    randomPixel= getRandomPixel()
-                    for p=1,math.random(2,32) do                 
-                        x = getRandomArgument(pieceInfo.min[1], pieceInfo.max[1])
-                        y = getRandomArgument(pieceInfo.min[2], pieceInfo.max[2])
-                        z = getRandomArgument(pieceInfo.min[3], pieceInfo.max[3])
-                        movePieceToPiece(unitID, randomPixel, cachedPiece, 0, {x=x, y=y, z=z})
-                    end
-                end
-
-            end
-        end
-    }
-    return effects[math.random(1,#effects)]
-end
-
-
+-- A sleeping controller replaces the old one-time 10% enable roll. Rain
+-- increases short errors; playful interludes remain rare in any weather.
 function pixelArt()
-    while true do
-       -- echo("PixelArt active at"..locationstring(unitID))
-        pixelEffect = getPixelEffect()
-        pixelEffect()
-        restVal= math.random(1,5)*250
-        Sleep(restVal)
-        hideTReg(TableOfPiecesGroups["R"])
-        hideTReg(TableOfPiecesGroups["G"])
-        hideTReg(TableOfPiecesGroups["B"])
-        restVal= math.random(1,15)*1000
-       Sleep(restVal)
-    end
+    SetSignalMask(SIG_CORE)
+    local run = createPixelInterludes(TableOfPiecesGroups, ShowReg, HideReg,
+        function()
+            local hour = getDayTime()
+            return (hour > 17 or hour < 7) and not hologramBlackout
+                and not checkSetTimeOutConditions()
+                and (not GG.GlobalGameState or GG.GlobalGameState == GameConfig.game.states.normal)
+        end,
+        function() return isRaining(getDayTime()) end)
+    run()
 end
 
 function HoloGrams()
     Signal(SIG_HOLO)
-    SetSignalMask(SIG_HOLO)
+    SetSignalMask(SIG_HOLO + SIG_CORE)
     deterministiceSetup()
     Spin(crossRotatePiece1, z_axis, math.rad(42), 0)
     Spin(crossRotatePiece2, x_axis, math.rad(42), 0)
@@ -806,15 +607,17 @@ local fiveMinutes = 5 * 60 * 1000
 local fiveSecondsInFrames = 5 * 30
 function checkForBlackOut()
     while true do
-        timeOutActive, timeoutTimeMs =checkSetTimeOutConditions()
-        if timeOutActive then 
+        local timeOutActive, timeoutTimeMs = checkSetTimeOutConditions()
+        if timeOutActive then
+            hologramBlackout = true
             Signal(SIG_HOLO)
             Sleep(500)
             hideAllReg(unitID)
             Sleep(timeoutTimeMs)
+            if GG.BlackOutDeactivationTime then GG.BlackOutDeactivationTime[unitID] = nil end
+            boolExternalTimeOutActive = false
+            hologramBlackout = false
             deployHologram()
-            GG.BlackOutDeactivationTime[unitID] = nil     
-            boolExternalTimeOutActive = false       
         end
     Sleep(1000)
     end

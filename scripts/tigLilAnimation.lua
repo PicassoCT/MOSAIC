@@ -1,3 +1,6 @@
+-- Signal bits absent from the old hologram callers, used by child routines.
+local SIG_SWING, SIG_WHIR, SIG_WALK, SIG_IDLE = 512, 1024, 2048, 4096
+local animationLifetime = (SIG_CORE or 0) + (SIG_TIGLIL or 0)
 
 -------------------------------------------TIGLILI COPIED CRAP --------------------------
 local tldrum = piece "tldrum"
@@ -801,7 +804,7 @@ end
 
 function danceTurnLeft()
     Signal(SIG_INCIRCLE)
-    SetSignalMask(SIG_INCIRCLE)
+    SetSignalMask(SIG_INCIRCLE + animationLifetime)
     while (true) do
 
 
@@ -961,7 +964,7 @@ end
 function talkingHead()
     Signal(SIG_TALKHEAD)
     howlong = math.random(2,12)
-    SetSignalMask(SIG_TALKHEAD)
+    SetSignalMask(SIG_TALKHEAD + animationLifetime)
     while (true) do
         for tlH = 0, howlong, 1 do
             rindRand = math.random(-5, 10)
@@ -981,7 +984,7 @@ end
 function danceTurnRight()
 
     Signal(SIG_INCIRCLE)
-    SetSignalMask(SIG_INCIRCLE)
+    SetSignalMask(SIG_INCIRCLE + animationLifetime)
     while (true) do
 
 
@@ -1131,7 +1134,7 @@ end
 
 function gestiKulieren()
 
-    SetSignalMask(SIG_GESTE)
+    SetSignalMask(SIG_GESTE + animationLifetime)
     while (true) do
 
         --Hand back to default
@@ -1295,7 +1298,7 @@ end
 
 
 function armswing()
-    SetSignalMask(SIG_SWING)
+    SetSignalMask(SIG_SWING + animationLifetime)
 
 
 
@@ -6305,7 +6308,7 @@ local SIG_BALL =8192
 boolBallAttached = false
 
 function attachBallToPiece(hand)
-    SetSignalMask(SIG_BALL)
+    SetSignalMask(SIG_BALL + animationLifetime)
     
     reset(ball)
     reset(BallArcPoint)
@@ -6592,7 +6595,7 @@ function walk()
         StartThread(armswing)
     end
 
-    SetSignalMask(SIG_WALK)
+    SetSignalMask(SIG_WALK + animationLifetime)
     while (true) do
         if dice < 30 then
             tradWalk()
@@ -6605,7 +6608,7 @@ end
 
 function hairInWind(offset)
     Signal(SIG_HAIR)
-    SetSignalMask(SIG_HAIR)
+    SetSignalMask(SIG_HAIR + animationLifetime)
     auslenkung= math.random(20,35)
     while true do
         TurnTowardsWind(tlhairup, math.pi, 50)
@@ -7034,3 +7037,6 @@ function waitPosition()
     Turn(tigLil, z_axis, math.rad(-4), 1)
     WaitForTurn(tigLil, y_axis)
 end
+
+-- Includes have their own lexical scope: export these local routines explicitly.
+return {idle_stance11 = idle_stance11, idle_playBall = idle_playBall}
