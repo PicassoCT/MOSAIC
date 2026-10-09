@@ -124,6 +124,7 @@ end
 
 
 function widget:Shutdown()
+  WG.ObservedCivilianUnits = nil
 end
 
 --------------------------------------------------------------------------------
@@ -131,6 +132,7 @@ end
 local selectedUnits = Spring.GetSelectedUnits()
 local selectedUnitsCount = Spring.GetSelectedUnitsCount()
 local trackedUnits = {}
+WG.ObservedCivilianUnits = trackedUnits
 local trackKey = 111 --'O'
 local untrackKey = 127 --'DELETE'
 
@@ -149,8 +151,8 @@ function widget:RecvLuaMsg(msg, playerID)
     Spring.Echo("TODO: Confirm working sending tracked "..msg)
     local rawNumber = msg:gsub("SEND_TRACKED:", "")
     if rawNumber ~= nil then
-      local trackedId = string.tonumber(rawNumber)
-      setTrackedUnit(trackedId)
+      local trackedId = tonumber(rawNumber)
+      if trackedId then setTrackedUnit(trackedId) end
     end
   end
 end
@@ -161,6 +163,7 @@ local function setUntrackedUnit(id)
 end
 
 local trackedUnitsCount = 0
+local nextTrackMarker = 0
 function widget:KeyRelease(key)
   if (key == trackKey) then
     local mouseX, mouseZ = Spring.GetMouseState ( )
@@ -170,12 +173,14 @@ function widget:KeyRelease(key)
       if not houseTypeTable[defID] then
         if trackedUnits[unitID] then
           trackedUnits[unitID] = nil
+          trackedUnitsCount = math.max(0,trackedUnitsCount-1)
           setUntrackedUnit(unitID)
         else
           setTrackedUnit(unitID)
           trackedUnits[unitID] = {}
-          trackedUnits[unitID].marker ="SUSPECT "..trackedUnitsCount
-          trackedUnits[unitID].name  = spGetUnitToolTip(unitID)
+          trackedUnits[unitID].marker ="SUSPECT "..nextTrackMarker
+          nextTrackMarker = nextTrackMarker + 1
+          trackedUnits[unitID].name  = spGetUnitToolTip(unitID) or "Civilian"
           if string.find(trackedUnits[unitID].name,"<") then
           trackedUnits[unitID].name  = string.sub(trackedUnits[unitID].name ,1, string.find(trackedUnits[unitID].name,"<")-1)
           end
@@ -188,9 +193,18 @@ function widget:KeyRelease(key)
     end
   end
   if (key == untrackKey) then
+   for id in pairs(trackedUnits) do setUntrackedUnit(id) end
    trackedUnits = {}
+   WG.ObservedCivilianUnits = trackedUnits
    trackedUnitsCount = 0
   end		
+end
+
+function widget:UnitDestroyed(id)
+  if trackedUnits[id] then
+    trackedUnits[id]=nil
+    trackedUnitsCount=math.max(0,trackedUnitsCount-1)
+  end
 end
 
 local iconsizeX = 60
@@ -261,3 +275,4 @@ end
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
+

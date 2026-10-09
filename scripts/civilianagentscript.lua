@@ -37,6 +37,7 @@ SIG_BEHAVIOUR_STATE_MACHINE = 16
 SIG_PISTOL = 32
 SIG_MOLOTOW = 64
 SIG_INTERNAL = 128
+local SIG_STOP = 512
 SIG_RPG = 256
 local suicideBomberManTypeTable = getSuicideBombermanTypeTable(UnitDefs)
 boolIsBomberMan = suicideBomberManTypeTable[spGetUnitDefID(unitID)]
@@ -181,11 +182,12 @@ end
 
 iShoppingConfig = math.random(0, 5)
 function variousBodyConfigs()
-    bodyConfig.boolShoppingLoaded = randChance(33)
+    if iShoppingConfig == 1 then iShoppingConfig = 5 end
+    bodyConfig.boolShoppingLoaded = false
     bodyConfig.boolCarrysBaby = (iShoppingConfig == 2)
     bodyConfig.boolTrolley = (iShoppingConfig == 3) or naked()
-    bodyConfig.boolHandbag = randChance(65)
-    bodyConfig.boolLoaded = (iShoppingConfig < 5)
+    bodyConfig.boolHandbag = false
+    bodyConfig.boolLoaded = bodyConfig.boolCarrysBaby or bodyConfig.boolTrolley
     bodyConfig.boolProtest = GG.GlobalGameState == GameConfig.game.states.anarchy and maRa()
     bodyConfig.boolHasDeco = randChance(70)
     setDefaultBodyConfig()
@@ -203,6 +205,68 @@ function externalPickUpHandbag()
         Show(Handbag)
         handBagConfig = bagAlignment.add(unitID, Handbag, parentPieceMap, math.pi/2, 3)
     end
+end
+
+-- Shared visible civilian actions, also available on operative disguise bodies.
+function externalSetCivilianBags(kind)
+    if bodyConfig.boolArmed or bodyConfig.boolInfluenced then return false end
+    if kind ~= "none" and (bodyConfig.boolCarrysBaby or bodyConfig.boolTrolley) then return false end
+    if ShoppingBag then Hide(ShoppingBag); bagAlignment.remove(ShoppingBag) end
+    if Handbag then Hide(Handbag); bagAlignment.remove(Handbag) end
+    shoppingBagConfig, handBagConfig = nil, nil
+    bodyConfig.boolShoppingLoaded = kind == "shopping"
+    bodyConfig.boolHandbag = kind == "luggage"
+    if iShoppingConfig == 1 then iShoppingConfig = 5 end
+    bodyConfig.boolLoaded = bodyConfig.boolCarrysBaby or bodyConfig.boolTrolley or kind ~= "none"
+    if kind == "shopping" and ShoppingBag then
+        iShoppingConfig = 1
+        Show(ShoppingBag)
+        shoppingBagConfig = bagAlignment.add(unitID, ShoppingBag, parentPieceMap, math.pi/2, 3)
+    elseif kind == "luggage" and Handbag then
+        Show(Handbag)
+        handBagConfig = bagAlignment.add(unitID, Handbag, parentPieceMap, math.pi/2, 3)
+    end
+    bagAlignment.wake(1000)
+    return true
+end
+
+function externalInterruptCivilian()
+    if bodyConfig.boolInfluenced then return false end
+    Signal(SIG_INTERNAL)
+    boolStartChatting, boolStartPraying, boolStartFilming, boolStartWailing = false, false, false, false
+    boolStartFleeing, boolStartPeaceFullProtest = false, false
+    chattingTime = 0
+    Hide(cellphone1)
+    if GG.CivilianUnitInternalLogicActive then GG.CivilianUnitInternalLogicActive[unitID] = nil end
+    setSpeedEnv(unitID, NORMAL_WALK_SPEED)
+    local animation = boolWalking and getWalkingState() or eAnimState.standing
+    setOverrideAnimationState(animation, animation, true, nil, true)
+    return true
+end
+
+function civilianPhoneCall(duration)
+    local current = GG.CivilianUnitInternalLogicActive and GG.CivilianUnitInternalLogicActive[unitID]
+    if not current or current.behaviour ~= "phone" then return end
+    Signal(SIG_INTERNAL)
+    SetSignalMask(SIG_INTERNAL)
+    setOverrideAnimationState(eAnimState.slaved, eAnimState.standing, true, nil, true)
+    Show(cellphone1)
+    local endFrame = Spring.GetGameFrame() + math.ceil(duration * 30 / 1000)
+    repeat
+        PlayAnimation("UPBODY_PHONE", lowerBodyPieces, 1.0)
+        Sleep(100)
+    until Spring.GetGameFrame() >= endFrame
+    Hide(cellphone1)
+    local state = boolWalking and getWalkingState() or eAnimState.standing
+    setOverrideAnimationState(state, state, true, nil, true)
+    setCivilianUnitInternalStateMode(unitID, GameConfig.civilians.activityStates.ended, "phone")
+end
+
+function startPhoneCall(duration)
+    if bodyConfig.boolInfluenced or bodyConfig.boolArmed then return false end
+    setCivilianUnitInternalStateMode(unitID, GameConfig.civilians.activityStates.started, "phone")
+    queueEventThread("behaviour", civilianPhoneCall, 1, duration)
+    return true
 end
 
 orgHousePosTable = {}
@@ -920,6 +984,7 @@ end
 function chatting()
     Signal(SIG_INTERNAL)
     SetSignalMask(SIG_INTERNAL)
+    setOverrideAnimationState(eAnimState.slaved, eAnimState.standing, true, nil, true)
     -- conditionalEcho(boolDebugActive, "Debugging chat civilianscript: active at ".. locationstring(unitID))
     accumulated = 0
     _, startRotation,_ = Spring.GetUnitRotation(unitID)
@@ -949,6 +1014,8 @@ function chatting()
 
     resetUpperBodyNoTPose(true)
     setCivilianUnitInternalStateMode(unitID, GameConfig.civilians.activityStates.ended, "talk")
+    local state = boolWalking and getWalkingState() or eAnimState.standing
+    setOverrideAnimationState(state, state, true, nil, true)
 end
 
 function filmingLocation()
@@ -1818,8 +1885,10 @@ function delayedStop()
     Sleep(250)
     boolWalking = false
     -- Spring.Echo("Stopping")
-    setOverrideAnimationState(eAnimState.standing, eAnimState.standing, true,
-                              nil, true)
+    local internal = GG.CivilianUnitInternalLogicActive and GG.CivilianUnitInternalLogicActive[unitID]
+    local upper = type(internal) == "table" and (internal.behaviour == "phone" or internal.behaviour == "talk")
+        and eAnimState.slaved or eAnimState.standing
+    setOverrideAnimationState(upper, eAnimState.standing, true, nil, true)
 end
 
 function getWalkingState()
@@ -2215,3 +2284,4 @@ function echoOverload(res)
 end
 
     
+

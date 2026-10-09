@@ -11,7 +11,20 @@ function gadget:GetInfo()
     }
 end
 
-if (not gadgetHandler:IsSyncedCode()) then return false end
+if not gadgetHandler:IsSyncedCode() then
+    local function receiveConversation(_, speaker, partner, text, duration)
+        if Script.LuaUI("CivilianConversation") then
+            Script.LuaUI.CivilianConversation(speaker, partner, text, duration)
+        end
+    end
+    function gadget:Initialize()
+        gadgetHandler:AddSyncAction("CivilianConversation", receiveConversation)
+    end
+    function gadget:Shutdown()
+        gadgetHandler:RemoveSyncAction("CivilianConversation")
+    end
+    return
+end
 
 VFS.Include("scripts/lib_UnitScript.lua")
 VFS.Include("scripts/lib_debug.lua")
@@ -76,6 +89,10 @@ local refugeeableTruckType = getRefugeeAbleTruckTypes(UnitDefs, TruckTypeTable, 
 local gaiaTeamID = Spring.GetGaiaTeamID() 
 local OpimizationFleeing = {accumulatedCivilianDamage = 0}
 local chanceOfCivilianSpawningFromTruck = GameConfig.civilians.traffic.passengerSpawnChance
+local newCivilianLife = VFS.Include("luarules/gadgets/include/civilian_daily_life.lua")
+local civilianLife = newCivilianLife({gameConfig=GameConfig, walkers=civilianWalkingTypeTable, trucks=TruckTypeTable, raining=isRaining})
+GG.CivilianLife = civilianLife
+local lastDangerReport = {}
 
 
 function startInternalBehaviourOfState(unitID, name, ...)
@@ -89,7 +106,9 @@ function startInternalBehaviourOfState(unitID, name, ...)
         state = internalState.state
     end
     if state == GameConfig.civilians.activityStates.started then
-        return false
+        if name ~= "startFleeing" and name ~= "startAnarchyBehaviour" then return false end
+        if type(internalState)=="table" and internalState.behaviour=="aerosol" then return false end
+        civilianLife:Interrupt(unitID)
     end
 
     local args = {...}
@@ -106,8 +125,8 @@ function startInternalBehaviourOfState(unitID, name, ...)
     return false
 end
 
-function callInternalFunction(uitID, name)
-    env = Spring.UnitScript.GetScriptEnv(unitID)
+function callInternalFunction(unitID, name)
+    local env = Spring.UnitScript.GetScriptEnv(unitID)
 
     if env and env[name] then
        return Spring.UnitScript.CallAsUnit(unitID, 
@@ -144,11 +163,12 @@ function makePasserBysLook(unitID)
 end
 
 function gadget:UnitDestroyed(unitID, unitDefID, teamID, attackerID)
+    civilianLife:UnitDestroyed(unitID, attackerID)
+    lastDangerReport[unitID] = nil
     if GG.AerosolAffectedCivilians then GG.AerosolAffectedCivilians[unitID] = nil end
     if GG.TollWutoxAfflicted then GG.TollWutoxAfflicted[unitID] = nil end
 	if GG.BusesTable and GG.BusesTable[unitID] then
 	   GG.BusesTable[unitID] =  nil
-       GG.BusesTable = compress(GG.BusesTable)
 	end
     -- if building, get all Civilians/Trucks nearby in random range and let them get together near the rubble
     if teamID == gaiaTeamID and attackerID then
@@ -158,6 +178,7 @@ function gadget:UnitDestroyed(unitID, unitDefID, teamID, attackerID)
 end
 
 function gadget:UnitCreated(unitID, unitDefID, teamID, attackerID)
+    civilianLife:UnitCreated(unitID, unitDefID)
     -- if bble
     if teamID == gaiaTeamID and unitDefID == closeCombatArenaDefID then
         makePasserBysLook(unitID)
@@ -172,33 +193,38 @@ end
 function gadget:UnitDamaged(unitID, unitDefID, unitTeam, damage, paralyzer,
                             weaponID, projectileID, attackerID, attackerDefID,
                             attackerTeam)
-    if MobileCivilianDefIds[unitDefID] or TruckTypeTable[unitDefID] or houseTypeTable[unitDefID] then
+    if damage and damage > 0 and (MobileCivilianDefIds[unitDefID] or TruckTypeTable[unitDefID] or houseTypeTable[unitDefID]) then
+        local frame = Spring.GetGameFrame()
+        if frame >= (lastDangerReport[unitID] or 0) then
+            lastDangerReport[unitID] = frame + 30
+            civilianLife:ReportDanger(unitID, damage)
+        end
         OpimizationFleeing.accumulatedCivilianDamage = OpimizationFleeing.accumulatedCivilianDamage + damage
 
-        if not OpimizationFleeing[unitID] then OpimizationFleeing[unitID] = Spring.GetGameFrame() + 30 end
+        if not OpimizationFleeing[unitID] then OpimizationFleeing[unitID] = 0 end
 
-        if attackerID and OpimizationFleeing[unitID] > Spring.GetGameFrame() then
+        if attackerID and OpimizationFleeing[unitID] <= Spring.GetGameFrame() then
             --Spring.Echo(attackerID .. " attacked civilian "..unitID)
             T = foreach(getInCircle(unitID,  GameConfig.civilians.panic.radius, gaiaTeamID),
                 function(id)
                     if id then
                         defID = spGetUnitDefID(id)
-                        if MobileCivilianDefIds[defID] or TruckTypeTable[unitDefID] then
+                        if TruckTypeTable[defID] then
                             return id
                         end
                     end
                 end,
                 function (id)
-                     if not OpimizationFleeing[id] then OpimizationFleeing[id] = Spring.GetGameFrame() + 30 end
+                     if not OpimizationFleeing[id] then OpimizationFleeing[id] = 0 end
 
-                     if OpimizationFleeing[id] > Spring.GetGameFrame()  then
+                     if OpimizationFleeing[id] <= Spring.GetGameFrame() then
                         startInternalBehaviourOfState(id, "startFleeing", attackerID)
                         OpimizationFleeing[id] = Spring.GetGameFrame() + math.random(15,35)
                      end
                 end
                 )
 
-            if (MobileCivilianDefIds[unitDefID] and not GG.DisguiseCivilianFor[unitID]) or TruckTypeTable[unitDefID] then
+            if TruckTypeTable[unitDefID] then
                 startInternalBehaviourOfState(unitID, "startFleeing", attackerID)
                 OpimizationFleeing[unitID] = Spring.GetGameFrame() + math.random(15,35)
              end       
@@ -243,7 +269,7 @@ function checkResetTemporaryStopped(frame)
     local temporaryCopy = temporaryStoppedTilFrame
     for id, endFrame in pairs(temporaryCopy) do
         if endFrame and frame > endFrame then
-            setSpeedEnv(busId, 1.0)
+            if doesUnitExistAlive(id) then setSpeedEnv(id, 1.0) end
             temporaryStoppedTilFrame[id] = nil
         end
     end
@@ -280,16 +306,20 @@ function checkReSpawnPopulation()
             x, _, z, startNode = getRandomSpawnNode()
             --assert(x > 0 and x < Game.mapSizeX, x)
             --assert(z > 0 and z < Game.mapSizeZ, z)
-            if x and startNode and GG.BusesTable and  #RouteTabel[startNode] > 0 then
+            if x and startNode and RouteTabel[startNode] and #RouteTabel[startNode] > 0 then
                 goalNode = getSafeRandom(RouteTabel[startNode], RouteTabel[startNode][1])
                 civilianType = randDict(civilianWalkingTypeTable)
-                busId = randDict(GG.BusesTable)      		
-                if busId and doesUnitExistAlive(busId) and randChance(10) then                    
-    	   	        x,_,z = spGetUnitPosition(busId)
-                    setTemporaryStopped(busId)
-        		end
-
-               id = spawnAMobileCivilianUnit(civilianType, x, z, startNode, goalNode)
+                local vehicle = civilianLife:VehicleOrigin(spGetGameFrame())
+                if vehicle then
+                    local vx, _, vz = spGetUnitPosition(vehicle)
+                    local side = vehicle % 2 == 0 and 1 or -1
+                    local px, pz = vx + side * 48, vz + 24
+                    local py = spGetGroundHeight(px,pz)
+                    if py >= 0 and Spring.TestMoveOrder(civilianType,px,py,pz) then x,z=px,pz
+                    else vehicle=nil end
+                end
+                id = spawnAMobileCivilianUnit(civilianType, x, z, startNode, goalNode)
+                if id and vehicle then civilianLife:SpawnedFromVehicle(id,vehicle) end
             else
                --echo("game_civilans: Found no startnode.")
                regenerateRoutesTable()
@@ -518,21 +548,6 @@ end
 
 -- truck or Person
 function spawnAMobileCivilianUnit(defID, x, z, startID, goalID)
-    --ocassionally spawn from arrived car
-    if (math.random(0,100)/100) > chanceOfCivilianSpawningFromTruck 
-        and civilianWalkingTypeTable[defID] 
-        and  GG.UnitArrivedAtTarget 
-        and #GG.UnitArrivedAtTarget > 0 then
-
-        for id, boolArrived in pairs(GG.UnitArrivedAtTarget) do
-           -- conditionalEcho(boolDebugCivilians, "Spawned civilian near truck "..id)
-            if boolArrived == true and GG.CivilianTable[id].defID and TruckTypeTable[GG.CivilianTable[id].defID] then
-                x,_,z = spGetUnitPosition(id)
-                break
-            end
-        end
-    end
-
     id = spawnUnit(defID, x, z)
     if id then
         -- assert(goalID)
@@ -543,6 +558,7 @@ function spawnAMobileCivilianUnit(defID, x, z, startID, goalID)
             goalID = goalID
         }
         GG.UnitArrivedAtTarget[id] = true
+        if civilianWalkingTypeTable[defID] then civilianLife:Register(id,startID) end
         return id
     end
 end
@@ -567,7 +583,12 @@ function gadget:Initialize()
     Spring.SetGameRulesParam ( "culture",GameConfig.game.culture )
     startFrame = Spring.GetGameFrame() + 30*5
     setUpRefugeeWayPoints()
+    GG.CivilianLife = civilianLife
+    local units = Spring.GetAllUnits(); table.sort(units)
+    for _, id in ipairs(units) do civilianLife:UnitCreated(id,spGetUnitDefID(id)) end
 end
+
+function gadget:Shutdown() civilianLife:Shutdown() end
 
 -----------------------------------------------------------------------------------------------------------------------
 -----------------------------  Civilian Behaviour Part  ---------------------------------------------------------------
@@ -718,7 +739,7 @@ function travelInWarTimes(evtID, frame, persPack, startFrame, myID)
             spDestroyUnit(myID, false, true)
             return true, nil, persPack
         else
-            Command(id, "go", {x = ex,y = ey,z = ez }, {"shift"})
+            Command(myID, "go", {x = ex,y = ey,z = ez }, {})
           return true, frame + math.random(15,45), persPack
         end
      end
@@ -738,34 +759,27 @@ function travelInWarTimes(evtID, frame, persPack, startFrame, myID)
 end
 
 function displayConversationTextAt(idA, idB)
---[[    --echo("isTRackedPerson "..toString(doesUnitExistAlive(idA)).." and "..toString(doesUnitExistAlive(idB)))--]]
-    if isTrackedPerson(idA) or isTrackedPerson(idB) then
-        gossipMessage = gossipGenerator(idA, idB, UnitDefs)
-       --[[ --echo("Displaying conversation between "..toString(idA).." and "..toString(idB))--]]
-        SendToUnsynced("DisplaytAtUnit", idA, gaiaTeamID, gossipMessage, 0.75, 0.75, 0.75, 0.25)
-    end
+    civilianLife:Conversation(idA,idB,20*30)
 end
 
 function getUnitNearestTalkableAlly(id)
-    resultUnits = 
+    local resultUnits =
     foreach(getAllNearUnit(id,  GameConfig.civilians.conversation.range, gaiaTeamID  ),
         function(ad)
             defID = spGetUnitDefID(ad)
-            if civilianWalkingTypeTable[defID] then
+            if ad ~= id and civilianWalkingTypeTable[defID] and civilianLife:CanSocialize(ad) then
                 return ad
             end
         end
         )
-    if #resultUnits  > 1 then return resultUnits[math.random(1,#resultUnits)] end
-    if #resultUnits == 0 then return resultUnits[1] end
+    table.sort(resultUnits)
+    if #resultUnits > 0 then return resultUnits[math.random(1,#resultUnits)] end
     return nil
 end
 
 function sozialize(evtID, frame, persPack, startFrame, myID)
     boolDone = false
-    if persPack.chatPartnerID ~= nil then
-        displayConversationTextAt(myID, persPack.chatPartnerID)
-    end
+    if not civilianLife:CanSocialize(myID) then return false,nil,persPack end
 
   ---ocassionally detour toward the nearest ally or enemy
     if randChance(80) and
@@ -798,6 +812,12 @@ function sozialize(evtID, frame, persPack, startFrame, myID)
 
     if persPack.boolStartAChat == true and persPack.chatPartnerID then
         local partnerID = persPack.chatPartnerID 
+        if not civilianLife:CanSocialize(partnerID) then
+            persPack.boolStartAChat=false
+            persPack.boolDeactivateStuckDetection=false
+            persPack=moveToLocation(myID,persPack,{},true)
+            return true,frame+30,persPack
+        end
         if distanceUnitToUnit(myID, partnerID) > GameConfig.civilians.conversation.range then
             --echo(myID.." moving to chat ")
              px, py, pz = spGetUnitPosition(partnerID)
@@ -814,7 +834,6 @@ function sozialize(evtID, frame, persPack, startFrame, myID)
           --echo(myID.." chatting at "..locationstring(partnerID))
             Command(myID, "stop")
             Command(partnerID, "stop")
-            displayConversationTextAt(myID, partnerID)
             -- Readiness controls when to chat, not how long the conversation lasts.
             -- Bias toward shorter chats without ever going below the minimum.
             local timeChattingInFrames = GameConfig.civilians.conversation.minDurationFrames + math.floor(
@@ -823,8 +842,10 @@ function sozialize(evtID, frame, persPack, startFrame, myID)
             local timeChattingInMs = frameToMs(timeChattingInFrames)
             startInternalBehaviourOfState(myID, "startChatting", timeChattingInMs, partnerID)
             startInternalBehaviourOfState(partnerID, "startChatting", timeChattingInMs, myID)
+            civilianLife:Conversation(myID,partnerID,timeChattingInFrames)
             persPack.maxTimeChattingInFrames  = 0
-            return true, frame + timeChattingInFrames, persPack
+            -- Polling remains cheap and lets danger interrupt long conversations.
+            return true, frame + 15, persPack
         end    
     end
     return boolDone, nil, persPack
@@ -900,6 +921,12 @@ function stuckDetection(evtID, frame, persPack, startFrame, myID, x, y, z)
             return true, frame + math.random(15,35), persPack
         else --reassign new route
             --Spring.Echo(myID.." :Help me stepbro im fucked at " .. locationstring(myID))
+            if civilianLife:IsProtected(myID) then
+                persPack.stuckCounter=0
+                metaStuckDetection[myID]=0
+                persPack=moveToLocation(myID,persPack,{},true)
+                return true,frame+90,persPack
+            end
             Spring.DestroyUnit(myID, false, true)
             metaStuckDetection[myID] = nil
             return true, nil, persPack
@@ -947,15 +974,14 @@ function travelInPeaceTimes(evtID, frame, persPack, startFrame, myID)
     if distanceUnitToPoint(myID, persPack.goalList[persPack.goalIndex].x, persPack.goalList[persPack.goalIndex].y,
                            persPack.goalList[persPack.goalIndex].z) < 100 then
 
+        if civilianLife:Arrive(myID,persPack.goalList[persPack.goalIndex],frame) then
+            return true, frame + 15, persPack
+        end
+
         if persPack.boolDamaged == true and maRa() == true then persPack.boolTraumatized = true end
         
         persPack.goalIndex = persPack.goalIndex + 1
         if persPack.goalIndex > #persPack.goalList then
-            if civilianWalkingTypeTable[persPack.mydefID] then
-                if maRa() then
-                    callInternalFunction(myID, "externalPickUpHandbag")                  
-                end
-            end
             GG.UnitArrivedAtTarget[myID] = true
             return true, nil, persPack
         else
@@ -1019,7 +1045,7 @@ function unitInternalLogic(evtID, frame, persPack, startFrame, myID)
         end
 
         local goal = persPack.goalList and persPack.goalList[persPack.goalIndex]
-        if goal then
+        if goal and not civilianLife:ResumeGroup(myID) then
             Command(myID, "go", {
                 x = math.ceil(goal.x),
                 y = math.ceil(goal.y),
@@ -1053,6 +1079,10 @@ function travellFunction(evtID, frame, persPack, startFrame)
 
     boolDone, retFrame, persPack, x,y,z, hp = travelInitialization(evtID, frame, persPack, startFrame, myID)
     if boolDone == true then return retFrame,packStep(persPack, retFrame, frame) end
+
+    if civilianLife:Step(myID,persPack,frame) then
+        return frame + 15, packStep(persPack,frame+15,frame)
+    end
 
     boolDone, retFrame, persPack = unitInternalLogic(evtID, frame, persPack, startFrame, myID)
     if boolDone == true then return retFrame,packStep(persPack, retFrame, frame) end
@@ -1110,25 +1140,24 @@ return defaultTargetNode
 end
 
 function giveWaypointsToUnit(uID, uType, startNodeID)
-    boolShortestPath = maRa() or not TruckTypeTable[uType]  -- direct route to target
-
-    index = math.random(2, #RouteTabel[startNodeID])
-    targetNodeID =  RouteTabel[startNodeID][index]
+    local candidates=RouteTabel[startNodeID]
+    if not candidates or #candidates==0 then return end
+    local targetNodeID=candidates[math.random(1,#candidates)]
 
     if civilianWalkingTypeTable[uType] then
-        targetNodeID = getTargetNodeInWalkingDistance(startNodeID, targetNodeID)
+        targetNodeID = civilianLife:SelectTarget(uID,startNodeID,candidates)
     end
 
     if startNodeID and targetNodeID then
+        local route = civilianWalkingTypeTable[uType] and civilianLife:BuildRoute(uID,startNodeID,targetNodeID)
+        route = route or buildRouteSquareFromTwoUnits(startNodeID,targetNodeID,uType)
    --     Spring.Echo("game_civilians:giveWaypointsToUnit:".. uID)
         GG.EventStream:CreateEvent(travellFunction, { -- persistance Pack
             mydefID = uType,
             myTeam = spGetUnitTeam(uID),
             unitID = uID,
             goalIndex = 1,
-            goalList = buildRouteSquareFromTwoUnits(startNodeID,
-                                                    targetNodeID,
-                                                    uType)
+            goalList = route
         }, spGetGameFrame() + (uID % 100))
     end
 end
@@ -1166,6 +1195,7 @@ function decimateArrivedCivilians(nrToDecimate, typeTable)
             doesUnitExistAlive(GG.CivilianTable[id].startID) == true and
             doesUnitExistAlive(id) == true and 
             GG.DisguiseCivilianFor[id] == nil and
+            not civilianLife:IsProtected(id) and
             typeTable[GG.CivilianTable[id].defID] then
             spDestroyUnit(id, false, true)
             ----echo("Killing Unit:"..id)
@@ -1179,6 +1209,7 @@ function decimateArrivedCivilians(nrToDecimate, typeTable)
 end
 
 function gadget:GameFrame(frame)
+    civilianLife:Frame(frame)
 
     if boolInitialized == false then       
         spawnInitialPopulation(frame)
@@ -1196,4 +1227,5 @@ function gadget:GameFrame(frame)
 
     OpimizationFleeing.accumulatedCivilianDamage = math.max(0, OpimizationFleeing.accumulatedCivilianDamage  - 1)
 end
+
 

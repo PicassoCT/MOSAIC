@@ -991,6 +991,9 @@ end
         Sleep(500)
   
         id = createUnitAtUnit(Spring.GetUnitTeam(parentID), holoDefID, parentID, 0,0,0,0)
+        if GG.CivilianLife and holoDefID == "house_western_hologram_brothel" then
+            GG.CivilianLife:RegisterVenue(parentID, "brothel")
+        end
     
         Spring.MoveCtrl.Enable(id, true)
         px, py, pz = Spring.GetUnitPiecePosDir(parentID, pieceID)
@@ -1827,7 +1830,7 @@ end
 
                 dayNr = frames/ dayLengthFrames
 
-                return dayNr % 3 < 1.0 and (hours > 18 or hours < 7)
+                return dayNr % 3 < 1.0 and (hour > 18 or hour < 7)
             end
 
             function isANormalDay()
@@ -2875,6 +2878,10 @@ end
                     return nil, persPack
                 end
 
+                if GG.CivilianLife then
+                    GG.CivilianLife:GuardedVisit(persPack.myID,persPack.syncedID,frame)
+                end
+
                 -- sync Health
                 transferUnitStatusToUnit(persPack.myID, persPack.syncedID)
 
@@ -2907,9 +2914,11 @@ end
                 if not parentMoved then
                 -- Unit has stopped, test wether we are near it
                 if distanceToParent < 25 then
-                    Command(persPack.myID, "stop", {}, {})
+                    if persPack.boolMoving ~= false then Command(persPack.myID, "stop", {}, {}) end
                     setDecoyMoving(false)
-                    return frame + 30, persPack
+                    persPack.stuckSince = nil
+                    persPack.currPos = {x=mx,y=my,z=mz}
+                    return frame + 6, persPack
                 end
             end
 
@@ -2924,14 +2933,17 @@ end
             if distance(mx, my, mz, persPack.currPos.x, persPack.currPos.y,
             persPack.currPos.z) < 50 then
             persPack.stuckCounter = persPack.stuckCounter + 1
+            persPack.stuckSince = persPack.stuckSince or frame
         else
             persPack.currPos = {x = mx, y = my, z = mz}
             persPack.stuckCounter = 0
+            persPack.stuckSince = nil
         end
 
-        if persPack.stuckCounter > 5 then
+        if persPack.stuckSince and frame - persPack.stuckSince > 5 * 30 then
             moveUnitToUnitGrounded(persPack.myID, persPack.syncedID,
             math.random(-10, 10), 0, math.random(-10, 10))
+            persPack.stuckSince = frame
         end
 
         -- Follow the actual parent. The previous ambient unitID made this
@@ -2942,7 +2954,7 @@ end
             setDecoyMoving(true)
         end
 
-        return frame + 30, persPack
+        return frame + 6, persPack
     end
 
 function getRegionByCulture(culture, hash)
@@ -4750,3 +4762,4 @@ function ViewShadowGameRelevant(px, pz, boolDebug)
 
     return counter  > 0
 end
+
