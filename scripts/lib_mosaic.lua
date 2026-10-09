@@ -1822,12 +1822,11 @@ end
                 end
 
                 if not hour then hour = getDayTime() end
-                dayLengthFrames = GG.GameConfig.game.dayLengthFrames
-                frames = Spring.GetGameFrame()
+                local dayLengthFrames = GG.GameConfig.game.dayLengthFrames
+                local frames = Spring.GetGameFrame()
+                local dayNr = frames / dayLengthFrames
 
-                dayNr = frames/ dayLengthFrames
-
-                return dayNr % 3 < 1.0 and (hours > 18 or hours < 7)
+                return dayNr % 3 < 1.0 and (hour > 18 or hour < 7)
             end
 
             function isANormalDay()
