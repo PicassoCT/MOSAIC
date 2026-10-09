@@ -72,7 +72,15 @@ e.Spring.AreTeamsAllied=function(a,b)return a==b end
 e.Spring.GetUnitHealth=function()return 15000,15000 end
 e.Spring.GetUnitBuildFacing=function(id)return units[id].facing end
 e.Spring.GetUnitCollisionVolumeData=function()return 124,60,124,0,30,0 end
-e.Spring.SetUnitRulesParam=function(id,key,rate)assert(key=='objective_income' and rate>0 and rate<=12);rates[id]=rate end
+local objectiveState={}
+e.Spring.SetUnitRulesParam=function(id,key,rate)
+    if key=='objective_income' then assert(rate>0 and rate<=12);rates[id]=rate
+    else
+        assert(key=='objective_protagon' or key=='objective_destroyed')
+        assert(rate==0 or rate==1)
+        objectiveState[id]=objectiveState[id] or {};objectiveState[id][key]=rate
+    end
+end
 e.Spring.GetUnitDefID=function(id)return units[id] and units[id].def end
 e.Spring.GetUnitTeam=function(id)return units[id] and units[id].team end
 e.Spring.GetUnitPosition=function(id)local u=units[id];return u.x,u.y,u.z end

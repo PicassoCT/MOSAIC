@@ -68,6 +68,9 @@ local function describe(record, dead)
     local name = UnitDefs[record.defID].humanName or UnitDefs[record.defID].name
     Spring.SetUnitTooltip(record.uid, name .. (dead and " <Destroyed objective> " or " <Objective> ")
         .. defender .. " must defend / " .. attacker .. (dead and " must attack to restore" or " must destroy"))
+    -- Public semantic state for AI/UI; this is already disclosed by the tooltip.
+    Spring.SetUnitRulesParam(record.uid, "objective_protagon", record.boolProProtagon and 1 or 0, {public=true})
+    Spring.SetUnitRulesParam(record.uid, "objective_destroyed", dead and 1 or 0, {public=true})
     Spring.SetUnitAlwaysVisible(record.uid, true)
 end
 

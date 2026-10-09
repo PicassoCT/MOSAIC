@@ -1,0 +1,33 @@
+name: Prometheus real order path
+on:
+  pull_request:
+    paths:
+      - 'luarules/gadgets/prometheus/**'
+      - 'luarules/gadgets/game_objective.lua'
+      - 'luarules/configs/side_morph_defs/**'
+      - 'units/**'
+      - 'baseclasses/units/**'
+      - 'tests/prometheus*'
+      - 'tests/civic_objectives_test.lua'
+      - '.github/workflows/prometheus-orders.yml'
+  push:
+    branches: ['feat/prometheus-strategic-play-*']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  orders:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install lupa==2.8
+      - name: Lua 5.1 real managers, bridge and objective lifecycle
+        run: >-
+          python -c "from pathlib import Path; from lupa.lua51 import LuaRuntime;
+          [LuaRuntime().execute(Path(p).read_text(encoding='utf-8')) for p in
+          ['tests/prometheus_startup_test.lua','tests/prometheus_orders_test.lua',
+          'tests/prometheus_betrayal_test.lua','tests/civic_objectives_test.lua',
+          'tests/objective_income_test.lua','tests/objective_security_test.lua']]"

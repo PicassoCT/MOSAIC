@@ -1,491 +1,93 @@
--- Author: Tobi Vollebregt
--- License: GNU General Public License v2
-
--- Slightly based on the Kernel Panic AI by KDR_11k (David Becker) and zwzsg.
--- Thanks to lurker for providing hints on how to make the AI run unsynced.
-
--- In-game, type /luarules prometheus in the console to toggle the ai debug messages
-
+-- Prometheus runs strategy on its owning client and submits orders through the
+-- authenticated synced bridge. No economy bonuses or hidden enemy state.
 function gadget:GetInfo()
-	return {
-		name = "Prometheus",
-		desc = "Configurable Reusable Artificial Intelligence Gadget for MOSAIC",
-		author = "Tobi Vollebregt",
-		date = "2009-02-12",
-		license = "GNU General Public License",
-  		layer = 1,
-		enabled = true
-	}
+    return {name="Prometheus", desc="Dispersed MOSAIC economy, reconnaissance and raids",
+        author="Mosaic contributors", license="GNU GPL v2", layer=1, enabled=true}
 end
-
-
--- Read mod options, we need this in both synced and unsynced code!
-if (Spring.GetModOptions) then
-    local modOptions = Spring.GetModOptions()
-    local lookup = {"easy", "medium", "hard", "impossible"}
-    gadget.difficulty = lookup[tonumber(modOptions.craig_difficulty) or 2] or "medium"
-else
-    gadget.difficulty = "hard"
-end
-
--- include configuration
-include("LuaRules/Configs/prometheus/config.lua")
-
-
-if (gadgetHandler:IsSyncedCode()) then
-
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---
---  SYNCED
---
-
-local function Refill(myTeamID, resource)
-    if gadget.difficulty ~= "easy" then
-        local value,storage = Spring.GetTeamResources(myTeamID, resource)
-        if gadget.difficulty == "medium" then
-            -- medium: partial refill
-            -- 1000 storage / 128 * 30 = approx. +234
-            -- this means 100% cheat is bonus of +234 metal at 1k storage
-            --Spring.AddTeamResource(myTeamID, resource, (storage - value) * 0.05)
-        else
-            -- hard: full refill
-           -- Spring.AddTeamResource(myTeamID, resource, storage - value)
-            if gadget.difficulty == "impossible" and resource == "energy" and storage < 1000.0 then
-                -- Grant the AI always have at least 1000 ammo storage, so
-                -- targeting the storages is not a possibility to win
-               -- Spring.AddTeamResource(myTeamID, "es", 1000.0)
-            end
-        end
-    end
-end
-
-function gadget:GameFrame(f)
-    -- Perform economy cheating, this must be done in synced code!
-    if f % 128 < 0.1 then
-        for t in pairs(gadget.team or {}) do
-            Refill(t, "metal")
-            Refill(t, "energy")
-        end
-    end
-end
-
-else
-
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---
---  UNSYNCED
---
-
---constants
-local MY_PLAYER_ID = Spring.GetMyPlayerID()
-local FIX_CONFIG_FOLDER = "LuaRules/configs/prometheus"
-local CONFIG_FOLDER = "LuaRules/Config/prometheus"
-local SAVE_PERIOD = 30 * 60  -- Save once per minute
-
-local TRAINING_MODE = nil  -- Set it true to train, nil to releases
-local MIN_TRAINING_TIME, MAX_TRAINING_TIME = 10 * 60, 40 * 60
-local DELTA_TRAINING_TIME = 10
-
--- globals
-waypointMgr = {}
-base_gann = {}
-intelligences = {}  -- One per team
-gadget.waypointMgr, gadget.base_gann, gadget.intelligences = waypointMgr, base_gann, intelligences
-gadget.betrayalContacts = {}
-
-
--- include code
-include("LuaRules/Gadgets/prometheus/base/buildsite.lua")
-include("LuaRules/Gadgets/prometheus/base.lua")
-include("LuaRules/Gadgets/prometheus/combat.lua")
-include("LuaRules/Gadgets/prometheus/flags.lua")
-include("LuaRules/Gadgets/prometheus/heatmap.lua")
-include("LuaRules/Gadgets/prometheus/intelligence.lua")
-include("LuaRules/Gadgets/prometheus/taxi.lua")
-include("LuaRules/Gadgets/prometheus/team.lua")
-include("LuaRules/Gadgets/prometheus/betrayal.lua")
-include("LuaRules/Gadgets/prometheus/pathfinder.lua")
-include("LuaRules/Gadgets/prometheus/waypoints.lua")
-include("LuaRules/Gadgets/prometheus/gann/gann.lua")
-
--- locals
-local prometheus_Debug_Mode =  0--1 -- Must be 0 or 1
-local team = {}
-local firstFrame = math.max(1,Spring.GetGameFrame()) + 1
-local teamsCreated = false
-local lastFrame = 0 -- To avoid repeated calls to GameFrame()
-local training_time
-
---------------------------------------------------------------------------------
-
-local function ChangeAIDebugVerbosity(cmd,line,words,player)
-	local lvl = tonumber(words[1])
-	if lvl then
-		prometheus_Debug_Mode = lvl
-		Spring.Echo("Prometheus: debug verbosity set to " .. prometheus_Debug_Mode)
-	else
-		if prometheus_Debug_Mode > 0 then
-			prometheus_Debug_Mode = 0
-		else
-			prometheus_Debug_Mode = 1
-		end
-
-		Spring.Echo("Prometheus : debug verbosity toggled to " .. prometheus_Debug_Mode)
-	end
-	return true
-end
-
-local function SetupCmdChangeAIDebugVerbosity()
-	local cmd,func,help
-	cmd  = "prometheus"
-	func = ChangeAIDebugVerbosity
-	help = " [0|1]: make Prometheus shut up or fill your infolog"
-	gadgetHandler:AddChatAction(cmd,func,help)
-	--Script.AddActionFallback(cmd .. ' ',help)
-end
-
-function gadget.IsDebug(teamID)
-    if prometheus_Debug_Mode == 0 then return false end
-
-    if teamID == nil then
-        return prometheus_Debug_Mode ~= nil
-    end
-    return prometheus_Debug_Mode == teamID
-end
-
-function gadget.IsTraining()
-    return TRAINING_MODE == true
-end
-
-local eachErrorOnlyOnce={}
-function gadget.Log(...)
-	if prometheus_Debug_Mode > 0 then
-      local arg = {...};
-      arg.n = #arg
-
-    local message = "Prometheus: " 
-	for i,v in ipairs(arg) do
-        message = message .. tostring(v) .. "\t"
-    end
-
-	if not eachErrorOnlyOnce[message] then
- 	  Spring.Echo(message)
-        eachErrorOnlyOnce[message] = true	
-	end
-    end    
-end    
-
--- This is for log messages which can not be turned off (e.g. while loading.)
-function gadget.Warning(...)
-	Spring.Echo("Prometheus: " .. table.concat{...})
-end
-
--- To read/save data, they replace widgets GetConfigData() and SetConfigData()
--- callins
-function SetConfigData()
-    local data = {}
-    if VFS.FileExists(CONFIG_FOLDER .. "/prometheus.lua") then
-        Log("Found config file: ",
-            VFS.GetFileAbsolutePath(CONFIG_FOLDER .. "/prometheus.lua"))
-        data = VFS.Include(CONFIG_FOLDER .. "/prometheus.lua")
-    elseif VFS.FileExists(FIX_CONFIG_FOLDER .. "/prometheus.lua") then
-        data = VFS.Include(FIX_CONFIG_FOLDER .. "/prometheus.lua")
-    end
-
-    if gadget.IsTraining() then
-        if data.training_time then
-            training_time = math.min(MAX_TRAINING_TIME, math.max(MIN_TRAINING_TIME,
-                                     data.training_time + DELTA_TRAINING_TIME))
-        end
-        local minutes = math.floor(training_time / 60)
-        local seconds = training_time - minutes * 60
-        Log("The game will last ", minutes, " minutes and ", seconds, " seconds")
-    end
-
-    base_gann.SetConfigData(data.base_gann or {})
-end
-
-function GetConfigData()
-    local data = {}
-    if gadget.IsTraining() then
-        data.training_time = training_time
-    end
-    data.base_gann = base_gann.GetConfigData()
-	if Script.LuaUI.CraigGetConfigData then
-		Script.LuaUI.CraigGetConfigData(CONFIG_FOLDER,   "prometheus.lua",  table.serialize(data))
-	end
-end
-
-Log = gadget.Log
-Warning = gadget.Warning
-
-function CreateTeamGann(teamID)
-    base_gann.Procreate(teamID)
-end
-
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---
---  The call-in routines
---
-
--- Execution order:
---  gadget:Initialize
---  gadget:GamePreload
---  gadget:UnitCreated (for each HQ / comm)
---  gadget:GameStart
---  gadget:GameFrame
-
-function gadget:Initialize()
-    SetupCmdChangeAIDebugVerbosity()
-    if gadget.IsTraining() then
-        training_time = MIN_TRAINING_TIME
-    end
-   firstFrame = math.max(1,Spring.GetGameFrame()) + 1
-   if not waypointMgr.UnitCreated then waypointMgr = CreateWaypointMgr() end
-   gadget.waypointMgr = waypointMgr
-
-	base_gann = CreateGANN()
-    gadget.base_gann = base_gann
-    local base_gann_inputs = VFS.Include("LuaRules/Gadgets/prometheus/base/gann_inputs.lua")
-    for _, input in ipairs(base_gann_inputs) do
-        base_gann.DeclareInput(input)
-    end
-    base_gann.DeclareOutput("score")
-
-    SetConfigData()
-end
-
-function gadget:GamePreload()
-    -- This is executed BEFORE headquarters / commander is spawned
-    Log("gadget:GamePreload")
-    Spring.Echo("gadet:GamePreload:GetConfigData")
-    GetConfigData()
-    waypointMgr = CreateWaypointMgr()
-    gadget.waypointMgr = waypointMgr
-end
-
-local function ResolveSide(teamID, units)
-    -- The lobby's side is not always set, particularly for Skirmish AIs.
-    -- The initial-spawn gadget publishes the actual chosen start unit.
-    local side = select(5, Spring.GetTeamInfo(teamID))
-    side = type(side) == "string" and side:lower() or ""
-    if side == "antagon" or side == "protagon" then return side, "team" end
-
-    local startUnit = tonumber(Spring.GetTeamRulesParam(teamID, "startUnit"))
-    local propagator = UnitDefNames.operativepropagator
-    local investigator = UnitDefNames.operativeinvestigator
-    if propagator and startUnit == propagator.id then return "antagon", "startUnit" end
-    if investigator and startUnit == investigator.id then return "protagon", "startUnit" end
-
-    -- A queued starting unit may appear after the first AI GameFrame.
-    for _, unitID in ipairs(units) do
-        if not Spring.GetUnitIsDead(unitID) then
-            local defID = Spring.GetUnitDefID(unitID)
-            if propagator and defID == propagator.id then return "antagon", "unit" end
-            if investigator and defID == investigator.id then return "protagon", "unit" end
-        end
-    end
-    return nil, "unresolved"
-end
-
-local unresolvedTeams = {}
-
-local function CreateTeams(f)
-    local name = gadget:GetInfo().name
-    local allReady = true
-    for _, t in ipairs(Spring.GetTeamList()) do
-        if Spring.GetTeamLuaAI(t) == name then
-            local _, leader, _, _, _, allyTeamID = Spring.GetTeamInfo(t)
-            if leader == MY_PLAYER_ID and not team[t] then
-                local units = Spring.GetTeamUnits(t) or {}
-                local side, source = ResolveSide(t, units)
-                if side then
-                    Spring.Echo("Prometheus: initializing team " .. t .. " as " .. side .. " (from " .. source .. ")")
-                    intelligences[t] = CreateIntelligence(t, allyTeamID)
-                    CreateTeamGann(t)
-                    team[t] = CreateTeam(t, allyTeamID, side)
-                    team[t].GameStart()
-                    for _, unitID in ipairs(units) do
-                        if not Spring.GetUnitIsDead(unitID) then
-                            local defID = Spring.GetUnitDefID(unitID)
-                            team[t].UnitCreated(unitID, defID, t)
-                            local _, _, _, _, built = Spring.GetUnitHealth(unitID)
-                            if (built or 0) >= 1 then team[t].UnitFinished(unitID, defID, t) end
-                        end
-                    end
-                    intelligences[t].GameStart()
-                    unresolvedTeams[t] = nil
-                else
-                    allReady = false
-                    -- Warn periodically rather than flooding the infolog every frame.
-                    if not unresolvedTeams[t] or f - unresolvedTeams[t] >= 150 then
-                        Warning("team " .. t .. " faction unresolved (team side/startUnit/starting unit); retrying")
-                        unresolvedTeams[t] = f
-                    end
+local levels={"easy","medium","hard","impossible"}
+gadget.difficulty=levels[tonumber((Spring.GetModOptions() or {}).craig_difficulty) or 2] or "medium"
+if not gadgetHandler:IsSyncedCode() then
+    include("LuaRules/Gadgets/prometheus/strategy.lua")
+    include("LuaRules/Gadgets/prometheus/team.lua")
+    include("LuaRules/Gadgets/prometheus/betrayal.lua")
+    local player=Spring.GetMyPlayerID()
+    local teams, unresolved, deadTeams={}, {}, {}
+    local lastFrame=-1
+    local debug=false
+    gadget.betrayalContacts={}
+    function gadget.IsDebug() return debug end
+    function gadget.Log(...) if debug then Spring.Echo("Prometheus",...) end end
+    local function resolve(id, units)
+        local side=select(5,Spring.GetTeamInfo(id))
+        side=type(side)=="string" and side:lower() or ""
+        if side=="antagon" or side=="protagon" then return side,"team" end
+        local start=tonumber(Spring.GetTeamRulesParam(id,"startUnit"))
+        for _,pair in ipairs({{"antagon","operativepropagator"},{"protagon","operativeinvestigator"}}) do
+            local def=UnitDefNames[pair[2]]
+            if def then
+                if def.id==start then return pair[1],"startUnit" end
+                for _,u in ipairs(units) do
+                    if not Spring.GetUnitIsDead(u) and Spring.GetUnitDefID(u)==def.id then return pair[1],"unit" end
                 end
             end
         end
     end
-    return allReady
-end
-
-function gadget:GameFrame(f)
-    if gadget.IsTraining() and Spring.GetGameSeconds() > training_time then
-        Spring.Echo("gadet:GameFrame:GetConfigData1")
-        GetConfigData()
-        Spring.Quit()
+    function gadget:Initialize()
+        gadgetHandler:AddChatAction("prometheus",function()
+            debug=not debug
+            Spring.Echo("Prometheus diagnostics",debug and "on" or "off")
+            return true
+        end,"Toggle bounded Prometheus strategy diagnostics")
     end
-
-    if (f < 1) or (f == lastFrame) then
-        return
-    end
-    lastFrame = f
-
-    if not teamsCreated and f >= firstFrame then
-        teamsCreated = true
-        waypointMgr.GameStart()
-    end
-    -- Retry unresolved teams after initial-spawn queues are flushed.
-    -- Successfully initialized teams are never initialized twice.
-    if teamsCreated then
-        CreateTeams(f)
-    end
-    if f > firstFrame  then
-	    if f % SAVE_PERIOD < 0.01 then
-        --Spring.Echo("gadet:GameFrame:GetConfigData2")
-		--GetConfigData()
-	    end
-        if not  waypointMgr.GameFrame then
-            waypointMgr = CreateWaypointMgr()
-            gadget.waypointMgr = waypointMgr
+    function gadget:GameFrame(f)
+        if f<2 or f==lastFrame then return end
+        lastFrame=f
+        for _,id in ipairs(Spring.GetTeamList()) do
+            local _,leader,dead=Spring.GetTeamInfo(id)
+            if not dead and not deadTeams[id] and leader==player and Spring.GetTeamLuaAI(id)=="Prometheus" then
+                if not teams[id] then
+                    local units=Spring.GetTeamUnits(id) or {}
+                    local side,source=resolve(id,units)
+                    if side then
+                        Spring.Echo("Prometheus: initializing team "..id.." as "..side.." (from "..source..")")
+                        teams[id]=CreateTeam(id,select(6,Spring.GetTeamInfo(id)),side)
+                        teams[id].GameStart()
+                        for _,u in ipairs(units) do
+                            if not Spring.GetUnitIsDead(u) then
+                                local def=Spring.GetUnitDefID(u)
+                                teams[id].UnitCreated(u,def,id)
+                                local _,_,_,_,built=Spring.GetUnitHealth(u)
+                                if (built or 0)>=1 then teams[id].UnitFinished(u,def,id) end
+                            end
+                        end
+                    elseif not unresolved[id] or f-unresolved[id].frame>=900 then
+                        local n=(unresolved[id] and unresolved[id].count or 0)+1
+                        if n<=5 or debug then
+                            Spring.Echo("Prometheus: team "..id.." faction unresolved; retrying team/startUnit/operative")
+                        end
+                        unresolved[id]={frame=f,count=n}
+                    end
+                end
+                if teams[id] then teams[id].GameFrame(f) end
+            end
         end
-	    waypointMgr.GameFrame(f)
-	    for _, intelligence in pairs(intelligences) do
-		intelligence.GameFrame(f)
-	    end
-	    for _,t in pairs(team) do
-		t.GameFrame(f)
-	    end
+    end
+    function gadget:TeamDied(id)
+        if teams[id] then teams[id].Shutdown();teams[id]=nil end
+        deadTeams[id]=true
+    end
+    function gadget:Shutdown()
+        for _,team in pairs(teams) do team.Shutdown() end
+        if gadgetHandler.RemoveChatAction then gadgetHandler:RemoveChatAction("prometheus") end
+    end
+    for _,name in ipairs({"UnitCreated","UnitFinished","UnitDestroyed","UnitTaken","UnitGiven",
+        "UnitIdle","UnitLoaded","UnitUnloaded","UnitDamaged"}) do
+        local event=name
+        gadget[event]=function(self,u,def,t,...)
+            if teams[t] and teams[t][event] then teams[t][event](u,def,t,...) end
+        end
     end
 end
-
---------------------------------------------------------------------------------
---
---  Game call-ins
---
-
-function gadget:TeamDied(teamID)
-    if team[teamID] then
-        team[teamID] = nil
-        Log("removed team ", teamID)
-    end
-
-    --TODO: need to call this for other/enemy teams too, so a team
-    -- can adjust it's fight orders to the remaining living teams.
-    --for _,t in pairs(team) do
-    --    t.TeamDied(teamID)
-    --end
-end
-
-function gadget:GameOver(winningAllyTeams)
-    if gadget.IsTraining() then
-        GetConfigData()
-        Spring.Quit()
-    end
-end
-
---------------------------------------------------------------------------------
---
---  Unit call-ins
---
-storedUnitCreations = {}
-function gadget:UnitCreated(unitID, unitDefID, unitTeam, builderID)
-    if not waypointMgr.UnitCreated then
-        waypointMgr = CreateWaypointMgr()
-        gadget.waypointMgr = waypointMgr
-    end
-    waypointMgr.UnitCreated(unitID, unitDefID, unitTeam, builderID)
-    if team[unitTeam] then
-        team[unitTeam].UnitCreated(unitID, unitDefID, unitTeam, builderID)
-    end
-end
-
-function gadget:UnitFinished(unitID, unitDefID, unitTeam)
-    if team[unitTeam] then
-        team[unitTeam].UnitFinished(unitID, unitDefID, unitTeam)
-    end
-    for _, intelligence in pairs(intelligences) do
-        intelligence.UnitFinished(unitID, unitDefID, unitTeam)
-    end
-end
-
-function gadget:UnitDestroyed(unitID, unitDefID, unitTeam, attackerID, attackerDefID, attackerTeam)
-    waypointMgr.UnitDestroyed(unitID, unitDefID, unitTeam, attackerID, attackerDefID, attackerTeam)
-    for teamID, t in pairs(team) do
-        t.UnitDestroyed(unitID, unitDefID, unitTeam, attackerID, attackerDefID, attackerTeam)
-    end
-    for _, intelligence in pairs(intelligences) do
-        intelligence.UnitDestroyed(unitID, unitDefID, unitTeam, attackerID, attackerDefID, attackerTeam)
-    end
-end
-
-function gadget:UnitTaken(unitID, unitDefID, unitTeam, newTeam)
-    if team[unitTeam] then
-        team[unitTeam].UnitTaken(unitID, unitDefID, unitTeam, newTeam)
-    end
-end
-
-function gadget:UnitGiven(unitID, unitDefID, unitTeam, oldTeam)
-    if team[unitTeam] then
-        team[unitTeam].UnitGiven(unitID, unitDefID, unitTeam, oldTeam)
-    end
-end
-
-function gadget:UnitLoaded(unitID, unitDefID, unitTeam, transportID, transportTeam)
-    if team[unitTeam] then
-        team[unitTeam].UnitLoaded(unitID, unitDefID, unitTeam, transportID, transportTeam)
-    end
-end
-
-function gadget:UnitUnloaded(unitID, unitDefID, unitTeam, transportID, transportTeam)
-    if team[unitTeam] then
-        team[unitTeam].UnitUnloaded(unitID, unitDefID, unitTeam, transportID, transportTeam)
-    end
-end
-
--- This may be called by engine from inside Spring.GiveOrderToUnit (e.g. if unit limit is reached)
-function gadget:UnitIdle(unitID, unitDefID, unitTeam)
-    if team[unitTeam] then
-        team[unitTeam].UnitIdle(unitID, unitDefID, unitTeam)
-    end
-end
-
-function gadget:UnitEnteredLos(unitID, unitTeam, allyTeam, unitDefID)
-    for _, intelligence in pairs(intelligences) do
-        intelligence.UnitEnteredLos(unitID, unitTeam, allyTeam, unitDefID)
-    end
-end
-
-function gadget:UnitLeftLos(unitID, unitTeam, allyTeam, unitDefID)
-    for _, intelligence in pairs(intelligences) do
-        intelligence.UnitLeftLos(unitID, unitTeam, allyTeam, unitDefID)
-    end
-end
-
-function gadget:UnitDamaged(unitID, unitDefID, unitTeam, damage, paralyzer, weaponDefID, projectileID, attackerID, attackerDefID, attackerTeam)
-    for _, intelligence in pairs(intelligences) do
-        intelligence.UnitDamaged(unitID, unitDefID, unitTeam, damage, paralyzer, weaponDefID, projectileID, attackerID, attackerDefID, attackerTeam)
-    end
-end
-
-end
-
--- Set up LUA AI framework.
-callInList = {
-    "TeamDied", "UnitCreated", "UnitFinished", "UnitDestroyed", "UnitTaken", "UnitGiven",
-    "UnitIdle", "UnitLoaded", "UnitUnloaded", "UnitEnteredLos", "UnitLeftLos", "UnitDamaged",
-}
-return VFS.Include("LuaRules/Gadgets/prometheus/framework.lua", nil, VFS.ZIP)
+callInList={"TeamDied","UnitCreated","UnitFinished","UnitDestroyed","UnitTaken","UnitGiven",
+    "UnitIdle","UnitLoaded","UnitUnloaded","UnitDamaged"}
+return VFS.Include("LuaRules/Gadgets/prometheus/framework.lua",nil,VFS.ZIP)
