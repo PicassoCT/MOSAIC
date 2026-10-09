@@ -639,7 +639,7 @@ function GetBadGuysGroupNames(hash)
 end
 
 function GetShoutByIdeology(unitID)
-    _, agencyName = GetBadGuysGroupNames(Spring.GetUnitTeam(unitID))
+    local agencyName = GetBadGuysGroupNames(Spring.GetUnitTeam(unitID))
 
     maxSamples = 56
     sampleHash = (hashString(agencyName) % maxSamples) + 1
@@ -675,11 +675,11 @@ end
 function getDeadDropLastWords(unitID, killerId )
     teamName, isAntagon = getTeamNameIsAntagon(unitID)
     civilianId = getCivilianIdFromAgent(unitID)  or unitID
-    agentName, SurName = getDeterministicCultureNames( id, UnitDefs, GG.GameConfig.game.culture)
+    agentName, SurName = getDeterministicCultureNames(civilianId, UnitDefs, GG.GameConfig.game.culture)
 
     lastWords = {
-        "We were brothers, "..agentName
-        "You ? But i thought you.."
+        "We were brothers, "..agentName,
+        "You? But I thought you...",
         "Why? Its #### that gave me up, eh ?",
         "Its glorious to die for " .. teamName,
         "History shall avenge me..",
@@ -710,12 +710,12 @@ function GetGoodGuysGroupName(hash)
 end
 
 function getTeamNameIsAntagon(id)
-    teamName = ""
-    teamID, leader, isDead, isAiTeam, side, allyTeam, incomeMultiplier, customTeamKeys = Spring.GetTeamInfo ( teamID )
-    if string.lower(side) == "antagon" then
-        return  GetGoodGuysGroupName(teamID), true
+    local teamID = Spring.GetUnitTeam(id)
+    local _, _, _, _, side = Spring.GetTeamInfo(teamID)
+    if string.lower(side or "") == "antagon" then
+        return GetBadGuysGroupNames(teamID), true
     else
-        return GetBadGuysGroupNames(teamID), false  
+        return GetGoodGuysGroupName(teamID), false
     end
 end
 
@@ -742,7 +742,8 @@ function startRevealedUnitsChatEventStream(idA, idB)
         idA = idA, 
         idB = idB, 
         startFrame = Spring.GetGameFrame(),
-        rate = 3 * 30,
+        rate = 5 * 30,
+        index = 1,
         -- Most intercepted calls remain operational chatter. Occasionally the
         -- listener catches a civilian-style conspiracy rant instead. Generate it
         -- once here so the entire intercepted stream stays internally consistent.
@@ -760,186 +761,35 @@ function startRevealedUnitsChatEventStream(idA, idB)
                             return nil, persPack
                         end 
                         if not doesUnitExistAlive(persPack.idB)then
-                            GG.DiscoveredUnitConversationPartners[idA][idB] = nil
+                            if GG.DiscoveredUnitConversationPartners[idA] then GG.DiscoveredUnitConversationPartners[idA][idB] = nil end
                             return nil, persPack
                         end
 
-                        timeLine = math.ceil((Spring.GetGameFrame() - persPack.startFrame)/ persPack.rate)
+                        local timeLine = persPack.index
 
                         if not persPack.conversation[timeLine] then   
                          return nil, persPack 
                         end
 
                         if timeLine % 2 == 0 then --operator
-                            SendToUnsynced("DisplaytAtUnit", idA, persPack.gaiaTeamID, persPack.conversation[timeLine], 0.75, 0.75, 0.75, 0.25)
+                            SendToUnsynced("CivilianConversation", idA, idB, persPack.conversation[timeLine], persPack.rate)
                         else 
-                            SendToUnsynced("DisplaytAtUnit", idB, persPack.gaiaTeamID, persPack.conversation[timeLine], 0.75, 0.75, 0.75, 0.25)
+                            SendToUnsynced("CivilianConversation", idB, idA, persPack.conversation[timeLine], persPack.rate)
                         end
 
+                        persPack.index = timeLine + 1
                         return Spring.GetGameFrame() + persPack.rate, persPack
                     end
-     GG.EventStream:CreateEvent( action, persPack, startFrame)
+     GG.EventStream:CreateEvent(action, persPack, persPack.startFrame + 1)
 end
 
-function gossipGenerator(gossipyID, oppossingPartnerID, UnitDefs)
-    --Spring.Echo("Running Gossip generator")
-    -- Define the subjects, actions, and objects
-    questions = {"Why", "Where", "What", "How", "With", "Who"}
-    space = " "
-    
-    subjects = {
-    "Me", "I", "You", "Us", "We", "They", "All of us", "Mum", "Dad","Society","Family"}
-    
-    emoShorts = {
-        "I Love you", "Hate you",  "Oh my god", "So fetch",    "I hate you",    "I'm sorry",    "I miss you",    "I'm proud of you",
-        "You hurt me", "I'm so happy",   "I feel lost",    "You inspire me",    "I'm disappointed",    "I need you",    "I forgive you",
-        "I can't stop thinking about you",    "I'm so angry",    "You complete me",    "I'm scared",    "I trust you",
-        "You betrayed me",    "I'm excited",    "I feel alone" 
-    } 
-
-    filler = {  "we are","I swear","um", "uh", "like", "you know", "fat", "freaking", "fuck yeah", "because", "feel me", "so", 
-    "actually", "basically", "literally", "I mean", "well", "right", "okay", "you see", "sort of", "kind of", "I guess", " know what I mean", 
-    "to be honest", "frankly", "seriously", "for real", "no duh", "not okay", "seriously", "yadaya", "catch my drift", "right on", "mkay", "fuck",
-     "then", "in", "hardcore", "far out man", "i swear", "my hand to god", "gods my wittnes", "get me", "yo", "otherwise"}
-
-    conversationShift = {
-        "where", "which",  "and","or", "with", "but not", "but"
-    }
-
-    actions = {
-        "agree", "like", "is so", "told", "loved", "dated", "owned", "hated", "life", "laughed", "talked", "mobbed", "networked", 
-    "worked", "stabbed", "fucked", "angered", "bought", "sold out", "murdered", "kicked", "rolled up", "fled", "yelled", "used", "cheat", 
-    "abused", "knows someone who", "promoted", "blew", "got rich", "knew", "sucked up", "blame"}
-
-    property = {
-        "weird", "sad", "horrific", "outrageous", "disgusting", "funny", "ruthless", "nice", "cheap", "rare", 
-        "plenty", "slutty", "wealthy", "small", "big", "hard", "soft", "stupid", "clever", "better", "beautiful", 
-        "worse", "jerky", "stoned", "hardcore", "dilapidated", "polluted", "corrupt", "violent", "desperate", 
-        "oppressive", "chaotic", "filthy", "dark", "overcrowded", "deprived", "dangerous", "exploited", "isolated", 
-        "contaminated", "squalid", "malnourished", "hacked", "paranoid", "parasitic", "synthetic", "decaying", 
-        "enslaved", "dehumanized", "totalitarian", "controlled", "desensitized", "scavenged", "illicit", 
-        "underground", "rebellious", "manipulated", "forgotten", "abandoned", "subversive", "gritty", "lawless", 
-        "grim", "disconnected", "trapped", "sterile", "heartless", "ruthless", "merciless", "barren", "bleak", 
-        "desolate", "forsaken", "impoverished", "ransacked", "pregnant", "shitty","favourite","beauty"
-    }
-
-    objects = {
-        "family", "me", "situation", "car", "house", "city", "money", "expenses", "government", "faith", "lipstick", "arcology",
-        "mother", "father", "bread", "veggies", "meat", "beer", "market",    "drugs", "booze", "problem", "flat", "jawhe", "allah",
-        "gambler", "ghetto", "community", "highrise", "family", "crime", "hope", "implants",     "drone", "music", "zion", "ganja",
-        "party", "gang", "market", "shop", "truck", "weather", "sunset", "streets", "gun", "suka", "blyat", "motherfucker", 
-        "bastard",  "prison", "promotion", "career", "job", "office", "restaurant", "sneakers", "brand", "camera", "organs",
-        "doctor", "lawyer", "secretary", "salaryslave", "master", "ceo", "boss", "a.i.", "company", "choom", "roller", "baller", "pornstar", "shit", "start", "end",
-        "conspiracy", "secret society", "cells", "agents", "foreign agents", "secret service", "mukbarat", "safehouse", "skyrise",
-         "arms race", "icbm", "rocket", "aerosol", "end of the world", "boobs", "bike", "limo", "truck"}
-    
-    techBabble = {"[CENSORED]", "[PROFANITY]", "[GCR]","[Generated Content removed]","...", "[AI Autonegotiation]","[NOT TRANSLATEABLE]", "[UNINTELIGABLE]", "[Sound of Breathing]", "[REDACTED]", "[ENCRYPTED]", "[VIRUS]", "[TranslatorError]", "BURP", "[sobs]", " -"}
-    
-    explainer = {"because of the", "for the", "of course the", "due to the", "well obviously the", 
-                 "cause of that", "in that", "unblievable", "thorough by", "by the"}
-
-   if gossipyID then
-        name, family = getDeterministicCultureNames(gossipyID, UnitDefs)
-        conversation = name..": "
-        table.insert(subjects, family)
-    end
-
-    if oppossingPartnerID then 
-        oname, ofamily = getDeterministicCultureNames(oppossingPartnerID, UnitDefs)
-        table.insert(subjects, ofamily)
-        table.insert(subjects, oname)
-    end
-
-    isConsumerBragging = randChance(10)
-    if isConsumerBragging  then
-        ConsumerStarter = {"Today i bought a %s, best quality", "You wont believe the bargain i made with the %s ", "It was on sale and it was only 99$ for %s!",
-        "They do not make %s like they used too ", "%s was a total steal", "I can buy a %s for you too.", "Honey, we do not have the money, but i bought a %s!"}
-        consumerItem = {"Bread", "Meat", "Salad", "sausage", "shirt", "skirt", "trouser", "implant", "medicine", "fruit", "soylentils", "coat", 
-        "shoes", "gun", "knife", "injector", "car", "game", "stimsim", "heroin", "speed", "booze", "slave", "heart", "liver", "concubine"}
-
-        conversation = conversation..string.format(ConsumerStarter[math.random(1,#ConsumerStarter)], consumerItem[math.random(1,#consumerItem)])
-        return conversation
-    end
-
-    isEmoShort = randChance(5)
-    if isEmoShort then
-        return conversation.. emoShorts[math.random(1,#emoShorts)]
-    end
-
-    isParanoid = randChance(1)
-    if isParanoid then
-        paranoidRantTable = getShizoBabbleRant(math.random(3,42))
-        return conversation..table.concat(paranoidRantTable, "\n", 1, #paranoidRantTable)
-    end
-
-
-    isQuestion = randChance(10)
-    if (isQuestion) then
-        conversation = conversation .. questions[math.random(1, #questions)]..space
-    end
-
-    space = " "   
-    conversationalRecursionDepth = math.random(1,3)
-    subject = subjects[math.random(1, #subjects)]
-
-    if isQuestion then subject = string.lower(subject) end
-
-    conversation =  conversation .. subject
-    conversation = conversation ..space.. actions[math.random(1,#actions)]
-    linebreak = 1
-    repeat 
-        if string.len(conversation) > linebreak * 32 then
-            conversation = conversation .. "\r"
-            linebreak = linebreak +1
-        end
-
-        if maRa() then
-            if randChance(25) then -- filler
-                conversation = conversation ..space.. filler[math.random(1,#filler)]
-                if maRa() then
-                    conversation = conversation ..space.. property[math.random(1,#property)]
-                end
-            else -- topic shift
-                conversation = conversation ..space.. conversationShift[math.random(1,#conversationShift)]
-                conversation = conversation ..space.. property[math.random(1,#property)]
-                conversation = conversation ..space.. objects[math.random(1,#objects)]
-                addendum = {"is", "is not", "can", "can't", "however"}
-                conversation = conversation .. space .. addendum[math.random(1, # addendum)]
-            end
-        end
-        
-        if randChance(10) then
-            conversation = conversation ..space..techBabble[math.random(1,#techBabble)]
-        end
-        if randChance(15) then
-            conversation = conversation ..space.. actions[math.random(1,#actions)] 
-            if randChance(25) then
-                conversation = conversation ..space.. property[math.random(1,#property)]
-            end
-            conversation = conversation .. space.. explainer[math.random(1,#explainer)] ..space.. objects[math.random(1,#objects)]
-        end
-
-        conversationalRecursionDepth = conversationalRecursionDepth -1
-    until (conversationalRecursionDepth < 0) 
-
-    optionalEndElement = ""
-
-    if randChance(35) then
-        optionalEndElement = space..explainer[math.random(1,#explainer)].. space ..objects[math.random(1,#objects)]
-    end 
-
-    conversation = conversation .. optionalEndElement 
-    if isQuestion == true then
-        conversation = conversation .. "?"
-    else
-        if maRa() then
-            conversation = conversation .. "."
-        else
-            conversation = conversation .. "!"
-        end
-    end
-
-    return conversation
+local civilianDialogue = VFS.Include("scripts/lib_civilian_dialogue.lua")
+function gossipGenerator(gossipyID, opposingPartnerID, UnitDefs)
+    local frame = Spring.GetGameFrame()
+    local seed = ((gossipyID or 0) * 131 + (opposingPartnerID or 0) * 17 + frame) % 2147483647
+    local person = GG.CivilianLife and GG.CivilianLife.people[gossipyID]
+    local memory = person and person.memories[#person.memories]
+    return civilianDialogue.build(seed, memory)[1]
 end
 
 function loremGibson()
@@ -957,3 +807,4 @@ function getDetThreeLetterAgency(hash)
 
     return string.upper(string.char(65+first)..string.char(65+second)..third[(hash%#third)+1])
 end
+
