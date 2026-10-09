@@ -6,7 +6,7 @@ function getFirstShopName(firstName)
     local secondLetter = firstName:sub(2, 2):upper()
 
     -- Example more generic products for each letter
-    products = {
+    local products = {
         A = "Art",
         B = "Bakery",
         C = "Crafts",    
@@ -37,11 +37,10 @@ function getFirstShopName(firstName)
     if products[secondLetter] then
         products.D = "Designer " .. products[secondLetter]
     else
-        key, val = randDict(products)
-        products.D = "Designer ".. val
+        products.D = "Designer Goods"
     end
 
-    broducts = {       
+    local broducts = {
         A = {"Adult Entertainment", "Appsassins", "Anal Toyz", "Artificial Animals", "Augment Surgeons"},
         B = {"Bunkers", "Bombs", "BDSM", "BadBets", "Blacklight Bazaar", "Biohackers Anonymous"},
         C = {"Corpse Dispossal", "Cannibalist", "Cybernetics", "Cryo Coffins", "Clone Customizers"},
@@ -72,13 +71,13 @@ function getFirstShopName(firstName)
     
     -- Get the product corresponding to the first letter
     local product = products[firstLetter] or "Products"
-    if maRa() then
+    if (#firstName % 2) == 0 then
         assert(secondLetter)
         assert(firstLetter)
         assert(firstLetter)
         assert(broducts)
         if not broducts[firstLetter] then return "NoName Shop" end
-        index = (string.byte(secondLetter) % (#broducts[firstLetter])) +1
+        local index = ((string.byte(secondLetter) or 0) % (#broducts[firstLetter])) +1
         assert(broducts[firstLetter][index])
         product = broducts[firstLetter][index] 
     end
@@ -88,447 +87,39 @@ function getFirstShopName(firstName)
     return shopName
 end
 
-function getHouseShopName(id,  buisnessNamesTable, UnitDefs)
-	hash = getDeterministicStationaryUnitHash(id) % 100 
-    houseHasShop = hash > 75   
-	if houseHasShop then
-        x,y, z = Spring.GetUnitPosition(id)
-        local houseStreetDim = {}
-        local gameConfig = GG.GameConfig
-        houseStreetDim.x, houseStreetDim.y, houseStreetDim.z = gameConfig.city.buildings.sizeX + gameConfig.city.alleys.sizeX, gameConfig.city.buildings.sizeY, gameConfig.city.buildings.sizeZ + gameConfig.city.alleys.sizeZ
-        isLocalShop = (hash % 3 == 0) and not isNearCityCenter(x * houseStreetDim.x, z* houseStreetDim.z, gameConfig)
-		if isLocalShop then
-            --ownerId = 
-            first, sur =  getDeterministicCultureNames(id+ math.random(1,3000), UnitDefs, gameConfig.game.culture, true)
-		    if maRa() then
-                return getFirstShopName(first)
-            else
-                return getFirstShopName(sur)
-            end
-        else            
-            return buisnessNamesTable[(id +  (hash% #buisnessNamesTable)) +1]
-        end
-	end
+function getHouseShopName(id, buisnessNamesTable, UnitDefs)
+    local p = GG.BuildingTable and GG.BuildingTable[id]
+    local x, _, z = Spring.GetUnitPosition(id)
+    x, z = p and p.x or x, p and p.z or z
+    local hash = VFS.Include("scripts/lib_city_roads.lua").hash(tostring(math.floor(x+0.5))..":"..tostring(math.floor(z+0.5)))
+    if hash % 100 <= 75 then return end
+    local config = GG.GameConfig or getGameConfig()
+    if hash % 3 == 0 and not isNearCityCenter(x, z, config) then
+        local owners = {western={"Alex","Sam","Morgan","Taylor"},arabic={"Noor","Amal","Salma","Karim"},asian={"Hana","Kai","Mei","Ren"},international={"Alex","Noor","Hana","Sam"}}
+        local pool = owners[config.game.culture] or owners.international
+        return getFirstShopName(pool[(hash % #pool)+1])
+    end
+    if buisnessNamesTable and #buisnessNamesTable > 0 then
+        return buisnessNamesTable[(hash % #buisnessNamesTable)+1]
+    end
 end
 
 function setHouseStreetNameTooltip(id, detailXHash, detailZHash, Game, boolInnerCityBlock, UnitDefs, buisnessNamesTable)
-    detailXHash = math.floor(detailXHash)
-    detailZHash = math.floor(detailZHash)
-
-    region = getRegionByCulture(GG.GameConfig.game.culture, getDetermenisticMapHash(Game))
-    assert(region)
-    if not GG.UsedStreetNameCounterDict then
-        GG.UsedStreetNameCounterDict = {}
-    end
-
-    addition = addition or ""
-    if not GG.Streetnames then
-        playername = getRandomPlayerName()
-        Highway = "Highway" .. math.random(1, 20)
-        Doctorstreet = "Dr." .. playername .. " street"
-        GG.Streetnames = {
-            NorthAmerica = {
-                "Freedomstr",
-                "Suburbialley",
-                "Veteranstreet",
-                "Plaza da Revoluzion",
-                "Mainstreet",
-                "Pinestreet",
-                "Cedarstreet",
-                "Cypressstreet",
-                "Vistaroad",
-                "Lakestr",
-                "First Street",
-                "Second Street",
-                "Third Street",
-                "Parkstr",
-                "Ninthstr",
-                "Washingtonstr",
-                "High Street",
-                "Station Street",
-                "Main Street",
-                "Grand Canal Way",
-                "MacMansion Road",
-                "Woolworth alley",
-                "Buy N Large Ring",
-                "Wallmartstreet",
-                },
-            Europe = {
-                "Deichstraße",
-                "Prinzregentenstraße",
-                "Tauentzienstraße",
-                "Karl-Liebknecht-Straße",
-                "Turmstraße",
-                "Ludwigstrasse",
-                "Voßstraße",
-                "Leipziger Straße",
-                "Ebertstraße",
-                "Frankfurter Allee",
-                "Brienner Straße",
-                "Frauenbruennl Straße",
-                "Schönhauser Allee",
-                "Wilhelmstraße",
-                "Raiffeisenstraße",
-                "Rathausgasse",
-                Doctorstreet,
-                "Hauptstraße",
-                "Schulstraße",
-                "Dorfstraße",
-                "Bahnhofstraße",
-                "Feldgasse",
-                "Champs-Élysées",
-                "Avenue Victor Hugo",
-                "Avenue Montaigne",
-                "Rue de Rivoli",
-                "Rue Saint-Rustique",
-                "Rue Saint-Dominique",
-                "Rue Vieille du Temple",
-                "Rue Sainte-Catherine",
-                "Rue de l'Eglise",
-                "Place de l'Eglise",
-                "Grande Rue",
-                "Kerkstraat",
-                "Molenstraat",
-                "Schoolstraat",
-                "Zahradní",
-                "Krátká",
-                "Nádražní",
-                "Lærkevej",
-                "Birkevej",
-                "Vinkelvej",
-                "Rantatie",
-                "Kirkkotie",
-                "Koulutie",
-                "Petőfi Sándor utca",
-                "Kossuth Lajos utca",
-                "Rákóczi utca",
-                "Via Roma",
-                "Via Garibaldi",
-                "Via Marconi",
-                "Liepų",
-                "Miško",
-                "Beržų",
-                "Rue de l’Église",
-                "Rue des Champs",
-                "Rue des Prés",
-                "Центральная улица",
-                "Молодёжная улица",
-                "Школьная Улица",
-                "Školská",
-                "Hlavná",
-                "Nová",
-                "calle Mayor",
-                "calle Iglesia",
-                "calle Real",
-                "Kifissias Avenue",
-                "Peiraios Street",
-                "Voukourestiou Street"
-            },
-            Africa = {
-                "Muizz Street",
-                "Saliba Street",
-                "Talaat Harb Street",
-                "Qasr El Nil Street",
-                "Mohammed Mazhar Street",
-                "Chemin poirson Lot",
-                "Rue Colonel Othmane",
-                "Boulevard Hassan",
-                "jbal jloud ",
-                "Rue Chabane El Bhouri",
-                "Ave Ali Belhouane",
-                "Ave Ouled Hafouz",
-                "Jan Smuts Avenue",
-                "Beyers Naudé Drive",
-                "Bloemfontein Ring Road",
-                "Adderley Street",
-                "Long Street",
-                "Strand Street",
-                "Louis Botha Avenue",
-                "Malibongwe Drive",
-                "Polokwane Ring Road",
-                "Kinshasa Highway",
-                "Mbarara–Kisangani Road",
-                "Avenue kimpika",
-                "Salongo",
-                "Ngwiziani",
-                "Avenue du 30 juin",
-                "Avenue Manenga",
-                "Avenue Kemba",
-                "Avenue Diwaz",
-                "Broad Street",
-                "Allen Avenue",
-                "Toyin Street",
-                "Ademola Adetokunbo Street",
-                "Ozumba Mbadiwe Avenue",
-                "Adeola Odeku Street",
-                "Ogunlana Drive",
-                "Adeniran Ogunsanya Street",
-                "Cameroon Street",
-                "Kazanchis",
-                "Equatorial Guinea street",
-                "Gabon street",
-                "kenyatta avenue",
-                "kimathi street",
-                "muindi mbingu",
-                "koinange street",
-                "wabera street",
-                "biashara street",
-                "tom mboya street",
-                "moi avenue",
-                "Jidka Sodonka",
-                "W21ka Nofeembar",
-                "Jidka Waxaracadde",
-                Doctorstreet
-            },
-            MiddleEast = {
-                "Tunisiastreet",
-                "Libyastreet",
-                "Sudanstreet",
-                "Syriaring",
-                "Saudi Arabia street",
-                "Jordanstreet",
-                "Kuwait street",
-                "Bruneistreet",
-                "Algeriastreet",
-                "Turkeystreet",
-                "Iran road",
-                "Lebanonstreet",
-                "Qatarstreet",
-                "West Bankstreet",
-                "United Arab Emiratesstreet",
-                "Israelplaza",
-                "Bahrainstreet",
-                "Gaza Stripstreet",
-                "Armeniastreet",
-                "Iraqroad",
-                "Omanstreet",
-                "Yemenstreet",
-                "Egyptstreet",
-                "Moroccostreet",
-                "Pakistanstreet",
-                "Mauritaniastreet",
-                "Ain El Remmaneh",
-                "Badaro",
-                "Escalier de l'Art",
-                "Avenue des Français",
-                "Avenue General de Gaulle",
-                "Rue Gouraud",
-                "Hamra Street",
-                "Rue Huvelin",
-                "Rue Jeanne d'Arc",
-                "Rue Maarad",
-                "Mar Mikhaël",
-                "Avenue de Paris",
-                "Rue de Phénicie",
-                "Rue George Post",
-                "Sassine Square",
-                "Rue Spears",
-                "Rue Sursock",
-                "Rue Van Dyck",
-                "Rue Verdun",
-                "Rue Weygand",
-                "Allenby Street",
-                "Ben Yehuda Street",
-                "Dizengoff Street",
-                "HaArba'a Street",
-                "HaMasger Street",
-                "HaYarkon Street",
-                Highway,
-                Doctorstreet,
-                "Ibn Gabirol Street",
-                "Jerusalem Boulevard",
-                "Kaplan Street",
-                "King George Street",
-                "Rothschild Boulevard",
-                "Yefet Street",
-                "Al-Amarah",
-                "Bab al-Saghir",
-                "Baghdad Street ",
-                "Straight Street",
-                "Falastin Street",
-                "Haifa Street",
-                "Mutanabbi Street",
-                "Al Rasheed Street",
-                "Aghdasieh",
-                "Azadi Avenue",
-                " Damavand Street",
-                "Doulat",
-                "Enqelab Street",
-                "Farmanieh",
-                "Ferdowsi Street",
-                "Imam Hossein Square",
-                "Jomhuri",
-                "Kargar Street",
-                "Keshavarz Boulevard",
-                "Khayyam Street",
-                "Laleh-Zar Street",
-                "Mirdamad Boulevard",
-                "Nelson Mandela Boulevard ",
-                "Nimr Baqir al-Nimr Street",
-                "Pasdaranroad",
-                "Pasteur Street",
-                "Rah Ahan Square",
-                "Seoul Street",
-                "Shush Street",
-                "Si-e Tir street",
-                "Sohrevardi Street",
-                "Surena Street",
-                "Tohid avenue",
-                "Valiasr Street",
-                "Happiness Street",
-                "Alserkal Avenue",
-                "Al Meydan Road",
-                "Sheikh Mohammed bin Rashid Boulevard",
-                "The Palm Jumeirah",
-                "2nd December Street",
-                "Jumeirah Street",
-                "King Salman bin Abdulaziz Al Saud Street",
-                "Admiralty Way",
-                "Anchor Cir",
-                "Beam Dr",
-                "Bounty Ave",
-                "Cabana Cir",
-                "İstiklal Caddesi",
-                "Bağdat Caddesi",
-                "Abdi İpekçi Caddesi",
-                "Nispetiye Caddesi",
-                "Nuruosmaniye Caddesi",
-                "Gaser Ahmed Road",
-                "Rue Abou El Kacem Chebbi",
-                "Rue El Fell",
-                "Tripoli Street"
-            },
-            CentralAsia = {
-                "Bhutanstr",
-                "Thimphustr",
-                "Tajikistanstr",
-                "Dushanbestr",
-                "Teheranstr",
-                "Iranstr",
-                "Georgiastr",
-                "Nepalstr",
-                "Azerbaijanstr",
-                "Russiastr",
-                "Kyrgyzstanstr",
-                "Kabulstr",
-                "Afghanistanstr",
-                "Turkmenistanstr",
-                "Pakistanstr",
-                "Hyderabadstr",
-                "Uzbekistanstr",
-                "Mongoliastr",
-                "Kazakhstanstr"
-            },
-            SouthAmerica = {
-                "Jirón de la Unión",
-                "9 de Julio Avenue",
-                "R Gen. Carneiro",
-                "Avenida Jose Larco",
-                "Córdoba Street",
-                "Paseo de la Catedral",
-                "Florida Street",
-                "Paseo Mercaderes",
-                "Oceanic Avenue",
-                "Via Costeira",
-                "Avenue Bernard O Higgins",
-                "Avenue Prestes Maia",
-                "Avenue Radial Leste-oeste",
-                "Avenida Leandro N. Alem",
-                "Caminito",
-                "Avenida Rivadavia",
-                "Avenida Alvear",
-                "Avenida Raúl Scalabrini Ortiz",
-                "Avenida Corrientes",
-                "Bandeirantes Avenue",
-                "Avenida del Libertador",
-                "Brigadeiro Faria Lima Avenue",
-                "Avenida de Mayo",
-                "Engenheiro Luís Carlos Berrini Avenue",
-                "Avenida Presidente Vargas",
-                "Rua Oscar Freire",
-                "Avenida Coronel Díaz",
-                "Gonçalo de Carvalho Street",
-                "Avenida Figueroa Alcorta",
-                "Avenida General Paz",
-                "Avenida Pueyrredón",
-                "Paseo de la Republica",
-                "Avenida Roque Sáenz Peña",
-                "Avenida Santa Fe",
-                Doctorstreet
-            },
-            SouthEastAsia = {
-                "Jianshe Road",
-                "Minzhu Road",
-                "Renmin Road",
-                "Xinghua Road",
-                "Wenhua Road",
-                "Huayuan Road",
-                "Binghe Road",
-                "Youai Road",
-                "Huzhu Road",
-                "Zhongyuan Road",
-                Doctorstreet
-            },
-            International = {
-                "Main Street",
-                "Elm Street",
-                "Maple Avenue",
-                "Oak Lane",
-                "Pine Street",
-                "Willow Road",
-                "Cedar Avenue",
-                "Park Avenue",
-                "River Street",
-                "Sunset Boulevard",
-                "Forest Drive",
-                "Meadow Lane",
-                "Lakeview Terrace",
-                "Valley Road",
-                "Mountain Avenue",
-                "Sunrise Avenue",
-                "Central Avenue",
-                "High Street",
-                "Broad Avenue",
-                "Green Street", 
-                Doctorstreet
-            }
-        }
-    end
-    local Streetnames = GG.Streetnames
-
-    name = "DropTable Adress;404.Haxxorstreet"
-    if not Streetnames[region] then
-        Spring.Echo("Error:Region not defined:" .. region .. ". Defaulting to us")
-        region = "NorthAmerica"
-    end
-
-    if isCrossway((detailXHash%4)+1, (detailZHash %4) +1, boolInnerCityBlock) then
-       
-        name = Streetnames[region][(detailXHash % (#Streetnames[region])) + 1]
-
-        --name ="(Querstrasse:x="..detailXHash.."/z="..detailZHash..")"
-    else
-       
-        name = Streetnames[region][(detailZHash % (#Streetnames[region])) + 1] 
-        --name ="(Laengstrasse:x="..detailXHash.."/z="..detailZHash..")"
-    end
-
-    if nil == GG.UsedStreetNameCounterDict[name] then
-        GG.UsedStreetNameCounterDict[name] = 0
-    end
-    GG.UsedStreetNameCounterDict[name] = GG.UsedStreetNameCounterDict[name] + 1
-    Spring.SetUnitTooltip(id, HouseDescriptor(id, detailXHash + detailZHash, UnitDefs,buisnessNamesTable).." - "..name .. "." .. GG.UsedStreetNameCounterDict[name].. " "..addition)
+    -- Coordinates in older callers mixed half-grid indices and world units.
+    -- The service reads the original world plot from GG.BuildingTable instead.
+    assert(GG.CityAddressService, "City address service was not initialized")
+    return GG.CityAddressService.Register(id, buisnessNamesTable)
 end
 
 
 function HouseDescriptor(id, hash,UnitDefs, buisnessNamesTable)
     
     if hash % 2 == 0 then
-        houseShopName = getHouseShopName(id,  buisnessNamesTable, UnitDefs)
+        local houseShopName = getHouseShopName(id,  buisnessNamesTable, UnitDefs)
         if houseShopName then return houseShopName end
     end
 
-    blockType = {
+    local blockType = {
         "Housing Block",
         "PreWar House",
         "Breshnevka",        

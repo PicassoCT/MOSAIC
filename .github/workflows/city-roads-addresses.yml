@@ -1,0 +1,39 @@
+name: City roads and address regression
+on:
+  pull_request:
+    paths:
+      - 'scripts/lib_city_roads.lua'
+      - 'scripts/lib_staticstring.lua'
+      - 'scripts/truckPayloadScript.lua'
+      - 'scripts/house_asian_standalone_script.lua'
+      - 'luarules/gadgets/game_city_roads.lua'
+      - 'luarules/gadgets/game_spawnCity.lua'
+      - 'luaui/widgets_mosaic/gui_city_roads.lua'
+      - 'tests/city_roads_test.lua'
+      - '.github/workflows/city-roads-addresses.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  roads:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /scripts/
+            /luarules/gadgets/game_city_roads.lua
+            /luarules/gadgets/game_spawnCity.lua
+            /luaui/widgets_mosaic/gui_city_roads.lua
+            /tests/city_roads_test.lua
+            /tests/city_arcologies_test.lua
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install lupa==2.8
+      - name: Lua 5.1 road and city lifecycle tests
+        run: python -c "from pathlib import Path; from lupa.lua51 import LuaRuntime; [LuaRuntime().execute(Path(p).read_text(encoding='utf-8')) for p in ['tests/city_roads_test.lua','tests/city_arcologies_test.lua']]"
