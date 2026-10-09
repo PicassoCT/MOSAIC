@@ -20,6 +20,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /luarules/
+            /scripts/
+            /baseclasses/
+            /units/
+            /tests/
+            /gamedata/
+            /objects3d/*.lua
+            /unitpics/
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
