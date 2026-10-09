@@ -108,8 +108,8 @@ function registerManuallyPlacedHouses(frame)
                 x,y,z = spGetUnitPosition(id)
                 --assert(x)
                 --assert(z)
-                setHouseStreetNameTooltip(id, x  , z , Game, false, UnitDefs, buisnessNeonSigns)
-                GG.BuildingTable[id] = {x = x, z = z }
+                GG.BuildingTable[id] = GG.BuildingTable[id] or {x = x, z = z }
+                setHouseStreetNameTooltip(id, x, z, Game, false, UnitDefs, buisnessNeonSigns)
                 counter = counter + 1
             end
             )
@@ -498,6 +498,10 @@ function checkReSpawnHouses()
             id = spawnBuilding(buildingType, x, z, isNearCityCenter(x,z, GameConfig), false, routeDataCopy.arcology)
             -- Keep the plot queued if creation fails (for example at unit cap).
             dataToAdd[id or bID] = routeDataCopy
+            if id then
+                GG.BuildingTable[id] = routeDataCopy
+                setHouseStreetNameTooltip(id, x, z, Game, false, UnitDefs, buisnessNeonSigns)
+            end
         end
     end
 

@@ -35,12 +35,18 @@ function getMeatName(id)
 end
 
 function getStreetName(id)
-	if GG.UsedStreetNameCounterDict then
-		streetNumber = count(GG.UsedStreetNameCounterDict)
-		key, value = getNthElementT(GG.UsedStreetNameCounterDict, (id % streetNumber) +1)
-		return key
-	end
-	return "Mainstreet"	
+    if GG.CityRoadNetwork then
+        local x, _, z = Spring.GetUnitPosition(id)
+        if x then
+            local road = VFS.Include('scripts/lib_city_roads.lua').nearest(GG.CityRoadNetwork, x, z)
+            if road then return road.road.name end
+        end
+    end
+    local names = {}
+    for name in pairs(GG.UsedStreetNameCounterDict or {}) do names[#names+1] = name end
+    table.sort(names)
+    if #names > 0 then return names[1] end
+    return "Mainstreet"
 end
 
 function getShippingContainerCompany(id)

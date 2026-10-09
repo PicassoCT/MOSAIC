@@ -225,7 +225,11 @@ function setArcologyProjectsName(id, isArcology)
     end
         name = names[(math.floor(px + py)% #names) +1] 
         description = descriptions[(math.floor(px + py + pz)% #descriptions) + 1] 
-        Spring.SetUnitTooltip(id,  name .. ": " .. description )
+        if GG.CityAddressService then
+            GG.CityAddressService.SetDescriptor(id, name .. ": " .. description)
+        else
+            Spring.SetUnitTooltip(id, name .. ": " .. description)
+        end
 end
 
 function addTableToShowTable(element)
