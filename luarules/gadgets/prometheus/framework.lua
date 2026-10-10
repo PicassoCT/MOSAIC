@@ -57,10 +57,12 @@ local function Log(...)
 end
 
 local warnings={}
-local function Warning(reason)
+local function Warning(reason, detail)
     warnings[reason]=(warnings[reason] or 0)+1
-    -- A bad sender/unsupported order must not flood the infolog indefinitely.
-    if warnings[reason]<=5 then Spring.Log("Prometheus bridge", "warning", reason) end
+    -- Bound errors by category, not by unit ID or command signature.
+    if warnings[reason]<=5 then
+        Spring.Log("Prometheus bridge", "warning", reason..(detail and ": "..detail or ""))
+    end
 end
 
 local function Error(...)
@@ -328,7 +330,7 @@ function GiveOrderToUnit(unitID, cmd, params, options, betrayalOrder)
     if not status or not msg then
         -- Diagnostics must name the bad field and order. Returning false keeps
         -- strategy counters honest: nothing was queued for the synced bridge.
-        Warning("Failed to serialize AI command: unit="..tostring(unitID)
+        Warning("Failed to serialize AI command", "unit="..tostring(unitID)
             .." cmd="..tostring(cmd).." reason="..tostring(msg))
         return false
     end
