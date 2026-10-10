@@ -288,14 +288,16 @@ local function SerializeOrder(unitID, cmd, params, options)
     local function integer(n,lo,hi)
         return type(n)=="number" and n==n and n>=lo and n<=hi and n==math.floor(n)
     end
-    assert(type(params)=="table" and #params<=15)
-    assert(integer(unitID,0,2147483647) and integer(cmd,-2147483648,2147483647))
+    assert(type(params)=="table" and #params<=15,
+        "expected at most 15 numeric command parameters")
+    assert(integer(unitID,0,2147483647), "unit ID must be a 31-bit integer")
+    assert(integer(cmd,-2147483648,2147483647), "command ID must be a signed 32-bit integer")
     if type(options)=="table" then
         local value=0
         for _,opt in ipairs(options) do value=value+(optionStringToNumber[opt] or 0) end
         options=value
     end
-    assert(integer(options,0,255))
+    assert(integer(options,0,255), "command option mask must be an integer byte")
     local b={}
     local function uint32(n)
         b[#b+1]=math.floor(n/16777216)%256
@@ -306,8 +308,12 @@ local function SerializeOrder(unitID, cmd, params, options)
     uint32(unitID);uint32(cmd+2147483648)
     b[#b+1]=options;b[#b+1]=#params
     for _,param in ipairs(params) do
-        assert(type(param)=="number" and param==param and param>=-2147483648 and param<=2147483647)
-        uint32(math.floor(param+0.5)+2147483648)
+        assert(type(param)=="number" and param==param and param>-2147483649 and param<2147483647.5,
+            "parameter "..i.." must be a finite signed 32-bit number")
+        -- The bridge transports 32-bit integer coordinates, rounded once here.
+        -- Negative halves round symmetrically, rather than towards positive infinity.
+        local rounded = param < 0 and -math.floor(-param+0.5) or math.floor(param+0.5)
+        uint32(rounded+2147483648)
     end
     return string.char(unpack(b))
 end
@@ -318,11 +324,14 @@ function GiveOrderToUnit(unitID, cmd, params, options, betrayalOrder)
     if gadget.betrayalContacts and gadget.betrayalContacts[unitID] and not betrayalOrder then return false end
     if cmd==CMD.CLOAK and Spring.GetUnitRulesParam(unitID,"betrayal_defector")==1 then return false end
 	--Log("UNSYNCED: GiveOrderToUnit ", unitID)
-	local status, msg = pcall(SerializeOrder, unitID, cmd, params, options)
-	if not status or msg == nil then
-		Warning("Failed to serialize AI command")
-		return nil
-	end
+    local status, msg = pcall(SerializeOrder, unitID, cmd, params, options)
+    if not status or not msg then
+        -- Diagnostics must name the bad field and order. Returning false keeps
+        -- strategy counters honest: nothing was queued for the synced bridge.
+        Warning("Failed to serialize AI command: unit="..tostring(unitID)
+            .." cmd="..tostring(cmd).." reason="..tostring(msg))
+        return false
+    end
     if bufferBytes+#msg>8192 then
         Spring.SendLuaRulesMsg(table.concat(messageBuffer))
         bufferSize,bufferBytes=1,1;messageBuffer={string.char(214)}
