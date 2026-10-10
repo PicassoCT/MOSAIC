@@ -1,5 +1,0 @@
-MOSAIC house splitter v1.0
-Scene: Z:\MosaicDev\Development\Models\building\house\house_asia\house_asiaV27.max
-Dry run: false
-Ten canonical variants processed.
-Check the first export in Recoil before deploying the whole set.
