@@ -736,7 +736,7 @@ function buildHouse()
     resetAll(unitID)
     hideAll(unitID)
     Sleep(1)
-    buildBuilding()
+    buildBuilding(GG.CityConstructionSites and GG.CityConstructionSites[unitID] ~= nil)
 end
 
 function absdiff(value, compval)
@@ -1749,7 +1749,8 @@ function buildAnimationSequential()
     Hide(Icon)
     heightSortedTable = sortPiecesInDictionaryByHeight(toShowDict)
     timeBudget = math.ceil((25*1000 ) /#heightSortedTable)
-    for index,pieceId in pairs(heightSortedTable) do
+    for index,pieceId in ipairs(heightSortedTable) do
+        waitForCityConstruction(unitID, index / #heightSortedTable)
         Show(pieceId)
         SetRadiancePlaceables({pieceId}, true)
         Sleep(timeBudget)

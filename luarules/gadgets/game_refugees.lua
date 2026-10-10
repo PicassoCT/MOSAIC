@@ -304,7 +304,7 @@ function militaryStream(frame)
     end
 
     if not isPeaceTime then        
-        aex,aez =  GG.DamageHeatMap:getHighestDangerLocation()
+        aex,aez =  GG.CityAreaState:getHighestDangerLocation()
         if aex then
             ex, ez = aex, aez
             ey = spGetGroundHeight(ex,ez)

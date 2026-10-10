@@ -101,8 +101,8 @@ end
 --
 
 function HeatmapMgr.FirepowerGradient(x, z)
-    if GG.DamageHeatMap then
-        local normalizedDanger =GG.DamageHeatMap:getDangerAtLocation(x,z)
+    if GG.CityAreaState then
+        local normalizedDanger =GG.CityAreaState:getDangerAtLocation(x,z)
         return normalizedDanger, normalizedDanger
     else
     return 0, 0

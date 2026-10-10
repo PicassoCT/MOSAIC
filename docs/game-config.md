@@ -61,14 +61,13 @@ benchmark and the police dispatch duration of 2,000 simulation frames.
 Duplicate civilian fields are consolidated. Unused old cybercrime rewards,
 redundant interrogation-seconds and bribe-milliseconds constants are removed;
 active durations remain in frames. Generic minute/hour/second constants are
-removed, and the scrap-heap script's minute sleeps remain `60 * 1000` ms.
+removed. Unmanaged decorative rubble retains its milliseconds lifetime.
 
-Rubble previously used the same numeric setting as milliseconds for standalone
-sinking and as frames for city respawn. The configuration now makes those
-separate clocks explicit: `city.rubble.disappearanceTimeMs = 300000` and
-`city.rubble.respawnBaseDelayFrames = 300000`. This preserves both effective
-delays; it deliberately does not turn the existing respawn behaviour into a
-five-minute timer.
+City rubble and reconstruction now share one peace-gated lifecycle. Rubble
+requires `city.rubble.decayFrames = 9000` peaceful frames, followed by
+`city.rubble.constructionFrames = 1800` peaceful frames. The old independent
+respawn countdown is removed. `city.rubble.disappearanceTimeMs = 300000` remains
+only for decorative, unmanaged rubble. See [city reconstruction](city-reconstruction.md).
 
 The satellite hijack script's misspelled lookup now reads the actual
 `espionage.satelliteHijack.durationMs` setting (15 seconds).

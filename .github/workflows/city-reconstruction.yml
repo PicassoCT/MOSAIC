@@ -1,0 +1,41 @@
+name: Peaceful city reconstruction
+on:
+  pull_request:
+    paths:
+      - 'luarules/configs/city_area.lua'
+      - 'luarules/configs/civilian_daily_life.lua'
+      - 'luarules/gadgets/game_spawnCity.lua'
+      - 'luarules/gadgets/game_damageHeatMap.lua'
+      - 'luarules/gadgets/game_buildingPlacementLimitor.lua'
+      - 'luarules/gadgets/include/city_*.lua'
+      - 'scripts/house*.lua'
+      - 'scripts/gCScrapHeap.lua'
+      - 'scripts/safehousescript.lua'
+      - 'scripts/lib_mosaic.lua'
+      - 'scripts/lib_UnitScript.lua'
+      - 'tests/city_*.lua'
+      - '.github/workflows/city-reconstruction.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  reconstruction:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            luarules
+            scripts
+            tests
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install lupa==2.8
+      - name: Lua 5.1 lifecycle, metadata, animation and occupancy regressions
+        run: >-
+          python -c "from pathlib import Path; from lupa.lua51 import LuaRuntime;
+          [LuaRuntime().execute(Path(p).read_text()) for p in
+          ['tests/city_reconstruction_test.lua','tests/city_area_events_test.lua',
+          'tests/city_construction_animation_test.lua','tests/city_arcologies_test.lua',
+          'tests/civilian_daily_life_invalid_targets_test.lua']]"

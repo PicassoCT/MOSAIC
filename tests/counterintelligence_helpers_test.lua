@@ -120,13 +120,17 @@ assert(not gadgetHandler:AllowUnitDecloak(5) and gadgetHandler:AllowUnitDecloak(
 assert(not gadgetHandler:AllowUnitTransport(20,21,1,2,4,2))
 assert(gadgetHandler:AllowUnitTransport(20,21,1,14,4,1))
 
+assert(loadstring(between('scripts/lib_mosaic.lua','function isCityBuildingHabitable','-- Unit-script animations')))()
+
 -- A safehouse takeover must retain its original house without interpreting
 -- already-transferred nearby factories as a duplicate construction.
 unitID,unitDefID,script=101,2,{}
 GG={UnitReplacement={oldID=10},houseHasSafeHouseTable={[3]=10}}
 Spring={GetGaiaTeamID=function() return 0 end,GetUnitTeam=function() return 2 end,
     GetUnitDefID=function() return 2 end,SetUnitNanoPieces=function() end,
-    SetUnitBlocking=function() end}
+    SetUnitBlocking=function() end,
+    ValidUnitID=function(id)return id==3 end,GetUnitIsDead=function()return false end,
+    GetUnitHealth=function()return 100,100,0,0,1 end}
 function piece(name) return name end
 function getSafeHouseUpgradeTypeTable() return {[4]=true} end
 function getSafeHouseTypeTable() return {[2]=true} end
@@ -140,4 +144,9 @@ function preventBuildingNearPreexistingSafehouse() error('ownership replacement 
 script.Create()
 assert(containingHouseID==3 and GG.houseHasSafeHouseTable[3]==101)
 assert(not threads[houseAttach] and not threads[killDelayed] and threads[drawMapRoom])
+GG.CityConstructionSites={[3]={}}
+assert(not isCityBuildingHabitable(3),'construction host accepted')
+GG.CityConstructionSites={}
+Spring.GetUnitHealth=function()return 50,100,0,0,.5 end
+assert(not isCityBuildingHabitable(3),'unfinished host accepted')
 print('PASS counterintelligence helpers: recruitment team, alliances, unit caps, operative escape identity, disabled recruitment, targeted cloak, cloak/transport dispatch, safehouse attachment')

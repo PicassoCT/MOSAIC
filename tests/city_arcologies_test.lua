@@ -195,12 +195,10 @@ end
 local normal = city.spawnBuilding(4,500,500,true)
 assert(units[normal].def == 4 and not city.GG.BuildingTable[normal].arcology)
 
-units[arcIDs[1]] = nil
-fail = true; city.checkReSpawnHouses()
-assert(city.GG.BuildingTable[arcIDs[1]].arcology, 'failed rebuild lost plot')
-fail = false; city.checkReSpawnHouses()
-assert(not city.GG.BuildingTable[arcIDs[1]])
-assert(units[nextID].def == 1 and city.GG.BuildingTable[nextID].arcology, 'rebuild lost arcology')
+-- Reconstruction no longer immediately respawns a missing BuildingTable unit.
+-- tests/city_reconstruction_test.lua exercises the staged adapter and verifies
+-- that the arcology reservation survives rubble, construction and completion.
+assert(city.checkReSpawnHouses == nil, 'unconditional respawn bypass returned')
 
 -- Manually placed arcologies are registered even in a non-Asian culture.
 city.GG.BuildingTable = {}

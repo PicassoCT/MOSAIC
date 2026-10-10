@@ -516,7 +516,8 @@ function buildBuilding()
     -- Reserve the first three arcology-capable standalones even on map-authored
     -- cities or outside the center. Additional ones retain a per-location 20%
     -- chance; getDermenisticChance hashes the UnitDef, identical for every copy.
-    local building = GG.BuildingTable and GG.BuildingTable[unitID]
+    local building = (GG.BuildingTable and GG.BuildingTable[unitID])
+        or (GG.CityConstructionSites and GG.CityConstructionSites[unitID] and GG.CityConstructionSites[unitID].data)
     local reserved = building and building.arcology
     isArcology = not isProject and (reserved or GG.StandaloneArcologyCount < arcologyMinimum
         or ((isNearCityCenter(px, pz, GameConfig) or isMapControlledBuildingPlacement())

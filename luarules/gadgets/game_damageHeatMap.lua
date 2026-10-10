@@ -1,75 +1,43 @@
 function gadget:GetInfo()
-    return {
-        name = "Damage HeatMap Gadget",
-        desc = "Keeps Track of Damage and Danger ",
-        author = "Picasso",
-        date = "3rd of May 2010",
-        license = "GPL3",
-        layer = 4,
-        version = 1,
-        enabled = true
-    }
+    return {name='City Area State', desc='Shared expiring danger and conflict metadata',
+        author='MOSAIC', date='2026', license='GPL3', layer=100, enabled=true}
 end
-
-if (not gadgetHandler:IsSyncedCode()) then return false end
-
-VFS.Include("scripts/lib_UnitScript.lua")
-VFS.Include("scripts/lib_mosaic.lua")
-
-local GameConfig = getGameConfig()
-local function getHighestDangerLocation(self)    
-    highestValues = {x=Game.mapSizeX*(math.random(25,50)/50),z = Game.mapSizeZ*(math.random(25,50)/50), value = math.huge*-1}
-    if #self.map > 0 then      
-        for x=1, #self.map do
-            if self.map[x] then
-                for z=1, #self.map[x] do
-                    if self.map[x][z] and self.map[x][z] > highestValues.value then
-                        highestValues = {x=x,z = z, value = self.map[x][z]}
-                    end
-                end
-            end
-        end
-    end
-    return highestValues.x, highestValues.z
-end
-
-local function getDangerAtLocation(self, x,z) 
-    local zoneSeperatorSize = math.min(Game.mapSizeX, Game.mapSizeZ)/12
-    if zoneSeperatorSize < 350 then zoneSeperatorSize = 350 end
-    local ox,oz = math.floor(x/zoneSeperatorSize)+1, math.floor(z/zoneSeperatorSize)+1
-    if not self.map[ox] then self.map[ox] = {} end
-    if not self.map[ox][oz] then self.map[ox][oz] = 0 end
-
-    return self.map[ox][oz]/self.normalizationValue
- end
-
- local function addDamageAtLocation(self, x,z, damage) 
-    local zoneSeperatorSize = math.min(Game.mapSizeX, Game.mapSizeZ)/12
-    if zoneSeperatorSize < 350 then zoneSeperatorSize = 350 end
-    local ox,oz = math.floor(x/zoneSeperatorSize)+1, math.floor(z/zoneSeperatorSize)+1
-    if not self.map[ox] then self.map[ox] = {} end
-    if not self.map[ox][oz] then self.map[ox][oz] = 0 end
-
-    self.map[ox][oz] = self.map[ox][oz] + damage
-
-    if self.map[ox][oz] > self.normalizationValue then
-        self.normalizationValue = self.map[ox][oz] 
-    end
- end
+if not gadgetHandler:IsSyncedCode() then return false end
+local config = VFS.Include('luarules/configs/city_area.lua')
+local newState = VFS.Include('luarules/gadgets/include/city_area_state.lua')
+local watched, lastShot = {}, {}
 
 function gadget:Initialize()
-    GG.DamageHeatMap = {map= {}, 
-                        normalizationValue = 0,
-                        addDamageAtLocation = addDamageAtLocation,
-                        getDangerAtLocation = getDangerAtLocation,
-                        getHighestDangerLocation = getHighestDangerLocation
-                    }
-
+    GG.CityAreaState = newState(config, Game.mapSizeX, Game.mapSizeZ, Spring.GetGameFrame)
+    GG.DamageHeatMap = GG.CityAreaState
+    for id, def in pairs(WeaponDefs) do
+        -- Utility weapons (raids, markers, etc.) must not keep a district at war.
+        if def.damages and (def.damages[0] or def.damages.default or 0) > 1 then
+            watched[id] = true
+            Script.SetWatchWeapon(id, true)
+        end
+    end
 end
-
-
-function gadget:UnitDamaged(unitID, unitDefID, unitTeam, damage, paralyzer)
-    x,y,z = Spring.GetUnitPosition(unitID)
-    GG.DamageHeatMap:addDamageAtLocation(x,z, damage)
+function gadget:UnitDamaged(id, def, team, damage)
+    if not damage or damage <= 0 then return end
+    local x, _, z = Spring.GetUnitPosition(id)
+    if x then GG.CityAreaState:ReportIncident(x, z, damage) end
 end
-
+function gadget:ProjectileCreated(projectile, owner, weapon)
+    if not watched[weapon] or not owner then return end
+    local frame = Spring.GetGameFrame()
+    if frame < (lastShot[owner] or -1) then return end
+    lastShot[owner] = frame + 15
+    local x, _, z = Spring.GetUnitPosition(owner)
+    if x then GG.CityAreaState:ReportIncident(x, z, 0) end
+end
+function gadget:Explosion(weapon, x, y, z)
+    if watched[weapon] then
+        GG.CityAreaState:ReportIncident(x, z, 0, math.max(config.dangerRadius, WeaponDefs[weapon].damageAreaOfEffect or 0))
+    end
+    return false
+end
+function gadget:UnitDestroyed(id) lastShot[id] = nil end
+function gadget:GameFrame(frame)
+    if frame % 30 == 0 then GG.CityAreaState:Update() end
+end
