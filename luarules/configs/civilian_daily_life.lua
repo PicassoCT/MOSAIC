@@ -14,4 +14,5 @@ return {
     memoryLimit = 6, memoryLifetime = 12 * 60 * 30,
     phoneMin = 55 * 30, phoneMax = 110 * 30,
     lineFrames = 5 * 30,
+    conspiracyChance = 3, -- percent of new topics; unfinished threads resume
 }

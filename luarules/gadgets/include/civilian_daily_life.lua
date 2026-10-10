@@ -52,6 +52,11 @@ return function(context)
         local state = (G.CivilianUnitInternalLogicActive or {})[id]
         return type(state) == "table" and state.state == C.civilians.activityStates.started
     end
+    local function speaking(id)
+        local state=(G.CivilianUnitInternalLogicActive or {})[id]
+        return type(state)=="table" and state.state==C.civilians.activityStates.started and
+            (state.behaviour=="talk" or state.behaviour=="phone")
+    end
     local function location(x, z)
         -- Only public place names; no attacker identity or hidden unit metadata.
         local best, bestD
@@ -91,7 +96,7 @@ return function(context)
         for i=#p.memories,1,-1 do
             local m = p.memories[i]
             if frame-m.frame <= config.memoryLifetime and m ~= p.lastTold then
-                p.lastTold=m; return m
+                return m
             end
         end
     end
@@ -99,19 +104,47 @@ return function(context)
         if not alive(a) or (b and not alive(b)) or sessions[a] or (b and sessions[b]) then return end
         local frame, p = S.GetGameFrame(), record(a)
         local memory = latestMemory(p,frame)
-        if not memory and b then
-            local other = latestMemory(record(b),frame)
-            if other then a,b,p,memory=b,a,record(b),other end
+        if not memory and not p.conspiracyThread and b then
+            local otherPerson = record(b)
+            local other = latestMemory(otherPerson,frame)
+            if other or otherPerson.conspiracyThread then a,b,p,memory=b,a,otherPerson,other end
         end
+        -- Alternate mundane news with an unfinished argument. Fresh distress
+        -- always takes precedence, but never deletes the argument it interrupts.
+        local urgent = memory and (memory.kind=="gunfire" or memory.kind=="injured" or
+            memory.kind=="home_lost" or memory.kind=="companion_lost")
+        if p.conspiracyThread and p.lastConversationWasMemory and not urgent then memory=nil end
         local seed = hash(a..":"..tostring(b or 0)..":"..frame)
-        local session = {a=a,b=b,lines=dialogue.build(seed,memory),index=1,
+        local thread = not memory and p.conspiracyThread
+        local lines, kind
+        if thread then lines=thread.lines else
+            lines,kind=dialogue.build(seed,memory,{conspiracyChance=p.conspiracyThread and 0 or config.conspiracyChance,
+                listenerSeed=b and hash(Game.mapName..":"..b) or hash(Game.mapName..":"..a..":phone")})
+            if kind=="conspiracy" then
+                thread={lines=lines,next=1}; p.conspiracyThread=thread
+            end
+        end
+        if memory then p.lastTold=memory end
+        p.lastConversationWasMemory=memory~=nil
+        local session = {a=a,b=b,lines=lines,index=thread and thread.next or 1,thread=thread,
             untilFrame=frame+duration,nextFrame=frame,phone=not b}
+        if thread and thread.next>1 and thread.lastClaim then
+            -- Re-establish the claim even when the listener changed, or an
+            -- interruption left us halfway through a claim/reply pair.
+            session.recap="About what I was saying: "..thread.lastClaim
+        end
         session.lineFrames=math.min(config.lineFrames,math.max(90,math.floor(duration/4)))
         p.nextChat=frame+duration+draw(p,25,65)*30+(2-p.social)*15*30
         if b then record(b).nextChat=p.nextChat end
         sessions[a]=session; if b then sessions[b]=session end
     end
     local function closeSession(s)
+        -- The cursor advances only after a line is emitted. An unfinished thread
+        -- stays on its living speaker across animation expiry, danger and calls.
+        local p=people[s.a]
+        if p and s.thread and s.thread.next>#s.thread.lines and p.conspiracyThread==s.thread then
+            p.conspiracyThread=nil
+        end
         if sessions[s.a] == s then sessions[s.a]=nil end
         if s.b and sessions[s.b] == s then sessions[s.b]=nil end
     end
@@ -701,13 +734,23 @@ return function(context)
             local s=sessions[id]
             if s and id==s.a then
                 if not alive(s.a) or (s.b and not alive(s.b)) or frame>=s.untilFrame or
-                    not busy(s.a) or (s.b and not busy(s.b)) then closeSession(s)
+                    not speaking(s.a) or (s.b and not speaking(s.b)) then closeSession(s)
                 elseif frame>=s.nextFrame then
-                    local speaker=(s.index%2==1 or not s.b) and s.a or s.b
-                    local prefix=(not s.b and s.index%2==0) and "Phone: " or ""
+                    local recap=s.recap
+                    local speaker=(recap or s.index%2==1 or not s.b) and s.a or s.b
+                    local prefix=(not recap and not s.b and s.index%2==0) and "Phone: " or ""
                     local partner=s.b and (speaker==s.a and s.b or s.a) or 0
-                    SendToUnsynced("CivilianConversation",speaker,partner,prefix..s.lines[s.index],s.lineFrames)
-                    s.index=s.index+1; s.nextFrame=frame+s.lineFrames
+                    local text=recap or s.lines[s.index]
+                    local rate=s.thread and dialogue.lineFrames(text,config.lineFrames) or s.lineFrames
+                    SendToUnsynced("CivilianConversation",speaker,partner,prefix..text,rate)
+                    if recap then s.recap=nil else
+                        if s.thread then
+                            if s.index%2==1 then s.thread.lastClaim=text end
+                            s.thread.next=s.index+1
+                        end
+                        s.index=s.index+1
+                    end
+                    s.nextFrame=frame+rate
                     if s.index>#s.lines then closeSession(s) end
                 end
             end
