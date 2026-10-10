@@ -48,7 +48,7 @@ VFS={MAP=1,FileExists=function() return true end,
         if p=='scripts/lib_city_roads.lua' then return roads end
         if p=='mosaic/roads.lua' then return network end
         if p=='scripts/lib_UnitScript.lua' or p=='scripts/lib_mosaic.lua' then return end
-        if p=='scripts/lib_staticstring.lua' then return dofile(p) end
+        if p=='scripts/lib_staticstring.lua' or p=='scripts/lib_civilian_dialogue.lua' then return dofile(p) end
         error('Unexpected include '..p)
     end}
 getGameConfig=function() return GG.GameConfig end
