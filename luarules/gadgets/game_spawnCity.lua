@@ -37,8 +37,11 @@ GG.HouseAsianUnitPlans = GG.HouseAsianUnitPlans or {}
 
 local scrapHeapTypeTable = getBuildingScrapHeapTypeTable(UnitDefs)
 local ruinTypeTable = getBuildingRuinTypeTable(UnitDefs)
-GG.TimeDelayedRespawn = {}
-local BuildingWithWaitingRespawn = {}
+GG.CityConstructionSites = {}
+GG.CityRubble = {}
+local newReconstruction = VFS.Include("luarules/gadgets/include/city_reconstruction.lua")
+local reconstruction
+local routesDirty = false
 
 GG.BuildingTable = {} -- [BuildingUnitID] = {routeID, stationIndex}
 local houseStreetDim = {}
@@ -97,7 +100,7 @@ function registerManuallyPlacedHouses(frame)
     foreach(Spring.GetAllUnits(),
             function(id)
                 defID = spGetUnitDefID(id)
-                if isCityHouse(defID) and allreadyRegistredBuilding[id] == nil then
+                if isCityHouse(defID) and not GG.CityConstructionSites[id] and allreadyRegistredBuilding[id] == nil then
                     return id
                 end
             end,
@@ -118,38 +121,59 @@ function registerManuallyPlacedHouses(frame)
 end
 
 
-function gadget:UnitDestroyed(unitID, unitDefID, teamID, attackerID)
-    GG.HouseAsianUnitPlans[unitID] = nil
-    --echo("UnitDestroyed:"..unitID.." a "..getUnitTypeName(unitDefID).." by "..toString(attackerID))
-    -- if building, get all Civilians/Trucks nearby in random range and let them get together near the rubble
-    if teamID == gaiaTeamID and attackerID then
-        if isCityHouse(unitDefID) then
-            rubbleHeapID = spawnRubbleHeapAt(unitID)
+local function removeCityRoute(id)
+    GG.BuildingTable[id] = nil
+    allreadyRegistredBuilding[id] = nil
+    RouteTabel[id] = nil
+    for _, route in pairs(RouteTabel) do
+        for i = #route, 1, -1 do
+            if route[i] == id then table.remove(route, i) end
         end
     end
-    if isCityHouse(unitDefID) then
-      if GG.houseHasSafeHouseTable and  GG.houseHasSafeHouseTable[unitID] and doesUnitExistAlive(GG.houseHasSafeHouseTable[unitID]) == true then
-         spDestroyUnit(GG.houseHasSafeHouseTable[unitID], true, false)
-         GG.houseHasSafeHouseTable[unitID] = nil
-      end  
-    end  
 end
 
-function spawnRubbleHeapAt(id)
-    x, y, z = spGetUnitPosition(id)
-    if x then
+local function queueDestroyedPlot(id, defID)
+    if not reconstruction then return end
+    local data = GG.BuildingTable[id]
+    local x, y, z = spGetUnitPosition(id)
+    if not x and data then x, z = data.x, data.z end
+    if not x then return end
+    -- Preserve the exact building type, orientation and city plot metadata.
+    local plot = reconstruction:Add({x=x, z=z, defID=defID,
+        facing=Spring.GetUnitBuildFacing(id) or 0,
+        data=data or {x=x,z=z}, plan=GG.HouseAsianUnitPlans[id]})
+    removeCityRoute(id)
+    return plot
+end
 
-        rubbleHeapID = spCreateUnit(randDict(scrapHeapTypeTable), x, y, z, 1,
-                                    gaiaTeamID)
-        GG.TimeDelayedRespawn[rubbleHeapID] =
-            {
-                frame = GameConfig.city.rubble.respawnBaseDelayFrames * (math.random(10,100)/100),
-                x = x,
-                z = z,
-                bID = id
-            }
-        BuildingWithWaitingRespawn[id] = true
+function gadget:UnitCreated(id, defID)
+    -- Publish pending construction before the lower-layer placement gadget.
+    if GG.CityReconstructionSpawning and isCityHouse(defID) then
+        GG.CityConstructionSites[id] = GG.CityReconstructionSpawning
+        Spring.SetUnitRulesParam(id, "city_construction", 1, {public=true})
     end
+end
+
+function gadget:UnitDestroyed(unitID, unitDefID, teamID, attackerID)
+    local plot = reconstruction and reconstruction:LostUnit(unitID)
+    GG.CityConstructionSites[unitID], GG.CityRubble[unitID] = nil, nil
+    if isCityHouse(unitDefID) then
+        if not plot and (teamID == gaiaTeamID or GG.BuildingTable[unitID]) then
+            queueDestroyedPlot(unitID, unitDefID)
+        end
+        removeCityRoute(unitID)
+        local safehouse = GG.houseHasSafeHouseTable and GG.houseHasSafeHouseTable[unitID]
+        if safehouse then
+            GG.houseHasSafeHouseTable[unitID] = nil
+            if doesUnitExistAlive(safehouse) then spDestroyUnit(safehouse, true, false) end
+        end
+    end
+    GG.HouseAsianUnitPlans[unitID] = nil
+end
+
+-- Neither player repairs nor reclaim/build power may advance a managed site.
+function gadget:AllowUnitBuildStep(builderID, builderTeam, unitID)
+    return GG.CityConstructionSites[unitID] == nil
 end
 
 local startindex = 1
@@ -486,27 +510,6 @@ function spawnInitialHouses(frame)
     end
 end
 
-function checkReSpawnHouses()
-    dataToAdd = {}
-    for bID, routeData in pairs(GG.BuildingTable) do
-        local routeDataCopy = routeData
-        if bID and doesUnitExistAlive(bID) ~= true and not BuildingWithWaitingRespawn[bID] then
-            GG.BuildingTable[bID] = nil
-
-            x, z = routeDataCopy.x, routeDataCopy.z
-            buildingType = routeDataCopy.arcology and arcologyDefID or getBuildingTypeWithinLimits()
-            id = spawnBuilding(buildingType, x, z, isNearCityCenter(x,z, GameConfig), false, routeDataCopy.arcology)
-            -- Keep the plot queued if creation fails (for example at unit cap).
-            dataToAdd[id or bID] = routeDataCopy
-            if id then
-                GG.BuildingTable[id] = routeDataCopy
-                setHouseStreetNameTooltip(id, x, z, Game, false, UnitDefs, buisnessNeonSigns)
-            end
-        end
-    end
-
-    for id, routeData in pairs(dataToAdd) do GG.BuildingTable[id] = routeData end
-end
 
 
 function regenerateRoutesTable()
@@ -601,6 +604,7 @@ end
 
 originalGameFrame = -math.huge
 function gadget:Initialize()
+    setupCityReconstruction()
     -- Initialize global tables
     Spring.Echo(Game.mapName.. " is a map controlled city place map "..toString(isMapControlledBuildingPlacement()))
     if not  GG.BuildingTable then  GG.BuildingTable = {} end
@@ -614,29 +618,90 @@ originalGameFrame = Spring.GetGameFrame()
 end
 
 
-function countDownRespawnHouses(framesToSubstract)
-    for rubbleHeapID, tables in pairs(GG.TimeDelayedRespawn) do
-        GG.TimeDelayedRespawn[rubbleHeapID].frame =
-            GG.TimeDelayedRespawn[rubbleHeapID].frame - framesToSubstract
+local function setConstructionProgress(id, progress)
+    local hp, maxHP, _, _, previous = Spring.GetUnitHealth(id)
+    if not hp then return end
+    -- Construction adds only the health earned by new work; pausing cannot heal
+    -- incoming damage and finishing does not wipe out battle damage.
+    local health = math.min(maxHP, hp + maxHP * math.max(0, progress - (previous or 0)))
+    Spring.SetUnitHealth(id, {build=progress, health=health})
+end
 
-        if GG.TimeDelayedRespawn[rubbleHeapID].frame <= 0 then
-            if isUnitAlive(rubbleHeapID) == true then
-                spDestroyUnit(rubbleHeapID, false, true)
+function setupCityReconstruction()
+    local cfg = GameConfig.city.rubble
+    reconstruction = newReconstruction(cfg, {
+        Alive = doesUnitExistAlive,
+        Peaceful = function(plot)
+            local state = GG.GlobalGameState
+            return GG.CityAreaState and GG.CityAreaState:IsPeaceful(plot.x, plot.z)
+                and state ~= GameConfig.game.states.anarchy
+                and state ~= GameConfig.game.states.postLaunch
+                and state ~= GameConfig.game.states.gameOver
+        end,
+        CreateRubble = function(plot)
+            local id = spCreateUnit(randDict(scrapHeapTypeTable), plot.x,
+                spGetGroundHeight(plot.x, plot.z), plot.z, plot.facing, gaiaTeamID)
+            if id then GG.CityRubble[id] = plot end
+            return id
+        end,
+        CreateSite = function(plot)
+            GG.CityReconstructionSpawning = plot
+            local id = spCreateUnit(plot.defID, plot.x, spGetGroundHeight(plot.x, plot.z),
+                plot.z, plot.facing, gaiaTeamID, true, false)
+            GG.CityReconstructionSpawning = nil
+            if id then
+                GG.CityConstructionSites[id] = plot
+                if plot.plan then GG.HouseAsianUnitPlans[id] = plot.plan end
+                spSetUnitAlwaysVisible(id, true)
+                setCityBuildingBlocking(id)
+                setConstructionProgress(id, 0.01)
+                Spring.SetUnitRulesParam(id, "city_construction", 1, {public=true})
+                Spring.SetUnitTooltip(id, "Construction site — awaiting peaceful completion")
             end
-            regenerateRoutesTable()
-            BuildingWithWaitingRespawn[tables.bID] = nil
-            GG.TimeDelayedRespawn[rubbleHeapID] = nil
-        end
-    end
+            return id
+        end,
+        RemoveRubble = function(id)
+            GG.CityRubble[id] = nil
+            spDestroyUnit(id, false, true)
+        end,
+        Complete = function(plot)
+            local id = plot.unitID
+            GG.CityConstructionSites[id] = nil
+            GG.BuildingTable[id] = plot.data
+            allreadyRegistredBuilding[id] = true
+            Spring.SetUnitRulesParam(id, "city_construction", 0, {public=true})
+            Spring.SetUnitRulesParam(id, "city_rebuild_progress", 1, {public=true})
+            Spring.SetUnitRulesParam(id, "city_rebuild_paused", 0, {public=true})
+            setConstructionProgress(id, 1)
+            -- SetUnitHealth completion need not send UnitFinished on every engine.
+            if GG.RefreshCityBuildingMask then GG.RefreshCityBuildingMask(id) end
+            setHouseStreetNameTooltip(id, plot.data.x, plot.data.z, Game, false, UnitDefs, buisnessNeonSigns)
+            routesDirty = true
+        end,
+        Publish = function(plot)
+            local duration = plot.stage == "rubble" and cfg.decayFrames or cfg.constructionFrames
+            local progress = math.min(1, plot.elapsed / duration)
+            Spring.SetUnitRulesParam(plot.unitID, "city_rebuild_progress", progress, {public=true})
+            Spring.SetUnitRulesParam(plot.unitID, "city_rebuild_paused", plot.paused and 1 or 0, {public=true})
+            if plot.stage == "construction" then
+                setConstructionProgress(plot.unitID, math.max(0.01, math.min(0.99, progress)))
+            end
+        end,
+    })
+    GG.CityReconstruction = reconstruction
 end
 
 function gadget:GameFrame(frame)
 
     if boolInitialized == false then
         spawnInitialHouses(frame)
-    elseif boolInitialized == true and frame > 0 and frame % 5 == 0 then
-        countDownRespawnHouses(5)
-        checkReSpawnHouses()
+    end
+    if frame > 0 and frame % 15 == 0 then
+        reconstruction:Update(15)
+        if routesDirty then
+            routesDirty = false
+            regenerateRoutesTable()
+        end
     end
 end
 

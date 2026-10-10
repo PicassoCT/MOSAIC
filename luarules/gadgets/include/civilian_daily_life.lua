@@ -7,7 +7,7 @@ local BLEND=CMD_CIVILIAN_BLEND
 return function(context)
     local S, G = Spring, GG
     local C = context.gameConfig
-    local people, groups, venues, vehicles, danger, sessions = {}, {}, {}, {}, {}, {}
+    local people, groups, venues, vehicles, sessions = {}, {}, {}, {}, {}
     local guardedUntil, busVehicles = {}, {}
     local nextVehicleEvent = 0
     local life = {people = people}
@@ -198,13 +198,12 @@ return function(context)
         end
         people[id],venues[id],vehicles[id],guardedUntil[id]=nil,nil,nil,nil
     end
-    local function cell(x,z) return math.floor(x/config.dangerCell)..":"..math.floor(z/config.dangerCell) end
     local function unsafe(x,z,frame,person)
         if person then
             local memory=person.avoid
-            return memory and frame<memory.untilFrame and distance(x,z,memory.x,memory.z)<config.dangerRadius^2
+            if memory and frame<memory.untilFrame and distance(x,z,memory.x,memory.z)<config.dangerRadius^2 then return true end
         end
-        local t=danger[cell(x,z)]; return t and t>frame
+        return G.CityAreaState and G.CityAreaState:IsDangerous(x,z) or false
     end
     local function approach(id, destination, salt)
         local x,z=position(destination); if not x then return end
@@ -369,9 +368,8 @@ return function(context)
     function life:ReportDanger(id, damage)
         local x,z=position(id); if not x then return end
         local frame=S.GetGameFrame()
-        for dx=-1,1 do for dz=-1,1 do
-            danger[cell(x+dx*config.dangerCell,z+dz*config.dangerCell)]=frame+config.dangerMemory
-        end end
+        -- Damage is recorded once by City Area State. This event supplies only
+        -- individual memories/flee reactions, never another spatial danger map.
         local nearby=S.GetUnitsInCylinder(x,z,config.dangerRadius) or {}; table.sort(nearby)
         for _,person in ipairs(nearby) do
             if context.walkers[S.GetUnitDefID(person)] then
@@ -769,13 +767,12 @@ return function(context)
         end
         if frame%(15*30)==0 then
             for _,id in ipairs(sorted(G.BuildingTable)) do
-                if alive(id) and venues[id]~="brothel" then
+                if alive(id) and not (G.CityConstructionSites or {})[id] and venues[id]~="brothel" then
                     local tooltip=(S.GetUnitTooltip(id) or ""):lower()
                     if tooltip:find("hotel",1,true) or tooltip:find("motel",1,true) then venues[id]="luggage"
                     elseif not venues[id] then venues[id]="errand" end
                 end
             end
-            for key,untilFrame in pairs(danger) do if frame>=untilFrame then danger[key]=nil end end
         end
         if frame%config.vehicleInterval==0 and normal() then
             local vehicle=self:VehicleOrigin(frame)

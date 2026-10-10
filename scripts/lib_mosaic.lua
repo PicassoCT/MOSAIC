@@ -179,9 +179,8 @@ function getGameConfig()
             },
             rubble = {
                 disappearanceTimeMs = 5 * 60 * 1000,
-                -- The city previously used the same number as frames. Keep
-                -- that effective delay while making the two clocks explicit.
-                respawnBaseDelayFrames = 300000,
+                decayFrames = 5 * 60 * 30,
+                constructionFrames = 60 * 30,
             },
         },
 
@@ -4766,3 +4765,23 @@ function ViewShadowGameRelevant(px, pz, boolDebug)
     return counter  > 0
 end
 
+
+-- Shared occupancy gate for placement and delayed/direct safehouse attachment.
+function isCityBuildingHabitable(id)
+    if not id or not Spring.ValidUnitID(id) or Spring.GetUnitIsDead(id) then return false end
+    if GG.CityConstructionSites and GG.CityConstructionSites[id] then return false end
+    local _, _, _, _, progress = Spring.GetUnitHealth(id)
+    return progress ~= nil and progress >= 1
+end
+
+-- Unit-script animations retain their scaffold/partial assembly until the
+-- authoritative plot clock permits this stage. Initial houses return at once.
+function waitForCityConstruction(id, fraction)
+    if not (GG.CityConstructionSites and GG.CityConstructionSites[id]) then return end
+    local duration = getGameConfig().city.rubble.constructionFrames
+    while GG.CityConstructionSites and GG.CityConstructionSites[id] do
+        local plot = GG.CityConstructionSites[id]
+        if fraction and not plot.paused and plot.elapsed >= duration * fraction then return end
+        Sleep(250)
+    end
+end

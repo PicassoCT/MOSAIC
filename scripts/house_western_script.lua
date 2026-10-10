@@ -1205,7 +1205,7 @@ end
 
 Icon = piece("Icon")
 function buildAnimationEarlyOut(builtT)
-    if Spring.GetGameSeconds() < 10 then
+    if Spring.GetGameSeconds() < 10 and not (GG.CityConstructionSites and GG.CityConstructionSites[unitID]) then
         Show(Icon)
         hideT(builtT)
         hideT(TablesOfPiecesGroups["Build01Sub"])
@@ -1281,6 +1281,7 @@ function buildAnimation()
 
     Sleep(15000)
     while boolDoneShowing == false do Sleep(100) end
+    waitForCityConstruction(unitID)
     showT(ToShowTable)
 
     individualSpeed = (unitID % 5) + 5

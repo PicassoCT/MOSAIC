@@ -3117,17 +3117,17 @@ function countT(T)
 end
 
 function sortPiecesInDictionaryByHeight(dict)
-    result = {}
-    for k,v in pairs(dict) do
-        x,y,z = Spring.GetUnitPiecePosDir(unitID, k)
-        result[#result +1 ] = {pieceId = k, height= y} 
+    local result = {}
+    for pieceID in pairs(dict) do
+        local _, y = Spring.GetUnitPiecePosDir(unitID, pieceID)
+        result[#result + 1] = {pieceId = pieceID, height = y or 0}
     end
-
-    result = table.sort(result, function(a,b) return a.height < b.height end)
-    sortedResult = {}
-    for i=1, #result do
-        sortedResult[#sortedResult +1] = result[i].pieceId
-    end
+    table.sort(result, function(a, b)
+        if a.height == b.height then return a.pieceId < b.pieceId end
+        return a.height < b.height
+    end)
+    local sortedResult = {}
+    for i = 1, #result do sortedResult[i] = result[i].pieceId end
     return sortedResult
 end
 

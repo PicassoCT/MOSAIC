@@ -689,11 +689,8 @@ function getEscapePoint(index)
 end
 
 function isGoalWarzone(persPack)
-    dangerNormalized= GG.DamageHeatMap:getDangerAtLocation(persPack.goalList[persPack.goalIndex].x,persPack.goalList[persPack.goalIndex].z)
-    ----echo("Is Goal Warzone: danger normalized"..dangerNormalized.. " Heatmap Normalization Value "..GG.DamageHeatMap.normalizationValue)
-
-    boolGoalIsWarzone = dangerNormalized > GameConfig.civilians.movement.warzoneThreshold and GG.DamageHeatMap.normalizationValue > 5000
-    return boolGoalIsWarzone
+    local goal = persPack.goalList[persPack.goalIndex]
+    return goal and GG.CityAreaState and GG.CityAreaState:IsDangerous(goal.x, goal.z) or false
 end
 
 function travelInWarTimes(evtID, frame, persPack, startFrame, myID)

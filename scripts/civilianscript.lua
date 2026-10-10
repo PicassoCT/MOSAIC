@@ -452,9 +452,9 @@ function speedControl()
         setSpeedIntern(unitID, 0.85)
         while GG.GlobalGameState ~= GameConfig.game.states.normal do
             Sleep(1000)
-            if  GG.DamageHeatMap and GG.DamageHeatMap.getDangerAtLocation then
+            if  GG.CityAreaState and GG.CityAreaState.getDangerAtLocation then
                 x,y, z = spGetUnitPosition(unitID)
-                normalizedDanger =GG.DamageHeatMap:getDangerAtLocation(x,z)
+                normalizedDanger =GG.CityAreaState:getDangerAtLocation(x,z)
                 if normalizedDanger > 0.5 then
                     setSpeedIntern(unitID, normalizedDanger)
                 end

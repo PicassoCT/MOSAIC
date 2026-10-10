@@ -52,7 +52,7 @@ function script.Create()
     local replacingID = replacement and replacement.oldID
     if replacingID then
         for houseID,occupant in pairs(GG.houseHasSafeHouseTable or {}) do
-            if occupant == replacingID then
+            if occupant == replacingID and isCityBuildingHabitable(houseID) then
                 containingHouseID = houseID
                 GG.houseHasSafeHouseTable[houseID] = unitID
                 break
@@ -85,7 +85,8 @@ function houseAttach()
     boolJustOnce = false
     T = foreach(getAllNearUnit(unitID, GameConfig.espionage.safehouses.buildRange),
     function(id) -- filter out all the safe houses
-        if houseTypeTable[Spring.GetUnitDefID(id)] and Spring.GetUnitTeam(id) == gaiaTeamID then return id end
+        if houseTypeTable[Spring.GetUnitDefID(id)] and Spring.GetUnitTeam(id) == gaiaTeamID
+            and isCityBuildingHabitable(id) then return id end
         end, 
     function(houseID)
         if boolJustOnce == true then return end
@@ -118,7 +119,7 @@ function houseAttach()
             end
         end
 
-        if boolJustOnce == true then
+        if boolJustOnce == true and isCityBuildingHabitable(houseID) then
 --            echo("Attach House "..houseID .." and make safehouse "..unitID.." mortally dependent" )
             containingHouseID = houseID
 

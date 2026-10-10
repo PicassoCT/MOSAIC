@@ -76,21 +76,20 @@ end
 function waitForAnEnd()
     hideT(ExcavatorTable)
     Sleep(10)
-    timeForMoveInSec = GameConfig.city.rubble.disappearanceTimeMs/1000
-    if GG.TimeDelayedRespawn and GG.TimeDelayedRespawn[unitID] and GG.TimeDelayedRespawn[unitID].frame  then
-        timeForMoveInSec = GG.TimeDelayedRespawn[unitID].frame/30
-    end 
-
-    speed = distanceToGoDown / timeForMoveInSec
-    Sleep(60 * 1000)
-    StartThread(excavator)
-
-    for i= 1, -1 * distanceToGoDown, -1 do
-        WMove(center, z_axis, i, speed)
-        while boolSleepOnHit == true or GG.GlobalGameState ~= GameConfig.game.states.normal do
-            Sleep(60 * 1000)
-            boolSleepOnHit = false
-        end            
+    -- City rubble has one clock, owned by the plot lifecycle. Never self-delete
+    -- it or run an independent sink timer during combat/anarchy.
+    if GG.CityRubble and GG.CityRubble[unitID] then
+        while GG.CityRubble[unitID] do
+            local plot = GG.CityRubble[unitID]
+            local progress = math.min(1, plot.elapsed / GameConfig.city.rubble.decayFrames)
+            Move(center, z_axis, -distanceToGoDown * progress, 0)
+            Sleep(500)
+        end
+        return
     end
+    -- Unmanaged decorative rubble keeps its finite lifetime.
+    local duration = GameConfig.city.rubble.disappearanceTimeMs
+    Move(center, z_axis, -distanceToGoDown, distanceToGoDown / (duration / 1000))
+    Sleep(duration)
     Spring.DestroyUnit(unitID, true, false)
 end

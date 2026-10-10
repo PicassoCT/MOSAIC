@@ -980,7 +980,7 @@ function buildAnimation()
     local builT = TablesOfPiecesGroups["Build"]
     axis = _y_axis
 
-    if Spring.GetGameSeconds() < 10 then
+    if Spring.GetGameSeconds() < 10 and not (GG.CityConstructionSites and GG.CityConstructionSites[unitID]) then
         hideT(builT)
         hideT(TablesOfPiecesGroups["Build01Sub"])
         hideT(TablesOfPiecesGroups["BuildCrane"])
@@ -1018,6 +1018,7 @@ function buildAnimation()
 
     Sleep(15000)
     while boolDoneShowing == false do Sleep(100) end
+    waitForCityConstruction(unitID)
     showT(ToShowTable)
 
     for i = 1, 3 do
