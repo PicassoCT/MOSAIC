@@ -169,11 +169,20 @@ function gadget:CommandFallback(id, defID, team, cmd, p, opts, tag)
     local s = states[id]
     return true, not s or s.phase == "idle" or s.phase == "done"
 end
+local function brokenSupport(s)
+    if not s.path then return false end
+    local index = s.index or 1
+    local target, previous = s.path[index], s.path[index-1]
+    return (target and call(s.house, "IsBuildingPieceDetached", target[4]))
+        or (previous and call(s.house, "IsBuildingPieceDetached", previous[4]))
+end
 function gadget:GameFrame(frame)
     if frame % step ~= 0 then return end
     for id,s in pairs(states) do
         local cmd,_,tag = Spring.GetUnitCurrentCommand(id)
         if not alive(id) or not alive(s.house) then
+            release(id)
+        elseif brokenSupport(s) then
             release(id)
         elseif (s.phase ~= "idle" and tag ~= s.tag) or (s.phase == "idle" and cmd and cmd ~= ROOF and cmd ~= CMD.ATTACK) then
             release(id)

@@ -2,6 +2,7 @@
 -- Placement inputs stay in script movement units; output is model-local elmos.
 -- Exporter unit conversion is configured once and applied only by the getter.
 local cells = {}
+local pieceCells = {}
 local cellSize, levelHeight
 local scriptToModelScale = 1
 local originX, originZ
@@ -19,6 +20,7 @@ function initializeBuildingShadowVoxels(length, height, unitScale)
     scriptToModelScale = unitScale
     cellSize, levelHeight = length, height
     cells = {}
+    pieceCells = {}
     originX, originZ, minX, maxX, minZ, maxZ = nil, nil, nil, nil, nil, nil
 end
 
@@ -28,7 +30,7 @@ local function gridIndex(value)
     return index
 end
 
-function addShadowVoxel(x, z, y)
+function addShadowVoxel(x, z, y, pieceID)
     assert(cellSize and finite(x) and finite(z) and finite(y))
     if not originX then originX, originZ = x, z end
     local ix, iz = gridIndex((x - originX) / cellSize), gridIndex((z - originZ) / cellSize)
@@ -50,8 +52,23 @@ function addShadowVoxel(x, z, y)
     local bit = 2 ^ level
     if math.floor(cell.mask / bit) % 2 == 0 then cell.mask = cell.mask + bit end
     cell.levels = math.max(cell.levels, level + 1)
+    if pieceID then pieceCells[pieceID] = {cell = cell, y = y} end
     minX, maxX = math.min(minX or ix, ix), math.max(maxX or ix, ix)
     minZ, maxZ = math.min(minZ or iz, iz), math.max(maxZ or iz, iz)
+end
+
+-- Remove exactly one generated block; keep sparse masks and neighbouring floors.
+function RemoveBuildingShadowPiece(pieceID)
+    local entry = pieceCells[pieceID]
+    if not entry then return end
+    pieceCells[pieceID] = nil
+    local cell = entry.cell
+    local level = gridIndex((entry.y - cell.base) / levelHeight)
+    local bit = 2 ^ level
+    if math.floor(cell.mask / bit) % 2 == 1 then cell.mask = cell.mask - bit end
+    while cell.levels > 0 and cell.mask < 2 ^ (cell.levels - 1) do
+        cell.levels = cell.levels - 1
+    end
 end
 
 -- Normal case: 2D height array plus two dimensions. Optional sparse tables

@@ -989,8 +989,11 @@ end
         WaitForMoves(pieceID)
 --        echo(holoDefID.." has rotation "..toString(orientation))
         Sleep(500)
-  
-        id = createUnitAtUnit(Spring.GetUnitTeam(parentID), holoDefID, parentID, 0,0,0,0)
+
+        if IsBuildingPieceDetached and IsBuildingPieceDetached(pieceID) then return end
+        local id = createUnitAtUnit(Spring.GetUnitTeam(parentID), holoDefID, parentID, 0,0,0,0)
+        if not id then return end
+        if RegisterBuildingPieceAttachment then RegisterBuildingPieceAttachment(pieceID, id) end
         if GG.CivilianLife and holoDefID == "house_western_hologram_brothel" then
             GG.CivilianLife:RegisterVenue(parentID, "brothel")
         end

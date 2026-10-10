@@ -5,6 +5,7 @@ include "createCorpse.lua"
 include "lib_OS.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
+local buildingDamage = include "lib_building_damage.lua"
 --include "lib_Build.lua"
 include "lib_mosaic.lua"
 LevelPieces = {}
@@ -62,7 +63,10 @@ _x_axis = 1
 _y_axis = 2
 _z_axis = 3
 
-function script.HitByWeapon(x, z, weaponDefID, damage) end
+-- Called by the damage gadget after engine health modifiers have been applied.
+function BuildingBlockDamaged(hits, frame)
+    return buildingDamage.update(hits, frame)
+end
 
 AlreadyUsedPiece = {}
 center = piece "center"
@@ -283,7 +287,7 @@ function showPowerPoles()
 end
 
 function script.Killed(recentDamage, _) 
-    houseDestroyWithDestructionTable(LevelPieces, 49.81, unitID)
+    buildingDamage.collapse(LevelPieces, ToShowTable)
     return 1
 end
 
@@ -691,9 +695,9 @@ function buildDecorateGroundLvl()
                 Move(element, _x_axis, xRealLoc, 0)
                 Move(element, _z_axis, zRealLoc, 0)
                 Move(element, _y_axis, gridOffset[xLoc][zLoc] , 0)
-                addShadowVoxel(xRealLoc, zRealLoc,  gridOffset[xLoc][zLoc])
+                addShadowVoxel(xRealLoc, zRealLoc,  gridOffset[xLoc][zLoc], element)
                 ToShowTable[#ToShowTable + 1] = element
-				LevelPieces = houseAddDestructionTable(LevelPieces, 1, element)
+				LevelPieces = houseAddDestructionTable(LevelPieces, 1, element, xRealLoc, zRealLoc, gridOffset[xLoc][zLoc])
                 if countElements == 24 then
                     return materialColourName
                 end
@@ -770,12 +774,12 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
                 Move(element, _x_axis, xRealLoc, 0)
                 Move(element, _z_axis, zRealLoc, 0)
                 Move(element, _y_axis, gridOffset[xLoc][zLoc] + Level * cubeDim.heigth, 0)
-                addShadowVoxel(xRealLoc, zRealLoc,  gridOffset[xLoc][zLoc] + Level * cubeDim.heigth)
+                addShadowVoxel(xRealLoc, zRealLoc,  gridOffset[xLoc][zLoc] + Level * cubeDim.heigth, element)
                 WaitForMoves(element)
                 Turn(element, _z_axis, math.rad(rotation), 0)
                 -- echo("Adding Element to level"..Level)
                 ToShowTable[#ToShowTable + 1] = element
-				LevelPieces = houseAddDestructionTable(LevelPieces, Level+1, element)
+				LevelPieces = houseAddDestructionTable(LevelPieces, Level + 1, element, xRealLoc, zRealLoc, gridOffset[xLoc][zLoc] + Level * cubeDim.heigth)
 
                 if chancesAre(10) < decoChances.windowwall then
                     rotation = getOutsideFacingRotationOfBlockFromPlan(index)
@@ -903,6 +907,7 @@ function addRoofDeocrate(Level, buildMaterial)
                 RoofTopPieces[i]= element
                 WaitForMoves(element)
                 Turn(element, _z_axis, math.rad(rotation), 0)
+                LevelPieces = houseAddDestructionTable(LevelPieces, Level + 1, element, xRealLoc, zRealLoc, gridOffset[xLoc][zLoc] + Level * cubeDim.heigth)
                 ToShowTable[#ToShowTable + 1] = element
                 if countElements == 24 then break end
             end
@@ -1050,6 +1055,7 @@ function buildBuilding()
 
     addRoofDeocrate(3, TablesOfPiecesGroups[materialColourName .. "Roof"])
     -- Releases buildAnimation, which publishes voxels after construction finishes.
+    buildingDamage.initialize(LevelPieces, ToShowTable, RoofTopPieces, nil, cubeDim.heigth, cubeDim.length, 1)
     boolDoneShowing = true
 end
 

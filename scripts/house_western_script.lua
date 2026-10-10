@@ -5,6 +5,7 @@ include "createCorpse.lua"
 include "lib_OS.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
+local buildingDamage = include "lib_building_damage.lua"
 
 local boolDebugActive = false
 local spGetUnitPosition = Spring.GetUnitPosition
@@ -74,7 +75,10 @@ local _x_axis = 1
 local _y_axis = 2
 local _z_axis = 3
 
-function script.HitByWeapon(x, z, weaponDefID, damage) end
+-- Called by the damage gadget after engine health modifiers have been applied.
+function BuildingBlockDamaged(hits, frame)
+    return buildingDamage.update(hits, frame)
+end
 
 AlreadyUsedPiece = {}
 center = piece "center"
@@ -275,7 +279,7 @@ function absdiff(value, compval)
 end
 
 function script.Killed(recentDamage, _)
-    return houseDestroyWithDestructionTable(LevelPieces, 49.81, unitID)
+    return buildingDamage.collapse(LevelPieces, ToShowTable)
 end
 
 function showOne(T, bNotDelayd)
@@ -768,9 +772,9 @@ function buildDecorateGroundLvl()
                                                                buildMaterial)
                 Move(element, _x_axis, xRealLoc, 0)
                 Move(element, _z_axis, zRealLoc, 0)
-                addShadowVoxel(xRealLoc, zRealLoc, 0)
+                addShadowVoxel(xRealLoc, zRealLoc, 0, element)
                 ToShowTable[#ToShowTable + 1] = element
-				LevelPieces = houseAddDestructionTable(LevelPieces, 1, element)
+				LevelPieces = houseAddDestructionTable(LevelPieces, 1, element, xRealLoc, zRealLoc, 0)
                 if countElements == 24 then
                     return materialColourName
                 end
@@ -878,12 +882,12 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
                 Move(element, _x_axis, xRealLoc, 0)
                 Move(element, _z_axis, zRealLoc, 0)
                 Move(element, _y_axis, Level * cubeDim.heigth, 0)
-                addShadowVoxel(xRealLoc, zRealLoc, Level * cubeDim.heigth)
+                addShadowVoxel(xRealLoc, zRealLoc, Level * cubeDim.heigth, element)
                 WaitForMoves(element)
                 Turn(element, _z_axis, math.rad(rotation), 0)
                 -- echo("Adding Element to level"..Level)
                 ToShowTable[#ToShowTable + 1] = element
-				LevelPieces = houseAddDestructionTable(LevelPieces, Level+1, element)
+				LevelPieces = houseAddDestructionTable(LevelPieces, Level + 1, element, xRealLoc, zRealLoc, Level * cubeDim.heigth)
                 if chancesAre(10) < decoChances.windowwall then
                     rotation = getOutsideFacingRotationOfBlockFromPlan(index)
                     -- echo("Adding Window decoration to"..Level)
@@ -1101,6 +1105,7 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
                 WaitForMoves(element)
                 RoofTopPieces[i]= element
                 Turn(element, _z_axis, math.rad(rotation), 0)
+                LevelPieces = houseAddDestructionTable(LevelPieces, Level + 1, element, xRealLoc, zRealLoc, Level * cubeDim.heigth)
                 ToShowTable[#ToShowTable + 1] = element
                 decoPieceUsedOrientation[element] = getRotationFromPiece(element)
 
@@ -1341,6 +1346,7 @@ function buildBuilding()
     addRoofDeocrate(3,      getMaterialElementsContaingNotContaining(materialColourName, {"Roof"}, {"Deco"}),        materialColourName)
     Show(BasePillars)
        --echo(getScriptName() .. "addRoofDeocrate ended")
+    buildingDamage.initialize(LevelPieces, ToShowTable, RoofTopPieces, nil, cubeDim.heigth, cubeDim.length, 0.0254, pieceName_pieceNr)
     boolDoneShowing = true
 end
 

@@ -59,6 +59,12 @@ tick(100)
 assert(attached[1]==10 and modes[1]=='idle','approach, grapple, walk, attach')
 local _,done=order(ray,1); assert(done)
 current[1]=nil; tick(3); assert(attached[1]==10,'empty queue stays on roof')
+env.IsBuildingPieceDetached=function(piece) return piece==3 end
+tick(1)
+assert(not attached[1] and not controlled[1], 'removed roof must release attached operative')
+env.IsBuildingPieceDetached=nil
+order(ray,101);tick(100);assert(attached[1]==10)
+current[1]=nil
 current[1]={CMD.ATTACK,99}; tick(3)
 assert(attached[1]==10 and modes[1]=='idle','attack preserves roof attachment')
 current[1]=nil; tick(1)
