@@ -50,6 +50,7 @@ client.GiveOrderToUnit(258,10,{1,0,1},{})
 client.GiveOrderToUnit(258,10,{2,0,2},{},true);client.gadget:GameFrame(3);eq(#cw.sent,2)
 -- Invalid orders must not claim to be queued; diagnostics identify the error
 -- without sending malformed batches or preventing later, valid orders.
+cw.rules[258]={};client.gadget.betrayalContacts[258]=nil
 local oldWarn=cw.warnings
 assert(client.GiveOrderToUnit(258,10,{math.huge}, {})==false)
 assert(cw.warnings==oldWarn+1,'invalid coordinates must be diagnosed')
