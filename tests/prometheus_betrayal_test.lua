@@ -58,6 +58,7 @@ client.gadget:GameFrame(4);eq(#cw.sent,2,'malformed order must never reach recei
 cw.rules[258]={};client.gadget.betrayalContacts[258]=nil
 assert(client.GiveOrderToUnit(258,10,{-1.5,0,2.5},{}))
 client.gadget:GameFrame(5);eq(#cw.sent,3)
+sw.rules[258]={} -- Reset the earlier receiver-side runner rejection.
 server.gadget:RecvLuaMsg(cw.sent[3],7);server.gadget:GameFrame(7)
 eq(sw.orders[#sw.orders][3][1],-2,'negative half coordinates round symmetrically')
 eq(sw.orders[#sw.orders][3][3],3)
