@@ -177,7 +177,9 @@ for _,side in ipairs({'antagon','protagon'}) do
     local w=world(side);w.add(10,op,1,500,500)
     for id=100,107 do w.add(id,'house_asian1',0,600+(id-100)*500,500) end
     w.tick(2)
-    local build=assert(w.has(-names[side..'safehouse'].id,10),'real startup must build')
+    local build=assert(w.has(-names[side..'safehouse'].id,10),
+        'real startup must build; side='..side..' orders='..#w.orders
+        ..' packets='..#w.packets..' warnings='..table.concat(w.logs,' / '))
     eq(#build.params,4);eq(build.params[1],600)
     w.created(20,side..'safehouse',10,600,500);w.tick(92)
     assert(w.has(-names[op].id,20),'real recruitment order must reach engine')
