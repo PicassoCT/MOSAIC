@@ -16,7 +16,10 @@ return function(context)
         local keys = {}; for id in pairs(t or {}) do keys[#keys + 1] = id end
         table.sort(keys); return keys
     end
-    local function alive(id) return id and S.ValidUnitID(id) and not S.GetUnitIsDead(id) end
+    -- Recoil C callins require actual numeric unit IDs; numeric strings are not safe.
+    local function alive(id)
+        return type(id) == "number" and S.ValidUnitID(id) and not S.GetUnitIsDead(id)
+    end
     local function ambient(id)
         return alive(id) and G.CivilianTable[id] and context.walkers[S.GetUnitDefID(id)]
             and S.GetUnitTeam(id) == gaia and not (G.DisguiseCivilianFor or {})[id]
@@ -36,7 +39,11 @@ return function(context)
         if env and env[name] then return S.UnitScript.CallAsUnit(id, env[name], ...) end
     end
     local function distance(x, z, a, b) return (x-a)*(x-a) + (z-b)*(z-b) end
-    local function position(id) local x, _, z = S.GetUnitPosition(id); return x, z end
+    local function position(id)
+        if not alive(id) then return nil end
+        local x, _, z = S.GetUnitPosition(id)
+        return x, z
+    end
     local function move(id, x, z)
         S.GiveOrderToUnit(id, CMD.MOVE, {x, S.GetGroundHeight(x,z), z}, {})
     end
@@ -154,6 +161,7 @@ return function(context)
             if people[other].home==id then
                 self:Remember(other,"home_lost"); people[other].home=nil
             end
+            if people[other].work==id then people[other].work=nil end
         end
         people[id],venues[id],vehicles[id],guardedUntil[id]=nil,nil,nil,nil
     end
@@ -185,46 +193,74 @@ return function(context)
         return best
     end
     function life:SelectTarget(id, start, candidates)
-        local p=record(id); p.home=alive(p.home) and p.home or start; p.trip=p.trip+1
-        local targets, nearbyTargets={},{}
+        if not alive(id) then return nil end
         local sx,sz=position(id)
-        for _,target in ipairs(candidates or {}) do
-            if alive(target) and target~=p.home then
-                targets[#targets+1]=target
-                local tx,tz=position(target)
-                if distance(sx,sz,tx,tz)<C.civilians.movement.maxWalkingDistance^2 then
-                    nearbyTargets[#nearbyTargets+1]=target
+        if not sx then return nil end
+        local p=record(id)
+        p.home=alive(p.home) and p.home or (alive(start) and start or nil)
+        p.trip=p.trip+1
+        local targets, nearbyTargets={},{}
+        -- Route tables may outlive buildings, and old saves can contain
+        -- nonnumeric IDs. Do not pass those values into Spring callins.
+        for _,candidate in ipairs(type(candidates)=="table" and candidates or {}) do
+            if alive(candidate) and candidate~=p.home then
+                local tx,tz=position(candidate)
+                if tx then
+                    targets[#targets+1]=candidate
+                    if distance(sx,sz,tx,tz)<C.civilians.movement.maxWalkingDistance^2 then
+                        nearbyTargets[#nearbyTargets+1]=candidate
+                    end
                 end
             end
         end
         if #nearbyTargets>0 then targets=nearbyTargets end
         table.sort(targets)
-        if #targets==0 then return start end
-        if not alive(p.work) then p.work=targets[draw(p,1,#targets)] end
+        if #targets==0 then return nil end
+
+        -- A remembered workplace may be gone or no longer reachable
+        -- from this node. Keep it only while it remains an eligible target.
+        local workAvailable=false
+        for _,candidate in ipairs(targets) do
+            if candidate==p.work then workAvailable=true; break end
+        end
+        if not workAvailable then p.work=targets[draw(p,1,#targets)] end
         local target=p.work
         if p.trip%3==0 then target=targets[draw(p,1,#targets)] end
+
         -- Occasional purposeful visits to actual registered venues.
         if draw(p,1,100)<=30 then
-            local x,z=position(id); local nearby={}
+            local nearby={}
             for _,venue in ipairs(sorted(venues)) do
-                local vx,vz=position(venue)
-                if vx and distance(x,z,vx,vz)<config.venueRadius^2 then nearby[#nearby+1]=venue end
+                if alive(venue) then
+                    local vx,vz=position(venue)
+                    if vx and distance(sx,sz,vx,vz)<config.venueRadius^2 then
+                        nearby[#nearby+1]=venue
+                    end
+                end
             end
             if #nearby>0 then target=nearby[draw(p,1,#nearby)] end
         end
         local tx,tz=position(target)
+        if not tx then
+            target=targets[draw(p,1,#targets)]
+            tx,tz=position(target)
+        end
         if tx and unsafe(tx,tz,S.GetGameFrame(),p) then
             self:Remember(id,"detour",tx,tz)
             for _,candidate in ipairs(targets) do
                 local cx,cz=position(candidate)
-                if cx and not unsafe(cx,cz,S.GetGameFrame(),p) then target=candidate; break end
+                if cx and not unsafe(cx,cz,S.GetGameFrame(),p) then
+                    target=candidate; break
+                end
             end
         end
         return target
     end
     function life:BuildRoute(id, start, destination)
-        local p=record(id)
+        if not alive(id) or not alive(destination) then return nil end
         local x,z=position(id)
+        if not x then return nil end
+        local p=record(id)
         local target=approach(id,destination,id)
         local home=alive(p.home) and approach(id,p.home,id+2)
         if not target then return end
