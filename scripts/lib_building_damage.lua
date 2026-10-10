@@ -3,21 +3,21 @@
 -- fails, every block above it in that column fails too (no invented cantilevers).
 local M = {}
 local nativeShow, nativeHide, nativeMove, nativeTurn, nativeSpin = Show, Hide, Move, Turn, Spin
-local hidden, visible, offsets, attachments = {}, {}, {}, {}
+local detached, visible, offsets, rotations, attachments = {}, {}, {}, {}, {}
 local blocks, columns, owners, movable = {}, {}, {}, {}
 local selected, rooftop, windowPieces, pieceMap
 local floorHeight, cellSize, modelScale = 1, 1, 1
 local ready, collapsing = false, false
-local failures = {}
+local failures, falling = {}, {}
 local FAILURE_DELAY_FRAMES = 6
-local MAX_DEBRIS_PER_EVENT = 8
+local FALL_FRAMES = 6
 local MAX_BROKEN_COLUMNS_PER_UPDATE = 3
 local FLOOR_TIME_MS = 320
 
 -- Construction, day/night switching and piece animations must never resurrect
 -- detached geometry. These wrappers belong only to the three procedural scripts.
 function Show(p)
-    if not collapsing and not hidden[p] then visible[p] = true; return nativeShow(p) end
+    if not collapsing and not detached[p] then visible[p] = true; return nativeShow(p) end
 end
 function Hide(p)
     visible[p] = nil
@@ -25,7 +25,7 @@ function Hide(p)
 end
 
 function IsBuildingPieceDetached(p)
-    return collapsing or hidden[p] == true
+    return collapsing or detached[p] == true
 end
 
 function RegisterBuildingPieceAttachment(p, id)
@@ -41,15 +41,20 @@ if nativeSetRadiancePiece then
     end
 end
 function Move(p, axis, goal, speed)
-    if collapsing or hidden[p] then return end
+    if collapsing or detached[p] then return end
     if axis == y_axis and (not ready or movable[p]) then offsets[p] = goal end
     return nativeMove(p, axis, goal, speed)
 end
-function Turn(p, ...)
-    if not collapsing and not hidden[p] then return nativeTurn(p, ...) end
+function Turn(p, axis, goal, speed)
+    if collapsing or detached[p] then return end
+    if not ready or movable[p] then
+        rotations[p] = rotations[p] or {}
+        rotations[p][axis] = goal
+    end
+    return nativeTurn(p, axis, goal, speed)
 end
 function Spin(p, ...)
-    if not collapsing and not hidden[p] then return nativeSpin(p, ...) end
+    if not collapsing and not detached[p] then return nativeSpin(p, ...) end
 end
 
 local function key(x, z)
@@ -66,6 +71,7 @@ local function bind(p, block, inherited)
     block.pieces[#block.pieces + 1] = p
     if not inherited then
         movable[p] = block
+        block.roots[#block.roots+1] = p
     end
     local info = Spring.GetUnitPieceInfo(unitID, p)
     for _, child in ipairs(info and info.children or {}) do
@@ -94,7 +100,13 @@ function M.initialize(levels, shown, roofs, windows, height, width, scale, cache
                 local bx, by, bz = position(p)
                 local block = {piece = p, level = level, y = at.y,
                     x = bx, worldY = by, z = bz,
-                    column = columnKey, pieces = {}, damage = 0}
+                    column = columnKey, pieces = {}, roots = {}, damage = 0}
+                local length = math.sqrt(at.x * at.x + at.z * at.z)
+                local dx, dz = at.x, at.z
+                if length < 0.01 then dx, dz, length = 1, 0, 1 end
+                local columnCode = math.floor(at.x / cellSize) + 3 * math.floor(at.z / cellSize)
+                local angle = math.rad(3 + (unitID + columnCode) % 3)
+                block.leanX, block.leanZ = dz / length * angle, -dx / length * angle
                 local wk = key(bx / modelScale, bz / modelScale)
                 worldGrid[wk] = worldGrid[wk] or {}
                 worldGrid[wk][#worldGrid[wk]+1] = block
@@ -142,6 +154,7 @@ function M.initialize(levels, shown, roofs, windows, height, width, scale, cache
         if daytime ~= name and owner then bind(p, owner) end
     end
     for p in pairs(offsets) do if not movable[p] then offsets[p] = nil end end
+    for p in pairs(rotations) do if not movable[p] then rotations[p] = nil end end
     ready = true
 end
 
@@ -155,7 +168,7 @@ local function removeAttachments(p)
 end
 
 local function hidePiece(p)
-    hidden[p] = true
+    detached[p] = true
     Hide(p)
     if windowPieces then windowPieces[p] = nil end
     if GG.SetObjectiveRadiancePieceVisible then
@@ -168,12 +181,12 @@ local function refreshGeometry()
     if selected then
         local n = 0
         for i = 1, #selected do
-            if not hidden[selected[i]] then n = n + 1; selected[n] = selected[i] end
+            if not detached[selected[i]] then n = n + 1; selected[n] = selected[i] end
         end
         for i = #selected, n + 1, -1 do selected[i] = nil end
     end
     for i, p in pairs(rooftop or {}) do
-        if hidden[p] then rooftop[i] = nil end
+        if detached[p] then rooftop[i] = nil end
     end
     if GG.MarkBuildingShadowVolumeDirty then GG.MarkBuildingShadowVolumeDirty(unitID) end
 end
@@ -184,17 +197,45 @@ local function dust(p)
     if x then Spring.SpawnCEG("building_block_dust", x, y, z, 0, 1, 0) end
 end
 
-local function detach(block, budget)
-    if block.gone then return budget end
-    block.gone = true
-    if budget > 0 and visible[block.piece] and
-        (not GG.AllowBuildingBlockDamageEffect or GG.AllowBuildingBlockDamageEffect("debris")) then
-        Explode(block.piece, SFX.FALL + SFX.NO_HEATCLOUD)
-        budget = budget - 1
+-- Keep the existing model section local: a short, controlled drop and tilt.
+-- There are no emitted model pieces, projectiles or separate debris units.
+local function settle(block, drop, seconds, travel)
+    for _, p in ipairs(block.roots) do
+        for axis = 1, 3 do StopSpin(p, axis, 0) end
+        if drop > 0 then
+            nativeMove(p, y_axis, (offsets[p] or 0) - drop, (travel or drop) / seconds)
+        end
+        local rotation = rotations[p] or {}
+        nativeTurn(p, x_axis, (rotation[x_axis] or 0) + block.leanX, math.rad(5) / seconds)
+        nativeTurn(p, z_axis, (rotation[z_axis] or 0) + block.leanZ, math.rad(5) / seconds)
     end
+end
+
+local function finishFall(block)
     for _, p in ipairs(block.pieces) do hidePiece(p) end
+end
+
+local function detach(block, frame)
+    if block.gone then return end
+    block.gone = true
+    for _, p in ipairs(block.pieces) do
+        detached[p] = true
+        removeAttachments(p)
+        if GG.SetObjectiveRadiancePieceVisible then
+            GG.SetObjectiveRadiancePieceVisible(unitID, p, false)
+        end
+    end
     if RemoveBuildingShadowPiece then RemoveBuildingShadowPiece(block.piece) end
-    return budget
+    if frame and visible[block.piece] then
+        -- Never push the lowest block into the terrain. Its upper stack settles
+        -- by less than half a floor, then disappears in the local dust puff.
+        local baseY = columns[block.column][1].y
+        local drop = math.min(floorHeight * 0.45, math.max(0, block.y - baseY))
+        settle(block, drop, FALL_FRAMES / 30)
+        falling[#falling+1] = {block = block, frame = frame + FALL_FRAMES}
+    else
+        finishFall(block)
+    end
 end
 
 local function nearestBlock(hitPiece, x, y, z)
@@ -215,10 +256,16 @@ local function nearestBlock(hitPiece, x, y, z)
 end
 
 -- Called only on the gadget's fixed update tick, including one final tick for
--- pending failures. Hits already contain the actual damage dealt below 50% HP.
+-- pending failures and settling sections. Hits contain damage below 50% HP.
 function M.update(hits, frame)
     if not ready or collapsing or #blocks == 0 then return false end
-    local budget, changed = MAX_DEBRIS_PER_EVENT, false
+    local settling = {}
+    for _, entry in ipairs(falling) do
+        if frame >= entry.frame then finishFall(entry.block)
+        else settling[#settling+1] = entry end
+    end
+    falling = settling
+    local changed = false
     local waiting = {}
     for _, failure in ipairs(failures) do
         if frame >= failure.frame then
@@ -226,7 +273,7 @@ function M.update(hits, frame)
             if not block.gone then
                 dust(block.piece)
                 for _, above in ipairs(columns[block.column]) do
-                    if above.y >= block.y then budget = detach(above, budget) end
+                    if above.y >= block.y then detach(above, frame) end
                 end
                 changed = true
             end
@@ -238,7 +285,7 @@ function M.update(hits, frame)
     if changed then refreshGeometry() end
 
     local _, maxHP = Spring.GetUnitHealth(unitID)
-    if not maxHP then return #failures > 0 end
+    if not maxHP then return #failures > 0 or #falling > 0 end
     local strength = math.max(1, maxHP * 0.5 / #blocks)
     -- Accumulate by struck block first, then resolve a bounded number of new
     -- support failures. Unresolved accumulated damage stays on the block.
@@ -262,17 +309,19 @@ function M.update(hits, frame)
     end
     local alive = false
     for _, block in ipairs(blocks) do if not block.gone then alive = true; break end end
-    if not alive then
+    if not alive and #falling == 0 then
         Spring.DestroyUnit(unitID, false, false)
         return false
     end
-    return overloaded or #failures > 0
+    return overloaded or #failures > 0 or #falling > 0
 end
 
 function M.collapse(levels, shown)
     if collapsing then return 1 end
     collapsing = true
     failures = {}
+    for _, entry in ipairs(falling) do finishFall(entry.block) end
+    falling = {}
     for p in pairs(attachments) do removeAttachments(p) end
     Sleep(200) -- brief structural hesitation before the first floor gives way
     -- If killed during assembly there may not yet be a completed support graph.
@@ -294,19 +343,14 @@ function M.collapse(levels, shown)
     -- Lower floors give way in sequence. The entire remaining upper mass moves
     -- down together, including roofs and independent facade/roof decorations.
     for _, level in ipairs(order) do
-        local budget = MAX_DEBRIS_PER_EVENT
         for i, block in ipairs(floors[level]) do
             if i <= 2 then dust(block.piece) end
-            budget = detach(block, budget)
+            detach(block)
         end
         refreshGeometry()
         displacement = displacement + floorHeight
-        for p, block in pairs(movable) do
-            if not block.gone then
-                for axis = 1, 3 do StopSpin(p, axis, 0) end
-                nativeMove(p, y_axis, (offsets[p] or 0) - displacement,
-                    floorHeight / (FLOOR_TIME_MS / 1000))
-            end
+        for _, block in ipairs(blocks) do
+            if not block.gone then settle(block, displacement, FLOOR_TIME_MS / 1000, floorHeight) end
         end
         Sleep(FLOOR_TIME_MS)
     end

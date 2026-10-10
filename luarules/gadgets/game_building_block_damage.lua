@@ -14,16 +14,13 @@ local eligible = {}
 local active = {}
 local UPDATE_FRAMES = 6 -- 0.2 seconds at the simulation's 30 Hz
 local MAX_IMPACTS = 8
-local fxInterval, debrisLeft, dustLeft = -1, 0, 0
+local fxInterval, dustLeft = -1, 0
 local function allowEffect(kind)
     local interval = math.floor(Spring.GetGameFrame() / UPDATE_FRAMES)
     if interval ~= fxInterval then
-        fxInterval, debrisLeft, dustLeft = interval, 64, 16
+        fxInterval, dustLeft = interval, 16
     end
-    if kind == "debris" and debrisLeft > 0 then
-        debrisLeft = debrisLeft - 1
-        return true
-    elseif kind == "dust" and dustLeft > 0 then
+    if kind == "dust" and dustLeft > 0 then
         dustLeft = dustLeft - 1
         return true
     end
