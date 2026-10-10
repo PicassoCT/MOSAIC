@@ -71,7 +71,7 @@ assert(params[99].city_plot_key=='100:100' and params[99].city_house_number=='1'
 assert(tips[99]==original,'Rebuild changed deterministic descriptor')
 assert(not tips[99]:find('^House %- '),'Gadget failed to load house descriptor library')
 GG.CityAddressService.SetDescriptor(99,'Arcology')
-assert(tips[99]=='Arcology - Café Street 1','Arcology title removed address')
+assert(tips[99]=='Arcology - Café Street 1 [A1]','Arcology title removed address')
 -- Simulate LuaRules state loss; public unit parameters preserve living plots.
 GG.CityPlotAddresses=nil;GG.BuildingTable={};gadget:Initialize()
 setHouseStreetNameTooltip(99,0,0,Game,false,UnitDefs,{'Shop'})
@@ -113,7 +113,7 @@ GL={QUADS=7,SRC_ALPHA=1,ONE_MINUS_SRC_ALPHA=2}
 gl={CreateList=function(fn) created=created+1;fn();return created end,
     DeleteList=function() deleted=deleted+1 end,
     BeginEnd=function(_,fn) fn() end,Vertex=function() vertices=vertices+1 end,
-    CallList=function() called=called+1 end,Color=function(_,_,_,a) if a==0.5 then alpha=a end end,
+    CallList=function() called=called+1 end,Color=function(_,_,_,a) if a and a<1 then alpha=a end end,
     DepthTest=noop,DepthMask=noop,PolygonOffset=noop,Blending=noop,
     GetViewSizes=function() return 1000,1000 end,GetTextWidth=function(s) return #s*0.5 end,
     Text=function() labels=labels+1 end}
@@ -121,11 +121,15 @@ Spring.GetGroundHeight=function() return 32 end
 Spring.IsSphereInView=function() return true end
 Spring.WorldToScreenCoords=function() return 500,500,0.5 end
 dofile('luaui/widgets_mosaic/gui_city_roads.lua')
-widget:Update(1);assert(created==1 and vertices>0)
-widget:Update(1);assert(created==1,'Static road mesh rebuilt each update')
-widget:DrawWorld();assert(called==1 and alpha==0.5,'Road transparency is not 50%')
+widget:Update(1);assert(created==2 and vertices>0)
+widget:Update(1);assert(created==2,'Static road mesh rebuilt each update')
+widget:DrawWorld();assert(called==2 and alpha==0.06,'Distant road opacity must be half the old 50%')
+Spring.GetCameraPosition=function() return 100,600,100 end
+widget:DrawWorld();assert(called==2,'Road overlay remained visible close up')
+Spring.GetCameraPosition=function() return 100,1500,100 end
+widget:DrawWorld();assert(called==4 and alpha>0 and alpha<0.06,'Zoom fade is not gradual')
 widget:DrawScreen();assert(labels==1,'Overlapping road labels were not culled')
-rules.city_roads_revision=2;widget:Update(1);assert(created==2 and deleted==1)
-widget:Shutdown();assert(deleted==2,'Road mesh leaked on widget shutdown')
+rules.city_roads_revision=2;widget:Update(1);assert(created==4 and deleted==2)
+widget:Shutdown();assert(deleted==4,'Road mesh leaked on widget shutdown')
 math.random=realRandom
 print('PASS: deterministic city roads, connected street IDs, OSM addresses, plot rebuilds, tooltips and overlay lifecycle')

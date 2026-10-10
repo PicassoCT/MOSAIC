@@ -1,3 +1,6 @@
+-- The shared city orientation renderer owns sectors and zoom fade now.
+-- Retain the legacy renderer only for installations without the new module.
+if VFS.FileExists('scripts/lib_city_roads.lua') then return end
 ----------------------------------------------------------------------------------------------------
 --                                          TACTICAL GRID                                         --
 --                         Widget display tactical grid and border fade.                          --

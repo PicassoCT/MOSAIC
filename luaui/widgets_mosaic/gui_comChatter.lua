@@ -220,9 +220,10 @@ local function doesUnitExistAlive(id)
 end
 
 
-local QuadrantSize = 512
+local cityOrientation=VFS.Include('scripts/lib_city_roads.lua')
 local function getQuadrant(x,z)
-	return math.ceil(x/QuadrantSize), math.ceil(z/QuadrantSize)
+    local _,column,row=cityOrientation.sector(x,z,Game.mapSizeX,Game.mapSizeZ)
+    return column,tostring(row)
 end
 
 local function dec2hex(num)
@@ -308,7 +309,7 @@ local function getObjectSounds(x,y, teamSex)
 
 		local x,z = goalLocation[1],goalLocation[3]
 		x,z = getQuadrant(x,z)
-		xHex, zHex = dec2hex(x),dec2hex(z)
+		local xHex, zHex = x:lower(),z
 		for s=1,string.len(xHex) do
 			local subStr = xHex:sub(s,1)
 			if subStr and subStr ~= "" then

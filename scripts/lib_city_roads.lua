@@ -17,6 +17,16 @@ function M.clean(s)
     return s:sub(1,n)
 end
 function M.key(x, z) return integer(x) .. ':' .. integer(z) end
+-- Map-fixed spoken sectors: letters west-to-east, numbers north-to-south.
+-- Camera rotation and zoom never change the reference.
+M.SECTOR_SIZE=1024
+function M.sector(x,z,sizeX,sizeZ)
+    local column=floor(math.max(0,math.min(sizeX-1,x))/M.SECTOR_SIZE)+1
+    local row=floor(math.max(0,math.min(sizeZ-1,z))/M.SECTOR_SIZE)+1
+    local letters,n='',column
+    repeat n=n-1;letters=string.char(65+n%26)..letters;n=floor(n/26) until n==0
+    return letters..row,letters,row
+end
 local names = {
     western = {'Oak Street', 'River Street', 'Market Street', 'Garden Street', 'Station Road', 'Park Avenue'},
     arabic = {'Al Noor Street', 'Al Salam Street', 'Al Quds Street', 'Al Amal Street', 'Al Zahra Street'},
@@ -25,7 +35,12 @@ local names = {
 }
 function M.name(id, culture, seed)
     local pool = names[culture] or names.international
-    return pool[(M.hash(tostring(seed) .. ':' .. id) % #pool) + 1] .. ' ' .. id
+    local roots = {'Cedar', 'Palm', 'Olive', 'Harbour', 'Canal', 'Old Market', 'Jasmine', 'Cypress', 'Acacia', 'Saffron', 'Silver', 'Fountain', 'Lantern', 'Orchard', 'Willow', 'Temple', 'Crescent', 'Rose', 'Amber', 'Juniper', 'Silk', 'Copper', 'Westgate', 'Eastgate', 'Citadel', 'Oasis', 'Fig', 'Myrtle', 'Hill', 'Meadow', 'Beacon', 'Pearl'}
+    local h=M.hash(tostring(seed)..':'..id)
+    if h % 8 == 0 then return pool[(floor(h/8) % #pool)+1] end
+    if culture=='arabic' then roots={'Al Noor','Al Salam','Al Quds','Al Amal','Al Zahra','Al Nakheel','Al Waha','Al Bahr','Al Souq','Al Yasmin','Al Ward','Al Safa','Al Rimal','Al Mina','Al Bustan','Al Qamar','Al Shams','Al Zaytun','Al Lulu','Al Nahr','Al Fajr','Al Sahl','Al Jabal','Al Rayan','Al Bahar','Al Rawda','Al Manar','Al Hamra','Al Khaleej','Al Madina','Al Hilal','Al Sadr'} end
+    local endings={'Street','Road','Lane','Walk','Way','Avenue','Crescent','Terrace'}
+    return roots[(floor(h/8)%#roots)+1]..' '..endings[(h%#endings)+1]
 end
 -- Canonical point direction makes odd/even sides and stationing independent
 -- of OSM way direction. Different ways keep distinct IDs even with equal names.
@@ -60,7 +75,7 @@ function M.normalize(network)
     local function root(i) while parent[i]~=i do i=parent[i] end;return i end
     for i,r in ipairs(out.roads) do
         parent[i]=i
-        if out.generation=='map' then
+        do -- connected same-name pieces share one address street
             for _,p in ipairs(r.points) do
                 local key=r.name..'\0'..M.key(p[1],p[2]);local other=vertices[key]
                 if other then local a,b=root(i),root(other);parent[math.max(a,b)]=math.min(a,b) else vertices[key]=i end
@@ -92,6 +107,137 @@ function M.grid(sizeX, sizeZ, spacingX, spacingZ, width, culture, seed)
     end
     return M.normalize({schema=1,generation='game',roads=roads})
 end
+-- Extract a centreline graph from a finite street/clearance mask. Zhang-Suen
+-- thinning preserves junctions and loops; stable raster traversal sets IDs.
+-- This is run once in synced Lua, never in the renderer or engine RNG.
+function M.trace(mask, nx, nz, step, culture, seed)
+    local function at(x,z) return x>0 and x<=nx and z>0 and z<=nz and mask[(z-1)*nx+x] and 1 or 0 end
+    for pass=1,256 do
+        local changed=false
+        for phase=1,2 do
+            local remove={}
+            for z=2,nz-1 do for x=2,nx-1 do
+                local k=(z-1)*nx+x
+                if mask[k] then
+                    local p={at(x,z-1),at(x+1,z-1),at(x+1,z),at(x+1,z+1),at(x,z+1),at(x-1,z+1),at(x-1,z),at(x-1,z-1)}
+                    local n,a=0,0
+                    for i=1,8 do n=n+p[i];if p[i]==0 and p[i%8+1]==1 then a=a+1 end end
+                    local b,c
+                    if phase==1 then b=p[1]*p[3]*p[5];c=p[3]*p[5]*p[7]
+                    else b=p[1]*p[3]*p[7];c=p[1]*p[5]*p[7] end
+                    if n>=2 and n<=6 and a==1 and b==0 and c==0 then remove[#remove+1]=k end
+                end
+            end end
+            if #remove>0 then changed=true;for _,k in ipairs(remove) do mask[k]=nil end end
+        end
+        if not changed then break end
+    end
+    local function neighbours(k)
+        local x,z=(k-1)%nx+1,floor((k-1)/nx)+1;local list={}
+        for dz=-1,1 do for dx=-1,1 do
+            if (dx~=0 or dz~=0) and at(x+dx,z+dz)==1 then
+                -- Diagonals only when there is no cardinal connection. This
+                -- avoids triangular junctions and one-cell spurious branches.
+                if dx==0 or dz==0 or (at(x+dx,z)==0 and at(x,z+dz)==0) then list[#list+1]=(z+dz-1)*nx+x+dx end
+            end
+        end end
+        table.sort(list);return list
+    end
+    local adjacency,keys={},{}
+    for k=1,nx*nz do if mask[k] then keys[#keys+1]=k;adjacency[k]=neighbours(k) end end
+    local visited,lines={},{}
+    local function edge(a,b) return math.min(a,b)..':'..math.max(a,b) end
+    local function walk(start,next)
+        local chain={start};local prev,k=start,next;visited[edge(prev,k)]=true
+        while true do
+            chain[#chain+1]=k
+            local ns=adjacency[k];if #ns~=2 or k==start then break end
+            local following=ns[1]==prev and ns[2] or ns[1]
+            if visited[edge(k,following)] then break end
+            visited[edge(k,following)]=true;prev,k=k,following
+        end
+        if #chain>=4 then
+            local points={}
+            for _,cell in ipairs(chain) do points[#points+1]={((cell-1)%nx+0.5)*step,(floor((cell-1)/nx)+0.5)*step} end
+            -- Remove staircase noise without moving the endpoints/junctions.
+            -- One local B-spline pass stays within one raster cell of source.
+            local smooth={points[1]}
+            for i=2,#points-1 do
+                smooth[#smooth+1]={integer((points[i-1][1]+4*points[i][1]+points[i+1][1])/6),integer((points[i-1][2]+4*points[i][2]+points[i+1][2])/6)}
+            end
+            smooth[#smooth+1]=points[#points];lines[#lines+1]={id='lane/'..start..'/'..next,width=math.min(24,step),points=smooth}
+        end
+    end
+    for _,k in ipairs(keys) do if #adjacency[k]~=2 then for _,n in ipairs(adjacency[k]) do if not visited[edge(k,n)] then walk(k,n) end end end end
+    for _,k in ipairs(keys) do for _,n in ipairs(adjacency[k]) do if not visited[edge(k,n)] then walk(k,n) end end end
+    table.sort(lines,function(a,b) return a.id<b.id end)
+    -- Continue a street through a junction using the straightest compatible
+    -- tangent pair. Names describe routes, not every little graph edge.
+    local parent,ends={},{}
+    local function root(i) while parent[i]~=i do i=parent[i] end;return i end
+    for i,r in ipairs(lines) do
+        parent[i]=i
+        for side=1,2 do
+            local p=side==1 and r.points[1] or r.points[#r.points]
+            local q=side==1 and r.points[math.min(4,#r.points)] or r.points[math.max(1,#r.points-3)]
+            local dx,dz=q[1]-p[1],q[2]-p[2];local length=sqrt(dx*dx+dz*dz)
+            if length>0 then
+                local key=M.key(p[1],p[2]);ends[key]=ends[key] or {}
+                ends[key][#ends[key]+1]={i=i,dx=dx/length,dz=dz/length}
+            end
+        end
+    end
+    local junctions={};for key in pairs(ends) do junctions[#junctions+1]=key end;table.sort(junctions)
+    for _,key in ipairs(junctions) do
+        local e=ends[key];local pairs={}
+        for i=1,#e do for j=i+1,#e do
+            local dot=e[i].dx*e[j].dx+e[i].dz*e[j].dz
+            if dot<-0.65 then pairs[#pairs+1]={a=i,b=j,d=dot} end
+        end end
+        table.sort(pairs,function(a,b) if a.d~=b.d then return a.d<b.d end;if a.a~=b.a then return a.a<b.a end;return a.b<b.b end)
+        local taken={}
+        for _,pair in ipairs(pairs) do
+            if not taken[pair.a] and not taken[pair.b] then
+                taken[pair.a]=true;taken[pair.b]=true
+                local a,b=root(e[pair.a].i),root(e[pair.b].i);parent[math.max(a,b)]=math.min(a,b)
+            end
+        end
+    end
+    local used,assigned={},{}
+    for i,r in ipairs(lines) do
+        local component=root(i)
+        if not assigned[component] then
+            local salt=0;local id=lines[component].id;local name=M.name(id,culture,seed)
+            while used[name] and salt<512 do salt=salt+1;name=M.name(id..':'..salt,culture,seed) end
+            assigned[component]=name;used[name]=true
+        end
+        r.name=assigned[component]
+    end
+    return M.normalize({schema=1,generation='game',roads=lines})
+end
+-- Infer only occupied neighbourhoods, not full-map grid lines. Raster clearance
+-- follows irregular blocks and terrain; outer districts keep their large gaps.
+function M.infer(plots,sizeX,sizeZ,blocked,culture,seed,radius)
+    local step=64;local nx,nz=floor(sizeX/step),floor(sizeZ/step)
+    local mask,occupied={},{};radius=radius or 144
+    local sorted={};for _,p in ipairs(plots) do sorted[#sorted+1]=p end
+    table.sort(sorted,function(a,b) return M.key(a.x,a.z)<M.key(b.x,b.z) end)
+    for _,p in ipairs(sorted) do
+        local reach=radius+320
+        for z=math.max(1,floor((p.z-reach)/step)),math.min(nz,math.ceil((p.z+reach)/step)) do
+            for x=math.max(1,floor((p.x-reach)/step)),math.min(nx,math.ceil((p.x+reach)/step)) do
+                local dx,dz=math.abs((x-0.5)*step-p.x),math.abs((z-0.5)*step-p.z);local k=(z-1)*nx+x
+                if dx<=radius and dz<=radius then occupied[k]=true
+                elseif dx*dx+dz*dz<=reach*reach then mask[k]=true end
+            end
+        end
+    end
+    for k=1,nx*nz do
+        if mask[k] and (occupied[k] or (blocked and blocked(((k-1)%nx+0.5)*step,(floor((k-1)/nx)+0.5)*step))) then mask[k]=nil end
+    end
+    return M.trace(mask,nx,nz,step,culture,seed)
+end
+
 function M.nearest(network, x, z, street)
     local best
     for _, r in ipairs(network.roads) do
