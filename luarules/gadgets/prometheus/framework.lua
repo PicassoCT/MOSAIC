@@ -308,7 +308,7 @@ local function SerializeOrder(unitID, cmd, params, options)
     uint32(unitID);uint32(cmd+2147483648)
     b[#b+1]=options;b[#b+1]=#params
     for _,param in ipairs(params) do
-        assert(type(param)=="number" and param==param and param>-2147483649 and param<2147483647.5,
+        assert(type(param)=="number" and param==param and param>=-2147483648 and param<=2147483647,
             "parameter "..i.." must be a finite signed 32-bit number")
         -- The bridge transports 32-bit integer coordinates, rounded once here.
         -- Negative halves round symmetrically, rather than towards positive infinity.
