@@ -48,6 +48,20 @@ client.gadget:GameFrame(2);eq(#cw.sent,1)
 cw.rules[258]={};client.gadget.betrayalContacts[258]=true
 client.GiveOrderToUnit(258,10,{1,0,1},{})
 client.GiveOrderToUnit(258,10,{2,0,2},{},true);client.gadget:GameFrame(3);eq(#cw.sent,2)
+-- Invalid orders must not claim to be queued; diagnostics identify the error
+-- without sending malformed batches or preventing later, valid orders.
+cw.rules[258]={};client.gadget.betrayalContacts[258]=nil
+local oldWarn=cw.warnings
+assert(client.GiveOrderToUnit(258,10,{math.huge}, {})==false)
+assert(cw.warnings==oldWarn+1,'invalid coordinates must be diagnosed')
+client.gadget:GameFrame(4);eq(#cw.sent,2,'malformed order must never reach receiver')
+cw.rules[258]={};client.gadget.betrayalContacts[258]=nil
+assert(client.GiveOrderToUnit(258,10,{-1.5,0,2.5},{}))
+client.gadget:GameFrame(5);eq(#cw.sent,3)
+sw.rules[258]={} -- Reset the earlier receiver-side runner rejection.
+server.gadget:RecvLuaMsg(cw.sent[3],7);server.gadget:GameFrame(7)
+eq(sw.orders[#sw.orders][3][1],-2,'negative half coordinates round symmetrically')
+eq(sw.orders[#sw.orders][3][3],3)
 client.gadget:Shutdown();eq(cw.actions.Prometheus_UnitCreated,nil)
 
 -- Repeated LOS and damage events must not duplicate enemies or corrupt indices.

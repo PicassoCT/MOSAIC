@@ -19,14 +19,15 @@ local house_arab = Building:New{
 
 	isFirePlatform  = true, 
 	
-	YardMap =  [[yyyyyyyy
-				yyyyyyyy
-				yyyyyyyy
-				yyyyyyyy
-				yyyyyyyy
-				yyyyyyyy
-				yyyyyyyy
-				yyyyyyyy]]	, 
+	-- 6 x 6 footprint requires exactly 36 yardmap cells (previously 8 x 8).
+	YardMap = [[
+        yyyyyy
+        yyyyyy
+        yyyyyy
+        yyyyyy
+        yyyyyy
+        yyyyyy
+    ]], 
 	
 
 	customparams = {	

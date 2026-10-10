@@ -40,5 +40,6 @@ jobs:
           python -c "from pathlib import Path; from lupa.lua51 import LuaRuntime;
           [LuaRuntime().execute(Path(p).read_text(encoding='utf-8')) for p in
           ['tests/prometheus_startup_test.lua','tests/prometheus_orders_test.lua',
-          'tests/prometheus_betrayal_test.lua','tests/civic_objectives_test.lua',
+          'tests/prometheus_betrayal_test.lua','tests/civilian_dialogue_test.lua',
+          'tests/civic_objectives_test.lua',
           'tests/objective_income_test.lua','tests/objective_security_test.lua']]"

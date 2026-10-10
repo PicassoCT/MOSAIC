@@ -1,6 +1,18 @@
 -- The shared city orientation renderer owns sectors and zoom fade now.
 -- Retain the legacy renderer only for installations without the new module.
-if VFS.FileExists('scripts/lib_city_roads.lua') then return end
+if VFS.FileExists('scripts/lib_city_roads.lua') then
+    -- The old grid must not draw over the new spline road / sector renderer.
+    -- Provide GetInfo even when retiring this widget: the widget handler
+    -- rejects files that return before registering their metadata.
+    function widget:GetInfo()
+        return {
+            name = "TacticalGrid (legacy)", desc = "Replaced by City roads",
+            author = "a1983 / MOSAIC", license = "GPL v2",
+            layer = math.huge, enabled = false,
+        }
+    end
+    return
+end
 ----------------------------------------------------------------------------------------------------
 --                                          TACTICAL GRID                                         --
 --                         Widget display tactical grid and border fade.                          --

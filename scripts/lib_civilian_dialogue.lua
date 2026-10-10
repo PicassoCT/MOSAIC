@@ -2,7 +2,12 @@
 -- has its own deterministic random stream and never queries hidden game intel.
 local M = {}
 local conspiracy = VFS.Include("scripts/lib_civilian_conspiracy.lua")
-local function choose(t, seed) return t[(seed % #t) + 1] end
+local function choose(t, seed)
+    if type(t) ~= "table" or #t == 0 then return nil end
+    seed = tonumber(seed) or 0
+    if seed ~= seed or seed == math.huge or seed == -math.huge then seed = 0 end
+    return t[(math.floor(seed) % #t) + 1]
+end
 local openers = {"Listen,", "For real,", "Look,", "Yo,", "Mate,", "No joke,"}
 local reactions = {"That's rough.", "Man, this city.", "You're telling me.", "Yeah. I hear you.", "What a mess."}
 local endings = {"Keep your head down, yeah?", "Get home in one piece.", "Catch you later. Stay sharp.", "We'll talk when it's quieter."}
@@ -50,12 +55,20 @@ local smallTalk = {
     {"All I want is to {hustle}. Apparently that's a luxury lifestyle now.", "{reaction}", "Meanwhile {system} calls me a valued partner.", "Valued at whatever's left in your account, {address}."},
 }
 function M.build(seed, memory, options)
-    options = options or {}
+    options = type(options) == "table" and options or {}
+    seed = tonumber(seed) or 0
+    if seed ~= seed or seed == math.huge or seed == -math.huge then seed = 0 end
+    if type(memory) ~= "table" then memory = nil end
     local elaborate = options.forceConspiracy or
         conspiracy.selected(seed, options.conspiracyChance)
     local pool = memory and events[memory.kind] or smallTalk
-    pool = pool or smallTalk
     local template = choose(pool, seed)
+    if type(template) ~= "table" or #template == 0 then
+        template = choose(smallTalk, seed) or {
+            "Busy day out here.", "Tell me about it.",
+            "I'm taking the long way home.", "Keep safe."
+        }
+    end
     local slots = {
         opener = choose(openers, math.floor(seed / 7)),
         reaction = choose(reactions, math.floor(seed / 13)),
@@ -69,7 +82,8 @@ function M.build(seed, memory, options)
     }
     local result = {}
     for i = 1, #template do
-        result[i] = template[i]:gsub("{(%w+)}", function(key) return slots[key] or "" end)
+        local line = type(template[i]) == "string" and template[i] or "..."
+        result[i] = line:gsub("{(%w+)}", function(key) return tostring(slots[key] or "") end)
     end
     if elaborate then
         -- Preserve the full personal-event exchange before spinning a theory
