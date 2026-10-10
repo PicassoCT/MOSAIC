@@ -13,7 +13,7 @@
 --------------------------------------------------------------------------------
 
 
-Spring.Echo("◘◘◘◘ mosaicmain.lua :: Start Loading ◘◘◘◘")
+Spring.Echo("---- mosaicmain.lua :: Start Loading ----")
 
 local vfsInclude = VFS.Include
 local vfsGame = VFS.GAME
@@ -166,4 +166,4 @@ end
 
 --------------------------------------------------------------------------------
 
-Spring.Echo("◘◘◘◘ mosaicmain.lua :: End Loading ◘◘◘◘")
+Spring.Echo("---- mosaicmain.lua :: End Loading ----")
