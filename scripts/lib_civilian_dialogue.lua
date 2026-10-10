@@ -1,6 +1,7 @@
--- Complete exchanges with bounded, grammatical street-slang slots. No RNG shared
--- with gameplay, external service, ethnicity-derived dialect or invented intel.
+-- Existing everyday exchanges plus combinatorial conspiracy threads. Dialogue
+-- has its own deterministic random stream and never queries hidden game intel.
 local M = {}
+local conspiracy = VFS.Include("scripts/lib_civilian_conspiracy.lua")
 local function choose(t, seed) return t[(seed % #t) + 1] end
 local openers = {"Listen,", "For real,", "Look,", "Yo,", "Mate,", "No joke,"}
 local reactions = {"That's rough.", "Man, this city.", "You're telling me.", "Yeah. I hear you.", "What a mess."}
@@ -48,7 +49,10 @@ local smallTalk = {
     {"{opener} every time I try to {hustle}, {system} wants {fee}.", "That's the hustle, {address}. Just not your hustle.", "Can I at least get a receipt for being played?", "Paper costs extra."},
     {"All I want is to {hustle}. Apparently that's a luxury lifestyle now.", "{reaction}", "Meanwhile {system} calls me a valued partner.", "Valued at whatever's left in your account, {address}."},
 }
-function M.build(seed, memory)
+function M.build(seed, memory, options)
+    options = options or {}
+    local elaborate = options.forceConspiracy or
+        conspiracy.selected(seed, options.conspiracyChance)
     local pool = memory and events[memory.kind] or smallTalk
     pool = pool or smallTalk
     local template = choose(pool, seed)
@@ -67,6 +71,19 @@ function M.build(seed, memory)
     for i = 1, #template do
         result[i] = template[i]:gsub("{(%w+)}", function(key) return slots[key] or "" end)
     end
+    if elaborate then
+        -- Preserve the full personal-event exchange before spinning a theory
+        -- around it. Without an event, start directly at the conspiracy opener.
+        if not memory then result = {} end
+        local rant = conspiracy.build(seed, memory, options)
+        for i=1,#rant do result[#result+1] = rant[i] end
+        return result, "conspiracy"
+    end
     return result
+end
+
+function M.lineFrames(text, base)
+    -- Long claims need reading time; short acknowledgements keep the old pace.
+    return math.max(base or 150, math.min(12*30, math.ceil(#text / 22)*30))
 end
 return M
