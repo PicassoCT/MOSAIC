@@ -1140,26 +1140,47 @@ return defaultTargetNode
 end
 
 function giveWaypointsToUnit(uID, uType, startNodeID)
+    -- RouteTabel is rebuilt from buildings, some of which can subsequently
+    -- disappear. Never feed stale/non-numeric IDs into Spring C callins.
+    if type(uID)~="number" or type(startNodeID)~="number"
+        or not doesUnitExistAlive(uID) or not doesUnitExistAlive(startNodeID)
+        or not spGetUnitPosition(uID) or not spGetUnitPosition(startNodeID) then
+        return false
+    end
+
     local candidates=RouteTabel[startNodeID]
-    if not candidates or #candidates==0 then return end
-    local targetNodeID=candidates[math.random(1,#candidates)]
-
-    if civilianWalkingTypeTable[uType] then
-        targetNodeID = civilianLife:SelectTarget(uID,startNodeID,candidates)
+    if type(candidates)~="table" then return false end
+    local validCandidates={}
+    for _,candidate in ipairs(candidates) do
+        if type(candidate)=="number" and doesUnitExistAlive(candidate)
+            and spGetUnitPosition(candidate) then
+            validCandidates[#validCandidates+1]=candidate
+        end
     end
+    if #validCandidates==0 then return false end
 
-    if startNodeID and targetNodeID then
-        local route = civilianWalkingTypeTable[uType] and civilianLife:BuildRoute(uID,startNodeID,targetNodeID)
-        route = route or buildRouteSquareFromTwoUnits(startNodeID,targetNodeID,uType)
-   --     Spring.Echo("game_civilians:giveWaypointsToUnit:".. uID)
-        GG.EventStream:CreateEvent(travellFunction, { -- persistance Pack
-            mydefID = uType,
-            myTeam = spGetUnitTeam(uID),
-            unitID = uID,
-            goalIndex = 1,
-            goalList = route
-        }, spGetGameFrame() + (uID % 100))
+    local walking=civilianWalkingTypeTable[uType]
+    local targetNodeID
+    if walking then
+        targetNodeID=civilianLife:SelectTarget(uID,startNodeID,validCandidates)
+    else
+        targetNodeID=validCandidates[math.random(1,#validCandidates)]
     end
+    if type(targetNodeID)~="number" or not doesUnitExistAlive(targetNodeID)
+        or not spGetUnitPosition(targetNodeID) then return false end
+
+    local route=walking and civilianLife:BuildRoute(uID,startNodeID,targetNodeID)
+    route=route or buildRouteSquareFromTwoUnits(startNodeID,targetNodeID,uType)
+    if not route or not route[1] then return false end
+
+    GG.EventStream:CreateEvent(travellFunction, { -- persistance Pack
+        mydefID = uType,
+        myTeam = spGetUnitTeam(uID),
+        unitID = uID,
+        goalIndex = 1,
+        goalList = route
+    }, spGetGameFrame() + (uID % 100))
+    return true
 end
 
 function testClampRoute(Route, defID) return Route end
@@ -1170,15 +1191,13 @@ function issueArrivedUnitsCommands()
     end
 
     --assertTable(GG.UnitArrivedAtTarget)
-    for id, bArrived in pairs(GG.UnitArrivedAtTarget) do
-        if id and GG.CivilianTable[id] then
-
-
-            if doesUnitExistAlive(GG.CivilianTable[id].startID) == true and
-            doesUnitExistAlive(id) then
-            giveWaypointsToUnit(id, GG.CivilianTable[id].defID,
-                                GG.CivilianTable[id].startID)
-            end
+    for id in pairs(GG.UnitArrivedAtTarget) do
+        local data=GG.CivilianTable[id]
+        if type(id)=="number" and type(data)=="table"
+            and type(data.startID)=="number"
+            and doesUnitExistAlive(data.startID) == true
+            and doesUnitExistAlive(id) then
+            giveWaypointsToUnit(id,data.defID,data.startID)
         end
     end
     GG.UnitArrivedAtTarget = {}
