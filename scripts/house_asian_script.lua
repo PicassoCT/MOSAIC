@@ -6,6 +6,7 @@ include "lib_OS.lua"
 include "lib_UnitScript.lua"
 include "lib_radiance_emitters.lua"
 include "lib_Animation.lua"
+local buildingDamage = include "lib_building_damage.lua"
 --include "lib_debug.lua"
 
 local splitPlanner = VFS.Include("scripts/lib_house_asian_split.lua")
@@ -745,8 +746,10 @@ function absdiff(value, compval)
 end
 
 function script.Killed(recentDamage, _)
-	houseDestroyWithDestructionTable(LevelPieces, 9.81, unitID)
-    GG.ManualRenderedBuildingWithWindowsVisiblePieces[unitID]= nil
+	buildingDamage.collapse(LevelPieces, ToShowTable)
+    if GG.ManualRenderedBuildingWithWindowsVisiblePieces then
+        GG.ManualRenderedBuildingWithWindowsVisiblePieces[unitID] = nil
+    end
     return 1
 end
 
@@ -1139,14 +1142,14 @@ function buildDecorateGroundLvl(materialColourName)
                 floorBuildMaterial = removeElementFromBuildMaterial(element, floorBuildMaterial)
                 Move(element, _x_axis, xRealLoc, 0)
                 Move(element, _z_axis, zRealLoc, 0)
-                addShadowVoxel(xRealLoc, zRealLoc, 0)
+                addShadowVoxel(xRealLoc, zRealLoc, 0, element)
 				WaitForMoves(element)
                 Sleep(1)
                 rotation = getOutsideFacingRotationOfBlockFromPlan(i)
 
                 --assert(rotation)
                 WTurn(element, 3, math.rad(rotation), 0)
-				LevelPieces = houseAddDestructionTable(LevelPieces, 1, element)
+				LevelPieces = houseAddDestructionTable(LevelPieces, 1, element, xRealLoc, zRealLoc, 0)
                 addToShowTable(element, xLoc, zLoc, i, xRealLoc, zRealLoc)
                 lecho("Piece placed:"..toString(pieceID_NameMap[element]).." at ("..toString(xLoc).."/"..toString(zLoc)..") ".."("..toString(xRealLoc).."/"..toString(zRealLoc)..") at level".. toString(0))
     
@@ -1254,13 +1257,13 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
                 Move(element, _x_axis, xRealLoc, 0)
                 Move(element, _z_axis, zRealLoc, 0)
                 Move(element, _y_axis, Level * cubeDim.heigth, 0)
-                addShadowVoxel(xRealLoc, zRealLoc, Level * cubeDim.heigth)
+                addShadowVoxel(xRealLoc, zRealLoc, Level * cubeDim.heigth, element)
                 lvlPlaced[index] = element
                 WaitForMoves(element)
 				--assert(rotation)
                 WTurn(element, _z_axis, math.rad(rotation), 0)
                 -- lecho("Adding Element to level"..Level)
-				LevelPieces = houseAddDestructionTable(LevelPieces, Level + 1, element)
+				LevelPieces = houseAddDestructionTable(LevelPieces, Level + 1, element, xRealLoc, zRealLoc, Level * cubeDim.heigth)
 				addToShowTable(element, xLoc, zLoc, index, xRealLoc, zRealLoc)
 				lecho("Piece placed:"..toString(pieceID_NameMap[element]).." at ("..toString(xLoc).."/"..toString(zLoc)..") ".."("..toString(xRealLoc).."/"..toString(zRealLoc)..") at level".. toString(Level))
                 if countElements == 24 then
@@ -1642,7 +1645,7 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
                 WaitForMoves(element)
                 RoofTopPieces[i]= element
                 WTurn(element, _z_axis, math.rad(rotation), 0)
-				LevelPieces = houseAddDestructionTable(LevelPieces, #LevelPieces+1, element)
+				LevelPieces = houseAddDestructionTable(LevelPieces, Level + 1, element, xRealLoc, zRealLoc, Level * cubeDim.heigth + offset)
 				addToShowTable(element, xLoc, zLoc)
                 decoPieceUsedOrientation[element] = getRotationFromPiece(element)
 
@@ -1875,6 +1878,7 @@ function buildBuilding(boolIsReconstruction)
 	
 	addGroundPlaceables()
     -- buildAnimation publishes the completed array after showing the building.
+    buildingDamage.initialize(LevelPieces, ToShowTable, RoofTopPieces, toShowDict, cubeDim.heigth, cubeDim.length, 0.0254, pieceName_pieceNr)
     boolDoneShowing = true
 	initAllPieces()
 end
@@ -1885,7 +1889,10 @@ function script.Deactivate() return 0 end
 
 function script.QueryBuildInfo() return center end
 
-function script.HitByWeapon(x, z, weaponDefID, damage) end
+-- Called by the damage gadget after engine health modifiers have been applied.
+function BuildingBlockDamaged(hits, frame)
+    return buildingDamage.update(hits, frame)
+end
 
 function traceRayRooftop(  vector_position, vector_direction)
 	return  GetRayIntersectPiecesPosition(unitID, RoofTopPieces, vector_position, vector_direction)

@@ -6312,10 +6312,16 @@ function printf(unitID, message)
 end
 
 
-function houseAddDestructionTable(OrgT, Level, pID)
-if not OrgT[Level] then OrgT[Level] = {}end
-OrgT[Level][#OrgT[Level] +1] =  pid
-return OrgT
+-- Coordinates are the actual procedural placement, in script movement units.
+function houseAddDestructionTable(OrgT, Level, pID, x, z, y)
+    if not pID then return OrgT end
+    if not OrgT[Level] then OrgT[Level] = {} end
+    OrgT[Level][#OrgT[Level] + 1] = pID
+    if x and z then
+        OrgT.placements = OrgT.placements or {}
+        OrgT.placements[pID] = {x = x, z = z, y = y or 0}
+    end
+    return OrgT
 end
 
 function houseDestroyWithDestructionTable(LevelPieces, maxSpeed, id)

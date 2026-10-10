@@ -39,14 +39,22 @@ local function assemble(fixture,plan)
         GetUnitPiecePosDir=function(_,id)
             valid(id);local p=moves[id] or {};return 400+(p[1] or 1),p[2] or 1,800+(p[3] or 1)
         end,
-        GetUnitPieceInfo=function(_,id) valid(id);return {name=fixture.pieces[id],children={}} end,
+        GetUnitPieceInfo=function(_,id)
+            valid(id)
+            return {name=fixture.pieces[id],children=fixture.children and fixture.children[fixture.pieces[id]] or {}}
+        end,
         SetUnitNanoPieces=noop,
     }
     -- Actual grouping, random-pool, table and shared-cache helper functions.
     loadEnv('scripts/lib_OS.lua',env)
     loadEnv('scripts/lib_UnitScript.lua',env)
     loadEnv('scripts/lib_Animation.lua',env)
-    env.include=function() return noop end
+    env.include=function(name)
+        if name == 'lib_building_damage.lua' then
+            return loadEnv('scripts/'..name,env)
+        end
+        return noop
+    end
     env.piece=function(name) return assert(pieceMap[name], 'missing literal piece '..name) end
     env.getGameConfig=function() return {city={buildings={sizeZ=100,roofGroupCount=1},neonStreetRadius=0}} end
     env.ViewShadowGameRelevant=function() return false end
@@ -58,7 +66,6 @@ local function assemble(fixture,plan)
         assert(scale==0.0254);dimensions.width=width;dimensions.height=height
     end
     env.addShadowVoxel=noop;env.SetRadiancePlaceables=noop
-    env.houseAddDestructionTable=function(t,level,id) valid(id);t[#t+1]=id;return t end
     env.startPieceOS=function(_,_,descriptor) assert(type(descriptor)=='table') end
     shared.HouseAsianUnitPlans[serial]=plan
     loadEnv('scripts/house_asian_script.lua',env)
@@ -98,4 +105,4 @@ for i=1,#planner.catalog.groups do
     assemble(assert(fixtureByName[plan.unitName]),plan)
     planner.commit(state,plan)
 end
-print('PASS: real assembly with all 10 imported piece maps, all 95 coherent components, optional animations and model-specific caches')
+print('PASS: real assembly with all 10 model piece maps, all 95 coherent components, optional animations and model-specific caches')
