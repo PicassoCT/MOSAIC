@@ -10,7 +10,8 @@ end
 
 if not gadgetHandler:IsSyncedCode() then return false end
 
-local eligible = {}
+VFS.Include('scripts/lib_mosaic.lua')
+local eligible = getStructuralBuildingTypeTable(UnitDefs)
 local active = {}
 local UPDATE_FRAMES = 6 -- 0.2 seconds at the simulation's 30 Hz
 local MAX_IMPACTS = 8
@@ -36,16 +37,6 @@ function gadget:Shutdown()
         GG.AllowBuildingBlockDamageEffect = nil
     end
 end
-for id, def in pairs(UnitDefs) do
-    local cp = def.customParams or {}
-    if def.name == "house_asian0" or def.name == "house_western0"
-        or def.name == "house_arab0" or cp.house_asian_base == "house_asian0"
-        or cp.house_western_base == "house_western0"
-        or cp.house_arab_base == "house_arab0" then
-        eligible[id] = true
-    end
-end
-
 function gadget:UnitDamaged(id, defID, team, damage, paralyzer, weaponID, projectileID, attackerID)
     if not eligible[defID] or paralyzer or damage <= 0 then return end
     local hp, maxHP = Spring.GetUnitHealth(id)
