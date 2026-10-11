@@ -6607,6 +6607,9 @@ end
 
 
 function hairInWind(offset)
+    -- The standalone library is also loaded by hologram variants which do not
+    -- always initialize the hair signal before animation threads start.
+    if type(SIG_HAIR) ~= 'number' then return end
     Signal(SIG_HAIR)
     SetSignalMask(SIG_HAIR + animationLifetime)
     auslenkung= math.random(20,35)
