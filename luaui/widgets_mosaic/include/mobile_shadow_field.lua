@@ -4,10 +4,18 @@ local M={size=256,height=32,gridSize=32,cellCap=16,maxCasters=128,margin=512}
 local GRID_OFFSET=256*5
 local floor,min,max=math.floor,math.min,math.max
 local function identity(fn,...)
-    gl.MatrixMode(GL.PROJECTION);gl.PushMatrix();gl.LoadIdentity()
-    gl.MatrixMode(GL.MODELVIEW);gl.PushMatrix();gl.LoadIdentity()
-    fn(...)
-    gl.PopMatrix();gl.MatrixMode(GL.PROJECTION);gl.PopMatrix();gl.MatrixMode(GL.MODELVIEW)
+    local projection,modelview
+    local ok,reason=pcall(function(...)
+        gl.MatrixMode(GL.PROJECTION);gl.PushMatrix();projection=true;gl.LoadIdentity()
+        gl.MatrixMode(GL.MODELVIEW);gl.PushMatrix();modelview=true;gl.LoadIdentity()
+        fn(...)
+    end,...)
+    -- ResetMatrices reloads only the current stack entries in Recoil. Unwind
+    -- our pushes here so a failed optional upload cannot corrupt scene draws.
+    if modelview then gl.MatrixMode(GL.MODELVIEW);gl.PopMatrix() end
+    if projection then gl.MatrixMode(GL.PROJECTION);gl.PopMatrix() end
+    gl.MatrixMode(GL.MODELVIEW)
+    if not ok then error(reason,0) end
 end
 -- A shader is necessary here: fixed-function gl.Color clamps world positions.
 local dataVertex=[[#version 150 compatibility
@@ -78,7 +86,7 @@ void main(){gl_FragColor=texture2D(sourceTex,gl_TexCoord[0].st);}
     end
     local function upload(records)
         gl.Clear(GL.COLOR_BUFFER_BIT,0,0,0,0)
-        gl.DepthTest(false);gl.DepthMask(false);gl.Culling(false);gl.Blending(false)
+        gl.DepthTest(false);gl.DepthMask(false);gl.Culling(false);gl.Blending(false);gl.AlphaTest(false)
         gl.UseShader(dataShader);gl.PointSize(1)
         identity(function() gl.BeginEnd(GL.POINTS,vertices,records) end)
         gl.UseShader(0);gl.Color(1,1,1,1)
@@ -128,7 +136,7 @@ void main(){gl_FragColor=texture2D(sourceTex,gl_TexCoord[0].st);}
         gl.ActiveFBO(self.sourceFBO,function()
             gl.Viewport(0,0,1024,512)
             gl.UseShader(0);gl.Texture(0,false);gl.Color(1,1,1,1)
-            gl.DepthMask(true);gl.DepthTest(false);gl.Blending(false);gl.Culling(false)
+            gl.DepthMask(true);gl.DepthTest(false);gl.Blending(false);gl.Culling(false);gl.AlphaTest(false)
             gl.Clear(GL.COLOR_BUFFER_BIT,0,0,0,0);gl.Clear(GL.DEPTH_BUFFER_BIT,1)
             gl.DepthMask(false)
             if useCascade then
@@ -137,13 +145,14 @@ void main(){gl_FragColor=texture2D(sourceTex,gl_TexCoord[0].st);}
             end
             if capture then
                 gl.Viewport(512,0,512,512)
-                gl.MatrixMode(GL.PROJECTION);gl.PushMatrix();gl.LoadIdentity()
-                gl.Ortho(domain.x,domain.x+domain.span,domain.z,domain.z+domain.span,-100000,100000)
-                gl.MatrixMode(GL.MODELVIEW);gl.PushMatrix();gl.LoadIdentity();gl.Rotate(-90,1,0,0)
-                -- Metadata mode uses depth to retain the brightest actual lamp,
-                -- with its owner ID. Do not average unrelated source positions.
-                capture(bottom,top,1,true)
-                gl.PopMatrix();gl.MatrixMode(GL.PROJECTION);gl.PopMatrix();gl.MatrixMode(GL.MODELVIEW)
+                identity(function()
+                    gl.MatrixMode(GL.PROJECTION)
+                    gl.Ortho(domain.x,domain.x+domain.span,domain.z,domain.z+domain.span,-100000,100000)
+                    gl.MatrixMode(GL.MODELVIEW);gl.Rotate(-90,1,0,0)
+                    -- Metadata mode uses depth to retain the brightest actual
+                    -- lamp, with its owner ID. Never average source positions.
+                    capture(bottom,top,1,true)
+                end)
                 self.directReady=true
             end
         end)

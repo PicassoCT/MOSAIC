@@ -13,16 +13,42 @@ return function()
     local source=VFS.LoadFile(PATH)
     if not source or not gl.UniformMatrix then return nil,"missing scene shader/matrix API" end
     local mobileSource=VFS.LoadFile("luaui/widgets_mosaic/shaders/radiancecascade/mobile_shadow.glsl")
-    if not mobileSource then return nil,"missing mobile shadow shader" end
-    source=source:gsub("// MOBILE_SHADOWS",function() return mobileSource end,1)
-    local shader=gl.CreateShader({fragment=source,uniformInt={radianceTex=0,occupancyTex=1,
+    local ordinarySamplers={radianceTex=0,occupancyTex=1,
         mapDepthTex=2,modelDepthTex=3,mapNormalTex=4,modelNormalTex=5,mapDiffuseTex=6,modelDiffuseTex=7,localRadianceTex=8,localOccupancyTex=9,headlightTex=10,headlightLocalTex=11,windowTex=12,windowGroundTex=13,
-        mobileSourceAtlas=14,mobileShadowData=15}})
-    if not shader then return nil,gl.GetShaderLog() or "scene shader failed" end
-    local self={shader=shader,mode="pending",smoothing=true}
+    }
+    local shader,mobileSupported,mobileFailure
+    if mobileSource then
+        local mobileSamplers={}
+        for name,unit in pairs(ordinarySamplers) do mobileSamplers[name]=unit end
+        mobileSamplers.mobileSourceAtlas=14;mobileSamplers.mobileShadowData=15
+        local mobileFragment=source:gsub("// MOBILE_SHADOWS",function() return mobileSource end,1)
+        mobileFragment=mobileFragment:gsub("#version 150 compatibility",
+            "#version 150 compatibility\n#define MOBILE_SHADOWS_ENABLED 1\n",1)
+        shader=gl.CreateShader({fragment=mobileFragment,uniformInt=mobileSamplers})
+        mobileSupported=not not shader
+        if not shader then mobileFailure=gl.GetShaderLog() or "mobile scene shader failed" end
+    else
+        mobileFailure="missing mobile shadow shader"
+    end
+    if not shader then
+        shader=gl.CreateShader({fragment=source,uniformInt=ordinarySamplers})
+        if not shader then
+            return nil,"mobile shadows: "..tostring(mobileFailure).."; ordinary scene: "..
+                tostring(gl.GetShaderLog() or "shader failed")
+        end
+        mobileSupported=false
+        Spring.Echo("Neon mobile shadows disabled: "..tostring(mobileFailure).."; ordinary scene lighting retained")
+    end
+    local self={shader=shader,mode="pending",smoothing=true,mobileSupported=mobileSupported,
+        mobileFailure=mobileFailure}
     local loc={}
     for _,name in ipairs({"inverseProjection","inverseView","mapSize","heightRange","clipZeroToOne",
-        "deferred","strength","nightIntensity","smoothing","localActive","localOrigin","localSpan","headlightActive","headlightLocalActive","headlightOrigin","headlightSpan","headlightIntensity","windowActive","objectiveLightCount","mobileShadowActive","mobileCascadeSourceActive","mobileDirectSourceActive"}) do loc[name]=gl.GetUniformLocation(shader,name) end
+        "deferred","strength","nightIntensity","smoothing","localActive","localOrigin","localSpan","headlightActive","headlightLocalActive","headlightOrigin","headlightSpan","headlightIntensity","windowActive","objectiveLightCount"}) do loc[name]=gl.GetUniformLocation(shader,name) end
+    if mobileSupported then
+        for _,name in ipairs({"mobileShadowActive","mobileCascadeSourceActive","mobileDirectSourceActive"}) do
+            loc[name]=gl.GetUniformLocation(shader,name)
+        end
+    end
     local objectiveLoc={}
     for i=1,24 do
         objectiveLoc[i]={}
@@ -92,13 +118,15 @@ return function()
         gl.Texture(12,useWindows and windows.texture or texture)
         gl.Texture(13,useWindows and windows.ground or texture)
         gl.UseShader(self.shader)
-        if mobileShadows then
-            if not self.mobileLoc then self.mobileLoc=mobileShadows:Locations(self.shader) end
-            mobileShadows:Bind(self.mobileLoc)
-        else
-            gl.UniformInt(loc.mobileShadowActive,0)
-            gl.UniformInt(loc.mobileCascadeSourceActive,0);gl.UniformInt(loc.mobileDirectSourceActive,0)
-            gl.Texture(14,texture);gl.Texture(15,texture)
+        if self.mobileSupported then
+            if mobileShadows then
+                if not self.mobileLoc then self.mobileLoc=mobileShadows:Locations(self.shader) end
+                mobileShadows:Bind(self.mobileLoc)
+            else
+                gl.UniformInt(loc.mobileShadowActive,0)
+                gl.UniformInt(loc.mobileCascadeSourceActive,0);gl.UniformInt(loc.mobileDirectSourceActive,0)
+                gl.Texture(14,false);gl.Texture(15,false)
+            end
         end
         local lightCount=math.min(24,#(objectiveLights or {}))
         gl.UniformInt(loc.objectiveLightCount,lightCount)
@@ -125,11 +153,11 @@ return function()
         gl.Uniform(loc.strength,strength);gl.Uniform(loc.nightIntensity,intensity)
         gl.UniformInt(loc.deferred,useDeferred and 1 or 0)
         gl.UniformInt(loc.clipZeroToOne,Platform and Platform.glSupportClipSpaceControl and 1 or 0)
-        gl.DepthTest(false);gl.DepthMask(false);gl.Culling(false)
+        gl.DepthTest(false);gl.DepthMask(false);gl.Culling(false);gl.AlphaTest(false)
         gl.Blending(GL.ONE,GL.ONE);gl.Color(1,1,1,1)
         fullscreen()
         gl.UseShader(0)
-        for i=0,15 do gl.Texture(i,false) end
+        for i=0,(self.mobileSupported and 15 or 13) do gl.Texture(i,false) end
         gl.Blending(GL.SRC_ALPHA,GL.ONE_MINUS_SRC_ALPHA)
         gl.DepthMask(true);gl.DepthTest(true);gl.Color(1,1,1,1)
     end

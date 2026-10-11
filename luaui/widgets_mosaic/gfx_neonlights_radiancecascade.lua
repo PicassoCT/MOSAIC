@@ -62,6 +62,7 @@ local scene
 local localDetail
 local liveHeadlights
 local mobileShadows
+local mobileShadowFailure
 local windowLighting
 local sceneEnabled, sceneTest = true, false
 local sceneStrength, sceneLayer = 2, 1
@@ -71,6 +72,32 @@ local previewExposure = 4
 local fogHeights, fogSourceUnits
 local fogClock, fogRequestedUntil = 0, -1
 local fogLighting = {version=1}
+
+local function restoreWorldState()
+    -- Optional renderer failures must not leave a program or capture transform
+    -- active when ordinary scene lighting continues in the same call-in.
+    gl.UseShader(0)
+    if gl.ResetState then gl.ResetState() end
+    if gl.ResetMatrices then gl.ResetMatrices() end
+end
+local function disableMobileShadows(stage,reason)
+    local failed=mobileShadows
+    mobileShadows=nil
+    mobileShadowFailure=tostring(reason)
+    if failed then pcall(failed.Shutdown,failed) end
+    restoreWorldState()
+    Spring.Echo("Mobile radiance shadows disabled after "..stage..": "..mobileShadowFailure.."; ordinary lighting retained")
+end
+local function refreshLocalDetail(...)
+    if not localDetail then return end
+    local ok,reason=pcall(localDetail.Refresh,localDetail,...)
+    if not ok then
+        local failed=localDetail;localDetail=nil
+        pcall(failed.Shutdown,failed)
+        restoreWorldState()
+        Spring.Echo("Neon local detail disabled after capture failure: "..tostring(reason).."; global lighting retained")
+    end
+end
 
 -- Flat x/z/base/mask values: four numbers per occupied column.
 local function receiveBuildingShadowBegin(unitID, unitDefID, cellSize, levelHeight)
@@ -357,7 +384,7 @@ function widget:TextCommand(command)
                 mobileShadows.enabled and "height-aware" or "off",mobileShadows.count,
                 s.overBudget or 0,s.gridOverflow or 0,s.occupiedCells or 0,
                 mobileShadows.minY or 0,mobileShadows.maxY or 0))
-        else Spring.Echo("Mobile radiance shadows unavailable") end
+        else Spring.Echo("Mobile radiance shadows unavailable: "..tostring(mobileShadowFailure or (scene and scene.mobileFailure) or "not initialized")) end
         return true
     end
     if windowLighting and windowLighting:TextCommand(command) then
@@ -709,13 +736,18 @@ function widget:Initialize()
     if scene then
         liveHeadlights=VFS.Include("luaui/widgets_mosaic/include/headlight_live_field.lua")()
         if not liveHeadlights then Spring.Echo("Headlights: live atlas allocation failed; retaining 5 Hz cone lighting") end
-        local ok,module=pcall(VFS.Include,"luaui/widgets_mosaic/include/mobile_shadow_field.lua")
-        if ok and type(module)=="table" then
-            local config=VFS.Include("scripts/lib_mosaic.lua",setmetatable({MOSAIC_CONFIG_ONLY=true},{__index=_G}))
-            local reason
-            mobileShadows,reason=module.New(config.getMobileRadianceShadowTypeTable(UnitDefs))
-            if not mobileShadows then Spring.Echo("Mobile radiance shadows unavailable: "..tostring(reason)) end
-        else Spring.Echo("Mobile radiance shadows unavailable: "..tostring(module)) end
+        if scene.mobileSupported then
+            local ok,result,reason=pcall(function()
+                local module=VFS.Include("luaui/widgets_mosaic/include/mobile_shadow_field.lua")
+                local config=VFS.Include("scripts/lib_mosaic.lua",setmetatable({MOSAIC_CONFIG_ONLY=true},{__index=_G}))
+                return module.New(config.getMobileRadianceShadowTypeTable(UnitDefs))
+            end)
+            if ok then mobileShadows=result end
+            if not mobileShadows then
+                mobileShadowFailure=tostring(ok and reason or result)
+                Spring.Echo("Mobile radiance shadows unavailable: "..mobileShadowFailure.."; ordinary lighting retained")
+            end
+        end
     end
 
     widgetHandler:RegisterGlobal("RecieveAllNeonUnitsPieces", recieveNeonHoloLightPiecesByUnit)
@@ -750,6 +782,9 @@ end
 
 local function drawNeonPieces(captureLayer, domain)
     captureLayer = captureLayer or propagationLayer
+    -- Alpha stores source height, not coverage. Material cutout state must not
+    -- discard low-height or low-luminance radiance samples.
+    gl.AlphaTest(false)
     gl.Clear(GL.COLOR_BUFFER_BIT, 0, 0, 0, 0)
     gl.Clear(GL.DEPTH_BUFFER_BIT, 1)
 
@@ -917,7 +952,7 @@ function widget:DrawWorldPreUnit()
             (sceneLayer-1)*bandHeight,sceneLayer*bandHeight,true)
         sceneRadiance = propagation.sceneTexture
         if localDetail then
-            localDetail:Refresh(sceneLayer,topDownTex,occlusionTex[sceneLayer],drawNeonPieces,drawOcclusionLayer)
+            refreshLocalDetail(sceneLayer,topDownTex,occlusionTex[sceneLayer],drawNeonPieces,drawOcclusionLayer)
         end
     end
     gl.RenderToTexture(topDownTex, drawNeonPieces, propagationLayer)
@@ -928,7 +963,7 @@ function widget:DrawWorldPreUnit()
             if sceneLayer == propagationLayer then
                 sceneRadiance = propagation.unitTexture
                 if localDetail then
-                    localDetail:Refresh(sceneLayer,topDownTex,occlusionTex[sceneLayer],drawNeonPieces,drawOcclusionLayer)
+                    refreshLocalDetail(sceneLayer,topDownTex,occlusionTex[sceneLayer],drawNeonPieces,drawOcclusionLayer)
                 end
             end
             sceneReady = true
@@ -984,7 +1019,10 @@ end
 
 function widget:DrawWorld()
     local domain=localDetail and localDetail:CameraDomain()
-    if mobileShadows then mobileShadows:Update(sceneEnabled and sceneReady and domain or nil) end
+    if mobileShadows then
+        local ok,reason=pcall(mobileShadows.Update,mobileShadows,sceneEnabled and sceneReady and domain or nil)
+        if not ok then disableMobileShadows("caster update",reason) end
+    end
     if liveHeadlights then
         local bandHeight=OCCLUSION_WORLD_HEIGHT/OCCLUSION_LAYER_COUNT
         if liveVehicleProvider~=WG.CaptureVehicleHeadlightEmission or liveCombatProvider~=WG.CaptureCombatLightEmission then
@@ -1001,7 +1039,9 @@ function widget:DrawWorld()
         local bandHeight=OCCLUSION_WORLD_HEIGHT/OCCLUSION_LAYER_COUNT
         if mobileShadows then
             local capture=liveHeadlights and liveHeadlights.localReady and captureLiveLights or nil
-            mobileShadows:CaptureSources(capture,(sceneLayer-1)*bandHeight,sceneLayer*bandHeight,domain,localDetail)
+            local ok,reason=pcall(mobileShadows.CaptureSources,mobileShadows,capture,
+                (sceneLayer-1)*bandHeight,sceneLayer*bandHeight,domain,localDetail)
+            if not ok then disableMobileShadows("source capture",reason) end
         end
         -- Sweep direct searchlights at render frequency; the cascade only holds
         -- their small fixed bulb spill, so it cannot leave old searchlight pools.

@@ -16,6 +16,7 @@ return function()
     if not self.texture or not self.localTexture then self:Shutdown();return nil end
     function self:Update(dt) self.age=self.age+dt end
     local function draw(capture,bottom,top,domain)
+        gl.AlphaTest(false) -- captured alpha is light metadata
         gl.Clear(GL.COLOR_BUFFER_BIT,0,0,0,0)
         gl.DepthTest(false);gl.DepthMask(false);gl.Culling(false);gl.Blending(false)
         gl.Color(1,1,1,1)

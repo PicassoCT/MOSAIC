@@ -41,6 +41,7 @@ def source(name, defines="", inject=False):
                             "#version 150 compatibility\n" + defines, 1)
     if inject:
         assert "// MOBILE_SHADOWS" in text, "production mobile-shadow injection point missing"
+        text = text.replace("#version 150 compatibility", "#version 150 compatibility\n#define MOBILE_SHADOWS_ENABLED 1", 1)
         text = text.replace("// MOBILE_SHADOWS", helper, 1)
     return text
 

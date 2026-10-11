@@ -12,6 +12,7 @@ local function harness(failure)
     local uniforms, passes = {},{}
     local counts={shader=0,texture=0,fbo=0,mrt=0,rtt=0,sourceBytes=0}
     local activeShader
+    local alphaTest=true
     local function allocate(kind)
         counts[kind]=counts[kind]+1
         if failure[kind]==counts[kind] then return end
@@ -55,6 +56,8 @@ local function harness(failure)
         UniformInt=function(location,...) uniforms[location]={...} end,
         Texture=function(unit,texture) bound[unit]=texture end,
         UseShader=function(shader) activeShader=shader end,
+        AlphaTest=function(value) alphaTest=value end,
+        TexRect=function() assert(alphaTest==false,'cascade data inherited opacity rejection') end,
         ActiveFBO=function(id,callback,...)
             local desc=assert(fbos[id])
             for _,tex in pairs(bound) do assert(tex~=desc.color0 and tex~=desc.color1,'paired target sampled itself') end
@@ -68,7 +71,7 @@ local function harness(failure)
         end,
         GetViewSizes=function() return 1280,720 end,
     }
-    for _,name in ipairs({'MatrixMode','PushMatrix','LoadIdentity','TexRect','PopMatrix','DepthTest',
+    for _,name in ipairs({'MatrixMode','PushMatrix','LoadIdentity','PopMatrix','DepthTest',
         'DepthMask','Blending','Culling','Color'}) do gl[name]=function() end end
     if failure.missingAPI then gl[failure.missingAPI]=nil end
     local env=setmetatable({gl=gl,GL={},Game={mapSizeX=8192,mapSizeZ=4096},

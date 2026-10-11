@@ -165,6 +165,7 @@ return function(emissionSize, singleOutput, heightAware)
         domain=localDomain
         self.mapSizeX, self.mapSizeZ = Game.mapSizeX, Game.mapSizeZ
         self.baseInterval = 2 * math.min(Game.mapSizeX,Game.mapSizeZ) / emissionSize
+        gl.AlphaTest(false) -- cascade alpha is transmittance, never coverage
         gl.DepthTest(false); gl.DepthMask(false); gl.Blending(false); gl.Culling(false)
         gl.Color(1,1,1,1)
         gl.Texture(0,emission); gl.Texture(1,occupancy)

@@ -14,6 +14,7 @@ return function(sources)
         gl.Vertex(x-r,y,z-r);gl.Vertex(x+r,y,z-r);gl.Vertex(x+r,y,z+r);gl.Vertex(x-r,y,z+r)
     end
     function self:Capture(bottom,top,gain,night,metadata)
+        gl.AlphaTest(false) -- source height/owner data must survive material cutouts
         gl.DepthTest(metadata and GL.LESS or false);gl.DepthMask(not not metadata)
         if metadata then gl.Blending(false) else gl.Blending(GL.ONE,GL.ONE) end
         gl.UseShader(shader);gl.Uniform(loc.mapSize,Game.mapSizeX,Game.mapSizeZ)
