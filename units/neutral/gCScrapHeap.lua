@@ -17,6 +17,9 @@ local unitDef = {
 
 	FootprintX = 5,
 	FootprintZ = 5,
+	-- Solid rubble in every yard-open state; visual decay never opens cells.
+	blocking = true,
+	YardMap = string.rep("o", 5 * 5),
 
 	--MaxVelocity = 0.5,
 	MaxWaterDepth =400,
