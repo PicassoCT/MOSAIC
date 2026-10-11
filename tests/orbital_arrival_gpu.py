@@ -97,8 +97,8 @@ def preview(result,name):
 
 # The four optical snapshots all precede atmospheric transit. Keep time fixed
 # here so cloud animation cannot masquerade as a change in planetary scale.
-# The whole-globe view includes the night limb, whose authored settlement lights
-# emit up to 2.5 before surface/atmosphere contributions; allow that HDR range.
+# The orbital shader retains night-limb settlement lights, which emit up to
+# 2.5 before surface/atmosphere contributions; allow that authored HDR range.
 orbit_stages=[]
 for index,descent in enumerate([0.,0.30,0.64,1.],1):
  e,result=render(descent,cloud_descent=0.)

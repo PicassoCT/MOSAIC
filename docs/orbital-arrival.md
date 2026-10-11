@@ -4,12 +4,16 @@
 The satellite renderer never compiles or runs while the engine is loading.
 **No descent runs until the simulation frame counter becomes positive.**
 At the first LuaUI screen draw with `Spring.GetGameFrame() > 0`, the
-artwork/orbit blend begins (0.5 seconds), holding the initial whole-globe view.
+artwork/orbit blend begins (0.5 seconds), holding the initial low Earth orbit view.
 It is followed by **four planetary snapshots of 0.35 seconds each**, then a
 separate 0.6-second cloud descent and city reveal (about 2.5 seconds total).
 Each snapshot holds one optical scale, with a hard zoom cut to the next.
-The Earth's optical diameter expands roughly 45x, keeping the same surface
-point under the screen center. All four snapshots show the planetary surface;
+Earth fills most of the opening frame, with a broad curved atmospheric limb
+and a narrow band of space above it. The initial projected radius is eight
+times the former whole-globe view. The Earth's optical diameter expands roughly
+9.7x across the four shots, keeping the same surface point under the screen
+center. The final radius compensates for the lower viewing angle so the final
+shot retains its previous central terrain scale. All four snapshots show the planetary surface;
 the cloud transit and live city reveal begin only after the fourth hold.
 The city appears progressively through thinning clouds instead of replacing
 the image in one frame. Neither LuaIntro shutdown nor city spawn completion gates
@@ -18,11 +22,11 @@ telex after the cinematic releases the live map.
 
 | Phase | Nominal time after first advancing game frame |
 | --- | --- |
-| Loading artwork blends into the whole globe | 0.00–0.50 seconds |
-| Snapshot 1: whole globe | 0.50–0.85 seconds |
-| Snapshot 2: broad regional view | 0.85–1.20 seconds |
-| Snapshot 3: closer terrain and cloud detail | 1.20–1.55 seconds |
-| Snapshot 4: low orbit | 1.55–1.90 seconds |
+| Loading artwork blends into low Earth orbit | 0.00–0.50 seconds |
+| Snapshot 1: low orbit with a curved atmospheric horizon | 0.50–0.85 seconds |
+| Snapshot 2: closer regional view | 0.85–1.20 seconds |
+| Snapshot 3: terrain and cloud detail | 1.20–1.55 seconds |
+| Snapshot 4: close atmospheric approach | 1.55–1.90 seconds |
 | Cloud transit, then live city reveal | 1.90–2.50 seconds |
 
 The presentation clock lands on each snapshot boundary in an actual draw.
