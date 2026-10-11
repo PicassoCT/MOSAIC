@@ -5,8 +5,10 @@ end
 
 local Sources=VFS.Include('luaui/widgets_mosaic/include/combat_light_sources.lua')
 local RadianceTime=VFS.Include('luaui/widgets_mosaic/include/radiance_time.lua')
+-- LuaUI copies System into each widget environment; it does not provide _G.
+-- Keep the config helpers isolated, but inherit the actual widget's builtins.
 local MosaicConfig=VFS.Include('scripts/lib_mosaic.lua',
-    setmetatable({MOSAIC_CONFIG_ONLY=true},{__index=_G}))
+    setmetatable({MOSAIC_CONFIG_ONLY=true},{__index=getfenv(1)}))
 local sources,lightRenderer,flameRenderer,tracerRenderer,capture,hasEmission,api
 local globalLightMult,globalRadiusMult,globalLifeMult=1.3,1.3,.75
 local enableHeatDistortion=true
@@ -193,6 +195,16 @@ local callbacks={GadgetPyroTorchOff=PyroTorchOff,
     GadgetWeaponExplosion=WeaponExplosion,GadgetWeaponBarrelfire=WeaponBarrelfire,
     GadgetCombatFire=CombatFire}
 
+local function effectStatus()
+    return {
+        frame=Spring.GetGameFrame(),
+        radiance=lightRenderer~=nil,
+        flamePainter=flameRenderer~=nil,
+        tracers=tracerRenderer~=nil,
+        tanks=sources and sources:GetTankMuzzleStats() or {},
+    }
+end
+
 function widget:Initialize()
     syncOptions()
     sources=Sources.New(weaponConf,MosaicConfig.getPoliceLightTypeTable(UnitDefs),
@@ -232,10 +244,23 @@ function widget:Initialize()
         getHeatDistortion=function() return enableHeatDistortion end,
         getCinderBudgetStats=function() return sources and sources.pyroStats end,
         getPoliceLightStats=function() return sources and sources:GetPoliceLightStats() end,
+        getStatus=effectStatus,
     }
     WG.lighteffects=api
 end
 function widget:TextCommand(command)
+    if command=='effects status' then
+        local status=effectStatus()
+        local t=status.tanks
+        Spring.Echo(string.format(
+            '[MOSAIC effects] frame=%d FlamePainter=%s combat-radiance=%s tracers=%s | tanks tracked=%d visible=%d active=%d queued=%d missing-anchors=%d last-shot-frame=%s age=%s',
+            status.frame,status.flamePainter and 'ready' or 'unavailable',
+            status.radiance and 'ready' or 'unavailable',status.tracers and 'ready' or 'unavailable',
+            t.tracked or 0,t.visible or 0,t.active or 0,t.queued or 0,t.missingAnchors or 0,
+            tostring(t.latestShotFrame or 'none'),t.latestShotAge and string.format('%.1ff',t.latestShotAge) or 'none'))
+        Spring.Echo('[MOSAIC effects] queued counts sources prepared for rendering; confirm visible flames and surface lighting in-game.')
+        return true
+    end
     if command=='police lights' then
         local s=sources and sources:GetPoliceLightStats() or {}
         local cascade=WG.GetVehicleLightOcclusion and WG.GetVehicleLightOcclusion(1)

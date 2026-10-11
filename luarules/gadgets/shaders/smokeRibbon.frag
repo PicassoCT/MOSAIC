@@ -1,5 +1,5 @@
 #version 150 compatibility
-uniform float effectTime, strandOpacity, hairMode;
+uniform float effectTime, strandOpacity, hairMode, electricMode;
 uniform vec4 colorStart, colorEnd;
 uniform vec4 sourceGlow;
 uniform vec2 emission;
@@ -32,6 +32,33 @@ void main() {
         float tips = 1.0-smoothstep(0.82+0.1*sin(phase*2.0),1.0,age);
         float alpha = color.a*edge*fibres*strandOpacity*tips;
         gl_FragColor = vec4(color.rgb*ambient*alpha,alpha);
+        return;
+    }
+    if (electricMode > 0.5) {
+        // White-hot continuous cores and short forks sit inside the original
+        // cyan/blue electrical colour. Pixel coverage keeps narrow filaments
+        // visible at tactical zoom without widening them into opaque bands.
+        float flow = age*25.0-effectTime*3.0;
+        float jitter = (noise(vec2(flow,ribbonSeed))-0.5)*0.22;
+        float aa = max(fwidth(x),0.006);
+        float core = (1.0-smoothstep(0.065,0.065+aa,abs(x-jitter)))
+            * min(1.0,0.13/aa);
+        float forkGate = smoothstep(0.20,0.33,age)*(1.0-smoothstep(0.55,0.86,age));
+        float forkSide = sin(ribbonSeed)>0.0 ? 1.0 : -1.0;
+        float forkX = jitter+forkSide*(0.35+0.09*sin(flow*1.9))*forkGate;
+        float fork = (1.0-smoothstep(0.035,0.035+aa,abs(x-forkX)))
+            * min(1.0,0.07/aa)*forkGate;
+        float halo = exp(-6.0*x*x)*(1.0-smoothstep(0.72,1.0,abs(x)))*0.22;
+        float pulse = 0.78+0.22*noise(vec2(age*9.0-effectTime*4.0,ribbonSeed+7.0));
+        float fade = smoothstep(0.0,0.02,age)*(1.0-smoothstep(0.78,1.0,age));
+        vec4 color = mix(colorStart,colorEnd,age);
+        float coverage = fade*color.a*strandOpacity*pulse;
+        float alpha = clamp((halo+core+fork*0.7)*coverage,0.0,0.98);
+        vec3 whiteCore = mix(color.rgb,vec3(1.0),0.96);
+        float glow = max(1.0,mix(emission.x,emission.y,age));
+        float sourceFade = 1.0-smoothstep(0.0,max(sourceGlow.a,0.0001),age);
+        vec3 energy = color.rgb*halo + whiteCore*(core+fork*0.7)*1.4;
+        gl_FragColor = vec4((energy*glow+sourceGlow.rgb*sourceFade*halo)*coverage,alpha);
         return;
     }
     vec2 flow=vec2(x*2.0+ribbonSeed,age*7.0-effectTime*0.85);

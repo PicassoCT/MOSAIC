@@ -8,9 +8,11 @@ local created=0
 local cameraY,cameraZ,frustumTests,lastOpacity=10,100,0,0
 local wind,velocity,lastDrift={0,0,0},{0,0,0},{}
 local windCalls,velocityCalls=0,0
-local lastLength,lastPad,lastLanding
+local lastLength,lastPad,lastLanding,lastElectric
 GG={}; Game={gameSpeed=30}; gadget={}
-gadgetHandler={IsSyncedCode=function() return synced end,RemoveGadget=function() error('unexpected removal') end}
+gadgetHandler={IsSyncedCode=function() return synced end,RemoveGadget=function() error('unexpected removal') end,
+    AddChatAction=function() end,RemoveChatAction=function() end,
+    AddSyncAction=function() end,RemoveSyncAction=function() end}
 VFS={Include=function(p) return dofile(p) end,LoadFile=function() return '' end}
 Spring={ValidUnitID=function(id) return id==7 end,GetUnitIsDead=function() return dead end,
     GetWind=function() windCalls=windCalls+1;return unpack(wind) end,
@@ -37,6 +39,7 @@ gl=setmetatable({CreateShader=function() return 1 end,GetUniformLocation=functio
         elseif n=='plumeLength' then lastLength=(...)
         elseif n=='landingPad' then lastPad={...}
         elseif n=='landingMode' then lastLanding=(...)
+        elseif n=='electricMode' then lastElectric=(...)
         elseif n=='directionalDrift' then lastDrift={...} end
     end}, {__index=function() return function() end end})
 local path='luarules/gadgets/gfx_smoke_ribbons.lua'
@@ -129,6 +132,19 @@ assert(lastDirection[1]==0 and lastDirection[2]==-1 and lastDirection[3]==0,'out
 gadget:Shutdown();gadget={};dofile(path);gadget:Initialize();gadget:DrawWorld()
 assert(lastOrigin[1]==3 and lastOrigin[2]==-4 and lastOrigin[3]==2 and lastDirection[2]==-1,'reload lost vapor attachment')
 api.Remove(7,'cold');hidden('removed tank vapor survives')
+-- Electrical mode and animated tip attachment survive the synced snapshot;
+-- changing back to a flame must reset the shared shader's electric uniform.
+local electric=dofile('scripts/lib_graphene_arc.lua').Options(19,{2,3,4})
+assert(api.Set(7,'electric','smoke',electric))
+gadget:DrawWorld()
+assert(lastElectric==1 and lastOrigin[1]==3 and lastOrigin[2]==-4 and lastOrigin[3]==2,
+    'electrical tip attachment or shader mode lost in the bridge')
+gadget:Shutdown();gadget={};dofile(path);gadget:Initialize();gadget:DrawWorld()
+assert(lastElectric==1 and lastLength==190,'reload lost the electric profile')
+cloak=true;hidden('electrical canopy reveals a cloaked owner');cloak=false
+assert(api.Set(7,'electric','smoke',{emission={4,2}}))
+gadget:DrawWorld();assert(lastElectric==0,'ordinary flames inherited the electric shader mode')
+api.Remove(7,'electric');hidden('removed electric canopy survives')
 assert(not api.Set(7,'hair','smoke',{mode='invalid'}))
 assert(api.Set(7,'hair','smoke',{mode='hair',rootOffset={2,3,4},direction={0,0,1},distanceFactor=100}))
 gadget:DrawWorld()

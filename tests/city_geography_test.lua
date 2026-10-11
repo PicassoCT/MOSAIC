@@ -111,9 +111,8 @@ print("PASS: pure shared geography, metadata validation, both hemispheres, 205 l
 -- from the map VFS; client LOCATION output must never select a different country.
 local function startLocationWidget(mapName, metadata)
     local messages = {}
-    local environment = setmetatable({
+    local engineEnvironment = setmetatable({
         Game = {mapName = mapName, mapSizeX = 8192, mapSizeZ = 8192},
-        widget = {}, WG = {},
         Spring = {
             GetGameFrame = function() return 100 end,
             GetViewGeometry = function() return 1920, 1080 end,
@@ -123,7 +122,14 @@ local function startLocationWidget(mapName, metadata)
         },
         gl = {Color = function() end, Text = function() end},
     }, {__index = _G})
-    environment._G = environment
+    -- LuaUI copies this exact allowlist into each widget. It exposes pairs,
+    -- getfenv and VFS but deliberately has no _G fallback; using an unrestricted
+    -- environment here previously hid a real config-import startup crash.
+    loadInEnvironment("luaui/system.lua", engineEnvironment)
+    local environment = {widget = {}, WG = {}}
+    for key, value in pairs(engineEnvironment.System) do environment[key] = value end
+    assert(environment._G == nil and environment.pairs == pairs,
+        "location fixture must reproduce the real LuaUI builtins without _G")
     environment.VFS = {MAP = "map", GAME = "game"}
     environment.VFS.FileExists = function(path, mode)
         return path == "mosaic/location.lua" and mode == "map" and metadata ~= nil

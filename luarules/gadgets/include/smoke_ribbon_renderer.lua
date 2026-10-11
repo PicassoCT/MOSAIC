@@ -7,7 +7,7 @@ return function()
     local self = {records = {}, maxVisible = 128}
     local loc, meshes, hairHistory = {}, {}, {}
     for _, name in ipairs({'origin','direction','cameraPosition','effectTime','plumeLength',
-        'plumeWidth','curl','seed','colorStart','colorEnd','emission','sourceGlow','ambient','strandOpacity','strandCount','directionalDrift','hairMode','stiffness','gravity',
+        'plumeWidth','curl','seed','colorStart','colorEnd','emission','sourceGlow','ambient','strandOpacity','strandCount','directionalDrift','hairMode','electricMode','stiffness','gravity',
         'landingMode','landingPad','terrainBandNear','terrainBandFar','terrainPad'}) do
         loc[name] = gl.GetUniformLocation(shader, name)
     end
@@ -223,6 +223,7 @@ return function()
                             -- Includes maximum curl, axial displacement and ribbon half-width.
                             local radius = length*0.5+width*(r.curl*2+1)+driftLength*0.5
                             if r.mode == 'hair' then radius=length*1.5+width end
+                            if r.mode == 'electric' then radius=radius+length*0.2 end
                             local pad
                             if r.mode == 'landing' or r.mode == 'pad' then
                                 pad = landingPad(id, r.padPiece)
@@ -306,6 +307,7 @@ return function()
             gl.Uniform(loc.origin,d.x,d.y,d.z); gl.Uniform(loc.direction,d.dx,d.dy,d.dz)
             gl.Uniform(loc.directionalDrift,d.driftX,d.driftY,d.driftZ)
             gl.Uniform(loc.hairMode,r.mode == 'hair' and 1 or 0)
+            gl.Uniform(loc.electricMode,r.mode == 'electric' and 1 or 0)
             gl.Uniform(loc.landingMode,r.mode == 'pad' and 2 or (r.mode == 'landing' and 1 or 0))
             gl.Uniform(loc.landingPad,unpack(d.pad or {0,0,0,-1}))
             if r.terrainGuard then

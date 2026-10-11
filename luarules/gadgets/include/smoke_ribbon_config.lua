@@ -21,7 +21,7 @@ function M.Normalize(unitID, piece, options)
     assert(found, 'unknown smoke emitter piece')
     local o = options or {}
     local mode = o.mode or 'smoke'
-    assert(mode == 'smoke' or mode == 'hair' or mode == 'landing' or mode == 'pad', 'unknown ribbon mode')
+    assert(mode == 'smoke' or mode == 'hair' or mode == 'landing' or mode == 'pad' or mode == 'electric', 'unknown ribbon mode')
     local hair = mode == 'hair'
     local direction = vector(o.direction, (hair and {0, 0, -1} or {0, 1, 0}), 3, -1e6, 1e6)
     local length = math.sqrt(direction[1]^2 + direction[2]^2 + direction[3]^2)

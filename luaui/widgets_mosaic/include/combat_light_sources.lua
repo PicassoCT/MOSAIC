@@ -334,6 +334,35 @@ function M.New(weaponConf, policeProfiles, tankProfiles)
         return lights,flames,tracers
     end
     -- On-demand diagnostics; no extra per-frame LOS or piece queries.
+    -- Read the shot stamp even after the brief flash has expired, so a user can
+    -- distinguish a missing firing event from a missed screenshot window.
+    function self:GetTankMuzzleStats()
+        local stats={tracked=0,visible=0,active=0,queued=0,missingAnchors=0}
+        local frame=Spring.GetGameFrame()+(Spring.GetFrameTimeOffset() or 0)
+        for id,record in pairs(self.tanks) do
+            stats.tracked=stats.tracked+1
+            if unitVisible(id) then
+                stats.visible=stats.visible+1
+                local born=Spring.GetUnitRulesParam(id,record.profile.shotParam)
+                if type(born)=='number' and born>=0 and born<=frame then
+                    stats.latestShotFrame=math.max(stats.latestShotFrame or born,born)
+                end
+                if TankMuzzle.ActiveFrame(Spring,id,record.profile,frame) then
+                    stats.active=stats.active+1
+                    if not TankMuzzle.Collect(Spring,id,record,frame) then
+                        stats.missingAnchors=stats.missingAnchors+1
+                    end
+                end
+            end
+        end
+        if stats.latestShotFrame then stats.latestShotAge=frame-stats.latestShotFrame end
+        for _,light in ipairs(self:Collect()) do
+            if light.unitID and self.tanks[light.unitID] and light.ribbon then
+                stats.queued=stats.queued+1
+            end
+        end
+        return stats
+    end
     function self:GetPoliceLightStats()
         local stats={tracked=0,visible=0,emitted=0,outsidePointLos=0,anchored=0,fallback=0}
         local frame=Spring.GetGameFrame()+(Spring.GetFrameTimeOffset() or 0)

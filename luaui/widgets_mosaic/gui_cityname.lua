@@ -51,8 +51,9 @@ end
 
 -- Shared identity also drives synced city ruin selection. Import only the
 -- lightweight config helpers; do not initialize synced GG state in LuaUI.
+-- LuaUI supplies builtins through the widget environment, without _G.
 local MosaicConfig = VFS.Include("scripts/lib_mosaic.lua",
-  setmetatable({MOSAIC_CONFIG_ONLY = true}, {__index = _G}))
+  setmetatable({MOSAIC_CONFIG_ONLY = true}, {__index = getfenv(1)}))
 local cityGeography = MosaicConfig.getCityGeography(Game)
 local mapName = Game.mapName
 local arrivalWasActive = false

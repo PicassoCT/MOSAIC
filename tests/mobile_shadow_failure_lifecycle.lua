@@ -1,11 +1,13 @@
--- Whole-widget fault isolation. Run from the repository root with Lua 5.1+.
--- Renderer doubles inject failures; the widget and its fallback flow are real.
+-- Whole-widget fault isolation. Run from the repository root with Lua 5.1.
+-- Use the actual LuaUI/System environment without _G and the real central
+-- property set. Renderer doubles inject optional failures after that boundary.
+assert(setfenv and getfenv, 'this regression must run with Lua 5.1')
+dofile('luaui/system.lua')
 local function read(path)
     local file=assert(io.open(path));local text=file:read('*a');file:close();return text
 end
 local function loadIn(path,env)
-    local chunk=setfenv and setfenv(assert(loadfile(path)),env) or assert(loadfile(path,'t',env))
-    return chunk()
+    return setfenv(assert(loadfile(path)),env)()
 end
 local function exercise(stage,shutdownFails)
     local h={logs={},globals={},live={},serial=0,draws=0,headlights=0,propagates=0,
@@ -89,18 +91,30 @@ local function exercise(stage,shutdownFails)
     function scene:Shutdown() end
     local window={}
     for _,method in ipairs({'Update','Step','Refresh','DrawWorld','Shutdown','TextCommand'}) do window[method]=function() end end
-    local env=setmetatable({widget={},WG={CaptureCombatLightEmission=function() end},gl=gl,GL=GL,
-        UnitDefs={},Game={mapSizeX=8192,mapSizeZ=8192},Spring={
-            GetGameFrame=function() return 0 end,
-            GetViewGeometry=function() return 1280,720,0,0 end,
-            ValidUnitID=function() return true end,
-            GetUnitIsDead=function() return false end,
-            Echo=function(text) h.logs[#h.logs+1]=text end,
-        },widgetHandler={
-            RegisterGlobal=function(_,name,fn) h.globals[name]=fn end,
-            DeregisterGlobal=function(_,name) h.globals[name]=nil end,
-            RemoveWidget=function() error('optional failure removed the whole lighting widget') end,
-        }},{__index=_G})
+    -- widgetHandler:NewWidget copies System; there is no host _G fallback.
+    local env={}
+    for key,value in pairs(System) do env[key]=value end
+    env.widget,env.WG=env,{CaptureCombatLightEmission=function() end}
+    env.gl,env.GL=gl,GL
+    env.UnitDefs={
+        [1]={name='ground_tank_day',speed=30,canMove=true,customParams={baseclass='Tank'}},
+        [2]={name='civilian_arab0',speed=40,canMove=true,customParams={baseclass='Civilian'}},
+        [3]={name='house_arab0',speed=0,isBuilding=true,customParams={baseclass='Civilian'}},
+    }
+    env.Game={mapSizeX=8192,mapSizeZ=8192}
+    env.Spring={
+        GetGameFrame=function() return 0 end,
+        GetViewGeometry=function() return 1280,720,0,0 end,
+        ValidUnitID=function() return true end,
+        GetUnitIsDead=function() return false end,
+        Echo=function(text) h.logs[#h.logs+1]=text end,
+    }
+    env.widgetHandler={
+        RegisterGlobal=function(_,name,fn) h.globals[name]=fn end,
+        DeregisterGlobal=function(_,name) h.globals[name]=nil end,
+        RemoveWidget=function() error('optional failure removed the whole lighting widget') end,
+    }
+    assert(env.pairs and env.getfenv and not env._G, 'fixture must match the real LuaUI global layout')
     env.VFS={LoadFile=read,Include=function(path,includeEnv)
         if path:find('cloud_volume_config.lua',1,true) then return {} end
         if path:find('radiance_objective_sources.lua',1,true) then return {CollectDirect=function() return {} end} end
@@ -110,8 +124,10 @@ local function exercise(stage,shutdownFails)
         if path:find('headlight_live_field.lua',1,true) then return function() return headlights end end
         if path:find('window_lighting.lua',1,true) then return function() return window end end
         if path:find('mobile_shadow_field.lua',1,true) then
-            return {New=function()
+            return {New=function(profiles)
                 h.constructors=h.constructors+1
+                assert(profiles[1] and profiles[1].shape==1 and profiles[2] and profiles[2].shape==2
+                    and not profiles[3], 'real central mobile-shadow profiles did not reach the renderer')
                 -- Constructor failures happen outside a draw call-in; do not
                 -- simulate or require drawing-only GL recovery APIs there.
                 if stage=='constructor' then error('injected constructor failure') end
@@ -120,12 +136,16 @@ local function exercise(stage,shutdownFails)
         end
         if path=='scripts/lib_mosaic.lua' then
             assert(includeEnv.MOSAIC_CONFIG_ONLY)
-            return {getMobileRadianceShadowTypeTable=function(defs) assert(defs==env.UnitDefs);return {} end}
         end
         return loadIn(path,includeEnv or env)
     end}
     loadIn('luaui/widgets_mosaic/gfx_neonlights_radiancecascade.lua',env)
     env.widget:Initialize()
+    if stage~='unsupported' then
+        assert(h.constructors==1, 'mobile-shadow constructor was bypassed: '..table.concat(h.logs,'\n'))
+    end
+    assert(not env.getMobileRadianceShadowTypeTable and not env.MOSAIC_CONFIG_ONLY,
+        'config-only include leaked helpers or flags into the widget environment')
     assert(env.WG.NeonRadiance==propagation,'optional initialization broke the global cascade provider')
     env.widget:TextCommand('radiancelight test on')
     env.widget:Update(1)
@@ -159,4 +179,4 @@ local function exercise(stage,shutdownFails)
 end
 for _,stage in ipairs({'none','unsupported','constructor','update','capture','local'}) do exercise(stage) end
 exercise('update',true)
-print('PASS: optional constructor/update/source/local-capture failures preserve global radiance, direct lights and shared providers; bounded diagnostics, GL recovery, no retries and cleanup')
+print('PASS: real LuaUI environment and central mobile profiles; optional constructor/update/source/local-capture failures preserve global radiance, direct lights and shared providers; bounded diagnostics, GL recovery, no retries and cleanup')

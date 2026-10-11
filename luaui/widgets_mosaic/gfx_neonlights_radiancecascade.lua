@@ -739,7 +739,9 @@ function widget:Initialize()
         if scene.mobileSupported then
             local ok,result,reason=pcall(function()
                 local module=VFS.Include("luaui/widgets_mosaic/include/mobile_shadow_field.lua")
-                local config=VFS.Include("scripts/lib_mosaic.lua",setmetatable({MOSAIC_CONFIG_ONLY=true},{__index=_G}))
+                -- LuaUI supplies builtins in this widget's environment, without
+                -- _G. Keep the config helpers isolated and inherit those builtins.
+                local config=VFS.Include("scripts/lib_mosaic.lua",setmetatable({MOSAIC_CONFIG_ONLY=true},{__index=getfenv(1)}))
                 return module.New(config.getMobileRadianceShadowTypeTable(UnitDefs))
             end)
             if ok then mobileShadows=result end

@@ -3,6 +3,7 @@ include "lib_OS.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 --include "lib_Build.lua"
+local GrapheneArc = VFS.Include("scripts/lib_graphene_arc.lua")
 
 TablesOfPiecesGroups = {}
 
@@ -113,24 +114,17 @@ function fallingDown()
 
     while not GG.ParachutPassengers[unitID] do Sleep(10) end
     StartThread(Strandanimation)
-    -- SmokeRibbon is the engine-side FlamePainter-style piece emitter.
-    -- Register only a few arcs; polygon cords and rotators stay untouched.
+    -- Keep all polygon cords and rotator animation. Four outer sheet tips
+    -- carry separate electrical fans; the rotator pivots themselves coincide.
     if GG.SmokeRibbon and TablesOfPiecesGroups["Rotator"] then
         local rotators = TablesOfPiecesGroups["Rotator"]
         local count = math.min(4, #rotators)
         for i = 1, count do
             local p = rotators[1 + math.floor((i - 1) * #rotators / count)]
             if p then
-                GG.SmokeRibbon.Set(unitID, "graphene_arc_" .. i, p, {
-                    directionSpace = "world", direction = {0, 1, 0},
-                    length = 190, width = 4.2, strands = 2,
-                    curl = 0.38, speed = 3.5, windInfluence = 0.08,
-                    colorStart = {0.8, 0.96, 1, 0.95},
-                    colorEnd = {0.22, 0.7, 1, 0},
-                    emission = {4.2, 1.6}, sourceGlow = {0.15, 0.72, 1, 0.4},
-                    distanceFactor = 30,
-                    seed = i * 19,
-                })
+                local ok, reason = GG.SmokeRibbon.Set(unitID, "graphene_arc_" .. i, p,
+                    GrapheneArc.Options(i * 19, GrapheneArc.OuterTip(unitID, p)))
+                if not ok then Spring.Echo("[GrapheneArc] registration failed: " .. tostring(reason)) end
             end
         end
     end

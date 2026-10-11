@@ -2,7 +2,7 @@
 uniform vec3 origin, direction, cameraPosition;
 uniform vec3 directionalDrift;
 uniform float effectTime, plumeLength, plumeWidth, curl, seed;
-uniform float hairMode, stiffness, gravity, strandCount;
+uniform float hairMode, electricMode, stiffness, gravity, strandCount;
 uniform float landingMode; // 0: ordinary plume, 1: landing jet, 2: deck-only fan
 uniform vec4 landingPad; // deck centre XZ, surface Y, contact radius; negative disables
 uniform vec4 terrainBandNear, terrainBandFar; // maximum sampled surface height in each 1/8 of a ribbon
@@ -37,6 +37,22 @@ vec3 centre(float t, float strand, vec3 u, vec3 v) {
         return p;
     }
     float s = seed + strand * 2.399963;
+    if (electricMode > 0.5) {
+        // Split each discharge into rising three-dimensional filaments. The
+        // fan is geometric, so it remains readable when viewed from above.
+        float angle = seed * 0.23 + strand * 6.2831853 / max(strandCount,1.0);
+        vec3 radial = u*cos(angle) + v*sin(angle);
+        vec3 crossRadial = -u*sin(angle) + v*cos(angle);
+        float phase = t*18.0 - effectTime*2.0 + s;
+        float envelope = sin(t*2.67);
+        float fan = plumeLength * (0.10+0.04*sin(s)*sin(s)) * t;
+        float wave = sin(phase) + 0.28*sin(phase*2.7+s);
+        float crossWave = sin(phase*0.73+s) + 0.22*sin(phase*3.1);
+        float radius = plumeWidth*curl*envelope;
+        return origin + direction*(t*plumeLength*(0.9+0.1*cos(s)*cos(s)))
+            + radial*(fan+radius*wave) + crossRadial*radius*crossWave*0.55
+            + directionalDrift*(t*t);
+    }
     float phase = t * 14.0 - effectTime * 1.7 + s;
     float envelope = t * t * (3.0 - 2.0 * t);
     float radius = plumeWidth * curl * envelope;
@@ -96,6 +112,10 @@ void main() {
         // Several narrow locks with soft, staggered ends, not one triangular card.
         spread = 0.5/max(strandCount,1.0) * (1.0-smoothstep(0.55,1.0,t));
         breath = 1.0;
+    } else if (electricMode > 0.5) {
+        // A narrow core plus halo, never the expanding triangular smoke card.
+        spread = 0.30 * smoothstep(0.0,0.018,t) * (1.0-smoothstep(0.78,1.0,t));
+        breath = 0.92 + 0.08*sin(t*23.0-effectTime*3.0+seed+strand);
     }
     p += across * side * plumeWidth * spread * breath;
     if (terrainPad > 0.0) {

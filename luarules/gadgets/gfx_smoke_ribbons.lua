@@ -31,8 +31,17 @@ if gadgetHandler:IsSyncedCode() then
         for k,r in pairs(records) do if r.unitID==unitID then records[k]=nil;dirty=true end end
         if dirty then changed() end
     end
-    function gadget:Initialize() GG.SmokeRibbon=api end
+    function gadget:Initialize()
+        GG.SmokeRibbon=api
+        -- This handler has no TextCommand dispatcher. LuaRules chat actions
+        -- must cross to the requesting client before using local selection.
+        gadgetHandler:AddChatAction('smokeribbon',function(_,message,_,playerID)
+            SendToUnsynced('smoke_ribbon_command',playerID,message)
+            return true
+        end,'<piece> electric|glow|steam|hair, status, or off (local preview)')
+    end
     function gadget:Shutdown()
+        gadgetHandler:RemoveChatAction('smokeribbon')
         if GG.SmokeRibbon==api then GG.SmokeRibbon=nil end
         _G.SmokeRibbonRecords=nil; _G.SmokeRibbonRevision=nil
     end
@@ -46,7 +55,13 @@ else
         renderer,err=VFS.Include('luarules/gadgets/include/smoke_ribbon_renderer.lua')()
         if not renderer then
             Spring.Echo('Smoke ribbons disabled: '..tostring(err)); gadgetHandler:RemoveGadget(self)
+            return
         end
+        gadgetHandler:AddSyncAction('smoke_ribbon_command',function(_,playerID,message)
+            if playerID==Spring.GetMyPlayerID() then
+                return self:TextCommand('smokeribbon '..message)
+            end
+        end)
     end
     local function refresh()
         local current=SYNCED.SmokeRibbonRevision
@@ -79,10 +94,26 @@ else
         if not piece or not renderer then return false end
         if piece=='off' then preview=nil;return true end
         local unitID=(Spring.GetSelectedUnits() or {})[1]
+        if piece=='status' then
+            refresh()
+            local count,electric=0,0
+            for key,r in pairs(renderer.records) do
+                if key~='__preview' and unitID and r.unitID==unitID then
+                    count=count+1
+                    if r.mode=='electric' then electric=electric+1 end
+                end
+            end
+            Spring.Echo('Smoke ribbons: renderer ready; synced registry '
+                ..(SYNCED.SmokeRibbonRevision~=nil and 'ready' or 'MISSING')
+                ..'; selected unit slots '..count..' ('..electric..' electric)')
+            return true
+        end
         if not unitID then Spring.Echo('Smoke ribbon: select a unit first');return true end
         local options={}
         if preset=='hair' then
             options={mode='hair'}
+        elseif preset=='electric' then
+            options=VFS.Include('scripts/lib_graphene_arc.lua').Options(19)
         elseif preset=='glow' then
             options={colorStart={1,0.35,0.7,0.65},colorEnd={0.35,0.15,0.8,0},emission={2,0.3}}
         elseif preset=='steam' then
@@ -92,5 +123,8 @@ else
         if ok then preview=result else Spring.Echo('Smoke ribbon: '..tostring(result)) end
         return true
     end
-    function gadget:Shutdown() if renderer then renderer:Shutdown();renderer=nil end end
+    function gadget:Shutdown()
+        gadgetHandler:RemoveSyncAction('smoke_ribbon_command')
+        if renderer then renderer:Shutdown();renderer=nil end
+    end
 end
