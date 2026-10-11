@@ -27,7 +27,13 @@ gl=setmetatable({CreateShader=function() return object(shaders) end,
     GetUniformLocation=function(_,name) return name end,
     BeginEnd=function(_,fn,...) fn(...) end,GetSun=function() return .3,.3,.3 end,
 }, {__index=function() return function() end end})
-VFS={Include=function(p) return dofile(p) end,LoadFile=function(p)
+VFS={Include=function(p,env)
+    if not env then return dofile(p) end
+    local chunk
+    if setfenv then chunk=assert(loadfile(p));setfenv(chunk,env)
+    else chunk=assert(loadfile(p,'t',env)) end
+    return chunk()
+end,LoadFile=function(p)
     local f=assert(io.open(p));local s=f:read('*a');f:close();return s
 end}
 widgetHandler={RegisterGlobal=function(_,name,fn) assert(not registered[name]);registered[name]=fn end,
@@ -38,6 +44,7 @@ local function start()
     assert(not registered.GadgetCreateLight and not registered.GadgetCreateBeamLight,'dead queue API survived')
 end
 start()
+assert(GG==nil and MOSAIC_CONFIG_ONLY==nil,'graphics config import ran synced initialization or escaped its environment')
 assert(not WG.HasCombatLightEmission(1),'idle effects keep the direct capture active')
 registered.GadgetWeaponExplosion(0,5,0,1)
 assert(particles==1,'working explosion heat distortion was removed')

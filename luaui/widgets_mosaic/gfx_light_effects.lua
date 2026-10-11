@@ -176,8 +176,12 @@ local function WeaponExplosion(px,py,pz,weaponID)
 		end
     end
 end
-local function WeaponBarrelfire(px,py,pz,weaponID)
-    if sources then sources:AddExplosion(px,py,pz,weaponID,true) end
+local function WeaponBarrelfire(px,py,pz,weaponID,ownerID)
+    -- The tank's firing script publishes its precise piece-attached flash.
+    -- Do not add a second, projectile-origin night flash for the same shot.
+    if sources and not sources:HasTankMuzzleFlash(ownerID) then
+        sources:AddExplosion(px,py,pz,weaponID,true)
+    end
 end
 local function CombatFire(id,x,y,z,born,expires)
     if sources then sources:SetFire(id,x,y,z,born,expires) end
@@ -191,7 +195,8 @@ local callbacks={GadgetPyroTorchOff=PyroTorchOff,
 
 function widget:Initialize()
     syncOptions()
-    sources=Sources.New(weaponConf,MosaicConfig.getPoliceLightTypeTable(UnitDefs))
+    sources=Sources.New(weaponConf,MosaicConfig.getPoliceLightTypeTable(UnitDefs),
+        MosaicConfig.getTankMuzzleTypeTable(UnitDefs))
     sources.brightness,sources.radius=globalLightMult,globalRadiusMult
     for _,id in ipairs(Spring.GetAllUnits()) do sources:UnitCreated(id,Spring.GetUnitDefID(id)) end
     local err

@@ -27,8 +27,37 @@ function getPoliceLightTypeTable(defs)
     return result
 end
 
+-- Both tank models have a ~94-elmo gun from Cannon1 to FireEmit. Share one
+-- model-proportional muzzle profile across their day/night variants.
+local tankMuzzleProfile = {
+    piece = "FireEmit", directionPiece = "Cannon1",
+    shotParam = "mosaic_tank_muzzle_frame",
+    durationFrames = 12,
+    lengthFactor = 0.85, widthFactor = 0.12,
+    minLength = 40, maxLength = 120,
+    clearance = 2, radiusFactor = 2.2, strength = 3.2,
+    color = {1, 0.6, 0.16},
+    colorStart = {1, 0.92, 0.62, 1}, colorEnd = {1, 0.19, 0.025, 0},
+    emission = {4, 0.7}, sourceGlow = {1, 0.48, 0.1, 0.5},
+    speed = 4.5, curl = 0.35, strands = 3, distanceFactor = 70,
+}
+local tankMuzzleProfiles = {
+    ground_tank_day = tankMuzzleProfile,
+    ground_tank_night = tankMuzzleProfile,
+}
+
+function getTankMuzzleTypeTable(defs)
+    local result = {}
+    for id, def in pairs(defs) do
+        local profile = tankMuzzleProfiles[def.name]
+        if profile then result[id] = profile end
+    end
+    return result
+end
+
 if MOSAIC_CONFIG_ONLY then
-    return {getPoliceLightTypeTable = getPoliceLightTypeTable}
+    return {getPoliceLightTypeTable = getPoliceLightTypeTable,
+        getTankMuzzleTypeTable = getTankMuzzleTypeTable}
 end
 
  GG.unitFactor = 0.80
@@ -1616,10 +1645,14 @@ end
                     end
                     
                     local fullTable = {}
-                    DictRuinNameDefID = addRuinsToHouseTable({}, getUnitDefNames(UnitDefs))
-                    for name,defID in pairs(DictRuinNameDefID) do                       
-                        fullTable[defID]= name
-                    end                    
+                    -- Ruins are building choices, never people or vehicles.
+                    -- Mobile spawn pools use this same shared culture helper.
+                    if typeName == "house" then
+                        local DictRuinNameDefID = addRuinsToHouseTable({}, getUnitDefNames(UnitDefs))
+                        for name,defID in pairs(DictRuinNameDefID) do
+                            fullTable[defID]= name
+                        end
+                    end
                     for name,defID in pairs(DicAsianNameDefID) do                       
                         fullTable[defID]= name
                     end
@@ -1638,7 +1671,9 @@ end
                     assert(translation[typeName] ~= nil , "No translation for "..typeName.." in culture "..cultureName)
 
                     DictDefIDNames = expandNameSubSet_Dict_NameDefID(translation[typeName], UnitDefs)
-                    DictDefIDNames = addRuinsToHouseTable(DictDefIDNames, getUnitDefNames(UnitDefs))
+                    if typeName == "house" then
+                        DictDefIDNames = addRuinsToHouseTable(DictDefIDNames, getUnitDefNames(UnitDefs))
+                    end
                     --assert(count(expandedNamesTable) > 0, typeName .." --> ".. cultureName)
                     local fullTable = {}
                     for name,defID in pairs(DictDefIDNames) do

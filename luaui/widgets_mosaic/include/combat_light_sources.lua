@@ -10,6 +10,9 @@ local makePyroBudget = VFS and VFS.Include and
     VFS.Include('luaui/widgets_mosaic/include/pyro_flame_budget.lua') or
     dofile('luaui/widgets_mosaic/include/pyro_flame_budget.lua')
 local PyroBudget = makePyroBudget(Spring,PyroCollision)
+local TankMuzzle = VFS and VFS.Include and
+    VFS.Include('luaui/widgets_mosaic/include/tank_muzzle_flash.lua') or
+    dofile('luaui/widgets_mosaic/include/tank_muzzle_flash.lua')
 
 local projectileTypes={Cannon=true,MissileLauncher=true,StarburstLauncher=true,
     LaserCannon=true,BeamLaser=true,LightningCannon=true,DGun=true,Flame=true}
@@ -25,9 +28,10 @@ function M.Weapon(wd)
         color=fire and {1,.32,.045} or {v.colorR or 1,v.colorG or .65,v.colorB or .25}}
 end
 
-function M.New(weaponConf, policeProfiles)
+function M.New(weaponConf, policeProfiles, tankProfiles)
     policeProfiles = policeProfiles or {}
-    local self={transient={},fires={},wrecks={},police={},torches={},pyros={},projectiles={},weaponConf=weaponConf,
+    tankProfiles = tankProfiles or {}
+    local self={transient={},fires={},wrecks={},police={},tanks={},torches={},pyros={},projectiles={},weaponConf=weaponConf,
         brightness=1.3,radius=1.3}
     local cursor,scanAge=0,1
     local drawFrame,lights,flames,tracers
@@ -50,13 +54,20 @@ function M.New(weaponConf, policeProfiles)
         if name=='ground_walker_flame' then self.pyros[id]={} end
         local profile=policeProfiles[defID]
         self.police[id]=profile and {profile=profile} or nil
+        profile=tankProfiles[defID]
+        self.tanks[id]=profile and {profile=profile} or nil
         drawFrame=nil
     end
     function self:UnitDestroyed(id)
         self.wrecks[id]=nil
         self.pyros[id]=nil
         self.police[id]=nil
+        self.tanks[id]=nil
         drawFrame=nil
+    end
+    function self:HasTankMuzzleFlash(id)
+        local record=self.tanks[id]
+        return record and TankMuzzle.ActiveFrame(Spring,id,record.profile,Spring.GetGameFrame())~=nil
     end
     function self:AddExplosion(x,y,z,weaponID,muzzle)
         local p=self.weaponConf[weaponID]
@@ -264,6 +275,15 @@ function M.New(weaponConf, policeProfiles)
                 local x,y,z=policeOrigin(id,record,phase)
                 if x then
                     add(x,y,z,profile.radius,profile.colors[phase+1],profile.strength,false,nil,nil,id)
+                end
+            end
+        end
+        for id,record in pairs(self.tanks) do
+            if unitVisible(id) then
+                local flash=TankMuzzle.Collect(Spring,id,record,frame)
+                if flash then
+                    add(flash.x,flash.y,flash.z,flash.radius*self.radius/1.3,
+                        flash.color,flash.strength*self.brightness/1.3,false,flash.ribbon,nil,id)
                 end
             end
         end

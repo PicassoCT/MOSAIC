@@ -88,7 +88,10 @@ city:Initialize()
 -- Load only the actual occupancy helper; the rest of lib_mosaic needs the engine.
 local lib=read('scripts/lib_mosaic.lua')
 local helper=lib:sub(assert(lib:find('function isCityBuildingHabitable',1,true)),assert(lib:find('-- Unit-script animations',1,true))-1)
-local fn=assert(loadstring and loadstring(helper) or load(helper));if setfenv then setfenv(fn,env) end;fn()
+local fn
+if setfenv then fn=assert(loadstring(helper));setfenv(fn,env)
+else fn=assert(load(helper,'city occupancy helper','t',env)) end
+fn()
 local pe={GG=shared,Spring=S,Game=env.Game,UnitDefs=defs,UnitDefNames=names,gadget={},gadgetHandler=env.gadgetHandler,
  VFS={Include=noop},getGameConfig=env.getGameConfig,getSafeHouseTypeTable=env.getSafeHouseTypeTable,
  getCultureUnitModelNames_Dict_DefIDName=env.getCultureUnitModelNames_Dict_DefIDName,

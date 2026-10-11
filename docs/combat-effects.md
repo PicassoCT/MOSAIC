@@ -11,6 +11,13 @@ renderer is not removed.
 - Weapon muzzle flashes, explosions and visible projectile lights are scaled
   by the cascade's night factor. `Flame` projectiles and Molotovs additionally
   use FlamePainter ribbons; persistent fire remains luminous in daylight.
+- Day and night tanks have a dedicated firing flash: `FireWeapon1` publishes
+  a shot frame, and the client renders a forward FlamePainter ribbon and an
+  orange radiance light at `FireEmit` for 12 simulation frames. Both remain
+  luminous in daylight. Their position follows the drawn barrel; the firing
+  axis comes from `Cannon1` to `FireEmit`, because the emitter's own direction
+  is rotated for the older CEG. Dimensions derive from the model's barrel
+  span. The existing shell ejection, CEGs and gameplay weapon are preserved.
 - Machine-gun and AA-gun rounds get additive camera-facing tracers only during
   the same night window (fading at dawn/dusk). The five base MG/AA definitions
   and four military support variants opt in through `night_tracer = 1`.
@@ -75,6 +82,7 @@ Run from the repository root:
 
 ```
 texlua tests/combat_effects_lifecycle.lua
+texlua tests/tank_muzzle_effects.lua
 texlua tests/cinder_flame_stream_test.lua
 texlua tests/cinder_flame_budget_test.lua
 texlua tests/pyro_flame_collision_test.lua
