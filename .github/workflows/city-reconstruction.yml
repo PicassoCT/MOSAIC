@@ -5,6 +5,7 @@ on:
       - 'luarules/configs/city_area.lua'
       - 'luarules/configs/civilian_daily_life.lua'
       - 'luarules/gadgets/game_spawnCity.lua'
+      - 'luarules/gadgets/game_building_rubble_blocking.lua'
       - 'luarules/gadgets/game_damageHeatMap.lua'
       - 'luarules/gadgets/game_buildingPlacementLimitor.lua'
       - 'luarules/gadgets/include/city_*.lua'
@@ -13,7 +14,10 @@ on:
       - 'scripts/safehousescript.lua'
       - 'scripts/lib_mosaic.lua'
       - 'scripts/lib_UnitScript.lua'
+      - 'units/neutral/gCScrapHeap.lua'
+      - 'units/neutral/house_ruin.lua'
       - 'tests/city_*.lua'
+      - 'tests/civilian_reconstruction_blocking_test.lua'
       - '.github/workflows/city-reconstruction.yml'
   workflow_dispatch:
 permissions:
@@ -28,6 +32,7 @@ jobs:
             luarules
             scripts
             tests
+            units
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -38,4 +43,5 @@ jobs:
           [LuaRuntime().execute(Path(p).read_text()) for p in
           ['tests/city_reconstruction_test.lua','tests/city_area_events_test.lua',
           'tests/city_construction_animation_test.lua','tests/city_arcologies_test.lua',
-          'tests/civilian_daily_life_invalid_targets_test.lua']]"
+          'tests/civilian_daily_life_invalid_targets_test.lua',
+          'tests/civilian_reconstruction_blocking_test.lua']]"
