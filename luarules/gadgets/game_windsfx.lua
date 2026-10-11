@@ -21,7 +21,7 @@ local spGetUnitLastAttackedPiece = Spring.GetUnitLastAttackedPiece
 local spSpawnCEG = Spring.SpawnCEG
 local spGetWind =Spring.GetWind
 local GameConfig = getGameConfig()
-local houseTypeTable = getCultureUnitModelTypes(GameConfig.game.culture, "house", UnitDefs)
+local houseTypeTable = getStructuralBuildingTypeTable(UnitDefs)
 local windLimit = Game.windMax*0.75
 
 
@@ -57,22 +57,17 @@ function localspawnCegAtPiece(cegname, unitID, pieceId, offset, dx, dy, dz )
     end
 end
 
-function gadget:UnitDamaged(unitID,unitDefID,teamID, damage)
-    if houseTypeTable[unitDefID] and damage > 10 then
-       
-        lastHitPiece = spGetUnitLastAttackedPiece ( unitID ) 
-        if not lastHitPiece then
-            lastHitPiece = getRandomPiece(unitID)    
-            if not lastHitPiece then return end    
-        end
-        --echo("UnitDamaged:"..toString(lastHitPiece))
-        if lastHitPiece then            
-            localspawnCegAtPiece("civilbuildingdamage", unitID, lastHitPiece)
-            registerSmokeSwirl(unitID, lastHitPiece)
-
-        end
+function gadget:UnitDamaged(unitID, unitDefID, teamID, damage)
+    if not houseTypeTable[unitDefID] or not damage or damage <= 10 then return end
+    -- The structural controller resolves the precise facade piece on its
+    -- bounded six-frame tick. Never substitute a random building polygon.
+    local piece = GG.BuildingDamageAnchor and GG.BuildingDamageAnchor[unitID]
+    if not piece then return end
+    local record = smokeSwirls[unitID]
+    if not record or record.piece ~= piece then
+        localspawnCegAtPiece("civilbuildingdamage", unitID, piece)
     end
-    return 
+    registerSmokeSwirl(unitID, piece)
 end
 
 function gadget:GameFrame(frame)
@@ -93,7 +88,11 @@ function gadget:GameFrame(frame)
          smokeSwirlsCounter = 0
          for id, data in pairs(smokeSwirls) do
             if data and data.piece then
-                spawnCegAtPiece(id, data.piece, "vehsmokepillar")
+                if Spring.ValidUnitID(id) and not Spring.GetUnitIsDead(id) then
+                    localspawnCegAtPiece("vehsmokepillar", id, data.piece, 0)
+                else
+                    smokeSwirls[id] = nil
+                end
                 smokeSwirls[id].timeInFrames = smokeSwirls[id].timeInFrames - 6
                 smokeSwirlsCounter = smokeSwirlsCounter + 1
                 if smokeSwirls[id].timeInFrames < 0 then
