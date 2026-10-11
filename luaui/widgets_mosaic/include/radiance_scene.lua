@@ -12,13 +12,17 @@ end
 return function()
     local source=VFS.LoadFile(PATH)
     if not source or not gl.UniformMatrix then return nil,"missing scene shader/matrix API" end
+    local mobileSource=VFS.LoadFile("luaui/widgets_mosaic/shaders/radiancecascade/mobile_shadow.glsl")
+    if not mobileSource then return nil,"missing mobile shadow shader" end
+    source=source:gsub("// MOBILE_SHADOWS",function() return mobileSource end,1)
     local shader=gl.CreateShader({fragment=source,uniformInt={radianceTex=0,occupancyTex=1,
-        mapDepthTex=2,modelDepthTex=3,mapNormalTex=4,modelNormalTex=5,mapDiffuseTex=6,modelDiffuseTex=7,localRadianceTex=8,localOccupancyTex=9,headlightTex=10,headlightLocalTex=11,windowTex=12,windowGroundTex=13}})
+        mapDepthTex=2,modelDepthTex=3,mapNormalTex=4,modelNormalTex=5,mapDiffuseTex=6,modelDiffuseTex=7,localRadianceTex=8,localOccupancyTex=9,headlightTex=10,headlightLocalTex=11,windowTex=12,windowGroundTex=13,
+        mobileSourceAtlas=14,mobileShadowData=15}})
     if not shader then return nil,gl.GetShaderLog() or "scene shader failed" end
     local self={shader=shader,mode="pending",smoothing=true}
     local loc={}
     for _,name in ipairs({"inverseProjection","inverseView","mapSize","heightRange","clipZeroToOne",
-        "deferred","strength","nightIntensity","smoothing","localActive","localOrigin","localSpan","headlightActive","headlightLocalActive","headlightOrigin","headlightSpan","headlightIntensity","windowActive","objectiveLightCount"}) do loc[name]=gl.GetUniformLocation(shader,name) end
+        "deferred","strength","nightIntensity","smoothing","localActive","localOrigin","localSpan","headlightActive","headlightLocalActive","headlightOrigin","headlightSpan","headlightIntensity","windowActive","objectiveLightCount","mobileShadowActive","mobileCascadeSourceActive","mobileDirectSourceActive"}) do loc[name]=gl.GetUniformLocation(shader,name) end
     local objectiveLoc={}
     for i=1,24 do
         objectiveLoc[i]={}
@@ -45,7 +49,7 @@ return function()
         end
         return true
     end
-    function self:Draw(texture,occupancy,heightMin,heightMax,strength,intensity,detail,headlights,headlightIntensity,windows,objectiveLights)
+    function self:Draw(texture,occupancy,heightMin,heightMax,strength,intensity,detail,headlights,headlightIntensity,windows,objectiveLights,mobileShadows)
         if not self.shader or not texture or intensity<=0 or strength<=0 then return end
         local useDeferred=buffersAvailable()
         local sx,sy,vpx,vpy=Spring.GetViewGeometry()
@@ -88,6 +92,14 @@ return function()
         gl.Texture(12,useWindows and windows.texture or texture)
         gl.Texture(13,useWindows and windows.ground or texture)
         gl.UseShader(self.shader)
+        if mobileShadows then
+            if not self.mobileLoc then self.mobileLoc=mobileShadows:Locations(self.shader) end
+            mobileShadows:Bind(self.mobileLoc)
+        else
+            gl.UniformInt(loc.mobileShadowActive,0)
+            gl.UniformInt(loc.mobileCascadeSourceActive,0);gl.UniformInt(loc.mobileDirectSourceActive,0)
+            gl.Texture(14,texture);gl.Texture(15,texture)
+        end
         local lightCount=math.min(24,#(objectiveLights or {}))
         gl.UniformInt(loc.objectiveLightCount,lightCount)
         for i=1,lightCount do
@@ -117,7 +129,7 @@ return function()
         gl.Blending(GL.ONE,GL.ONE);gl.Color(1,1,1,1)
         fullscreen()
         gl.UseShader(0)
-        for i=0,13 do gl.Texture(i,false) end
+        for i=0,15 do gl.Texture(i,false) end
         gl.Blending(GL.SRC_ALPHA,GL.ONE_MINUS_SRC_ALPHA)
         gl.DepthMask(true);gl.DepthTest(true);gl.Color(1,1,1,1)
     end

@@ -31,6 +31,27 @@ uniform float headlightSpan;
 uniform sampler2D windowTex;
 uniform sampler2D windowGroundTex;
 uniform int windowActive;
+uniform sampler2D mobileSourceAtlas;
+uniform int mobileCascadeSourceActive=0;
+uniform int mobileDirectSourceActive=0;
+// MOBILE_SHADOWS
+// The two source fields share an atlas, but each discrete source is fetched
+// without filtering: interpolating XYZ would invent lamps between real ones.
+float mobileFieldVisibility(vec2 uv,bool direct,vec3 world,vec3 normal)
+{
+    if(mobileShadowActive==0 || (direct ? mobileDirectSourceActive : mobileCascadeSourceActive)==0)
+        return 1.0;
+    if(any(lessThan(uv,vec2(0))) || any(greaterThanEqual(uv,vec2(1))))return 1.0;
+    ivec2 size=textureSize(mobileSourceAtlas,0);size.x/=2;
+    ivec2 p=clamp(ivec2(uv*vec2(size)),ivec2(0),size-ivec2(1));
+    if(direct)p.x+=size.x;
+    vec4 source=texelFetch(mobileSourceAtlas,p,0);
+    if(source.w<=0.0)return 1.0;
+    float owner=direct && source.w>=1.0 ? source.w-1.0 : -1.0;
+    // Actual surface height and a small world-space bias, independent of the
+    // much wider XZ occupancy lookup offset used to find a building's exterior.
+    return mobileVisibility(source.xyz,world+normal*0.35,owner);
+}
 // Finite 3D cones for objective floodlights/searchlights. These share the scene
 // depth and normals; no extra framebuffer, model shader or engine setting.
 const int MAX_OBJECTIVE_LIGHTS=24;
@@ -69,7 +90,8 @@ vec3 objectiveLighting(vec3 world,vec3 normal)
         float fade=1.0-smoothstep(range*0.65,range,distance);
         float energy=cone*incidence*fade/(1.0+12.0*distance*distance/(range*range));
         light+=objectiveColorGain[i].rgb*objectiveColorGain[i].a*energy*
-            objectiveVisibility(objectivePosRange[i].xyz,world);
+            objectiveVisibility(objectivePosRange[i].xyz,world)*
+            mobileVisibility(objectivePosRange[i].xyz,world+normal*0.35,-1.0);
     }
     return light;
 }
@@ -150,6 +172,7 @@ void main()
         float blend=smoothstep(0.0,0.18,edge);
         if(blend>0.0) {
             vec3 detail=filteredLight(localRadianceTex,localOccupancyTex,localUV);
+            detail*=mobileFieldVisibility(localUV,false,world,normal);
             light=mix(light,detail,blend);
         }
     }
@@ -162,8 +185,11 @@ void main()
             vec2 hu=(world.xz+normal.xz*cell*1.25-headlightOrigin)/headlightSpan;
             float edge=min(min(hu.x,hu.y),min(1.0-hu.x,1.0-hu.y));
             float blend=smoothstep(0.0,0.18,edge);
-            if(blend>0.0 && texture2D(occupancyTex,sampleUV).r<=0.5)
-                direct=mix(direct,max(texture2D(headlightLocalTex,hu).rgb,vec3(0)),blend);
+            if(blend>0.0 && texture2D(occupancyTex,sampleUV).r<=0.5) {
+                vec3 localDirect=max(texture2D(headlightLocalTex,hu).rgb,vec3(0));
+                localDirect*=mobileFieldVisibility(hu,true,world,normal);
+                direct=mix(direct,localDirect,blend);
+            }
         }
         // Slow vehicle emission is only 8% spill. Max, rather than addition,
         // preserves full direct intensity without counting it twice.

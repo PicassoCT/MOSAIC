@@ -5,7 +5,7 @@ return function(sources)
         fragment=VFS.LoadFile(path..'combat_emission.frag'),uniformInt={buildingOccupancy=0}})
     if not shader then return nil,gl.GetShaderLog() end
     local loc={}
-    for _,name in ipairs({'mapSize','lamp','radius','color','strength','hasOccupancy','heightRange'}) do
+    for _,name in ipairs({'mapSize','lamp','radius','color','strength','hasOccupancy','heightRange','sourceMetadata','sourceOwner'}) do
         loc[name]=gl.GetUniformLocation(shader,name)
     end
     local self={}
@@ -13,10 +13,12 @@ return function(sources)
         local x,z,r=l.x,l.z,l.radius
         gl.Vertex(x-r,y,z-r);gl.Vertex(x+r,y,z-r);gl.Vertex(x+r,y,z+r);gl.Vertex(x-r,y,z+r)
     end
-    function self:Capture(bottom,top,gain,night)
-        gl.DepthTest(false);gl.DepthMask(false);gl.Blending(GL.ONE,GL.ONE)
+    function self:Capture(bottom,top,gain,night,metadata)
+        gl.DepthTest(metadata and GL.LESS or false);gl.DepthMask(not not metadata)
+        if metadata then gl.Blending(false) else gl.Blending(GL.ONE,GL.ONE) end
         gl.UseShader(shader);gl.Uniform(loc.mapSize,Game.mapSizeX,Game.mapSizeZ)
         gl.Uniform(loc.heightRange,bottom,top)
+        gl.UniformInt(loc.sourceMetadata,metadata and 1 or 0)
         for _,l in ipairs(sources:Collect()) do
             local strength=l.strength*(gain or 1)*(l.nightOnly and (night or 0) or 1)
             if strength>0 and l.y+l.radius>bottom and l.y-l.radius<top then
@@ -24,6 +26,7 @@ return function(sources)
                 local atlas=WG.GetVehicleLightOcclusion and WG.GetVehicleLightOcclusion(y)
                 gl.Texture(0,atlas or false);gl.Uniform(loc.hasOccupancy,atlas and 1 or 0)
                 gl.Uniform(loc.lamp,l.x,l.y,l.z);gl.Uniform(loc.radius,l.radius)
+                gl.Uniform(loc.sourceOwner,l.unitID or -1)
                 gl.Uniform(loc.color,l.color[1],l.color[2],l.color[3]);gl.Uniform(loc.strength,strength)
                 gl.BeginEnd(GL.QUADS,quad,l,y)
             end

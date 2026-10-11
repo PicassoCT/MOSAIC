@@ -9,7 +9,7 @@ import moderngl
 root=Path(__file__).resolve().parents[1]/'luaui/widgets_mosaic/shaders'
 c=moderngl.create_standalone_context(backend='egl',require=330)
 cone=c.program(vertex_shader=(root/'headlights/cone_emission.vert').read_text(),fragment_shader=(root/'headlights/cone_emission.frag').read_text())
-scene=c.program(vertex_shader='#version 150 compatibility\nvoid main(){gl_Position=gl_Vertex;gl_TexCoord[0]=gl_MultiTexCoord0;}',fragment_shader=(root/'radiancecascade/scene.frag').read_text())
+scene=c.program(vertex_shader='#version 150 compatibility\nvoid main(){gl_Position=gl_Vertex;gl_TexCoord[0]=gl_MultiTexCoord0;}',fragment_shader=(root/'radiancecascade/scene.frag').read_text().replace('// MOBILE_SHADOWS',(root/'radiancecascade/mobile_shadow.glsl').read_text()))
 gl=ctypes.CDLL('libGL.so.1')
 for name,args in {'glUseProgram':[ctypes.c_uint],'glMatrixMode':[ctypes.c_uint],'glOrtho':[ctypes.c_double]*6,'glRotatef':[ctypes.c_float]*4,'glVertex3f':[ctypes.c_float]*3,'glVertex2f':[ctypes.c_float]*2,'glTexCoord2f':[ctypes.c_float]*2,'glBegin':[ctypes.c_uint]}.items():getattr(gl,name).argtypes=args
 live=c.texture((256,256),4,dtype='f4');live.filter=(moderngl.LINEAR,moderngl.LINEAR);target=c.framebuffer([live])

@@ -19,5 +19,6 @@ void main() {
     if(value<0.0001) discard;
     // Cool blue with a greener core, no white blanket or alpha darkening.
     vec3 color=mix(vec3(0.015,0.36,0.8),vec3(0.025,0.95,0.7),clamp(front+0.8*trail,0.0,1.0));
-    gl_FragColor=vec4(color*value,0.0);
+    vec3 radiance=color*value;
+    gl_FragColor=vec4(radiance,capture!=0 ? dot(radiance,vec3(0.2126,0.7152,0.0722))*h/2048.0 : 0.0);
 }

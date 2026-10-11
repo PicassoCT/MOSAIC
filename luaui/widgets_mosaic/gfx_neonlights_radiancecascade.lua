@@ -61,6 +61,7 @@ local previewSpan = 0 -- world elmos; zero shows the whole map
 local scene
 local localDetail
 local liveHeadlights
+local mobileShadows
 local windowLighting
 local sceneEnabled, sceneTest = true, false
 local sceneStrength, sceneLayer = 2, 1
@@ -342,6 +343,23 @@ local function focusPreview(unitID, pieceID)
 end
 
 function widget:TextCommand(command)
+    if command == "radiancelight shadows on" or command == "radiancelight shadows off" then
+        if mobileShadows then
+            mobileShadows.enabled=command == "radiancelight shadows on"
+            mobileShadows.ready=false;mobileShadows:Invalidate()
+        end
+        return true
+    end
+    if command == "radiancelight shadows stats" then
+        if mobileShadows then
+            local s=mobileShadows.stats
+            Spring.Echo(string.format("Mobile radiance shadows: %s | %d/128 casters | %d over budget | %d grid overflow | %d occupied cells | height %.1f..%.1f",
+                mobileShadows.enabled and "height-aware" or "off",mobileShadows.count,
+                s.overBudget or 0,s.gridOverflow or 0,s.occupiedCells or 0,
+                mobileShadows.minY or 0,mobileShadows.maxY or 0))
+        else Spring.Echo("Mobile radiance shadows unavailable") end
+        return true
+    end
     if windowLighting and windowLighting:TextCommand(command) then
         refreshAccumulator=ATLAS_REFRESH_SECONDS
         return true
@@ -526,13 +544,13 @@ end
 
 -- Cars and combat lights share the two existing direct fields and scene pass.
 -- Apply night scaling per source so fires can remain luminous during the day.
-local function captureLiveLights(bottom,top,gain)
+local function captureLiveLights(bottom,top,gain,metadata)
     local night=sceneTest and 1 or neonLightPercent
     if WG.CaptureVehicleHeadlightEmission and night>0 then
-        WG.CaptureVehicleHeadlightEmission(bottom,top,gain*night)
+        WG.CaptureVehicleHeadlightEmission(bottom,top,gain*night,metadata)
     end
     if WG.CaptureCombatLightEmission and (not WG.HasCombatLightEmission or WG.HasCombatLightEmission(night)) then
-        WG.CaptureCombatLightEmission(bottom,top,gain,night)
+        WG.CaptureCombatLightEmission(bottom,top,gain,night,metadata)
     end
 end
 local liveVehicleProvider,liveCombatProvider
@@ -691,6 +709,13 @@ function widget:Initialize()
     if scene then
         liveHeadlights=VFS.Include("luaui/widgets_mosaic/include/headlight_live_field.lua")()
         if not liveHeadlights then Spring.Echo("Headlights: live atlas allocation failed; retaining 5 Hz cone lighting") end
+        local ok,module=pcall(VFS.Include,"luaui/widgets_mosaic/include/mobile_shadow_field.lua")
+        if ok and type(module)=="table" then
+            local config=VFS.Include("scripts/lib_mosaic.lua",setmetatable({MOSAIC_CONFIG_ONLY=true},{__index=_G}))
+            local reason
+            mobileShadows,reason=module.New(config.getMobileRadianceShadowTypeTable(UnitDefs))
+            if not mobileShadows then Spring.Echo("Mobile radiance shadows unavailable: "..tostring(reason)) end
+        else Spring.Echo("Mobile radiance shadows unavailable: "..tostring(module)) end
     end
 
     widgetHandler:RegisterGlobal("RecieveAllNeonUnitsPieces", recieveNeonHoloLightPiecesByUnit)
@@ -941,10 +966,27 @@ local function emitDebugLines(building, x0, y0, z0, x1, y1, z1)
     emitBoxLines(modelVertex, building, x0, y0, z0, x1, y1, z1)
 end
 
+function widget:UnitCreated(id)
+    if mobileShadows then mobileShadows.collector:UnitCreated(id);mobileShadows:Invalidate() end
+end
+function widget:UnitDestroyed(id)
+    if mobileShadows then mobileShadows.collector:UnitDestroyed(id);mobileShadows:Invalidate() end
+end
+function widget:UnitEnteredLos()
+    if mobileShadows then mobileShadows:Invalidate() end
+end
+function widget:UnitLeftLos()
+    if mobileShadows then mobileShadows:Invalidate() end
+end
+function widget:PlayerChanged()
+    if mobileShadows then mobileShadows:Invalidate() end
+end
+
 function widget:DrawWorld()
+    local domain=localDetail and localDetail:CameraDomain()
+    if mobileShadows then mobileShadows:Update(sceneEnabled and sceneReady and domain or nil) end
     if liveHeadlights then
         local bandHeight=OCCLUSION_WORLD_HEIGHT/OCCLUSION_LAYER_COUNT
-        local domain=localDetail and localDetail:CameraDomain()
         if liveVehicleProvider~=WG.CaptureVehicleHeadlightEmission or liveCombatProvider~=WG.CaptureCombatLightEmission then
             liveHeadlights.age=1 -- clear stale footprints on provider removal/reload
             liveVehicleProvider,liveCombatProvider=WG.CaptureVehicleHeadlightEmission,WG.CaptureCombatLightEmission
@@ -957,12 +999,16 @@ function widget:DrawWorld()
     end
     if scene and sceneEnabled and sceneReady then
         local bandHeight=OCCLUSION_WORLD_HEIGHT/OCCLUSION_LAYER_COUNT
+        if mobileShadows then
+            local capture=liveHeadlights and liveHeadlights.localReady and captureLiveLights or nil
+            mobileShadows:CaptureSources(capture,(sceneLayer-1)*bandHeight,sceneLayer*bandHeight,domain,localDetail)
+        end
         -- Sweep direct searchlights at render frequency; the cascade only holds
         -- their small fixed bulb spill, so it cannot leave old searchlight pools.
         local frame=Spring.GetGameFrame()+(Spring.GetFrameTimeOffset and Spring.GetFrameTimeOffset() or 0)
         local objectiveLights=ObjectiveSources.CollectDirect(objectiveRadianceUnitTables,frame)
         scene:Draw(sceneRadiance,occlusionTex[sceneLayer],(sceneLayer-1)*bandHeight,sceneLayer*bandHeight,
-            sceneStrength,1,localDetail,liveHeadlights,1,windowLighting,objectiveLights)
+            sceneStrength,1,localDetail,liveHeadlights,1,windowLighting,objectiveLights,mobileShadows)
     end
     if windowLighting then windowLighting:DrawWorld() end
     if not debugVoxelUnit then return end
@@ -1105,6 +1151,7 @@ function widget:Shutdown()
     if fogHeights then fogHeights:Shutdown();fogHeights=nil end
     if windowLighting then windowLighting:Shutdown();windowLighting=nil end
     if liveHeadlights then liveHeadlights:Shutdown();liveHeadlights=nil end
+    if mobileShadows then mobileShadows:Shutdown();mobileShadows=nil end
     if WG.IsVehicleHeadlightCascadeActive == vehicleHeadlightCascadeActive then WG.IsVehicleHeadlightCascadeActive=nil end
     if WG.GetRainRadiance == getRainLighting then WG.GetRainRadiance = nil end
     if WG.GetVehicleLightOcclusion == getVehicleLightOcclusion then WG.GetVehicleLightOcclusion = nil end

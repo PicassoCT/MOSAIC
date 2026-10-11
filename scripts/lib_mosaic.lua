@@ -55,9 +55,39 @@ function getTankMuzzleTypeTable(defs)
     return result
 end
 
+-- Ground-mobile radiance blockers use each live unit's collision dimensions.
+-- Keep membership here, alongside the other visual property sets: culture
+-- spawn pools omit military units and getCivilianTypeTable also contains houses.
+local mobileRadianceBox = {shape = 1}
+local mobileRadianceEllipsoid = {shape = 2}
+local mobileRadianceClasses = {
+    truck = mobileRadianceBox, tank = mobileRadianceBox,
+    civilian = mobileRadianceEllipsoid,
+}
+-- Human is also the base class of software icons and the close-combat arena.
+-- Only its actual people belong to the pedestrian set.
+local mobileRadiancePeople = {
+    operativeinvestigator = true, operativepropagator = true,
+    operativeasset = true, civilianagent = true, civilian_suicidebomber = true,
+}
+function getMobileRadianceShadowTypeTable(defs)
+    local result = {}
+    for id, def in pairs(defs) do
+        if (tonumber(def.speed) or 0) > 0 and def.canMove ~= false
+            and not def.canFly and not def.isBuilding then
+            local cp = def.customParams or {}
+            local profile = mobileRadianceClasses[string.lower(cp.baseclass or "")]
+            if mobileRadiancePeople[def.name] then profile = mobileRadianceEllipsoid end
+            if profile then result[id] = profile end
+        end
+    end
+    return result
+end
+
 if MOSAIC_CONFIG_ONLY then
     return {getPoliceLightTypeTable = getPoliceLightTypeTable,
-        getTankMuzzleTypeTable = getTankMuzzleTypeTable}
+        getTankMuzzleTypeTable = getTankMuzzleTypeTable,
+        getMobileRadianceShadowTypeTable = getMobileRadianceShadowTypeTable}
 end
 
  GG.unitFactor = 0.80

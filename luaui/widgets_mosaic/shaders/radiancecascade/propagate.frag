@@ -3,6 +3,9 @@
 uniform sampler2D emissionTex;
 uniform sampler2D occupancyTex;
 uniform sampler2D parentTex;
+#ifdef HEIGHT_AWARE
+uniform sampler2D parentSourceTex;
+#endif
 uniform vec2 mapSize;
 uniform int cascadeIndex;
 uniform int hasParent;
@@ -21,14 +24,29 @@ bool validPosition(vec2 uv) {
     vec2 world=domainOrigin+uv*mapSize;
     return all(greaterThanEqual(world,vec2(0))) && all(lessThan(world,worldSize));
 }
-vec3 emissionAt(vec2 uv) {
-    if(localField==0 || insidePatch(uv)) return texture2D(emissionTex,uv).rgb;
-    return texture2D(coarseEmissionTex,(domainOrigin+uv*mapSize)/worldSize).rgb;
+vec4 emissionAt(vec2 uv) {
+    if(localField==0 || insidePatch(uv)) return texture2D(emissionTex,uv);
+    return texture2D(coarseEmissionTex,(domainOrigin+uv*mapSize)/worldSize);
 }
 float occupancyAt(vec2 uv) {
     if(localField==0 || insidePatch(uv)) return texture2D(occupancyTex,uv).r;
     return texture2D(coarseOccupancyTex,(domainOrigin+uv*mapSize)/worldSize).r;
 }
+
+#ifdef HEIGHT_AWARE
+float sourceWeight(vec3 color) { return dot(max(color,vec3(0.0)),vec3(0.2126,0.7152,0.0722)); }
+void chooseSource(vec4 candidate,vec3 color,float weight,inout vec4 selected,inout float strongest)
+{
+    float energy=sourceWeight(color)*weight;
+    if(candidate.w>0.0 && energy>strongest) { selected=candidate; strongest=energy; }
+}
+vec4 emissionSource(vec2 uv,vec4 emitted)
+{
+    vec2 position=domainOrigin+uv*mapSize;
+    float height=emitted.a*2048.0/max(sourceWeight(emitted.rgb),0.000001);
+    return vec4(position.x,height,position.y,1.0);
+}
+#endif
 
 
 // Injected: BASE_PROBES, CASCADE_COUNT, MAX_TRACE_STEPS.
@@ -37,8 +55,10 @@ float occupancyAt(vec2 uv) {
 // A parent probe starts its interval elsewhere. Test the connector from the
 // child probe to that entry point before interpolating, otherwise bright parent
 // probes on the other side of a wall leak through the coarse spatial grid.
-vec4 visibleParentTap(vec2 originUV, ivec2 probe, int probes, ivec2 tile, int direction, int directions)
+vec4 visibleParentTap(vec2 originUV, ivec2 probe, int probes, ivec2 tile, int direction, int directions,
+                      out vec4 source)
 {
+    source=vec4(0.0);
     vec4 value=texelFetch(parentTex,tile*probes+probe,0);
     if(max(value.r,max(value.g,value.b))<=0.0) return value;
     vec2 parentUV=(vec2(probe)+0.5)/float(probes);
@@ -54,11 +74,15 @@ vec4 visibleParentTap(vec2 originUV, ivec2 probe, int probes, ivec2 tile, int di
         if(!validPosition(uv)) return vec4(0.0);
         if(occupancyAt(uv)>0.5) return vec4(0.0);
     }
+#ifdef HEIGHT_AWARE
+    source=texelFetch(parentSourceTex,tile*probes+probe,0);
+#endif
     return value;
 }
 
-vec4 fetchParent(vec2 worldUV, int direction)
+vec4 fetchParent(vec2 worldUV, int direction, out vec4 source)
 {
+    source=vec4(0.0);
     int probes = BASE_PROBES >> (cascadeIndex + 1);
     int tiles = 2 << (cascadeIndex + 1);
     ivec2 tile = ivec2(direction % tiles, direction / tiles);
@@ -67,10 +91,20 @@ vec4 fetchParent(vec2 worldUV, int direction)
     vec2 w = fract(p);
     ivec2 a = clamp(b, ivec2(0), ivec2(probes - 1));
     ivec2 c = clamp(b + ivec2(1), ivec2(0), ivec2(probes - 1));
-    vec4 q00 = visibleParentTap(worldUV,a,probes,tile,direction,tiles*tiles);
-    vec4 q10 = visibleParentTap(worldUV,ivec2(c.x,a.y),probes,tile,direction,tiles*tiles);
-    vec4 q01 = visibleParentTap(worldUV,ivec2(a.x,c.y),probes,tile,direction,tiles*tiles);
-    vec4 q11 = visibleParentTap(worldUV,c,probes,tile,direction,tiles*tiles);
+    vec4 s00,s10,s01,s11;
+    vec4 q00 = visibleParentTap(worldUV,a,probes,tile,direction,tiles*tiles,s00);
+    vec4 q10 = visibleParentTap(worldUV,ivec2(c.x,a.y),probes,tile,direction,tiles*tiles,s10);
+    vec4 q01 = visibleParentTap(worldUV,ivec2(a.x,c.y),probes,tile,direction,tiles*tiles,s01);
+    vec4 q11 = visibleParentTap(worldUV,c,probes,tile,direction,tiles*tiles,s11);
+#ifdef HEIGHT_AWARE
+    // Preserve a real contributing hit. Interpolating positions could invent
+    // a light halfway between two differently coloured, differently high lamps.
+    float strongest=0.0;
+    chooseSource(s00,q00.rgb,(1.0-w.x)*(1.0-w.y),source,strongest);
+    chooseSource(s10,q10.rgb,w.x*(1.0-w.y),source,strongest);
+    chooseSource(s01,q01.rgb,(1.0-w.x)*w.y,source,strongest);
+    chooseSource(s11,q11.rgb,w.x*w.y,source,strongest);
+#endif
     return mix(mix(q00,q10,w.x),mix(q01,q11,w.x),w.y);
 }
 
@@ -92,6 +126,7 @@ void main()
     // Half an emission texel per step, bounded by the injected loop limit.
     int steps = min(MAX_TRACE_STEPS, max(1,int(ceil(interval / (0.5 * min(texelWorld.x,texelWorld.y))))));
     vec4 result = vec4(0.0,0.0,0.0,1.0); // RGB radiance, A transmittance
+    vec4 representative=vec4(0.0);
     for (int i=0; i<MAX_TRACE_STEPS; ++i) {
         if (i>=steps) break;
         float distance = start + (float(i)+0.5) * interval / float(steps);
@@ -100,10 +135,14 @@ void main()
             result.a=0.0; // no clamped edge emission and no out-of-map parent
             break;
         }
-        vec3 emitted = emissionAt(uv);
+        vec4 sampleEmission=emissionAt(uv);
+        vec3 emitted = sampleEmission.rgb;
         // An emitting surface may occupy the same cell as its host building.
         if (max(emitted.r,max(emitted.g,emitted.b)) > 0.001) {
             result=vec4(emitted,0.0);
+#ifdef HEIGHT_AWARE
+            representative=emissionSource(uv,sampleEmission);
+#endif
             break;
         }
         if (occupancyAt(uv) > 0.5) {
@@ -113,10 +152,25 @@ void main()
     }
     if (result.a > 0.0 && hasParent != 0) {
         vec4 farInterval=vec4(0.0);
-        for (int child=0; child<4; ++child)
-            farInterval += fetchParent(originUV,direction*4+child) * 0.25;
+        float strongest=0.0;
+        for (int child=0; child<4; ++child) {
+            vec4 candidate;
+            vec4 value=fetchParent(originUV,direction*4+child,candidate);
+            farInterval += value * 0.25;
+#ifdef HEIGHT_AWARE
+            chooseSource(candidate,value.rgb,0.25,representative,strongest);
+#endif
+        }
         result.rgb += result.a * farInterval.rgb;
         result.a *= farInterval.a;
     }
+#ifdef HEIGHT_AWARE
+    // Keep the radiance carrier unshadowed by mobile geometry. Visibility is
+    // evaluated at the actual receiver height; a ground shadow must not remove
+    // light from a roof or bridge above a car.
+    gl_FragData[0]=result;
+    gl_FragData[1]=representative;
+#else
     gl_FragColor=result;
+#endif
 }

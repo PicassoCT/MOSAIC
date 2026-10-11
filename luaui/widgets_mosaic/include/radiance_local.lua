@@ -16,6 +16,7 @@ function M.New()
     local self={ready=false,enabled=true}
     function self:Shutdown()
         self.ready=false
+        self.texture,self.sourceTexture,self.domain=nil,nil,nil
         if self.solver then self.solver:Shutdown();self.solver=nil end
         for _,key in ipairs({"emission","occupancy"}) do
             if self[key] then gl.DeleteTexture(self[key]);self[key]=nil end
@@ -35,7 +36,12 @@ function M.New()
         if self.solver then return true end
         local factory=VFS.Include("luaui/widgets_mosaic/include/radiance_propagation.lua")
         local reason
-        self.solver,reason=factory(1024,true)
+        self.solver,reason=factory(1024,true,true)
+        if not self.solver then
+            -- Keep local lighting on drivers without paired float32 targets.
+            self.sourceFailure=reason
+            self.solver,reason=factory(1024,true)
+        end
         if self.solver then
             local opts={format=GL.RGBA16F or 0x881A,min_filter=GL.NEAREST,mag_filter=GL.NEAREST,
                 wrap_s=GL.CLAMP_TO_EDGE,wrap_t=GL.CLAMP_TO_EDGE,fbo=true}
@@ -52,13 +58,16 @@ function M.New()
     end
     function self:Refresh(layer,coarseEmission,coarseOccupancy,captureEmission,captureOccupancy)
         self.ready=false
+        self.sourceTexture=nil
         local domain=self:CameraDomain()
         if not domain or not self:Allocate() then self.domain=nil;return end
         gl.RenderToTexture(self.emission,captureEmission,layer,domain)
         gl.RenderToTexture(self.occupancy,captureOccupancy,layer-1,domain)
         self.solver:Draw(self.emission,self.occupancy,1,(layer-1)*128,layer*128,
             false,domain,coarseEmission,coarseOccupancy)
+        if self.solver.ready==false then self.domain=nil;return end
         self.domain=domain;self.texture=self.solver.unitTexture;self.ready=true
+        if self.solver.sourceReady then self.sourceTexture=self.solver.unitSourceTexture end
     end
     return self
 end
