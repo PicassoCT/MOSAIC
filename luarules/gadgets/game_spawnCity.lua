@@ -37,6 +37,9 @@ GG.HouseAsianUnitPlans = GG.HouseAsianUnitPlans or {}
 
 local scrapHeapTypeTable = getBuildingScrapHeapTypeTable(UnitDefs)
 local ruinTypeTable = getBuildingRuinTypeTable(UnitDefs)
+-- Lifecycle coverage is independent of the map's spawn culture and of whether
+-- a model supports block damage. The all-culture set is owned by lib_mosaic.
+local civilianHouseTypeTable = getCultureUnitModelTypes("international", "house", UnitDefs)
 GG.CityConstructionSites = {}
 GG.CityRubble = {}
 local newReconstruction = VFS.Include("luarules/gadgets/include/city_reconstruction.lua")
@@ -76,7 +79,7 @@ local initialArcologyPlots = 0
 local arcologyMinimum = 3
 
 local function isCityHouse(defID)
-    return houseTypeTable[defID] or defID == arcologyDefID
+    return civilianHouseTypeTable[defID]
 end
 
 if GameConfig.game.culture == "arab" then
@@ -100,7 +103,8 @@ function registerManuallyPlacedHouses(frame)
     foreach(Spring.GetAllUnits(),
             function(id)
                 defID = spGetUnitDefID(id)
-                if isCityHouse(defID) and not GG.CityConstructionSites[id] and allreadyRegistredBuilding[id] == nil then
+                if isCityHouse(defID) and not GG.CityConstructionSites[id]
+                    and not GG.CityRubble[id] and allreadyRegistredBuilding[id] == nil then
                     return id
                 end
             end,
@@ -158,7 +162,9 @@ function gadget:UnitDestroyed(unitID, unitDefID, teamID, attackerID)
     local plot = reconstruction and reconstruction:LostUnit(unitID)
     GG.CityConstructionSites[unitID], GG.CityRubble[unitID] = nil, nil
     if isCityHouse(unitDefID) then
-        if not plot and (teamID == gaiaTeamID or GG.BuildingTable[unitID]) then
+        -- A rubble member is already the remains, not another destroyed house.
+        -- Managed rubble/site deaths are handled by LostUnit above.
+        if not plot and not scrapHeapTypeTable[unitDefID] then
             queueDestroyedPlot(unitID, unitDefID)
         end
         removeCityRoute(unitID)
@@ -191,13 +197,16 @@ function distributedPathValidationComplete(frame, elements)
 end
 
 function setCityBuildingBlocking(id)
-    isblocking= false
-    isSolidObjectCollidable=false
-    isProjectileCollidable= true
-    isRaySegmentCollidable = true
-    crushable = false
-    blockEnemyPushing= true
-    blockHeightChanges = true
+    -- Decorative, map-placed and reconstruction rubble share the same policy.
+    -- Do not derive house walkability from which model pieces remain visible.
+    local rubble = scrapHeapTypeTable[spGetUnitDefID(id)] ~= nil
+    local isblocking = rubble
+    local isSolidObjectCollidable = rubble
+    local isProjectileCollidable= true
+    local isRaySegmentCollidable = true
+    local crushable = false
+    local blockEnemyPushing= true
+    local blockHeightChanges = true
 
     spSetUnitBlocking( id,  isblocking, isSolidObjectCollidable,  isProjectileCollidable,  isRaySegmentCollidable ,  crushable , blockEnemyPushing,  blockHeightChanges ) 
 
@@ -641,10 +650,17 @@ function setupCityReconstruction()
         CreateRubble = function(plot)
             local id = spCreateUnit(randDict(scrapHeapTypeTable), plot.x,
                 spGetGroundHeight(plot.x, plot.z), plot.z, plot.facing, gaiaTeamID)
-            if id then GG.CityRubble[id] = plot end
+            if id then
+                GG.CityRubble[id] = plot
+                setCityBuildingBlocking(id)
+            end
             return id
         end,
         CreateSite = function(plot)
+            -- Release only the old rubble during the same-tick replacement.
+            -- A failed creation must leave it blocking, not open the plot.
+            local rubbleID = plot.unitID
+            if rubbleID then spSetUnitBlocking(rubbleID, false, false) end
             GG.CityReconstructionSpawning = plot
             local id = spCreateUnit(plot.defID, plot.x, spGetGroundHeight(plot.x, plot.z),
                 plot.z, plot.facing, gaiaTeamID, true, false)
@@ -657,6 +673,8 @@ function setupCityReconstruction()
                 setConstructionProgress(id, 0.01)
                 Spring.SetUnitRulesParam(id, "city_construction", 1, {public=true})
                 Spring.SetUnitTooltip(id, "Construction site — awaiting peaceful completion")
+            elseif rubbleID then
+                setCityBuildingBlocking(rubbleID)
             end
             return id
         end,
@@ -704,5 +722,4 @@ function gadget:GameFrame(frame)
         end
     end
 end
-
 
