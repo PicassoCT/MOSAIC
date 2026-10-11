@@ -85,4 +85,5 @@ end
 
 function gadget:UnitDestroyed(id)
     active[id] = nil
+    if GG.BuildingDamageAnchor then GG.BuildingDamageAnchor[id] = nil end
 end
