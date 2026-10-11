@@ -7,11 +7,11 @@ function gadget:GetInfo()
         enabled = true,
     }
 end
-VFS.Include("scripts/lib_mosaic.lua")
 
 if not gadgetHandler:IsSyncedCode() then return false end
 
-local eligible = {}
+VFS.Include('scripts/lib_mosaic.lua')
+local eligible = getStructuralBuildingTypeTable(UnitDefs)
 local active = {}
 local UPDATE_FRAMES = 6 -- 0.2 seconds at the simulation's 30 Hz
 local MAX_IMPACTS = 8
@@ -93,4 +93,5 @@ end
 
 function gadget:UnitDestroyed(id)
     active[id] = nil
+    if GG.BuildingDamageAnchor then GG.BuildingDamageAnchor[id] = nil end
 end

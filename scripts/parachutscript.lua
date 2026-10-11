@@ -122,12 +122,12 @@ function fallingDown()
             local p = rotators[1 + math.floor((i - 1) * #rotators / count)]
             if p then
                 GG.SmokeRibbon.Set(unitID, "graphene_arc_" .. i, p, {
-                    directionSpace = "piece", direction = {0, 0, -1},
-                    length = 115, width = 2.4, strands = 2,
+                    directionSpace = "world", direction = {0, 1, 0},
+                    length = 190, width = 4.2, strands = 2,
                     curl = 0.38, speed = 3.5, windInfluence = 0.08,
-                    colorStart = {0.65, 0.98, 1, 0.82},
-                    colorEnd = {0.07, 0.45, 1, 0},
-                    emission = {3.2, 1.0}, sourceGlow = {0.12, 0.8, 1, 0.35},
+                    colorStart = {0.8, 0.96, 1, 0.95},
+                    colorEnd = {0.22, 0.7, 1, 0},
+                    emission = {4.2, 1.6}, sourceGlow = {0.15, 0.72, 1, 0.4},
                     distanceFactor = 30,
                     seed = i * 19,
                 })
