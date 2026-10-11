@@ -31,6 +31,7 @@ uniform float headlightSpan;
 uniform sampler2D windowTex;
 uniform sampler2D windowGroundTex;
 uniform int windowActive;
+#ifdef MOBILE_SHADOWS_ENABLED
 uniform sampler2D mobileSourceAtlas;
 uniform int mobileCascadeSourceActive=0;
 uniform int mobileDirectSourceActive=0;
@@ -52,6 +53,12 @@ float mobileFieldVisibility(vec2 uv,bool direct,vec3 world,vec3 normal)
     // much wider XZ occupancy lookup offset used to find a building's exterior.
     return mobileVisibility(source.xyz,world+normal*0.35,owner);
 }
+#else
+// A failed optional shadow shader must not remove the existing scene lighting.
+// These constants also remove both extra samplers from the fallback program.
+float mobileVisibility(vec3 source,vec3 receiver,float ownerID) { return 1.0; }
+float mobileFieldVisibility(vec2 uv,bool direct,vec3 world,vec3 normal) { return 1.0; }
+#endif
 // Finite 3D cones for objective floodlights/searchlights. These share the scene
 // depth and normals; no extra framebuffer, model shader or engine setting.
 const int MAX_OBJECTIVE_LIGHTS=24;

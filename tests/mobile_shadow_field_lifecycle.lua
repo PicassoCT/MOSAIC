@@ -61,11 +61,14 @@ local function harness(failure)
         ActiveFBO=function(id,fn,...)
             local oldTarget,oldViewport=target,copy(h.viewport)
             target=h.fbos[id].color0;h.viewport={0,0,h.textures[target].w,h.textures[target].h}
-            h.counts.source=h.counts.source+1;fn(...)
+            h.counts.source=h.counts.source+1;local ok,reason=pcall(fn,...)
             target,h.viewport=oldTarget,oldViewport -- Recoil ActiveFBO restores both.
+            if not ok then error(reason,0) end
         end,
         RenderToTexture=function(id,fn,...)
-            local oldTarget=target;target=id;h.counts.upload=h.counts.upload+1;fn(...);target=oldTarget
+            local oldTarget=target;target=id;h.counts.upload=h.counts.upload+1
+            local ok,reason=pcall(fn,...);target=oldTarget
+            if not ok then error(reason,0) end
         end,
         Clear=function(bit,...)
             if bit==GL.COLOR_BUFFER_BIT then h.pixels[target]={};h.counts.clear=h.counts.clear+1
@@ -73,6 +76,7 @@ local function harness(failure)
         end,
         TexCoord=function(a,b,c,d) texcoord={a,b,c,d} end,
         Vertex=function(x,y)
+            assert(h.alphaTest==false,'alpha testing discarded zero-alpha data texels')
             assert(shader and shader~=0 and texcoord and #texcoord==4,'float data shader/payload missing')
             local px=(x+1)*128-.5;local py=(y+1)*16-.5
             assert(math.abs(px-math.floor(px+.5))<.00001 and math.abs(py-math.floor(py+.5))<.00001,'point not on texel center')
@@ -89,11 +93,13 @@ local function harness(failure)
         Viewport=function(...) h.viewport={...} end,
         DepthMask=function(value) depthWrite=value end,
         DepthTest=function(value) depthTest=value end,
+        AlphaTest=function(value) h.alphaTest=value end,
         Texture=function(unit,texture) h.bindings[unit]=texture end,
         Uniform=function(location,...) h.uniforms[location]={...} end,
         UniformInt=function(location,...) h.uniforms[location]={...} end,
         GetUniformLocation=function(_,name) return name end,
         TexRect=function()
+            assert(h.alphaTest==false,'alpha testing discarded source metadata')
             assert(h.viewport[1]==0 and h.viewport[3]==512 and h.bindings[0]=='cascade-source',
                 'RC source copy did not fill the left half')
             h.copied=(h.copied or 0)+1
@@ -190,4 +196,22 @@ end
 for _,api in ipairs({'CreateFBO','ActiveFBO','Viewport'}) do
     h=harness({missingAPI=api});assert(not h.object and h.counts.texture==0 and h.counts.shader==0);noLeaks(h)
 end
+-- Engine FBO callbacks restore their own viewport/framebuffer on errors, but
+-- ResetMatrices only reloads current matrices. The module must pop its scopes.
+h=harness();h.alphaTest=true
+h.gl.Vertex=function() error('injected float upload failure') end
+local ok,reason=pcall(h.object.Update,h.object,h.domain)
+assert(not ok and tostring(reason):find('injected float upload failure',1,true))
+assert(h.matrices[1]==0 and h.matrices[2]==0,'failed upload leaked its matrix scopes')
+h.object:Shutdown();noLeaks(h)
+h=harness();h.object:Update(h.domain);h.alphaTest=true
+beforeViewport=copy(h.viewport)
+ok,reason=pcall(h.object.CaptureSources,h.object,function()
+    assert(h.alphaTest==false)
+    error('injected source renderer failure')
+end,0,128,h.domain,{ready=true,sourceTexture='cascade-source'})
+assert(not ok and tostring(reason):find('injected source renderer failure',1,true))
+assert(h.matrices[1]==0 and h.matrices[2]==0,'failed source renderer leaked its matrix scopes')
+for i=1,4 do assert(h.viewport[i]==beforeViewport[i],'failed source renderer leaked its viewport') end
+h.object:Shutdown();noLeaks(h)
 print('PASS: float payload/texel packing, full proxy-grid coverage, deterministic cell overflow, fixed memory, draw reuse, camera/removal lifecycle, metadata/depth/viewport routing and complete allocation cleanup')

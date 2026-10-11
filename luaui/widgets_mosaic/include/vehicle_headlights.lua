@@ -153,6 +153,7 @@ return function()
         if not self.coneShader or emissionStrength<=0 then return end
         -- Whole-map and local captures use exactly the same vehicle snapshot.
         refreshCaptureLights()
+        gl.AlphaTest(false) -- source height/owner data is not surface coverage
         gl.DepthTest(metadata and GL.LESS or false);gl.DepthMask(not not metadata)
         if metadata then gl.Blending(false) else gl.Blending(GL.ONE,GL.ONE) end
         gl.UseShader(self.coneShader)

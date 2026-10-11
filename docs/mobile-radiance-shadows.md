@@ -83,3 +83,22 @@ capture, paired cascade/resolve outputs, scene receiver heights, exact owner
 clearance, visibility, resource lifetimes, and allocation failures. GPU fixtures
 use EGL/llvmpipe in this workspace. They are not an in-game or GTX 1050 Ti frame
 time measurement; visual tuning and hardware performance require the game.
+
+## Lighting recovery
+
+The optional mobile shader now has an ordinary scene-shader fallback. A missing
+helper or rejected shader logs the actual failure and retains the existing
+14-sampler lighting pass. Mobile collection is created only when its shader is
+available. A failed mobile constructor, caster update, source capture, or local
+detail capture is isolated from global radiance and direct lights; the failing
+component is stopped once and its error is recorded in the infolog. Matrix
+scopes are unwound before ordinary drawing continues.
+
+All radiance/data capture passes explicitly disable alpha testing. Their alpha
+channels encode height, transmittance, or source identity, rather than opacity.
+The real Lua 5.1/OpenGL regression in `tests/radiance_capture_state_gpu.py`
+demonstrates that inherited alpha testing discards these values without the
+guard and preserves them with it. The engine normally starts drawing with alpha
+testing disabled; this reproducer establishes a state vulnerability, not the
+specific state of an unlogged game session. Shader and Lua errors from that
+session are still needed to distinguish the exact trigger.

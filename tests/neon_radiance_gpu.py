@@ -193,7 +193,7 @@ emission_program['textured']=0
 
 # Actual scene shader: world reconstruction in both depth conventions,
 # nearest opaque receiver, height bounds, colour, gain and day/night once.
-scene_program=ctx.program(vertex_shader=vertex,fragment_shader=(root/'scene.frag').read_text().replace('// MOBILE_SHADOWS',(root/'mobile_shadow.glsl').read_text()))
+scene_program=ctx.program(vertex_shader=vertex,fragment_shader=(root/'scene.frag').read_text().replace('#version 150 compatibility','#version 150 compatibility\n#define MOBILE_SHADOWS_ENABLED 1',1).replace('// MOBILE_SHADOWS',(root/'mobile_shadow.glsl').read_text()))
 scene_inputs=[texture(np.full((N,N,3),[0.2,0.05,0.1],np.float32)),texture(empty),
  texture(np.full((N,N,1),0.25,np.float32)),texture(np.ones((N,N,1),np.float32)),
  texture(np.full((N,N,3),[0.5,1,0.5],np.float32)),texture(np.full((N,N,3),[0.5,1,0.5],np.float32)),
