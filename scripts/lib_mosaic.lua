@@ -1,5 +1,36 @@
 -- ===================================================================================================================
 -- Game Configuration
+-- Shared visual property sets. LuaUI can request only these pure helpers, without
+-- initializing the synced game configuration or creating a second list of units.
+local policeLightProfiles = {
+    policetruck = {
+        pieces = {"LightEmit01", "LightEmit2"},
+        -- The authored helper pivots are below the lightbar mesh. Match the
+        -- existing PieceLight clearance; never emit at the raw helper pivot.
+        pieceLift = 10,
+        fallbackHeight = 40,
+        fallbackSpacing = 6,
+        fallbackForward = 5.24,
+        phaseFrames = 5,
+        radius = 135,
+        strength = 2.4,
+        colors = {{1, 0.025, 0.015}, {0.025, 0.18, 1}},
+    },
+}
+
+function getPoliceLightTypeTable(defs)
+    local result = {}
+    for id, def in pairs(defs) do
+        local profile = policeLightProfiles[def.name]
+        if profile then result[id] = profile end
+    end
+    return result
+end
+
+if MOSAIC_CONFIG_ONLY then
+    return {getPoliceLightTypeTable = getPoliceLightTypeTable}
+end
+
  GG.unitFactor = 0.80
  GameVersion = "1.033"  --UpdateFlag
  function setUnitFactor(modOptions)
