@@ -1,7 +1,103 @@
 -- ===================================================================================================================
 -- Game Configuration
--- Shared visual property sets. LuaUI can request only these pure helpers, without
+-- Shared property sets. LuaUI/LuaGaia can request only these pure helpers, without
 -- initializing the synced game configuration or creating a second list of units.
+local civilianHouseFamilies = {
+    arabic = {name = "house_arab", range = 0},
+    western = {name = "house_western", range = 0},
+    asian = {name = "house_asian", range = 4},
+}
+local structuralHouseBases = {
+    house_asian0 = true, house_western0 = true, house_arab0 = true,
+}
+local structuralHouseVariantKeys = {
+    house_asian_base = true, house_western_base = true, house_arab_base = true,
+}
+local buildingRuinNames = {house_ruin = true}
+local function copyBuildingPropertySet(source)
+    local result = {}
+    for key, value in pairs(source) do result[key] = value end
+    return result
+end
+local function buildingTypesFromNames(defs, names)
+    local result = {}
+    for id, def in pairs(defs) do
+        local member = names[def.name] == true
+        if not member then
+            local cp = def.customParams or {}
+            for key in pairs(structuralHouseVariantKeys) do
+                if names[cp[key]] then member = true; break end
+            end
+        end
+        if member then result[id] = true end
+    end
+    return result
+end
+function getStructuralBuildingTypeTable(defs)
+    return buildingTypesFromNames(defs, structuralHouseBases)
+end
+function getCivilianHouseTypeTable(defs)
+    local names = {}
+    for _, family in pairs(civilianHouseFamilies) do
+        for index = 0, family.range do names[family.name .. index] = true end
+    end
+    return buildingTypesFromNames(defs, names)
+end
+-- Ruins have a separate geographic plot roll. Authored model variants stay in
+-- gameplay membership without multiplying the building-purpose lottery.
+function getCityHouseSpawnTypeTable(cultureName, defs)
+    assert(cultureName == "international" or civilianHouseFamilies[cultureName], "Unknown city culture")
+    local names, result = {}, {}
+    for culture, family in pairs(civilianHouseFamilies) do
+        if cultureName == "international" or cultureName == culture then
+            for index = 0, family.range do names[family.name .. index] = true end
+        end
+    end
+    for id, def in pairs(defs) do
+        if names[def.name] then result[id] = id end
+    end
+    return result
+end
+function getCityRuinCandidateTypeTable(defs)
+    return getCivilianHouseTypeTable(defs)
+end
+function getCityRuinTypeTable(defs)
+    local result = {}
+    for id, def in pairs(defs) do
+        if buildingRuinNames[def.name] then result[id] = id end
+    end
+    return result
+end
+
+-- Initial war ruins are one choice for an entire city plot. These are fictional
+-- world-generation settings, shared by game generation and map LuaGaia placement.
+function getCityRuinConfig()
+    return {
+        equatorChance = 0.45,
+        polewardChance = 0.02,
+        polewardLatitude = 60,
+        unknownLatitude = 45,
+        protectedMinimums = {house_asian1 = 3},
+        ruinFootprintSize = 130,
+        plotClearance = 2,
+    }
+end
+
+local cityGeography, cityLocationMetadata, cityLocationMetadataRead
+function getCityGeography(game, metadata)
+    if not cityGeography then cityGeography = VFS.Include("scripts/lib_city_geography.lua") end
+    if metadata == nil then
+        if not cityLocationMetadataRead then
+            cityLocationMetadataRead = true
+            if VFS.FileExists and VFS.FileExists("mosaic/location.lua", VFS.MAP) then
+                cityLocationMetadata = VFS.Include("mosaic/location.lua", nil, VFS.MAP)
+            end
+        end
+        metadata = cityLocationMetadata
+    end
+    return cityGeography.Resolve(game, metadata)
+end
+
 local policeLightProfiles = {
     policetruck = {
         pieces = {"LightEmit01", "LightEmit2"},
@@ -87,7 +183,14 @@ end
 if MOSAIC_CONFIG_ONLY then
     return {getPoliceLightTypeTable = getPoliceLightTypeTable,
         getTankMuzzleTypeTable = getTankMuzzleTypeTable,
-        getMobileRadianceShadowTypeTable = getMobileRadianceShadowTypeTable}
+        getMobileRadianceShadowTypeTable = getMobileRadianceShadowTypeTable,
+        getStructuralBuildingTypeTable = getStructuralBuildingTypeTable,
+        getCivilianHouseTypeTable = getCivilianHouseTypeTable,
+        getCityHouseSpawnTypeTable = getCityHouseSpawnTypeTable,
+        getCityRuinCandidateTypeTable = getCityRuinCandidateTypeTable,
+        getCityRuinTypeTable = getCityRuinTypeTable,
+        getCityRuinConfig = getCityRuinConfig,
+        getCityGeography = getCityGeography}
 end
 
  GG.unitFactor = 0.80
@@ -221,30 +324,6 @@ end
 -- Configuration uses lowerCamelCase paths and explicit Frames/Ms/Seconds units.
 -- Chance = 0..1, Percent = 0..100, OneIn = inverse odds. Engine metal/energy
 -- names are confined to resource API calls; gameplay calls them money/supply.
--- Centralized membership for procedural houses with block-structural damage.
--- Consumers test membership rather than duplicating names/variant metadata.
--- The set is built once per Lua state and keyed by UnitDefID.
-local structuralHouseBases = {
-    house_asian0 = true, house_western0 = true, house_arab0 = true,
-}
-local structuralHouseVariantKeys = {
-    house_asian_base = true, house_western_base = true, house_arab_base = true,
-}
-function getStructuralBuildingTypeTable(defs)
-    local result = {}
-    for id, def in pairs(defs) do
-        local cp = def.customParams or {}
-        local member = structuralHouseBases[def.name] == true
-        if not member then
-            for key in pairs(structuralHouseVariantKeys) do
-                if structuralHouseBases[cp[key]] then member = true; break end
-            end
-        end
-        if member then result[id] = true end
-    end
-    return result
-end
-
 function getGameConfig()
     return {
         -- Match identity, simulation clock and global phase transitions.
@@ -269,6 +348,7 @@ function getGameConfig()
 
         -- Procedural city layout and population targets; counts scale with unitFactor.
         city = {
+            ruins = getCityRuinConfig(),
             population = {
                 buildings = math.ceil(150 * GG.unitFactor),
                 vehicles = math.ceil(60 * GG.unitFactor),
@@ -836,13 +916,7 @@ end
     end
 
     function getBuildingRuinTypeTable(UnitDefs)
-        local UnitDefNames = getUnitDefNames(UnitDefs)
-
-                typeTable = {            
-                    "house_ruin"                   
-                }
-                
-        return getTypeTable(UnitDefNames, typeTable)          
+        return getCityRuinTypeTable(UnitDefs)
     end
     
     function getScrapheapTypeTable(UnitDefs)
@@ -1565,15 +1639,15 @@ end
 
             translation = {
                 ["arabic"] = {
-                    ["house"] = {name = "house_arab", range = 0},
+                    ["house"] = copyBuildingPropertySet(civilianHouseFamilies.arabic),
                     ["civilian"] = {name = "civilian_arab", range = 5},
                     ["truck"] = {name = "truck_arab", range = 9}},
                 ["western"] = {
-                    ["house"] = {name = "house_western", range = 0},
+                    ["house"] = copyBuildingPropertySet(civilianHouseFamilies.western),
                     ["civilian"] = {name = "civilian_western", range = 4},
                     ["truck"] = {name = "truck_western", range = 4}},        
                 ["asian"] = {
-                    ["house"] = {name = "house_asian", range = 4},
+                    ["house"] = copyBuildingPropertySet(civilianHouseFamilies.asian),
                     ["civilian"] = {name = "civilian_arab", range = 5},
                     ["truck"] = {name = "truck_western", range = 4}}
                 }
@@ -1640,7 +1714,9 @@ end
             end
 
             function addRuinsToHouseTable(houseTable, UnitDefNames)
-                houseTable["house_ruin"] = UnitDefNames["house_ruin"].id
+                for name in pairs(buildingRuinNames) do
+                    if UnitDefNames[name] then houseTable[name] = UnitDefNames[name].id end
+                end
                 return houseTable
             end
 

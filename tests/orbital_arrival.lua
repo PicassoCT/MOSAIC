@@ -20,7 +20,11 @@ Spring = {
 }
 Game={mapName='LastDayOfDhubai', mapSizeX=8192, mapSizeZ=8192}
 VFS={LoadFile=function(p) local f=assert(io.open(root..p)); local s=f:read('*a'); f:close(); return s end}
-VFS.Include=function(p) return assert(loadstring(VFS.LoadFile(p)))() end
+VFS.Include=function(p, env)
+ local chunk=assert(loadstring(VFS.LoadFile(p)))
+ if env then setfenv(chunk,env) end
+ return chunk()
+end
 local noop=function() end
 local blend = true
 local renderCount = 0

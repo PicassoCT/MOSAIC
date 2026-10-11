@@ -66,6 +66,7 @@ local S={GetGameFrame=function()return frame end,GetGaiaTeamID=function()return 
   if alive(id) and (u.x-x)^2+(u.z-z)^2<=r*r then t[#t+1]=id end end;table.sort(t);return t end}
 env.Spring=S
 env.VFS={Include=function(path)
+ if path=='scripts/lib_city_ruins.lua' then return dofile(path) end
  if path=='scripts/lib_house_asian_split.lua' then return {newState=function()return {} end} end
  if path:find('luarules/gadgets/include/',1,true)==1 then return dofile(path) end
 end}
@@ -83,7 +84,7 @@ S.DestroyUnit=function(id)
  if placement then placement:UnitDestroyed(id) end
  units[id]=nil
 end
-run('luarules/gadgets/game_spawnCity.lua',env);city=env.gadget
+run('luarules/gadgets/game_spawnCity.lua',dofile('tests/fixtures/city_policy.lua')(env));city=env.gadget
 city:Initialize()
 -- Load only the actual occupancy helper; the rest of lib_mosaic needs the engine.
 local lib=read('scripts/lib_mosaic.lua')

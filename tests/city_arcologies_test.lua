@@ -133,10 +133,11 @@ end end
 local byName = {}; for _, d in pairs(defs) do byName[d.name] = d end
 local units, nextID, fail = {}, 100, false
 local destroyed
-local city = loadEnv('luarules/gadgets/game_spawnCity.lua', {
+local city = loadEnv('luarules/gadgets/game_spawnCity.lua', dofile('tests/fixtures/city_policy.lua')({
     GG = {}, gadget = {}, UnitDefs = defs, Game = {mapSizeX=1024,mapSizeZ=1024},
     gadgetHandler = {IsSyncedCode=function() return true end},
     VFS = {Include=function(path)
+        if path == 'scripts/lib_city_ruins.lua' then return dofile(path) end
         if path == 'scripts/lib_house_asian_split.lua' then
             local env = {VFS={Include=dofile}}
             setmetatable(env, {__index=_G})
@@ -188,7 +189,7 @@ local city = loadEnv('luarules/gadgets/game_spawnCity.lua', {
             nextID=nextID+1; units[nextID]={def=def,x=x,z=z}; return nextID
         end,
     },
-})
+}))
 local filler = city.spawnBuilding(4,0,0,true,true)
 assert(units[filler].def == 4 and not city.GG.BuildingTable[filler].arcology)
 fail = true; assert(city.spawnBuilding(4,100,100,true) == nil); fail = false
