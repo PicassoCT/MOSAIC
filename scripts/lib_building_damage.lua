@@ -291,7 +291,13 @@ function M.update(hits, frame)
     -- support failures. Unresolved accumulated damage stays on the block.
     for _, hit in ipairs(hits or {}) do
         local block = nearestBlock(hit.piece, hit.x, hit.y, hit.z)
-        if block and not block.pending then block.damage = block.damage + hit.damage end
+        if block and not block.pending then
+            block.damage = block.damage + hit.damage
+            -- Shared structural anchor: visual damage and smoke never pick a
+            -- random decoration or the geometric centre of the house.
+            GG.BuildingDamageAnchor = GG.BuildingDamageAnchor or {}
+            GG.BuildingDamageAnchor[unitID] = block.piece
+        end
     end
     local scheduled, overloaded = 0, false
     for _, block in ipairs(blocks) do
