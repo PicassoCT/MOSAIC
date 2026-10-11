@@ -39,7 +39,9 @@ end
 for id, def in pairs(UnitDefs) do
     local cp = def.customParams or {}
     if def.name == "house_asian0" or def.name == "house_western0"
-        or def.name == "house_arab0" or cp.house_asian_base == "house_asian0" then
+        or def.name == "house_arab0" or cp.house_asian_base == "house_asian0"
+        or cp.house_western_base == "house_western0"
+        or cp.house_arab_base == "house_arab0" then
         eligible[id] = true
     end
 end
@@ -47,7 +49,7 @@ end
 function gadget:UnitDamaged(id, defID, team, damage, paralyzer, weaponID, projectileID, attackerID)
     if not eligible[defID] or paralyzer or damage <= 0 then return end
     local hp, maxHP = Spring.GetUnitHealth(id)
-    if not hp or hp <= 0 or hp >= maxHP * 0.5 then return end
+    if not hp or not maxHP or hp <= 0 or hp >= maxHP * 0.5 then return end
     local hitPiece, frame = Spring.GetUnitLastAttackedPiece(id)
     if frame ~= Spring.GetGameFrame() then hitPiece = nil end
     local x, y, z
