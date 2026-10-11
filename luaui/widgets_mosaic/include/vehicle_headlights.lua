@@ -126,7 +126,7 @@ return function()
     end
     local coneLoc={}
     if self.coneShader then
-        for _,name in ipairs({'mapSize','lamp','forward','lightRange','strength','hasOccupancy'}) do
+        for _,name in ipairs({'mapSize','lamp','forward','lightRange','strength','hasOccupancy','sourceMetadata','sourceOwner'}) do
             coneLoc[name]=gl.GetUniformLocation(self.coneShader,name)
         end
     end
@@ -149,16 +149,19 @@ return function()
         for i=1,math.min(#captureLights,48) do sources[i]=captureLights[i] end
         return sources -- same visible lamps and budget as the cone emitter
     end
-    capture=function(bottom,top,gain)
+    capture=function(bottom,top,gain,metadata)
         if not self.coneShader or emissionStrength<=0 then return end
         -- Whole-map and local captures use exactly the same vehicle snapshot.
         refreshCaptureLights()
-        gl.DepthTest(false);gl.DepthMask(false);gl.Blending(GL.ONE,GL.ONE)
+        gl.DepthTest(metadata and GL.LESS or false);gl.DepthMask(not not metadata)
+        if metadata then gl.Blending(false) else gl.Blending(GL.ONE,GL.ONE) end
         gl.UseShader(self.coneShader)
         gl.Uniform(coneLoc.mapSize,Game.mapSizeX,Game.mapSizeZ)
         gl.Uniform(coneLoc.strength,emissionStrength*(gain or 1))
+        gl.UniformInt(coneLoc.sourceMetadata,metadata and 1 or 0)
         for i=1,math.min(#captureLights,48) do
             local l=captureLights[i]
+            gl.Uniform(coneLoc.sourceOwner,l.unitID)
             local length=math.sqrt(l.front[1]^2+l.front[3]^2)
             if length>0.001 then
                 local fx,fz=l.front[1]/length,l.front[3]/length

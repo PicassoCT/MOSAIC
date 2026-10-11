@@ -2,6 +2,7 @@
 layout(triangles) in;
 layout(triangle_strip, max_vertices=12) out;
 in float vertexHeight[];
+in float vertexSourceHeight[];
 in vec4 vertexColor[];
 in vec2 vertexUV[];
 out vec2 sourceUV;
@@ -12,12 +13,14 @@ uniform sampler2D materialTex;
 uniform int textured;
 uniform int materialMasked = 0;
 out float worldHeight;
+out float sourceHeight;
 uniform vec2 heightRange;
 uniform vec2 atlasSize;
 // Orthographic capture only. Clip to the height band BEFORE expanding so a
 // tall sign contributes only its portion intersecting this band.
 vec4 p[6];
 float h[6];
+float sourceH[6];
 vec2 uv[6];
 vec3 averageColor;
 int count;
@@ -32,27 +35,32 @@ vec3 sampleEmission(vec2 coord)
 }
 void clipHeight(float plane, bool lower)
 {
-    vec4 q[6]; float heights[6]; vec2 coords[6]; int n=0;
+    vec4 q[6]; float heights[6]; float sourceHeights[6]; vec2 coords[6]; int n=0;
     for(int i=0;i<6;++i) {
         if(i>=count) break;
         int j=(i+1)%count;
         bool a=lower ? h[i]>=plane : h[i]<plane;
         bool b=lower ? h[j]>=plane : h[j]<plane;
-        if(a) { q[n]=p[i]; coords[n]=uv[i]; heights[n++]=h[i]; }
+        if(a) { q[n]=p[i]; coords[n]=uv[i]; sourceHeights[n]=sourceH[i]; heights[n++]=h[i]; }
         if(a!=b) {
             float t=(plane-h[i])/(h[j]-h[i]);
-            q[n]=mix(p[i],p[j],t); coords[n]=mix(uv[i],uv[j],t); heights[n++]=plane;
+            q[n]=mix(p[i],p[j],t); coords[n]=mix(uv[i],uv[j],t);
+            sourceHeights[n]=mix(sourceH[i],sourceH[j],t); heights[n++]=plane;
         }
     }
     count=n;
-    for(int i=0;i<6;++i) { if(i>=n) break; p[i]=q[i]; h[i]=heights[i]; uv[i]=coords[i]; }
+    for(int i=0;i<6;++i) {
+        if(i>=n) break;
+        p[i]=q[i]; h[i]=heights[i]; sourceH[i]=sourceHeights[i]; uv[i]=coords[i];
+    }
 }
-void emitPosition(vec4 position, vec2 coord, int thin)
+void emitPosition(vec4 position, vec2 coord, int thin, float actualHeight)
 {
     gl_Position=position;
     sourceUV=coord; ribbon=thin; ribbonColor=averageColor;
     // Height membership has already been clipped, including upper exclusivity.
     worldHeight=(heightRange.x+heightRange.y)*0.5;
+    sourceHeight=actualHeight;
     gl_FrontColor=vertexColor[0];
     gl_BackColor=vertexColor[0];
     EmitVertex();
@@ -60,7 +68,10 @@ void emitPosition(vec4 position, vec2 coord, int thin)
 void main()
 {
     count=3;
-    for(int i=0;i<3;++i) { p[i]=gl_in[i].gl_Position; h[i]=vertexHeight[i]; uv[i]=vertexUV[i]; }
+    for(int i=0;i<3;++i) {
+        p[i]=gl_in[i].gl_Position; h[i]=vertexHeight[i];
+        sourceH[i]=vertexSourceHeight[i]; uv[i]=vertexUV[i];
+    }
     clipHeight(heightRange.x,true);
     if(count<3) return;
     clipHeight(heightRange.y,false);
@@ -87,7 +98,9 @@ void main()
         // Broad surfaces retain their original footprint, not a bounding box.
         for(int i=1;i<5;++i) {
             if(i>=count-1) break;
-            emitPosition(p[0],uv[0],0); emitPosition(p[i],uv[i],0); emitPosition(p[i+1],uv[i+1],0); EndPrimitive();
+            emitPosition(p[0],uv[0],0,sourceH[0]);
+            emitPosition(p[i],uv[i],0,sourceH[i]);
+            emitPosition(p[i+1],uv[i+1],0,sourceH[i+1]); EndPrimitive();
         }
         return;
     }
@@ -107,12 +120,16 @@ void main()
     }
     vec2 mid=(lo+hi)*0.5;
     vec2 halfSize=max((hi-lo)*0.5,vec2(1.0));
+    // A collapsed face already represents several texels of emission. Keep its
+    // clipped face height, rather than inventing a source at the band midpoint.
+    float averageHeight=0.0;
+    for(int i=0;i<6;++i) { if(i>=count) break; averageHeight+=sourceH[i]/float(count); }
     for(int i=0;i<4;++i) {
         vec2 s=vec2((i%2)==0 ? -1.0 : 1.0,i<2 ? -1.0 : 1.0);
         vec2 v=mid+s*halfSize;
         vec4 position=p[0];
         position.xy=(axis*v.x+normal*v.y)*2.0/atlasSize*position.w;
-        emitPosition(position,vec2(0.0),1);
+        emitPosition(position,vec2(0.0),1,averageHeight);
     }
     EndPrimitive();
 }

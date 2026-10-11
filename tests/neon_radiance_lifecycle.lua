@@ -65,7 +65,7 @@ local renders, captureUniforms, globals, serial=0, {}, {}, 0
 local previewRects={}
 local previewPosition={100,51,200}
 local gameFrame, captureColor, missingMaterial=0,{},false
-local env=setmetatable({widget={},WG={},Game={mapSizeX=8192,mapSizeZ=8192},GL={},Spring={
+local env=setmetatable({widget={},WG={},UnitDefs={},Game={mapSizeX=8192,mapSizeZ=8192},GL={},Spring={
  ValidUnitID=function() return true end,GetUnitIsDead=function() return false end,
  GetGameFrame=function() return gameFrame end,GetUnitPiecePosDir=function() return table.unpack(previewPosition) end,
  GetSelectedUnits=function() return {42} end,
@@ -87,7 +87,9 @@ env.gl=setmetatable({GetViewSizes=function() return 1280,720 end,
  TexRect=function(...) previewRects[#previewRects+1]={...} end,
  GetShaderLog=function() return '' end,
 }, {__index=function() return function() end end})
-env.VFS={LoadFile=read,Include=function(path) return assert(load(read(path),path,'t',env))() end}
+env.VFS={LoadFile=read,Include=function(path,includeEnv)
+ return assert(load(read(path),path,'t',includeEnv or env))()
+end}
 sourceEnv=assert(load(read('luaui/widgets_mosaic/gfx_neonlights_radiancecascade.lua'),'widget','t',env));sourceEnv()
 env.widget:Initialize();assert(env.WG.NeonRadiance and not env.WG.NeonRadiance.ready)
 globals.RecieveAllNeonUnitsPieces({[42]={1}})

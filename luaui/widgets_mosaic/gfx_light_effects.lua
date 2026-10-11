@@ -208,8 +208,8 @@ function widget:Initialize()
     tracerRenderer,err=VFS.Include('luaui/widgets_mosaic/include/combat_tracers.lua')()
     if not tracerRenderer then Spring.Echo('Night tracers unavailable: '..tostring(err)) end
     for name,fn in pairs(callbacks) do widgetHandler:RegisterGlobal(name,fn) end
-    capture=function(bottom,top,gain,night)
-        if lightRenderer then lightRenderer:Capture(bottom,top,gain,night) end
+    capture=function(bottom,top,gain,night,metadata)
+        if lightRenderer then lightRenderer:Capture(bottom,top,gain,night,metadata) end
     end
     hasEmission=function(night)
         for _,light in ipairs(sources:Collect()) do

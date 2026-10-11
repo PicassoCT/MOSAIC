@@ -11,7 +11,7 @@ import numpy as np
 ctx=moderngl.create_standalone_context(backend='egl',require=330)
 shader=ctx.program(vertex_shader='''#version 150 compatibility
 void main(){gl_Position=gl_Vertex;gl_TexCoord[0]=gl_MultiTexCoord0;}''',
-    fragment_shader=Path('luaui/widgets_mosaic/shaders/radiancecascade/scene.frag').read_text())
+    fragment_shader=Path('luaui/widgets_mosaic/shaders/radiancecascade/scene.frag').read_text().replace('// MOBILE_SHADOWS',Path('luaui/widgets_mosaic/shaders/radiancecascade/mobile_shadow.glsl').read_text()))
 gl=ctypes.CDLL('libGL.so.1')
 for name,args in {'glUseProgram':[ctypes.c_uint],'glBegin':[ctypes.c_uint],
                  'glVertex2f':[ctypes.c_float]*2,'glTexCoord2f':[ctypes.c_float]*2}.items():
