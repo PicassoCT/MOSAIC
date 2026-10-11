@@ -1,9 +1,21 @@
 """Production shader check using headless EGL/Mesa; no Python GL packages needed.
 Run: python3 tests/orbital_arrival_gpu.py [--preview-dir /tmp/arrival-preview]
+     python3 tests/orbital_arrival_gpu.py --width 1920 --height 1080 --region 19.25 41.5
 """
 import argparse, ctypes as C, os
 from pathlib import Path
 import numpy as np
+parser=argparse.ArgumentParser(description=__doc__)
+parser.add_argument('--preview-dir')
+parser.add_argument('--width',type=int,default=960,help='Render width (default: 960)')
+parser.add_argument('--height',type=int,default=540,help='Render height (default: 540)')
+parser.add_argument('--region',type=float,nargs=2,default=(0.,0.),metavar=('X','Y'),
+                    help='Generated Earth region offset (default: 0 0)')
+args=parser.parse_args()
+if args.width<=0 or args.height<=0:parser.error('width and height must be positive')
+if not np.isfinite(args.region).all():parser.error('region coordinates must be finite')
+W,H=args.width,args.height
+REGION=tuple(args.region)
 os.environ.setdefault('EGL_PLATFORM','surfaceless')
 egl=C.CDLL('libEGL.so.1'); gl=C.CDLL('libGL.so.1')
 def bind(lib,name,restype,args):
@@ -19,10 +31,9 @@ assert egl.eglBindAPI(0x30A2)
 attrs=(I*13)(0x3033,1,0x3040,8,0x3024,8,0x3023,8,0x3022,8,0x3021,8,0x3038)
 config=P(); count=I(); assert egl.eglChooseConfig(display,attrs,C.byref(config),1,C.byref(count)) and count.value
 context=egl.eglCreateContext(display,config,None,(I*7)(0x3098,3,0x30FB,3,0x30FD,2,0x3038)); assert context
-W,H=960,540
 surface=egl.eglCreatePbufferSurface(display,config,(I*5)(0x3057,W,0x3056,H,0x3038)); assert surface
 assert egl.eglMakeCurrent(display,surface,surface,context)
-for n,ret,args in [
+for n,ret,argtypes in [
  ('glCreateShader',U,[U]),('glShaderSource',None,[U,I,C.POINTER(C.c_char_p),P]),
  ('glCompileShader',None,[U]),('glGetShaderiv',None,[U,U,C.POINTER(I)]),
  ('glGetShaderInfoLog',None,[U,I,P,C.c_char_p]),('glCreateProgram',U,[]),
@@ -36,8 +47,8 @@ for n,ret,args in [
  ('glFramebufferTexture2D',None,[U,U,U,U,I]),('glViewport',None,[I,I,I,I]),
  ('glBegin',None,[U]),('glEnd',None,[]),('glTexCoord2f',None,[F,F]),('glVertex2f',None,[F,F]),
  ('glReadPixels',None,[I,I,I,I,U,U,P]),('glDisable',None,[U]),('glGetError',U,[]),
- ('glGetString',C.c_char_p,[U])]: bind(gl,n,ret,args)
-print('GL:',gl.glGetString(0x1F02).decode())
+ ('glGetString',C.c_char_p,[U])]: bind(gl,n,ret,argtypes)
+print('GL:',gl.glGetString(0x1F02).decode(),f'; render {W}x{H}; region {REGION}',flush=True)
 def compile_stage(kind,source):
  shader=gl.glCreateShader(kind); src=C.c_char_p(source.encode())
  gl.glShaderSource(shader,1,C.byref(src),None); gl.glCompileShader(shader)
@@ -78,38 +89,66 @@ def quad(p,target):
  gl.glEnd();assert gl.glGetError()==0
  data=np.empty((H,W,4),dtype='f4');gl.glReadPixels(0,0,W,H,0x1908,0x1406,data.ctypes.data)
  assert np.isfinite(data).all();return data
-uniform(earth,'elapsed',20);uniform(earth,'aspect',W/H)
+uniform(earth,'aspect',W/H)
 for n,v in [('orbitTex',0),('artworkTex',1),('liveTex',2),('hasArtwork',1),('hasLive',1)]:uniform(composite,n,v,True)
 uniform(composite,'artScale',(1.,1.));uniform(composite,'fade',1.)
-def render(descent,cloud_descent=0.,live_input=live,fade=1.):
+def render(descent,cloud_descent=0.,live_input=live,fade=1.,region=REGION):
  uniform(earth,'descent',descent);uniform(earth,'cloudDescent',cloud_descent)
+ uniform(earth,'regionOffset',tuple(region))
  gl.glActiveTexture(0x84C0);gl.glBindTexture(0x0DE1,0)
  e=quad(earth,orbit)
  for unit,tex in enumerate((orbit,art,live_input)):gl.glActiveTexture(0x84C0+unit);gl.glBindTexture(0x0DE1,tex)
  uniform(composite,'descent',cloud_descent);uniform(composite,'fade',fade)
  return e,quad(composite,out)
-parser=argparse.ArgumentParser();parser.add_argument('--preview-dir');args=parser.parse_args()
 def preview(result,name):
  if args.preview_dir:
   from PIL import Image
   directory=Path(args.preview_dir);directory.mkdir(parents=True,exist_ok=True)
   Image.fromarray(np.uint8(np.clip(result[::-1,:,:3],0,1)*255)).save(directory/f'{name}.png')
 
-# The four optical snapshots all precede atmospheric transit. Keep time fixed
-# here so cloud animation cannot masquerade as a change in planetary scale.
-# The orbital shader retains night-limb settlement lights, which emit up to
-# 2.5 before surface/atmosphere contributions; allow that authored HDR range.
+# The four optical snapshots all precede atmospheric transit. The shader takes
+# no time input: a chosen region's terrain and clouds must stay fixed while the
+# apparent altitude changes. Noon lighting is reviewed in the production source;
+# output bounds deliberately allow dark water and a bright atmospheric limb.
 orbit_stages=[]
 for index,descent in enumerate([0.,0.30,0.64,1.],1):
  e,result=render(descent,cloud_descent=0.)
  orbit_stages.append(e[:,:,:3].copy())
  assert result[:,:,:3].min()>=0 and result[:,:,:3].max()<=3.5
  assert np.allclose(e[:,:,3],0.),f'Planetary snapshot {index} entered atmospheric transit early'
- other_result=render(descent,cloud_descent=0.,live_input=other)[1]
+ repeated_e,other_result=render(descent,cloud_descent=0.,live_input=other)
+ assert np.array_equal(e,repeated_e),f'Planetary snapshot {index} changes between identical renders'
  assert np.array_equal(result,other_result),f'Planetary snapshot {index} exposes live-city pixels'
  preview(result,f'{index:02d}_planet_{descent:.2f}')
 assert all(np.mean(np.abs(a-b)) > 0.015 for a,b in zip(orbit_stages,orbit_stages[1:])), (
  'Orbital image has insufficient magnification across the four planetary snapshots')
+
+# A region changes the generated surface and weather, without depending on any
+# previously rendered region or stage. Test fully opaque transit clouds as well
+# as the orbital image, so terrain differences cannot disguise fixed weather.
+regional_orbit,regional_scene=render(0.64)
+regional_cloud,cloud_scene=render(1.,cloud_descent=0.52)
+region_differences=[]
+for index,(dx,dy) in enumerate([(19.25,41.5),(-31.75,7.125),(73.875,-18.625)],1):
+ region=(REGION[0]+dx,REGION[1]+dy)
+ changed_orbit,changed_scene=render(0.64,region=region)
+ changed_cloud,changed_cloud_scene=render(1.,cloud_descent=0.52,region=region)
+ orbit_difference=float(np.mean(np.abs(regional_orbit[:,:,:3]-changed_orbit[:,:,:3])))
+ cloud_difference=float(np.mean(np.abs(regional_cloud[:,:,:3]-changed_cloud[:,:,:3])))
+ assert orbit_difference>1./255.,f'Region {region} did not change the visible Earth'
+ assert cloud_difference>1./255.,f'Region {region} did not change its cloud field'
+ assert np.array_equal(changed_cloud[:,:,3],regional_cloud[:,:,3]), (
+  'Generated weather changed the guaranteed opaque projection handoff')
+ region_differences.append((round(orbit_difference,4),round(cloud_difference,4)))
+ preview(changed_scene,f'region_{index:02d}_planet_0.64')
+ preview(changed_cloud_scene,f'region_{index:02d}_cloud_0.52')
+ repeated_orbit,repeated_scene=render(0.64)
+ repeated_cloud,repeated_cloud_scene=render(1.,cloud_descent=0.52)
+ assert np.array_equal(regional_orbit,repeated_orbit) and np.array_equal(regional_scene,repeated_scene), (
+  'Orbital terrain or clouds moved between identical fixed-stage renders')
+ assert np.array_equal(regional_cloud,repeated_cloud) and np.array_equal(cloud_scene,repeated_cloud_scene), (
+  'Transit cloud density changed without camera descent or regional movement')
+print('Region mean RGB differences (Earth, cloud):',region_differences,flush=True)
 
 # Only after the final planetary snapshot do near-camera clouds take over and
 # open onto the live framebuffer. Optical magnification stays at its last stop.
@@ -124,7 +163,13 @@ for index,cloud_descent in enumerate([0.16,0.34,0.43,0.52,0.65,0.8,0.96,1.],5):
   expected=live_data[::-1].copy()
   assert np.allclose(result,expected,atol=2e-6),'Final composite changed framebuffer screen orientation'
   assert np.allclose(result[:,:,0],expected[:,:,0],atol=2e-6),'Live handoff inverted X / performed a 180-degree rotation'
+  regional_result=render(1.,cloud_descent=1.,region=(REGION[0]+19.25,REGION[1]+41.5))[1]
+  # The compositor's float mix can round its fully revealed result by one ULP
+  # depending on the hidden input. Use the same tolerance as the live fixture.
+  assert np.allclose(result,regional_result,atol=2e-6), (
+   f'Generated region altered the final live-city pixels: max error {np.max(np.abs(result-regional_result))}')
  preview(result,f'{index:02d}_cloud_{cloud_descent:.2f}')
 assert np.allclose(render(0,fade=0)[1][:,:,:3],0.25,atol=1e-6),'Artwork continuity failed'
 print('PASS: shaders compile; four planetary snapshots hide live pixels; orbital scale advances; '
-      'opaque cloud handoff; exact live pixels; artwork continuity')
+      'stationary repeat renders; different regional terrain and clouds; opaque cloud handoff; '
+      'exact live pixels across regions; artwork continuity')
