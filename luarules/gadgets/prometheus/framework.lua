@@ -287,6 +287,9 @@ local messageBuffer = {string.char(214)}
 
 local function SerializeOrder(unitID, cmd, params, options)
     params,options=params or {},options or 0
+    -- UnitDefs/engine command descriptors sometimes expose a numeric command ID
+    -- as a string. Normalize it before validation and packing; reject nonintegers.
+    if type(cmd) == "string" then cmd = tonumber(cmd) end
     local function integer(n,lo,hi)
         return type(n)=="number" and n==n and n>=lo and n<=hi and n==math.floor(n)
     end
