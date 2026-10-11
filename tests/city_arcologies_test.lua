@@ -151,8 +151,14 @@ local city = loadEnv('luarules/gadgets/game_spawnCity.lua', {
     getBuildingScrapHeapTypeTable=function() return {} end,
     getBuildingRuinTypeTable=function() return {} end,
     makeTable=function() return {} end,
-    getCultureUnitModelTypes=function()
-        local houses={[4]=4};for id=5,#defs do houses[id]=id end;return houses
+    getCultureUnitModelTypes=function(culture)
+        local houses={[4]=4};for id=5,#defs do houses[id]=id end
+        -- Lifecycle asks for every culture; the western spawn lottery stays
+        -- restricted to its original fixture pool.
+        if culture=='international' then
+            for id=1,3 do houses[id]=id end
+        end
+        return houses
     end,
     getHouseTypeIsInnerCityOnly=function() return {} end,
     removeDictFromDict=function(t) return t end,
