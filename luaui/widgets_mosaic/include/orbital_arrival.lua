@@ -4,26 +4,38 @@ local M = {}
 M.configKey = "MosaicOrbitalArrivalHandoff"
 M.phaseKey = "MosaicOrbitalArrivalPhase"
 M.artSeconds, M.fadeSeconds = 3, 1.25
-M.blendSeconds, M.stepSeconds = 0.5, 0.5
+M.blendSeconds, M.stepSeconds, M.revealSeconds = 0.5, 0.35, 0.6
 M.latestStartFrame = 300 -- late LuaUI initialization is OK; mid-game reloads are not
 M.holdDescent = 0.16
 
 function M.clamp(x) return math.max(0, math.min(1, x)) end
--- Actively magnify for 72% of each half-second beat, then settle for 28%.
--- A 0.09-second jump looked static or like a discontinuity.
-local snapStops = {0.0, 0.16, 0.34, 0.56, 0.78, 1.0}
-M.descentSeconds = (#snapStops - 1) * M.stepSeconds
+-- Four held planetary snapshots, followed by a separate cloud descent.
+-- Keep the first scale through the artwork blend so none of the four shots
+-- is spent underneath the loading picture. These are optical scales only;
+-- reaching the fourth stop must not reveal the live city yet.
+local snapStops = {0.0, 0.30, 0.64, 1.0}
+M.snapshotCount = #snapStops
+M.revealStart = M.blendSeconds + M.snapshotCount * M.stepSeconds
+M.descentSeconds = M.revealStart + M.revealSeconds
 function M.snapDescent(x)
-  x = M.clamp(x)
-  if x >= 1 then return 1 end
-  local count = #snapStops - 1
-  local scaled = x * count
-  local index = math.min(count, math.floor(scaled) + 1)
-  local phase = scaled - math.floor(scaled)
-  local a, b = snapStops[index], snapStops[index + 1]
-  local jump = M.clamp(phase / 0.72)
-  jump = jump * jump * (3 - 2 * jump)
-  return a + (b - a) * jump
+  local elapsed = M.clamp(x) * M.descentSeconds
+  local beat = math.max(0, elapsed - M.blendSeconds) / M.stepSeconds
+  local stage = math.min(M.snapshotCount, math.floor(beat + 1e-7) + 1)
+  return snapStops[stage], stage
+end
+function M.cloudDescent(x)
+  return M.clamp((M.clamp(x) * M.descentSeconds - M.revealStart) / M.revealSeconds)
+end
+function M.advanceTime(elapsed, delta)
+  local nextTime = math.min(M.descentSeconds, elapsed + math.max(0, delta))
+  -- A slow city-startup frame must not consume an unseen snapshot. Stop at
+  -- each shot boundary at least once; normal frame pacing only adds rounding
+  -- to display frames, while a stall extends the presentation safely.
+  for beat = 0, M.snapshotCount do
+    local boundary = M.blendSeconds + beat * M.stepSeconds
+    if elapsed < boundary - 1e-7 then return math.min(nextTime, boundary) end
+  end
+  return nextTime
 end
 function M.loadingState(age)
   -- Legacy helper retained for tests and compatibility. LuaIntro no longer
@@ -93,7 +105,7 @@ function M.newRenderer()
     Spring.Echo("[MOSAIC arrival] Shader unavailable: " .. (gl.GetShaderLog() or ""))
     r:destroy(); return
   end
-  for _, name in ipairs({"descent", "elapsed", "aspect"}) do
+  for _, name in ipairs({"descent", "cloudDescent", "elapsed", "aspect"}) do
     r.uniforms[name] = gl.GetUniformLocation(r.earth, name)
   end
   for _, name in ipairs({"descent", "fade", "hasArtwork", "hasLive", "artScale"}) do
@@ -101,7 +113,8 @@ function M.newRenderer()
   end
 
   function r:draw(width, height, texture, age, fade, descent, live)
-    local visualDescent = M.snapDescent(descent)
+    local visualDescent, stage = M.snapDescent(descent)
+    local cloudDescent = M.cloudDescent(descent)
     local factor = math.min(1, 960 / width, 540 / height)
     local rw = math.max(1, math.floor(width * factor))
     local rh = math.max(1, math.floor(height * factor))
@@ -116,13 +129,16 @@ function M.newRenderer()
     if not self.orbitTexture then return false end
     -- The procedural Earth has multiple FBM layers; rendering it every
     -- screen refresh can collapse low-end GPUs. Reuse the FBO between
-    -- samples, at most 12 orbital updates/sec during the 2.5-second dive.
+    -- samples, at 12 Hz during holds and the cloud reveal. Refresh immediately
+    -- on optical cuts so a short snapshot is never swallowed by the cache.
     -- Composite the artwork and clean live framebuffer every display frame.
     local aspect = width / height
     local rerender = self.lastAge == nil or age < self.lastAge
       or (age - self.lastAge) >= (1 / 12)
       or self.lastAspect ~= aspect
-      or (visualDescent >= 1 and self.lastDescent ~= 1)
+      or self.lastStage ~= stage
+      or (cloudDescent > 0 and self.lastCloudDescent == 0)
+      or (cloudDescent >= 1 and self.lastCloudDescent ~= 1)
     if rerender then
       gl.RenderToTexture(self.orbitTexture, function()
       gl.MatrixMode(GL.PROJECTION); gl.PushMatrix(); gl.LoadIdentity()
@@ -131,6 +147,7 @@ function M.newRenderer()
       gl.Blending(false)
       gl.UseShader(self.earth)
       gl.Uniform(self.uniforms.descent, visualDescent)
+      gl.Uniform(self.uniforms.cloudDescent, cloudDescent)
       gl.Uniform(self.uniforms.elapsed, age)
       gl.Uniform(self.uniforms.aspect, width / height)
       gl.Color(1, 1, 1, 1)
@@ -141,7 +158,8 @@ function M.newRenderer()
       gl.MatrixMode(GL.PROJECTION); gl.PopMatrix()
       gl.MatrixMode(GL.MODELVIEW)
       end)
-      self.lastAge, self.lastDescent, self.lastAspect = age, visualDescent, width / height
+      self.lastAge, self.lastStage, self.lastAspect = age, stage, aspect
+      self.lastCloudDescent = cloudDescent
     end
     local info = texture and texture ~= "" and gl.TextureInfo(texture)
     local sx, sy = 1, 1
@@ -153,10 +171,12 @@ function M.newRenderer()
     gl.Texture(1, info and texture or self.orbitTexture)
     gl.Texture(2, live or self.orbitTexture)
     gl.UseShader(self.composite)
-    gl.Uniform(self.uniforms.c_descent, visualDescent)
+    gl.Uniform(self.uniforms.c_descent, cloudDescent)
     gl.Uniform(self.uniforms.c_fade, fade)
     gl.UniformInt(self.uniforms.c_hasArtwork, info and 1 or 0)
-    gl.UniformInt(self.uniforms.c_hasLive, live and 1 or 0)
+    -- The cached image must have reached the full-cloud scene before the
+    -- display-rate compositor can expose a different projection underneath.
+    gl.UniformInt(self.uniforms.c_hasLive, live and self.lastCloudDescent >= 0.55 and 1 or 0)
     gl.Uniform(self.uniforms.c_artScale, sx, sy)
     gl.Color(1, 1, 1, 1)
     gl.TexRect(0, 0, width, height)

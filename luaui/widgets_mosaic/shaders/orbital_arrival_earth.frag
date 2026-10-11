@@ -1,5 +1,6 @@
 #version 150 compatibility
 uniform float descent;
+uniform float cloudDescent;
 uniform float elapsed;
 uniform float aspect;
 
@@ -26,10 +27,10 @@ void main() {
 
     // Keep the horizon orientation fixed throughout the dive. Only apparent
     // altitude/scale changes; this avoids the old "camera flip" impression.
-    // Planet diameter expands roughly 26x as the view descends.
-    // Center the optical axis on one coastline throughout the approach.
-    float radius = 1.62 * exp2(4.7 * descent);
-    vec2 center = vec2(0.0, -1.02);
+    // Start with the whole globe, then magnify roughly 45x in four snapshots.
+    // Keep the same surface point under the optical axis at every scale.
+    float radius = 0.42 * exp2(5.5 * descent);
+    vec2 center = vec2(0.0, -0.12 * radius);
     vec2 p = (screen - center) / radius;
     float rr = dot(p, p);
     float edge = 1.0 - smoothstep(0.994, 1.006, rr);
@@ -44,7 +45,7 @@ void main() {
 
     // Stable regional projection: scale changes in snaps, but the surface never
     // rotates or mirrors underneath the viewer.
-    vec2 focal = vec2(0.0, 1.02 / radius);
+    vec2 focal = -center / radius;
     vec2 surface = (p - focal) * 7.0 / (0.34 + z) + vec2(2.0, -0.5);
     float continental = fbm(surface * 0.72);
     float land = smoothstep(0.43, 0.50, continental);
@@ -106,14 +107,13 @@ void main() {
     vec3 earth = mix(space, litSurface, edge) + vec3(0.06, 0.24, 0.60) * halo;
 
     // During atmospheric transit, clouds become a separate near-camera layer.
-    // Their scale changes at the same staged beats as the descent, revealing
-    // progressively finer detail instead of one long rubber-band zoom.
-    // Moving cloud parallax scales along with the ground projection.
+    // This phase begins only AFTER all four planetary snapshots. Its smooth
+    // parallax is independent of the stepped ground projection.
     // It becomes opaque across the Earth -> live-city geometry boundary,
     // then disperses continuously as the real city grows underneath.
-    float transitScale = exp2(mix(4.6, -0.15, descent));
+    float transitScale = exp2(mix(4.6, -0.15, cloudDescent));
     vec2 transitUV = screen * transitScale;
-    vec2 flow = wind * (0.45 + descent * 2.5);
+    vec2 flow = wind * (0.45 + cloudDescent * 2.5);
     float transitLarge = fbm(transitUV + vec2(4.7, 8.2) + flow);
     float transitFine = fbm(transitUV * 3.6 - flow * 1.8);
     float transitNoise = transitLarge * 0.78 + transitFine * 0.22;
@@ -123,8 +123,8 @@ void main() {
                             vec3(0.97, 0.98, 1.0), relief);
     transitCloud *= 0.76 + transitNoise * 0.36;
     // 0.43-0.55 stays fully opaque to conceal the projection handoff.
-    float cover = smoothstep(0.23, 0.39, descent)
-                * (1.0 - smoothstep(0.55, 0.98, descent));
-    float cloudScene = smoothstep(0.25, 0.40, descent);
+    float cover = smoothstep(0.23, 0.39, cloudDescent)
+                * (1.0 - smoothstep(0.55, 0.98, cloudDescent));
+    float cloudScene = smoothstep(0.25, 0.40, cloudDescent);
     gl_FragColor = vec4(mix(earth, transitCloud, cloudScene), cover);
 }

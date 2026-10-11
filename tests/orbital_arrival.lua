@@ -29,7 +29,8 @@ gl = {CreateShader=function() if not shaderFailure then return id() end end,
  CreateTexture=function() if not textureFailure then return id() end end,
  DeleteTexture=function(n) deleted[n]=true end, TextureInfo=function() return {xsize=1920,ysize=1080} end,
  GetUniformLocation=function(_,n) return n end, Uniform=function(n, ...) draws[n]={...} end,
- UniformInt=noop, UseShader=noop, Texture=noop, Color=noop, TexRect=noop,
+ UniformInt=function(n, ...) draws[n]={...} end,
+ UseShader=noop, Texture=noop, Color=noop, TexRect=noop,
  Clear=noop, MatrixMode=noop, PushMatrix=noop, PopMatrix=noop, LoadIdentity=noop,
  Blending=function(v) blend=v end,
  CopyToTexture=noop, RenderToTexture=function(_,fn) renderCount=renderCount+1; fn(); assert(blend) end,
@@ -58,9 +59,20 @@ assert(A.introPhase()=='finished','LuaIntro did not mark its informational shutd
 assert(A.loadingState(0)==0)
 local f,d=A.loadingState(60); assert(f==1 and d==0,'loading screen must never advance descent')
 assert(A.snapDescent(0)==0 and A.snapDescent(1)==1)
-assert(A.blendSeconds==0.5 and A.stepSeconds==0.5 and A.descentSeconds==2.5)
-assert(A.snapDescent(0.10)>0 and A.snapDescent(0.10)<0.16, 'first beat must visibly magnify')
-assert(A.snapDescent(0.20)>=0.16, 'snap must advance to the next scale')
+assert(A.blendSeconds==0.5 and A.stepSeconds==0.35 and A.descentSeconds==2.5)
+assert(A.snapshotCount==4 and A.revealSeconds==0.6)
+local shots={0,0.30,0.64,1}
+for i,optical in ipairs(shots) do
+ local start=A.blendSeconds+(i-1)*A.stepSeconds
+ local a,stage=A.snapDescent((start+0.01)/A.descentSeconds)
+ local b=A.snapDescent((start+A.stepSeconds-0.01)/A.descentSeconds)
+ assert(stage==i and a==optical and b==optical, 'planetary shot must hold its own optical scale')
+ assert(A.cloudDescent((start+A.stepSeconds-0.01)/A.descentSeconds)==0,
+   'cloud reveal started before all four snapshots were shown')
+end
+assert(A.cloudDescent(A.revealStart/A.descentSeconds)==0)
+assert(A.cloudDescent((A.revealStart+0.3)/A.descentSeconds)>0)
+assert(A.cloudDescent(1)==1)
 A.beginHandoff(); assert(A.introPhase()=='pending')
 A.writeHandoff('art.png',20,1,0)
 local tex,age,fade,descent=A.readHandoff(); assert(tex=='art.png' and age==20 and fade==1 and descent==0)
@@ -74,6 +86,34 @@ assert(r:draw(1920,1080,'art.png',20.04,1,0.2))
 assert(renderCount==previous,'Orbital shader still runs at full screen refresh rate')
 assert(r:draw(1920,1080,'art.png',20.1,1,0.2))
 assert(renderCount==previous+1,'Orbital shader did not refresh at 12 Hz')
+-- Cuts must bypass the cache, including the fourth (closest) planetary shot.
+for stage=2,4 do
+ previous=renderCount
+ local progress=(A.blendSeconds+(stage-1)*A.stepSeconds)/A.descentSeconds
+ local sampleAge=20.1+stage*0.01
+ assert(r:draw(1920,1080,'art.png',sampleAge,1,progress,'live.png'))
+ assert(renderCount==previous+1 and r.lastStage==stage,
+   '12 Hz cache swallowed a planetary snapshot')
+ assert(draws.descent[1]==0 and draws.hasLive[1]==0,
+   'a planetary snapshot started the live-city compositor')
+ assert(r:draw(1920,1080,'art.png',sampleAge,1,progress,'live.png'))
+ assert(renderCount==previous+1,'Post pass repeated an optical cut')
+end
+local function revealProgress(x) return (A.revealStart+x*A.revealSeconds)/A.descentSeconds end
+previous=renderCount
+assert(r:draw(1920,1080,'art.png',20.15,1,revealProgress(0.01),'live.png'))
+assert(renderCount==previous+1,'Entering the cloud reveal did not invalidate the cache')
+assert(r:draw(1920,1080,'art.png',20.3,1,revealProgress(0.3),'live.png'))
+previous=renderCount
+assert(r:draw(1920,1080,'art.png',20.34,1,revealProgress(0.6),'live.png'))
+assert(renderCount==previous and draws.hasLive[1]==0,
+  'compositor exposed the live projection before its cached clouds were ready')
+assert(r:draw(1920,1080,'art.png',20.4,1,revealProgress(0.61),'live.png'))
+assert(draws.hasLive[1]==1,'cloud reveal did not enable the captured city')
+previous=renderCount
+assert(r:draw(1920,1080,'art.png',20.41,1,1,'live.png'))
+assert(renderCount==previous+1 and r.lastCloudDescent==1,
+  'final cloud frame was swallowed by the cache')
 r:destroy(); r:destroy()
 local function newWidget()
  WG={}; widget={}; widgetHandler={RemoveWidget=function(_,w) if w.Shutdown then w:Shutdown() end end}
@@ -99,17 +139,25 @@ assert(hidden and settings.WindowedEdgeMove==0 and A.introPhase()=='pending',
 assert(WG.MosaicArrival.descent==0)
 time=0.25; w:DrawScreenEffects()
 assert(draws.fade[1]>=0.5 and math.abs(WG.MosaicArrival.descent-0.1)<0.00001,
-  'the first optical beat starts DURING the blend')
+  'the working half-second artwork/sky blend changed')
+assert(A.snapDescent(WG.MosaicArrival.descent)==0 and draws.descent[1]==0,
+  'the first snapshot was consumed underneath the loading artwork')
 time=0.5; w:DrawScreenEffects()
 assert(draws.fade[1]==1 and math.abs(WG.MosaicArrival.descent-0.2)<0.00001,
-  'first zoom beat must be complete at 0.5s')
-time=1.0; w:DrawScreenEffects()
-assert(math.abs(WG.MosaicArrival.descent-0.4)<0.00001, 'second 0.5-second step')
-time=1.5; w:DrawScreenEffects()
-assert(math.abs(WG.MosaicArrival.descent-0.6)<0.00001, 'third 0.5-second step')
+  'first planetary snapshot must be fully visible after the 0.5s blend')
+for stage=2,4 do
+ time=A.blendSeconds+(stage-1)*A.stepSeconds; w:DrawScreenEffects()
+ local optical,actualStage=A.snapDescent(WG.MosaicArrival.descent)
+ assert(actualStage==stage and optical==shots[stage] and draws.descent[1]==0,
+   'the four planetary snapshots must finish before cloud reveal')
+end
+time=A.revealStart; w:DrawScreenEffects()
+assert(WG.MosaicArrival and draws.descent[1]==0,'clouds revealed the city during the fourth shot')
+time=2.2; w:DrawScreenEffects()
+assert(WG.MosaicArrival and draws.descent[1]>0,'cloud reveal did not follow the four snapshots')
 time=2.5; w:DrawScreenEffects()
 assert(not hidden and not WG.MosaicArrival and WG.MosaicArrivalFinished,
-  'five half-second steps must finish in 2.5s without city readiness')
+  'four snapshots plus clouds must finish in nominal 2.5s without city readiness')
 A.finishIntro(); assert(A.introPhase()=='played','late LuaIntro shutdown clobbered completion')
 assert(settings.FullscreenEdgeMove==0 and settings.WindowedEdgeMove==1)
 assert(settings[A.configKey]==''); assert(cameraCalls==0)
@@ -144,8 +192,22 @@ assert(not WG.MosaicArrival,'midgame reload replayed arrival')
 A.beginHandoff(); frame=1; time=50; w=newWidget()
 assert(WG.MosaicArrival and WG.MosaicArrival.active)
 w:DrawScreenEffects(); assert(hidden)
-time=53; w:DrawScreenEffects()
+for i=1,60 do time=50+i/20; w:DrawScreenEffects() end
 assert(not hidden and not WG.MosaicArrival, 'late-initialized arrival did not finish')
+-- Even multi-second startup stalls must show every planetary shot. Simulation
+-- frame stays fixed: progress is still driven by rendered wall time when paused.
+A.beginHandoff(); frame=1; time=60; w=newWidget(); w:DrawScreenEffects()
+local seen={1}
+for i=1,8 do
+ time=60+i; w:DrawScreenEffects(); w:DrawScreenPost()
+ if WG.MosaicArrival then
+  local _,stage=A.snapDescent(WG.MosaicArrival.descent)
+  if stage~=seen[#seen] then seen[#seen+1]=stage end
+  if stage<4 then assert(draws.descent[1]==0,'startup stall bypassed a planetary shot') end
+ end
+end
+assert(table.concat(seen,',')=='1,2,3,4','slow startup skipped a planetary snapshot')
+assert(not WG.MosaicArrival and not hidden,'paused or stalled arrival did not release the city')
 -- Test the actual router functions: keys must be intercepted BEFORE bound actions.
 local source=VFS.LoadFile('luaui/mosaicwidgets.lua')
 local first=assert(source:find('local function ArrivalActive',1,true))
@@ -164,7 +226,7 @@ widgetHandler.WG.MosaicArrival={active=true,skip=function() skipped=true end}
 assert(widgetHandler:KeyPress(65,{},false)); assert(widgetHandler:TextInput('a'))
 assert(widgetHandler:MouseWheel(true,1)); assert(widgetHandler:CommandNotify(10,{},{}))
 assert(widgetHandler:KeyPress(27,{},false) and skipped)
-print('PASS: static LuaIntro and load bar, pregame artwork bridge, gameframe-only GPU zoom, 12Hz shader cache, no map gap or camera writes')
+print('PASS: static loading bridge, four planetary snapshots before clouds, stall-safe timing, 12Hz cache with immediate cuts, input/cleanup, no camera writes')
 -- Exercise the real location widget on both map spellings, including resize.
 Spring.SendLuaRulesMsg=function(s) assert(s:match('City: Dubai')); end
 Spring.PlaySoundFile=function() end

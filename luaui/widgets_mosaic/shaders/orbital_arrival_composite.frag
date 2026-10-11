@@ -2,7 +2,7 @@
 uniform sampler2D orbitTex;
 uniform sampler2D artworkTex;
 uniform sampler2D liveTex;
-uniform float descent;
+uniform float descent; // cloud/reveal phase only; planetary snapshots keep this at zero
 uniform float fade;
 uniform int hasArtwork;
 uniform int hasLive;
@@ -29,7 +29,7 @@ void main() {
     float opening = smoothstep(-0.02, 0.10, min(bounds.x, bounds.y));
     opening = mix(opening, 1.0, smoothstep(0.85, 0.98, descent));
     // Opaque clouds hide the different coordinate systems; thinning clouds
-    // expose the enlarged city image continuously over the final beats.
+    // expose the enlarged city image continuously after the four snapshots.
     float reveal = progress * (1.0 - orbit.a) * opening * float(hasLive);
     vec3 scene = mix(orbit.rgb, live, reveal);
     vec2 artUV = (uv - 0.5) * artScale + 0.5;

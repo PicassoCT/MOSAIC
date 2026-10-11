@@ -57,6 +57,7 @@ def program(path):
 earth=program(root/'orbital_arrival_earth.frag'); composite=program(root/'orbital_arrival_composite.frag')
 def uniform(p,n,v,integer=False):
  gl.glUseProgram(p);loc=gl.glGetUniformLocation(p,n.encode())
+ assert loc>=0, f'Missing production shader uniform: {n}'
  if isinstance(v,tuple):gl.glUniform2f(loc,*v)
  elif integer:gl.glUniform1i(loc,v)
  else:gl.glUniform1f(loc,v)
@@ -80,30 +81,50 @@ def quad(p,target):
 uniform(earth,'elapsed',20);uniform(earth,'aspect',W/H)
 for n,v in [('orbitTex',0),('artworkTex',1),('liveTex',2),('hasArtwork',1),('hasLive',1)]:uniform(composite,n,v,True)
 uniform(composite,'artScale',(1.,1.));uniform(composite,'fade',1.)
-def render(descent,live_input=live,fade=1.):
- uniform(earth,'descent',descent);gl.glActiveTexture(0x84C0);gl.glBindTexture(0x0DE1,0)
+def render(descent,cloud_descent=0.,live_input=live,fade=1.):
+ uniform(earth,'descent',descent);uniform(earth,'cloudDescent',cloud_descent)
+ gl.glActiveTexture(0x84C0);gl.glBindTexture(0x0DE1,0)
  e=quad(earth,orbit)
  for unit,tex in enumerate((orbit,art,live_input)):gl.glActiveTexture(0x84C0+unit);gl.glBindTexture(0x0DE1,tex)
- uniform(composite,'descent',descent);uniform(composite,'fade',fade)
+ uniform(composite,'descent',cloud_descent);uniform(composite,'fade',fade)
  return e,quad(composite,out)
 parser=argparse.ArgumentParser();parser.add_argument('--preview-dir');args=parser.parse_args()
-orbit_stages=[]
-for descent in [0.,0.16,0.34,0.43,0.52,0.65,0.8,0.96,1.]:
- e,result=render(descent)
- if descent<=0.34:orbit_stages.append(e[:,:,:3].copy())
- assert result[:,:,:3].min()>=0 and result[:,:,:3].max()<=1.5
- if 0.42<=descent<=0.55:assert np.allclose(e[:,:,3],1.),'Handoff cloud is not fully opaque'
- if descent==1.:
-  expected=live_data[::-1].copy()
-  assert np.allclose(result,expected,atol=2e-6),'Final composite changed framebuffer screen orientation'
-  assert np.allclose(result[:,:,0],expected[:,:,0],atol=2e-6),'Live handoff inverted X / performed a 180-degree rotation'
+def preview(result,name):
  if args.preview_dir:
   from PIL import Image
   directory=Path(args.preview_dir);directory.mkdir(parents=True,exist_ok=True)
-  Image.fromarray(np.uint8(np.clip(result[::-1,:,:3],0,1)*255)).save(directory/f'{descent:.2f}.png')
+  Image.fromarray(np.uint8(np.clip(result[::-1,:,:3],0,1)*255)).save(directory/f'{name}.png')
+
+# The four optical snapshots all precede atmospheric transit. Keep time fixed
+# here so cloud animation cannot masquerade as a change in planetary scale.
+# The whole-globe view includes the night limb, whose authored settlement lights
+# emit up to 2.5 before surface/atmosphere contributions; allow that HDR range.
+orbit_stages=[]
+for index,descent in enumerate([0.,0.30,0.64,1.],1):
+ e,result=render(descent,cloud_descent=0.)
+ orbit_stages.append(e[:,:,:3].copy())
+ assert result[:,:,:3].min()>=0 and result[:,:,:3].max()<=3.5
+ assert np.allclose(e[:,:,3],0.),f'Planetary snapshot {index} entered atmospheric transit early'
+ other_result=render(descent,cloud_descent=0.,live_input=other)[1]
+ assert np.array_equal(result,other_result),f'Planetary snapshot {index} exposes live-city pixels'
+ preview(result,f'{index:02d}_planet_{descent:.2f}')
 assert all(np.mean(np.abs(a-b)) > 0.015 for a,b in zip(orbit_stages,orbit_stages[1:])), (
- 'Orbital image has insufficient motion / magnification across optical beats')
-a=render(0.52,live)[1];b=render(0.52,other)[1]
-assert np.array_equal(a,b),'Cloud handoff exposes underlying projection switch'
+ 'Orbital image has insufficient magnification across the four planetary snapshots')
+
+# Only after the final planetary snapshot do near-camera clouds take over and
+# open onto the live framebuffer. Optical magnification stays at its last stop.
+for index,cloud_descent in enumerate([0.16,0.34,0.43,0.52,0.65,0.8,0.96,1.],5):
+ e,result=render(1.,cloud_descent=cloud_descent)
+ assert result[:,:,:3].min()>=0 and result[:,:,:3].max()<=1.5
+ if 0.42<=cloud_descent<=0.55:
+  assert np.allclose(e[:,:,3],1.),'Handoff cloud is not fully opaque'
+  other_result=render(1.,cloud_descent=cloud_descent,live_input=other)[1]
+  assert np.array_equal(result,other_result),'Cloud handoff exposes underlying projection switch'
+ if cloud_descent==1.:
+  expected=live_data[::-1].copy()
+  assert np.allclose(result,expected,atol=2e-6),'Final composite changed framebuffer screen orientation'
+  assert np.allclose(result[:,:,0],expected[:,:,0],atol=2e-6),'Live handoff inverted X / performed a 180-degree rotation'
+ preview(result,f'{index:02d}_cloud_{cloud_descent:.2f}')
 assert np.allclose(render(0,fade=0)[1][:,:,:3],0.25,atol=1e-6),'Artwork continuity failed'
-print('PASS: shaders compile; orbital scale advances; opaque cloud handoff; exact live pixels; artwork continuity')
+print('PASS: shaders compile; four planetary snapshots hide live pixels; orbital scale advances; '
+      'opaque cloud handoff; exact live pixels; artwork continuity')

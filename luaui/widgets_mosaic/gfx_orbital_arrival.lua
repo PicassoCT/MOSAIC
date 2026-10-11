@@ -7,6 +7,7 @@ local Arrival = VFS.Include("luaui/widgets_mosaic/include/orbital_arrival.lua")
 local renderer, liveTexture, modal
 local width, height, offsetX, offsetY
 local timer, texture, age, fade, descent
+local lastWallElapsed = 0
 local guiWasHidden, hasCapture, started = false, false, false
 local artworkReady = false
 local savedEdges = {}
@@ -76,9 +77,10 @@ local function begin()
   renderer = Arrival.newRenderer()
   if not renderer then finish(); return false end
   fade, descent = 0, 0
+  lastWallElapsed = 0
   timer = Spring.GetTimer()
   Spring.Echo("[MOSAIC arrival] first advancing gameframe=" ..
-      tostring(Spring.GetGameFrame()) .. "; starting one 2.5-second zoom")
+      tostring(Spring.GetGameFrame()) .. "; starting four planetary snapshots, then cloud reveal")
   guiWasHidden = Spring.IsGUIHidden()
   started = true
   if not guiWasHidden then Spring.SendCommands("hideinterface") end
@@ -111,7 +113,9 @@ function widget:DrawScreenEffects()
     -- The only zoom trigger is the advancing game-frame counter.
     if not begin() then return end
   end
-  local elapsed = Spring.DiffTimers(Spring.GetTimer(), timer)
+  local wallElapsed = Spring.DiffTimers(Spring.GetTimer(), timer)
+  local elapsed = Arrival.advanceTime(modal.elapsed or 0, wallElapsed - lastWallElapsed)
+  lastWallElapsed = wallElapsed
   fade = Arrival.clamp(elapsed / Arrival.blendSeconds)
   descent = Arrival.clamp(elapsed / Arrival.descentSeconds)
   modal.elapsed, modal.descent = elapsed, descent
