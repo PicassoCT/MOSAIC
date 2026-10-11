@@ -46,7 +46,15 @@ Spring={
 local M=dofile('luaui/widgets_mosaic/include/combat_light_sources.lua')
 assert(M.Weapon(WeaponDefs[1])==nil,'damage-only flame still produces pellet VFX')
 assert(M.Weapon(WeaponDefs[2]).fire,'ordinary Molotov trail should be unchanged')
-local fx=M.New({})
+local configEnv=setmetatable({MOSAIC_CONFIG_ONLY=true},{__index=_G})
+local configChunk
+if setfenv then
+    configChunk=setfenv(assert(loadfile('scripts/lib_mosaic.lua')),configEnv)
+else
+    configChunk=assert(loadfile('scripts/lib_mosaic.lua','t',configEnv))
+end
+local policeProfiles=configChunk().getPoliceLightTypeTable(UnitDefs)
+local fx=M.New({},policeProfiles)
 fx:UnitCreated(21,11)
 local function collect()
     drawFrame=drawFrame+1

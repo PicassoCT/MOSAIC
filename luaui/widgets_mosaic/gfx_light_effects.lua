@@ -5,6 +5,8 @@ end
 
 local Sources=VFS.Include('luaui/widgets_mosaic/include/combat_light_sources.lua')
 local RadianceTime=VFS.Include('luaui/widgets_mosaic/include/radiance_time.lua')
+local MosaicConfig=VFS.Include('scripts/lib_mosaic.lua',
+    setmetatable({MOSAIC_CONFIG_ONLY=true},{__index=_G}))
 local sources,lightRenderer,flameRenderer,tracerRenderer,capture,hasEmission,api
 local globalLightMult,globalRadiusMult,globalLifeMult=1.3,1.3,.75
 local enableHeatDistortion=true
@@ -174,8 +176,12 @@ local function WeaponExplosion(px,py,pz,weaponID)
 		end
     end
 end
-local function WeaponBarrelfire(px,py,pz,weaponID)
-    if sources then sources:AddExplosion(px,py,pz,weaponID,true) end
+local function WeaponBarrelfire(px,py,pz,weaponID,ownerID)
+    -- The tank's firing script publishes its precise piece-attached flash.
+    -- Do not add a second, projectile-origin night flash for the same shot.
+    if sources and not sources:HasTankMuzzleFlash(ownerID) then
+        sources:AddExplosion(px,py,pz,weaponID,true)
+    end
 end
 local function CombatFire(id,x,y,z,born,expires)
     if sources then sources:SetFire(id,x,y,z,born,expires) end
@@ -189,7 +195,8 @@ local callbacks={GadgetPyroTorchOff=PyroTorchOff,
 
 function widget:Initialize()
     syncOptions()
-    sources=Sources.New(weaponConf)
+    sources=Sources.New(weaponConf,MosaicConfig.getPoliceLightTypeTable(UnitDefs),
+        MosaicConfig.getTankMuzzleTypeTable(UnitDefs))
     sources.brightness,sources.radius=globalLightMult,globalRadiusMult
     for _,id in ipairs(Spring.GetAllUnits()) do sources:UnitCreated(id,Spring.GetUnitDefID(id)) end
     local err
@@ -224,10 +231,21 @@ function widget:Initialize()
         getLife=function() return globalLifeMult end,
         getHeatDistortion=function() return enableHeatDistortion end,
         getCinderBudgetStats=function() return sources and sources.pyroStats end,
+        getPoliceLightStats=function() return sources and sources:GetPoliceLightStats() end,
     }
     WG.lighteffects=api
 end
 function widget:TextCommand(command)
+    if command=='police lights' then
+        local s=sources and sources:GetPoliceLightStats() or {}
+        local cascade=WG.GetVehicleLightOcclusion and WG.GetVehicleLightOcclusion(1)
+        Spring.Echo(string.format(
+            'Police radiance: tracked=%d visible=%d emitted=%d anchors=%d fallback=%d outside-point-LOS=%d | capture=%s occupancy=%s',
+            s.tracked or 0,s.visible or 0,s.emitted or 0,s.anchored or 0,
+            s.fallback or 0,s.outsidePointLos or 0,
+            lightRenderer and 'ready' or 'unavailable',cascade and 'ready' or 'unavailable'))
+        return true
+    end
     if command~='cinder fxstats' then return false end
     local s=sources and sources.pyroStats or {}
     Spring.Echo(string.format(
@@ -239,6 +257,11 @@ function widget:TextCommand(command)
 end
 function widget:Update(dt) if sources then sources:Update(dt) end end
 function widget:UnitCreated(id,defID) if sources then sources:UnitCreated(id,defID) end end
+function widget:UnitEnteredLos(id)
+    -- A unit created outside our LOS can become visible after its script enables
+    -- always-visible rendering. Register it when the engine exposes it to LuaUI.
+    if sources then sources:UnitCreated(id,Spring.GetUnitDefID(id)) end
+end
 function widget:UnitDestroyed(id) if sources then sources:UnitDestroyed(id) end end
 function widget:DrawWorld()
     if sources then

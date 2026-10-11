@@ -299,11 +299,16 @@ else -- UNSYNCED
     local colGray ={r = 175/255, g= 175/255, b= 175/255, a = 128/255}
 
     local function GetMoneyMessage(number)
+        -- Discard fractional magnitude only in the floating label. The synced
+        -- damage, account balances and aggregated transfer keep full precision.
+        local magnitude = math.floor(math.abs(number))
+        local amount = string.format("%.0f", magnitude)
+        if number < 0 and magnitude > 0 then amount = "-" .. amount end
         local text =""
         if number < 0 then
-            text=  "\255\255\34\12 $ " .. number
+            text=  "\255\255\34\12 $ " .. amount
         else
-           text = "\255\171\236\183 $ " .. number
+           text = "\255\171\236\183 $ " .. amount
         end
         return text
     end

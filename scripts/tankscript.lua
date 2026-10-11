@@ -186,6 +186,7 @@ function optionalStealth()
 end
 
 function script.Create()
+    Spring.SetUnitRulesParam(unitID, "mosaic_tank_muzzle_frame", -1, camoRulesAccess)
 
     Show(center)
     Show(aimpiece)
@@ -280,6 +281,9 @@ end
 
 
 function script.FireWeapon1()
+    -- One shot stamp drives the muzzle ribbon and radiance together. No timer
+    -- thread: clients expire it against the game frame, including after reload.
+    Spring.SetUnitRulesParam(unitID, "mosaic_tank_muzzle_frame", Spring.GetGameFrame(), camoRulesAccess)
     tP(FireEmit,5*45,0,10,0)
     Explode(Shell, SFX.FALL)
     EmitSfx(FireEmit, 1026)

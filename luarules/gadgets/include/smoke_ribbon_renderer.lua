@@ -257,7 +257,22 @@ return function()
             local length,width=r.length,r.width
             local d2=(cx-x)^2+(cy-y)^2+(cz-z)^2
             local cutoff=math.max(length,width*2)*(r.distanceFactor or 40)
-            if (fullView or Spring.IsPosInLos(x,y,z,ally)) and d2<cutoff*cutoff
+            local visible
+            if r.unitID then
+                -- Attached combat flashes inherit the visible model's LOS,
+                -- just like piece-attached ribbons and police radiance lamps.
+                -- Recheck the owner here; a caller cannot leak a hidden unit.
+                local id=r.unitID
+                if Spring.ValidUnitID(id) and not Spring.GetUnitIsDead(id)
+                    and not Spring.GetUnitIsCloaked(id) and not Spring.GetUnitNoDraw(id)
+                    and not Spring.GetUnitTransporter(id) then
+                    local los=fullView or Spring.GetUnitLosState(id,ally)
+                    visible=fullView or (los and los.los)
+                end
+            else
+                visible=fullView or Spring.IsPosInLos(x,y,z,ally)
+            end
+            if visible and d2<cutoff*cutoff
                 and Spring.IsSphereInView(x,y+length*.5,z,length*2+width*3) then
                 if not wind and Spring.GetWind then wind={Spring.GetWind()} end
                 local v=r.velocity or {0,0,0}

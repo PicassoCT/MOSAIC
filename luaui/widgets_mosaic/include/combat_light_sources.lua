@@ -10,6 +10,9 @@ local makePyroBudget = VFS and VFS.Include and
     VFS.Include('luaui/widgets_mosaic/include/pyro_flame_budget.lua') or
     dofile('luaui/widgets_mosaic/include/pyro_flame_budget.lua')
 local PyroBudget = makePyroBudget(Spring,PyroCollision)
+local TankMuzzle = VFS and VFS.Include and
+    VFS.Include('luaui/widgets_mosaic/include/tank_muzzle_flash.lua') or
+    dofile('luaui/widgets_mosaic/include/tank_muzzle_flash.lua')
 
 local projectileTypes={Cannon=true,MissileLauncher=true,StarburstLauncher=true,
     LaserCannon=true,BeamLaser=true,LightningCannon=true,DGun=true,Flame=true}
@@ -25,8 +28,10 @@ function M.Weapon(wd)
         color=fire and {1,.32,.045} or {v.colorR or 1,v.colorG or .65,v.colorB or .25}}
 end
 
-function M.New(weaponConf)
-    local self={transient={},fires={},wrecks={},police={},torches={},pyros={},projectiles={},weaponConf=weaponConf,
+function M.New(weaponConf, policeProfiles, tankProfiles)
+    policeProfiles = policeProfiles or {}
+    tankProfiles = tankProfiles or {}
+    local self={transient={},fires={},wrecks={},police={},tanks={},torches={},pyros={},projectiles={},weaponConf=weaponConf,
         brightness=1.3,radius=1.3}
     local cursor,scanAge=0,1
     local drawFrame,lights,flames,tracers
@@ -47,13 +52,22 @@ function M.New(weaponConf)
         local name=UnitDefs[defID] and UnitDefs[defID].name
         if name=='vehiclecorpse' or name=='tankcorpse' then self.wrecks[id]=name=='tankcorpse' and 1.5 or 1 end
         if name=='ground_walker_flame' then self.pyros[id]={} end
-        if name=='policetruck' then self.police[id]=true end
+        local profile=policeProfiles[defID]
+        self.police[id]=profile and {profile=profile} or nil
+        profile=tankProfiles[defID]
+        self.tanks[id]=profile and {profile=profile} or nil
+        drawFrame=nil
     end
     function self:UnitDestroyed(id)
         self.wrecks[id]=nil
         self.pyros[id]=nil
         self.police[id]=nil
+        self.tanks[id]=nil
         drawFrame=nil
+    end
+    function self:HasTankMuzzleFlash(id)
+        local record=self.tanks[id]
+        return record and TankMuzzle.ActiveFrame(Spring,id,record.profile,Spring.GetGameFrame())~=nil
     end
     function self:AddExplosion(x,y,z,weaponID,muzzle)
         local p=self.weaponConf[weaponID]
@@ -143,6 +157,37 @@ function M.New(weaponConf)
         if ux and vx then x,y,z=x+vx-ux,y+vy-uy,z+vz-uz end
         return x,y,z,dx/mag,dy/mag,dz/mag
     end
+    local function policeOrigin(id,record,phase)
+        local ux,uy,uz=Spring.GetUnitPosition(id)
+        if not ux then return end
+        local x,y,z=ux,uy,uz
+        if Spring.GetUnitViewPosition then
+            local vx,vy,vz=Spring.GetUnitViewPosition(id)
+            if vx then x,y,z=vx,vy,vz end
+        end
+        local front,up,right=Spring.GetUnitVectors(id)
+        if not front or not up or not right then return end
+        local p=record.profile
+        if not record.pieces and Spring.GetUnitPieceMap then
+            local map=Spring.GetUnitPieceMap(id)
+            if map then record.pieces={map[p.pieces[1]],map[p.pieces[2]]} end
+        end
+        local piece=record.pieces and record.pieces[phase+1]
+        if piece and Spring.GetUnitPiecePosDir then
+            local px,py,pz=Spring.GetUnitPiecePosDir(id,piece)
+            if px then
+                -- Piece positions are at the simulation transform; keep the
+                -- light on the drawn roof as the vehicle moves or tilts.
+                return px+x-ux+up[1]*p.pieceLift,
+                    py+y-uy+up[2]*p.pieceLift,
+                    pz+z-uz+up[3]*p.pieceLift, true
+            end
+        end
+        local side=phase==0 and -p.fallbackSpacing or p.fallbackSpacing
+        return x+up[1]*p.fallbackHeight+front[1]*p.fallbackForward+right[1]*side,
+            y+up[2]*p.fallbackHeight+front[2]*p.fallbackForward+right[2]*side,
+            z+up[3]*p.fallbackHeight+front[3]*p.fallbackForward+right[3]*side, false
+    end
     function self:Collect()
         local stamp=Spring.GetDrawFrame()
         if drawFrame==stamp then return lights,flames,tracers end
@@ -150,10 +195,14 @@ function M.New(weaponConf)
         local extraFlames={}
         local cx,cy,cz=Spring.GetCameraPosition()
         local frame=Spring.GetGameFrame()+(Spring.GetFrameTimeOffset() or 0)
-        local function add(x,y,z,radius,color,strength,nightOnly,ribbon,tracer)
-            if not visible(x,y,z) then return end
+        local function add(x,y,z,radius,color,strength,nightOnly,ribbon,tracer,visibleUnitID)
+            -- A validated unit's visibility is authoritative for attached lamps.
+            -- Always-visible police can be outside the terrain's positional LOS.
+            -- Unattached combat effects retain their positional visibility check.
+            if not visibleUnitID and not visible(x,y,z) then return end
             lights[#lights+1]={x=x,y=y,z=z,radius=radius,color=color,strength=strength,
-                nightOnly=nightOnly,ribbon=ribbon,tracer=tracer,d2=(x-cx)^2+(y-cy)^2+(z-cz)^2,order=#lights+1}
+                nightOnly=nightOnly,ribbon=ribbon,tracer=tracer,unitID=visibleUnitID,
+                d2=(x-cx)^2+(y-cy)^2+(z-cz)^2,order=#lights+1}
         end
         local function fire(x,y,z,scale,seed,opacity)
             local flicker=.82+.11*math.sin(frame*.43+seed)+.07*math.sin(frame*.79+seed*2)
@@ -219,16 +268,22 @@ function M.New(weaponConf)
         end
         -- Police lightbars share the normal combat-light radiance capture: no extra pass.
         -- Two rooftop beacons alternate at 3 Hz, remaining visible by day as well.
-        for id in pairs(self.police) do
+        for id,record in pairs(self.police) do
             if unitVisible(id) then
-                local x,y,z=Spring.GetUnitPosition(id)
-                local _,_,right=Spring.GetUnitVectors(id)
-                if x and right then
-                    local phase=math.floor(frame/5)%2
-                    local side=phase==0 and -1 or 1
-                    local color=phase==0 and {1,.025,.015} or {.025,.18,1}
-                    local lx,lz=x+right[1]*side*11,z+right[3]*side*11
-                    add(lx,y+37,lz,135,color,2.4,false)
+                local profile=record.profile
+                local phase=math.floor(frame/profile.phaseFrames)%2
+                local x,y,z=policeOrigin(id,record,phase)
+                if x then
+                    add(x,y,z,profile.radius,profile.colors[phase+1],profile.strength,false,nil,nil,id)
+                end
+            end
+        end
+        for id,record in pairs(self.tanks) do
+            if unitVisible(id) then
+                local flash=TankMuzzle.Collect(Spring,id,record,frame)
+                if flash then
+                    add(flash.x,flash.y,flash.z,flash.radius*self.radius/1.3,
+                        flash.color,flash.strength*self.brightness/1.3,false,flash.ribbon,nil,id)
                 end
             end
         end
@@ -277,6 +332,28 @@ function M.New(weaponConf)
             flames[#flames+1]=extraFlames[i].ribbon
         end
         return lights,flames,tracers
+    end
+    -- On-demand diagnostics; no extra per-frame LOS or piece queries.
+    function self:GetPoliceLightStats()
+        local stats={tracked=0,visible=0,emitted=0,outsidePointLos=0,anchored=0,fallback=0}
+        local frame=Spring.GetGameFrame()+(Spring.GetFrameTimeOffset() or 0)
+        for id,record in pairs(self.police) do
+            stats.tracked=stats.tracked+1
+            if unitVisible(id) then
+                stats.visible=stats.visible+1
+                local phase=math.floor(frame/record.profile.phaseFrames)%2
+                local x,y,z,anchored=policeOrigin(id,record,phase)
+                if x then
+                    local key=anchored and 'anchored' or 'fallback'
+                    stats[key]=stats[key]+1
+                    if not visible(x,y,z) then stats.outsidePointLos=stats.outsidePointLos+1 end
+                end
+            end
+        end
+        for _,light in ipairs(self:Collect()) do
+            if light.unitID and self.police[light.unitID] then stats.emitted=stats.emitted+1 end
+        end
+        return stats
     end
     return self
 end
