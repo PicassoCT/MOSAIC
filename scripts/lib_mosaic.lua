@@ -131,6 +131,30 @@ end
 -- Configuration uses lowerCamelCase paths and explicit Frames/Ms/Seconds units.
 -- Chance = 0..1, Percent = 0..100, OneIn = inverse odds. Engine metal/energy
 -- names are confined to resource API calls; gameplay calls them money/supply.
+-- Centralized membership for procedural houses with block-structural damage.
+-- Consumers test membership rather than duplicating names/variant metadata.
+-- The set is built once per Lua state and keyed by UnitDefID.
+local structuralHouseBases = {
+    house_asian0 = true, house_western0 = true, house_arab0 = true,
+}
+local structuralHouseVariantKeys = {
+    house_asian_base = true, house_western_base = true, house_arab_base = true,
+}
+function getStructuralBuildingTypeTable(defs)
+    local result = {}
+    for id, def in pairs(defs) do
+        local cp = def.customParams or {}
+        local member = structuralHouseBases[def.name] == true
+        if not member then
+            for key in pairs(structuralHouseVariantKeys) do
+                if structuralHouseBases[cp[key]] then member = true; break end
+            end
+        end
+        if member then result[id] = true end
+    end
+    return result
+end
+
 function getGameConfig()
     return {
         -- Match identity, simulation clock and global phase transitions.
@@ -161,6 +185,11 @@ function getGameConfig()
                 persons = math.ceil(75 * GG.unitFactor),
             },
             buildings = {
+                -- Membership definitions live here, not in feature gadgets.
+                sets = {
+                    structuralBaseNames = structuralHouseBases,
+                    structuralVariantKeys = structuralHouseVariantKeys,
+                },
                 maxMegaBuildings = 12,
                 sizeX = 256,
                 sizeY = 64,

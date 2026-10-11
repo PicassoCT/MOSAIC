@@ -57,6 +57,7 @@ local TruckTypeTable = getCultureUnitModelTypes(GameConfig.game.culture,
                                                 "truck", UnitDefs)
 local houseTypeTable = getCultureUnitModelTypes(GameConfig.game.culture,
                                                 "house", UnitDefs)
+local structuralHouseTypeTable = getStructuralBuildingTypeTable(UnitDefs)
 
 -- Variants belong to all house gameplay registries, but must not multiply the
 -- probability of selecting this building purpose in the city's spawn lottery.
@@ -76,7 +77,7 @@ local initialArcologyPlots = 0
 local arcologyMinimum = 3
 
 local function isCityHouse(defID)
-    return houseTypeTable[defID] or defID == arcologyDefID
+    return houseTypeTable[defID] or structuralHouseTypeTable[defID] or defID == arcologyDefID
 end
 
 if GameConfig.game.culture == "arab" then
