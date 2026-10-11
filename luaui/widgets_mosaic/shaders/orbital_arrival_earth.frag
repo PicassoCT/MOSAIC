@@ -27,10 +27,14 @@ void main() {
 
     // Keep the horizon orientation fixed throughout the dive. Only apparent
     // altitude/scale changes; this avoids the old "camera flip" impression.
-    // Start with the whole globe, then magnify roughly 45x in four snapshots.
-    // Keep the same surface point under the optical axis at every scale.
-    float radius = 0.42 * exp2(5.5 * descent);
-    vec2 center = vec2(0.0, -0.12 * radius);
+    // Begin in low Earth orbit: the opening globe is eight times larger,
+    // with a broad curved limb across the top instead of a distant full disc.
+    // Descend roughly 9.7x across four snapshots. The final radius compensates
+    // for the near-limb view to retain the previous final terrain scale.
+    // A fixed center/radius ratio keeps the same surface point under the
+    // optical axis without rotating the horizon between cuts.
+    float radius = 3.36 * exp2(3.28 * descent);
+    vec2 center = vec2(0.0, -0.90 * radius);
     vec2 p = (screen - center) / radius;
     float rr = dot(p, p);
     float edge = 1.0 - smoothstep(0.994, 1.006, rr);
