@@ -8,6 +8,9 @@ function gadget:GetInfo()
 end
 
 if gadgetHandler:IsSyncedCode() then
+    local environment=(getfenv and getfenv(1)) or _ENV
+    local config=VFS.Include("scripts/lib_mosaic.lua",setmetatable({MOSAIC_CONFIG_ONLY=true},{__index=environment}))
+    local shadowTypes=config.getBuildingRadianceShadowTypeTable(UnitDefs)
     local pendingUnits = {}
     local MAX_GRID_CELLS = 4096
     local MAX_LEVELS = 30
@@ -70,11 +73,8 @@ if gadgetHandler:IsSyncedCode() then
 
     local function rebuildUnit(unitID)
         local unitDefID = Spring.GetUnitDefID(unitID)
-        local def = unitDefID and UnitDefs[unitDefID]
-        local cp = def and def.customParams
-        local enabled = cp and (cp.throwsshadow or cp.throwsShadow)
         local env = Spring.UnitScript.GetScriptEnv(unitID)
-        if not (enabled == true or enabled == 1 or enabled == "1" or enabled == "true") or
+        if not shadowTypes[unitDefID] or
             not env or type(env.GetBuildingShadowColumns) ~= "function" then
             SendToUnsynced("buildingShadowColumnsRemove", unitID)
             return
@@ -118,6 +118,11 @@ if gadgetHandler:IsSyncedCode() then
     function gadget:UnitDestroyed(unitID)
         pendingUnits[unitID] = nil
         SendToUnsynced("buildingShadowColumnsRemove", unitID)
+    end
+
+    function gadget:UnitFinished(unitID,unitDefID)
+        local profile=shadowTypes[unitDefID]
+        if profile and profile.kind=="solid" then markDirty(unitID) end
     end
 
     function gadget:GameFrame()

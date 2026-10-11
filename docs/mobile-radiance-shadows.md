@@ -100,5 +100,13 @@ The real Lua 5.1/OpenGL regression in `tests/radiance_capture_state_gpu.py`
 demonstrates that inherited alpha testing discards these values without the
 guard and preserves them with it. The engine normally starts drawing with alpha
 testing disabled; this reproducer establishes a state vulnerability, not the
-specific state of an unlogged game session. Shader and Lua errors from that
-session are still needed to distinguish the exact trigger.
+specific state of an unlogged game session.
+
+The subsequent game log identified a separate startup failure: the mobile and
+Light Effects configuration imports inherited `_G`, but Mosaic's LuaUI loader
+copies `System` exports into each widget without exposing `_G`. Shared helpers
+therefore failed with `pairs` missing. The same import in the city-name widget
+failed with `VFS` missing. These imports now inherit their actual calling
+environment (`getfenv(1)` in Lua 5.1), while keeping configuration definitions in
+their own table. Regression fixtures copy the real LuaUI `System` exports and
+intentionally provide no host `_G` fallback.
