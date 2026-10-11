@@ -7,6 +7,35 @@ M.artSeconds, M.fadeSeconds = 3, 1.25
 M.blendSeconds, M.stepSeconds, M.revealSeconds = 0.5, 0.35, 0.6
 M.latestStartFrame = 300 -- late LuaUI initialization is OK; mid-game reloads are not
 M.holdDescent = 0.16
+M.maxRenderWidth, M.maxRenderHeight = 1920, 1080
+
+-- Choose a fixed region of the procedural planet without touching Lua's RNG.
+-- Length-prefixed fields distinguish map/game identifiers even when they
+-- contain separators. All products remain below 2^53, including Lua 5.1's
+-- double-only number representation and a full 32-bit map checksum.
+local regionModulus = 2147483647
+local function hashRegionField(hash, value)
+  local text = tostring(value or "")
+  hash = (hash * 131 + #text) % regionModulus
+  for i = 1, #text do
+    hash = (hash * 131 + text:byte(i)) % regionModulus
+  end
+  return hash
+end
+
+function M.regionOffset(game)
+  game = game or Game or {}
+  local hash = 7
+  for _, key in ipairs({"mapName", "mapChecksum", "gameID"}) do
+    hash = hashRegionField(hash, game[key])
+  end
+  -- A missing gameID gives the same map its stable fallback region. With a
+  -- gameID, another match can visit another region under the same noon sun.
+  hash = (hash * 48271) % regionModulus
+  local x = hash / regionModulus * 128
+  hash = (hash * 48271) % regionModulus
+  return x, hash / regionModulus * 128
+end
 
 function M.clamp(x) return math.max(0, math.min(1, x)) end
 -- Four held planetary snapshots, followed by a separate cloud descent.
@@ -85,7 +114,7 @@ function M.clearHandoff()
 end
 
 function M.newRenderer()
-  local r = {uniforms = {}}
+  local r = {uniforms = {}, regionOffset = {M.regionOffset()}}
   function r:destroy()
     if self.earth then gl.DeleteShader(self.earth); self.earth = nil end
     if self.composite then gl.DeleteShader(self.composite); self.composite = nil end
@@ -105,7 +134,7 @@ function M.newRenderer()
     Spring.Echo("[MOSAIC arrival] Shader unavailable: " .. (gl.GetShaderLog() or ""))
     r:destroy(); return
   end
-  for _, name in ipairs({"descent", "cloudDescent", "elapsed", "aspect"}) do
+  for _, name in ipairs({"descent", "cloudDescent", "regionOffset", "aspect"}) do
     r.uniforms[name] = gl.GetUniformLocation(r.earth, name)
   end
   for _, name in ipairs({"descent", "fade", "hasArtwork", "hasLive", "artScale"}) do
@@ -115,7 +144,7 @@ function M.newRenderer()
   function r:draw(width, height, texture, age, fade, descent, live)
     local visualDescent, stage = M.snapDescent(descent)
     local cloudDescent = M.cloudDescent(descent)
-    local factor = math.min(1, 960 / width, 540 / height)
+    local factor = math.min(1, M.maxRenderWidth / width, M.maxRenderHeight / height)
     local rw = math.max(1, math.floor(width * factor))
     local rh = math.max(1, math.floor(height * factor))
     if rw ~= self.width or rh ~= self.height then
@@ -127,14 +156,15 @@ function M.newRenderer()
       self.lastAge = nil
     end
     if not self.orbitTexture then return false end
-    -- The procedural Earth has multiple FBM layers; rendering it every
-    -- screen refresh can collapse low-end GPUs. Reuse the FBO between
-    -- samples, at 12 Hz during holds and the cloud reveal. Refresh immediately
-    -- on optical cuts so a short snapshot is never swallowed by the cache.
-    -- Composite the artwork and clean live framebuffer every display frame.
+    -- Earth and its cloud pattern are stationary at this distance: render
+    -- each high-resolution snapshot only once, including the artwork blend.
+    -- The cloud descent alone changes continuously, at a bounded 12 Hz.
+    -- Cuts, resize, age resets and the first/final cloud frames invalidate
+    -- immediately. Composite artwork and the clean live image every frame.
     local aspect = width / height
-    local rerender = self.lastAge == nil or age < self.lastAge
-      or (age - self.lastAge) >= (1 / 12)
+    local rerender = self.lastAge == nil or age < self.lastDrawAge
+      or (cloudDescent > 0 and cloudDescent ~= self.lastCloudDescent
+        and (age - self.lastAge) >= (1 / 12))
       or self.lastAspect ~= aspect
       or self.lastStage ~= stage
       or (cloudDescent > 0 and self.lastCloudDescent == 0)
@@ -148,7 +178,7 @@ function M.newRenderer()
       gl.UseShader(self.earth)
       gl.Uniform(self.uniforms.descent, visualDescent)
       gl.Uniform(self.uniforms.cloudDescent, cloudDescent)
-      gl.Uniform(self.uniforms.elapsed, age)
+      gl.Uniform(self.uniforms.regionOffset, self.regionOffset[1], self.regionOffset[2])
       gl.Uniform(self.uniforms.aspect, width / height)
       gl.Color(1, 1, 1, 1)
       gl.TexRect(-1, -1, 1, 1)
@@ -161,6 +191,7 @@ function M.newRenderer()
       self.lastAge, self.lastStage, self.lastAspect = age, stage, aspect
       self.lastCloudDescent = cloudDescent
     end
+    self.lastDrawAge = age
     local info = texture and texture ~= "" and gl.TextureInfo(texture)
     local sx, sy = 1, 1
     if info then
