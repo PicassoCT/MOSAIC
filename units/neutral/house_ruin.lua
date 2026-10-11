@@ -20,14 +20,9 @@ local house_ruin = Building:New{
 
 	isFirePlatform  = true, 	
 		
-	YardMap =  [[yyyyyyyy
-				yyyyyyyy
-				yyyyyyyy
-				yyyyyyyy
-				yyyyyyyy
-				yyyyyyyy
-				yyyyyyyy
-				yyyyyyyy]]	,  
+	-- A building-scrapheap member, not a drive-through courtyard.
+	blocking = true,
+	YardMap = string.rep("o", 8 * 8),
 	
 
 	customparams = {	
