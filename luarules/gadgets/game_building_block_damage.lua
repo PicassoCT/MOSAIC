@@ -7,6 +7,7 @@ function gadget:GetInfo()
         enabled = true,
     }
 end
+VFS.Include("scripts/lib_mosaic.lua")
 
 if not gadgetHandler:IsSyncedCode() then return false end
 
@@ -15,6 +16,7 @@ local active = {}
 local UPDATE_FRAMES = 6 -- 0.2 seconds at the simulation's 30 Hz
 local MAX_IMPACTS = 8
 local fxInterval, dustLeft = -1, 0
+local blockDestroyableHouseTypes = getBlockDestroyableHouseTypes()
 local function allowEffect(kind)
     local interval = math.floor(Spring.GetGameFrame() / UPDATE_FRAMES)
     if interval ~= fxInterval then
@@ -38,10 +40,7 @@ function gadget:Shutdown()
 end
 for id, def in pairs(UnitDefs) do
     local cp = def.customParams or {}
-    if def.name == "house_asian0" or def.name == "house_western0"
-        or def.name == "house_arab0" or cp.house_asian_base == "house_asian0"
-        or cp.house_western_base == "house_western0"
-        or cp.house_arab_base == "house_arab0" then
+    if blockDestroyableHouseTypes [def.name] then
         eligible[id] = true
     end
 end

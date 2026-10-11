@@ -2062,6 +2062,17 @@ end
                 return resultTypeTable
             end
 
+             function getBlockDestroyableHouseTypes(UnitDefs)
+
+                typeTable = {
+                    ["house_asian0"]=true,
+                    ["house_western0"]=true,
+                    ["house_arab0"]=true,
+                }
+
+                return typeTable
+            end
+
             function getRaidIconTypeTable(UnitDefs)
                 assert(UnitDefs)
                 GameConfig = getGameConfig()
