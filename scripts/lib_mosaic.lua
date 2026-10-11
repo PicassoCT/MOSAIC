@@ -185,6 +185,11 @@ function getGameConfig()
                 persons = math.ceil(75 * GG.unitFactor),
             },
             buildings = {
+                -- Membership definitions live here, not in feature gadgets.
+                sets = {
+                    structuralBaseNames = structuralHouseBases,
+                    structuralVariantKeys = structuralHouseVariantKeys,
+                },
                 maxMegaBuildings = 12,
                 sizeX = 256,
                 sizeY = 64,
