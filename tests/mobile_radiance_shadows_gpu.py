@@ -188,15 +188,19 @@ data.set([proxy((128, 30, 128), (20, 4, 4),
 ray((96, 46, 128), (160, 46, 128), 0, "pitched vehicle raises one end")
 ray((96, 54, 128), (160, 54, 128), 1, "ray above pitched extent")
 
-# Exact owner IDs clear only their own containing proxy. Neighboring vehicles
-# still cast, including with consecutive IDs above half-float integer precision.
+# Exact owner IDs clear only their own proxy, including a rooftop attachment
+# above its box whose downward rays would re-enter the approximate roof.
+# Neighbors still cast, including consecutive IDs above half-float precision.
 host = proxy((40, 12, 128), (12, 10, 8), unit_id=32765)
 data.set([host])
 ray((40, 12, 128), (224, 12, 128), 1, "emitter clears own body", owner=32765)
 ray((40, 12, 128), (224, 12, 128), 0, "unowned emitter is inside obstruction")
-ray((20, 12, 128), (224, 12, 128), 0, "owner exemption requires source containment", owner=32765)
+ray((20, 12, 128), (224, 12, 128), 1, "attached lamp outside own proxy", owner=32765)
+ray((40, 26, 128), (80, 0, 128), 1, "roof lamp above own proxy", owner=32765)
+ray((40, 26, 128), (80, 0, 128), 0, "unowned descending lamp still hits proxy")
 data.set([host, proxy((64, 12, 128), (8, 10, 8), unit_id=32766)])
 ray((40, 12, 128), (224, 12, 128), 0, "adjacent car survives owner clearance", owner=32765)
+ray((40, 26, 128), (100, 0, 128), 0, "adjacent car shadows rooftop owner", owner=32765)
 
 # End-point containment avoids a receiver shadowing itself, without making a
 # radius around that receiver transparent to a neighboring obstacle.

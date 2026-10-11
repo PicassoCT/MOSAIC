@@ -148,6 +148,7 @@ local function queueDestroyedPlot(id, defID)
     if not x then return end
     -- Preserve the exact building type, orientation and city plot metadata.
     local plot = reconstruction:Add({x=x, z=z, defID=defID,
+        originalUnitID=id, sourceUnitID=id,
         facing=Spring.GetUnitBuildFacing(id) or 0,
         data=data or {x=x,z=z}, plan=GG.HouseAsianUnitPlans[id]})
     removeCityRoute(id)
@@ -155,6 +156,7 @@ local function queueDestroyedPlot(id, defID)
 end
 
 function gadget:UnitCreated(id, defID)
+    if reconstruction then reconstruction:UnitCreated(id) end
     -- Publish pending construction before the lower-layer placement gadget.
     if GG.CityReconstructionSpawning and isCityHouse(defID) then
         GG.CityConstructionSites[id] = GG.CityReconstructionSpawning
@@ -658,18 +660,31 @@ function setupCityReconstruction()
     local cfg = GameConfig.city.rubble
     reconstruction = newReconstruction(cfg, {
         Alive = doesUnitExistAlive,
+        Exists = Spring.ValidUnitID,
         Peaceful = function(plot)
             local state = GG.GlobalGameState
-            return GG.CityAreaState and GG.CityAreaState:IsPeaceful(plot.x, plot.z)
-                and state ~= GameConfig.game.states.anarchy
-                and state ~= GameConfig.game.states.postLaunch
-                and state ~= GameConfig.game.states.gameOver
+            if state == GameConfig.game.states.anarchy
+                or state == GameConfig.game.states.postLaunch
+                or state == GameConfig.game.states.gameOver then
+                return false, state
+            end
+            if not GG.CityAreaState then return false, 'area-state-unavailable' end
+            if not GG.CityAreaState:IsPeaceful(plot.x, plot.z) then
+                return false, 'combat-or-quiet-period'
+            end
+            return true, 'none'
         end,
         CreateRubble = function(plot)
-            local id = spCreateUnit(randDict(scrapHeapTypeTable), plot.x,
+            local rubbleDefID = randDict(scrapHeapTypeTable)
+            plot.rubbleDefID = rubbleDefID
+            local id = spCreateUnit(rubbleDefID, plot.x,
                 spGetGroundHeight(plot.x, plot.z), plot.z, plot.facing, gaiaTeamID)
             if id then
                 GG.CityRubble[id] = plot
+                -- All city houses are always visible. The replacement must
+                -- inherit that policy for every rubble model, including ruins
+                -- whose unit script does not enable it on its own.
+                spSetUnitAlwaysVisible(id, true)
                 setCityBuildingBlocking(id)
             end
             return id

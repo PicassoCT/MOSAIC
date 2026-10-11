@@ -334,3 +334,172 @@ for label, passed, metric in checks:
     print(("PASS" if passed else "FAIL") + ": " + label + " | metric=" + str(metric))
 assert all(passed for _, passed, _ in checks), "inherited alpha test suppressed a production radiance capture"
 print("PASS: real Lua 5.1 capture callbacks remain correct under inherited GL_ALPHA_TEST; fragment-only and full shader descriptions link/validate")
+
+# A shader that can draw a manually supplied lamp is not sufficient: the police
+# provider must first survive the actual LuaUI sandbox. Route the real widget,
+# central profile, source collector and Lua renderer into this same GL context,
+# then apply its direct field through the actual scene renderer. Only engine
+# world queries below are fixtures; no source/capture/scene module is replaced.
+def create_list(callback):
+    handle = fn(G, "glGenLists", U, I)(1)
+    fn(G, "glNewList", None, U, U)(handle, 0x1300)
+    callback()
+    fn(G, "glEndList", None)()
+    return handle
+
+
+projection_inverse = np.array([[256, 0, 0, 0], [0, 0, 100, -200],
+                               [0, 256, 0, 0], [0, 0, 0, 1]], "f4")
+view_inverse = np.eye(4, dtype="f4")
+view_inverse[:3, 3] = (256, 200, 256)
+
+
+def uniform_matrix(location, name):
+    assert name in ("projectioninverse", "viewinverse")
+    matrix_value = projection_inverse if name == "projectioninverse" else view_inverse
+    values = matrix_value.T.copy()
+    fn(G, "glUniformMatrix4fv", None, I, I, C.c_ubyte, P)(location, 1, False, values.ctypes.data)
+
+
+def copy_texture(name, x_offset, y_offset, x, y, width, height):
+    active(0x84C0)
+    bind(0x0DE1, textures[name]["id"])
+    fn(G, "glCopyTexSubImage2D", None, U, I, I, I, I, I, I, I)(
+        0x0DE1, 0, x_offset, y_offset, x, y, width, height)
+
+
+g.gl.CreateList = create_list
+g.gl.DeleteList = lambda handle: fn(G, "glDeleteLists", None, U, I)(handle, 1)
+g.gl.UniformMatrix = uniform_matrix
+g.gl.CopyToTexture = copy_texture
+g.GL.TRIANGLE_STRIP = 5
+g.GL.SRC_ALPHA = 0x0302
+g.GL.ONE_MINUS_SRC_ALPHA = 0x0303
+g.GL.DEPTH_COMPONENT24 = 0x81A6
+lua.execute("""
+policeState={frame=0,drawFrame=10,x=256,z=256,hidden=false}
+Game={mapSizeX=512,mapSizeZ=512,gameSpeed=30}
+UnitDefs={[1]={name='policetruck'}}
+WeaponDefs={}
+Spring={
+  Echo=print,GetGameFrame=function()return policeState.frame end,
+  GetDrawFrame=function()return policeState.drawFrame end,
+  GetFrameTimeOffset=function()return 0 end,
+  GetAllUnits=function()return {71}end,GetUnitDefID=function()return 1 end,
+  GetCameraPosition=function()return 256,200,256 end,
+  GetViewGeometry=function()return 256,256,0,0 end,
+  GetGroundHeight=function()return 0 end,
+  GetSpectatingState=function()return false,false end,
+  GetMyAllyTeamID=function()return 0 end,
+  GetUnitLosState=function()return {los=not policeState.hidden}end,
+  IsPosInLos=function()return false end,
+  ValidUnitID=function()return true end,GetUnitIsDead=function()return false end,
+  GetUnitIsCloaked=function()return false end,GetUnitNoDraw=function()return false end,
+  GetUnitTransporter=function()end,
+  GetUnitPosition=function()return policeState.x,0,policeState.z end,
+  GetUnitViewPosition=function()return policeState.x,0,policeState.z end,
+  GetUnitVectors=function()return {0,0,1},{0,1,0},{1,0,0}end,
+  GetUnitPieceMap=function()return {LightEmit01=0,LightEmit2=1}end,
+  GetUnitPiecePosDir=function(_,piece)
+    return policeState.x+(piece==0 and 5.967846 or -4.372424),
+      28.78328,policeState.z+5.24158,0,1,0
+  end,
+  GetVisibleProjectiles=function()return {}end,
+}
+VFS={LoadFile=readFile}
+function VFS.Include(path,env)
+  local chunk=assert(loadstring(readFile(path),path))
+  return setfenv(chunk,env or getfenv(2))()
+end
+VFS.Include('luaui/system.lua')
+policeWG={}
+policeWidget={}
+for key,value in pairs(System) do policeWidget[key]=value end
+policeWidget.widget,policeWidget.WG=policeWidget,policeWG
+policeWidget.widgetHandler={RegisterGlobal=function()end,DeregisterGlobal=function()end}
+assert(policeWidget.pairs and not policeWidget._G,'fixture no longer matches LuaUI System')
+VFS.Include('luaui/widgets_mosaic/gfx_light_effects.lua',policeWidget)
+policeWidget:Initialize()
+assert(policeWG.HasCombatLightEmission(0),'police provider missing after real widget startup')
+assert(policeWG.lighteffects.getPoliceLightStats().emitted==1)
+policeLive=VFS.Include('luaui/widgets_mosaic/include/headlight_live_field.lua')()
+function policeCapture(bottom,top,gain,metadata)
+  policeWG.CaptureCombatLightEmission(bottom,top,gain,0,metadata)
+end
+policeScene=assert(VFS.Include('luaui/widgets_mosaic/include/radiance_scene.lua')())
+policeDomain={x=0,z=0,span=512}
+""")
+black = create_texture(1, 1, lua.table_from({"format": 0x8814, "fbo": True}))
+activate(textures[black], lambda: clear(0x4000, 0, 0, 0, 0))
+scene_color = create_texture(256, 256, lua.table_from({"format": 0x8814, "fbo": True}))
+scene_depth = create_texture(256, 256, lua.table_from({"format": 0x81A6}))
+scene_target = dict(textures[scene_color], fbo=framebuffer(
+    [textures[scene_color]["id"]], textures[scene_depth]["id"]))
+
+
+def police_scene(mobile_shadows=None):
+    def draw():
+        clear(0x4000, 0, 0, 0, 0)
+        g.gl.DepthMask(True)
+        clear(0x0100, .5)  # Ground plane reconstructed by the real depth-copy path.
+        g.policeScene.Draw(g.policeScene, black, black, 0, 128, 2, 1,
+                           None, g.policeLive, 1, None, None, mobile_shadows)
+
+    activate(scene_target, draw)
+    return pixels(scene_color)[:, :, :3]
+
+
+def police_step(frame, x=256, hidden=False):
+    g.policeState.frame = frame
+    g.policeState.drawFrame += 1
+    g.policeState.x = x
+    g.policeState.hidden = hidden
+    enabled = g.policeWG.HasCombatLightEmission(0)
+    g.policeLive.Update(g.policeLive, .2)
+    inherited_alpha(True)
+    g.policeLive.Draw(g.policeLive, g.policeCapture if enabled else None,
+                      0, 128, g.policeDomain, enabled)
+    return police_scene()
+
+
+red_scene = police_step(0)
+blue_scene = police_step(5)
+road_x, road_z = np.meshgrid((np.arange(256) + .5) * 2, (np.arange(256) + .5) * 2)
+outside_vehicle = (np.abs(road_x - 256) > 20) | (np.abs(road_z - 256) > 47)
+assert red_scene[outside_vehicle, 0].sum() > 100, 'real police provider produced no outward red scene light'
+assert blue_scene[outside_vehicle, 2].sum() > 100, 'real police provider produced no outward blue scene light'
+assert red_scene[..., 0].sum() > red_scene[..., 2].sum() * 10
+assert blue_scene[..., 2].sum() > blue_scene[..., 0].sum() * 5
+
+# Retain the actual owner in the direct-source atlas and the optional shadow
+# pass. The engine-world fixture is a box around the car, plus a separate box
+# between its blue lamp and the road. Both use the production upload/ray code.
+lua.execute("""
+function mobile.collector:Collect()
+  local records={}
+  local function box(id,x,z,hx,hy,hz)
+    records[#records+1]={unitID=id,shape=1,center={x,hy,z},half={hx,hy,hz},
+      axisX={1,0,0},axisY={0,1,0},axisZ={0,0,1},
+      minX=x-hx,maxX=x+hx,minZ=z-hz,maxZ=z+hz}
+  end
+  box(71,256,256,20,17,47)
+  box(72,312,256,8,17,8)
+  return records,{minY=0,maxY=34}
+end
+mobile:Update(policeDomain)
+mobile:CaptureSources(policeCapture,0,128,policeDomain,nil)
+""")
+police_metadata = pixels(g.mobile.sourceAtlas)[:, 512:]
+assert (police_metadata[:, :, 3] == 72).any(), 'police source owner lost before mobile shadows'
+shadowed_scene = police_scene(g.mobile)
+front = (road_x < 240) & (road_x > 210) & (np.abs(road_z - 256) < 8)
+behind = (road_x > 330) & (road_x < 360) & (np.abs(road_z - 256) < 6)
+assert np.allclose(shadowed_scene[front], blue_scene[front], atol=.001), 'own police proxy erased outward illumination'
+assert shadowed_scene[behind].sum() < blue_scene[behind].sum() * .1, 'separate mobile blocker did not cast a police-light shadow'
+moving_scene = police_step(10, x=360)
+assert moving_scene[:, :80].max() == 0, 'police direct field left a stale footprint after movement'
+assert moving_scene[:, 190:, 0].sum() > red_scene[:, 190:, 0].sum() * 5
+assert police_step(15, x=360, hidden=True).max() == 0, 'hidden police retained scene lighting'
+g.policeWidget.Shutdown(g.policeWidget)
+assert g.policeWG.CaptureCombatLightEmission is None
+print('PASS: real LuaUI startup -> central police profile -> live red/blue GL capture -> outward scene light, source ownership, finite mobile shadow, movement and LOS cleanup')

@@ -14,7 +14,7 @@ local function fixture(columnCount, floorCount, scale)
     local dirty, calls, destroyed, poseReads = 0, 0, false, 0
     local childUnits = {}
     local env = setmetatable({unitID=42, x_axis=1, y_axis=2, z_axis=3,
-        GG={}, VFS={Include=function() return {} end}}, {__index=_G})
+        GG={InstanceCulture='international'}, VFS={Include=function() return {} end}}, {__index=_G})
     env.Show=function(p) visible[p]=true end
     env.Hide=function(p) visible[p]=nil end
     env.Move=function(p,axis,goal,speed)
@@ -86,7 +86,17 @@ local function fixture(columnCount, floorCount, scale)
     local gadgetEnv=setmetatable({gadget={},GG=env.GG,Spring=env.Spring,UnitDefs={
         [1]={name='house_asian0'},[2]={name='house_western0'},[3]={name='house_arab0'},
         [4]={name='house_asian_split_1_3',customParams={house_asian_base='house_asian0'}},
-        [5]={name='tank'},},gadgetHandler={IsSyncedCode=function() return true end}}, {__index=_G})
+        [5]={name='tank'},[6]={name='protagonsafehouse',buildOptions={}},
+        [7]={name='antagonsafehouse',buildOptions={}}},gadgetHandler={IsSyncedCode=function() return true end}}, {__index=_G})
+    -- Eligibility is now exported by the real central configuration. The
+    -- previous fixture predated that include and failed before any damage ran.
+    gadgetEnv._G=gadgetEnv
+    gadgetEnv.GG.InstanceCulture='international'
+    gadgetEnv.UnitDefNames={}
+    for id,def in pairs(gadgetEnv.UnitDefs) do
+        def.id=id;gadgetEnv.UnitDefNames[def.name]=def
+    end
+    gadgetEnv.VFS={Include=function(path) return loadEnv(path,gadgetEnv) end}
     local batchSizes={}
     env.Spring.UnitScript={GetScriptEnv=function()
         calls=calls+1

@@ -43,11 +43,14 @@ bool mobileProxyBlocks(int record,vec3 source,vec3 receiver,float ownerID)
     vec3 a=vec3(dot(from,x.xyz),dot(from,y.xyz),dot(from,z.xyz))/halfSize;
     vec3 b=vec3(dot(to,x.xyz),dot(to,y.xyz),dot(to,z.xyz))/halfSize;
     int shape=int(center.w+0.5);
-    // Approximate proxy volume may contain a visible piece of its own unit.
-    // Omit only that volume; nearby units remain eligible to shadow it.
+    // Attached lamps must not be occluded by their own approximate chassis.
+    // A roof beacon is above the box, but nearly every descending road ray
+    // would re-enter its broad roof and extinguish the whole light footprint.
+    // Owner identity, not source containment, selects this single exclusion;
+    // neighboring units remain eligible to shadow the lamp at every height.
+    if(ownerID>=0.0 && abs(mobileData(address+4).x-ownerID)<0.5) return false;
+    // A visible receiving surface can lie inside its approximate proxy.
     if(mobileInside(b,shape)) return false;
-    if(ownerID>=0.0 && mobileInside(a,shape) &&
-       abs(mobileData(address+4).x-ownerID)<0.5) return false;
     vec3 ray=b-a;
     float entry=0.0,exit=1.0;
     if(shape==2) {

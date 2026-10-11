@@ -2,7 +2,9 @@
 
 Destroyed city houses retain their plot, building type, facing, route metadata and Asian split plan. A plot has one lifecycle: rubble → construction site → occupied house. Death without an attacker uses the same path. Scripted houses and map-authored houses are included; unrelated objective respawn rules are unchanged.
 
-Rubble sinks as its decay clock advances. Default decay requires five minutes of peaceful simulation time, followed by one minute of construction. Nearby incidents restart a 90-second quiet period. Anarchy, postlaunch and game-over freeze both stages. Work resumes from its existing progress after peace returns. Configuration lives in `getGameConfig().city.rubble` and `luarules/configs/city_area.lua`.
+Recoil sends `UnitDestroyed` before the house's `Killed` animation. The lifecycle queues the plot immediately, waits for that original unit lifetime to be removed, then places the remains within its next 15-frame update. An ID reused before that update releases the old lifetime without taking ownership of the new unit. Both existing rubble choices, `gcscrapheap` and `house_ruin`, inherit the city's always-visible policy and block vehicles. The old house and its replacement no longer overlap during the collapse.
+
+The `gcscrapheap` model sinks as its decay clock advances. Default decay requires five minutes of peaceful simulation time, followed by one minute of construction. Nearby incidents restart a 90-second quiet period. Anarchy, postlaunch and game-over freeze both stages. Work resumes from its existing progress after peace returns. Configuration lives in `getGameConfig().city.rubble` and `luarules/configs/city_area.lua`.
 
 Construction sites use the original house UnitDef in the engine's being-built state. Arabian and Western houses retain their construction props until completion; modular Asian houses reveal their pieces in height order as the construction clock advances. Single-mesh houses use the native build rendering. Sites stay outside the occupied-building/traffic registry. Safehouse placement, engine build masks and delayed script attachment all require a completed host. Player build/reclaim steps cannot advance a managed construction site. Battle damage is retained when work resumes.
 
@@ -19,6 +21,8 @@ Failed unit creation retains the plot and its current rubble. Removing rubble ca
 
 ## Validation
 
-Run `tests/city_reconstruction_test.lua`, `tests/city_area_events_test.lua`, `tests/city_construction_animation_test.lua`, `tests/city_arcologies_test.lua` and `tests/civilian_daily_life_invalid_targets_test.lua` under Lua 5.1, or use the Peaceful city reconstruction workflow.
+Run `tests/building_rubble_lifecycle_test.lua`, `tests/civilian_reconstruction_blocking_test.lua`, `tests/city_reconstruction_test.lua`, `tests/city_area_events_test.lua`, `tests/city_construction_animation_test.lua`, `tests/city_arcologies_test.lua` and `tests/civilian_daily_life_invalid_targets_test.lua` under Lua 5.1, or use the Peaceful city reconstruction workflow. The rubble lifecycle suite executes the real category helpers, house death coroutine, structural last-support destruction, city adapter and both rubble unit scripts against engine calls that preserve dead-but-present units, actual removal and ID reuse.
+
+`/validate rebuild status` (also `/validate rubble status`) reports queued plots, actual rubble/construction units, a still-collapsing source unit, local/global pause reasons and failed creation attempts. `GG.CityReconstruction:GetStatus()` supplies the read-only snapshot on request; there is no diagnostic polling. The count distinguishes an absent heap from a plot waiting for the death animation or retrying a failed spawn.
 
 In Recoil, destroy one house; confirm visible sinking rubble, pause it with nearby firing, and wait for a native construction site. Try a safehouse during construction, trigger anarchy just before completion, then restore peace. Repeat with Arabian, Western, modular Asian and standalone models. Rendering and live-game performance require this engine check; the automated suite mocks engine calls.

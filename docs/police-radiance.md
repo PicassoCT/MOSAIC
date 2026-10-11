@@ -1,5 +1,51 @@
 # Police radiance lights and mobile shadow assessment
 
+## October 11 restoration
+
+Two independent failures prevented the previous police source fix from reaching
+the road and surrounding surfaces:
+
+1. **The combat widget failed during initialization.** Its isolated
+   `lib_mosaic.lua` include inherited `_G`, but MOSAIC's real LuaUI `System` table
+   does not expose `_G` inside widgets. Consequently the central police-profile
+   helper attempted to call a missing `pairs`, and initialization stopped before
+   publishing `WG.CaptureCombatLightEmission`. The earlier source-only tests ran
+   in a host environment with `_G`, so they did not exercise this failure.
+   Commit `8c637f4` restores the real widget environment with `getfenv(1)`.
+   The same startup failure also removed tank muzzle lights and FlamePainter.
+2. **The police vehicle's simplified shadow box swallowed its own beacon.** The
+   lamp is approximately 38.8 elmos above the unit origin, above the roughly
+   34-elmo body. The mobile-shadow shader only exempted an owner's box if the
+   lamp was *inside* it. Downward rays from a lamp just above the broad proxy roof
+   re-entered that box, suppressing most of the nearby red-blue illumination.
+   A production Lua/GL fixture measured the selected road patch's blue RGB sum
+   dropping from 77.13 to 10.77 when that owning box was enabled.
+
+Attached lamps now exclude exactly their owning unit's simplified proxy whether
+the attachment is inside, above or outside its bounds. This deliberately leaves
+the housing and own-vehicle self-shadow out of the coarse-proxy approximation.
+Other units still cast finite, height-aware shadows; unowned sources and static
+building occlusion remain subject to their normal tests. Lamp colors, strength,
+radius, pulse timing, actual piece positions and visibility filters are retained.
+
+`tests/radiance_capture_state_gpu.py` now loads the actual `luaui/system.lua`
+sandbox and combat widget, then runs the central police profile, real collector,
+real Lua capture, production GLSL and real scene renderer in Mesa OpenGL. It
+checks outward red and blue road pixels, the owner-bearing source atlas,
+neighboring-car shadows, live movement and cleanup when the unit becomes hidden.
+The test deliberately sets unit LOS true and positional LOS false. It also starts
+each direct capture with inherited alpha testing enabled. Neither the source
+collector nor the capture or scene renderer is substituted by a test module.
+World/engine queries use a geometric fixture, so this is not a live Recoil or
+target-hardware appearance measurement.
+
+The new own-proxy assertion fails after the startup fix with the old shadow
+condition, and passes with exact-owner exclusion. `tests/mobile_radiance_shadows_gpu.py`
+also checks sources inside and above/outside their owning box, a separate car
+blocking an elevated source, and unowned rays still intersecting the box.
+
+## Earlier source and model audit
+
 Source/model audit: master `33ff371ffae5f7da4d4270379732931661bcf49e`.
 
 The police light collector now follows the visibility of its owning vehicle.
@@ -88,6 +134,10 @@ underscores. The same failure reproduces on the unmodified audited master; this
 change does not alter the `getGameConfig()` section.
 
 ## Mobile shadows
+
+The assessment below predates the implemented height-aware proxy renderer.
+Its current behavior and limits are documented in
+[`mobile-radiance-shadows.md`](mobile-radiance-shadows.md).
 
 Oriented car boxes and vertically stretched pedestrian ellipsoids are suitable
 approximations. The useful implementation is a medium feature: drawing the

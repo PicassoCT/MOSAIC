@@ -28,9 +28,14 @@ atlas. A depth comparison selects the brightest contributor, preserving one real
 lamp rather than interpolating several lamp positions. Objective floodlights and
 searchlights also use the finite mobile intersection test.
 
-When a source lies inside its own simplified proxy, only that owning proxy is
-exempted. A lamp outside its car can still cast a shadow backwards across it.
-Neighboring units remain blockers. A proxy containing a visible receiver is
+An attached lamp exempts its owning unit's simplified proxy, including when the
+lamp sits above or outside the proxy. The police roof beacon is above its box;
+requiring source containment caused its descending road rays to hit the broad
+approximate roof and extinguished most of the red-blue footprint. This is an
+explicit approximation: these coarse boxes do not model an attached lamp's
+housing or its own vehicle's self-shadow. Exact owner identity limits the
+exemption to that one unit. Neighboring units remain blockers at every height,
+and unowned lamps receive no owner exemption. A proxy containing a visible receiver is
 omitted for that ray to avoid blackening surfaces inside an approximate collision
 shape; this does not clear a surrounding radius.
 

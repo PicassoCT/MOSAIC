@@ -110,6 +110,26 @@ that a light, shadow, flame or address was visually correct. Requested missile
 trails remain pending if the tested build does not yet provide them. Record
 screenshots and the status output from the same match when a visual check fails.
 
+## Reconstruction state when remains are missing
+
+Run `/validate rebuild status` (or `/validate rubble status`) after destroying
+a house. This asks the simulation for one read-only snapshot and prints the
+reply only for the requesting player. With rubble or a construction site
+selected, it reports that plot; otherwise it shows up to eight recent plots.
+
+The output separates queued and completed plots, houses whose death animation
+has not yet retired, existing rubble and construction. Each detail includes the
+actual replacement unit ID and definition, its stage, pause reason, elapsed
+progress and rubble/site creation attempts and failures. A waiting collapse
+does not count as a failed spawn. Combat can pause decay and construction;
+it must not prevent rubble appearing after the original house is removed.
+
+If no plot was queued, check the original house with `/validate status`:
+partial structural collapse can leave a living, damaged house. If the service
+is unavailable, the reply explicitly points to the Spawn City Gadget startup
+errors. Requests are capped at one per player per 30 simulation frames, with
+at most eight plot details per reply. No request runs automatically.
+
 ## Once per match and cost
 
 `game_validation_session.lua` captures Recoil's `GameID` event. The engine
@@ -151,5 +171,7 @@ The regression uses the real `luaui/system.lua` global layout with no `_G`,
 the actual gadget `GameID` and widget `ConfigureLayout` dispatchers, delayed
 startup identity, mid-match and frame-zero LuaUI reloads, another match on the
 same map, every task command/alias, status with missing renderers and stale
-selection, and traps for gameplay writes or unit scans. Live rendering and
+selection, explicit reconstruction request/reply routing, selection filtering,
+bounded output, unavailable lifecycle service, and traps for gameplay writes
+or unit scans. Live rendering and
 performance remain in-game validation tasks.

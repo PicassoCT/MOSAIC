@@ -20,12 +20,16 @@ on:
       - 'luaui/widgets_mosaic/include/radiance_scene.lua'
       - 'luaui/widgets_mosaic/include/tank_muzzle_flash.lua'
       - 'luaui/widgets_mosaic/shaders/radiancecascade/combat_emission.*'
+      - 'luaui/widgets_mosaic/shaders/radiancecascade/mobile_shadow.glsl'
+      - 'luaui/widgets_mosaic/shaders/radiancecascade/scene.frag'
       - 'luarules/gadgets/game_validation_session.lua'
       - 'luarules/gadgets/gfx_smoke_ribbons.lua'
       - 'luarules/gadgets/include/smoke_ribbon_*.lua'
       - 'luarules/gadgets/shaders/smokeRibbon.*'
       - 'tests/light_effects_widget_startup.lua'
       - 'tests/mobile_shadow_failure_lifecycle.lua'
+      - 'tests/mobile_radiance_shadows_gpu.py'
+      - 'tests/radiance_capture_state_gpu.py'
       - 'tests/city_geography_test.lua'
       - 'tests/validation_widget.lua'
       - 'tests/graphene_arcs_*'
@@ -94,3 +98,5 @@ jobs:
           python tests/graphene_arcs_gpu.py
           python tests/smoke_ribbons_gpu.py
           python tests/combat_light_gpu.py
+          python tests/mobile_radiance_shadows_gpu.py
+          python tests/radiance_capture_state_gpu.py

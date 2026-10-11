@@ -2,6 +2,7 @@
 -- manual visual checks, not assertions that a renderer produced correct pixels.
 return {
     gameIDParam = 'mosaic_validation_game_id',
+    rebuildStatusMessage = 'mosaic_validation_rebuild_status',
     prefix = '[MOSAIC validate] ',
     tasks = {
         {
@@ -71,15 +72,18 @@ return {
         },
         {
             id = 'rebuild',
+            aliases = {'rubble'},
             title = 'Rubble, construction and occupied houses',
             summary = 'Rubble blocks vehicles; reconstruction pauses near fighting and completes only in peace.',
             steps = {
-                'Destroy a city house, then leave the area peaceful. Select the rubble or later construction site and enter /validate status.',
+                'Destroy a city house and wait for its collapse animation to finish. Rubble must appear on the next reconstruction update, including during combat.',
+                'Enter /validate rebuild status after destruction, even if no rubble is visible. The infolog reports waiting death animations, actual rubble IDs/types and failed spawn attempts; selecting a house, rubble or site filters its plot.',
+                'Select the rubble or later construction site and enter /validate status, then leave the area peaceful.',
                 'Fire nearby while rubble is decaying or construction is progressing, then stop and allow the quiet period to expire.',
                 'Try moving a vehicle through the plot and placing a safehouse in the unfinished building. Repeat for each civilian house culture.',
                 'Use /validate status again after completion and compare the address with the original plot.',
             },
-            expect = 'The plot passes through sinking rubble and a visible construction site; nearby combat pauses rebuilding, rubble blocks vehicles, incomplete sites cannot host safehouses, and the street address survives.',
+            expect = 'After the old house finishes collapsing, a visible blocking scrapheap occupies its plot. Combat pauses decay and rebuilding, not the appearance of rubble; incomplete sites cannot host safehouses, and the street address survives.',
         },
         {
             id = 'roads',

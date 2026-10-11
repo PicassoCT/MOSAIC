@@ -40,6 +40,7 @@ local function printList()
         echo(string.format('TODO %d/%d: /validate %s - %s', index, #config.tasks, task.id, task.summary))
     end
     echo('/validate status - record renderer readiness and the selected unit in infolog.')
+    echo('/validate rebuild status - record queued collapses, rubble creation and reconstruction state in infolog.')
     echo('/validate repeats this list; /validate all prints every procedure. /luaui validate also works.')
     echo('Checks stay TODO until visually verified.')
 end
@@ -58,6 +59,21 @@ end
 
 local function readiness(v)
     return v == true and 'ready' or 'unavailable'
+end
+
+local function requestRebuildStatus()
+    if type(Spring.SendLuaRulesMsg) ~= 'function' then
+        echo('Reconstruction status request unavailable in this LuaUI session.')
+        return
+    end
+    local selected = Spring.GetSelectedUnits() or {}
+    local id = selected[1]
+    local message = config.rebuildStatusMessage
+    if type(id) == 'number' and id >= 0 and id == math.floor(id) then
+        message = message .. ':' .. tostring(id)
+    end
+    Spring.SendLuaRulesMsg(message)
+    echo('Requested reconstruction state from the simulation; the reply follows in this infolog.')
 end
 
 local function selectedStatus()
@@ -148,6 +164,8 @@ function widget:TextCommand(command)
         printList()
     elseif argument == 'status' then
         printStatus()
+    elseif argument == 'rebuild status' or argument == 'rubble status' then
+        requestRebuildStatus()
     elseif argument == 'all' then
         for _, task in ipairs(config.tasks) do printTask(task) end
     elseif tasksByName[argument] then

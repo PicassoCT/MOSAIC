@@ -7,6 +7,7 @@ local frame, messages, gameRules, ruleWrites = 0, {}, {}, 0
 local selected, unitAvailable = {}, true
 local unitRules = {}
 local shared = {}
+local requests, replies, reconstructionState = {}, {}, {}
 local function forbidden() error('validation changed gameplay or scanned units') end
 Game = {mapName = 'Same map', gameVersion = 'validation-test'}
 UnitDefs = {[1] = {name = 'ground_tank_day'}}
@@ -23,7 +24,9 @@ Spring = {
     GetUnitDefID = function() if unitAvailable then return 1 end end,
     GetUnitHealth = function() return 3500, 4000, 0, 0, 1 end,
     GetUnitRulesParam = function(_, key) return unitRules[key] end,
-    SendCommands = forbidden, SendLuaRulesMsg = forbidden, GiveOrderToUnit = forbidden,
+    SendLuaRulesMsg = function(message) requests[#requests + 1] = message end,
+    SendMessageToPlayer = function(player, message) replies[#replies + 1] = {player=player, message=message} end,
+    SendCommands = forbidden, GiveOrderToUnit = forbidden,
     GetAllUnits = forbidden, GetVisibleUnits = forbidden, CreateUnit = forbidden,
     SetUnitHealth = forbidden, SetConfigInt = forbidden,
 }
@@ -49,6 +52,8 @@ end
 
 local function loadBridge(synced)
     local env = {gadget = {}, Spring = Spring, VFS = VFS, type = type,
+        GG = reconstructionState, UnitDefs = UnitDefs, math = math, string = string,
+        ipairs = ipairs, tostring = tostring, tonumber = tonumber,
         gadgetHandler = {IsSyncedCode = function() return synced end}}
     local result = setfenv(assert(loadfile('luarules/gadgets/game_validation_session.lua')), env)()
     return env.gadget, result
@@ -202,4 +207,55 @@ assert(output():find('Match identity unavailable', 1, true))
 assert(w:GetConfigData().lastPrintedGameID == nil)
 assert(ruleWrites == 2, 'widget wrote game state while reporting validation')
 
-print('PASS: match identity bridge, real LuaUI startup, once-per-match/reload behavior, repeatable task commands, read-only status, unavailable providers and no polling/gameplay changes')
+-- Instructions and generic status never send a simulation message. Only this
+-- explicit diagnostic asks for the existing reconstruction service snapshot.
+assert(#requests == 0, 'startup or instructions sent an unsolicited simulation request')
+selected, unitAvailable, messages = {}, true, {}
+assert(w:TextCommand('validate rebuild status'))
+assert(requests[1] == config.rebuildStatusMessage)
+assert(output():find('Requested reconstruction state', 1, true))
+frame = 300
+assert(bridge:RecvLuaMsg(requests[1], 17))
+assert(#replies == 1 and replies[1].player == 17 and replies[1].message:find('status unavailable', 1, true))
+local oldReplies = #replies
+assert(bridge:RecvLuaMsg(requests[1], 17) and #replies == oldReplies, 'repeated diagnostic was not bounded')
+for _, invalid in ipairs({'unrelated', config.rebuildStatusMessage .. 'typo',
+    config.rebuildStatusMessage .. ':', config.rebuildStatusMessage .. ':-1',
+    config.rebuildStatusMessage .. ':4.5', config.rebuildStatusMessage .. ':999999999'}) do
+    assert(not bridge:RecvLuaMsg(invalid, 17), 'diagnostic consumed a malformed or unrelated message')
+end
+assert(not bridge:RecvLuaMsg(false, 17))
+
+local plots = {}
+for index = 1, 12 do
+    plots[index] = {id=index, stage='rubble', x=index*100, z=index*200,
+        originalUnitID=index+100, sourceUnitID=index+100, sourceWaiting=true,
+        unitID=index+200, defID=1, elapsed=0, paused=true, pauseReason='combat',
+        rubbleSpawnAttempts=2, rubbleSpawnFailures=1, siteSpawnAttempts=0, siteSpawnFailures=0}
+end
+reconstructionState.CityReconstruction = {GetStatus = function()
+    return {queued=12, completed=0, active=12, waitingForRemoval=12, rubble=0, construction=0, plots=plots}
+end}
+frame, replies = 330, {}
+assert(bridge:RecvLuaMsg(requests[1], 17))
+assert(#replies == 10, 'a whole-city diagnostic was not capped at eight plot details')
+assert(replies[1].message:find('waiting_for_collapse=12', 1, true))
+assert(replies[2].message:find('Plot 5 ', 1, true) and replies[9].message:find('Plot 12 ', 1, true))
+assert(replies[2].message:find('rubble_failures=1', 1, true))
+for _, reply in ipairs(replies) do assert(reply.player == 17, 'diagnostic reply went to another player') end
+
+selected, messages = {203}, {}
+assert(w:TextCommand('validate rubble status'))
+assert(requests[#requests] == config.rebuildStatusMessage .. ':203')
+frame, replies = 360, {}
+bridge:RecvLuaMsg(requests[#requests], 17)
+assert(#replies == 3 and replies[2].message:find('Plot 3 ', 1, true), 'selection did not isolate its plot')
+reconstructionState.CityReconstruction.GetStatus = function()
+    return {queued=12, completed=12, active=0, waitingForRemoval=0, rubble=0, construction=0, plots={}}
+end
+frame, replies = 390, {}
+bridge:RecvLuaMsg(config.rebuildStatusMessage, 17)
+assert(#replies == 2 and replies[2].message:find('may still be alive', 1, true))
+assert(ruleWrites == 2, 'reconstruction diagnostics mutated game state')
+
+print('PASS: match identity bridge, real LuaUI startup, once-per-match/reload behavior, task commands, bounded private reconstruction diagnostics, unavailable providers and no polling/gameplay changes')
