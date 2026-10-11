@@ -43,6 +43,29 @@ function getCivilianHouseTypeTable(defs)
     end
     return buildingTypesFromNames(defs, names)
 end
+
+-- Procedural houses keep their existing authored column flags. Standalone
+-- buildings use a solid envelope of the main model pieces actually selected.
+local buildingColumnShadow = {kind = "columns"}
+local standaloneBuildingShadow = {kind = "solid", cellSize = 16, maxCells = 1024}
+local standaloneBuildingShadowProfiles = {
+    house_asian1 = standaloneBuildingShadow,
+    house_asian3 = standaloneBuildingShadow,
+}
+function getBuildingRadianceShadowTypeTable(defs)
+    local result = {}
+    for id, def in pairs(defs) do
+        local profile = standaloneBuildingShadowProfiles[def.name]
+        local cp = def.customParams or {}
+        local enabled = cp.throwsshadow or cp.throwsShadow
+        if profile then
+            result[id] = profile
+        elseif enabled == true or enabled == 1 or enabled == "1" or enabled == "true" then
+            result[id] = buildingColumnShadow
+        end
+    end
+    return result
+end
 -- Ruins have a separate geographic plot roll. Authored model variants stay in
 -- gameplay membership without multiplying the building-purpose lottery.
 function getCityHouseSpawnTypeTable(cultureName, defs)
@@ -184,6 +207,7 @@ if MOSAIC_CONFIG_ONLY then
     return {getPoliceLightTypeTable = getPoliceLightTypeTable,
         getTankMuzzleTypeTable = getTankMuzzleTypeTable,
         getMobileRadianceShadowTypeTable = getMobileRadianceShadowTypeTable,
+        getBuildingRadianceShadowTypeTable = getBuildingRadianceShadowTypeTable,
         getStructuralBuildingTypeTable = getStructuralBuildingTypeTable,
         getCivilianHouseTypeTable = getCivilianHouseTypeTable,
         getCityHouseSpawnTypeTable = getCityHouseSpawnTypeTable,

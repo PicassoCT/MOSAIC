@@ -6,7 +6,13 @@ local function environment(extra)
     return setmetatable(extra or {}, {__index = _G})
 end
 local function sourceEnv(source, env)
+    if setfenv then return setfenv(assert(loadstring(source,'test')),env)() end
     return assert(load(source, 'test', 't', env))()
+end
+local function includeFor(env)
+    return {Include=function(path,includeEnv)
+        return sourceEnv(read(path),includeEnv or env)
+    end}
 end
 local shared = read('scripts/lib_building_voxels.lua')
 local provider = environment()
@@ -40,6 +46,7 @@ local spring = {
     Echo=function() end, GetSelectedUnits=function() return {42} end,
 }
 local uiEnv=environment({widget={},gl=gl,Spring=spring,GL={QUADS=1,LINES=2},Game={mapSizeX=1024,mapSizeZ=1024}})
+uiEnv.VFS=includeFor(uiEnv)
 local ui=sourceEnv(read('luaui/widgets_mosaic/gfx_neonlights_radiancecascade.lua')..[[
 return {begin=receiveBuildingShadowBegin, add=receiveBuildingShadowColumn,
  finish=receiveBuildingShadowEnd, remove=receiveBuildingShadowRemove,
@@ -67,6 +74,7 @@ local synced=environment({gadget={},GG={},Spring=spring,UnitDefs={{customParams=
   messages[#messages+1]=name
   assert(actions[name])(nil,...)
  end})
+synced.VFS=includeFor(synced)
 sourceEnv(gadgetSource,synced);synced.gadget:Initialize()
 local function publish(g)
  currentGrid=g; messages={}
