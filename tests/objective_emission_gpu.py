@@ -9,7 +9,7 @@ for kind,name in [(0x8B31,'emission_slice.vert'),(0x8DD9,'emission_slice.geom'),
     attach(p,shader(kind,(root/name).read_text()))
 link(p)
 ok=I();get_program(p,0x8B82,C.byref(ok));assert ok.value,'emission shader link failed'
-program('#version 150 compatibility\nvoid main(){gl_Position=gl_Vertex;}',(root/'scene.frag').read_text().replace('// MOBILE_SHADOWS',(root/'mobile_shadow.glsl').read_text()))
+program('#version 150 compatibility\nvoid main(){gl_Position=gl_Vertex;}',(root/'scene.frag').read_text())
 fn(G,'glUseProgram',None,U)(p)
 loc=fn(G,'glGetUniformLocation',I,U,C.c_char_p)
 ui=fn(G,'glUniform1i',None,I,I);uf=fn(G,'glUniform1f',None,I,F)

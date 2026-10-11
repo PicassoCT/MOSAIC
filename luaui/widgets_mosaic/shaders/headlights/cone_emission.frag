@@ -7,8 +7,6 @@ uniform vec2 forward;
 uniform float lightRange;
 uniform float strength;
 uniform float hasOccupancy;
-uniform int sourceMetadata=0;
-uniform float sourceOwner=-1.0;
 void main() {
     vec2 delta = coneWorld.xz - lamp.xz;
     float along = dot(delta, forward);
@@ -30,14 +28,5 @@ void main() {
         }
     }
     float energy=cone*fade*strength/(1.0+along*along/6000.0);
-    vec3 radiance=vec3(1.0,0.91,0.76)*energy;
-    float luminance=dot(radiance,vec3(0.2126,0.7152,0.0722));
-    if(sourceMetadata!=0) {
-        if(luminance<0.00001)discard;
-        gl_FragColor=vec4(lamp,sourceOwner>=0.0 ? sourceOwner+1.0 : 0.5);
-        gl_FragDepth=1.0/(1.0+luminance);
-    } else {
-        gl_FragColor=vec4(radiance,luminance*lamp.y/2048.0);
-        gl_FragDepth=gl_FragCoord.z;
-    }
+    gl_FragColor=vec4(vec3(1.0,0.91,0.76)*energy,1.0);
 }

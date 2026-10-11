@@ -13,37 +13,23 @@ local function fullscreen()
     gl.MatrixMode(GL.MODELVIEW)
 end
 
-return function(emissionSize, singleOutput, heightAware)
+return function(emissionSize, singleOutput)
     emissionSize = emissionSize or 1024
-    -- Source provenance is an optional camera-local extension. Whole-map and
-    -- ordinary single-output solvers keep their existing targets and shaders.
-    heightAware = heightAware and singleOutput and true or false
-    local self = {textures = {}, sourceTextures = {}, fbos = {}, ready = false,
-        sourceReady = false, heightAware = heightAware}
+    local self = {textures = {}, ready = false}
     function self:Shutdown()
-        self.ready, self.sourceReady = false, false
-        -- FBO attachments must be released before their textures.
-        for i = 1, #self.fbos do gl.DeleteFBO(self.fbos[i]) end
-        self.fbos = {}; self.resolveFBO = nil
+        self.ready = false
         for _, key in ipairs({"cascadeShader","resolveShader","emissionShader","previewShader"}) do
             if self[key] then gl.DeleteShader(self[key]); self[key] = nil end
         end
         for i = 1, #self.textures do gl.DeleteTexture(self.textures[i]) end
         self.textures = {}
-        for i = 1, #self.sourceTextures do gl.DeleteTexture(self.sourceTextures[i]) end
-        self.sourceTextures = {}
-        for _, key in ipairs({"texture","unitTexture","sceneTexture","unitSourceTexture"}) do
+        for _, key in ipairs({"texture","unitTexture","sceneTexture"}) do
             if self[key] then gl.DeleteTexture(self[key]); self[key] = nil end
         end
     end
     local function fail(message)
         self:Shutdown()
         return nil, message
-    end
-    if heightAware then
-        for _, name in ipairs({"CreateFBO","DeleteFBO","ActiveFBO","IsValidFBO"}) do
-            if not gl[name] then return fail("source provenance requires gl." .. name) end
-        end
     end
     local function source(name)
         return VFS.LoadFile(PATH .. name)
@@ -56,20 +42,12 @@ return function(emissionSize, singleOutput, heightAware)
         return fail("missing propagation shader source")
     end
     local defines = string.format("#define BASE_PROBES %d\n#define CASCADE_COUNT %d\n#define MAX_TRACE_STEPS %d\n", PROBES, COUNT, MAX_STEPS)
-    if heightAware then
-        defines = defines .. "#define HEIGHT_AWARE 1\n"
-        resolveSource = resolveSource:gsub("#version 150 compatibility",
-            "#version 150 compatibility\n#define HEIGHT_AWARE 1\n", 1)
-    end
     cascadeSource = cascadeSource:gsub("#version 150 compatibility", "#version 150 compatibility\n" .. defines, 1)
-    local cascadeSamplers = {emissionTex=0, occupancyTex=1, parentTex=2, coarseEmissionTex=3, coarseOccupancyTex=4}
-    local resolveSamplers = {cascadeTex=0, occupancyTex=1, emissionTex=2}
-    if heightAware then cascadeSamplers.parentSourceTex=5; resolveSamplers.cascadeSourceTex=3 end
     self.cascadeShader = gl.CreateShader({fragment = cascadeSource,
-        uniformInt = cascadeSamplers})
+        uniformInt = {emissionTex=0, occupancyTex=1, parentTex=2, coarseEmissionTex=3, coarseOccupancyTex=4}})
     if not self.cascadeShader then return fail("cascade shader: " .. (gl.GetShaderLog() or "failed")) end
     self.resolveShader = gl.CreateShader({fragment = resolveSource,
-        uniformInt = resolveSamplers})
+        uniformInt = {cascadeTex=0, occupancyTex=1, emissionTex=2}})
     if not self.resolveShader then return fail("resolve shader: " .. (gl.GetShaderLog() or "failed")) end
     self.emissionShader = gl.CreateShader({vertex=emissionVertex,geometry=emissionGeometry,fragment=emissionFragment,
         uniformInt={sourceTex=0,materialTex=1,textured=0,materialMasked=0}})
@@ -78,24 +56,10 @@ return function(emissionSize, singleOutput, heightAware)
     if not self.previewShader then return fail("preview shader: " .. (gl.GetShaderLog() or "failed")) end
     local options = {format = GL.RGBA16F or 0x881A, min_filter=GL.NEAREST, mag_filter=GL.NEAREST,
         wrap_s=GL.CLAMP_TO_EDGE, wrap_t=GL.CLAMP_TO_EDGE, fbo=true}
-    local sourceOptions = {format = GL.RGBA32F or 0x8814, min_filter=GL.NEAREST, mag_filter=GL.NEAREST,
-        wrap_s=GL.CLAMP_TO_EDGE, wrap_t=GL.CLAMP_TO_EDGE, fbo=false}
-    local function pairedFBO(radiance, provenance)
-        local fbo = gl.CreateFBO({color0=radiance,color1=provenance,drawbuffers={0x8CE0,0x8CE1}})
-        if not fbo then return end
-        self.fbos[#self.fbos+1] = fbo
-        if not gl.IsValidFBO(fbo) then return end
-        return fbo
-    end
     for i=1,COUNT do
         local tex=gl.CreateTexture(SIZE,SIZE,options)
         if not tex then return fail("cascade FBO allocation failed") end
         self.textures[i]=tex
-        if heightAware then
-            self.sourceTextures[i]=gl.CreateTexture(SIZE,SIZE,sourceOptions)
-            if not self.sourceTextures[i] then return fail("cascade source texture allocation failed") end
-            if not pairedFBO(tex,self.sourceTextures[i]) then return fail("cascade source framebuffer incomplete") end
-        end
     end
     self.unitTexture=gl.CreateTexture(RESOLVE_SIZE,RESOLVE_SIZE,options)
     if not singleOutput then
@@ -104,12 +68,6 @@ return function(emissionSize, singleOutput, heightAware)
     end
     if not self.unitTexture or (not singleOutput and (not self.sceneTexture or not self.texture)) then
         return fail("resolve FBO allocation failed")
-    end
-    if heightAware then
-        self.unitSourceTexture=gl.CreateTexture(RESOLVE_SIZE,RESOLVE_SIZE,sourceOptions)
-        if not self.unitSourceTexture then return fail("resolve source texture allocation failed") end
-        self.resolveFBO=pairedFBO(self.unitTexture,self.unitSourceTexture)
-        if not self.resolveFBO then return fail("resolve source framebuffer incomplete") end
     end
     local function loc(shader,name) return gl.GetUniformLocation(shader,name) end
     self.previewExposureLoc=loc(self.previewShader,"exposure")
@@ -128,11 +86,6 @@ return function(emissionSize, singleOutput, heightAware)
     local domain
     local intervalLoc=loc(self.cascadeShader,"baseInterval")
     local intensityLoc=loc(self.resolveShader,"intensity")
-    local resolveMapLoc, resolveOriginLoc
-    if heightAware then
-        resolveMapLoc=loc(self.resolveShader,"mapSize")
-        resolveOriginLoc=loc(self.resolveShader,"domainOrigin")
-    end
     local function cascadePass(index)
         gl.UseShader(self.cascadeShader)
         gl.UniformInt(indexLoc,index)
@@ -149,15 +102,9 @@ return function(emissionSize, singleOutput, heightAware)
     local function resolvePass(intensity)
         gl.UseShader(self.resolveShader)
         gl.Uniform(intensityLoc,intensity)
-        if heightAware then
-            gl.Uniform(resolveMapLoc,domain.span,domain.span)
-            gl.Uniform(resolveOriginLoc,domain.x,domain.z)
-        end
         fullscreen()
     end
     function self:Draw(emission, occupancy, intensity, heightMin, heightMax, sceneOnly, localDomain, coarseEmission, coarseOccupancy)
-        self.sourceReady=false
-        if heightAware and (sceneOnly or not localDomain) then self.ready=false; return false end
         if not sceneOnly then
             self.ready = false
             self.heightMin, self.heightMax = heightMin, heightMax
@@ -172,27 +119,18 @@ return function(emissionSize, singleOutput, heightAware)
         for index=COUNT-1,0,-1 do
             -- Never sample the texture attached to the current target FBO.
             gl.Texture(2,index < COUNT-1 and self.textures[index+2] or emission)
-            if heightAware then
-                gl.Texture(5,index < COUNT-1 and self.sourceTextures[index+2] or emission)
-                gl.ActiveFBO(self.fbos[index+1],cascadePass,index)
-            else
-                gl.RenderToTexture(self.textures[index+1],cascadePass,index)
-            end
+            gl.RenderToTexture(self.textures[index+1],cascadePass,index)
         end
         gl.Texture(0,self.textures[1]); gl.Texture(1,occupancy); gl.Texture(2,emission)
-        if heightAware then gl.Texture(3,self.sourceTextures[1]) end
         if sceneOnly then
             gl.RenderToTexture(self.sceneTexture,resolvePass,1)
         else
-            if heightAware then gl.ActiveFBO(self.resolveFBO,resolvePass,1)
-            else gl.RenderToTexture(self.unitTexture,resolvePass,1) end
+            gl.RenderToTexture(self.unitTexture,resolvePass,1)
             if not singleOutput then gl.RenderToTexture(self.texture,resolvePass,intensity) end
         end
         gl.UseShader(0)
-        for unit=0,(heightAware and 5 or 4) do gl.Texture(unit,false) end
+        for unit=0,4 do gl.Texture(unit,false) end
         if not sceneOnly then self.ready=true end
-        self.sourceReady=heightAware
-        return true
     end
     return self
 end

@@ -1,6 +1,5 @@
 #version 150 compatibility
 in float worldHeight;
-in float sourceHeight;
 in vec2 sourceUV;
 flat in vec3 ribbonColor;
 flat in int ribbon;
@@ -25,8 +24,5 @@ void main()
     // uses RGB). Black texels emit nothing; visible-piece registration is kept.
     color=max(color*gl_Color.rgb*emissionStrength,vec3(0.0));
     if(max(color.r,max(color.g,color.b))<=0.001) discard;
-    // RGB is unchanged. Additive captures can recover a finite, luminance-
-    // weighted source height from this moment without another emission target.
-    float luminance=dot(color,vec3(0.2126,0.7152,0.0722));
-    gl_FragColor=vec4(color,luminance*sourceHeight/2048.0);
+    gl_FragColor=vec4(color,1.0);
 }

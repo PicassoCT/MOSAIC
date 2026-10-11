@@ -33,7 +33,7 @@ debug_program=compile_program('debug.vert','debug.frag')
 compile_program('data.vert','data.frag')
 flat_vertex='#version 150 compatibility\nvoid main(){gl_Position=gl_Vertex;gl_TexCoord[0]=gl_MultiTexCoord0;}'
 copy_program=program(flat_vertex,(root/'copy.frag').read_text())
-scene_program=program(flat_vertex,Path('luaui/widgets_mosaic/shaders/radiancecascade/scene.frag').read_text().replace('// MOBILE_SHADOWS',Path('luaui/widgets_mosaic/shaders/radiancecascade/mobile_shadow.glsl').read_text()))
+scene_program=program(flat_vertex,Path('luaui/widgets_mosaic/shaders/radiancecascade/scene.frag').read_text())
 def texture(w,h,data=None,depth=False):
     t=U();fn(G,'glGenTextures',None,I,P)(1,C.byref(t));bind(0x0DE1,t.value)
     for key in [0x2800,0x2801]:fn(G,'glTexParameteri',None,U,U,I)(0x0DE1,key,0x2600)
