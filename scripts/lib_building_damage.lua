@@ -9,6 +9,28 @@ local selected, rooftop, windowPieces, pieceMap
 local floorHeight, cellSize, modelScale = 1, 1, 1
 local ready, collapsing = false, false
 local failures, falling = {}, {}
+local fireSlots, activeFires, detachedCount = {}, 0, 0
+local MAX_BUILDING_FIRES = 2
+local function publishStats()
+    if Spring.SetUnitRulesParam then
+        Spring.SetUnitRulesParam(unitID, 'building_structural_blocks', #blocks, {public=true})
+        Spring.SetUnitRulesParam(unitID, 'building_detached_blocks', detachedCount, {public=true})
+        Spring.SetUnitRulesParam(unitID, 'building_structural_ready', ready and 1 or 0, {public=true})
+    end
+end
+local function lightBlockFire(p)
+    if not GG.SmokeRibbon or fireSlots[p] or activeFires >= MAX_BUILDING_FIRES then return end
+    local slot='block_fire_'..tostring(p)
+    local ok=GG.SmokeRibbon.Set(unitID,slot,p,{
+        directionSpace='world',direction={0,1,0},
+        length=24,width=5,strands=2,curl=0.45,speed=1.8,
+        windAffected=false,motionAffected=false,
+        colorStart={1,0.55,0.18,0.85},colorEnd={0.75,0.08,0.015,0},
+        emission={2.5,0.6},sourceGlow={1,0.42,0.09,0.3},
+        distanceFactor=35,
+    })
+    if ok then fireSlots[p]=slot;activeFires=activeFires+1 end
+end
 local FAILURE_DELAY_FRAMES = 6
 local FALL_FRAMES = 6
 local MAX_BROKEN_COLUMNS_PER_UPDATE = 3
@@ -156,6 +178,7 @@ function M.initialize(levels, shown, roofs, windows, height, width, scale, cache
     for p in pairs(offsets) do if not movable[p] then offsets[p] = nil end end
     for p in pairs(rotations) do if not movable[p] then rotations[p] = nil end end
     ready = true
+    publishStats()
 end
 
 local function removeAttachments(p)
@@ -168,6 +191,10 @@ local function removeAttachments(p)
 end
 
 local function hidePiece(p)
+    if fireSlots[p] then
+        if GG.SmokeRibbon then GG.SmokeRibbon.Remove(unitID,fireSlots[p]) end
+        fireSlots[p]=nil;activeFires=math.max(0,activeFires-1)
+    end
     detached[p] = true
     Hide(p)
     if windowPieces then windowPieces[p] = nil end
@@ -218,6 +245,8 @@ end
 local function detach(block, frame)
     if block.gone then return end
     block.gone = true
+    detachedCount = detachedCount + 1
+    publishStats()
     for _, p in ipairs(block.pieces) do
         detached[p] = true
         removeAttachments(p)
@@ -297,6 +326,7 @@ function M.update(hits, frame)
             -- random decoration or the geometric centre of the house.
             GG.BuildingDamageAnchor = GG.BuildingDamageAnchor or {}
             GG.BuildingDamageAnchor[unitID] = block.piece
+            lightBlockFire(block.piece)
         end
     end
     local scheduled, overloaded = 0, false
@@ -329,6 +359,11 @@ function M.collapse(levels, shown)
     for _, entry in ipairs(falling) do finishFall(entry.block) end
     falling = {}
     for p in pairs(attachments) do removeAttachments(p) end
+    for p,slot in pairs(fireSlots) do
+        if GG.SmokeRibbon then GG.SmokeRibbon.Remove(unitID,slot) end
+        fireSlots[p]=nil
+    end
+    activeFires=0
     Sleep(200) -- brief structural hesitation before the first floor gives way
     -- If killed during assembly there may not yet be a completed support graph.
     -- Hide partial geometry and suppress subsequent construction-thread Shows.
