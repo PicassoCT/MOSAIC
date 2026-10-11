@@ -4,6 +4,13 @@ local first=assert(source:find('function getGameConfig()',1,true))
 local last=assert(source:find('   function getAllCultures',first,true))
 local expected=dofile('tests/fixtures/game_config_expected.lua')
 local code=source:sub(first,last-1)
+-- The game config delegates its ruin policy to the same pure API used by
+-- map LuaGaia. Load that production helper without initializing a game state.
+local helperEnv=setmetatable({MOSAIC_CONFIG_ONLY=true},{__index=_G})
+local helperChunk
+if setfenv then helperChunk=assert(loadstring(source));setfenv(helperChunk,helperEnv)
+else helperChunk=assert(load(source,'config helpers','t',helperEnv))end
+local helpers=helperChunk()
 local roots={game=true,city=true,civilians=true,police=true,economy=true,
     objectives=true,espionage=true,military=true,presentation=true,performance=true}
 local function loadConfig(env)
@@ -16,13 +23,17 @@ local count=0
 for _,factor in ipairs({0,.35,.8,1,2})do
     for _,culture in ipairs({'arabic','asian','western','international'})do
         local env=setmetatable({GG={unitFactor=factor},GameVersion='test-version',
+            getCityRuinConfig=helpers.getCityRuinConfig,
             getInstanceCultureOrDefaultToo=function()return culture end},{__index=_G})
         local config=loadConfig(env)
         local flat={}
         local function walk(t,path)
             assert(getmetatable(t)==nil,'configuration must be plain data, without compatibility proxies')
             for key,value in pairs(t)do
-                assert(type(key)=='string' and key:match('^[a-z][a-zA-Z0-9]*$'),'nonstandard key: '..key)
+                local unitNameSet=path=='city.ruins.protectedMinimums'
+                assert(type(key)=='string' and (key:match('^[a-z][a-zA-Z0-9]*$')
+                    or (unitNameSet and key:match('^[a-z][a-z0-9_]*$'))),
+                    'nonstandard key: '..tostring(key))
                 local name=path=='' and key or path..'.'..key
                 if type(value)=='table' then walk(value,name)else flat[name]=value end
             end
@@ -36,9 +47,13 @@ for _,factor in ipairs({0,.35,.8,1,2})do
         -- getGameConfig continues to create independent tables and evaluate
         -- the current unit factor and culture, as it did before migration.
         config.espionage.cybercrime.payoutMoney=-1
+        config.city.ruins.equatorChance=-1
+        config.city.ruins.protectedMinimums.house_asian1=-1
         local another=env.getGameConfig()
         assert(another.espionage.cybercrime.payoutMoney==25)
+        assert(another.city.ruins.equatorChance==values['city.ruins.equatorChance'])
+        assert(another.city.ruins.protectedMinimums.house_asian1==values['city.ruins.protectedMinimums.house_asian1'])
         count=count+1
     end
 end
-print('Game config: 209 settings, 20 factor/culture combinations, plain new schema and independent instances PASS')
+print('Game config: 217 settings, 20 factor/culture combinations, plain schema and independent instances PASS')

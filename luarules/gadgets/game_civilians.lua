@@ -531,13 +531,20 @@ function getCultureDependentDiretion(culture)
  end
 
 function spawnUnit(defID, x, z)
+    -- Population origins are occupied building plots. Recheck the shared
+    -- property sets at this boundary so a contaminated pool cannot put a
+    -- second building or a ruin inside the existing house.
+    if not MobileCivilianDefIds[defID] or houseTypeTable[defID]
+        or scrapHeapTypeTable[defID] then
+        return nil
+    end
     if not x then
         --echo("Spawning unit of typ " .. UnitDefs[defID].name ..                 " with no coords")
     end
     
-    dir = getCultureDependentDiretion(GameConfig.game.culture)
-    h = spGetGroundHeight(x, z)
-    id = spCreateUnit(defID, x, h, z, dir, gaiaTeamID)
+    local dir = getCultureDependentDiretion(GameConfig.game.culture)
+    local h = spGetGroundHeight(x, z)
+    local id = spCreateUnit(defID, x, h, z, dir, gaiaTeamID)
 
     if id then
         --spSetUnitNoSelect(id, true)
@@ -548,7 +555,7 @@ end
 
 -- truck or Person
 function spawnAMobileCivilianUnit(defID, x, z, startID, goalID)
-    id = spawnUnit(defID, x, z)
+    local id = spawnUnit(defID, x, z)
     if id then
         -- assert(goalID)
         -- assert(startID)

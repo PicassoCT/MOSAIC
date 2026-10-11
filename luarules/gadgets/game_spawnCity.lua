@@ -19,6 +19,9 @@ VFS.Include("scripts/lib_staticstring.lua")
 local buisnessNeonSigns =  include("scripts/buissnesNamesNeonLogos.lua")
 
 local GameConfig = getGameConfig()
+local ruinConfig = GameConfig.city.ruins or getCityRuinConfig()
+local cityGeography = getCityGeography(Game)
+local cityRuins = VFS.Include("scripts/lib_city_ruins.lua")
 --if not Game.version then Game.version = GameConfig.game.version end
 local spGetUnitPosition = Spring.GetUnitPosition
 local spGetGroundHeight = Spring.GetGroundHeight
@@ -37,6 +40,11 @@ GG.HouseAsianUnitPlans = GG.HouseAsianUnitPlans or {}
 
 local scrapHeapTypeTable = getBuildingScrapHeapTypeTable(UnitDefs)
 local ruinTypeTable = getBuildingRuinTypeTable(UnitDefs)
+local ruinCandidateTypeTable = getCityRuinCandidateTypeTable(UnitDefs)
+local ruinDefIDs = {}
+for defID in pairs(ruinTypeTable) do ruinDefIDs[#ruinDefIDs + 1] = defID end
+table.sort(ruinDefIDs)
+local cityPlotGeometry = {}
 -- Lifecycle coverage is independent of the map's spawn culture and of whether
 -- a model supports block damage. The all-culture set is owned by lib_mosaic.
 local civilianHouseTypeTable = getCultureUnitModelTypes("international", "house", UnitDefs)
@@ -61,14 +69,7 @@ local TruckTypeTable = getCultureUnitModelTypes(GameConfig.game.culture,
 local houseTypeTable = getCultureUnitModelTypes(GameConfig.game.culture,
                                                 "house", UnitDefs)
 
--- Variants belong to all house gameplay registries, but must not multiply the
--- probability of selecting this building purpose in the city's spawn lottery.
-local houseSpawnTypeTable = {}
-for defID, value in pairs(houseTypeTable) do
-    if not (UnitDefs[defID].customParams or {}).house_asian_base then
-        houseSpawnTypeTable[defID] = value
-    end
-end
+local houseSpawnTypeTable = getCityHouseSpawnTypeTable(GameConfig.game.culture, UnitDefs)
 
 local outerCityHouseTypeTable = removeDictFromDict(houseSpawnTypeTable, getHouseTypeIsInnerCityOnly(GameConfig.game.culture, UnitDefs))
 
@@ -76,7 +77,7 @@ local houseTypeLimitationsTable = getHouseTypeLimitations(UnitDefs)
 local houeArabicDefID = UnitDefNames["house_arab0"].id
 local arcologyDefID = UnitDefNames["house_asian1"].id
 local initialArcologyPlots = 0
-local arcologyMinimum = 3
+local arcologyMinimum = ruinConfig.protectedMinimums[UnitDefs[arcologyDefID].name] or 0
 
 local function isCityHouse(defID)
     return civilianHouseTypeTable[defID]
@@ -102,13 +103,14 @@ function registerManuallyPlacedHouses(frame)
     counter = 0
     foreach(Spring.GetAllUnits(),
             function(id)
-                defID = spGetUnitDefID(id)
+                local defID = spGetUnitDefID(id)
                 if isCityHouse(defID) and not GG.CityConstructionSites[id]
                     and not GG.CityRubble[id] and allreadyRegistredBuilding[id] == nil then
                     return id
                 end
             end,
             function(id)
+                local defID = spGetUnitDefID(id)
                 allreadyRegistredBuilding[id] = true
                 spSetUnitAlwaysVisible(id, true)
                 setCityBuildingBlocking(id)                
@@ -116,6 +118,7 @@ function registerManuallyPlacedHouses(frame)
                 --assert(x)
                 --assert(z)
                 GG.BuildingTable[id] = GG.BuildingTable[id] or {x = x, z = z }
+                cityPlotGeometry[id] = {x=x, z=z, defID=defID}
                 setHouseStreetNameTooltip(id, x, z, Game, false, UnitDefs, buisnessNeonSigns)
                 counter = counter + 1
             end
@@ -126,6 +129,7 @@ end
 
 
 local function removeCityRoute(id)
+    cityPlotGeometry[id] = nil
     GG.BuildingTable[id] = nil
     allreadyRegistredBuilding[id] = nil
     RouteTabel[id] = nil
@@ -251,10 +255,19 @@ function isOnInnerCityGridBlock(cursorl, offx, offz)
     return false
 end
 
-function hasAlreadyBuilding(x,z, range)
+function hasAlreadyBuilding(x,z, range, defID)
     local allPreviousBuildings = GG.BuildingTable
     for id, data in pairs(allPreviousBuildings) do
-        if distance(x,0,z, data.x, 0, data.z) < range then return true end
+        local placed = cityPlotGeometry[id] or data
+        local dx, dz = x - placed.x, z - placed.z
+        if dx * dx + dz * dz < range * range then return true end
+        -- Full-size rubble must not be copied into the 128-elmo filler spaces.
+        -- Check actual jittered positions, not just ideal grid coordinates.
+        local otherDefID = placed.defID or spGetUnitDefID(id)
+        if ruinTypeTable[defID] or ruinTypeTable[otherDefID] then
+            local separation = ruinConfig.ruinFootprintSize + ruinConfig.plotClearance
+            if math.abs(dx) < separation and math.abs(dz) < separation then return true end
+        end
     end
 
     return false
@@ -302,6 +315,8 @@ function validateBuildSpotsReachable(start, endindex)
 end
 
 function fillGapsWithInnerCityBlocks(cursorl, buildingType, BuildingPlaceT)
+    -- An explicitly authored ruin remains one plot, never a source of replicas.
+    if ruinTypeTable[buildingType] then return end
     local cursor = cursorl
     orgPosX, orgPosZ= cursor.x*houseStreetDim.x, cursor.z*houseStreetDim.z
     for offsx = -1, 1, 1 do
@@ -355,14 +370,6 @@ function getBuildingTypeWithinLimits()
     end
 end
 
-maxMapSize = math.max(Game.mapSizeX, Game.mapSizeZ)
-function overrideRuinByChance(buildingTypeId, distanceToCityCenter)
-    if randChance((distanceToCityCenter/maxMapSize)*100) and maRa() then 
-       return UnitDefNames["house_ruin"].id
-    end
-    return buildingTypeId
-end
-
 -- spawns intial buildings
 function fromMapCenterOutwards(BuildingPlaceT, startx, startz)
     local finiteSteps = GameConfig.performance.maxCityGenerationSteps
@@ -391,7 +398,6 @@ function fromMapCenterOutwards(BuildingPlaceT, startx, startz)
 
             if BuildingPlaceT[cursor.x][cursor.z] == true and  isOnRoad(cursor) == false then
                 buildingType = getBuildingTypeWithinLimits()
-                buildingType = overrideRuinByChance(buildingType, distanceToCityCenter)
                
                 houseID = spawnBuilding(buildingType, cursor.x * dimX, cursor.z * dimZ, boolNearCityCenter)
 				if houseID then
@@ -408,7 +414,6 @@ function fromMapCenterOutwards(BuildingPlaceT, startx, startz)
 
             if boolFirstPlaced == true and BuildingPlaceT[mirror.x][mirror.z] == true and isOnRoad(mirror) == false then
                 buildingType = getBuildingTypeWithinLimits()
-                buildingType = overrideRuinByChance(buildingType, mirrorDistanceToCityCenter)
                 houseID = spawnBuilding(buildingType, mirror.x * dimX, mirror.z * dimZ, boolMirrorNearCityCenter)
                 if houseID then
 					setHouseStreetNameTooltip(houseID, mirror.x*2 , mirror.z*2, Game, false, UnitDefs, buisnessNeonSigns)
@@ -463,7 +468,6 @@ function placeThreeByThreeBlockAroundCursor(cursor, numberOfBuildings,  Building
                         local nameCursor = {x =(cursor.x*2) + offx, z =(cursor.z*2) + offz}
                         tmpCursor = clampCursor(tmpCursor)  
                         buildingType = getBuildingTypeWithinLimits()                  
-                        buildingType = overrideRuinByChance(buildingType, distanceToCityCenter)
                         if BuildingPlaceT[tmpCursor.x] and BuildingPlaceT[tmpCursor.x][tmpCursor.z] and BuildingPlaceT[tmpCursor.x][tmpCursor.z] == true then
                             houseID = spawnBuilding(buildingType,
                                           tmpCursor.x * houseStreetDim.x,
@@ -584,21 +588,32 @@ end
 function spawnBuilding(defID, x, z, boolInCityCenter, isGapFiller, forceArcology)
     -- Allocate real city plots, not the small blocks filling gaps between them.
     -- Count successful placements only, so a failed CreateUnit is retried.
-    local reserveArcology = not boolInitialized and not isGapFiller
+    local reserveArcology = not boolInitialized and not isGapFiller and ruinCandidateTypeTable[defID]
         and initialArcologyPlots < arcologyMinimum
-    if reserveArcology or forceArcology then defID = arcologyDefID end
+    if reserveArcology or forceArcology then
+        defID = arcologyDefID
+    elseif isGapFiller then
+        if ruinTypeTable[defID] then return end
+    elseif ruinCandidateTypeTable[defID] and #ruinDefIDs > 0
+        and cityRuins.ShouldRuin(cityGeography.hash, x, z, cityGeography.latitude, ruinConfig) then
+        local choice = math.floor(cityRuins.PlotRoll(cityGeography.hash + 7919, x, z) * #ruinDefIDs) + 1
+        defID = ruinDefIDs[choice]
+    end
     local offset = {xRandOffset = 0, zRandOffset = 0}
     if not boolInCityCenter  then
          offset = getCultureDependantRandomOffsets(GameConfig.game.culture, {x=x, z=z})
 		 if not offset then return end
     end
-    local id = spawnUnit(defID, x + math.random(-1 * offset.xRandOffset, offset.xRandOffset),
-                          z + math.random(-1 * offset.zRandOffset, offset.zRandOffset))
+    local spawnX = x + math.random(-1 * offset.xRandOffset, offset.xRandOffset)
+    local spawnZ = z + math.random(-1 * offset.zRandOffset, offset.zRandOffset)
+    if hasAlreadyBuilding(spawnX, spawnZ, 35, defID) then return end
+    local id = spawnUnit(defID, spawnX, spawnZ)
 
     if id then
         spSetUnitAlwaysVisible(id, true)
         setCityBuildingBlocking(id)
         GG.BuildingTable[id] = {x = x, z = z, arcology = reserveArcology or forceArcology or nil}
+        cityPlotGeometry[id] = {x=spawnX, z=spawnZ, defID=defID}
         if reserveArcology then initialArcologyPlots = initialArcologyPlots + 1 end
         return id
     end
@@ -622,6 +637,9 @@ function gadget:Initialize()
     GG.CitySpawnComplete = false
     Spring.SetGameRulesParam("mosaic_city_spawn_complete", 0, {public = true})
     Spring.SetGameRulesParam ( "culture",GameConfig.game.culture )
+    Spring.SetGameRulesParam("mosaic_city_country", cityGeography.country, {public=true})
+    Spring.SetGameRulesParam("mosaic_city_latitude", cityGeography.latitude, {public=true})
+    Spring.SetGameRulesParam("mosaic_city_ruin_chance", cityRuins.Chance(cityGeography.latitude, ruinConfig), {public=true})
     --killAllUnitsAtGamestart()
 originalGameFrame = Spring.GetGameFrame()
 end

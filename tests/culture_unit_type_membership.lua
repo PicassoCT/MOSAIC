@@ -80,6 +80,12 @@ for _, culture in ipairs({'arabic','western','asian','international'}) do
         end
         checkMap(label .. ' name list', names, wanted)
     end
+    local plotHouses = expected(culture, 'house')
+    plotHouses.house_ruin = nil
+    plotHouses.house_asian_split_1_1 = nil
+    plotHouses.house_asian_split_1_2 = nil
+    checkMap(culture .. ' ordinary city plot lottery',
+        env.getCityHouseSpawnTypeTable(culture, defs), plotHouses)
     local mobile = expected(culture, 'civilian')
     for name in pairs(expected(culture, 'truck')) do mobile[name] = true end
     checkMap(culture .. ' mobile civilians', env.getMobileCivilianDefIDTypeTable(defs), mobile)
@@ -87,6 +93,11 @@ for _, culture in ipairs({'arabic','western','asian','international'}) do
     assert(env.getUnitType_BaseTypeMap(defs, culture).house_ruin == 'house',
         culture .. ': ruin incorrectly classified as traffic/pedestrian')
 end
+local ruinCandidates = expected('international', 'house')
+ruinCandidates.house_ruin = nil
+checkMap('intact and variant plots eligible for war damage',
+    env.getCityRuinCandidateTypeTable(defs), ruinCandidates)
+checkMap('war ruin choices', env.getCityRuinTypeTable(defs), {house_ruin=true})
 assert(env.getBuildingScrapHeapTypeTable(defs)[byName.house_ruin.id], 'lost reconstruction rubble option')
 assert(env.getBuildingRuinTypeTable(defs)[byName.house_ruin.id], 'lost ruin property membership')
 print('PASS: all culture pools preserve house/variant/ruin choices and exclude ruins from mobile spawns')

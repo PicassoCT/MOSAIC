@@ -49,11 +49,15 @@ local function setAnchorsRelative(nvx, nvy)
   anchorx, anchory = nvx*0.9,nvy*0.15 
 end
 
+-- Shared identity also drives synced city ruin selection. Import only the
+-- lightweight config helpers; do not initialize synced GG state in LuaUI.
+local MosaicConfig = VFS.Include("scripts/lib_mosaic.lua",
+  setmetatable({MOSAIC_CONFIG_ONLY = true}, {__index = _G}))
+local cityGeography = MosaicConfig.getCityGeography(Game)
 local mapName = Game.mapName
 local arrivalWasActive = false
 local function isDubaiMap()
-  local name = (Game.mapName or ""):lower():gsub("[^a-z]", "")
-  return name:find("lastdayofdubai", 1, true) or name:find("lastdayofdhubai", 1, true)
+  return cityGeography.isDubai
 end
 
 
@@ -83,36 +87,8 @@ function widget:ViewResize(n_vsx,n_vsy)
 end
 
 local function getDetermenisticHash()
-  local accumulated = 0
-  local mapName = Game.mapName
-  local mapNameLength = string.len(mapName)
-
-  for i=1, mapNameLength do
-    accumulated = accumulated + string.byte(mapName,i)
-  end
-
-  accumulated = accumulated + Game.mapSizeX
-  accumulated = accumulated + Game.mapSizeZ
-  return accumulated
+  return cityGeography.hash
 end
-
-local function GetRegionByHash(mapHash)
-  local allRegions = 9
-  local result = (mapHash % allRegions)+1
-  local resultMap = {    
-    [1] = "MiddleEast",
-    [2] = "CentralAsia",
-    [3] = "Africa",
-    [4] = "Europe",
-    [5] = "NorthAmerica",
-    [6] = "SouthAmerica",
-    [7] = "SouthEastAsia",
-    [8] = "CentralAsia",
-    [9] = "CityState"
-      }
-
-      return resultMap[result]
-  end
 
 
 local function getHashDate(startYear)
@@ -7064,8 +7040,13 @@ local function getCityNameByProvince(provincelocal, hash)
 ["Ahuachapan"] = {"Ahuachapan","Atiquizaya","Tacuba","Guaymango","Concepcion de Ataco"},
  ["Ningbo"]={"Hangzhou","Taizhou","Jinhua","Shaoxing","Jiaxing","Wenzhou","Huzhou","Quzhou","Lishui","Xushan"}
 }
-  if not province_city_map[provincelocal] then Spring.Echo("Not a valid province ".. provincelocal) end
-  setCacheBy("city", province_city_map[provincelocal][(hash % #province_city_map[provincelocal])+1 ])
+  local cities = province_city_map[provincelocal]
+  if not cities or #cities == 0 then
+    -- A map may author a new country/province before adding its place-name data.
+    setCacheBy("city", "Unspecified")
+  else
+    setCacheBy("city", cities[(hash % #cities) + 1])
+  end
   return "City: "..getCacheBy("city") 
 end
 
@@ -7584,34 +7565,15 @@ local function getProvinceNameBy(countrylocal,  hash)
     ["Mali"] = {"Bamako","Sikasso","Segou","Mopti","Kayes","Gao","Tombouctou","Koulikoro","Kidal"},
   }
 
-  if not country_province_map[countrylocal] then
-    Spring.Echo("No provinces for country".. countrylocal)
-  end 
-  assert(country_province_map[countrylocal], countrylocal.. " has no country_province_map")
-  if not country_province_map[countrylocal][(hash % #country_province_map[countrylocal])+1 ] then
-    Spring.Echo("No provinces for country".. countrylocal)
+  local provinces = country_province_map[countrylocal]
+  if not provinces or #provinces == 0 then
+    setCacheBy("province", "Unspecified")
+  else
+    setCacheBy("province", provinces[(hash % #provinces) + 1])
   end
-  setCacheBy("province", country_province_map[countrylocal][(hash % #country_province_map[countrylocal])+1 ])
   return "Province: "..getCacheBy("province") 
 end
 
-
-local function getCountryByRegion(region, hash)
-  
-  local region_countryMap = {}
-  region_countryMap ={
-    CityState = {"Redmond","Mare Silentio Company","Singapore", "London", "Dubai", "Hong Kong", "Shanghai", "Lagos", "Falklandia", "Thielon Arcology", "Panama Inc", "Kaliningrad"},
-    Africa = {"Chad","Central African Republic","Senegal","Lesotho","Congo","Ghana","Botswana","Togo","Swaziland","South Africa","Eritrea","Zimbabwe","Algeria","Malawi","Sierra Leone","Liberia","Zambia","Kenya","Ethiopia","Guinea","Djibouti","Burkina Faso","Nigeria","Uganda","Comoros","Saint Helena","Guinea-Bissau","Namibia","Gambia","Benin","Gabon","Trinidad And Tobago","Niger","Cameroon","Angola","Cabo Verde","Burundi","Somalia","Mali","Tanzania","Rwanda","Mozambique","Côte D’Ivoire","Madagascar","Saint Martin"},
-    MiddleEast = {"Tunisia","Libya","Sudan","Syria","Saudi Arabia","Jordan","Kuwait","Brunei","Algeria","Turkey","Iran","Lebanon","Qatar","West Bank","United Arab Emirates","Israel","Bahrain","Gaza Strip","Armenia","Iraq","Oman","Yemen","Egypt","Morocco","Pakistan", "Western Sahara", "Mauritania"},
-    CentralAsia = {"Bhutan","Tajikistan","Iran","Georgia","Nepal","Azerbaijan","Russia","Kyrgyzstan","Afghanistan","Turkmenistan","Pakistan","Uzbekistan","Mongolia","Kazakhstan"},
-    Europe = {"Cyprus","Belarus","Slovakia","Greece","Hungary","Montenegro","Macedonia","Kosovo","Sweden","Luxembourg","Belgium","Slovenia","Albania","Turkey","Serbia","Ukraine","France","Liechtenstein","United Kingdom","Iceland","Italy","Czechia","Andorra","Poland","Netherlands","Croatia","Russia","Malta","Germany","Ireland","Portugal","Monaco","Norway","Vatican City","Finland","Bulgaria","Moldova","Estonia","Lithuania","Latvia", "Switzerland","Romania","San Marino","Isle Of Man","Spain","Denmark","Austria","Gibraltar","Bosnia And Herzegovina"},
-    NorthAmerica = {"United States","Panama","Canada","Greenland","Jersey","Village of Islands","El Salvador","Mexico",},
-    SouthAmerica = {"Belize","Jamaica","Venezuela","Guyana","Equatorial Guinea","Argentina","Brazil","Peru","Ecuador","Honduras","Nicaragua","Bermuda","Bolivia","Cuba","Puerto Rico","Cayman Islands","Chile","Uruguay","Dominican Republic","Costa Rica","French Guiana","Saint Maarten","Mauritius","Saint Lucia","New Caledonia","Paraguay","Guatemala","Barbados","Colombia","French Polynesia",},
-    SouthEastAsia = {"Bangladesh","Papua New Guinea","Myanmar","Cambodia","Australia","Thailand","Korea","China","Vietnam","New Zealand","Sri Lanka","Guadeloupe","Taiwan","Malaysia","Macau", "Wallis And Futuna","Grenada","Laos","Anguilla","Christmas Island","Pitcairn Islands","Guam","Singapore","Hong Kong","Japan","Philippines","Indonesia" }
-  }
-
-  return region_countryMap[region][((hash*69) % #region_countryMap[region]) +1 ]   
-end
 
 local function getMapOverrideCountry()
     local foundDubai = isDubaiMap()
@@ -7619,7 +7581,7 @@ local function getMapOverrideCountry()
   end
 
 
-local persistenCountry 
+local persistenCountry = cityGeography.country
 local function getCountryNameByRegion(region, hash)
     if getCacheBy("country") then return "Country: "..getCacheBy("country")  end
     local mapOverrideCountry = getMapOverrideCountry()
@@ -7627,7 +7589,7 @@ local function getCountryNameByRegion(region, hash)
       setCacheBy("country",mapOverrideCountry)
       return "Country: "..getCacheBy("country")
     end
-    local country = getCountryByRegion(region, hash)
+    local country = cityGeography.country
     setCacheBy("country", country..", "..region)
     persistenCountry = country
     return "Country: "..getCacheBy("country") 
@@ -7661,7 +7623,7 @@ function widget:DrawScreenEffects(vsx, vsy)
     end
     local hash = getDetermenisticHash()
     local rawtimeStamp = getDayTimeString()
-    local region    = GetRegionByHash(hash)
+    local region    = cityGeography.region
     local rawcountry = getCountryNameByRegion(region, hash)
 
     for k, v in pairs(cache) do
@@ -7740,7 +7702,7 @@ function widget:Initialize()
   culture = Spring.GetGameRulesParam ("culture") 
 
   local hash = getDetermenisticHash()
-  local region    = GetRegionByHash(hash)
+  local region    = cityGeography.region
   local country   = getCountryNameByRegion(region, hash)
   local citypart  = getNeighbourhoodName(persistenCountry, hash)
   local province  = getProvinceNameBy(persistenCountry ,hash)
