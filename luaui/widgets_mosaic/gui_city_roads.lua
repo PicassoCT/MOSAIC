@@ -10,29 +10,67 @@ local function clear()
     if mesh then gl.DeleteList(mesh); mesh=nil end
     if sectorMesh then gl.DeleteList(sectorMesh); sectorMesh=nil end
 end
+-- Smooth only the visual overlay. Source centreline vertices, road IDs,
+-- house addresses and navigational geometry remain authoritative.
+-- Endpoint clamping preserves the topology of every junction.
 local function curve(points,width)
-    local out={points[1]}
-    for i=2,#points-1 do
-        local a,b,c=points[i-1],points[i],points[i+1]
-        local l=math.sqrt((a[1]-b[1])^2+(a[2]-b[2])^2)
-        local m=math.sqrt((c[1]-b[1])^2+(c[2]-b[2])^2)
-        local radius=math.min(width/2,l/4,m/4)
-        local u={b[1]+(a[1]-b[1])*radius/l,b[2]+(a[2]-b[2])*radius/l}
-        local v={b[1]+(c[1]-b[1])*radius/m,b[2]+(c[2]-b[2])*radius/m}
-        out[#out+1]=u
-        for k=1,6 do
-            local t=k/6;local q=1-t
-            out[#out+1]={q*q*u[1]+2*q*t*b[1]+t*t*v[1],q*q*u[2]+2*q*t*b[2]+t*t*v[2]}
+    if #points<3 then return points end
+    local source=points
+    local out=source
+    -- Two corner-cutting passes tame the raster staircase on long routes.
+    -- Every new point is a convex combination of source positions: no overshoot.
+    for pass=1,2 do
+        local nextPoints={out[1]}
+        for i=1,#out-1 do
+            local a,b=out[i],out[i+1]
+            local length=math.sqrt((a[1]-b[1])^2+(a[2]-b[2])^2)
+            if length>0.01 then
+                nextPoints[#nextPoints+1]={a[1]*0.75+b[1]*0.25,a[2]*0.75+b[2]*0.25}
+                nextPoints[#nextPoints+1]={a[1]*0.25+b[1]*0.75,a[2]*0.25+b[2]*0.75}
+            end
+        end
+        nextPoints[#nextPoints+1]=out[#out]
+        out=nextPoints
+    end
+    return out
+end
+-- At shared graph vertices, fill the center using the widest incoming road.
+-- This avoids visible pinholes and the angular seams between strip quads.
+local function junctions()
+    local nodes={}
+    for _,r in ipairs(network.roads) do
+        for _,p in ipairs({r.points[1],r.points[#r.points]}) do
+            local key=math.floor(p[1]+0.5)..':'..math.floor(p[2]+0.5)
+            local n=nodes[key] or {x=p[1],z=p[2],degree=0,radius=0}
+            n.degree=n.degree+1;n.radius=math.max(n.radius,r.width*0.55)
+            nodes[key]=n
         end
     end
-    out[#out+1]=points[#points];return out
+    for _,n in pairs(nodes) do
+        if n.degree>=2 and Spring.GetGroundHeight(n.x,n.z)>0 then
+            local radius=n.radius
+            -- A small polygon fan is sufficient for the translucent orientation
+            -- overlay. It is deliberately not road collision or map asphalt.
+            for i=0,7 do
+                local a,b=i*math.pi/4,(i+1)*math.pi/4
+                local x1,z1=n.x+math.cos(a)*radius,n.z+math.sin(a)*radius
+                local x2,z2=n.x+math.cos(b)*radius,n.z+math.sin(b)*radius
+                for _,p in ipairs({{n.x,n.z},{x1,z1},{x2,z2},{n.x,n.z}}) do
+                    local x=math.max(0,math.min(Game.mapSizeX,p[1]))
+                    local z=math.max(0,math.min(Game.mapSizeZ,p[2]))
+                    gl.Vertex(x,Spring.GetGroundHeight(x,z)+1,z)
+                end
+            end
+        end
+    end
 end
 local function surface()
     for _,r in ipairs(network.roads) do
         local points=curve(r.points,r.width)
         for i=2,#points do
             local a,b=points[i-1],points[i]; local dx,dz=b[1]-a[1],b[2]-a[2]
-            local length=math.sqrt(dx*dx+dz*dz);local nx,nz=-dz/length*r.width/2,dx/length*r.width/2
+            local length=math.sqrt(dx*dx+dz*dz);if length>0.01 then
+            local nx,nz=-dz/length*r.width/2,dx/length*r.width/2
             local steps=math.ceil(length/64)
             for k=0,steps-1 do
                 local t,u=k/steps,(k+1)/steps
@@ -44,8 +82,10 @@ local function surface()
                     end
                 end
             end
+            end
         end
     end
+    junctions()
 end
 local function sectors()
     local size=roads.SECTOR_SIZE
