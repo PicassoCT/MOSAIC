@@ -8,6 +8,7 @@ local function loadEnv(path, env)
     return env
 end
 local function noop() end
+local shadowProperties=loadEnv('scripts/lib_mosaic.lua',{MOSAIC_CONFIG_ONLY=true})
 local function count(t)
     local n = 0; for _ in pairs(t) do n = n + 1 end; return n
 end
@@ -37,6 +38,7 @@ local function standalone(shared, id, opts)
         UnitDefs = {{name = opts.project and 'house_asian3' or 'house_asian1'}},
         include = noop, piece = function() return -1 end,
         getGameConfig = function() return config end,
+        getBuildingRadianceShadowTypeTable=shadowProperties.getBuildingRadianceShadowTypeTable,
         getPieceTableByNameGroups = function() return groups end,
         Spring = {
             GetGaiaTeamID = function() return 0 end,
@@ -44,6 +46,8 @@ local function standalone(shared, id, opts)
             GetUnitPieceList = function() return pieceNames end,
             GetUnitPieceMap = function() return {} end,
             GetUnitPosition = function() return opts.x or 99, 0, 0 end,
+            GetUnitHealth = function() return 100,100,0,0,1 end,
+            GetUnitPieceMatrix = function() return 1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1 end,
             GetUnitPieceInfo = function(_, piece)
                 return {min={0,0,0}, max={10,10,(piece == 40 or piece == 130) and 3000 or 100}}
             end,
@@ -66,6 +70,7 @@ local function standalone(shared, id, opts)
         getDetermenisticMapHash = function() return 0 end,
         randChance = function() return opts.dual or false end,
     })
+    loadEnv('scripts/lib_building_solid_shadow.lua',env)
     env.script.Create()
     env.buildBuilding()
     return env, shown

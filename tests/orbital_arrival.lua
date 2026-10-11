@@ -28,9 +28,12 @@ end
 local noop=function() end
 local blend = true
 local renderCount = 0
+local textureSizes = {}
 gl = {CreateShader=function() if not shaderFailure then return id() end end,
  DeleteShader=function(n) deleted[n]=true end, GetShaderLog=function() return '' end,
- CreateTexture=function() if not textureFailure then return id() end end,
+ CreateTexture=function(w,h)
+  if not textureFailure then local n=id(); textureSizes[n]={w,h}; return n end
+ end,
  DeleteTexture=function(n) deleted[n]=true end, TextureInfo=function() return {xsize=1920,ysize=1080} end,
  GetUniformLocation=function(_,n) return n end, Uniform=function(n, ...) draws[n]={...} end,
  UniformInt=function(n, ...) draws[n]={...} end,
@@ -82,19 +85,79 @@ A.writeHandoff('art.png',20,1,0)
 local tex,age,fade,descent=A.readHandoff(); assert(tex=='art.png' and age==20 and fade==1 and descent==0)
 A.finishIntro(); assert(A.introPhase()=='finished')
 Game.mapName='Other'; assert(A.readHandoff()==nil); Game.mapName='LastDayOfDhubai'
+-- Each match chooses a reproducible region; missing game IDs have a stable
+-- map fallback. This visual seed must not consume or reseed the global RNG.
+local random, randomseed = math.random, math.randomseed
+math.random=function() error('Arrival consumed the global RNG') end
+math.randomseed=function() error('Arrival reseeded the global RNG') end
+local function region(game) return {A.regionOffset(game)} end
+local function sameRegion(a,b) return a[1]==b[1] and a[2]==b[2] end
+local identity={mapName='LastDayOfDhubai',mapChecksum=4294967295,gameID='match-01'}
+local seededRegion=region(identity)
+assert(sameRegion(seededRegion,region(identity)), 'same match changed its generated Earth region')
+for _,game in ipairs({
+ {mapName='Other',mapChecksum=identity.mapChecksum,gameID=identity.gameID},
+ {mapName=identity.mapName,mapChecksum=4294967294,gameID=identity.gameID},
+ {mapName=identity.mapName,mapChecksum=identity.mapChecksum,gameID='match-02'},
+ {mapName=identity.mapName,mapChecksum=identity.mapChecksum,gameID=string.rep('long\0id',100)},
+}) do
+ local offset=region(game)
+ assert(not sameRegion(seededRegion,offset), 'a changed map or game did not select another region')
+ for _,v in ipairs(offset) do assert(v>=0 and v<128, 'invalid procedural region coordinate') end
+ assert(sameRegion(offset,region(game)), 'region hash was not deterministic')
+end
+local fallback=region({mapName=identity.mapName,mapChecksum=identity.mapChecksum})
+assert(sameRegion(fallback,region({mapName=identity.mapName,mapChecksum=identity.mapChecksum,gameID=''})),
+  'missing gameID did not use the stable map fallback')
+assert(not sameRegion(fallback,region({mapName='Other',mapChecksum=identity.mapChecksum})),
+  'map fallback ignored the map name')
+assert(not sameRegion(region({mapName='ab',mapChecksum='c'}),region({mapName='a',mapChecksum='bc'})),
+  'region seed lost the boundaries between identity fields')
+assert(sameRegion(region({}),region({})), 'missing identity fields broke the stable fallback')
 local r=A.newRenderer(); assert(r)
-assert(r:draw(1920,1080,'art.png',20,1,0.16))
+local rendererRegion={r.regionOffset[1],r.regionOffset[2]}
+assert(r:draw(1920,1080,'art.png',20,0,0))
+assert(textureSizes[r.orbitTexture][1]==1920 and textureSizes[r.orbitTexture][2]==1080,
+  'planetary snapshots were still downsampled below native 1080p')
+assert(sameRegion(draws.regionOffset,rendererRegion) and draws.elapsed==nil,
+  'Earth shader did not receive its fixed region independently of elapsed time')
 local previous=renderCount
-assert(r:draw(1920,1080,'art.png',20,1,0.16)); assert(renderCount==previous,'Post pass repeated procedural work')
-assert(r:draw(1920,1080,'art.png',20.04,1,0.2))
-assert(renderCount==previous,'Orbital shader still runs at full screen refresh rate')
-assert(r:draw(1920,1080,'art.png',20.1,1,0.2))
-assert(renderCount==previous+1,'Orbital shader did not refresh at 12 Hz')
+assert(r:draw(1920,1080,'art.png',20,0,0)); assert(renderCount==previous,'Post pass repeated procedural work')
+assert(r:draw(1920,1080,'art.png',20.04,0.1,0.02))
+assert(r:draw(1920,1080,'art.png',20.1,0.2,0.04))
+assert(r:draw(1920,1080,'art.png',25,1,0.2))
+assert(renderCount==previous,'Stationary orbital snapshot redrew during artwork blending or a hold')
+-- Detect a clock reset even when the new age is later than the last Earth
+-- render: held snapshots can outlive many display frames without rendering.
+assert(r:draw(1920,1080,'art.png',24.9,1,0.2))
+assert(renderCount==previous+1,'An age reset during a held snapshot did not invalidate the cache')
+-- Resolution and aspect changes refresh the snapshot, but never choose a new
+-- region even if Game receives another identity after renderer construction.
+local savedGameID=Game.gameID; Game.gameID='identity-changed-after-renderer-creation'
+for i,size in ipairs({{1280,720,1280,720},{3840,2160,1920,1080},
+ {3840,2159,1920,1079},{3841,2159,1920,1079},{1920,1080,1920,1080}}) do
+ previous=renderCount
+ local oldTexture=r.orbitTexture
+ local oldSize=textureSizes[oldTexture]
+ assert(r:draw(size[1],size[2],'art.png',24.9+i*0.01,1,0.2))
+ assert(renderCount==previous+1,'Viewport resize or aspect change reused a stale snapshot')
+ local actual=textureSizes[r.orbitTexture]
+ assert(actual[1]==size[3] and actual[2]==size[4], 'snapshot resolution exceeded its cap or lost native detail')
+ if oldSize[1]~=size[3] or oldSize[2]~=size[4] then
+  assert(deleted[oldTexture], 'resize leaked the previous orbital texture')
+ else
+  assert(r.orbitTexture==oldTexture, 'an aspect-only refresh reallocated the same texture dimensions')
+ end
+ assert(sameRegion(draws.regionOffset,rendererRegion), 'resize changed the selected planet region')
+ assert(r:draw(size[1],size[2],'art.png',24.9+i*0.01,1,0.2))
+ assert(renderCount==previous+1,'Post pass rerendered a resized snapshot')
+end
+Game.gameID=savedGameID
 -- Cuts must bypass the cache, including the fourth (closest) planetary shot.
 for stage=2,4 do
  previous=renderCount
  local progress=(A.blendSeconds+(stage-1)*A.stepSeconds)/A.descentSeconds
- local sampleAge=20.1+stage*0.01
+ local sampleAge=25+stage*0.01
  assert(r:draw(1920,1080,'art.png',sampleAge,1,progress,'live.png'))
  assert(renderCount==previous+1 and r.lastStage==stage,
    '12 Hz cache swallowed a planetary snapshot')
@@ -102,23 +165,29 @@ for stage=2,4 do
    'a planetary snapshot started the live-city compositor')
  assert(r:draw(1920,1080,'art.png',sampleAge,1,progress,'live.png'))
  assert(renderCount==previous+1,'Post pass repeated an optical cut')
+ assert(sameRegion(draws.regionOffset,rendererRegion), 'an optical cut chose a different planet region')
 end
 local function revealProgress(x) return (A.revealStart+x*A.revealSeconds)/A.descentSeconds end
 previous=renderCount
-assert(r:draw(1920,1080,'art.png',20.15,1,revealProgress(0.01),'live.png'))
+assert(r:draw(1920,1080,'art.png',25.05,1,revealProgress(0.01),'live.png'))
 assert(renderCount==previous+1,'Entering the cloud reveal did not invalidate the cache')
-assert(r:draw(1920,1080,'art.png',20.3,1,revealProgress(0.3),'live.png'))
+assert(r:draw(1920,1080,'art.png',25.2,1,revealProgress(0.3),'live.png'))
 previous=renderCount
-assert(r:draw(1920,1080,'art.png',20.34,1,revealProgress(0.6),'live.png'))
+assert(r:draw(1920,1080,'art.png',25.24,1,revealProgress(0.6),'live.png'))
 assert(renderCount==previous and draws.hasLive[1]==0,
   'compositor exposed the live projection before its cached clouds were ready')
-assert(r:draw(1920,1080,'art.png',20.4,1,revealProgress(0.61),'live.png'))
+assert(r:draw(1920,1080,'art.png',25.3,1,revealProgress(0.61),'live.png'))
+assert(renderCount==previous+1,'Moving cloud descent did not refresh at the bounded 12 Hz rate')
 assert(draws.hasLive[1]==1,'cloud reveal did not enable the captured city')
 previous=renderCount
-assert(r:draw(1920,1080,'art.png',20.41,1,1,'live.png'))
+assert(r:draw(1920,1080,'art.png',25.31,1,1,'live.png'))
 assert(renderCount==previous+1 and r.lastCloudDescent==1,
   'final cloud frame was swallowed by the cache')
+assert(r:draw(1920,1080,'art.png',30,1,1,'live.png'))
+assert(renderCount==previous+1,'Completed cloud frame needlessly repeated procedural work')
+assert(sameRegion(draws.regionOffset,rendererRegion), 'cloud reveal changed the selected planet region')
 r:destroy(); r:destroy()
+math.random,math.randomseed=random,randomseed
 local function newWidget()
  WG={}; widget={}; widgetHandler={RemoveWidget=function(_,w) if w.Shutdown then w:Shutdown() end end}
  assert(loadstring(VFS.LoadFile('luaui/widgets_mosaic/gfx_orbital_arrival.lua')))()
@@ -230,7 +299,7 @@ widgetHandler.WG.MosaicArrival={active=true,skip=function() skipped=true end}
 assert(widgetHandler:KeyPress(65,{},false)); assert(widgetHandler:TextInput('a'))
 assert(widgetHandler:MouseWheel(true,1)); assert(widgetHandler:CommandNotify(10,{},{}))
 assert(widgetHandler:KeyPress(27,{},false) and skipped)
-print('PASS: static loading bridge, four planetary snapshots before clouds, stall-safe timing, 12Hz cache with immediate cuts, input/cleanup, no camera writes')
+print('PASS: static loading bridge, stable generated Earth region, native 1080p stationary snapshot cache, bounded 12Hz cloud reveal and live handoff, four cuts, resize, stall-safe timing, input/cleanup, no camera writes')
 -- Exercise the real location widget on both map spellings, including resize.
 Spring.SendLuaRulesMsg=function(s) assert(s:match('City: Dubai')); end
 Spring.PlaySoundFile=function() end

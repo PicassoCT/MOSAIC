@@ -1,6 +1,7 @@
 include "createCorpse.lua"
 include "lib_OS.lua"
 include "lib_mosaic.lua"
+include "lib_building_solid_shadow.lua"
 include "lib_physics.lua"
 include "lib_UnitScript.lua"
 include "lib_radiance_emitters.lua"
@@ -33,19 +34,40 @@ local cubeDim = {
     roofHeigth = 50
 }
 
--- Standalone models need authored/model-specific voxels, not procedural blocks.
--- Future implementation: supply a floor grid, column heights and optional masks.
+local buildingShadowProfile=getBuildingRadianceShadowTypeTable(UnitDefs)[unitDefID]
+local emptyBuildingShadow={columns={},cellSize=16,levelHeight=1}
+local buildingShadowColumns=emptyBuildingShadow
+local buildingShadowReady,buildingShadowDead=false,false
 function GetBuildingShadowColumns()
-    return {columns = {}, cellSize = 16, levelHeight = 16}
+    local _,_,_,_,built=Spring.GetUnitHealth(unitID)
+    -- hideHouse/showHouse switches to raid presentation; the physical house
+    -- remains in place, just like the existing Asian/western column providers.
+    if buildingShadowReady and not buildingShadowDead and built and built>=1 then
+        return buildingShadowColumns
+    end
+    return emptyBuildingShadow
 end
 
 local function buildStandaloneShadowVoxels()
-    -- TODO: insert voxel geometry for the selected pieces in toShowDict.
+    -- Main meshes define the solid body. Optional spinners, rooftop furniture,
+    -- elevators and distant ground placeables keep their visuals without
+    -- widening the block. Both selected bodies of a dual project are retained.
+    local mainPieces,selected,seen={},{},{}
+    for _,group in ipairs({TablesOfPieceGroups.Arcology or {},TablesOfPieceGroups.Project or {}}) do
+        for _,id in pairs(group) do mainPieces[id]=true end
+    end
+    for _,id in ipairs(ToShowTable) do
+        if mainPieces[id] and not seen[id] then seen[id]=true;selected[#selected+1]=id end
+    end
+    if not buildingShadowProfile then return end
+    local grid,reason=BuildSolidBuildingShadowColumns(unitID,selected,buildingShadowProfile)
+    buildingShadowColumns=grid or emptyBuildingShadow
+    buildingShadowReady=grid~=nil
+    if not grid then Spring.Echo("Standalone building shadow unavailable for unit "..unitID..": "..tostring(reason)) end
 end
 
 local function registerStandaloneShadowVoxels()
-    -- TODO: enable registration once standalone voxel geometry is implemented.
-    -- GG.MarkBuildingShadowVolumeDirty(unitID)
+    if GG.MarkBuildingShadowVolumeDirty then GG.MarkBuildingShadowVolumeDirty(unitID) end
 end
 
 local RoofTopPieces ={}
@@ -618,6 +640,10 @@ function buildAnimation()
 end
 
 function script.Killed(recentDamage, _)
+    buildingShadowDead=true
+    buildingShadowReady=false
+    buildingShadowColumns=emptyBuildingShadow
+    registerStandaloneShadowVoxels()
     if isArcology then
         GG.StandaloneArcologyCount = math.max(0, GG.StandaloneArcologyCount - 1)
     end

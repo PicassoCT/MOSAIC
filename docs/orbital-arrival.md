@@ -35,11 +35,29 @@ skipped. There is no backlog that can fast-forward through unseen snapshots.
 
 Every apparent movement is in screen space. The sequence never changes the
 camera position, orientation, mode, field of view, simulation speed or pause state.
-The orbital renderer keeps a fixed horizon orientation, adds a day/night terminator,
-night-side settlement lights, water glint, elevated cloud layers and displaced
-cloud shadows, plus atmospheric limb/twilight lighting.
-The Earth surface is a procedural cinematic regional coastline, not a geographical
-atlas. It does not claim to locate the city accurately on a real globe.
+The orbital renderer keeps a fixed horizon orientation and places the sun
+directly above the destination: every match arrives at local **high noon**.
+Cloud tops and water reflections use neutral daylight, with a thin blue
+atmospheric rim. Changing the generated region never changes the solar angle.
+Clouds combine broad sheets, broken cumulus and sparse cirrus. Layered billows
+share their detail with the lighting, while softer fine-scale normals avoid
+making the cloud tops look like crumpled material.
+
+The Earth surface is a procedural cinematic regional coastline. A deterministic
+hash of the map name, map checksum and game ID selects another part of that
+generated world for each match. If a game ID is unavailable, the same map uses
+a stable fallback region. The renderer captures this choice once; every zoom
+stage and viewport resize samples that same region without consuming Lua's RNG.
+This is a fictional generated world, not a geographical atlas or a claim to
+locate the live map accurately on Earth.
+
+**Orbital clouds are stationary.** Terrain, cloud coverage, shadows and detail
+depend on world coordinates and the selected region, with no time input or wind
+offset. Fixed spatial frequencies keep formations aligned between snapshots;
+pixel-footprint filtering reveals fine detail as the view approaches and limits
+aliasing at the horizon. The final cloud passage changes the viewing scale of a
+frozen cloud field, then opens onto the live city. Its motion comes from the
+approach and reveal, rather than weather moving over the ground.
 
 ## Handoff and readiness
 
@@ -91,9 +109,14 @@ replay it. The timer uses wall time, so a paused simulation cannot trap the UI.
 In a multiplayer start-position lobby, Escape can return to setup immediately;
 the animation cannot begin until game frames advance.
 
-The procedural pass is capped at 960×540 and cached, updating at 12 Hz during
-snapshot holds and cloud motion. Snapshot cuts, reveal entry, and the final
-frame force an immediate refresh. The compositor waits for the cached image to
+The procedural pass uses native resolution up to **1920×1080**. Each of the
+four stationary orbital snapshots is rendered once and reused throughout its
+hold, including the artwork blend. Resizing or changing the viewport aspect
+refreshes the image without choosing a new region. The final cloud approach
+alone updates at a bounded 12 Hz. Snapshot cuts, reveal entry, clock resets and
+the final frame force an immediate refresh. Uniform shader branches skip cloud
+transit work during the orbital snapshots and skip the planet once the transit
+clouds cover it. The compositor waits for the cached image to
 reach the fully cloudy scene before it can show the live framebuffer, preventing
 an early reveal when the cache trails the presentation clock. Artwork blending
 and the live framebuffer composite remain display-rate. No procedural GPU pass runs during loading.
@@ -107,19 +130,26 @@ Run from the repository root:
 ```sh
 lua5.1 tests/orbital_arrival.lua
 python3 tests/orbital_arrival_gpu.py
+python3 tests/orbital_arrival_gpu.py --width 1920 --height 1080 --preview-dir /tmp/arrival-preview
 ```
 
 The Lua suite covers a shader-free, progress-visible LuaIntro, an artwork
-bridge before gameframe 1, 12 Hz orbital GPU caching with immediate snapshot cuts,
-game-frame triggering, the half-second blend, four held optical scales before
+bridge before gameframe 1, stable regional seeding without global RNG use,
+native 1080p stationary snapshot caching, viewport resize, bounded 12 Hz cloud
+descent with immediate cuts, game-frame triggering, the half-second blend,
+four held optical scales before
 cloud reveal, stalled-frame protection, cached-cloud handoff safety,
 late widget initialization, no replay after completion, input routing,
 skip/failure cleanup, hidden-interface preservation, both Dubai/Dhubai
 spellings and title resize. The GPU test uses NumPy and headless EGL/OpenGL on
 Linux to compile the production shaders and verify four distinct planetary
-images without live-city leakage, the opaque handoff, finite output, artwork
-continuity and unchanged final live pixels. Its optional `--preview-dir` writes
-the four planetary snapshots followed by cloud-reveal samples from those shaders.
+images without live-city leakage, identical repeated frames at a fixed region
+and stage, distinct regional terrain and cloud formations, the opaque handoff,
+finite output, artwork continuity and unchanged final live pixels within the
+existing floating-point tolerance. Its optional `--preview-dir` writes the four
+planetary snapshots, cloud-reveal samples and alternate-region samples from
+the production shaders. `--width` and `--height` select render resolution;
+`--region X Y` selects the procedural region to inspect.
 
 In Recoil, check slow and fast loads, both map spellings, pause, Escape,
 window resizing, interface restoration and tutorial audio. Check city assembly

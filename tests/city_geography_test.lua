@@ -111,8 +111,11 @@ print("PASS: pure shared geography, metadata validation, both hemispheres, 205 l
 -- from the map VFS; client LOCATION output must never select a different country.
 local function startLocationWidget(mapName, metadata)
     local messages = {}
-    local engineEnvironment = setmetatable({
+    local systemEnvironment = setmetatable({}, {__index = _G})
+    loadInEnvironment("luaui/system.lua", systemEnvironment)
+    local environment = {
         Game = {mapName = mapName, mapSizeX = 8192, mapSizeZ = 8192},
+        WG = {},
         Spring = {
             GetGameFrame = function() return 100 end,
             GetViewGeometry = function() return 1920, 1080 end,
@@ -121,15 +124,14 @@ local function startLocationWidget(mapName, metadata)
             Echo = function() end, PlaySoundFile = function() end,
         },
         gl = {Color = function() end, Text = function() end},
-    }, {__index = _G})
-    -- LuaUI copies this exact allowlist into each widget. It exposes pairs,
-    -- getfenv and VFS but deliberately has no _G fallback; using an unrestricted
-    -- environment here previously hid a real config-import startup crash.
-    loadInEnvironment("luaui/system.lua", engineEnvironment)
-    local environment = {widget = {}, WG = {}}
-    for key, value in pairs(engineEnvironment.System) do environment[key] = value end
-    assert(environment._G == nil and environment.pairs == pairs,
-        "location fixture must reproduce the real LuaUI builtins without _G")
+    }
+    -- Match mosaicwidgets.NewWidget: copy System exports, with no host _G
+    -- fallback. An import that inherits _G loses pairs and VFS in the game.
+    for key, value in pairs(systemEnvironment.System) do
+        if environment[key] == nil then environment[key] = value end
+    end
+    environment.widget = environment
+    assert(environment._G == nil and environment.pairs == pairs)
     environment.VFS = {MAP = "map", GAME = "game"}
     environment.VFS.FileExists = function(path, mode)
         return path == "mosaic/location.lua" and mode == "map" and metadata ~= nil
@@ -139,7 +141,8 @@ local function startLocationWidget(mapName, metadata)
             eq(mode, "map", "metadata must come from the map archive")
             return metadata
         end
-        return loadInEnvironment(path, includeEnvironment or environment)
+        return loadInEnvironment(path, includeEnvironment or
+            (getfenv and getfenv(2) or environment))
     end
     local configEnvironment = setmetatable({MOSAIC_CONFIG_ONLY = true}, {__index = environment})
     local config = loadInEnvironment("scripts/lib_mosaic.lua", configEnvironment)

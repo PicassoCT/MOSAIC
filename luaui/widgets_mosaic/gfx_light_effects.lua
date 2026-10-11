@@ -5,10 +5,9 @@ end
 
 local Sources=VFS.Include('luaui/widgets_mosaic/include/combat_light_sources.lua')
 local RadianceTime=VFS.Include('luaui/widgets_mosaic/include/radiance_time.lua')
--- LuaUI copies System into each widget environment; it does not provide _G.
--- Keep the config helpers isolated, but inherit the actual widget's builtins.
+-- LuaUI copies its System exports into the widget environment without _G.
 local MosaicConfig=VFS.Include('scripts/lib_mosaic.lua',
-    setmetatable({MOSAIC_CONFIG_ONLY=true},{__index=getfenv(1)}))
+    setmetatable({MOSAIC_CONFIG_ONLY=true},{__index=getfenv and getfenv(1) or _ENV}))
 local sources,lightRenderer,flameRenderer,tracerRenderer,capture,hasEmission,api
 local globalLightMult,globalRadiusMult,globalLifeMult=1.3,1.3,.75
 local enableHeatDistortion=true
