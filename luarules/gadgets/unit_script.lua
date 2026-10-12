@@ -538,6 +538,13 @@ do
     prototypeEnv = script
 end
 
+-- Central property-set membership is computed once, before any unit's header
+-- runs. Ordinary scripts keep their direct native animation aliases.
+local configEnvironment = setmetatable({MOSAIC_CONFIG_ONLY = true},
+    {__index = getfenv(1)})
+local buildingProperties = VFS.Include('scripts/lib_mosaic.lua', configEnvironment, VFSMODE)
+local structuralBuildingTypes = buildingProperties.getStructuralBuildingTypeTable(UnitDefs)
+
 local function Basename(filename) return filename:match("[^\\/:]*$") or filename end
 
 local function LoadChunk(filename)
@@ -735,6 +742,7 @@ function gadget:UnitCreated(unitID, unitDefID, unitTeamID, parentID)
         fatherID = parentID,
         unitID = unitID,
         unitDefID = unitDefID,
+        buildingDamageEnabled = structuralBuildingTypes[unitDefID] == true,
         script = {} -- will store the callins
     }
 

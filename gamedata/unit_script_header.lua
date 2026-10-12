@@ -34,6 +34,20 @@ if unitDef.customParams and unitDef.customParams.cloud_piece_volumes then
     end
 end
 
+-- The loader opts in members of lib_mosaic's structural-building set before
+-- their header runs. Includes also get this header, and must resolve the
+-- owning unit's hooks after lib_building_damage installs them.
+if buildingDamageEnabled then
+    local env = _G
+    local fallbackShow, fallbackHide = Show, Hide
+    Show = function(piece)
+        return (env.BuildingDamageShow or fallbackShow)(piece)
+    end
+    Hide = function(piece)
+        return (env.BuildingDamageHide or fallbackHide)(piece)
+    end
+end
+
 
 -- Keep these helpers local to each compiled unit-script chunk.  The old
 -- lib_UnitScript versions stored pieceMap globally and could overwrite the
@@ -62,6 +76,19 @@ local Move = UnitScript.Move
 local Turn = UnitScript.Turn
 local Spin = UnitScript.Spin
 local StopSpin = UnitScript.StopSpin
+
+if buildingDamageEnabled then
+    local env = _G
+    Move = function(...)
+        return (env.BuildingDamageMove or UnitScript.Move)(...)
+    end
+    Turn = function(...)
+        return (env.BuildingDamageTurn or UnitScript.Turn)(...)
+    end
+    Spin = function(...)
+        return (env.BuildingDamageSpin or UnitScript.Spin)(...)
+    end
+end
 
 local StartThread = UnitScript.StartThread
 local Signal = UnitScript.Signal

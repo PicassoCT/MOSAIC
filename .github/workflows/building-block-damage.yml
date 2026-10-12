@@ -7,10 +7,13 @@ on:
       - scripts/lib_building*.lua
       - scripts/lib_UnitScript.lua
       - scripts/lib_mosaic.lua
+      - gamedata/unit_script_header.lua
+      - luarules/gadgets/unit_script.lua
       - luarules/gadgets/game_building_block_damage.lua
       - luarules/gadgets/game_sniperPosition.lua
       - gamedata/explosions/building_block_dust.lua
       - tests/building_block_damage_test.lua
+      - tests/building_damage_header_test.lua
       - tests/asset_rooftop_test.lua
       - .github/workflows/building-block-damage.yml
   pull_request:
@@ -19,10 +22,13 @@ on:
       - scripts/lib_building*.lua
       - scripts/lib_UnitScript.lua
       - scripts/lib_mosaic.lua
+      - gamedata/unit_script_header.lua
+      - luarules/gadgets/unit_script.lua
       - luarules/gadgets/game_building_block_damage.lua
       - luarules/gadgets/game_sniperPosition.lua
       - gamedata/explosions/building_block_dust.lua
       - tests/building_block_damage_test.lua
+      - tests/building_damage_header_test.lua
       - tests/asset_rooftop_test.lua
       - .github/workflows/building-block-damage.yml
 
@@ -41,14 +47,16 @@ jobs:
             tests
             luarules
             luaui/widgets_mosaic
-            gamedata/explosions
+            gamedata
       - run: sudo apt-get update && sudo apt-get install -y lua5.1 lua5.4
       - name: Parse and check behavior
         run: |
-          for file in scripts/lib_building_damage.lua scripts/lib_building_voxels.lua scripts/lib_UnitScript.lua scripts/lib_mosaic.lua scripts/house_asian_script.lua scripts/house_western_script.lua scripts/house_arab_script.lua luarules/gadgets/game_building_block_damage.lua luarules/gadgets/game_sniperPosition.lua gamedata/explosions/building_block_dust.lua; do
+          for file in scripts/lib_building_damage.lua scripts/lib_building_voxels.lua scripts/lib_UnitScript.lua scripts/lib_mosaic.lua scripts/house_asian_script.lua scripts/house_western_script.lua scripts/house_arab_script.lua gamedata/unit_script_header.lua luarules/gadgets/unit_script.lua luarules/gadgets/game_building_block_damage.lua luarules/gadgets/game_sniperPosition.lua gamedata/explosions/building_block_dust.lua; do
             luac5.1 -p "$file"
           done
           lua5.1 tests/building_block_damage_test.lua
+          lua5.1 tests/building_damage_header_test.lua
+          lua5.4 tests/building_damage_header_test.lua
           lua5.1 tests/asset_rooftop_test.lua
           lua5.1 tests/house_asian_split_test.lua
           lua5.4 -e 'VFS={Include=dofile}; dofile("tests/building_shadow_columns.lua")'

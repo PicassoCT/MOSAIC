@@ -88,6 +88,10 @@ local function fixture(rubbleName)
         e.WaitForTurn=noop
         e.StartThread=function(fn,...) return start(u,fn,false,...) end
         e.SetSignalMask=noop;e.Signal=noop
+        e.Spring=copy(S);e.Spring.UnitScript=copy(S.UnitScript)
+        for _,name in ipairs({'Show','Hide','Move','Turn','Spin','StopSpin'}) do
+            e.Spring.UnitScript[name]=e[name]
+        end
         e.VFS.Include=function(path) return loadEnv(path,e) end
         e.include=function(path)
             local result=loadEnv('scripts/'..path,e)

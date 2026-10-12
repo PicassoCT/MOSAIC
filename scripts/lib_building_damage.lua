@@ -2,7 +2,15 @@
 -- The generated grid supplies conservative vertical supports: when one block
 -- fails, every block above it in that column fails too (no invented cantilevers).
 local M = {}
-local nativeShow, nativeHide, nativeMove, nativeTurn, nativeSpin = Show, Hide, Move, Turn, Spin
+local unitEnv = _G
+local unitScript = Spring.UnitScript
+-- Header-local aliases dispatch to our hooks; bypass those aliases for native
+-- commands so a structural move cannot call its own suppression hook.
+local nativeShow, nativeHide = unitScript.Show, unitScript.Hide
+local nativeMove, nativeTurn, nativeSpin = unitScript.Move, unitScript.Turn, unitScript.Spin
+-- All three generators place floor heights on Move axis 2. Use that axis rather
+-- than the shared header's y_axis alias, which is 3.
+local HEIGHT_MOVE_AXIS = 2
 local detached, visible, offsets, rotations, attachments = {}, {}, {}, {}, {}
 local blocks, columns, owners, movable = {}, {}, {}, {}
 local selected, rooftop, windowPieces, pieceMap
@@ -38,12 +46,15 @@ local FLOOR_TIME_MS = 320
 
 -- Construction, day/night switching and piece animations must never resurrect
 -- detached geometry. These wrappers belong only to the three procedural scripts.
-function Show(p)
-    if not collapsing and not detached[p] then visible[p] = true; return nativeShow(p) end
+local function showBuildingPiece(p)
+    if not collapsing and not detached[p] then
+        visible[p] = true
+        return (unitEnv.CloudPieceShow or nativeShow)(p)
+    end
 end
-function Hide(p)
+local function hideBuildingPiece(p)
     visible[p] = nil
-    return nativeHide(p)
+    return (unitEnv.CloudPieceHide or nativeHide)(p)
 end
 
 function IsBuildingPieceDetached(p)
@@ -62,22 +73,30 @@ if nativeSetRadiancePiece then
         return nativeSetRadiancePiece(p, on, ...)
     end
 end
-function Move(p, axis, goal, speed)
+local function moveBuildingPiece(p, axis, goal, speed, ...)
     if collapsing or detached[p] then return end
-    if axis == y_axis and (not ready or movable[p]) then offsets[p] = goal end
-    return nativeMove(p, axis, goal, speed)
+    if axis == HEIGHT_MOVE_AXIS and (not ready or movable[p]) then offsets[p] = goal end
+    return nativeMove(p, axis, goal, speed, ...)
 end
-function Turn(p, axis, goal, speed)
+local function turnBuildingPiece(p, axis, goal, speed, ...)
     if collapsing or detached[p] then return end
     if not ready or movable[p] then
         rotations[p] = rotations[p] or {}
         rotations[p][axis] = goal
     end
-    return nativeTurn(p, axis, goal, speed)
+    return nativeTurn(p, axis, goal, speed, ...)
 end
-function Spin(p, ...)
+local function spinBuildingPiece(p, ...)
     if not collapsing and not detached[p] then return nativeSpin(p, ...) end
 end
+
+-- Explicit environment writes reach every separately compiled script/include.
+-- Plain global aliases also cover callers which do not have a script header.
+unitEnv.BuildingDamageShow, unitEnv.BuildingDamageHide = showBuildingPiece, hideBuildingPiece
+unitEnv.BuildingDamageMove, unitEnv.BuildingDamageTurn, unitEnv.BuildingDamageSpin =
+    moveBuildingPiece, turnBuildingPiece, spinBuildingPiece
+unitEnv.Show, unitEnv.Hide = showBuildingPiece, hideBuildingPiece
+unitEnv.Move, unitEnv.Turn, unitEnv.Spin = moveBuildingPiece, turnBuildingPiece, spinBuildingPiece
 
 local function key(x, z)
     return math.floor(x / cellSize + 0.5) .. ":" .. math.floor(z / cellSize + 0.5)
@@ -230,7 +249,7 @@ local function settle(block, drop, seconds, travel)
     for _, p in ipairs(block.roots) do
         for axis = 1, 3 do StopSpin(p, axis, 0) end
         if drop > 0 then
-            nativeMove(p, y_axis, (offsets[p] or 0) - drop, (travel or drop) / seconds)
+            nativeMove(p, HEIGHT_MOVE_AXIS, (offsets[p] or 0) - drop, (travel or drop) / seconds)
         end
         local rotation = rotations[p] or {}
         nativeTurn(p, x_axis, (rotation[x_axis] or 0) + block.leanX, math.rad(5) / seconds)
