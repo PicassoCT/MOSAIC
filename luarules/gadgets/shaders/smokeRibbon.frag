@@ -35,8 +35,9 @@ void main() {
         return;
     }
     if (electricMode > 0.5) {
-        // White-hot continuous cores and short forks sit inside the original
-        // cyan/blue electrical colour. Pixel coverage keeps narrow filaments
+        // Bright continuous cores and short forks retain the discharge colour.
+        // A small white highlight keeps the core hot without washing out its hue.
+        // Pixel coverage keeps narrow filaments
         // visible at tactical zoom without widening them into opaque bands.
         float flow = age*25.0-effectTime*3.0;
         float jitter = (noise(vec2(flow,ribbonSeed))-0.5)*0.22;
@@ -54,10 +55,10 @@ void main() {
         vec4 color = mix(colorStart,colorEnd,age);
         float coverage = fade*color.a*strandOpacity*pulse;
         float alpha = clamp((halo+core+fork*0.7)*coverage,0.0,0.98);
-        vec3 whiteCore = mix(color.rgb,vec3(1.0),0.96);
+        vec3 coreColor = mix(color.rgb,vec3(1.0),0.16);
         float glow = max(1.0,mix(emission.x,emission.y,age));
         float sourceFade = 1.0-smoothstep(0.0,max(sourceGlow.a,0.0001),age);
-        vec3 energy = color.rgb*halo + whiteCore*(core+fork*0.7)*1.4;
+        vec3 energy = color.rgb*halo + coreColor*(core+fork*0.7)*1.4;
         gl_FragColor = vec4((energy*glow+sourceGlow.rgb*sourceFade*halo)*coverage,alpha);
         return;
     }

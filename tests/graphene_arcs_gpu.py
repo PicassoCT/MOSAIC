@@ -62,10 +62,25 @@ p['ambient'].value = (0.015,0.015,0.015)
 assert np.array_equal(day,render()), 'electrical arcs depend on external lighting'
 bright = day[...,2] > 0.6
 assert bright.sum() > 20, 'electric arcs have no readable hot core'
-assert np.median(day[...,0][bright]/day[...,2][bright]) > 0.9, 'electric core is not near white'
 halo = (day[...,2] > 0.003) & (day[...,2] < 0.05) & (day[...,3] > 0.003)
-assert halo.sum() > 50, 'white core lost its coloured halo'
-assert np.median(day[...,0][halo]/day[...,2][halo]) < 0.9, 'original cyan/blue halo washed out'
+assert halo.sum() > 50, 'electric core lost its coloured halo'
+assert np.median(day[...,0][halo]/day[...,2][halo]) < 0.9, 'electrical halo washed out'
+# The previous shader mixed every core 96% towards white, then amplified it
+# enough to clip all RGB channels. The real preset must retain its colour
+# through the fragment shader and the same blend operation used in game.
+for seed,time in ((19,1),(38,2.3),(76,5)):
+    p['seed'].value=seed;p['effectTime'].value=time*options['speed']
+    electric=render()
+    energy=electric[...,:3]
+    signal=energy.max(axis=2)>0.2
+    assert signal.sum()>100, 'electric core is invisible'
+    saturation=(energy.max(axis=2)-energy.min(axis=2))/np.maximum(0.0001,energy.max(axis=2))
+    assert saturation[signal].mean()>0.4, 'electric core washes the palette out to white'
+    assert energy[35:180,:,1].sum()>energy[35:180,:,0].sum()*1.5, 'electric source lost cyan'
+    assert energy[280:410,:,0].sum()>energy[280:410,:,1].sum()*1.2, 'electric tail lost violet'
+    rgb=np.clip(energy+np.array([0.08,0.17,0.23])*(1-electric[...,3:4]),0,1)
+    assert (rgb.min(axis=2)[signal]>0.99).mean()<0.05, 'electric core clips all channels to white'
+p['seed'].value=parameters['seed'];p['effectTime'].value=parameters['effectTime']
 p['electricMode'].value = 0
 smoke = render()
 assert np.abs(day-smoke).sum() > 30, 'electric mode is still the generic smoke ribbon'
@@ -112,5 +127,5 @@ if '--preview' in sys.argv:
     from PIL import Image
     rgb = day[...,:3]+np.array([.025,.035,.05])*(1-day[...,3:4])
     Image.fromarray((np.clip(rgb[::-1],0,1)**(1/2.2)*255).astype('uint8')).save(sys.argv[sys.argv.index('--preview')+1])
-print('PASS: live Lua electrical preset on production GLSL, white cores, cyan halo, self-illumination, pause, animation, alpha, camera fallback, pinned roots and separated upward filaments')
+print('PASS: live Lua electrical preset on production GLSL, cyan/violet colour without white clipping, coloured halo, self-illumination, pause, animation, alpha, camera fallback, pinned roots and separated upward filaments')
 print('Renderer:',ctx.info['GL_RENDERER'])

@@ -1,6 +1,6 @@
 -- Shared by the live parachute and /smokeribbon <piece> electric.
 -- The mesh ribbons retain their original colours and animation; these are
--- the white-core, cyan electrical discharges rising from their outer tips.
+-- the luminous cyan-to-violet electrical discharges rising from their outer tips.
 local M = {}
 
 function M.Options(seed, rootOffset)
@@ -9,9 +9,9 @@ function M.Options(seed, rootOffset)
         directionSpace = 'world', direction = {0, 1, 0},
         length = 190, width = 18, strands = 4,
         curl = 0.8, speed = 1.8, windInfluence = 0.08,
-        colorStart = {0.8, 0.96, 1, 0.95},
-        colorEnd = {0.22, 0.7, 1, 0},
-        emission = {4.2, 1.6}, sourceGlow = {0.15, 0.72, 1, 0.4},
+        colorStart = {0.05, 0.72, 1, 0.95},
+        colorEnd = {0.65, 0.06, 1, 0},
+        emission = {2.4, 2.0}, sourceGlow = {0.03, 0.5, 1, 0.4},
         distanceFactor = 30, drawInIcon = true,
         seed = seed,
     }

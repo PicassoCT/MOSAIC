@@ -58,8 +58,10 @@ for i,effect in ipairs(registered) do
     assert(r.directionSpace=='world' and r.direction[1]==0 and r.direction[2]==1 and r.direction[3]==0,
         'animated sheet rotations pointed the electrical plume downward')
     assert(r.width==18 and r.length==190 and r.drawInIcon,'electrical canopy lost its visible scale')
-    assert(r.colorStart[1]==0.8 and r.colorEnd[2]==0.7 and r.colorEnd[3]==1,
-        'original cyan/blue electrical colours were changed')
+    assert(r.colorStart[2]>r.colorStart[1]*4 and r.colorStart[3]>r.colorStart[2],
+        'electrical source lost its saturated cyan colour')
+    assert(r.colorEnd[1]>r.colorEnd[2]*4 and r.colorEnd[3]>r.colorEnd[1],
+        'electrical tail lost its violet colour')
 end
 assert(attached[1]==7 and attached[2]==8 and attached[3]==pieces.step,
     'visual repair changed live passenger attachment')
@@ -68,4 +70,4 @@ local preset=include('scripts/lib_graphene_arc.lua')
 env.Spring.GetUnitPieceInfo=function() return nil end
 local offset=preset.OuterTip(7,1)
 assert(offset[1]==0 and offset[2]==0 and offset[3]==0,'missing piece bounds produced an invalid offset')
-print('PASS: real parachute registration, separate animated tip attachments, four-emitter budget, original colours/animation, live passenger attachment and teardown')
+print('PASS: real parachute registration, separate animated tip attachments, four-emitter budget, cyan/violet colours, original animation, live passenger attachment and teardown')

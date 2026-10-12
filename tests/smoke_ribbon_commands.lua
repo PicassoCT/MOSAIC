@@ -50,9 +50,14 @@ server.gadget:Initialize();client.gadget:Initialize()
 assert(handlers.server.GotChatMsg('smokeribbon root electric',2),'real LuaRules chat action was not handled')
 client.gadget:DrawWorld()
 local preview=assert(renderers.client.records.__preview,'chat action failed to reach the local renderer')
-assert(preview.mode=='electric' and preview.width==18 and preview.length==190,
+local live=client.VFS.Include('scripts/lib_graphene_arc.lua').Options(19)
+assert(preview.mode==live.mode and preview.width==live.width and preview.length==live.length,
     'command did not use the production parachute electrical preset')
-assert(preview.colorStart[1]==0.8 and preview.emission[1]==4.2,'preview changed the live electrical colours')
+for _,field in ipairs({'colorStart','colorEnd','emission','sourceGlow'}) do
+    for i,value in ipairs(live[field]) do
+        assert(preview[field][i]==value,'preview changed live electrical '..field..' channel '..i)
+    end
+end
 handlers.server.GotChatMsg('smokeribbon off',3)
 client.gadget:DrawWorld()
 assert(renderers.client.records.__preview==preview,'another player altered this client preview')
