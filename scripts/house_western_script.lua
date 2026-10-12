@@ -6,7 +6,6 @@ include "lib_OS.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 local buildingDamage = include "lib_building_damage.lua"
-local traceBuilding = GG.BuildingDestructionTrace and GG.BuildingDestructionTrace.Log
 
 local boolDebugActive = false
 local spGetUnitPosition = Spring.GetUnitPosition
@@ -78,7 +77,6 @@ local _z_axis = 3
 
 -- Called by the damage gadget after engine health modifiers have been applied.
 function BuildingBlockDamaged(hits, frame)
-    if traceBuilding then traceBuilding(unitID, 'house_damage_callback', {family='western', buckets=hits and #hits or 0}, 30) end
     return buildingDamage.update(hits, frame)
 end
 
@@ -281,7 +279,6 @@ function absdiff(value, compval)
 end
 
 function script.Killed(recentDamage, _)
-    if traceBuilding then traceBuilding(unitID, 'house_killed_callback', {family='western', recent_damage=recentDamage}) end
     return buildingDamage.collapse(LevelPieces, ToShowTable)
 end
 

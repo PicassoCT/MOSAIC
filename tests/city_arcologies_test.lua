@@ -142,7 +142,6 @@ local city = loadEnv('luarules/gadgets/game_spawnCity.lua', dofile('tests/fixtur
     GG = {}, gadget = {}, UnitDefs = defs, Game = {mapSizeX=1024,mapSizeZ=1024},
     gadgetHandler = {IsSyncedCode=function() return true end},
     VFS = {Include=function(path)
-        if path == 'scripts/lib_building_destruction_trace.lua' then return {Log=noop, Forget=noop} end
         if path == 'scripts/lib_city_ruins.lua' then return dofile(path) end
         if path == 'scripts/lib_house_asian_split.lua' then
             local env = {VFS={Include=dofile}}

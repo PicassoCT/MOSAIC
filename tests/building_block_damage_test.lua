@@ -13,7 +13,6 @@ local function fixture(columnCount, floorCount, scale)
     local losses, puffs, sleeps, moves, turns, removed = {}, {}, {}, {}, {}, {}
     local dirty, calls, destroyed, poseReads = 0, 0, false, 0
     local childUnits = {}
-    local traces = {}
     local env = setmetatable({unitID=42, x_axis=1, y_axis=2, z_axis=3,
         GG={InstanceCulture='international'}, VFS={Include=function() return {} end}}, {__index=_G})
     env.Show=function(p) visible[p]=true end
@@ -30,7 +29,6 @@ local function fixture(columnCount, floorCount, scale)
     env.Sleep=function(ms) sleeps[#sleeps+1]=ms end
     env.hideAll=function() for p in pairs(visible) do visible[p]=nil end end
     env.Spring={
-        Echo=function(line) traces[#traces+1]=line end,
         GetUnitPieceMap=function() return names end,
         GetUnitPieceInfo=function(_,p) return {children=children[p] or {}} end,
         -- Rotate the entire building to ensure attachment lookup uses positions,
@@ -52,10 +50,6 @@ local function fixture(columnCount, floorCount, scale)
             if id==42 then destroyed=true else childUnits[id]=nil end
         end,
     }
-    env.VFS.Include=function(path)
-        if path=='scripts/lib_building_destruction_trace.lua' then return loadEnv(path,env) end
-        return {}
-    end
     env.GG.MarkBuildingShadowVolumeDirty=function() dirty=dirty+1 end
     env.GG.SetObjectiveRadiancePieceVisible=function(_,p,on) assert(not on);removed[p]=true end
     loadEnv('scripts/lib_UnitScript.lua',env)
@@ -117,7 +111,7 @@ local function fixture(columnCount, floorCount, scale)
     return {
         env=env,gadget=g,damage=damage,levels=levels,shown=shown,roofs=roofs,windows=windows,
         visible=visible,losses=losses,puffs=puffs,sleeps=sleeps,moves=moves,turns=turns,removed=removed,
-        batchSizes=batchSizes,traces=traces,
+        batchSizes=batchSizes,
         health=function(value) hp=value end,
         tick=function(value) frame=value;g:GameFrame(frame) end,
         hit=function(amount,p,opts)
@@ -251,8 +245,7 @@ q2.tick(18);assert(#q2.losses==6)
 
 -- Empty scaffolding and late construction callbacks must not resurrect a house.
 local env=setmetatable({Show=noop,Hide=noop,Move=noop,Turn=noop,Spin=noop,
-    Sleep=noop,hideAll=noop,unitID=1,GG={},Spring={Echo=noop}}, {__index=_G})
-env.VFS={Include=function(path) return loadEnv(path,env) end}
+    Sleep=noop,hideAll=noop,unitID=1,GG={}}, {__index=_G})
 local early=loadEnv('scripts/lib_building_damage.lua',env)
 assert(not early.update({{damage=100}},6));assert(early.collapse({}, {})==1)
 env.Show(123)
@@ -276,15 +269,4 @@ assert(not allow('debris') and not allow('dust'))
 city.tick(5);assert(not allow('dust'))
 city.tick(6);assert(not allow('debris') and allow('dust'))
 city.gadget:Shutdown();assert(not city.env.GG.AllowBuildingBlockDamageEffect)
-local stages = {}
-for _, line in ipairs(a.traces) do
-    local stage=line:match('stage=([^ ]+)')
-    if stage then stages[stage]=true end
-end
-for _, stage in ipairs({'damage_received','damage_skipped','damage_accepted','damage_queued',
-    'damage_dispatch_begin','structural_update_received','block_lookup_selected',
-    'block_damage_accumulated','block_failure_scheduled','block_settle_issued',
-    'block_fall_hide_complete','damage_dispatch_complete'}) do
-    assert(stages[stage], 'missing damage trace: '..stage)
-end
 print('PASS: threshold, accumulation, fixed ticks, delayed supports/roofs, local drop/tilt without Explode, attachments, lighting, shadows, budgets, cleanup and staged collapse')

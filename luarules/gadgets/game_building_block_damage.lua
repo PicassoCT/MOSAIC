@@ -10,9 +10,6 @@ end
 
 if not gadgetHandler:IsSyncedCode() then return false end
 
-local destructionTrace = VFS.Include('scripts/lib_building_destruction_trace.lua')
-local trace = destructionTrace.Log
-trace(nil, 'damage_gadget_load_begin')
 VFS.Include('scripts/lib_mosaic.lua')
 local blockDamageableHouseTypeTable = getStructuralBuildingTypeTable(UnitDefs)
 local active = {}
@@ -34,14 +31,9 @@ end
 
 function gadget:Initialize()
     GG.AllowBuildingBlockDamageEffect = allowEffect
-    local eligibleCount = 0
-    for _ in pairs(blockDamageableHouseTypeTable) do eligibleCount = eligibleCount + 1 end
-    trace(nil, 'damage_gadget_ready', {eligible_types=eligibleCount,
-        update_frames=UPDATE_FRAMES, max_impacts=MAX_IMPACTS, repeated_trace_frames=30})
 end
 
 function gadget:Shutdown()
-    trace(nil, 'damage_gadget_shutdown')
     if GG.AllowBuildingBlockDamageEffect == allowEffect then
         GG.AllowBuildingBlockDamageEffect = nil
     end
@@ -54,39 +46,17 @@ local spGetUnitLastAttackedPiece = Spring.GetUnitLastAttackedPiece
 local spGetProjectilePosition = Spring.GetProjectilePosition
 local spGetUnitPosition = Spring.GetUnitPosition
 function gadget:UnitDamaged(id, defID, team, damage, paralyzer, weaponID, projectileID, attackerID)
-    if not blockDamageableHouseTypeTable[defID] then return end
-    trace(id, 'damage_received', {def=defID, damage=damage,
-        paralyzer=paralyzer, weapon=weaponID, projectile=projectileID, attacker=attackerID}, 30)
-    if paralyzer or damage <= 0 then
-        trace(id, 'damage_skipped', {reason=paralyzer and 'paralyzer' or 'nonpositive_damage', damage=damage}, 30)
-        return
-    end
+    if not blockDamageableHouseTypeTable[defID] or paralyzer or damage <= 0 then return end
 
     local hp, maxHP = spGetUnitHealth(id)
-    if not hp or not maxHP or hp <= 0 or hp >= maxHP * 0.5 then
-        local reason = not hp and 'health_unavailable' or not maxHP and 'max_health_unavailable'
-            or hp <= 0 and 'lethal_damage' or 'at_or_above_half_health'
-        trace(id, 'damage_skipped', {reason=reason, hp=hp, max_hp=maxHP, damage=damage}, 30)
-        return
-    end
-    trace(id, 'damage_accepted', {damage=damage, hp=hp, max_hp=maxHP}, 30)
+    if not hp or not maxHP or hp <= 0 or hp >= maxHP * 0.5 then return end
     local hitPiece, frame = spGetUnitLastAttackedPiece(id)
-    if frame ~= spGetGameFrame() then
-        trace(id, 'hit_piece_discarded', {reason='stale_frame', piece=hitPiece, reported_frame=frame}, 30)
-        hitPiece = nil
-    end
+    if frame ~= spGetGameFrame() then hitPiece = nil end
     local x, y, z
-    local positionSource = 'none'
-    if projectileID and projectileID >= 0 then
-        x, y, z = spGetProjectilePosition(projectileID)
-        if x then positionSource = 'projectile' end
-    end
+    if projectileID and projectileID >= 0 then x, y, z = spGetProjectilePosition(projectileID) end
     -- Most houses use a whole-unit collision box, so an exact piece hit is not
     -- available. Prefer the impact projectile, then the attacker-facing facade.
-    if not x and attackerID then
-        x, y, z = spGetUnitPosition(attackerID)
-        if x then positionSource = 'attacker' end
-    end
+    if not x and attackerID then x, y, z = spGetUnitPosition(attackerID) end
     local hits = active[id]
     if not hits then hits = {}; active[id] = hits end
     -- Bound queue size even for rapid-fire area damage. Nearby impacts merge;
@@ -104,9 +74,6 @@ function gadget:UnitDamaged(id, defID, team, damage, paralyzer, weaponID, projec
         hits[#hits + 1] = bucket
     end
     bucket.damage = bucket.damage + math.min(damage, maxHP * 0.5 - hp)
-    trace(id, 'damage_queued', {piece=hitPiece, bucket_piece=bucket.piece,
-        buckets=#hits, bucket_damage=bucket.damage, admitted_damage=math.min(damage, maxHP * 0.5 - hp),
-        position_source=positionSource, x=x, y=y, z=z, merge_distance_squared=bestDistance}, 30)
 end
 
 function gadget:GameFrame(frame)
@@ -117,30 +84,15 @@ function gadget:GameFrame(frame)
     for _, id in ipairs(ids) do
         local hits = active[id]
         active[id] = nil
-        trace(id, 'damage_dispatch_begin', {buckets=#hits}, 30)
         local env = Spring.UnitScript.GetScriptEnv(id)
         if env and env.BuildingBlockDamaged and not Spring.GetUnitIsDead(id) then
             local waiting = Spring.UnitScript.CallAsUnit(id, env.BuildingBlockDamaged, hits, frame)
-            trace(id, 'damage_dispatch_complete', {buckets=#hits, waiting=not not waiting}, 30)
             if waiting then active[id] = {} end
-        else
-            local reason = not env and 'script_environment_missing'
-                or not env.BuildingBlockDamaged and 'callback_missing' or 'unit_dead'
-            trace(id, 'damage_dispatch_skipped', {reason=reason, discarded_buckets=#hits}, 30)
         end
     end
 end
 
-function gadget:UnitCreated(id)
-    destructionTrace.Forget(id)
-end
-
-function gadget:UnitDestroyed(id, defID)
-    local hits = active[id]
-    if hits or blockDamageableHouseTypeTable[defID] then
-        trace(id, 'damage_unit_destroyed', {discarded_buckets=hits and #hits or 0}, 30)
-    end
+function gadget:UnitDestroyed(id)
     active[id] = nil
     if GG.BuildingDamageAnchor then GG.BuildingDamageAnchor[id] = nil end
-    destructionTrace.Forget(id)
 end

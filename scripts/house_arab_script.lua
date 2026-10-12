@@ -6,7 +6,6 @@ include "lib_OS.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 local buildingDamage = include "lib_building_damage.lua"
-local traceBuilding = GG.BuildingDestructionTrace and GG.BuildingDestructionTrace.Log
 --include "lib_Build.lua"
 include "lib_mosaic.lua"
 LevelPieces = {}
@@ -66,7 +65,6 @@ _z_axis = 3
 
 -- Called by the damage gadget after engine health modifiers have been applied.
 function BuildingBlockDamaged(hits, frame)
-    if traceBuilding then traceBuilding(unitID, 'house_damage_callback', {family='arab', buckets=hits and #hits or 0}, 30) end
     return buildingDamage.update(hits, frame)
 end
 
@@ -289,7 +287,6 @@ function showPowerPoles()
 end
 
 function script.Killed(recentDamage, _) 
-    if traceBuilding then traceBuilding(unitID, 'house_killed_callback', {family='arab', recent_damage=recentDamage}) end
     buildingDamage.collapse(LevelPieces, ToShowTable)
     return 1
 end

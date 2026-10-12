@@ -29,7 +29,7 @@ local function fixture(rubbleName)
     for _,name in ipairs({'house_ruin','gcscrapheap','protagonsafehouse','antagonsafehouse',
         'nimrod','propagandaserver','protagonassembly','antagonassembly','launcher',
         'hivemind','warheadfactory'}) do def(name) end
-    local state={units={},tasks={},created={},traces={},frame=0,nextID=100,peaceful=false,
+    local state={units={},tasks={},created={},frame=0,nextID=100,peaceful=false,
         failRubble=false,failSite=false,forcedID=nil}
     local env=setmetatable({arg=false,gadget={},UnitDefs=defs,UnitDefNames=names,
         GG={InstanceCulture='international',GlobalGameState='normal'},
@@ -143,8 +143,7 @@ local function fixture(rubbleName)
     end
     S={GetGaiaTeamID=function() return 0 end,GetModOptions=function() return {} end,
         GetGroundHeight=function() return 10 end,GetGameFrame=function() return state.frame end,
-        Echo=function(line) state.traces[#state.traces+1]=line end,
-        SetGameRulesParam=noop,SetUnitTooltip=noop,SetUnitNanoPieces=noop,
+        Echo=noop,SetGameRulesParam=noop,SetUnitTooltip=noop,SetUnitNanoPieces=noop,
         PlaySoundFile=noop,SpawnCEG=noop,SetUnitNeutral=noop,
         SetUnitAlwaysVisible=function(id,value) assert(state.units[id]).alwaysVisible=value end,
         SetUnitBlocking=function(id,blocking,solid,projectile,ray,crushable,push,height)
@@ -195,9 +194,7 @@ local function fixture(rubbleName)
     loadEnv('luarules/gadgets/game_building_rubble_blocking.lua',blocker)
     state.blocker=blocker.gadget
     local damageEnv=setmetatable({gadget={},GG=env.GG,Spring=S,UnitDefs=defs,
-        VFS={Include=function(path)
-            if path=='scripts/lib_building_destruction_trace.lua' then return env.GG.BuildingDestructionTrace end
-        end},getStructuralBuildingTypeTable=env.getStructuralBuildingTypeTable,
+        VFS={Include=noop},getStructuralBuildingTypeTable=env.getStructuralBuildingTypeTable,
         getBlockDestroyableHouseTypes=env.getBlockDestroyableHouseTypes,
         gadgetHandler=env.gadgetHandler},{__index=_G})
     loadEnv('luarules/gadgets/game_building_block_damage.lua',damageEnv)
@@ -265,22 +262,6 @@ for _,rubble in ipairs({'house_ruin','gcscrapheap'}) do
     assert(remains.blocking and remains.solid and not remains.crushable)
     assert(f.env.GG.CityRubble[remains.id]==plot and plot.elapsed==0 and plot.paused)
     assert(plot.rubbleSpawnAttempts==1 and (plot.rubbleSpawnFailures or 0)==0)
-    local stages = {}
-    for _, line in ipairs(f.state.traces) do
-        if type(line)=='string' and line:find('[BuildingDestruction]',1,true) then
-            local stage=line:match('stage=([^ ]+)')
-            stages[stage]=line
-        end
-    end
-    for _, stage in ipairs({'house_killed_callback','collapse_begin','collapse_complete',
-        'source_removal_waiting','source_removal_observed','rubble_unit_created',
-        'rubble_visibility_applied','rubble_blocking_applied','rubble_spawned'}) do
-        assert(stages[stage], 'missing lifecycle trace: '..stage)
-    end
-    assert(stages.rubble_spawned:find('unit=30 ',1,true)
-        and stages.rubble_spawned:find('plot=1 ',1,true)
-        and stages.rubble_spawned:find('currentUnitID='..remains.id,1,true),
-        'rubble trace lost original-house/plot/replacement correlation')
     f.tick(30)
     if rubble=='gcscrapheap' then
         assert(remains.positions[remains.pieces.center][3]==0,'managed rubble self-sank during combat')

@@ -51,20 +51,8 @@ local civilianHouseTypeTable = getCultureUnitModelTypes("international", "house"
 GG.CityConstructionSites = {}
 GG.CityRubble = {}
 local newReconstruction = VFS.Include("luarules/gadgets/include/city_reconstruction.lua")
-local destructionTrace = VFS.Include("scripts/lib_building_destruction_trace.lua")
 local reconstruction
 local routesDirty = false
-
-local function tracePlot(plot, stage, fields, repeatFrames)
-    fields = fields or {}
-    fields.plot = plot.id
-    fields.originalUnitID = plot.originalUnitID or "none"
-    fields.sourceUnitID = plot.sourceUnitID or "none"
-    fields.currentUnitID = plot.unitID or "none"
-    destructionTrace.Log(plot.originalUnitID or plot.sourceUnitID or plot.unitID,
-        stage, fields, repeatFrames)
-    if stage == "rebuild_completed" then destructionTrace.Forget(plot.originalUnitID) end
-end
 
 GG.BuildingTable = {} -- [BuildingUnitID] = {routeID, stationIndex}
 local houseStreetDim = {}
@@ -153,35 +141,21 @@ local function removeCityRoute(id)
 end
 
 local function queueDestroyedPlot(id, defID)
-    if not reconstruction then
-        destructionTrace.Log(id, "plot_queue_skipped", {defID=defID, reason="reconstruction-not-ready"})
-        return
-    end
+    if not reconstruction then return end
     local data = GG.BuildingTable[id]
     local x, y, z = spGetUnitPosition(id)
-    local positionSource = x and "unit" or (data and "registration" or "unavailable")
     if not x and data then x, z = data.x, data.z end
-    if not x then
-        destructionTrace.Log(id, "plot_queue_skipped", {defID=defID,
-            reason="position-unavailable", registered=data ~= nil})
-        return
-    end
-    destructionTrace.Log(id, "plot_queue_request", {defID=defID, registered=data ~= nil,
-        positionSource=positionSource, x=x, z=z})
+    if not x then return end
     -- Preserve the exact building type, orientation and city plot metadata.
     local plot = reconstruction:Add({x=x, z=z, defID=defID,
         originalUnitID=id, sourceUnitID=id,
         facing=Spring.GetUnitBuildFacing(id) or 0,
         data=data or {x=x,z=z}, plan=GG.HouseAsianUnitPlans[id]})
     removeCityRoute(id)
-    tracePlot(plot, "plot_queued", {defID=defID, registered=data ~= nil, positionSource=positionSource})
     return plot
 end
 
 function gadget:UnitCreated(id, defID)
-    if reconstruction and reconstruction.retiring[id] then
-        tracePlot(reconstruction.retiring[id], "source_id_reused", {createdUnitID=id, createdDefID=defID})
-    end
     if reconstruction then reconstruction:UnitCreated(id) end
     -- Publish pending construction before the lower-layer placement gadget.
     if GG.CityReconstructionSpawning and isCityHouse(defID) then
@@ -191,15 +165,6 @@ function gadget:UnitCreated(id, defID)
 end
 
 function gadget:UnitDestroyed(unitID, unitDefID, teamID, attackerID)
-    local trackedPlot = reconstruction and reconstruction.byUnit[unitID]
-    if trackedPlot then
-        tracePlot(trackedPlot, "managed_unit_destroyed", {destroyedUnitID=unitID,
-            defID=unitDefID, attackerID=attackerID, lifecycleStage=trackedPlot.stage})
-    elseif civilianHouseTypeTable[unitDefID] then
-        destructionTrace.Log(unitID, "city_house_destroyed", {defID=unitDefID,
-            attackerID=attackerID, rubble=scrapHeapTypeTable[unitDefID] ~= nil,
-            registered=GG.BuildingTable[unitID] ~= nil, reconstructionReady=reconstruction ~= nil})
-    end
     local plot = reconstruction and reconstruction:LostUnit(unitID)
     GG.CityConstructionSites[unitID], GG.CityRubble[unitID] = nil, nil
     if isCityHouse(unitDefID) then
@@ -207,10 +172,6 @@ function gadget:UnitDestroyed(unitID, unitDefID, teamID, attackerID)
         -- Managed rubble/site deaths are handled by LostUnit above.
         if not plot and not scrapHeapTypeTable[unitDefID] then
             queueDestroyedPlot(unitID, unitDefID)
-        elseif plot then
-            tracePlot(plot, "plot_queue_skipped", {reason="already-managed", destroyedUnitID=unitID})
-        else
-            destructionTrace.Log(unitID, "plot_queue_skipped", {defID=unitDefID, reason="already-rubble"})
         end
         removeCityRoute(unitID)
         local safehouse = GG.houseHasSafeHouseTable and GG.houseHasSafeHouseTable[unitID]
@@ -698,7 +659,6 @@ end
 function setupCityReconstruction()
     local cfg = GameConfig.city.rubble
     reconstruction = newReconstruction(cfg, {
-        Trace = tracePlot,
         Alive = doesUnitExistAlive,
         Exists = Spring.ValidUnitID,
         Peaceful = function(plot)
@@ -717,25 +677,15 @@ function setupCityReconstruction()
         CreateRubble = function(plot)
             local rubbleDefID = randDict(scrapHeapTypeTable)
             plot.rubbleDefID = rubbleDefID
-            tracePlot(plot, "rubble_definition_selected", {rubbleDefID=rubbleDefID,
-                x=plot.x, z=plot.z, facing=plot.facing}, 150)
             local id = spCreateUnit(rubbleDefID, plot.x,
                 spGetGroundHeight(plot.x, plot.z), plot.z, plot.facing, gaiaTeamID)
             if id then
-                tracePlot(plot, "rubble_unit_created", {rubbleUnitID=id, rubbleDefID=rubbleDefID})
                 GG.CityRubble[id] = plot
                 -- All city houses are always visible. The replacement must
                 -- inherit that policy for every rubble model, including ruins
                 -- whose unit script does not enable it on its own.
-                tracePlot(plot, "rubble_visibility_request", {rubbleUnitID=id, alwaysVisible=true})
                 spSetUnitAlwaysVisible(id, true)
-                tracePlot(plot, "rubble_visibility_applied", {rubbleUnitID=id, alwaysVisible=true})
-                tracePlot(plot, "rubble_blocking_request", {rubbleUnitID=id})
                 setCityBuildingBlocking(id)
-                tracePlot(plot, "rubble_blocking_applied", {rubbleUnitID=id})
-            else
-                tracePlot(plot, "rubble_unit_create_failed", {rubbleDefID=rubbleDefID,
-                    reason="CreateUnit-returned-no-unit"}, 150)
             end
             return id
         end,
@@ -745,12 +695,10 @@ function setupCityReconstruction()
             local rubbleID = plot.unitID
             if rubbleID then spSetUnitBlocking(rubbleID, false, false) end
             GG.CityReconstructionSpawning = plot
-            tracePlot(plot, "site_unit_create_request", {defID=plot.defID, rubbleUnitID=rubbleID}, 150)
             local id = spCreateUnit(plot.defID, plot.x, spGetGroundHeight(plot.x, plot.z),
                 plot.z, plot.facing, gaiaTeamID, true, false)
             GG.CityReconstructionSpawning = nil
             if id then
-                tracePlot(plot, "site_unit_created", {siteUnitID=id, defID=plot.defID})
                 GG.CityConstructionSites[id] = plot
                 if plot.plan then GG.HouseAsianUnitPlans[id] = plot.plan end
                 spSetUnitAlwaysVisible(id, true)
@@ -758,12 +706,8 @@ function setupCityReconstruction()
                 setConstructionProgress(id, 0.01)
                 Spring.SetUnitRulesParam(id, "city_construction", 1, {public=true})
                 Spring.SetUnitTooltip(id, "Construction site — awaiting peaceful completion")
-                tracePlot(plot, "site_initialized", {siteUnitID=id, initialProgress=0.01})
             elseif rubbleID then
-                tracePlot(plot, "site_unit_create_failed", {reason="CreateUnit-returned-no-unit",
-                    rubbleUnitID=rubbleID, defID=plot.defID}, 150)
                 setCityBuildingBlocking(rubbleID)
-                tracePlot(plot, "rubble_blocking_restored", {rubbleUnitID=rubbleID}, 150)
             end
             return id
         end,
