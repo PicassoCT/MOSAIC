@@ -14,6 +14,7 @@ local function fixture(columnCount, floorCount, scale, id, baseHeight)
     local losses, puffs, sleeps, moves, turns, removed = {}, {}, {}, {}, {}, {}
     local dirty, calls, destroyed, poseReads, healthReads = 0, 0, false, 0, 0
     local rules = {}
+    local traces = {}
     local childUnits = {}
     local env = setmetatable({unitID=id, x_axis=1, y_axis=2, z_axis=3,
         GG={InstanceCulture='international'}, VFS={}}, {__index=_G})
@@ -35,7 +36,7 @@ local function fixture(columnCount, floorCount, scale, id, baseHeight)
     env.Sleep=function(ms) sleeps[#sleeps+1]=ms end
     env.hideAll=function() for p in pairs(visible) do visible[p]=nil end end
     env.Spring={
-        Echo=noop,
+        Echo=function(line) traces[#traces+1]=line end,
         UnitScript={Show=env.Show,Hide=env.Hide,Move=env.Move,Turn=env.Turn,Spin=env.Spin},
         GetUnitPieceMap=function() return names end,
         GetUnitPieceInfo=function(_,p) return {children=children[p] or {}} end,
@@ -120,7 +121,7 @@ local function fixture(columnCount, floorCount, scale, id, baseHeight)
     return {
         env=env,gadget=g,damage=damage,levels=levels,shown=shown,roofs=roofs,windows=windows,
         visible=visible,positions=positions,losses=losses,puffs=puffs,sleeps=sleeps,moves=moves,turns=turns,removed=removed,
-        batchSizes=batchSizes,rules=rules,
+        batchSizes=batchSizes,rules=rules,traces=traces,
         health=function(value) hp=value end,
         tick=function(value) frame=value;g:GameFrame(frame) end,
         hit=function(amount,p,opts)
@@ -317,6 +318,26 @@ end
 last.tick(18)
 assert(last.destroyed() and not last.env.GG.BuildingDamageEffects[42],
     'retained geometry prevented the last support from triggering normal unit death')
+
+-- Finite effects keep the shared timer active, but only its initial dispatch
+-- and final completion should print. The final line retains the hit cycle.
+local diagnostic=fixture()
+diagnostic.health(801);diagnostic.hit(2,2);diagnostic.tick(6)
+local count=#diagnostic.traces
+diagnostic.tick(12);diagnostic.tick(18);diagnostic.tick(60)
+assert(#diagnostic.traces==count, 'empty lifetime ticks flooded the damage trace')
+diagnostic.tick(306)
+local startup,finished=false,false
+for _,line in ipairs(diagnostic.traces) do
+    if line:find('stage=damage_gadget_ready',1,true) then
+        startup=line:find('trace_version=3',1,true) and line:find('health_threshold=0.8',1,true)
+            and line:find('fire_frames=240',1,true) and line:find('smoke_frames=300',1,true)
+    elseif line:find('stage=damage_dispatch_complete',1,true) and line:find('reason=finished',1,true) then
+        finished=line:find('frame=306 ',1,true) and line:find('cycle=6 ',1,true)
+            and line:find('waiting=false',1,true)
+    end
+end
+assert(startup and finished, 'damage trace lost the active policy or final effect completion')
 
 -- Whole-city budget is shared by normal damage and final-collapse scripts, and
 -- resets only at the common fixed interval, not at each building callback.

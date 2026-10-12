@@ -26,6 +26,14 @@ local config = getBuildingDamageConfig()
 local windMax = Game.windMax or 0
 local windLimit = windMax*.75
 local smokeSwirls = {}
+-- Temporary, bounded lifecycle diagnostics; removed with the printf commit.
+local smokeTrace = VFS.Include('luarules/gadgets/include/execution_trace.lua')
+    .New('BuildingDestruction', {maxEvents=32})
+
+local function traceAnchorStopped(unitID, piece, state, reason)
+    smokeTrace.Log(unitID, state.started, 'building_smoke_anchor_stopped',
+        {piece=piece, reason=reason, started=state.started, smokeUntil=state.smokeUntil})
+end
 
 local function getRandomPiece(unitID)
     local list = spGetUnitPieceList(unitID)
@@ -66,17 +74,35 @@ function gadget:GameFrame(frame)
                     and frame >= effect.started and frame < effect.smokeUntil then
                     local state = previous[piece]
                     if not state or state.started ~= effect.started then
-                        state = {started=effect.started, credit=0}
+                        state = {started=effect.started, credit=0, smokeUntil=effect.smokeUntil}
+                        smokeTrace.Log(unitID, effect.started, 'building_smoke_anchor_started',
+                            {piece=piece, started=effect.started, fireUntil=effect.fireUntil,
+                                smokeUntil=effect.smokeUntil})
                         spawnCegAtPiece("civilbuildingdamage", unitID, piece)
                     end
                     local fade = config.effectFadeFrames > 0
                         and math.min(1, (effect.smokeUntil-frame)/config.effectFadeFrames) or 1
+                    if fade < 1 and not state.fadeLogged then
+                        state.fadeLogged = true
+                        smokeTrace.Log(unitID, effect.started, 'building_smoke_fade_started',
+                            {piece=piece, fade=fade, remainingFrames=effect.smokeUntil-frame,
+                                fadeFrames=config.effectFadeFrames, smokeUntil=effect.smokeUntil})
+                    end
                     -- CEG particles retain their natural lifetime. Reduce new
                     -- emission during the final two seconds without inventing
                     -- an unsupported per-CEG alpha or lifetime override.
                     state.credit = state.credit+fade
                     if state.credit >= 1 then
-                        spawnCegAtPiece("vehsmokepillar", unitID, piece, 0)
+                        local submitted = spawnCegAtPiece("vehsmokepillar", unitID, piece, 0)
+                        if submitted and not state.emissionLogged then
+                            state.emissionLogged = true
+                            smokeTrace.Log(unitID, effect.started, 'building_smoke_emission_started',
+                                {piece=piece, ceg='vehsmokepillar', meaning='spawn_call_returned'})
+                        elseif not submitted and not state.missingPositionLogged then
+                            state.missingPositionLogged = true
+                            smokeTrace.Log(unitID, effect.started, 'building_smoke_emission_skipped',
+                                {piece=piece, reason='missing_piece_position'})
+                        end
                         state.credit = state.credit-1
                     end
                     nextSwirls[unitID] = nextSwirls[unitID] or {}
@@ -85,9 +111,33 @@ function gadget:GameFrame(frame)
             end
         end
     end
+    -- Observe states the existing nextSwirls replacement is about to retire.
+    -- This never edits the authoritative records or keeps an emitter alive.
+    for unitID, pieces in pairs(smokeSwirls) do
+        for piece, state in pairs(pieces) do
+            if not nextSwirls[unitID] or nextSwirls[unitID][piece] ~= state then
+                local current = GG.BuildingDamageEffects and GG.BuildingDamageEffects[unitID]
+                local effect = current and current[piece]
+                local reason
+                if not spValidUnitID(unitID) then reason='invalid_unit'
+                elseif spGetUnitIsDead(unitID) then reason='dead_unit'
+                elseif effect and effect.started ~= state.started then reason='replaced'
+                elseif effect and effect.visible ~= true then reason='hidden_piece'
+                elseif frame >= state.smokeUntil then reason='expired'
+                elseif not effect then reason='record_removed'
+                elseif effect.piece ~= piece then reason='piece_mismatch'
+                elseif frame >= effect.smokeUntil then reason='expired'
+                else reason='not_started' end
+                traceAnchorStopped(unitID, piece, state, reason)
+            end
+        end
+    end
     smokeSwirls = nextSwirls
 end
 
 function gadget:UnitDestroyed(unitID)
+    for piece, state in pairs(smokeSwirls[unitID] or {}) do
+        traceAnchorStopped(unitID, piece, state, 'unit_destroyed')
+    end
     smokeSwirls[unitID] = nil
 end

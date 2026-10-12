@@ -56,7 +56,10 @@ local function fixture(id, defID)
         buildingDamageEnabled=structural[defID] or false,MOSAIC_CONFIG_ONLY=true,
         Game={mapSizeX=8192,mapSizeZ=8192},GG={},VFS={},table=copy(table)}, {__index=_G})
     env._G=env;env.table.getn=env.table.getn or function(t)return #t end
-    env.Spring={UnitScript=raw,Echo=function(line)state.traces[#state.traces+1]=line end,GetUnitTeam=function()return 0 end,
+    env.Spring={UnitScript=raw,Echo=function(line)
+            if state.echoFails then error('fixture Echo failure') end
+            state.traces[#state.traces+1]=line
+        end,GetUnitTeam=function()return 0 end,
         GetGaiaTeamID=function()return 0 end,GetGameFrame=function()return state.frame end,
         ValidUnitID=function(unit)return unit==id and not state.destroyed end,
         GetUnitIsDead=function(unit)return unit~=id or state.destroyed==true end,
@@ -137,6 +140,20 @@ local function update(state, hits, frame)
     return state.env.BuildingBlockDamaged(hits,frame)
 end
 
+local function traceEvent(state, stage, piece, reason)
+    local found, count = nil, 0
+    for _, line in ipairs(state.traces) do
+        local fields = {}
+        for key, value in line:gmatch('([%w_]+)=([^ ]+)') do fields[key]=value end
+        if fields.stage==stage and (not piece or fields.piece==tostring(piece))
+            and (not reason or fields.reason==reason) then
+            found, count = fields, count+1
+        end
+    end
+    assert(found, 'missing transition trace '..stage..' for piece '..tostring(piece)..' / '..tostring(reason))
+    return found, count
+end
+
 local a=fixture(42,1)
 assemble(a)
 assert(a.shown[3] and a.rules.building_structural_blocks==6)
@@ -201,9 +218,10 @@ assert(not update(a,{},306) and not a.env.GG.BuildingDamageEffects[42] and not a
     'smoke expiry left a stale anchor or permanent update loop')
 assert(not update(a,{},600) and #a.fires==1 and a.shown[3], 'low health rekindled an old remnant')
 local sequence={'block_lookup_skipped','block_damage_skipped','block_lookup_selected',
-    'block_damage_accumulated','block_fire_requested','building_fire_registration_requested',
+    'block_damage_accumulated','block_effects_started','block_fire_requested','building_fire_registration_requested',
     'building_fire_registered','block_fire_result','block_failure_scheduled','block_failure_due',
-    'block_settle_issued','block_fall_hidden','building_fire_removed'}
+    'block_remnant_decided','block_settle_issued','block_fall_retained','block_fall_hidden',
+    'building_fire_removed','block_fire_stopped','block_effects_removed'}
 local nextStage=1
 for _,line in ipairs(a.traces) do
     if line:find('[BuildingDestruction]',1,true) and line:find(' unit=42 ',1,true)
@@ -212,6 +230,32 @@ for _,line in ipairs(a.traces) do
     end
 end
 assert(nextStage==#sequence+1,'execution trace stopped before '..tostring(sequence[nextStage]))
+local started, count=traceEvent(a,'block_effects_started',3)
+assert(count==1 and started.cycle=='6' and started.started=='6' and started.fire_until=='246'
+    and started.smoke_until=='306' and started.max_effects=='2' and started.visible=='true',
+    'effect-start trace omitted the fixed lifetime or shared slot limit')
+local requested=traceEvent(a,'block_fire_requested',3)
+assert(tonumber(requested.length)==a.fires[1].options.length
+    and tonumber(requested.width)==a.fires[1].options.width
+    and requested.root_x=='0' and requested.root_y=='0' and requested.root_z=='0'
+    and requested.direction_x=='0' and requested.direction_y=='1' and requested.direction_z=='0'
+    and requested.direction_space=='world' and requested.end_frame=='246' and requested.fade_frames=='60',
+    'fire-request trace omitted actual geometry or deadline options')
+local kept=traceEvent(a,'block_remnant_decided',3)
+local removed=traceEvent(a,'block_remnant_decided',4)
+assert(kept.bottom=='false' and kept.retained=='true' and tonumber(kept.roll)<tonumber(kept.chance)
+    and kept.column=='0:5' and kept.level=='2' and tonumber(kept.drop)==8
+    and tonumber(kept.target_y)==2 and tonumber(kept.target_offset)==2,
+    'retained remnant trace disagrees with its roll or native target')
+assert(removed.retained=='false' and tonumber(removed.roll)>=tonumber(removed.chance)
+    and removed.drop=='4.5' and removed.target_offset=='15.5', 'removed remnant trace reported a different outcome')
+local settled, settleCount=traceEvent(a,'block_fall_retained',3)
+assert(settleCount==1 and settled.frame=='18' and settled.visible=='true' and settled.retained_pieces=='1',
+    'settlement transition did not report the retained visible piece once')
+local stopped, stopCount=traceEvent(a,'block_fire_stopped',3,'fire_expiry')
+local expired, expiryCount=traceEvent(a,'block_effects_removed',3,'smoke_expiry')
+assert(stopCount==1 and expiryCount==1 and stopped.cycle=='6' and stopped.frame=='246'
+    and expired.cycle=='6' and expired.frame=='306', 'effect stop traces lost their original ignition cycle')
 
 -- Reused include source must bind each unit's hooks and private support state.
 local b=fixture(84,3);assemble(b)
@@ -235,6 +279,13 @@ assert(not hidden.shown[3] and not hidden.env.IsBuildingPieceVisible(3)
     'explicit hide left a visible-effect snapshot or compatible anchor')
 assert(not next(hidden.provider.SmokeRibbonRecords) and hidden.provider.SmokeRibbonRevision==2
     and not update(hidden,{},18), 'explicit hide did not remove the actual provider record immediately')
+local hideStopped=traceEvent(hidden,'block_fire_stopped',3,'hide')
+local hideRemoved=traceEvent(hidden,'block_effects_removed',3,'hide')
+local _, startCount=traceEvent(hidden,'block_effects_started',3)
+assert(startCount==1 and hideStopped.cycle=='6' and hideRemoved.cycle=='6' and hideRemoved.frame=='12',
+    'hide/repeated-hit diagnostics renewed or lost the original effect lifetime')
+assert(traceEvent(hidden,'block_fire_skipped',3,'already_active').cycle=='6',
+    'already-active fire diagnostic lost its original ignition cycle')
 
 -- The disappearing deterministic outcome removes its fire at fall completion,
 -- while the selected upper remnant keeps its pose and rejects Hide/Show calls.
@@ -264,6 +315,22 @@ assert(map[3]==previous and previous.started==6 and map[5].started==12 and not m
 budget.damage.collapse(budget.env.LevelPieces,budget.env.ToShowTable)
 assert(not budget.env.GG.BuildingDamageEffects[44] and not next(budget.provider.SmokeRibbonRecords),
     'full collapse retained live effects on original pieces')
+assert(traceEvent(budget,'block_fire_stopped',3,'collapse').cycle=='6'
+    and traceEvent(budget,'block_effects_removed',5,'collapse').cycle=='12',
+    'collapse cleanup traces lost the separate ignition cycles')
+
+-- Diagnose the last-support path separately from ordinary Hide or Killed, and
+-- report that a lowest block is retained without falsely claiming a random roll.
+local noSupport=fixture(47,1);assemble(noSupport)
+assert(update(noSupport,{{piece=2,damage=134},{piece=5,damage=134}},6))
+assert(update(noSupport,{},12));assert(not update(noSupport,{},18) and noSupport.destroyed)
+local bottom=traceEvent(noSupport,'block_remnant_decided',2)
+assert(bottom.bottom=='true' and bottom.retained=='true' and bottom.roll=='not_rolled'
+    and bottom.chance=='1' and bottom.drop=='0' and bottom.target_offset=='0',
+    'permanent-bottom trace invented a roll or a downward movement')
+assert(traceEvent(noSupport,'block_fire_stopped',2,'no_support').cycle=='6'
+    and traceEvent(noSupport,'block_effects_removed',5,'no_support').cycle=='6',
+    'last-support effect cleanup was not distinguished from a visual hide')
 
 -- Cloud hooks may be installed after the structural library. Compose at call time.
 local cloud=fixture(126,4)
@@ -283,4 +350,14 @@ local ordinary=fixture(168,2)
 for _,name in ipairs({'Show','Hide','Move','Turn','Spin'}) do
     assert(ordinary.env.script.testPrimitives[name]==ordinary.raw[name],name..' gained dispatch for an unrelated unit')
 end
+
+-- The printf layer must remain optional to gameplay, even if the engine's
+-- logging sink itself throws during damage, native movement or cleanup.
+local quiet=fixture(48,1);assemble(quiet);quiet.echoFails=true
+assert(update(quiet,{{piece=3,damage=134}},6));assert(update(quiet,{},12))
+update(quiet,{},18)
+assert(quiet.rules.building_detached_blocks==2 and #quiet.fires==1)
+quiet.damage.collapse(quiet.env.LevelPieces,quiet.env.ToShowTable)
+assert(not next(quiet.shown) and not next(quiet.provider.SmokeRibbonRecords)
+    and not quiet.env.GG.BuildingDamageEffects[48], 'failed diagnostics interrupted destruction cleanup')
 print('PASS: real house/header/includes and provider, finite flame/smoke lifetimes, hidden-anchor removal, deterministic retained/disappearing sections, height-axis pose, frozen geometry, unit isolation and cloud composition')

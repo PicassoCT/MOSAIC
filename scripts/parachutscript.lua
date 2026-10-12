@@ -4,6 +4,11 @@ include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 --include "lib_Build.lua"
 local GrapheneChute = VFS.Include("scripts/lib_graphene_chute.lua")
+local canopyTrace = VFS.Include('luarules/gadgets/include/execution_trace.lua').New('GrapheneChute')
+local canopyCycle
+local function logCanopy(stage, fields)
+    canopyTrace.Log(unitID, canopyCycle or (Spring.GetGameFrame and Spring.GetGameFrame() or 0), stage, fields)
+end
 
 TablesOfPiecesGroups = {}
 
@@ -18,27 +23,49 @@ travellingDropRate = 0.5
 dropRate = travellingDropRate
 local canopySlots = {}
 
-local function clearCanopy()
+local function clearCanopy(reason)
+    local count = #canopySlots
+    if count > 0 then logCanopy('canopy_clear_begin', {slots=count, reason=reason}) end
     if GG.SmokeRibbon then
         for _, slot in ipairs(canopySlots) do GG.SmokeRibbon.Remove(unitID, slot) end
     end
     canopySlots = {}
+    if count > 0 then logCanopy('canopy_cleared', {slots=count, reason=reason}) end
 end
 
 local function deployCanopy()
-    if not GG.SmokeRibbon then return end
+    canopyCycle = Spring.GetGameFrame()
+    logCanopy('canopy_deploy_begin', {piece=step})
+    if not GG.SmokeRibbon then
+        logCanopy('canopy_deploy_skipped', {piece=step, reason='no_provider'})
+        return
+    end
     local layout = GrapheneChute.Layout(unitID, step)
-    if not layout then return end
+    if not layout then
+        logCanopy('canopy_deploy_skipped', {piece=step, reason='missing_or_invalid_support_geometry'})
+        return
+    end
+    logCanopy('canopy_layout_ready', {piece=step, span=layout.span, radius=layout.radius})
+    local blackCount, arcCount = 0, 0
     for i = 1, 4 do
         local slot = "graphene_chute_" .. i
-        if GG.SmokeRibbon.Set(unitID, slot, step, GrapheneChute.RibbonOptions(layout, i)) then
+        local options = GrapheneChute.RibbonOptions(layout, i)
+        options.executionTrace = {prefix='GrapheneChute', stagePrefix='graphene_chute', cycle=canopyCycle}
+        local accepted, reason = GG.SmokeRibbon.Set(unitID, slot, step, options)
+        if accepted then
             canopySlots[#canopySlots+1] = slot
+            blackCount = blackCount + 1
+        else
+            logCanopy('canopy_registration_skipped', {piece=step, slot=slot, reason=reason})
         end
         slot = "graphene_arc_" .. i
         local ok, reason = GG.SmokeRibbon.Set(unitID, slot, step, GrapheneChute.ArcOptions(layout, i))
-        if ok then canopySlots[#canopySlots+1] = slot
+        if ok then
+            canopySlots[#canopySlots+1] = slot
+            arcCount = arcCount + 1
         else Spring.Echo("[GrapheneArc] registration failed: " .. tostring(reason)) end
     end
+    logCanopy('canopy_deploy_complete', {piece=step, black=blackCount, arcs=arcCount, slots=#canopySlots})
 end
 
 function script.Create()
@@ -49,6 +76,8 @@ function script.Create()
     --Spring.SetUnitAlwaysVisible(unitID, true)
     hideT(TablesOfPiecesGroups["Rotator"])
     hideT(TablesOfPiecesGroups["DownWardSpiral"])
+    logCanopy('canopy_polygons_hidden', {rotators=#(TablesOfPiecesGroups["Rotator"] or {}),
+        spirals=#(TablesOfPiecesGroups["DownWardSpiral"] or {})})
     StartThread(fallingDown)
     StartThread(detectStationary)
     Show(center)
@@ -129,12 +158,13 @@ function fallingDown()
     x, y, z = GG.ParachutPassengers[unitID].x, GG.ParachutPassengers[unitID].y,
               GG.ParachutPassengers[unitID].z
     if not passengerID or isUnitAlive(passengerID) == false then
-        clearCanopy()
+        clearCanopy('invalid_passenger')
         Spring.DestroyUnit(unitID, false, true);
         return
     end
 
     Spring.UnitAttach(unitID, passengerID, step)
+    logCanopy('passenger_attached', {passenger=passengerID, piece=step})
     Spring.MoveCtrl.SetPosition(unitID, x, y, z)
 
     while isPieceAboveGround(unitID, center, 15) == true do    
@@ -147,13 +177,14 @@ function fallingDown()
         WMove(TablesOfPiecesGroups["Cord"][i], 2 , i*-15, 900)
     end
 
-    clearCanopy()
+    clearCanopy('landed')
     Spring.UnitDetach(passengerID)
+    logCanopy('passenger_released', {passenger=passengerID})
     Spring.DestroyUnit(unitID, false, true)
 end
 
 function script.Killed(recentDamage, _)    
-    clearCanopy()
+    clearCanopy('killed')
     return 1 
 end
 
