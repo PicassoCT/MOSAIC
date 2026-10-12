@@ -3,6 +3,7 @@
 unpack=unpack or table.unpack
 local noop=function() end
 local frame,offset,drawFrame,fullView,pointLOS=100,0,0,false,true
+local traceLines={}
 Game={gameSpeed=30,mapSizeX=4096,mapSizeZ=4096}
 WeaponDefs={}
 UnitDefs={[1]={name='ground_tank_day'},[2]={name='ground_tank_night'},[3]={name='civilian_arab0'}}
@@ -21,6 +22,7 @@ local function newUnit(defID)
         muzzle={10,32,104},barrel={10,32,10},mapCalls=0,pieceCalls=0}
 end
 Spring={
+    Echo=function(line) traceLines[#traceLines+1]=line end,
     GetGameFrame=function() return frame end,GetFrameTimeOffset=function() return offset end,
     GetDrawFrame=function() return drawFrame end,GetCameraPosition=function() return 10,100,10 end,
     GetSpectatingState=function() return fullView,fullView end,GetMyAllyTeamID=function() return 0 end,
@@ -180,4 +182,109 @@ units[id]=newUnit(2);units[id].rules[profile.shotParam]=frame
 unitID=id;unitDefID=2;script={};dofile('scripts/tankscript.lua');script.Create()
 s:UnitCreated(id,2);assert(#collect(s)==0,'new tank inherited an earlier unit shot')
 
-print('PASS tank muzzle: actual day/night FireWeapon, preserved CEGs, external animated barrel anchor, shared 12-frame fade, exact expiry/reload, LOS and owner validation, daylight radiance, no extra targets and ID reuse')
+-- Trace the actual script -> collector -> renderer handoff. A successful source
+-- is not a submitted draw, and an expired first observation must not replay it.
+local function traceCount(stage, reason)
+    local n=0
+    for _,line in ipairs(traceLines) do
+        if line:find(' stage='..stage..' ',1,true)
+            and (not reason or line:find('reason='..reason,1,true)) then n=n+1 end
+    end
+    return n
+end
+local function output() return table.concat(traceLines,'\n') end
+id=41;units[id]=newUnit(1);u=units[id]
+frame,offset,pointLOS=2000,0,true
+s=fresh();traceLines={};fire(id);s:UnitCreated(id,1)
+lights,flames=collect(s)
+local traceRenderer=assert(dofile('luarules/gadgets/include/smoke_ribbon_renderer.lua')())
+local before=draws
+traceRenderer:Draw(flames);lights,flames=collect(s);traceRenderer:Draw(flames)
+assert(draws==before+2, 'diagnostic deduplication suppressed real repeated draws')
+for _,stage in ipairs({'tank_shot_published','tank_registered','tank_shot_observed',
+    'tank_muzzle_anchors','tank_muzzle_source_ready','tank_muzzle_queued',
+    'tank_muzzle_render_ready','tank_muzzle_draw_submitted'}) do
+    assert(traceCount(stage)==1, stage..' was absent or repeated for one shot')
+end
+assert(output():find('meaning=cpu_submission_returned',1,true))
+frame=2012;traceLines={};lights,flames=collect(s)
+assert(#flames==0 and traceCount('tank_muzzle_rejected','expired_stamp')==1)
+assert(output():find('expired_on_first_observation=false',1,true), 'ordinary expiry mislabeled as missed first observation')
+frame=2040;s=fresh();s:UnitCreated(id,1);traceLines={};lights,flames=collect(s)
+assert(#flames==0 and traceCount('tank_shot_observed')==1)
+assert(output():find('expired_on_first_observation=true',1,true), 'first observation of expired shot not recorded')
+collect(s);assert(traceCount('tank_shot_observed')==1, 'expired shot spammed each draw')
+
+local function prepare()
+    frame=frame+20;u.rules[profile.shotParam]=frame
+    s=fresh();s:UnitCreated(id,1)
+    lights,flames=collect(s);traceLines={}
+    return flames[1]
+end
+local reasons={invalid='invalid_unit',dead='dead_unit',cloaked='cloaked_unit',
+    noDraw='unit_nodraw',transporter='transported_unit'}
+for flag,reason in pairs(reasons) do
+    prepare();u[flag]=true
+    before=draws;traceRenderer:Draw(flames)
+    assert(draws==before and traceCount('tank_muzzle_render_rejected',reason)==1,
+        'renderer did not report '..reason)
+    assert(traceCount('tank_muzzle_draw_submitted')==0, 'rejected '..reason..' reported a draw')
+    traceLines={};collect(s)
+    assert(traceCount('tank_muzzle_rejected',reason)==1, 'source did not report '..reason)
+    u[flag]=nil
+end
+prepare();u.los=false;before=draws;traceRenderer:Draw(flames)
+assert(draws==before and traceCount('tank_muzzle_render_rejected','outside_unit_los')==1)
+assert(traceCount('tank_muzzle_draw_submitted')==0);u.los=true
+local r=prepare();r.x=1e7;before=draws;traceRenderer:Draw(flames)
+assert(draws==before and traceCount('tank_muzzle_render_rejected','distance_cutoff')==1)
+prepare();local inView=Spring.IsSphereInView;Spring.IsSphereInView=function() return false end
+before=draws;traceRenderer:Draw(flames)
+assert(draws==before and traceCount('tank_muzzle_render_rejected','outside_frustum')==1)
+assert(traceCount('tank_muzzle_draw_submitted')==0);Spring.IsSphereInView=inView
+prepare();traceRenderer.maxVisible=0;before=draws;traceRenderer:Draw(flames)
+assert(draws==before and traceCount('tank_muzzle_render_rejected','ribbon_budget')==1)
+assert(traceCount('tank_muzzle_draw_submitted')==0);traceRenderer.maxVisible=128
+
+-- Exhaust the existing shared light budget with closer fires. The tank's
+-- source must report this handoff loss, without bypassing the established cap.
+prepare()
+for i=1,128 do s:SetFire(i,10,95,10,frame,frame+100) end
+traceLines={};lights,flames=collect(s)
+assert(#lights==96 and traceCount('tank_muzzle_budget_dropped','light_budget')==1)
+assert(traceCount('tank_muzzle_queued')==0)
+
+-- Piece data failures stay explicit and retain the original no-flash result.
+local originalMap,originalMuzzle,originalBarrel=u.map,u.muzzle,u.barrel
+for _,test in ipairs({
+    {reason='missing_anchors', setup=function() u.map={} end},
+    {reason='missing_piece_position', setup=function() u.muzzle=nil end},
+    {reason='degenerate_direction', setup=function() u.barrel=u.muzzle end},
+}) do
+    u.map,u.muzzle,u.barrel=originalMap,originalMuzzle,originalBarrel
+    test.setup();frame=frame+20;u.rules[profile.shotParam]=frame
+    s=fresh();s:UnitCreated(id,1);traceLines={};lights,flames=collect(s)
+    assert(#flames==0 and traceCount('tank_muzzle_rejected',test.reason)==1)
+end
+u.map,u.muzzle,u.barrel=originalMap,originalMuzzle,originalBarrel
+
+-- Ordinary ribbons acquire no diagnostics. Explicitly tagged piece-attached
+-- building records use their own prefix and retain distinct emitter slots.
+r=prepare();r.executionTrace=nil;before=draws;traceRenderer:Draw(flames)
+assert(draws==before+1 and #traceLines==0, 'untagged ribbon emitted diagnostic noise')
+local Trace=dofile('luarules/gadgets/include/execution_trace.lua')
+local buildingTrace=Trace.New('BuildingDestruction')
+r.piece=pieces.FireEmit;r.enabled=true;r.rootOffset={0,0,0};r.drawInIcon=true
+r.executionTrace={logger=buildingTrace,unitID=id,cycle=frame,stagePrefix='building_fire',piece=r.piece,slot=1}
+local r2={};for key,value in pairs(r) do r2[key]=value end
+r2.executionTrace={logger=buildingTrace,unitID=id,cycle=frame-5,stagePrefix='building_fire',piece=r.piece,slot=2}
+traceRenderer.records={one=r,two=r2};traceLines={};before=draws
+traceRenderer:Draw();traceRenderer:Draw()
+assert(draws==before+4 and traceCount('building_fire_draw_submitted')==2,
+    'piece-attached traces lost their family, slot identity or real repeated draws')
+u.los=false;traceLines={};before=draws;traceRenderer:Draw()
+assert(draws==before and traceCount('building_fire_render_rejected','outside_unit_los')==2)
+assert(traceCount('building_fire_draw_submitted')==0)
+traceRenderer:Shutdown()
+
+print('PASS tank muzzle: real script/source/renderer, preserved CEGs/dimensions/expiry/LOS, bounded shot traces, expired-first-observation, explicit source and render rejection, budgets, CPU submission and tagged building slots')

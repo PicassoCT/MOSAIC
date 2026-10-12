@@ -25,6 +25,7 @@ on:
       - 'luarules/gadgets/game_validation_session.lua'
       - 'luarules/gadgets/gfx_smoke_ribbons.lua'
       - 'luarules/gadgets/include/smoke_ribbon_*.lua'
+      - 'luarules/gadgets/include/execution_trace.lua'
       - 'luarules/gadgets/shaders/smokeRibbon.*'
       - 'tests/light_effects_widget_startup.lua'
       - 'tests/mobile_shadow_failure_lifecycle.lua'
@@ -35,6 +36,8 @@ on:
       - 'tests/graphene_arcs_*'
       - 'tests/smoke_ribbon_commands.lua'
       - 'tests/tank_muzzle_effects.lua'
+      - 'tests/execution_trace_test.lua'
+      - 'tests/smoke_ribbons_lifecycle.lua'
       - '.github/workflows/effects-validation.yml'
   workflow_dispatch:
 
@@ -83,6 +86,7 @@ jobs:
           lua5.1 tests/city_geography_test.lua
           lua5.1 tests/validation_widget.lua
           lua5.1 tests/tank_muzzle_effects.lua
+          lua5.1 tests/execution_trace_test.lua
           lua5.1 tests/police_radiance_lifecycle.lua
           lua5.1 tests/combat_effects_lifecycle.lua
           lua5.1 tests/combat_effect_events.lua

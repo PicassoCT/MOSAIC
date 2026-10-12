@@ -1,0 +1,41 @@
+-- Debug instrumentation must stay bounded and must not break the code it observes.
+local lines, frame = {}, 20
+Spring = {GetGameFrame=function() return frame end,
+    Echo=function(line) lines[#lines+1]=line end}
+local Trace=dofile('luarules/gadgets/include/execution_trace.lua')
+local log=Trace.New('TestTrace', {maxUnits=2, maxEvents=8})
+assert(log.Log(1, 10, 'ready', {z=true,a='first\nsecond',value={}}))
+assert(lines[1]=='[TestTrace] frame=20 unit=1 cycle=10 stage=ready a=first second value=<table> z=true')
+assert(not log.Log(1, 10, 'ready', {z=false}), 'repeated stage was not suppressed')
+assert(log.Log(1, 10, 'ready', {piece=2,slot=1}))
+assert(log.Log(1, 10, 'ready', {piece=3,slot=1}), 'different block was suppressed')
+assert(log.Log(1, 10, 'ready', {piece=3,slot=2}), 'different emitter slot was suppressed')
+assert(log.Log(1, 10, 'rejected', {reason='hidden'}))
+assert(log.Log(1, 10, 'rejected', {reason='distance'}), 'changed stop reason was suppressed')
+assert(log.Log(2, 10, 'ready'))
+assert(log.Log(3, 10, 'ready'))
+assert(log.Log(1, 10, 'ready'), 'old owner was not evicted at the bound')
+assert(not log.Log(1, 10, 'ready'))
+assert(log.Log(1, 11, 'ready'), 'new shot inherited old deduplication')
+log.Forget(1)
+assert(log.Log(1, 11, 'ready'), 'reused unit could not emit a fresh trace')
+assert(log.Log(nil, 'startup', 'ready'))
+log.Forget(nil)
+assert(log.Log(nil, 'startup', 'ready'), 'system-level cleanup was not nil-safe')
+
+local bounded=Trace.New('Bounded', {maxUnits=1, maxEvents=2})
+assert(bounded.Log(1, 1, 'one') and bounded.Log(1, 1, 'two'))
+assert(not bounded.Log(1, 1, 'three'), 'per-cycle event storage was unbounded')
+assert(bounded.Log(1, 2, 'three'))
+local concurrent=Trace.New('Concurrent', {maxUnits=1,maxCycles=2})
+assert(concurrent.Log(1, 10, 'draw', {slot=1}))
+assert(concurrent.Log(1, 20, 'draw', {slot=2}))
+assert(not concurrent.Log(1, 10, 'draw', {slot=1}))
+assert(not concurrent.Log(1, 20, 'draw', {slot=2}), 'alternating emitter cycles reset deduplication')
+assert(concurrent.Log(1, 30, 'draw', {slot=3}))
+assert(concurrent.Log(1, 10, 'draw', {slot=1}), 'oldest cycle was not evicted at its bound')
+Spring.Echo=function() error('broken output sink') end
+assert(not Trace.New('Broken').Log(1, 1, 'ready'), 'Echo failure escaped into gameplay')
+Spring.GetGameFrame=function() error('unavailable clock') end
+assert(not Trace.New('BrokenClock').Log(1, 1, 'ready'))
+print('PASS execution trace: safe scalar output, owner/cycle/stage/reason/piece/slot dedup, bounds, cleanup, nil owner and contained failures')

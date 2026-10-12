@@ -14,8 +14,12 @@ local function fixture(columnCount, floorCount, scale)
     local dirty, calls, destroyed, poseReads = 0, 0, false, 0
     local childUnits = {}
     local env = setmetatable({unitID=42, x_axis=1, y_axis=2, z_axis=3,
-        GG={InstanceCulture='international'}, VFS={Include=function() return {} end}}, {__index=_G})
+        GG={InstanceCulture='international'}, VFS={}}, {__index=_G})
     env._G=env
+    env.VFS.Include=function(path)
+        if path=='luarules/gadgets/include/execution_trace.lua' then return loadEnv(path,env) end
+        return {}
+    end
     env.Show=function(p) visible[p]=true end
     env.Hide=function(p) visible[p]=nil end
     env.Move=function(p,axis,goal,speed)
@@ -30,6 +34,7 @@ local function fixture(columnCount, floorCount, scale)
     env.Sleep=function(ms) sleeps[#sleeps+1]=ms end
     env.hideAll=function() for p in pairs(visible) do visible[p]=nil end end
     env.Spring={
+        Echo=noop,
         UnitScript={Show=env.Show,Hide=env.Hide,Move=env.Move,Turn=env.Turn,Spin=env.Spin},
         GetUnitPieceMap=function() return names end,
         GetUnitPieceInfo=function(_,p) return {children=children[p] or {}} end,
@@ -247,9 +252,10 @@ q2.tick(18);assert(#q2.losses==6)
 
 -- Empty scaffolding and late construction callbacks must not resurrect a house.
 local env=setmetatable({Show=noop,Hide=noop,Move=noop,Turn=noop,Spin=noop,
-    Sleep=noop,hideAll=noop,unitID=1,GG={},Spring={UnitScript={
+    Sleep=noop,hideAll=noop,unitID=1,GG={},Spring={Echo=noop,UnitScript={
         Show=noop,Hide=noop,Move=noop,Turn=noop,Spin=noop}}}, {__index=_G})
 env._G=env
+env.VFS={Include=function(path)return loadEnv(path,env)end}
 local early=loadEnv('scripts/lib_building_damage.lua',env)
 assert(not early.update({{damage=100}},6));assert(early.collapse({}, {})==1)
 env.Show(123)

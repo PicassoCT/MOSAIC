@@ -5,6 +5,8 @@ local M = {}
 
 function M.Options(seed, rootOffset)
     return {
+        executionTrace={prefix='GrapheneArcs',stagePrefix='graphene_arc',
+            cycle=Spring and Spring.GetGameFrame and Spring.GetGameFrame() or 0},
         mode = 'electric', rootOffset = rootOffset or {0, 0, 0},
         directionSpace = 'world', direction = {0, 1, 0},
         length = 190, width = 18, strands = 4,

@@ -36,7 +36,8 @@ script.testPrimitives={Show=Show,Hide=Hide,Move=Move,Turn=Turn,Spin=Spin}
 ]]
 
 local function fixture(id, defID)
-    local state={shown={},positions={},moves={},turns={},spins={},fires={},removedFires={},rules={},cloudShows=0,cloudHides=0}
+    local state={shown={},positions={},moves={},turns={},spins={},fires={},removedFires={},rules={},cloudShows=0,cloudHides=0,
+        traces={},frame=0}
     local names={center=1,block1=2,block2=3,block3=4,block4=5,block5=6,block6=7,base=8}
     local raw = {
         Show=function(p) assert(p);state.shown[p]=true end,
@@ -55,8 +56,8 @@ local function fixture(id, defID)
         buildingDamageEnabled=structural[defID] or false,MOSAIC_CONFIG_ONLY=true,
         Game={mapSizeX=8192,mapSizeZ=8192},GG={},VFS={},table=copy(table)}, {__index=_G})
     env._G=env;env.table.getn=env.table.getn or function(t)return #t end
-    env.Spring={UnitScript=raw,Echo=noop,GetUnitTeam=function()return 0 end,
-        GetGaiaTeamID=function()return 0 end,GetGameFrame=function()return 0 end,
+    env.Spring={UnitScript=raw,Echo=function(line)state.traces[#state.traces+1]=line end,GetUnitTeam=function()return 0 end,
+        GetGaiaTeamID=function()return 0 end,GetGameFrame=function()return state.frame end,
         ValidUnitID=function(unit)return unit==id and not state.destroyed end,
         GetUnitIsDead=function(unit)return unit~=id or state.destroyed==true end,
         GetUnitPosition=function()return 100,0,200 end,GetGroundHeight=function()return 0 end,
@@ -131,16 +132,21 @@ local function assemble(state)
     state.show()
 end
 
+local function update(state, hits, frame)
+    state.frame=frame
+    return state.env.BuildingBlockDamaged(hits,frame)
+end
+
 local a=fixture(42,1)
 assemble(a)
 assert(a.shown[3] and a.rules.building_structural_blocks==6)
 a.env.hideHouse()
-assert(not a.env.BuildingBlockDamaged({{x=100,y=10,z=300,damage=100}},0) and #a.fires==0,
+assert(not update(a,{{x=100,y=10,z=300,damage=100}},0) and #a.fires==0,
     'hidden geometry remained eligible for damage')
 assert(a.provider.SmokeRibbonRevision==0 and not next(a.provider.SmokeRibbonRecords),
     'unselected damage modified the synced flame registry')
 a.show()
-assert(a.env.BuildingBlockDamaged({{x=100,y=10,z=300,damage=100}},6),
+assert(update(a,{{x=100,y=10,z=300,damage=100}},6),
     'real header Show/showT calls bypassed structural visibility tracking')
 assert(#a.fires==1 and a.fires[1].unit==42 and a.fires[1].piece==3,
     'selected damaged block never reached the real SmokeRibbon request')
@@ -154,7 +160,7 @@ assert(fire.directionSpace=='world' and fire.direction[1]==0 and fire.direction[
 assert(fire.colorStart~=a.fires[1].options.colorStart and a.provider.SmokeRibbonRevision==1,
     'provider did not publish a normalized copy and revision')
 assert(a.env.GG.BuildingDamageAnchor[42]==3)
-assert(a.env.BuildingBlockDamaged({},12))
+assert(update(a,{},12))
 assert(a.rules.building_detached_blocks==2 and a.shown[3] and a.shown[4],
     'supported roof should settle with the struck block before hiding')
 local falls=0
@@ -174,16 +180,28 @@ local beforeMoves,beforeTurns,beforeSpins=#a.moves,#a.turns,#a.spins
 a.env.script.testLateAnimation(3)
 assert(#a.moves==beforeMoves and #a.turns==beforeTurns and #a.spins==beforeSpins,
     'a header-local animation overrode detached geometry')
-assert(not a.env.BuildingBlockDamaged({},18))
+assert(not update(a,{},18))
 a.show();a.env.script.testLateAnimation(3)
 assert(not a.shown[3] and not a.shown[4] and a.shown[2], 'a later show resurrected detached geometry')
 assert(#a.removedFires==1, 'the detached block retained its fire slot')
 assert(not a.provider.SmokeRibbonRecords['42:block_fire_3'] and a.provider.SmokeRibbonRevision==2,
     'fall completion did not remove the actual synced record and publish its revision')
+local sequence={'block_lookup_skipped','block_damage_skipped','block_lookup_selected',
+    'block_damage_accumulated','block_fire_requested','building_fire_registration_requested',
+    'building_fire_registered','block_fire_result','block_failure_scheduled','block_failure_due',
+    'block_settle_issued','building_fire_removed','block_fall_hidden'}
+local nextStage=1
+for _,line in ipairs(a.traces) do
+    if line:find('[BuildingDestruction]',1,true) and line:find(' unit=42 ',1,true)
+        and line:match('stage=([^ ]+)')==sequence[nextStage] then
+        nextStage=nextStage+1
+    end
+end
+assert(nextStage==#sequence+1,'execution trace stopped before '..tostring(sequence[nextStage]))
 
 -- Reused include source must bind each unit's hooks and private support state.
 local b=fixture(84,3);assemble(b)
-assert(b.env.BuildingBlockDamaged({{piece=3,damage=100}},6))
+assert(update(b,{{piece=3,damage=100}},6))
 assert(b.fires[1].unit==84 and a.rules.building_detached_blocks==2)
 assert(b.rules.building_detached_blocks==0 and b.shown[3])
 assert(b.provider.SmokeRibbonRecords['84:block_fire_3'].piece==3 and not next(a.provider.SmokeRibbonRecords),

@@ -201,6 +201,10 @@ local function fixture(rubbleName)
         VFS={Include=noop},getStructuralBuildingTypeTable=env.getStructuralBuildingTypeTable,
         getBlockDestroyableHouseTypes=env.getBlockDestroyableHouseTypes,
         gadgetHandler=env.gadgetHandler},{__index=_G})
+    damageEnv._G=damageEnv
+    damageEnv.VFS.Include=function(path)
+        if path=='luarules/gadgets/include/execution_trace.lua' then return loadEnv(path,damageEnv) end
+    end
     loadEnv('luarules/gadgets/game_building_block_damage.lua',damageEnv)
     state.damageGadget=damageEnv.gadget;state.damageGadget:Initialize()
     local function tick(frames)

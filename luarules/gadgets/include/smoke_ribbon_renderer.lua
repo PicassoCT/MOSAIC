@@ -95,13 +95,29 @@ return function()
             return pad
         end
         local now = (Spring.GetGameFrame()+(Spring.GetFrameTimeOffset() or 0))/(Game.gameSpeed or 30)
+        local function traceRecord(r, stage, fields)
+            local trace=r.executionTrace
+            if not trace then return end
+            fields=fields or {}
+            fields.piece=trace.piece or r.piece
+            fields.slot=trace.slot
+            fields.sample_frame=now*(Game.gameSpeed or 30)
+            if type(trace.cycle)=='number' then fields.age=fields.sample_frame-trace.cycle end
+            trace.logger.Log(trace.unitID, trace.cycle, trace.stagePrefix..'_'..stage, fields)
+        end
         local nextHistory = {}
         for key, r in pairs(self.records) do
             local id = r.unitID
             local los = fullView or Spring.GetUnitLosState(id,ally)
-            if r.enabled and (fullView or (los and los.los)) and not Spring.GetUnitIsDead(id)
-                and not Spring.GetUnitIsCloaked(id) and not Spring.GetUnitNoDraw(id)
-                and not Spring.GetUnitTransporter(id) and (r.drawInIcon or not Spring.IsUnitIcon(id)) then
+            local rejected
+            if not r.enabled then rejected='disabled_record'
+            elseif not (fullView or (los and los.los)) then rejected='outside_unit_los'
+            elseif Spring.GetUnitIsDead(id) then rejected='dead_unit'
+            elseif Spring.GetUnitIsCloaked(id) then rejected='cloaked_unit'
+            elseif Spring.GetUnitNoDraw(id) then rejected='unit_nodraw'
+            elseif Spring.GetUnitTransporter(id) then rejected='transported_unit'
+            elseif not r.drawInIcon and Spring.IsUnitIcon(id) then rejected='unit_icon' end
+            if not rejected then
                 local x,y,z,ex,ey,ez = Spring.GetUnitPiecePosDir(id,r.piece)
                 if x then
                     -- Same draw translation correction as Mosaic's live headlights.
@@ -245,10 +261,24 @@ return function()
                                 draw[#draw+1] = {r=r,x=x,y=y,z=z,dx=dx,dy=dy,dz=dz,
                                     driftX=driftX,driftY=driftY,driftZ=driftZ,
                                     length=length,width=width,fade=fade,pad=pad,d2=(cx-mx)^2+(cy-my)^2+(cz-mz)^2}
+                                if r.executionTrace then traceRecord(r, 'render_ready',
+                                    {x=x,y=y,z=z,length=length,width=width,opacity=fade}) end
+                            else
+                                if r.executionTrace then traceRecord(r, 'render_rejected',
+                                    {reason=fade <= 0 and 'zero_fade' or 'outside_frustum'}) end
                             end
+                        else
+                            if r.executionTrace then traceRecord(r, 'render_rejected', {reason='degenerate_direction'}) end
                         end
+                    else
+                        if r.executionTrace then traceRecord(r, 'render_rejected',
+                            {reason='distance_cutoff', distance_squared=anchorD2, cutoff=cutoff}) end
                     end
+                else
+                    if r.executionTrace then traceRecord(r, 'render_rejected', {reason='missing_piece_position'}) end
                 end
+            else
+                if r.executionTrace then traceRecord(r, 'render_rejected', {reason=rejected}) end
             end
         end
         -- Combat trails and ground fires use the same FlamePainter shader and
@@ -258,17 +288,21 @@ return function()
             local length,width=r.length,r.width
             local d2=(cx-x)^2+(cy-y)^2+(cz-z)^2
             local cutoff=math.max(length,width*2)*(r.distanceFactor or 40)
-            local visible
+            local visible, rejected
             if r.unitID then
                 -- Attached combat flashes inherit the visible model's LOS,
                 -- just like piece-attached ribbons and police radiance lamps.
                 -- Recheck the owner here; a caller cannot leak a hidden unit.
                 local id=r.unitID
-                if Spring.ValidUnitID(id) and not Spring.GetUnitIsDead(id)
-                    and not Spring.GetUnitIsCloaked(id) and not Spring.GetUnitNoDraw(id)
-                    and not Spring.GetUnitTransporter(id) then
+                if not Spring.ValidUnitID(id) then rejected='invalid_unit'
+                elseif Spring.GetUnitIsDead(id) then rejected='dead_unit'
+                elseif Spring.GetUnitIsCloaked(id) then rejected='cloaked_unit'
+                elseif Spring.GetUnitNoDraw(id) then rejected='unit_nodraw'
+                elseif Spring.GetUnitTransporter(id) then rejected='transported_unit' end
+                if not rejected then
                     local los=fullView or Spring.GetUnitLosState(id,ally)
                     visible=fullView or (los and los.los)
+                    if not visible then rejected='outside_unit_los' end
                 end
             else
                 visible=fullView or Spring.IsPosInLos(x,y,z,ally)
@@ -290,11 +324,21 @@ return function()
                 draw[#draw+1]={r=r,x=x,y=y,z=z,dx=r.direction[1],dy=r.direction[2],dz=r.direction[3],
                     driftX=drift[1]*cap,driftY=drift[2]*cap,driftZ=drift[3]*cap,
                     length=length,width=width,fade=fade,d2=d2}
+                if r.executionTrace then traceRecord(r, 'render_ready',
+                    {x=x,y=y,z=z,length=length,width=width,opacity=fade}) end
+            else
+                if r.executionTrace then traceRecord(r, 'render_rejected', {reason=rejected or (not visible and 'outside_position_los'
+                    or (d2>=cutoff*cutoff and 'distance_cutoff' or 'outside_frustum')),
+                    distance_squared=d2, cutoff=cutoff}) end
             end
         end
         hairHistory=nextHistory
         if #draw == 0 then return end
         table.sort(draw,function(a,b) return a.d2 < b.d2 end)
+        for i=self.maxVisible+1,#draw do
+            if draw[i].r.executionTrace then traceRecord(draw[i].r, 'render_rejected',
+                {reason='ribbon_budget', rank=i, limit=self.maxVisible}) end
+        end
         local ar,ag,ab = gl.GetSun('ambient','unit')
         gl.PushAttrib(GL.ALL_ATTRIB_BITS)
         gl.DepthTest(true); gl.DepthMask(false); gl.Culling(false)
@@ -328,6 +372,8 @@ return function()
             gl.Uniform(loc.sourceGlow,unpack(r.sourceGlow))
             local segments = d.d2 > (d.length*20)^2 and 24 or 48
             gl.CallList(meshes[segments][r.strands])
+            if r.executionTrace then traceRecord(r, 'draw_submitted', {segments=segments, strands=r.strands, opacity=d.fade,
+                meaning='cpu_submission_returned'}) end
         end
         gl.UseShader(0); gl.PopAttrib()
     end
