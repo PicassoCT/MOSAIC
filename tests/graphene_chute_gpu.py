@@ -1,0 +1,178 @@
+"""Render the live black chute presets with the production FlamePainter GLSL.
+
+MESA_GL_VERSION_OVERRIDE=3.3COMPAT python tests/graphene_chute_gpu.py
+Requires moderngl, numpy and lupa. Optional --preview /absolute/path.png.
+The engine fixture uses air_parachut.dae's actual step bounds/imported basis;
+this is a shader diagnostic, not an in-game screenshot.
+"""
+import ctypes
+from pathlib import Path
+import sys
+
+from lupa.lua51 import LuaRuntime
+import moderngl
+import numpy as np
+
+repo = Path(__file__).resolve().parents[1]
+lua = LuaRuntime(unpack_returned_tuples=True)
+lua.globals().repo = str(repo)
+lua.execute("""
+VFS={Include=function(path)return dofile(repo..'/'..path)end}
+Spring={
+    GetUnitPieceInfo=function()return {min={-85.832451,-82.309372,68.273422},
+        max={91.686882,96.216965,288.091553}}end,
+    GetUnitPieceMatrix=function()return .0254,0,0,0, 0,0,-.0254,0, 0,.0254,0,0,
+        .0240321084,34.4081509194,-.6740445244,1 end,
+    GetUnitVectors=function()return {0,0,1},{0,1,0},{-1,0,0}end,
+    GetUnitPosition=function()return 0,0,0 end,
+    GetUnitPiecePosDir=function()return .04717199,36.1921519,-.28818393 end,
+    ValidUnitID=function()return true end,GetUnitIsDead=function()return false end,
+    GetUnitPieceMap=function()return {step=1}end,
+}
+""")
+presets = lua.execute("return VFS.Include('scripts/lib_graphene_chute.lua')")
+normalize = lua.execute("return VFS.Include('luarules/gadgets/include/smoke_ribbon_config.lua').Normalize")
+layout = presets['Layout'](7, 1)
+
+
+def array(table):
+    return np.array([table[i] for i in range(1, len(table)+1)], dtype='f4')
+
+
+# The renderer applies this same imported basis to local offsets/directions.
+basis = np.array([[.0254, 0, 0], [0, 0, .0254], [0, -.0254, 0]], dtype='f4')
+emitter = np.array([.04717199, 36.1921519, -.28818393], dtype='f4')
+records = []
+for option in ('RibbonOptions', 'ArcOptions'):
+    for index in range(1, 5):
+        record = normalize(7, 1, presets[option](layout, index))
+        direction = array(record['direction'])
+        if record['directionSpace'] == 'piece':
+            direction = basis @ direction
+        records.append(dict(record=record, origin=emitter+basis@array(record['rootOffset']),
+                            direction=direction/np.linalg.norm(direction)))
+
+ctx = moderngl.create_standalone_context(backend='egl', require=330)
+shader_dir = repo / 'luarules/gadgets/shaders'
+vertex = (shader_dir / 'smokeRibbon.vert').read_text()
+program = ctx.program(vertex_shader=vertex, fragment_shader=(shader_dir / 'smokeRibbon.frag').read_text())
+gl = ctypes.CDLL('libGL.so.1')
+gl.glUseProgram.argtypes = [ctypes.c_uint]
+gl.glBegin.argtypes = [ctypes.c_uint]
+gl.glVertex3f.argtypes = [ctypes.c_float]*3
+gl.glEnd.argtypes = []
+gl.glMatrixMode.argtypes = [ctypes.c_uint]
+gl.glLoadMatrixf.argtypes = [ctypes.POINTER(ctypes.c_float)]
+size = 512
+out = ctx.texture((size, size), 4, dtype='f4')
+fbo = ctx.framebuffer([out]); fbo.use()
+ctx.enable(moderngl.BLEND)
+ctx.blend_func = (moderngl.ONE, moderngl.ONE_MINUS_SRC_ALPHA)
+eye = np.array([110, 125, 160], dtype='f4')
+target = np.array([0, 62, 0], dtype='f4')
+forward = (target-eye)/np.linalg.norm(target-eye)
+right = np.cross(forward, [0, 1, 0]); right /= np.linalg.norm(right)
+up = np.cross(right, forward)
+view = np.eye(4, dtype='f4'); view[:3, :3] = [right, up, -forward]
+view[:3, 3] = -view[:3, :3] @ eye
+projection = np.diag([1/65, 1/65, -2/500, 1]).astype('f4')
+projection[2, 3] = -1
+for mode, matrix in ((0x1701, projection), (0x1700, view)):
+    gl.glMatrixMode(mode); gl.glLoadMatrixf((ctypes.c_float*16)(*matrix.T.ravel()))
+
+
+def parameters(entry, time=1, drift=(0, 0, 0)):
+    r = entry['record']
+    values = dict(origin=tuple(entry['origin']), direction=tuple(entry['direction']),
+                  cameraPosition=tuple(eye), plumeLength=r['length'], plumeWidth=r['width'],
+                  effectTime=time*r['speed'], curl=r['curl'], seed=r['seed'],
+                  stiffness=r['stiffness'], gravity=r['gravity'], hairMode=int(r['mode']=='hair'),
+                  electricMode=int(r['mode']=='electric'), landingMode=0,
+                  strandCount=r['strands'], strandOpacity=1 if r['mode']=='hair' else 1.6/r['strands'],
+                  ambient=(.8, .8, .8), directionalDrift=drift)
+    for name in ('colorStart', 'colorEnd', 'emission', 'sourceGlow'):
+        values[name] = tuple(array(r[name]))
+    return values
+
+
+def render(entries, time=1, drift=(0, 0, 0), overrides=None):
+    fbo.clear(); gl.glUseProgram(program.glo)
+    for entry in entries:
+        values = parameters(entry, time, drift)
+        values.update(overrides or {})
+        for name, value in values.items():
+            program[name].value = value
+        for strand in range(int(entry['record']['strands'])):
+            gl.glBegin(5)
+            for step in range(49):
+                gl.glVertex3f(step/48, -1, strand); gl.glVertex3f(step/48, 1, strand)
+            gl.glEnd()
+    gl.glUseProgram(0)
+    assert ctx.error == 'GL_NO_ERROR', ctx.error
+    result = np.frombuffer(out.read(), dtype='f4').reshape(size, size, 4).copy()
+    assert np.isfinite(result).all(), 'chute shader produced NaN/Inf'
+    return result
+
+
+black = render(records[:4])
+assert black[..., 3].sum() > 500, 'four black ribbons have no readable canopy coverage'
+assert (black[..., 3] > .8).sum() > 200, 'black material became faint smoke'
+assert black[..., :3].max() == 0, 'graphene shader introduced colour or glow'
+assert np.array_equal(black, render(records[:4])), 'paused canopy changed'
+assert np.array_equal(black, render(records[:4], overrides={'emission': (8, 8),
+    'sourceGlow': (1, 1, 1, 1), 'ambient': (.01, .01, .01)})), 'black fabric glows or loses coverage at night'
+for entry in records[:4]:
+    assert render([entry])[..., 3].sum() > 40, 'one canopy ribbon is invisible from the scene camera'
+assert render(records[:4], overrides={'colorStart': (0, 0, 0, 0),
+    'colorEnd': (0, 0, 0, 0)}).max() == 0, 'zero-alpha fabric still occludes the scene'
+wind = (8, 0, 2)
+wind_a, wind_b = render(records[:4], 1, wind), render(records[:4], 3, wind)
+assert np.abs(wind_a-wind_b).sum() > 5, 'wind cannot animate the fixed-length ribbons'
+combined = render(records)
+assert (combined[..., 2] > .2).sum() > 100, 'retained electric arcs lost their visible cores'
+black_pixels = (combined[..., 3] > .8) & (combined[..., :3].max(axis=2) < .01)
+assert black_pixels.sum() > 150, 'electric sources obscured the entire black canopy'
+
+# Inspect actual GLSL paths, without reimplementing the hair centre curve.
+flight = ctx.program(vertex_shader=vertex.split('void main() {')[0]+'''
+in vec2 samplePoint;
+out vec3 samplePosition;
+void main() {
+    vec3 helper=abs(direction.y)<0.9 ? vec3(0,1,0) : vec3(1,0,0);
+    vec3 u=normalize(cross(direction,helper));
+    samplePosition=centre(samplePoint.x,samplePoint.y,u,cross(direction,u));
+}
+''', varyings=['samplePosition'])
+samples = np.array([(t, 0) for t in np.linspace(0, 1, 129)], dtype='f4')
+vbo = ctx.buffer(samples.tobytes()); capture = ctx.buffer(reserve=len(samples)*12)
+vao = ctx.vertex_array(flight, [(vbo, '2f', 'samplePoint')])
+paths = []
+for entry in records[:4]:
+    roots = []
+    for drift in ((0, 0, 0), wind):
+        for name, value in parameters(entry, 2, drift).items():
+            if name in flight:
+                flight[name].value = value
+        vao.transform(capture, vertices=len(samples))
+        path = np.frombuffer(capture.read(), dtype='f4').reshape(-1, 3).copy()
+        assert np.isfinite(path).all()
+        assert path[:, 1].min() > 34.4, 'canopy droops below its upper support toward the passenger'
+        assert (np.linalg.norm(path[0]-entry['origin']) < entry['record']['width']*.23), (
+            'black ribbon root detached from its electric rim source')
+        assert (np.linalg.norm(path[-1, [0, 2]]) < layout['radius']*.4), (
+            'ribbons no longer meet above the passenger to form a canopy')
+        assert (np.linalg.norm(np.diff(path, axis=0), axis=1).sum() < entry['record']['length']*1.03), (
+            'wind stretches the canopy material')
+        roots.append(path[0]); paths.append(path)
+    assert np.array_equal(roots[0], roots[1]), 'wind unpinned a canopy rim attachment'
+
+if '--preview' in sys.argv:
+    from PIL import Image
+    background = np.array([.22, .30, .36])
+    panels = []
+    for rendered in (black, combined):
+        rgb = rendered[..., :3] + background*(1-rendered[..., 3:4])
+        panels.append((np.clip(rgb[::-1], 0, 1)**(1/2.2)*255).astype('uint8'))
+    Image.fromarray(np.concatenate(panels, axis=1)).save(sys.argv[sys.argv.index('--preview')+1])
+print('PASS: live Lua chute layout on production GLSL, four black fibrous sheets, canopy coverage, no glow, pause, wind, fixed length, rim pins, inward canopy shape and retained electric sources')
+print('Renderer:', ctx.info['GL_RENDERER'])
