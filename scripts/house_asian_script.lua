@@ -7,6 +7,7 @@ include "lib_UnitScript.lua"
 include "lib_radiance_emitters.lua"
 include "lib_Animation.lua"
 local buildingDamage = include "lib_building_damage.lua"
+local traceBuilding = GG.BuildingDestructionTrace and GG.BuildingDestructionTrace.Log
 --include "lib_debug.lua"
 
 local splitPlanner = VFS.Include("scripts/lib_house_asian_split.lua")
@@ -746,6 +747,7 @@ function absdiff(value, compval)
 end
 
 function script.Killed(recentDamage, _)
+    if traceBuilding then traceBuilding(unitID, 'house_killed_callback', {family='asian', recent_damage=recentDamage}) end
 	buildingDamage.collapse(LevelPieces, ToShowTable)
     if GG.ManualRenderedBuildingWithWindowsVisiblePieces then
         GG.ManualRenderedBuildingWithWindowsVisiblePieces[unitID] = nil
@@ -1892,6 +1894,7 @@ function script.QueryBuildInfo() return center end
 
 -- Called by the damage gadget after engine health modifiers have been applied.
 function BuildingBlockDamaged(hits, frame)
+    if traceBuilding then traceBuilding(unitID, 'house_damage_callback', {family='asian', buckets=hits and #hits or 0}, 30) end
     return buildingDamage.update(hits, frame)
 end
 

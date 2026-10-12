@@ -79,6 +79,7 @@ local function fixture(culture)
     }
     env.GG.CityAreaState={IsPeaceful=function() return peaceful end}
     env.VFS={Include=function(path)
+        if path=='scripts/lib_building_destruction_trace.lua' then return loadEnv(path,env) end
         if path=='scripts/lib_city_ruins.lua' then return dofile(path) end
         if path:find('city_reconstruction.lua',1,true) then return loadEnv(path,env) end
         if path:find('lib_house_asian_split.lua',1,true) then return {newState=function() return {} end} end

@@ -2,6 +2,7 @@
 -- The generated grid supplies conservative vertical supports: when one block
 -- fails, every block above it in that column fails too (no invented cantilevers).
 local M = {}
+local destructionTrace = VFS.Include('scripts/lib_building_destruction_trace.lua')
 local nativeShow, nativeHide, nativeMove, nativeTurn, nativeSpin = Show, Hide, Move, Turn, Spin
 local detached, visible, offsets, rotations, attachments = {}, {}, {}, {}, {}
 local blocks, columns, owners, movable = {}, {}, {}, {}
@@ -19,8 +20,13 @@ local function publishStats()
     end
 end
 local function lightBlockFire(p)
-    if not GG.SmokeRibbon or fireSlots[p] or activeFires >= MAX_BUILDING_FIRES then return end
+    if not GG.SmokeRibbon or fireSlots[p] or activeFires >= MAX_BUILDING_FIRES then
+        destructionTrace.Log(unitID, 'block_fire_skipped', {piece=p, active=activeFires,
+            reason=not GG.SmokeRibbon and 'no_provider' or fireSlots[p] and 'already_active' or 'fire_limit'}, 30)
+        return
+    end
     local slot='block_fire_'..tostring(p)
+    destructionTrace.Log(unitID, 'block_fire_requested', {piece=p, slot=slot}, 30)
     local ok=GG.SmokeRibbon.Set(unitID,slot,p,{
         directionSpace='world',direction={0,1,0},
         length=24,width=5,strands=2,curl=0.45,speed=1.8,
@@ -30,6 +36,7 @@ local function lightBlockFire(p)
         distanceFactor=35,
     })
     if ok then fireSlots[p]=slot;activeFires=activeFires+1 end
+    destructionTrace.Log(unitID, 'block_fire_result', {piece=p, accepted=not not ok, active=activeFires}, 30)
 end
 local FAILURE_DELAY_FRAMES = 6
 local FALL_FRAMES = 6
@@ -103,10 +110,16 @@ local function bind(p, block, inherited)
 end
 
 function M.initialize(levels, shown, roofs, windows, height, width, scale, cachedPieceMap)
-    if ready or collapsing then return end
+    if ready or collapsing then
+        destructionTrace.Log(unitID, 'structure_initialize_skipped', {reason=ready and 'already_ready' or 'collapsing'}, 30)
+        return
+    end
+    destructionTrace.Log(unitID, 'structure_initialize_begin', {height=height, width=width, scale=scale,
+        cachedPieceMap=cachedPieceMap ~= nil, shown=shown and #shown or 0})
     floorHeight, cellSize, modelScale = height, width, scale
     selected, rooftop, windowPieces = shown, roofs, windows
     pieceMap = cachedPieceMap or Spring.GetUnitPieceMap(unitID)
+    destructionTrace.Log(unitID, 'structure_piece_map_ready', {available=pieceMap ~= nil})
     local worldGrid = {}
     local placements = levels.placements or {}
     local order = {}
@@ -140,7 +153,9 @@ function M.initialize(levels, shown, roofs, windows, height, width, scale, cache
             end
         end
     end
+    local columnCount = 0 -- Diagnostic count in the existing traversal.
     for _, col in pairs(columns) do
+        columnCount = columnCount + 1
         table.sort(col, function(a, b)
             if a.y == b.y then return a.piece < b.piece end
             return a.y < b.y
@@ -179,6 +194,8 @@ function M.initialize(levels, shown, roofs, windows, height, width, scale, cache
     for p in pairs(rotations) do if not movable[p] then rotations[p] = nil end end
     ready = true
     publishStats()
+    destructionTrace.Log(unitID, 'structure_initialize_ready', {blocks=#blocks, columns=columnCount,
+        reason=#blocks == 0 and 'empty_structure' or 'support_graph_registered'})
 end
 
 local function removeAttachments(p)
@@ -227,6 +244,8 @@ end
 -- Keep the existing model section local: a short, controlled drop and tilt.
 -- There are no emitted model pieces, projectiles or separate debris units.
 local function settle(block, drop, seconds, travel)
+    destructionTrace.Log(unitID, 'block_settle_begin', {piece=block.piece, column=block.column, level=block.level,
+        roots=#block.roots, pieces=#block.pieces, drop=drop, seconds=seconds, travel=travel or drop})
     for _, p in ipairs(block.roots) do
         for axis = 1, 3 do StopSpin(p, axis, 0) end
         if drop > 0 then
@@ -236,14 +255,22 @@ local function settle(block, drop, seconds, travel)
         nativeTurn(p, x_axis, (rotation[x_axis] or 0) + block.leanX, math.rad(5) / seconds)
         nativeTurn(p, z_axis, (rotation[z_axis] or 0) + block.leanZ, math.rad(5) / seconds)
     end
+    destructionTrace.Log(unitID, 'block_settle_issued', {piece=block.piece, roots=#block.roots})
 end
 
 local function finishFall(block)
+    destructionTrace.Log(unitID, 'block_fall_hide_begin', {piece=block.piece, pieces=#block.pieces})
     for _, p in ipairs(block.pieces) do hidePiece(p) end
+    destructionTrace.Log(unitID, 'block_fall_hide_complete', {piece=block.piece, pieces=#block.pieces})
 end
 
 local function detach(block, frame)
-    if block.gone then return end
+    if block.gone then
+        destructionTrace.Log(unitID, 'block_detach_skipped', {piece=block.piece, reason='already_gone'}, 30)
+        return
+    end
+    destructionTrace.Log(unitID, 'block_detach_begin', {piece=block.piece, column=block.column, level=block.level,
+        visible=not not visible[block.piece], pieces=#block.pieces, animate=not not (frame and visible[block.piece])})
     block.gone = true
     detachedCount = detachedCount + 1
     publishStats()
@@ -262,15 +289,21 @@ local function detach(block, frame)
         local drop = math.min(floorHeight * 0.45, math.max(0, block.y - baseY))
         settle(block, drop, FALL_FRAMES / 30)
         falling[#falling+1] = {block = block, frame = frame + FALL_FRAMES}
+        destructionTrace.Log(unitID, 'block_fall_scheduled', {piece=block.piece, dueFrame=frame+FALL_FRAMES, drop=drop})
     else
         finishFall(block)
     end
 end
 
 local function nearestBlock(hitPiece, x, y, z)
+    destructionTrace.Log(unitID, 'block_lookup_begin', {piece=hitPiece, x=x, y=y, z=z}, 30)
     if type(hitPiece) == "string" then hitPiece = pieceMap[hitPiece] end
     local hit = hitPiece and owners[hitPiece]
-    if hit and not hit.gone and visible[hit.piece] then return hit end
+    if hit and not hit.gone and visible[hit.piece] then
+        destructionTrace.Log(unitID, 'block_lookup_selected', {piece=hit.piece, source='piece_owner',
+            pending=not not hit.pending, column=hit.column, level=hit.level}, 30)
+        return hit
+    end
     local best, distance
     for _, block in ipairs(blocks) do
         if not block.gone and not block.pending and visible[block.piece] then
@@ -281,13 +314,24 @@ local function nearestBlock(hitPiece, x, y, z)
             if not distance or d < distance then best, distance = block, d end
         end
     end
+    if best then
+        destructionTrace.Log(unitID, 'block_lookup_selected', {piece=best.piece, source=x and 'cached_position' or 'lowest_level',
+            metric=x and 'distance_squared' or 'level', score=distance,
+            x=best.x, y=best.worldY, z=best.z, column=best.column, level=best.level}, 30)
+    else
+        destructionTrace.Log(unitID, 'block_lookup_skipped', {piece=hitPiece, blocks=#blocks, reason='no_eligible_visible_block'}, 30)
+    end
     return best
 end
 
 -- Called only on the gadget's fixed update tick, including one final tick for
 -- pending failures and settling sections. Hits contain damage below 50% HP.
 function M.update(hits, frame)
-    if not ready or collapsing or #blocks == 0 then return false end
+    destructionTrace.Log(unitID, 'structural_update_received', {hits=hits and #hits or 0, failures=#failures, falling=#falling}, 30)
+    if not ready or collapsing or #blocks == 0 then
+        destructionTrace.Log(unitID, 'structural_update_skipped', {reason=not ready and 'not_ready' or collapsing and 'collapsing' or 'no_blocks'}, 30)
+        return false
+    end
     local settling = {}
     for _, entry in ipairs(falling) do
         if frame >= entry.frame then finishFall(entry.block)
@@ -300,11 +344,16 @@ function M.update(hits, frame)
         if frame >= failure.frame then
             local block = failure.block
             if not block.gone then
+                destructionTrace.Log(unitID, 'block_failure_due', {piece=block.piece, column=block.column,
+                    level=block.level, dueFrame=failure.frame})
                 dust(block.piece)
                 for _, above in ipairs(columns[block.column]) do
                     if above.y >= block.y then detach(above, frame) end
                 end
                 changed = true
+                destructionTrace.Log(unitID, 'block_failure_applied', {piece=block.piece, detached=detachedCount, falling=#falling})
+            else
+                destructionTrace.Log(unitID, 'block_failure_skipped', {piece=block.piece, reason='already_gone'}, 30)
             end
         else
             waiting[#waiting + 1] = failure
@@ -314,7 +363,10 @@ function M.update(hits, frame)
     if changed then refreshGeometry() end
 
     local _, maxHP = Spring.GetUnitHealth(unitID)
-    if not maxHP then return #failures > 0 or #falling > 0 end
+    if not maxHP then
+        destructionTrace.Log(unitID, 'structural_update_skipped', {reason='health_unavailable', failures=#failures, falling=#falling}, 30)
+        return #failures > 0 or #falling > 0
+    end
     local strength = math.max(1, maxHP * 0.5 / #blocks)
     -- Accumulate by struck block first, then resolve a bounded number of new
     -- support failures. Unresolved accumulated damage stays on the block.
@@ -322,11 +374,16 @@ function M.update(hits, frame)
         local block = nearestBlock(hit.piece, hit.x, hit.y, hit.z)
         if block and not block.pending then
             block.damage = block.damage + hit.damage
+            destructionTrace.Log(unitID, 'block_damage_accumulated', {piece=block.piece, increment=hit.damage,
+                damage=block.damage, strength=strength, column=block.column, level=block.level}, 30)
             -- Shared structural anchor: visual damage and smoke never pick a
             -- random decoration or the geometric centre of the house.
             GG.BuildingDamageAnchor = GG.BuildingDamageAnchor or {}
             GG.BuildingDamageAnchor[unitID] = block.piece
             lightBlockFire(block.piece)
+        else
+            destructionTrace.Log(unitID, 'block_damage_skipped', {piece=block and block.piece or hit.piece,
+                damage=hit.damage, reason=block and 'pending_failure' or 'no_selected_block'}, 30)
         end
     end
     local scheduled, overloaded = 0, false
@@ -338,14 +395,19 @@ function M.update(hits, frame)
                     if above.y >= block.y then above.pending = true end
                 end
                 scheduled = scheduled + 1
+                destructionTrace.Log(unitID, 'block_failure_scheduled', {piece=block.piece, column=block.column,
+                    level=block.level, damage=block.damage, strength=strength, dueFrame=frame+FAILURE_DELAY_FRAMES})
             else
                 overloaded = true
+                destructionTrace.Log(unitID, 'block_failure_deferred', {piece=block.piece, damage=block.damage,
+                    strength=strength, reason='update_column_limit'}, 30)
             end
         end
     end
     local alive = false
     for _, block in ipairs(blocks) do if not block.gone then alive = true; break end end
     if not alive and #falling == 0 then
+        destructionTrace.Log(unitID, 'all_blocks_gone_destroy_requested', {blocks=#blocks, detached=detachedCount})
         Spring.DestroyUnit(unitID, false, false)
         return false
     end
@@ -353,7 +415,11 @@ function M.update(hits, frame)
 end
 
 function M.collapse(levels, shown)
-    if collapsing then return 1 end
+    if collapsing then
+        destructionTrace.Log(unitID, 'collapse_skipped', {reason='already_collapsing'}, 30)
+        return 1
+    end
+    destructionTrace.Log(unitID, 'collapse_begin', {ready=ready, blocks=#blocks, failures=#failures, falling=#falling})
     collapsing = true
     failures = {}
     for _, entry in ipairs(falling) do finishFall(entry.block) end
@@ -364,12 +430,15 @@ function M.collapse(levels, shown)
         fireSlots[p]=nil
     end
     activeFires=0
+    destructionTrace.Log(unitID, 'collapse_hesitation', {milliseconds=200})
     Sleep(200) -- brief structural hesitation before the first floor gives way
     -- If killed during assembly there may not yet be a completed support graph.
     -- Hide partial geometry and suppress subsequent construction-thread Shows.
     if not ready then
+        destructionTrace.Log(unitID, 'collapse_partial_cleanup_begin', {shown=shown and #shown or 0, reason='not_ready'})
         for _, p in ipairs(shown or {}) do hidePiece(p) end
         hideAll(unitID)
+        destructionTrace.Log(unitID, 'collapse_complete', {result=1, reason='partial_structure_hidden'})
         return 1
     end
     local floors, order = {}, {}
@@ -384,6 +453,7 @@ function M.collapse(levels, shown)
     -- Lower floors give way in sequence. The entire remaining upper mass moves
     -- down together, including roofs and independent facade/roof decorations.
     for _, level in ipairs(order) do
+        destructionTrace.Log(unitID, 'collapse_floor_begin', {level=level, blocks=#floors[level], displacement=displacement})
         for i, block in ipairs(floors[level]) do
             if i <= 2 then dust(block.piece) end
             detach(block)
@@ -394,12 +464,15 @@ function M.collapse(levels, shown)
             if not block.gone then settle(block, displacement, FLOOR_TIME_MS / 1000, floorHeight) end
         end
         Sleep(FLOOR_TIME_MS)
+        destructionTrace.Log(unitID, 'collapse_floor_complete', {level=level, displacement=displacement, milliseconds=FLOOR_TIME_MS})
     end
     -- Unattached ground furniture, cranes and foundations disappear only after
     -- the structural mass has finished collapsing.
+    destructionTrace.Log(unitID, 'collapse_cleanup_begin', {shown=shown and #shown or 0})
     for _, p in ipairs(shown or {}) do hidePiece(p) end
     hideAll(unitID)
     refreshGeometry()
+    destructionTrace.Log(unitID, 'collapse_complete', {result=1, floors=#order, detached=detachedCount})
     return 1
 end
 
