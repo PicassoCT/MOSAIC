@@ -16,7 +16,7 @@ local active = {}
 local UPDATE_FRAMES = 6 -- 0.2 seconds at the simulation's 30 Hz
 local MAX_IMPACTS = 8
 local fxInterval, dustLeft = -1, 0
-local blockDestroyableHouseTypes = getBlockDestroyableHouseTypes()
+local blockDestroyableHouseTypes = getBlockDestroyableHouseTypes(UnitDefs)
 local function allowEffect(kind)
     local interval = math.floor(Spring.GetGameFrame() / UPDATE_FRAMES)
     if interval ~= fxInterval then
@@ -85,7 +85,6 @@ function gadget:GameFrame(frame)
         local hits = active[id]
         active[id] = nil
         local env = Spring.UnitScript.GetScriptEnv(id)
-        echo("Transfering damage to building ".. hits)
         if env and env.BuildingBlockDamaged and not Spring.GetUnitIsDead(id) then
             local waiting = Spring.UnitScript.CallAsUnit(id, env.BuildingBlockDamaged, hits, frame)
             if waiting then active[id] = {} end
