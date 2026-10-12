@@ -11,7 +11,7 @@ end
 if not gadgetHandler:IsSyncedCode() then return false end
 
 VFS.Include('scripts/lib_mosaic.lua')
-local eligible = getStructuralBuildingTypeTable(UnitDefs)
+local blockDamageableHouseTypeTable = getStructuralBuildingTypeTable(UnitDefs)
 local active = {}
 local UPDATE_FRAMES = 6 -- 0.2 seconds at the simulation's 30 Hz
 local MAX_IMPACTS = 8
@@ -38,24 +38,25 @@ function gadget:Shutdown()
         GG.AllowBuildingBlockDamageEffect = nil
     end
 end
-for id, def in pairs(UnitDefs) do
-    local cp = def.customParams or {}
-    if blockDestroyableHouseTypes [def.name] then
-        eligible[id] = true
-    end
-end
 
+
+local spGetUnitHealth = Spring.GetUnitHealth
+local spGetGameFrame = Spring.GetGameFrame
+local spGetUnitLastAttackedPiece = Spring.GetUnitLastAttackedPiece
+local spGetProjectilePosition = Spring.GetProjectilePosition
+local spGetUnitPosition = Spring.GetUnitPosition
 function gadget:UnitDamaged(id, defID, team, damage, paralyzer, weaponID, projectileID, attackerID)
-    if not eligible[defID] or paralyzer or damage <= 0 then return end
-    local hp, maxHP = Spring.GetUnitHealth(id)
+    if not blockDamageableHouseTypeTable[defID] or paralyzer or damage <= 0 then return end
+
+    local hp, maxHP = spGetUnitHealth(id)
     if not hp or not maxHP or hp <= 0 or hp >= maxHP * 0.5 then return end
-    local hitPiece, frame = Spring.GetUnitLastAttackedPiece(id)
-    if frame ~= Spring.GetGameFrame() then hitPiece = nil end
+    local hitPiece, frame = spGetUnitLastAttackedPiece(id)
+    if frame ~= spGetGameFrame() then hitPiece = nil end
     local x, y, z
-    if projectileID and projectileID >= 0 then x, y, z = Spring.GetProjectilePosition(projectileID) end
+    if projectileID and projectileID >= 0 then x, y, z = spGetProjectilePosition(projectileID) end
     -- Most houses use a whole-unit collision box, so an exact piece hit is not
     -- available. Prefer the impact projectile, then the attacker-facing facade.
-    if not x and attackerID then x, y, z = Spring.GetUnitPosition(attackerID) end
+    if not x and attackerID then x, y, z = spGetUnitPosition(attackerID) end
     local hits = active[id]
     if not hits then hits = {}; active[id] = hits end
     -- Bound queue size even for rapid-fire area damage. Nearby impacts merge;
@@ -84,6 +85,7 @@ function gadget:GameFrame(frame)
         local hits = active[id]
         active[id] = nil
         local env = Spring.UnitScript.GetScriptEnv(id)
+        echo("Transfering damage to building ".. hits)
         if env and env.BuildingBlockDamaged and not Spring.GetUnitIsDead(id) then
             local waiting = Spring.UnitScript.CallAsUnit(id, env.BuildingBlockDamaged, hits, frame)
             if waiting then active[id] = {} end

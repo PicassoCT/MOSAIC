@@ -1892,6 +1892,7 @@ function script.QueryBuildInfo() return center end
 
 -- Called by the damage gadget after engine health modifiers have been applied.
 function BuildingBlockDamaged(hits, frame)
+    echo("Damage received ".. hits)
     return buildingDamage.update(hits, frame)
 end
 

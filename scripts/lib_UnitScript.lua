@@ -5993,11 +5993,7 @@ function explodeTableOfPiecesGroupsExcludeTable(TableOfPiecesGroups,  ExcludePie
     end
 end
 
--- > Explodes a Table of Pieces 
-function explodeD(TableOfPieces, Conditions)
-    lStepSize = StepSize or 1
-    for num, pieces in pairs(TableOfPieces) do Explode(pieces, Conditions) end
-end
+
 
 -- > make a CEG CLOUD
 function CEG_CLOUD(cegname, size, pos, lifetime, nr, densits, plifetime, swing,

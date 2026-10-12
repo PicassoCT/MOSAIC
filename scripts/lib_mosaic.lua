@@ -2288,19 +2288,17 @@ end
             end
 
              function getBlockDestroyableHouseTypes(UnitDefs)
-
+                local UnitDefNames = getUnitDefNames(UnitDefs)
                 typeTable = {
-                    ["house_asian0"]=true,
-                    ["house_western0"]=true,
-                    ["house_arab0"]=true,
+                    "house_asian0",
+                    "house_western0",
+                    "house_arab0",
                 }
-
-                return typeTable
+                return getTypeTable(UnitDefNames, typeTable)
             end
 
             function getRaidIconTypeTable(UnitDefs)
                 assert(UnitDefs)
-                GameConfig = getGameConfig()
                 local UnitDefNames = getUnitDefNames(UnitDefs)
                 typeTable = {
                     "icon_raid",

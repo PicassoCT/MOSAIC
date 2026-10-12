@@ -8,9 +8,6 @@ TablesOfPiecesGroups = {}
 
 
 function script.HitByWeapon(x, z, weaponDefID, damage)
-    if damage > 50 then
-        Explode(randDict(TablesOfPiecesGroups["RuinSub"]),  SFX.FALL + SFX.FIRE)
-    end
     return damage
 end
 
