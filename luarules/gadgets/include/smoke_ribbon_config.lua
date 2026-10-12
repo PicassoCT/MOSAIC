@@ -72,6 +72,9 @@ function M.Normalize(unitID, piece, options)
         sourceGlow = vector(o.sourceGlow, {0, 0, 0, 0}, 4, 0, 1),
         seed = number(o.seed, (unitID * 0.754877666 + piece * 0.569840296) % 100, 0, 10000),
         strands = math.floor(number(o.strands, hair and 1 or 3, 1, 4)),
+        -- Optional simulation-clock lifetime; persistent attachments omit it.
+        endFrame = number(o.endFrame, nil, 0, 2147483647),
+        fadeFrames = number(o.fadeFrames, 0, 0, 1000000),
         enabled = o.enabled ~= false,
     }
 end

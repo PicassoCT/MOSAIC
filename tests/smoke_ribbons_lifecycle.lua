@@ -94,6 +94,25 @@ assert(api.Set(7,'a','smoke',{length=10,width=50}));cameraZ=3000;before=drawn
 gadget:DrawWorld();assert(drawn==before+1,'wide plume size ignored')
 assert(api.Set(7,'a','smoke',{distanceFactor=10}));cameraZ=600;hidden('custom distance factor lost')
 cameraZ=100;before=drawn;gadget:DrawWorld();assert(drawn==before+1,'plume failed to return in range')
+-- Finite attachments fade using the simulation clock without registry churn.
+-- Expiry must survive a client reload even before the synced removal arrives.
+local previousFrame=frame
+frame=100
+assert(api.Set(7,'a','smoke',{endFrame=190.5,fadeFrames=60}))
+local lifetimeRevision=SmokeRibbonRevision
+gadget:DrawWorld();assert(math.abs(lastOpacity-1.6/3)<1e-8,'finite effect faded before its final interval')
+frame=160;gadget:DrawWorld()
+assert(math.abs(lastOpacity-0.8/3)<1e-8,'finite effect did not fade at half its remaining interval')
+cameraZ=2160;gadget:DrawWorld()
+assert(math.abs(lastOpacity-0.4/3)<1e-8,'distance fade overwrote lifetime fade')
+cameraZ=100;frame=190;hidden('effect was submitted at its expiry frame')
+assert(SmokeRibbonRevision==lifetimeRevision,'lifetime progression rewrote the synced registry')
+gadget:Shutdown();gadget={};dofile(path);gadget:Initialize()
+hidden('client reload revived an expired attachment')
+assert(not api.Set(7,'invalid_lifetime','smoke',{endFrame=0/0}),'invalid expiry was accepted')
+frame=previousFrame
+assert(api.Set(7,'a','smoke',{}));gadget:DrawWorld()
+assert(math.abs(lastOpacity-1.6/3)<1e-8,'persistent attachment inherited an old lifetime')
 -- Default wind, optional motion, both together and one sample per unit/draw.
 wind={4,0,0};assert(api.Set(7,'a','smoke',{}));gadget:DrawWorld()
 assert(math.abs(lastDrift[1]-0.84)<1e-8,'default wind disabled or incorrectly scaled')

@@ -7,101 +7,87 @@ function gadget:GetInfo()
         license = "GPL3",
         layer = 1,
         version = 1,
-        enabled = Game.windMax >= 2 
+        enabled = true,
     }
 end
 
-if (not gadgetHandler:IsSyncedCode()) then return false end
+if not gadgetHandler:IsSyncedCode() then return false end
 
 VFS.Include("scripts/lib_UnitScript.lua")
 VFS.Include("scripts/lib_mosaic.lua")
 VFS.Include("scripts/lib_debug.lua")
 local spGetUnitPieceList = Spring.GetUnitPieceList
-local spGetUnitLastAttackedPiece = Spring.GetUnitLastAttackedPiece
+local spGetUnitPiecePosDir = Spring.GetUnitPiecePosDir
 local spSpawnCEG = Spring.SpawnCEG
-local spGetWind =Spring.GetWind
-local GameConfig = getGameConfig()
-local houseTypeTable = getStructuralBuildingTypeTable(UnitDefs)
-local windLimit = Game.windMax*0.75
-
-
-function getRandomPiece(unitID)
-        assertNum(unitID)
-        list = spGetUnitPieceList(unitID) 
-        if list then return  math.random(1,#list) else return nil end
-end
+local spGetWind = Spring.GetWind
+local spValidUnitID = Spring.ValidUnitID
+local spGetUnitIsDead = Spring.GetUnitIsDead
+local config = getBuildingDamageConfig()
+local windMax = Game.windMax or 0
+local windLimit = windMax*.75
 local smokeSwirls = {}
-local boolAnySmokeSwirlActive = true
-local spGetUnitPiecePosDir =  Spring.GetUnitPiecePosDir
-function registerSmokeSwirl(unitID, pieceId)
-    smokeSwirls[unitID] = {timeInFrames = 25*30, piece = pieceId}
-    boolAnySmokeSwirlActive = true
+
+local function getRandomPiece(unitID)
+    local list = spGetUnitPieceList(unitID)
+    if list and #list > 0 then return math.random(1, #list) end
 end
 
--- > create a CEG at the given Piece with direction or piecedirectional Vector
-function localspawnCegAtPiece(cegname, unitID, pieceId, offset, dx, dy, dz )
-    assert(unitID)
-    assert(pieceId)
-    if not dx then -- default to upvector 
-        dx, dy, dz = 0, 1, 0
-    end
-
-    boolAdd = offset or 10
-
-
-    x, y, z, mx, my, mz = spGetUnitPiecePosDir(unitID, pieceId)
-
-    if y then
-        y = y + boolAdd
-        spSpawnCEG(cegname, x, y, z, dx, dy, dz, 0, 0)
-    end
-end
-
-function gadget:UnitDamaged(unitID, unitDefID, teamID, damage)
-    if not houseTypeTable[unitDefID] or not damage or damage <= 10 then return end
-    -- The structural controller resolves the precise facade piece on its
-    -- bounded six-frame tick. Never substitute a random building polygon.
-    local piece = GG.BuildingDamageAnchor and GG.BuildingDamageAnchor[unitID]
-    if not piece then return end
-    local record = smokeSwirls[unitID]
-    if not record or record.piece ~= piece then
-        localspawnCegAtPiece("civilbuildingdamage", unitID, piece)
-    end
-    registerSmokeSwirl(unitID, piece)
+local function spawnCegAtPiece(cegname, unitID, piece, offset)
+    if not piece then return false end
+    local x, y, z = spGetUnitPiecePosDir(unitID, piece)
+    if not y then return false end
+    spSpawnCEG(cegname, x, y+(offset or 10), z, 0, 1, 0, 0, 0)
+    return true
 end
 
 function gadget:GameFrame(frame)
-    if frame % 270 == 0 then
-        dirX, dirY, dirZ, strength, normDirX, normDirY, normDirZ = spGetWind()
+    -- Damage smoke also works on calm maps. Only windblown newspaper uses the
+    -- original wind threshold, 270-frame cadence and random building/piece.
+    if windMax >= 2 and frame % 270 == 0 then
+        local _, _, _, strength = spGetWind()
         if strength > windLimit then
-            factor = math.ceil((strength/Game.windMax) * 10.0)
-            for i=1 , factor do
-                unitId, pos =  randDict(GG.BuildingTable)
-                if unitId then
-                    localspawnCegAtPiece("flyinggarbage", unitId, getRandomPiece(unitId))
-                end
+            local factor = math.ceil((strength/windMax)*10)
+            for _ = 1, factor do
+                local unitID = randDict(GG.BuildingTable)
+                if unitID then spawnCegAtPiece("flyinggarbage", unitID, getRandomPiece(unitID)) end
             end
         end
     end
 
-    if boolAnySmokeSwirlActive and frame % 6 == 0 then
-         smokeSwirlsCounter = 0
-         for id, data in pairs(smokeSwirls) do
-            if data and data.piece then
-                if Spring.ValidUnitID(id) and not Spring.GetUnitIsDead(id) then
-                    localspawnCegAtPiece("vehsmokepillar", id, data.piece, 0)
-                else
-                    smokeSwirls[id] = nil
-                end
-                smokeSwirls[id].timeInFrames = smokeSwirls[id].timeInFrames - 6
-                smokeSwirlsCounter = smokeSwirlsCounter + 1
-                if smokeSwirls[id].timeInFrames < 0 then
-                  smokeSwirls[id] = nil
-                  smokeSwirlsCounter = smokeSwirlsCounter -1
+    if frame % 6 ~= 0 then return end
+    local nextSwirls = {}
+    -- Structure is authoritative. There is no UnitDamaged timer or last-hit
+    -- anchor to refresh after a piece disappears; absent records stop emission.
+    for unitID, pieces in pairs(GG.BuildingDamageEffects or {}) do
+        if spValidUnitID(unitID) and not spGetUnitIsDead(unitID) then
+            local previous = smokeSwirls[unitID] or {}
+            for piece, effect in pairs(pieces) do
+                if effect.visible == true and effect.piece == piece
+                    and frame >= effect.started and frame < effect.smokeUntil then
+                    local state = previous[piece]
+                    if not state or state.started ~= effect.started then
+                        state = {started=effect.started, credit=0}
+                        spawnCegAtPiece("civilbuildingdamage", unitID, piece)
+                    end
+                    local fade = config.effectFadeFrames > 0
+                        and math.min(1, (effect.smokeUntil-frame)/config.effectFadeFrames) or 1
+                    -- CEG particles retain their natural lifetime. Reduce new
+                    -- emission during the final two seconds without inventing
+                    -- an unsupported per-CEG alpha or lifetime override.
+                    state.credit = state.credit+fade
+                    if state.credit >= 1 then
+                        spawnCegAtPiece("vehsmokepillar", unitID, piece, 0)
+                        state.credit = state.credit-1
+                    end
+                    nextSwirls[unitID] = nextSwirls[unitID] or {}
+                    nextSwirls[unitID][piece] = state
                 end
             end
-         end
-         boolAnySmokeSwirlActive = (smokeSwirlsCounter > 0)
+        end
     end
+    smokeSwirls = nextSwirls
 end
 
+function gadget:UnitDestroyed(unitID)
+    smokeSwirls[unitID] = nil
+end

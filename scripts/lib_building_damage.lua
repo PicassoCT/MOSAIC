@@ -3,6 +3,9 @@
 -- fails, every block above it in that column fails too (no invented cantilevers).
 local M = {}
 local unitEnv = _G
+local config = VFS.Include('scripts/lib_mosaic.lua',
+    setmetatable({MOSAIC_CONFIG_ONLY=true}, {__index=unitEnv})).getBuildingDamageConfig()
+local effectsHelper = VFS.Include('scripts/lib_building_damage_effects.lua')
 local trace = VFS.Include('luarules/gadgets/include/execution_trace.lua').New('BuildingDestruction', {maxEvents=256})
 local function log(stage, fields, cycle)
     trace.Log(unitID, cycle or (Spring.GetGameFrame and Spring.GetGameFrame() or 0), stage, fields)
@@ -15,38 +18,84 @@ local nativeMove, nativeTurn, nativeSpin = unitScript.Move, unitScript.Turn, uni
 -- All three generators place floor heights on Move axis 2. Use that axis rather
 -- than the shared header's y_axis alias, which is 3.
 local HEIGHT_MOVE_AXIS = 2
-local detached, visible, offsets, rotations, attachments = {}, {}, {}, {}, {}
+local detached, retained, visible, offsets, rotations, attachments = {}, {}, {}, {}, {}, {}
 local blocks, columns, owners, movable = {}, {}, {}, {}
 local selected, rooftop, windowPieces, pieceMap
 local floorHeight, cellSize, modelScale = 1, 1, 1
 local ready, collapsing = false, false
-local failures, falling = {}, {}
-local fireSlots, activeFires, detachedCount = {}, 0, 0
-local MAX_BUILDING_FIRES = 2
+local failures, falling, overloadedPending = {}, {}, false
+local fireSlots, activeFires, detachedCount, remnantCount = {}, 0, 0, 0
+local effects, activeEffects = {}, 0
 local function publishStats()
     if Spring.SetUnitRulesParam then
         Spring.SetUnitRulesParam(unitID, 'building_structural_blocks', #blocks, {public=true})
         Spring.SetUnitRulesParam(unitID, 'building_detached_blocks', detachedCount, {public=true})
+        Spring.SetUnitRulesParam(unitID, 'building_remnant_blocks', remnantCount, {public=true})
         Spring.SetUnitRulesParam(unitID, 'building_structural_ready', ready and 1 or 0, {public=true})
     end
 end
+local function removeBlockFire(p)
+    if not fireSlots[p] then return end
+    if GG.SmokeRibbon then GG.SmokeRibbon.Remove(unitID, fireSlots[p]) end
+    fireSlots[p] = nil
+    activeFires = activeFires - 1
+end
+
+local function removeBlockEffect(p)
+    removeBlockFire(p)
+    if effects[p] then
+        effects[p] = nil
+        activeEffects = activeEffects - 1
+    end
+    if activeEffects == 0 and GG.BuildingDamageEffects then
+        GG.BuildingDamageEffects[unitID] = nil
+    end
+    if GG.BuildingDamageAnchor and GG.BuildingDamageAnchor[unitID] == p then
+        GG.BuildingDamageAnchor[unitID] = nil
+    end
+end
+
+local function clearEffects()
+    for p in pairs(effects) do removeBlockEffect(p) end
+end
+
+local function expireEffects(frame)
+    for p, effect in pairs(effects) do
+        if not visible[p] or frame >= effect.smokeUntil then
+            removeBlockEffect(p)
+        elseif frame >= effect.fireUntil then
+            removeBlockFire(p)
+        end
+    end
+end
+
 local function lightBlockFire(p, cycle)
-    if not GG.SmokeRibbon or fireSlots[p] or activeFires >= MAX_BUILDING_FIRES then
+    if not visible[p] or effects[p] or activeEffects >= config.maxFires then
         log('block_fire_skipped', {piece=p, active=activeFires,
-            reason=not GG.SmokeRibbon and 'no_provider' or fireSlots[p] and 'already_active' or 'fire_limit'}, cycle)
+            reason=not visible[p] and 'hidden_piece' or effects[p] and 'already_active' or 'fire_limit'}, cycle)
+        return
+    end
+    -- A hit creates one finite lifetime. Subsequent ticks and repeated hits on
+    -- this anchor cannot extend it; fire and smoke share the same bounded slots.
+    local effect = {piece=p, started=cycle, fireUntil=cycle+config.fireLifetimeFrames,
+        smokeUntil=cycle+config.smokeLifetimeFrames, visible=true}
+    effects[p] = effect
+    activeEffects = activeEffects + 1
+    GG.BuildingDamageEffects = GG.BuildingDamageEffects or {}
+    GG.BuildingDamageEffects[unitID] = effects
+    GG.BuildingDamageAnchor = GG.BuildingDamageAnchor or {}
+    GG.BuildingDamageAnchor[unitID] = p
+    if not GG.SmokeRibbon then
+        log('block_fire_skipped', {piece=p, active=activeFires, reason='no_provider'}, cycle)
         return
     end
     local slot='block_fire_'..tostring(p)
+    local options = effectsHelper.FlameOptions(unitID, p,
+        {floorHeight=floorHeight, cellSize=cellSize, modelScale=modelScale})
+    options.endFrame, options.fadeFrames = effect.fireUntil, config.effectFadeFrames
+    options.executionTrace = {prefix='BuildingDestruction',stagePrefix='building_fire',cycle=cycle}
     log('block_fire_requested', {piece=p, slot=slot}, cycle)
-    local ok, reason=GG.SmokeRibbon.Set(unitID,slot,p,{
-        executionTrace={prefix='BuildingDestruction',stagePrefix='building_fire',cycle=cycle},
-        directionSpace='world',direction={0,1,0},
-        length=24,width=5,strands=2,curl=0.45,speed=1.8,
-        windAffected=false,motionAffected=false,
-        colorStart={1,0.55,0.18,0.85},colorEnd={0.75,0.08,0.015,0},
-        emission={2.5,0.6},sourceGlow={1,0.42,0.09,0.3},
-        distanceFactor=35,
-    })
+    local ok, reason=GG.SmokeRibbon.Set(unitID,slot,p,options)
     if ok then fireSlots[p]=slot;activeFires=activeFires+1 end
     log('block_fire_result', {piece=p, slot=slot, accepted=not not ok, reason=reason}, cycle)
 end
@@ -64,7 +113,11 @@ local function showBuildingPiece(p)
     end
 end
 local function hideBuildingPiece(p)
+    -- Retained ruins are frozen geometry. Assembly/day-night threads must not
+    -- hide them after their old structural entries have been removed.
+    if retained[p] and not collapsing then return end
     visible[p] = nil
+    removeBlockEffect(p)
     return (unitEnv.CloudPieceHide or nativeHide)(p)
 end
 
@@ -72,7 +125,17 @@ function IsBuildingPieceDetached(p)
     return collapsing or detached[p] == true
 end
 
+function IsBuildingPieceVisible(p)
+    return not collapsing and visible[p] == true
+end
+
 function RegisterBuildingPieceAttachment(p, id)
+    if IsBuildingPieceDetached(p) then
+        if Spring.ValidUnitID(id) and not Spring.GetUnitIsDead(id) then
+            Spring.DestroyUnit(id, false, true)
+        end
+        return
+    end
     attachments[p] = attachments[p] or {}
     attachments[p][#attachments[p]+1] = id
 end
@@ -231,12 +294,9 @@ local function removeAttachments(p)
 end
 
 local function hidePiece(p)
-    if fireSlots[p] then
-        if GG.SmokeRibbon then GG.SmokeRibbon.Remove(unitID,fireSlots[p]) end
-        fireSlots[p]=nil;activeFires=math.max(0,activeFires-1)
-    end
     detached[p] = true
-    Hide(p)
+    retained[p] = nil
+    hideBuildingPiece(p)
     if windowPieces then windowPieces[p] = nil end
     if GG.SetObjectiveRadiancePieceVisible then
         GG.SetObjectiveRadiancePieceVisible(unitID, p, false)
@@ -264,7 +324,8 @@ local function dust(p)
     if x then Spring.SpawnCEG("building_block_dust", x, y, z, 0, 1, 0) end
 end
 
--- Keep the existing model section local: a short, controlled drop and tilt.
+-- Keep each model section local: retained upper sections sink into the base;
+-- the other sections make a short controlled drop before disappearing.
 -- There are no emitted model pieces, projectiles or separate debris units.
 local function settle(block, drop, seconds, travel)
     if not collapsing then
@@ -284,8 +345,29 @@ local function settle(block, drop, seconds, travel)
 end
 
 local function finishFall(block)
+    if block.keepVisible and not collapsing then return end
+    if block.keepVisible then
+        block.keepVisible = false
+        remnantCount = remnantCount - 1
+        publishStats()
+    end
     for _, p in ipairs(block.pieces) do hidePiece(p) end
     if not collapsing then log('block_fall_hidden', {piece=block.piece, pieces=#block.pieces}) end
+end
+
+local function removeBlockShadow(block)
+    if not block.shadowRemoved and RemoveBuildingShadowPiece then
+        RemoveBuildingShadowPiece(block.piece)
+        block.shadowRemoved = true
+    end
+end
+
+local function keepUpperRemnant(block)
+    -- A private integer seed gives each section a stable roll without consuming
+    -- or depending on the simulation's shared random-number sequence.
+    local seed = (unitID * 65537 + block.piece * 8191) % 2147483647
+    local roll = ((seed * 48271) % 2147483647) / 2147483647
+    return roll < config.upperRemnantChance
 end
 
 local function detach(block, frame)
@@ -294,22 +376,36 @@ local function detach(block, frame)
         log('block_detach_begin', {piece=block.piece, level=block.level, column=block.column,
             visible=not not visible[block.piece]}, frame)
     end
+    local bottom = columns[block.column][1]
+    block.keepVisible = not collapsing and visible[block.piece]
+        and (block == bottom or keepUpperRemnant(block)) or false
     block.gone = true
     detachedCount = detachedCount + 1
+    if block.keepVisible then remnantCount = remnantCount + 1 end
     publishStats()
     for _, p in ipairs(block.pieces) do
         detached[p] = true
+        -- Preserve only the pieces actually drawn at the moment of failure;
+        -- hidden alternative meshes and decorations must remain hidden.
+        retained[p] = block.keepVisible and visible[p] or nil
+        if windowPieces then windowPieces[p] = nil end
         removeAttachments(p)
         if GG.SetObjectiveRadiancePieceVisible then
             GG.SetObjectiveRadiancePieceVisible(unitID, p, false)
         end
     end
-    if RemoveBuildingShadowPiece then RemoveBuildingShadowPiece(block.piece) end
+    -- A retained bottom still occupies the bottom shadow cell. Sunken upper
+    -- remnants overlap that cell, so their old elevated shadow bits are removed.
+    if not block.keepVisible or block ~= bottom then removeBlockShadow(block) end
     if frame and visible[block.piece] then
-        -- Never push the lowest block into the terrain. Its upper stack settles
-        -- by less than half a floor, then disappears in the local dust puff.
-        local baseY = columns[block.column][1].y
-        local drop = math.min(floorHeight * 0.45, math.max(0, block.y - baseY))
+        local drop = 0
+        if block ~= bottom then
+            if block.keepVisible then
+                drop = math.max(0, block.y - (bottom.y + floorHeight * config.remnantHeightFraction))
+            else
+                drop = math.min(floorHeight * 0.45, math.max(0, block.y - bottom.y))
+            end
+        end
         settle(block, drop, FALL_FRAMES / 30)
         falling[#falling+1] = {block = block, frame = frame + FALL_FRAMES}
     else
@@ -347,8 +443,16 @@ local function nearestBlock(hitPiece, x, y, z, cycle)
 end
 
 -- Called only on the gadget's fixed update tick, including one final tick for
--- pending failures and settling sections. Hits contain damage below 50% HP.
+-- pending failures, settling sections and finite effects. Hits contain only the
+-- damage admitted below the shared configured health threshold.
 function M.update(hits, frame)
+    -- Once structural work has finished, only two bounded effect records need
+    -- ticking. Avoid a health query, support scan and trace on every fire tick.
+    if ready and not collapsing and #blocks > 0 and (not hits or #hits == 0)
+        and #failures == 0 and #falling == 0 and not overloadedPending then
+        expireEffects(frame)
+        return activeEffects > 0
+    end
     log('structural_update_received', {hits=hits and #hits or 0, ready=ready, blocks=#blocks,
         failures=#failures, falling=#falling, header_dispatch=unitEnv.buildingDamageEnabled==true,
         hook_installed=type(unitEnv.BuildingDamageShow)=='function', move_axis=HEIGHT_MOVE_AXIS}, frame)
@@ -356,6 +460,7 @@ function M.update(hits, frame)
         log('structural_update_skipped', {reason=not ready and 'not_ready' or collapsing and 'collapsing' or 'no_blocks'}, frame)
         return false
     end
+    expireEffects(frame)
     local settling = {}
     for _, entry in ipairs(falling) do
         if frame >= entry.frame then finishFall(entry.block)
@@ -385,9 +490,9 @@ function M.update(hits, frame)
     local _, maxHP = Spring.GetUnitHealth(unitID)
     if not maxHP then
         log('structural_update_skipped', {reason='missing_max_health', failures=#failures, falling=#falling}, frame)
-        return #failures > 0 or #falling > 0
+        return #failures > 0 or #falling > 0 or activeEffects > 0
     end
-    local strength = math.max(1, maxHP * 0.5 / #blocks)
+    local strength = math.max(1, maxHP * config.healthThreshold / #blocks)
     -- Accumulate by struck block first, then resolve a bounded number of new
     -- support failures. Unresolved accumulated damage stays on the block.
     for _, hit in ipairs(hits or {}) do
@@ -398,8 +503,6 @@ function M.update(hits, frame)
                 increment=hit.damage, strength=strength, level=block.level, column=block.column}, frame)
             -- Shared structural anchor: visual damage and smoke never pick a
             -- random decoration or the geometric centre of the house.
-            GG.BuildingDamageAnchor = GG.BuildingDamageAnchor or {}
-            GG.BuildingDamageAnchor[unitID] = block.piece
             lightBlockFire(block.piece, frame)
         else
             log('block_damage_skipped', {piece=block and block.piece or hit.piece, damage=hit.damage,
@@ -422,17 +525,19 @@ function M.update(hits, frame)
             end
         end
     end
+    overloadedPending = overloaded
     local alive = false
     for _, block in ipairs(blocks) do if not block.gone then alive = true; break end end
     if not alive and #falling == 0 then
         log('structural_destroy_requested', {reason='no_remaining_blocks'}, frame)
+        clearEffects()
         Spring.DestroyUnit(unitID, false, false)
         return false
     end
     log('structural_update_complete', {scheduled=scheduled, overloaded=overloaded,
         failures=#failures, falling=#falling, fires=activeFires,
-        waiting=overloaded or #failures > 0 or #falling > 0}, frame)
-    return overloaded or #failures > 0 or #falling > 0
+        waiting=overloaded or #failures > 0 or #falling > 0 or activeEffects > 0}, frame)
+    return overloaded or #failures > 0 or #falling > 0 or activeEffects > 0
 end
 
 function M.collapse(levels, shown)
@@ -440,14 +545,11 @@ function M.collapse(levels, shown)
     log('collapse_begin', {ready=ready, blocks=#blocks, failures=#failures, falling=#falling})
     collapsing = true
     failures = {}
+    overloadedPending = false
     for _, entry in ipairs(falling) do finishFall(entry.block) end
     falling = {}
     for p in pairs(attachments) do removeAttachments(p) end
-    for p,slot in pairs(fireSlots) do
-        if GG.SmokeRibbon then GG.SmokeRibbon.Remove(unitID,slot) end
-        fireSlots[p]=nil
-    end
-    activeFires=0
+    clearEffects()
     Sleep(200) -- brief structural hesitation before the first floor gives way
     -- If killed during assembly there may not yet be a completed support graph.
     -- Hide partial geometry and suppress subsequent construction-thread Shows.
@@ -484,6 +586,15 @@ function M.collapse(levels, shown)
     end
     -- Unattached ground furniture, cranes and foundations disappear only after
     -- the structural mass has finished collapsing.
+    -- Retained partial-collapse sections are absent from shown and the live
+    -- support lists, so explicitly clear their geometry and shadow bits too.
+    for _, block in ipairs(blocks) do
+        for _, p in ipairs(block.pieces) do hidePiece(p) end
+        removeBlockShadow(block)
+        block.keepVisible = false
+    end
+    remnantCount = 0
+    publishStats()
     for _, p in ipairs(shown or {}) do hidePiece(p) end
     hideAll(unitID)
     refreshGeometry()

@@ -12,6 +12,7 @@ if not gadgetHandler:IsSyncedCode() then return false end
 
 VFS.Include('scripts/lib_mosaic.lua')
 local blockDamageableHouseTypeTable = getStructuralBuildingTypeTable(UnitDefs)
+local damageHealthFraction = getBuildingDamageConfig().healthThreshold
 local trace = VFS.Include('luarules/gadgets/include/execution_trace.lua').New('BuildingDestruction')
 local active = {}
 local UPDATE_FRAMES = 6 -- 0.2 seconds at the simulation's 30 Hz
@@ -61,9 +62,9 @@ function gadget:UnitDamaged(id, defID, team, damage, paralyzer, weaponID, projec
     end
 
     local hp, maxHP = spGetUnitHealth(id)
-    if not hp or not maxHP or hp <= 0 or hp >= maxHP * 0.5 then
+    if not hp or not maxHP or hp <= 0 or hp >= maxHP * damageHealthFraction then
         trace.Log(id, cycle, 'damage_skipped', {hp=hp, max_hp=maxHP,
-            reason=(not hp or not maxHP) and 'missing_health' or hp <= 0 and 'lethal_hit' or 'above_half_health'})
+            reason=(not hp or not maxHP) and 'missing_health' or hp <= 0 and 'lethal_hit' or 'above_damage_threshold'})
         return
     end
     local hitPiece, frame = spGetUnitLastAttackedPiece(id)
@@ -89,7 +90,7 @@ function gadget:UnitDamaged(id, defID, team, damage, paralyzer, weaponID, projec
         bucket = {damage = 0, piece = hitPiece, x = x, y = y, z = z}
         hits[#hits + 1] = bucket
     end
-    local admitted = math.min(damage, maxHP * 0.5 - hp)
+    local admitted = math.min(damage, maxHP * damageHealthFraction - hp)
     bucket.damage = bucket.damage + admitted
     trace.Log(id, cycle, 'damage_queued', {hp=hp, max_hp=maxHP, admitted=admitted,
         piece=hitPiece, x=x, y=y, z=z, buckets=#hits, bucket_damage=bucket.damage})
@@ -128,5 +129,6 @@ function gadget:UnitDestroyed(id)
     end
     active[id] = nil
     if GG.BuildingDamageAnchor then GG.BuildingDamageAnchor[id] = nil end
+    if GG.BuildingDamageEffects then GG.BuildingDamageEffects[id] = nil end
     trace.Forget(id)
 end

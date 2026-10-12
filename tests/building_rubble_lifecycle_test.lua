@@ -92,7 +92,7 @@ local function fixture(rubbleName)
         for _,name in ipairs({'Show','Hide','Move','Turn','Spin','StopSpin'}) do
             e.Spring.UnitScript[name]=e[name]
         end
-        e.VFS.Include=function(path) return loadEnv(path,e) end
+        e.VFS.Include=function(path,scope) return loadEnv(path,scope or e) end
         e.include=function(path)
             local result=loadEnv('scripts/'..path,e)
             if path=='lib_building_damage.lua' then u.damage=result end
@@ -188,7 +188,7 @@ local function fixture(rubbleName)
         end}
     env.Spring=S
     env.GG.CityAreaState={IsPeaceful=function() return state.peaceful end}
-    env.VFS={Include=function(path) return loadEnv(path,env) end}
+    env.VFS={Include=function(path,scope) return loadEnv(path,scope or env) end}
     loadEnv('luarules/gadgets/game_spawnCity.lua',env)
     env.spawnInitialHouses=noop;env.regenerateRoutesTable=noop;env.setHouseStreetNameTooltip=noop
     env.gadget:Initialize()
@@ -200,6 +200,7 @@ local function fixture(rubbleName)
     local damageEnv=setmetatable({gadget={},GG=env.GG,Spring=S,UnitDefs=defs,
         VFS={Include=noop},getStructuralBuildingTypeTable=env.getStructuralBuildingTypeTable,
         getBlockDestroyableHouseTypes=env.getBlockDestroyableHouseTypes,
+        getBuildingDamageConfig=env.getBuildingDamageConfig,
         gadgetHandler=env.gadgetHandler},{__index=_G})
     damageEnv._G=damageEnv
     damageEnv.VFS.Include=function(path)
@@ -284,11 +285,18 @@ local house=f.house(40,'house_arab0',true);house.hp=350
 f.state.damageGadget:UnitDamaged(40,house.def,1,150,false,1,nil,nil)
 f.tick(18)
 assert(not house.dead,'one support column should survive the first partial collapse')
+local bottom=house.pieces.block1
+assert(house.shown[bottom] and house.env.IsBuildingPieceDetached(bottom)
+    and house.env.GetBuildingShadowColumns().columns[1][1]==1,
+    'partial collapse removed its lowest visible ruin or its shadow extent')
+assert(f.env.GG.BuildingDamageEffects[40][bottom].visible, 'retained base lost its finite smoke lifetime')
 house.hp=200
 f.state.damageGadget:UnitDamaged(40,house.def,1,150,false,1,nil,nil)
 f.tick(18)
 assert(house.dead and f.env.GG.CityReconstruction.nextID==1,
     'last visible support disappeared without queuing a destroyed plot')
+assert(not f.env.GG.BuildingDamageEffects[40] and not f.env.GG.BuildingDamageAnchor[40],
+    'unit death handed stale original-model effects to the rubble lifecycle')
 f.tick(15)
 assert(f.env.GG.CityReconstruction.plots[1].unitID and not f.S.ValidUnitID(40))
 print('PASS: real structural damage to last-support destruction to managed scrapheap')

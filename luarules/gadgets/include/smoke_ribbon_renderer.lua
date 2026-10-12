@@ -94,7 +94,8 @@ return function()
             end
             return pad
         end
-        local now = (Spring.GetGameFrame()+(Spring.GetFrameTimeOffset() or 0))/(Game.gameSpeed or 30)
+        local sampleFrame = Spring.GetGameFrame()+(Spring.GetFrameTimeOffset() or 0)
+        local now = sampleFrame/(Game.gameSpeed or 30)
         local function traceRecord(r, stage, fields)
             local trace=r.executionTrace
             if not trace then return end
@@ -111,6 +112,7 @@ return function()
             local los = fullView or Spring.GetUnitLosState(id,ally)
             local rejected
             if not r.enabled then rejected='disabled_record'
+            elseif r.endFrame and sampleFrame >= r.endFrame then rejected='expired_effect'
             elseif not (fullView or (los and los.los)) then rejected='outside_unit_los'
             elseif Spring.GetUnitIsDead(id) then rejected='dead_unit'
             elseif Spring.GetUnitIsCloaked(id) then rejected='cloaked_unit'
@@ -145,9 +147,12 @@ return function()
                     -- Reject before direction work, frustum tests, sorting and GPU submission.
                     if r.distanceCulling == false or anchorD2 < cutoff*cutoff then
                         local fade = 1
+                        if r.endFrame and (r.fadeFrames or 0) > 0 then
+                            fade = math.min(1, (r.endFrame-sampleFrame)/r.fadeFrames)
+                        end
                         if r.distanceCulling ~= false and anchorD2 > (cutoff*0.8)^2 then
                             local t = (math.sqrt(anchorD2)/cutoff-0.8)/0.2
-                            fade = 1-t*t*(3-2*t)
+                            fade = fade*(1-t*t*(3-2*t))
                         end
                         local dx,dy,dz = unpack(r.direction)
                         if r.directionSpace == 'piece' then
