@@ -6,19 +6,21 @@ local function loadEnv(path, env)
     return f()
 end
 local function noop() end
-local function fixture(columnCount, floorCount, scale)
+local function fixture(columnCount, floorCount, scale, id, baseHeight)
     columnCount, floorCount, scale = columnCount or 2, floorCount or 3, scale or 1
+    id, baseHeight = id or 42, baseHeight or 0
     local hp, frame, lastPiece, lastFrame = 1000, 0, nil, -1
     local positions, names, children, visible = {}, {}, {}, {}
     local losses, puffs, sleeps, moves, turns, removed = {}, {}, {}, {}, {}, {}
-    local dirty, calls, destroyed, poseReads = 0, 0, false, 0
+    local dirty, calls, destroyed, poseReads, healthReads = 0, 0, false, 0, 0
+    local rules = {}
+    local traces = {}
     local childUnits = {}
-    local env = setmetatable({unitID=42, x_axis=1, y_axis=2, z_axis=3,
+    local env = setmetatable({unitID=id, x_axis=1, y_axis=2, z_axis=3,
         GG={InstanceCulture='international'}, VFS={}}, {__index=_G})
     env._G=env
-    env.VFS.Include=function(path)
-        if path=='luarules/gadgets/include/execution_trace.lua' then return loadEnv(path,env) end
-        return {}
+    env.VFS.Include=function(path,scope)
+        return loadEnv(path,scope or env)
     end
     env.Show=function(p) visible[p]=true end
     env.Hide=function(p) visible[p]=nil end
@@ -34,7 +36,7 @@ local function fixture(columnCount, floorCount, scale)
     env.Sleep=function(ms) sleeps[#sleeps+1]=ms end
     env.hideAll=function() for p in pairs(visible) do visible[p]=nil end end
     env.Spring={
-        Echo=noop,
+        Echo=function(line) traces[#traces+1]=line end,
         UnitScript={Show=env.Show,Hide=env.Hide,Move=env.Move,Turn=env.Turn,Spin=env.Spin},
         GetUnitPieceMap=function() return names end,
         GetUnitPieceInfo=function(_,p) return {children=children[p] or {}} end,
@@ -46,15 +48,16 @@ local function fixture(columnCount, floorCount, scale)
             return 100+v[3]*scale, v[2]*scale, 200-v[1]*scale
         end,
         GetUnitPosition=function() return 100,0,200 end,
-        GetUnitHealth=function() return hp,1000 end,
+        GetUnitHealth=function() healthReads=healthReads+1;return hp,1000 end,
+        SetUnitRulesParam=function(_,key,value)rules[key]=value end,
         GetUnitLastAttackedPiece=function() return lastPiece,lastFrame end,
         GetGameFrame=function() return frame end,
         GetUnitIsDead=function() return destroyed end,
         GetProjectilePosition=function(id) return id*20,0,0 end,
         SpawnCEG=function(name) assert(name=='building_block_dust');puffs[#puffs+1]=frame end,
-        ValidUnitID=function(id) return id==42 or childUnits[id] end,
-        DestroyUnit=function(id)
-            if id==42 then destroyed=true else childUnits[id]=nil end
+        ValidUnitID=function(unit) return unit==id or childUnits[unit] end,
+        DestroyUnit=function(unit)
+            if unit==id then destroyed=true else childUnits[unit]=nil end
         end,
     }
     env.GG.MarkBuildingShadowVolumeDirty=function() dirty=dirty+1 end
@@ -74,10 +77,10 @@ local function fixture(columnCount, floorCount, scale)
     for col=1,columnCount do for floor=1,floorCount do
         local p=(col-1)*floorCount+floor
         names['block'..p]=p
-        env.Move(p,1,(col-1)*20,0);env.Move(p,2,(floor-1)*10,0);env.Move(p,3,0,0)
+        env.Move(p,1,(col-1)*20,0);env.Move(p,2,baseHeight+(floor-1)*10,0);env.Move(p,3,0,0)
         env.Turn(p,3,math.pi/2,0) -- preserve authored pose when adding collapse tilt
-        env.houseAddDestructionTable(levels,floor,p,(col-1)*20,0,(floor-1)*10)
-        env.addShadowVoxel((col-1)*20,0,(floor-1)*10,p)
+        env.houseAddDestructionTable(levels,floor,p,(col-1)*20,0,baseHeight+(floor-1)*10)
+        env.addShadowVoxel((col-1)*20,0,baseHeight+(floor-1)*10,p)
         shown[#shown+1]=p;windows[p]=p;env.Show(p)
         if floor==floorCount then roofs[col]=p end
     end end
@@ -85,7 +88,7 @@ local function fixture(columnCount, floorCount, scale)
     names.RoofDay1=roof;names.RoofNight1=1003;names.roofChild=1001;names.roofDecor=1002
     children[roof]={'roofChild'}
     for _,p in ipairs({1001,1002,1003}) do
-        env.Move(p,1,0,0);env.Move(p,2,(floorCount-1)*10+2,0);env.Move(p,3,0,0)
+        env.Move(p,1,0,0);env.Move(p,2,baseHeight+(floorCount-1)*10+2,0);env.Move(p,3,0,0)
         if p~=1003 then shown[#shown+1]=p;windows[p]=p;env.Show(p) end
     end
     roofs.decor=1002
@@ -103,7 +106,7 @@ local function fixture(columnCount, floorCount, scale)
     for id,def in pairs(gadgetEnv.UnitDefs) do
         def.id=id;gadgetEnv.UnitDefNames[def.name]=def
     end
-    gadgetEnv.VFS={Include=function(path) return loadEnv(path,gadgetEnv) end}
+    gadgetEnv.VFS={Include=function(path,scope) return loadEnv(path,scope or gadgetEnv) end}
     local batchSizes={}
     env.Spring.UnitScript={GetScriptEnv=function()
         calls=calls+1
@@ -117,30 +120,31 @@ local function fixture(columnCount, floorCount, scale)
     g:Initialize()
     return {
         env=env,gadget=g,damage=damage,levels=levels,shown=shown,roofs=roofs,windows=windows,
-        visible=visible,losses=losses,puffs=puffs,sleeps=sleeps,moves=moves,turns=turns,removed=removed,
-        batchSizes=batchSizes,
+        visible=visible,positions=positions,losses=losses,puffs=puffs,sleeps=sleeps,moves=moves,turns=turns,removed=removed,
+        batchSizes=batchSizes,rules=rules,traces=traces,
         health=function(value) hp=value end,
         tick=function(value) frame=value;g:GameFrame(frame) end,
         hit=function(amount,p,opts)
             opts=opts or {}; if not opts.paralyze then hp=hp-amount end
             lastPiece,lastFrame=p,opts.stale and frame-1 or frame
-            g:UnitDamaged(42,opts.def or 1,0,amount,opts.paralyze,1,opts.projectile,nil)
+            g:UnitDamaged(id,opts.def or 1,0,amount,opts.paralyze,1,opts.projectile,nil)
         end,
         dirty=function() return dirty end, calls=function() return calls end,
         destroyed=function() return destroyed end, reads=function() return poseReads end,
+        healthReads=function() return healthReads end,
         childUnits=childUnits,
     }
 end
 
--- Exactly half HP remains intact; threshold-crossing damage is clipped to its
--- below-half portion. Small impacts accumulate across updates on the same block.
+-- Exactly 80% HP remains intact; threshold-crossing damage is clipped to its
+-- below-80% portion. Small impacts accumulate across updates on the same block.
 local a=fixture()
 a.childUnits[77]=true;a.env.RegisterBuildingPieceAttachment(1002,77)
 assert(a.levels[1][1]==1 and a.levels[3][2]==6, 'registration must preserve actual pID')
-a.hit(500,2);a.tick(6);assert(a.calls()==0 and #a.losses==0)
+a.hit(200,2);a.tick(6);assert(a.calls()==0 and #a.losses==0)
 a.hit(20,2);a.hit(20,2);a.tick(7);assert(a.calls()==0)
 a.tick(12);assert(#a.losses==0 and a.calls()==1)
-a.hit(44,2);a.tick(18);assert(#a.losses==0, 'failure must be delayed')
+a.hit(94,2);a.tick(18);assert(#a.losses==0, 'failure must be delayed')
 a.tick(23);assert(#a.losses==0)
 a.tick(24);assert(#a.losses==2, 'struck middle block and supported roof must fall')
 assert(a.visible[1] and a.visible[4] and a.visible[5] and a.visible[6], 'lower/adjacent supports survive')
@@ -154,9 +158,10 @@ assert(#a.moves==beforeMoves and #a.turns==beforeTurns and not a.visible[1003], 
 for _,move in ipairs(a.moves) do
     if move.speed>0 then
         assert(move.piece==2 or move.piece==3 or move.piece==1002 or move.piece==1003)
-        assert(move.speed==4.5/0.2, 'short drop must span the settling interval')
-        if move.piece==2 then assert(move.goal==5.5) end
-        if move.piece==3 then assert(move.goal==15.5) end
+        local drop=move.piece==2 and 8 or 18
+        assert(move.speed==drop/0.2, 'remnant drop must span the settling interval')
+        if move.piece==2 or move.piece==3 then assert(move.goal==2) end
+        if move.piece==1002 then assert(move.goal==4, 'decoration lost its authored offset') end
     end
 end
 for _,turn in ipairs(a.turns) do
@@ -169,19 +174,29 @@ for _,turn in ipairs(a.turns) do
 end
 assert(not a.roofs[1] and not a.roofs.decor and a.roofs[2]==6)
 assert(not a.childUnits[77], 'roof hologram survived losing its anchor')
+a.childUnits[79]=true;a.env.RegisterBuildingPieceAttachment(1002,79)
+assert(not a.childUnits[79], 'late attachment callback repopulated a structurally gone remnant')
 local shadow=a.env.GetBuildingShadowColumns()
 assert(shadow.columns[1][1]==1 and shadow.columns[2][1]==3, 'shadow retained unsupported floors')
 assert(a.dirty()==1, 'geometry notifications should coalesce per update')
 a.tick(29);assert(a.visible[3], 'settling ended outside the fixed interval')
 a.tick(30)
 for _,p in ipairs({2,3,1001,1002,1003}) do
-    a.env.Show(p);assert(not a.visible[p], 'animation resurrected broken piece')
+    a.env.Show(p);a.env.Hide(p)
+    assert((a.visible[p]==true)==(p~=1003), 'animation changed the retained visibility snapshot')
     assert(not a.windows[p], 'window entry retained after settling')
 end
-local before=a.calls();a.tick(36);a.tick(42);assert(a.calls()==before, 'idle building still polled')
+assert(a.rules.building_remnant_blocks==2 and not a.env.IsBuildingPieceVisible(1003))
+local healthReads=a.healthReads()
+a.tick(36);a.tick(306)
+assert(a.healthReads()==healthReads, 'effect-only update rescanned structural health')
+assert(a.env.GG.BuildingDamageEffects[42][2].started==12, 'low HP refreshed effect lifetime')
+a.tick(312)
+assert(not a.env.GG.BuildingDamageEffects[42] and not a.env.GG.BuildingDamageAnchor[42])
+local before=a.calls();a.tick(318);a.tick(324);assert(a.calls()==before, 'expired building still polled')
 
-local b=fixture();b.health(501);b.hit(2,2);b.tick(6)
-b.hit(82,2);b.tick(12);b.tick(18);assert(#b.losses==0, 'above-half damage incorrectly counted')
+local b=fixture();b.health(801);b.hit(2,2);b.tick(6)
+b.hit(132,2);b.tick(12);b.tick(18);assert(#b.losses==0, 'above-80% damage incorrectly counted')
 b.hit(1,2);b.tick(24);b.tick(30);assert(#b.losses==2)
 
 -- Paralyzers, healing, unrelated units and lethal damage never queue a chip.
@@ -193,7 +208,7 @@ c.hit(1000,2);c.tick(12);assert(c.calls()==0)
 -- Split variants dispatch normally. Cached positions make an ordinary batched
 -- hit independent of the model's total piece count (no runtime pose scans).
 local d=fixture(2,3,0.0254);d.health(400)
-local reads=d.reads();d.hit(84,'block2',{def=4});d.tick(6)
+local reads=d.reads();d.hit(134,'block2',{def=4});d.tick(6)
 assert(d.reads()==reads);d.tick(12);assert(#d.losses==2)
 
 -- Bursts produce one bounded batch. Excess queued impact buckets merge without
@@ -207,13 +222,47 @@ e.gadget:UnitDestroyed(42);local before=e.calls();e.tick(18);assert(e.calls()==b
 -- Four failed columns exceed a tick's scheduling limit: accumulated damage in
 -- the fourth column must be retained and resolved on the next fixed update.
 local f=fixture(5,4)
-local hits={};for col=1,4 do hits[#hits+1]={piece=(col-1)*4+1,damage=30} end
+local hits={};for col=1,4 do hits[#hits+1]={piece=(col-1)*4+1,damage=40} end
 assert(f.damage.update(hits,6));assert(#f.losses==0)
-assert(f.damage.update({},12));assert(#f.losses==12 and #f.puffs==3)
-assert(f.damage.update({},18));assert(#f.losses==16 and #f.puffs==4)
-assert(not f.damage.update({},24))
-for p=1,16 do assert(not f.visible[p], 'unsupported mass retained') end
+assert(f.damage.update({},12));assert(#f.losses==9 and #f.puffs==3)
+assert(f.damage.update({},18));assert(#f.losses==12 and #f.puffs==4)
+assert(f.damage.update({},24), 'retained bottom smoke stopped being ticked')
+for _,p in ipairs({1,5,9,13}) do
+    assert(f.visible[p] and f.env.IsBuildingPieceDetached(p), 'failed bottom was not retained')
+end
+assert(f.visible[2] and f.visible[3] and not f.visible[4], 'stable rolls did not cover both remnant outcomes')
+local shadow=f.env.GetBuildingShadowColumns()
+for col=1,4 do assert(shadow.columns[col][1]==1, 'retained bottom lost its shadow extent') end
+local slots=0;for _ in pairs(f.env.GG.BuildingDamageEffects[42]) do slots=slots+1 end
+assert(slots==2, 'simultaneous smoke anchors exceeded the configured fire budget')
+assert(not f.damage.update({},306))
 assert(f.visible[17] and f.visible[20], 'intact fifth column removed')
+
+-- Remnant choices do not consume global randomness and do not change between
+-- runs. Frozen bottoms keep their authored height and reject later animations.
+local stable=fixture(5,4)
+stable.env.math=setmetatable({random=function()error('remnant selection used shared RNG')end}, {__index=math})
+stable.damage.update(hits,6);stable.damage.update({},12);stable.damage.update({},18);stable.damage.update({},24)
+for p=1,20 do assert(stable.visible[p]==f.visible[p], 'remnant choice changed across identical runs') end
+local beforeMoves,beforeTurns=#stable.moves,#stable.turns
+stable.env.Show(1);stable.env.Hide(1);stable.env.Move(1,2,-100,10);stable.env.Turn(1,3,0,10)
+assert(stable.visible[1] and #stable.moves==beforeMoves and #stable.turns==beforeTurns)
+for _,move in ipairs(stable.moves) do
+    if move.piece==1 then assert(move.speed==0 and move.goal==0, 'bottom moved below the terrain') end
+end
+stable.damage.collapse(stable.levels,stable.shown)
+assert(not next(stable.visible) and stable.rules.building_remnant_blocks==0,
+    'full death retained partial-collapse ruins in the original model')
+
+-- A raised foundation and independent decoration offsets are not zero-based:
+-- sink to bottomY + 0.2 floorHeight, retaining each mesh's authored offset.
+local raised=fixture(2,3,1,42,7)
+raised.damage.update({{piece=2,damage=134}},6);raised.damage.update({},12);raised.damage.update({},18)
+assert(raised.positions[1][2]==7 and raised.positions[2][2]==9 and raised.positions[3][2]==9,
+    'sunken remnants used a zero-height foundation')
+assert(raised.positions[1002][2]==11 and raised.visible[1002] and not raised.visible[1003],
+    'independent decoration offset or hidden variant changed during sinking')
+assert(raised.env.GetBuildingShadowColumns().baseHeights[1][1]==7)
 
 -- Killed pauses, then lower floors crumble before the surviving upper mass
 -- descends. Children inherit parent motion instead of being translated twice.
@@ -238,13 +287,13 @@ assert(not next(k.roofs) and not next(k.windows))
 local count=#k.losses;k.damage.collapse(k.levels,k.shown);assert(#k.losses==count)
 
 -- A pending chip followed by death is handled by the single collapse sequence.
-local q=fixture();q.health(400);q.hit(84,2);q.tick(6)
+local q=fixture();q.health(400);q.hit(134,2);q.tick(6)
 q.damage.collapse(q.levels,q.shown)
 local count=#q.losses;q.tick(12);assert(#q.losses==count)
 
 -- Death during a short fall finishes that animation once, then collapses only
 -- the surviving columns. It cannot restart a drop or leave a floating roof.
-local q2=fixture();q2.health(400);q2.hit(84,2);q2.tick(6);q2.tick(12)
+local q2=fixture();q2.health(400);q2.hit(134,2);q2.tick(6);q2.tick(12)
 assert(q2.visible[3] and #q2.losses==2)
 q2.damage.collapse(q2.levels,q2.shown)
 assert(#q2.losses==6 and not next(q2.visible))
@@ -255,19 +304,40 @@ local env=setmetatable({Show=noop,Hide=noop,Move=noop,Turn=noop,Spin=noop,
     Sleep=noop,hideAll=noop,unitID=1,GG={},Spring={Echo=noop,UnitScript={
         Show=noop,Hide=noop,Move=noop,Turn=noop,Spin=noop}}}, {__index=_G})
 env._G=env
-env.VFS={Include=function(path)return loadEnv(path,env)end}
+env.VFS={Include=function(path,scope)return loadEnv(path,scope or env)end}
 local early=loadEnv('scripts/lib_building_damage.lua',env)
 assert(not early.update({{damage=100}},6));assert(early.collapse({}, {})==1)
 env.Show(123)
 
 -- Removing the last support stack destroys the remaining building shell.
-local last=fixture(1,3);last.health(400);last.hit(200,1);last.tick(6);last.tick(12)
+local last=fixture(1,3);last.health(400);last.hit(267,1);last.tick(6);last.tick(12)
 assert(not last.destroyed() and last.visible[3], 'last stack destroyed before settling')
 for _,move in ipairs(last.moves) do
     assert(move.speed==0 or move.piece~=1, 'lowest support dropped into terrain')
 end
 last.tick(18)
-assert(last.destroyed() and not last.visible[3])
+assert(last.destroyed() and not last.env.GG.BuildingDamageEffects[42],
+    'retained geometry prevented the last support from triggering normal unit death')
+
+-- Finite effects keep the shared timer active, but only its initial dispatch
+-- and final completion should print. The final line retains the hit cycle.
+local diagnostic=fixture()
+diagnostic.health(801);diagnostic.hit(2,2);diagnostic.tick(6)
+local count=#diagnostic.traces
+diagnostic.tick(12);diagnostic.tick(18);diagnostic.tick(60)
+assert(#diagnostic.traces==count, 'empty lifetime ticks flooded the damage trace')
+diagnostic.tick(306)
+local startup,finished=false,false
+for _,line in ipairs(diagnostic.traces) do
+    if line:find('stage=damage_gadget_ready',1,true) then
+        startup=line:find('trace_version=3',1,true) and line:find('health_threshold=0.8',1,true)
+            and line:find('fire_frames=240',1,true) and line:find('smoke_frames=300',1,true)
+    elseif line:find('stage=damage_dispatch_complete',1,true) and line:find('reason=finished',1,true) then
+        finished=line:find('frame=306 ',1,true) and line:find('cycle=6 ',1,true)
+            and line:find('waiting=false',1,true)
+    end
+end
+assert(startup and finished, 'damage trace lost the active policy or final effect completion')
 
 -- Whole-city budget is shared by normal damage and final-collapse scripts, and
 -- resets only at the common fixed interval, not at each building callback.
@@ -279,4 +349,4 @@ assert(not allow('debris') and not allow('dust'))
 city.tick(5);assert(not allow('dust'))
 city.tick(6);assert(not allow('debris') and allow('dust'))
 city.gadget:Shutdown();assert(not city.env.GG.AllowBuildingBlockDamageEffect)
-print('PASS: threshold, accumulation, fixed ticks, delayed supports/roofs, local drop/tilt without Explode, attachments, lighting, shadows, budgets, cleanup and staged collapse')
+print('PASS: 80% threshold/strength, accumulation, deterministic sunken remnants, permanent bottoms, authored poses, attachments, lighting/shadows, bounded finite effects, idle path and complete staged death')

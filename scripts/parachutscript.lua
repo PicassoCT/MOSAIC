@@ -3,7 +3,12 @@ include "lib_OS.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 --include "lib_Build.lua"
-local GrapheneArc = VFS.Include("scripts/lib_graphene_arc.lua")
+local GrapheneChute = VFS.Include("scripts/lib_graphene_chute.lua")
+local canopyTrace = VFS.Include('luarules/gadgets/include/execution_trace.lua').New('GrapheneChute')
+local canopyCycle
+local function logCanopy(stage, fields)
+    canopyTrace.Log(unitID, canopyCycle or (Spring.GetGameFrame and Spring.GetGameFrame() or 0), stage, fields)
+end
 
 TablesOfPiecesGroups = {}
 
@@ -16,6 +21,52 @@ testOffset = 300
 stationaryDropRate = 2.0
 travellingDropRate = 0.5
 dropRate = travellingDropRate
+local canopySlots = {}
+
+local function clearCanopy(reason)
+    local count = #canopySlots
+    if count > 0 then logCanopy('canopy_clear_begin', {slots=count, reason=reason}) end
+    if GG.SmokeRibbon then
+        for _, slot in ipairs(canopySlots) do GG.SmokeRibbon.Remove(unitID, slot) end
+    end
+    canopySlots = {}
+    if count > 0 then logCanopy('canopy_cleared', {slots=count, reason=reason}) end
+end
+
+local function deployCanopy()
+    canopyCycle = Spring.GetGameFrame()
+    logCanopy('canopy_deploy_begin', {piece=step})
+    if not GG.SmokeRibbon then
+        logCanopy('canopy_deploy_skipped', {piece=step, reason='no_provider'})
+        return
+    end
+    local layout = GrapheneChute.Layout(unitID, step)
+    if not layout then
+        logCanopy('canopy_deploy_skipped', {piece=step, reason='missing_or_invalid_support_geometry'})
+        return
+    end
+    logCanopy('canopy_layout_ready', {piece=step, span=layout.span, radius=layout.radius})
+    local blackCount, arcCount = 0, 0
+    for i = 1, 4 do
+        local slot = "graphene_chute_" .. i
+        local options = GrapheneChute.RibbonOptions(layout, i)
+        options.executionTrace = {prefix='GrapheneChute', stagePrefix='graphene_chute', cycle=canopyCycle}
+        local accepted, reason = GG.SmokeRibbon.Set(unitID, slot, step, options)
+        if accepted then
+            canopySlots[#canopySlots+1] = slot
+            blackCount = blackCount + 1
+        else
+            logCanopy('canopy_registration_skipped', {piece=step, slot=slot, reason=reason})
+        end
+        slot = "graphene_arc_" .. i
+        local ok, reason = GG.SmokeRibbon.Set(unitID, slot, step, GrapheneChute.ArcOptions(layout, i))
+        if ok then
+            canopySlots[#canopySlots+1] = slot
+            arcCount = arcCount + 1
+        else Spring.Echo("[GrapheneArc] registration failed: " .. tostring(reason)) end
+    end
+    logCanopy('canopy_deploy_complete', {piece=step, black=blackCount, arcs=arcCount, slots=#canopySlots})
+end
 
 function script.Create()
     -- generatepiecesTableAndArrayCode(unitID)
@@ -24,6 +75,9 @@ function script.Create()
     Spring.SetUnitNoSelect(unitID, true)
     --Spring.SetUnitAlwaysVisible(unitID, true)
     hideT(TablesOfPiecesGroups["Rotator"])
+    hideT(TablesOfPiecesGroups["DownWardSpiral"])
+    logCanopy('canopy_polygons_hidden', {rotators=#(TablesOfPiecesGroups["Rotator"] or {}),
+        spirals=#(TablesOfPiecesGroups["DownWardSpiral"] or {})})
     StartThread(fallingDown)
     StartThread(detectStationary)
     Show(center)
@@ -56,32 +110,14 @@ function detectStationary()
                 if accumulatedNonMovementTime > 5000 then
                     dropRate = stationaryDropRate
                     boolStationary = true
-                    foreach(TablesOfPiecesGroups["DownWardSpiral"],
-                        function(id)
-                            val = math.random(1,360)
-                            Turn(id, y_axis, math.rad(val),0)
-                            Show(id)
-                            directions = math.random(15, 35)
-                            Spin(id,y_axis,math.rad(directions), 0.1)
-                        end)
                 else
                     dropRate = travellingDropRate
                     boolStationary = false
-                    foreach(TablesOfPiecesGroups["DownWardSpiral"],
-                        function(id)
-                            Hide(id)                            
-                            StopSpin(id,y_axis)
-                        end)
                 end
             else
                 accumulatedNonMovementTime = 0
                 dropRate = travellingDropRate
                 boolStationary = false
-                foreach(TablesOfPiecesGroups["DownWardSpiral"],
-                        function(id)
-                            Hide(id)                            
-                            StopSpin(id,y_axis)
-                        end)
             end
         end
     end
@@ -113,21 +149,7 @@ function fallingDown()
     end
 
     while not GG.ParachutPassengers[unitID] do Sleep(10) end
-    StartThread(Strandanimation)
-    -- Keep all polygon cords and rotator animation. Four outer sheet tips
-    -- carry separate electrical fans; the rotator pivots themselves coincide.
-    if GG.SmokeRibbon and TablesOfPiecesGroups["Rotator"] then
-        local rotators = TablesOfPiecesGroups["Rotator"]
-        local count = math.min(4, #rotators)
-        for i = 1, count do
-            local p = rotators[1 + math.floor((i - 1) * #rotators / count)]
-            if p then
-                local ok, reason = GG.SmokeRibbon.Set(unitID, "graphene_arc_" .. i, p,
-                    GrapheneArc.Options(i * 19, GrapheneArc.OuterTip(unitID, p)))
-                if not ok then Spring.Echo("[GrapheneArc] registration failed: " .. tostring(reason)) end
-            end
-        end
-    end
+    deployCanopy()
 
     passengerID = GG.ParachutPassengers[unitID].id
     passengerDefID = Spring.GetUnitDefID(passengerID)
@@ -136,11 +158,13 @@ function fallingDown()
     x, y, z = GG.ParachutPassengers[unitID].x, GG.ParachutPassengers[unitID].y,
               GG.ParachutPassengers[unitID].z
     if not passengerID or isUnitAlive(passengerID) == false then
+        clearCanopy('invalid_passenger')
         Spring.DestroyUnit(unitID, false, true);
         return
     end
 
     Spring.UnitAttach(unitID, passengerID, step)
+    logCanopy('passenger_attached', {passenger=passengerID, piece=step})
     Spring.MoveCtrl.SetPosition(unitID, x, y, z)
 
     while isPieceAboveGround(unitID, center, 15) == true do    
@@ -153,69 +177,14 @@ function fallingDown()
         WMove(TablesOfPiecesGroups["Cord"][i], 2 , i*-15, 900)
     end
 
-
+    clearCanopy('landed')
     Spring.UnitDetach(passengerID)
+    logCanopy('passenger_released', {passenger=passengerID})
     Spring.DestroyUnit(unitID, false, true)
 end
 
-function pieceOrder(i)
-    if i == 1 then return 1 end
-    if i > 1 and i < 4 then return 2 end
-    if i > 3 and i < 8 then return 3 end
-    if i > 7 and i < 16 then return 4 end
-    return 0
-end
-
-local semaphore = {}
-function strandMotion(index,strand, yValue, xStart, xEndValue, speed)
-    semaphore[index] = true  
-    Turn(strand, x_axis, math.rad(xStart), 0)
-    Turn(strand, y_axis, math.rad(yValue), 0)
-    Show(strand)
-    WTurn(strand, x_axis, math.rad(xEndValue), speed)
-    Hide(strand)
-    semaphore[index] = nil
-end
-
-function sinusWaveThread(start, ends)
-    local Fract = TablesOfPiecesGroups["Rotator"]
-
-    while true do
-        -- one animation cycle
-        sintime = ((Spring.GetGameFrame() % 300) / 300)
-        
-        for i = start, ends do
-            local strand = Fract[i]
-            circleVal = ((i - start)+1) * (360/(ends- start)) + math.random(-5,5)
-
-            if not semaphore[i] then
-                startValue =  math.random(15,30)
-                endValue = -15
-                StartThread(strandMotion, i, strand, circleVal, startValue,endValue, 1 )               
-            end
-        end
-        Sleep(100)
-    end
-end
-
-function Fibonacci_tail_call(n)
-    local function inner(m, a, b)
-        if m == 0 then return a end
-        return inner(m - 1, b, a + b)
-    end
-    return inner(n, 0, 1)
-end
-
-function Strandanimation()
-    local Fract = TablesOfPiecesGroups["Rotator"]
-    for i = 1, #Fract do
-        if i % 15 == 1 and Fract[i] and Fract[i+15] then
-            StartThread(sinusWaveThread, i, i + 15) 
-        end
-    end
-end
-
 function script.Killed(recentDamage, _)    
+    clearCanopy('killed')
     return 1 
 end
 

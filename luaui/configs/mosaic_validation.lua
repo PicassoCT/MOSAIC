@@ -7,15 +7,15 @@ return {
     tasks = {
         {
             id = 'parachute',
-            title = 'Graphene parachute electricity',
-            summary = 'Upward cyan-white electrical ribbons throughout the first operative drop.',
+            title = 'Graphene ribbon parachute and electricity',
+            summary = 'Four black fibrous ribbons form the canopy, with cyan-violet arcs during the first operative drop.',
             steps = {
                 'Full descent: start a fresh match and watch the first operative arrive under its graphene parachute.',
                 'Repeat the ribbon material check: select an uncloaked operative, zoom in, then enter /luarules smokeribbon center electric.',
                 'Record /luarules smokeribbon status. End the local preview with /luarules smokeribbon off; the fresh-match drop also checks canopy attachment and descent.',
                 'Do not use /give air_parachut alone: its script waits for a registered passenger.',
             },
-            expect = 'Bright cyan-white streamers rise above the canopy, remain visible in midday light, and follow the descending parachute without becoming dark smoke.',
+            expect = 'A few black fibrous FlamePainter ribbons form the graphene canopy in place of the polygon web. Cyan-violet electrical streamers remain visible above it, both effects follow the passenger, and both stop on landing.',
         },
         {
             id = 'tank',
@@ -64,11 +64,12 @@ return {
             summary = 'Damaged blocks lose support plausibly; existing fires do not twitch when another block is hit.',
             steps = {
                 'Choose a completed procedural Asian, Arabian or Western house; select it and enter /validate status for starting health and structural counts.',
-                'In a test match, attack one side until health is below half, then damage a different side. Watch the already-burning pieces during the second attack.',
+                'In a test match, attack one side until health is below 80%, then damage a different side. Watch the already-burning pieces during the second attack.',
+                'Stop firing for at least ten seconds: fire fades and goes out, smoke emission stops, and hidden pieces must not keep emitting. Lowest blocks remain visible; some upper blocks remain sunken into them.',
                 'Use /validate status between attacks. Continue to destruction and watch the roof and successive floors lose support.',
                 'With a completed house selected, /radiancedebug voxels shows the registered building columns; /radiancedebug voxels off hides them.',
             },
-            expect = 'Blocks fail after the accumulated-damage delay; unsupported roof pieces fall with their support, flames extend outside damaged walls, and existing falls/fires are not reset by another hit.',
+            expect = 'Damage begins below 80% health. Failed bottom blocks remain visible; each failed upper block has a 50% chance to remain sunken into its bottom block. Flames extend outside visible damaged walls, existing falls/fires are not reset by another hit, and fire/smoke expire.',
         },
         {
             id = 'rebuild',
@@ -115,6 +116,7 @@ return {
         'building_structural_ready',
         'building_structural_blocks',
         'building_detached_blocks',
+        'building_remnant_blocks',
         'city_construction',
         'city_rebuild_progress',
         'city_rebuild_paused',

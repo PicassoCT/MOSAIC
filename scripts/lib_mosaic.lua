@@ -36,6 +36,20 @@ end
 function getStructuralBuildingTypeTable(defs)
     return buildingTypesFromNames(defs, structuralHouseBases)
 end
+-- Shared structural and visual lifetime policy. Damage admission and block
+-- strength use the same remaining-health budget; effects never renew merely
+-- because a building stays below that threshold.
+function getBuildingDamageConfig()
+    return {
+        healthThreshold = 0.8,
+        upperRemnantChance = 0.5,
+        remnantHeightFraction = 0.2,
+        fireLifetimeFrames = 8 * 30,
+        smokeLifetimeFrames = 10 * 30,
+        effectFadeFrames = 2 * 30,
+        maxFires = 2,
+    }
+end
 function getCivilianHouseTypeTable(defs)
     local names = {}
     for _, family in pairs(civilianHouseFamilies) do
@@ -209,6 +223,7 @@ if MOSAIC_CONFIG_ONLY then
         getMobileRadianceShadowTypeTable = getMobileRadianceShadowTypeTable,
         getBuildingRadianceShadowTypeTable = getBuildingRadianceShadowTypeTable,
         getStructuralBuildingTypeTable = getStructuralBuildingTypeTable,
+        getBuildingDamageConfig = getBuildingDamageConfig,
         getCivilianHouseTypeTable = getCivilianHouseTypeTable,
         getCityHouseSpawnTypeTable = getCityHouseSpawnTypeTable,
         getCityRuinCandidateTypeTable = getCityRuinCandidateTypeTable,

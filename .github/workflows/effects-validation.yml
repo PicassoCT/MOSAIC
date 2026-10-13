@@ -5,6 +5,7 @@ on:
     paths:
       - 'scripts/lib_mosaic.lua'
       - 'scripts/lib_graphene_arc.lua'
+      - 'scripts/lib_graphene_chute.lua'
       - 'scripts/parachutscript.lua'
       - 'scripts/tankscript.lua'
       - 'luaui/system.lua'
@@ -34,6 +35,7 @@ on:
       - 'tests/city_geography_test.lua'
       - 'tests/validation_widget.lua'
       - 'tests/graphene_arcs_*'
+      - 'tests/graphene_chute_gpu.py'
       - 'tests/smoke_ribbon_commands.lua'
       - 'tests/tank_muzzle_effects.lua'
       - 'tests/execution_trace_test.lua'
@@ -100,6 +102,7 @@ jobs:
       - name: Render production electrical, smoke and combat shaders
         run: |
           python tests/graphene_arcs_gpu.py
+          python tests/graphene_chute_gpu.py
           python tests/smoke_ribbons_gpu.py
           python tests/combat_light_gpu.py
           python tests/mobile_radiance_shadows_gpu.py

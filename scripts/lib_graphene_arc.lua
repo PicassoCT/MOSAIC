@@ -1,6 +1,5 @@
 -- Shared by the live parachute and /smokeribbon <piece> electric.
--- The mesh ribbons retain their original colours and animation; these are
--- the luminous cyan-to-violet electrical discharges rising from their outer tips.
+-- Luminous cyan-to-violet electrical discharges rise from the chute's rim.
 local M = {}
 
 function M.Options(seed, rootOffset)
