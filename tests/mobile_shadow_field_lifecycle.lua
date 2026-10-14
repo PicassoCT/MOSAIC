@@ -18,7 +18,7 @@ local function harness(failure)
     local target,mode,shader,texcoord,depthWrite,depthTest
     local collector={}
     function collector:Collect(domain,draw)
-        assert(domain.margin==512 and domain.minX==h.domain.x and domain.maxX==h.domain.x+h.domain.span)
+        assert(domain.margin==518 and domain.minX==h.domain.x and domain.maxX==h.domain.x+h.domain.span)
         assert(draw==h.draw);h.counts.collect=h.counts.collect+1;return h.records,h.stats
     end
     function collector:Invalidate() h.invalidations=(h.invalidations or 0)+1 end
@@ -130,7 +130,7 @@ local pixels=h.pixels[field.texture]
 assert(pixels[0][1]==510 and pixels[0][2]==35 and pixels[0][4]==1 and pixels[4][1]==4095,
     'world position/shape/owner payload was clamped or misplaced')
 assert(pixels[1][1]==1 and pixels[1][4]==30 and pixels[2][2]==1 and pixels[2][4]==20)
-assert(field.ready and field.count==1 and field.minY==15 and field.maxY==55)
+assert(field.ready and field.count==1 and field.minY==9 and field.maxY==61)
 for z=15,16 do for x=15,16 do
     local index=1280+(z*32+x)*4
     assert(pixels[index] and pixels[index][1]==1,'proxy omitted an overlapping spatial cell')
@@ -175,6 +175,7 @@ local locations=field:Locations(1);field:Bind(locations)
 assert(h.bindings[14]==field.sourceAtlas and h.bindings[15]==field.texture)
 assert(h.uniforms.mobileShadowActive[1]==1 and h.uniforms.mobileShadowCount[1]==128)
 assert(h.uniforms.mobileCascadeSourceActive[1]==1 and h.uniforms.mobileDirectSourceActive[1]==1)
+assert(h.uniforms.mobileShadowSoftness[1]==3,'soft cone radius was not uploaded')
 field:CaptureSources(nil,0,128,h.domain,{ready=false,sourceTexture='stale'})
 assert(not field.cascadeReady and not field.directReady,'removed source provider retained metadata readiness')
 
@@ -213,5 +214,14 @@ end,0,128,h.domain,{ready=true,sourceTexture='cascade-source'})
 assert(not ok and tostring(reason):find('injected source renderer failure',1,true))
 assert(h.matrices[1]==0 and h.matrices[2]==0,'failed source renderer leaked its matrix scopes')
 for i=1,4 do assert(h.viewport[i]==beforeViewport[i],'failed source renderer leaked its viewport') end
+h.object:Shutdown();noLeaks(h)
+-- A soft silhouette must also be found in a cell not touched by the hard box.
+h=harness()
+local r=record(1)
+r.center={443,35,443};r.half={3,20,3}
+r.minX,r.maxX,r.minZ,r.maxZ=440,446,440,446
+h.records={r};h.object:Update(h.domain)
+local neighboring=1280+(15*32+15)*4
+assert(h.pixels[h.object.texture][neighboring],'penumbra was culled at a hard-box grid edge')
 h.object:Shutdown();noLeaks(h)
 print('PASS: float payload/texel packing, full proxy-grid coverage, deterministic cell overflow, fixed memory, draw reuse, camera/removal lifecycle, metadata/depth/viewport routing and complete allocation cleanup')

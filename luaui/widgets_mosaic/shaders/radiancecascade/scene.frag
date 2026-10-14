@@ -38,7 +38,7 @@ uniform int mobileDirectSourceActive=0;
 // MOBILE_SHADOWS
 // The two source fields share an atlas, but each discrete source is fetched
 // without filtering: interpolating XYZ would invent lamps between real ones.
-float mobileFieldVisibility(vec2 uv,bool direct,vec3 world,vec3 normal)
+float mobileFieldVisibility(vec2 uv,bool direct,vec3 world,vec3 normal,float receiverMask)
 {
     if(mobileShadowActive==0 || (direct ? mobileDirectSourceActive : mobileCascadeSourceActive)==0)
         return 1.0;
@@ -51,13 +51,19 @@ float mobileFieldVisibility(vec2 uv,bool direct,vec3 world,vec3 normal)
     float owner=direct && source.w>=1.0 ? source.w-1.0 : -1.0;
     // Actual surface height and a small world-space bias, independent of the
     // much wider XZ occupancy lookup offset used to find a building's exterior.
-    return mobileVisibility(source.xyz,world+normal*0.35,owner);
+    vec3 toward=source.xyz-world;
+    float distance2=dot(toward,toward);
+    float incidence=distance2>1e-8 ? max(0.0,dot(normal,toward*inversesqrt(distance2))) : 1.0;
+    float response=mix(1.0,incidence,receiverMask);
+    if(response<=0.0)return 0.0;
+    return response*mobileVisibility(source.xyz,world+normal*0.35,owner);
 }
 #else
 // A failed optional shadow shader must not remove the existing scene lighting.
 // These constants also remove both extra samplers from the fallback program.
 float mobileVisibility(vec3 source,vec3 receiver,float ownerID) { return 1.0; }
-float mobileFieldVisibility(vec2 uv,bool direct,vec3 world,vec3 normal) { return 1.0; }
+float mobileReceiverMask(vec3 world) { return 0.0; }
+float mobileFieldVisibility(vec2 uv,bool direct,vec3 world,vec3 normal,float receiverMask) { return 1.0; }
 #endif
 // Finite 3D cones for objective floodlights/searchlights. These share the scene
 // depth and normals; no extra framebuffer, model shader or engine setting.
@@ -168,18 +174,23 @@ void main()
     // Sample the exterior of a wall rather than its occupied column. Never
     // interpolate a bright sample from the opposite side of an occupied cell.
     vec2 cell=mapSize/vec2(textureSize(occupancyTex,0));
-    vec2 sampleUV=(world.xz+normal.xz*cell*1.25)/mapSize;
+    float receiverMask=(model || deferred==0) ? mobileReceiverMask(world) : 0.0;
+    // A vehicle is not an occupied building column. Keep its light lookup at
+    // the actual depth-buffer surface, not a coarse texel away across the car.
+    vec2 surfaceOffset=mix(cell*1.25,vec2(0.35),receiverMask);
+    vec2 sampleUV=(world.xz+normal.xz*surfaceOffset)/mapSize;
     if(any(lessThan(world.xz,vec2(0))) || any(greaterThanEqual(world.xz,mapSize))) discard;
     if(any(lessThan(sampleUV,vec2(0))) || any(greaterThanEqual(sampleUV,vec2(1)))) discard;
     vec3 light=filteredLight(radianceTex,occupancyTex,sampleUV);
     if(localActive!=0) {
         vec2 localCell=vec2(localSpan)/vec2(textureSize(localOccupancyTex,0));
-        vec2 localUV=(world.xz+normal.xz*localCell*1.25-localOrigin)/localSpan;
+        vec2 localUV=(world.xz+normal.xz*mix(localCell*1.25,vec2(0.35),receiverMask)-localOrigin)/localSpan;
         float edge=min(min(localUV.x,localUV.y),min(1.0-localUV.x,1.0-localUV.y));
         float blend=smoothstep(0.0,0.18,edge);
         if(blend>0.0) {
             vec3 detail=filteredLight(localRadianceTex,localOccupancyTex,localUV);
-            detail*=mobileFieldVisibility(localUV,false,world,normal);
+            if(any(greaterThan(detail,vec3(0.00001))))
+                detail*=mobileFieldVisibility(localUV,false,world,normal,receiverMask);
             light=mix(light,detail,blend);
         }
     }
@@ -189,12 +200,13 @@ void main()
         if(texture2D(occupancyTex,sampleUV).r<=0.5)
             direct=max(texture2D(headlightTex,sampleUV).rgb,vec3(0));
         if(headlightLocalActive!=0) {
-            vec2 hu=(world.xz+normal.xz*cell*1.25-headlightOrigin)/headlightSpan;
+            vec2 hu=(world.xz+normal.xz*surfaceOffset-headlightOrigin)/headlightSpan;
             float edge=min(min(hu.x,hu.y),min(1.0-hu.x,1.0-hu.y));
             float blend=smoothstep(0.0,0.18,edge);
             if(blend>0.0 && texture2D(occupancyTex,sampleUV).r<=0.5) {
                 vec3 localDirect=max(texture2D(headlightLocalTex,hu).rgb,vec3(0));
-                localDirect*=mobileFieldVisibility(hu,true,world,normal);
+                if(any(greaterThan(localDirect,vec3(0.00001))))
+                    localDirect*=mobileFieldVisibility(hu,true,world,normal,receiverMask);
                 direct=mix(direct,localDirect,blend);
             }
         }
