@@ -97,6 +97,9 @@ getWorldDialogue=function(id)
     if not visible(id) then return end
     local entry=findExchange(id)
     if not entry or not visible(entry.a) then return end
+    -- Operatives can show their own intercepted speech, but a marked vehicle
+    -- must not inherit an unrelated nearby civilian's overheard conversation.
+    if not civilian(id) and entry.a~=id and entry.b~=id then return end
     local lines=entry.lines
     local last=#lines
     if last==0 then return end
