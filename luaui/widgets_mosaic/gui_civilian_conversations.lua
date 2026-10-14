@@ -5,6 +5,8 @@ end
 local exchanges, hovered, hoverTime, elapsed = {}, nil, 0, 0
 local panel, pinnedHover
 local HISTORY_LINES, HISTORY_FRAMES = 96, 5*60*30
+local WORLD_TURNS, WORLD_PREVIOUS_FRAMES = 3, 20*30
+local getWorldDialogue
 local function visible(id)
     if not id or not Spring.ValidUnitID(id) or Spring.GetUnitIsDead(id) then return false end
     local spec,full=Spring.GetSpectatingState()
@@ -28,17 +30,28 @@ local function receive(speaker,partner,text,duration)
     exchanges[key]=entry
     local name=(Spring.GetUnitTooltip(speaker) or "Civilian"):match("^[^<\n]+") or "Civilian"
     if partner==0 and text:sub(1,7)=="Phone: " then name="Other end"; text=text:sub(8) end
-    entry.lines[#entry.lines+1]={name=clean(name):sub(1,58),text=clean(text)}
+    local frame=Spring.GetGameFrame()
+    -- The in-world reader follows the actual delivery/reading interval. The
+    -- full historical transcript remains available in the hover reader.
+    local lifetime=math.max(90,math.min(420,tonumber(duration) or 150))+60
+    entry.lines[#entry.lines+1]={name=clean(name):sub(1,58),text=clean(text),
+        frame=frame,untilFrame=frame+lifetime}
     if #entry.lines>HISTORY_LINES then table.remove(entry.lines,1) end
     entry.pending=(entry.pending or 0)+1
     entry.dirty=true
-    entry.frame=Spring.GetGameFrame()
+    entry.frame=frame
 end
 function widget:Initialize()
     widgetHandler:RegisterGlobal("CivilianConversation",receive)
+    -- Read-only data bridge to the existing 3D Observe marker widget.
+    -- No extra synced messages, simulation RNG or world visibility changes.
+    WG.CivilianConversationWorld={GetRecentLines=function(id)
+        return getWorldDialogue(id)
+    end}
 end
 function widget:Shutdown()
     widgetHandler:DeregisterGlobal("CivilianConversation")
+    WG.CivilianConversationWorld=nil
 end
 function widget:UnitDestroyed(id)
     for key,entry in pairs(exchanges) do if entry.a==id or entry.b==id then exchanges[key]=nil end end
@@ -80,6 +93,23 @@ local function findExchange(id)
     end
     return best
 end
+getWorldDialogue=function(id)
+    if not visible(id) then return end
+    local entry=findExchange(id)
+    if not entry or not visible(entry.a) then return end
+    local lines=entry.lines
+    local last=#lines
+    if last==0 then return end
+    local frame=Spring.GetGameFrame()
+    if frame>lines[last].untilFrame then return end
+    local first=last
+    while first>1 and last-first+1<WORLD_TURNS and
+        frame-(lines[first-1].frame or -HISTORY_FRAMES)>WORLD_PREVIOUS_FRAMES do
+        first=first-1
+    end
+    -- The caller must not modify the shared transcript.
+    return lines,first,last,entry.frame
+end
 local function wrap(text,width,size)
     local lines,current={},""
     for word in text:gmatch("%S+") do
@@ -104,18 +134,9 @@ function widget:DrawScreen()
     local id,entry,mode
     if hovered and elapsed-hoverTime>=0.18 then
         id=hovered; entry=findExchange(id); mode="Conversation"
-    else
-        local observed=WG.ObservedCivilianUnits or {}
-        for tracked in pairs(observed) do
-            if visible(tracked) then
-                local candidate=findExchange(tracked)
-                if candidate and (not entry or candidate.frame>entry.frame or
-                    (candidate.frame==entry.frame and tracked<id)) then
-                    id,entry,mode=tracked,candidate,"Observe"
-                end
-            end
-        end
     end
+    -- Observed conversations now appear beneath each O marker in world space;
+    -- keep this larger scrollable transcript only for explicit hover inspection.
     if not id then panel=nil; pinnedHover=nil; return end
     local vsx,vsy=Spring.GetViewGeometry()
     local scale=math.max(0.85,math.min(1.25,vsx/1920))
