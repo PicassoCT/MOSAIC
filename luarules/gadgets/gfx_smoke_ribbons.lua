@@ -4,18 +4,6 @@ function gadget:GetInfo()
 end
 
 local Config = VFS.Include('luarules/gadgets/include/smoke_ribbon_config.lua')
-local Trace = VFS.Include('luarules/gadgets/include/execution_trace.lua')
-local traces = {}
-local function logger(prefix)
-    if not traces[prefix] then traces[prefix]=Trace.New(prefix) end
-    return traces[prefix]
-end
-local function observe(t, stage, fields)
-    if t then
-        fields=fields or {};fields.piece=t.piece;fields.slot=t.slot
-        logger(t.prefix).Log(t.unitID,t.cycle,t.stagePrefix..'_'..stage,fields)
-    end
-end
 if gadgetHandler:IsSyncedCode() then
     local records, api = {}, {}
     -- Versioned snapshot also restores effects after an unsynced Lua reload.
@@ -25,35 +13,14 @@ if gadgetHandler:IsSyncedCode() then
     local function key(unitID, slot) return unitID..':'..tostring(slot or 'default') end
     function api.Set(unitID, slot, piece, options)
         assert(type(slot)=='string' or type(slot)=='number' or slot==nil, 'invalid smoke slot')
-        local requested=type(options)=='table' and options.executionTrace
-        local detail
-        if type(requested)=='table' and type(requested.prefix)=='string' and type(requested.stagePrefix)=='string' then
-            local cycle=requested.cycle
-            if type(cycle)~='number' and type(cycle)~='string' then cycle=nil end
-            detail={prefix=requested.prefix,stagePrefix=requested.stagePrefix,cycle=cycle,
-                unitID=unitID,piece=piece,slot=slot or 'default'}
-            observe(detail,'registration_requested')
-        end
         local ok, record = pcall(Config.Normalize,unitID,piece,options)
-        if not ok then
-            observe(detail,'registration_rejected',{reason=record})
-            return false, record
-        end
-        if detail then detail.piece=record.piece;record.executionTrace=detail end
+        if not ok then return false, record end
         records[key(unitID,slot)] = record; changed()
-        observe(detail,'registered',{mode=record.mode,revision=_G.SmokeRibbonRevision,
-            length=record.length,width=record.width,distance_factor=record.distanceFactor,
-            start_r=record.colorStart[1],start_g=record.colorStart[2],start_b=record.colorStart[3],
-            end_r=record.colorEnd[1],end_g=record.colorEnd[2],end_b=record.colorEnd[3]})
         return true
     end
     function api.Remove(unitID, slot)
         local k=key(unitID,slot)
-        if records[k] then
-            local detail=records[k].executionTrace
-            records[k]=nil; changed()
-            observe(detail,'removed',{revision=_G.SmokeRibbonRevision})
-        end
+        if records[k] then records[k]=nil; changed() end
     end
     function api.SetEnabled(unitID, slot, enabled)
         local r=records[key(unitID,slot)]
@@ -61,16 +28,11 @@ if gadgetHandler:IsSyncedCode() then
     end
     function gadget:UnitDestroyed(unitID)
         local dirty=false
-        for k,r in pairs(records) do if r.unitID==unitID then
-            observe(r.executionTrace,'removed',{reason='unit_destroyed'})
-            records[k]=nil;dirty=true
-        end end
+        for k,r in pairs(records) do if r.unitID==unitID then records[k]=nil;dirty=true end end
         if dirty then changed() end
-        for _,trace in pairs(traces) do trace.Forget(unitID) end
     end
     function gadget:Initialize()
         GG.SmokeRibbon=api
-        logger('SmokeRibbon').Log(nil,0,'provider_ready',{side='synced'})
         -- This handler has no TextCommand dispatcher. LuaRules chat actions
         -- must cross to the requesting client before using local selection.
         gadgetHandler:AddChatAction('smokeribbon',function(_,message,_,playerID)
@@ -95,7 +57,6 @@ else
             Spring.Echo('Smoke ribbons disabled: '..tostring(err)); gadgetHandler:RemoveGadget(self)
             return
         end
-        logger('SmokeRibbon').Log(nil,0,'renderer_ready',{side='unsynced'})
         gadgetHandler:AddSyncAction('smoke_ribbon_command',function(_,playerID,message)
             if playerID==Spring.GetMyPlayerID() then
                 return self:TextCommand('smokeribbon '..message)
@@ -117,15 +78,6 @@ else
             r.emission={source.emission[1],source.emission[2]}
             local glow=source.sourceGlow
             r.sourceGlow=glow and {glow[1],glow[2],glow[3],glow[4]} or {0,0,0,0}
-            local detail=source.executionTrace
-            if detail then
-                -- Copy scalar metadata across the synced boundary; the logger
-                -- itself is local to this client and is never synchronized.
-                r.executionTrace={logger=logger(detail.prefix),unitID=detail.unitID,cycle=detail.cycle,
-                    stagePrefix=detail.stagePrefix,piece=detail.piece,slot=detail.slot}
-                r.executionTrace.logger.Log(detail.unitID,detail.cycle,detail.stagePrefix..'_received',
-                    {piece=detail.piece,slot=detail.slot,mode=r.mode,revision=current})
-            end
             records[k]=r
         end
         renderer.records=records

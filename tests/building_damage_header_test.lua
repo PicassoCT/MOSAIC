@@ -37,7 +37,7 @@ script.testPrimitives={Show=Show,Hide=Hide,Move=Move,Turn=Turn,Spin=Spin}
 
 local function fixture(id, defID)
     local state={shown={},positions={},moves={},turns={},spins={},fires={},removedFires={},rules={},cloudShows=0,cloudHides=0,
-        traces={},frame=0,healthReads=0}
+        frame=0,healthReads=0}
     local names={center=1,block1=2,block2=3,block3=4,block4=5,block5=6,block6=7,base=8}
     local raw = {
         Show=function(p) assert(p);state.shown[p]=true end,
@@ -56,7 +56,7 @@ local function fixture(id, defID)
         buildingDamageEnabled=structural[defID] or false,MOSAIC_CONFIG_ONLY=true,
         Game={mapSizeX=8192,mapSizeZ=8192},GG={},VFS={},table=copy(table)}, {__index=_G})
     env._G=env;env.table.getn=env.table.getn or function(t)return #t end
-    env.Spring={UnitScript=raw,Echo=function(line)state.traces[#state.traces+1]=line end,GetUnitTeam=function()return 0 end,
+    env.Spring={UnitScript=raw,Echo=noop,GetUnitTeam=function()return 0 end,
         GetGaiaTeamID=function()return 0 end,GetGameFrame=function()return state.frame end,
         ValidUnitID=function(unit)return unit==id and not state.destroyed end,
         GetUnitIsDead=function(unit)return unit~=id or state.destroyed==true end,
@@ -189,9 +189,9 @@ a.show();a.env.script.testLateAnimation(3)
 assert(a.shown[3] and not a.shown[4] and a.shown[2], 'a later animation changed the retained visibility snapshot')
 assert(a.rules.building_remnant_blocks==1 and a.env.IsBuildingPieceDetached(3)
     and a.env.IsBuildingPieceVisible(3), 'retained section stayed structurally available or became invisible')
-local healthReads,traceCount=a.healthReads,#a.traces
+local healthReads=a.healthReads
 assert(update(a,{},240) and a.provider.SmokeRibbonRecords['42:block_fire_3'])
-assert(a.healthReads==healthReads and #a.traces==traceCount, 'effects-only tick rescanned or retraced the structure')
+assert(a.healthReads==healthReads, 'effects-only tick rescanned the structure')
 assert(update(a,{},246) and #a.removedFires==1, 'fire did not stop at its fixed deadline')
 assert(not a.provider.SmokeRibbonRecords['42:block_fire_3'] and a.provider.SmokeRibbonRevision==2,
     'fire expiry did not remove the actual synced record and publish its revision')
@@ -200,19 +200,6 @@ assert(a.env.GG.BuildingDamageEffects[42][3]==effect and update(a,{},300),
 assert(not update(a,{},306) and not a.env.GG.BuildingDamageEffects[42] and not a.env.GG.BuildingDamageAnchor[42],
     'smoke expiry left a stale anchor or permanent update loop')
 assert(not update(a,{},600) and #a.fires==1 and a.shown[3], 'low health rekindled an old remnant')
-local sequence={'block_lookup_skipped','block_damage_skipped','block_lookup_selected',
-    'block_damage_accumulated','block_fire_requested','building_fire_registration_requested',
-    'building_fire_registered','block_fire_result','block_failure_scheduled','block_failure_due',
-    'block_settle_issued','block_fall_hidden','building_fire_removed'}
-local nextStage=1
-for _,line in ipairs(a.traces) do
-    if line:find('[BuildingDestruction]',1,true) and line:find(' unit=42 ',1,true)
-        and line:match('stage=([^ ]+)')==sequence[nextStage] then
-        nextStage=nextStage+1
-    end
-end
-assert(nextStage==#sequence+1,'execution trace stopped before '..tostring(sequence[nextStage]))
-
 -- Reused include source must bind each unit's hooks and private support state.
 local b=fixture(84,3);assemble(b)
 assert(update(b,{{piece=3,damage=134}},6))

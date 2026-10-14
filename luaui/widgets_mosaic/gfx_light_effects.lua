@@ -5,8 +5,6 @@ end
 
 local Sources=VFS.Include('luaui/widgets_mosaic/include/combat_light_sources.lua')
 local RadianceTime=VFS.Include('luaui/widgets_mosaic/include/radiance_time.lua')
-local widgetTrace=VFS.Include('luarules/gadgets/include/execution_trace.lua').New('TankMuzzle',
-    {maxUnits=1, maxEvents=16})
 -- LuaUI copies its System exports into the widget environment without _G.
 local MosaicConfig=VFS.Include('scripts/lib_mosaic.lua',
     setmetatable({MOSAIC_CONFIG_ONLY=true},{__index=getfenv and getfenv(1) or _ENV}))
@@ -208,9 +206,8 @@ end
 
 function widget:Initialize()
     syncOptions()
-    local policeProfiles=MosaicConfig.getPoliceLightTypeTable(UnitDefs)
-    local tankProfiles=MosaicConfig.getTankMuzzleTypeTable(UnitDefs)
-    sources=Sources.New(weaponConf,policeProfiles,tankProfiles)
+    sources=Sources.New(weaponConf,MosaicConfig.getPoliceLightTypeTable(UnitDefs),
+        MosaicConfig.getTankMuzzleTypeTable(UnitDefs))
     sources.brightness,sources.radius=globalLightMult,globalRadiusMult
     for _,id in ipairs(Spring.GetAllUnits()) do sources:UnitCreated(id,Spring.GetUnitDefID(id)) end
     local err
@@ -249,12 +246,6 @@ function widget:Initialize()
         getStatus=effectStatus,
     }
     WG.lighteffects=api
-    local tankTypes=0
-    for _ in pairs(tankProfiles) do tankTypes=tankTypes+1 end
-    widgetTrace.Log(nil, 'widget', 'combat_renderer_ready',
-        {tank_types=tankTypes, flame_painter=not not flameRenderer,
-            radiance=not not lightRenderer, tracers=not not tracerRenderer,
-            ribbon_limit=flameRenderer and flameRenderer.maxVisible})
 end
 function widget:TextCommand(command)
     if command=='effects status' then
@@ -299,20 +290,11 @@ function widget:UnitDestroyed(id) if sources then sources:UnitDestroyed(id) end 
 function widget:DrawWorld()
     if sources then
         local _,flames,tracers=sources:Collect()
-        if flameRenderer then
-            flameRenderer:Draw(flames)
-        else
-            for _,ribbon in ipairs(flames) do
-                local trace=ribbon.executionTrace
-                if trace then trace.logger.Log(trace.unitID, trace.cycle,
-                    trace.stagePrefix..'_render_rejected', {piece=trace.piece, reason='renderer_unavailable'}) end
-            end
-        end
+        if flameRenderer then flameRenderer:Draw(flames) end
         if tracerRenderer then tracerRenderer:Draw(tracers,RadianceTime.AtFrame(Spring.GetGameFrame())) end
     end
 end
 function widget:Shutdown()
-    widgetTrace.Log(nil, 'widget', 'combat_renderer_shutdown')
     for name in pairs(callbacks) do widgetHandler:DeregisterGlobal(name) end
     if WG.CaptureCombatLightEmission==capture then WG.CaptureCombatLightEmission=nil end
     if WG.HasCombatLightEmission==hasEmission then WG.HasCombatLightEmission=nil end

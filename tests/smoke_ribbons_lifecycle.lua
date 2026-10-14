@@ -9,22 +9,11 @@ local cameraY,cameraZ,frustumTests,lastOpacity=10,100,0,0
 local wind,velocity,lastDrift={0,0,0},{0,0,0},{}
 local windCalls,velocityCalls=0,0
 local lastLength,lastPad,lastLanding,lastElectric
-local echoLines,clientRenderer={}
 GG={}; Game={gameSpeed=30}; gadget={}
 gadgetHandler={IsSyncedCode=function() return synced end,RemoveGadget=function() error('unexpected removal') end,
     AddChatAction=function() end,RemoveChatAction=function() end,
     AddSyncAction=function() end,RemoveSyncAction=function() end}
-VFS={Include=function(p)
-    local loaded=dofile(p)
-    if p=='luarules/gadgets/include/smoke_ribbon_renderer.lua' then
-        return function(...)
-            local renderer,err=loaded(...)
-            clientRenderer=renderer
-            return renderer,err
-        end
-    end
-    return loaded
-end,LoadFile=function() return '' end}
+VFS={Include=function(p) return dofile(p) end,LoadFile=function() return '' end}
 Spring={ValidUnitID=function(id) return id==7 end,GetUnitIsDead=function() return dead end,
     GetWind=function() windCalls=windCalls+1;return unpack(wind) end,
     GetUnitVelocity=function() velocityCalls=velocityCalls+1;return unpack(velocity) end,
@@ -37,8 +26,7 @@ Spring={ValidUnitID=function(id) return id==7 end,GetUnitIsDead=function() retur
     GetUnitPosition=function() return x,0,0 end,GetUnitViewPosition=function() return viewX,0,0 end,
     GetUnitVectors=function() return {1,0,0},{0,1,0},{0,0,-1} end,
     IsSphereInView=function() frustumTests=frustumTests+1;return visible end,GetGameFrame=function() return frame end,
-    GetFrameTimeOffset=function() return 0.5 end,GetSelectedUnits=function() return {7} end,
-    Echo=function(line) echoLines[#echoLines+1]={line=line,draws=drawn,ordinal=#echoLines+1} end}
+    GetFrameTimeOffset=function() return 0.5 end,GetSelectedUnits=function() return {7} end,Echo=function() end}
 GL={TRIANGLE_STRIP=5,ALL_ATTRIB_BITS=1,ONE=1,ONE_MINUS_SRC_ALPHA=2}
 gl=setmetatable({CreateShader=function() return 1 end,GetUniformLocation=function(_,n) return n end,
     CreateList=function(fn) created=created+1;fn();return 1 end,BeginEnd=function(_,fn,...) fn(...) end,
@@ -147,64 +135,6 @@ assert(api.Set(7,'a','smoke',{}));wind={0,0,0};velocity={0,0,0}
 gadget:Shutdown();gadget={};dofile(path);gadget:Initialize()
 local n=drawn;gadget:DrawWorld();assert(drawn==n+1,'reload lost registered effect')
 api.Remove(7,'a');hidden('removed effect survives')
--- Exercise the actual synced API, unsynced record copy and CPU renderer.
--- The input's logger/callback must never become synchronized record values.
-do
-    local requested={prefix='SmokeRibbonBridgeTest',stagePrefix='bridge',cycle=frame,
-        logger={Log=function() error('input logger crossed the synced boundary') end},
-        callback=function() error('input callback crossed the synced boundary') end}
-    local function events(stage)
-        local matches={}
-        for _,entry in ipairs(echoLines) do
-            if entry.line:find('[SmokeRibbonBridgeTest]',1,true)
-                and (entry.line..' '):find(' stage=bridge_'..stage..' ',1,true) then
-                matches[#matches+1]=entry
-            end
-        end
-        return matches
-    end
-    assert(api.Set(7,'trace','smoke',{length=24,width=5,executionTrace=requested}))
-    local metadata=assert(SmokeRibbonRecords['7:trace'].executionTrace)
-    assert(metadata~=requested and metadata.unitID==7 and metadata.piece==2
-        and metadata.slot=='trace' and metadata.cycle==frame,'synced trace identity was lost')
-    assert(metadata.logger==nil and metadata.callback==nil,'logger or callback was synchronized')
-    for _,value in pairs(metadata) do
-        local kind=type(value)
-        assert(kind=='number' or kind=='string' or kind=='boolean','non-scalar trace metadata was synchronized')
-    end
-    local registered=events('registered')
-    assert(#registered==1 and #events('received')==0,'registration did not stop at the synced boundary')
-    local before=drawn
-    gadget:DrawWorld()
-    local received,submitted=events('received'),events('draw_submitted')
-    assert(#received==1 and #submitted==1 and drawn==before+1,'trace never reached the CPU draw submission')
-    assert(registered[1].ordinal<received[1].ordinal and received[1].ordinal<submitted[1].ordinal,
-        'trace stages do not follow registration, receipt and submission order')
-    assert(received[1].draws==before and submitted[1].draws==before+1
-        and submitted[1].line:find('meaning=cpu_submission_returned',1,true),
-        'draw trace was emitted before the GL submission returned')
-    local localTrace=clientRenderer.records['7:trace'].executionTrace
-    assert(localTrace~=metadata and type(localTrace.logger.Log)=='function' and metadata.logger==nil,
-        'unsynced receipt failed to create a separate client-local logger')
-    local count=#echoLines
-    gadget:DrawWorld()
-    assert(drawn==before+2 and #echoLines==count,'repeated draw spammed traces or suppressed rendering')
-    assert(api.Set(7,'untraced','smoke',{}))
-    gadget:DrawWorld()
-    assert(drawn==before+4 and #echoLines==count,'unrelated registry refresh reset trace deduplication')
-    api.Remove(7,'untraced');api.Remove(7,'trace')
-    local removed=events('removed')
-    assert(#removed==1 and submitted[1].ordinal<removed[1].ordinal,'trace removal was not reported')
-    hidden('traced emitter survived synced removal')
-    assert(clientRenderer.records['7:trace']==nil,'removed trace survived the unsynced snapshot')
-    api.Remove(7,'trace');hidden('repeated trace removal restarted rendering')
-    assert(#events('removed')==1,'repeated removal spammed trace output')
-    assert(api.Set(7,'invalid_cycle','smoke',{executionTrace={prefix=requested.prefix,
-        stagePrefix='invalid_cycle',cycle=function() end}}))
-    assert(SmokeRibbonRecords['7:invalid_cycle'].executionTrace.cycle==nil,
-        'non-scalar cycle crossed the synced boundary')
-    api.Remove(7,'invalid_cycle')
-end
 assert(api.Set(7,'a','smoke',{}));assert(api.Set(7,'b','smoke',{}))
 producer:UnitDestroyed(7);hidden('destroyed unit retains slots')
 gadget:TextCommand('smokeribbon smoke glow');n=drawn;gadget:DrawWorld();assert(drawn==n+1)
@@ -373,4 +303,4 @@ n=drawn;gadget:DrawWorld();assert(drawn==n+1 and lastLanding==2,'reload lost dec
 producer:UnitDestroyed(7);hidden('destroyed launch retains pad fan')
 gadget:Shutdown();assert(deleted==created,'mesh resources leaked')
 producer:Shutdown();assert(GG.SmokeRibbon==nil)
-print('PASS: ribbon lifecycle, synced scalar trace metadata, local receive/submission/removal, trace deduplication, hair piece transform, turn lag, pause, settling, separate driver/root transforms, driver reload, shared matrix cache and culling')
+print('PASS: ribbon lifecycle, hair piece transform, turn lag, pause, settling, separate driver/root transforms, driver reload, shared matrix cache and culling')
