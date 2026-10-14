@@ -34,25 +34,18 @@ local function publishStats()
         Spring.SetUnitRulesParam(unitID, 'building_structural_ready', ready and 1 or 0, {public=true})
     end
 end
-local function removeBlockFire(p, reason)
+local function removeBlockFire(p)
     if not fireSlots[p] then return end
-    local slot, effect = fireSlots[p], effects[p]
     if GG.SmokeRibbon then GG.SmokeRibbon.Remove(unitID, fireSlots[p]) end
     fireSlots[p] = nil
     activeFires = activeFires - 1
-    log('block_fire_stopped', {piece=p, slot=slot, reason=reason,
-        fire_until=effect and effect.fireUntil, active_fires=activeFires}, effect and effect.started)
 end
 
-local function removeBlockEffect(p, reason)
-    local effect = effects[p]
-    removeBlockFire(p, reason)
-    if effect then
+local function removeBlockEffect(p)
+    removeBlockFire(p)
+    if effects[p] then
         effects[p] = nil
         activeEffects = activeEffects - 1
-        log('block_effects_removed', {piece=p, reason=reason, started=effect.started,
-            fire_until=effect.fireUntil, smoke_until=effect.smokeUntil,
-            active_effects=activeEffects}, effect.started)
     end
     if activeEffects == 0 and GG.BuildingDamageEffects then
         GG.BuildingDamageEffects[unitID] = nil
@@ -62,27 +55,24 @@ local function removeBlockEffect(p, reason)
     end
 end
 
-local function clearEffects(reason)
-    for p in pairs(effects) do removeBlockEffect(p, reason) end
+local function clearEffects()
+    for p in pairs(effects) do removeBlockEffect(p) end
 end
 
 local function expireEffects(frame)
     for p, effect in pairs(effects) do
         if not visible[p] or frame >= effect.smokeUntil then
-            removeBlockEffect(p, not visible[p] and 'hide' or 'smoke_expiry')
+            removeBlockEffect(p)
         elseif frame >= effect.fireUntil then
-            removeBlockFire(p, 'fire_expiry')
+            removeBlockFire(p)
         end
     end
 end
 
 local function lightBlockFire(p, cycle)
     if not visible[p] or effects[p] or activeEffects >= config.maxFires then
-        local existing = effects[p]
         log('block_fire_skipped', {piece=p, active=activeFires,
-            active_effects=activeEffects, max_effects=config.maxFires,
-            reason=not visible[p] and 'hidden_piece' or existing and 'already_active' or 'fire_limit'},
-            existing and existing.started or cycle)
+            reason=not visible[p] and 'hidden_piece' or effects[p] and 'already_active' or 'fire_limit'}, cycle)
         return
     end
     -- A hit creates one finite lifetime. Subsequent ticks and repeated hits on
@@ -95,9 +85,6 @@ local function lightBlockFire(p, cycle)
     GG.BuildingDamageEffects[unitID] = effects
     GG.BuildingDamageAnchor = GG.BuildingDamageAnchor or {}
     GG.BuildingDamageAnchor[unitID] = p
-    log('block_effects_started', {piece=p, started=effect.started,
-        fire_until=effect.fireUntil, smoke_until=effect.smokeUntil,
-        visible=effect.visible, active_effects=activeEffects, max_effects=config.maxFires}, effect.started)
     if not GG.SmokeRibbon then
         log('block_fire_skipped', {piece=p, active=activeFires, reason='no_provider'}, cycle)
         return
@@ -107,12 +94,7 @@ local function lightBlockFire(p, cycle)
         {floorHeight=floorHeight, cellSize=cellSize, modelScale=modelScale})
     options.endFrame, options.fadeFrames = effect.fireUntil, config.effectFadeFrames
     options.executionTrace = {prefix='BuildingDestruction',stagePrefix='building_fire',cycle=cycle}
-    local root = type(options.rootOffset)=='table' and options.rootOffset or {}
-    local direction = type(options.direction)=='table' and options.direction or {}
-    log('block_fire_requested', {piece=p, slot=slot, length=options.length, width=options.width,
-        root_x=root[1], root_y=root[2], root_z=root[3], direction_space=options.directionSpace,
-        direction_x=direction[1], direction_y=direction[2], direction_z=direction[3],
-        end_frame=options.endFrame, fade_frames=options.fadeFrames}, cycle)
+    log('block_fire_requested', {piece=p, slot=slot}, cycle)
     local ok, reason=GG.SmokeRibbon.Set(unitID,slot,p,options)
     if ok then fireSlots[p]=slot;activeFires=activeFires+1 end
     log('block_fire_result', {piece=p, slot=slot, accepted=not not ok, reason=reason}, cycle)
@@ -135,7 +117,7 @@ local function hideBuildingPiece(p)
     -- hide them after their old structural entries have been removed.
     if retained[p] and not collapsing then return end
     visible[p] = nil
-    removeBlockEffect(p, collapsing and 'collapse' or 'hide')
+    removeBlockEffect(p)
     return (unitEnv.CloudPieceHide or nativeHide)(p)
 end
 
@@ -363,13 +345,7 @@ local function settle(block, drop, seconds, travel)
 end
 
 local function finishFall(block)
-    if block.keepVisible and not collapsing then
-        local drawn = 0
-        for _, p in ipairs(block.pieces) do if visible[p] then drawn=drawn+1 end end
-        log('block_fall_retained', {piece=block.piece, level=block.level, column=block.column,
-            visible=not not visible[block.piece], retained_pieces=drawn, remnants=remnantCount})
-        return
-    end
+    if block.keepVisible and not collapsing then return end
     if block.keepVisible then
         block.keepVisible = false
         remnantCount = remnantCount - 1
@@ -391,7 +367,7 @@ local function keepUpperRemnant(block)
     -- or depending on the simulation's shared random-number sequence.
     local seed = (unitID * 65537 + block.piece * 8191) % 2147483647
     local roll = ((seed * 48271) % 2147483647) / 2147483647
-    return roll < config.upperRemnantChance, roll
+    return roll < config.upperRemnantChance
 end
 
 local function detach(block, frame)
@@ -401,12 +377,8 @@ local function detach(block, frame)
             visible=not not visible[block.piece]}, frame)
     end
     local bottom = columns[block.column][1]
-    local upperRemnant, roll
-    if not collapsing and visible[block.piece] and block ~= bottom then
-        upperRemnant, roll = keepUpperRemnant(block)
-    end
     block.keepVisible = not collapsing and visible[block.piece]
-        and (block == bottom or upperRemnant) or false
+        and (block == bottom or keepUpperRemnant(block)) or false
     block.gone = true
     detachedCount = detachedCount + 1
     if block.keepVisible then remnantCount = remnantCount + 1 end
@@ -425,8 +397,8 @@ local function detach(block, frame)
     -- A retained bottom still occupies the bottom shadow cell. Sunken upper
     -- remnants overlap that cell, so their old elevated shadow bits are removed.
     if not block.keepVisible or block ~= bottom then removeBlockShadow(block) end
-    local drop = 0
     if frame and visible[block.piece] then
+        local drop = 0
         if block ~= bottom then
             if block.keepVisible then
                 drop = math.max(0, block.y - (bottom.y + floorHeight * config.remnantHeightFraction))
@@ -434,16 +406,6 @@ local function detach(block, frame)
                 drop = math.min(floorHeight * 0.45, math.max(0, block.y - bottom.y))
             end
         end
-    end
-    if not collapsing then
-        log('block_remnant_decided', {piece=block.piece, level=block.level, column=block.column,
-            bottom=block==bottom, bottom_piece=bottom.piece, retained=block.keepVisible,
-            visible=not not visible[block.piece], roll=roll or 'not_rolled',
-            chance=block==bottom and 1 or config.upperRemnantChance,
-            drop=drop, target_y=frame and visible[block.piece] and block.y-drop or nil,
-            target_offset=frame and visible[block.piece] and (offsets[block.piece] or 0)-drop or nil}, frame)
-    end
-    if frame and visible[block.piece] then
         settle(block, drop, FALL_FRAMES / 30)
         falling[#falling+1] = {block = block, frame = frame + FALL_FRAMES}
     else
@@ -568,7 +530,7 @@ function M.update(hits, frame)
     for _, block in ipairs(blocks) do if not block.gone then alive = true; break end end
     if not alive and #falling == 0 then
         log('structural_destroy_requested', {reason='no_remaining_blocks'}, frame)
-        clearEffects('no_support')
+        clearEffects()
         Spring.DestroyUnit(unitID, false, false)
         return false
     end
@@ -587,7 +549,7 @@ function M.collapse(levels, shown)
     for _, entry in ipairs(falling) do finishFall(entry.block) end
     falling = {}
     for p in pairs(attachments) do removeAttachments(p) end
-    clearEffects('collapse')
+    clearEffects()
     Sleep(200) -- brief structural hesitation before the first floor gives way
     -- If killed during assembly there may not yet be a completed support graph.
     -- Hide partial geometry and suppress subsequent construction-thread Shows.

@@ -12,11 +12,9 @@ if not gadgetHandler:IsSyncedCode() then return false end
 
 VFS.Include('scripts/lib_mosaic.lua')
 local blockDamageableHouseTypeTable = getStructuralBuildingTypeTable(UnitDefs)
-local damageConfig = getBuildingDamageConfig()
-local damageHealthFraction = damageConfig.healthThreshold
+local damageHealthFraction = getBuildingDamageConfig().healthThreshold
 local trace = VFS.Include('luarules/gadgets/include/execution_trace.lua').New('BuildingDestruction')
 local active = {}
-local dispatchCycles = {} -- Diagnostics follow the last hit through timed cleanup.
 local UPDATE_FRAMES = 6 -- 0.2 seconds at the simulation's 30 Hz
 local MAX_IMPACTS = 8
 local fxInterval, dustLeft = -1, 0
@@ -37,11 +35,8 @@ function gadget:Initialize()
     GG.AllowBuildingBlockDamageEffect = allowEffect
     local eligible = 0
     for _ in pairs(blockDamageableHouseTypeTable) do eligible = eligible + 1 end
-    trace.Log(nil, 0, 'damage_gadget_ready', {trace_version=3, eligible_definitions=eligible,
-        update_frames=UPDATE_FRAMES, max_impacts=MAX_IMPACTS,
-        health_threshold=damageHealthFraction, upper_remnant_chance=damageConfig.upperRemnantChance,
-        fire_frames=damageConfig.fireLifetimeFrames, smoke_frames=damageConfig.smokeLifetimeFrames,
-        fade_frames=damageConfig.effectFadeFrames})
+    trace.Log(nil, 0, 'damage_gadget_ready', {trace_version=2, eligible_definitions=eligible,
+        update_frames=UPDATE_FRAMES, max_impacts=MAX_IMPACTS})
 end
 
 function gadget:Shutdown()
@@ -109,33 +104,21 @@ function gadget:GameFrame(frame)
     for _, id in ipairs(ids) do
         local hits = active[id]
         active[id] = nil
-        local hasHits = #hits > 0
-        local cycle = hasHits and frame or dispatchCycles[id] or frame
-        dispatchCycles[id] = cycle
         local total = 0
         for index, hit in ipairs(hits) do
             total = total + hit.damage
             trace.Log(id, frame, 'damage_dispatch_impact', {slot=index, piece=hit.piece,
                 damage=hit.damage, x=hit.x, y=hit.y, z=hit.z})
         end
-        if hasHits then
-            trace.Log(id, cycle, 'damage_dispatch_begin', {hits=#hits, total_damage=total})
-        end
+        trace.Log(id, frame, 'damage_dispatch_begin', {hits=#hits, total_damage=total})
         local env = Spring.UnitScript.GetScriptEnv(id)
         if env and env.BuildingBlockDamaged and not Spring.GetUnitIsDead(id) then
             local waiting = Spring.UnitScript.CallAsUnit(id, env.BuildingBlockDamaged, hits, frame)
             if waiting then active[id] = {} end
-            -- A finite fire can keep the shared timer active for ten seconds.
-            -- Log its admission and final completion, not every empty tick.
-            if hasHits or not waiting then
-                trace.Log(id, cycle, 'damage_dispatch_complete', {waiting=not not waiting,
-                    reason=waiting and 'timed_work_pending' or 'finished'})
-            end
-            if not waiting then dispatchCycles[id] = nil end
+            trace.Log(id, frame, 'damage_dispatch_complete', {waiting=not not waiting})
         else
             trace.Log(id, frame, 'damage_dispatch_skipped',
                 {reason=not env and 'no_script_env' or not env.BuildingBlockDamaged and 'no_callback' or 'dead_unit'})
-            dispatchCycles[id] = nil
         end
     end
 end
@@ -145,7 +128,6 @@ function gadget:UnitDestroyed(id)
         trace.Log(id, spGetGameFrame(), 'damage_tracking_removed', {reason='unit_destroyed'})
     end
     active[id] = nil
-    dispatchCycles[id] = nil
     if GG.BuildingDamageAnchor then GG.BuildingDamageAnchor[id] = nil end
     if GG.BuildingDamageEffects then GG.BuildingDamageEffects[id] = nil end
     trace.Forget(id)

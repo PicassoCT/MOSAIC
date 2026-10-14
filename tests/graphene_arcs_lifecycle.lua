@@ -11,7 +11,7 @@ local function fixture(options)
     options = options or {}
     local state = {registered={}, removed={}, registry={}, attached={}, detached={}, destroyed={},
         threads={}, shown={}, showCalls={}, cordMoves={}, moves={}, turns={},
-        position={10,500,20}, ground=0, checks=2, frame=0, traces={}}
+        position={10,500,20}, ground=0, checks=2, frame=0}
     local pieces = {anchor=201, Infantrz=202, step=203}
     local groups, web = {Rotator={}, DownWardSpiral={}, Cord={}}, {}
     for i=1,156 do pieces['Rotator'..i]=i;groups.Rotator[i]=i;web[i]=true;state.shown[i]=true end
@@ -61,10 +61,7 @@ local function fixture(options)
             SetPosition=function(id,x,y,z)
                 assert(id==7);state.position={x,y,z};state.moves[#state.moves+1]={x,y,z}
             end},
-        Echo=function(message)
-            if options.echoFailure then error('diagnostic sink unavailable') end
-            state.traces[#state.traces+1]=message
-        end,
+        Echo=function(message) error(message) end,
     }
     env.VFS={Include=function(path) return loadEnv(path,env) end}
     env.include=function() end
@@ -94,7 +91,7 @@ local function fixture(options)
     if not options.noProvider then
         env.GG.SmokeRibbon={Set=function(id,slot,p,settings)
             local record=config.Normalize(id,p,settings)
-            state.registered[#state.registered+1]={slot=slot,record=record,trace=settings.executionTrace}
+            state.registered[#state.registered+1]={slot=slot,record=record}
             state.registry[slot]=record
             return true
         end,Remove=function(id,slot)
@@ -131,12 +128,6 @@ for _,effect in ipairs(s.registered) do
     local r=effect.record
     assert(r.piece==pieces.step,'effect still follows a hidden animated web remnant')
     if r.mode=='hair' then black[#black+1]=r else arcs[#arcs+1]=r end
-    if r.mode=='hair' then
-        assert(effect.trace and effect.trace.prefix=='GrapheneChute'
-            and effect.trace.stagePrefix=='graphene_chute'
-            and effect.trace.cycle==s.registered[1].trace.cycle,
-            'black canopy delivery lost its bounded renderer trace metadata')
-    end
 end
 assert(#black==4 and #arcs==4,'canopy/electric source counts changed')
 for i,r in ipairs(black) do
@@ -195,15 +186,6 @@ for i,move in ipairs(s.cordMoves) do
 end
 s.assertWebHidden()
 env.script.Killed(1,1);assert(#s.removed==8,'later destruction removed the same ribbons twice')
-local sequence={'canopy_polygons_hidden','canopy_deploy_begin','canopy_layout_ready',
-    'canopy_deploy_complete','passenger_attached','canopy_clear_begin','canopy_cleared','passenger_released'}
-local nextStage=1
-for _,line in ipairs(s.traces) do
-    if line:find('[GrapheneChute]',1,true) and line:find(' unit=7 ',1,true)
-        and line:match('stage=([^ ]+)')==sequence[nextStage] then nextStage=nextStage+1 end
-end
-assert(nextStage==#sequence+1,'chute trace stopped before '..tostring(sequence[nextStage]))
-assert(#s.traces==#sequence,'ordinary descent or repeated teardown flooded the chute trace')
 
 local scaled=fixture({scale=2});scaled.createAndDeploy()
 for i,effect in ipairs(scaled.registered) do
@@ -225,8 +207,4 @@ for _,option in ipairs({'missingBounds','missingMatrix','noProvider','deadPassen
     else assert(state.attached[2]==8 and state.detached[1]==8,'missing VFX changed transport behavior: '..option) end
     state.assertWebHidden()
 end
-local silent=fixture({echoFailure=true});silent.createAndDeploy()
-while coroutine.status(silent.threads[1].co)~='dead' do silent.resume(silent.threads[1]) end
-assert(silent.detached[1]==8 and silent.destroyed[1]==7 and next(silent.registry)==nil,
-    'a failed diagnostic sink interrupted passenger descent or effect cleanup')
 print('PASS: real chute Create/fall/stationary/landing, 159 polygon pieces stay hidden, four black fibrous ribbons, four cyan/violet rim sources, imported scale, emitter correction, cords, passenger movement/cloak and teardown')
