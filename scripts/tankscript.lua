@@ -4,11 +4,6 @@ include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 --include "lib_Build.lua"
 
-local tankTraceFactory = VFS and VFS.Include and
-    VFS.Include('luarules/gadgets/include/execution_trace.lua') or
-    dofile('luarules/gadgets/include/execution_trace.lua')
-local tankTrace = tankTraceFactory.New('TankMuzzle')
-
 TablesOfPiecesGroups = {}
 FireEmit= piece"FireEmit"
 DustEmit= piece"DustEmit"
@@ -288,10 +283,7 @@ end
 function script.FireWeapon1()
     -- One shot stamp drives the muzzle ribbon and radiance together. No timer
     -- thread: clients expire it against the game frame, including after reload.
-    local shotFrame=Spring.GetGameFrame()
-    Spring.SetUnitRulesParam(unitID, "mosaic_tank_muzzle_frame", shotFrame, camoRulesAccess)
-    tankTrace.Log(unitID, shotFrame, 'tank_shot_published',
-        {definition=unitDefID, piece=FireEmit, direction_piece=Cannon1})
+    Spring.SetUnitRulesParam(unitID, "mosaic_tank_muzzle_frame", Spring.GetGameFrame(), camoRulesAccess)
     tP(FireEmit,5*45,0,10,0)
     Explode(Shell, SFX.FALL)
     EmitSfx(FireEmit, 1026)

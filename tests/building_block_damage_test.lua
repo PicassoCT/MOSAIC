@@ -35,7 +35,6 @@ local function fixture(columnCount, floorCount, scale, id, baseHeight)
     env.Sleep=function(ms) sleeps[#sleeps+1]=ms end
     env.hideAll=function() for p in pairs(visible) do visible[p]=nil end end
     env.Spring={
-        Echo=noop,
         UnitScript={Show=env.Show,Hide=env.Hide,Move=env.Move,Turn=env.Turn,Spin=env.Spin},
         GetUnitPieceMap=function() return names end,
         GetUnitPieceInfo=function(_,p) return {children=children[p] or {}} end,
@@ -300,7 +299,7 @@ q2.tick(18);assert(#q2.losses==6)
 
 -- Empty scaffolding and late construction callbacks must not resurrect a house.
 local env=setmetatable({Show=noop,Hide=noop,Move=noop,Turn=noop,Spin=noop,
-    Sleep=noop,hideAll=noop,unitID=1,GG={},Spring={Echo=noop,UnitScript={
+    Sleep=noop,hideAll=noop,unitID=1,GG={},Spring={UnitScript={
         Show=noop,Hide=noop,Move=noop,Turn=noop,Spin=noop}}}, {__index=_G})
 env._G=env
 env.VFS={Include=function(path,scope)return loadEnv(path,scope or env)end}

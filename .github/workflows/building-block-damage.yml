@@ -13,7 +13,6 @@ on:
       - luarules/gadgets/game_windsfx.lua
       - luarules/gadgets/gfx_smoke_ribbons.lua
       - luarules/gadgets/include/smoke_ribbon_*.lua
-      - luarules/gadgets/include/execution_trace.lua
       - luarules/gadgets/game_sniperPosition.lua
       - gamedata/explosions/building_block_dust.lua
       - tests/building_block_damage_test.lua
@@ -21,7 +20,6 @@ on:
       - tests/building_rubble_lifecycle_test.lua
       - tests/building_damage_flame_geometry_test.lua
       - tests/building_damage_smoke_lifecycle_test.lua
-      - tests/execution_trace_test.lua
       - tests/asset_rooftop_test.lua
       - .github/workflows/building-block-damage.yml
   pull_request:
@@ -36,7 +34,6 @@ on:
       - luarules/gadgets/game_windsfx.lua
       - luarules/gadgets/gfx_smoke_ribbons.lua
       - luarules/gadgets/include/smoke_ribbon_*.lua
-      - luarules/gadgets/include/execution_trace.lua
       - luarules/gadgets/game_sniperPosition.lua
       - gamedata/explosions/building_block_dust.lua
       - tests/building_block_damage_test.lua
@@ -44,7 +41,6 @@ on:
       - tests/building_rubble_lifecycle_test.lua
       - tests/building_damage_flame_geometry_test.lua
       - tests/building_damage_smoke_lifecycle_test.lua
-      - tests/execution_trace_test.lua
       - tests/asset_rooftop_test.lua
       - .github/workflows/building-block-damage.yml
 
@@ -80,8 +76,6 @@ jobs:
           lua5.4 tests/building_damage_flame_geometry_test.lua
           lua5.1 tests/building_damage_smoke_lifecycle_test.lua
           lua5.4 tests/building_damage_smoke_lifecycle_test.lua
-          lua5.1 tests/execution_trace_test.lua
-          lua5.4 tests/execution_trace_test.lua
           lua5.1 tests/asset_rooftop_test.lua
           lua5.1 tests/house_asian_split_test.lua
           lua5.4 -e 'VFS={Include=dofile}; dofile("tests/building_shadow_columns.lua")'
