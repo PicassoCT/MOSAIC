@@ -33,14 +33,24 @@ jobs:
         run: |
           set -euo pipefail
           base=c0982bac374dd211761eac305d393c193c1763a8
+          target=cf2e2f04bdc4d9369b0eb0adda63b2030d9ad5fd
           test "$(git rev-parse HEAD)" = "$base"
           test "$(git ls-remote origin refs/heads/master | cut -f1)" = "$base"
           test "$(git ls-remote origin refs/heads/debug/building-fire-tank-muzzle-tracing | cut -f1)" = 8004b41973bde9abf63a4b6e985619088ec54ccd
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git fetch --no-tags --depth=1 origin "$GITHUB_SHA"
-          git show "$GITHUB_SHA:.github/maintenance/resolve_trace_revert.py" > /tmp/resolve_trace_revert.py
-          if ! git revert --no-commit cf2e2f04bdc4d9369b0eb0adda63b2030d9ad5fd; then
+          curl --fail --location --retry 2 "https://raw.githubusercontent.com/$GITHUB_REPOSITORY/$GITHUB_SHA/.github/maintenance/resolve_trace_revert.py" -o /tmp/resolve_trace_revert.py
+          test "$(git hash-object /tmp/resolve_trace_revert.py)" = dc10eb7f8f465e4151c41b2a13005890bab120c9
+          # Materialize all three historical versions before merge-ort runs.
+          git diff-tree --no-commit-id --name-only -r "$target" | while IFS= read -r path; do
+            for ref in HEAD "$target" "$target^"; do
+              if git cat-file -e "$ref:$path" 2>/dev/null; then
+                echo "PREFETCH $ref:$path"
+                git show "$ref:$path" > /dev/null
+              fi
+            done
+          done
+          if ! git revert --no-commit "$target"; then
             test "$(git diff --name-only --diff-filter=U | wc -l)" -eq 6
           fi
           python3 /tmp/resolve_trace_revert.py
