@@ -45,7 +45,7 @@ received={};clock=.44;consumer:Update();assert(not next(received))
 consumer:Shutdown();assert(not next(messages),'sync actions leaked on shutdown')
 producer:Shutdown();assert(MosaicCombatFires==nil)
 
--- Exercise both real wreckage fire loops: retain their fire/smoke CEGs, no
+-- Exercise both real wreckage fire loops: car-only FlamePainter, retained smoke, no
 -- groundflash, and publish finite radiance/FlamePainter emitter lifetimes.
 include=function() end;piece=function(name) return name=='emitfire' and 2 or 1 end
 Spring.GetGaiaTeamID=function() return 0 end;Spring.GetUnitTeam=function() return 0 end
@@ -61,7 +61,11 @@ for _,file in ipairs({'vehicleCorpsescript.lua','tankwreckagescript.lua'}) do
     dofile('scripts/'..file)
     frame=0;received={};emitted={}
     onFire(10,4)
-    assert(emitted[1025]==3 and emitted[1026]==3 and emitted[1028]==10,'existing wreck CEG flames/smoke changed')
+    local car=file=='vehicleCorpsescript.lua'
+    if car then assert(not emitted[1025],'car still emits legacy CEG flames')
+    else assert(emitted[1025]==3,'tank CEG flames changed') end
+    assert(emitted[1026]==3 and emitted[1028]==10,'existing wreck smoke changed')
+    assert(received.mosaic_fire_flames==(car and 3 or nil),'car-only three-flame opt-in missing')
     assert(not emitted[1031],'wreck still emits CEG ground lighting')
     assert(received.mosaic_fire_piece==emitfire)
     assert(math.abs(received.mosaic_fire_until-(8.1+18))<.001,'fire-light lifetime does not match flame phase')

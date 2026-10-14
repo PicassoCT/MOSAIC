@@ -1,6 +1,6 @@
 -- Live analytic caster data and source positions, separate from static building
 -- occupancy. Fixed allocations; no moving unit invalidates a facade bake.
-local M={size=256,height=32,gridSize=32,cellCap=16,maxCasters=128,margin=512}
+local M={size=256,height=32,gridSize=32,cellCap=16,maxCasters=128,margin=512,softness=3}
 local GRID_OFFSET=256*5
 local floor,min,max=math.floor,math.min,math.max
 local function identity(fn,...)
@@ -100,16 +100,19 @@ void main(){gl_FragColor=texture2D(sourceTex,gl_TexCoord[0].st);}
         local drawFrame=Spring.GetDrawFrame()
         if self.drawFrame==drawFrame and self.domainX==domain.x and self.domainZ==domain.z and self.domainSpan==domain.span then return end
         local records,stats=self.collector:Collect({minX=domain.x,maxX=domain.x+domain.span,
-            minZ=domain.z,maxZ=domain.z+domain.span,margin=M.margin},drawFrame)
+            minZ=domain.z,maxZ=domain.z+domain.span,margin=M.margin+max(1,2*min(8,max(0,M.softness)))},drawFrame)
         self.originX,self.originZ,self.span=domain.x-M.margin,domain.z-M.margin,domain.span+2*M.margin
         for i=1,#counts do counts[i]=0 end
         local overflow,occupied=0,0
         local scale=M.gridSize/self.span
+        -- Local-box dilation can project onto several world axes. Twice the
+        -- source radius conservatively covers that cone plus the receiver skin.
+        local padding=max(1,2*min(8,max(0,M.softness)))
         for index,r in ipairs(records) do
-            local x0=max(0,min(M.gridSize-1,floor((r.minX-self.originX)*scale)))
-            local x1=max(0,min(M.gridSize-1,floor((r.maxX-self.originX)*scale)))
-            local z0=max(0,min(M.gridSize-1,floor((r.minZ-self.originZ)*scale)))
-            local z1=max(0,min(M.gridSize-1,floor((r.maxZ-self.originZ)*scale)))
+            local x0=max(0,min(M.gridSize-1,floor((r.minX-padding-self.originX)*scale)))
+            local x1=max(0,min(M.gridSize-1,floor((r.maxX+padding-self.originX)*scale)))
+            local z0=max(0,min(M.gridSize-1,floor((r.minZ-padding-self.originZ)*scale)))
+            local z1=max(0,min(M.gridSize-1,floor((r.maxZ+padding-self.originZ)*scale)))
             for z=z0,z1 do for x=x0,x1 do
                 local key=z*M.gridSize+x+1;local n=counts[key]
                 if n<M.cellCap then
@@ -119,7 +122,7 @@ void main(){gl_FragColor=texture2D(sourceTex,gl_TexCoord[0].st);}
             end end
         end
         self.count=#records;self.stats=stats;stats.gridOverflow=overflow;stats.occupiedCells=occupied
-        self.minY,self.maxY=stats.minY or 0,stats.maxY or 0
+        self.minY,self.maxY=(stats.minY or 0)-padding,(stats.maxY or 0)+padding
         gl.RenderToTexture(self.texture,upload,records)
         self.ready=self.count>0
         self.drawFrame,self.domainX,self.domainZ,self.domainSpan=drawFrame,domain.x,domain.z,domain.span
@@ -162,7 +165,7 @@ void main(){gl_FragColor=texture2D(sourceTex,gl_TexCoord[0].st);}
     function self:Locations(shader)
         local result={}
         for _,name in ipairs({"mobileShadowOrigin","mobileShadowSpan","mobileShadowCount","mobileShadowActive",
-            "mobileShadowHeight","mobileCascadeSourceActive","mobileDirectSourceActive"}) do
+            "mobileShadowHeight","mobileShadowSoftness","mobileCascadeSourceActive","mobileDirectSourceActive"}) do
             result[name]=gl.GetUniformLocation(shader,name)
         end
         return result
@@ -171,6 +174,7 @@ void main(){gl_FragColor=texture2D(sourceTex,gl_TexCoord[0].st);}
         gl.Texture(14,self.sourceAtlas);gl.Texture(15,self.texture)
         gl.UniformInt(loc.mobileShadowActive,self.ready and self.enabled and 1 or 0)
         gl.UniformInt(loc.mobileShadowCount,self.count)
+        gl.Uniform(loc.mobileShadowSoftness,min(8,max(0,M.softness)))
         gl.Uniform(loc.mobileShadowOrigin,self.originX or 0,self.originZ or 0)
         gl.Uniform(loc.mobileShadowSpan,self.span or 1)
         gl.Uniform(loc.mobileShadowHeight,self.minY or 0,self.maxY or 0)
