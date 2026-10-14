@@ -1,27 +1,35 @@
-# Burning car: three FlamePainter flames
+# Burning car: one broad upward FlamePainter flame
 
 Scope: `vehiclecorpse` only. Spawn on dry open ground with `/cheat 1`, then
-`/give vehiclecorpse`. Pause once it is burning; `/give all` is unnecessary.
+`/give vehiclecorpse`. Start a fresh game after updating the script and client.
 
-The car script no longer emits recurring SFX 1025 (`custom:flames`). Shared CEG
-files, textures, tank wrecks, initial explosions, falling debris, smoke/ash calls,
-and the randomized burn/wreck lifetime are unchanged. The existing fire rules
-publish one additional LOS-scoped parameter, `mosaic_fire_flames=3`.
+The car script still does not emit recurring SFX 1025 (`custom:flames`). Shared
+CEG files, textures, tank wrecks, initial explosions, falling debris, smoke/ash
+calls, and randomized burn/wreck lifetimes are unchanged. The LOS-scoped
+`mosaic_fire_broad=1` opt-in replaces the obsolete `mosaic_fire_flames` count.
+The emitter piece and expiry parameters keep their existing meaning.
 
-The client renders three equal upward flames: each retains the previous car
-FlamePainter size (45 elmos long, 12 wide). Two flank the original emitter by
-8 elmos along the vehicle's forward axis. They follow the interpolated model
-position and use different stable seeds, with the same expiry/fade. They are
-not three extra copies on top of the previous flame: the total is three.
+The client reshapes the existing car ribbon into one broad upward column:
+90 elmos long, 20 wide, direction `{0,1,0}`, speed 3, curl 0.28, wind influence
+0.18, and trail time 0.7. Four internal mesh strands provide detail within that
+single emitter; there are no offset sibling flames. Flame emission is
+`{3.5,0.35}` and source-glow alpha is 0.55. The original interpolated anchor,
+stable per-wreck seed, colours, and end-of-burn fade are retained.
 
-One shared radiance light retains its previous strength/radius. Sibling flames
-are created only for retained wreck lights, and share the existing 64-ribbon
-allowance with other combat FlamePainter effects. At saturation, siblings can
-be omitted; no rendering budget is raised. Tank wrecks omit the opt-in parameter
-and retain their one 1.5-scale ribbon and CEG flames.
+One radiance light keeps its previous position, strength, radius, colour and
+flicker. Flame size does not enlarge or brighten that light. Each burning car
+now reserves one ribbon rather than three. The removed sibling fanout no longer
+queries vehicle heading. `extraFlames` remains in use for Cinder side streamers;
+the existing light and renderer budgets are unchanged.
+
+Tank wrecks do not publish the broad-flame opt-in and retain their one 1.5-scale
+ribbon and CEG flames. Ground fires, weapon trails, building flames, police lights
+and the soft-shadow shaders are not retuned by this change.
 
 Checks: `texlua tests/vehicle_wreck_flames.lua` and
-`texlua tests/combat_effect_events.lua`. These are Lua/source tests, not in-engine
-visual acceptance. Replacing this car's CEG does not establish the cause of the
-previous orange-quad artifact, nor prove that unrelated particle compositing
-is correct. Inspect the preserved smoke separately if the artifact remains.
+`texlua tests/combat_effect_events.lua`. The first runs the actual car script and
+combat collector with unrelated modules isolated; the second runs the actual
+combat event bridge and both wreck scripts. These are Lua/source regressions,
+not Recoil visual or target-hardware performance acceptance. In-game, inspect
+one broad upward flame, preserved smoke, normal burnout, and an unchanged tank
+wreck. This retuning does not diagnose the earlier orange-quad artifact.

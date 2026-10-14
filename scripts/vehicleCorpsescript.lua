@@ -42,9 +42,9 @@ function onFire(times, endtimes)
     -- One LOS-limited publication; rendering follows the animated emitter locally.
     local burningSteps = math.min(times, math.max(0, endtimes - 1))
     Spring.SetUnitRulesParam(unitID, "mosaic_fire_piece", emitfire, {inlos=true})
-    -- Car wrecks opt into three equal FlamePainter flames. Tank wrecks and
+    -- Car wrecks opt into one broad upward FlamePainter flame. Tank wrecks and
     -- shared CEG definitions retain their existing appearance.
-    Spring.SetUnitRulesParam(unitID, "mosaic_fire_flames", 3, {inlos=true})
+    Spring.SetUnitRulesParam(unitID, "mosaic_fire_broad", 1, {inlos=true})
     Spring.SetUnitRulesParam(unitID, "mosaic_fire_until",
         Spring.GetGameFrame() + math.ceil(burningSteps * 200 * (Game.gameSpeed or 30) / 1000), {inlos=true})
     for i = 1, times, 1 do

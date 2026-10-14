@@ -65,7 +65,8 @@ for _,file in ipairs({'vehicleCorpsescript.lua','tankwreckagescript.lua'}) do
     if car then assert(not emitted[1025],'car still emits legacy CEG flames')
     else assert(emitted[1025]==3,'tank CEG flames changed') end
     assert(emitted[1026]==3 and emitted[1028]==10,'existing wreck smoke changed')
-    assert(received.mosaic_fire_flames==(car and 3 or nil),'car-only three-flame opt-in missing')
+    assert(received.mosaic_fire_broad==(car and 1 or nil),'car-only broad-flame opt-in missing')
+    assert(received.mosaic_fire_flames==nil,'obsolete three-flame parameter is still published')
     assert(not emitted[1031],'wreck still emits CEG ground lighting')
     assert(received.mosaic_fire_piece==emitfire)
     assert(math.abs(received.mosaic_fire_until-(8.1+18))<.001,'fire-light lifetime does not match flame phase')

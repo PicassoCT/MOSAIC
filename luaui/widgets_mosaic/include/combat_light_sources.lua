@@ -263,10 +263,20 @@ function M.New(weaponConf, policeProfiles, tankProfiles)
                         local vx,vy,vz=Spring.GetUnitViewPosition(id)
                         if ux and vx then x,y,z=x+vx-ux,y+vy-uy,z+vz-uz end
                         local light=fire(x,y+4,z,scale,id,clamp((expires-frame)/15,0,1))
-                        local count=tonumber(Spring.GetUnitRulesParam(id,'mosaic_fire_flames')) or 1
-                        if light and count==count and count>1 then
-                            light.wreckFlameCount=clamp(math.floor(count),1,3)
-                            light.wreckID,light.wreckScale=id,scale
+                        if light and Spring.GetUnitRulesParam(id,'mosaic_fire_broad')==1 then
+                            -- Car-only opt-in: one broad upward column at the
+                            -- original anchor. Do not alter its radiance light.
+                            local ribbon=light.ribbon
+                            ribbon.direction={0,1,0}
+                            ribbon.length=90*scale
+                            ribbon.width=20*scale
+                            ribbon.speed=3.0
+                            ribbon.strands=4
+                            ribbon.curl=.28
+                            ribbon.windInfluence=.18
+                            ribbon.trailTime=.7
+                            ribbon.emission={3.5,.35}
+                            ribbon.sourceGlow={1,.3,.03,.55}
                         end
                     end
                 end
@@ -316,7 +326,7 @@ function M.New(weaponConf, policeProfiles, tankProfiles)
         -- Never spend the shared 64-ribbon allowance on hidden/distant pyros.
         local reserved=0
         for _,light in ipairs(lights) do
-            if light.ribbon then reserved=reserved+(light.wreckFlameCount or 1) end
+            if light.ribbon then reserved=reserved+1 end
         end
         PyroBudget.Collect(self.pyros,{
             simFrame=Spring.GetGameFrame(),frame=frame,
@@ -330,25 +340,11 @@ function M.New(weaponConf, policeProfiles, tankProfiles)
         for _,l in ipairs(lights) do
             if l.ribbon then
                 flames[#flames+1]=l.ribbon
-                if l.wreckFlameCount then
-                    -- Build siblings only after the light budget has retained
-                    -- their parent. Keep one radiance source, not triple light.
-                    local front=Spring.GetUnitVectors and Spring.GetUnitVectors(l.wreckID)
-                    front=front or {0,0,1}
-                    for i=2,l.wreckFlameCount do
-                        local offset=(i==2 and -8 or 8)*l.wreckScale
-                        local x,y,z=l.x+front[1]*offset,l.y+front[2]*offset,l.z+front[3]*offset
-                        extraFlames[#extraFlames+1]={
-                            ribbon=flame(x,y,z,l.wreckScale,l.wreckID+i*97,false,nil,nil,nil,l.ribbon.opacity),
-                            d2=(x-cx)^2+(y-cy)^2+(z-cz)^2,
-                        }
-                    end
-                end
             end
             if l.tracer then tracers[#tracers+1]=l.tracer end
         end
-        -- Wreck siblings and Cinder side streamers have no extra ground-light
-        -- record. Both share the existing 64-FlamePainter rendering allowance.
+        -- Cinder side streamers have no extra ground-light record and retain
+        -- the existing shared 64-FlamePainter rendering allowance.
         table.sort(extraFlames,function(a,b) return a.d2<b.d2 end)
         for i=1,math.min(#extraFlames,math.max(0,64-#flames)) do
             flames[#flames+1]=extraFlames[i].ribbon
