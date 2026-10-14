@@ -132,6 +132,7 @@ end
 local selectedUnits = Spring.GetSelectedUnits()
 local selectedUnitsCount = Spring.GetSelectedUnitsCount()
 local trackedUnits = {}
+local worldDialogueCache = {}
 WG.ObservedCivilianUnits = trackedUnits
 local trackKey = 111 --'O'
 local untrackKey = 127 --'DELETE'
@@ -173,6 +174,7 @@ function widget:KeyRelease(key)
       if not houseTypeTable[defID] then
         if trackedUnits[unitID] then
           trackedUnits[unitID] = nil
+          worldDialogueCache[unitID] = nil
           trackedUnitsCount = math.max(0,trackedUnitsCount-1)
           setUntrackedUnit(unitID)
         else
@@ -195,6 +197,7 @@ function widget:KeyRelease(key)
   if (key == untrackKey) then
    for id in pairs(trackedUnits) do setUntrackedUnit(id) end
    trackedUnits = {}
+   worldDialogueCache = {}
    WG.ObservedCivilianUnits = trackedUnits
    trackedUnitsCount = 0
   end		
@@ -203,6 +206,7 @@ end
 function widget:UnitDestroyed(id)
   if trackedUnits[id] then
     trackedUnits[id]=nil
+    worldDialogueCache[id]=nil
     trackedUnitsCount=math.max(0,trackedUnitsCount-1)
   end
 end
@@ -214,7 +218,111 @@ local suspectCol = {0.0, 1.0, 0.0, 0.95}
 local baseWhite = {1.0, 1.0, 1.0, 0.35}
 local baseBlack = {0.0, 0.0, 0.0, 1.0}
 
-local function DrawSuspectMarker(yshift, designator, name)
+-- These are world-space units in the same plane as the Observe marker. Both
+-- dimensions of the dialogue box are bounded by twice the marker's dimensions.
+local dialogueAlpha = 0.75 -- 25% transparent, NOT 25% opaque
+local dialoguePadding = 6
+local dialogueGap = 6
+local dialogueSize = textSize * 1.5
+local dialogueLineHeight = dialogueSize * 1.4
+
+local function textWidth(s)
+  return gl.GetTextWidth(s) * dialogueSize
+end
+
+local function wrapWorldText(s, limit)
+  local rows, current = {}, ""
+  for word in tostring(s):gmatch("%S+") do
+    local candidate = current == "" and word or current .. " " .. word
+    if textWidth(candidate) <= limit then
+      current = candidate
+    else
+      if current ~= "" then rows[#rows+1] = current; current = "" end
+      if textWidth(word) <= limit then
+        current = word
+      else
+        -- Split an oversized single word at UTF-8 character boundaries. Text
+        -- must never overrun the width cap, even for long generated tokens.
+        local pos = 1
+        while pos <= #word do
+          local byte = word:byte(pos)
+          local count = byte < 128 and 1 or byte < 224 and 2 or byte < 240 and 3 or 4
+          local glyph = word:sub(pos, pos + count - 1)
+          pos = pos + count
+          if current ~= "" and textWidth(current .. glyph) > limit then
+            rows[#rows+1] = current; current = ""
+          end
+          current = current .. glyph
+        end
+      end
+    end
+  end
+  if current ~= "" then rows[#rows+1] = current end
+  return rows
+end
+
+local function layoutDialogue(unitID, markerWidth, markerHeight, lines, first, last, revision)
+  local cached = worldDialogueCache[unitID]
+  if cached and cached.revision == revision and cached.first == first and
+      cached.last == last and cached.markerWidth == markerWidth then
+    return cached
+  end
+
+  local maxWidth = 2 * markerWidth
+  local maxHeight = 2 * markerHeight
+  local innerWidth = maxWidth - 2 * dialoguePadding
+  local maxRows = math.max(1, math.floor((maxHeight - 2 * dialoguePadding) / dialogueLineHeight))
+  local selected = {}
+  -- Keep the latest utterance intact whenever it fits, adding older turns
+  -- above it only while there is room. The full transcript is never modified.
+  for i = last, first, -1 do
+    local line = lines[i]
+    local content = tostring(line.name or "Civilian") .. ": " .. tostring(line.text or "")
+    local parts = wrapWorldText(content, innerWidth)
+    if #parts > maxRows then
+      if #selected == 0 then
+        for j = 1, maxRows do selected[j] = parts[j] end
+        local tail = selected[maxRows]
+        while #tail > 0 and textWidth(tail .. "...") > innerWidth do
+          tail = tail:sub(1, -2)
+        end
+        selected[maxRows] = tail .. "..."
+      end
+      break
+    end
+    if #selected + #parts > maxRows then break end
+    for j = #parts, 1, -1 do table.insert(selected, 1, parts[j]) end
+  end
+  cached = {revision=revision, first=first, last=last, markerWidth=markerWidth,
+    width=maxWidth, height=2*dialoguePadding+#selected*dialogueLineHeight, rows=selected}
+  worldDialogueCache[unitID] = cached
+  return cached
+end
+
+local function DrawWorldDialogue(unitID, markerWidth, markerHeight)
+  local api = WG.CivilianConversationWorld
+  if not api or not api.GetRecentLines then return end
+  local lines, first, last, revision = api.GetRecentLines(unitID)
+  if not lines or not first or not last then return end
+  local layout = layoutDialogue(unitID, markerWidth, markerHeight, lines, first, last, revision)
+  if #layout.rows == 0 then return end
+  local centreX = (markerWidth - 2*iconsizeX) * 0.5
+  local x0 = centreX - layout.width * 0.5
+  local top = -iconsizeZ - dialogueGap
+  glColor(0.035, 0.05, 0.05, dialogueAlpha)
+  glRect(x0, top-layout.height, x0+layout.width, top)
+  glColor(0.18, 0.64, 0.49, dialogueAlpha)
+  glRect(x0, top-1.5, x0+layout.width, top)
+
+  glColor(0.88, 0.95, 0.91, 1)
+  local y = top - dialoguePadding - dialogueSize
+  for _, row in ipairs(layout.rows) do
+    gl.Text(row, x0+dialoguePadding, y, dialogueSize, "lo")
+    y = y - dialogueLineHeight
+  end
+end
+
+local function DrawSuspectMarker(yshift, designator, name, unitID)
 
   local maxstringlength = math.max(math.max(string.len(designator),string.len(name)),iconsizeX)*2
   glColor(baseWhite)
@@ -233,6 +341,9 @@ local function DrawSuspectMarker(yshift, designator, name)
   glColor(suspectCol)
   gl.Text ("\255\0\255\0⧉⬚ "..string.upper(name), -iconsizeX+2, -iconsizeZ*0.3, textSize*1.5 , "lto" ) 
   gl.EndText()
+  -- Use the same translated billboard so speech stays attached beneath this
+  -- marker as the civilian moves and as the camera zooms/rotates.
+  DrawWorldDialogue(unitID, maxstringlength + iconsizeX, iconsizeZ * 2)
 end
 
 
@@ -241,13 +352,14 @@ function widget:DrawWorld()
 	if chobbyInterface then return end
   if not trackedUnits or Spring.IsGUIHidden() then return end
 
+  gl.Blending(GL.SRC_ALPHA, GL.ONE_MINUS_SRC_ALPHA)
   gl.DepthTest(true)
   gl.PolygonOffset(-0.5, -0.5)
  
   if  trackedUnitsCount > 0 then
   
     for unitID,texData in pairs(trackedUnits) do
-      glDrawFuncAtUnit(unitID, false, DrawSuspectMarker, unitHeights[texData.unitDefID] + iconHeighth, trackedUnits[unitID].marker, trackedUnits[unitID].name)
+      glDrawFuncAtUnit(unitID, false, DrawSuspectMarker, unitHeights[texData.unitDefID] + iconHeighth, texData.marker, texData.name, unitID)
     end   
   end
 
