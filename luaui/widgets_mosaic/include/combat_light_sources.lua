@@ -13,9 +13,6 @@ local PyroBudget = makePyroBudget(Spring,PyroCollision)
 local TankMuzzle = VFS and VFS.Include and
     VFS.Include('luaui/widgets_mosaic/include/tank_muzzle_flash.lua') or
     dofile('luaui/widgets_mosaic/include/tank_muzzle_flash.lua')
-local Trace = VFS and VFS.Include and
-    VFS.Include('luarules/gadgets/include/execution_trace.lua') or
-    dofile('luarules/gadgets/include/execution_trace.lua')
 
 local projectileTypes={Cannon=true,MissileLauncher=true,StarburstLauncher=true,
     LaserCannon=true,BeamLaser=true,LightningCannon=true,DGun=true,Flame=true}
@@ -34,7 +31,6 @@ end
 function M.New(weaponConf, policeProfiles, tankProfiles)
     policeProfiles = policeProfiles or {}
     tankProfiles = tankProfiles or {}
-    local tankTrace = Trace.New('TankMuzzle')
     local self={transient={},fires={},wrecks={},police={},tanks={},torches={},pyros={},projectiles={},weaponConf=weaponConf,
         brightness=1.3,radius=1.3}
     local cursor,scanAge=0,1
@@ -46,14 +42,11 @@ function M.New(weaponConf, policeProfiles, tankProfiles)
         return full or Spring.IsPosInLos(x,y,z,Spring.GetMyAllyTeamID())
     end
     local function unitVisible(id)
-        if not Spring.ValidUnitID(id) then return false, 'invalid_unit' end
-        if Spring.GetUnitIsDead(id) then return false, 'dead_unit' end
-        if Spring.GetUnitIsCloaked(id) then return false, 'cloaked_unit' end
-        if Spring.GetUnitNoDraw(id) then return false, 'unit_nodraw' end
-        if Spring.GetUnitTransporter(id) then return false, 'transported_unit' end
+        if not Spring.ValidUnitID(id) or Spring.GetUnitIsDead(id) or Spring.GetUnitIsCloaked(id)
+            or Spring.GetUnitNoDraw(id) or Spring.GetUnitTransporter(id) then return false end
         local _,full=Spring.GetSpectatingState()
         local los=full or Spring.GetUnitLosState(id,Spring.GetMyAllyTeamID())
-        return full or (los and los.los), 'outside_unit_los'
+        return full or (los and los.los)
     end
     function self:UnitCreated(id,defID)
         local name=UnitDefs[defID] and UnitDefs[defID].name
@@ -62,10 +55,7 @@ function M.New(weaponConf, policeProfiles, tankProfiles)
         local profile=policeProfiles[defID]
         self.police[id]=profile and {profile=profile} or nil
         profile=tankProfiles[defID]
-        self.tanks[id]=profile and {profile=profile, trace=tankTrace} or nil
-        if profile then tankTrace.Log(id, 'registration', 'tank_registered',
-            {definition=defID, name=name, piece_name=profile.piece,
-                direction_piece_name=profile.directionPiece, duration_frames=profile.durationFrames}) end
+        self.tanks[id]=profile and {profile=profile} or nil
         drawFrame=nil
     end
     function self:UnitDestroyed(id)
@@ -73,7 +63,6 @@ function M.New(weaponConf, policeProfiles, tankProfiles)
         self.pyros[id]=nil
         self.police[id]=nil
         self.tanks[id]=nil
-        tankTrace.Forget(id)
         drawFrame=nil
     end
     function self:HasTankMuzzleFlash(id)
@@ -296,16 +285,12 @@ function M.New(weaponConf, policeProfiles, tankProfiles)
             end
         end
         for id,record in pairs(self.tanks) do
-            local tankVisible, reason = unitVisible(id)
-            if tankVisible then
+            if unitVisible(id) then
                 local flash=TankMuzzle.Collect(Spring,id,record,frame)
                 if flash then
                     add(flash.x,flash.y,flash.z,flash.radius*self.radius/1.3,
                         flash.color,flash.strength*self.brightness/1.3,false,flash.ribbon,nil,id)
                 end
-            else
-                tankTrace.Log(id, record.traceShot or 'visibility', 'tank_muzzle_rejected',
-                    {reason=reason, sample_frame=frame})
             end
         end
         for _,p in ipairs(self.projectiles) do
@@ -341,13 +326,7 @@ function M.New(weaponConf, policeProfiles, tankProfiles)
         })
         self.pyroStats=PyroBudget.lastStats
         table.sort(lights,function(a,b) if a.d2==b.d2 then return a.order<b.order end;return a.d2<b.d2 end)
-        for i=#lights,M.maxLights+1,-1 do
-            local light=lights[i]
-            local trace=light.ribbon and light.ribbon.executionTrace
-            if trace then trace.logger.Log(trace.unitID, trace.cycle, 'tank_muzzle_budget_dropped',
-                {piece=trace.piece, rank=i, limit=M.maxLights, reason='light_budget', sample_frame=frame}) end
-            lights[i]=nil
-        end
+        for i=#lights,M.maxLights+1,-1 do lights[i]=nil end
         for _,l in ipairs(lights) do
             if l.ribbon then
                 flames[#flames+1]=l.ribbon
@@ -365,9 +344,6 @@ function M.New(weaponConf, policeProfiles, tankProfiles)
                         }
                     end
                 end
-                local trace=l.ribbon.executionTrace
-                if trace then trace.logger.Log(trace.unitID, trace.cycle, 'tank_muzzle_queued',
-                    {piece=trace.piece, sample_frame=frame, draw_frame=stamp, age=frame-trace.cycle}) end
             end
             if l.tracer then tracers[#tracers+1]=l.tracer end
         end
