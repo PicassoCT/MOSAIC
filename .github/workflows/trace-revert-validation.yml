@@ -4,11 +4,14 @@ on:
     branches: [work/trace-revert-validation]
     paths: [.github/workflows/trace-revert-validation.yml]
 permissions:
-  contents: read
+  contents: write
 jobs:
-  inspect:
+  validate:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 12
+    env:
+      MESA_GL_VERSION_OVERRIDE: 3.3COMPAT
+      LIBGL_ALWAYS_SOFTWARE: '1'
     steps:
       - uses: actions/checkout@v4
         with:
@@ -25,37 +28,94 @@ jobs:
             weapons
             .github/workflows
             docs
-      - name: Inspect reverse patch and preserve source fixtures
+      - name: Reproduce the reviewed trace-only removal
         shell: bash
         run: |
           set -euo pipefail
+          base=c0982bac374dd211761eac305d393c193c1763a8
+          test "$(git rev-parse HEAD)" = "$base"
+          test "$(git ls-remote origin refs/heads/master | cut -f1)" = "$base"
+          test "$(git ls-remote origin refs/heads/debug/building-fire-tank-muzzle-tracing | cut -f1)" = 8004b41973bde9abf63a4b6e985619088ec54ccd
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          target=cf2e2f04bdc4d9369b0eb0adda63b2030d9ad5fd
-          mkdir -p /tmp/trace-revert-workspace/{current,original,parent}
-          git diff "$target^" "$target" -- > /tmp/trace-revert-workspace/instrumentation.patch
-          git diff "$target" HEAD -- . ':!luaui/images' ':!sounds' > /tmp/trace-revert-workspace/later-source.patch
-          git diff-tree --no-commit-id --name-only -r "$target" | while IFS= read -r path; do
-            for pair in "current:HEAD" "original:$target" "parent:$target^"; do
-              folder=${pair%%:*}; ref=${pair#*:}
-              if git cat-file -e "$ref:$path" 2>/dev/null; then
-                mkdir -p "/tmp/trace-revert-workspace/$folder/$(dirname "$path")"
-                git show "$ref:$path" > "/tmp/trace-revert-workspace/$folder/$path"
-              fi
+          git fetch --no-tags --depth=1 origin "$GITHUB_SHA"
+          git show "$GITHUB_SHA:.github/maintenance/resolve_trace_revert.py" > /tmp/resolve_trace_revert.py
+          if ! git revert --no-commit cf2e2f04bdc4d9369b0eb0adda63b2030d9ad5fd; then
+            test "$(git diff --name-only --diff-filter=U | wc -l)" -eq 6
+          fi
+          python3 /tmp/resolve_trace_revert.py
+          git diff --cached --stat
+          git write-tree | tee /tmp/reviewed-tree.txt
+          git diff --cached --binary > /tmp/reviewed-revert.patch
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install regression and headless shader dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y lua5.1 lua5.4 libegl1 libgl1 libgl1-mesa-dri
+          python -m pip install moderngl numpy lupa
+      - name: Parse every changed Lua file with both versions
+        shell: bash
+        run: |
+          set -euo pipefail
+          while IFS= read -r -d '' path; do
+            case "$path" in
+              *.lua) luac5.1 -p "$path"; luac5.4 -p "$path" ;;
+            esac
+          done < <(git diff --cached --name-only --diff-filter=ACM -z)
+      - name: Run fifteen behavior regressions on Lua 5.1 and 5.4
+        shell: bash
+        run: |
+          set -euo pipefail
+          tests=(building_block_damage_test building_damage_header_test building_rubble_lifecycle_test building_damage_flame_geometry_test building_damage_smoke_lifecycle_test tank_muzzle_effects smoke_ribbons_lifecycle graphene_arcs_lifecycle police_radiance_lifecycle combat_effects_lifecycle combat_effect_events objective_ribbon_flames_lifecycle city_geography_test asset_rooftop_test house_asian_split_test)
+          for lua in lua5.1 lua5.4; do
+            for test in "${tests[@]}"; do
+              echo "CHECK $lua tests/$test.lua"
+              "$lua" "tests/$test.lua"
             done
           done
-          git ls-tree -r HEAD > /tmp/trace-revert-workspace/tree.txt
-          git rev-parse HEAD > /tmp/trace-revert-workspace/base.txt
-          git revert --no-commit "$target" || true
-          git status --short
-          git diff --name-only --diff-filter=U
-          git diff --cc | tee /tmp/trace-revert-workspace/conflicts.patch
-          git diff --cached --stat
-          tar --exclude=.git -czf /tmp/trace-revert-source.tar.gz .
-          mv /tmp/trace-revert-source.tar.gz /tmp/trace-revert-workspace/
+          lua5.4 -e 'VFS={Include=dofile}; dofile("tests/building_shadow_columns.lua")'
+      - name: Run Lua 5.1 engine-environment regressions
+        shell: bash
+        run: |
+          set -euo pipefail
+          for test in light_effects_widget_startup mobile_shadow_failure_lifecycle smoke_ribbon_commands smoke_cigarette_lifecycle validation_widget; do
+            echo "CHECK lua5.1 tests/$test.lua"
+            lua5.1 "tests/$test.lua"
+          done
+      - name: Render production smoke, combat, electrical and shadow shaders
+        shell: bash
+        run: |
+          set -euo pipefail
+          for test in graphene_arcs_gpu graphene_chute_gpu smoke_ribbons_gpu combat_light_gpu mobile_radiance_shadows_gpu radiance_capture_state_gpu; do
+            echo "CHECK python tests/$test.py"
+            python "tests/$test.py"
+          done
+      - name: Publish runtime candidate without changing master
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git write-tree)" = "$(cat /tmp/reviewed-tree.txt)"
+          git diff --quiet
+          # The connected GitHub client applies the two reviewed workflow edits
+          # when publishing the final exact tree. The runner only pushes runtime.
+          git restore --source=c0982bac374dd211761eac305d393c193c1763a8 --staged .github/workflows/building-block-damage.yml .github/workflows/effects-validation.yml
+          git commit -m 'revert: validated building fire and tank muzzle tracing removal' -m 'Runtime publication candidate. The final master commit also removes the obsolete tracing test references from the two workflows. The reviewed full tree and patch are recorded as workflow artifacts.'
+          git push origin HEAD:refs/heads/fix/remove-building-fire-tank-tracing
+          git rev-parse HEAD | tee /tmp/candidate.txt
+          {
+            echo 'All 36 Lua regression runs and six headless shader checks passed.'
+            echo "Reviewed final tree: $(cat /tmp/reviewed-tree.txt)"
+            echo "Runtime candidate: $(cat /tmp/candidate.txt)"
+            echo 'Master and the retained debug archive were not changed by this workflow.'
+          } | tee -a "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
-          name: trace-revert-workspace
-          path: /tmp/trace-revert-workspace
-          include-hidden-files: true
-          retention-days: 2
+          name: reviewed-trace-revert
+          path: |
+            /tmp/reviewed-tree.txt
+            /tmp/reviewed-revert.patch
+            /tmp/candidate.txt
+          retention-days: 7
