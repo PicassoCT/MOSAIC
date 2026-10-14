@@ -1,0 +1,61 @@
+name: Trace revert validation
+on:
+  push:
+    branches: [work/trace-revert-validation]
+    paths: [.github/workflows/trace-revert-validation.yml]
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: c0982bac374dd211761eac305d393c193c1763a8
+          fetch-depth: 20
+          sparse-checkout: |
+            scripts
+            tests
+            luarules
+            luaui/widgets_mosaic
+            luaui/configs
+            gamedata
+            units
+            weapons
+            .github/workflows
+            docs
+      - name: Inspect reverse patch and preserve source fixtures
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          target=cf2e2f04bdc4d9369b0eb0adda63b2030d9ad5fd
+          mkdir -p /tmp/trace-revert-workspace/{current,original,parent}
+          git diff "$target^" "$target" -- > /tmp/trace-revert-workspace/instrumentation.patch
+          git diff "$target" HEAD -- . ':!luaui/images' ':!sounds' > /tmp/trace-revert-workspace/later-source.patch
+          git diff-tree --no-commit-id --name-only -r "$target" | while IFS= read -r path; do
+            for pair in "current:HEAD" "original:$target" "parent:$target^"; do
+              folder=${pair%%:*}; ref=${pair#*:}
+              if git cat-file -e "$ref:$path" 2>/dev/null; then
+                mkdir -p "/tmp/trace-revert-workspace/$folder/$(dirname "$path")"
+                git show "$ref:$path" > "/tmp/trace-revert-workspace/$folder/$path"
+              fi
+            done
+          done
+          git ls-tree -r HEAD > /tmp/trace-revert-workspace/tree.txt
+          git rev-parse HEAD > /tmp/trace-revert-workspace/base.txt
+          git revert --no-commit "$target" || true
+          git status --short
+          git diff --name-only --diff-filter=U
+          git diff --cc | tee /tmp/trace-revert-workspace/conflicts.patch
+          git diff --cached --stat
+          tar --exclude=.git -czf /tmp/trace-revert-source.tar.gz .
+          mv /tmp/trace-revert-source.tar.gz /tmp/trace-revert-workspace/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: trace-revert-workspace
+          path: /tmp/trace-revert-workspace
+          include-hidden-files: true
+          retention-days: 2
