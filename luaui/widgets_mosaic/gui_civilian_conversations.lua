@@ -104,7 +104,7 @@ getWorldDialogue=function(id)
     if frame>lines[last].untilFrame then return end
     local first=last
     while first>1 and last-first+1<WORLD_TURNS and
-        frame-(lines[first-1].frame or -HISTORY_FRAMES)>WORLD_PREVIOUS_FRAMES do
+        frame-(lines[first-1].frame or -HISTORY_FRAMES)<=WORLD_PREVIOUS_FRAMES do
         first=first-1
     end
     -- The caller must not modify the shared transcript.
