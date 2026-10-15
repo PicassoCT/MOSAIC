@@ -28,10 +28,11 @@ function M.Weapon(wd)
         color=fire and {1,.32,.045} or {v.colorR or 1,v.colorG or .65,v.colorB or .25}}
 end
 
-function M.New(weaponConf, policeProfiles, tankProfiles)
+function M.New(weaponConf, policeProfiles, tankProfiles, debugLampProfiles)
     policeProfiles = policeProfiles or {}
     tankProfiles = tankProfiles or {}
-    local self={transient={},fires={},wrecks={},police={},tanks={},torches={},pyros={},projectiles={},weaponConf=weaponConf,
+    debugLampProfiles = debugLampProfiles or {}
+    local self={transient={},fires={},wrecks={},police={},tanks={},debugLamps={},torches={},pyros={},projectiles={},weaponConf=weaponConf,
         brightness=1.3,radius=1.3}
     local cursor,scanAge=0,1
     local drawFrame,lights,flames,tracers
@@ -56,6 +57,8 @@ function M.New(weaponConf, policeProfiles, tankProfiles)
         self.police[id]=profile and {profile=profile} or nil
         profile=tankProfiles[defID]
         self.tanks[id]=profile and {profile=profile} or nil
+        profile=debugLampProfiles[defID]
+        self.debugLamps[id]=profile and {profile=profile} or nil
         drawFrame=nil
     end
     function self:UnitDestroyed(id)
@@ -63,6 +66,7 @@ function M.New(weaponConf, policeProfiles, tankProfiles)
         self.pyros[id]=nil
         self.police[id]=nil
         self.tanks[id]=nil
+        self.debugLamps[id]=nil
         drawFrame=nil
     end
     function self:HasTankMuzzleFlash(id)
@@ -188,6 +192,38 @@ function M.New(weaponConf, policeProfiles, tankProfiles)
             y+up[2]*p.fallbackHeight+front[2]*p.fallbackForward+right[2]*side,
             z+up[3]*p.fallbackHeight+front[3]*p.fallbackForward+right[3]*side, false
     end
+    local function debugLampOrigin(id,record)
+        local ux,uy,uz=Spring.GetUnitPosition(id)
+        if not ux then return end
+        local x,y,z=ux,uy,uz
+        if Spring.GetUnitViewPosition then
+            local vx,vy,vz=Spring.GetUnitViewPosition(id)
+            if vx then x,y,z=vx,vy,vz end
+        end
+        local p=record.profile
+        if record.piece==nil and Spring.GetUnitPieceMap then
+            local map=Spring.GetUnitPieceMap(id)
+            record.piece=map and map[p.piece] or false
+        end
+        if record.piece and Spring.GetUnitPiecePosDir then
+            local px,py,pz=Spring.GetUnitPiecePosDir(id,record.piece)
+            if px then
+                return px+x-ux,py+y-uy,pz+z-uz,true
+            end
+        end
+        return x,y+(p.fallbackHeight or 54),z,false
+    end
+    local function debugLampColor(frame,cycleFrames)
+        local h=((frame%(cycleFrames or 240))/(cycleFrames or 240))*6
+        local sector=math.floor(h)
+        local f=h-sector
+        if sector==0 then return {1,f,0} end
+        if sector==1 then return {1-f,1,0} end
+        if sector==2 then return {0,1,f} end
+        if sector==3 then return {0,1-f,1} end
+        if sector==4 then return {f,0,1} end
+        return {1,0,1-f}
+    end
     function self:Collect()
         local stamp=Spring.GetDrawFrame()
         if drawFrame==stamp then return lights,flames,tracers end
@@ -291,6 +327,19 @@ function M.New(weaponConf, policeProfiles, tankProfiles)
                 local x,y,z=policeOrigin(id,record,phase)
                 if x then
                     add(x,y,z,profile.radius,profile.colors[phase+1],profile.strength,false,nil,nil,id)
+                end
+            end
+        end
+        -- Debug lamps are ordinary attached radiance sources. The moving bulb
+        -- therefore exercises the same owner exclusion, mobile blockers,
+        -- receiver-height tests and soft shadow path as production lights.
+        for id,record in pairs(self.debugLamps) do
+            if unitVisible(id) then
+                local profile=record.profile
+                local x,y,z=debugLampOrigin(id,record)
+                if x then
+                    add(x,y,z,profile.radius,debugLampColor(frame,profile.cycleFrames),
+                        profile.strength,false,nil,nil,id)
                 end
             end
         end

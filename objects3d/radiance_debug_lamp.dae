@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1">
+<asset><contributor><authoring_tool>MOSAIC debug fixture</authoring_tool></contributor><unit name="meter" meter="1"/><up_axis>Z_UP</up_axis></asset>
+<library_images/>
+<library_geometries>
+<geometry id="base-mesh" name="base"><mesh>
+<source id="base-positions"><float_array id="base-positions-array" count="24">-12 -10 0 12 -10 0 12 10 0 -12 10 0 -12 -10 4 12 -10 4 12 10 4 -12 10 4</float_array><technique_common><accessor source="#base-positions-array" count="8" stride="3"><param name="X" type="float"/><param name="Y" type="float"/><param name="Z" type="float"/></accessor></technique_common></source>
+<vertices id="base-vertices"><input semantic="POSITION" source="#base-positions"/></vertices>
+<triangles count="12"><input semantic="VERTEX" source="#base-vertices" offset="0"/><p>0 2 1 0 3 2 4 5 6 4 6 7 0 1 5 0 5 4 1 2 6 1 6 5 2 3 7 2 7 6 3 0 4 3 4 7</p></triangles>
+</mesh></geometry>
+<geometry id="lowerarm-mesh" name="lowerarm"><mesh>
+<source id="lowerarm-positions"><float_array id="lowerarm-positions-array" count="24">-2.4 -2.4 0 2.4 -2.4 0 2.4 2.4 0 -2.4 2.4 0 -2.4 -2.4 24 2.4 -2.4 24 2.4 2.4 24 -2.4 2.4 24</float_array><technique_common><accessor source="#lowerarm-positions-array" count="8" stride="3"><param name="X" type="float"/><param name="Y" type="float"/><param name="Z" type="float"/></accessor></technique_common></source>
+<vertices id="lowerarm-vertices"><input semantic="POSITION" source="#lowerarm-positions"/></vertices>
+<triangles count="12"><input semantic="VERTEX" source="#lowerarm-vertices" offset="0"/><p>0 2 1 0 3 2 4 5 6 4 6 7 0 1 5 0 5 4 1 2 6 1 6 5 2 3 7 2 7 6 3 0 4 3 4 7</p></triangles>
+</mesh></geometry>
+<geometry id="upperarm-mesh" name="upperarm"><mesh>
+<source id="upperarm-positions"><float_array id="upperarm-positions-array" count="24">-2.1 -2.1 0 2.1 -2.1 0 2.1 2.1 0 -2.1 2.1 0 -2.1 -2.1 22 2.1 -2.1 22 2.1 2.1 22 -2.1 2.1 22</float_array><technique_common><accessor source="#upperarm-positions-array" count="8" stride="3"><param name="X" type="float"/><param name="Y" type="float"/><param name="Z" type="float"/></accessor></technique_common></source>
+<vertices id="upperarm-vertices"><input semantic="POSITION" source="#upperarm-positions"/></vertices>
+<triangles count="12"><input semantic="VERTEX" source="#upperarm-vertices" offset="0"/><p>0 2 1 0 3 2 4 5 6 4 6 7 0 1 5 0 5 4 1 2 6 1 6 5 2 3 7 2 7 6 3 0 4 3 4 7</p></triangles>
+</mesh></geometry>
+<geometry id="head-mesh" name="head"><mesh>
+<source id="head-positions"><float_array id="head-positions-array" count="24">-5 0 -4 5 0 -4 5 0 4 -5 0 4 -9 11 -7 9 11 -7 9 11 7 -9 11 7</float_array><technique_common><accessor source="#head-positions-array" count="8" stride="3"><param name="X" type="float"/><param name="Y" type="float"/><param name="Z" type="float"/></accessor></technique_common></source>
+<vertices id="head-vertices"><input semantic="POSITION" source="#head-positions"/></vertices>
+<triangles count="10"><input semantic="VERTEX" source="#head-vertices" offset="0"/><p>0 2 1 0 3 2 0 1 5 0 5 4 1 2 6 1 6 5 2 3 7 2 7 6 3 0 4 3 4 7</p></triangles>
+</mesh></geometry>
+<geometry id="bulb-mesh" name="bulb"><mesh>
+<source id="bulb-positions"><float_array id="bulb-positions-array" count="18">0 0 5  4 0 0  0 4 0  -4 0 0  0 -4 0  0 0 -5</float_array><technique_common><accessor source="#bulb-positions-array" count="6" stride="3"><param name="X" type="float"/><param name="Y" type="float"/><param name="Z" type="float"/></accessor></technique_common></source>
+<vertices id="bulb-vertices"><input semantic="POSITION" source="#bulb-positions"/></vertices>
+<triangles count="8"><input semantic="VERTEX" source="#bulb-vertices" offset="0"/><p>0 1 2 0 2 3 0 3 4 0 4 1 5 2 1 5 3 2 5 4 3 5 1 4</p></triangles>
+</mesh></geometry>
+</library_geometries>
+<library_visual_scenes>
+<visual_scene id="Scene" name="Scene">
+  <node id="base" name="base" type="NODE">
+    <translate>0 0 0</translate><instance_geometry url="#base-mesh"/>
+    <node id="lowerarm" name="lowerarm" type="NODE">
+      <translate>-4 0 4</translate><rotate>0 1 0 -12</rotate><instance_geometry url="#lowerarm-mesh"/>
+      <node id="upperarm" name="upperarm" type="NODE">
+        <translate>0 0 24</translate><rotate>0 1 0 22</rotate><instance_geometry url="#upperarm-mesh"/>
+        <node id="head" name="head" type="NODE">
+          <translate>0 0 22</translate><rotate>1 0 0 -10</rotate><instance_geometry url="#head-mesh"/>
+          <node id="bulb" name="bulb" type="NODE">
+            <translate>0 10 0</translate><instance_geometry url="#bulb-mesh"/>
+          </node>
+        </node>
+      </node>
+    </node>
+  </node>
+</visual_scene>
+</library_visual_scenes>
+<scene><instance_visual_scene url="#Scene"/></scene>
+</COLLADA>

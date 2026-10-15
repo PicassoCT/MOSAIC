@@ -160,6 +160,28 @@ function getPoliceLightTypeTable(defs)
     return result
 end
 
+-- A deliberately conspicuous debug fixture: one bulb-attached, full-spectrum
+-- source that uses the same combat-radiance capture and mobile-shadow ownership
+-- path as police and muzzle lights. Keep the membership/profile centralized.
+local radianceDebugLampProfiles = {
+    radiancedebuglamp = {
+        piece = "bulb",
+        fallbackHeight = 54,
+        radius = 190,
+        strength = 2.2,
+        cycleFrames = 240,
+    },
+}
+
+function getRadianceDebugLampTypeTable(defs)
+    local result = {}
+    for id, def in pairs(defs) do
+        local profile = radianceDebugLampProfiles[def.name]
+        if profile then result[id] = profile end
+    end
+    return result
+end
+
 -- Both tank models have a ~94-elmo gun from Cannon1 to FireEmit. Share one
 -- model-proportional muzzle profile across their day/night variants.
 local tankMuzzleProfile = {
@@ -219,6 +241,7 @@ end
 
 if MOSAIC_CONFIG_ONLY then
     return {getPoliceLightTypeTable = getPoliceLightTypeTable,
+        getRadianceDebugLampTypeTable = getRadianceDebugLampTypeTable,
         getTankMuzzleTypeTable = getTankMuzzleTypeTable,
         getMobileRadianceShadowTypeTable = getMobileRadianceShadowTypeTable,
         getBuildingRadianceShadowTypeTable = getBuildingRadianceShadowTypeTable,
