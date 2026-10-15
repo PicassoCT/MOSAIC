@@ -183,7 +183,7 @@ function drillAnimation()
     
     while true do  
         val = math.random(-90, 90)
-        Turn(Crane, y_axis, math.rad(val), 0.05)
+        Turn(Crane, ArmAxis, math.rad(val), 0.05)
         hideT(TablesOfPiecesGroups["Pipe"])     
         if boolDrillDown == true then
             for i = #TablesOfPiecesGroups["Pipe"], 1, -1 do
