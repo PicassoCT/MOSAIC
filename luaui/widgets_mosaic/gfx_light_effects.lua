@@ -207,7 +207,8 @@ end
 function widget:Initialize()
     syncOptions()
     sources=Sources.New(weaponConf,MosaicConfig.getPoliceLightTypeTable(UnitDefs),
-        MosaicConfig.getTankMuzzleTypeTable(UnitDefs))
+        MosaicConfig.getTankMuzzleTypeTable(UnitDefs),
+        MosaicConfig.getRadianceDebugLampTypeTable(UnitDefs))
     sources.brightness,sources.radius=globalLightMult,globalRadiusMult
     for _,id in ipairs(Spring.GetAllUnits()) do sources:UnitCreated(id,Spring.GetUnitDefID(id)) end
     local err
