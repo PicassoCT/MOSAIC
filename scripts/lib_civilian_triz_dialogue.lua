@@ -270,12 +270,21 @@ function M.build(seed, options)
             lastAnchor = differentAnchor(random, lastAnchor)
             parts[#parts+1] = render(pick(anchorPhrases, random), {anchor=lastAnchor})
             meta.anchorCount = meta.anchorCount + 1
-            if i < turns and random(3) == 1 then pendingRebuttal = true end
+            if random(3) == 1 then pendingRebuttal = true end
         elseif random(4) == 1 then
             parts[#parts+1] = pick(replies, random)
         end
         parts[#parts+1] = methodLine(random, slots, meta)
         lines[#lines+1] = table.concat(parts, " ")
+    end
+    -- An anchor on the final planned turn still gets the same one-in-three
+    -- rebuttal chance; extend the exchange by one turn rather than silently
+    -- dropping that state transition.
+    if pendingRebuttal then
+        local alternative = differentAnchor(random, lastAnchor)
+        local prefix = render(pick(rebuttals, random), {anchor=alternative})
+        meta.rebuttalCount = meta.rebuttalCount + 1
+        lines[#lines+1] = prefix.." "..methodLine(random, slots, meta)
     end
     return lines, meta
 end
@@ -287,7 +296,7 @@ function M.catalogue()
         evolutionLaws = #evolution,
         arizMoves = #ariz,
         suFieldStandardSolutionClasses = #suFieldClasses,
-        standardSolutions = 76,
+        standardSolutionCorpusSize = 76,
         idealityRoutes = #ideality,
         dwarfModelMoves = #dwarfs,
         sCurveMoves = #sCurves,
