@@ -54,9 +54,9 @@ decoChances = {
 }
 
 logoPieces = {
-                [piece("ClassicWhiteOffice_Roof_Deco05")] = true, 
-                [piece("ClassicWhiteOffice_Roof_Deco01")] = true,
-                [piece("ClassicWhiteOffice_Roof_Deco03")] = true
+                [piece("ClassicWhiteOffice_Roof_Deco5")] = true, 
+                [piece("ClassicWhiteOffice_Roof_Deco1")] = true,
+                [piece("ClassicWhiteOffice_Roof_Deco3")] = true
             }
 
 materialChoiceTable = {"Classic", "Ghetto", "Office", "White"}
@@ -218,7 +218,7 @@ function HoloGrams()
             conditionalEcho(boolDebugActive, "Spawn brothel hologram")
             StartThread(moveCtrlHologramToUnitPiece, unitID, "house_western_hologram_brothel", hostBrothelPiece, decoPieceUsedOrientation[hostBrothelPiece] )
         else
-            hostCasinoPiece = piece("WhiteOfficeGhetto_Roof_Deco01")   
+            hostCasinoPiece = piece("WhiteOfficeGhetto_Roof_Deco1")   
             if contains(ToShowTable, hostCasinoPiece) == true then 
                 conditionalEcho(boolDebugActive, "Spawn casino hologram")
                 StartThread(moveCtrlHologramToUnitPiece, unitID, "house_western_hologram_casino", hostCasinoPiece, decoPieceUsedOrientation[hostCasinoPiece] )
@@ -1070,8 +1070,8 @@ function showSubsAnimateSpins(pieceGroupName, nr)
     end
 end
 logoPiecesToHide = {
-                [piece("Office_Roof_Deco07")] = true, 
-                [piece("Office_Roof_Deco02")] = true
+                [piece("Office_Roof_Deco7")] = true, 
+                [piece("Office_Roof_Deco2")] = true
             }
 pieceNameMap = Spring.GetUnitPieceList( unitID ) 
 
@@ -1208,7 +1208,7 @@ function buildAnimationEarlyOut(builtT)
     if Spring.GetGameSeconds() < 10 and not (GG.CityConstructionSites and GG.CityConstructionSites[unitID]) then
         Show(Icon)
         hideT(builtT)
-        hideT(TablesOfPiecesGroups["Build01Sub"])
+        hideT(TablesOfPiecesGroups["Build1Sub"])
         hideT(TablesOfPiecesGroups["BuildCrane"])
 
         while boolDoneShowing == false do Sleep(100) end
@@ -1266,16 +1266,16 @@ function buildAnimation()
         WMove(builtT[i], axis, i * -moveFactor, i * moveFactor/timePerStageSeconds) 
     end
 
-    moveT(TablesOfPiecesGroups["Build01Sub"], axis, -60, 0)
+    moveT(TablesOfPiecesGroups["Build1Sub"], axis, -60, 0)
 
-    WaitForMoves(TablesOfPiecesGroups["Build01Sub"])
+    WaitForMoves(TablesOfPiecesGroups["Build1Sub"])
     WaitForMoves(builtT)
     showT(builtT)
-    showT(TablesOfPiecesGroups["Build01Sub"])
+    showT(TablesOfPiecesGroups["Build1Sub"])
     showT(TablesOfPiecesGroups["BuildCrane"])
 
     moveSyncInTimeT(builtT, 0, 0, 0, 5000)
-    moveSyncInTimeT(TablesOfPiecesGroups["Build01Sub"], 0, 0, 0, 5000)
+    moveSyncInTimeT(TablesOfPiecesGroups["Build1Sub"], 0, 0, 0, 5000)
     
     StartBuildCraneAnimation()
 
@@ -1289,17 +1289,17 @@ function buildAnimation()
         WMove(builtT[i], axis, i * -cubeDim.heigth * 10, individualSpeed)
     end
 
-    moveSyncInTimeT(TablesOfPiecesGroups["Build01Sub"], 0, -3200, 0, 8000)
+    moveSyncInTimeT(TablesOfPiecesGroups["Build1Sub"], 0, -3200, 0, 8000)
     moveSyncInTimeT(TablesOfPiecesGroups["BuildCrane"], 0, -3200, 0, 8000)
     Sleep(1000)
     hideT(TablesOfPiecesGroups["BuildCrane"])
      Hide(Bucket1)
      hideT(TablesOfPiecesGroups["Rope"])
     Sleep(7000)
-    WaitForMoves(TablesOfPiecesGroups["Build01Sub"])
+    WaitForMoves(TablesOfPiecesGroups["Build1Sub"])
     WaitForMoves(builtT)
     hideT(builtT)
-    hideT(TablesOfPiecesGroups["Build01Sub"])
+    hideT(TablesOfPiecesGroups["Build1Sub"])
     hideT(TablesOfPiecesGroups["BuildCrane"])
     hideT(TablesOfPiecesGroups["BuildDeco"])
     if GG.MarkBuildingShadowVolumeDirty then
