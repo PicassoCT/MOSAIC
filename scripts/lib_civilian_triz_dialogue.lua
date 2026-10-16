@@ -257,34 +257,27 @@ function M.build(seed, options)
     local turns = options.turns or (6 + random(5)) -- 7..11 turns
     turns = math.max(4, math.min(16, math.floor(turns)))
     local lines = {pick(openers, random).." You want it "..slots.improve.." and "..slots.protect.." at once."}
-    local pendingRebuttal, lastAnchor
+    local lastAnchor
+    meta.anchorOpportunities = turns - 1
     for i = 2, turns do
         local parts = {}
-        if pendingRebuttal then
-            local alternative = differentAnchor(random, lastAnchor)
-            parts[#parts+1] = render(pick(rebuttals, random), {anchor=alternative})
-            meta.rebuttalCount = meta.rebuttalCount + 1
-            lastAnchor = alternative
-            pendingRebuttal = false
-        elseif random(5) == 1 then
+        local anchored = random(5) == 1
+        if anchored then
             lastAnchor = differentAnchor(random, lastAnchor)
             parts[#parts+1] = render(pick(anchorPhrases, random), {anchor=lastAnchor})
             meta.anchorCount = meta.anchorCount + 1
-            if random(3) == 1 then pendingRebuttal = true end
         elseif random(4) == 1 then
             parts[#parts+1] = pick(replies, random)
         end
         parts[#parts+1] = methodLine(random, slots, meta)
         lines[#lines+1] = table.concat(parts, " ")
-    end
-    -- An anchor on the final planned turn still gets the same one-in-three
-    -- rebuttal chance; extend the exchange by one turn rather than silently
-    -- dropping that state transition.
-    if pendingRebuttal then
-        local alternative = differentAnchor(random, lastAnchor)
-        local prefix = render(pick(rebuttals, random), {anchor=alternative})
-        meta.rebuttalCount = meta.rebuttalCount + 1
-        lines[#lines+1] = prefix.." "..methodLine(random, slots, meta)
+        if anchored and random(3) == 1 then
+            local alternative = differentAnchor(random, lastAnchor)
+            local prefix = render(pick(rebuttals, random), {anchor=alternative})
+            meta.rebuttalCount = meta.rebuttalCount + 1
+            lastAnchor = alternative
+            lines[#lines+1] = prefix.." "..methodLine(random, slots, meta)
+        end
     end
     return lines, meta
 end
