@@ -19,4 +19,5 @@ return {
     metaConspiracyChance = 1, -- needs >=2 delayed player-action summaries
     playerActionMemory = 18, playerActionMinAge = 15 * 30,
     playerActionMaxAge = 6 * 60 * 30,
+    contextFreeEvery = 5, -- every fifth newly selected non-urgent topic
 }
