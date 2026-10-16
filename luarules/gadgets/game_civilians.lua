@@ -190,6 +190,20 @@ function gadget:UnitCreated(unitID, unitDefID, teamID, attackerID)
     end
 end
 
+
+local playerCommandKinds = {
+    [CMD.MOVE]="move", [CMD.STOP]="stop", [CMD.ATTACK]="attack",
+    [CMD.PATROL]="patrol", [CMD.GUARD]="guard", [CMD.REPAIR]="repair",
+    [CMD.RECLAIM]="reclaim", [CMD.CLOAK]="cloak",
+}
+function gadget:UnitCommand(unitID, unitDefID, unitTeam, cmdID, cmdParams, cmdOpts, cmdTag, playerID, fromSynced, fromLua)
+    -- Meta-conspiracy evidence intentionally records only a command category.
+    -- Never retain player/team/unit identity, target IDs, coordinates or options.
+    if unitTeam==gaiaTeamID or fromLua then return end
+    local kind = cmdID and cmdID < 0 and "build" or playerCommandKinds[cmdID]
+    if kind then civilianLife:ObservePlayerAction(kind) end
+end
+
 function gadget:UnitDamaged(unitID, unitDefID, unitTeam, damage, paralyzer,
                             weaponID, projectileID, attackerID, attackerDefID,
                             attackerTeam)
