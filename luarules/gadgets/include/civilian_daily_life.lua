@@ -100,32 +100,48 @@ return function(context)
             end
         end
     end
+    local function pendingThread(person)
+        return person and (person.contextFreeThread or person.conspiracyThread)
+    end
     function life:Conversation(a, b, duration)
         if not alive(a) or (b and not alive(b)) or sessions[a] or (b and sessions[b]) then return end
         local frame, p = S.GetGameFrame(), record(a)
         local memory = latestMemory(p,frame)
-        if not memory and not p.conspiracyThread and b then
+        if not memory and not pendingThread(p) and b then
             local otherPerson = record(b)
             local other = latestMemory(otherPerson,frame)
-            if other or otherPerson.conspiracyThread then a,b,p,memory=b,a,otherPerson,other end
+            if other or pendingThread(otherPerson) then a,b,p,memory=b,a,otherPerson,other end
         end
         -- Alternate mundane news with an unfinished argument. Fresh distress
         -- always takes precedence, but never deletes the argument it interrupts.
         local urgent = memory and (memory.kind=="gunfire" or memory.kind=="injured" or
             memory.kind=="home_lost" or memory.kind=="companion_lost")
-        if p.conspiracyThread and p.lastConversationWasMemory and not urgent then memory=nil end
+        local waitingThread = pendingThread(p)
+        if waitingThread and p.lastConversationWasMemory and not urgent then memory=nil end
         local seed = hash(a..":"..tostring(b or 0)..":"..frame)
-        local thread = not memory and p.conspiracyThread
+        local thread = not memory and waitingThread
         local lines, kind
         if thread then lines=thread.lines else
-            lines,kind=dialogue.build(seed,memory,{conspiracyChance=p.conspiracyThread and 0 or config.conspiracyChance,
-                listenerSeed=b and hash(Game.mapName..":"..b) or hash(Game.mapName..":"..a..":phone")})
+            local forceContextFree = false
+            if not waitingThread and not urgent then
+                p.dialogueTopicCount=(p.dialogueTopicCount or 0)+1
+                forceContextFree=config.contextFreeEvery and config.contextFreeEvery>0 and
+                    p.dialogueTopicCount%config.contextFreeEvery==0
+            end
+            lines,kind=dialogue.build(seed,memory,{
+                conspiracyChance=waitingThread and 0 or config.conspiracyChance,
+                forceContextFree=forceContextFree,
+                listenerSeed=b and hash(Game.mapName..":"..b) or hash(Game.mapName..":"..a..":phone")
+            })
             if kind=="conspiracy" then
-                thread={lines=lines,next=1}; p.conspiracyThread=thread
+                thread={lines=lines,next=1,kind=kind}; p.conspiracyThread=thread
+            elseif kind=="contextfree" then
+                thread={lines=lines,next=1,kind=kind}; p.contextFreeThread=thread
             end
         end
-        if memory then p.lastTold=memory end
-        p.lastConversationWasMemory=memory~=nil
+        local usedMemory=memory and kind~="contextfree"
+        if usedMemory then p.lastTold=memory end
+        p.lastConversationWasMemory=usedMemory~=nil
         local session = {a=a,b=b,lines=lines,index=thread and thread.next or 1,thread=thread,
             untilFrame=frame+duration,nextFrame=frame,phone=not b}
         if thread and thread.next>1 and thread.lastClaim then
@@ -142,8 +158,9 @@ return function(context)
         -- The cursor advances only after a line is emitted. An unfinished thread
         -- stays on its living speaker across animation expiry, danger and calls.
         local p=people[s.a]
-        if p and s.thread and s.thread.next>#s.thread.lines and p.conspiracyThread==s.thread then
-            p.conspiracyThread=nil
+        if p and s.thread and s.thread.next>#s.thread.lines then
+            if p.conspiracyThread==s.thread then p.conspiracyThread=nil end
+            if p.contextFreeThread==s.thread then p.contextFreeThread=nil end
         end
         if sessions[s.a] == s then sessions[s.a]=nil end
         if s.b and sessions[s.b] == s then sessions[s.b]=nil end
