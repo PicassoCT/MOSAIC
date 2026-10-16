@@ -126,7 +126,7 @@ return function(context)
             if not waitingThread and not urgent then
                 p.dialogueTopicCount=(p.dialogueTopicCount or 0)+1
                 forceContextFree=config.contextFreeEvery and config.contextFreeEvery>0 and
-                    p.dialogueTopicCount%config.contextFreeEvery==0
+                    dialogue.contextFreeSelected(p.dialogueTopicCount,config.contextFreeEvery,false)
             end
             lines,kind=dialogue.build(seed,memory,{
                 conspiracyChance=waitingThread and 0 or config.conspiracyChance,
