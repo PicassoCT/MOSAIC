@@ -101,6 +101,11 @@ function M.build(seed, memory, options)
     return result
 end
 
+function M.contextFreeSelected(topicCount, every, urgent)
+    every = math.max(1, math.floor(tonumber(every) or 5))
+    return not urgent and (math.floor(tonumber(topicCount) or 0) % every == 0)
+end
+
 function M.lineFrames(text, base)
     -- Long claims need reading time; short acknowledgements keep the old pace.
     return math.max(base or 150, math.min(12*30, math.ceil(#text / 22)*30))
