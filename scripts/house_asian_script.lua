@@ -40,8 +40,8 @@ pieceLimits = {
 pieceCyclicOSTable = {}
 hideDuringDayPieceNames= {}
 largeRoofPieceDecoPieces = optionalPieceSet({
-    "Office_Industrial_Pod_BaseDeco6", "Office_Industrial_Pod_BaseDeco007",
-    "Office_Industrial_Pod_BaseDeco04",
+    "Office_Industrial_Pod_BaseDeco6", "Office_Industrial_Pod_BaseDeco7",
+    "Office_Industrial_Pod_BaseDeco4",
 })
 
 function filterOutToShowTableElements( element)
@@ -687,8 +687,8 @@ function script.Create()
 
     vtolDeco = {
         ["ID_l100_Industrial_RoofBlock1"] = (TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock1Sub"] or {})[27],
-        ["Roof01"] = TablesOfPiecesGroups["Roof01Sub"][1],
-        ["Roof05"] = TablesOfPiecesGroups["Roof05Sub"][1]     
+        ["Roof1"] = TablesOfPiecesGroups["Roof1Sub"][1],
+        ["Roof5"] = TablesOfPiecesGroups["Roof5Sub"][1]     
     }
 
     StartThread(HoloGrams)	
