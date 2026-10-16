@@ -8,6 +8,7 @@ return function(context)
     local S, G = Spring, GG
     local C = context.gameConfig
     local people, groups, venues, vehicles, sessions = {}, {}, {}, {}, {}
+    local playerActions = {}
     local guardedUntil, busVehicles = {}, {}
     local nextVehicleEvent = 0
     local life = {people = people}
@@ -92,6 +93,21 @@ return function(context)
             place=x and location(x,z) or "round the corner", vehicle=detail}
         if #p.memories > config.memoryLimit then table.remove(p.memories,1) end
     end
+    function life:ObservePlayerAction(kind)
+        local frame=S.GetGameFrame()
+        playerActions[#playerActions+1]={kind=tostring(kind or "generic"),frame=frame}
+        while #playerActions>(config.playerActionMemory or 18) do table.remove(playerActions,1) end
+    end
+    local function dialogueActions(frame)
+        local out={}
+        local minAge=config.playerActionMinAge or 450
+        local maxAge=config.playerActionMaxAge or 10800
+        for i=1,#playerActions do
+            local age=frame-playerActions[i].frame
+            if age>=minAge and age<=maxAge then out[#out+1]={kind=playerActions[i].kind} end
+        end
+        return out
+    end
     local function latestMemory(p, frame)
         for i=#p.memories,1,-1 do
             local m = p.memories[i]
@@ -119,8 +135,10 @@ return function(context)
         local lines, kind
         if thread then lines=thread.lines else
             lines,kind=dialogue.build(seed,memory,{conspiracyChance=p.conspiracyThread and 0 or config.conspiracyChance,
+                metaConspiracyChance=p.conspiracyThread and 0 or config.metaConspiracyChance,
+                playerActions=dialogueActions(frame),
                 listenerSeed=b and hash(Game.mapName..":"..b) or hash(Game.mapName..":"..a..":phone")})
-            if kind=="conspiracy" then
+            if kind=="conspiracy" or kind=="meta_conspiracy" then
                 thread={lines=lines,next=1}; p.conspiracyThread=thread
             end
         end

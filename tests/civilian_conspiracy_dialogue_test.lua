@@ -37,6 +37,18 @@ assert(unique>990,"procedural variety collapsed")
 assert(#conspiracy.legacyRant(42)==43,"legacy long rant API lost")
 assert(dialogue.lineFrames(string.rep("x",300),150)>150,"long lines require readable pacing")
 
+-- The simulation conspiracy must retell only lossy action categories.
+local actions={{kind="move"},{kind="stop"},{kind="patrol"},{kind="attack"}}
+local meta,metaKind=dialogue.build(333,nil,{forceMetaConspiracy=true,playerActions=actions})
+assert(metaKind=="meta_conspiracy" and #meta>=8,"meta simulation conspiracy missing")
+local metaText=table.concat(meta,"\n")
+assert(metaText:find("sent somewhere",1,true) and metaText:find("told to stop",1,true),"player actions not retold")
+assert(not metaText:find("333",1,true),"meta conspiracy leaked raw identifiers")
+assert(table.concat(dialogue.build(333,nil,{forceMetaConspiracy=true,playerActions=actions}),"\n")==metaText,
+    "meta conspiracy nondeterministic")
+local absent,absentKind=dialogue.build(333,nil,{forceMetaConspiracy=true,playerActions={{kind="move"}}})
+assert(absentKind~="meta_conspiracy","meta conspiracy should require multiple observations")
+
 -- Execute the actual life manager through expiry, danger and changed partners.
 local frame,emitted,units=0,{}, {[10]=true,[11]=true,[12]=true}
 local config=evaluate("luarules/configs/civilian_daily_life.lua",e)

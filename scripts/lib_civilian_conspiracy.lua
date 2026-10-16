@@ -295,6 +295,78 @@ function M.build(seed, memory, options)
     return lines
 end
 
+
+-- Fourth-wall conspiracy: civilians misread delayed, deliberately lossy player
+-- commands as evidence that their world is being operated from outside.
+-- The recorder strips team, unit, target and coordinates before data reaches here.
+local simulationOpeners = {
+    "You want the theory that gets me banned from every normal group chat?",
+    "I think the city is being watched from outside itself.",
+    "Don't laugh. I think our choices are somebody else's interface.",
+    "Ever get the feeling the sky has a cursor?",
+    "I don't think fate is fate. I think it's input.",
+}
+local simulationFrames = {
+    "Like we're pieces on a board somebody can zoom in and out of.",
+    "Like there are people above us issuing little instructions and calling that strategy.",
+    "Like the world only bothers to make sense where somebody is looking.",
+    "Like every panic, detour and gunshot is just feedback to someone holding controls.",
+}
+local simulationRebuttals = {
+    "Or people just change their minds.",
+    "That's called traffic, mate. You've invented God with a mouse.",
+    "You are describing coincidence with extra hardware.",
+    "And somehow your cosmic operator has nothing better to do than micromanage us?",
+    "You need sleep more than you need a theory.",
+}
+local simulationEscalations = {
+    "No. Listen to the sequence.",
+    "That's what I thought until I started writing the order down.",
+    "Coincidence doesn't repeat with this kind of rhythm.",
+    "Then explain why the commands come in clusters, like somebody changed plans.",
+}
+local actionPhrases = {
+    move="something was sent somewhere, then redirected",
+    stop="something moving was suddenly told to stop",
+    attack="something was told to attack",
+    patrol="something got sent back and forth like the route itself mattered",
+    guard="something was ordered to follow something else",
+    repair="something damaged was suddenly made the priority",
+    reclaim="something in the world was marked to be taken apart",
+    build="something new was ordered into existence",
+    cloak="something was told to disappear from ordinary sight",
+    generic="another instruction happened for no reason anyone down here could hear",
+}
+function M.buildSimulation(seed, actions, options)
+    options = options or {}
+    local random = generator(seed + 104729)
+    local usable = {}
+    for i=1,#(actions or {}) do
+        local kind = tostring(actions[i].kind or "generic")
+        usable[#usable+1] = actionPhrases[kind] or actionPhrases.generic
+    end
+    if #usable < 2 then return nil end
+    local lines = {}
+    lines[#lines+1] = pick(simulationOpeners, random).." "..pick(simulationFrames, random)
+    lines[#lines+1] = pick(simulationRebuttals, random)
+    local count = math.min(#usable, options.maxSimulationEvidence or 4)
+    local start = math.max(1, #usable-count+1)
+    for i=start,#usable do
+        local prefix = (i==start) and "First, " or ((i==#usable) and "And then " or "Then ")
+        lines[#lines+1] = pick(simulationEscalations, random).." "..prefix..usable[i].."."
+        lines[#lines+1] = pick(simulationRebuttals, random)
+    end
+    lines[#lines+1] = "I'm telling you, those aren't decisions. They're clicks. Somebody up there keeps changing their mind and we call the result history."
+    lines[#lines+1] = random(3)==1 and
+        "Fine. If the sky selects me, ask it to select somewhere with cheaper rent." or
+        "If you're right, whoever is playing us has terrible impulse control."
+    return lines
+end
+
+function M.selectedSimulation(seed, chance, actions)
+    return type(actions)=="table" and #actions>=2 and generator(seed + 65537)(100) <= (chance or 1)
+end
+
 function M.selected(seed, chance)
     return generator(seed)(100) <= (chance or 3)
 end

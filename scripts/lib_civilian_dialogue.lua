@@ -59,8 +59,10 @@ function M.build(seed, memory, options)
     seed = tonumber(seed) or 0
     if seed ~= seed or seed == math.huge or seed == -math.huge then seed = 0 end
     if type(memory) ~= "table" then memory = nil end
-    local elaborate = options.forceConspiracy or
-        conspiracy.selected(seed, options.conspiracyChance)
+    local meta = options.forceMetaConspiracy or
+        conspiracy.selectedSimulation(seed, options.metaConspiracyChance, options.playerActions)
+    local elaborate = not meta and (options.forceConspiracy or
+        conspiracy.selected(seed, options.conspiracyChance))
     local pool = memory and events[memory.kind] or smallTalk
     local template = choose(pool, seed)
     if type(template) ~= "table" or #template == 0 then
@@ -84,6 +86,14 @@ function M.build(seed, memory, options)
     for i = 1, #template do
         local line = type(template[i]) == "string" and template[i] or "..."
         result[i] = line:gsub("{(%w+)}", function(key) return tostring(slots[key] or "") end)
+    end
+    if meta then
+        if not memory then result = {} end
+        local rant = conspiracy.buildSimulation(seed, options.playerActions, options)
+        if rant then
+            for i=1,#rant do result[#result+1] = rant[i] end
+            return result, "meta_conspiracy"
+        end
     end
     if elaborate then
         -- Preserve the full personal-event exchange before spinning a theory

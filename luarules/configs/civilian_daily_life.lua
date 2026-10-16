@@ -16,4 +16,7 @@ return {
     phoneMin = 55 * 30, phoneMax = 110 * 30,
     lineFrames = 5 * 30,
     conspiracyChance = 3, -- percent of new topics; unfinished threads resume
+    metaConspiracyChance = 1, -- needs >=2 delayed player-action summaries
+    playerActionMemory = 18, playerActionMinAge = 15 * 30,
+    playerActionMaxAge = 6 * 60 * 30,
 }
