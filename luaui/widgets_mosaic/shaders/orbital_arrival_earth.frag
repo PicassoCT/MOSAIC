@@ -171,6 +171,14 @@ vec3 orbitalEarth(vec2 screen) {
     vec2 terrainWarp = vec2(fractal(world * 0.43, 3),
                             fractal(world * 0.43 + vec2(7.4, 3.2), 3)) - 0.5;
     float continent = fbm(world * 0.38 + terrainWarp * 1.2);
+    // The optical axis is always aimed at a city. At the wide orbital stop the
+    // underlying continent remains essentially untouched; during the later
+    // cuts a broad, noise-softened land bias guarantees that the selected
+    // metropolitan patch does not accidentally resolve into open ocean.
+    float targetRadius = length(localSurface * vec2(0.92, 1.08));
+    float targetLand = exp(-targetRadius * targetRadius * 0.72)
+        * smoothstep(0.12, 0.58, descent);
+    continent += targetLand * (0.15 + 0.07 * fbm(world * 0.91 + vec2(21.4, 5.7)));
     float land = smoothstep(0.49, 0.515, continent);
     float shallows = smoothstep(0.45, 0.505, continent) * (1.0 - land);
     float terrain = fbm(world * 5.4);
@@ -185,10 +193,39 @@ vec3 orbitalEarth(vec2 screen) {
                      vec3(0.008, 0.077, 0.084), shallows * 0.75);
     vec3 ground = mix(ocean, soil, land);
 
-    float population = smoothstep(0.55, 0.73, fbm(world * 3.2 + vec2(8.0, 1.7)));
-    float roads = exp(-26.0 * min(abs(sin(world.x * 31.0)), abs(sin(world.y * 29.0))));
-    ground += vec3(0.016, 0.015, 0.012) * land * population * roads
-        * smoothstep(0.12, 0.34, descent);
+    // A deliberately generic city grows under the optical axis as scale
+    // collapses. It is not supposed to encode a real-world street plan: the
+    // job of these middle shots is to read immediately as "metropolitan" and
+    // then hand the eye to the real Recoil map.
+    float authoredPopulation = smoothstep(0.55, 0.73,
+        fbm(world * 3.2 + vec2(8.0, 1.7)));
+    float metroReveal = smoothstep(0.17, 0.50, descent);
+    float detailReveal = smoothstep(0.48, 0.92, descent);
+    float metroEnvelope = exp(-targetRadius * targetRadius * 1.35);
+    float population = max(authoredPopulation * 0.72,
+        metroEnvelope * metroReveal);
+
+    float arterialA = abs(sin(world.x * 12.7 + world.y * 2.1));
+    float arterialB = abs(sin(world.y * 11.3 - world.x * 1.7));
+    float localA = abs(sin(world.x * 43.0 + world.y * 5.2));
+    float localB = abs(sin(world.y * 39.0 - world.x * 4.4));
+    float arterials = exp(-17.0 * min(arterialA, arterialB));
+    float streets = exp(-33.0 * min(localA, localB)) * detailReveal;
+    float roads = max(arterials, streets);
+
+    float urbanMask = land * population * metroReveal;
+    vec3 urbanFabric = mix(vec3(0.105, 0.095, 0.078),
+                           vec3(0.185, 0.165, 0.132), terrain);
+    ground = mix(ground, urbanFabric, urbanMask * 0.72);
+    ground += vec3(0.080, 0.078, 0.071) * urbanMask * roads;
+
+    // Parcel-scale roof variation only appears once the city fills most of
+    // the frame. This keeps the regional shot from turning into noisy pixels.
+    float parcels = noise(floor(world * 92.0 + vec2(17.0, 31.0)));
+    float roofs = smoothstep(0.56, 0.82, parcels)
+        * (1.0 - smoothstep(0.42, 0.86, roads)) * detailReveal;
+    ground += mix(vec3(0.018, 0.016, 0.014), vec3(0.070, 0.060, 0.047), parcels)
+        * urbanMask * roofs;
 
     // White midday reflection, with stronger grazing-angle reflectance.
     // No warm sunset grading or moving light source.
@@ -220,6 +257,22 @@ vec3 orbitalEarth(vec2 screen) {
     vec3 cloudColor = vec3(0.075, 0.105, 0.145)
         + vec3(0.91, 0.93, 0.96) * directLight;
     float cloudOpacity = (1.0 - exp(-cloud.r * 3.8));
+
+    // Hide the procedural city's outer join behind an irregular cloud belt.
+    // The center clears as we descend, while the borders stay optically busy;
+    // the player therefore reads one continuous dive into a city rather than
+    // getting a clean frame in which to compare synthetic regional geography
+    // against the final authored map.
+    float viewRadius = length(vec2(screen.x / max(aspect, 0.001), screen.y) * 2.0);
+    float veilNoise = fbm(world * 0.73 + vec2(37.0, 11.0));
+    float veilRadius = viewRadius + (veilNoise - 0.5) * 0.26;
+    float veilStrength = smoothstep(0.20, 0.68, descent);
+    float borderVeil = smoothstep(0.56, 1.03, veilRadius) * veilStrength;
+    float centerWindow = (1.0 - smoothstep(0.22, 0.62, viewRadius))
+        * smoothstep(0.28, 0.72, descent);
+    cloudOpacity *= 1.0 - centerWindow * 0.62;
+    cloudOpacity = max(cloudOpacity, borderVeil * (0.72 + 0.28 * cloud.b));
+
     vec3 litSurface = mix(ground, cloudColor, cloudOpacity);
     litSurface = mix(litSurface, vec3(0.70, 0.80, 0.92), cloud.a * 0.36);
 
