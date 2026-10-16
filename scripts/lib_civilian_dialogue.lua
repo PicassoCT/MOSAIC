@@ -2,6 +2,7 @@
 -- has its own deterministic random stream and never queries hidden game intel.
 local M = {}
 local conspiracy = VFS.Include("scripts/lib_civilian_conspiracy.lua")
+local triz = VFS.Include("scripts/lib_civilian_triz_dialogue.lua")
 local function choose(t, seed)
     if type(t) ~= "table" or #t == 0 then return nil end
     seed = tonumber(seed) or 0
@@ -59,6 +60,10 @@ function M.build(seed, memory, options)
     seed = tonumber(seed) or 0
     if seed ~= seed or seed == math.huge or seed == -math.huge then seed = 0 end
     if type(memory) ~= "table" then memory = nil end
+    if options.forceContextFree then
+        local lines, meta = triz.build(seed, options)
+        return lines, "contextfree", meta
+    end
     local elaborate = options.forceConspiracy or
         conspiracy.selected(seed, options.conspiracyChance)
     local pool = memory and events[memory.kind] or smallTalk
