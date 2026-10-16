@@ -196,7 +196,7 @@ function rotations()
 
     for k, v in pairs(windsolar) do StartThread(windfunc, k) end
     Sleep(500)
-    clockPiece = piece("StreetDeco06")
+    clockPiece = piece("StreetDeco6")
     if contains(ToShowTable, clockPiece) then
         WTurn(TablesOfPiecesGroups["StreetDeco6Sub"][1], z_axis, math.rad(180), 0)
         showT(TablesOfPiecesGroups["StreetDeco6Sub"])
@@ -982,7 +982,7 @@ function buildAnimation()
 
     if Spring.GetGameSeconds() < 10 and not (GG.CityConstructionSites and GG.CityConstructionSites[unitID]) then
         hideT(builT)
-        hideT(TablesOfPiecesGroups["Build01Sub"])
+        hideT(TablesOfPiecesGroups["Build1Sub"])
         hideT(TablesOfPiecesGroups["BuildCrane"])
         while boolDoneShowing == false do Sleep(100) end
         showT(ToShowTable)
@@ -993,16 +993,16 @@ function buildAnimation()
     local builT = TablesOfPiecesGroups["Build"]
     axis = _y_axis
     for i = 1, 3 do WMove(builT[i], axis, i * -cubeDim.heigth * 2, 0) end
-    moveT(TablesOfPiecesGroups["Build01Sub"], axis, -60, 0)
+    moveT(TablesOfPiecesGroups["Build1Sub"], axis, -60, 0)
 
-    WaitForMoves(TablesOfPiecesGroups["Build01Sub"])
+    WaitForMoves(TablesOfPiecesGroups["Build1Sub"])
     WaitForMoves(builT)
     showT(builT)
-    showT(TablesOfPiecesGroups["Build01Sub"])
+    showT(TablesOfPiecesGroups["Build1Sub"])
     showT(TablesOfPiecesGroups["BuildCrane"])
 
     moveSyncInTimeT(builT, 0, 0, 0, 5000)
-    moveSyncInTimeT(TablesOfPiecesGroups["Build01Sub"], 0, 0, 0, 5000)
+    moveSyncInTimeT(TablesOfPiecesGroups["Build1Sub"], 0, 0, 0, 5000)
 
     foreach(TablesOfPiecesGroups["BuildCrane"], function(id)
         craneFunction = function(id)
@@ -1025,15 +1025,15 @@ function buildAnimation()
         Move(builT[i], _y_axis, i * -cubeDim.heigth * 10, 3 * math.pi)
     end
     moveT(TablesOfPiecesGroups["BuildCrane"], y_axis, -3000, 8000)
-    moveSyncInTimeT(TablesOfPiecesGroups["Build01Sub"], 0, -1000, 0, 8000)
+    moveSyncInTimeT(TablesOfPiecesGroups["Build1Sub"], 0, -1000, 0, 8000)
 
     Sleep(1000)
     hideT(TablesOfPiecesGroups["BuildCrane"])
     Sleep(7000)
-    WaitForMoves(TablesOfPiecesGroups["Build01Sub"])
+    WaitForMoves(TablesOfPiecesGroups["Build1Sub"])
     WaitForMoves(builT)
     hideT(builT)
-    hideT(TablesOfPiecesGroups["Build01Sub"])
+    hideT(TablesOfPiecesGroups["Build1Sub"])
     hideT(TablesOfPiecesGroups["BuildCrane"])
     finalizeBuildingShadowVoxels()
 end
