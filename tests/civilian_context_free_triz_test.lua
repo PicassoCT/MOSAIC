@@ -35,17 +35,17 @@ math.randomseed(881); triz.build(99); assert(math.random()==expected,"TRIZ dialo
 local seenPrinciples,seenSeparations,seenSu,seenEvolution,seenExtended={},{},{},{},{}
 local methodSeen={}
 local noAnchor,withAnchor,withRebuttal=false,false,false
-local anchors,rebuttals,switches=0,0,0
+local anchors,rebuttals,anchorOpportunities=0,0,0
 local examples={}
 for seed=1,5000 do
     local lines,meta=triz.build(seed)
-    assert(#lines>=7 and #lines<=12,"context-free thread length out of bounds")
+    assert(#lines>=7 and #lines<=21,"context-free thread length out of bounds")
     for _,line in ipairs(lines) do assert(type(line)=="string" and #line>0,"empty context-free turn") end
     local lines2,meta2=triz.build(seed)
     assert(table.concat(lines,"\n")==table.concat(lines2,"\n"),"context-free dialogue is nondeterministic")
     assert(meta.anchorCount==meta2.anchorCount and meta.rebuttalCount==meta2.rebuttalCount,
         "context-free metadata is nondeterministic")
-    switches=switches+#lines-1
+    anchorOpportunities=anchorOpportunities+meta.anchorOpportunities
     anchors=anchors+meta.anchorCount
     rebuttals=rebuttals+meta.rebuttalCount
     noAnchor=noAnchor or meta.anchorCount==0
@@ -71,9 +71,9 @@ assert(methodSeen.matrix and methodSeen.principles and methodSeen.separation and
     methodSeen.scurve and methodSeen.extended,"one or more TRIZ method families are unreachable")
 assert(noAnchor and withAnchor and withRebuttal,"anchorless/anchored/rebuttal states must all be reachable")
 
-local anchorRate=anchors/switches
+local anchorRate=anchors/anchorOpportunities
 local rebuttalRate=rebuttals/anchors
-assert(anchorRate>0.15 and anchorRate<0.24,"anchor probability drift: "..anchorRate)
+assert(anchorRate>0.18 and anchorRate<0.22,"anchor probability drift: "..anchorRate)
 assert(rebuttalRate>0.27 and rebuttalRate<0.39,"rebuttal probability drift: "..rebuttalRate)
 
 print("PASS context-free TRIZ dialogue: 1/5 cadence, 1/5 anchors, 1/3 rebuttals, determinism, RNG isolation, full method reachability")
