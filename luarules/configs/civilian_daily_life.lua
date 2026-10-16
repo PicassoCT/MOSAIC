@@ -16,4 +16,5 @@ return {
     phoneMin = 55 * 30, phoneMax = 110 * 30,
     lineFrames = 5 * 30,
     conspiracyChance = 3, -- percent of new topics; unfinished threads resume
+    contextFreeEvery = 5, -- every fifth newly selected non-urgent topic
 }
