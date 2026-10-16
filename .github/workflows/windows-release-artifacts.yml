@@ -7,8 +7,6 @@ on:
       - 'tests/test_windows_release.py'
       - 'tests/test_performance_gate.py'
       - 'tools/validate_performance_gate.py'
-      - 'tests/test_performance_gate.py'
-      - 'tools/validate_performance_gate.py'
       - 'packaging/**'
       - 'pack_mosaic*.sh'
       - '.github/workflows/windows-release-artifacts.yml'
@@ -19,6 +17,8 @@ on:
     paths:
       - 'tools/package_windows_release.py'
       - 'tests/test_windows_release.py'
+      - 'tests/test_performance_gate.py'
+      - 'tools/validate_performance_gate.py'
       - 'packaging/**'
       - 'pack_mosaic*.sh'
       - '.github/workflows/windows-release-artifacts.yml'
