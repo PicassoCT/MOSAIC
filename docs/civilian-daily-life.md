@@ -78,6 +78,32 @@ twelve simulation minutes; recently retold events yield to other topics.
 Slang slots vary complete sentences about rent, work, surveillance and city life.
 They run locally and deterministically without an external generator service.
 
+Every fifth newly selected non-urgent topic is now a resumable **context-free**
+exchange. It begins with an abstract contradiction and deliberately has no
+subject. Each planned speaker switch independently has a 1-in-5 chance to drop
+an anchor such as a family member, purchase, investment or life situation. The
+other speaker keeps applying the abstract transformation rather than switching
+to ordinary exposition. Every anchor independently has a 1-in-3 chance to be
+re-anchored by the other speaker with a correction such as "No, no, I actually
+meant ...". It is therefore valid for a whole exchange to finish without ever
+revealing what either civilian was talking about.
+
+The context-free generator uses a private deterministic random stream and covers
+the full set of 40 inventive principles, the four physical-contradiction
+separation principles, ARIZ-style contradiction/IFR/resource moves, the
+Su-Field/76-standard-solution method families, S-curves and the eight classical
+system-evolution laws, ideality, the little-people model, plus the later TRIZ
+questionnaire, function-structure, SAO, process, size-time-cost, anticipatory
+failure and resource-checklist tools. These are translated into natural
+conversation operators rather than exposed as TRIZ terminology.
+
+Context-free threads never consume or mark a real civilian memory as told.
+Urgent memories (gunfire, injury, destroyed home or lost companion) always take
+precedence. Non-urgent memories may temporarily yield to the fifth-topic slot,
+remain pending, and are still available for a later ordinary exchange. Like
+conspiracy arguments, an unfinished context-free exchange survives animation
+expiry or interruption and can resume later.
+
 Occasionally a civilian spins an escalating conspiracy argument (3% of newly
 selected topics by default). All 50 original worries, all 50 theories, and every
 original opener, connector and pivot are retained in the shared
@@ -138,6 +164,7 @@ speech while reading history, cached layout, visibility and retention bounds.
 These checks do not replace Recoil visual and multiplayer validation.
 
 Run `lua tests/civilian_conspiracy_dialogue_test.lua`,
+`lua tests/civilian_context_free_triz_test.lua`,
 `lua tests/civilian_conversation_reader_test.lua`, and
 `lua tests/civilian_world_observation_test.lua` from the repository root.
 The world-space test checks icon-relative geometry, opacity, wrapping, cache
