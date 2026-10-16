@@ -1182,6 +1182,13 @@ function validatePieceGroups(T)
     end
 end
 
+local function canonicalPieceGroupName(name)
+    return (string.gsub(name, "%d+", function(number)
+        local numeric = tonumber(number)
+        return numeric and tostring(numeric) or number
+    end))
+end
+
 -- > finds GenericNames and Creates Tables with them
 function getPieceTableByNameGroups(boolMakePiecesTable, boolSilent)
 
@@ -1199,9 +1206,11 @@ function getPieceTableByNameGroups(boolMakePiecesTable, boolSilent)
         for w in string.gmatch(s, "%d+") do
             if w then
                 s = string.sub(s, string.len(w), string.len(s))
+                local sourceName = string.sub(piecesTable[i], 1, string.len(
+                                                  piecesTable[i]) - string.len(w))
                 NameAndNumber[i] = {
-                    name = string.sub(piecesTable[i], 1, string.len(
-                                          piecesTable[i]) - string.len(w)),
+                    name = canonicalPieceGroupName(sourceName),
+                    sourceName = sourceName,
                     number = string.reverse(w)
                 }
 
@@ -1215,7 +1224,7 @@ function getPieceTableByNameGroups(boolMakePiecesTable, boolSilent)
             end
         end
         if not NameAndNumber[i] then
-            NameAndNumber[i] = {name = string.reverse(s)}
+            NameAndNumber[i] = {name = canonicalPieceGroupName(string.reverse(s))}
         end
     end
 
@@ -1227,10 +1236,11 @@ function getPieceTableByNameGroups(boolMakePiecesTable, boolSilent)
         for k, v in pairs(NameAndNumber) do
 
             if v and v.number then
-                Spring.Echo(v.name .. v.number .. " = piece\"" .. v.name ..
+                local sourceName = v.sourceName or v.name
+                Spring.Echo(sourceName .. v.number .. " = piece\"" .. sourceName ..
                                 v.number .. "\"")
-                Spring.Echo(v.name .. "[" .. v.number .. "]= " .. v.name ..
-                                v.number)
+                Spring.Echo(v.name .. "[" .. tonumber(v.number) .. "]= " ..
+                                sourceName .. v.number)
             else
                 Spring.Echo(v.name .. " = piece(" .. v.name .. ")")
             end
@@ -1242,17 +1252,20 @@ function getPieceTableByNameGroups(boolMakePiecesTable, boolSilent)
 
     else
 
-        -- pack the piecesTables in a UeberTable by Name
+        -- pack the piecesTables in a UeberTable by canonicalized name.
+        -- Numeric padding is ignored in both the table key and the final index,
+        -- while sourceName preserves the exact model piece name for lookup.
         for tableName, _ in pairs(TableByName) do
             local PackedAllNames = {}
             -- Add the Pieces to the Table
             for k, v in pairs(NameAndNumber) do
 
                 if v and v.number and v.name == tableName then
-                    piecename = v.name .. v.number
+                    local sourceName = v.sourceName or v.name
+                    piecename = sourceName .. v.number
                     if lib_boolDebug == true then
                         if lib_boolDebug == true and pieceMap[piecename] then
-                            Spring.Echo(v.name .. "[" .. v.number .. "] = " ..
+                            Spring.Echo(v.name .. "[" .. tonumber(v.number) .. "] = " ..
                                             piecename .. " Piecenumber: " ..
                                             pieceMap[piecename])
                         else
