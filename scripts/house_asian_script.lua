@@ -1622,7 +1622,7 @@ function nightAndDay(dayNightPieceNameDict, defaultFaultRate, rainFaultRate)
 					hideConditional(daynightPieces)
                     hideConditional(hideDuringDayPieces)
                     if boolHasNeonDefects then
-                        rainAndFaultyPieces(faultPieces, rainFaultPieces)
+                        rainAndFaultyPieces(faultPieces, rainFaultPieces, hours)
                     end
 				end
 
