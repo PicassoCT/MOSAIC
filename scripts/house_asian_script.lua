@@ -119,6 +119,63 @@ holoPieces = optionalPieceSet({
 })
 
 pieceID_NameMap = Spring.GetUnitPieceList(unitID)
+
+local roofCornerPlanIndices = {[1] = true, [6] = true, [31] = true, [36] = true}
+local asianRoofCornerDecoPieceNames = {
+    ["Office_Pod_Wall_Block11"] = true,
+    ["Office_Pod_Wall_Block12"] = true,
+    ["Office_Pod_Wall_Block13"] = true,
+    ["Office_Pod_Wall_Block14"] = true,
+    ["Office_Pod_Wall_Block15"] = true,
+    ["Office_Pod_Wall_Block16"] = true,
+}
+
+function isRoofPlanCorner(index)
+    return roofCornerPlanIndices[index] == true
+end
+
+function isCornerRoofDecoPiece(pieceID)
+    local pieceName = pieceID and pieceID_NameMap[pieceID]
+    return pieceName and asianRoofCornerDecoPieceNames[pieceName] == true or false
+end
+
+function isCornerRoofDecoAllowed(pieceID, index)
+    if not isCornerRoofDecoPiece(pieceID) then return true end
+    return splitPhase == "roof" and isRoofPlanCorner(index)
+end
+
+function addAsianRoofCornerDecoPieces(decoMaterial, materialColourName)
+    local result, seen = {}, {}
+    for _, pieceID in pairs(decoMaterial or {}) do
+        if pieceID and not seen[pieceID] then
+            result[#result + 1] = pieceID
+            seen[pieceID] = true
+        end
+    end
+
+    local style = string.lower(materialColourName or "")
+    if style ~= "office" and style ~= "pod" then return result end
+
+    for pieceName in pairs(asianRoofCornerDecoPieceNames) do
+        local pieceID = pieceName_pieceNr[pieceName]
+        if pieceID and not seen[pieceID] and not reservedSplitPieces[pieceName] then
+            result[#result + 1] = pieceID
+            seen[pieceID] = true
+        end
+    end
+    return result
+end
+
+function getRoofDecoMaterialForPlanIndex(decoMaterial, index)
+    if isRoofPlanCorner(index) then return decoMaterial or {} end
+    local filtered = {}
+    for _, pieceID in pairs(decoMaterial or {}) do
+        if not isCornerRoofDecoPiece(pieceID) then
+            filtered[#filtered + 1] = pieceID
+        end
+    end
+    return filtered
+end
 materialChoiceTable = {"pod", "industrial", "trad", "office"}
 materialChoiceTableReverse = {pod= 1, industrial = 2, trad=3, office=4}
 vtolDeco= {}
@@ -598,7 +655,7 @@ function getNameFilteredTableDict( MustContainOne, MustContainAll, MustContainNo
             table.sort(indices)
             for _, index in ipairs(indices) do
                 local id = v[index]
-                if not reservedSplitPieces[pieceID_NameMap[id]] then
+                if not reservedSplitPieces[pieceID_NameMap[id]] and not isCornerRoofDecoPiece(id) then
                     allMatchingGroups[#allMatchingGroups + 1] = id
                 end
             end
@@ -1003,7 +1060,7 @@ function getRandomBuildMaterial(buildMaterial, name, index, x, z, level, buildin
 	
 	
 	piecenum, num = getSafeRandom(buildMaterial, ErrorIcon) 
-	if piecenum and not inToShowDict(piecenum)  then
+	if piecenum and not inToShowDict(piecenum) and isCornerRoofDecoAllowed(piecenum, index) then
 		--assert(pieceID_NameMap[piecenum], "Found a invalid PieceID returned randomized material")
 		lecho("resorting to random piece for level " ..toString(level).. "for material " ..name.. " with piece ".. toString(pieceID_NameMap[piecenum]).." selected") 
 		return piecenum, num
@@ -1663,6 +1720,7 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
 
     countElements = 0
     local decoMaterial = getNameFilteredTable({materialColourName}, {"Roof", "Deco"}, {})
+    decoMaterial = addAsianRoofCornerDecoPieces(decoMaterial, materialColourName)
     local T = foreach(decoMaterial, function(id) return pieceNr_pieceName[id] end)
 
     for i = 1, 37, 1 do
@@ -1671,19 +1729,19 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
         if partOfPlan == true then
             xRealLoc, zRealLoc = -centerP.x + (xLoc * cubeDim.length),
                                  -centerP.z + (zLoc * cubeDim.length)
-            local element, nr = getRandomBuildMaterial(decoMaterial, materialColourName, index, xLoc, zLoc, Level) 
-            attempts = maxNrAttempts
-            while (not element or inToShowDict(element)) and attempts > 0 do
-                element, nr = getRandomBuildMaterial(decoMaterial, materialColourName, index, xLoc, zLoc,  Level) 
-                attempts = attempts -1
+            local slotDecoMaterial = getRoofDecoMaterialForPlanIndex(decoMaterial, index)
+            local element, nr
+            if #slotDecoMaterial > 0 then
+                element, nr = getRandomBuildMaterial(slotDecoMaterial, materialColourName, index, xLoc, zLoc, Level)
+                attempts = maxNrAttempts
+                while (not element or inToShowDict(element)) and attempts > 0 do
+                    element, nr = getRandomBuildMaterial(slotDecoMaterial, materialColourName, index, xLoc, zLoc, Level)
+                    attempts = attempts - 1
+                end
+                if attempts == 0 then element = nil end
             end
 
-            if attempts == 0 then 
-                lecho( "decorateBackYard:roofDecoMaterials element selection failed for "..materialColourName)
-                return materialColourName
-            end
-
-            if  (element and chancesAre(10) < decoChances.roof ) then
+            if (element and chancesAre(10) < decoChances.roof) then
                 rotation = getOutsideFacingRotationOfBlockFromPlan(i)
                 countElements = countElements + 1
                 decoMaterial = removeElementFromBuildMaterial(element,
