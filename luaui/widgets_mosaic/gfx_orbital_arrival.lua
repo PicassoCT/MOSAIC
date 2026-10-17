@@ -7,6 +7,7 @@ local Arrival = VFS.Include("luaui/widgets_mosaic/include/orbital_arrival.lua")
 local renderer, liveTexture, modal
 local width, height, offsetX, offsetY
 local timer, texture, age, fade, descent
+local riskPacket
 local lastWallElapsed = 0
 local guiWasHidden, hasCapture, started = false, false, false
 local artworkReady = false
@@ -26,6 +27,7 @@ local function finish()
   Arrival.clearHandoff()
   if renderer then renderer:destroy(); renderer = nil end
   if liveTexture then gl.DeleteTexture(liveTexture); liveTexture = nil end
+  riskPacket = nil
   -- VFS owns the static artwork texture. It may still be used by LuaIntro
   -- during a late shutdown; never delete the shared image handle here.
   WG.MosaicArrivalFinished = true
@@ -77,6 +79,7 @@ local function begin()
   renderer = Arrival.newRenderer()
   if not renderer then finish(); return false end
   fade, descent = 0, 0
+  riskPacket = Arrival.riskPacket(Game)
   lastWallElapsed = 0
   timer = Spring.GetTimer()
   Spring.Echo("[MOSAIC arrival] first advancing gameframe=" ..
@@ -104,6 +107,78 @@ local function capture()
   return true
 end
 
+local function drawRiskOverlay(progress)
+  if not riskPacket or not width or not height then return end
+  -- Cross the middle two optical cuts, then disappear before the live-map
+  -- reveal. The moving card intentionally competes for attention while the
+  -- procedural metropolitan target is doing the most perceptual work.
+  local startP, endP = 0.32, 0.79
+  if progress <= startP or progress >= endP then return end
+  local sweep = Arrival.clamp((progress - startP) / (endP - startP))
+  local fadeIn = Arrival.clamp((progress - startP) / 0.055)
+  local fadeOut = Arrival.clamp((endP - progress) / 0.075)
+  local alpha = math.min(fadeIn, fadeOut)
+  if alpha <= 0 then return end
+
+  local scale = math.max(0.72, math.min(1.35, height / 1080))
+  local panelW = math.min(width * 0.36, 620 * scale)
+  local panelH = math.min(height * 0.31, 318 * scale)
+  local travel = width + panelW * 1.20
+  local left = width + panelW * 0.05 - sweep * travel
+  local bottom = height * 0.53 - panelH * 0.50
+  local right, top = left + panelW, bottom + panelH
+  local pad = 18 * scale
+
+  -- Dirty glass / scan-card treatment. Muted grey-blue and one restrained
+  -- amber warning accent keep the Earth sickly rather than cyber-neon.
+  gl.Color(0.025, 0.032, 0.037, 0.31 * alpha)
+  gl.Rect(left, bottom, right, top)
+  gl.Color(0.42, 0.50, 0.53, 0.42 * alpha)
+  gl.Rect(left, top - 2 * scale, right, top)
+  gl.Rect(left, bottom, left + 2 * scale, top)
+
+  local headerSize = 12 * scale
+  local textSize = 11 * scale
+  gl.Color(0.70, 0.76, 0.77, 0.88 * alpha)
+  gl.Text("ORB-CIV // REGIONAL RISK AGGREGATE", left + pad, top - 25 * scale,
+      headerSize, "o")
+  gl.Color(0.56, 0.62, 0.63, 0.76 * alpha)
+  gl.Text("MODEL ESTIMATE // " .. riskPacket.theme ..
+      " // CONF " .. riskPacket.confidence .. "%", left + pad,
+      top - 43 * scale, 9.5 * scale, "o")
+
+  local y = top - 72 * scale
+  local barLeft = left + panelW * 0.60
+  local barMax = panelW * 0.24
+  for _, line in ipairs(riskPacket.lines) do
+    gl.Color(0.67, 0.72, 0.72, 0.82 * alpha)
+    gl.Text(line.label, left + pad, y, textSize, "o")
+    gl.Color(0.22, 0.27, 0.28, 0.60 * alpha)
+    gl.Rect(barLeft, y + 2 * scale, barLeft + barMax, y + 6 * scale)
+    gl.Color(0.57, 0.62, 0.61, 0.76 * alpha)
+    gl.Rect(barLeft, y + 2 * scale,
+        barLeft + barMax * line.value / 100, y + 6 * scale)
+    gl.Color(0.72, 0.75, 0.72, 0.86 * alpha)
+    gl.Text(string.format("%02d%%", line.value), right - pad,
+        y, textSize, "or")
+    y = y - 27 * scale
+  end
+
+  gl.Color(0.68, 0.53, 0.31, 0.90 * alpha)
+  gl.Text(riskPacket.status, left + pad, bottom + 19 * scale,
+      11.5 * scale, "o")
+
+  -- A few short horizontal acquisition marks make the card feel like a
+  -- transient machine-readout instead of a conventional menu panel.
+  gl.Color(0.48, 0.55, 0.56, 0.34 * alpha)
+  local tickY = bottom + 8 * scale
+  for i = 0, 5 do
+    local tx = right - pad - i * 16 * scale
+    gl.Rect(tx, tickY, tx + 8 * scale, tickY + 1.5 * scale)
+  end
+  gl.Color(1, 1, 1, 1)
+end
+
 function widget:DrawScreenEffects()
   if finished then return end
   if not started then
@@ -124,6 +199,7 @@ function widget:DrawScreenEffects()
   if not renderer:draw(width, height, texture, age + elapsed, fade, descent, liveTexture) then
     finish(); return
   end
+  drawRiskOverlay(descent)
   if descent >= 1 then finish() end
 end
 
@@ -135,6 +211,7 @@ function widget:DrawScreenPost()
   -- Reuse the CLEAN world capture after engine overlays/cursor. No feedback.
   if hasCapture then
     renderer:draw(width, height, texture, age + modal.elapsed, fade, descent, liveTexture)
+    drawRiskOverlay(descent)
   end
 end
 
