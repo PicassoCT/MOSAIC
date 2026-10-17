@@ -1461,10 +1461,10 @@ local function simulateRainShort(normalPart, illuminatedPart, duration, hour)
     local startTime = Spring.GetGameFrame()
 
     -- Initial state on
-    showHideSwitch(normalpart, illuminatedPart)
+    showHideSwitch(normalPart, illuminatedPart)
 
     if randChance(50)  then return end
-    Spring.Echo("Rain short active for "..pieceNr_pieceName[normalpart].. " active")
+    Spring.Echo("Rain short active for "..pieceNr_pieceName[normalPart].. " active")
 
     -- Optional sound support
     --local shortSound = illuminatedPart:FindFirstChild("ShortCircuitSound")
@@ -1474,11 +1474,11 @@ local function simulateRainShort(normalPart, illuminatedPart, duration, hour)
 
         if randChance(70) then
             -- Illuminate
-            showHideSwitch(normalpart, illuminatedPart)
+            showHideSwitch(normalPart, illuminatedPart)
             
             Sleep(math.random(250, 1000))
         end
-        showHideSwitch(illuminatedPart, normalpart)
+        showHideSwitch(illuminatedPart, normalPart)
         -- Cut out
 
         Sleep( math.random(500, 1000) )
@@ -1487,15 +1487,15 @@ local function simulateRainShort(normalPart, illuminatedPart, duration, hour)
     -- Final burnout flicker
     for i = 1, 6 do
         if i % 2 == 0 then
-            showHideSwitch(normalpart, illuminatedPart)
+            showHideSwitch(normalPart, illuminatedPart)
           else
-            showHideSwitch(illuminatedPart, normalpart)
+            showHideSwitch(illuminatedPart, normalPart)
         end
         Sleep(280)
     end
 
     -- End state: dead/off
-    showHideSwitch(illuminatedPart, normalpart)
+    showHideSwitch(illuminatedPart, normalPart)
 end
 
 local function registerDayNightPiece(pieceID)
