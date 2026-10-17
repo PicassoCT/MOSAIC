@@ -268,11 +268,84 @@ function spawnInitialPopulation(frame)
     end
 end
 
-function getRandomSpawnNode()
+local FAIR_POPULATION_GRID = 4
 
-    startNode = randT(RouteTabel)
-    
-    attempts = 0
+local function getPopulationSector(x, z)
+    if not x or not z then return nil end
+    local sx = math.min(FAIR_POPULATION_GRID,
+        math.max(1, math.floor((x / Game.mapSizeX) * FAIR_POPULATION_GRID) + 1))
+    local sz = math.min(FAIR_POPULATION_GRID,
+        math.max(1, math.floor((z / Game.mapSizeZ) * FAIR_POPULATION_GRID) + 1))
+    return (sz - 1) * FAIR_POPULATION_GRID + sx
+end
+
+local function buildFairSpawnSectors()
+    local sectors = {}
+    for startNode, goals in pairs(RouteTabel) do
+        if type(startNode) == "number" and type(goals) == "table" and #goals > 0
+            and doesUnitExistAlive(startNode) then
+            local x, _, z = spGetUnitPosition(startNode)
+            local sector = getPopulationSector(x, z)
+            if sector then
+                sectors[sector] = sectors[sector] or {}
+                sectors[sector][#sectors[sector] + 1] = startNode
+            end
+        end
+    end
+    for _, nodes in pairs(sectors) do table.sort(nodes) end
+    return sectors
+end
+
+local function getWalkingPopulationBySector()
+    local occupancy = {}
+    for id, data in pairs(GG.CivilianTable or {}) do
+        if type(id) == "number" and type(data) == "table"
+            and civilianWalkingTypeTable[data.defID] and doesUnitExistAlive(id) then
+            local x, _, z = spGetUnitPosition(id)
+            local sector = getPopulationSector(x, z)
+            if sector then occupancy[sector] = (occupancy[sector] or 0) + 1 end
+        end
+    end
+    return occupancy
+end
+
+local function getFairSpawnNode(sectors, occupancy)
+    local leastOccupied
+    local candidateSectors = {}
+
+    for sector, nodes in pairs(sectors) do
+        if #nodes > 0 then
+            local population = occupancy[sector] or 0
+            if leastOccupied == nil or population < leastOccupied then
+                leastOccupied = population
+                candidateSectors = {sector}
+            elseif population == leastOccupied then
+                candidateSectors[#candidateSectors + 1] = sector
+            end
+        end
+    end
+
+    if #candidateSectors == 0 then return nil end
+    table.sort(candidateSectors)
+    local sector = candidateSectors[math.random(1, #candidateSectors)]
+    local nodes = sectors[sector]
+    local startNode = nodes[math.random(1, #nodes)]
+
+    if not doesUnitExistAlive(startNode) then return nil end
+    local x, y, z = spGetUnitPosition(startNode)
+    if not x then return nil end
+
+    -- Reserve this slot immediately so a whole spawn batch round-robins across
+    -- equally populated sectors instead of selecting the same sector repeatedly.
+    occupancy[sector] = (occupancy[sector] or 0) + 1
+    return x, y, z, startNode
+end
+
+function getRandomSpawnNode()
+    -- Legacy fallback used by traffic and callers that do not need pedestrian
+    -- population balancing.
+    local startNode = randT(RouteTabel)
+    local attempts = 0
 
     while not doesUnitExistAlive(startNode) and attempts < 5 do
         startNode = randT(RouteTabel)
@@ -280,7 +353,7 @@ function getRandomSpawnNode()
     end
     if not startNode then return nil end
     if type(startNode) ~= "number" then echo("StartNode is not a numb :",startNode) end
-    x, y, z = spGetUnitPosition(startNode)
+    local x, y, z = spGetUnitPosition(startNode)
 
     return x, y, z, startNode
 end
@@ -322,9 +395,12 @@ function checkReSpawnPopulation()
         local stepSpawn = math.min(GameConfig.city.population.persons - counter,
                                    GameConfig.performance.civilianBatchSize)
         -- --echo(counter.. " of "..GameConfig.city.population.persons .." persons spawned")
-        --assertType(RouteTabel, "table")
+        -- Equalize actual pedestrian headcount across occupied map sectors.
+        -- Building density does not buy a district additional population share.
+        local fairSpawnSectors = buildFairSpawnSectors()
+        local fairOccupancy = getWalkingPopulationBySector()
         for i = 1, stepSpawn do
-            x, _, z, startNode = getRandomSpawnNode()
+            x, _, z, startNode = getFairSpawnNode(fairSpawnSectors, fairOccupancy)
             --assert(x > 0 and x < Game.mapSizeX, x)
             --assert(z > 0 and z < Game.mapSizeZ, z)
             if x and startNode and RouteTabel[startNode] and #RouteTabel[startNode] > 0 then
@@ -788,15 +864,19 @@ function displayConversationTextAt(idA, idB)
 end
 
 function getUnitNearestTalkableAlly(id)
-    local resultUnits =
-    foreach(getAllNearUnit(id,  GameConfig.civilians.conversation.range, gaiaTeamID  ),
-        function(ad)
-            defID = spGetUnitDefID(ad)
-            if ad ~= id and civilianWalkingTypeTable[defID] and civilianLife:CanSocialize(ad) then
-                return ad
+    -- Build a dense numeric array explicitly. foreach() may preserve holes from
+    -- rejected candidates; table.sort cannot compare a numeric unitID with nil.
+    local resultUnits = {}
+    local nearby = getAllNearUnit(id, GameConfig.civilians.conversation.range, gaiaTeamID) or {}
+    for _, ad in pairs(nearby) do
+        if type(ad) == "number" and ad ~= id then
+            local defID = spGetUnitDefID(ad)
+            if defID and civilianWalkingTypeTable[defID] and civilianLife:CanSocialize(ad) then
+                resultUnits[#resultUnits + 1] = ad
             end
         end
-        )
+    end
+
     table.sort(resultUnits)
     if #resultUnits > 0 then return resultUnits[math.random(1,#resultUnits)] end
     return nil
