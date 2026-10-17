@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1">
-  <asset><contributor><author></author><authoring_tool>FBX COLLADA exporter</authoring_tool><comments></comments></contributor><created>2026-10-17T11:47:39Z</created><keywords></keywords><modified>2026-10-17T11:47:39Z</modified><revision></revision><subject></subject><title></title><unit meter="0.025400" name="centimeter"></unit><up_axis>Y_UP</up_axis></asset>
+  <asset><contributor><author></author><authoring_tool>FBX COLLADA exporter</authoring_tool><comments></comments></contributor><created>2026-10-17T17:41:43Z</created><keywords></keywords><modified>2026-10-17T17:41:43Z</modified><revision></revision><subject></subject><title></title><unit meter="0.025400" name="centimeter"></unit><up_axis>Y_UP</up_axis></asset>
   <library_images>
     <image id="Map #0-image" name="Map #0"><init_from>file://Z:\MosaicDev\Development\Models\building\house\house_asia\Tex_Diff_Asia_Building.psd</init_from></image>
     <image id="Map #0_ncl1_1-image" name="Map #0_ncl1_1"><init_from>file://C:\Users\GameDev\Desktop\Tex_Diff_Asia_Building.png</init_from></image>
