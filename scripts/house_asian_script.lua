@@ -1518,10 +1518,10 @@ local function simulateRainShort(normalPart, illuminatedPart, duration, hour)
     local startTime = Spring.GetGameFrame()
 
     -- Initial state on
-    showHideSwitch(normalpart, illuminatedPart)
+    showHideSwitch(normalPart, illuminatedPart)
 
     if randChance(50)  then return end
-    Spring.Echo("Rain short active for "..pieceNr_pieceName[normalpart].. " active")
+    Spring.Echo("Rain short active for "..pieceNr_pieceName[normalPart].. " active")
 
     -- Optional sound support
     --local shortSound = illuminatedPart:FindFirstChild("ShortCircuitSound")
@@ -1531,11 +1531,11 @@ local function simulateRainShort(normalPart, illuminatedPart, duration, hour)
 
         if randChance(70) then
             -- Illuminate
-            showHideSwitch(normalpart, illuminatedPart)
+            showHideSwitch(normalPart, illuminatedPart)
             
             Sleep(math.random(250, 1000))
         end
-        showHideSwitch(illuminatedPart, normalpart)
+        showHideSwitch(illuminatedPart, normalPart)
         -- Cut out
 
         Sleep( math.random(500, 1000) )
@@ -1544,15 +1544,33 @@ local function simulateRainShort(normalPart, illuminatedPart, duration, hour)
     -- Final burnout flicker
     for i = 1, 6 do
         if i % 2 == 0 then
-            showHideSwitch(normalpart, illuminatedPart)
+            showHideSwitch(normalPart, illuminatedPart)
           else
-            showHideSwitch(illuminatedPart, normalpart)
+            showHideSwitch(illuminatedPart, normalPart)
         end
         Sleep(280)
     end
 
     -- End state: dead/off
-    showHideSwitch(illuminatedPart, normalpart)
+    showHideSwitch(illuminatedPart, normalPart)
+end
+
+local function registerDayNightPiece(pieceID)
+    if not pieceID then return end
+    local dayName = pieceID_NameMap[pieceID]
+    if not dayName or not string.find(string.lower(dayName), "day", 1, true) then return end
+
+    local nightName = replaceStr(dayName, "Day", "Night")
+    if nightName == dayName then
+        nightName = replaceStr(dayName, "day", "night")
+    end
+
+    if pieceName_pieceNr[nightName] then
+        dayNightPieceNames[dayName] = nightName
+    else
+        Spring.Echo("[house_asian day/night] Missing night cousin for " ..
+            tostring(dayName) .. " expected " .. tostring(nightName))
+    end
 end
 
 function nightAndDay(dayNightPieceNameDict, defaultFaultRate, rainFaultRate)
@@ -1594,10 +1612,8 @@ function nightAndDay(dayNightPieceNameDict, defaultFaultRate, rainFaultRate)
 				for dayPieceName,nightPieceName in pairs(dayNightPieceNameDict) do
 					randSleep= math.random(1,10)*1000
 					Sleep(randSleep)
-					if maRa() then
-					if pieceName_pieceNr[dayPieceName] then Hide(pieceName_pieceNr[dayPieceName]) end --else echo("No dayPieceName for"..dayPieceName)end
-					if pieceName_pieceNr[nightPieceName] then Show(pieceName_pieceNr[nightPieceName]) end --else echo("No nightPieceName for"..nightPieceName)end
-					end
+					if pieceName_pieceNr[dayPieceName] then Hide(pieceName_pieceNr[dayPieceName]) end
+					if pieceName_pieceNr[nightPieceName] then Show(pieceName_pieceNr[nightPieceName]) end
 				end
 	
 				while atNight(hours) do
@@ -1686,9 +1702,7 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
                 rotation = getOutsideFacingRotationOfBlockFromPlan(i)
                 countElements = countElements + 1
                 buildMaterial = removeElementFromBuildMaterial(element, roofMaterial)
-                if string.find(string.lower(pieceID_NameMap[element]), "day") then
-                    dayNightPieceNames[pieceID_NameMap[element]] = replaceStr(pieceID_NameMap[element], "Day", "Night")
-                end
+                registerDayNightPiece(element)
 
                 offset = 0
                 --offset if one of the last level was not placed due to offset
@@ -1719,7 +1733,8 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
     end
 
     countElements = 0
-    local decoMaterial = getNameFilteredTable({materialColourName}, {"Roof", "Deco"}, {})
+    -- Night cousins are display variants, never placement candidates.
+    local decoMaterial = getNameFilteredTable({materialColourName}, {"Roof", "Deco"}, {"Night"})
     decoMaterial = addAsianRoofCornerDecoPieces(decoMaterial, materialColourName)
     local T = foreach(decoMaterial, function(id) return pieceNr_pieceName[id] end)
 
@@ -1742,6 +1757,7 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
             end
 
             if (element and chancesAre(10) < decoChances.roof) then
+                registerDayNightPiece(element)
                 rotation = getOutsideFacingRotationOfBlockFromPlan(i)
                 countElements = countElements + 1
                 decoMaterial = removeElementFromBuildMaterial(element,
