@@ -21,6 +21,7 @@ on:
       - tests/building_damage_flame_geometry_test.lua
       - tests/building_damage_smoke_lifecycle_test.lua
       - tests/asset_rooftop_test.lua
+      - tests/house_roof_corner_deco_test.lua
       - tests/piece_group_name_normalization_test.lua
       - .github/workflows/building-block-damage.yml
   pull_request:
@@ -79,6 +80,8 @@ jobs:
           lua5.1 tests/building_damage_smoke_lifecycle_test.lua
           lua5.4 tests/building_damage_smoke_lifecycle_test.lua
           lua5.1 tests/asset_rooftop_test.lua
+          lua5.1 tests/house_roof_corner_deco_test.lua
+          lua5.4 tests/house_roof_corner_deco_test.lua
           lua5.1 tests/piece_group_name_normalization_test.lua
           lua5.4 tests/piece_group_name_normalization_test.lua
           lua5.1 tests/house_asian_split_test.lua
