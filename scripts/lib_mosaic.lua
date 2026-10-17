@@ -2928,10 +2928,10 @@ end
 
 			function isNight()
                 hours, minutes, seconds, percent = getDayTime()			
-				return hours > 19 and hours < 6
+				return hours > 19 or hours < 6
 			end
             function atNight(hours)
-                return hours > 19 and hours < 6
+                return hours > 19 or hours < 6
             end
 
             function nightLightsLoop(LigthOn, LightOff, restTime)
