@@ -37,7 +37,7 @@ gl = {CreateShader=function() if not shaderFailure then return id() end end,
  DeleteTexture=function(n) deleted[n]=true end, TextureInfo=function() return {xsize=1920,ysize=1080} end,
  GetUniformLocation=function(_,n) return n end, Uniform=function(n, ...) draws[n]={...} end,
  UniformInt=function(n, ...) draws[n]={...} end,
- UseShader=noop, Texture=noop, Color=noop, TexRect=noop,
+ UseShader=noop, Texture=noop, Color=noop, TexRect=noop, Text=noop,
  Clear=noop, MatrixMode=noop, PushMatrix=noop, PopMatrix=noop, LoadIdentity=noop,
  Blending=function(v) blend=v end,
  CopyToTexture=noop, RenderToTexture=function(_,fn) renderCount=renderCount+1; fn(); assert(blend) end,
@@ -95,6 +95,25 @@ local function sameRegion(a,b) return a[1]==b[1] and a[2]==b[2] end
 local identity={mapName='LastDayOfDhubai',mapChecksum=4294967295,gameID='match-01'}
 local seededRegion=region(identity)
 assert(sameRegion(seededRegion,region(identity)), 'same match changed its generated Earth region')
+local function packetSignature(packet)
+  local out={packet.theme,packet.status,tostring(packet.confidence)}
+  for _,line in ipairs(packet.lines) do
+    out[#out+1]=line.label .. '=' .. tostring(line.value)
+  end
+  return table.concat(out,'|')
+end
+local risk=A.riskPacket(identity)
+assert(#risk.lines==5 and risk.confidence>=61 and risk.confidence<=94,
+  'orbital risk packet shape or confidence range is invalid')
+for _,line in ipairs(risk.lines) do
+  assert(type(line.label)=='string' and line.label~='' and line.value>=0 and line.value<=100,
+    'orbital risk metric is invalid')
+end
+assert(packetSignature(risk)==packetSignature(A.riskPacket(identity)),
+  'same match changed its orbital risk telemetry')
+local alternateRisk=A.riskPacket({mapName=identity.mapName,mapChecksum=identity.mapChecksum,gameID='match-risk-alt'})
+assert(packetSignature(risk)~=packetSignature(alternateRisk),
+  'different match did not vary orbital risk telemetry')
 for _,game in ipairs({
  {mapName='Other',mapChecksum=identity.mapChecksum,gameID=identity.gameID},
  {mapName=identity.mapName,mapChecksum=4294967294,gameID=identity.gameID},
