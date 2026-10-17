@@ -75,6 +75,7 @@ local function checkAsian()
     assert(whole:find('decoMaterial = addAsianRoofCornerDecoPieces(decoMaterial, materialColourName)', 1, true))
     assert(whole:find('getRoofDecoMaterialForPlanIndex(decoMaterial, index)', 1, true))
     assert(whole:find('isCornerRoofDecoAllowed(piecenum, index)', 1, true))
+    assert(whole:find('not isCornerRoofDecoPiece(id)', 1, true), 'Asian corner pieces remain in generic material pools')
 end
 
 local function checkWestern()
