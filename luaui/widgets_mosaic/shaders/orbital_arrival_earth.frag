@@ -199,33 +199,74 @@ vec3 orbitalEarth(vec2 screen) {
     // then hand the eye to the real Recoil map.
     float authoredPopulation = smoothstep(0.55, 0.73,
         fbm(world * 3.2 + vec2(8.0, 1.7)));
-    float metroReveal = smoothstep(0.17, 0.50, descent);
-    float detailReveal = smoothstep(0.48, 0.92, descent);
-    float metroEnvelope = exp(-targetRadius * targetRadius * 1.35);
-    float population = max(authoredPopulation * 0.72,
+    float metroReveal = smoothstep(0.15, 0.46, descent);
+    float detailReveal = smoothstep(0.40, 0.86, descent);
+    float metroEnvelope = exp(-targetRadius * targetRadius * 1.12);
+    float denseCore = exp(-dot(localSurface * vec2(1.10, 0.86),
+                              localSurface * vec2(1.10, 0.86)) * 3.1);
+    float industrialPatch = exp(-dot((localSurface - vec2(0.62, -0.22))
+                                  * vec2(1.8, 2.8),
+                                    (localSurface - vec2(0.62, -0.22))
+                                  * vec2(1.8, 2.8)) * 1.7);
+    float population = max(authoredPopulation * 0.62,
         metroEnvelope * metroReveal);
 
-    float arterialA = abs(sin(world.x * 12.7 + world.y * 2.1));
-    float arterialB = abs(sin(world.y * 11.3 - world.x * 1.7));
-    float localA = abs(sin(world.x * 43.0 + world.y * 5.2));
-    float localB = abs(sin(world.y * 39.0 - world.x * 4.4));
-    float arterials = exp(-17.0 * min(arterialA, arterialB));
-    float streets = exp(-33.0 * min(localA, localB)) * detailReveal;
-    float roads = max(arterials, streets);
+    // Break the "perfect procedural grid" read. Large district noise chooses
+    // between two street orientations; warped coordinates bend both of them,
+    // while a ring road and several broad radials establish metropolitan
+    // hierarchy before parcel detail becomes visible.
+    vec2 cityWarp = vec2(fbm(world * 0.82 + vec2(4.8, 12.2)),
+                         fbm(world * 0.82 + vec2(18.1, 3.7))) - 0.5;
+    vec2 cityP = world + cityWarp * 0.34;
+    vec2 gridA = mat2(0.94, -0.34, 0.34, 0.94) * cityP;
+    vec2 gridB = mat2(0.72, 0.69, -0.69, 0.72) * cityP;
+    float district = smoothstep(0.42, 0.60, fbm(world * 0.72 + vec2(2.4, 19.7)));
+
+    float broadA = min(abs(sin(gridA.x * 9.4 + fbm(cityP * 0.58) * 1.7)),
+                       abs(sin(gridA.y * 8.1 - fbm(cityP * 0.63 + 4.0) * 1.3)));
+    float broadB = min(abs(sin(gridB.x * 8.7 - fbm(cityP * 0.61 + 9.0) * 1.5)),
+                       abs(sin(gridB.y * 7.6 + fbm(cityP * 0.55 + 2.0) * 1.6)));
+    float broadGrid = mix(broadA, broadB, district);
+    float arterials = exp(-20.0 * broadGrid);
+
+    float ringDistance = abs(length(localSurface * vec2(1.05, 0.86))
+                           - (0.74 + cityWarp.x * 0.08));
+    float ringRoad = exp(-34.0 * ringDistance);
+    float radial1 = exp(-27.0 * abs(localSurface.y
+        - 0.23 * sin(localSurface.x * 1.8 + cityWarp.y * 2.0)));
+    float radial2 = exp(-30.0 * abs(localSurface.x * 0.78
+        + localSurface.y * 0.52 - 0.14 + cityWarp.x * 0.11));
+    float majorRoads = max(max(arterials, ringRoad), max(radial1, radial2));
+
+    float localA = min(abs(sin(gridA.x * 31.0)), abs(sin(gridA.y * 27.0)));
+    float localB = min(abs(sin(gridB.x * 28.0)), abs(sin(gridB.y * 33.0)));
+    float localGrid = mix(localA, localB, district);
+    float streets = exp(-39.0 * localGrid) * detailReveal;
+    float roads = max(majorRoads, streets);
 
     float urbanMask = land * population * metroReveal;
-    vec3 urbanFabric = mix(vec3(0.105, 0.095, 0.078),
-                           vec3(0.185, 0.165, 0.132), terrain);
-    ground = mix(ground, urbanFabric, urbanMask * 0.72);
-    ground += vec3(0.080, 0.078, 0.071) * urbanMask * roads;
+    float hardscape = clamp01(0.56 + denseCore * 0.34 + industrialPatch * 0.22
+        + (terrain - 0.5) * 0.18);
+    vec3 urbanFabric = mix(vec3(0.082, 0.078, 0.068),
+                           vec3(0.168, 0.151, 0.126), hardscape);
+    ground = mix(ground, urbanFabric, urbanMask * (0.70 + denseCore * 0.16));
+    ground += vec3(0.085, 0.083, 0.076) * urbanMask * majorRoads;
+    ground += vec3(0.043, 0.042, 0.039) * urbanMask * streets;
 
-    // Parcel-scale roof variation only appears once the city fills most of
-    // the frame. This keeps the regional shot from turning into noisy pixels.
-    float parcels = noise(floor(world * 92.0 + vec2(17.0, 31.0)));
-    float roofs = smoothstep(0.56, 0.82, parcels)
-        * (1.0 - smoothstep(0.42, 0.86, roads)) * detailReveal;
-    ground += mix(vec3(0.018, 0.016, 0.014), vec3(0.070, 0.060, 0.047), parcels)
-        * urbanMask * roofs;
+    // Parcel-scale roof variation appears late and clusters around a denser
+    // core and a flatter industrial patch instead of filling the whole basin.
+    float parcels = noise(floor(cityP * 88.0 + vec2(17.0, 31.0)));
+    float roofs = smoothstep(0.53, 0.80, parcels)
+        * (1.0 - smoothstep(0.44, 0.90, roads)) * detailReveal;
+    float builtDensity = clamp01(0.42 + denseCore * 0.46
+        + industrialPatch * 0.28 + population * 0.25);
+    ground += mix(vec3(0.016, 0.015, 0.014), vec3(0.064, 0.057, 0.049), parcels)
+        * urbanMask * roofs * builtDensity;
+
+    // Large dark voids read as parks, derelict plots and infrastructure gaps.
+    float openGround = smoothstep(0.69, 0.80,
+        fbm(world * 2.7 + vec2(41.0, 7.0))) * urbanMask * (1.0 - denseCore);
+    ground *= 1.0 - openGround * 0.18;
 
     // White midday reflection, with stronger grazing-angle reflectance.
     // No warm sunset grading or moving light source.
@@ -265,16 +306,42 @@ vec3 orbitalEarth(vec2 screen) {
     // against the final authored map.
     float viewRadius = length(vec2(screen.x / max(aspect, 0.001), screen.y) * 2.0);
     float veilNoise = fbm(world * 0.73 + vec2(37.0, 11.0));
-    float veilRadius = viewRadius + (veilNoise - 0.5) * 0.26;
-    float veilStrength = smoothstep(0.20, 0.68, descent);
-    float borderVeil = smoothstep(0.56, 1.03, veilRadius) * veilStrength;
-    float centerWindow = (1.0 - smoothstep(0.22, 0.62, viewRadius))
-        * smoothstep(0.28, 0.72, descent);
-    cloudOpacity *= 1.0 - centerWindow * 0.62;
-    cloudOpacity = max(cloudOpacity, borderVeil * (0.72 + 0.28 * cloud.b));
+    float veilRadius = viewRadius + (veilNoise - 0.5) * 0.32;
+    float veilStrength = smoothstep(0.18, 0.60, descent);
+    float borderVeil = smoothstep(0.70, 1.08, veilRadius) * veilStrength;
+    // Establish the city first. The middle of the frame clears aggressively
+    // at regional/city scale; only after the metropolitan read is secure do
+    // the outer clouds become the camouflage for the authored-map handoff.
+    float centerWindow = (1.0 - smoothstep(0.34, 0.82, viewRadius))
+        * smoothstep(0.22, 0.56, descent);
+    cloudOpacity *= 1.0 - centerWindow * 0.82;
+    cloudOpacity = max(cloudOpacity, borderVeil * (0.62 + 0.24 * cloud.b));
+
+    // One deterministic regional incident per match. Most runs show a dirty
+    // smoke or dust plume rather than postcard weather; a rarer dark ash band
+    // supplies the same attention cue without forcing a specific geography.
+    float incidentSeed = noise(floor(regionOffset * 0.37 + vec2(11.0, 29.0)));
+    float angle = 6.2831853 * noise(floor(regionOffset.yx * 0.29 + vec2(5.0, 17.0)));
+    float ca = cos(angle), sa = sin(angle);
+    vec2 incidentSource = vec2(
+        mix(-0.72, 0.68, noise(floor(regionOffset + vec2(31.0, 7.0)))),
+        mix(-0.42, 0.46, noise(floor(regionOffset + vec2(13.0, 43.0)))));
+    vec2 iq = mat2(ca, -sa, sa, ca) * (localSurface - incidentSource);
+    float downwind = smoothstep(-0.10, 0.18, iq.x)
+        * (1.0 - smoothstep(1.25, 2.75, iq.x));
+    float plumeWidth = 0.09 + clamp(iq.x, 0.0, 2.0) * 0.12;
+    float plumeBody = exp(-iq.y * iq.y / max(plumeWidth * plumeWidth, 0.003))
+        * downwind;
+    float plumeBreakup = 0.55 + 0.45 * fbm(world * 7.0 + vec2(incidentSeed * 17.0, 3.0));
+    float incident = plumeBody * plumeBreakup * smoothstep(0.30, 0.66, descent)
+        * land * (1.0 - cloudOpacity * 0.72);
+    vec3 incidentColor = incidentSeed < 0.66
+        ? vec3(0.12, 0.105, 0.085)
+        : vec3(0.095, 0.090, 0.088);
 
     vec3 litSurface = mix(ground, cloudColor, cloudOpacity);
-    litSurface = mix(litSurface, vec3(0.70, 0.80, 0.92), cloud.a * 0.36);
+    litSurface = mix(litSurface, incidentColor, incident * 0.48);
+    litSurface = mix(litSurface, vec3(0.59, 0.64, 0.67), cloud.a * 0.24);
 
     // Keep the authored settlement population/lights. The fixed noon sun
     // makes their night factor zero in this daylight arrival.
@@ -284,8 +351,18 @@ vec3 orbitalEarth(vec2 screen) {
 
     // Atmospheric depth is concentrated near the limb: a thin cyan edge
     // above subdued blue haze, with a dark sky at daylight exposure.
+    // Pull the surface away from clean NASA postcard color as we approach:
+    // polluted aerosol, reduced saturation and slightly compressed exposure.
+    float urbanAerosol = urbanMask * smoothstep(0.22, 0.72, descent)
+        * (0.38 + 0.34 * fbm(world * 1.2 + vec2(6.0, 23.0)));
+    litSurface = mix(litSurface, vec3(0.19, 0.18, 0.155), urbanAerosol * 0.32);
+    float luminance = dot(litSurface, vec3(0.299, 0.587, 0.114));
+    float desaturate = 0.08 + smoothstep(0.26, 0.82, descent) * 0.20;
+    litSurface = mix(litSurface, vec3(luminance), desaturate);
+    litSurface *= 0.94 - smoothstep(0.30, 0.92, descent) * 0.10;
+
     float airMass = pow(1.0 - z, 3.4);
-    litSurface = mix(litSurface, vec3(0.045, 0.12, 0.23), airMass * 0.52);
+    litSurface = mix(litSurface, vec3(0.042, 0.095, 0.16), airMass * 0.48);
     float innerRim = exp(-max(1.0 - rr, 0.0) * 130.0) * edge;
     litSurface += vec3(0.022, 0.082, 0.19) * innerRim;
     float outerRim = exp(-max(rr - 1.0, 0.0) * 220.0) * (1.0 - edge);
@@ -306,9 +383,14 @@ vec3 passingClouds(vec2 screen) {
     float height = broad * 0.68 + billows * 0.32;
     vec2 slope = surfaceGradient(height, p);
     float relief = inversesqrt(1.0 + dot(slope, slope) * 0.04);
-    vec3 color = mix(vec3(0.22, 0.32, 0.43), vec3(0.92, 0.96, 1.0),
-        clamp01(relief * 0.70 + height * 0.30));
-    color *= 0.80 + fine * 0.22;
+    float cavity = smoothstep(0.18, 0.72, billows);
+    vec3 color = mix(vec3(0.095, 0.115, 0.125), vec3(0.66, 0.69, 0.68),
+        clamp01(relief * 0.58 + height * 0.27 + cavity * 0.15));
+    // Keep the opaque projection cover visually volumetric: grey undersides,
+    // dirty cavities and fine structure instead of a featureless white wipe.
+    color *= 0.68 + fine * 0.16 + cavity * 0.08;
+    color = mix(color, vec3(0.20, 0.19, 0.17),
+        smoothstep(0.62, 0.88, broad) * (1.0 - cavity) * 0.12);
     return displayColor(color);
 }
 
