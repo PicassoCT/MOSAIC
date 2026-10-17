@@ -37,6 +37,85 @@ function M.regionOffset(game)
   return x, hash / regionModulus * 128
 end
 
+local riskThemes = {
+  {
+    name = "CLIMATE",
+    metrics = {
+      {"RAINFALL DEFICIT", 34, 82},
+      {"WILDFIRE LIKELIHOOD", 21, 74},
+      {"WATER STRESS", 38, 89},
+      {"HEAT ANOMALY", 18, 71},
+      {"CROP FAILURE RISK", 14, 62},
+      {"AIRBORNE PARTICULATE LOAD", 23, 77},
+    },
+    stamps = {"RESOURCE STRESSED", "WATER-RATIONED", "FIRE WEATHER"},
+  },
+  {
+    name = "CONFLICT",
+    metrics = {
+      {"CONFLICT LIKELIHOOD", 26, 86},
+      {"WAR DAMAGE", 5, 58},
+      {"DISPLACEMENT PRESSURE", 9, 67},
+      {"CIVIL ORDER FAILURE", 12, 69},
+      {"ORDNANCE CONTAMINATION", 4, 42},
+      {"MILITARY TRAFFIC", 18, 73},
+    },
+    stamps = {"MILITARIZED", "CONTESTED", "RECENT STRIKES"},
+  },
+  {
+    name = "SYSTEMS",
+    metrics = {
+      {"GRID INSTABILITY", 23, 79},
+      {"INFRASTRUCTURE LOSS", 10, 64},
+      {"AIR TOXICITY", 19, 76},
+      {"FOOD PRICE STRESS", 27, 84},
+      {"INSURABILITY FAILURE", 31, 91},
+      {"WATER SERVICE FAILURE", 13, 69},
+    },
+    stamps = {"AUSTERITY REGION", "CHRONIC OUTAGES", "INSURANCE EXCLUSION"},
+  },
+}
+
+local function riskStep(hash, salt)
+  hash = hashRegionField(hash, salt)
+  return (hash * 48271) % regionModulus
+end
+
+-- A fictional orbital-survey aggregate for the arrival overlay. It is seeded
+-- only from match identity, never Lua's RNG, so every client sees the same
+-- terse risk packet while different matches can show different bad news.
+function M.riskPacket(game)
+  game = game or Game or {}
+  local hash = 29
+  for _, key in ipairs({"mapName", "mapChecksum", "gameID"}) do
+    hash = hashRegionField(hash, game[key])
+  end
+  hash = riskStep(hash, "risk-theme")
+  local theme = riskThemes[(hash % #riskThemes) + 1]
+  local pool = {}
+  for i = 1, #theme.metrics do pool[i] = i end
+  local lines = {}
+  for line = 1, 5 do
+    hash = riskStep(hash, "metric-" .. line)
+    local pick = (hash % #pool) + 1
+    local metric = theme.metrics[pool[pick]]
+    table.remove(pool, pick)
+    hash = riskStep(hash, metric[1])
+    local value = metric[2] + (hash % (metric[3] - metric[2] + 1))
+    lines[#lines + 1] = {label = metric[1], value = value}
+  end
+  hash = riskStep(hash, "status")
+  local status = theme.stamps[(hash % #theme.stamps) + 1]
+  hash = riskStep(hash, "confidence")
+  local confidence = 61 + (hash % 34)
+  return {
+    theme = theme.name,
+    status = status,
+    confidence = confidence,
+    lines = lines,
+  }
+end
+
 function M.clamp(x) return math.max(0, math.min(1, x)) end
 -- Four held planetary snapshots, followed by a separate cloud descent.
 -- Keep the first scale through the artwork blend so none of the four shots
