@@ -484,6 +484,70 @@ function getRandomBuildMaterial(buildMaterial)
     end
 end
 
+local function placementMaterialStats(buildMaterial)
+    local entries, numericPieces, unusedPieces, usedPieces = 0, 0, 0, 0
+    local samples = {}
+
+    if type(buildMaterial) ~= "table" then
+        return entries, numericPieces, unusedPieces, usedPieces, "<not-a-table>"
+    end
+
+    for key, pieceID in pairs(buildMaterial) do
+        entries = entries + 1
+        if type(key) == "number" and type(pieceID) == "number" then
+            numericPieces = numericPieces + 1
+            if AlreadyUsedPiece[pieceID] then
+                usedPieces = usedPieces + 1
+            else
+                unusedPieces = unusedPieces + 1
+            end
+
+            if #samples < 8 then
+                local info = Spring.GetUnitPieceInfo(unitID, pieceID)
+                samples[#samples + 1] = tostring(key) .. "=" ..
+                    tostring(info and info.name or pieceID) ..
+                    (AlreadyUsedPiece[pieceID] and "(used)" or "(free)")
+            end
+        end
+    end
+
+    return entries, numericPieces, unusedPieces, usedPieces, table.concat(samples, ",")
+end
+
+local function requirePlacementElement(buildMaterial, context)
+    local entries, numericPieces, unusedPieces, usedPieces, samples =
+        placementMaterialStats(buildMaterial)
+
+    if type(buildMaterial) ~= "table" then
+        error("[house_arab placement] invalid material table; unitID=" ..
+            tostring(unitID) .. " context=" .. tostring(context) ..
+            " type=" .. type(buildMaterial))
+    end
+
+    -- getRandomBuildMaterial can legitimately miss while randomly selecting from
+    -- a sparse/partially-used table. Bound retries so an exhausted or malformed
+    -- material set becomes an actionable infolog error instead of an endless loop.
+    local maxAttempts = math.max(32, entries * 4)
+    for attempt = 1, maxAttempts do
+        local element, nr = getRandomBuildMaterial(buildMaterial)
+        if element then
+            return element, nr
+        end
+        Sleep(1)
+    end
+
+    local x, y, z = Spring.GetUnitPosition(unitID)
+    error("[house_arab placement] material allocation exhausted; unitID=" ..
+        tostring(unitID) .. " context=" .. tostring(context) ..
+        " attempts=" .. tostring(maxAttempts) ..
+        " entries=" .. tostring(entries) ..
+        " numericPieces=" .. tostring(numericPieces) ..
+        " unusedPieces=" .. tostring(unusedPieces) ..
+        " usedPieces=" .. tostring(usedPieces) ..
+        " unitPos=" .. tostring(x) .. "," .. tostring(y) .. "," .. tostring(z) ..
+        " samples={" .. tostring(samples) .. "}")
+end
+
 -- x:0-6 z:0-6
 function getLocationInPlan(index)
 
@@ -682,11 +746,11 @@ function buildDecorateGroundLvl()
         if partOfPlan == true then
             xRealLoc, zRealLoc = -centerP.x + (xLoc * cubeDim.length),
                                  -centerP.z + (zLoc * cubeDim.length)
-            local element, nr = getRandomBuildMaterial(buildMaterial)
-            while not element do
-                element, nr = getRandomBuildMaterial(buildMaterial)
-                Sleep(1)
-            end
+            local element, nr = requirePlacementElement(
+                buildMaterial,
+                "ground index=" .. tostring(index) ..
+                " materialGroup=" .. tostring(materialGroupName)
+            )
 
             if element then
                 countElements = countElements + 1
@@ -760,11 +824,12 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
         if partOfPlan == true then
             xRealLoc, zRealLoc = -centerP.x + (xLoc * cubeDim.length),
                                  -centerP.z + (zLoc * cubeDim.length)
-            local element, nr = getRandomBuildMaterial(buildMaterial)
-            while not element do
-                element, nr = getRandomBuildMaterial(buildMaterial)
-                Sleep(1)
-            end
+            local element, nr = requirePlacementElement(
+                buildMaterial,
+                "wall level=" .. tostring(Level) ..
+                " index=" .. tostring(index) ..
+                " materialGroup=" .. tostring(materialGroupName)
+            )
 
             if element then
 
@@ -889,11 +954,11 @@ function addRoofDeocrate(Level, buildMaterial)
         if partOfPlan == true then
             xRealLoc, zRealLoc = -centerP.x + (xLoc * cubeDim.length),
                                  -centerP.z + (zLoc * cubeDim.length)
-            local element, nr = getRandomBuildMaterial(buildMaterial)
-            while not element do
-                element, nr = getRandomBuildMaterial(buildMaterial)
-                Sleep(1)
-            end
+            local element, nr = requirePlacementElement(
+                buildMaterial,
+                "roof structural level=" .. tostring(Level) ..
+                " index=" .. tostring(index)
+            )
 
             if element then
                 rotation = getOutsideFacingRotationOfBlockFromPlan(i)
@@ -921,11 +986,11 @@ function addRoofDeocrate(Level, buildMaterial)
         if partOfPlan == true then
             xRealLoc, zRealLoc = -centerP.x + (xLoc * cubeDim.length),
                                  -centerP.z + (zLoc * cubeDim.length)
-            local element, nr = getRandomBuildMaterial(decoMaterial)
-            while not element do
-                element, nr = getRandomBuildMaterial(decoMaterial)
-                Sleep(1)
-            end
+            local element, nr = requirePlacementElement(
+                decoMaterial,
+                "roof decoration level=" .. tostring(Level) ..
+                " index=" .. tostring(i)
+            )
 
             if element and chancesAre(10) < decoChances.roof then
                 rotation = getOutsideFacingRotationOfBlockFromPlan(i)
