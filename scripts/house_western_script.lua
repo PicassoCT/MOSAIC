@@ -1073,7 +1073,40 @@ logoPiecesToHide = {
                 [piece("Office_Roof_Deco7")] = true, 
                 [piece("Office_Roof_Deco2")] = true
             }
-pieceNameMap = Spring.GetUnitPieceList( unitID ) 
+pieceNameMap = Spring.GetUnitPieceList( unitID )
+
+local roofCornerPlanIndices = {[1] = true, [6] = true, [31] = true, [36] = true}
+local westernRoofCornerDecoPieceNames = {
+    ["WhiteOffice_Roof_Deco19"] = true,
+    ["WhiteOffice_Roof_Deco20"] = true,
+    ["WhiteOffice_Roof_Deco21"] = true,
+    ["WhiteOffice_Roof_Deco22"] = true,
+    ["WhiteOffice_Roof_Deco23"] = true,
+    ["WhiteOffice_Roof_Deco24"] = true,
+    ["WhiteOffice_Roof_Deco25"] = true,
+    ["WhiteOffice_Roof_Deco26"] = true,
+    ["WhiteOffice_Roof_Deco27"] = true,
+}
+
+function isRoofPlanCorner(index)
+    return roofCornerPlanIndices[index] == true
+end
+
+function isCornerRoofDecoPiece(pieceID)
+    local pieceName = pieceID and pieceNr_pieceName[pieceID]
+    return pieceName and westernRoofCornerDecoPieceNames[pieceName] == true or false
+end
+
+function getRoofDecoMaterialForPlanIndex(decoMaterial, index)
+    if isRoofPlanCorner(index) then return decoMaterial or {} end
+    local filtered = {}
+    for _, pieceID in pairs(decoMaterial or {}) do
+        if not isCornerRoofDecoPiece(pieceID) then
+            filtered[#filtered + 1] = pieceID
+        end
+    end
+    return filtered
+end
 
 function addRoofDeocrate(Level, buildMaterial, materialColourName)
     countElements = 0
@@ -1126,12 +1159,17 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
         if partOfPlan == true then
             xRealLoc, zRealLoc = -centerP.x + (xLoc * cubeDim.length),
                                  -centerP.z + (zLoc * cubeDim.length)
-            local element, nr = getRandomBuildMaterial(decoMaterial, materialColourName.."RoofDeco")
-            while not element do
-                element, nr = getRandomBuildMaterial(decoMaterial, materialColourName.."RoofDeco")
-                Sleep(1)
+            local slotDecoMaterial = getRoofDecoMaterialForPlanIndex(decoMaterial, i)
+            local element, nr
+            if #slotDecoMaterial > 0 then
+                local attempts = #slotDecoMaterial
+                element, nr = getRandomBuildMaterial(slotDecoMaterial, materialColourName.."RoofDeco")
+                while not element and attempts > 0 do
+                    element, nr = getRandomBuildMaterial(slotDecoMaterial, materialColourName.."RoofDeco")
+                    attempts = attempts - 1
+                    Sleep(1)
+                end
             end
-
 
             if element and chancesAre(10) < decoChances.roof then
                 rotation = getOutsideFacingRotationOfBlockFromPlan(i)
