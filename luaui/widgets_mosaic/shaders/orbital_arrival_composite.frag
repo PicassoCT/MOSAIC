@@ -18,7 +18,22 @@ void main() {
     // CopyToTexture flips framebuffer Y, never X.
     vec2 liveSampleUV = vec2(liveUV.x, 1.0 - liveUV.y);
     vec3 live = texture2D(liveTex, liveSampleUV).rgb;
-    // Identical final framebuffer pixels, preventing image warp at release.
+
+    // During the first glimpse of the authored map, briefly treat the image as
+    // a tactical reconstruction rather than pretending it is still optical
+    // satellite photography. The grade vanishes completely before release.
+    float sensorIn = smoothstep(0.66, 0.77, descent);
+    float sensorOut = 1.0 - smoothstep(0.90, 0.98, descent);
+    float sensor = sensorIn * sensorOut;
+    float liveLuma = dot(live, vec3(0.299, 0.587, 0.114));
+    vec3 recon = mix(live, vec3(liveLuma), 0.30);
+    recon = (recon - 0.5) * 1.08 + 0.5;
+    float scan = 0.975 + 0.025 * sin(gl_FragCoord.y * 1.37);
+    recon *= scan;
+    recon = mix(recon, recon * vec3(0.92, 0.97, 0.95), 0.35);
+    live = mix(live, recon, sensor);
+
+    // Identical final framebuffer pixels, preventing image warp or grading at release.
     if (descent >= 0.98) {
         ivec2 size = textureSize(liveTex, 0);
         vec2 finalUV = vec2(uv.x, 1.0 - uv.y);
