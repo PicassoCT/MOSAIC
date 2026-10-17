@@ -655,7 +655,7 @@ function getNameFilteredTableDict( MustContainOne, MustContainAll, MustContainNo
             table.sort(indices)
             for _, index in ipairs(indices) do
                 local id = v[index]
-                if not reservedSplitPieces[pieceID_NameMap[id]] then
+                if not reservedSplitPieces[pieceID_NameMap[id]] and not isCornerRoofDecoPiece(id) then
                     allMatchingGroups[#allMatchingGroups + 1] = id
                 end
             end
