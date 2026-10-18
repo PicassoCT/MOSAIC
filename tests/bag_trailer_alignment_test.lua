@@ -64,44 +64,89 @@ end
 while coroutine.status(co)~="dead" do tick() end
 M.wake(0); assert(starts==2)
 
--- These checks cover the restored API commands, not the engine's model
--- transforms. The remaining in-game heading-sign issue is not proven fixed.
+-- Long-truck trailer: the authored steering axis is Y. Exercise the
+-- controller state itself: signed heading deltas, no ceil() kick, movement-only
+-- centering, and immediate hold when translation stops.
 local file=assert(io.open("scripts/LongTruckscript.lua")); local source=file:read("*a"); file:close()
-local code=assert(source:match("(local function holdTrailerYaw%(%).-)\n\nlocal loadOutUnitID"))
-local function trailer(dx,dz,moving,turning)
+local code=assert(source:match("(local TRAILER_YAW_SPEED.-)\n\nlocal loadOutUnitID"))
+
+local function trailer(initialYaw)
     local commands={}
+    local state={moving=false,delta=0}
+    local frame=0
+    local pieceYaw=initialYaw
     local e={math=math,unitID=1,PayloadCenter=1,DetectPiece=2,x_axis=1,y_axis=2}
     e.clamp=function(v,a,b) return math.max(a,math.min(b,v)) end
-    e.newMotionSampler=function() return function() return moving,turning,false end end
+    e.newMotionSampler=function()
+        return function()
+            return state.moving,state.delta~=0,state.delta<0,state.delta
+        end
+    end
     e.Spring={
-        GetUnitPiecePosDir=function(_,piece)
-            if piece==2 then return dx,7,dz end
-            return 0,7,0
-        end,
+        GetGameFrame=function() return frame end,
+        GetUnitPiecePosDir=function() return 0,7,0 end,
         GetGroundHeight=function() return 0 end,
-        UnitScript={GetPieceRotation=function() return 0,0.5,0 end}}
+        UnitScript={GetPieceRotation=function() return 0,pieceYaw,0 end}}
     e.Turn=function(_,axis,target,speed)
-        assert(axis==1 or axis==2, "Original controller uses X pitch and Y steering")
-        if axis==2 then commands[#commands+1]={target,speed} end
+        if axis==2 then
+            commands[#commands+1]={target,speed}
+        end
     end
     e.Sleep=function() coroutine.yield() end
-    if _VERSION=="Lua 5.1" then local f=assert(loadstring(code)); setfenv(f,e); f()
+    if _VERSION=="Lua 5.1" then local fn=assert(loadstring(code)); setfenv(fn,e); fn()
     else assert(load(code,"trailer","t",e))() end
     local thread=coroutine.create(e.turnTrailerLoop)
     local ok,err=coroutine.resume(thread); assert(ok,err)
-    -- After an idle transition the outstanding target must be overwritten.
-    moving,turning=false,false
-    local ok,err=coroutine.resume(thread); assert(ok,err)
-    near(commands[#commands][1],0.5)
-    assert(commands[#commands][2]>0, "TurnNow would leave the old animation active")
-    return commands
+
+    local function step(moving,delta,yaw)
+        state.moving=moving
+        state.delta=delta or 0
+        if yaw~=nil then pieceYaw=yaw end
+        frame=frame+3
+        local ok,err=coroutine.resume(thread); assert(ok,err)
+        return commands[#commands]
+    end
+    return step,commands
 end
-local right=trailer(10,0,false,true)
-near(right[1][1],math.pi/2); near(right[1][2],1)
-local left=trailer(-10,0,false,true)
-near(left[1][1],3*math.pi/2); near(left[1][2],1)
-local moving=trailer(10,0,true,true)
-near(moving[1][1],1); near(moving[1][2],1.125)
-local idle=trailer(10,0,false,false)
-near(idle[1][1],0.5); assert(idle[1][2]>0)
-print("bag alignment and original trailer command checks passed")
+
+do
+    local step,commands=trailer(0.5)
+    local d=1024*math.pi/32768
+    local a=step(false,1024)
+    near(a[1],0.5-d)
+    assert(a[2]>0,"yaw correction must be an interpolated Turn, not TurnNow")
+
+    -- Once the tractor stops turning, stationary articulation must stay where
+    -- the signed heading delta left it instead of drifting back to zero.
+    local held=step(false,0)
+    near(held[1],0.5-d)
+
+    -- Opposite signed heading change must be exactly symmetric.
+    local back=step(false,-1024)
+    near(back[1],0.5)
+end
+
+do
+    local step=trailer(0.1)
+    local moving=step(true,0)
+    assert(moving[1]>0 and moving[1]<0.1,
+        "small positive yaw must decay toward zero without ceil() wrong-side kick")
+
+    -- Simulate Recoil having only reached part of the centering animation when
+    -- the chassis stops. The new target must freeze at the actual pose reached.
+    local stopped=step(false,0,0.073)
+    near(stopped[1],0.073)
+    local still=step(false,0,0.073)
+    near(still[1],0.073)
+end
+
+do
+    local step=trailer(-0.25)
+    -- Wrapped heading delta corresponding to 65000 -> 500.
+    local a=step(false,1036)
+    local b=step(false,-1036)
+    near(b[1],-0.25)
+end
+
+print("bag alignment and stable long-truck trailer yaw checks passed")
+
