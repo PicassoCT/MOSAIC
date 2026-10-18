@@ -129,57 +129,79 @@ end
 boolTurnLeft = false
 boolTurning = false
 
+local TRAILER_YAW_SPEED = 1.125
+local TRAILER_RELAX_SECONDS = 6
+
+local function wrapTrailerAngle(angle)
+    return (angle + math.pi) % (2 * math.pi) - math.pi
+end
+
 local function holdTrailerYaw()
     local _, yaw = Spring.UnitScript.GetPieceRotation(PayloadCenter)
     -- A nonzero-speed Turn replaces the pending animation target. Turn(..., 0)
-    -- only sets the pose in Recoil and does not cancel an existing turn.
-    Turn(PayloadCenter, y_axis, yaw, 1)
+    -- is TurnNow in Recoil and does not cancel an existing turn animation.
+    Turn(PayloadCenter, y_axis, yaw, TRAILER_YAW_SPEED)
 end
 
 function turnTrailerLoop()
     local spGetUnitPiecePosDir = Spring.GetUnitPiecePosDir
     local spGetGroundHeight = Spring.GetGroundHeight
-    _,lastOrientation,_  = Spring.UnitScript.GetPieceRotation(PayloadCenter)
-    px,py,pz = spGetUnitPiecePosDir(unitID, DetectPiece)
-    val  = 0
-    local headRad = 0
     local sampleMotion = newMotionSampler(unitID)
+    local previousFrame = Spring.GetGameFrame()
+    local _, initialYaw = Spring.UnitScript.GetPieceRotation(PayloadCenter)
+    local targetYaw = wrapTrailerAngle(initialYaw or 0)
+    local wasMoving = false
+    local val = 0
+
     while true do
-        boolMoving, boolTurning, boolTurnLeft = sampleMotion()
-        px,py,pz = spGetUnitPiecePosDir(unitID, DetectPiece)
-        if boolMoving == true  then          
-            _, rot, _ = Spring.UnitScript.GetPieceRotation(PayloadCenter)
-            goal = math.ceil(rot * 0.98)
-            Turn(PayloadCenter,y_axis, goal, 1.125)
-            lastOrientation = goal
-        else
-            if boolTurning == true then                
-                x,y,z = spGetUnitPiecePosDir(unitID, PayloadCenter)
-                dx,  dz = px-x, pz-z
-                headRad = math.pi - math.atan2(dx, dz)
+        local headingDelta
+        boolMoving, boolTurning, boolTurnLeft, headingDelta = sampleMotion()
 
-                Turn(PayloadCenter,y_axis, headRad, 1)
-                lastOrientation = headRad
-            else
-                holdTrailerYaw()
-            end
-        end     
+        local frame = Spring.GetGameFrame()
+        local dt = math.max(0, frame - previousFrame) / 30
+        previousFrame = frame
 
-        groundHeigth =   spGetGroundHeight(px,pz)
-        diff = math.max(math.abs((py - 7) -groundHeigth), 0.0125)
-        if py - 7 > groundHeigth then
-            val = val - (diff/10)
-        else
-            val = val + (diff/10)
+        local _, currentYaw = Spring.UnitScript.GetPieceRotation(PayloadCenter)
+        currentYaw = wrapTrailerAngle(currentYaw or targetYaw)
+
+        -- If translation stops while a centering turn is still in flight,
+        -- freeze at the pose actually reached. This prevents the trailer from
+        -- continuing to pull itself back to zero after the truck has stopped.
+        if wasMoving and not boolMoving then
+            targetYaw = currentYaw
         end
-        radYaw = math.rad(clamp( val, -5, 5))
-        Turn(PayloadCenter, x_axis, radYaw, 0.881)   
 
-        if boolMoving == true then
-            Sleep(125)
-        else
-            Sleep(50)
+        -- Spring headings are signed 16-bit TA angles. Counter-rotate the
+        -- articulated payload by the wrapped tractor delta so clockwise and
+        -- anticlockwise turns are symmetric, including across +/-32768.
+        if boolTurning then
+            local deltaRad = headingDelta * math.pi / 32768
+            targetYaw = wrapTrailerAngle(targetYaw - deltaRad)
         end
+
+        -- Only real linear movement straightens the articulation. Never round
+        -- radians here: ceil() was able to turn +0.1 rad into a +1 rad target,
+        -- producing the visible one-frame wrong-side kick.
+        if boolMoving then
+            targetYaw = targetYaw * math.exp(-dt / TRAILER_RELAX_SECONDS)
+        end
+
+        -- Keep the authored Y steering axis. A real Turn (nonzero speed)
+        -- replaces any previous target and lets Recoil interpolate smoothly.
+        Turn(PayloadCenter, y_axis, targetYaw, TRAILER_YAW_SPEED)
+
+        local px, py, pz = spGetUnitPiecePosDir(unitID, DetectPiece)
+        local groundHeight = spGetGroundHeight(px, pz)
+        local diff = math.max(math.abs((py - 7) - groundHeight), 0.0125)
+        if py - 7 > groundHeight then
+            val = val - (diff / 10)
+        else
+            val = val + (diff / 10)
+        end
+        Turn(PayloadCenter, x_axis, math.rad(clamp(val, -5, 5)), 0.881)
+
+        wasMoving = boolMoving
+        Sleep(boolMoving and 125 or 50)
     end
 end
 
