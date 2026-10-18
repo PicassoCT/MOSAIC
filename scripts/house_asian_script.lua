@@ -1500,17 +1500,7 @@ function showHideSwitch(a, b)
     Show(b)
 end
 
-function rainAndFaultyPieces(faulty, rainFaulty, hour)
-    for k,v in pairs(faulty) do
-        StartThread(simulateRainShort, k,v, 5, hour)
-    end
 
-    if isRaining(hour) then
-        for k,v in pairs(rainFaulty) do
-            StartThread(simulateRainShort, k,v, 6, hour)
-        end
-    end
-end
 
 local function simulateRainShort(normalPart, illuminatedPart, duration, hour)
     duration = (duration or 5)*30
@@ -1570,6 +1560,18 @@ local function registerDayNightPiece(pieceID)
     else
         Spring.Echo("[house_asian day/night] Missing night cousin for " ..
             tostring(dayName) .. " expected " .. tostring(nightName))
+    end
+end
+
+function rainAndFaultyPieces(faulty, rainFaulty, hour)
+    for k,v in pairs(faulty) do
+        StartThread(simulateRainShort, k,v, 5, hour)
+    end
+
+    if isRaining(hour) then
+        for k,v in pairs(rainFaulty) do
+            StartThread(simulateRainShort, k,v, 6, hour)
+        end
     end
 end
 
