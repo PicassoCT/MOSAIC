@@ -194,11 +194,30 @@ do
     local e=setmetatable({Spring={GetUnitPosition=function() return x,0,0 end,
         GetUnitHeading=function() return heading end, GetGameFrame=function() return frame end}},{__index=_G})
     local sample=run(read('scripts/lib_vehicle_motion.lua'),e)(1)
-    local moving,turning,left=sample(); assert(not moving and not turning)
+    local moving,turning,left,delta=sample(); assert(not moving and not turning and delta==0)
     frame=3; x=10; heading=500
-    moving,turning,left=sample(); assert(moving and turning and not left)
+    moving,turning,left,delta=sample(); assert(moving and turning and not left and delta==1036)
     frame=6; heading=65000
-    moving,turning,left=sample(); assert(not moving and turning and left)
+    moving,turning,left,delta=sample(); assert(not moving and turning and left and delta==-1036)
+end
+
+-- When Recoil exposes physical velocity, turning a long model in place must not
+-- be mistaken for translation just because its visible ends sweep across space.
+do
+    local frame,x,heading,vx=0,0,0,0
+    local e=setmetatable({Spring={
+        GetUnitPosition=function() return x,0,0 end,
+        GetUnitVelocity=function() return vx,0,0 end,
+        GetUnitHeading=function() return heading end,
+        GetGameFrame=function() return frame end}},{__index=_G})
+    local sample=run(read('scripts/lib_vehicle_motion.lua'),e)(1)
+    sample()
+    frame=3; x=20; heading=1000
+    local moving,turning=sample()
+    assert(not moving and turning,'turn-in-place must not trigger trailer centering')
+    frame=6; vx=0.2
+    moving=sample()
+    assert(moving,'real linear velocity must trigger trailer centering')
 end
 
 -- Moving aim completes; the restore timer begins after aiming finishes.
