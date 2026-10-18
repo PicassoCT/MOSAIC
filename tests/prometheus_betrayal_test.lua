@@ -62,6 +62,23 @@ sw.rules[258]={} -- Reset the earlier receiver-side runner rejection.
 server.gadget:RecvLuaMsg(cw.sent[3],7);server.gadget:GameFrame(7)
 eq(sw.orders[#sw.orders][3][1],-2,'negative half coordinates round symmetrically')
 eq(sw.orders[#sw.orders][3][3],3)
+
+-- Build commands are negative UnitDef IDs in Spring/Recoil. Marker 214 must
+-- preserve them without adding a 2^31 bias, which is not lossless in float Lua.
+assert(client.GiveOrderToUnit(258,-33,{123,0,-456},{}))
+client.gadget:GameFrame(6);eq(#cw.sent,4)
+server.gadget:RecvLuaMsg(cw.sent[4],7);server.gadget:GameFrame(8)
+eq(sw.orders[#sw.orders][2],-33,'negative build command must survive bridge')
+eq(sw.orders[#sw.orders][3][1],123);eq(sw.orders[#sw.orders][3][3],-456)
+
+-- Recoil Lua guarantees exact integer representation through 2^24. Exercise
+-- both signs at that boundary so future codecs do not reintroduce 2^31 biasing.
+assert(client.GiveOrderToUnit(258,-16777216,{},{}))
+assert(client.GiveOrderToUnit(258,16777216,{},{}))
+client.gadget:GameFrame(7);eq(#cw.sent,5)
+server.gadget:RecvLuaMsg(cw.sent[5],7);server.gadget:GameFrame(9)
+eq(sw.orders[#sw.orders-1][2],-16777216)
+eq(sw.orders[#sw.orders][2],16777216)
 client.gadget:Shutdown();eq(cw.actions.Prometheus_UnitCreated,nil)
 
 -- Repeated LOS and damage events must not duplicate enemies or corrupt indices.
