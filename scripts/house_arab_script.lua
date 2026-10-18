@@ -15,10 +15,10 @@ local spGetGroundHeight = Spring.GetGroundHeight
 local TablesOfPiecesGroups = {}
 gridOffset =  {}
 local RoofTopPieces = {}
-
+factor = 40
 local cubeDim = {
-    length = 14.4 * 1.45,
-    heigth = 13.65 * 0.75 * 1.45,
+    length = 14.4 * 1.45* factor,
+    heigth = 13.65 * 0.75 * 1.45* factor,
     roofHeigth = 2
 }
 
