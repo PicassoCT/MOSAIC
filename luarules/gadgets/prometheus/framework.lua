@@ -121,8 +121,16 @@ end
 local function DeserializeAndProcessMessage(msg, player)
     local cursor, orders = 2, {}
     local wide=msg:byte(1)==214
+    -- Spring/Recoil Lua numbers are 32-bit floats. Never rebuild a signed
+    -- integer by first constructing its biased 0..2^32 representation: values
+    -- near 2^31 lose their low bits before the sign bias can be removed.
     local function uint32()
         local a,b,c,d=msg:byte(cursor,cursor+3);cursor=cursor+4
+        return ((a*256+b)*256+c)*256+d
+    end
+    local function sint32()
+        local a,b,c,d=msg:byte(cursor,cursor+3);cursor=cursor+4
+        if a>=128 then a=a-256 end
         return ((a*256+b)*256+c)*256+d
     end
     -- Validate the entire packet first. Truncation must not partly execute a batch.
@@ -130,7 +138,7 @@ local function DeserializeAndProcessMessage(msg, player)
         local id,cmd,options,count
         if wide then
             if cursor+9>#msg then return false end
-            id=uint32();cmd=uint32()-2147483648
+            id=uint32();cmd=sint32()
             options,count=msg:byte(cursor,cursor+1);cursor=cursor+2
         else
             if cursor+4>#msg then return false end
@@ -141,7 +149,7 @@ local function DeserializeAndProcessMessage(msg, player)
         if count>15 or cursor+count*(wide and 4 or 2)-1>#msg then return false end
         local params={}
         for i=1,count do
-            if wide then params[i]=uint32()-2147483648
+            if wide then params[i]=sint32()
             else
                 local a,b=msg:byte(cursor,cursor+1);cursor=cursor+2
                 params[i]=a*256+b-32768
@@ -290,13 +298,18 @@ local function SerializeOrder(unitID, cmd, params, options)
     -- UnitDefs/engine command descriptors sometimes expose a numeric command ID
     -- as a string. Normalize it before validation and packing; reject nonintegers.
     if type(cmd) == "string" then cmd = tonumber(cmd) end
+    -- Recoil deliberately uses float-backed Lua numbers. Integers are
+    -- guaranteed lossless only through 2^24, so keep bridge-visible integer
+    -- fields inside that exact range rather than pretending Lua can carry every
+    -- signed int32 value.
+    local MAX_EXACT_INT=16777216
     local function integer(n,lo,hi)
         return type(n)=="number" and n==n and n>=lo and n<=hi and n==math.floor(n)
     end
     assert(type(params)=="table" and #params<=15,
         "expected at most 15 numeric command parameters")
-    assert(integer(unitID,0,2147483647), "unit ID must be a 31-bit integer")
-    assert(integer(cmd,-2147483648,2147483647), "command ID must be a signed 32-bit integer")
+    assert(integer(unitID,0,MAX_EXACT_INT), "unit ID must be an exact Spring Lua integer")
+    assert(integer(cmd,-MAX_EXACT_INT,MAX_EXACT_INT), "command ID must be an exact Spring Lua integer")
     if type(options)=="table" then
         local value=0
         for _,opt in ipairs(options) do value=value+(optionStringToNumber[opt] or 0) end
@@ -310,15 +323,23 @@ local function SerializeOrder(unitID, cmd, params, options)
         b[#b+1]=math.floor(n/256)%256
         b[#b+1]=n%256
     end
-    uint32(unitID);uint32(cmd+2147483648)
+    -- Two's-complement bytes, emitted directly from the signed value. This
+    -- keeps every intermediate within Spring Lua's exact integer range.
+    local function sint32(n)
+        b[#b+1]=math.floor(n/16777216)%256
+        b[#b+1]=math.floor(n/65536)%256
+        b[#b+1]=math.floor(n/256)%256
+        b[#b+1]=n%256
+    end
+    uint32(unitID);sint32(cmd)
     b[#b+1]=options;b[#b+1]=#params
     for i,param in ipairs(params) do
-        assert(type(param)=="number" and param==param and param>=-2147483648 and param<=2147483647,
-            "parameter "..i.." must be a finite signed 32-bit number")
+        assert(type(param)=="number" and param==param and param>=-MAX_EXACT_INT and param<=MAX_EXACT_INT,
+            "parameter "..i.." must be an exact Spring Lua number")
         -- The bridge transports 32-bit integer coordinates, rounded once here.
         -- Negative halves round symmetrically, rather than towards positive infinity.
         local rounded = param < 0 and -math.floor(-param+0.5) or math.floor(param+0.5)
-        uint32(rounded+2147483648)
+        sint32(rounded)
     end
     return string.char(unpack(b))
 end
