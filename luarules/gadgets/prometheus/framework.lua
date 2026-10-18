@@ -355,7 +355,7 @@ function GiveOrderToUnit(unitID, cmd, params, options, betrayalOrder)
         -- Diagnostics must name the bad field and order. Returning false keeps
         -- strategy counters honest: nothing was queued for the synced bridge.
         Warning("Failed to serialize AI command", "unit="..tostring(unitID)
-            .." cmd="..tostring(cmd).." reason="..tostring(msg))
+            .." cmd="..tostring(cmd).." cmdType="..type(cmd).." reason="..tostring(msg))
         return false
     end
     if bufferBytes+#msg>8192 then
