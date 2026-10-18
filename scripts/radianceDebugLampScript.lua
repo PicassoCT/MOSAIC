@@ -1,4 +1,5 @@
-include "constants.lua"
+-- gamedata/unit_script_header.lua already provides the animation API and axes.
+-- There is no scripts/constants.lua in MOSAIC; do not log a spurious load error.
 
 local base = piece("base")
 local lowerarm = piece("lowerarm")

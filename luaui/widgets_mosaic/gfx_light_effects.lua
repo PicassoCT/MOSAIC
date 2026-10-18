@@ -9,6 +9,7 @@ local RadianceTime=VFS.Include('luaui/widgets_mosaic/include/radiance_time.lua')
 local MosaicConfig=VFS.Include('scripts/lib_mosaic.lua',
     setmetatable({MOSAIC_CONFIG_ONLY=true},{__index=getfenv and getfenv(1) or _ENV}))
 local sources,lightRenderer,flameRenderer,tracerRenderer,capture,hasEmission,api
+local radianceDiagnostics
 local globalLightMult,globalRadiusMult,globalLifeMult=1.3,1.3,.75
 local enableHeatDistortion=true
 local weaponConf={}
@@ -244,6 +245,16 @@ function widget:Initialize()
         getHeatDistortion=function() return enableHeatDistortion end,
         getCinderBudgetStats=function() return sources and sources.pyroStats end,
         getPoliceLightStats=function() return sources and sources:GetPoliceLightStats() end,
+        getRadianceDiagnostics=function()
+            if not radianceDiagnostics then
+                radianceDiagnostics=VFS.Include('luaui/widgets_mosaic/include/radiance_diagnostics.lua')
+            end
+            local status=radianceDiagnostics.SourceSnapshot(sources,
+                MosaicConfig.getRadianceDebugLampTypeTable(UnitDefs),Sources.maxLights)
+            status.captureReady=lightRenderer~=nil
+            status.capturePublished=capture~=nil and WG.CaptureCombatLightEmission==capture
+            return status
+        end,
         getStatus=effectStatus,
     }
     WG.lighteffects=api
