@@ -131,6 +131,7 @@ boolTurning = false
 
 local TRAILER_YAW_SPEED = 1.125
 local TRAILER_RELAX_SECONDS = 6
+local trailerHoldRequested = false
 
 local function wrapTrailerAngle(angle)
     return (angle + math.pi) % (2 * math.pi) - math.pi
@@ -165,10 +166,15 @@ function turnTrailerLoop()
         currentYaw = wrapTrailerAngle(currentYaw or targetYaw)
 
         -- If translation stops while a centering turn is still in flight,
-        -- freeze at the pose actually reached. This prevents the trailer from
-        -- continuing to pull itself back to zero after the truck has stopped.
-        if wasMoving and not boolMoving then
+        -- freeze at the pose actually reached. script.StopMoving raises the
+        -- explicit hold request immediately; the sampled transition is the
+        -- fallback for pushes and other physical stops.
+        if trailerHoldRequested or (wasMoving and not boolMoving) then
             targetYaw = currentYaw
+        end
+        if trailerHoldRequested then
+            boolMoving = false
+            trailerHoldRequested = false
         end
 
         -- Spring headings are signed 16-bit TA angles. Counter-rotate the
@@ -290,6 +296,7 @@ function honkIfHorny()
 end
 
 function script.StopMoving() 
+    trailerHoldRequested = true
     holdTrailerYaw()
     stopSpinT(TablesOfPiecesGroups["Wheel"], x_axis, 3) 
     stopSpinT(TablesOfPiecesGroups["LimoWheel"], x_axis, 3) 
