@@ -13,6 +13,9 @@ local PyroBudget = makePyroBudget(Spring,PyroCollision)
 local TankMuzzle = VFS and VFS.Include and
     VFS.Include('luaui/widgets_mosaic/include/tank_muzzle_flash.lua') or
     dofile('luaui/widgets_mosaic/include/tank_muzzle_flash.lua')
+local AimLaserGlow = VFS and VFS.Include and
+    VFS.Include('luaui/widgets_mosaic/include/aiming_laser_glow.lua') or
+    dofile('luaui/widgets_mosaic/include/aiming_laser_glow.lua')
 
 local projectileTypes={Cannon=true,MissileLauncher=true,StarburstLauncher=true,
     LaserCannon=true,BeamLaser=true,LightningCannon=true,DGun=true,Flame=true}
@@ -34,6 +37,7 @@ function M.New(weaponConf, policeProfiles, tankProfiles, debugLampProfiles)
     debugLampProfiles = debugLampProfiles or {}
     local self={transient={},fires={},wrecks={},police={},tanks={},debugLamps={},torches={},pyros={},projectiles={},weaponConf=weaponConf,
         brightness=1.3,radius=1.3}
+    local aimingLasers = AimLaserGlow.New(Spring,WeaponDefs,UnitDefs)
     local cursor,scanAge=0,1
     local drawFrame,lights,flames,tracers
     local definitions={}
@@ -50,6 +54,7 @@ function M.New(weaponConf, policeProfiles, tankProfiles, debugLampProfiles)
         return full or (los and los.los)
     end
     function self:UnitCreated(id,defID)
+        aimingLasers:UnitCreated(id,defID)
         local name=UnitDefs[defID] and UnitDefs[defID].name
         if name=='vehiclecorpse' or name=='tankcorpse' then self.wrecks[id]=name=='tankcorpse' and 1.5 or 1 end
         if name=='ground_walker_flame' then self.pyros[id]={} end
@@ -62,6 +67,7 @@ function M.New(weaponConf, policeProfiles, tankProfiles, debugLampProfiles)
         drawFrame=nil
     end
     function self:UnitDestroyed(id)
+        aimingLasers:UnitDestroyed(id)
         self.wrecks[id]=nil
         self.pyros[id]=nil
         self.police[id]=nil
@@ -351,6 +357,14 @@ function M.New(weaponConf, policeProfiles, tankProfiles, debugLampProfiles)
                         flash.color,flash.strength*self.brightness/1.3,false,flash.ribbon,nil,id)
                 end
             end
+        end
+        -- Glow at each currently visible aiming laser's actual hitscan endpoint.
+        -- A small source, not a second beam, CEG, or permanent unit light.
+        -- Keep positional LOS checking in add(): a visible drone must not
+        -- illuminate a target outside the player's explored sight.
+        for _,dot in ipairs(aimingLasers:Collect(unitVisible,cx,cy,cz)) do
+            add(dot.x,dot.y,dot.z,AimLaserGlow.radius*self.radius/1.3,
+                AimLaserGlow.color,AimLaserGlow.strength*self.brightness/1.3,false)
         end
         for _,p in ipairs(self.projectiles) do
             -- Def check prevents a reused projectile ID inheriting an old flame.
