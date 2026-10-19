@@ -5,7 +5,7 @@ local settings, draws, deleted, cameraCalls = {}, {}, {}, 0
 local textureFailure, shaderFailure = false, false
 local serial = 0
 local function id() serial = serial + 1; return serial end
-GL = {LINEAR=1, CLAMP_TO_EDGE=2, PROJECTION=3, MODELVIEW=4}
+GL = {LINEAR=1, CLAMP_TO_EDGE=2, PROJECTION=3, MODELVIEW=4, LINES=5}
 Spring = {
  GetTimer=function() return time end, DiffTimers=function(a,b) return a-b end,
  GetGameFrame=function() return frame end, GetGameRulesParam=function() return ready end,
@@ -38,6 +38,7 @@ gl = {CreateShader=function() if not shaderFailure then return id() end end,
  GetUniformLocation=function(_,n) return n end, Uniform=function(n, ...) draws[n]={...} end,
  UniformInt=function(n, ...) draws[n]={...} end,
  UseShader=noop, Texture=noop, Color=noop, TexRect=noop, Text=noop,
+ BeginEnd=function(_,fn) fn() end, Vertex=noop, LineWidth=noop,
  Clear=noop, MatrixMode=noop, PushMatrix=noop, PopMatrix=noop, LoadIdentity=noop,
  Blending=function(v) blend=v end,
  CopyToTexture=noop, RenderToTexture=function(_,fn) renderCount=renderCount+1; fn(); assert(blend) end,
@@ -66,8 +67,8 @@ assert(A.introPhase()=='finished','LuaIntro did not mark its informational shutd
 assert(A.loadingState(0)==0)
 local f,d=A.loadingState(60); assert(f==1 and d==0,'loading screen must never advance descent')
 assert(A.snapDescent(0)==0 and A.snapDescent(1)==1)
-assert(A.blendSeconds==0.5 and A.stepSeconds==0.35 and A.descentSeconds==2.5)
-assert(A.snapshotCount==4 and A.revealSeconds==0.6)
+assert(A.blendSeconds==0.5 and A.stepSeconds==0.5 and A.descentSeconds==3.4)
+assert(A.snapshotCount==4 and A.revealSeconds==0.9)
 local shots={0,0.30,0.64,1}
 for i,optical in ipairs(shots) do
  local start=A.blendSeconds+(i-1)*A.stepSeconds
@@ -230,12 +231,12 @@ assert(hidden and settings.WindowedEdgeMove==0 and A.introPhase()=='pending',
   'frame > 0 must start the transition even while LuaIntro is pending')
 assert(WG.MosaicArrival.descent==0)
 time=0.25; w:DrawScreenEffects()
-assert(draws.fade[1]>=0.5 and math.abs(WG.MosaicArrival.descent-0.1)<0.00001,
+assert(draws.fade[1]>=0.5 and math.abs(WG.MosaicArrival.descent-0.25/A.descentSeconds)<0.00001,
   'the working half-second artwork/sky blend changed')
 assert(A.snapDescent(WG.MosaicArrival.descent)==0 and draws.descent[1]==0,
   'the first snapshot was consumed underneath the loading artwork')
 time=0.5; w:DrawScreenEffects()
-assert(draws.fade[1]==1 and math.abs(WG.MosaicArrival.descent-0.2)<0.00001,
+assert(draws.fade[1]==1 and math.abs(WG.MosaicArrival.descent-0.5/A.descentSeconds)<0.00001,
   'first planetary snapshot must be fully visible after the 0.5s blend')
 for stage=2,4 do
  time=A.blendSeconds+(stage-1)*A.stepSeconds; w:DrawScreenEffects()
@@ -245,11 +246,11 @@ for stage=2,4 do
 end
 time=A.revealStart; w:DrawScreenEffects()
 assert(WG.MosaicArrival and draws.descent[1]==0,'clouds revealed the city during the fourth shot')
-time=2.2; w:DrawScreenEffects()
+time=A.revealStart+0.3; w:DrawScreenEffects()
 assert(WG.MosaicArrival and draws.descent[1]>0,'cloud reveal did not follow the four snapshots')
-time=2.5; w:DrawScreenEffects()
+time=A.descentSeconds; w:DrawScreenEffects()
 assert(not hidden and not WG.MosaicArrival and WG.MosaicArrivalFinished,
-  'four snapshots plus clouds must finish in nominal 2.5s without city readiness')
+  'four half-second snapshots plus clouds must finish in nominal 3.4s without city readiness')
 A.finishIntro(); assert(A.introPhase()=='played','late LuaIntro shutdown clobbered completion')
 assert(settings.FullscreenEdgeMove==0 and settings.WindowedEdgeMove==1)
 assert(settings[A.configKey]==''); assert(cameraCalls==0)
@@ -284,7 +285,7 @@ assert(not WG.MosaicArrival,'midgame reload replayed arrival')
 A.beginHandoff(); frame=1; time=50; w=newWidget()
 assert(WG.MosaicArrival and WG.MosaicArrival.active)
 w:DrawScreenEffects(); assert(hidden)
-for i=1,60 do time=50+i/20; w:DrawScreenEffects() end
+for i=1,80 do time=50+i/20; w:DrawScreenEffects() end
 assert(not hidden and not WG.MosaicArrival, 'late-initialized arrival did not finish')
 -- Even multi-second startup stalls must show every planetary shot. Simulation
 -- frame stays fixed: progress is still driven by rendered wall time when paused.
