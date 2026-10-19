@@ -130,7 +130,7 @@ boolTurnLeft = false
 boolTurning = false
 
 local TRAILER_YAW_SPEED = 1.125
-local TRAILER_RELAX_SECONDS = 6
+local TRAILER_RELAX_SECONDS = 2
 local trailerHoldRequested = false
 
 local function wrapTrailerAngle(angle)
