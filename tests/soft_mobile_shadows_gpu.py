@@ -215,8 +215,8 @@ scene=scene.replace('#version 150 compatibility','#version 150 compatibility\n#d
 scene_program=program(scene)
 zero=texture(32,32,[0]*(32*32*4));white=texture(1,1,[1,1,1,1]);normal=texture(1,1,[0,0.5,0.5,1]);depth=texture(1,1,[.4,0,0,0]);far_depth=texture(1,1,[.9,0,0,0])
 for slot,(name,tex) in enumerate([('radianceTex',zero),('occupancyTex',zero),('mapDepthTex',far_depth),('modelDepthTex',depth),('mapNormalTex',normal),('modelNormalTex',normal),('mapDiffuseTex',white),('modelDiffuseTex',white),('localRadianceTex',white),('localOccupancyTex',zero),('headlightTex',white),('headlightLocalTex',white),('windowTex',zero),('windowGroundTex',zero)]):bind(scene_program,name,slot,tex)
-for name,value in [('deferred',1),('clipZeroToOne',0),('smoothing',0),('localActive',1),('headlightActive',1),('headlightLocalActive',1),('mobileCascadeSourceActive',1),('mobileDirectSourceActive',1),('windowActive',0),('objectiveLightCount',0)]:uniform(scene_program,name,value,integer=True)
-for name,value in [('mapSize',(256,256)),('heightRange',(0,128)),('strength',1),('nightIntensity',1),('headlightIntensity',1),('localOrigin',(0,0)),('localSpan',256),('headlightOrigin',(0,0)),('headlightSpan',256)]:uniform(scene_program,name,value)
+for name,value in [('deferred',1),('clipZeroToOne',0),('smoothing',0),('localActive',1),('headlightActive',1),('headlightLocalActive',1),('mobileCascadeSourceActive',1),('mobileDirectSourceActive',1),('objectiveLightCount',0)]:uniform(scene_program,name,value,integer=True)
+for name,value in [('mapSize',(256,256)),('heightRange',(0,128)),('strength',1),('nightIntensity',1),('headlightIntensity',1),('localOrigin',(0,0)),('localSpan',256),('headlightOrigin',(0,0)),('headlightSpan',256),('windowGain',0)]:uniform(scene_program,name,value)
 identity=[1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1]
 uniform(scene_program,'inverseProjection',identity)
 # Center receiver inside its proxy; deep within the local field blend plateau.

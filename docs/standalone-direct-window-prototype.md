@@ -94,30 +94,47 @@ decorations are not continuously recaptured; this prototype targets static facad
 The explicit rebuild command remains available for manual model changes.
 
 Ground-height changes and building-occupancy changes invalidate lighting bakes.
+Their previous completed light remains visible until a replacement is ready.
+Adding or removing a camera-selected facade mask only invalidates fields whose
+projection footprints overlap that mask, padded by one coarse blocker texel.
 Removal events for units that never supplied blockers, and empty updates for
 absent blockers, leave bakes running. View culling retains its conservative radius
 after capture so small houses near the screen edge cannot repeatedly evict and
 recapture themselves, resetting every building's bake.
 Day/night and strength changes reuse the captured sources and completed fields.
-The combined atlas is reused until a completed field, blocker generation, gain or
-cutoff changes. It is not cleared or redrawn while every field is still baking.
+One shared work field holds the current 16-chunk bake. Its texture handle swaps
+with the house's completed field when the bake finishes, without a GPU copy.
+The active house keeps that work field across camera-priority changes. Cold
+caches publish completed houses progressively. Warm replacement batches retain
+the existing combined atlas until completion, instead of re-adding every retained
+house after each individual completion. Source removals update it immediately at
+the normal refresh boundary.
 The per-frame bake queue becomes idle when all fields are complete. Normal daytime
 and zero strength skip window GPU work; debug overlays remain opt-in.
 Changing range/cutoff explicitly rebuilds the caches. Partially baked fields are
-not displayed. Adding/removing a cached blocker invalidates affected generation
-results conservatively, so light can disappear temporarily during a rebuild.
+never displayed. A genuine blocker change can temporarily display the previous
+completed shadow solution during its replacement bake.
 
 Up to 32 nearby, view-intersecting eligible buildings are cached. Approximate
-texture storage at that limit is 46 MiB: two 256×64 RGBA32F captures, two 64×64
+texture payload at that limit is 45.75 MiB: two 256×64 RGBA32F captures, two 64×64
 RGBA8 masks and a 256×256 RGBA16F ground field per building; a 1024-square HDR
-atlas, 256-square terrain heights and a packed 2048-square R8 blocker atlas.
+atlas, 256-square terrain heights, a packed 2048-square R8 blocker atlas, and
+one shared 256-square RGBA16F staging field. Staging adds 0.5 MiB to the previous
+45.25 MiB payload; these figures exclude driver/FBO metadata and allocation padding.
 Capture FBOs/depth targets are temporary. Source-point lists are shared. The selected
 house is prioritized for capture and baking, so it cannot lose its place to 32
 nearer houses. Diagnostics show captured light pixels and fitted bounds; an empty
 capture is reported instead of silently retrying and starving the other houses.
 No GPU readback, model recapture, blocker packing or atlas rendering occurs for
 an unchanged warm cache at constant intensity. The final scene still samples the
-cached atlas. Day/night fades update the atlas because the cutoff follows gain.
+cached atlas. During a warm replacement, the existing scene enable uniform now
+carries the ratio of current to published gain. This keeps the normal night fade
+moving without an atlas redraw each refresh. The old per-house cutoff shape is
+retained only while the ratio stays within 0.8–1.25. Larger changes, explicit
+strength changes, removals and batch completion recompose the exact cutoff.
+Outside a replacement batch, fades continue updating the atlas as before.
+The scene uses the same texture samples, pass and number of uniform updates;
+scaling its nonnegative window sample replaces the previous max-with-zero.
 
 The mocked lifecycle fixture measured 100 atlas redraws over 100 unchanged refreshes
 before the cache cleanup, and zero afterward. Two pending houses now require one
@@ -125,6 +142,16 @@ blocker pack and exactly 32 bake chunks, with no discarded startup chunks. The
 `work since load` line from `/windowlight status` reports capture, bake-chunk,
 blocker-pack and atlas-update totals for checking this in-game. Status itself
 still performs an explicit field readback to report peak intensity.
+
+Continuity/cost fixtures compare the production module with the pre-fix module.
+A constant-gain 32-house blocker rebuild keeps all 512 projection chunks but
+reduces atlas passes from 32 to 1 and house copies from 528 to 32. A 20-second
+fixture using the real night curve reduces copies from 2016 to 896, with the
+same projection workload. Small removals and exact brightness reclassification
+can require a few additional copies to retain surviving light. The comparison
+reports these explicit budgets; `--strict-cost` rejects all such increases.
+See [cache-continuity validation](window-lighting-cache-continuity-validation.md)
+for complete results and target-hardware limitations.
 
 This is not yet a measured performance claim on the target GPU. A full synthetic
 building bake took about 3.6 seconds on software Mesa at the fixture's 128-square
@@ -156,6 +183,7 @@ python3 tests/window_lighting_gpu.py
 lua tests/window_bounds.lua
 lua tests/window_exterior.lua
 lua tests/window_lighting_lifecycle.lua
+lua tests/window_lighting_continuity.lua
 lua tests/neon_radiance_lifecycle.lua
 lua tests/fog_radiance_heights.lua
 ```
@@ -168,5 +196,7 @@ outside the cascade band. Lifecycle tests cover every allocation failure, both
 engine pixel-readback layouts, cache reuse, revision changes, LOS, terrain updates,
 bake completion during unrelated unit removals and screen-edge visibility checks,
 real blocker invalidation, unchanged-atlas reuse, gain changes, capture batching,
-and cleanup. Exterior ground-light spill has been confirmed in-game; the cache
+and cleanup. The continuity fixture additionally covers completed-field ownership,
+warm replacement, source removal, real night fades, transient LOS/cloak changes,
+and shutdown/re-enable. Exterior ground-light spill has been confirmed in-game; the cache
 optimizations still need target-GPU profiling before claiming an FPS improvement.

@@ -410,7 +410,7 @@ for name, value in dict(mapSize=(N, N), heightRange=(0, 128), clipZeroToOne=0,
                         headlightActive=0, headlightLocalActive=1,
                         headlightOrigin=(0, 0), headlightSpan=N,
                         mobileCascadeSourceActive=1, mobileDirectSourceActive=1,
-                        windowActive=0, objectiveLightCount=0).items():
+                        windowGain=0.0, objectiveLightCount=0).items():
     scene[name].value = value
 scene["inverseView"].write(np.eye(4, dtype="f4").T.tobytes())
 road_depth = texture(np.full((1, 1, 1), .5, "f4"))

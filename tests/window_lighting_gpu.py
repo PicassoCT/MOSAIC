@@ -167,7 +167,7 @@ def screenquad():
     begin(7)
     for x,y,u,v in [(-1,-1,0,0),(1,-1,1,0),(1,1,1,1),(-1,1,0,1)]:uv(u,v);vertex(x,y,0)
     end()
-def composite(window=True,model=False,height=0):
+def composite(window=True,model=False,height=0,gain=1):
     slots=[('radianceTex',[.2,.1,.05,0]),('occupancyTex',[0,0,0,0]),('mapDepthTex',[.5,0,0,0]),
         ('modelDepthTex',[.4 if model else 1,0,0,0]),('mapNormalTex',[.5,1,.5,1]),('modelNormalTex',[.5,1,.5,1]),
         ('mapDiffuseTex',[1,1,1,1]),('modelDiffuseTex',[1,1,1,1]),('localRadianceTex',[0,0,0,0]),
@@ -176,8 +176,9 @@ def composite(window=True,model=False,height=0):
     use(scene_program)
     for slot,(name,value) in enumerate(slots):
         active(0x84C0+slot);t=constant(value);bind(0x0DE1,t);ui(loc(scene_program,name.encode()),slot)
-    for name,value in [('clipZeroToOne',1),('deferred',1),('smoothing',0),('localActive',0),('headlightActive',0),('windowActive',int(window))]:
+    for name,value in [('clipZeroToOne',1),('deferred',1),('smoothing',0),('localActive',0),('headlightActive',0)]:
         ui(loc(scene_program,name.encode()),value)
+    uf(loc(scene_program,b'windowGain'),gain if window else 0)
     u2(loc(scene_program,b'mapSize'),512,512);u2(loc(scene_program,b'heightRange'),0,128)
     uf(loc(scene_program,b'strength'),2);uf(loc(scene_program,b'nightIntensity'),1)
     inverse_p=np.zeros((4,4),dtype='f4');inverse_p[3,3]=1
@@ -188,9 +189,12 @@ def composite(window=True,model=False,height=0):
     bind_fbo(0x8D40,result_fbo);viewport(0,0,FIELD,FIELD);disable(0x0BE2);clear(0x4000);screenquad()
     return pixels(FIELD,FIELD)[FIELD//2,FIELD//2,:3]
 assert np.allclose(composite(),1-np.exp(-np.array([.5,.3,.15])*2),atol=1e-5),'direct and cascade terms did not add once'
+for gain in (0,0.5,1.25,2):
+    expected=1-np.exp(-(np.array([.2,.1,.05])+np.array([.3,.2,.1])*gain)*2)
+    assert np.allclose(composite(gain=gain),expected,atol=1e-5),'retained window gain must apply once before tone mapping'
 assert np.allclose(composite(window=False),composite(model=True),atol=1e-5),'direct ground light leaked onto model roofs'
 assert np.allclose(composite(height=256),1-np.exp(-np.array([.3,.2,.1])*2),atol=1e-5),'direct terrain light incorrectly clipped to cascade height band'
-print('PASS: production GLSL; untapered side capture; both depth modes; actual raster walls -> Lua flood fill; enclosed/open courtyard; original positions; direct exterior footprint; source height; obstruction; smooth cutoff; zero emission; scene addition exactly once; roof rejection; terrain above cascade band')
+print('PASS: production GLSL; untapered side capture; both depth modes; actual raster walls -> Lua flood fill; enclosed/open courtyard; original positions; direct exterior footprint; source height; obstruction; smooth cutoff; zero emission; scene addition and retained gain exactly once; roof rejection; terrain above cascade band')
 if __name__=='__main__':
     parser=argparse.ArgumentParser();parser.add_argument('--preview');args=parser.parse_args()
     if args.preview:

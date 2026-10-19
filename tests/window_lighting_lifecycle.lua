@@ -164,7 +164,7 @@ local function exercise(failure,chunked)
         assert(not obj.automatic and obj.focusID==43 and #obj.units==1)
         obj:TextCommand('windowlight range 128');assert(not next(obj.records),'range change kept stale field bounds')
         obj:Refresh(blockers,false,1);assert(obj.records[43])
-        obj:TerrainChanged();assert(obj.terrainDirty and not obj.ready)
+        obj:TerrainChanged();assert(obj.terrainDirty and obj.ready,'terrain rebuild blanked the published field')
         obj:Refresh(blockers,false,1);assert(obj.ready and not obj.terrainDirty)
         local getParam=env.Spring.GetUnitRulesParam
         env.Spring.GetUnitRulesParam=function(id,key)
