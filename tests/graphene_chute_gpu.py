@@ -1,4 +1,4 @@
-"""Render the live black chute presets with the production FlamePainter GLSL.
+"""Render the live smoky graphene canopy with the production FlamePainter GLSL.
 
 MESA_GL_VERSION_OVERRIDE=3.3COMPAT python tests/graphene_chute_gpu.py
 Requires moderngl, numpy and lupa. Optional --preview /absolute/path.png.
@@ -42,15 +42,18 @@ def array(table):
 # The renderer applies this same imported basis to local offsets/directions.
 basis = np.array([[.0254, 0, 0], [0, 0, .0254], [0, -.0254, 0]], dtype='f4')
 emitter = np.array([.04717199, 36.1921519, -.28818393], dtype='f4')
-records = []
-for option in ('RibbonOptions', 'ArcOptions'):
-    for index in range(1, 5):
+canopy_records, arc_records = [], []
+for option, roots, entries in (
+        ('RibbonOptions', layout['roots'], canopy_records),
+        ('ArcOptions', layout['arcRoots'], arc_records)):
+    for index in range(1, len(roots)+1):
         record = normalize(7, 1, presets[option](layout, index))
         direction = array(record['direction'])
         if record['directionSpace'] == 'piece':
             direction = basis @ direction
-        records.append(dict(record=record, origin=emitter+basis@array(record['rootOffset']),
+        entries.append(dict(record=record, origin=emitter+basis@array(record['rootOffset']),
                             direction=direction/np.linalg.norm(direction)))
+records = canopy_records + arc_records
 
 ctx = moderngl.create_standalone_context(backend='egl', require=330)
 shader_dir = repo / 'luarules/gadgets/shaders'
@@ -68,14 +71,18 @@ out = ctx.texture((size, size), 4, dtype='f4')
 fbo = ctx.framebuffer([out]); fbo.use()
 ctx.enable(moderngl.BLEND)
 ctx.blend_func = (moderngl.ONE, moderngl.ONE_MINUS_SRC_ALPHA)
-eye = np.array([110, 125, 160], dtype='f4')
-target = np.array([0, 62, 0], dtype='f4')
+# Preserve the old diagnostic's viewing angle while allowing the enlarged
+# canopy and its electrical tips to fit. Report projected world-space coverage
+# below so the image remains comparable to the former half-span of 65.
+eye = np.array([110, 145, 160], dtype='f4')
+target = np.array([0, 82, 0], dtype='f4')
 forward = (target-eye)/np.linalg.norm(target-eye)
 right = np.cross(forward, [0, 1, 0]); right /= np.linalg.norm(right)
 up = np.cross(right, forward)
 view = np.eye(4, dtype='f4'); view[:3, :3] = [right, up, -forward]
 view[:3, 3] = -view[:3, :3] @ eye
-projection = np.diag([1/65, 1/65, -2/500, 1]).astype('f4')
+half_span = 115
+projection = np.diag([1/half_span, 1/half_span, -2/500, 1]).astype('f4')
 projection[2, 3] = -1
 for mode, matrix in ((0x1701, projection), (0x1700, view)):
     gl.glMatrixMode(mode); gl.glLoadMatrixf((ctypes.c_float*16)(*matrix.T.ravel()))
@@ -86,9 +93,11 @@ def parameters(entry, time=1, drift=(0, 0, 0)):
     values = dict(origin=tuple(entry['origin']), direction=tuple(entry['direction']),
                   cameraPosition=tuple(eye), plumeLength=r['length'], plumeWidth=r['width'],
                   effectTime=time*r['speed'], curl=r['curl'], seed=r['seed'],
-                  stiffness=r['stiffness'], gravity=r['gravity'], hairMode=int(r['mode']=='hair'),
+                  stiffness=r['stiffness'], gravity=r['gravity'],
+                  hairMode={'hair': 1, 'canopy': 2}.get(r['mode'], 0),
                   electricMode=int(r['mode']=='electric'), landingMode=0,
-                  strandCount=r['strands'], strandOpacity=1 if r['mode']=='hair' else 1.6/r['strands'],
+                  strandCount=r['strands'],
+                  strandOpacity=1 if r['mode'] in ('hair', 'canopy') else 1.6/r['strands'],
                   ambient=(.8, .8, .8), directionalDrift=drift)
     for name in ('colorStart', 'colorEnd', 'emission', 'sourceGlow'):
         values[name] = tuple(array(r[name]))
@@ -114,24 +123,52 @@ def render(entries, time=1, drift=(0, 0, 0), overrides=None):
     return result
 
 
-black = render(records[:4])
-assert black[..., 3].sum() > 500, 'four black ribbons have no readable canopy coverage'
-assert (black[..., 3] > .8).sum() > 200, 'black material became faint smoke'
-assert black[..., :3].max() == 0, 'graphene shader introduced colour or glow'
-assert np.array_equal(black, render(records[:4])), 'paused canopy changed'
-assert np.array_equal(black, render(records[:4], overrides={'emission': (8, 8),
-    'sourceGlow': (1, 1, 1, 1), 'ambient': (.01, .01, .01)})), 'black fabric glows or loses coverage at night'
-for entry in records[:4]:
-    assert render([entry])[..., 3].sum() > 40, 'one canopy ribbon is invisible from the scene camera'
-assert render(records[:4], overrides={'colorStart': (0, 0, 0, 0),
-    'colorEnd': (0, 0, 0, 0)}).max() == 0, 'zero-alpha fabric still occludes the scene'
-wind = (8, 0, 2)
-wind_a, wind_b = render(records[:4], 1, wind), render(records[:4], 3, wind)
-assert np.abs(wind_a-wind_b).sum() > 5, 'wind cannot animate the fixed-length ribbons'
+black = render(canopy_records)
 combined = render(records)
+if '--preview' in sys.argv:
+    from PIL import Image
+    background = np.array([.22, .30, .36])
+    panels = []
+    for rendered in (black, combined):
+        rgb = rendered[..., :3] + background*(1-rendered[..., 3:4])
+        panels.append((np.clip(rgb[::-1], 0, 1)**(1/2.2)*255).astype('uint8'))
+    Image.fromarray(np.concatenate(panels, axis=1)).save(sys.argv[sys.argv.index('--preview')+1])
+
+alpha = black[..., 3]
+visible = alpha > .02
+assert alpha.sum() > 1000, 'smoky graphene veil has no readable scene attenuation'
+assert (alpha > .25).sum() > 1000, 'dense graphene mist faded into an invisible effect'
+# The material should have broad soft density, rather than individually opaque
+# stripes. Most of the visible veil must still transmit its background.
+soft_fraction = ((alpha > .02) & (alpha < .90)).sum()/visible.sum()
+assert soft_fraction > .80, f'graphene reverted to opaque striped fabric: soft fraction {soft_fraction:.3f}'
+# A separable binomial filter measures pixel-scale contrast without imposing a
+# particular noise implementation. The former clearly separated stripes gave
+# 0.230 at a closer camera; a dense, filtered fibre field must be smoother.
+smoothed = alpha.copy()
+for axis in (0, 1):
+    smoothed = sum(weight*np.roll(smoothed, offset, axis)
+                   for offset, weight in zip(range(-2, 3), (1, 4, 6, 4, 1)))/16
+fine_contrast = np.abs(alpha-smoothed).sum()/alpha.sum()
+assert fine_contrast < .20, f'canopy resolves as sharp individual bands: fine contrast {fine_contrast:.3f}'
+assert combined[:2].max() == 0 and combined[-2:].max() == 0, 'diagnostic clips electrical or canopy tips'
+assert combined[:, :2].max() == 0 and combined[:, -2:].max() == 0, 'diagnostic clips canopy edges'
+assert black[..., :3].max() == 0, 'graphene shader introduced colour or glow'
+assert np.array_equal(black, render(canopy_records)), 'paused canopy changed'
+assert np.array_equal(black, render(canopy_records, overrides={'emission': (8, 8),
+    'sourceGlow': (1, 1, 1, 1), 'ambient': (.01, .01, .01)})), 'black fabric glows or loses coverage at night'
+for entry in canopy_records:
+    assert render([entry])[..., 3].sum() > 40, 'one canopy sector is invisible from the scene camera'
+assert render(canopy_records, overrides={'colorStart': (0, 0, 0, 0),
+    'colorEnd': (0, 0, 0, 0)}).max() == 0, 'zero-alpha fabric still occludes the scene'
+calm_later = render(canopy_records, 3)
+assert np.abs(black-calm_later).sum() > alpha.sum()*.05, 'canopy billowing is frozen in calm air'
+wind = (8, 0, 2)
+wind_a, wind_b = render(canopy_records, 1, wind), render(canopy_records, 3, wind)
+assert np.abs(wind_a-wind_b).sum() > alpha.sum()*.05, 'wind cannot animate the fixed-length canopy'
 assert (combined[..., 2] > .2).sum() > 100, 'retained electric arcs lost their visible cores'
-black_pixels = (combined[..., 3] > .8) & (combined[..., :3].max(axis=2) < .01)
-assert black_pixels.sum() > 150, 'electric sources obscured the entire black canopy'
+black_pixels = (combined[..., 3] > .25) & (combined[..., :3].max(axis=2) < .01)
+assert black_pixels.sum() > 1000, 'electric sources obscured the entire black canopy'
 
 # Inspect actual GLSL paths, without reimplementing the hair centre curve.
 flight = ctx.program(vertex_shader=vertex.split('void main() {')[0]+'''
@@ -143,36 +180,50 @@ void main() {
     samplePosition=centre(samplePoint.x,samplePoint.y,u,cross(direction,u));
 }
 ''', varyings=['samplePosition'])
-samples = np.array([(t, 0) for t in np.linspace(0, 1, 129)], dtype='f4')
-vbo = ctx.buffer(samples.tobytes()); capture = ctx.buffer(reserve=len(samples)*12)
-vao = ctx.vertex_array(flight, [(vbo, '2f', 'samplePoint')])
-paths = []
-for entry in records[:4]:
-    roots = []
-    for drift in ((0, 0, 0), wind):
-        for name, value in parameters(entry, 2, drift).items():
+paths, curve_ratios, calm_motion = [], [], []
+for entry in canopy_records:
+    strands = int(entry['record']['strands'])
+    samples = np.array([(t, strand) for strand in range(strands)
+                        for t in np.linspace(0, 1, 129)], dtype='f4')
+    vbo = ctx.buffer(samples.tobytes()); capture = ctx.buffer(reserve=len(samples)*12)
+    vao = ctx.vertex_array(flight, [(vbo, '2f', 'samplePoint')])
+    roots, calm_paths = [], []
+    for time, drift in ((1, (0, 0, 0)), (3, (0, 0, 0)), (1, wind), (3, wind)):
+        for name, value in parameters(entry, time, drift).items():
             if name in flight:
                 flight[name].value = value
         vao.transform(capture, vertices=len(samples))
-        path = np.frombuffer(capture.read(), dtype='f4').reshape(-1, 3).copy()
+        path = np.frombuffer(capture.read(), dtype='f4').reshape(strands, 129, 3).copy()
         assert np.isfinite(path).all()
-        assert path[:, 1].min() > 34.4, 'canopy droops below its upper support toward the passenger'
-        assert (np.linalg.norm(path[0]-entry['origin']) < entry['record']['width']*.23), (
+        assert path[..., 1].min() > 34.4, 'canopy droops below its upper support toward the passenger'
+        assert (np.linalg.norm(path[:, 0]-entry['origin'], axis=1).max() < entry['record']['width']*.23), (
             'black ribbon root detached from its electric rim source')
-        assert (np.linalg.norm(path[-1, [0, 2]]) < layout['radius']*.4), (
+        assert (np.linalg.norm(path[:, -1][:, [0, 2]], axis=1).max() < layout['radius']*.4), (
             'ribbons no longer meet above the passenger to form a canopy')
-        assert (np.linalg.norm(np.diff(path, axis=0), axis=1).sum() < entry['record']['length']*1.03), (
+        arc_length = np.linalg.norm(np.diff(path, axis=1), axis=2).sum(axis=1)
+        assert (arc_length.max() < entry['record']['length']*1.03), (
             'wind stretches the canopy material')
-        roots.append(path[0]); paths.append(path)
-    assert np.array_equal(roots[0], roots[1]), 'wind unpinned a canopy rim attachment'
+        roots.append(path[:, 0]); paths.extend(path)
+        if drift == (0, 0, 0):
+            calm_paths.append(path)
+            curve_ratios.extend(arc_length/np.linalg.norm(path[:, -1]-path[:, 0], axis=1))
+    assert all(np.array_equal(roots[0], root) for root in roots[1:]), 'billowing unpinned a canopy rim attachment'
+    calm_motion.append(np.linalg.norm(calm_paths[1]-calm_paths[0], axis=2).mean()/entry['record']['length'])
+    vao.release(); capture.release(); vbo.release()
+# Capture all geometric strands, not just one representative centreline. The
+# original canopy's length/chord ratio was only 1.0036 (almost straight).
+assert np.mean(curve_ratios) > 1.015, f'canopy curves are still almost straight: ratio {np.mean(curve_ratios):.4f}'
+assert np.mean(calm_motion) > .01, f'calm motion only changes opacity, not canopy shape: {np.mean(calm_motion):.4f}'
 
-if '--preview' in sys.argv:
-    from PIL import Image
-    background = np.array([.22, .30, .36])
-    panels = []
-    for rendered in (black, combined):
-        rgb = rendered[..., :3] + background*(1-rendered[..., 3:4])
-        panels.append((np.clip(rgb[::-1], 0, 1)**(1/2.2)*255).astype('uint8'))
-    Image.fromarray(np.concatenate(panels, axis=1)).save(sys.argv[sys.argv.index('--preview')+1])
-print('PASS: live Lua chute layout on production GLSL, four black fibrous sheets, canopy coverage, no glow, pause, wind, fixed length, rim pins, inward canopy shape and retained electric sources')
+y, x = np.nonzero(visible)
+world_per_pixel = 2*half_span/size
+print('Canopy metrics: alpha sum=%.1f, projected coverage=%.1f square world units, '
+      'projected bounds=%.1f x %.1f world units, soft fraction=%.3f, fine contrast=%.3f, '
+      'mean curve/chord=%.4f, calm shape motion=%.4f of material length' % (
+          alpha.sum(), visible.sum()*world_per_pixel**2,
+          (x.max()-x.min()+1)*world_per_pixel, (y.max()-y.min()+1)*world_per_pixel,
+          soft_fraction, fine_contrast, np.mean(curve_ratios), np.mean(calm_motion)))
+print('PASS: live Lua chute layout on production GLSL, smoky black canopy, soft filtered density, '
+      'no glow, deterministic pause, calm-air billowing, wind, all-strand curvature and fixed length, '
+      'pinned roots, inward canopy shape and retained electric sources')
 print('Renderer:', ctx.info['GL_RENDERER'])

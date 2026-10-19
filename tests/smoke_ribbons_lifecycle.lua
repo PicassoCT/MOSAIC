@@ -8,7 +8,7 @@ local created=0
 local cameraY,cameraZ,frustumTests,lastOpacity=10,100,0,0
 local wind,velocity,lastDrift={0,0,0},{0,0,0},{}
 local windCalls,velocityCalls=0,0
-local lastLength,lastPad,lastLanding,lastElectric
+local lastLength,lastPad,lastLanding,lastElectric,lastHair,lastSeed,capturedDraws
 GG={}; Game={gameSpeed=30}; gadget={}
 gadgetHandler={IsSyncedCode=function() return synced end,RemoveGadget=function() error('unexpected removal') end,
     AddChatAction=function() end,RemoveChatAction=function() end,
@@ -30,7 +30,13 @@ Spring={ValidUnitID=function(id) return id==7 end,GetUnitIsDead=function() retur
 GL={TRIANGLE_STRIP=5,ALL_ATTRIB_BITS=1,ONE=1,ONE_MINUS_SRC_ALPHA=2}
 gl=setmetatable({CreateShader=function() return 1 end,GetUniformLocation=function(_,n) return n end,
     CreateList=function(fn) created=created+1;fn();return 1 end,BeginEnd=function(_,fn,...) fn(...) end,
-    CallList=function() drawn=drawn+1 end,DeleteList=function() deleted=deleted+1 end,
+    CallList=function()
+        drawn=drawn+1
+        if capturedDraws then
+            capturedDraws[#capturedDraws+1]={seed=lastSeed,hair=lastHair,electric=lastElectric,
+                landing=lastLanding,opacity=lastOpacity}
+        end
+    end,DeleteList=function() deleted=deleted+1 end,
     GetSun=function() return 0.3,0.3,0.3 end,
     Uniform=function(n,...)
         if n=='origin' then lastOrigin={...} elseif n=='direction' then lastDirection={...}
@@ -40,6 +46,8 @@ gl=setmetatable({CreateShader=function() return 1 end,GetUniformLocation=functio
         elseif n=='landingPad' then lastPad={...}
         elseif n=='landingMode' then lastLanding=(...)
         elseif n=='electricMode' then lastElectric=(...)
+        elseif n=='hairMode' then lastHair=(...)
+        elseif n=='seed' then lastSeed=(...)
         elseif n=='directionalDrift' then lastDrift={...} end
     end}, {__index=function() return function() end end})
 local path='luarules/gadgets/gfx_smoke_ribbons.lua'
@@ -246,6 +254,65 @@ cameraZ=1000;matrixCalls={};hidden('distant hair drawn')
 assert(next(matrixCalls)==nil,'culled hair queried animated matrices')
 cameraZ=100;cloak=true;hidden('driver bypasses cloak');cloak=false
 producer:UnitDestroyed(7);hidden('destroyed hair retains driver')
+-- A canopy crosses the actual synced snapshot and uses pinned-material motion,
+-- including MoveCtrl translation even when the engine velocity remains zero.
+local oldPiecePosition=Spring.GetUnitPiecePosDir
+Spring.GetUnitPiecePosDir=function() return x,40,0,0,1,0 end
+x=0;viewX=0;velocity={0,0,0};wind={0,0,0}
+local canopy={mode='canopy',directionSpace='piece',directionPiece=5,direction={0,0,-1},
+    length=30,width=12,strands=2,stiffness=0.2,curl=1.3,speed=0.8,
+    windAffected=false,motionAffected=true}
+assert(api.Set(7,'canopy',2,canopy))
+gadget:DrawWorld()
+assert(lastHair==2 and lastElectric==0 and lastOpacity==1 and lastLength==30,
+    'canopy mode or material opacity was lost crossing the synced snapshot')
+gadget:Shutdown();gadget={};dofile(path);gadget:Initialize();gadget:DrawWorld()
+assert(lastHair==2 and lastOpacity==1,'client reload lost the canopy material')
+local vc=velocityCalls
+x=3;viewX=x;frame=frame+1;gadget:DrawWorld()
+assert(lastOrigin[1]==x and lastDrift[1]<0 and velocityCalls==vc,
+    'MoveCtrl canopy must follow its piece and trail position changes without an engine velocity')
+local pausedCanopy={unpack(lastDrift)}
+gadget:DrawWorld()
+for axis=1,3 do assert(lastDrift[axis]==pausedCanopy[axis],'paused canopy accumulated motion') end
+canopy.windAffected=true;assert(api.Set(7,'canopy',2,canopy))
+wind={1e9,1e9,1e9};frame=frame+1;gadget:DrawWorld()
+assert(lastDrift[1]^2+lastDrift[2]^2+lastDrift[3]^2<=(canopy.length*1.5)^2+1e-8,
+    'canopy wind escaped the fixed-material drift bound')
+cameraZ=5000;matrixCalls={}
+local queries,wc=frustumTests,windCalls
+hidden('distant canopy reached GPU submission')
+assert(next(matrixCalls)==nil and frustumTests==queries and windCalls==wc,
+    'culled canopy reached direction, frustum or wind work')
+cameraZ=100;wind={0,0,0}
+cloak=true;hidden('canopy mode bypassed cloak');cloak=false
+inlos=false;hidden('canopy mode bypassed LOS');inlos=true
+producer:UnitDestroyed(7);hidden('destroyed canopy retains material records')
+-- Sharing a shader in one frame must reset the specialized material uniforms
+-- for each draw, regardless of record/sort order.
+local modes={canopy={hair=2,electric=0,opacity=1},hair={hair=1,electric=0,opacity=1},
+    smoke={hair=0,electric=0,opacity=0.8},electric={hair=0,electric=1,opacity=0.8}}
+local expected={}
+for i,mode in ipairs({'canopy','hair','smoke','electric'}) do
+    local seed=100+i
+    expected[seed]=modes[mode]
+    assert(api.Set(7,'mixed_'..mode,2,{mode=mode,seed=seed,strands=2,length=30,width=12,
+        directionSpace='world',direction={0,1,0},windAffected=false,motionAffected=false}))
+end
+capturedDraws={};gadget:DrawWorld()
+assert(#capturedDraws==4,'mixed material scene lost a visible effect')
+for _,draw in ipairs(capturedDraws) do
+    local wanted=expected[draw.seed]
+    assert(wanted and draw.hair==wanted.hair and draw.electric==wanted.electric
+        and draw.landing==0 and math.abs(draw.opacity-wanted.opacity)<1e-8,
+        'canopy material uniforms contaminated another ribbon mode')
+    expected[draw.seed]=nil
+end
+assert(next(expected)==nil,'mixed material scene submitted a mode twice')
+capturedDraws=nil
+producer:UnitDestroyed(7);hidden('destroyed mixed scene retains effects')
+Spring.GetUnitPiecePosDir=oldPiecePosition
+x=0;viewX=0
 -- A rocket piece remains visible above the iconified ground building, without
 -- the usual plume-distance fade. LOS/cloak/frustum rules remain in force.
 Spring.IsUnitIcon=function() return true end
@@ -303,4 +370,4 @@ n=drawn;gadget:DrawWorld();assert(drawn==n+1 and lastLanding==2,'reload lost dec
 producer:UnitDestroyed(7);hidden('destroyed launch retains pad fan')
 gadget:Shutdown();assert(deleted==created,'mesh resources leaked')
 producer:Shutdown();assert(GG.SmokeRibbon==nil)
-print('PASS: ribbon lifecycle, hair piece transform, turn lag, pause, settling, separate driver/root transforms, driver reload, shared matrix cache and culling')
+print('PASS: ribbon lifecycle, hair piece transform, turn lag, pause, settling, separate driver/root transforms, canopy bridge/reload/MoveCtrl lag, mixed-material uniform reset, shared matrix cache and culling')

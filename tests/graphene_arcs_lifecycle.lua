@@ -122,42 +122,55 @@ end
 
 local s,env,pieces,groups=fixture()
 s.createAndDeploy()
-assert(#s.registered==8,'chute must use exactly four black sheets and four electrical sources')
+assert(#s.registered==12,'chute must use eight mist canopy sources and four electrical sources')
 local black,arcs={},{}
 for _,effect in ipairs(s.registered) do
     local r=effect.record
     assert(r.piece==pieces.step,'effect still follows a hidden animated web remnant')
-    if r.mode=='hair' then black[#black+1]=r else arcs[#arcs+1]=r end
+    if r.mode=='canopy' then black[#black+1]=r
+    elseif r.mode=='electric' then arcs[#arcs+1]=r
+    else error('chute registered an unrelated material: '..tostring(r.mode)) end
 end
-assert(#black==4 and #arcs==4,'canopy/electric source counts changed')
+assert(#black==8 and #arcs==4,'canopy/electric source counts changed')
+local previousRadius=48 -- This fixture's 8-unit support previously used a 6x radius.
+local expectedRadius=previousRadius*2
 for i,r in ipairs(black) do
-    local a=arcs[i]
-    assert(r.strands==1 and r.emission[1]==0 and r.emission[2]==0,'black sheet is glowing or multiplied')
+    assert(r.strands==2,'dense canopy exceeded its bounded sixteen-strip mesh budget')
+    assert(r.emission[1]==0 and r.emission[2]==0,'black canopy is emissive')
+    for axis=1,4 do assert(r.sourceGlow[axis]==0,'black canopy gained source glow') end
     for _,color in ipairs({r.colorStart,r.colorEnd}) do
-        assert(color[1]==0 and color[2]==0 and color[3]==0 and color[4]==1,
-            'graphene must remain black and opaque along its material length')
+        assert(color[1]==0 and color[2]==0 and color[3]==0 and color[4]>0 and color[4]<=1,
+            'graphene mist must remain black with visible material coverage')
     end
+    assert(r.windAffected and r.motionAffected and r.windInfluence>0 and r.motionInfluence>0,
+        'canopy stopped responding to wind or the passenger movement')
+    assert(r.speed>0 and r.curl>0.3 and r.stiffness<0.72,
+        'canopy retained the nearly rigid old ribbon settings')
     assert(r.directionSpace=='piece' and r.direction[3]>0,'black canopy does not rise above the support')
     -- Put back the emitted mesh vertex to recover the desired local target.
     local tx,ty=r.rootOffset[1]+2,r.rootOffset[2]-1
     local radial=math.sqrt(tx^2+ty^2)
-    assert(math.abs(radial-48)<1e-8 and r.rootOffset[3]+5==8,
-        'canopy bounds were attached relative to the emitter vertex instead of the pivot')
-    assert(r.length<radial*1.2 and r.width<radial*.5,'black ribbons became oversized polygon-web replacements')
+    assert(math.abs(radial-expectedRadius)<1e-8 and r.rootOffset[3]+5==8,
+        'canopy did not double its asset-scaled radius or lost the emitter-vertex correction')
+    assert(r.length>=radial and r.length<radial*1.8 and r.width>radial*.6 and r.width<radial*1.6,
+        'black mist sheets lost their broad, bounded canopy proportions')
     assert(r.direction[1]*tx+r.direction[2]*ty<0,
         'canopy sheets point away from the suspended passenger')
-    for axis=1,3 do assert(a.rootOffset[axis]==r.rootOffset[axis], 'electric source detached from the new canopy rim') end
-    assert(a.mode=='electric' and a.strands==4 and math.abs(a.length-radial*1.5)<1e-8,
+    for j=1,i-1 do
+        local other=black[j].rootOffset
+        assert((other[1]-r.rootOffset[1])^2+(other[2]-r.rootOffset[2])^2>(expectedRadius*.7)^2,
+            'mist canopy sheets collapsed onto one rim attachment')
+    end
+end
+for i,a in ipairs(arcs) do
+    local rim=black[i*2-1]
+    for axis=1,3 do assert(a.rootOffset[axis]==rim.rootOffset[axis], 'electric source detached from its alternating canopy rim') end
+    assert(a.mode=='electric' and a.strands==4 and math.abs(a.length-expectedRadius*1.5)<1e-8,
         'electrical fan lost its bounded canopy scale')
     assert(a.directionSpace=='world' and a.direction[1]==0 and a.direction[2]==1 and a.direction[3]==0,
         'support rotation pointed the electrical plume downward')
     assert(a.colorStart[2]>a.colorStart[1]*4 and a.colorStart[3]>a.colorStart[2], 'electrical source lost cyan')
     assert(a.colorEnd[1]>a.colorEnd[2]*4 and a.colorEnd[3]>a.colorEnd[1], 'electrical tail lost violet')
-    for j=1,i-1 do
-        local other=black[j].rootOffset
-        assert((other[1]-r.rootOffset[1])^2+(other[2]-r.rootOffset[2])^2>48^2,
-            'canopy sheets collapsed onto one rim attachment')
-    end
 end
 assert(s.attached[1]==7 and s.attached[2]==8 and s.attached[3]==pieces.step,
     'visual replacement changed the live passenger attachment')
@@ -178,14 +191,14 @@ assert(env.dropRate==0.00000001,'water descent behavior changed')
 s.ground=0;env.dropRate=env.travellingDropRate
 while coroutine.status(s.threads[1].co)~='dead' do s.resume(s.threads[1]) end
 assert(s.detached[1]==8 and s.destroyed[1]==7,'landing teardown changed')
-assert(#s.removed==8 and next(s.registry)==nil,'landing left black or electrical ribbons registered')
+assert(#s.removed==12 and next(s.registry)==nil,'landing left black or electrical ribbons registered')
 assert(#s.cordMoves==11,'landing lost the existing suspension-cord retraction')
 for i,move in ipairs(s.cordMoves) do
     assert(move[1]==groups.Cord[i+1] and move[2]==2 and move[3]==(i+1)*-15 and move[4]==900,
         'landing changed a suspension-cord movement')
 end
 s.assertWebHidden()
-env.script.Killed(1,1);assert(#s.removed==8,'later destruction removed the same ribbons twice')
+env.script.Killed(1,1);assert(#s.removed==12,'later destruction removed the same ribbons twice')
 
 local scaled=fixture({scale=2});scaled.createAndDeploy()
 for i,effect in ipairs(scaled.registered) do
@@ -197,7 +210,7 @@ for i,effect in ipairs(scaled.registered) do
 end
 local cloaked,cloakEnv,cloakPieces=fixture({cloaked=true});cloaked.createAndDeploy()
 assert(cloaked.shown[cloakPieces.Infantrz], 'cloaked operative lost the existing infantry stand-in')
-assert(cloakEnv.script.Killed(1,1)==1 and #cloaked.removed==8 and next(cloaked.registry)==nil,
+assert(cloakEnv.script.Killed(1,1)==1 and #cloaked.removed==12 and next(cloaked.registry)==nil,
     'killed chute left its canopy registered')
 for _,option in ipairs({'missingBounds','missingMatrix','noProvider','deadPassenger'}) do
     local settings={[option]=true};local state=fixture(settings);state.createAndDeploy()
@@ -207,4 +220,4 @@ for _,option in ipairs({'missingBounds','missingMatrix','noProvider','deadPassen
     else assert(state.attached[2]==8 and state.detached[1]==8,'missing VFX changed transport behavior: '..option) end
     state.assertWebHidden()
 end
-print('PASS: real chute Create/fall/stationary/landing, 159 polygon pieces stay hidden, four black fibrous ribbons, four cyan/violet rim sources, imported scale, emitter correction, cords, passenger movement/cloak and teardown')
+print('PASS: real chute Create/fall/stationary/landing, 159 polygon pieces stay hidden, doubled black mist canopy with sixteen strips, four cyan/violet rim sources, imported scale, emitter correction, cords, passenger movement/cloak and twelve-slot teardown')
