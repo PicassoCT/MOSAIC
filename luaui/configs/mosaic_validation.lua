@@ -8,14 +8,14 @@ return {
         {
             id = 'parachute',
             title = 'Graphene ribbon parachute and electricity',
-            summary = 'Four black fibrous ribbons form the canopy, with cyan-violet arcs during the first operative drop.',
+            summary = 'A larger, waving black mist canopy carries cyan-violet arcs during the first operative drop.',
             steps = {
                 'Full descent: start a fresh match and watch the first operative arrive under its graphene parachute.',
                 'Repeat the ribbon material check: select an uncloaked operative, zoom in, then enter /luarules smokeribbon center electric.',
                 'Record /luarules smokeribbon status. End the local preview with /luarules smokeribbon off; the fresh-match drop also checks canopy attachment and descent.',
                 'Do not use /give air_parachut alone: its script waits for a registered passenger.',
             },
-            expect = 'A few black fibrous FlamePainter ribbons form the graphene canopy in place of the polygon web. Cyan-violet electrical streamers remain visible above it, both effects follow the passenger, and both stop on landing.',
+            expect = 'The graphene canopy is twice as wide, densely layered and softly feathered like black smoke, with visible waves even in calm air. Individual fine strands blend into the mist. Cyan-violet electrical streamers remain visible above it, both effects follow the passenger, and both stop on landing.',
         },
         {
             id = 'tank',

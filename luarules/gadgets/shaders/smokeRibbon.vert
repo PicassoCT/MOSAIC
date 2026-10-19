@@ -14,10 +14,16 @@ out float ribbonSeed;
 vec3 centre(float t, float strand, vec3 u, vec3 v) {
     if (hairMode > 0.5) {
         // Fixed arc length: integrate short unit tangents; roots never advect.
+        bool canopy = hairMode > 1.5;
         float s = seed + strand * 2.399963;
         float count = max(strandCount,1.0);
         float rootRadius = plumeWidth * 0.22 * sqrt((strand+0.5)/count);
         vec3 p = origin + rootRadius*(u*cos(s)+v*sin(s));
+        if (canopy) {
+            // Two broad, overlapping veils per rim pin; their roots fan along
+            // the rim instead of scattering vertically toward the passenger.
+            p = origin + u*plumeWidth*0.44*((strand+0.5)/count-0.5);
+        }
         float lockLength = plumeLength * (0.88+0.12*sin(s)*sin(s));
         float airflow = min(1.0,length(directionalDrift)/max(plumeLength,0.001));
         float gust = 1.0 + airflow*(0.18*sin(effectTime*1.7+s*0.13)
@@ -29,6 +35,15 @@ vec3 centre(float t, float strand, vec3 u, vec3 v) {
                 + airflow*sin(effectTime*2.1 + q*3.0 + s);
             float crossWave = 0.25*sin(q*4.0+s)
                 + airflow*sin(effectTime*1.3+q*4.0+s);
+            if (canopy) {
+                // Rolling folds continue in calm air. Separate travelling
+                // waves avoid a rigid fan or a synchronized flapping sheet.
+                flex = (1.0-stiffness)*(0.3+0.7*smoothstep(0.0,0.9,q));
+                wave = 0.55*sin(q*8.0-effectTime*1.5+s*0.3)
+                    + 0.20*sin(q*17.0-effectTime*2.3+s);
+                crossWave = 0.38*sin(q*9.0-effectTime*1.05+s*0.7)
+                    + 0.14*sin(q*19.0-effectTime*1.75+s);
+            }
             vec3 bend = direction + vec3(0,-gravity*q,0)
                 + directionalDrift/max(plumeLength,0.001)*flex*gust
                 + (u*wave+v*crossWave)*curl*flex;
@@ -99,10 +114,18 @@ void main() {
     vec3 u = normalize(cross(direction, helper));
     vec3 v = cross(direction, u);
     vec3 p = centre(t, strand, u, v);
-    vec3 tangent = centre(min(1.0,t+0.005),strand,u,v) - centre(max(0.0,t-0.005),strand,u,v);
+    vec3 tangent = direction;
+    if (hairMode < 1.5) {
+        tangent = centre(min(1.0,t+0.005),strand,u,v) - centre(max(0.0,t-0.005),strand,u,v);
+    }
     if (dot(tangent,tangent) < 1e-10) tangent = direction;
     tangent = normalize(tangent);
     vec3 across = cross(tangent, cameraPosition-p);
+    if (hairMode > 1.5) {
+        // A broad veil needs a stable facing plane. Following every local
+        // tangent can flip its sides near an inflection and draw black spikes.
+        across = cross(direction, cameraPosition-origin);
+    }
     if (dot(across,across) < 1e-8) across = cross(tangent,helper);
     if (dot(across,across) < 1e-8) across = cross(tangent,vec3(0,0,1));
     across = normalize(across);
@@ -112,6 +135,14 @@ void main() {
         // Several narrow locks with soft, staggered ends, not one triangular card.
         spread = 0.5/max(strandCount,1.0) * (1.0-smoothstep(0.55,1.0,t));
         breath = 1.0;
+        if (hairMode > 1.5) {
+            // Wider layers overlap around the canopy; fine fibres live in
+            // the opacity field, so density does not require particle meshes.
+            // Fade the ends in density, rather than collapsing these wide
+            // billboards into sharp triangular points at the crown.
+            spread = (0.42+0.22*sin(t*3.14159265))/sqrt(max(strandCount,1.0));
+            breath = 0.86+0.14*sin(t*11.0-effectTime*0.95+seed+strand);
+        }
     } else if (electricMode > 0.5) {
         // A narrow core plus halo, never the expanding triangular smoke card.
         spread = 0.30 * smoothstep(0.0,0.018,t) * (1.0-smoothstep(0.78,1.0,t));

@@ -44,6 +44,13 @@ parachute. `giveParachutToUnit` registers a passenger and drop position; the
 parachute script waits for that registration before enabling its ribbons.
 `/give air_parachut` alone does not perform this step and is not a complete test.
 
+The canopy should span twice its previous width and form dense black mist with
+soft edges. Look for clear waves in calm air as well as a response to wind and
+movement; the fine strands should blend together at ordinary play distances.
+The four cyan-violet discharge sources should rise above the rim, follow the
+passenger and disappear with the canopy on landing. Check from above and at a
+low angle while the operative descends.
+
 For a repeatable check of the electrical material, select an uncloaked operative,
 zoom in and enter:
 

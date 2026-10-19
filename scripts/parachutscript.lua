@@ -29,12 +29,14 @@ local function deployCanopy()
     if not GG.SmokeRibbon then return end
     local layout = GrapheneChute.Layout(unitID, step)
     if not layout then return end
-    for i = 1, 4 do
+    for i = 1, #layout.roots do
         local slot = "graphene_chute_" .. i
         if GG.SmokeRibbon.Set(unitID, slot, step, GrapheneChute.RibbonOptions(layout, i)) then
             canopySlots[#canopySlots+1] = slot
         end
-        slot = "graphene_arc_" .. i
+    end
+    for i = 1, #layout.arcRoots do
+        local slot = "graphene_arc_" .. i
         local ok, reason = GG.SmokeRibbon.Set(unitID, slot, step, GrapheneChute.ArcOptions(layout, i))
         if ok then canopySlots[#canopySlots+1] = slot
         else Spring.Echo("[GrapheneArc] registration failed: " .. tostring(reason)) end

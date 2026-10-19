@@ -99,6 +99,7 @@ return function()
         local nextHistory = {}
         for key, r in pairs(self.records) do
             local id = r.unitID
+            local hair = r.mode == 'hair' or r.mode == 'canopy'
             local los = fullView or Spring.GetUnitLosState(id,ally)
             if r.enabled and (not r.endFrame or sampleFrame < r.endFrame)
                 and (fullView or (los and los.los)) and not Spring.GetUnitIsDead(id)
@@ -156,7 +157,7 @@ return function()
                         local magnitude = dx and math.sqrt(dx*dx+dy*dy+dz*dz) or 0
                         if magnitude > 1e-6 then
                             dx,dy,dz = dx/magnitude,dy/magnitude,dz/magnitude
-                            if r.mode == 'hair' and (r.hang or 0)>0 then
+                            if hair and (r.hang or 0)>0 then
                                 local h=r.hang
                                 dx,dy,dz=dx*(1-h),dy*(1-h)-h,dz*(1-h)
                                 local norm=math.sqrt(dx*dx+dy*dy+dz*dz)
@@ -169,7 +170,7 @@ return function()
                                 local gain=(r.windInfluence or 0.3)*(r.trailTime or 0.7)
                                 driftX,driftY,driftZ=(wind[1] or 0)*gain,(wind[2] or 0)*gain,(wind[3] or 0)*gain
                             end
-                            if r.mode ~= 'hair' and r.motionAffected and Spring.GetUnitVelocity then
+                            if not hair and r.motionAffected and Spring.GetUnitVelocity then
                                 local velocity=velocities[id]
                                 if not velocity then velocity={Spring.GetUnitVelocity(id)};velocities[id]=velocity end
                                 -- Engine unit velocity is in world units per simulation frame.
@@ -178,7 +179,7 @@ return function()
                                 driftY=driftY-(velocity[2] or 0)*gain
                                 driftZ=driftZ-(velocity[3] or 0)*gain
                             end
-                            if r.mode == 'hair' and r.motionAffected then
+                            if hair and r.motionAffected then
                                 -- Follow a rest tip, so both translation and head turns create lag.
                                 local tx,ty,tz=x+dx*length,y+dy*length,z+dz*length
                                 local old=hairHistory[key]
@@ -214,7 +215,7 @@ return function()
                             -- Hair already applies stiffness in GLSL and preserves
                             -- arc length. A second stiffness-scaled clamp here made
                             -- even strong wind almost invisible on stationary locks.
-                            local maxDrift = r.mode == 'hair' and length*1.5 or length*2
+                            local maxDrift = hair and length*1.5 or length*2
                             if driftLength>maxDrift then
                                 local cap=maxDrift/driftLength
                                 driftX,driftY,driftZ=driftX*cap,driftY*cap,driftZ*cap
@@ -227,7 +228,7 @@ return function()
                             local mx,my,mz = x+(dx*length+driftX)*0.5,y+(dy*length+driftY)*0.5,z+(dz*length+driftZ)*0.5
                             -- Includes maximum curl, axial displacement and ribbon half-width.
                             local radius = length*0.5+width*(r.curl*2+1)+driftLength*0.5
-                            if r.mode == 'hair' then radius=length*1.5+width end
+                            if hair then radius=length*1.5+width end
                             if r.mode == 'electric' then radius=radius+length*0.2 end
                             local pad
                             if r.mode == 'landing' or r.mode == 'pad' then
@@ -309,9 +310,10 @@ return function()
         gl.Uniform(loc.ambient,ar or 0.5,ag or 0.5,ab or 0.5)
         for i=math.min(#draw,self.maxVisible),1,-1 do
             local d=draw[i]; local r=d.r
+            local hair = r.mode == 'hair' or r.mode == 'canopy'
             gl.Uniform(loc.origin,d.x,d.y,d.z); gl.Uniform(loc.direction,d.dx,d.dy,d.dz)
             gl.Uniform(loc.directionalDrift,d.driftX,d.driftY,d.driftZ)
-            gl.Uniform(loc.hairMode,r.mode == 'hair' and 1 or 0)
+            gl.Uniform(loc.hairMode,r.mode == 'canopy' and 2 or (hair and 1 or 0))
             gl.Uniform(loc.electricMode,r.mode == 'electric' and 1 or 0)
             gl.Uniform(loc.landingMode,r.mode == 'pad' and 2 or (r.mode == 'landing' and 1 or 0))
             gl.Uniform(loc.landingPad,unpack(d.pad or {0,0,0,-1}))
@@ -329,7 +331,7 @@ return function()
             gl.Uniform(loc.strandCount,r.strands)
             gl.Uniform(loc.curl,r.curl); gl.Uniform(loc.seed,r.seed)
             gl.Uniform(loc.colorStart,unpack(r.colorStart)); gl.Uniform(loc.colorEnd,unpack(r.colorEnd))
-            gl.Uniform(loc.emission,unpack(r.emission)); gl.Uniform(loc.strandOpacity,(r.mode == 'hair' and 1 or 1.6/r.strands)*d.fade)
+            gl.Uniform(loc.emission,unpack(r.emission)); gl.Uniform(loc.strandOpacity,(hair and 1 or 1.6/r.strands)*d.fade)
             gl.Uniform(loc.sourceGlow,unpack(r.sourceGlow))
             local segments = d.d2 > (d.length*20)^2 and 24 or 48
             gl.CallList(meshes[segments][r.strands])

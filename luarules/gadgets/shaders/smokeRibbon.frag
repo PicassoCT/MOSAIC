@@ -19,6 +19,26 @@ float noise(vec2 p) {
 }
 void main() {
     float x=ribbonUV.x, age=ribbonUV.y;
+    if (hairMode > 1.5) {
+        // A cloud of unresolved fibres, not a handful of hard black stripes.
+        // Broad moving folds carry fine anisotropic detail. Average subpixel
+        // fibres before they alias, preserving the veil at tactical zoom.
+        vec2 flow = vec2(x*2.8+ribbonSeed,age*5.0-effectTime*0.4);
+        float broad = noise(flow);
+        float folds = noise(flow*1.93+vec2(broad*1.4,0.0));
+        float warp = x+0.18*(noise(vec2(age*4.0-effectTime*0.3,ribbonSeed))-0.5);
+        float fibreCoord = warp*96.0+ribbonSeed*7.0;
+        float fibres = noise(vec2(fibreCoord,age*3.0-effectTime*0.28));
+        fibres = mix(fibres,0.5,smoothstep(0.6,1.5,fwidth(fibreCoord)));
+        float edge = 1.0-smoothstep(0.30,1.0,abs(x)+(broad-0.5)*0.22);
+        float density = mix(0.30,0.90,broad)*mix(0.65,1.0,folds)*mix(0.65,1.0,fibres);
+        float fade = smoothstep(0.0,0.18+0.08*broad,age)
+            * (1.0-smoothstep(0.65+0.1*folds,1.0,age));
+        vec4 color = mix(colorStart,colorEnd,age);
+        float alpha = clamp(0.68*edge*density*fade*color.a*strandOpacity,0.0,0.92);
+        gl_FragColor = vec4(color.rgb*ambient*alpha,alpha);
+        return;
+    }
     if (hairMode > 0.5) {
         // Static longitudinal fibres; no smoke holes, scrolling or emission.
         float phase = x*3.5 + ribbonSeed + 0.1*sin(age*5.0+ribbonSeed);
