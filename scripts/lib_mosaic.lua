@@ -256,7 +256,7 @@ if MOSAIC_CONFIG_ONLY then
 end
 
  GG.unitFactor = 0.80
- GameVersion = "1.033"  --UpdateFlag
+ GameVersion = "1.034"  --UpdateFlag
  function setUnitFactor(modOptions)
     GG.unitFactor = modOptions.unitfactor or 0.8
  end
