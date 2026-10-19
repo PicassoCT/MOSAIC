@@ -43,7 +43,7 @@ return function()
         mobileFailure=mobileFailure}
     local loc={}
     for _,name in ipairs({"inverseProjection","inverseView","mapSize","heightRange","clipZeroToOne",
-        "deferred","strength","nightIntensity","smoothing","localActive","localOrigin","localSpan","headlightActive","headlightLocalActive","headlightOrigin","headlightSpan","headlightIntensity","windowActive","objectiveLightCount"}) do loc[name]=gl.GetUniformLocation(shader,name) end
+        "deferred","strength","nightIntensity","smoothing","localActive","localOrigin","localSpan","headlightActive","headlightLocalActive","headlightOrigin","headlightSpan","headlightIntensity","windowGain","objectiveLightCount"}) do loc[name]=gl.GetUniformLocation(shader,name) end
     if mobileSupported then
         for _,name in ipairs({"mobileShadowActive","mobileCascadeSourceActive","mobileDirectSourceActive"}) do
             loc[name]=gl.GetUniformLocation(shader,name)
@@ -136,7 +136,7 @@ return function()
             gl.Uniform(objectiveLoc[i].objectiveDirCos,l.direction[1],l.direction[2],l.direction[3],l.outerCos)
             gl.Uniform(objectiveLoc[i].objectiveColorGain,l.color[1],l.color[2],l.color[3],l.gain)
         end
-        gl.UniformInt(loc.windowActive,useWindows and 1 or 0)
+        gl.Uniform(loc.windowGain,useWindows and (windows.presentationGain or 1) or 0)
         gl.UniformInt(loc.headlightActive,useHeadlights and 1 or 0)
         gl.UniformInt(loc.headlightLocalActive,localHeadlights and 1 or 0)
         gl.Uniform(loc.headlightOrigin,localHeadlights and headlights.domain.x or 0,localHeadlights and headlights.domain.z or 0)

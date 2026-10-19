@@ -78,10 +78,31 @@ return function()
     local function list(fn)
         local l=gl.CreateList(fn);assert(l,'display list allocation failed');ownedLists[l]=true;return l
     end
+    local function needsBake(r)
+        return r.fieldGeneration~=self.generation or r.fieldRevision~=(r.cacheRevision or 0)
+    end
+    local function dirtyMask(r)
+        self.blockersDirty=true
+        -- A cached facade only supplements blockers inside its own footprint.
+        -- Camera admission/eviction must not restart unrelated houses. Pad by
+        -- one world blocker texel for conservative rasterization at the edge.
+        local half=r.span/2+math.max(Game.mapSizeX,Game.mapSizeZ)/BLOCK_TILE
+        for _,other in pairs(self.records) do
+            if other~=r and other.captured and other.fieldX<r.x+half
+                and other.fieldX+other.fieldSpan>r.x-half and other.fieldZ<r.z+half
+                and other.fieldZ+other.fieldSpan>r.z-half then
+                other.cacheRevision=(other.cacheRevision or 0)+1
+            end
+        end
+    end
     function self:Drop(id)
         local r=self.records[id];if not r then return end
+        if self.bakeRecord==r then self.bakeRecord=nil end
+        if r.captured then dirtyMask(r) end
+        if r.fieldGeneration then self.sourcesDirty=true end
         for _,key in ipairs({'emission','position','wall','exterior','field'}) do dropTex(r[key]) end
-        self.records[id]=nil;self.generation=self.generation+1;self.ready=false
+        self.records[id]=nil
+        if not next(self.records) then self.ready=false;self.atlasVersion=nil;self.batchWarm=nil end
     end
     function self:Shutdown()
         for f in pairs(ownedFBO) do gl.DeleteFBO(f) end
@@ -92,6 +113,10 @@ return function()
         self.records={};self.allocated=false;self.ready=false
         self.texture=nil;self.ground=nil;self.blockers=nil;self.packedGeneration=nil
         self.bakeQueue=nil;self.atlasGeneration=nil
+        self.atlasVersion=nil;self.atlasGain=nil;self.atlasCutoff=nil;self.atlasStrength=nil
+        self.presentationGain=nil
+        self.staging=nil;self.bakeRecord=nil;self.blockersDirty=nil;self.sourcesDirty=nil
+        self.batchWarm=nil
     end
     local function dataPass(w,h,value)
         gl.UseShader(programs.data);gl.Blending(false);gl.DepthTest(false);gl.DepthMask(false)
@@ -130,6 +155,9 @@ return function()
         program('copy',nil,'copy.frag',nil,{sourceTex=0})
         program('debug','debug.vert','debug.frag',nil,{materialTex=0,exteriorTex=1})
         self.texture=tex(ATLAS,ATLAS,GL.RGBA16F or 0x881A,true)
+        -- One shared half-MiB work surface, not a second field per house.
+        -- Handle swaps publish finished bakes without a GPU texture copy.
+        self.staging=tex(FIELD,FIELD,GL.RGBA16F or 0x881A,true)
         self.ground=tex(GROUND,GROUND,GL.R32F or 0x822E,true)
         self.blockers=tex(BLOCK_TILE*4,BLOCK_TILE*4,GL.R8 or 0x8229,false)
         self.points={}
@@ -151,7 +179,7 @@ return function()
         end)
         dropTex(probe);self.allocated=true;self.terrainDirty=true
     end
-    function self:TerrainChanged() self.terrainDirty=true;self.generation=self.generation+1;self.ready=false end
+    function self:TerrainChanged() self.terrainDirty=true;self.generation=self.generation+1 end
     function self:Invalidate(id)
         if id then self:Drop(id) else
             local ids={};for unit in pairs(self.records) do ids[#ids+1]=unit end
@@ -218,7 +246,7 @@ return function()
         local exterior=Exterior.Fill(walls,SIZE)
         gl.RenderToTexture(r.exterior,function()dataPass(SIZE,SIZE,function(px,py)return unpack(exterior[py*SIZE+px+1]) end)end)
         r.fieldSpan=r.span+self.range*2;r.fieldX=r.x-r.fieldSpan/2;r.fieldZ=r.z-r.fieldSpan/2
-        r.captured=true;self.generation=self.generation+1
+        r.captured=true;r.cacheRevision=0;dirtyMask(r)
         self.stats.captures=self.stats.captures+1;clean()
     end
     local function copy(source,x0,y0,x1,y1,channel,gain,cutoff)
@@ -246,11 +274,14 @@ return function()
                 end
             end)
         end)
-        self.packedGeneration=self.generation;self.stats.blockerPacks=self.stats.blockerPacks+1;clean()
+        self.packedGeneration=self.generation;self.blockersDirty=false
+        self.stats.blockerPacks=self.stats.blockerPacks+1;clean()
     end
     function self:Bake(r)
-        if r.bakeGeneration~=self.generation then r.bakeGeneration=self.generation;r.bakeStep=0 end
-        gl.RenderToTexture(r.field,function()
+        if r.bakeGeneration~=self.generation or r.bakeRevision~=(r.cacheRevision or 0) then
+            r.bakeGeneration=self.generation;r.bakeRevision=r.cacheRevision or 0;r.bakeStep=0
+        end
+        gl.RenderToTexture(self.staging,function()
             clean();if r.bakeStep==0 then gl.Clear(GL.COLOR_BUFFER_BIT,0,0,0,0) end
             gl.Texture(0,r.emission);gl.Texture(1,r.position);gl.Texture(2,r.exterior)
             gl.Texture(3,self.ground);gl.Texture(4,self.blockers);gl.Texture(5,r.wall)
@@ -266,20 +297,41 @@ return function()
         clean();r.bakeStep=r.bakeStep+1
         self.stats.bakeChunks=self.stats.bakeChunks+1
         if r.bakeStep==BAKE_CHUNKS then
-            r.fieldGeneration=self.generation;self.fieldVersion=self.fieldVersion+1
+            r.field,self.staging=self.staging,r.field
+            r.fieldGeneration=self.generation;r.fieldRevision=r.cacheRevision or 0
+            self.fieldVersion=self.fieldVersion+1
         end
     end
     function self:Step()
         if not self.enabled or not self.bakeQueue or not self.allocated or self.packedGeneration~=self.generation
-            or (self.intensity or 0)<=0 or self.strength<=0 then return end
+            or self.blockersDirty or (self.intensity or 0)<=0 or self.strength<=0 then return end
         local ok,reason=pcall(function()
-            while self.bakeIndex<=#self.bakeQueue do
-                local r=self.bakeQueue[self.bakeIndex]
-                if r.fieldGeneration~=self.generation and valid(r.id) and r.revision==revision(r.id) then
-                    self:Bake(r)
-                    if r.fieldGeneration==self.generation then self.bakeIndex=self.bakeIndex+1 end
-                    break
+            local r=self.bakeRecord
+            if r and (self.records[r.id]~=r or not needsBake(r)) then
+                self.bakeRecord=nil;r=nil
+            end
+            -- Refresh removes invalid sources. A brief LOS/cloak change between
+            -- refreshes must not discard an otherwise resumable partial bake.
+            if r and (not valid(r.id) or r.revision~=revision(r.id)) then return end
+            if not r then
+                while self.bakeIndex<=#self.bakeQueue do
+                    local candidate=self.bakeQueue[self.bakeIndex]
+                    if self.records[candidate.id]==candidate and needsBake(candidate)
+                        and valid(candidate.id) and candidate.revision==revision(candidate.id) then
+                        r=candidate;self.bakeRecord=r
+                        -- Staging may have belonged to a different house before
+                        -- a removal. Never resume that house's partial pixels.
+                        r.bakeGeneration=nil
+                        break
+                    end
+                    self.bakeIndex=self.bakeIndex+1
                 end
+            end
+            if r then
+                self:Bake(r)
+                if not needsBake(r) then self.bakeRecord=nil end
+            end
+            while self.bakeIndex<=#self.bakeQueue and not needsBake(self.bakeQueue[self.bakeIndex]) do
                 self.bakeIndex=self.bakeIndex+1
             end
             if self.bakeIndex>#self.bakeQueue then self.bakeQueue=nil end
@@ -288,15 +340,27 @@ return function()
     end
     function self:Compose()
         local gain=self.strength*self.intensity
-        if self.atlasGeneration==self.generation and self.atlasVersion==self.fieldVersion
-            and self.atlasGain==gain and self.atlasCutoff==self.cutoff then
-            self.ready=true;return
+        local sameGain=self.atlasGain==gain and self.atlasCutoff==self.cutoff
+        -- Keep the published atlas during a replacement batch. Re-composing all
+        -- retained houses after EACH completion would turn a rebuild into N*N
+        -- atlas quads. The scene scales the old snapshot for the normal night
+        -- fade. Refresh its per-house cutoff on a large gain change, an explicit
+        -- strength change, a source removal, or completion of the whole batch.
+        local ratio=self.atlasGain and self.atlasGain>0 and gain/self.atlasGain or 1
+        local retain=self.batchWarm and (self.bakeQueue or self.blockersDirty)
+            and self.atlasCutoff==self.cutoff and self.atlasStrength==self.strength
+            and ratio>=0.8 and ratio<=1.25
+        if self.atlasVersion and not self.sourcesDirty
+            and (retain or sameGain and self.atlasVersion==self.fieldVersion) then
+            self.presentationGain=ratio;self.ready=true;return
         end
         local completed={}
         for _,id in ipairs(self.units) do local r=self.records[id]
-            if r and r.fieldGeneration==self.generation then completed[#completed+1]=r end
+            if r and r.fieldGeneration then completed[#completed+1]=r end
         end
-        if #completed==0 then return end
+        if #completed==0 then
+            self.ready=false;self.atlasVersion=nil;self.sourcesDirty=false;return
+        end
         gl.RenderToTexture(self.texture,function()
             clean();gl.Clear(GL.COLOR_BUFFER_BIT,0,0,0,0);gl.Blending(GL.ONE,GL.ONE)
             identity(function()
@@ -308,15 +372,18 @@ return function()
             end)
         end)
         self.atlasGeneration=self.generation;self.atlasVersion=self.fieldVersion
-        self.atlasGain=gain;self.atlasCutoff=self.cutoff;self.ready=true
+        self.atlasGain=gain;self.atlasCutoff=self.cutoff;self.atlasStrength=self.strength
+        self.presentationGain=1;self.ready=true
+        self.sourcesDirty=false
         self.stats.atlasUpdates=self.stats.atlasUpdates+1;clean()
     end
     function self:Refresh(occupancy,occlusionChanged,intensity)
-        self.ready=false;self.bakeQueue=nil;self.intensity=self.test and 1 or intensity
-        -- Remember blocker changes even while disabled or in daylight. Re-enabling
-        -- must never reuse a field baked against the old occupancy.
+        self.intensity=self.test and 1 or intensity
+        -- Remember blocker changes even while disabled or in daylight so the
+        -- replacement is baked against current occupancy. Otherwise-valid
+        -- sources may display their last completed shadow solution meanwhile.
         if occlusionChanged then self.generation=self.generation+1 end
-        if not self.enabled then return end
+        if not self.enabled then self.ready=false;return end
         local ok,reason=pcall(function()
             local candidates={}
             local cx,cy,cz=0,0,0
@@ -350,7 +417,7 @@ return function()
             end
             for _,id in ipairs(drop) do self:Drop(id) end
             if keep[selected] then self.focusID=selected elseif not keep[self.focusID] then self.focusID=self.units[1] end
-            if #self.units==0 or self.intensity<=0 or self.strength<=0 then return end
+            if #self.units==0 or self.intensity<=0 or self.strength<=0 then self.ready=false;return end
             self:Allocate()
             if self.terrainDirty then
                 gl.RenderToTexture(self.ground,function()dataPass(GROUND,GROUND,function(x,y)
@@ -364,18 +431,29 @@ return function()
                 if captured then pending=true;break end
                 self:Capture(id);captured=true
             end end
-            -- Each capture changes the shared blocker set. Wait for this batch
-            -- before packing or baking; its intermediate results would be discarded.
+            if captured and self.batchWarm==nil then self.batchWarm=self.atlasVersion~=nil end
+            -- Batch mask changes before packing; nearby fields would otherwise
+            -- restart for every capture. Unrelated completed fields stay valid.
             if not pending then
-                if self.packedGeneration~=self.generation then self:PackBlockers(occupancy) end
-                local queue={}
-                for _,id in ipairs(self.units) do local r=self.records[id]
-                    if r and r.captured and r.fieldGeneration~=self.generation then queue[#queue+1]=r end
+                local changed=self.packedGeneration~=self.generation or self.blockersDirty
+                if changed then self:PackBlockers(occupancy) end
+                -- A warm, unchanged cache has no work queue to rebuild. Active
+                -- queues still follow camera priority without changing the owner
+                -- of an unfinished staging field.
+                if changed or self.bakeQueue or self.batchWarm~=nil then
+                    local queue={}
+                    for _,id in ipairs(self.units) do local r=self.records[id]
+                        if r and r.captured and needsBake(r) then queue[#queue+1]=r end
+                    end
+                    self.bakeQueue=#queue>0 and queue or nil;self.bakeIndex=1
                 end
-                self.bakeQueue=#queue>0 and queue or nil;self.bakeIndex=1
+                if self.bakeQueue and self.batchWarm==nil then self.batchWarm=self.atlasVersion~=nil end
                 self:Step();if not self.enabled then return end
-                self:Compose()
             end
+            -- Captures can be pending while an already-published source is
+            -- removed or the night gain changes. Those updates cannot wait.
+            self:Compose()
+            if not pending and not self.bakeQueue then self.batchWarm=nil end
             if self.report then self:Report();self.report=false end
         end)
         if not ok then
@@ -397,13 +475,14 @@ return function()
         if not r then echo('no cached house; select a completed visible house_asian1/3');return end
         if r.failed then echo('unit '..r.id..': '..r.failed);return end
         local peak=0
-        if r.fieldGeneration==self.generation then
+        if r.fieldGeneration then
             gl.RenderToTexture(r.field,function()
                 for _,p in ipairs(readPixels(FIELD,FIELD)) do peak=math.max(peak,p[1],p[2],p[3]) end
             end)
         end
-        echo(string.format('unit %d | %d lit pixels | span %.0f height %.0f | bake %d/%d | field peak %.6g | atlas %s',
-            r.id,r.litPixels or 0,r.span,r.height,r.bakeStep or 0,BAKE_CHUNKS,peak,self.ready and 'ready' or 'waiting'))
+        echo(string.format('unit %d | %d lit pixels | span %.0f height %.0f | bake %d/%d | completed peak %.6g | atlas %s%s',
+            r.id,r.litPixels or 0,r.span,r.height,r.bakeStep or 0,BAKE_CHUNKS,peak,self.ready and 'ready' or 'waiting',
+            r.fieldGeneration and needsBake(r) and ' (rebuilding)' or ''))
         local s=self.stats
         echo(string.format('work since load: %d captures | %d bake chunks | %d blocker packs | %d atlas updates',
             s.captures,s.bakeChunks,s.blockerPacks,s.atlasUpdates))
@@ -456,11 +535,11 @@ return function()
             gl.Text(r.failed or string.format('Unit %d | %d lit pixels | span %.0f | height %.0f',
                 r.id,r.litPixels or 0,r.span,r.height),x-75,y-38,12,'o')
         end
-        if not self.enabled or not r or r.fieldGeneration~=self.generation then
+        if not self.enabled or not r or not r.fieldGeneration then
             local cached,baked=0,0
             for _,record in pairs(self.records) do
                 if record.captured then cached=cached+1 end
-                if record.fieldGeneration==self.generation then baked=baked+1 end
+                if record.fieldGeneration and not needsBake(record) then baked=baked+1 end
             end
             gl.Text(self.enabled and string.format('Cache %d/%d | baked %d | selected %d/%d',cached,#self.units,baked,r and r.bakeStep or 0,BAKE_CHUNKS)
                 or 'Window light OFF',x-75,y+size,12,'o');return
@@ -469,7 +548,7 @@ return function()
         if previewShader then gl.UseShader(previewShader);gl.Uniform(exposureLoc,exposure or 4) end
         quad(x,y,x+size,y+size);gl.UseShader(0);gl.Texture(false)
         gl.Blending(GL.SRC_ALPHA,GL.ONE_MINUS_SRC_ALPHA)
-        gl.Text('Direct ground light | unit '..r.id,x,y-18,13,'o')
+        gl.Text('Direct ground light | unit '..r.id..(needsBake(r) and ' | rebuilding' or ''),x,y-18,13,'o')
     end
     return self
 end

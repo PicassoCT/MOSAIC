@@ -30,7 +30,7 @@ uniform vec2 headlightOrigin;
 uniform float headlightSpan;
 uniform sampler2D windowTex;
 uniform sampler2D windowGroundTex;
-uniform int windowActive;
+uniform float windowGain;
 #ifdef MOBILE_SHADOWS_ENABLED
 uniform sampler2D mobileSourceAtlas;
 uniform int mobileCascadeSourceActive=0;
@@ -154,7 +154,7 @@ void main()
     if(depth>=0.999999) discard; // sky/cleared buffer
     vec3 world=worldPosition(uv,depth);
     bool cascadeBand=world.y>=max(0.0,heightRange.x) && world.y<heightRange.y;
-    if(!cascadeBand && windowActive==0 && objectiveLightCount==0)discard;
+    if(!cascadeBand && windowGain<=0.0 && objectiveLightCount==0)discard;
     vec3 normal,albedo;
     if(deferred!=0) {
         vec3 encoded=model ? texture2D(modelNormalTex,uv).rgb : texture2D(mapNormalTex,uv).rgb;
@@ -218,11 +218,13 @@ void main()
     light+=objectiveLighting(world,normal);
     // Direct facade light joins only here. It is NEVER a cascade emission input
     // or a fog source, and must not be projected onto roofs above the ground.
-    if(windowActive!=0 && !model && normal.y>0.25 && world.y>=0.0){
+    if(windowGain>0.0 && !model && normal.y>0.25 && world.y>=0.0){
         float ground=texture2D(windowGroundTex,world.xz/mapSize).r;
         float tolerance=max(4.0,2.0*max(abs(dFdx(world.y)),abs(dFdy(world.y))));
         if(abs(world.y-ground)<tolerance)
-            light+=max(texture2D(windowTex,world.xz/mapSize).rgb,vec3(0));
+            // Completed window fields contain only nonnegative additive light.
+            // Scaling replaces the old max(0) and uses the same atlas sample.
+            light+=texture2D(windowTex,world.xz/mapSize).rgb*windowGain;
     }
     // Emission carries per-source intensity. Apply scene gain once,
     // after bounded artistic gain. Preview exposure does not enter this pass.
