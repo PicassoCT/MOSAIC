@@ -1104,7 +1104,7 @@ function buildAnimation()
 end
 
 function buildBuilding()
-    initializeBuildingShadowVoxels(cubeDim.length, cubeDim.heigth)
+    initializeBuildingShadowVoxels(cubeDim.length, cubeDim.heigth, 0.0254)
     boolDoneShowing = false
     StartThread(buildAnimation)
     selectBase()

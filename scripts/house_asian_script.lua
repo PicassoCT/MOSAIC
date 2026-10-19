@@ -1511,7 +1511,7 @@ local function simulateRainShort(normalPart, illuminatedPart, duration, hour)
     showHideSwitch(normalPart, illuminatedPart)
 
     if randChance(50)  then return end
-    Spring.Echo("Rain short active for "..pieceNr_pieceName[normalPart].. " active")
+    -- Spring.Echo("Rain short active for "..pieceNr_pieceName[normalPart].. " active")
 
     -- Optional sound support
     --local shortSound = illuminatedPart:FindFirstChild("ShortCircuitSound")
