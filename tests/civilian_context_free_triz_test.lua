@@ -18,6 +18,17 @@ assert(catalogue.suFieldStandardSolutionClasses==5 and catalogue.standardSolutio
     "Su-Field/76-standard-solution method coverage lost")
 assert(catalogue.extendedMethods==7,"extended TRIZ method set incomplete")
 
+-- Named consumer objects come from Documents/Marketing*, not invented brands.
+-- They should turn up only as occasional anchors, with no change to the
+-- abstract starting state or to the existing civilian/family anchors.
+local advertisedProducts = {
+    "Don Fettuccini", "Almost Chocolate", "Floaties", "SungSam",
+    "Alexandria", "Nostrildomus", "RatFuck", "DumbDownDrone",
+    "Waysub", "Everbloom Magnolia", "HelloDolly", "ServerFarms",
+}
+assert(catalogue.advertisedProductObjects==#advertisedProducts,
+    "advertised-object anchor catalogue drift")
+
 for i=1,20 do
     assert(dialogue.contextFreeSelected(i,5,false)==(i%5==0),"every-fifth cadence drift")
     assert(not dialogue.contextFreeSelected(i,5,true),"urgent event must never be displaced")
@@ -37,10 +48,20 @@ local methodSeen={}
 local noAnchor,withAnchor,withRebuttal=false,false,false
 local anchors,rebuttals,anchorOpportunities=0,0,0
 local examples={}
+local seenAdvertisedProducts={}
 for seed=1,5000 do
     local lines,meta=triz.build(seed)
     assert(#lines>=7 and #lines<=21,"context-free thread length out of bounds")
     for _,line in ipairs(lines) do assert(type(line)=="string" and #line>0,"empty context-free turn") end
+    local whole=table.concat(lines,"\n")
+    for _,product in ipairs(advertisedProducts) do
+        assert(not lines[1]:find(product,1,true),"abstract opener exposed an advertised object")
+        if whole:find(product,1,true) then
+            assert(meta.anchorCount>0,"advertised object escaped into anchorless dialogue")
+            seenAdvertisedProducts[product]=true
+            if not examples.product then examples.product=whole end
+        end
+    end
     local lines2,meta2=triz.build(seed)
     assert(table.concat(lines,"\n")==table.concat(lines2,"\n"),"context-free dialogue is nondeterministic")
     assert(meta.anchorCount==meta2.anchorCount and meta.rebuttalCount==meta2.rebuttalCount,
@@ -70,6 +91,9 @@ assert(methodSeen.matrix and methodSeen.principles and methodSeen.separation and
     methodSeen.sufield and methodSeen.evolution and methodSeen.ideality and methodSeen.dwarfs and
     methodSeen.scurve and methodSeen.extended,"one or more TRIZ method families are unreachable")
 assert(noAnchor and withAnchor and withRebuttal,"anchorless/anchored/rebuttal states must all be reachable")
+for _,product in ipairs(advertisedProducts) do
+    assert(seenAdvertisedProducts[product],"advertised product anchor is unreachable: "..product)
+end
 
 local anchorRate=anchors/anchorOpportunities
 local rebuttalRate=rebuttals/anchors
@@ -78,3 +102,4 @@ assert(rebuttalRate>0.27 and rebuttalRate<0.39,"rebuttal probability drift: "..r
 
 print("PASS context-free TRIZ dialogue: 1/5 cadence, 1/5 anchors, 1/3 rebuttals, determinism, RNG isolation, full method reachability")
 if examples.rebuttal then print("--- example with anchor rebuttal ---\n"..examples.rebuttal) end
+if examples.product then print("--- example with advertised product object ---\n"..examples.product) end

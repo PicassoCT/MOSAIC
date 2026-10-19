@@ -164,6 +164,29 @@ local anchors = {
     "the landlord's buyout offer", "the insurance settlement", "the rent increase", "the job transfer",
 }
 
+-- Ordinary civilians occasionally own things sold in the city's adverts.
+-- These are OBJECT anchors, not ad reads or new conversation topics: the
+-- abstract TRIZ exchange continues after a product is named. Source material:
+-- Documents/Marketing V20; MarketingV24.txt; MarketingV25.txt;
+-- MarketingV29; MarketingV31. Keep the original civilian anchors reachable.
+local advertisedProductAnchors = {
+    "the Don Fettuccini programmable pizza that watched me eat",
+    "the Almost Chocolate hyper-caramel bars in my cupboard",
+    "the Floaties room divider I filled with foam",
+    "the SungSam directional noise-cancelling camera on my window",
+    "the Alexandria news roll with the antihistamine cream inside",
+    "the Nostrildomus nostril filters I bought",
+    "the RatFuck repair robot living in my wall",
+    "the DumbDownDrone negotiating my bills",
+    "the Waysub sandwich machine at my stop",
+    "the Everbloom Magnolia Maas Biotech wants back",
+    "the HelloDolly Bio-Synth-Doll my child brought home",
+    "the ServerFarms gaming device I'm still responsible for",
+}
+for i = 1, #advertisedProductAnchors do
+    anchors[#anchors+1] = advertisedProductAnchors[i]
+end
+
 local anchorPhrases = {
     "I'm talking about {anchor}.",
     "That's what I mean about {anchor}.",
@@ -294,6 +317,7 @@ function M.catalogue()
         dwarfModelMoves = #dwarfs,
         sCurveMoves = #sCurves,
         extendedMethods = #extendedMethods,
+        advertisedProductObjects = #advertisedProductAnchors,
     }
 end
 
