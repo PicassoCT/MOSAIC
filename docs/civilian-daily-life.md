@@ -88,6 +88,19 @@ re-anchored by the other speaker with a correction such as "No, no, I actually
 meant ...". It is therefore valid for a whole exchange to finish without ever
 revealing what either civilian was talking about.
 
+Occasionally the subject, when it finally surfaces, is an actual consumer object
+from the in-world `Documents/Marketing*` adverts: a programmable pizza,
+an Almost Chocolate bar, Floaties furniture, a SungSam noise-cancelling camera,
+an Alexandria news roll, Nostrildomus filters, a RatFuck wall-repair robot,
+a DumbDownDrone, a Waysub sandwich machine, an Everbloom Magnolia, a
+HelloDolly synth-doll or a ServerFarms gaming device. Each is phrased as
+something a civilian bought, owns, borrowed or has to deal with; characters
+do not recite the advert or acquire privileged product knowledge. Existing
+family, work, housing and investment anchors remain in the same pool.
+The marketed-object anchors use the same 1-in-5 per-switch chance and the same
+1-in-3 correction/re-anchor chance. They are sampled locally from static Lua
+data, never parsed from the Documents files at runtime.
+
 The context-free generator uses a private deterministic random stream and covers
 the full set of 40 inventive principles, the four physical-contradiction
 separation principles, ARIZ-style contradiction/IFR/resource moves, the
