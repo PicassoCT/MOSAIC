@@ -240,7 +240,8 @@ function getMobileRadianceShadowTypeTable(defs)
 end
 
 if MOSAIC_CONFIG_ONLY then
-    return {getPoliceLightTypeTable = getPoliceLightTypeTable,
+    return {
+        getPoliceLightTypeTable = getPoliceLightTypeTable,
         getRadianceDebugLampTypeTable = getRadianceDebugLampTypeTable,
         getTankMuzzleTypeTable = getTankMuzzleTypeTable,
         getMobileRadianceShadowTypeTable = getMobileRadianceShadowTypeTable,
