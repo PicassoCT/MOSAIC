@@ -14,21 +14,8 @@
 
 return {
 	["railgunceg"] = {
-		tealflash = {
-			alwaysVisible = true,
-			air = true,
-			class = [[CSimpleGroundFlash]],
-			count = 1,
-			ground = true,
-			water = true,
-			properties = {
-				colormap = [[0.5 1 1 0.08 0 0 0 0.01]],
-				size = 160,
-				sizegrowth = 0,
-				texture = [[groundflash]],
-				ttl = 25,
-			},
-		},
+		-- Surface illumination is supplied by shared railgun radiance. Keep
+		-- both expanding ring layers alongside the detached shader wake.
 		trail = {
 			alwaysVisible = true,
 			air = true,

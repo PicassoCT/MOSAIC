@@ -12,6 +12,7 @@ turret = piece "turret"
 projectile = piece "projectile"
 Icon2 = piece "Icon2"
 local SIG_AIM_ORBITAL = 1
+local chargeRulesAccess = {inlos = true}
 GameConfig = getGameConfig()
 local spGetUnitDefID = Spring.GetUnitDefID
 local houseTypeTable = getCultureUnitModelTypes(GameConfig.game.culture,
@@ -26,6 +27,8 @@ function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
     Hide(projectile)
     Move(projectile, z_axis, -210, 0)
+    Spring.SetUnitRulesParam(unitID, 'mosaic_railgun_charge_a_frame', -1, chargeRulesAccess)
+    Spring.SetUnitRulesParam(unitID, 'mosaic_railgun_charge_b_frame', -1, chargeRulesAccess)
 
     StartThread(goToFireMode)
     StartThread(modeChangeOS)
@@ -72,11 +75,11 @@ function goToSpaceMode()
 end
 
 function goToFireMode()
-    spawnCegNearUnitGround(unitID, "railgunshine",0,0,45)
-    spawnCegNearUnitGround(unitID, "railgunshine",0,0,10)
+    -- The combat renderer preserves both deployment flash pairs as finite,
+    -- height-aware cyan radiance. Stamps are visible only with this unit in LOS.
+    Spring.SetUnitRulesParam(unitID, 'mosaic_railgun_charge_a_frame', Spring.GetGameFrame(), chargeRulesAccess)
     WMove(slider, z_axis, 0, 50)
-    spawnCegNearUnitGround(unitID, "railgunshine",0,0, 65)
-    spawnCegNearUnitGround(unitID, "railgunshine",0,0, 35)
+    Spring.SetUnitRulesParam(unitID, 'mosaic_railgun_charge_b_frame', Spring.GetGameFrame(), chargeRulesAccess)
     WTurn(turret, x_axis, math.rad(0), math.pi)
     shiverHologramsNearby()
 end
@@ -100,7 +103,7 @@ end
 function script.FireWeapon1()
     GG.RevealNimrodOnFire(unitID)
     shiverHologramsNearby()
-    spawnCegNearUnitGround(unitID, "railgunshine", 0, 0, 10)
+    -- ProjectileCreated supplies the single projectile-origin radiance flash.
     return true 
 end
 
@@ -130,15 +133,13 @@ end
 function script.FireWeapon2()
     GG.RevealNimrodOnFire(unitID)
     shiverHologramsNearby()
-    spawnCegNearUnitGround(unitID, "railgunshine", 0, 0, 10)
+    -- ProjectileCreated supplies the single projectile-origin radiance flash.
     return true 
 end
 
 function script.StartBuilding() end
 
-function script.StopBuilding() 
-    --spawnCegNearUnitGround(unitID, "railgunshine")
-end
+function script.StopBuilding() end
 function script.Activate()
     SetUnitValue(COB.YARD_OPEN, 1)
     SetUnitValue(COB.BUGGER_OFF, 1)
@@ -186,3 +187,4 @@ function showHideIcon(boolCloaked)
         if TablesOfPiecesGroups then hideT(TablesOfPiecesGroups["Icon"]) end
     end
 end
+

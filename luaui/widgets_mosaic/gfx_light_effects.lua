@@ -5,10 +5,12 @@ end
 
 local Sources=VFS.Include('luaui/widgets_mosaic/include/combat_light_sources.lua')
 local RadianceTime=VFS.Include('luaui/widgets_mosaic/include/radiance_time.lua')
+local RailgunWakes=VFS.Include('luaui/widgets_mosaic/include/railgun_wakes.lua')
 -- LuaUI copies its System exports into the widget environment without _G.
 local MosaicConfig=VFS.Include('scripts/lib_mosaic.lua',
     setmetatable({MOSAIC_CONFIG_ONLY=true},{__index=getfenv and getfenv(1) or _ENV}))
 local sources,lightRenderer,flameRenderer,tracerRenderer,capture,hasEmission,api
+local railgunWakes,railgunRenderer
 local globalLightMult,globalRadiusMult,globalLifeMult=1.3,1.3,.75
 local enableHeatDistortion=true
 local weaponConf={}
@@ -122,9 +124,9 @@ local function syncOptions()
     end
 end
 
-local function WeaponExplosion(px,py,pz,weaponID)
+local function WeaponExplosion(px,py,pz,weaponID,ownerID)
     if not sources then return end
-    sources:AddExplosion(px,py,pz,weaponID,false)
+    sources:AddExplosion(px,py,pz,weaponID,false,ownerID)
     local conf=weaponConf[weaponID]
     if conf then
         local params={life=conf.life,param={radius=conf.radius}}
@@ -181,7 +183,7 @@ local function WeaponBarrelfire(px,py,pz,weaponID,ownerID)
     -- The tank's firing script publishes its precise piece-attached flash.
     -- Do not add a second, projectile-origin night flash for the same shot.
     if sources and not sources:HasTankMuzzleFlash(ownerID) then
-        sources:AddExplosion(px,py,pz,weaponID,true)
+        sources:AddExplosion(px,py,pz,weaponID,true,ownerID)
     end
 end
 local function CombatFire(id,x,y,z,born,expires)
@@ -190,9 +192,15 @@ end
 local function PyroTorchOff(x,y,z,id)
     if sources then sources:AddPyroTorch(x,y,z,id) end
 end
+local function RailgunPoint(id,born,weaponID,x,y,z,frame,done)
+    if railgunWakes then railgunWakes:Point(id,born,weaponID,x,y,z,frame,done) end
+end
+local function RailgunGap(id,born,frame,done)
+    if railgunWakes then railgunWakes:Gap(id,born,frame,done) end
+end
 local callbacks={GadgetPyroTorchOff=PyroTorchOff,
     GadgetWeaponExplosion=WeaponExplosion,GadgetWeaponBarrelfire=WeaponBarrelfire,
-    GadgetCombatFire=CombatFire}
+    GadgetCombatFire=CombatFire,GadgetRailgunWakePoint=RailgunPoint,GadgetRailgunWakeGap=RailgunGap}
 
 local function effectStatus()
     return {
@@ -200,12 +208,15 @@ local function effectStatus()
         radiance=lightRenderer~=nil,
         flamePainter=flameRenderer~=nil,
         tracers=tracerRenderer~=nil,
+        railgunWake=railgunRenderer~=nil,
+        railgun=railgunWakes and railgunWakes:GetStats() or {},
         tanks=sources and sources:GetTankMuzzleStats() or {},
     }
 end
 
 function widget:Initialize()
     syncOptions()
+    railgunWakes=RailgunWakes.New(Spring,Game,WeaponDefs)
     sources=Sources.New(weaponConf,MosaicConfig.getPoliceLightTypeTable(UnitDefs),
         MosaicConfig.getTankMuzzleTypeTable(UnitDefs),
         MosaicConfig.getRadianceDebugLampTypeTable(UnitDefs))
@@ -219,6 +230,8 @@ function widget:Initialize()
     if flameRenderer then flameRenderer.maxVisible=64 end
     tracerRenderer,err=VFS.Include('luaui/widgets_mosaic/include/combat_tracers.lua')()
     if not tracerRenderer then Spring.Echo('Night tracers unavailable: '..tostring(err)) end
+    railgunRenderer,err=VFS.Include('luaui/widgets_mosaic/include/railgun_wake_renderer.lua')()
+    if not railgunRenderer then Spring.Echo('Railgun wake unavailable: '..tostring(err)) end
     for name,fn in pairs(callbacks) do widgetHandler:RegisterGlobal(name,fn) end
     capture=function(bottom,top,gain,night,metadata)
         if lightRenderer then lightRenderer:Capture(bottom,top,gain,night,metadata) end
@@ -244,11 +257,22 @@ function widget:Initialize()
         getHeatDistortion=function() return enableHeatDistortion end,
         getCinderBudgetStats=function() return sources and sources.pyroStats end,
         getPoliceLightStats=function() return sources and sources:GetPoliceLightStats() end,
+        getRailgunWakeStats=function() return railgunWakes and railgunWakes:GetStats() end,
         getStatus=effectStatus,
     }
     WG.lighteffects=api
 end
 function widget:TextCommand(command)
+    if command=='railgun status' then
+        local s=railgunWakes and railgunWakes:GetStats() or {}
+        local r=railgunRenderer and railgunRenderer:GetStats() or {}
+        Spring.Echo(string.format(
+            '[MOSAIC railgun] renderer=%s radiance=%s tracked=%d active=%d stored-spans=%d drawn-shots=%d drawn-spans=%d cells=%d draws=%d | lifetime=15s cap=16 shots/384 cells evicted=%d trimmed=%d dropped-draws=%d',
+            railgunRenderer and 'ready' or 'unavailable',lightRenderer and 'ready' or 'unavailable',
+            s.tracked or 0,s.active or 0,s.spans or 0,r.drawnShots or 0,r.drawnSpans or 0,
+            r.cells or 0,r.drawCalls or 0,s.evicted or 0,s.trimmed or 0,r.droppedShots or 0))
+        return true
+    end
     if command=='effects status' then
         local status=effectStatus()
         local t=status.tanks
@@ -259,6 +283,9 @@ function widget:TextCommand(command)
             t.tracked or 0,t.visible or 0,t.active or 0,t.queued or 0,t.missingAnchors or 0,
             tostring(t.latestShotFrame or 'none'),t.latestShotAge and string.format('%.1ff',t.latestShotAge) or 'none'))
         Spring.Echo('[MOSAIC effects] queued counts sources prepared for rendering; confirm visible flames and surface lighting in-game.')
+        local r=status.railgun
+        Spring.Echo(string.format('[MOSAIC effects] railgun-wake=%s tracked=%d active=%d stored-spans=%d; /railgun status for budgets',
+            status.railgunWake and 'ready' or 'unavailable',r.tracked or 0,r.active or 0,r.spans or 0))
         return true
     end
     if command=='police lights' then
@@ -280,7 +307,10 @@ function widget:TextCommand(command)
         s.totalRibbons or 0,s.tracesThisFrame or 0,s.liteThisFrame or 0))
     return true
 end
-function widget:Update(dt) if sources then sources:Update(dt) end end
+function widget:Update(dt)
+    if sources then sources:Update(dt) end
+    if railgunWakes then railgunWakes:Update() end
+end
 function widget:UnitCreated(id,defID) if sources then sources:UnitCreated(id,defID) end end
 function widget:UnitEnteredLos(id)
     -- A unit created outside our LOS can become visible after its script enables
@@ -294,6 +324,10 @@ function widget:DrawWorld()
         if flameRenderer then flameRenderer:Draw(flames) end
         if tracerRenderer then tracerRenderer:Draw(tracers,RadianceTime.AtFrame(Spring.GetGameFrame())) end
     end
+    if railgunRenderer and railgunWakes then
+        local frame=Spring.GetGameFrame()+(Spring.GetFrameTimeOffset() or 0)
+        railgunRenderer:Draw(railgunWakes:Collect(frame),frame)
+    end
 end
 function widget:Shutdown()
     for name in pairs(callbacks) do widgetHandler:DeregisterGlobal(name) end
@@ -303,6 +337,8 @@ function widget:Shutdown()
     if lightRenderer then lightRenderer:Shutdown();lightRenderer=nil end
     if flameRenderer then flameRenderer:Shutdown();flameRenderer=nil end
     if tracerRenderer then tracerRenderer:Shutdown();tracerRenderer=nil end
+    if railgunRenderer then railgunRenderer:Shutdown();railgunRenderer=nil end
+    if railgunWakes then railgunWakes:Clear();railgunWakes=nil end
     sources=nil
 end
 function widget:GetConfigData()
@@ -316,3 +352,4 @@ function widget:SetConfigData(data)
     if data.enableHeatDistortion~=nil then enableHeatDistortion=data.enableHeatDistortion end
     syncOptions()
 end
+

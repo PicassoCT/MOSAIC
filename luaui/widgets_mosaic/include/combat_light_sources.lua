@@ -1,6 +1,13 @@
 -- Bounded, client-side combat effects. Expiry never depends on a renderer.
 local M = {maxTransient=128, maxFires=128, maxProjectiles=64, maxLights=96}
 local function clamp(v,lo,hi) return math.max(lo,math.min(hi,v)) end
+-- Railgun light is spent during discharge; the detached wake owns its longer
+-- visual lifetime. These sources reuse the existing combat radiance captures.
+local railgunColor={.32,.82,1}
+local railgunChargePhases={
+    {param='mosaic_railgun_charge_a_frame',heights={45,10}},
+    {param='mosaic_railgun_charge_b_frame',heights={65,35}},
+}
 -- Visual-only obstruction solver, independent from synced Flame projectile damage.
 local makePyroCollision = VFS and VFS.Include and
     VFS.Include('luaui/widgets_mosaic/include/pyro_flame_collision.lua') or
@@ -23,19 +30,22 @@ function M.Weapon(wd)
     local cp=wd.customParams or {}
     if cp.light_skip or cp.expl_light_skip or tonumber(cp.no_projectile_vfx)==1 then return nil end
     local fire=wd.type=='Flame' or wd.name=='molotow' or tonumber(cp.molotov_fire)==1
+    local railgun=tonumber(cp.railgun_wake)==1
     if not projectileTypes[wd.type] and not fire then return nil end
     local v=wd.visuals or {}
-    return {fire=fire,trail=wd.name=='molotow',tracer=tonumber(cp.night_tracer)==1,
+    return {fire=fire,railgun=railgun,nightOnly=not fire and not railgun,
+        strength=railgun and 1.1 or .65,
+        trail=wd.name=='molotow',tracer=tonumber(cp.night_tracer)==1,
         tracerWidth=clamp(tonumber(cp.tracer_width) or (.8+(wd.size or 1)*.35),.4,3),
-        radius=clamp(tonumber(cp.light_radius) or (40+(wd.damageAreaOfEffect or 0)*.6),40,220),
-        color=fire and {1,.32,.045} or {v.colorR or 1,v.colorG or .65,v.colorB or .25}}
+        radius=railgun and 160 or clamp(tonumber(cp.light_radius) or (40+(wd.damageAreaOfEffect or 0)*.6),40,220),
+        color=railgun and railgunColor or (fire and {1,.32,.045} or {v.colorR or 1,v.colorG or .65,v.colorB or .25})}
 end
 
 function M.New(weaponConf, policeProfiles, tankProfiles, debugLampProfiles)
     policeProfiles = policeProfiles or {}
     tankProfiles = tankProfiles or {}
     debugLampProfiles = debugLampProfiles or {}
-    local self={transient={},fires={},wrecks={},police={},tanks={},debugLamps={},torches={},pyros={},projectiles={},weaponConf=weaponConf,
+    local self={transient={},fires={},wrecks={},police={},tanks={},railguns={},debugLamps={},torches={},pyros={},projectiles={},weaponConf=weaponConf,
         brightness=1.3,radius=1.3}
     local aimingLasers = AimLaserGlow.New(Spring,WeaponDefs,UnitDefs)
     local cursor,scanAge=0,1
@@ -58,6 +68,7 @@ function M.New(weaponConf, policeProfiles, tankProfiles, debugLampProfiles)
         local name=UnitDefs[defID] and UnitDefs[defID].name
         if name=='vehiclecorpse' or name=='tankcorpse' then self.wrecks[id]=name=='tankcorpse' and 1.5 or 1 end
         if name=='ground_walker_flame' then self.pyros[id]={} end
+        self.railguns[id]=name=='nimrod' or nil
         local profile=policeProfiles[defID]
         self.police[id]=profile and {profile=profile} or nil
         profile=tankProfiles[defID]
@@ -72,6 +83,7 @@ function M.New(weaponConf, policeProfiles, tankProfiles, debugLampProfiles)
         self.pyros[id]=nil
         self.police[id]=nil
         self.tanks[id]=nil
+        self.railguns[id]=nil
         self.debugLamps[id]=nil
         drawFrame=nil
     end
@@ -79,7 +91,7 @@ function M.New(weaponConf, policeProfiles, tankProfiles, debugLampProfiles)
         local record=self.tanks[id]
         return record and TankMuzzle.ActiveFrame(Spring,id,record.profile,Spring.GetGameFrame())~=nil
     end
-    function self:AddExplosion(x,y,z,weaponID,muzzle)
+    function self:AddExplosion(x,y,z,weaponID,muzzle,ownerID)
         local p=self.weaponConf[weaponID]
         if not p or not visible(x,y,z) then return end
         local frame=Spring.GetGameFrame()
@@ -88,6 +100,19 @@ function M.New(weaponConf, policeProfiles, tankProfiles, debugLampProfiles)
         self.transient[cursor]={x=x,y=y+4,z=z,born=frame,expires=frame+life,
             radius=clamp(muzzle and 20+p.radius*.44 or p.radius,30,480),
             color={p.r,p.g,p.b},strength=muzzle and .55 or p.orgMult,nightOnly=true}
+        if definitions[weaponID] and definitions[weaponID].railgun then
+            local r=self.transient[cursor]
+            r.expires=frame+math.max(1,math.floor((muzzle and .4 or .6)*(Game.gameSpeed or 30)+.5))
+            r.radius=(muzzle and 150 or 200)*self.radius/1.3
+            r.color=railgunColor
+            r.strength=(muzzle and 2.4 or 2.8)*self.brightness/1.3
+            r.nightOnly=false
+            r.fadePower=1.65
+            -- Metadata excludes the firing unit's own occupancy. It must not
+            -- grant the position the attached-lamp visibility exemption.
+            if muzzle and type(ownerID)=='number' and Spring.ValidUnitID(ownerID)
+                and not Spring.GetUnitIsDead(ownerID) then r.ownerID=ownerID end
+        end
         drawFrame=nil
     end
     function self:SetFire(id,x,y,z,born,expires)
@@ -255,7 +280,8 @@ function M.New(weaponConf, policeProfiles, tankProfiles, debugLampProfiles)
         for _,r in pairs(self.transient) do
             if frame<r.expires then
                 local fade=clamp((r.expires-frame)/(r.expires-r.born),0,1)
-                add(r.x,r.y,r.z,r.radius,r.color,r.strength*fade,true)
+                local light=add(r.x,r.y,r.z,r.radius,r.color,r.strength*fade^(r.fadePower or 1),r.nightOnly)
+                if light then light.unitID=r.ownerID end
             end
         end
         for id,r in pairs(self.fires) do
@@ -358,6 +384,33 @@ function M.New(weaponConf, policeProfiles, tankProfiles, debugLampProfiles)
                 end
             end
         end
+        -- Keep the two original Nimrod deployment flash pairs and their heights.
+        -- Script timestamps make them finite through UI reloads and offscreen
+        -- periods, and visibility checks keep cloaked emplacements concealed.
+        local chargeLife=1.4*(Game.gameSpeed or 30)
+        for id in pairs(self.railguns) do
+            local bornA=Spring.GetUnitRulesParam(id,railgunChargePhases[1].param)
+            local bornB=Spring.GetUnitRulesParam(id,railgunChargePhases[2].param)
+            local activeA=type(bornA)=='number' and bornA>=0 and frame>=bornA and frame<bornA+chargeLife
+            local activeB=type(bornB)=='number' and bornB>=0 and frame>=bornB and frame<bornB+chargeLife
+            -- Idle guns need no position, terrain-height or visibility queries.
+            if (activeA or activeB) and unitVisible(id) then
+                local x,_,z=Spring.GetUnitPosition(id)
+                if x then
+                    local ground=Spring.GetGroundHeight(x,z)
+                    for index,phase in ipairs(railgunChargePhases) do
+                        local active=index==1 and activeA or (index==2 and activeB)
+                        local born=index==1 and bornA or bornB
+                        if active then
+                            local strength=.8*(1-(frame-born)/chargeLife)^1.5*self.brightness/1.3
+                            for _,height in ipairs(phase.heights) do
+                                add(x,ground+height,z,142*self.radius/1.3,railgunColor,strength,false,nil,nil,id)
+                            end
+                        end
+                    end
+                end
+            end
+        end
         -- Glow at each currently visible aiming laser's actual hitscan endpoint.
         -- A small source, not a second beam, CEG, or permanent unit light.
         -- Keep positional LOS checking in add(): a visible drone must not
@@ -380,7 +433,7 @@ function M.New(weaponConf, policeProfiles, tankProfiles, debugLampProfiles)
                     local ribbon=r.fire and flame(x,y,z,r.trail and 1 or .7,p.id,true,vx,vy,vz)
                     local tracer=r.tracer and {x=x,y=y,z=z,vx=vx or 0,vy=vy or 0,vz=vz or 0,
                         width=r.tracerWidth,color=r.color}
-                    add(x,y,z,r.radius*self.radius/1.3,r.color,.65*self.brightness/1.3,not r.fire,ribbon,tracer)
+                    add(x,y,z,r.radius*self.radius/1.3,r.color,r.strength*self.brightness/1.3,r.nightOnly,ribbon,tracer)
                 end
             end
         end
@@ -468,3 +521,4 @@ function M.New(weaponConf, policeProfiles, tankProfiles, debugLampProfiles)
     return self
 end
 return M
+
