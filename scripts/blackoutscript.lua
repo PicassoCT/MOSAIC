@@ -59,6 +59,7 @@ function script.HitByWeapon(x, z, weaponDefID, damage) end
 
 
 function blackOutCycle()
+    if GG.PrioritySFX then GG.PrioritySFX.Unit('emp', unitID, 0) end
     while true do  
         unitsInCircle = getAllNearUnit(unitID, GameConfig.espionage.ecm.iconDeactivateRange)
         filteredUnitsInCircle = {}
@@ -78,6 +79,7 @@ function blackOutCycle()
                     defID = spGetUnitDefID(id)
                     if stunnedInBlackOutUnitType[defID] then
                         stunUnit(id, 10.0)
+                        if GG.PrioritySFX then GG.PrioritySFX.Unit('emp', id, 20) end
                         spawnCegAtUnit(id, "electric_arc",0, 20, 0)                     
                         return
                     end
@@ -85,6 +87,7 @@ function blackOutCycle()
                     if hologramTypeTable[defID] then
                         if not GG.BlackOutDeactivationTime then GG.BlackOutDeactivationTime = {} end
                         GG.BlackOutDeactivationTime[id] = Spring.GetGameFrame()
+                        if GG.PrioritySFX then GG.PrioritySFX.Unit('emp', id, 20) end
                     end
 
                     blackOuttedUnits_OriginalState[id] = Spring.GetUnitNoSelect(id)

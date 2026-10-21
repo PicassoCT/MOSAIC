@@ -1,0 +1,71 @@
+name: High Low SFX regression
+on:
+  push:
+    branches: ['feat/sfx-high-low-priority']
+  pull_request:
+    paths:
+      - 'luaui/widgets_mosaic/include/combat_sfx_policy.lua'
+      - 'luaui/widgets_mosaic/include/combat_light_sources.lua'
+      - 'luaui/widgets_mosaic/gfx_light_effects.lua'
+      - 'luarules/gadgets/gfx_priority_sfx_events.lua'
+      - 'luarules/configs/sticky_bombs.lua'
+      - 'scripts/blackoutscript.lua'
+      - 'scripts/warheadpayloadscript.lua'
+      - 'tests/combat_sfx_*.lua'
+      - '.github/workflows/sfx-priority.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  priority:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      MESA_GL_VERSION_OVERRIDE: 3.3COMPAT
+      LIBGL_ALWAYS_SOFTWARE: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            scripts/
+            tests/
+            units/
+            weapons/
+            gamedata/explosions/railGunCeg.lua
+            luaui/*.lua
+            luaui/widgets_mosaic/gfx_light_effects.lua
+            luaui/widgets_mosaic/include/
+            luaui/widgets_mosaic/shaders/
+            luarules/configs/
+            luarules/gadgets/include/
+            luarules/gadgets/shaders/
+            luarules/gadgets/gfx_explosion_lights.lua
+            luarules/gadgets/gfx_priority_sfx_events.lua
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install runtimes
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y lua5.1 libegl1 libgl1 libgl1-mesa-dri
+          python -m pip install moderngl numpy
+      - name: Verify priority policy and real event integration
+        run: |
+          lua5.1 tests/combat_sfx_priority.lua
+          lua5.1 tests/combat_sfx_collector.lua
+          lua5.1 tests/combat_sfx_events.lua
+          lua5.1 tests/combat_sfx_widget.lua
+      - name: Verify existing combat paths
+        run: |
+          lua5.1 tests/light_effects_widget_startup.lua
+          lua5.1 tests/combat_effects_lifecycle.lua
+          lua5.1 tests/combat_effect_events.lua
+          lua5.1 tests/railgun_radiance.lua
+          lua5.1 tests/tank_muzzle_effects.lua
+          lua5.1 tests/police_radiance_lifecycle.lua
+          lua5.1 tests/cinder_flame_budget_test.lua
+      - name: Render unchanged production shaders
+        run: |
+          python tests/smoke_ribbons_gpu.py
+          python tests/combat_light_gpu.py

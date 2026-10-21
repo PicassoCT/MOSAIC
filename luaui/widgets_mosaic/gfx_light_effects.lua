@@ -128,7 +128,9 @@ local function WeaponExplosion(px,py,pz,weaponID,ownerID)
     if not sources then return end
     sources:AddExplosion(px,py,pz,weaponID,false,ownerID)
     local conf=weaponConf[weaponID]
-    if conf then
+    -- Heat distortion is expensive detail too. Do not let the old LUPS path
+    -- bypass the Low distance gate after its light/ribbon was suppressed.
+    if conf and sources.sfx:Gain(sources.sfx:Profile(weaponID).priority,px,py,pz)>0 then
         local params={life=conf.life,param={radius=conf.radius}}
 		if py > 0 and enableHeatDistortion and WG['Lups'] and params.param.radius > 80 and not weaponConf[weaponID].noheatdistortion and Spring.IsSphereInView(px,py,pz,100) then
 
@@ -258,11 +260,19 @@ function widget:Initialize()
         getCinderBudgetStats=function() return sources and sources.pyroStats end,
         getPoliceLightStats=function() return sources and sources:GetPoliceLightStats() end,
         getRailgunWakeStats=function() return railgunWakes and railgunWakes:GetStats() end,
+        getSfxBudgetStats=function() return sources and sources.sfx.stats end,
         getStatus=effectStatus,
     }
     WG.lighteffects=api
 end
 function widget:TextCommand(command)
+    if command=='sfx status' then
+        local s=sources and sources.sfx.stats or {}
+        Spring.Echo(string.format(
+            '[MOSAIC SFX] new High events=%d/8 Low events=%d/8 missile jets=%d/8 | shared lights=%d/96 ribbons=%d/64 cheap tracers=%d | Low fade=900..1400 elmos; High has no close-up cutoff',
+            s.high or 0,s.low or 0,s.missiles or 0,s.lights or 0,s.ribbons or 0,s.tracers or 0))
+        return true
+    end
     if command=='railgun status' then
         local s=railgunWakes and railgunWakes:GetStats() or {}
         local r=railgunRenderer and railgunRenderer:GetStats() or {}

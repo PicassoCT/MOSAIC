@@ -4,6 +4,8 @@ local config = {plantRange = 150, plantedFuseMs = 5000, deathFuseMs = 2000,
 function config.explode(bombID, targetID, x, y, z, count)
     local strength = config.damage * (count or 1)
     Spring.SpawnCEG("bigbulletimpact", x, y + 25, z, 0, 1, 0, 50, 0)
+    -- High: one detached visual event for the whole charge stack.
+    if GG and GG.PrioritySFX then GG.PrioritySFX.Burst('sticky', x, y, z, targetID) end
     Spring.PlaySoundFile("sounds/explosions/Explosion1.ogg", 1, x, y, z)
     local attacker = bombID and Spring.ValidUnitID(bombID) and bombID or nil
     if targetID and Spring.ValidUnitID(targetID) and not Spring.GetUnitIsDead(targetID) then

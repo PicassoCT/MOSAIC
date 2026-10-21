@@ -24,6 +24,10 @@ local AimLaserGlow = VFS and VFS.Include and
     VFS.Include('luaui/widgets_mosaic/include/aiming_laser_glow.lua') or
     dofile('luaui/widgets_mosaic/include/aiming_laser_glow.lua')
 
+local Sfx = VFS and VFS.Include and
+    VFS.Include('luaui/widgets_mosaic/include/combat_sfx_policy.lua') or
+    dofile('luaui/widgets_mosaic/include/combat_sfx_policy.lua')
+
 local projectileTypes={Cannon=true,MissileLauncher=true,StarburstLauncher=true,
     LaserCannon=true,BeamLaser=true,LightningCannon=true,DGun=true,Flame=true}
 function M.Weapon(wd)
@@ -48,10 +52,18 @@ function M.New(weaponConf, policeProfiles, tankProfiles, debugLampProfiles)
     local self={transient={},fires={},wrecks={},police={},tanks={},railguns={},debugLamps={},torches={},pyros={},projectiles={},weaponConf=weaponConf,
         brightness=1.3,radius=1.3}
     local aimingLasers = AimLaserGlow.New(Spring,WeaponDefs,UnitDefs)
+    self.sfx=Sfx.New(Spring,Game,WeaponDefs,WeaponDefNames)
     local cursor,scanAge=0,1
     local drawFrame,lights,flames,tracers
     local definitions={}
-    for id,wd in pairs(WeaponDefs) do definitions[id]=M.Weapon(wd) end
+    for id,wd in pairs(WeaponDefs) do
+        local def=M.Weapon(wd)
+        if def then
+            def.priority=self.sfx:Profile(id).priority
+            def.sfxKind=self.sfx:Profile(id).kind
+        end
+        definitions[id]=def
+    end
     local function visible(x,y,z)
         local _,full=Spring.GetSpectatingState()
         return full or Spring.IsPosInLos(x,y,z,Spring.GetMyAllyTeamID())
@@ -92,14 +104,29 @@ function M.New(weaponConf, policeProfiles, tankProfiles, debugLampProfiles)
         return record and TankMuzzle.ActiveFrame(Spring,id,record.profile,Spring.GetGameFrame())~=nil
     end
     function self:AddExplosion(x,y,z,weaponID,muzzle,ownerID)
+        if self.sfx:Explosion(x,y,z,weaponID,muzzle,ownerID,visible,unitVisible) then
+            drawFrame=nil
+            return
+        end
         local p=self.weaponConf[weaponID]
         if not p or not visible(x,y,z) then return end
+        local priority=self.sfx:Profile(weaponID).priority
+        if self.sfx:Gain(priority,x,y,z)<=0 then return end
         local frame=Spring.GetGameFrame()
         cursor=cursor%M.maxTransient+1
+        -- Low traffic never evicts a High flash from the bounded event ring.
+        if self.transient[cursor] and self.transient[cursor].priority==Sfx.HIGH then
+            local free
+            for i=1,M.maxTransient do
+                local at=(cursor+i-1)%M.maxTransient+1
+                if not self.transient[at] or self.transient[at].priority~=Sfx.HIGH then free=at;break end
+            end
+            if free then cursor=free elseif priority==Sfx.LOW then return end
+        end
         local life=math.max(4,muzzle and p.life*.3 or p.life)
         self.transient[cursor]={x=x,y=y+4,z=z,born=frame,expires=frame+life,
             radius=clamp(muzzle and 20+p.radius*.44 or p.radius,30,480),
-            color={p.r,p.g,p.b},strength=muzzle and .55 or p.orgMult,nightOnly=true}
+            color={p.r,p.g,p.b},strength=muzzle and .55 or p.orgMult,nightOnly=true,priority=priority}
         if definitions[weaponID] and definitions[weaponID].railgun then
             local r=self.transient[cursor]
             r.expires=frame+math.max(1,math.floor((muzzle and .4 or .6)*(Game.gameSpeed or 30)+.5))
@@ -131,6 +158,7 @@ function M.New(weaponConf, policeProfiles, tankProfiles, debugLampProfiles)
         drawFrame=nil
     end
     function self:Update(dt)
+        self.sfx:Update()
         local frame=Spring.GetGameFrame()
         for key,r in pairs(self.transient) do if frame>=r.expires then self.transient[key]=nil end end
         for key,r in pairs(self.fires) do if frame>=r.expires then self.fires[key]=nil end end
@@ -145,10 +173,16 @@ function M.New(weaponConf, policeProfiles, tankProfiles, debugLampProfiles)
             local def=definitions[defID]
             if def then
                 local x,y,z=Spring.GetProjectilePosition(id)
-                if x then candidates[#candidates+1]={id=id,defID=defID,def=def,d2=(x-cx)^2+(y-cy)^2+(z-cz)^2} end
+                if x then
+                    local gain,d2=self.sfx:Gain(def.priority,x,y,z,cx,cy,cz)
+                    -- Tracer geometry has its own cheap, all-distance cue path.
+                    if gain>0 or def.tracer then
+                        candidates[#candidates+1]={id=id,defID=defID,def=def,d2=d2,priority=def.priority}
+                    end
+                end
             end
         end
-        table.sort(candidates,function(a,b) if a.d2==b.d2 then return a.id<b.id end;return a.d2<b.d2 end)
+        table.sort(candidates,Sfx.Before)
         for i=#candidates,M.maxProjectiles+1,-1 do candidates[i]=nil end
         self.projectiles=candidates;drawFrame=nil
     end
@@ -262,25 +296,36 @@ function M.New(weaponConf, policeProfiles, tankProfiles, debugLampProfiles)
         local extraFlames={}
         local cx,cy,cz=Spring.GetCameraPosition()
         local frame=Spring.GetGameFrame()+(Spring.GetFrameTimeOffset() or 0)
-        local function add(x,y,z,radius,color,strength,nightOnly,ribbon,tracer,visibleUnitID)
+        local function add(x,y,z,radius,color,strength,nightOnly,ribbon,tracer,visibleUnitID,priority)
+            priority=priority or Sfx.HIGH
+            local gain,d2=self.sfx:Gain(priority,x,y,z,cx,cy,cz)
+            if gain<=0 or strength<=0 then return end
+            if Spring.IsSphereInView and not Spring.IsSphereInView(x,y,z,radius) then return end
             -- A validated unit's visibility is authoritative for attached lamps.
             -- Always-visible police can be outside the terrain's positional LOS.
             -- Unattached combat effects retain their positional visibility check.
             if not visibleUnitID and not visible(x,y,z) then return end
-            lights[#lights+1]={x=x,y=y,z=z,radius=radius,color=color,strength=strength,
+            if ribbon then
+                ribbon.opacity=(ribbon.opacity or 1)*gain
+                Sfx.PrepareRibbon(ribbon,priority,d2)
+            end
+            lights[#lights+1]={x=x,y=y,z=z,radius=radius,color=color,strength=strength*gain,
                 nightOnly=nightOnly,ribbon=ribbon,tracer=tracer,unitID=visibleUnitID,
-                d2=(x-cx)^2+(y-cy)^2+(z-cz)^2,order=#lights+1}
+                d2=d2,priority=priority,order=#lights+1}
             return lights[#lights]
         end
-        local function fire(x,y,z,scale,seed,opacity)
+        local function fire(x,y,z,scale,seed,opacity,priority)
+            priority=priority or Sfx.HIGH
+            if self.sfx:Gain(priority,x,y,z,cx,cy,cz)<=0 then return end
             local flicker=.82+.11*math.sin(frame*.43+seed)+.07*math.sin(frame*.79+seed*2)
             return add(x,y,z,100*scale*self.radius/1.3,{1,.3,.04},flicker*opacity*self.brightness/1.3,false,
-                flame(x,y,z,scale,seed,false,nil,nil,nil,opacity))
+                flame(x,y,z,scale,seed,false,nil,nil,nil,opacity),nil,nil,priority)
         end
         for _,r in pairs(self.transient) do
             if frame<r.expires then
                 local fade=clamp((r.expires-frame)/(r.expires-r.born),0,1)
-                local light=add(r.x,r.y,r.z,r.radius,r.color,r.strength*fade^(r.fadePower or 1),r.nightOnly)
+                local light=add(r.x,r.y,r.z,r.radius,r.color,r.strength*fade^(r.fadePower or 1),r.nightOnly,
+                    nil,nil,nil,r.priority)
                 if light then light.unitID=r.ownerID end
             end
         end
@@ -320,8 +365,14 @@ function M.New(weaponConf, policeProfiles, tankProfiles, debugLampProfiles)
                 end
             end
         end
+        local function closeUnit(id)
+            local x,y,z
+            if Spring.GetUnitViewPosition then x,y,z=Spring.GetUnitViewPosition(id) end
+            if not x then x,y,z=Spring.GetUnitPosition(id) end
+            return x and self.sfx:Gain(Sfx.LOW,x,y,z,cx,cy,cz)>0
+        end
         for id,scale in pairs(self.wrecks) do
-            if unitVisible(id) then
+            if (scale>1 or closeUnit(id)) and unitVisible(id) then
                 local expires=Spring.GetUnitRulesParam(id,'mosaic_fire_until') or 0
                 local piece=Spring.GetUnitRulesParam(id,'mosaic_fire_piece')
                 if piece and frame<expires then
@@ -330,7 +381,7 @@ function M.New(weaponConf, policeProfiles, tankProfiles, debugLampProfiles)
                         local ux,uy,uz=Spring.GetUnitPosition(id)
                         local vx,vy,vz=Spring.GetUnitViewPosition(id)
                         if ux and vx then x,y,z=x+vx-ux,y+vy-uy,z+vz-uz end
-                        local light=fire(x,y+4,z,scale,id,clamp((expires-frame)/15,0,1))
+                        local light=fire(x,y+4,z,scale,id,clamp((expires-frame)/15,0,1),scale>1 and Sfx.HIGH or Sfx.LOW)
                         if light and Spring.GetUnitRulesParam(id,'mosaic_fire_broad')==1 then
                             -- Car-only opt-in: one broad upward column at the
                             -- original anchor. Do not alter its radiance light.
@@ -353,12 +404,12 @@ function M.New(weaponConf, policeProfiles, tankProfiles, debugLampProfiles)
         -- Police lightbars share the normal combat-light radiance capture: no extra pass.
         -- Two rooftop beacons alternate at 3 Hz, remaining visible by day as well.
         for id,record in pairs(self.police) do
-            if unitVisible(id) then
+            if closeUnit(id) and unitVisible(id) then
                 local profile=record.profile
                 local phase=math.floor(frame/profile.phaseFrames)%2
                 local x,y,z=policeOrigin(id,record,phase)
                 if x then
-                    add(x,y,z,profile.radius,profile.colors[phase+1],profile.strength,false,nil,nil,id)
+                    add(x,y,z,profile.radius,profile.colors[phase+1],profile.strength,false,nil,nil,id,Sfx.LOW)
                 end
             end
         end
@@ -419,6 +470,8 @@ function M.New(weaponConf, policeProfiles, tankProfiles, debugLampProfiles)
             add(dot.x,dot.y,dot.z,AimLaserGlow.radius*self.radius/1.3,
                 AimLaserGlow.color,AimLaserGlow.strength*self.brightness/1.3,false)
         end
+        self.sfx:Collect(frame,cx,cy,cz,visible,unitVisible,add,extraFlames,self.brightness,self.radius)
+        local missileCount=0
         for _,p in ipairs(self.projectiles) do
             -- Def check prevents a reused projectile ID inheriting an old flame.
             if Spring.GetProjectileDefID(p.id)==p.defID then
@@ -430,10 +483,32 @@ function M.New(weaponConf, policeProfiles, tankProfiles, debugLampProfiles)
                     local offset=Spring.GetFrameTimeOffset() or 0
                     x,y,z=x+(vx or 0)*offset,y+(vy or 0)*offset,z+(vz or 0)*offset
                     local r=p.def
-                    local ribbon=r.fire and flame(x,y,z,r.trail and 1 or .7,p.id,true,vx,vy,vz)
-                    local tracer=r.tracer and {x=x,y=y,z=z,vx=vx or 0,vy=vy or 0,vz=vz or 0,
-                        width=r.tracerWidth,color=r.color}
-                    add(x,y,z,r.radius*self.radius/1.3,r.color,r.strength*self.brightness/1.3,r.nightOnly,ribbon,tracer)
+                    if r.tracer then
+                        -- Keep the night tracer even when its expensive detail
+                        -- is culled. MG lighting comes from pooled gun flashes,
+                        -- never a moving radiance source on every round.
+                        if visible(x,y,z) then
+                            tracers[#tracers+1]={x=x,y=y,z=z,vx=vx or 0,vy=vy or 0,vz=vz or 0,
+                                width=r.tracerWidth,color=r.color}
+                        end
+                    else
+                        local gain,d2=self.sfx:Gain(r.priority,x,y,z,cx,cy,cz)
+                        if gain>0 and visible(x,y,z) then
+                            local ribbon
+                            if r.sfxKind=='missile' then
+                                if missileCount<Sfx.maxMissiles then
+                                    ribbon=self.sfx:Missile(x,y,z,vx,vy,vz,p.id,r.priority,d2)
+                                    missileCount=missileCount+1
+                                    add(x,y,z,70*self.radius/1.3,{1,.55,.12},.9*self.brightness/1.3,
+                                        false,ribbon,nil,nil,r.priority)
+                                end
+                            else
+                                ribbon=r.fire and flame(x,y,z,r.trail and 1 or .7,p.id,true,vx,vy,vz)
+                                add(x,y,z,r.radius*self.radius/1.3,r.color,r.strength*self.brightness/1.3,
+                                    r.nightOnly,ribbon,nil,nil,r.priority)
+                            end
+                        end
+                    end
                 end
             end
         end
@@ -451,20 +526,30 @@ function M.New(weaponConf, policeProfiles, tankProfiles, debugLampProfiles)
             add=add,extraFlames=extraFlames,brightness=self.brightness,
         })
         self.pyroStats=PyroBudget.lastStats
-        table.sort(lights,function(a,b) if a.d2==b.d2 then return a.order<b.order end;return a.d2<b.d2 end)
+        table.sort(lights,Sfx.Before)
         for i=#lights,M.maxLights+1,-1 do lights[i]=nil end
+        local ribbonCandidates={}
         for _,l in ipairs(lights) do
             if l.ribbon then
-                flames[#flames+1]=l.ribbon
+                ribbonCandidates[#ribbonCandidates+1]={ribbon=l.ribbon,d2=l.d2,priority=l.priority,order=#ribbonCandidates+1}
             end
             if l.tracer then tracers[#tracers+1]=l.tracer end
         end
-        -- Cinder side streamers have no extra ground-light record and retain
-        -- the existing shared 64-FlamePainter rendering allowance.
-        table.sort(extraFlames,function(a,b) return a.d2<b.d2 end)
-        for i=1,math.min(#extraFlames,math.max(0,64-#flames)) do
-            flames[#flames+1]=extraFlames[i].ribbon
+        -- All ribbons share the old cap, including unlit secondary tongues.
+        -- Select High before Low here: the renderer may then sort the admitted
+        -- set for blending without dropping a distant High for a nearby Low.
+        for _,r in ipairs(extraFlames) do
+            r.priority=r.priority or Sfx.HIGH
+            r.order=#ribbonCandidates+1
+            Sfx.PrepareRibbon(r.ribbon,r.priority,r.d2)
+            ribbonCandidates[#ribbonCandidates+1]=r
         end
+        table.sort(ribbonCandidates,Sfx.Before)
+        for i=1,math.min(64,#ribbonCandidates) do flames[i]=ribbonCandidates[i].ribbon end
+        self.sfx.stats.missiles=missileCount
+        self.sfx.stats.lights=#lights
+        self.sfx.stats.ribbons=#flames
+        self.sfx.stats.tracers=#tracers
         return lights,flames,tracers
     end
     -- On-demand diagnostics; no extra per-frame LOS or piece queries.

@@ -101,6 +101,9 @@ local detonated=false
 local function payloadCloudAtUnit(id, preset, yOffset)
     local x,y,z=Spring.GetUnitPosition(id)
     if x and GG.CloudVolume then GG.CloudVolume.Burst(preset,x,y+(yOffset or 0),z) end
+    if x and preset=='electric' and GG.PrioritySFX then
+        GG.PrioritySFX.Burst('emp',x,y+(yOffset or 0),z,id)
+    end
 end
 
 function mightyBadaBoom(lastAttackerTeam)
@@ -554,4 +557,3 @@ function script.Deactivate() return 0 end
 -- end
 
 -- Spring.SetUnitNanoPieces(unitID, { center })
-
