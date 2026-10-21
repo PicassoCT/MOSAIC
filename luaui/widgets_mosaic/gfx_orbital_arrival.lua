@@ -125,7 +125,7 @@ end
 
 local function fittedText(text, x, y, size, available, options)
   -- GetTextWidth is measured at unit font size. Fit unusually long map names
-  -- and risk labels without truncating any of the deterministic content.
+  -- and risk labels fit without dropping any deterministic content.
   local units = gl.GetTextWidth and gl.GetTextWidth(text) or #text * 0.62
   gl.Text(text, x, y, math.min(size, available / math.max(units, 0.01)), options or "o")
 end
@@ -137,7 +137,11 @@ local function drawRiskOverlay(progress)
   -- Only the artwork blend and the terminal handoff change its visibility;
   -- the final .98..1 cloud interval must remain the exact live framebuffer.
   local cloud = Arrival.cloudDescent(progress)
-  local alpha = (fade or 0) * (1 - Arrival.clamp((cloud - 0.94) / 0.04))
+  -- Acquire the screen-space lock only as the temporary projection settles.
+  -- From the first held orbital snapshot onward its original alpha is intact.
+  local lockFade = fade or 0
+  if lockFade < 1 then lockFade = Arrival.clamp((lockFade - 0.82) / 0.18) end
+  local alpha = lockFade * (1 - Arrival.clamp((cloud - 0.94) / 0.04))
   if alpha <= 0 then return end
   local target = Arrival.targetFrame(progress, width, height)
 
@@ -252,8 +256,12 @@ function widget:DrawScreenEffects()
     -- The only zoom trigger is the advancing game-frame counter.
     if not begin() then return end
   end
+  local warming = not hasCapture
   local wallElapsed = Spring.DiffTimers(Spring.GetTimer(), timer)
-  local elapsed = Arrival.advanceTime(modal.elapsed or 0, wallElapsed - lastWallElapsed)
+  -- Build/capture the first snapshot underneath exact, unmodified artwork.
+  -- Initial allocation and the first driver draw are not presentation time.
+  local elapsed = warming and 0
+    or Arrival.advanceTime(modal.elapsed or 0, wallElapsed - lastWallElapsed)
   lastWallElapsed = wallElapsed
   fade = Arrival.clamp(elapsed / Arrival.blendSeconds)
   descent = Arrival.clamp(elapsed / Arrival.descentSeconds)
@@ -264,6 +272,10 @@ function widget:DrawScreenEffects()
     finish(); return
   end
   drawRiskOverlay(descent)
+  if warming then
+    timer = Spring.GetTimer()
+    lastWallElapsed = 0
+  end
   if descent >= 1 then finish() end
 end
 

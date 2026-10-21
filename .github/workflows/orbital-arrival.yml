@@ -7,6 +7,7 @@ on:
       - 'luaui/widgets_mosaic/include/orbital_arrival.lua'
       - 'luaui/widgets_mosaic/shaders/orbital_arrival_*.frag'
       - 'tests/orbital_arrival*'
+      - 'tests/fixtures/orbital_arrival_composite_before_holotable.frag'
       - '.github/workflows/orbital-arrival.yml'
   workflow_dispatch:
 jobs:
@@ -31,8 +32,18 @@ jobs:
         run: |
           lua5.1 tests/orbital_arrival_telemetry.lua
           lua5.1 tests/orbital_arrival_survey.lua
+      - name: Verify transition-only holotable lifecycle
+        run: lua5.1 tests/orbital_arrival_holotable.lua
       - name: Compile and render production orbital shaders
         env:
           EGL_PLATFORM: surfaceless
           LIBGL_ALWAYS_SOFTWARE: '1'
         run: python tests/orbital_arrival_gpu.py
+      - name: Compare holotable endpoints and unchanged zoom pixels
+        env:
+          EGL_PLATFORM: surfaceless
+          LIBGL_ALWAYS_SOFTWARE: '1'
+        run: |
+          python tests/orbital_arrival_holotable_gpu.py
+          python tests/orbital_arrival_holotable_gpu.py --width 320 --height 240
+          python tests/orbital_arrival_holotable_gpu.py --width 840 --height 360
