@@ -11,6 +11,13 @@ renderer is not removed.
 - Weapon muzzle flashes, explosions and visible projectile lights are scaled
   by the cascade's night factor. `Flame` projectiles and Molotovs additionally
   use FlamePainter ribbons; persistent fire remains luminous in daylight.
+- Nimrod ground/orbital railguns have dedicated cold cyan radiance, visible
+  in daylight: 0.4-second muzzle and 0.6-second impact pulses, plus a moving
+  projectile source. Their existing CEG rings and impacts remain. A detached
+  shader wake follows the observed flight path and dissolves within 15
+  simulation seconds, independently of the short-lived lights. See
+  [Railgun radiance and lingering wake](railgun-wake.md) for budgets and checks;
+  `/railgun status` reports its on-demand diagnostics.
 - Day and night tanks have a dedicated firing flash: `FireWeapon1` publishes
   a shot frame, and the client renders a forward FlamePainter ribbon and an
   orange radiance light at `FireEmit` for 12 simulation frames. Both remain
@@ -119,3 +126,4 @@ Molotov and both wreckage types. Check flame extinction, LOS loss/re-entry,
 LuaUI reload and widget disable/re-enable. Compare frame times with combat
 effects enabled and disabled: this change adds working effects, so automated
 correctness checks do not establish an FPS improvement on the 1050 Ti.
+

@@ -5,11 +5,12 @@ end
 
 local types={Cannon=true,MissileLauncher=true,StarburstLauncher=true,AircraftBomb=true,
     LaserCannon=true,BeamLaser=true,LightningCannon=true,DGun=true,Flame=true}
-local watched,wanted={},{}
+local watched,wanted,railguns={},{},{}
 for id,wd in pairs(WeaponDefs) do
     -- Cinder fire projectiles do gameplay damage but never emit individual
     -- muzzle/explosion light events. The unit emits one continuous ribbon.
     local cp=wd.customParams or {}
+    if tonumber(cp.railgun_wake)==1 then railguns[id]=true end
     if types[wd.type] and tonumber(cp.no_projectile_vfx)~=1 then
         watched[id]=true;wanted[#wanted+1]=id
     end
@@ -19,14 +20,49 @@ local fuelburst=WeaponDefNames.walkerfuelburst and WeaponDefNames.walkerfuelburs
 local pyro=UnitDefNames and UnitDefNames.ground_walker_flame and UnitDefNames.ground_walker_flame.id
 if gadgetHandler:IsSyncedCode() then
     local fires,cursor,lastMuzzle={},0,{}
+    local railShots,railCount={},0
+    local maxRailShots=32
+    local function railPoint(projectileID,shot,x,y,z,frame,done)
+        if not x then x,y,z=shot.x,shot.y,shot.z end
+        if x then
+            shot.x,shot.y,shot.z,shot.frame=x,y,z,frame
+            SendToUnsynced('railgun_wake_point',projectileID,shot.born,shot.weaponID,
+                x,y,z,frame,done and 1 or 0)
+        end
+        if done then railShots[projectileID]=nil;railCount=railCount-1 end
+    end
+    local function startRailShot(projectileID,weaponID,x,y,z,frame)
+        if not railguns[weaponID] or not x then return end
+        if railShots[projectileID] then
+            railPoint(projectileID,railShots[projectileID],nil,nil,nil,frame,true)
+        end
+        if railCount>=maxRailShots then
+            local oldestID,oldest
+            for id,shot in pairs(railShots) do
+                if not oldest or shot.born<oldest.born or (shot.born==oldest.born and id<oldestID) then
+                    oldestID,oldest=id,shot
+                end
+            end
+            if oldest then railPoint(oldestID,oldest,nil,nil,nil,frame,true) end
+        end
+        local shot={born=frame,weaponID=weaponID,expires=frame+15*(Game.gameSpeed or 30)}
+        railShots[projectileID]=shot;railCount=railCount+1
+        railPoint(projectileID,shot,x,y,z,frame,false)
+    end
     _G.MosaicCombatFires=fires
     function gadget:Initialize()
         for id in pairs(watched) do Script.SetWatchWeapon(id,true) end
     end
     function gadget:Explosion_GetWantedWeaponDef() return wanted end
-    function gadget:Explosion(weaponID,x,y,z,ownerID)
+    function gadget:Explosion(weaponID,x,y,z,ownerID,projectileID)
         if not watched[weaponID] then return end
         SendToUnsynced('explosion_light',x,y,z,weaponID,ownerID)
+        local shot=projectileID and railShots[projectileID]
+        if shot and shot.weaponID==weaponID then
+            -- Orbital noExplode rounds can hit and continue; ordinary railgun
+            -- rounds end at this exact impact point rather than an aimed target.
+            railPoint(projectileID,shot,x,y,z,Spring.GetGameFrame(),not WeaponDefs[weaponID].noExplode)
+        end
         if (weaponID==molotov or weaponID==fuelburst) and y>=0 then
             cursor=cursor%128+1
             local frame=Spring.GetGameFrame()
@@ -34,15 +70,32 @@ if gadgetHandler:IsSyncedCode() then
         end
     end
     function gadget:ProjectileCreated(projectileID,ownerID,weaponID)
+        weaponID=weaponID or Spring.GetProjectileDefID(projectileID)
         if not watched[weaponID] then return end
         local frame=Spring.GetGameFrame()
+        local x,y,z
+        -- This happens before generic muzzle throttling, so every burst member
+        -- and same-frame short shot has its own identity and observed start.
+        if railguns[weaponID] then
+            x,y,z=Spring.GetProjectilePosition(projectileID)
+            startRailShot(projectileID,weaponID,x,y,z,frame)
+        end
         local key=ownerID or -1
         local prior=lastMuzzle[key]
         if prior and frame-prior<3 then return end -- at most 10 Hz per firing unit
-        local x,y,z=Spring.GetProjectilePosition(projectileID)
+        if not railguns[weaponID] then x,y,z=Spring.GetProjectilePosition(projectileID) end
         if x then
             lastMuzzle[key]=frame
             SendToUnsynced('barrelfire_light',x,y,z,weaponID,ownerID)
+        end
+    end
+    function gadget:ProjectileDestroyed(projectileID)
+        local shot=railShots[projectileID]
+        if shot then
+            -- Recoil invokes this before deleting the projectile; retain a
+            -- cached endpoint as a fallback for older engine builds.
+            local x,y,z=Spring.GetProjectilePosition(projectileID)
+            railPoint(projectileID,shot,x,y,z,Spring.GetGameFrame(),true)
         end
     end
     function gadget:UnitDestroyed(id,defID)
@@ -53,6 +106,10 @@ if gadgetHandler:IsSyncedCode() then
         end
     end
     function gadget:GameFrame(frame)
+        for id,shot in pairs(railShots) do
+            local x,y,z=Spring.GetProjectilePosition(id)
+            railPoint(id,shot,x,y,z,frame,not x or frame>=shot.expires)
+        end
         if frame%3~=0 then return end
         for id,r in pairs(fires) do if frame>=r.expires then fires[id]=nil end end
     end
@@ -77,6 +134,17 @@ else
             Script.LuaUI.GadgetWeaponBarrelfire(x,y,z,weaponID,ownerID)
         end
     end
+    local function RailgunPoint(_,projectileID,born,weaponID,x,y,z,frame,done)
+        if visible(x,y,z) then
+            if Script.LuaUI('GadgetRailgunWakePoint') then
+                Script.LuaUI.GadgetRailgunWakePoint(projectileID,born,weaponID,x,y,z,frame,done)
+            end
+        elseif Script.LuaUI('GadgetRailgunWakeGap') then
+            -- Never forward a hidden position or join two visible sections
+            -- across an unobserved part of the projectile's flight.
+            Script.LuaUI.GadgetRailgunWakeGap(projectileID,born,frame,done)
+        end
+    end
     local lastUpdate
     function gadget:Update()
         -- MOSAIC's gadget handler does not pass dt to Update.
@@ -97,10 +165,13 @@ else
         gadgetHandler:AddSyncAction('explosion_light',Explosion)
         gadgetHandler:AddSyncAction('barrelfire_light',Muzzle)
         gadgetHandler:AddSyncAction('pyro_torch_off',PyroTorch)
+        gadgetHandler:AddSyncAction('railgun_wake_point',RailgunPoint)
     end
     function gadget:Shutdown()
         gadgetHandler:RemoveSyncAction('explosion_light')
         gadgetHandler:RemoveSyncAction('barrelfire_light')
         gadgetHandler:RemoveSyncAction('pyro_torch_off')
+        gadgetHandler:RemoveSyncAction('railgun_wake_point')
     end
 end
+

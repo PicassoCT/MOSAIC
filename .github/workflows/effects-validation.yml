@@ -12,6 +12,10 @@ on:
       - 'scripts/airplanefighterjetscript.lua'
       - 'scripts/parachutscript.lua'
       - 'scripts/tankscript.lua'
+      - 'scripts/nimrodscript.lua'
+      - 'weapons/railgun.lua'
+      - 'weapons/orbitalRailgun.lua'
+      - 'gamedata/explosions/railGunCeg.lua'
       - 'luaui/system.lua'
       - 'luaui/configs/mosaic_validation.lua'
       - 'luaui/widgets_mosaic/dbg_validation.lua'
@@ -24,11 +28,14 @@ on:
       - 'luaui/widgets_mosaic/include/mobile_shadow_sources.lua'
       - 'luaui/widgets_mosaic/include/radiance_scene.lua'
       - 'luaui/widgets_mosaic/include/tank_muzzle_flash.lua'
+      - 'luaui/widgets_mosaic/include/railgun_*.lua'
+      - 'luaui/widgets_mosaic/shaders/railgun_wake/*'
       - 'luaui/widgets_mosaic/shaders/radiancecascade/combat_emission.*'
       - 'luaui/widgets_mosaic/shaders/radiancecascade/mobile_shadow.glsl'
       - 'luaui/widgets_mosaic/shaders/radiancecascade/scene.frag'
       - 'luarules/gadgets/game_validation_session.lua'
       - 'luarules/gadgets/gfx_smoke_ribbons.lua'
+      - 'luarules/gadgets/gfx_explosion_lights.lua'
       - 'luarules/gadgets/include/smoke_ribbon_*.lua'
       - 'luarules/gadgets/shaders/smokeRibbon.*'
       - 'tests/light_effects_widget_startup.lua'
@@ -44,6 +51,7 @@ on:
       - 'tests/smoke_ribbons_lifecycle.lua'
       - 'tests/aircraft_ribbon_lifecycle.lua'
       - 'tests/f35_rearm_test.lua'
+      - 'tests/railgun_*'
       - '.github/workflows/effects-validation.yml'
   workflow_dispatch:
 
@@ -63,6 +71,7 @@ jobs:
             tests/
             units/
             weapons/
+            gamedata/explosions/railGunCeg.lua
             luaui/*.lua
             luaui/configs/mosaic_validation.lua
             luaui/widgets_mosaic/dbg_validation.lua
@@ -95,6 +104,12 @@ jobs:
           lua5.1 tests/police_radiance_lifecycle.lua
           lua5.1 tests/combat_effects_lifecycle.lua
           lua5.1 tests/combat_effect_events.lua
+      - name: Verify railgun trajectory, radiance and renderer lifecycles
+        run: |
+          lua5.1 tests/railgun_wakes.lua
+          lua5.1 tests/railgun_effect_events.lua
+          lua5.1 tests/railgun_radiance.lua
+          lua5.1 tests/railgun_wake_renderer.lua
       - name: Verify parachute attachments and existing ribbon lifecycles
         run: |
           lua5.1 tests/graphene_arcs_lifecycle.lua
@@ -112,5 +127,7 @@ jobs:
           python tests/graphene_chute_gpu.py
           python tests/smoke_ribbons_gpu.py
           python tests/combat_light_gpu.py
+          python tests/railgun_wake_gpu.py
           python tests/mobile_radiance_shadows_gpu.py
           python tests/radiance_capture_state_gpu.py
+

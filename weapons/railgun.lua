@@ -48,7 +48,7 @@ local weaponDef = {
     sprayangle = 0,
     stages = 32,
     fireStarter = 0,
-    customParams = { wall_damage_multiplier = 0.5 },
+    customParams = { wall_damage_multiplier = 0.5, railgun_wake = 1 },
     turret = true,
     alwaysVisible  = true,
     weaponType = [[Cannon]],

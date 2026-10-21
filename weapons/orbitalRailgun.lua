@@ -47,6 +47,7 @@ local weaponDef = {
     sprayangle = 800,
     stages = 32,
     fireStarter = 35,
+    customParams = { railgun_wake = 1 },
     turret = true,
 
     weaponType = [[Cannon]],

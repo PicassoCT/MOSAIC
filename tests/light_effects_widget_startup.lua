@@ -5,6 +5,7 @@ assert(setfenv and getfenv, 'this regression must run with Lua 5.1')
 local frame, drawFrame = 100, 1
 local shot = {[72] = 100, [73] = -1}
 local messages, globals, draws = {}, {}, 0
+local wakeVertices = 0
 local hidden, missingPieces = {}, {}
 local captureMode, captureDepth, captureDepthMask
 local captureOwners = {}
@@ -15,7 +16,10 @@ UnitDefs = {
     [2]={name='ground_tank_day'},
     [3]={name='ground_tank_night'},
 }
-WeaponDefs = {{name='tankcannon', type='Cannon', damageAreaOfEffect=80, visuals={}}}
+WeaponDefs = {
+    {name='tankcannon', type='Cannon', damageAreaOfEffect=80, visuals={}},
+    {name='railgun', type='Cannon', damageAreaOfEffect=160, visuals={},customParams={railgun_wake=1}},
+}
 Spring = {
     Echo=function(s) messages[#messages+1]=s end,
     GetGameFrame=function() return frame end,
@@ -67,7 +71,8 @@ gl = {
     UniformInt=function(name,value) if name=='sourceMetadata' then captureMode=value end end,
     DepthTest=function(value) captureDepth=value end,
     DepthMask=function(value) captureDepthMask=value end,
-    Vertex=noop, TexCoord=noop, DeleteList=noop, DeleteShader=noop,
+    Vertex=function(_,_,_,t) if t~=nil then wakeVertices=wakeVertices+1 end end,
+    TexCoord=noop, MultiTexCoord=noop, DeleteList=noop, DeleteShader=noop,
     PushAttrib=noop, PopAttrib=noop, AlphaTest=noop,
     Culling=noop, Texture=noop, Blending=noop, UseShader=noop, Color=noop,
 }
@@ -99,12 +104,13 @@ end
 local w=loadWidget()
 assert(shared.lighteffects and shared.CaptureCombatLightEmission and shared.HasCombatLightEmission,
     'combat widget failed to publish its render providers')
-assert(globals.GadgetWeaponBarrelfire and globals.GadgetWeaponExplosion and globals.GadgetCombatFire,
+assert(globals.GadgetWeaponBarrelfire and globals.GadgetWeaponExplosion and globals.GadgetCombatFire
+    and globals.GadgetRailgunWakePoint and globals.GadgetRailgunWakeGap,
     'combat callbacks were lost during widget initialization')
 assert(not w.getPoliceLightTypeTable and not w.getTankMuzzleTypeTable and not w.MOSAIC_CONFIG_ONLY,
     'config-only include leaked helpers or flags into the widget environment')
 local status=shared.lighteffects.getStatus()
-assert(status.flamePainter and status.radiance and status.tracers,
+assert(status.flamePainter and status.radiance and status.tracers and status.railgunWake,
     'normal startup did not report linked renderers')
 assert(status.tanks.tracked==2 and status.tanks.active==1 and status.tanks.queued==1,
     'central config membership did not reach the live source collector')
@@ -118,21 +124,37 @@ shared.CaptureCombatLightEmission(0,256,1,0,false)
 assert(captureMode==0 and captureDepth==false and captureDepthMask==false,
     'ordinary light capture retained mobile-shadow metadata state')
 assert(w:TextCommand('effects status'))
-assert(messages[#messages-1]:find('FlamePainter=ready',1,true))
+assert(messages[#messages-2]:find('FlamePainter=ready',1,true))
+assert(messages[#messages]:find('railgun-wake=ready',1,true))
 assert(not w:TextCommand('unrelated command'), 'effect status consumed an unrelated command')
 
-frame,drawFrame=112,2
+-- Actual railgun callbacks reach both persistent world geometry and shared
+-- radiance capture, with source-owner metadata confined to the muzzle.
+globals.GadgetRailgunWakePoint(501,100,2,200,30,200,100,0)
+frame,drawFrame=101,2
+globals.GadgetRailgunWakePoint(501,100,2,280,32,200,101,1)
+globals.GadgetWeaponBarrelfire(200,30,200,2,99)
+captureOwners={}
+shared.CaptureCombatLightEmission(0,256,1,0,true)
+assert(captureOwners[99],'railgun muzzle source ownership was dropped by widget bridge')
+w:DrawWorld()
+assert(wakeVertices>0 and shared.lighteffects.getRailgunWakeStats().tracked==1,
+    'observed railgun path did not reach its renderer')
+assert(w:TextCommand('railgun status') and messages[#messages]:find('tracked=1',1,true),
+    'railgun diagnostics did not report the live path')
+
+frame,drawFrame=112,3
 status=shared.lighteffects.getStatus()
 assert(status.tanks.active==0 and status.tanks.queued==0,
     'expired flash persisted in validation status')
 assert(status.tanks.latestShotFrame==100 and status.tanks.latestShotAge==12,
     'diagnostics cannot distinguish an expired flash from an absent firing event')
-hidden[72]=true;drawFrame=3
+hidden[72]=true;drawFrame=4
 status=shared.lighteffects.getStatus()
 assert(status.tanks.visible==1 and status.tanks.latestShotFrame==nil,
     'diagnostics exposed a hidden tank firing stamp')
 hidden[72]=nil
-missingPieces[73]=true;shot[73]=112;drawFrame=4
+missingPieces[73]=true;shot[73]=112;drawFrame=5
 status=shared.lighteffects.getStatus()
 assert(status.tanks.active==1 and status.tanks.queued==0 and status.tanks.missingAnchors==1,
     'missing muzzle geometry was not reported')
@@ -145,9 +167,11 @@ assert(not next(globals) and not shared.lighteffects and not shared.CaptureComba
 shaderFailure=true
 w=loadWidget()
 status=shared.lighteffects.getStatus()
-assert(not status.flamePainter and not status.radiance and not status.tracers)
+assert(not status.flamePainter and not status.radiance and not status.tracers and not status.railgunWake)
 assert(not shared.CaptureCombatLightEmission)
 assert(w:TextCommand('effects status'))
-assert(messages[#messages-1]:find('FlamePainter=unavailable',1,true))
+assert(messages[#messages-2]:find('FlamePainter=unavailable',1,true))
+assert(messages[#messages]:find('railgun-wake=unavailable',1,true))
 w:Shutdown()
-print('PASS: real LuaUI environment startup, isolated config, combat providers, tank draw, mobile-shadow metadata, expiry/LOS/anchor diagnostics and unavailable renderer reporting')
+print('PASS: real LuaUI environment startup, isolated config, combat/railgun callbacks and draws, source metadata, expiry/LOS/anchor diagnostics, shutdown and unavailable renderer reporting')
+
