@@ -1,8 +1,10 @@
 -- Run with lua or luatex --luaonly from the repository root.
 local params, threads, orders = {}, {}, {}
 local px, pz, baseTeam, progress, dead, stunned = 1000, 0, 1, 1, false, false
-script = {}; unitID = 7; UnitDefNames = {armybase={id=20}}; CMD = {GUARD=25}
-function include() end
+script = {}; unitID = 7; UnitDefNames = {armybase={id=20}}; CMD = {GUARD=25}; GG = {}
+function include(path)
+    if path == 'lib_f35_exhaust.lua' then return dofile('scripts/'..path) end
+end
 function piece(name) return name end
 function Hide() end
 function getPieceTableByNameGroups() return {} end
@@ -34,11 +36,12 @@ local function tick(n)
 end
 dofile('scripts/airplanefighterjetscript.lua')
 script.Create()
+local backgroundThreads = #threads
 assert(script.AimWeapon2() and not script.BlockShot2())
 script.FireWeapon2()
 assert(not script.AimWeapon2() and script.BlockShot2())
 assert(script.AimWeapon1(), 'AA remains available')
-script.FireWeapon2(); assert(#threads==1, 'no duplicate rearm threads')
+script.FireWeapon2(); assert(#threads==backgroundThreads+1, 'no duplicate rearm threads')
 tick(80)
 assert(not script.AimWeapon2(), 'time alone cannot rearm away from base')
 assert(orders[1][1]==CMD.GUARD and orders[1][2]==8)
@@ -58,6 +61,6 @@ script.FireWeapon2(); px=1000; tick(30)
 assert(not script.AimWeapon2(), 'second sortie also consumes the bomb')
 -- Unit-script recreation must preserve the empty magazine.
 threads={}; dofile('scripts/airplanefighterjetscript.lua'); script.Create()
-assert(not script.AimWeapon2() and #threads==1)
+assert(not script.AimWeapon2() and #threads==backgroundThreads+1)
 px=0; tick(16); assert(script.AimWeapon2())
 print('PASS: F35 single bomb, AA, base return, service interruption, capture, destruction and reload persistence')

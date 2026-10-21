@@ -5,6 +5,7 @@ include "lib_Animation.lua"
 include "lib_mosaic.lua"
 include "lib_radiance_emitters.lua"
 local scramjetFlames = include('lib_airport_scramjet_flames.lua')(unitID)
+local planeContrails = include('lib_airport_contrails.lua')(unitID)
 
 local TablesOfPiecesGroups = {}
 Airport = piece "Airport"
@@ -303,6 +304,7 @@ LeftWing = piece("LeftWing")
 TailStrike = piece("TailStrike")
 
 function hidePlane()
+    planeContrails.Stop()
     hideT(TablesOfPiecesGroups["MainBirdBody"])
     Hide(RightWing)
     Hide(LeftWing)
@@ -314,6 +316,7 @@ function showPlane()
     Show(LeftWing)
     Show(TailStrike)
     showOne(TablesOfPiecesGroups["MainBirdBody"])
+    planeContrails.Start(LeftWing, RightWing, TablesOfPiecesGroups["MainBirdBody"][1])
 end
 
 function ferryGoUp(selectedFerryNr, times)
@@ -583,6 +586,7 @@ function departure()
 end
 
 function script.Killed(recentDamage, _)
+    planeContrails.Shutdown()
     scramjetFlames.Shutdown()
     if  GG.AirPortSemaphore == unitID then  GG.AirPortSemaphore = nil end
     return 1
