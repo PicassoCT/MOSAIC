@@ -6,6 +6,10 @@ on:
       - 'scripts/lib_mosaic.lua'
       - 'scripts/lib_graphene_arc.lua'
       - 'scripts/lib_graphene_chute.lua'
+      - 'scripts/lib_airport_contrails.lua'
+      - 'scripts/lib_f35_exhaust.lua'
+      - 'scripts/objectiveAirportscript.lua'
+      - 'scripts/airplanefighterjetscript.lua'
       - 'scripts/parachutscript.lua'
       - 'scripts/tankscript.lua'
       - 'luaui/system.lua'
@@ -38,6 +42,8 @@ on:
       - 'tests/smoke_ribbon_commands.lua'
       - 'tests/tank_muzzle_effects.lua'
       - 'tests/smoke_ribbons_lifecycle.lua'
+      - 'tests/aircraft_ribbon_lifecycle.lua'
+      - 'tests/f35_rearm_test.lua'
       - '.github/workflows/effects-validation.yml'
   workflow_dispatch:
 
@@ -96,6 +102,10 @@ jobs:
           lua5.1 tests/smoke_ribbons_lifecycle.lua
           lua5.1 tests/objective_ribbon_flames_lifecycle.lua
           lua5.1 tests/smoke_cigarette_lifecycle.lua
+      - name: Verify aircraft contrails, flight exhaust and F35 rearming
+        run: |
+          lua5.1 tests/aircraft_ribbon_lifecycle.lua
+          lua5.1 tests/f35_rearm_test.lua
       - name: Render production electrical, smoke and combat shaders
         run: |
           python tests/graphene_arcs_gpu.py

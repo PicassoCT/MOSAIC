@@ -2,7 +2,18 @@ include "createCorpse.lua"
 include "lib_OS.lua"
 include "lib_UnitScript.lua"
 include "lib_Animation.lua"
+local createExhaust = include('lib_f35_exhaust.lua')
+local exhaust
 --include "lib_Build.lua"
+
+local function updateExhaust()
+    -- Movement callbacks alone cannot distinguish landing from a holding
+    -- circle. Four checks per second; no repeated Set calls in steady flight.
+    while exhaust do
+        exhaust.Update()
+        Sleep(250)
+    end
+end
 
 -- One bomb per sortie. The existing Armybase services aircraft in a local
 -- holding circle; there is no runway / landing-pad system in this game.
@@ -77,10 +88,17 @@ function script.Create()
     Hide(RocketPod)
     Hide(bodyFly)
     TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
+    exhaust = createExhaust(unitID, bodyFly)
+    StartThread(updateExhaust)
 end
 
 function script.Killed(recentDamage, _)
+    if exhaust then exhaust.Shutdown(); exhaust = nil end
     return 1
+end
+
+function BeginAircraftCrash()
+    if exhaust then exhaust.Shutdown(); exhaust = nil end
 end
 function landReady()
     WTurn(Canopy, x_axis, math.rad(0), 5)
@@ -89,6 +107,7 @@ function landReady()
     Hide(Canopy)
 end
 function script.StartMoving() 
+    if exhaust then exhaust.Update() end
     StartThread(landReady)
 end
 
@@ -103,6 +122,7 @@ function startReady()
     Turn(Canopy, x_axis, math.rad(-50), 5)
     end
 function script.StopMoving() 
+    if exhaust then exhaust.Update() end
     StartThread(startReady)
 end
 
