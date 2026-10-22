@@ -1,5 +1,7 @@
 -- Lua 5.1 regression: geometry, shared addressing, tooltip and UI lifecycle.
 local roads=dofile('scripts/lib_city_roads.lua')
+local roadMesh=dofile('luaui/widgets_mosaic/include/city_road_mesh.lua')
+local visualBuilds=0
 local realRandom=math.random
 math.random=function() error('Address code consumed engine RNG') end
 local raw={schema=1,generation='map',roads={
@@ -46,9 +48,13 @@ Spring={GetUnitPosition=function(id) local p=units[id];if p then return p.x,0,p.
 VFS={MAP=1,FileExists=function() return true end,
     Include=function(p)
         if p=='scripts/lib_city_roads.lua' then return roads end
+        if p=='luaui/widgets_mosaic/include/city_road_mesh.lua' then
+            return {build=function(n) visualBuilds=visualBuilds+1;return roadMesh.build(n) end}
+        end
         if p=='mosaic/roads.lua' then return network end
         if p=='scripts/lib_UnitScript.lua' or p=='scripts/lib_mosaic.lua' then return end
-        if p=='scripts/lib_staticstring.lua' or p=='scripts/lib_civilian_dialogue.lua' then return dofile(p) end
+        if p=='scripts/lib_staticstring.lua' or p=='scripts/lib_civilian_dialogue.lua'
+            or p=='scripts/lib_civilian_conspiracy.lua' or p=='scripts/lib_civilian_triz_dialogue.lua' then return dofile(p) end
         error('Unexpected include '..p)
     end}
 getGameConfig=function() return GG.GameConfig end
@@ -122,14 +128,14 @@ Spring.IsSphereInView=function() return true end
 Spring.WorldToScreenCoords=function() return 500,500,0.5 end
 dofile('luaui/widgets_mosaic/gui_city_roads.lua')
 widget:Update(1);assert(created==2 and vertices>0)
-widget:Update(1);assert(created==2,'Static road mesh rebuilt each update')
+widget:Update(1);assert(created==2 and visualBuilds==1,'Static road mesh rebuilt each update')
 widget:DrawWorld();assert(called==2 and alpha==0.06,'Distant road opacity must be half the old 50%')
 Spring.GetCameraPosition=function() return 100,600,100 end
 widget:DrawWorld();assert(called==2,'Road overlay remained visible close up')
 Spring.GetCameraPosition=function() return 100,1500,100 end
 widget:DrawWorld();assert(called==4 and alpha>0 and alpha<0.06,'Zoom fade is not gradual')
 widget:DrawScreen();assert(labels==1,'Overlapping road labels were not culled')
-rules.city_roads_revision=2;widget:Update(1);assert(created==4 and deleted==2)
+rules.city_roads_revision=2;widget:Update(1);assert(created==4 and deleted==2 and visualBuilds==2)
 widget:Shutdown();assert(deleted==4,'Road mesh leaked on widget shutdown')
 math.random=realRandom
 print('PASS: deterministic city roads, connected street IDs, OSM addresses, plot rebuilds, tooltips and overlay lifecycle')

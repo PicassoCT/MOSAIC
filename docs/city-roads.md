@@ -10,6 +10,18 @@ Two generation paths share `scripts/lib_city_roads.lua`:
 
 The recovered Dhubai atlas was visually compared with its native minimap. Raster extraction has 32-world-unit resolution and may preserve minor asphalt-detail branches; it is an approximation, not surveyed road data. Inferred streets are orientation hints, not new physical roads or pathfinding changes.
 
+## Smooth display geometry on existing maps
+
+`luaui/widgets_mosaic/include/city_road_mesh.lua` builds the visible ribbon independently of the authoritative road network. Equal-width sections continue smoothly through two-way connections, including boundaries between separately named road pieces. Genuine branching junctions and width changes remain anchored, and closed loops have a continuous seam. Shared interior source vertices are also treated as junctions.
+
+Corner rounding is bounded by road width so sparse map polylines cannot cut far across a building plot or canal. Adjacent ribbon quads share edge vertices through each bend; the old independent rectangles produced wedge gaps and overlapping seams. Tight inside edges form a shared fan instead of folding back over themselves. On exceptionally short or acute legs, the inner offset is limited by curvature while the outer half-width is retained. Long straight sections are sampled for terrain height at no more than 64-world-unit intervals. Interpolation, joins and terrain vertices are cached on a network revision, with no per-frame geometry rebuild.
+
+This applies to the existing LastDayOfDubai/Dhubai atlas and other networks drawn by the game widget. LastDayOfDubai does not need a rebuilt map archive for the overlay improvement. Its compiled black asphalt remains map artwork; updating that artwork requires a separate map rebuild. Maps supplying their own `widgets_map/gui_city_roads.lua` still own their renderer. Source road points, names, address assignments, plot clearances and pathfinding are not modified by display smoothing.
+
+The 319-road Dhubai fixture produces 227 continuous display strips and 20,137 display points, versus 20,072 points in the old renderer. Maximum sampled turns within a strip fall from 18.970 to 5.962 degrees; centerline displacement stays within 12 world units (half its 24-unit display width). The full flat-ground OpenGL diagnostic emits 86,472 vertices versus 85,860 previously, a 0.71% increase, and has no self-crossing ribbon faces. These are geometry measurements, not measured Recoil frame times.
+
+## Sectors and address data
+
 The old TacticalGrid renderer yields to this unified overlay. Sectors are fixed 1024-unit areas: columns A, B, C from world X=0; rows 1, 2, 3 from world Z=0. Labels and dashed boundaries are fainter than roads and disappear close up. A small cursor-ground sector readout, house tooltip sector and radio chatter use the **same** shared resolver. Camera rotation does not rename a sector. For example: “B3, Market Street, east of the mosque.” This names a useful location without placing coordinates inside street names. `WG.CityOrientation.SectorAt` and `StreetAt` expose the cosmetic lookup to other UI.
 
 The map contract is a data-only Lua table:
@@ -31,6 +43,6 @@ CityLights placements may supply an `address` record with these fields. Map and 
 
 Old address code mixed half-grid and world coordinates, chose some street directions randomly and incremented a counter keyed only by display name. This update removes those dependencies, fixes shop array bounds and double-scaled shop coordinates, makes shop descriptors deterministic, and sorts/falls back safely when choosing truck destination names.
 
-Run `lua5.1 tests/city_roads_test.lua`, `lua5.1 tests/city_roads_organic_test.lua` and `lua5.1 tests/city_arcologies_test.lua`. The first suite forbids RNG use and checks reversed geometry/plot order, connected street IDs, UTF-8, imported numbers, repeated registration, rebuilt houses, rules-state recovery, zoom fade, label collision checks and GL cleanup. The second checks the existing city and arcology lifecycle. CI executes Lua 5.1 on Linux and Windows via Lupa.
+Run `lua5.1 tests/city_roads_test.lua`, `lua5.1 tests/city_road_mesh_test.lua`, `lua5.1 tests/city_roads_organic_test.lua`, `lua5.1 tests/city_arcologies_test.lua` and `lua5.1 tests/city_tacticalgrid_yardmap_test.lua`. The suites cover deterministic source geometry and addresses, source preservation during display smoothing, connected and closed ribbons, bounded corner rounding, the real Dhubai atlas, city/arcology lifecycle, zoom fade, label collision checks, revision-only mesh builds and GL cleanup. CI executes Lua 5.1 on Linux and Windows via Lupa.
 
 Recoil visual rendering and multiplayer use still require an engine smoke test. In particular, inspect lane alignment in each culture, labels at several zoom levels, map-widget loading, and a destroyed/rebuilt house on both game-generated and CityLights maps.
