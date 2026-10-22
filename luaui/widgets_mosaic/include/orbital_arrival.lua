@@ -5,6 +5,7 @@ M.configKey = "MosaicOrbitalArrivalHandoff"
 M.phaseKey = "MosaicOrbitalArrivalPhase"
 M.artSeconds, M.fadeSeconds = 3, 1.25
 M.blendSeconds, M.stepSeconds, M.revealSeconds = 0.5, 0.5, 0.9
+M.maxBlendFrameSeconds = 0.05 -- preserve the handover through slow startup draws
 M.latestStartFrame = 300 -- late LuaUI initialization is OK; mid-game reloads are not
 M.holdDescent = 0.16
 M.maxRenderWidth, M.maxRenderHeight = 1920, 1080
@@ -161,6 +162,17 @@ function M.targetFrame(progress, width, height)
     stage = stage, label = stageLabels[stage], altitude = stageAltitudes[stage]}
 end
 function M.advanceTime(elapsed, delta)
+  delta = math.max(0, delta)
+  if elapsed < M.blendSeconds then
+    -- The hologram exists only strictly between the artwork/orbit endpoints.
+    -- A post-warmup startup stall must not jump straight from fade 0 to 1.
+    -- Keep at least ten progress steps, discarding stall time rather than
+    -- catching it up on the next draw. At >=20 display FPS the blend is 0.5s.
+    local nextTime = math.min(M.blendSeconds,
+      elapsed + math.min(delta, M.maxBlendFrameSeconds))
+    if M.blendSeconds - nextTime < 1e-7 then return M.blendSeconds end
+    return nextTime
+  end
   local nextTime = math.min(M.descentSeconds, elapsed + math.max(0, delta))
   -- A slow city-startup frame must not consume an unseen snapshot. Stop at
   -- each shot boundary at least once; normal frame pacing only adds rounding
@@ -428,6 +440,7 @@ function M.newRenderer()
     end
     self.lastDrawAge = age
     local info = texture and texture ~= "" and gl.TextureInfo(texture)
+    self.artworkAvailable = not not info
     local sx, sy = 1, 1
     if info then
       local ratio = (width / height) / (info.xsize / info.ysize)

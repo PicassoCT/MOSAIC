@@ -40,6 +40,21 @@ and first-draw CPU/driver preparation cannot consume the visible blend. This is
 not a GPU synchronization barrier: later GPU stalls still require a live test.
 The post-screen pass reuses the same age/progress without advancing the clock.
 
+During the artwork handover, each primary draw advances presentation time by
+at most **0.05 seconds**. This preserves the nominal half-second blend at 20
+display FPS and above. Slower startup frames stretch only this handover, so a
+long gap cannot jump from plain artwork directly to the finished orbital image
+without submitting any hologram draws. Discarded stall time is never caught up
+later. The four existing snapshot boundaries and cloud reveal retain their
+previous timing policy. This limits animation progress, not the rendering FPS;
+it adds no rendering work to an individual frame.
+
+The startup log identifies this correction with `[MOSAIC arrival] holotable v2`,
+reports whether loading artwork is available, then reports the count of
+primary transition draws at handover completion. Post-screen redraws do not
+increase that count. A missing artwork texture reports the orbital fallback
+explicitly. These are draw submissions, not GPU presentation acknowledgements.
+
 The existing telemetry acquires its screen-space target during the last 18%
 of the handover, as the plane settles. From the first held orbital snapshot
 onward its previous alpha, content and behavior are unchanged. Loading artwork
@@ -67,7 +82,10 @@ The Lua test executes the actual widget/helper with a renderer spy, including
 six seconds of artificial compilation/allocation/first-draw work. It checks
 static loading, the first unmodified image, clock reset, unchanged zoom timing,
 late lock acquisition, post-pass reuse, terminal cleanup, failures and Escape.
-It does not simulate or launch Recoil. CI runs this under Lua 5.1.
+It also covers stalls after warmup and during the handover, sustained slow
+draws, recovery to healthy frame pacing, unchanged normal timing and missing
+artwork diagnostics. It does not simulate or launch Recoil. CI runs this under
+Lua 5.1.
 
 The EGL test compiles the production compositor and an immutable copy of the
 approved pre-feature compositor (Git blob `560904b32713e5028c57184e79cb43db0c0caec4`,

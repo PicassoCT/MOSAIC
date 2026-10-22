@@ -230,12 +230,12 @@ frame=1; w:DrawScreenEffects()
 assert(hidden and settings.WindowedEdgeMove==0 and A.introPhase()=='pending',
   'frame > 0 must start the transition even while LuaIntro is pending')
 assert(WG.MosaicArrival.descent==0)
-time=0.25; w:DrawScreenEffects()
+for i=1,5 do time=i/20; w:DrawScreenEffects() end
 assert(draws.fade[1]>=0.5 and math.abs(WG.MosaicArrival.descent-0.25/A.descentSeconds)<0.00001,
   'the working half-second artwork/sky blend changed')
 assert(A.snapDescent(WG.MosaicArrival.descent)==0 and draws.descent[1]==0,
   'the first snapshot was consumed underneath the loading artwork')
-time=0.5; w:DrawScreenEffects()
+for i=6,10 do time=i/20; w:DrawScreenEffects() end
 assert(draws.fade[1]==1 and math.abs(WG.MosaicArrival.descent-0.5/A.descentSeconds)<0.00001,
   'first planetary snapshot must be fully visible after the 0.5s blend')
 for stage=2,4 do
@@ -291,7 +291,7 @@ assert(not hidden and not WG.MosaicArrival, 'late-initialized arrival did not fi
 -- frame stays fixed: progress is still driven by rendered wall time when paused.
 A.beginHandoff(); frame=1; time=60; w=newWidget(); w:DrawScreenEffects()
 local seen={1}
-for i=1,8 do
+for i=1,16 do
  time=60+i; w:DrawScreenEffects(); w:DrawScreenPost()
  if WG.MosaicArrival then
   local _,stage=A.snapDescent(WG.MosaicArrival.descent)

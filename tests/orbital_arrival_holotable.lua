@@ -16,7 +16,7 @@ local function scene(options)
   local hidden = options.hidden or false
   local settings = {FullscreenEdgeMove=1, WindowedEdgeMove=0}
   local count = {created=0, allocated=0, deleted=0, draws=0, destroyed=0, copies=0, art=0, lock=0}
-  local samples = {}
+  local samples, messages = {}, {}
   local firstDraw = true
   GL = {LINEAR=1, CLAMP_TO_EDGE=2, LINES=3}
   Game = {mapName='LastDayOfDhubai', mapChecksum=13579, gameID='holotable-test'}
@@ -32,7 +32,7 @@ local function scene(options)
     SetConfigInt=function(k,v,temporary) assert(temporary); settings[k]=v end,
     IsGUIHidden=function() return hidden end,
     SendCommands=function(command) assert(command=='hideinterface'); hidden=not hidden end,
-    Echo=noop,
+    Echo=function(message) messages[#messages+1]=message end,
     SetCameraState=function() error('physical camera changed') end,
   }
   gl = {
@@ -57,8 +57,9 @@ local function scene(options)
     clock=clock+(options.compileCost or 0)
     if options.shaderFail then return nil end
     return {
-      draw=function(_,w,h,art,age,fade,progress,live)
+      draw=function(renderer,w,h,art,age,fade,progress,live)
         assert(w==1280 and h==720 and art=='loading.png' and live==17)
+        renderer.artworkAvailable=not options.noArtwork
         count.draws=count.draws+1
         samples[#samples+1]={fade=fade, progress=progress, age=age}
         if firstDraw then clock=clock+(options.drawCost or 0); firstDraw=false end
@@ -76,14 +77,120 @@ local function scene(options)
   local object=widget
   object:Initialize()
   return {
-    widget=object, count=count, samples=samples, settings=settings,
+    widget=object, count=count, samples=samples, settings=settings, messages=messages,
     tick=function(delta,start)
       clock=clock+delta; if start then frame=1 end
       object:DrawScreenEffects()
     end,
+    wait=function(delta) clock=clock+delta end,
     isHidden=function() return hidden end,
   }
 end
+
+local function messageCount(s, text)
+  local count=0
+  for _,message in ipairs(s.messages) do
+    if message:find(text,1,true) then count=count+1 end
+  end
+  return count
+end
+
+-- A stall AFTER the initial warm-up used to jump directly from fade zero to
+-- one, skipping every pixel in the shader's strictly interior holotable branch.
+for _, gap in ipairs({0.5, 0.905, 3}) do
+  local stalled = scene()
+  stalled.tick(0, true)
+  stalled.widget:DrawScreenPost()
+  stalled.tick(gap)
+  local first = stalled.samples[#stalled.samples]
+  assert(first.fade > 0 and first.fade < 1,
+    'post-warmup ' .. gap .. 's stall skipped the complete holotable handover')
+  assert(first.fade <= 0.1 + 1e-7, 'a startup stall rushed past the initial projection')
+  local elapsed=WG.MosaicArrival.elapsed
+  stalled.wait(gap)
+  stalled.widget:DrawScreenPost()
+  near(WG.MosaicArrival.elapsed,elapsed,'post pass advanced stalled presentation time')
+  near(stalled.samples[#stalled.samples].fade,first.fade,'post pass changed the stalled projection')
+  stalled.widget:KeyPress(27)
+end
+
+-- Repeated slow frames must show projection, breakup and lingering fragments,
+-- then leave the same first orbital snapshot and the same later shot pacing.
+local slow=scene()
+slow.tick(0,true)
+local interior,early,breakup,linger=0,false,false,false
+for _=1,20 do
+  slow.tick(3)
+  local sample=slow.samples[#slow.samples]
+  if sample.fade>=1 then break end
+  interior=interior+1
+  early=early or sample.fade<=0.3
+  breakup=breakup or (sample.fade>=0.35 and sample.fade<=0.65)
+  linger=linger or (sample.fade>=0.7 and sample.fade<=0.95)
+  near(A.cloudDescent(sample.progress),0,'stalled blend exposed cloud transit')
+  local elapsed=WG.MosaicArrival.elapsed
+  slow.widget:DrawScreenPost()
+  near(WG.MosaicArrival.elapsed,elapsed,'post pass counted as a new presentation frame')
+end
+assert(interior>=9 and early and breakup and linger,'slow startup did not show the handover phases')
+near(slow.samples[#slow.samples].fade,1)
+near(WG.MosaicArrival.elapsed,A.blendSeconds,'slow blend consumed an orbital hold')
+assert(messageCount(slow,'holotable v2; artwork=true')==1,'handover readiness was not reported once')
+assert(messageCount(slow,'holotable handover complete; transition draws='..interior)==1,
+  'handover diagnostics counted post passes or missed transition draws')
+for stage=1,4 do
+  local _,actual=A.snapDescent(WG.MosaicArrival.descent)
+  assert(actual==stage,'slow blend changed the subsequent shot order')
+  slow.tick(3)
+end
+near(WG.MosaicArrival.elapsed,A.revealStart)
+slow.tick(3)
+assert(not WG.MosaicArrival and not slow.isHidden(),'slow startup did not release the interface')
+assert(messageCount(slow,'holotable handover complete;')==1,'handover completion repeated during zoom')
+
+-- Recovery discards old stall time: the next healthy display frame advances
+-- by its own delta rather than catching up and erasing the remaining tiles.
+local recovery=scene()
+recovery.tick(0,true)
+recovery.tick(3)
+local resumed=WG.MosaicArrival.elapsed
+recovery.tick(1/60)
+near(WG.MosaicArrival.elapsed,resumed+1/60,'startup stall left catch-up time behind')
+recovery.tick(1/60); recovery.tick(1/60)
+local middle=WG.MosaicArrival.elapsed
+recovery.tick(3)
+assert(WG.MosaicArrival.elapsed-middle<=0.05+1e-7,'mid-blend stall skipped the tile breakup')
+resumed=WG.MosaicArrival.elapsed
+recovery.tick(1/60)
+near(WG.MosaicArrival.elapsed,resumed+1/60,'mid-blend stall left catch-up time behind')
+recovery.widget:KeyPress(27)
+assert(not WG.MosaicArrival and not recovery.isHidden())
+
+-- At healthy display rates, the original half-second handover is exact; the
+-- protective cap must neither slow ordinary playback nor quantize its beats.
+for _,fps in ipairs({20,25,30,60,144}) do
+  local normal=scene()
+  normal.tick(0,true)
+  local frames=math.floor(A.blendSeconds*fps)
+  for _=1,frames do normal.tick(1/fps) end
+  local remainder=A.blendSeconds-frames/fps
+  if remainder>1e-7 then normal.tick(remainder) end
+  near(WG.MosaicArrival.elapsed,A.blendSeconds,'healthy '..fps..' FPS blend changed duration')
+  near(normal.samples[#normal.samples].fade,1,'healthy blend did not reach clean orbit')
+  normal.widget:KeyPress(27)
+end
+
+-- The renderer's missing-art fallback must be explicit in infolog and must
+-- never be reported as successful holotable draws.
+local missing=scene({noArtwork=true})
+missing.tick(0,true)
+for _=1,10 do missing.tick(.05); missing.widget:DrawScreenPost() end
+near(WG.MosaicArrival.elapsed,A.blendSeconds)
+assert(messageCount(missing,'holotable v2; artwork=false')==1)
+assert(messageCount(missing,'holotable unavailable: loading artwork missing;')==1)
+assert(messageCount(missing,'holotable handover complete; transition draws=0')==1)
+missing.widget:KeyPress(27)
+assert(not WG.MosaicArrival and not missing.isHidden(),'missing-art fallback retained the interface')
 
 -- Loading remains plain, including long waits and the post-screen pass.
 local s=scene({compileCost=2, allocationCost=1, drawCost=3})
@@ -101,10 +208,10 @@ assert(s.count.lock==0)
 s.tick(.05)
 near(s.samples[#s.samples].fade,.1,'GPU warm-up consumed the handover')
 assert(s.count.lock==0,'telemetry acquired a moving projection too early')
-s.tick(.35)
+for _=1,7 do s.tick(.05) end
 near(s.samples[#s.samples].fade,.8)
 assert(s.count.lock==0)
-s.tick(.075)
+s.tick(.05); s.tick(.025)
 near(s.samples[#s.samples].fade,.95)
 assert(s.count.lock>0,'target lock did not appear as the image stabilized')
 s.tick(.025)
@@ -142,4 +249,4 @@ for _,options in ipairs({{hidden=false},{hidden=true},{shaderFail=true},{allocat
 end
 local beforeStart=scene(); beforeStart.widget:KeyPress(27)
 assert(not WG.MosaicArrival and beforeStart.count.created==0)
-print('PASS: static loading; excluded 6s first-frame preparation; unchanged 0.5s blend/four holds/cloud reveal; delayed lock only during projection; post-pass reuse; no camera writes; Escape and failure cleanup')
+print('PASS: post-warmup and repeated stalls retain holotable phases; healthy 20-144 FPS keeps 0.5s blend; recovery has no catch-up debt; four holds/cloud reveal unchanged; static loading and 6s preparation excluded; post-pass reuse; no camera writes; Escape and failure cleanup')

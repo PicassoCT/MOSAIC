@@ -11,6 +11,7 @@ local riskPacket, targetName
 local lastWallElapsed = 0
 local guiWasHidden, hasCapture, started = false, false, false
 local artworkReady = false
+local holotableDraws, handoverReported = 0, false
 local savedEdges = {}
 local finished = false
 
@@ -270,6 +271,23 @@ function widget:DrawScreenEffects()
   hasCapture = true
   if not renderer:draw(width, height, texture, age + elapsed, fade, descent, liveTexture) then
     finish(); return
+  end
+  if not handoverReported then
+    if warming then
+      Spring.Echo("[MOSAIC arrival] holotable v2; artwork=" ..
+        tostring(renderer.artworkAvailable) .. "; blend=" ..
+        tostring(Arrival.blendSeconds) .. "s; max progress step=" ..
+        tostring(Arrival.maxBlendFrameSeconds) .. "s")
+      if not renderer.artworkAvailable then
+        Spring.Echo("[MOSAIC arrival] holotable unavailable: loading artwork missing; using orbital fallback")
+      end
+    elseif fade > 0 and fade < 1 and renderer.artworkAvailable then
+      holotableDraws = holotableDraws + 1
+    elseif fade >= 1 then
+      Spring.Echo("[MOSAIC arrival] holotable handover complete; transition draws=" ..
+        tostring(holotableDraws))
+      handoverReported = true
+    end
   end
   drawRiskOverlay(descent)
   if warming then
