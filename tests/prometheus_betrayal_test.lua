@@ -3,6 +3,14 @@ local function env(synced)
     local e=setmetatable({}, {__index=_G});e._G=e
     local w={sent={},orders={},rules={},teams={[258]=1},warnings=0,actions={}}
     e.CMD={MOVE=10,ATTACK=20,CLOAK=95,OPT_ALT=128,OPT_CTRL=64,OPT_SHIFT=32,OPT_RIGHT=16}
+    -- Reproduce the pinned Recoil float-Lua edge observed in infologs: its
+    -- floor can move an exact negative integer to the preceding value.
+    e.math={}
+    for key,value in pairs(math) do e.math[key]=value end
+    e.math.floor=function(value)
+        if value<0 and value==math.floor(value) then return value-1 end
+        return math.floor(value)
+    end
     e.gadget={GetInfo=function() return {name='Prometheus'} end, betrayalContacts={}}
     e.callInList={'UnitCreated'}
     e.gadget.UnitCreated=function(self,id) eq(self,e.gadget);w.created=id end

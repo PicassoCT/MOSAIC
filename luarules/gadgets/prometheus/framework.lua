@@ -304,7 +304,12 @@ local function SerializeOrder(unitID, cmd, params, options)
     -- signed int32 value.
     local MAX_EXACT_INT=16777216
     local function integer(n,lo,hi)
-        return type(n)=="number" and n==n and n>=lo and n<=hi and n==math.floor(n)
+        if type(n)~="number" or n~=n or n<lo or n>hi then return false end
+        -- Recoil's float-backed Lua can floor an exactly represented negative
+        -- integer to the preceding value. Validate the positive magnitude so
+        -- build commands such as -33 are not rejected.
+        local magnitude=math.abs(n)
+        return magnitude==math.floor(magnitude)
     end
     assert(type(params)=="table" and #params<=15,
         "expected at most 15 numeric command parameters")
@@ -323,13 +328,26 @@ local function SerializeOrder(unitID, cmd, params, options)
         b[#b+1]=math.floor(n/256)%256
         b[#b+1]=n%256
     end
-    -- Two's-complement bytes, emitted directly from the signed value. This
-    -- keeps every intermediate within Spring Lua's exact integer range.
+    -- Build two's-complement bytes from a positive magnitude. Calling floor on
+    -- a negative value is not reliable in Recoil's float-backed Lua, and adding
+    -- 2^32 would exceed its exact integer range.
     local function sint32(n)
-        b[#b+1]=math.floor(n/16777216)%256
-        b[#b+1]=math.floor(n/65536)%256
-        b[#b+1]=math.floor(n/256)%256
-        b[#b+1]=n%256
+        local magnitude=n<0 and -n or n
+        local bytes={
+            math.floor(magnitude/16777216)%256,
+            math.floor(magnitude/65536)%256,
+            math.floor(magnitude/256)%256,
+            magnitude%256,
+        }
+        if n<0 then
+            local carry=1
+            for i=4,1,-1 do
+                local value=255-bytes[i]+carry
+                if value>=256 then value=value-256;carry=1 else carry=0 end
+                bytes[i]=value
+            end
+        end
+        for i=1,4 do b[#b+1]=bytes[i] end
     end
     uint32(unitID);sint32(cmd)
     b[#b+1]=options;b[#b+1]=#params
@@ -338,7 +356,8 @@ local function SerializeOrder(unitID, cmd, params, options)
             "parameter "..i.." must be an exact Spring Lua number")
         -- The bridge transports 32-bit integer coordinates, rounded once here.
         -- Negative halves round symmetrically, rather than towards positive infinity.
-        local rounded = param < 0 and -math.floor(-param+0.5) or math.floor(param+0.5)
+        local rounded=math.floor(math.abs(param)+0.5)
+        if param<0 then rounded=-rounded end
         sint32(rounded)
     end
     return string.char(unpack(b))
