@@ -607,6 +607,7 @@ function fadeOut(piecesTable, rest)
 end
 
 function disAppearGlowWorm(piecesTable, fadeInTimeMs, lifeTimeMs, fadeOutTimeMs)
+    if #piecesTable == 0 then return end
     -- appear
     fadeIn(piecesTable, fadeInTimeMs/#piecesTable)
 
@@ -614,8 +615,8 @@ function disAppearGlowWorm(piecesTable, fadeInTimeMs, lifeTimeMs, fadeOutTimeMs)
     if maRa() then
         Sleep(lifeTimeMs)
     else-- flicker
-        fadeOut(piecesTable, lifeTimeMs/(#piecesTable/2))
-        fadeIn(piecesTable, lifeTimeMs/(#piecesTable/2))
+        fadeOut(piecesTable, lifeTimeMs/(2*#piecesTable))
+        fadeIn(piecesTable, lifeTimeMs/(2*#piecesTable))
     end
 
     fadeOut(piecesTable, fadeOutTimeMs/(#piecesTable))
@@ -889,12 +890,16 @@ function delayedFlickerSingleLetter(letterPiece)
 end
 
 function setupMessage(myMessages)
+    Signal(SIG_FLICKER)
+    local boolHighlightFirstLetter, myMessage, axis, startValue, boolUpright
+    local boolFirstHighlight, downIndex, stringlength, rowIndex, columnIndex, val
     boolHighlightFirstLetter = math.random(1,100) < 10
     hideResetAllLetters()
+    StopSpin(textSpinner, y_axis, 0)
     Move(textSpinner, 2 ,0, 0) --Move the text spinner upward so letters dont vannish into the ground
     axis= 2
     startValue = 0
-    myMessage = myMessages[math.random(1,#myMessages)]
+    myMessage = selectHologramMessage(myMessages, TableOfPiecesGroups)
     if boolIsCasino  then startValue = 2 end
     if boolIsBrothel  then startValue = 3 end
     boolUpright = maRa()
@@ -910,8 +915,8 @@ function setupMessage(myMessages)
     boolFirstHighlight= true
 
     downIndex = 1
-    local lettercounter={}
-    stringlength = string.len(myMessage)
+    local slots, leases = allocateHologramSlots(myMessage, TableOfPiecesGroups)
+    stringlength = #slots
     rowIndex= 0
     columnIndex= 0
       
@@ -931,25 +936,26 @@ function setupMessage(myMessages)
     local posLetters = {}   
     posLetters.unitID = unitID
     posLetters.myMessage = myMessage
-    posLetters.TriLetters= getAllLetters(TableOfPiecesGroups)
-    posLetters.spacing = {}
+    posLetters.messages = myMessages
+    posLetters.TriLetters = TableOfPiecesGroups -- Include J/W and every supported glyph.
+    posLetters.spacing = slots
+    posLetters.slotByPiece = {}
+    posLetters.leases = leases
+    posLetters.slotPositions = {}
+    local glyphs = {}
+    for glyph in myMessage:gmatch("[%z\1-\127\194-\244][\128-\191]*") do glyphs[#glyphs+1] = glyph end
     posLetters.boolUpright = boolUpright
+    posLetters.spinnerSpeed = boolSpinning and math.rad(val) or nil
 
     for i=1, stringlength do
         --increment letter index
         local letter = string.upper(string.sub(myMessage,i,i))
 
-        if TableOfPiecesGroups[letter] then
-            if not lettercounter[letter] then 
-                lettercounter[letter] = 0
-            end            
-
-            lettercounter[letter] = lettercounter[letter] + 1 
-            boolContinue = not(lettercounter[letter] > #TableOfPiecesGroups[letter])
-
-            if boolContinue == true and TableOfPiecesGroups[letter] and lettercounter[letter] and TableOfPiecesGroups[letter][lettercounter[letter]] then
-                local letterName = TableOfPiecesGroups[letter][(lettercounter[letter] % #TableOfPiecesGroups[letter]) + 1 ] 
-      
+        posLetters.slotPositions[i] = {0, -sizeSpacingLetter * columnIndex, -sizeDownLetter * rowIndex}
+        if slots[i] ~= " " then
+            do
+                local letterName = slots[i]
+                posLetters.slotByPiece[letterName] = i
                 --Highlight first
                 if boolHighlightFirstLetter and boolFirstHighlight then
                     boolFirstHighlight =false
@@ -957,7 +963,7 @@ function setupMessage(myMessages)
                 end
                 if letterName then     
                     table.insert(allLetters, letterName)
-                    table.insert(posLetters.spacing, letterName)          
+                    -- Slot already recorded by allocateHologramSlots.
                     ShowReg(letterName)                    
                     posLetters[letterName]= {0,  -1*sizeSpacingLetter * columnIndex,  -1 * sizeDownLetter * rowIndex }
                     for ax=1,3 do
@@ -973,12 +979,12 @@ function setupMessage(myMessages)
             end
 
         else -- non letter letter - space etc
-            table.insert(posLetters.spacing, " ")
+            -- Keep this logical slot even when a physical glyph is exhausted.
             boolFirstHighlight = true   
             if boolUpright == true then --spacing
                 rowIndex = rowIndex +1
             else --horizontal
-                if columnIndex > 12 then -- linebreak
+                if columnIndex > 12 and glyphs[i]:match("%s") then -- linebreak
                     columnIndex = 0
                     rowIndex = rowIndex +1
                 else
@@ -992,7 +998,7 @@ end
 
 function restoreMessageOriginalPosition(message, posLetters)
     hideResetAllLetters()
-    letterIndex= 0
+    local letterIndex, val = 0, 0
     foreach(message,
         function(letter)
             letterIndex= letterIndex +1
@@ -1008,6 +1014,7 @@ function restoreMessageOriginalPosition(message, posLetters)
                 end    
             end
         )
+    transitionHologramText(message, posLetters, true, 400)
 end
 
 
@@ -1018,7 +1025,7 @@ function resetSpinDrop(allLetters)
 
          foreach(allLetters,
         function(id)   
-                StopSpin(id, spindropAxis, math.rad(0), 0)      
+                StopSpin(id, spindropAxis, 0)
                 Turn(id, 1, math.rad(0), 0)    
                 Turn(id, 2, math.rad(0), 0)    
                 Turn(id, 3, math.rad(0), 0)    
@@ -1088,18 +1095,18 @@ idleAnimations[#idleAnimations +1] = strikeAPose
 function waterFallProject(allLetters, posLetters)
     foreach(allLetters, 
         function (id)
-            randomHeight = math.random(8,20)*1000
+            local randomHeight = math.random(8,20)*1000
             Move(id, spindropAxis, randomHeight, 0)
             ShowReg(id)
         end)
-    speed= 0
-    waitTime = 21000
+    local speed = 0
+    local waitTime = 21000
     while waitTime > 0 do
         speed = speed + 9.81
         foreach(allLetters, 
         function (id)
             for ax=1,3 do
-                Move(id, spindropAxis, posLetters[id][ax], speed)
+                Move(id, ax, posLetters[id][ax], speed)
             end
         end)
         waitTime = waitTime - 100
@@ -1112,8 +1119,9 @@ end
 
 --myMessage = neonSigns[math.random(1,#neonSigns)]
 function addHologramLetters( myMessages)  
-    allFunctions = getAllTextFx()
-    allLetters, posLetters, newMessage = setupMessage(myMessages)
+    local name, textFX, restTime
+    local allFunctions = getAllTextFx()
+    local allLetters, posLetters, newMessage = setupMessage(myMessages)
 
     if randChance(50) or boolIsEverChanging  then 
 
@@ -1130,16 +1138,19 @@ function addHologramLetters( myMessages)
                 WaitForMoves(allLetters)       
             end
             restTime = math.max(5000, #allLetters*150)
-            Sleep(restTime)
+            holdHologramText(allLetters, posLetters, restTime)
             restoreMessageOriginalPosition(allLetters, posLetters)
             resetSpinDrop(allLetters)
             WaitForTurns(allLetters)
-            Sleep(restTime)
+            holdHologramText(allLetters, posLetters, restTime)
             if boolIsEverChanging == true then
+                transitionHologramText(allLetters, posLetters, false, 400)
                 allLetters, posLetters, newMessage = setupMessage(myMessages)                
             end
         end
-    end 
+    else
+        while true do holdHologramText(allLetters, posLetters, 10000) end
+    end
 end
 
 function flickerBuisnessLogo(logoA, logoB)
