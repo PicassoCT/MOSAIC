@@ -74,8 +74,10 @@ local AntagonSafeHouse = Building:New{
 		"operativeasset",
 		"operativepropagator",
 		"civilianagent",
+		"truck_western0",
 
 		"ground_walker_mg",
+		"ground_turret_mg",
 		"ground_turret_sniper",
 		"ground_walker_grenade",
 

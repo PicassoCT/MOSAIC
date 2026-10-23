@@ -72,8 +72,10 @@ local ProtagonSafeHouse =    Building:New{
     "operativeasset",
     "operativeinvestigator",
     "civilianagent",    
+    "truck_western0",
     -- A raid can be escorted before investing in an assembly or army base.
     "ground_walker_mg",
+    "ground_turret_mg",
     "ground_turret_sniper",
     --Described in morphdefs
     --propagandaserver

@@ -3127,8 +3127,16 @@ end
 
             -- EventStream Function
             function syncDecoyToAgent(evtID, frame, persPack, startFrame)
+                local followRadius = 12
+                local settleDistance = 20
+                local catchUpDistance = 28
+                local stuckDistance = 50
                 local function setDecoyMoving(boolMoving)
-                    if persPack.boolMoving == boolMoving then return end
+                    if persPack.boolMoving == boolMoving or
+                        (persPack.boolMoving == nil and not boolMoving) then
+                        persPack.boolMoving = boolMoving
+                        return
+                    end
 
                     persPack.boolMoving = boolMoving
                     local env = Spring.UnitScript.GetScriptEnv(persPack.myID)
@@ -3160,77 +3168,112 @@ end
                 -- sync Health
                 transferUnitStatusToUnit(persPack.myID, persPack.syncedID)
 
-                x, y, z = Spring.GetUnitPosition(persPack.syncedID)
-                mx, my, mz = Spring.GetUnitPosition(persPack.myID)
-                if not x then return nil, persPack end
+                local x, y, z = Spring.GetUnitPosition(persPack.syncedID)
+                local mx, my, mz = Spring.GetUnitPosition(persPack.myID)
+                if not x or not mx then return nil, persPack end
+
+                -- The close-range return below may set currPos before the
+                -- first stuck check. Initialize the counter independently.
+                persPack.stuckCounter = persPack.stuckCounter or 0
+                persPack.currPos = persPack.currPos or {x = mx, y = my, z = mz}
 
                 if not persPack.oldSyncedPos then
                     persPack.oldSyncedPos = {x = x, y = y, z = z}
                 end
-                -- Test Synced Unit Stopped
-                agentTransportedByID = Spring.GetUnitTransporter(persPack.syncedID)
+                local agentTransportedByID = Spring.GetUnitTransporter(persPack.syncedID)
                 -- Transported
-                if agentTransportedByID and not persPack.boolTransported then
-                    persPack.boolTransported = true
-					pieceMap = Spring.GetUnitPieceMap(agentTransportedByID)
-                    centerPiece = sampleKeyFromDicct(pieceMap, "center", "anchor")
-					Spring.UnitAttach(agentTransportedByID, persPack.myID, centerPiece)		
+                if agentTransportedByID then
+                    if not persPack.boolTransported then
+                        persPack.boolTransported = true
+                        local pieceMap = Spring.GetUnitPieceMap(agentTransportedByID)
+                        local centerPiece = sampleKeyFromDicct(pieceMap, "center", "anchor")
+                        Spring.UnitAttach(agentTransportedByID, persPack.myID, centerPiece)
+                        persPack.followGoal = nil
+                        persPack.stuckSince = nil
+                        setDecoyMoving(false)
+                    end
                     return frame + 5, persPack
                 elseif persPack.boolTransported == true and not agentTransportedByID then
-					Spring.UnitDetach(persPack.myID)
+                    Spring.UnitDetach(persPack.myID)
                     persPack.boolTransported = false
+                    persPack.followGoal = nil
                 end
 
-                local parentMoved = distance(persPack.oldSyncedPos.x,
-                    persPack.oldSyncedPos.y, persPack.oldSyncedPos.z,
-                    x, y, z) >= 1
+                local oldSyncedPos = persPack.oldSyncedPos
+                local parentMovement = distance(oldSyncedPos.x,
+                    oldSyncedPos.y, oldSyncedPos.z, x, y, z)
+                if parentMovement >= 1 then
+                    persPack.lastParentMoveFrame = frame
+                end
+                local parentMoving = persPack.lastParentMoveFrame and
+                    frame - persPack.lastParentMoveFrame < 12
                 local distanceToParent = distance(mx, my, mz, x, y, z)
+                persPack.oldSyncedPos = {x = x, y = y, z = z}
 
-                if not parentMoved then
-                -- Unit has stopped, test wether we are near it
-                if distanceToParent < 25 then
-                    if persPack.boolMoving ~= false then Command(persPack.myID, "stop", {}, {}) end
+                -- Keep walking through brief pauses. Stop only once the
+                -- operative has settled and the decoy has caught up.
+                if not parentMoving and distanceToParent < settleDistance then
+                    if persPack.boolMoving then
+                        Command(persPack.myID, "stop", {}, {})
+                    end
                     setDecoyMoving(false)
                     persPack.stuckSince = nil
-                    persPack.currPos = {x=mx,y=my,z=mz}
+                    persPack.stuckCounter = 0
+                    persPack.currPos = {x = mx, y = my, z = mz}
+                    persPack.followGoal = nil
                     return frame + 6, persPack
                 end
+
+                -- A moving decoy can cover less than 50 elmos in one update.
+                -- Only treat it as stuck when it is far away and has made
+                -- almost no progress for five seconds.
+                if distanceToParent > stuckDistance and
+                    distance(mx, my, mz, persPack.currPos.x,
+                        persPack.currPos.y, persPack.currPos.z) < 8 then
+                    persPack.stuckCounter = persPack.stuckCounter + 1
+                    persPack.stuckSince = persPack.stuckSince or frame
+                else
+                    persPack.currPos = {x = mx, y = my, z = mz}
+                    persPack.stuckCounter = 0
+                    persPack.stuckSince = nil
+                end
+
+                if persPack.stuckSince and frame - persPack.stuckSince > 5 * 30 then
+                    moveUnitToUnitGrounded(persPack.myID, persPack.syncedID,
+                        math.random(-10, 10), 0, math.random(-10, 10))
+                    persPack.currPos = {x = x, y = y, z = z}
+                    persPack.stuckSince = nil
+                    persPack.stuckCounter = 0
+                    persPack.followGoal = nil
+                end
+
+                -- Refresh a movement goal instead of replacing a MOVE order
+                -- every six frames. Aim slightly ahead while the operative
+                -- walks so the decoy keeps pace rather than halting nearby.
+                if parentMoving or distanceToParent >= catchUpDistance or
+                    persPack.boolMoving then
+                    local goalX, goalZ = x, z
+                    local dx, dz = x - oldSyncedPos.x, z - oldSyncedPos.z
+                    local horizontalMovement = math.sqrt(dx * dx + dz * dz)
+                    if parentMoving and horizontalMovement > 0 then
+                        goalX = x + dx / horizontalMovement * 18
+                        goalZ = z + dz / horizontalMovement * 18
+                    end
+
+                    local goal = persPack.followGoal
+                    if not goal or distance(goal.x, goal.y, goal.z,
+                        goalX, y, goalZ) >= 12 or
+                        frame - (persPack.followGoalFrame or 0) >= 18 then
+                        Spring.SetUnitMoveGoal(persPack.myID,
+                            goalX, y, goalZ, followRadius)
+                        persPack.followGoal = {x = goalX, y = y, z = goalZ}
+                        persPack.followGoalFrame = frame
+                    end
+                    setDecoyMoving(true)
+                end
+
+                return frame + 6, persPack
             end
-
-            -- update old Pos
-            persPack.oldSyncedPos = {x = x, y = y, z = z}
-
-            if not persPack.currPos then
-                persPack.currPos = {x = mx, y = my, z = mz}
-                persPack.stuckCounter = 0
-            end
-
-            if distance(mx, my, mz, persPack.currPos.x, persPack.currPos.y,
-            persPack.currPos.z) < 50 then
-            persPack.stuckCounter = persPack.stuckCounter + 1
-            persPack.stuckSince = persPack.stuckSince or frame
-        else
-            persPack.currPos = {x = mx, y = my, z = mz}
-            persPack.stuckCounter = 0
-            persPack.stuckSince = nil
-        end
-
-        if persPack.stuckSince and frame - persPack.stuckSince > 5 * 30 then
-            moveUnitToUnitGrounded(persPack.myID, persPack.syncedID,
-            math.random(-10, 10), 0, math.random(-10, 10))
-            persPack.stuckSince = frame
-        end
-
-        -- Follow the actual parent. The previous ambient unitID made this
-        -- depend on whichever unit script happened to call the shared helper.
-        local command = Spring.GetUnitCommands(persPack.syncedID, 1)
-        if parentMoved or distanceToParent >= 25 or command[1] then
-            Command(persPack.myID, "go", {x = x, y = y, z = z})
-            setDecoyMoving(true)
-        end
-
-        return frame + 6, persPack
-    end
 
 function getRegionByCulture(culture, hash)
 
