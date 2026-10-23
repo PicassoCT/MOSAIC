@@ -23,6 +23,15 @@ end
 local crashing, selfDestructing = {}, {}
 local timeoutFrames = 15 * (Game.gameSpeed or 30)
 local ruleName = "aircraft_crash_deadline"
+local icarusDefID = UnitDefNames and UnitDefNames.air_plane_artillery
+    and UnitDefNames.air_plane_artillery.id
+
+local function IsReleasedIcarus(unitID, unitDefID)
+    -- The native falling bomb keeps this hidden owner alive only for damage
+    -- attribution. Its script reclaims the owner after the projectile ends.
+    return unitDefID == icarusDefID
+        and Spring.GetUnitRulesParam(unitID, "icarus_released") == 1
+end
 
 local function DisableAircraft(unitID, unitDefID, deadline)
     Spring.SetUnitNoSelect(unitID, true)
@@ -50,6 +59,7 @@ end
 local function BeginCrash(unitID, attackerID)
     if crashing[unitID] then return true end
     local unitDefID = Spring.GetUnitDefID(unitID)
+    if IsReleasedIcarus(unitID, unitDefID) then return false end
     if not crashable[unitDefID] or Spring.GetUnitIsDead(unitID) then return false end
     local health, _, _, _, build = Spring.GetUnitHealth(unitID)
     if not health or (build and build < 1) or Spring.GetUnitTransporter(unitID) then
@@ -85,6 +95,7 @@ end
 
 function gadget:UnitPreDamaged(unitID, unitDefID, unitTeam, damage, paralyzer,
         weaponDefID, projectileID, attackerID)
+    if IsReleasedIcarus(unitID, unitDefID) then return 0, 0 end
     if crashing[unitID] then return 0, 0 end
     if not crashable[unitDefID] or paralyzer or damage <= 0 then return damage, 1 end
     local health = Spring.GetUnitHealth(unitID)
@@ -97,12 +108,14 @@ function gadget:UnitPreDamaged(unitID, unitDefID, unitTeam, damage, paralyzer,
     return damage, 1
 end
 
-function gadget:AllowCommand(unitID)
+function gadget:AllowCommand(unitID, unitDefID)
     return not crashing[unitID]
+        and not IsReleasedIcarus(unitID, unitDefID or Spring.GetUnitDefID(unitID))
 end
 
-function gadget:AllowUnitBuildStep(builderID, builderTeam, unitID)
+function gadget:AllowUnitBuildStep(builderID, builderTeam, unitID, unitDefID)
     return not crashing[unitID]
+        and not IsReleasedIcarus(unitID, unitDefID or Spring.GetUnitDefID(unitID))
 end
 
 function gadget:UnitCommand(unitID, unitDefID, unitTeam, cmdID)

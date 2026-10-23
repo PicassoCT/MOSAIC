@@ -6,6 +6,11 @@ model = {
 
 	--tex2 = "armtech_tex2.dds",
 	midpos = {0, 5, 0},
+	pieces = {
+		-- The DAE's folded nose points down its baked Y axis. Native bomb
+		-- projectiles align model +Z with velocity, so correct only this piece.
+		Projectile = {rotatez = 90},
+	},
 	--rotAxisSigns = {-1, -1, -1}
 	--[[
 	pbr = {

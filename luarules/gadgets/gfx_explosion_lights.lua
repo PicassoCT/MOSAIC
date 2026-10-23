@@ -18,10 +18,56 @@ end
 local molotov=WeaponDefNames.molotow and WeaponDefNames.molotow.id
 local fuelburst=WeaponDefNames.walkerfuelburst and WeaponDefNames.walkerfuelburst.id
 local pyro=UnitDefNames and UnitDefNames.ground_walker_flame and UnitDefNames.ground_walker_flame.id
+local nimrod=UnitDefNames and UnitDefNames.nimrod and UnitDefNames.nimrod.id
+local launchWeapon=WeaponDefNames.railgun and WeaponDefNames.railgun.id
+local launchTypes={}
+for _,name in ipairs({'satellitescan','satelliteanti','satellitegodrod','air_plane_artillery'}) do
+    local def=UnitDefNames and UnitDefNames[name]
+    if def then launchTypes[def.id]=true end
+end
+local maxLaunchHeight,launchStep=2048,64
 if gadgetHandler:IsSyncedCode() then
     local fires,cursor,lastMuzzle={},0,{}
     local railShots,railCount={},0
     local maxRailShots=32
+    local pendingLaunches={}
+    local launchAPI={}
+    function launchAPI.Departure(unitID,topY)
+        local record=pendingLaunches[unitID]
+        if not record then return false end
+        local owner=record.owner
+        if Spring.GetUnitDefID(unitID)~=record.defID or Spring.GetUnitIsDead(unitID)
+            or Spring.GetUnitDefID(owner)~=nimrod or Spring.GetUnitIsDead(owner) then
+            pendingLaunches[unitID]=nil
+            return false
+        end
+        local _,_,_,_,progress=Spring.GetUnitHealth(unitID)
+        if not progress or progress<1 then return false end
+        -- Completion alone is insufficient: the payload calls this immediately
+        -- before actual departure. A canceled build never reaches this path.
+        pendingLaunches[unitID]=nil
+        if not launchWeapon or not railguns[launchWeapon]
+            or Spring.GetUnitTeam(unitID)~=Spring.GetUnitTeam(owner) then return false end
+        local x,y,z
+        if Spring.GetUnitPieceMap and Spring.GetUnitPiecePosDir then
+            local pieces=Spring.GetUnitPieceMap(owner)
+            local barrel=pieces and pieces.projectile
+            if barrel then x,y,z=Spring.GetUnitPiecePosDir(owner,barrel) end
+        end
+        if not x then x,y,z=Spring.GetUnitPosition(unitID) end
+        if not x then return false end
+        local height=maxLaunchHeight
+        if type(topY)=='number' and topY==topY then
+            height=math.max(launchStep,math.min(maxLaunchHeight,topY-y))
+        end
+        -- Synthetic identities cannot collide with engine projectile IDs. The
+        -- serial also separates same-frame unit-ID reuse, including gadget reload.
+        GG.NimrodLaunchFXSerial=(GG.NimrodLaunchFXSerial or 0)%100000000+1
+        SendToUnsynced('nimrod_launch',-GG.NimrodLaunchFXSerial,
+            Spring.GetGameFrame(),launchWeapon,owner,Spring.GetUnitAllyTeam(owner),
+            Spring.GetUnitIsCloaked(owner) and 1 or 0,x,y,z,height)
+        return true
+    end
     local function railPoint(projectileID,shot,x,y,z,frame,done)
         if not x then x,y,z=shot.x,shot.y,shot.z end
         if x then
@@ -52,6 +98,15 @@ if gadgetHandler:IsSyncedCode() then
     _G.MosaicCombatFires=fires
     function gadget:Initialize()
         for id in pairs(watched) do Script.SetWatchWeapon(id,true) end
+        GG=GG or {}
+        GG.NimrodLaunchFX=launchAPI
+    end
+    function gadget:UnitCreated(unitID,defID,unitTeam,builderID)
+        pendingLaunches[unitID]=nil
+        if nimrod and builderID and launchTypes[defID]
+            and Spring.GetUnitDefID(builderID)==nimrod then
+            pendingLaunches[unitID]={owner=builderID,defID=defID}
+        end
     end
     function gadget:Explosion_GetWantedWeaponDef() return wanted end
     function gadget:Explosion(weaponID,x,y,z,ownerID,projectileID)
@@ -100,6 +155,12 @@ if gadgetHandler:IsSyncedCode() then
     end
     function gadget:UnitDestroyed(id,defID)
         lastMuzzle[id]=nil
+        pendingLaunches[id]=nil
+        if defID==nimrod then
+            for payload,record in pairs(pendingLaunches) do
+                if record.owner==id then pendingLaunches[payload]=nil end
+            end
+        end
         if defID==pyro then
             local x,y,z=Spring.GetUnitPosition(id)
             if x then SendToUnsynced('pyro_torch_off',x,y,z,id) end
@@ -113,7 +174,10 @@ if gadgetHandler:IsSyncedCode() then
         if frame%3~=0 then return end
         for id,r in pairs(fires) do if frame>=r.expires then fires[id]=nil end end
     end
-    function gadget:Shutdown() _G.MosaicCombatFires=nil end
+    function gadget:Shutdown()
+        _G.MosaicCombatFires=nil
+        if GG and GG.NimrodLaunchFX==launchAPI then GG.NimrodLaunchFX=nil end
+    end
 else
     local function visible(x,y,z)
         local _,full=Spring.GetSpectatingState()
@@ -145,6 +209,26 @@ else
             Script.LuaUI.GadgetRailgunWakeGap(projectileID,born,frame,done)
         end
     end
+    local function NimrodLaunch(_,id,born,weaponID,owner,ownerAlly,wasCloaked,x,y,z,height)
+        local _,full=Spring.GetSpectatingState()
+        local ally=Spring.GetMyAllyTeamID()
+        if not full and ownerAlly~=ally then
+            -- Eligibility is decided only at departure. Concealed enemy events
+            -- are discarded and cannot be replayed when the gun becomes visible.
+            if wasCloaked==1 then return end
+            local los=Spring.GetUnitLosState(owner,ally)
+            if not los or not los.los then return end
+        end
+        if visible(x,y,z) then Muzzle(nil,x,y,z,weaponID,owner) end
+        -- This is a deliberate local launch stroke, not a fabricated projectile
+        -- or a chord to a satellite's map-edge orbital entry. At most 33 samples;
+        -- all enter the existing LOS-filtered, bounded, 15-second wake renderer.
+        height=math.max(launchStep,math.min(maxLaunchHeight,height))
+        local count=math.ceil(height/launchStep)
+        for i=0,count do
+            RailgunPoint(nil,id,born,weaponID,x,y+height*i/count,z,born,i==count and 1 or 0)
+        end
+    end
     local lastUpdate
     function gadget:Update()
         -- MOSAIC's gadget handler does not pass dt to Update.
@@ -166,12 +250,14 @@ else
         gadgetHandler:AddSyncAction('barrelfire_light',Muzzle)
         gadgetHandler:AddSyncAction('pyro_torch_off',PyroTorch)
         gadgetHandler:AddSyncAction('railgun_wake_point',RailgunPoint)
+        gadgetHandler:AddSyncAction('nimrod_launch',NimrodLaunch)
     end
     function gadget:Shutdown()
         gadgetHandler:RemoveSyncAction('explosion_light')
         gadgetHandler:RemoveSyncAction('barrelfire_light')
         gadgetHandler:RemoveSyncAction('pyro_torch_off')
         gadgetHandler:RemoveSyncAction('railgun_wake_point')
+        gadgetHandler:RemoveSyncAction('nimrod_launch')
     end
 end
 

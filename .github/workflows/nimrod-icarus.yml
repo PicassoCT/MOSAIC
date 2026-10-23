@@ -1,0 +1,98 @@
+name: Nimrod launches and Icarus flight
+
+on:
+  push:
+    branches:
+      - master
+      - fix/nimrod-launch-icarus-flight
+    paths:
+      - '.github/workflows/nimrod-icarus.yml'
+      - 'scripts/airplaneartilleryscript.lua'
+      - 'units/shared/chasis/air/plane/air_plane_artillery.lua'
+      - 'weapons/birdsOfInfamy.lua'
+      - 'gamedata/unit_script_header.lua'
+      - 'objects3d/air_plane_artillery*'
+      - 'luarules/gadgets/game_sattelite.lua'
+      - 'luarules/gadgets/gfx_explosion_lights.lua'
+      - 'luarules/gadgets/unit_aircraft_crashing.lua'
+      - 'luaui/widgets_mosaic/include/railgun_*.lua'
+      - 'tests/icarus_*'
+      - 'tests/nimrod_launch_fx.lua'
+      - 'tests/aircraft_crashing_test.lua'
+      - 'tests/orbital_bands_test.lua'
+      - 'tests/railgun_*.lua'
+  pull_request:
+    paths:
+      - '.github/workflows/nimrod-icarus.yml'
+      - 'scripts/airplaneartilleryscript.lua'
+      - 'units/shared/chasis/air/plane/air_plane_artillery.lua'
+      - 'weapons/birdsOfInfamy.lua'
+      - 'gamedata/unit_script_header.lua'
+      - 'objects3d/air_plane_artillery*'
+      - 'luarules/gadgets/game_sattelite.lua'
+      - 'luarules/gadgets/gfx_explosion_lights.lua'
+      - 'luarules/gadgets/unit_aircraft_crashing.lua'
+      - 'luaui/widgets_mosaic/include/railgun_*.lua'
+      - 'tests/icarus_*'
+      - 'tests/nimrod_launch_fx.lua'
+      - 'tests/aircraft_crashing_test.lua'
+      - 'tests/orbital_bands_test.lua'
+      - 'tests/railgun_*.lua'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  flight-and-launch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /baseclasses/
+            /scripts/
+            /units/
+            /weapons/
+            /objects3d/air_plane_artillery*
+            /gamedata/unitdefs_pre.lua
+            /gamedata/unit_script_header.lua
+            /gamedata/explosions/railGunCeg.lua
+            /luarules/gadgets/game_sattelite.lua
+            /luarules/gadgets/gfx_explosion_lights.lua
+            /luarules/gadgets/unit_aircraft_crashing.lua
+            /luarules/gadgets/include/
+            /luaui/widgets_mosaic/include/
+            /luaui/widgets_mosaic/shaders/railgun_wake/
+            /tests/
+      - name: Install Lua 5.1
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y lua5.1
+      - name: Parse flight and effect integration
+        run: |
+          luac5.1 -p scripts/airplaneartilleryscript.lua
+          luac5.1 -p units/shared/chasis/air/plane/air_plane_artillery.lua
+          luac5.1 -p weapons/birdsOfInfamy.lua
+          luac5.1 -p objects3d/air_plane_artillery_projectile.dae.lua
+          luac5.1 -p luarules/gadgets/game_sattelite.lua
+          luac5.1 -p luarules/gadgets/gfx_explosion_lights.lua
+          luac5.1 -p luarules/gadgets/unit_aircraft_crashing.lua
+      - name: Verify launch, flight and crash transitions
+        run: |
+          lua5.1 tests/nimrod_launch_fx.lua
+          lua5.1 tests/icarus_flight_test.lua
+          lua5.1 tests/orbital_bands_test.lua
+          lua5.1 tests/aircraft_crashing_test.lua
+      - name: Verify the folded model falls nose first
+        run: python3 tests/icarus_model_basis_test.py
+      - name: Verify shared effect and visibility lifecycles
+        run: |
+          lua5.1 tests/railgun_effect_events.lua
+          lua5.1 tests/railgun_wakes.lua
+          lua5.1 tests/railgun_radiance.lua
+          lua5.1 tests/railgun_wake_renderer.lua
+          lua5.1 tests/combat_effect_events.lua
+          lua5.1 tests/combat_effects_lifecycle.lua

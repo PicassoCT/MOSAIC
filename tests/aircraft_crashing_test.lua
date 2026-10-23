@@ -55,6 +55,7 @@ for _, file in ipairs(files) do
     end
 end
 assert(covered == 17, 'all 17 concrete aircraft definitions covered')
+UnitDefNames = {air_plane_artillery = {id = names.air_plane_artillery}}
 assert(Aero:New().customparams.crashable == 1)
 assert(not Rocket:New().customparams.crashable, 'ICBM keeps its scripted flight/death')
 for _, def in pairs(dofile('units/shared/chasis/air/copter/air_parachut.lua')) do
@@ -165,6 +166,24 @@ end
 local id,u=unit(103);assert(damage(id,500)==500 and u.state=='crashing', 'string custom params')
 local launch,lu=unit(names.air_plane_artillery,{scripted=true,state='landed',y=600})
 assert(damage(launch,200)==200 and not lu.scripted and lu.state=='crashing')
+-- A released Icarus is only the brief owner of its native falling projectile.
+-- It must keep attribution alive without entering a second aircraft crash.
+local carrier,cu=unit(names.air_plane_artillery,
+    {scripted=true,state='landed',y=1536,rules={icarus_released=1}})
+for _,paralyze in ipairs({false,true}) do
+    local d,impulse=damage(carrier,200,paralyze)
+    assert(d==0 and impulse==0 and cu.scripted and cu.hooks==0,
+        'released Icarus carrier took damage or started a second crash')
+end
+assert(not GG.AircraftCrash(carrier) and cu.state=='landed' and cu.hooks==0,
+    'explicit crash API bypassed the released Icarus exclusion')
+assert(not gadget:AllowCommand(carrier,names.air_plane_artillery)
+    and not gadget:AllowUnitBuildStep(999,1,carrier,names.air_plane_artillery),
+    'new self-destruct or queued reclamation could remove the attribution carrier')
+-- The private marker has no effect on any other aircraft definition.
+local marked,mu=unit(names.air_plane_fighterjet,{rules={icarus_released=1}})
+assert(damage(marked,200)==200 and mu.state=='crashing' and mu.hooks==1,
+    'Icarus carrier marker changed another aircraft type')
 local api=Spring.SetUnitCrashing;Spring.SetUnitCrashing=nil
 local legacy,le=unit(1);assert(damage(legacy,200)==200 and le.state=='crashing', 'COB fallback')
 Spring.SetUnitCrashing=api
@@ -194,4 +213,4 @@ local c=unit(1);damage(c,100,false,attacker);att.dead=true
 frame=1440;gadget:GameFrame(frame);assert(destroyed[c].attacker==nil)
 gadget:Shutdown();assert(GG.AircraftCrash==nil)
 
-print('PASS: 17 real aircraft definitions; lethal/exact/EMP hits; weapon/sensor shutdown; ground/build/transport exclusions; launch and Spring fallback; expiry; self-D cancellation/stun; reload and bounded cleanup')
+print('PASS: 17 real aircraft definitions; lethal/exact/EMP hits; weapon/sensor shutdown; ground/build/transport exclusions; launch and released-Icarus attribution carrier; Spring fallback; expiry; self-D cancellation/stun; reload and bounded cleanup')

@@ -2,7 +2,8 @@
 local weaponName = "icarusglidebomb" --
 local weaponDef = {
     name = "Glidebomb",
-    weaponType = [[MissileLauncher]],
+    -- Released explicitly after folding; native gravity and collision, no motor.
+    weaponType = [[AircraftBomb]],
 	--damage
 	damage = {
 	default = 512
@@ -16,20 +17,13 @@ local weaponDef = {
 
 	--aiming behaviour
 	range = 1024 + 512+ 64,
-	turnRate = 4096,
 	turret = true,
-	tracks = false,
-	predictBoost = 1.0,
 	avoidFeature = true,
 	avoidGround = true,
 	
 	alwaysVisible = true,
 	--flight behaviour
-	startVelocity  = 0,
-	trajectoryHeight = 1.0 ,
-	flightTime = 150.5 ,
-	weaponVelocity = 2050,
-	weaponAcceleration = 150,
+	-- The unit script supplies the map's gravity and initial downward velocity.
 
 	--impact behaviour
 	impulseBoost  = 1,
