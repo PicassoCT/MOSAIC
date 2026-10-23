@@ -19,6 +19,10 @@ local pieceName_pieceNr = Spring.GetUnitPieceMap(unitID)
 local pieceToShow = nil
 local toShowDict = {}
 local ToShowTable = {}
+local buildingClearanceReady = false
+function GetBuildingClearancePieces()
+    return buildingClearanceReady and ToShowTable or nil
+end
 local ArcoT= {}
 local ProjectT = {}
 local Mega = {}
@@ -586,6 +590,8 @@ function buildBuilding()
     if toShowDict[TablesOfPieceGroups["Arcology"][8]] then
             StartThread(placeElevators, TablesOfPieceGroups, 200, 20, toShowDict)
     end
+    buildingClearanceReady = true
+    if GG.MarkBuildingClearanceDirty then GG.MarkBuildingClearanceDirty(unitID) end
     Sleep(restSleep)
     boolDoneShowing = true
     showHouse()

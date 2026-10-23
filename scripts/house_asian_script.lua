@@ -23,6 +23,10 @@ local function optionalPieceSet(names)
 end
 
 local ToShowTable = {}
+local buildingClearanceReady = false
+function GetBuildingClearancePieces()
+    return buildingClearanceReady and ToShowTable or nil
+end
 IDGroupsDirection = { 
     "u", --upright
     "l"} -- lengthwise
@@ -1954,8 +1958,10 @@ function buildBuilding(boolIsReconstruction)
     end
 	
 	addGroundPlaceables()
-    -- buildAnimation publishes the completed array after showing the building.
+    -- Flight clearance uses the completed plan before cosmetic reveal delays.
     buildingDamage.initialize(LevelPieces, ToShowTable, RoofTopPieces, toShowDict, cubeDim.heigth, cubeDim.length, 0.0254, pieceName_pieceNr)
+    buildingClearanceReady = true
+    if GG.MarkBuildingClearanceDirty then GG.MarkBuildingClearanceDirty(unitID) end
     boolDoneShowing = true
 	initAllPieces()
 end

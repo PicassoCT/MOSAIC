@@ -44,6 +44,7 @@ boringChances = {
 }
 -- Called by either construction-animation completion path, after the assembled
 -- building is visible. The gadget sends only primitives across the sync boundary.
+local buildingClearanceReady = false
 local function finalizeBuildingShadowVoxels()
     if GG.MarkBuildingShadowVolumeDirty then
         GG.MarkBuildingShadowVolumeDirty(unitID)
@@ -58,6 +59,9 @@ geoHash = (x - (x - math.floor(x))) + (y - (y - math.floor(y))) +
 if geoHash % 3 == 1 then decoChances = supriseChances end
 centerP = {x = (cubeDim.length / 2) * 5, z = (cubeDim.length / 2) * 5}
 ToShowTable = {}
+function GetBuildingClearancePieces()
+    return buildingClearanceReady and ToShowTable or nil
+end
 
 _x_axis = 1
 _y_axis = 2
@@ -1122,6 +1126,8 @@ function buildBuilding()
     addRoofDeocrate(3, TablesOfPiecesGroups[materialColourName .. "Roof"])
     -- Releases buildAnimation, which publishes voxels after construction finishes.
     buildingDamage.initialize(LevelPieces, ToShowTable, RoofTopPieces, nil, cubeDim.heigth, cubeDim.length, 1)
+    buildingClearanceReady = true
+    if GG.MarkBuildingClearanceDirty then GG.MarkBuildingClearanceDirty(unitID) end
     boolDoneShowing = true
 end
 

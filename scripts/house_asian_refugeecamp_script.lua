@@ -8,6 +8,10 @@ local pieceNr_pieceName =Spring.GetUnitPieceList ( unitID )
 
 Icon = piece("Icon")
 local ToShowTable = {piece("House")}
+local buildingClearanceReady = false
+function GetBuildingClearancePieces()
+    return buildingClearanceReady and ToShowTable or nil
+end
 function script.HitByWeapon(x, z, weaponDefID, damage) end
 boolHouseHidden = false
 
@@ -37,6 +41,8 @@ function buildBuilding()
   hideAll(unitID)
   Show(Icon)
   registerRooftopSubPieces(piece("House"))
+  buildingClearanceReady = true
+  if GG.MarkBuildingClearanceDirty then GG.MarkBuildingClearanceDirty(unitID) end
   Sleep(9000)
   showHouse()
 end

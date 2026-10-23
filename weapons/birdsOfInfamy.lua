@@ -23,8 +23,9 @@ local weaponDef = {
 	
 	alwaysVisible = true,
 	--flight behaviour
-	-- Ordinary shots inherit the native aircraft's motion. Glide exhaustion
-	-- spawns this same native projectile once, locally, even without a target.
+	-- Both release paths inherit motion remaining after native aircraft braking.
+	-- AircraftBomb has no horizontal drag: it predicts and follows that ballistic
+	-- arc. Glide exhaustion spawns the same projectile locally without a target.
 
 	--impact behaviour
 	impulseBoost  = 1,

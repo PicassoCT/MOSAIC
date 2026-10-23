@@ -10,6 +10,9 @@ local FPS = Game.gameSpeed or 30
 local FRAME_MS = 1000 / FPS
 local FOLD_SPEED = math.rad(180)
 local WING_SLIDE, WING_SLIDE_SPEED = 326, 652
+local FOLD_SECONDS = math.max(WING_SLIDE/WING_SLIDE_SPEED, math.rad(80)/FOLD_SPEED)
+local UPDATE_SECONDS = 1
+local FOLD_ALIGNMENT, CANCEL_ALIGNMENT = 0.95, 0.8
 local phaseNumber = {building=0, ascent=1, unfolding=2, loiter=3,
                      transit=4, folding=5, released=6, crashing=7}
 local phase, stopped, released, committed = "building", false, false, false
@@ -24,6 +27,13 @@ local terminalHeight = math.max(1, math.min(cruiseHeight-1,
     tonumber(custom.icarus_terminal_height) or 128))
 local glideFrames = math.ceil((cruiseHeight-terminalHeight) / sinkRate * FPS)
 local flightSpeed = definition.speed or 75 -- elmos per second
+local brakeSeconds = math.max(0.1, tonumber(custom.icarus_brake_seconds) or 1)
+local foldedSpeedFactor = math.max(0.05, math.min(1,
+    tonumber(custom.icarus_folded_speed_factor) or 0.25))
+local nativeMaxSpeed, foldedSpeed = flightSpeed, flightSpeed*foldedSpeedFactor
+local braking, brakeReadyFrame = false, nil
+local glideStarted, glideDeadline, clearanceY
+local expireGlide, checkClearance
 local gravityPerSecond = math.abs(Game.gravity or 130)
 local gravity = -gravityPerSecond / (FPS * FPS)
 local weaponDefID = WeaponDefNames.icarusglidebomb.id
@@ -118,9 +128,23 @@ local function foldWings()
     WaitForTurn(Wing2, x_axis)
 end
 
+local function brakeForDrop()
+    if braking then return end
+    braking = true
+    brakeReadyFrame = Spring.GetGameFrame()+math.ceil(brakeSeconds*FPS)
+    -- CStrafeAirMoveType::SetMaxSpeed recalculates native aerodynamic drag.
+    -- The engine sheds forward speed; Lua never writes the unit's velocity.
+    Spring.MoveCtrl.SetAirMoveTypeData(unitID,"maxSpeed",foldedSpeed)
+end
+
 local function cancelFold()
     if wings == "open" or wings == "unfolding" or exhausted or released or stopped then return end
+    if checkClearance and not checkClearance() then return end
     Signal(SIG_WINGS)
+    if braking then
+        Spring.MoveCtrl.SetAirMoveTypeData(unitID,"maxSpeed",nativeMaxSpeed)
+        braking, brakeReadyFrame = false, nil
+    end
     wings = "unfolding"
     setPhase("unfolding")
     StartThread(function()
@@ -134,6 +158,7 @@ end
 
 local function beginFold()
     if wings ~= "open" or stopped or released or exhausted or committed then return end
+    if checkClearance and not checkClearance() then return end
     Signal(SIG_WINGS)
     wings = "folding"
     setPhase("folding")
@@ -142,6 +167,7 @@ local function beginFold()
         foldWings()
         if stopped or released or exhausted then return end
         wings = "folded"
+        brakeForDrop()
     end)
 end
 
@@ -176,12 +202,22 @@ local function prepareAttack()
     if not tx or Spring.GetUnitIsStunned(unitID) then cancelFold(); return end
     local x,y,z = Spring.GetUnitPosition(unitID)
     local vx,_,vz = Spring.GetUnitVelocity(unitID)
-    local speed = math.max(flightSpeed, math.sqrt(vx*vx+vz*vz)*FPS)
+    local dx,dz = tx-x,tz-z
+    local distanceSquared, speedSquared = dx*dx+dz*dz, vx*vx+vz*vz
+    local approach = dx*vx+dz*vz
+    local alignment = wings == "open" and FOLD_ALIGNMENT or CANCEL_ALIGNMENT
+    -- Fold only on an aligned approach: the slow native profile deliberately
+    -- sheds lift and has weaker turning authority. Reopen after a missed pass,
+    -- with hysteresis, unless the clearance guard commits a local terminal drop.
+    if approach <= 0 or approach*approach < alignment*alignment*distanceSquared*speedSquared then
+        cancelFold()
+        return
+    end
+    local speed = math.max(nativeMaxSpeed, math.sqrt(speedSquared)*FPS)
     local fallSeconds = math.sqrt(2*math.max(0,y-ty) / gravityPerSecond)
     -- Prepare before the native bomber's narrow ballistic firing window, only
     -- during an explicit attack, at the same 1 Hz as the glide allowance.
-    local lead = speed*(fallSeconds + WING_SLIDE/WING_SLIDE_SPEED + 1.5) + 24
-    local distanceSquared = (tx-x)*(tx-x) + (tz-z)*(tz-z)
+    local lead = foldedSpeed*fallSeconds + speed*(FOLD_SECONDS+brakeSeconds+1.5) + 24
     if distanceSquared <= lead*lead then
         beginFold()
     elseif distanceSquared > (lead*1.25)^2 then
@@ -254,7 +290,8 @@ local function releaseExpiredBomb()
     local ttl = math.ceil(fallFrames) + 10*FPS
     projectileTimeoutFrames = ttl+FPS
     -- Passive exhaustion cannot be postponed by EMP or a distant target.
-    -- Preserve momentum; native gravity and collision own the terminal fall.
+    -- Inherit the momentum left after native braking. Native gravity and
+    -- collision own the terminal fall; AircraftBomb itself has no air drag.
     local projectileID = Spring.SpawnProjectile(weaponDefID, {
         pos={x,y,z}, speed={vx,vy,vz}, gravity=gravity, ttl=ttl,
         owner=unitID, team=Spring.GetUnitTeam(unitID), weapon=1,
@@ -265,8 +302,10 @@ local function releaseExpiredBomb()
     return true
 end
 
-local function expireGlide()
+expireGlide = function()
+    if exhausted or stopped or released then return end
     exhausted = true
+    Signal(SIG_GLIDE)
     Signal(SIG_WINGS)
     Signal(SIG_ORDERS)
     wings = "folding"
@@ -276,6 +315,11 @@ local function expireGlide()
         foldWings()
         if stopped or released then return end
         wings = "folded"
+        brakeForDrop()
+        -- Bounded native braking, independent of EMP or commands. Always yield
+        -- before spawning, including if a BlockShot callback triggered expiry.
+        Sleep(math.max(1,brakeReadyFrame-Spring.GetGameFrame())*FRAME_MS)
+        if stopped or released then return end
         if releaseExpiredBomb() then return end
         Sleep(FRAME_MS)
         if stopped or released or releaseExpiredBomb() then return end
@@ -287,26 +331,69 @@ local function expireGlide()
     end)
 end
 
+local function foldClearance(ground,vx,vy,vz)
+    local speed = math.max(nativeMaxSpeed, math.sqrt(vx*vx+vz*vz)*FPS)
+    local downward = math.max(sinkRate, -vy*FPS)
+    -- Reserve the entire next sampling interval, wing animation and native
+    -- braking dwell. Full bomb gravity is conservative while still an aircraft.
+    -- The horizontal travel allowance also keeps fast gliders out of roof gaps.
+    local seconds = UPDATE_SECONDS+FOLD_SECONDS+brakeSeconds
+    local reserve = math.max(terminalHeight, speed*seconds,
+        downward*seconds+0.5*gravityPerSecond*seconds*seconds)
+    return math.max(ground,GG.IcarusSkylineHeight or 0)+reserve
+end
+
+checkClearance = function(frame)
+    if exhausted or stopped or released then return false end
+    if not glideStarted then return true end
+    frame = frame or Spring.GetGameFrame()
+    local x,y,z = Spring.GetUnitPosition(unitID)
+    local vx,vy,vz = Spring.GetUnitVelocity(unitID)
+    local ground = math.max(0,Spring.GetGroundHeight(x,z))
+    local floorY = foldClearance(ground,vx,vy,vz)
+    local requiredAGL = math.max(terminalHeight,floorY-ground)
+    local deadline = glideStarted+math.max(0,
+        math.ceil((cruiseHeight-requiredAGL)/sinkRate*FPS))
+    -- The shared city roof is fixed. Faster descent or movement over lower
+    -- terrain can spend the allowance; climbing or orders cannot refill it.
+    if deadline < glideDeadline then
+        glideDeadline = deadline
+        Spring.SetUnitRulesParam(unitID,"icarus_glide_end_frame",deadline,{inlos=true})
+    end
+    if not clearanceY or math.ceil(floorY) ~= math.ceil(clearanceY) then
+        Spring.SetUnitRulesParam(unitID,"icarus_fold_height",floorY,{inlos=true})
+    end
+    clearanceY = floorY
+    if frame >= glideDeadline or y <= floorY then
+        expireGlide()
+        return false,requiredAGL
+    end
+    return true,requiredAGL
+end
+
 local function glideLifetime()
-    local started = Spring.GetGameFrame()
-    local deadline = started+glideFrames
-    Spring.SetUnitRulesParam(unitID,"icarus_glide_start_frame",started,{inlos=true})
-    Spring.SetUnitRulesParam(unitID,"icarus_glide_end_frame",deadline,{inlos=true})
+    glideStarted = Spring.GetGameFrame()
+    glideDeadline = glideStarted+glideFrames
+    Spring.SetUnitRulesParam(unitID,"icarus_glide_start_frame",glideStarted,{inlos=true})
+    Spring.SetUnitRulesParam(unitID,"icarus_glide_end_frame",glideDeadline,{inlos=true})
     Spring.SetUnitRulesParam(unitID,"icarus_sink_rate",sinkRate,{inlos=true})
+    if not checkClearance(glideStarted) then return end
+    refreshOrder()
     -- Stagger same-frame spawns instead of waking a whole swarm together.
-    local sleepFrames = math.min(glideFrames,FPS-(started+unitID)%FPS)
+    local sleepFrames = math.min(glideDeadline-glideStarted,FPS-(glideStarted+unitID)%FPS)
     prepareAttack()
     while not stopped and not released do
         Sleep(sleepFrames*FRAME_MS)
         if stopped or released then return end
         local frame = Spring.GetGameFrame()
+        local safe,requiredAGL = checkClearance(frame)
+        if not safe then return end
         -- This namespace also exposes NATIVE movement configuration. The setter
         -- does not enable MoveCtrl or write position, velocity or steering.
         Spring.MoveCtrl.SetAirMoveTypeData(unitID,"wantedHeight",
-            math.max(terminalHeight,cruiseHeight-sinkRate*(frame-started)/FPS))
-        if frame >= deadline then expireGlide(); return end
+            math.max(requiredAGL,cruiseHeight-sinkRate*(frame-glideStarted)/FPS))
         prepareAttack()
-        sleepFrames = math.min(FPS,deadline-frame)
+        sleepFrames = math.min(FPS,glideDeadline-frame)
     end
 end
 
@@ -317,11 +404,20 @@ local function revealUnfold()
     showT(pieces.Sabot)
     Show(Cartdrige)
     if not waitTillComplete(unitID) or not alive() then return end
-    while alive() and Spring.GetUnitIsStunned(unitID) do Sleep(100) end
+    -- The generated city's one map-wide roof calculation must finish before
+    -- any payload unfolds. This wait is outside the finite airborne budget.
+    while alive() and (Spring.GetUnitIsStunned(unitID) or GG.IcarusSkylineReady == false) do
+        Sleep(100)
+    end
     if not alive() then return end
 
     local x,y,z = Spring.GetUnitPosition(unitID)
     local launchTop = y+2048
+    -- Read the native profile before launch MoveCtrl temporarily replaces it.
+    -- Its actual (possibly modified) speed also sizes the launch clearance test.
+    local moveData = Spring.GetUnitMoveTypeData(unitID)
+    nativeMaxSpeed = math.max(1,(moveData and moveData.maxSpeed) or flightSpeed)
+    foldedSpeed = nativeMaxSpeed*foldedSpeedFactor
     if GG.NimrodLaunchFX and GG.NimrodLaunchFX.Departure then
         GG.NimrodLaunchFX.Departure(unitID, launchTop)
     end
@@ -357,17 +453,21 @@ local function revealUnfold()
     Turn(Base,x_axis,math.rad(90),15)
     Turn(Base,z_axis,math.rad(90),15)
     spinT(pieces.TailRotor,y_axis,math.rad(42))
-    setPhase("unfolding")
-    unfoldWings()
+    -- A launch underneath an unusually high skyline must stay folded too.
+    if launchTop > foldClearance(math.max(0,Spring.GetGroundHeight(x,z)),0,0,0) then
+        setPhase("unfolding")
+        unfoldWings()
+        wings = "open"
+    else
+        wings = "folded"
+    end
     if not alive() then return end
-    wings = "open"
     Spring.MoveCtrl.Disable(unitID)
     Spring.MoveCtrl.SetAirMoveTypeData(unitID,"wantedHeight",cruiseHeight)
     -- StartMoving enters native takeoff/flying even without a player order.
     -- This one goal seeds idle circling; later commands belong to AirCAI.
     Spring.SetUnitMoveGoal(unitID,x,launchTop,z)
     nativeReady = true
-    refreshOrder()
     glideLifetime()
 end
 
@@ -410,6 +510,7 @@ function script.BlockShot1(targetID,userTarget)
         or not userTarget or not isDesignation(currentOrder) or Spring.GetUnitIsStunned(unitID) then
         return true
     end
+    if not checkClearance() then return true end
     local tx,ty,tz = targetPosition()
     if not tx then return true end
     local p = currentOrder.params
@@ -421,6 +522,7 @@ function script.BlockShot1(targetID,userTarget)
             or math.abs(position[1]-tx) > 1 or math.abs(position[3]-tz) > 1 then return true end
     end
     if wings ~= "folded" then beginFold(); return true end
+    if not brakeReadyFrame or Spring.GetGameFrame() < brakeReadyFrame then return true end
     return false
 end
 

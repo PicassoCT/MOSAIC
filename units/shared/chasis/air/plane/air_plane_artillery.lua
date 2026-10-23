@@ -68,10 +68,12 @@ local AIR_ARTILLERY = AIRCRAFT:New{
 	  customParams = {
 	  	baseclass = "vtol",
 	  	normaltex = "unittextures/component_atlas_normal.dds",
-		-- Native terrain clearance falls from cruiseAlt to this floor, then
-		-- the wings fold and the bomb drops locally. (1536-128)/8 = 176 s.
+		-- The native altitude allowance sinks until rooftop clearance is spent.
+		-- Actual roofs, descent and fold/braking time can shorten this budget.
 		icarus_sink_rate = 8, -- elmos/second of glide altitude allowance
-		icarus_terminal_height = 128,
+		icarus_terminal_height = 128, -- minimum transition reserve above obstacles
+		icarus_folded_speed_factor = 0.25, -- native drag profile after folding
+		icarus_brake_seconds = 1, -- native braking before either release path
 	  },
 
 	weapons={	

@@ -70,6 +70,14 @@ geoHash = (x - (x - math.floor(x))) + (y - (y - math.floor(y))) +
 if geoHash % 3 == 1 then decoChances = supriseChances end
 centerP = {x = (cubeDim.length / 2) * 5, z = (cubeDim.length / 2) * 5}
 ToShowTable = {}
+local buildingClearanceReady = false
+function GetBuildingClearancePieces()
+    return buildingClearanceReady and ToShowTable or nil
+end
+local function publishBuildingClearance()
+    buildingClearanceReady = true
+    if GG.MarkBuildingClearanceDirty then GG.MarkBuildingClearanceDirty(unitID) end
+end
 
 local _x_axis = 1
 local _y_axis = 2
@@ -1386,6 +1394,7 @@ function buildBuilding()
     Show(BasePillars)
        --echo(getScriptName() .. "addRoofDeocrate ended")
     buildingDamage.initialize(LevelPieces, ToShowTable, RoofTopPieces, nil, cubeDim.heigth, cubeDim.length, 0.0254, pieceName_pieceNr)
+    publishBuildingClearance()
     boolDoneShowing = true
 end
 

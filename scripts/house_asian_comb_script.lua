@@ -24,6 +24,19 @@ boolDoneShowing = false
 RoofTopPieces = {}
 base = nil
 ToShowTable = {}
+local buildingClearanceReady = false
+local clearanceExtraPieces = {}
+function GetBuildingClearancePieces()
+    if not buildingClearanceReady then return end
+    local selected = {}
+    for _, id in pairs(ToShowTable) do selected[#selected+1] = id end
+    for _, id in pairs(clearanceExtraPieces) do selected[#selected+1] = id end
+    -- These already-selected waterfall groups are revealed by buildAnimation.
+    for _, name in ipairs({"PlateWater", chasingWaterfalls[base]}) do
+        for _, id in ipairs(TablesOfPieceGroups[name] or {}) do selected[#selected+1] = id end
+    end
+    return selected
+end
 Icon =piece("Icon")
 
 -- Returns a random integer between min and max (inclusive)
@@ -116,6 +129,8 @@ function buildAnimation()
     Hide(Icon)
     setupWaterfalls()
     showHouse()
+    buildingClearanceReady = true
+    if GG.MarkBuildingClearanceDirty then GG.MarkBuildingClearanceDirty(unitID) end
 end
 
 function setupWaterfalls()
@@ -154,7 +169,9 @@ function buildBuilding()
     Sleep(1000)
     addToShowTable(Plate)
     base = addToShowTable(showOne(TablesOfPieceGroups["base"], true))
-    showTSubSpins(base, TablesOfPieceGroups)
+    -- Retain the pieces chosen by this existing random selection for physical
+    -- clearance; do not change the house's visibility/raid selection table.
+    clearanceExtraPieces = showTSubSpins(base, TablesOfPieceGroups)
     if base == base1 then  
         showSeveral(TablesOfPieceGroups["ShowCombe"])   
         RoofTopPieces = TablesOfPieceGroups["RoofTopCircle"]
@@ -163,6 +180,8 @@ function buildBuilding()
     if base == base4 then RoofTopPieces = TablesOfPieceGroups["RoofTopSquare"] end
     if base == base2 then RoofTopPieces = TablesOfPieceGroups["RoofTopSquare"] end
     if base == base3 then RoofTopPieces = TablesOfPieceGroups["RoofTopUpright"] end
+    buildingClearanceReady = true
+    if GG.MarkBuildingClearanceDirty then GG.MarkBuildingClearanceDirty(unitID) end
     boolDoneShowing = true
 end
 

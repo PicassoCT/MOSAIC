@@ -9,6 +9,9 @@ on:
     paths:
       - '.github/workflows/nimrod-icarus.yml'
       - 'scripts/airplaneartilleryscript.lua'
+      - 'scripts/lib_building_clearance.lua'
+      - 'scripts/lib_mosaic.lua'
+      - 'scripts/house_*_script.lua'
       - 'units/shared/chasis/air/plane/air_plane_artillery.lua'
       - 'weapons/birdsOfInfamy.lua'
       - 'gamedata/unit_script_header.lua'
@@ -17,6 +20,8 @@ on:
       - 'luarules/gadgets/gfx_explosion_lights.lua'
       - 'luarules/gadgets/unit_aircraft_crashing.lua'
       - 'luarules/gadgets/unit_icarus_lifecycle.lua'
+      - 'luarules/gadgets/game_building_clearance.lua'
+      - 'luarules/gadgets/game_spawnCity.lua'
       - 'luaui/widgets_mosaic/include/railgun_*.lua'
       - 'tests/icarus_*'
       - 'tests/nimrod_launch_fx.lua'
@@ -27,6 +32,9 @@ on:
     paths:
       - '.github/workflows/nimrod-icarus.yml'
       - 'scripts/airplaneartilleryscript.lua'
+      - 'scripts/lib_building_clearance.lua'
+      - 'scripts/lib_mosaic.lua'
+      - 'scripts/house_*_script.lua'
       - 'units/shared/chasis/air/plane/air_plane_artillery.lua'
       - 'weapons/birdsOfInfamy.lua'
       - 'gamedata/unit_script_header.lua'
@@ -35,6 +43,8 @@ on:
       - 'luarules/gadgets/gfx_explosion_lights.lua'
       - 'luarules/gadgets/unit_aircraft_crashing.lua'
       - 'luarules/gadgets/unit_icarus_lifecycle.lua'
+      - 'luarules/gadgets/game_building_clearance.lua'
+      - 'luarules/gadgets/game_spawnCity.lua'
       - 'luaui/widgets_mosaic/include/railgun_*.lua'
       - 'tests/icarus_*'
       - 'tests/nimrod_launch_fx.lua'
@@ -67,6 +77,7 @@ jobs:
             /luarules/gadgets/gfx_explosion_lights.lua
             /luarules/gadgets/unit_aircraft_crashing.lua
             /luarules/gadgets/unit_icarus_lifecycle.lua
+            /luarules/gadgets/game_building_clearance.lua
             /luarules/gadgets/include/
             /luaui/widgets_mosaic/include/
             /luaui/widgets_mosaic/shaders/railgun_wake/
@@ -78,6 +89,8 @@ jobs:
       - name: Parse flight and effect integration
         run: |
           luac5.1 -p scripts/airplaneartilleryscript.lua
+          luac5.1 -p scripts/lib_building_clearance.lua
+          for script in scripts/house_*_script.lua; do luac5.1 -p "$script"; done
           luac5.1 -p units/shared/chasis/air/plane/air_plane_artillery.lua
           luac5.1 -p weapons/birdsOfInfamy.lua
           luac5.1 -p objects3d/air_plane_artillery_projectile.dae.lua
@@ -85,11 +98,13 @@ jobs:
           luac5.1 -p luarules/gadgets/gfx_explosion_lights.lua
           luac5.1 -p luarules/gadgets/unit_aircraft_crashing.lua
           luac5.1 -p luarules/gadgets/unit_icarus_lifecycle.lua
+          luac5.1 -p luarules/gadgets/game_building_clearance.lua
       - name: Verify launch, flight and crash transitions
         run: |
           lua5.1 tests/nimrod_launch_fx.lua
           lua5.1 tests/icarus_flight_test.lua
           lua5.1 tests/icarus_lifecycle_test.lua
+          lua5.1 tests/icarus_clearance_test.lua
           lua5.1 tests/orbital_bands_test.lua
           lua5.1 tests/aircraft_crashing_test.lua
       - name: Verify the folded model falls nose first
