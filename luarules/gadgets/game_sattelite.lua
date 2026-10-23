@@ -244,6 +244,11 @@ local function timeoutTarget(data)
 end
 
 local function beginFlight(unitID, data)
+    if data.state=="waiting" and GG.NimrodLaunchFX and GG.NimrodLaunchFX.Departure then
+        -- Capture the local barrel position before orbital insertion moves the
+        -- satellite to its map-edge track. Retasking is not a second launch.
+        GG.NimrodLaunchFX.Departure(unitID,SatelliteAltitude[data.utype])
+    end
     spMoveCtrlEnable(unitID, true)
     data.state = "flying"
     data.timeoutRemaining = 0

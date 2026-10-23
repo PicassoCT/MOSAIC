@@ -16,7 +16,8 @@ local AIR_ARTILLERY = AIRCRAFT:New{
 	idleAutoHeal = 0,
 	--Movement
 	
-	 fireState=-1,
+	-- Release requires an explicit attack order; the script owns flight.
+	 fireState=0,
 	BrakeRate = 1,
 	FootprintX = 1,
 	FootprintZ = 1,
@@ -30,7 +31,7 @@ local AIR_ARTILLERY = AIRCRAFT:New{
 	turnRadius		  	= 12,
 	TurnRate = 350,
 
-	dontLand		 	= true,
+	airHoverFactor = 0,
 	Acceleration = 0.5,
 	MaxVelocity = 2.5,
 	MaxWaterDepth = 0,
@@ -47,7 +48,7 @@ local AIR_ARTILLERY = AIRCRAFT:New{
 	CanGuard = false,
 	CanMove = true,
 	CanPatrol = true,
-	Canstop  = false,
+	Canstop  = true,
 	onOffable = false,
 	LeaveTracks = false, 
 	crashDrag = 0.02,
@@ -56,7 +57,7 @@ local AIR_ARTILLERY = AIRCRAFT:New{
 	useSmoothMesh 		=true,
 	collide             = true,
 	crashDrag =0.035,
-	fireState = 1,
+	fireState = 0,
 
 
 	Category = [[AIR]],

@@ -26,6 +26,36 @@ replaced. Weapon damage, velocity, range, costs, reload, burst behaviour,
 collision behaviour, reveal-on-fire and hologram interactions are unchanged.
 The unused `railgunshine` definition remains available for compatibility.
 
+## Factory launches
+
+Successful Nimrod-built satellite and Icarus departures now produce the same
+short cyan muzzle radiance and a vertical 15-second Eraser wake. This is a
+visual launch stroke: it creates no damaging projectile and does not change
+orbital insertion, weapon costs, reloads, cloak state or reveal-on-fire rules.
+
+The effect gadget records the builder when a supported payload is created.
+`GG.NimrodLaunchFX.Departure(payloadID, optionalAbsoluteTopY)` consumes that
+record once, after construction has completed and actual departure begins.
+Canceled builds, unrelated builders, transferred payloads and orbital retasking
+do not emit extra launches. The satellite hook runs before its map-edge orbital
+insertion; Icarus calls the same API before its scripted ascent.
+
+The stroke starts at the Nimrod barrel piece, with the payload position as a
+fallback, and rises locally toward the supplied flight altitude, capped at
+2,048 elmos. It never connects the barrel to a satellite's distant orbital
+entry. One event supplies at most 33 visibility samples and 32 retained spans;
+there is no new continuous unit/projectile tracker. Negative synthetic IDs and
+a monotonic serial keep launches separate from engine projectiles and from
+same-frame reuse of a unit ID. The flash inherits railgun **High** priority;
+residue and lighting share the existing caps below.
+
+Own/allied players and full-view spectators can see a cloaked Nimrod's launch
+feedback. Enemy clients require an uncloaked source in LOS at departure, and
+all normal clients still require per-point and interior LOS. Hidden enemy
+events are discarded immediately; later revealing the gun cannot reconstruct
+them. The existing deployment charge flashes keep their separate timing and
+visibility behavior. LuaUI reload does not replay an old launch.
+
 ## Actual trajectories and visibility
 
 `gfx_explosion_lights.lua` captures a shot's initial position before generic
@@ -102,6 +132,8 @@ standalone tests:
 
 ```
 lua5.1 tests/railgun_effect_events.lua
+lua5.1 tests/nimrod_launch_fx.lua
+lua5.1 tests/orbital_bands_test.lua
 lua5.1 tests/railgun_wakes.lua
 lua5.1 tests/railgun_radiance.lua
 lua5.1 tests/railgun_wake_renderer.lua
@@ -110,6 +142,11 @@ lua5.1 tests/combat_effect_events.lua
 lua5.1 tests/combat_effects_lifecycle.lua
 python tests/railgun_wake_gpu.py
 ```
+
+The factory-launch test exercises the real event bridge and wake accumulator:
+completion/departure separation, cancellation, source destruction, ownership,
+duplicate calls, same-frame ID reuse, local launch anchoring, hidden enemy and
+allied feedback, LOS gaps, High priority, shared budgets and fixed expiry.
 
 The GPU test uses NumPy and system Mesa EGL/OpenGL libraries to compile and
 render the production shaders. It checks emission cooling, erosion, fixed

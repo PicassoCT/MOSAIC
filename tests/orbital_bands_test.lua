@@ -187,6 +187,12 @@ Spring = {
 
 -- IDs deliberately give scan/Godrod vertical courses and both anti/target
 -- horizontal courses. Positions are replaced with orbital entry points at tick 1.
+local departures={}
+GG.NimrodLaunchFX={Departure=function(id,topY)
+    assert(not departures[id],"orbital retasking emitted another factory launch")
+    local x,y,z=Spring.GetUnitPosition(id)
+    departures[id]={x=x,y=y,z=z,topY=topY}
+end}
 add(10, D.satellitescan, 1, 1000, 1000)
 add(11, D.satelliteanti, 1, 1000, 1000)
 add(12, D.satellitegodrod, 1, 1000, 1000)
@@ -201,6 +207,12 @@ local function tick(frame)
 end
 
 tick(1)
+for _,id in ipairs({10,11,12,21}) do
+    local launch=assert(departures[id],"initial satellite departure omitted launch effect")
+    assert(launch.x==1000 and launch.y==0 and launch.z==1000,
+        "launch effect was captured after the orbital-entry teleport")
+    assert(launch.topY==getSatelliteAltitudeTable()[w.units[id].defID])
+end
 assert(w.rules[10].orbital_state == 1)
 assert(w.rules[11].orbital_state == 1)
 assert(w.rules[12].orbital_state == 1)
