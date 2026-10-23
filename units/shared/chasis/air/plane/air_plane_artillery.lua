@@ -16,7 +16,7 @@ local AIR_ARTILLERY = AIRCRAFT:New{
 	idleAutoHeal = 0,
 	--Movement
 	
-	-- Release requires an explicit attack order; the script owns flight.
+	-- Native bomber movement; explicit attack or exhausted glide releases once.
 	 fireState=0,
 	BrakeRate = 1,
 	FootprintX = 1,
@@ -61,11 +61,17 @@ local AIR_ARTILLERY = AIRCRAFT:New{
 
 
 	Category = [[AIR]],
+	-- Suppress idle/FIGHT auto-selection. Explicit ATTACK bypasses this native
+	-- filter, so a designated ground target is still approached normally.
 	noChaseCategory = "GROUND BUILDING AIR",
 
 	  customParams = {
 	  	baseclass = "vtol",
 	  	normaltex = "unittextures/component_atlas_normal.dds",
+		-- Native terrain clearance falls from cruiseAlt to this floor, then
+		-- the wings fold and the bomb drops locally. (1536-128)/8 = 176 s.
+		icarus_sink_rate = 8, -- elmos/second of glide altitude allowance
+		icarus_terminal_height = 128,
 	  },
 
 	weapons={	

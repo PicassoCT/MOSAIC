@@ -1,90 +1,163 @@
-# Icarus flight and gravity drop
+# Icarus: native flight and finite glide
 
-Icarus (`air_plane_artillery`) uses an explicit unit-script flight controller. It
-waits for construction, leaves the Nimrod, unfolds and circles until given an
-attack order. Its wings and telescoping panels finish folding before one native
-gravity bomb takes over the visible descent.
+Icarus (air_plane_artillery) uses Recoil's native aircraft movement for circling,
+MOVE, PATROL, FIGHT and attack approach. The unit script animates the model,
+consumes a finite glide allowance, and gates the native weapon until folding is
+complete. Only the short Nimrod launch uses enabled MoveCtrl.
+
+## Glide budget and tuning
+
+| Setting | Default | Meaning |
+| --- | ---: | --- |
+| cruiseAlt | 1536 | Initial native terrain-clearance target, in elmos |
+| customParams.icarus_sink_rate | 8 | Elmos of glide altitude allowance lost per simulation second |
+| customParams.icarus_terminal_height | 128 | Remaining clearance at which the forced terminal fold starts |
+
+The glide starts when the launch/unfold animation hands movement to the engine.
+Its deadline is fixed once:
+
+    glide duration = (initial clearance - terminal clearance) / sink rate
+                   = (1536 - 128) / 8
+                   = 176 simulation seconds
+
+The wings then take up to another half second to fold before the native
+projectile falls. Construction time and the rail launch are outside this budget.
+STOP, new waypoints, target changes, team changes and EMP do not replenish or
+pause it. The two custom parameters are positive, with the terminal clearance
+clamped below the initial height.
+
+Once per second the script sets the decreasing native wantedHeight, calculated
+from absolute simulation age. The first update is staggered by unit ID to spread
+same-frame swarm launches. This setter happens to live at
+Spring.MoveCtrl.SetAirMoveTypeData, but it modifies the active native
+CStrafeAirMoveType; it does not enable script-controlled movement. No Lua loop
+sets flight position, velocity, heading, banking or orbit waypoints.
+
+The engine interprets wantedHeight as terrain clearance. Its normal terrain
+avoidance can briefly raise the aircraft over a ridge, and actual altitude
+responds through aircraft physics rather than following a prescribed vertical
+velocity. The declining allowance and absolute deadline remain unchanged.
+This is a finite gameplay glide, not a full simulation of unpowered energy
+conservation. Setting the altitude target to zero alone would not guarantee
+termination: normal native aircraft can clamp/bounce away from terrain.
+
+At expiry, the current order is no longer relevant. Icarus folds and releases
+the same native bomb at its **current position**, with its existing horizontal
+momentum and downward vertical velocity. It cannot travel indefinitely toward
+an unreachable target. A permanently stunned aircraft also expires; this passive
+release is independent of the native weapon's stun gate.
 
 ## Commands and phases
 
 | Phase | Behavior |
 | --- | --- |
-| Building | Shows the original casing/sabots and waits for completed construction. A stunned payload waits before departure. |
-| Ascent | Calls `GG.NimrodLaunchFX.Departure` once, when available; raises the payload by 2,048 elmos with the existing sabot separation. The late ascent slowdown now changes the actual step. |
-| Unfold | Preserves the original base, tail, rotor and wing arrangement. Uses actual wing/panel piece IDs and waits for their animations. |
-| Loiter | Circles with a 180-elmo radius around its current holding point. Uses the owning unit's configured speed and cruise height; circles stay inside map edges. |
-| Transit | An explicit ATTACK follows a visible ground unit or the selected ground position at flight altitude. MOVE navigates to a new holding point. PATROL keeps cycling through its waypoints, including a return leg for a single-point patrol. FIGHT navigates without selecting a bomb target automatically. |
-| Fold | Stops over the designated position, locks that release point, retracts both panels and folds both wings. STOP, a replacement order, a dead/lost target, or EMP before release aborts the strike and unfolds again. |
-| Drop | Creates one `AircraftBomb` with zero horizontal velocity and the map's gravity. It does not accelerate under motor power or home after release. Native projectile collision handles units, features, terrain and water. |
-| Cleanup | Keeps the original owner hidden and protected until impact so the engine can resolve attacker credit; then reclaims it without a second explosion. A bounded fallback removes a stuck projectile/carrier. |
+| Building | Casing/sabots remain visible; construction and an initial EMP finish before launch. |
+| Ascent | The existing 2048-elmo rail launch emits the Nimrod departure effect once and separates the sabots. This is the only enabled MoveCtrl phase. |
+| Unfold | The original base/tail orientation, rotor, wings and telescoping panels finish their animations. MoveCtrl is disabled. One native movement goal starts airborne circling even without a player order. |
+| Loiter | Native aircraft steering circles around its holding goal while the altitude allowance declines. The native turn radius and physics determine the path. |
+| Transit | The engine processes MOVE/PATROL/FIGHT and explicit ATTACK commands. The Lua script does not implement command navigation or move the aircraft toward a target. |
+| Fold for attack | A cheap preparation check runs only during an explicit attack. It starts folding ahead of the native ballistic release window. BlockShot rejects release until both wings and both panels finish. |
+| Native attack drop | The AircraftBomb weapon chooses its ballistic release point and carries aircraft velocity into the projectile. The original aircraft becomes a hidden owner only after the projectile has actually been created. |
+| Exhausted drop | At the absolute glide deadline, folding and one local native projectile release happen regardless of target or EMP. |
+| Cleanup | The projectile destruction event starts the finite blast-propagation grace period, then the original owner is reclaimed without a second explosion. |
 
-Native aircraft attack AI cannot own the movement while this controller is
-active: the old missile-armed fighter behavior could dive and fire independently
-of the folding animation. `AimWeapon1` rejects native firing and `BlockShot1`
-blocks it as a second guard. The unit defaults to hold fire; changing fire state
-does not authorize an automatic strike. Only a non-internal ATTACK command does.
+Native bomb release is ballistic: it does not stop the aircraft directly above
+the target or produce a perfectly vertical fall. A moving target may evade
+after release; the bomb does not home.
 
-Unit designations preserve the original GROUND target category. A target must
-remain in the owner's LOS or radar contact until release. Its position is read
-through `CallAsTeam({read=ownerTeam}, ...)`, preserving radar error instead of
-reading unrestricted synced coordinates. A target that moves after folding
-begins can evade the locked, unpowered drop. Ground-position attacks remain
-available when unit contact is lost. STOP cancels the approach and resumes
-circling at the current position.
+Release requires the current explicit, non-internal ATTACK designation and the
+native weapon's userTarget flag. A unit designation retains the GROUND category
+restriction and must still be in the owner's LOS or radar at release. Animation
+preparation reads its position through CallAsTeam, preserving radar error.
+Changing fire state does not by itself authorize a strike.
+The native noChaseCategory filter excludes every eligible GROUND target from
+idle/FIGHT auto-selection. Explicit ATTACK bypasses that filter. This matters
+because a native FIGHT-generated attack can inherit a user-target flag; that
+flag alone would not establish an explicit bomb designation.
 
-EMP pauses scripted flight and prevents launch/release. An interruption during
-folding opens the wings again; the still-current order may resume after the stun
-ends. Before release, lethal damage hands movement back to the existing aircraft
-crash system through `BeginAircraftCrash`; the flight controller cannot later
-resume or create a bomb.
+STOP, a changed active designation, lost/dead targets or EMP prevent a commanded
+release and reopen the wings. Appending an unrelated shifted command preserves
+the active fold. Command notifications are coalesced and read one frame later,
+because Recoil emits UnitCommand before changing its queue. The shot gate stays
+closed during that gap. Native movement remains active during all animations.
 
-## Impact and ownership
+The engine checks AircraftBomb range before calling BlockShot and can delay
+AimWeapon acquisition until the same narrow window. Folding therefore starts
+in advance, using altitude, travel speed and a short animation lead. BlockShot
+is the final synchronous gate. Waiting inside FireWeapon would not delay native
+projectile creation; that callback only marks the shot committed and leaves
+the muzzle and velocity intact.
 
-The existing weapon retains its 512 base damage, 128 area of effect, impulse,
-fire starter, impact model, explosion CEG and impact sound. Its terminal weapon
-type changes from `MissileLauncher` to `AircraftBomb`; obsolete powered-flight
-parameters are removed. No motor glow or smoke is added. The projectile metadata
-orients the existing folded model along its velocity so its nose points down.
+## Event relay and ownership
 
-`Spring.SpawnProjectile` receives both the live owner and its current team, plus
-weapon slot 1. The engine resolves that owner again at collision. Immediate unit
-deletion would therefore lose attacker credit. During the brief fall, the
-original unit is a hidden attribution carrier with no selection, minimap icon,
-blocking, sensors or targetable neutral behavior. The aircraft crash gadget
-protects only a marked, released Icarus against damage, new commands and reclaim;
-all other aircraft retain their normal behavior. A pre-existing self-destruct is
-cancelled before release. The Icarus continues to count as one unit until impact
-and the brief damage-propagation grace period have finished.
+unit_icarus_lifecycle.lua is an event-only bridge between native projectile and
+command events and the unit script. It has no GameFrame callback, movement
+controller, command polling or whole-world scan. ProjectileCreated records the
+owner before notifying the script. ProjectileDestroyed removes that record and
+notifies the script while the engine still exposes the projectile.
 
-The carrier polls its projectile at 10 Hz and is reclaimed after it disappears
-and the explosion's finite outward damage propagation ends, preserving attacker
-credit for the delayed outer splash as well as the direct impact.
-The projectile has a gravity-derived finite TTL plus a margin; an additional
-bounded deadline prevents an invisible carrier from persisting if the engine
-does not clear its projectile. Exceptional forced removal of the carrier leaves
-an already released bomb to finish its native ballistic flight and finite TTL;
-the stopped controller cannot restart. Failed projectile creation leaves the visible
-aircraft alive, unfolds it and clears the failed attack order.
+The original unit remains alive through the fall and delayed outward splash so
+the engine can resolve attacker credit. It is hidden, unselectable, absent from
+the minimap, nonblocking, neutral/stealthy and without sensors. Its native
+movement continues briefly; it is never frozen with MoveCtrl. The existing
+aircraft-crash gadget narrowly protects this released Icarus from damage,
+new commands and reclaim. A pre-existing self-destruct is cancelled first.
+
+A relay reload can recover the projectile owner directly from a destruction
+event without restarting the glide or release deadline. One sleeping timeout
+per released carrier covers a completely missed event or stuck projectile;
+there is no recurring projectile-position poll. Exceptional external removal
+of the owner leaves an already released projectile in flight.
+
+If the exceptional exhaustion spawn fails, the script retries once on the next
+frame, then hands off to native crash behavior instead of creating an immortal
+glider. A lethal hit before release stops the lifetime and animation threads
+through BeginAircraftCrash. No subsequent expiry bomb can appear.
+
+The weapon retains its 512 base damage, 128 area of effect, impulse, fire starter,
+folded model, explosion CEG and impact sound. The projectile metadata keeps its
+nose aligned with native projectile velocity.
 
 ## Cost and validation
 
-There is one coroutine per Icarus. Movement decisions and command reads run at
-10 Hz, reading at most two queued commands; MoveCtrl extrapolates the velocity
-on ordinary simulation frames. There is no all-units scan or per-frame target
-search. The short ascent uses simulation-frame steps. Carrier polling exists
-only during the finite drop.
+For an idle airborne Icarus, a normal one-second update consists of
+GetGameFrame and one SetAirMoveTypeData call. There are no idle position,
+terrain, velocity, target or command reads. The previous controller ran at
+10 Hz and made about 90 Spring/MoveCtrl calls per second in idle flight.
 
-`tests/icarus_flight_test.lua` executes the real script with a frame scheduler,
-continuous velocity, animation completion and a ballistic projectile fixture.
-It covers build/launch ordering, circle movement, explicit/internal orders,
-unit/ground targets and radar visibility, MOVE/PATROL/STOP and patrol replacement,
-fold/panel completion, cancellation/target death/EMP, one native release, live
-owner/team attribution, one impact, silent cleanup, spawn failure, finite fallback
-and pre-release crashes. `tests/aircraft_crashing_test.lua` covers the narrowly
-scoped carrier protection. The projectile orientation test checks the actual
-model transform against the engine's draw convention.
+This is a measured script-call reduction, not an FPS benchmark. Native aircraft
+physics still has its ordinary per-unit cost. Attack preparation adds a small
+amount of work at 1 Hz only while an explicit attack is active; animation and
+command callbacks occur at transitions.
 
-The scripted regressions do not replace an in-game visual check. Validate an
-idle circle, a ground and moving-unit designation, STOP/EMP during folding, and a
-normal AA kill before release in Recoil. Confirm the casing, panels, projectile
-orientation, launch wake, impact audio and explosion appearance in that run.
+tests/icarus_flight_test.lua runs the actual production script with multiple
+coroutines, signal masks, completed animation waits and explicit native command,
+shot and projectile events. It verifies launch/handoff, idle call budget,
+declining altitude, the absolute lifetime under orders and EMP, forced local
+expiry, fold completion, cancellation, visibility, one-shot attribution,
+cleanup, spawn failure and crash cancellation. Native aerodynamic movement is
+deliberately opaque in this harness; it does not fake an engine flight test.
+
+tests/icarus_lifecycle_test.lua checks the event bridge, including reload
+recovery and synchronous event ordering. The existing crash, model orientation,
+Nimrod launch and effect suites remain applicable.
+
+An in-engine visual pass should cover idle descending circles, MOVE/PATROL,
+ground and moving-unit designation, STOP or EMP during folding, passive expiry
+with no target, and a normal AA kill. Inspect the first-pass fold/release timing,
+terrain response, launch wake, model orientation and single impact.
+
+## Exact target-engine references
+
+These checks use Recoil BAR105 105.1.1-1544-g058c8ea:
+
+- [Native movement setter](https://github.com/beyond-all-reason/RecoilEngine/blob/058c8ea/rts/Lua/LuaSyncedMoveCtrl.cpp):
+  SetAirMoveTypeData modifies the active native type without enabling MoveCtrl.
+- [Native aircraft movement](https://github.com/beyond-all-reason/RecoilEngine/blob/058c8ea/rts/Sim/MoveTypes/StrafeAirMoveType.cpp):
+  bomber steering, terrain clearance, altitude defaults and ground handling.
+- [Air command processing](https://github.com/beyond-all-reason/RecoilEngine/blob/058c8ea/rts/Sim/Units/CommandAI/AirCAI.cpp):
+  native command handling and the script-movement early return.
+- [Native bomb release](https://github.com/beyond-all-reason/RecoilEngine/blob/058c8ea/rts/Sim/Weapons/BombDropper.cpp):
+  ballistic range, AimWeapon angle bypass, inherited velocity and projectile TTL.
+- [Weapon callback order](https://github.com/beyond-all-reason/RecoilEngine/blob/058c8ea/rts/Sim/Weapons/Weapon.cpp):
+  BlockShot before salvo commitment, FireWeapon before projectile creation.

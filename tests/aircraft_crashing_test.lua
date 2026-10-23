@@ -50,6 +50,14 @@ local names, covered = {}, 0
 for _, file in ipairs(files) do
     for name, def in pairs(dofile(file)) do
         assert(def.canfly and def.customparams.crashable == 1, name..' missing crash opt-in')
+        if name == 'air_plane_artillery' then
+            -- Native FIGHT-generated ATTACK can inherit userTarget=true. Its
+            -- autonomous target filter must exclude all eligible bomb targets;
+            -- explicit player ATTACK bypasses this engine filter.
+            assert((' '..def.nochasecategory..' '):find(' GROUND ',1,true),
+                'Icarus FIGHT could select a ground target without designation')
+            assert(def.airhoverfactor >= 0, 'native Icarus must remain airborne')
+        end
         covered = covered + 1; names[name] = covered
         UnitDefs[covered] = {canFly = true, customParams = def.customparams, weapons = def.weapons or {}}
     end
@@ -169,13 +177,13 @@ assert(damage(launch,200)==200 and not lu.scripted and lu.state=='crashing')
 -- A released Icarus is only the brief owner of its native falling projectile.
 -- It must keep attribution alive without entering a second aircraft crash.
 local carrier,cu=unit(names.air_plane_artillery,
-    {scripted=true,state='landed',y=1536,rules={icarus_released=1}})
+    {scripted=false,state='flying',y=1536,rules={icarus_released=1}})
 for _,paralyze in ipairs({false,true}) do
     local d,impulse=damage(carrier,200,paralyze)
-    assert(d==0 and impulse==0 and cu.scripted and cu.hooks==0,
+    assert(d==0 and impulse==0 and not cu.scripted and cu.hooks==0,
         'released Icarus carrier took damage or started a second crash')
 end
-assert(not GG.AircraftCrash(carrier) and cu.state=='landed' and cu.hooks==0,
+assert(not GG.AircraftCrash(carrier) and cu.state=='flying' and cu.hooks==0,
     'explicit crash API bypassed the released Icarus exclusion')
 assert(not gadget:AllowCommand(carrier,names.air_plane_artillery)
     and not gadget:AllowUnitBuildStep(999,1,carrier,names.air_plane_artillery),

@@ -1,61 +1,113 @@
 -- Run from the repository root: lua5.1 tests/icarus_flight_test.lua
--- The real unit script runs with a frame scheduler, native animation waits and
--- continuous MoveCtrl velocity. The projectile fixture supplies only ballistic
--- movement/collision; engine ownership/weapon semantics are checked separately.
+-- Exercise the real script and its native-movement/weapon API contract. This
+-- fixture deliberately does not pretend to implement Recoil's aircraft AI.
+-- Native command completion, firing and projectile destruction are explicit
+-- engine events; native aerodynamic trajectory still needs an engine run.
 local path = 'scripts/airplaneartilleryscript.lua'
-local function fixture()
+local FPS = 30
+local function copy(t)
+    local result = {}; for k,v in pairs(t or {}) do result[k] = v end; return result
+end
+local function intersects(a,b)
+    while a>0 and b>0 do
+        if a%2==1 and b%2==1 then return true end
+        a=math.floor(a/2);b=math.floor(b/2)
+    end
+    return false
+end
+
+local function fixture(options)
+    options=options or {}
     local w = {frame=0, position={1000,0,1000}, velocity={0,0,0}, valid=true,
-        build=1, team=2, commands={}, nextTag=1, rules={}, events={}, projectiles={},
-        projectileCount=0, impacts=0, launches=0, reads=0, selfD=0, targetAlive=true,
-        target={1600,0,1000}, targetVisible=true, targetGround=true,
-        animations={}, turns={}, moves={}, disabled=0, destroyed=0}
-    local e = setmetatable({}, {__index=_G})
+        build=options.build or 1, team=2, commands={}, nextTag=1, rules={}, events={},
+        projectiles={}, projectileCount=0, manualSpawns=0, spawnAttempts=0,
+        launches=0, reads=0, selfD=0, targetAlive=true, targetVisible=true,
+        target={1600,0,1000}, animations={}, turns={}, moves={}, threads={},
+        disabled=0, enabled=0, destroyed=0, heights={}, calls={}, goalWrites=0,
+        steeringWrites=0, stunned=options.stunned or false}
+    local e=setmetatable({}, {__index=_G})
     e.script={};e.unitID=7;e.unitDefID=9
     e.x_axis=1;e.y_axis=3;e.z_axis=2 -- actual gamedata/unit_script_header.lua
-    e.Game={gameSpeed=30,gravity=130}
-    e.CMD={ATTACK=20,MOVE=10,PATROL=15,FIGHT=16,STOP=0,REMOVE=2,SELFD=65,OPT_INTERNAL=8,IDLEMODE=145}
-    e.UnitDefs={[9]={speed=75,wantedHeight=1536,modCategories={air=true}},
-                [10]={modCategories={ground=true}}}
+    e.Game={gameSpeed=FPS,gravity=130,mapSizeX=8192,mapSizeZ=8192}
+    e.CMD={ATTACK=20,MOVE=10,PATROL=15,FIGHT=16,STOP=0,REMOVE=2,INSERT=1,
+        SELFD=65,OPT_INTERNAL=8,OPT_SHIFT=32,IDLEMODE=145}
+    e.COB={CRASHING=97}
+    e.UnitDefs={[9]={speed=75,wantedHeight=1536,modCategories={air=true},
+        customParams=copy(options.customParams)},[10]={modCategories={ground=true}}}
     e.WeaponDefNames={icarusglidebomb={id=4}}
     e.WeaponDefs={[4]={damageAreaOfEffect=64,explosionSpeed=3.23}}
     local ids={Cartdrige=13,Base=15,Eye=16,Tail=17,Wing1=101,Wing2=102,
-               Wing1Sub1=111,Wing2Sub1=112}
+        Wing1Sub1=111,Wing2Sub1=112}
     local groups={Wing={101,102},Sabot={121,122},TailRotor={131,132}}
     e.include=function() end
-    e.CallAsTeam=function(access,fn,id)
-        assert(access.read==w.team and id==88,'target position must respect owner information')
-        w.scopedReads=(w.scopedReads or 0)+1
-        local x,y,z=fn(id)
-        return x+(w.radarError or 0),y,z
-    end
     e.piece=function(name) return assert(ids[name],name) end
     e.getPieceTableByNameGroups=function() return groups end
     e.hideAll=function() w.hidden=true end
     e.showT=function() end;e.hideT=function() end;e.Show=function() end;e.Hide=function() end
     e.moveT=function() end;e.spinT=function() end;e.spinRand=function() end
-    e.SetSignalMask=function() end
-    e.Signal=function() w.cancelled=true end
-    e.Sleep=function(ms) coroutine.yield(math.max(1,math.ceil(ms*30/1000-0.00001))) end
-    e.StartThread=function(fn)
-        assert(not w.thread,'only one flight controller')
-        w.thread=coroutine.create(fn);w.wake=w.frame
+    e.CallAsTeam=function(access,fn,id)
+        assert(access.read==w.team and id==88,'target position must respect owner information')
+        w.scopedReads=(w.scopedReads or 0)+1
+        local x,y,z=fn(id)
+        if x then return x+(w.radarError or 0),y,z end
+    end
+
+    -- Match the project's LUS scheduler: StartThread runs immediately and
+    -- inherits the caller's mask. Signal cancels suspended threads only.
+    local function resume(thread,...)
+        local previous=w.currentThread
+        w.currentThread=thread;thread.wait=nil
+        local ok,wait=coroutine.resume(thread.co,...)
+        w.currentThread=previous
+        assert(ok,wait)
+        if coroutine.status(thread.co)~='dead' then
+            assert(type(wait)=='table','a script thread yielded outside a supported wait')
+            thread.wait=wait
+        end
+    end
+    e.StartThread=function(fn,...)
+        local thread={co=coroutine.create(fn),mask=w.currentThread and w.currentThread.mask or 0}
+        w.threads[#w.threads+1]=thread
+        resume(thread,...)
+    end
+    e.SetSignalMask=function(mask) assert(w.currentThread).mask=mask end
+    e.Signal=function(mask)
+        w.signals=(w.signals or 0)+1
+        for _,thread in ipairs(w.threads) do
+            if thread.wait and intersects(thread.mask,mask) then
+                thread.cancelled=true;thread.wait=nil
+            end
+        end
+    end
+    e.Sleep=function(ms)
+        coroutine.yield({kind='sleep',wake=w.frame+math.max(1,math.floor(ms/33))})
     end
     local function animate(kind,id,axis,target,speed)
         local key=kind..':'..id..':'..axis
-        local before=w.animations[key] or {target=0}
-        w.animations[key]={target=target,finish=w.frame+(speed==0 and 0 or math.ceil(math.abs(target-before.target)/speed*30))}
+        local previous=w.animations[key]
+        local initial=0
+        if previous then
+            local duration=previous.finish-previous.begin
+            local fraction=duration==0 and 1 or math.min(1,(w.frame-previous.begin)/duration)
+            initial=previous.start+(previous.target-previous.start)*fraction
+        end
+        w.animations[key]={start=initial,target=target,begin=w.frame,
+            finish=w.frame+(speed==0 and 0 or math.ceil(math.abs(target-initial)/speed*FPS))}
         local log=kind=='turn' and w.turns or w.moves
         log[#log+1]={id=id,axis=axis,target=target,frame=w.frame}
     end
     e.Turn=function(id,axis,target,speed) animate('turn',id,axis,target,speed) end
     e.Move=function(id,axis,target,speed) animate('move',id,axis,target,speed) end
     local function waitAnimation(kind,id,axis)
-        local a=w.animations[kind..':'..id..':'..axis]
-        if a and a.finish>w.frame then e.Sleep((a.finish-w.frame)*1000/30) end
+        local key=kind..':'..id..':'..axis
+        local a=w.animations[key]
+        if a and a.finish>w.frame then coroutine.yield({kind='animation',key=key}) end
     end
     e.WaitForTurn=function(id,axis) waitAnimation('turn',id,axis) end
     e.WaitForMove=function(id,axis) waitAnimation('move',id,axis) end
-    e.setUnitNeverLand=function(_,flag) assert(flag==true,'never-land helper needs explicit true');w.neverLand=true end
+    e.setUnitNeverLand=function(_,flag)
+        assert(flag==true,'never-land helper requires explicit true');w.neverLand=true
+    end
     e.waitTillComplete=function()
         while w.valid and w.build<1 do e.Sleep(50) end
         return w.valid
@@ -64,126 +116,241 @@ local function fixture()
         assert(id==7 and w.valid and w.build==1)
         w.launches=w.launches+1;w.launchTop=top
     end}}
+    local function crash()
+        w.crashed=true
+        if e.BeginAircraftCrash then e.BeginAircraftCrash() end
+        return true
+    end
+    e.GG.AircraftCrash=crash
     local function copyCommand(c)
-        local p={};for i,v in ipairs(c.params or {}) do p[i]=v end
-        return {id=c.id,params=p,tag=c.tag,options=c.options}
+        return {id=c.id,params=copy(c.params),tag=c.tag,options=copy(c.options)}
+    end
+    local function noSteeringAfterHandoff()
+        assert(not w.handoffFrame,'scripted steering resumed after native handoff')
+        w.steeringWrites=w.steeringWrites+1
+    end
+    function w:folded()
+        for _,id in ipairs({101,102}) do
+            local a=self.animations['turn:'..id..':1']
+            if not a or a.target~=0 or a.finish>self.frame then return false end
+        end
+        for _,id in ipairs({111,112}) do
+            local a=self.animations['move:'..id..':3']
+            if not a or a.target~=326 or a.finish>self.frame then return false end
+        end
+        return true
+    end
+    function w:recordProjectile(params,manual)
+        assert(self.valid,'projectile owner must still be alive')
+        assert(self:folded(),'release must wait for both wings and telescoping panels')
+        self.projectileCount=self.projectileCount+1
+        local id=900+self.projectileCount
+        self.projectiles[id]={params=params,weaponDef=4,position=copy(params.pos),
+            releaseFrame=self.frame,manual=manual}
+        self.releaseFrame=self.frame
+        -- Native AddProjectile emits this synchronously, before SpawnProjectile
+        -- returns. Exercise that re-entrant ordering for forced expiry too.
+        if not self.suppressCreated and e.IcarusProjectileCreated then e.IcarusProjectileCreated(id) end
+        return id
+    end
+    function w:projectileDestroyed(id)
+        local p=self.projectiles[id]
+        if not p then return end
+        -- Recoil calls this before removing the projectile from its registry.
+        if not self.suppressDestroyed then e.IcarusProjectileDestroyed(id) end
+        self.projectiles[id]=nil
     end
     e.Spring={
         ValidUnitID=function(id) return id==7 and w.valid or id==88 and w.targetAlive end,
         GetUnitIsDead=function(id) return id==7 and not w.valid or id==88 and not w.targetAlive end,
-        GetUnitPosition=function(id) local p=id==7 and w.position or w.target;return p[1],p[2],p[3] end,
+        GetUnitPosition=function(id)
+            if id==88 and not w.targetAlive then return end
+            local p=id==7 and w.position or w.target;return p[1],p[2],p[3]
+        end,
+        GetUnitVelocity=function() return w.velocity[1],w.velocity[2],w.velocity[3],
+            math.sqrt(w.velocity[1]^2+w.velocity[2]^2+w.velocity[3]^2) end,
+        GetUnitDirection=function() return 0,0,1 end,
         GetUnitDefID=function(id) return id==7 and 9 or 10 end,
         GetUnitTeam=function() return w.team end,
         GetUnitAllyTeam=function(id) return id==7 and w.team or 3 end,
         GetUnitLosState=function() return {los=w.targetVisible,radar=w.targetVisible} end,
         GetUnitSelfDTime=function() return w.selfD end,
-        GetUnitIsStunned=function() return w.stunned or false end,
+        GetUnitIsStunned=function() return w.stunned end,
         GetGameFrame=function() return w.frame end,
-        GetGroundHeight=function() return 0 end,
+        GetGroundHeight=function() return w.groundHeight or 0 end,
+        GetUnitHealth=function() return 100,100,0,0,w.build end,
         SetUnitRulesParam=function(_,key,value)
             w.rules[key]=value
             if key=='icarus_flight_phase' then w.events[#w.events+1]={phase=value,frame=w.frame} end
         end,
+        GetUnitRulesParam=function(_,key) return w.rules[key] end,
         GetUnitCommands=function(_,limit)
+            assert(limit==1,'event refresh needs only the active command')
             w.reads=w.reads+1
             local result={}
             for i=1,math.min(limit,#w.commands) do result[i]=copyCommand(w.commands[i]) end
             return result
         end,
-        GiveOrderToUnit=function(_,id,params,options)
-            if id==e.CMD.REMOVE then
-                for i,c in ipairs(w.commands) do if c.tag==params[1] then table.remove(w.commands,i);break end end
-            elseif id==e.CMD.SELFD then w.selfD=0
-            elseif id==e.CMD.PATROL then
-                assert(options[1]=='shift');w:order(id,params,{},true)
-            else error('unexpected emitted order '..tostring(id)) end
+        GetUnitWeaponTarget=function()
+            if w.weaponTarget then return unpack(w.weaponTarget) end
+            local c=w.commands[1]
+            if c and c.id==e.CMD.ATTACK then
+                local userTarget=not (c.options.internal or (c.options.coded or 0)%16>=8)
+                if #c.params==1 then return 1,userTarget,c.params[1] end
+                return 2,userTarget,copy(c.params)
+            end
+            return 0,false
+        end,
+        GiveOrderToUnit=function(_,id,params)
+            if id==e.CMD.SELFD then w.selfD=0
+            elseif id==e.CMD.IDLEMODE then w.neverLand=params[1]==0
+            else error('Lua must leave native command execution alone: '..tostring(id)) end
+        end,
+        SetUnitMoveGoal=function(_,x,y,z)
+            assert(not w.controlled,'native move goal while MoveCtrl is active')
+            w.goalWrites=w.goalWrites+1;w.nativeGoal={x,y,z}
+        end,
+        SetUnitVelocity=function(_,x,y,z)
+            noSteeringAfterHandoff();w.velocity={x,y,z}
         end,
         SpawnProjectile=function(id,params)
-            assert(w.valid,'owner must live at release')
+            w.spawnAttempts=w.spawnAttempts+1
             assert(id==4 and params.owner==7 and params.team==w.team and params.weapon==1)
-            assert(params.gravity==-130/900 and params.speed[1]==0 and params.speed[3]==0 and params.speed[2]<0)
-            for _,pieceID in ipairs({101,102}) do
-                local a=assert(w.animations['turn:'..pieceID..':1'])
-                assert(a.target==0 and a.finish<=w.frame,'release before actual wing fold completes')
-            end
-            for _,pieceID in ipairs({111,112}) do
-                local a=assert(w.animations['move:'..pieceID..':3'])
-                assert(a.target==326 and a.finish<=w.frame,'release before telescoping panels retract')
-            end
-            if w.spawnFailure then return nil end
-            w.projectileCount=w.projectileCount+1
-            local number=900+w.projectileCount
-            w.projectiles[number]={position={params.pos[1],params.pos[2],params.pos[3]},vy=params.speed[2],gravity=params.gravity,
-                ttl=params.ttl,params=params,releaseFrame=w.frame}
-            w.releaseFrame=w.frame
-            return number
+            assert(params.gravity==-130/(FPS*FPS) and params.ttl>0)
+            assert(w:folded(),'forced release before fold completion')
+            if w.spawnFailure or (w.failFirstSpawn and w.spawnAttempts==1) then return nil end
+            w.manualSpawns=w.manualSpawns+1
+            return w:recordProjectile(params,true)
         end,
         GetProjectilePosition=function(id)
-            local p=w.projectiles[id];if p then return p.position[1],p.position[2],p.position[3] end
+            local p=w.projectiles[id];if p then return unpack(p.position) end
         end,
-        DeleteProjectile=function(id) w.projectiles[id]=nil;w.forcedProjectileCleanup=true end,
+        GetProjectileDefID=function(id)
+            local p=w.projectiles[id];return p and p.weaponDef
+        end,
+        GetProjectileOwnerID=function(id)
+            local p=w.projectiles[id];return p and p.params.owner
+        end,
+        DeleteProjectile=function(id) w.forcedProjectileCleanup=true;w:projectileDestroyed(id) end,
         DestroyUnit=function(id,selfd,reclaimed)
-            assert(id==7 and not selfd and reclaimed,'cleanup must not create a second explosion')
+            assert(id==7 and not selfd and reclaimed,'owner cleanup must not create another explosion')
+            assert(w.valid,'owner cleaned up twice')
             w.valid=false;w.destroyed=w.destroyed+1;e.script.Killed()
         end,
+        SetUnitCrashing=crash,
+        SetUnitCOBValue=function(_,key,value) assert(key==97 and value==1);crash() end,
         SetUnitNoDraw=function(_,v) w.noDraw=v end,
         SetUnitNoSelect=function(_,v) w.noSelect=v end,
         SetUnitNoMinimap=function(_,v) w.noMinimap=v end,
         SetUnitBlocking=function(_,a,b,c) assert(not a and not b and not c);w.nonblocking=true end,
         SetUnitNeutral=function(_,v) w.neutral=v end,
+        SetUnitCloak=function(_,v) w.cloak=v end,
         SetUnitStealth=function(_,v) w.stealth=v end,
         SetUnitSonarStealth=function(_,v) w.sonarStealth=v end,
         SetUnitSensorRadius=function(_,_,v) assert(v==0);w.sensorsZero=true end,
+        SetUnitWeaponState=function(_,slot,state) assert(slot==1);w.weaponState=state end,
         Echo=function() w.errors=(w.errors or 0)+1 end,
         MoveCtrl={
-            Enable=function() w.controlled=true end,
-            Disable=function() w.controlled=false;w.disabled=w.disabled+1 end,
+            Enable=function()
+                noSteeringAfterHandoff();w.controlled=true;w.enabled=w.enabled+1
+            end,
+            Disable=function()
+                assert(w.controlled,'MoveCtrl disabled twice')
+                w.controlled=false;w.disabled=w.disabled+1;w.handoffFrame=w.frame
+            end,
             GetTag=function() if w.controlled then return 0 end end,
-            SetGravity=function(_,g) assert(g==0) end,
-            SetPosition=function(_,x,y,z) w.position={x,y,z} end,
-            SetVelocity=function(_,x,y,z) w.velocity={x,y,z} end,
-            SetRotation=function(_,pitch,yaw,roll) w.rotation={pitch,yaw,roll} end,
+            SetGravity=function(_,g) noSteeringAfterHandoff();assert(g==0) end,
+            SetPosition=function(_,x,y,z) noSteeringAfterHandoff();w.position={x,y,z} end,
+            SetVelocity=function(_,x,y,z) noSteeringAfterHandoff();w.velocity={x,y,z} end,
+            SetRotation=function() noSteeringAfterHandoff() end,
+            SetAirMoveTypeData=function(_,key,value)
+                assert(not w.controlled,'native air settings require native movement')
+                if type(key)=='table' then
+                    for k,v in pairs(key) do w.nativeSettings=w.nativeSettings or {};w.nativeSettings[k]=v end
+                    if key.wantedHeight then w.heights[#w.heights+1]={height=key.wantedHeight,frame=w.frame} end
+                else
+                    w.nativeSettings=w.nativeSettings or {};w.nativeSettings[key]=value
+                    if key=='wantedHeight' then w.heights[#w.heights+1]={height=value,frame=w.frame} end
+                end
+            end,
         },
     }
-    function w:order(id,params,options,append)
-        local c={id=id,params=params or {},options=options or {},tag=self.nextTag}
+    -- Count direct production calls, excluding the fixture's engine events.
+    local function countFunctions(t,prefix)
+        for name,fn in pairs(t) do
+            local key=(prefix or '')..name
+            if type(fn)=='function' then
+                t[name]=function(...)
+                    w.calls[key]=(w.calls[key] or 0)+1
+                    return fn(...)
+                end
+            elseif type(fn)=='table' then countFunctions(fn,key..'.') end
+        end
+    end
+    countFunctions(e.Spring)
+    function w:order(id,params,opts,append)
+        -- Engine UnitCommand precedes the actual queue mutation.
+        e.IcarusCommandChanged()
+        local c={id=id,params=copy(params),options=copy(opts),tag=self.nextTag}
         self.nextTag=self.nextTag+1
         if append then self.commands[#self.commands+1]=c else self.commands={c} end
         return c
     end
+    function w:finishCommand()
+        table.remove(self.commands,1)
+        e.IcarusCommandChanged() -- UnitCmdDone/UnitIdle relay
+    end
     function w:step(count)
         for _=1,count or 1 do
             self.frame=self.frame+1
+            -- Only launch MoveCtrl is simulated. Native flight is intentionally
+            -- opaque; test scenarios supply positions/engine callbacks.
             if self.controlled then
                 for i=1,3 do self.position[i]=self.position[i]+self.velocity[i] end
             end
-            for id,p in pairs(self.projectiles) do
-                if not self.freezeProjectile then
-                    p.vy=p.vy+p.gravity;p.position[2]=p.position[2]+p.vy;p.ttl=p.ttl-1
-                    if p.position[2]<=(self.hitHeight or 0) then
-                        assert(self.valid or self.allowDeadOwner,'live owner required at impact for attacker credit')
-                        self.impacts=self.impacts+1;self.projectiles[id]=nil
-                        self.delayedSplash=self.frame+16
-                    elseif p.ttl<=0 then self.projectiles[id]=nil end
+            local countThreads=#self.threads
+            for index=1,countThreads do
+                local thread=self.threads[index]
+                local wait=thread.wait
+                if wait and not thread.cancelled then
+                    local ready=wait.kind=='sleep' and wait.wake<=self.frame
+                    if wait.kind=='animation' then
+                        local animation=self.animations[wait.key]
+                        ready=not animation or animation.finish<=self.frame
+                    end
+                    if ready then resume(thread) end
                 end
-            end
-            if self.delayedSplash and self.frame==self.delayedSplash then
-                assert(self.valid or self.allowDeadOwner,'outer delayed splash also needs its living owner')
-                self.splashHit=true
-            end
-            if self.thread and not self.cancelled and coroutine.status(self.thread)~='dead' and self.wake<=self.frame then
-                local ok,delay=coroutine.resume(self.thread)
-                assert(ok,delay)
-                self.wake=self.frame+(delay or 1)
             end
         end
     end
-    function w:untilPhase(phase,limit)
+    function w:untilTrue(predicate,limit,message)
         for _=1,limit or 1200 do
-            if self.rules.icarus_flight_phase==phase then return end
+            if predicate(self) then return end
             self:step()
         end
-        error('phase '..phase..' not reached; last '..tostring(self.rules.icarus_flight_phase))
+        error(message or 'condition not reached; phase '..tostring(self.rules.icarus_flight_phase))
+    end
+    function w:untilPhase(phase,limit)
+        self:untilTrue(function(s) return s.rules.icarus_flight_phase==phase end,limit,
+            'phase '..phase..' not reached')
+    end
+    function w:handoff()
+        self:untilTrue(function(s) return s.goalWrites>0 end,300,'native handoff missing')
+        self:step(2) -- allow the deferred initial command refresh
+    end
+    function w:nativeFire(targetID)
+        assert(not e.script.BlockShot1(targetID,true),'native release gate unexpectedly blocked')
+        local beforePosition=copy(self.position)
+        local beforeVelocity=copy(self.velocity)
+        e.script.FireWeapon1()
+        assert(not self.noDraw,'FireWeapon hid the muzzle before native projectile creation')
+        for i=1,3 do
+            assert(self.position[i]==beforePosition[i] and self.velocity[i]==beforeVelocity[i],
+                'FireWeapon changed native launch position/velocity')
+        end
+        local params={pos=copy(self.position),speed=copy(self.velocity),gravity=-130/(FPS*FPS),
+            ttl=1000,owner=7,team=self.team,weapon=1}
+        return self:recordProjectile(params,false)
     end
     local chunk
     if setfenv then chunk=assert(loadfile(path));setfenv(chunk,e) else chunk=assert(loadfile(path,'t',e)) end
@@ -191,114 +358,210 @@ local function fixture()
     return w
 end
 
-local w=fixture();w.build=0.5;w:step(40)
-assert(w.launches==0 and not w.controlled,'unfinished construction cannot launch')
-w.build=1;w:untilPhase(3)
+local function deadline(w)
+    return assert(w.rules.icarus_glide_end_frame,'glide deadline must be exposed for diagnostics')
+end
+local function advanceTo(w,frame) if frame>w.frame then w:step(frame-w.frame) end end
+local function closeGroundAttack(w)
+    w:order(w.env.CMD.ATTACK,{w.position[1]+300,0,w.position[3]})
+    w:untilTrue(function(s) return s:folded() and s.rules.icarus_flight_phase==5 end,90,
+        'approach did not prepare fold before native firing')
+end
+local function assertCarrier(w)
+    assert(w.valid and w.noDraw and w.noSelect and w.noMinimap and w.nonblocking)
+    assert(w.neutral and w.sensorsZero and not w.controlled)
+    assert(w.env.script.HitByWeapon(0,0,1,500)==0)
+end
+
+-- Completed construction and EMP gating precede the one finite launch, then
+-- native movement owns the airframe for the entire remaining lifetime.
+local w=fixture({build=0.5});w:step(40)
+assert(w.launches==0 and not w.controlled,'unfinished payload launched')
+w.build=1;w.stunned=true;w:step(40)
+assert(w.launches==0,'stunned payload launched')
+w.stunned=false;w:handoff()
 assert(w.launches==1 and w.launchTop==2048 and w.neverLand)
-local x,z=w.position[1],w.position[3]
-local initialReads=w.reads
+assert(w.enabled==1 and w.disabled==1 and not w.controlled and w.goalWrites==1)
+assert(w.heights[1].height==1536)
+local finish=deadline(w)
+assert(finish-w.handoffFrame==176*FPS,'default glide should last 176 simulation seconds')
+local initialCalls=copy(w.calls);local initialReads=w.reads;local initialHeights=#w.heights
 w:step(300)
-assert(w.rules.icarus_flight_phase==3 and w.projectileCount==0)
-assert(w.position[2]>=1536-0.001 and (w.position[1]-x)^2+(w.position[3]-z)^2>100,'loiter must move around its circle')
-assert(w.reads-initialReads<=102,'state decisions are bounded to 10 Hz')
-assert(not w.env.script.AimWeapon1() and w.env.script.BlockShot1() and not w.env.script.FireWeapon1())
-w:order(w.env.CMD.ATTACK,{w.position[1],0,w.position[3]},{internal=true});w:step(15)
-assert(w.projectileCount==0,'internal/autonomous attack must not designate a strike')
-w:order(w.env.CMD.ATTACK,{w.position[1],0,w.position[3]},{coded=8});w:step(15)
-assert(w.projectileCount==0,'coded internal options also rejected')
+assert(w.projectileCount==0 and w.goalWrites==1 and not w.controlled)
+assert(w.reads==initialReads,'idle glide must not poll the command queue')
+local directCalls=0
+for name,count in pairs(w.calls) do directCalls=directCalls+count-(initialCalls[name] or 0) end
+assert(directCalls<=22,'idle sink exceeded two direct engine calls per update')
+for _,name in ipairs({'GetUnitPosition','GetUnitVelocity','GetGroundHeight'}) do
+    assert((w.calls[name] or 0)==(initialCalls[name] or 0),'idle glide sampled '..name)
+end
+assert(#w.heights-initialHeights<=11,'altitude target is updated at most about 1 Hz')
+for i=2,#w.heights do
+    local a,b=w.heights[i-1],w.heights[i]
+    local expected=8*(b.frame-a.frame)/FPS
+    assert(math.abs((a.height-b.height)-expected)<0.00001,'sink target must follow absolute elapsed time')
+end
 
--- Explicit ground attack, full fold before native release, live credit carrier,
--- an elevated target contact, then exactly one impact and one silent cleanup.
-w=fixture();w:untilPhase(3);w.selfD=3
-w:order(w.env.CMD.ATTACK,{1450,0,1000})
-w:untilPhase(4);assert(w.projectileCount==0)
-w:untilPhase(5);assert(w.projectileCount==0)
-w:untilPhase(6)
-assert(w.projectileCount==1 and w.valid and w.selfD==0)
-assert(w.noDraw and w.noSelect and w.noMinimap and w.nonblocking and w.neutral and w.sensorsZero)
-assert(w.env.script.HitByWeapon(0,0,1,500)==0)
-w.hitHeight=120;w:step(300)
-assert(w.impacts==1 and w.splashHit and w.destroyed==1 and not w.valid)
-w:step(300);assert(w.projectileCount==1 and w.impacts==1 and w.destroyed==1)
+-- Internal and automatic targets cannot release. Native MOVE/PATROL/FIGHT
+-- execution is left untouched: no replacement waypoints or steering writes.
+w:order(w.env.CMD.ATTACK,{1100,0,1000},{internal=true});w:step(40)
+assert(w.env.script.BlockShot1(nil,false) and w.projectileCount==0)
+w:order(w.env.CMD.ATTACK,{1100,0,1000},{coded=8});w:step(40)
+assert(w.env.script.BlockShot1(nil,true) and w.projectileCount==0)
+for _,cmd in ipairs({w.env.CMD.MOVE,w.env.CMD.PATROL,w.env.CMD.FIGHT}) do
+    w:order(cmd,{1900,0,1900});w:step(40)
+    assert(#w.commands==1 and w.commands[1].id==cmd and w.goalWrites==1)
+    assert(w.env.script.BlockShot1(nil,false),'movement order allowed an automatic strike')
+end
+w:order(w.env.CMD.STOP,{});w:step(40)
+assert(deadline(w)==finish and w.projectileCount==0,'orders renewed the glide budget')
 
--- Unit targets follow their position before commitment; changing or cancelling
--- the order during folding restores the wings instead of launching late.
-w=fixture();w:untilPhase(3);w:order(w.env.CMD.ATTACK,{88});w:step(30)
-w.target={1800,0,1200};w:untilPhase(5)
-assert(w.position[1]==1800 and w.position[3]==1200)
-w.commands={};w:step(45)
-assert(w.projectileCount==0 and w.valid and w.rules.icarus_flight_phase==3)
+-- Native weapon release is gated on full animation completion; ownership
+-- handoff occurs only after the engine has sampled muzzle and velocity.
+w=fixture();w:handoff();w.selfD=3;closeGroundAttack(w)
+assert(not w.noDraw and w.projectileCount==0 and w.manualSpawns==0)
+w.weaponTarget={2,true,{1300,0,1700}}
+assert(w.env.script.BlockShot1(nil,true),'stale native ground target passed the current designation gate')
+w.weaponTarget={2,false,{1300,0,1000}}
+assert(w.env.script.BlockShot1(nil,true),'non-user native ground target passed the gate')
+w.weaponTarget=nil
+local projectile=w:nativeFire(nil)
+assert(w.projectileCount==1 and w.manualSpawns==0 and w.selfD==0)
+assertCarrier(w)
+assert(w.env.script.BlockShot1(nil,true),'second native shot allowed')
+w.env.IcarusProjectileCreated(projectile)
+assert(w.projectileCount==1,'duplicate created callback spawned another bomb')
+w:projectileDestroyed(projectile)
+w:step(16);assert(w.valid,'owner removed before delayed outer splash')
+w:step(20);assert(not w.valid and w.destroyed==1)
+w:step(1200);assert(w.destroyed==1,'fallback cleanup ran a second time')
+
+-- Event-before-queue ordering and shifted appends: an event coalesces one
+-- deferred refresh; replacing the active designation cancels the old fold.
+w=fixture();w:handoff()
+local reads=w.reads
+w:order(w.env.CMD.ATTACK,{1300,0,1000})
+w.env.IcarusCommandChanged();w.env.IcarusCommandChanged()
+assert(w.reads==reads,'UnitCommand synchronously read the old queue')
+w:step(1);assert(w.reads==reads+1,'command events were not coalesced')
+w:untilPhase(5,90)
+w:order(w.env.CMD.MOVE,{1900,0,1900},{shift=true},true);w:step(20)
+assert(w:folded() and #w.commands==2,'shift append interrupted the active strike')
+assert(not w.env.script.BlockShot1(nil,true))
+w:order(w.env.CMD.STOP,{});assert(w.env.script.BlockShot1(nil,true))
+w:step(40)
+assert(w.projectileCount==0 and not w:folded(),'STOP failed to reopen the wings')
 assert(w.animations['turn:101:1'].target<0 and w.animations['turn:102:1'].target>0)
-w:order(w.env.CMD.ATTACK,{88});w:untilPhase(5);w.targetAlive=false;w:step(45)
-assert(w.projectileCount==0,'target dying during folding aborts release')
 
-w=fixture();w:untilPhase(3);w:order(w.env.CMD.ATTACK,{88});w:step(15);w.targetAlive=false;w:step(6)
-assert(w.rules.icarus_flight_phase==3 and w.projectileCount==0,'dead target cancels transit')
+w=fixture();w:handoff()
+w:order(w.env.CMD.ATTACK,{1300,0,1000})
+assert(w.env.script.BlockShot1(nil,true),'event/queue gap admitted a shot')
+w:step(1)
+assert(w.env.script.BlockShot1(nil,true),'native window admitted a shot before folding')
+w:step(5)
+assert(not w:folded() and w.env.script.BlockShot1(nil,true))
+w:order(w.env.CMD.ATTACK,{7000,0,7000});w:step(40)
+assert(not w:folded() and w.projectileCount==0,'replacement designation left a stale fold completion')
 
-w=fixture();w:untilPhase(3);w:order(w.env.CMD.ATTACK,{88});w:step(9)
+-- Unit designations use team-scoped perceived positions and final visibility
+-- gating. A target dying, leaving contact, or an EMP cannot release a strike.
+w=fixture();w:handoff();w.target={1300,0,1000};w.radarError=75
+w:order(w.env.CMD.ATTACK,{88});w:untilTrue(function(s) return s:folded() end,90)
 assert(w.scopedReads and w.scopedReads>0)
-w.targetVisible=false;w:step(6)
-assert(w.rules.icarus_flight_phase==3 and w.projectileCount==0,'lost contact cannot be followed through fog')
-w.targetVisible=true;w.env.UnitDefs[10].modCategories={air=true}
-w:order(w.env.CMD.ATTACK,{88});w:step(6)
-assert(w.rules.icarus_flight_phase==3,'unit targeting preserves the GROUND-only restriction')
-w:order(w.env.CMD.ATTACK,{7});w:step(6)
-assert(w.projectileCount==0,'self targeting is rejected')
-w=fixture();w:untilPhase(3);w.target={w.position[1]+200,0,w.position[3]};w.radarError=75
-w:order(w.env.CMD.ATTACK,{88});w:untilPhase(5)
-assert(w.position[1]==w.target[1]+75,'radar designation uses team-scoped perceived coordinates')
+assert(not w.env.script.BlockShot1(88,true))
+assert(w.env.script.BlockShot1(99,true),'wrong native target passed the designation gate')
+w.targetVisible=false;assert(w.env.script.BlockShot1(88,true))
+w:step(40);assert(not w:folded() and w.projectileCount==0)
+w.targetVisible=true;w:untilTrue(function(s) return s:folded() end,90)
+w.targetAlive=false;assert(w.env.script.BlockShot1(88,true))
+w:step(40);assert(w.projectileCount==0)
+w.targetAlive=true;w.env.UnitDefs[10].modCategories={air=true}
+w:order(w.env.CMD.ATTACK,{88});w:step(40)
+assert(w.env.script.BlockShot1(88,true),'non-GROUND target passed')
+w:order(w.env.CMD.ATTACK,{7});w:step(40)
+assert(w.env.script.BlockShot1(7,true),'self designation passed')
 
--- Manual release must retain the engine's EMP/stun gate, including a stun that
--- starts after the folding animation has already begun.
-w=fixture();w.stunned=true;w:step(60)
-assert(w.launches==0,'a stunned completed payload waits before actual departure')
-w.stunned=false;w:untilPhase(3)
-w.stunned=true;w:order(w.env.CMD.ATTACK,{w.position[1],0,w.position[3]});w:step(40)
-assert(w.projectileCount==0,'stunned aircraft cannot start a strike')
-w.stunned=false;w:untilPhase(5);w.stunned=true;w:step(50)
-assert(w.projectileCount==0 and w.valid,'EMP during folding aborts the release')
-w.stunned=false;w:untilPhase(6)
-assert(w.projectileCount==1,'a still-current designation can resume after EMP')
+w=fixture();w:handoff();closeGroundAttack(w);local originalDeadline=deadline(w)
+w.stunned=true;assert(w.env.script.BlockShot1(nil,true));w:step(40)
+assert(w.projectileCount==0 and not w:folded(),'EMP did not abort prepared strike')
+w.stunned=false;w:untilTrue(function(s) return s:folded() end,90)
+assert(deadline(w)==originalDeadline and not w.env.script.BlockShot1(nil,true))
 
--- Existing movement and patrol remain usable; STOP aborts a designated run.
-w=fixture();w:untilPhase(3);w:order(w.env.CMD.MOVE,{1300,0,1000});w:untilPhase(4)
-w:untilPhase(3);assert(w.projectileCount==0 and #w.commands==0)
-w:order(w.env.CMD.PATROL,{1600,0,1000});w:step(10)
-assert(#w.commands==2,'single patrol also keeps its start waypoint')
-w:step(240);assert(#w.commands==2 and w.projectileCount==0,'patrol keeps cycling')
-w:order(w.env.CMD.PATROL,{1900,0,900});w:step(6)
-assert(#w.commands==2,'replacing a patrol keeps a return leg')
-w:order(w.env.CMD.MOVE,{1800,0,1000});w:step(6)
-w:order(w.env.CMD.PATROL,{1700,0,1000});w:step(6)
-assert(#w.commands==2,'patrol/move/patrol replacement must not strand a one-point patrol')
-w:order(w.env.CMD.ATTACK,{2500,0,1000});w:step(9)
-w:order(w.env.CMD.STOP,{});w:step(6)
-assert(w.rules.icarus_flight_phase==3 and w.projectileCount==0)
+-- Absolute exhaustion applies to idle and engaged aircraft, including a
+-- permanent EMP. A distant attack target cannot redirect the local expiry drop.
+for _,engaged in ipairs({false,true}) do
+    w=fixture();w:handoff();local endFrame=deadline(w)
+    if engaged then w:order(w.env.CMD.ATTACK,{7000,0,7000});w:step(1) end
+    w.stunned=true
+    w.position={2100,128,2200};w.velocity={1.5,-0.1,2}
+    advanceTo(w,endFrame-1)
+    assert(w.projectileCount==0 and deadline(w)==endFrame)
+    w:untilPhase(6,40)
+    assert(w.releaseFrame>=endFrame and w.releaseFrame<=endFrame+20)
+    assert(w.manualSpawns==1 and w.projectileCount==1)
+    local params=w.projectiles[901].params
+    assert(params.pos[1]==2100 and params.pos[3]==2200,'expiry drop used the distant target')
+    assert(params.speed[1]==1.5 and params.speed[3]==2,'expiry discarded native forward momentum')
+    assert(params.owner==7 and params.team==2 and params.weapon==1)
+    assertCarrier(w)
+    w:projectileDestroyed(901);w:step(40)
+    assert(w.destroyed==1)
+end
 
--- A failed native spawn retains the aircraft; a stuck projectile cannot retain
--- an invisible owner indefinitely, even if the engine never clears its ID.
-w=fixture();w:untilPhase(3);w.spawnFailure=true
-w:order(w.env.CMD.ATTACK,{w.position[1],0,w.position[3]});w:step(80)
-assert(w.valid and not w.noDraw and w.projectileCount==0 and w.errors==1)
-w=fixture();w:untilPhase(3);w.freezeProjectile=true
-w:order(w.env.CMD.ATTACK,{w.position[1],0,w.position[3]});w:untilPhase(6);w:step(1000)
-assert(not w.valid and w.destroyed==1 and w.forcedProjectileCleanup)
-w=fixture();w:untilPhase(3);w:order(w.env.CMD.ATTACK,{88});w:untilPhase(5)
-local lockedX,lockedZ=w.position[1],w.position[3]
-w.target={w.target[1]+300,0,w.target[3]+300};w:untilPhase(6)
-local bomb=w.projectiles[901]
-assert(bomb.position[1]==lockedX and bomb.position[3]==lockedZ,'moving targets cannot steer a committed drop')
-assert(w.projectileCount==1,'an explicit unit designation also releases once')
-w.env.script.Killed();w.valid=false;w.allowDeadOwner=true;w:step(300)
-assert(w.cancelled and next(w.projectiles)==nil and w.impacts==1,'forced owner removal does not restart controller or cancel an already released native bomb')
+-- UnitDef tuning controls the finite budget, and the deadline remains an
+-- upper bound even when native terrain avoidance has not reached that height.
+w=fixture({customParams={icarus_sink_rate='16',icarus_terminal_height='256'}});w:handoff()
+assert(deadline(w)-w.handoffFrame==80*FPS)
+w.groundHeight=1000;w.position[2]=5000
+advanceTo(w,deadline(w));w:untilPhase(6,40)
+assert(w.manualSpawns==1 and w.projectiles[901].params.pos[2]==5000)
 
--- Lethal pre-release damage hands movement to the existing crash system and
--- cannot leave a coroutine that later reacquires MoveCtrl or releases a bomb.
-w=fixture();w:untilPhase(3);w:order(w.env.CMD.ATTACK,{88});w:step(6)
-w.env.BeginAircraftCrash();local p=w.position[1];w:step(300)
-assert(w.rules.icarus_flight_phase==7 and not w.controlled and w.disabled==1 and w.projectileCount==0)
-assert(w.position[1]==p)
-w=fixture();w:untilPhase(3);w.env.script.Killed();w.valid=false;w:step(300)
-assert(w.projectileCount==0 and w.cancelled)
+-- Finite failure handling: a missing destruction callback or a failed forced
+-- spawn must not create an immortal invisible/loitering unit.
+w=fixture();w:handoff();closeGroundAttack(w);w:nativeFire(nil)
+w.suppressDestroyed=true;w:step(1200)
+assert(w.forcedProjectileCleanup and w.destroyed==1)
+-- A missing destruction callback leaves a stale numerical ID in the script.
+-- If Recoil reuses it, the fallback may reclaim its carrier but must never
+-- delete another owner's bomb or a different weapon fired by this owner.
+for _,replacement in ipairs({{weaponDef=4,owner=88},{weaponDef=5,owner=7}}) do
+    w=fixture();w:handoff();closeGroundAttack(w);w:nativeFire(nil)
+    w.suppressDestroyed=true;w:projectileDestroyed(901)
+    local reused={weaponDef=replacement.weaponDef,params={owner=replacement.owner},position={10,20,30}}
+    w.projectiles[901]=reused
+    w:step(1200)
+    assert(w.projectiles[901]==reused and not w.forcedProjectileCleanup,
+        'timeout deleted an unrelated projectile after numerical ID reuse')
+    assert(w.destroyed==1,'ID reuse left the original hidden carrier alive')
+end
+w=fixture({customParams={icarus_sink_rate=1408}});w:handoff();w.failFirstSpawn=true
+advanceTo(w,deadline(w));w:untilPhase(6,40)
+assert(w.spawnAttempts==2 and w.manualSpawns==1 and not w.crashed)
+w=fixture({customParams={icarus_sink_rate=1408}});w:handoff();w.spawnFailure=true
+advanceTo(w,deadline(w));w:step(40)
+assert(w.spawnAttempts==2 and w.crashed and w.projectileCount==0)
+w=fixture({customParams={icarus_sink_rate=1408}});w:handoff();w.suppressCreated=true
+advanceTo(w,deadline(w));w:untilPhase(6,40)
+assert(w.manualSpawns==1,'forced expiry failed without its synchronous relay callback')
+assertCarrier(w)
 
-print('PASS: Icarus construction/ascent, circling, explicit/visible targets, move/patrol/stop, fold waits/EMP, gravity release, attribution carrier, one impact, failures and crashes')
+-- Pre-release crash/death cancels all scheduled work. No later sink update,
+-- fold, MoveCtrl reacquisition or expiry projectile may appear.
+w=fixture();w:handoff();closeGroundAttack(w)
+w.env.BeginAircraftCrash();local updates=#w.heights
+w:step(6000)
+assert(w.rules.icarus_flight_phase==7 and w.projectileCount==0 and #w.heights==updates)
+assert(w.enabled==1 and w.disabled==1 and not w.controlled)
+w=fixture();assert(w.controlled,'launch test must begin during MoveCtrl ascent')
+w.env.BeginAircraftCrash();w:step(6000)
+assert(w.projectileCount==0 and #w.heights==0 and w.disabled==1 and not w.controlled)
+w=fixture();w:handoff();w.env.script.Killed();w.valid=false;w:step(6000)
+assert(w.projectileCount==0)
+w=fixture();w:handoff();closeGroundAttack(w);w:nativeFire(nil)
+w.env.script.Killed();w.valid=false;w:step(1200)
+assert(w.projectiles[901] and not w.forcedProjectileCleanup,
+    'exceptional owner removal deleted an already independent native projectile')
+w:projectileDestroyed(901);w:step(40)
+assert(w.destroyed==0 and w.projectileCount==1)
+
+print('PASS: native Icarus handoff, sparse finite sink, command events, fold/shot gate, expiry under EMP, local native drop, live attribution, bounded cleanup and crashes')

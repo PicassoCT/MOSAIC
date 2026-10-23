@@ -5,6 +5,7 @@ on:
     branches:
       - master
       - fix/nimrod-launch-icarus-flight
+      - fix/icarus-native-glide
     paths:
       - '.github/workflows/nimrod-icarus.yml'
       - 'scripts/airplaneartilleryscript.lua'
@@ -15,6 +16,7 @@ on:
       - 'luarules/gadgets/game_sattelite.lua'
       - 'luarules/gadgets/gfx_explosion_lights.lua'
       - 'luarules/gadgets/unit_aircraft_crashing.lua'
+      - 'luarules/gadgets/unit_icarus_lifecycle.lua'
       - 'luaui/widgets_mosaic/include/railgun_*.lua'
       - 'tests/icarus_*'
       - 'tests/nimrod_launch_fx.lua'
@@ -32,6 +34,7 @@ on:
       - 'luarules/gadgets/game_sattelite.lua'
       - 'luarules/gadgets/gfx_explosion_lights.lua'
       - 'luarules/gadgets/unit_aircraft_crashing.lua'
+      - 'luarules/gadgets/unit_icarus_lifecycle.lua'
       - 'luaui/widgets_mosaic/include/railgun_*.lua'
       - 'tests/icarus_*'
       - 'tests/nimrod_launch_fx.lua'
@@ -63,6 +66,7 @@ jobs:
             /luarules/gadgets/game_sattelite.lua
             /luarules/gadgets/gfx_explosion_lights.lua
             /luarules/gadgets/unit_aircraft_crashing.lua
+            /luarules/gadgets/unit_icarus_lifecycle.lua
             /luarules/gadgets/include/
             /luaui/widgets_mosaic/include/
             /luaui/widgets_mosaic/shaders/railgun_wake/
@@ -80,10 +84,12 @@ jobs:
           luac5.1 -p luarules/gadgets/game_sattelite.lua
           luac5.1 -p luarules/gadgets/gfx_explosion_lights.lua
           luac5.1 -p luarules/gadgets/unit_aircraft_crashing.lua
+          luac5.1 -p luarules/gadgets/unit_icarus_lifecycle.lua
       - name: Verify launch, flight and crash transitions
         run: |
           lua5.1 tests/nimrod_launch_fx.lua
           lua5.1 tests/icarus_flight_test.lua
+          lua5.1 tests/icarus_lifecycle_test.lua
           lua5.1 tests/orbital_bands_test.lua
           lua5.1 tests/aircraft_crashing_test.lua
       - name: Verify the folded model falls nose first

@@ -2,7 +2,7 @@
 local weaponName = "icarusglidebomb" --
 local weaponDef = {
     name = "Glidebomb",
-    -- Released explicitly after folding; native gravity and collision, no motor.
+    -- Native bomber release after the unit script finishes folding its wings.
     weaponType = [[AircraftBomb]],
 	--damage
 	damage = {
@@ -23,7 +23,8 @@ local weaponDef = {
 	
 	alwaysVisible = true,
 	--flight behaviour
-	-- The unit script supplies the map's gravity and initial downward velocity.
+	-- Ordinary shots inherit the native aircraft's motion. Glide exhaustion
+	-- spawns this same native projectile once, locally, even without a target.
 
 	--impact behaviour
 	impulseBoost  = 1,
