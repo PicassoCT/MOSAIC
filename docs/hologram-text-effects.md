@@ -6,6 +6,10 @@ A single text owner schedules the leases; other text effects do not compete with
 
 The shared effect review repairs piece/axis arguments, missing all-piece waits, the circle radius parameter and no-rest flag, the personal projection's civilian identity, scratch-global leakage, empty inputs, repeated-gap spacing in curved effects, and the duplicate wait helper. Matrix arrivals place every axis before dropping. Waterfall restoration targets each actual axis. The cube's loop index is no longer mutated.
 
+## Upright spiral and helix axis
+
+Horizontal text runs along local **Y**, while upright text runs down local **-Z**. Spiral and DNA-helix project around their corresponding axes: horizontal uses a Y-axis helix with X/Z radial offsets; upright uses a Z-axis helix with X/Y radial offsets and negative Z progression. Horizontal effects remain unchanged. Only these two corrected effects are eligible for upright text; other projections retain their existing horizontal-only selection.
+
 ## New effects
 
 - **Civilian conga:** chooses a live civilian within 650 world units, drops the physical letters to terrain height over 800 ms, and follows a bounded path history with phased sway and hopping. Letter spacing uses the authored glyph's transformed bounds. A cached inverse of each glyph's parent-world basis accounts for house heading, parent rotation, imported scale and axes. Motion updates at 5 Hz for at most 16.6 seconds, ending early on disappearance or departure beyond 750 units. Letter leases also rotate through conga positions. No civilian orders, MoveCtrl or new gadgets are involved.
