@@ -1707,11 +1707,13 @@ end
                     ["truck"] = {name = "truck_arab", range = 9}},
                 ["western"] = {
                     ["house"] = copyBuildingPropertySet(civilianHouseFamilies.western),
-                    ["civilian"] = {name = "civilian_western", range = 4},
+                    ["civilian"] = {name = "civilian_western", range = 4,
+                        additionalNames = {"civilian_worker_western"}},
                     ["truck"] = {name = "truck_western", range = 4}},        
                 ["asian"] = {
                     ["house"] = copyBuildingPropertySet(civilianHouseFamilies.asian),
-                    ["civilian"] = {name = "civilian_arab", range = 5},
+                    ["civilian"] = {name = "civilian_arab", range = 5,
+                        additionalNames = {"civilian_courier_asian"}},
                     ["truck"] = {name = "truck_western", range = 4}}
                 }
                 assert(translation[cultureName], "no translation for "..cultureName)
@@ -1919,6 +1921,14 @@ end
                         expandedDictNameID[key] = UnitDefNames[key].id
                     end
                     i = i + 1
+                end
+
+                -- Occupational civilians extend a culture's existing numbered
+                -- family, including the Asian fallback models, without replacing it.
+                for _, name in ipairs(SubsetTable.additionalNames or {}) do
+                    if UnitDefNames[name] then
+                        expandedDictNameID[name] = UnitDefNames[name].id
+                    end
                 end
 
                 if SubsetTable.name == "house_asian" then
@@ -2133,6 +2143,7 @@ end
                         typeTable = {
                             "civilian_western0",
                             "civilian_western3",
+                            "civilian_worker_western",
                         }
                     else
                         typeTable = {
@@ -2151,6 +2162,7 @@ end
                             "civilian_arab2",
                             "civilian_western0",
                             "civilian_western3",
+                            "civilian_worker_western",
                         }
                     else
                         typeTable = {
@@ -2162,6 +2174,7 @@ end
                             "civilian_western2",
                             "civilian_western4",
                             "civilian_western5",
+                            "civilian_courier_asian",
                         }
                     end
 
@@ -2181,7 +2194,8 @@ end
                             "civilian_arab4",
                             "civilian_arab5",
                             "civilian_western1",
-                            "civilian_western2"
+                            "civilian_western2",
+                            "civilian_courier_asian"
                         }
                     end
 
