@@ -44,6 +44,7 @@ jobs:
             /tests/city_roads_organic_test.lua
             /tests/city_tacticalgrid_yardmap_test.lua
             /tests/city_arcologies_test.lua
+            /tests/fixtures/
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
