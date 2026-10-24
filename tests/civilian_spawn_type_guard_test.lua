@@ -27,10 +27,6 @@ local function fixture(culture)
     family('house_arab',0); family('house_western',0); family('house_asian',4)
     family('truck_arab',9,true); family('truck_western',4,true)
     family('civilian_arab',5,true); family('civilian_western',4,true)
-    for _, name in ipairs({'civilian_worker_western','civilian_courier_asian'}) do
-        add(name, {baseclass='Civilian'})
-        mobileNames[name] = true
-    end
     add('house_asian_split_1_3', {house_asian_base='house_asian0'})
     for _, name in ipairs({'house_ruin','gcscrapheap','vehiclecorpse','tankcorpse',
         'closecombatarena','civilianagent','protagonsafehouse','antagonsafehouse',

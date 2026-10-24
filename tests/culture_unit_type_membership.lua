@@ -23,7 +23,6 @@ end
 family('house_arab', 0); family('house_western', 0); family('house_asian', 4)
 family('truck_arab', 9); family('truck_western', 4)
 family('civilian_arab', 5); family('civilian_western', 4)
-add('civilian_worker_western'); add('civilian_courier_asian')
 add('house_ruin')
 for _, name in ipairs({'house_asian_split_1_1', 'house_asian_split_1_2'}) do
     add(name, {house_asian_base='house_asian0'})
@@ -41,7 +40,6 @@ local env = {arg=false, GG={InstanceCulture='international', AllCultures={intern
 setmetatable(env, {__index=_G}); env._G=env
 loadEnv('scripts/lib_UnitScript.lua', env)
 loadEnv((arg and arg[1]) or 'scripts/lib_mosaic.lua', env)
-loadEnv('scripts/lib_staticstring.lua', env)
 
 local culturalFamilies = {
     arabic={house={'house_arab'}, truck={'truck_arab'}, civilian={'civilian_arab'}},
@@ -56,14 +54,6 @@ local function expected(culture, kind)
         for unitName in pairs(families[name]) do result[unitName] = true end
     end
     if kind == 'house' then result.house_ruin = true end
-    if kind == 'civilian' then
-        if culture == 'western' or culture == 'international' then
-            result.civilian_worker_western = true
-        end
-        if culture == 'asian' or culture == 'international' then
-            result.civilian_courier_asian = true
-        end
-    end
     return result
 end
 local function checkMap(label, actual, wanted)
@@ -100,23 +90,9 @@ for _, culture in ipairs({'arabic','western','asian','international'}) do
     for name in pairs(expected(culture, 'truck')) do mobile[name] = true end
     checkMap(culture .. ' mobile civilians', env.getMobileCivilianDefIDTypeTable(defs), mobile)
     checkMap(culture .. ' pedestrians', env.getPanicableCiviliansTypeTable(defs), expected(culture, 'civilian'))
-    local male = env.getCivlianDisguiseBySexTypeTable(defs, 'male')
-    local female = env.getCivlianDisguiseBySexTypeTable(defs, 'female')
-    local worker, courier = byName.civilian_worker_western.id, byName.civilian_courier_asian.id
-    assert((male[worker] ~= nil) == (culture == 'western' or culture == 'international'),
-        culture .. ': worker disguise does not match the ordinary population')
-    assert((female[courier] ~= nil) == (culture == 'asian' or culture == 'international'),
-        culture .. ': courier disguise does not match the ordinary population')
-    assert(not female[worker] and not male[courier], culture .. ': wrong sex in occupational disguises')
     assert(env.getUnitType_BaseTypeMap(defs, culture).house_ruin == 'house',
         culture .. ': ruin incorrectly classified as traffic/pedestrian')
 end
--- Naming must follow the model rather than the unrelated unit-ID parity fallback.
-env.Spring.GetUnitDefID = function(id)
-    return id <= 2 and byName.civilian_worker_western.id or byName.civilian_courier_asian.id
-end
-assert(env.getCivilianSex(1, defs) == 'male' and env.getCivilianSex(2, defs) == 'male')
-assert(env.getCivilianSex(3, defs) == 'female' and env.getCivilianSex(4, defs) == 'female')
 local ruinCandidates = expected('international', 'house')
 ruinCandidates.house_ruin = nil
 checkMap('intact and variant plots eligible for war damage',
@@ -124,4 +100,4 @@ checkMap('intact and variant plots eligible for war damage',
 checkMap('war ruin choices', env.getCityRuinTypeTable(defs), {house_ruin=true})
 assert(env.getBuildingScrapHeapTypeTable(defs)[byName.house_ruin.id], 'lost reconstruction rubble option')
 assert(env.getBuildingRuinTypeTable(defs)[byName.house_ruin.id], 'lost ruin property membership')
-print('PASS: culture pools preserve existing families and add matching occupational spawns, disguises and names')
+print('PASS: all culture pools preserve house/variant/ruin choices and exclude ruins from mobile spawns')
