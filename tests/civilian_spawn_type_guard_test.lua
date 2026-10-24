@@ -40,7 +40,7 @@ local function fixture(culture)
         [103]={def=names.house_ruin.id,x=1200,z=720,team=0},
         [104]={def=names.vehiclecorpse.id,x=1200,z=900,team=0},
     }
-    local created, visible, nextID, frame, pools = {}, {}, 1000, 1, {}
+    local created, visible, neutral, nextID, frame, pools = {}, {}, {}, 1000, 1, {}
     local env = setmetatable({arg=false, gadget={}, UnitDefs=defs, UnitDefNames=names,
         Game={mapName='civilian_spawn_guard_test',mapSizeX=8192,mapSizeZ=8192},
         GG={InstanceCulture=culture,AllCultures={international='international'},
@@ -65,8 +65,22 @@ local function fixture(culture)
             local ids={}; for id in pairs(live) do ids[#ids+1]=id end; return ids
         end,
         GetGroundHeight=function() return 12 end,
+        GetUnitRadius=function() return 90 end,
+        TestMoveOrder=function() return true end,
+        GetUnitsInCylinder=function(x,z,radius,team)
+            local ids={}
+            for id,u in pairs(live) do
+                if (not team or u.team==team) and (u.x-x)^2+(u.z-z)^2<=radius^2 then ids[#ids+1]=id end
+            end
+            table.sort(ids)
+            return ids
+        end,
+        SetUnitPosition=function(id,x,y,z)
+            live[id].x,live[id].z=x,z
+        end,
         GetUnitTransporter=function() end,
         SetUnitAlwaysVisible=function(id) visible[id]=true end,
+        SetUnitNeutral=function(id,value) neutral[id]=value end,
         SetUnitNoSelect=noop, SetGameRulesParam=noop, DestroyUnit=noop,
         RequestPath=function() return {} end,
         GetUnitRulesParam=function(id,key)
@@ -108,12 +122,13 @@ local function fixture(culture)
     end}
     loadEnv((arg and arg[1]) or 'luarules/gadgets/game_civilians.lua',env)
     env.gadget:Initialize()
-    return env, names, mobileNames, live, created, visible, pools
+    return env, names, mobileNames, live, created, visible, pools, neutral
 end
 
 local checked=0
 for _, culture in ipairs({'arabic','western','asian','international'}) do
-    local env,names,mobileNames,live,created,visible,pools=fixture(culture)
+    local env,names,mobileNames,live,created,visible,pools,neutral=fixture(culture)
+    assert(not neutral[100] and not neutral[101], 'civilian houses were made neutral')
     assert(next(env.GG.CivilianTable)==nil, 'map structures registered as population')
     assert(next(env.GG.CivilianLife.people)==nil, 'map structures registered as people')
     local rejected={'house_ruin','gcscrapheap','vehiclecorpse','tankcorpse',
@@ -198,6 +213,32 @@ for _, culture in ipairs({'arabic','western','asian','international'}) do
     env.checkReSpawnTraffic()
     assert(#created==count+2 and created[count+1].defID==walker and created[count+2].defID==truck,
         'valid mobile selection no longer reaches the real batch spawn')
+    local car=created[count+2]
+    env.gadget:UnitCreated(car.id,car.defID,0)
+    assert(not neutral[car.id], 'civilian traffic was made neutral')
+    assert((car.x-200)^2+(car.z-220)^2>90^2,
+        'traffic spawned inside its source building')
+    local route=assert(env.buildRouteSquareFromTwoUnits(100,101,truck))
+    assert((route[1].x-200)^2+(route[1].z-220)^2>90^2,
+        'traffic route starts inside its source building')
+    local nearDestination=false
+    for _,point in ipairs(route) do
+        local fromSource=(point.x-200)^2+(point.z-220)^2
+        local fromDestination=(point.x-700)^2+(point.z-720)^2
+        assert(fromSource>90^2 and fromDestination>90^2,
+            'traffic route enters a building')
+        if fromDestination<=130^2+1 then nearDestination=true end
+    end
+    assert(nearDestination,'traffic route no longer visits its destination')
+    live[105]={def=names.protagonsafehouse.id,x=200,z=220,team=1}
+    live[106]={def=truck,x=200,z=220,team=1}
+    env.gadget:UnitFromFactory(106,truck,1,105)
+    assert((live[106].x-200)^2+(live[106].z-220)^2>90^2,
+        'safehouse released a truck inside its civilian building')
+    live[107]={def=names.house_arab0.id,x=car.x,z=car.z,team=0}
+    local rerouted=assert(env.buildRouteSquareFromTwoUnits(100,101,truck))
+    assert((rerouted[1].x-car.x)^2+(rerouted[1].z-car.z)^2>90^2,
+        'traffic curb was inside a neighbouring civilian building')
 end
 print('PASS civilian spawn guard: rejected static units and contaminated pools; ' ..
-    checked .. ' culture mobile variants, home spawns, routes and initial venues preserved')
+    checked .. ' culture mobile variants, curbside traffic, routes and initial venues preserved')

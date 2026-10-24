@@ -72,6 +72,7 @@ assert(TruckTypeTable, toString("gameCivilians:",TruckTypeTable))
 
 local houseTypeTable = getCultureUnitModelTypes(GameConfig.game.culture,
                                                 "house", UnitDefs)
+local allCivilianHouses = getCultureUnitModelTypes("international", "house", UnitDefs)
 
 assert(houseTypeTable)
 assert(count(houseTypeTable) > 0)
@@ -87,6 +88,7 @@ local loadableTruckType = getLoadAbleTruckTypes(UnitDefs, GameConfig.game.cultur
 --echo("Loadable TruckTypes: ".. toString(loadableTruckType))
 local refugeeableTruckType = getRefugeeAbleTruckTypes(UnitDefs, TruckTypeTable, GameConfig.game.culture)
 local gaiaTeamID = Spring.GetGaiaTeamID() 
+local trafficPoint
 local OpimizationFleeing = {accumulatedCivilianDamage = 0}
 local chanceOfCivilianSpawningFromTruck = GameConfig.civilians.traffic.passengerSpawnChance
 local newCivilianLife = VFS.Include("luarules/gadgets/include/civilian_daily_life.lua")
@@ -188,6 +190,27 @@ function gadget:UnitCreated(unitID, unitDefID, teamID, attackerID)
     if individualNamedTypes[unitDefID] then
         name = setIndividualCivilianName(unitID, GG.GameConfig.game.culture, UnitDefs)
     end
+end
+
+function gadget:UnitFromFactory(unitID, unitDefID, teamID, factoryID)
+    local def = UnitDefs[unitDefID]
+    if not def or not def.name:find("truck") then return end
+    local fx, _, fz = spGetUnitPosition(factoryID)
+    if not fx then return end
+    local house, nearest
+    for _, id in ipairs(Spring.GetUnitsInCylinder(fx, fz, 180, gaiaTeamID) or {}) do
+        if allCivilianHouses[spGetUnitDefID(id)] then
+            local hx, _, hz = spGetUnitPosition(id)
+            local distance = hx and (fx - hx)^2 + (fz - hz)^2
+            if distance and distance < (Spring.GetUnitRadius(id) or 90)^2
+                and (not nearest or distance < nearest) then
+                house, nearest = id, distance
+            end
+        end
+    end
+    if not house then return end
+    local curb = trafficPoint(house, unitDefID)
+    if curb then Spring.SetUnitPosition(unitID, curb.x, curb.y, curb.z) end
 end
 
 
@@ -339,6 +362,48 @@ local function getFairSpawnNode(sectors, occupancy)
     -- equally populated sectors instead of selecting the same sector repeatedly.
     occupancy[sector] = (occupancy[sector] or 0) + 1
     return x, y, z, startNode
+end
+
+-- Buildings are route nodes, but vehicle positions must stay outside their
+-- footprint. Prefer the side facing the next node when several curbs work.
+local function houseExtent(id)
+    local def = UnitDefs[spGetUnitDefID(id)] or {}
+    local footprint = math.max(def.footprintX or 0, def.footprintZ or 0) * 8 * math.sqrt(2)
+    return math.max(Spring.GetUnitRadius(id) or 0, footprint)
+end
+
+local function outsideHouses(x, z)
+    for _, id in ipairs(Spring.GetUnitsInCylinder(x, z, 180, gaiaTeamID) or {}) do
+        if allCivilianHouses[spGetUnitDefID(id)] then
+            local hx, _, hz = spGetUnitPosition(id)
+            if hx and (x-hx)^2+(z-hz)^2 <= houseExtent(id)^2 then return false end
+        end
+    end
+    return true
+end
+
+trafficPoint = function(buildingID, vehicleDefID, towardID)
+    local x, _, z = spGetUnitPosition(buildingID)
+    if not x then return nil end
+    local tx, tz
+    if towardID then tx, _, tz = spGetUnitPosition(towardID) end
+    for ring = 0, 2 do
+        local radius = houseExtent(buildingID) + 40 + ring * 80
+        local best, score
+        for i = 0, 7 do
+            local angle = i * math.pi / 4
+            local px, pz = x + math.cos(angle) * radius, z + math.sin(angle) * radius
+            if px > 16 and pz > 16 and px < Game.mapSizeX - 16 and pz < Game.mapSizeZ - 16 then
+                local py = spGetGroundHeight(px, pz)
+                if py >= 0 and Spring.TestMoveOrder(vehicleDefID, px, py, pz)
+                    and outsideHouses(px, pz) then
+                    local cost = tx and ((px - tx)^2 + (pz - tz)^2) or i
+                    if not score or cost < score then best, score = {x = px, y = py, z = pz}, cost end
+                end
+            end
+        end
+        if best then return best end
+    end
 end
 
 function getRandomSpawnNode()
@@ -500,7 +565,8 @@ function checkReSpawnTraffic()
                 --assertTable(TruckTypeTable)
                 TruckType = randDict(TruckTypeTable)
                 --echo("checkReSpawnTraffic2.5")
-                id = spawnAMobileCivilianUnit(TruckType, x, z, startNode, goalNode)
+                local curb = trafficPoint(startNode, TruckType, goalNode)
+                id = curb and spawnAMobileCivilianUnit(TruckType, curb.x, curb.z, startNode, goalNode)
                 if id  then
                   --  --echo("calling truck loading")
                     --echo("checkReSpawnTraffic2.6")
@@ -540,6 +606,14 @@ function buildRouteSquareFromTwoUnits(unitOne, unitTwo, uType)
 
     x2, y2, z2 = spGetUnitPosition(unitTwo)
     if not x2 then     x2,y2,z2 = x1 + math.random(100,256)*randSign(), y1, z1 + math.random(100,256)*randSign() end
+
+    if TruckTypeTable[uType] then
+        local start = trafficPoint(unitOne, uType, unitTwo)
+        local finish = trafficPoint(unitTwo, uType, unitOne)
+        if not start or not finish then return nil end
+        x1, y1, z1 = start.x, start.y, start.z
+        x2, y2, z2 = finish.x, finish.y, finish.z
+    end
 
     index = 1
     Route[index] = {}
@@ -631,7 +705,7 @@ function spawnUnit(defID, x, z)
     -- Population origins are occupied building plots. Recheck the shared
     -- property sets at this boundary so a contaminated pool cannot put a
     -- second building or a ruin inside the existing house.
-    if not MobileCivilianDefIds[defID] or houseTypeTable[defID]
+    if not MobileCivilianDefIds[defID] or allCivilianHouses[defID]
         or scrapHeapTypeTable[defID] then
         return nil
     end
