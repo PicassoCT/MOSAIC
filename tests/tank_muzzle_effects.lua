@@ -77,7 +77,7 @@ for _,defID in ipairs({1,2}) do
     local id=defID+10;units[id]=newUnit(defID);fire(id);s:UnitCreated(id,defID)
     assert(units[id].rules[profile.shotParam]==frame,'FireWeapon1 failed to stamp the shot')
     local lights,flames=collect(s)
-    assert(#lights==1 and #flames==1,'tank shot did not produce both light and FlamePainter')
+    assert(#lights==3 and #flames==1,'tank shot did not produce directional light chain and FlamePainter')
     local light,ribbon=lights[1],flames[1]
     assert(not light.nightOnly and light.unitID==id and ribbon.unitID==id,
         'muzzle flash lost daytime emission or validated owner')
@@ -87,7 +87,11 @@ for _,defID in ipairs({1,2}) do
     near(ribbon.direction[3],1,'barrel direction Z')
     near(ribbon.length,94*profile.lengthFactor,'model-proportional flame length')
     near(ribbon.width,ribbon.length*profile.widthFactor,'model-proportional flame width')
-    near(light.radius,ribbon.length*profile.radiusFactor,'model-proportional radiance reach')
+    near(light.radius,ribbon.length*profile.radiusFactor,'model-proportional muzzle radiance reach')
+    near(lights[2].z,light.z+ribbon.length*profile.lightOffsets[2],'middle radiance source did not follow barrel axis')
+    near(lights[3].z,light.z+ribbon.length*profile.lightOffsets[3],'forward radiance source did not follow barrel axis')
+    near(lights[2].radius,ribbon.length*profile.lightRadiusFactors[2],'middle radiance radius')
+    near(lights[3].radius,ribbon.length*profile.lightRadiusFactors[3],'forward radiance radius')
     local queries=units[id].pieceCalls
     assert(s:Collect()==lights and queries==units[id].pieceCalls,'same draw repeats piece queries')
     s:UnitDestroyed(id)
@@ -115,11 +119,14 @@ near(lights[1].z,170.06+vz/span*profile.clearance,'animated muzzle Z')
 near(flames[1].direction[2],vy/span,'pitch direction')
 
 frame=born+6;lights,flames=collect(s)
-near(lights[1].strength/profile.strength,flames[1].opacity,'light and flame envelopes diverged')
+near(lights[1].strength/profile.strength,(1-6/profile.durationFrames)^profile.lightFadePower,
+    'muzzle radiance did not use its fast flash envelope')
+assert(lights[1].strength/profile.strength<flames[1].opacity,
+    'muzzle radiance should decay faster than the lingering plume')
 assert(flames[1].opacity<.5,'shot did not decay')
 local reloaded=fresh();reloaded:UnitCreated(id,1)
-assert(#collect(reloaded)==1,'LuaUI reload lost the active part of a shot')
-frame=born+11;offset=.999;assert(#collect(s)==1,'shot expired before its exact endpoint')
+assert(#collect(reloaded)==3,'LuaUI reload lost the active directional light chain')
+frame=born+11;offset=.999;assert(#collect(s)==3,'shot expired before its exact endpoint')
 frame=born+12;offset=0
 assert(#collect(s)==0 and not s:HasTankMuzzleFlash(id),'shot outlived 12 frames')
 reloaded=fresh();reloaded:UnitCreated(id,1)
@@ -136,10 +143,10 @@ for _,flag in ipairs({'cloaked','noDraw','transporter','dead','invalid'}) do
     u[flag]=true;assert(#collect(s)==0,flag..' tank retained muzzle light');u[flag]=nil
 end
 u.los=false;assert(#collect(s)==0,'tank flash leaked outside unit LOS')
-fullView=true;assert(#collect(s)==1,'full-view spectator lost a visible tank shot')
+fullView=true;assert(#collect(s)==3,'full-view spectator lost a visible tank shot')
 fullView=false;u.los=true;pointLOS=false
 lights,flames=collect(s)
-assert(#lights==1 and #flames==1,'visible owner was rehidden by terrain positional LOS')
+assert(#lights==3 and #flames==1,'visible owner was rehidden by terrain positional LOS')
 
 -- The point-light pass emits in daylight and allocates no extra targets.
 local gain,draws,allocations=0,0,0
