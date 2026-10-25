@@ -79,6 +79,8 @@ pericodicRotationYPieces = {}
 pericodicMovingZPieces = {}
 spinYPieces = {}
 local GameConfig = getGameConfig()
+local SIG_BUILD_CRANES = 4
+local decorationsStarted = false
 
 function timeOfDay()
 
@@ -127,7 +129,6 @@ function script.Create()
         [TablesOfPiecesGroups["RoofDeco56Sub"][1]] = 5000
     }
 
-    StartThread(rotations)
     StartThread(decorateCity)
 end
 
@@ -165,61 +166,73 @@ function delayedHeightMapTransform()
 end
 
 function rotations()
+    if decorationsStarted then return end
+    decorationsStarted = true
+    -- Called after the assembled pieces are revealed, not while the generator
+    -- is still choosing variants. Hidden alternatives need no animation worker.
     foreach(spinYPieces, function(id)
-        direction = 42 * randSign()
-        Spin(id, y_axis, math.rad(direction), math.pi)
-
+        if IsBuildingPieceVisible(id) then
+            local direction = 42 * randSign()
+            Spin(id, y_axis, math.rad(direction), math.pi)
+        end
     end)
 
-    periodicFunc = function(p)
-        while true do
-            Sleep(500);
-            dir = math.random(-45, 45);
-            WTurn(p, _y_axis, math.rad(dir), math.pi / 250);
-        end
-    end
-    for k, v in pairs(pericodicRotationYPieces) do
-
-        StartThread(periodicFunc, k)
-    end
-
-    windfunc = function(p)
-        while true do
-            Sleep(1000)
-            percentage = timeOfDay()
-            if percentage > 0.25 and percentage < 0.75 then
-                percentage = (percentage - 0.25) / 0.5
-                degree = (percentage * 180) + math.random(-10, 10)
-                Turn(p, _z_axis, math.rad(degree), math.pi / 100)
-            else
-                TurnTowardsWind(p, math.pi / 100, math.random(-10, 10))
+    local function periodicFunc(p)
+        while not IsBuildingPieceDetached(p) do
+            Sleep(500)
+            if IsBuildingPieceVisible(p) then
+                local dir = math.random(-45, 45)
+                WTurn(p, _y_axis, math.rad(dir), math.pi / 250)
             end
-            WaitForTurns(p)
         end
     end
+    for p in pairs(pericodicRotationYPieces) do
+        if IsBuildingPieceVisible(p) then StartThread(periodicFunc, p) end
+    end
 
-    for k, v in pairs(windsolar) do StartThread(windfunc, k) end
+    local function windfunc(p)
+        while not IsBuildingPieceDetached(p) do
+            Sleep(1000)
+            if IsBuildingPieceVisible(p) then
+                local percentage = timeOfDay()
+                if percentage > 0.25 and percentage < 0.75 then
+                    percentage = (percentage - 0.25) / 0.5
+                    local degree = (percentage * 180) + math.random(-10, 10)
+                    Turn(p, _z_axis, math.rad(degree), math.pi / 100)
+                else
+                    TurnTowardsWind(p, math.pi / 100, math.random(-10, 10))
+                end
+                WaitForTurns(p)
+            end
+        end
+    end
+    for p in pairs(windsolar) do
+        if IsBuildingPieceVisible(p) then StartThread(windfunc, p) end
+    end
     Sleep(500)
-    clockPiece = piece("StreetDeco6")
-    if contains(ToShowTable, clockPiece) then
+    local clockPiece = piece("StreetDeco6")
+    if IsBuildingPieceVisible(clockPiece) then
         WTurn(TablesOfPiecesGroups["StreetDeco6Sub"][1], z_axis, math.rad(180), 0)
         showT(TablesOfPiecesGroups["StreetDeco6Sub"])
         Spin(TablesOfPiecesGroups["StreetDeco6Sub"][1], z_axis, math.rad(3), 10)
         Spin(TablesOfPiecesGroups["StreetDeco6Sub"][2], z_axis, math.rad(36), 10)
     end
 
-    periodicMovementFunc = function(p, value)
-        while true do
-            Sleep(500);
-            Move(p, _x_axis, math.rad(value), 5);
-            WaitForMoves(p)
-            Move(p, _x_axis, math.rad(0), 5);
-            WaitForMoves(p)
+    local function periodicMovementFunc(p, value)
+        while not IsBuildingPieceDetached(p) do
+            Sleep(500)
+            if IsBuildingPieceVisible(p) then
+                Move(p, _x_axis, math.rad(value), 5)
+                WaitForMoves(p)
+                if IsBuildingPieceVisible(p) then
+                    Move(p, _x_axis, 0, 5)
+                    WaitForMoves(p)
+                end
+            end
         end
     end
-
-    for k, v in pairs(pericodicMovingZPieces) do
-        StartThread(periodicMovementFunc, k, v)
+    for p, value in pairs(pericodicMovingZPieces) do
+        if IsBuildingPieceVisible(p) then StartThread(periodicMovementFunc, p, value) end
     end
 end
 
@@ -1055,6 +1068,7 @@ function buildAnimation()
         hideT(TablesOfPiecesGroups["BuildCrane"])
         while boolDoneShowing == false do Sleep(100) end
         showT(ToShowTable)
+        StartThread(rotations)
         finalizeBuildingShadowVoxels()
         return
     end
@@ -1074,9 +1088,10 @@ function buildAnimation()
     moveSyncInTimeT(TablesOfPiecesGroups["Build1Sub"], 0, 0, 0, 5000)
 
     foreach(TablesOfPiecesGroups["BuildCrane"], function(id)
-        craneFunction = function(id)
+        local craneFunction = function(id)
+            SetSignalMask(SIG_BUILD_CRANES)
             while true do
-                target = math.random(-120, 120)
+                local target = math.random(-120, 120)
                 WTurn(id, y_axis, math.rad(target), math.pi / 10)
                 Sleep(1000)
             end
@@ -1089,6 +1104,16 @@ function buildAnimation()
     while boolDoneShowing == false do Sleep(100) end
     waitForCityConstruction(unitID)
     showT(ToShowTable)
+    StartThread(rotations)
+
+    -- Retire the crane workers and stop their outstanding native turns before
+    -- lowering and hiding the construction pieces. Signalling alone does not
+    -- cancel an engine-side Turn that a worker already issued.
+    Signal(SIG_BUILD_CRANES)
+    for _, id in pairs(TablesOfPiecesGroups["BuildCrane"]) do
+        local rotation = {Spring.UnitScript.GetPieceRotation(id)}
+        Turn(id, y_axis, rotation[y_axis], 0)
+    end
 
     for i = 1, 3 do
         Move(builT[i], _y_axis, i * -cubeDim.heigth * 10, 3 * math.pi)
