@@ -29,6 +29,20 @@ weapons.covermachinegun = variant("weapons/heavymachinegun.lua", "heavymachinegu
     customparams = {wall_damage_multiplier = 0.05, night_tracer = 1},
 })
 
+-- Interception resolves against projectile IDs in the turret script. These
+-- rounds reuse the normal gun visuals without adding a second damage source.
+weapons.interceptiontracer = copy(weapons.covermachinegun)
+weapons.interceptiontracer.name = "Interception gun tracer"
+weapons.interceptiontracer.damage = {default = 0}
+weapons.interceptiontracer.areaofeffect = 0
+weapons.interceptiontracer.impulsefactor = 0
+weapons.interceptiontracer.impulseboost = 0
+weapons.interceptiontracer.collidefriendly = false
+weapons.interceptiontracer.collideenemy = false
+weapons.interceptiontracer.collideneutral = false
+weapons.interceptiontracer.collidefeature = false
+weapons.interceptiontracer.collideground = false
+
 weapons.escortantiair = variant("weapons/aamachinegun.lua", "aamachinegun", {
     name = "Short-range drone defence",
     range = 650,

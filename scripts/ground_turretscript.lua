@@ -34,55 +34,82 @@ function script.Create()
     StartThread(droneDefense)
 end
 
-function playProjectileInterceptAnimation(projectiles, timeTotal, maxIntercept)
-    x, y, z = Spring.GetUnitPosition(unitID)
-    intercepted = math.ceil(math.min(#projectiles, maxIntercept))
-    timePerProjectile = timeTotal / intercepted
-    StartThread(fireFlowers, intercepted)
-    for projID, wdefID in pairs(projectiles) do
-        if projID then
-            if not cruiseMissileProjectileType[wDefID] or 
-                cruiseMissileProjectileType[wDefID] and math.random(1,GameConfig.military.cruiseMissiles.interceptOneIn) == 1  then
-                px, py, pz = Spring.GetProjectilePosition (projID)
-                if px then
+local function interceptionTargets(targets)
+    local ids = {}
+    for id in pairs(targets) do ids[#ids+1] = id end
+    table.sort(ids)
+    return ids
+end
 
-                    goalRad = convPointsToRad(x, z, px, pz)
-                    turnInTime(center, y_axis, math.deg(goalRad), timePerProjectile, 0, math.deg(lastValueHeadingRad), 0, false)
-                    WaitForTurns(center)
-                    lastValueHeadingRad = goalRad
-                    EmitSfx(firingFrom, 256)
-                    EmitSfx(firingFrom, 1025)
-                    Spring.DeleteProjectile (projID)
-                    Spring.SpawnCEG("missile_explosion", px, py, pz, 0, 1, 0, 50, 0)
-                    if intercepted == 0 then return end
+local function aimAndFireIntercept(position, duration)
+    local px, py, pz = position()
+    if not px then return false end
+    local x, y, z = Spring.GetUnitPiecePosDir(unitID, firingFrom)
+    local front, up, right = Spring.GetUnitVectors(unitID)
+    local dx, dy, dz = px-x, py-y, pz-z
+    local forward = dx*front[1]+dy*front[2]+dz*front[3]
+    local side = -(dx*right[1]+dy*right[2]+dz*right[3])
+    local vertical = dx*up[1]+dy*up[2]+dz*up[3]
+    local heading = math.atan2(side, forward)
+    local pitch = math.atan2(vertical, math.sqrt(side*side+forward*forward))
+    local _, oldHeading = Spring.UnitScript.GetPieceRotation(center)
+    local oldPitch = Spring.UnitScript.GetPieceRotation(Turret)
+    local turnTime = math.max(0.001, duration / 2000)
+    local yaw = oldHeading + (heading-oldHeading+math.pi)%(2*math.pi)-math.pi
+    Signal(SIG_GUARDMODE)
+    Turn(center, y_axis, yaw, math.max(math.pi, math.abs(yaw-oldHeading)/turnTime))
+    Turn(Turret, x_axis, -pitch, math.max(math.pi, math.abs(-pitch-oldPitch)/turnTime))
+    WaitForTurns(center, Turret)
+    lastValueHeadingRad = heading
+    -- The same muzzle routine as normal shooting, plus visible travelling
+    -- rounds. Sample moving targets again for each shot; disappeared targets
+    -- end the burst without an explosion at stale coordinates.
+    fireFlowers(3, position, duration / 6)
+    return position() ~= nil
+end
+
+function playProjectileInterceptAnimation(projectiles, timeTotal, maxIntercept)
+    local ids = interceptionTargets(projectiles)
+    local limit = math.ceil(math.min(#ids, maxIntercept))
+    local intercepted = 0
+    boolDroneInterceptSaturated = true
+    for _, projID in ipairs(ids) do
+        if intercepted >= limit then break end
+        local wdefID = projectiles[projID]
+        if not cruiseMissileProjectileType[wdefID] or
+            math.random(1,GameConfig.military.cruiseMissiles.interceptOneIn) == 1 then
+            local function position()
+                if Spring.GetProjectileDefID(projID) == wdefID then
+                    return Spring.GetProjectilePosition(projID)
                 end
-                intercepted = intercepted - 1
+            end
+            if aimAndFireIntercept(position, timeTotal/limit) then
+                local px, py, pz = position()
+                Spring.DeleteProjectile(projID)
+                Spring.SpawnCEG("missile_explosion", px, py, pz, 0, 1, 0, 50, 0)
+                intercepted = intercepted + 1
             end
         end
     end
+    boolDroneInterceptSaturated = false
+    StartThread(guardSwivelTurret)
 end
 
 function playDroneInterceptAnimation(drones, timeTotal, maxIntercept)
-    x, y, z = Spring.GetUnitPosition(unitID)
-    intercepted = math.ceil(math.min(count(drones), maxIntercept))
-    timePerProjectile = timeTotal / intercepted
-    StartThread(fireFlowers, intercepted)
-    for droneID, wdefID in pairs(drones) do
-        if droneID then
-            px, py, pz = Spring.GetUnitPosition(droneID)
-                if px then
-                    goalRad = convPointsToRad(x, z, px, pz)
-                    turnInTime(center, y_axis, math.deg(goalRad), timePerProjectile, 0, math.deg(lastValueHeadingRad), 0, false)
-                    WaitForTurns(center)
-                    lastValueHeadingRad = goalRad
-                    EmitSfx(firingFrom, 256)
-                    EmitSfx(firingFrom, 1025)
-                    Spring.AddUnitDamage(droneID, 50)
-                    if intercepted == 0 then return end
-                end
-            intercepted = intercepted - 1
+    local ids = interceptionTargets(drones)
+    local limit = math.ceil(math.min(#ids, maxIntercept))
+    local intercepted = 0
+    boolDroneInterceptSaturated = true
+    for _, droneID in ipairs(ids) do
+        if intercepted >= limit then break end
+        local function position() return Spring.GetUnitPosition(droneID) end
+        if aimAndFireIntercept(position, timeTotal/limit) then
+            Spring.AddUnitDamage(droneID, 50)
+            intercepted = intercepted + 1
         end
     end
+    boolDroneInterceptSaturated = false
+    StartThread(guardSwivelTurret)
 end
 
 function droneDefense()
@@ -94,7 +121,7 @@ function droneDefense()
     local interceptableDronesTypeTable = getInterceptableAirDroneTypes(UnitDefs)
     
     while true do
-        if hasNoActiveAttackCommand(unitID) == true then
+        if not boolDroneInterceptSaturated and hasNoActiveAttackCommand(unitID) == true then
             projectilesToIntercept = {}
             foreach(getProjectilesAroundUnit(unitID, droneInterceptDistance),
                 function(id)
@@ -113,11 +140,8 @@ function droneDefense()
             )
             boolPlayGunSound= false
             if projectilesToIntercept and count(projectilesToIntercept) > 0 then
-                boolDroneInterceptSaturated = true
                 StartThread(playProjectileInterceptAnimation, projectilesToIntercept, 500, GameConfig.military.droneInterception.maxPerSecond / 2)
                 boolPlayGunSound = true
-
-                boolDroneInterceptSaturated = false
             else 
                 dronesToIntercept = {}
                 foreach(getAllNearUnitNotInTeam(unitID, droneInterceptDistance, myTeamID),
@@ -329,10 +353,28 @@ function script.FireWeapon2()
     return true
 end
 
-function fireFlowers(itterations)
+function fireFlowers(itterations, targetPosition, shotInterval)
+    if targetPosition then
+        StartThread(PlaySoundByUnitDefID, unitDefID,
+            "sounds/weapons/machinegun/salvo.ogg", 1.0, 5000, 2)
+    end
     for i = 1, itterations do
+        if targetPosition then
+            local tx, ty, tz = targetPosition()
+            if not tx then return end
+            local x, y, z = Spring.GetUnitPiecePosDir(unitID, firingFrom)
+            local dx, dy, dz = tx-x, ty-y, tz-z
+            local distance = math.sqrt(dx*dx+dy*dy+dz*dz)
+            if distance > 0 then
+                local speed = 850 / (Game.gameSpeed or 30)
+                Spring.SpawnProjectile(WeaponDefNames.interceptiontracer.id, {
+                    pos = {x,y,z}, speed = {dx/distance*speed,dy/distance*speed,dz/distance*speed},
+                    owner = unitID, ttl = math.max(1,math.ceil(distance/speed)), gravity = 0,
+                })
+            end
+        end
         EmitSfx(firingFrom, 1025)
-        Sleep(120)
+        Sleep(shotInterval or 120)
     end
 end
 
