@@ -156,7 +156,7 @@ function trayAnimation(partName, totalTravelDistance, delayInMs,
     end
 
     while true do
-        stopWaitLocalyCloaked({partName, getTrayObects(partName)})
+        stopWaitLocalyCloaked(partName, getTrayObects(partName))
 
         if boolTravelDirection == true then
             WTurn(partName, raxis, math.rad(0), math.pi)
@@ -247,7 +247,7 @@ function scaraAnimationLoop(scaraNumber, objectToPick, targetIDTable,
                 break
             end
         end
-        stopWaitLocalyCloaked({objectToPick, getScaraTable(scaraNumber)})
+        stopWaitLocalyCloaked(objectToPick, getScaraTable(scaraNumber))
         if targetID and boolObjectPicked == false then
             -- Move to PickUpPos
             WMoveScara(scaraNumber, jointPosTable.PickUp.a,
@@ -341,12 +341,12 @@ function robotArmAnimation(robotID, posTable, speed, targetIDTable,
     WMoveRobotToPos(robotID, posTable.homepos, speed)
     boolObjectPicked = false
     changeToolTo(robotID, Tool_ModuleGripper, posTable, speed, Tool_FoilWeld)
-    currentTool = Tool_ModuleGripper
+    local currentTool = Tool_ModuleGripper
     WMoveRobotToPos(robotID, posTable.homepos, speed)
 
     while true do
         -- Check if there is stuff to be picked up
-        stopWaitLocalyCloaked({DeskTable[robotID][ToolType], getRobotTable(robotID)})
+        stopWaitLocalyCloaked(DeskTable[robotID][currentTool], getRobotTable(robotID))
         local targetID
         if maRa() == true then
             for i = 1, #targetIDTable, 1 do
