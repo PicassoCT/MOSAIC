@@ -52,6 +52,30 @@ than their budget alone would buy. Payouts themselves remain unchanged.
   to a truck's mounted gun. Attack orders queue a return to the passable exit
   followed by GUARD on the surviving objective. Losing sight, cloak, death or
   capture of the attacker immediately cancels pursuit and clears the gun target.
+- Existing attack, return and guard commands persist across controller updates;
+  only changed targets/sites or missing/interrupted orders rebuild the queue.
+  A settled guard is not repeatedly sent back to its exit. Security APCs use
+  90% of their mounted primary gun's range for the truck's aiming proxy and
+  movement range, so the 1,024-unit dummy marker cannot stop them short of
+  firing distance. This adjustment is restored on capture.
+- The truck's existing 100-ms order-forwarding loop preserves an unchanged
+  ATTACK/FIGHT command on its mounted gun, rather than dropping its target lock
+  on every pass. It reads only the first command of each queue and still repairs
+  missing orders and forwards changed targets to replacement guns.
+- An engaged security APC checks its mounted primary gun's native firing lane
+  at most once every three seconds, only within the gun's range. Two consecutive
+  blocked observations with less than 16 units of intervening movement trigger
+  a short sidestep (96 sideways, 48 forward). It tries at most two passable,
+  on-map, above-water destinations without querying surrounding units.
+  The gun keeps its attacker; the truck queues ATTACK, return and GUARD after
+  the sidestep. A clear lane, completed move or nine-second timeout resumes
+  normal pursuit. Target loss/change, cloak, stand-down or gun loss cancels
+  recovery. Reload preserves its state and probe deadline.
+- Recovery adds no update loop. With the eight-vehicle site cap, it performs
+  at most eight firing-lane probes per site per three seconds (tanks do not
+  probe), plus at most two terrain/move tests per recovery attempt. Engine
+  firing-lane checks retain their normal collision/avoidance semantics; this
+  does not add custom civilian-building ray tests or guarantee a clear route.
 - The force stands down 120 seconds after the last objective hit: it stops
   pursuing and returns before being removed within 128 units of its exit.
   Blocked returning vehicles remain tracked and retry their return. Captured
@@ -75,9 +99,10 @@ builder, payment, construction timer, or progress-driven building animation.
 
 ## Verification
 
-Lua 5.1 tests: `tests/objective_security_test.lua`,
+Lua 5.1 tests: `tests/objective_security_test.lua`, `tests/truck_attack_forwarding_test.lua`,
 `tests/objective_income_test.lua`, and `tests/civic_objectives_test.lua` cover
-response scaling/minimums, cooldown, spawn failure, blocked terrain, hidden
+response scaling/minimums, persistent guard/pursuit orders, mounted-gun approach
+range, bounded blocked-shot recovery, command/probe counts, cooldown, spawn failure, blocked terrain, hidden
 attackers, capture, reload, lethal hits, restoration and income conservation.
 Recoil playtesting is still needed for actual vehicle exits, mounted-weapon
 behavior and offshore shoreline placement.

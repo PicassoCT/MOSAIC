@@ -112,34 +112,141 @@ function M.New(Spring, Game, UnitDefs, UnitDefNames, CMD, config, state)
         end
     end
 
+    local function currentCommand(id)
+        return (Spring.GetUnitCommands(id,1) or {})[1]
+    end
+
+    local function attacks(command, target)
+        return command and command.id == CMD.ATTACK and command.params[1] == target
+    end
+
+    local function movesTo(command, x, z)
+        return command and command.id == CMD.MOVE
+            and math.abs(command.params[1]-x) < 1 and math.abs(command.params[3]-z) < 1
+    end
+
+    local function recoverBlockedGun(id, unit, target, gun, range, command, frame)
+        if unit.target ~= target or unit.recoveryGun ~= gun then
+            unit.reposition, unit.blockedChecks, unit.checkX, unit.checkZ = nil, 0, nil, nil
+        end
+        unit.recoveryGun = gun
+        if not target or not gun then
+            unit.reposition, unit.blockedChecks = nil, 0
+            return
+        end
+        local maneuver = unit.reposition
+        if maneuver and (frame >= maneuver.expires or not movesTo(command,maneuver.x,maneuver.z)) then
+            unit.reposition, unit.blockedChecks = nil, 0
+        end
+        -- Target changes can cause early order updates. They must not increase
+        -- the agreed probe rate of one firing-lane check per three seconds.
+        if frame < (unit.nextFireCheck or 0) then return end
+        unit.nextFireCheck = frame + config.orderSeconds*fps
+        local x, _, z = Spring.GetUnitPosition(id)
+        local tx, _, tz = Spring.GetUnitPosition(target) -- visibleTarget already checked LOS/cloak
+        if not x or not tx then return end
+        local dx, dz = tx-x, tz-z
+        local distance = math.sqrt(dx*dx+dz*dz)
+        local stationary = unit.checkX and (x-unit.checkX)^2+(z-unit.checkZ)^2 < 16^2
+        unit.checkX, unit.checkZ = x, z
+        if distance > range then unit.blockedChecks = 0; return end
+        local clear = Spring.GetUnitWeaponHaveFreeLineOfFire(gun,1,target)
+        if clear ~= false then
+            unit.reposition, unit.blockedChecks = nil, 0
+            return
+        end
+        if unit.reposition then return end -- let an existing sidestep finish
+        unit.blockedChecks = stationary and (unit.blockedChecks or 0)+1 or 1
+        if unit.blockedChecks < config.blockedChecks then return end
+        unit.blockedChecks = 0
+        if distance < 1 then return end
+        dx, dz = dx/distance, dz/distance
+        local step = config.repositionDistance
+        local side = unit.repositionSide or (id%2 == 0 and 1 or -1)
+        unit.repositionSide = -side
+        -- Two fixed destinations, no neighborhood scan or firing-lane search.
+        for attempt = 1, 2 do
+            local nx = x + dx*step*0.5 - dz*step*side
+            local nz = z + dz*step*0.5 + dx*step*side
+            if nx > 48 and nz > 48 and nx < Game.mapSizeX-48 and nz < Game.mapSizeZ-48 then
+                local ny = Spring.GetGroundHeight(nx,nz)
+                if ny >= 0 and Spring.TestMoveOrder(unit.defID,nx,ny,nz,0,0,0,true,true,false) then
+                    unit.reposition = {x=nx,y=ny,z=nz,expires=frame+config.repositionSeconds*fps}
+                    return
+                end
+            end
+            side = -side
+        end
+    end
+
     local function order(id, unit, site, frame)
         local target = visibleTarget(site)
-        Spring.GiveOrderToUnit(id,CMD.FIRE_STATE,{0},{})
-        if target then
-            Spring.GiveOrderToUnit(id,CMD.ATTACK,{target},{})
-        end
-        -- Return as soon as ATTACK completes, even between controller updates.
-        -- Use the passable exit first; a large objective collision volume can
-        -- otherwise make a native GUARD order stop far from the actual site.
-        Spring.GiveOrderToUnit(id,CMD.MOVE,{unit.homeX,unit.homeY,unit.homeZ},target and {"shift"} or {})
-        if alive(site.uid) then
-            Spring.GiveOrderToUnit(id,CMD.GUARD,{site.uid},{"shift"})
-        end
+        local guardSite = alive(site.uid) and site.uid or nil
+        local command = currentCommand(id)
+        local primaryGun, primaryRange
         -- Truckscript forwards ATTACK but does not clear its mounted gun's
         -- target when the truck receives MOVE. Clear/order the gun explicitly.
+        unit.passengers = unit.passengers or {}
         for _, passenger in ipairs(Spring.GetUnitIsTransporting(id) or {}) do
             if Spring.GetUnitTeam(passenger) == gaia then
-                Spring.GiveOrderToUnit(passenger,CMD.FIRE_STATE,{0},{})
-                Spring.GiveOrderToUnit(passenger,target and CMD.ATTACK or CMD.STOP,target and {target} or {},{})
+                -- The APC's 1024-range marker is only an aiming proxy. Native
+                -- ATTACK must close within the mounted gun's primary range.
+                -- Leave a margin for the gun's offset from the truck center.
+                if unit.defID == UnitDefNames[config.truck].id then
+                    local range = Spring.GetUnitWeaponState(passenger,1,"range")
+                    if range and range > 0 and not primaryGun then primaryGun, primaryRange = passenger, range end
+                    if range and range > 0 and unit.engagementRange ~= range*0.9 then
+                        unit.markerRange = unit.markerRange or Spring.GetUnitWeaponState(id,1,"range")
+                        unit.engagementRange = range*0.9
+                        Spring.SetUnitWeaponState(id,1,{range=unit.engagementRange})
+                        Spring.SetUnitMaxRange(id,unit.engagementRange)
+                    end
+                end
+                local gunCommand = currentCommand(passenger)
+                if not unit.passengers[passenger] then
+                    Spring.GiveOrderToUnit(passenger,CMD.FIRE_STATE,{0},{})
+                end
+                if (target and not attacks(gunCommand,target))
+                    or (not target and (gunCommand or not unit.passengers[passenger])) then
+                    Spring.GiveOrderToUnit(passenger,target and CMD.ATTACK or CMD.STOP,target and {target} or {},{})
+                end
+                unit.passengers[passenger] = true
             end
         end
+        recoverBlockedGun(id,unit,target,primaryGun,primaryRange,command,frame)
+        local maneuver = unit.reposition
+        local keepOrder = unit.ordered and unit.target == target and unit.guardSite == guardSite
+        if target then
+            keepOrder = keepOrder and ((maneuver and movesTo(command,maneuver.x,maneuver.z))
+                or (not maneuver and attacks(command,target)))
+        elseif command then
+            keepOrder = keepOrder and (movesTo(command,unit.homeX,unit.homeZ)
+                or (command.id == CMD.GUARD and command.params[1] == guardSite))
+        else
+            local x, _, z = Spring.GetUnitPosition(id)
+            keepOrder = keepOrder and not guardSite and x
+                and (x-unit.homeX)^2 + (z-unit.homeZ)^2 <= config.returnRadius^2
+        end
+        if not unit.ordered then Spring.GiveOrderToUnit(id,CMD.FIRE_STATE,{0},{}) end
+        if not keepOrder then
+            if maneuver then Spring.GiveOrderToUnit(id,CMD.MOVE,{maneuver.x,maneuver.y,maneuver.z},{}) end
+            if target then Spring.GiveOrderToUnit(id,CMD.ATTACK,{target},maneuver and {"shift"} or {}) end
+            -- Preserve return/guard orders after both ordinary attacks and sidesteps.
+            Spring.GiveOrderToUnit(id,CMD.MOVE,{unit.homeX,unit.homeY,unit.homeZ},target and {"shift"} or {})
+            if guardSite then Spring.GiveOrderToUnit(id,CMD.GUARD,{guardSite},{"shift"}) end
+        end
         unit.nextOrder = frame + config.orderSeconds*fps
-        unit.target = target
+        unit.target, unit.guardSite, unit.ordered = target, guardSite, true
     end
 
     function api.Remove(id)
         local unit = state.units[id]
         if not unit then return end
+        -- UnitTaken runs before the engine changes the unit's team.
+        if unit.markerRange and alive(id) then
+            Spring.SetUnitWeaponState(id,1,{range=unit.markerRange})
+            Spring.SetUnitMaxRange(id,unit.markerRange)
+        end
         local site = state.sites[unit.siteID]
         if site then site.vehicles[id] = nil end
         state.units[id] = nil
