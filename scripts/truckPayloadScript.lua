@@ -180,9 +180,15 @@ end
 
 transportingParent = nil
 function delayedParentDetection()
-	Sleep(100)
-	transportingParent = Spring.GetUnitTransporter(unitID)
-	assert(transportingParent)
+	-- Payload creation and transport attachment can happen in different frames.
+	while doesUnitExistAlive(unitID) do
+		local parent = Spring.GetUnitTransporter(unitID)
+		if parent then
+			transportingParent = parent
+			return
+		end
+		Sleep(100)
+	end
 end
 function script.Create()
     -- generatepiecesTableAndArrayCode(unitID)
@@ -248,7 +254,9 @@ function delayedSetParentDescription(payloadDescription)
       end
   end
 function rewardAudacity()
-	attackerID= Spring.GetUnitLastAttacker(transportingParent)
+	local parent = Spring.GetUnitTransporter(unitID) or transportingParent
+	local attackerID = parent and Spring.GetUnitLastAttacker(parent)
+	attackerID = attackerID or Spring.GetUnitLastAttacker(unitID)
 	if attackerID then
 		attackerTeam = Spring.GetUnitTeam(attackerID)
 		GG.Bank:TransferToTeam(GameConfig.economy.rewards.fortKnoxDestructionMoney, attackerTeam, unitID)
