@@ -57,6 +57,7 @@ local minute = piece"minute"
 SIG_TIGLIL = 2
 SIG_GESTE = 4
 SIG_TALKHEAD = 8
+SIG_INCIRCLE = 16
 
 DirectionArcPoint = piece "DirectionArcPoint"
 BallArcPoint = piece "BallArcPoint"
