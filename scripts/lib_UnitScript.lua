@@ -5747,10 +5747,20 @@ end
 
 -- > transfers Order from one Unit to another
 function transferAttackOrder(originID, targetID)
-    CommandTable = Spring.GetUnitCommands(originID, 2)
-    if CommandTable and CommandTable[1] then
-        cmd = CommandTable[1]
+    local commands = Spring.GetUnitCommands(originID, 1)
+    if commands and commands[1] then
+        local cmd = commands[1]
         if cmd.id == CMD.ATTACK or cmd.id == CMD.FIGHT then
+            -- Trucks call this every 100 ms. Reissuing an immediate attack
+            -- drops the mounted gun's target lock, even for the same target.
+            local current = (Spring.GetUnitCommands(targetID, 1) or {})[1]
+            local same = current and current.id == cmd.id and #current.params == #cmd.params
+            if same then
+                for i = 1, #cmd.params do
+                    if current.params[i] ~= cmd.params[i] then same = false; break end
+                end
+            end
+            if same then return end
             Spring.GiveOrderToUnit(targetID, cmd.id, cmd.params, {})
         elseif cmd.id == CMD.STOP then
             Spring.GiveOrderToUnit(targetID, CMD.STOP, {}, {})
