@@ -15,7 +15,7 @@ local weaponDef = {
     flightTime = 15,
     burst = 5,
     burstrate               = 0.1,
-    BurnBlow = false,
+    BurnBlow = true, -- expire after flightTime even though terrain collisions are disabled
     FixedLauncher = false,
     dance = 100,
     wobble                  = 3500,
@@ -39,6 +39,12 @@ local weaponDef = {
     collideEnemy  = true,
     collideNeutral  = true,
     collideGround = false,
+    customParams = {
+        -- S3O vertices fit within 5.17 elmos of the projectile origin.
+        drone_ground_clearance = 6,
+        -- One native step: 200/30 speed + 15/900 acceleration + 2*100/30 dance.
+        drone_terrain_step = 14,
+    },
 
     heightMod = 0.5,
 
