@@ -10,6 +10,7 @@ local function scenario(scale)
     local names, pieces = {}, {}
     local translation, targets = {0, 0, 0}, {}
     local heading, terrain = 0, -30 -- authored initial pivot is already floating
+    local worker, workerActive, groundQueries = nil, false, 0
     local orbitRadius, clearance = 160, 7
     local function noop() end
     env.unitID, env.script = 1, {}
@@ -51,7 +52,7 @@ local function scenario(scale)
             assert(piece == names.Truck)
             return position()
         end,
-        GetGroundHeight = function() return terrain end,
+        GetGroundHeight = function() groundQueries=groundQueries+1;return terrain end,
         GetUnitPosition = function() return 0, 0, 0 end,
         GetUnitVectors = function() return {0,0,1},{0,1,0},{-1,0,0} end,
         GetUnitPieceInfo = function(_, piece)
@@ -78,6 +79,14 @@ local function scenario(scale)
         "SetSignalMask", "StartThread", "hideAll", "resetAll", "showT"}) do
         env[name] = function() return name end
     end
+    -- Model the height worker's signal lifecycle; unrelated Create threads
+    -- remain stubbed out in this focused animation harness.
+    env.Signal = function(mask)
+        if mask == env.SIG_TRUCK_ABOVE then workerActive=false end
+    end
+    env.SetSignalMask = function(mask)
+        assert(mask==env.SIG_TRUCK_ABOVE);workerActive=true
+    end
     env.reset = function(piece)
         assert(piece ~= 3, "departure reset an axis number as a piece ID")
     end
@@ -93,12 +102,17 @@ local function scenario(scale)
         assert(loadfile(source, "t", env))()
     end
     env.script.Create()
-    local worker = coroutine.create(env.truckAboveGround)
+    worker = coroutine.create(env.truckAboveGround)
+    local function resumeWorker()
+        if workerActive then
+            local ok,err=coroutine.resume(worker);assert(ok,err)
+        end
+    end
+    workerActive=true
     local function tick()
         -- Robot/spark/weld workers mutate these globals while the truck runs.
         env.val, env.x, env.y, env.z, env.groundHeight = 180, -999, 999, 999, -999
-        local ok, err = coroutine.resume(worker)
-        assert(ok, err)
+        resumeWorker()
         near(env.val, 180, "height worker overwrote another animation's state")
         near(translation[1], -100, "terrain correction changed the driving radius")
         near(translation[2], 0, "terrain correction changed the other horizontal axis")
@@ -126,13 +140,54 @@ local function scenario(scale)
     for _, step in ipairs(env.truckDepartingSequence) do
         if step[1] == env.reset then env.reset(step[2]) end
     end
-    for _, step in ipairs(env.truckArrivingSequence) do
-        assert(step[1] ~= env.Signal, 'arrival stopped terrain tracking before parking')
-        assert(not (step[1] == env.Move and step[2] == names.TruckMove and step[3] == 3),
-            'arrival overwrote ground-height correction')
+    local starts, rampTurns = 0, 0
+    local function runSequence(sequence, departing)
+        for _,step in ipairs(sequence)do
+            local fn=step[1]
+            if fn==env.StartThread and step[2]==env.truckAboveGround then
+                if departing then assert(rampTurns==2,'ground tracking resumed before leaving the ramp') end
+                starts=starts+1
+                worker=coroutine.create(env.truckAboveGround);workerActive=true
+                resumeWorker()
+                local _,y=position()
+                near(y,terrain+clearance,'ground tracking did not resume')
+            elseif fn==env.Signal or fn==env.Move then
+                fn(unpack(step,2))
+            elseif fn==env.WMove then
+                -- Complete the authored drive; tracking must already be off
+                -- for the final approach to the loading position.
+                if not departing and step[4]==0 then
+                    assert(not workerActive,'terrain worker remained active on dock approach')
+                    near(translation[3],0,'dock approach retained a terrain offset')
+                end
+                env.Move(step[2],step[3],step[4],0)
+            elseif fn==env.WTurn and (step[2]==names.TruckRotate1 or step[2]==names.TruckRotate2) then
+                assert(not workerActive,'terrain worker pulled the truck through the ramp')
+                near(translation[3],0,'ramp turn must use zero relative height')
+                rampTurns=rampTurns+1
+                local queries=groundQueries
+                resumeWorker()
+                assert(groundQueries==queries,'ramp animation still sampled terrain')
+            end
+        end
     end
+    -- Exercise repeated arrival, unloading dwell and departure on uneven
+    -- terrain, including the DAE's small import scale.
+    for cycle=1,2 do
+        rampTurns=0;runSequence(env.truckArrivingSequence,false)
+        assert(rampTurns==2 and not workerActive)
+        near(translation[3],0,'loading/unloading must remain relative to factory')
+        terrain=terrain-15
+        local queries=groundQueries
+        for i=1,30 do resumeWorker() end
+        near(translation[3],0,'docked height changed with terrain')
+        assert(queries==groundQueries,'docked truck still ran terrain checks')
+        rampTurns=0;runSequence(env.truckDepartingSequence,true)
+        assert(not workerActive,'hidden departing truck left terrain worker running')
+    end
+    assert(starts==4,'each trip must retain arrival and departure ground tracking')
 end
 
 scenario(1)
 scenario(0.0254)
-print("PASS: industrial truck keeps its orbit, tracks terrain and ignores shared animation globals")
+print("PASS: industrial truck tracks terrain while driving and keeps zero relative height through ramp/loading phases")

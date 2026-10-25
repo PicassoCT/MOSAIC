@@ -336,10 +336,13 @@ end
 rotSign = -1
 outsideOffset= -100
 truckDepartingSequence = {
+    -- Ramp/loading motion is authored relative to the factory, not terrain.
+    {Signal, SIG_TRUCK_ABOVE},
+    {Move, TruckMove,truckHeightAxis, 0, 0},
     {WTurn, TruckRotate2,truckAxis, math.rad(60 *rotSign), 0.3 },
     {Move,  TruckMove,horizontalAxis, outsideOffset, 20 },
-    {StartThread,  truckAboveGround },  
     {WTurn, TruckRotate1,truckAxis, math.rad(-60 * rotSign), 0.3 }, 
+    {StartThread,  truckAboveGround },
     {WMove, TruckMove,horizontalAxis, -500, 100 },
     {Turn,  Truck,rotationAxis, math.rad(90), 1.5},
     {WTurn, TruckRotate3,rotationAxis, math.rad(180), 0.1 },  
@@ -361,7 +364,10 @@ truckArrivingSequence =
     {Turn, TruckRotate3,rotationAxis, math.rad(0), 0.1 },
     {WTurn, Truck,rotationAxis, math.rad(0), 1},
 
-    --
+    -- Dock approach, ramp turns and the entire loading/unloading dwell use
+    -- the model's zero height offset. Resume terrain tracking only off-ramp.
+    {Signal, SIG_TRUCK_ABOVE},
+    {Move, TruckMove,truckHeightAxis, 0, 0},
 
     {WMove, TruckMove,horizontalAxis, 0, 20 },
 
