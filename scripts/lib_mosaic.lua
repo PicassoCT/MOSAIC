@@ -569,7 +569,7 @@ function getGameConfig()
                 spawnRetrySeconds = 1,
                 spawnClearance = 96,
                 spawnSearchRadius = 1536,
-                pursuitRadius = 1200,
+                returnRadius = 128,
                 military = {
                     objective_combatoutpost = true,
                     objective_westhemhq = true,

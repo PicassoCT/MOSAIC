@@ -12,7 +12,7 @@ local defs={
     {name='ground_tank_day',metalCost=5000,xsize=10,zsize=10},
 }
 local names={};for id,d in ipairs(defs)do names[d.name]={id=id}end
-local CMD={ATTACK=1,MOVE=2,FIRE_STATE=3,STOP=4}
+local CMD={ATTACK=1,MOVE=2,FIRE_STATE=3,STOP=4,GUARD=5}
 local function setup()
     local s={units={},orders={},state={},nextID=100,fail=false,water=false,blocked=false,creates=0,rateCalls=0}
     local function unit(id,def,team,x,z)
@@ -46,9 +46,16 @@ local function setup()
             s.nextID=s.nextID+1;unit(s.nextID,def,team,x,z);return s.nextID
         end,
         DestroyUnit=function(id)assert(s.units[id].team==0);s.units[id]=nil end,
-        GiveOrderToUnit=function(id,cmd,params)
+        GiveOrderToUnit=function(id,cmd,params,options)
             s.orders[id]=s.orders[id] or {};s.orders[id][cmd]=params
-            if cmd~=CMD.FIRE_STATE then s.orders[id].last=cmd end
+            if cmd~=CMD.FIRE_STATE then
+                if options and options[1]=='shift' then
+                    table.insert(s.orders[id].queue,{cmd=cmd,params=params})
+                else
+                    s.orders[id].last=cmd
+                    s.orders[id].queue={{cmd=cmd,params=params}}
+                end
+            end
         end,
         GetUnitTransporter=function(id)return s.units[id] and s.units[id].transport end,
         GetUnitIsTransporting=function(id)
@@ -92,6 +99,9 @@ assert(s.count()==4)
 for id,u in pairs(s.state.units)do
     assert(s.units[id].team==0 and (u.homeX-2048)^2+(u.homeZ-2048)^2>=160^2)
     assert(s.orders[id].last==CMD.ATTACK and s.orders[id][CMD.ATTACK][1]==2)
+    local q=s.orders[id].queue
+    assert(#q==3 and q[2].cmd==CMD.MOVE and q[2].params[1]==u.homeX)
+    assert(q[3].cmd==CMD.GUARD and q[3].params[1]==s.record.uid)
 end
 s.reload();s.hit(200,12);s.tick(210);assert(s.count()==4)
 
@@ -107,11 +117,14 @@ s.units[90]={team=0,transport=guard}
 assert(s.api.AllowWeaponTarget(90,2));assert(not s.api.AllowWeaponTarget(90,99))
 s.units[2].cloaked=true;s.tick(5430)
 assert(s.orders[guard].last==CMD.MOVE and not s.api.AllowWeaponTarget(90,2))
+assert(s.orders[guard].queue[2].cmd==CMD.GUARD)
 assert(s.orders[90].last==CMD.STOP,'mounted gun must forget the hidden target')
 s.units[2].cloaked=false;s.units[2].los=false;s.tick(5445)
 assert(not s.api.AllowWeaponTarget(guard,2))
 s.units[2].los=true;s.units[2].x=4090;s.tick(5460)
-assert(not s.api.AllowWeaponTarget(guard,2))
+assert(s.api.AllowWeaponTarget(guard,2),'visible attackers beyond 1200 must still be pursued')
+assert(s.orders[guard].last==CMD.ATTACK and s.orders[90].last==CMD.ATTACK)
+assert(s.orders[guard].queue[2].cmd==CMD.MOVE and s.orders[guard].queue[3].cmd==CMD.GUARD)
 s.units[2].x=2200;s.units[2].team=2;s.tick(5475)
 assert(not s.api.AllowWeaponTarget(guard,2),'captured attacker must not inherit pursuit')
 
@@ -121,6 +134,32 @@ assert(s.units[guard] and s.count()==0 and next(s.state.sites)==nil)
 s=setup();s.hit(0);s.tick(15);guard=next(s.state.units)
 s.units[90]={team=0,transport=guard};s.tick(3600)
 assert(not s.units[guard] and not s.units[90],'stand-down must remove the attached gun too')
+
+-- A distant convoy comes home before stand-down cleanup. Reload keeps the
+-- return alive; renewed attacks can reactivate it without duplicating guards.
+s=setup();s.hit(0);s.tick(15);guard=next(s.state.units)
+local home=s.state.units[guard]
+s.units[guard].x=4000;s.units[guard].z=4000
+s.units[90]={team=0,transport=guard}
+s.tick(3600)
+assert(s.units[guard] and s.orders[guard].last==CMD.MOVE)
+assert(s.orders[90].last==CMD.STOP and not s.api.AllowWeaponTarget(90,2))
+s.reload();s.tick(3700)
+assert(s.units[guard] and s.state.sites[40],'returning force must stay tracked')
+s.hit(3710);s.tick(3720)
+assert(s.count()==1 and s.orders[guard].last==CMD.ATTACK)
+s.tick(7310)
+assert(s.units[guard] and s.orders[guard].last==CMD.MOVE)
+s.units[guard].x,s.units[guard].z=home.homeX,home.homeZ
+s.tick(7325)
+assert(not s.units[guard] and not s.units[90] and not s.state.sites[40])
+
+-- Target death returns immediately; a destroyed objective has no GUARD target.
+s=setup();s.hit(0);s.tick(15);guard=next(s.state.units)
+s.units[2]=nil;s.tick(30)
+assert(s.orders[guard].last==CMD.MOVE and s.orders[guard].queue[2].cmd==CMD.GUARD)
+s.api.SiteDestroyed(s.record);s.live={};s.units[1]=nil;s.tick(120)
+assert(s.orders[guard].last==CMD.MOVE and #s.orders[guard].queue==1)
 
 -- Failed/blocked deployments retry without consuming the minimum or multiplying it.
 s=setup();s.blocked=true;s.hit(0);s.tick(15);assert(s.count()==0)

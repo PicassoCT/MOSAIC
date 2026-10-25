@@ -21,13 +21,13 @@ function M.New(Spring, Game, UnitDefs, UnitDefNames, CMD, config, state)
     end
 
     local function visibleTarget(site)
+        if site.standingDown then return end
         local id = site.attacker
         if not alive(id) or Spring.GetUnitTeam(id) ~= site.attackerTeam
             or Spring.GetUnitIsCloaked(id) then return end
         local los = Spring.GetUnitLosState(id, ally)
         if not los or not los.los then return end
-        local x, _, z = Spring.GetUnitPosition(id)
-        if x and (x-site.x)^2 + (z-site.z)^2 <= config.pursuitRadius^2 then return id end
+        return id
     end
 
     function api.Plan(record, rate)
@@ -77,6 +77,7 @@ function M.New(Spring, Game, UnitDefs, UnitDefNames, CMD, config, state)
         site.uid, site.x, site.z = record.uid, record.x, record.z
         site.attacker, site.attackerTeam = attacker, attackerTeam
         site.expires = frame + config.standDownSeconds * fps
+        site.standingDown = false
         if frame < site.nextResponse then return end
         site.nextResponse = frame + config.cooldownSeconds * fps
         site.pending = {}
@@ -116,9 +117,13 @@ function M.New(Spring, Game, UnitDefs, UnitDefNames, CMD, config, state)
         Spring.GiveOrderToUnit(id,CMD.FIRE_STATE,{0},{})
         if target then
             Spring.GiveOrderToUnit(id,CMD.ATTACK,{target},{})
-        else
-            -- Replace any old attack order immediately when LOS is lost.
-            Spring.GiveOrderToUnit(id,CMD.MOVE,{unit.homeX,unit.homeY,unit.homeZ},{})
+        end
+        -- Return as soon as ATTACK completes, even between controller updates.
+        -- Use the passable exit first; a large objective collision volume can
+        -- otherwise make a native GUARD order stop far from the actual site.
+        Spring.GiveOrderToUnit(id,CMD.MOVE,{unit.homeX,unit.homeY,unit.homeZ},target and {"shift"} or {})
+        if alive(site.uid) then
+            Spring.GiveOrderToUnit(id,CMD.GUARD,{site.uid},{"shift"})
         end
         -- Truckscript forwards ATTACK but does not clear its mounted gun's
         -- target when the truck receives MOVE. Clear/order the gun explicitly.
@@ -162,6 +167,7 @@ function M.New(Spring, Game, UnitDefs, UnitDefNames, CMD, config, state)
         for _, siteID in ipairs(sortedKeys(state.sites)) do
             local site = state.sites[siteID]
             local active = frame < site.expires
+            site.standingDown = not active
             if active and (not site.uid or (objectives[site.uid] and alive(site.uid)))
                 and #site.pending > 0 and frame >= site.nextSpawn then
                 local defID = site.pending[1]
@@ -187,21 +193,25 @@ function M.New(Spring, Game, UnitDefs, UnitDefNames, CMD, config, state)
                 if not alive(id) or Spring.GetUnitTeam(id) ~= gaia then
                     api.Remove(id)
                 elseif not active then
-                    local passengers = Spring.GetUnitIsTransporting(id) or {}
-                    api.Remove(id)
-                    Spring.DestroyUnit(id,false,true)
-                    -- Reclaiming a transport may release its weapon; do not
-                    -- leave an orphaned corporate turret at every stand-down.
-                    for _, passenger in ipairs(passengers) do
-                        if alive(passenger) and Spring.GetUnitTeam(passenger) == gaia then
-                            Spring.DestroyUnit(passenger,false,true)
+                    local x, _, z = Spring.GetUnitPosition(id)
+                    if x and (x-unit.homeX)^2 + (z-unit.homeZ)^2 <= config.returnRadius^2 then
+                        local passengers = Spring.GetUnitIsTransporting(id) or {}
+                        api.Remove(id)
+                        Spring.DestroyUnit(id,false,true)
+                        -- Reclaiming a transport may release its weapon.
+                        for _, passenger in ipairs(passengers) do
+                            if alive(passenger) and Spring.GetUnitTeam(passenger) == gaia then
+                                Spring.DestroyUnit(passenger,false,true)
+                            end
                         end
+                    elseif unit.target or frame >= unit.nextOrder then
+                        order(id,unit,site,frame)
                     end
                 elseif unit and (frame >= unit.nextOrder or unit.target ~= visibleTarget(site)) then
                     order(id,unit,site,frame)
                 end
             end
-            if not active then state.sites[siteID] = nil end
+            if not active and not next(site.vehicles) then state.sites[siteID] = nil end
         end
     end
 

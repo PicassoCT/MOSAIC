@@ -47,11 +47,15 @@ than their budget alone would buy. Payouts themselves remain unchanged.
   response retries until stand-down. No vehicle is spawned onto the seabed.
 - A fresh attack after 90 seconds can replenish the force. Surviving vehicles
   count toward its budget, so sustained damage does not create endless convoys.
-- Guards explicitly target the reported attacker only while uncloaked, in Gaia
-  line of sight, and within 1,200 units of the site. This also restricts a truck's
-  mounted gun. Otherwise they return to their exit positions.
-- The force stands down 120 seconds after the last objective hit. Captured guards
-  leave this system immediately and are not removed by its cleanup.
+- Guards explicitly target the reported attacker while uncloaked and in Gaia
+  line of sight, including beyond 1,200 units from the site. This also applies
+  to a truck's mounted gun. Attack orders queue a return to the passable exit
+  followed by GUARD on the surviving objective. Losing sight, cloak, death or
+  capture of the attacker immediately cancels pursuit and clears the gun target.
+- The force stands down 120 seconds after the last objective hit: it stops
+  pursuing and returns before being removed within 128 units of its exit.
+  Blocked returning vehicles remain tracked and retry their return. Captured
+  guards leave this system immediately and are not removed by its cleanup.
 - The already-triggered response finishes even after a lethal first hit destroys
   the building. Attacking the destroyed marker does not call further security.
 - Site IDs retain the force and cooldown across destruction/restoration and
