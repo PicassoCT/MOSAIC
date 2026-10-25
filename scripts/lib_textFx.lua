@@ -200,10 +200,26 @@ function matrixTextFx(allLetters, posLetters)
     end
 end
 
+-- Horizontal lines flow along Y; upright text stacks downward along negative Z.
+-- Keep helical rotation and its radial plane aligned to the text layout.
+local function helixTextAxes(posLetters)
+    if posLetters.boolUpright then
+        return z_axis, y_axis, -1
+    end
+    return y_axis, z_axis, 1
+end
+
+-- Only spiral and helix currently support upright text's Z-axis baseline.
+function canProjectTextFx(name, posLetters)
+    return not posLetters.boolUpright
+        or name == "dnaHelix" or name == "spiralProject"
+end
+
 function dnaHelix(allLetters, posLetters)
     if #allLetters == 0 then return end
     local circumference, i, length, radiant, radiantVal, radius, spiralIncrease
-circumference = 7 * sizeSpacingLetter 
+    local axialAxis, radialAxis, axialSign = helixTextAxes(posLetters)
+    circumference = 7 * sizeSpacingLetter 
     length = #posLetters.spacing
     radius = circumference / (2 * math.pi)
     radiant = (math.pi)/(7 )
@@ -223,9 +239,9 @@ circumference = 7 * sizeSpacingLetter
                 local zr = radius * math.sin(radiantVal)
 
                 Move(pID,x_axis, xr, math.abs(xr)/2.0)
-                Move(pID,z_axis, zr, math.abs(zr)/2.0)
-                Move(pID,spindropAxis, i * spiralIncrease, 0)
-                Turn(pID,spindropAxis, math.pi + radiantVal, 0)
+                Move(pID,radialAxis, zr, math.abs(zr)/2.0)
+                Move(pID,axialAxis, axialSign * i * spiralIncrease, 0)
+                Turn(pID,axialAxis, math.pi + radiantVal, 0)
              
             else
                 reset(pID, 0)
@@ -235,9 +251,9 @@ circumference = 7 * sizeSpacingLetter
                 local zr = radius * math.sin(radiantVal)
 
                 Move(pID,x_axis, xr, math.abs(xr)/2.0)
-                Move(pID,z_axis, zr, math.abs(zr)/2.0)
-                Move(pID,spindropAxis, (i- (length/2)) * spiralIncrease, 0)
-                Turn(pID,spindropAxis, math.pi + radiantVal, 0)
+                Move(pID,radialAxis, zr, math.abs(zr)/2.0)
+                Move(pID,axialAxis, axialSign * (i- (length/2)) * spiralIncrease, 0)
+                Turn(pID,axialAxis, math.pi + radiantVal, 0)
             end
                i = i +1
                 if posLetters.spacing[i + 1] == " " then
@@ -253,6 +269,7 @@ end
 function spiralProject(allLetters, posLetters)
     if #allLetters == 0 then return end
     local circumference, i, radiant, radiantVal, radius, spiralIncrease
+    local axialAxis, radialAxis, axialSign = helixTextAxes(posLetters)
     circumference = 7 * sizeSpacingLetter 
     radius = circumference / (2 * math.pi)
     radiant = (math.pi)/(7 )
@@ -271,9 +288,9 @@ function spiralProject(allLetters, posLetters)
         local zr = radius * math.sin(radiantVal)
 
         Move(pID,x_axis, xr, math.abs(xr)/2.0)
-        Move(pID,z_axis, zr, math.abs(zr)/2.0)
-        Move(pID,spindropAxis, i * spiralIncrease, 0)
-        Turn(pID,spindropAxis, math.pi + radiantVal, 0)
+        Move(pID,radialAxis, zr, math.abs(zr)/2.0)
+        Move(pID,axialAxis, axialSign * i * spiralIncrease, 0)
+        Turn(pID,axialAxis, math.pi + radiantVal, 0)
         i = i +1
         if posLetters.spacing[i + 1] == " " then
             i = i + 1

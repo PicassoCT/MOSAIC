@@ -87,6 +87,33 @@ clear();matrixTextFx(letters,pos);assert(#waits==4)
 clear();circleProject(letters,pos,2,true,true)
 local radius=9*300*2/math.pi
 assert(math.abs(moves[1][3]-radius)<1e-7 and #sleeps==0 and visible[1])
+-- Curved text effects must use the matching layout/rotation axis in both orientations.
+local function movedTarget(id, axis)
+    for _,m in ipairs(moves) do
+        if m[1]==id and m[2]==axis then return m[3] end
+    end
+end
+local helixRadius=7*sizeSpacingLetter/(2*math.pi)
+for _,upright in ipairs({false,true}) do
+    pos.boolUpright=upright
+    local axial=upright and z_axis or y_axis
+    local radial=upright and y_axis or z_axis
+    local sign=upright and -1 or 1
+    for _,fx in ipairs({spiralProject,dnaHelix}) do
+        clear();fx(letters,pos)
+        assert(#turns==#letters)
+        for _,turn in ipairs(turns) do assert(turn[2]==axial) end
+        for _,id in ipairs(letters) do
+            assert(movedTarget(id,x_axis) and movedTarget(id,radial) and movedTarget(id,axial))
+        end
+        assert(math.abs(movedTarget(2,radial)-helixRadius*math.sin(math.pi/7))<1e-7)
+        assert(movedTarget(2,axial)==sign*sizeDownLetter)
+        local tailOffset=(fx==dnaHelix) and (8-#slots/2) or 8
+        assert(movedTarget(4,axial)==sign*tailOffset*sizeDownLetter)
+    end
+    assert(canProjectTextFx('dnaHelix',pos) and canProjectTextFx('spiralProject',pos))
+    assert(canProjectTextFx('SpinLetters',pos)==(not upright))
+end
 -- Both script integrations execute the same allocation/layout path, not a test clone.
 local function loadFunction(path,name,nextName)
     local f=assert(io.open(path));local text=f:read('*a');f:close()

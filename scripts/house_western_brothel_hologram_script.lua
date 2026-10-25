@@ -1127,16 +1127,13 @@ function addHologramLetters( myMessages)
 
         while true do
             restoreMessageOriginalPosition(allLetters, posLetters)
-            if not posLetters.boolUpright then
-                name, textFX = randDict(allFunctions)
-                if name then
-                    --conditionalEcho(boolDebugActive, "Hologram "..newMessage.." with textFX "..name)
-                    textFX(allLetters, posLetters, TableOfPiecesGroups)
-                    Signal(SIG_FLICKER)
-                    HideLetters(allLetters,posLetters)
-                end
-                WaitForMoves(allLetters)       
+            name, textFX = randDict(allFunctions)
+            if name and canProjectTextFx(name, posLetters) then
+                textFX(allLetters, posLetters, TableOfPiecesGroups)
+                Signal(SIG_FLICKER)
+                HideLetters(allLetters, posLetters)
             end
+            WaitForMoves(allLetters)
             restTime = math.max(5000, #allLetters*150)
             holdHologramText(allLetters, posLetters, restTime)
             restoreMessageOriginalPosition(allLetters, posLetters)
