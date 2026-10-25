@@ -32,6 +32,6 @@ local Civil = Civilian:New{
  }
 
 return lowerkeys({
-	--Temp
-	["civilian_western6"] = Civil:New(),
+	-- Disabled until objects3d/civilian6_western.dae is available.
+	-- ["civilian_western6"] = Civil:New(),
 })
