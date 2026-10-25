@@ -38,6 +38,10 @@ function M.Collect(Spring, id, record, frame)
     local length = math.max(p.minLength, math.min(p.maxLength, barrelLength*p.lengthFactor))
     local width = length*p.widthFactor
     local fade = (1-age/p.durationFrames)^1.5
+    -- Radiance peaks much faster than the lingering FlamePainter plume.  Keep
+    -- the same shot lifetime so the ribbon can remain attached to the first
+    -- source without allocating a separate renderer path.
+    local lightFade = (1-age/p.durationFrames)^(p.lightFadePower or 1.5)
     local ribbon = {
         unitID=id, x=x,y=y,z=z, direction={dx,dy,dz},
         length=length,width=width,scale=1,
@@ -46,7 +50,22 @@ function M.Collect(Spring, id, record, frame)
         sourceGlow=p.sourceGlow,opacity=fade,distanceFactor=p.distanceFactor,
         windInfluence=0.08,trailTime=0.05,
     }
-    return {x=x,y=y,z=z, radius=length*p.radiusFactor,color=p.color,
-        strength=p.strength*fade,ribbon=ribbon}
+    local offsets = p.lightOffsets or {0}
+    local radiusFactors = p.lightRadiusFactors or {p.radiusFactor or 1}
+    local strengthFactors = p.lightStrengthFactors or {1}
+    local lightSources = {}
+    for i,offsetFactor in ipairs(offsets) do
+        local radiusFactor = radiusFactors[i] or radiusFactors[#radiusFactors] or p.radiusFactor or 1
+        local strengthFactor = strengthFactors[i] or strengthFactors[#strengthFactors] or 1
+        local offset = length*offsetFactor
+        lightSources[i] = {
+            x=x+dx*offset, y=y+dy*offset, z=z+dz*offset,
+            radius=length*radiusFactor,
+            strength=p.strength*strengthFactor*lightFade,
+        }
+    end
+    local first = lightSources[1]
+    return {x=x,y=y,z=z, radius=first.radius,color=p.color,
+        strength=first.strength,direction={dx,dy,dz},lights=lightSources,ribbon=ribbon}
 end
 return M
