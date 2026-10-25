@@ -9,7 +9,7 @@ local TablesOfPiecesGroups = {}
 
 function script.HitByWeapon(x, z, weaponDefID, damage, attackerId) 
     if doesUnitExistAlive(attackerId) then
-        Command(unitId, "attack", attackerId)
+        Command(unitID, "attack", attackerId)
     end
 
 end
