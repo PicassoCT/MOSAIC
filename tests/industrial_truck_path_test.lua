@@ -9,7 +9,7 @@ local function scenario(scale)
     local env = setmetatable({}, {__index = _G})
     local names, pieces = {}, {}
     local translation, targets = {0, 0, 0}, {}
-    local heading, terrain = 0, 20
+    local heading, terrain = 0, -30 -- authored initial pivot is already floating
     local orbitRadius, clearance = 160, 7
     local function noop() end
     env.unitID, env.script = 1, {}
@@ -52,7 +52,19 @@ local function scenario(scale)
             return position()
         end,
         GetGroundHeight = function() return terrain end,
+        GetUnitPosition = function() return 0, 0, 0 end,
+        GetUnitVectors = function() return {0,0,1},{0,1,0},{-1,0,0} end,
+        GetUnitPieceInfo = function(_, piece)
+            assert(piece == names.Truck)
+            return {min={-2,-1,-clearance/scale},max={2,1,3/scale}}
+        end,
         GetUnitPieceMatrix = function(_, piece)
+            if piece == names.Truck then
+                local x,y,z = position()
+                local c,s = math.cos(heading),math.sin(heading)
+                return scale*c,0,scale*s,0, scale*s,0,-scale*c,0,
+                       0,scale,0,0, x,y,z,1
+            end
             assert(piece == names.TruckRotate3)
             -- Local Z is world up after the DAE's baked -90 degree X rotation.
             return scale,0,0,0, 0,0,-scale,0, 0,scale,0,0, 0,0,0,1
@@ -64,7 +76,7 @@ local function scenario(scale)
     }
     for _, name in ipairs({"Turn", "WTurn", "WMove", "Show", "Hide", "Signal",
         "SetSignalMask", "StartThread", "hideAll", "resetAll", "showT"}) do
-        env[name] = noop
+        env[name] = function() return name end
     end
     env.reset = function(piece)
         assert(piece ~= 3, "departure reset an axis number as a piece ID")
@@ -113,6 +125,11 @@ local function scenario(scale)
     near(y, terrain + clearance, "height jumped on worker restart")
     for _, step in ipairs(env.truckDepartingSequence) do
         if step[1] == env.reset then env.reset(step[2]) end
+    end
+    for _, step in ipairs(env.truckArrivingSequence) do
+        assert(step[1] ~= env.Signal, 'arrival stopped terrain tracking before parking')
+        assert(not (step[1] == env.Move and step[2] == names.TruckMove and step[3] == 3),
+            'arrival overwrote ground-height correction')
     end
 end
 

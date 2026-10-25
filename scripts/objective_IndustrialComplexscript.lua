@@ -30,8 +30,7 @@ horizontalAxis = 1
 -- TruckRotate3's baked rotation maps its local Z axis to world up.
 -- Keep terrain correction separate from TruckMove's X driving offset.
 local truckHeightAxis = z_axis
-local truckGroundClearance = 0
-local truckHeightScale = 1
+local truckBounds
 
 SIG_TRUCK_ABOVE =1
 SIG_WELD = 2
@@ -73,12 +72,9 @@ function script.Create()
     resetAll(unitID)
     showT(TablesOfPiecesGroups["Claw"])
 
-    -- Preserve the model's authored clearance, including the truck pivot's
-    -- height above its wheels. Move distances are in the parent's local units.
-    local x, y, z = Spring.GetUnitPiecePosDir(unitID, Truck)
-    truckGroundClearance = y - Spring.GetGroundHeight(x, z)
-    local parentMatrix = {Spring.GetUnitPieceMatrix(unitID, TruckRotate3)}
-    truckHeightScale = parentMatrix[10]
+    -- Use the mesh's underside, not its initial pivot height above terrain:
+    -- the initial placement can already be floating on uneven ground.
+    truckBounds = Spring.GetUnitPieceInfo(unitID, Truck)
 
     StartThread(truckComingAndGoing)
     StartThread(Melting)
@@ -309,17 +305,32 @@ function truckAboveGround()
     Signal(SIG_TRUCK_ABOVE)
     SetSignalMask(SIG_TRUCK_ABOVE)
 
-    if not truckHeightScale or math.abs(truckHeightScale) < 0.000001 then
-        return
-    end
-
     while true do
-        local x, y, z = Spring.GetUnitPiecePosDir(unitID, Truck)
-        local groundHeight = Spring.GetGroundHeight(x, z)
-        local _, _, height = Spring.UnitScript.GetPieceTranslation(TruckMove)
-        local correction = (groundHeight + truckGroundClearance - y) / truckHeightScale
-        Move(TruckMove, truckHeightAxis, height + correction, 100)
-        Sleep(100)
+        local m = {Spring.GetUnitPieceMatrix(unitID, Truck)}
+        local parent = {Spring.GetUnitPieceMatrix(unitID, TruckRotate3)}
+        local front, up, right = Spring.GetUnitVectors(unitID)
+        local ux, uy, uz = Spring.GetUnitPosition(unitID)
+        local scale = -right[2]*parent[9] + up[2]*parent[10] + front[2]*parent[11]
+        if truckBounds and m[16] and math.abs(scale) > 0.000001 then
+            local bottom = math.huge
+            for ix = 1, 2 do for iy = 1, 2 do for iz = 1, 2 do
+                local x = (ix == 1 and truckBounds.min or truckBounds.max)[1]
+                local y = (iy == 1 and truckBounds.min or truckBounds.max)[2]
+                local z = (iz == 1 and truckBounds.min or truckBounds.max)[3]
+                local mx = m[1]*x + m[5]*y + m[9]*z + m[13]
+                local my = m[2]*x + m[6]*y + m[10]*z + m[14]
+                local mz = m[3]*x + m[7]*y + m[11]*z + m[15]
+                local wx = ux-right[1]*mx+up[1]*my+front[1]*mz
+                local wy = uy-right[2]*mx+up[2]*my+front[2]*mz
+                local wz = uz-right[3]*mx+up[3]*my+front[3]*mz
+                bottom = math.min(bottom, wy-Spring.GetGroundHeight(wx,wz))
+            end end end
+            local _, _, height = Spring.UnitScript.GetPieceTranslation(TruckMove)
+            -- The import scale may be 0.0254. An immediate correction avoids
+            -- a slow local-space move leaving the wheels suspended for seconds.
+            Move(TruckMove, truckHeightAxis, height-bottom/scale, 0)
+        end
+        Sleep(33)
     end
 end
 rotSign = -1
@@ -347,7 +358,6 @@ truckArrivingSequence =
     {Turn,  Truck,rotationAxis, math.rad(90), 0},   
     {WTurn, TruckRotate3,rotationAxis, math.rad(-10), 0.1 },
     {Move, TruckMove,horizontalAxis, -500, 100 },
-    {Signal, SIG_TRUCK_ABOVE},
     {Turn, TruckRotate3,rotationAxis, math.rad(0), 0.1 },
     {WTurn, Truck,rotationAxis, math.rad(0), 1},
 
@@ -356,7 +366,6 @@ truckArrivingSequence =
     {WMove, TruckMove,horizontalAxis, 0, 20 },
 
     {WTurn, TruckRotate1,truckAxis, math.rad(0), 0.1 }, 
-    {Move,  TruckMove,rotationAxis, 0, 1 },
     {WTurn, TruckRotate2,truckAxis, math.rad(0), 0.1 }
 }
 
