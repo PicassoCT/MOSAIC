@@ -8,7 +8,8 @@ direct branch. No shader framework or DAE voxelization system is introduced.
 
 ## In-game check
 
-`house_asian1` and `house_asian3` activate automatically once their building
+`house_asian0`, its ten `house_asian_split_*` variants, `house_asian1` and
+`house_asian3` activate automatically once their building
 animation finishes, following the normal neon day/night intensity. For daytime
 testing, use `/windowlight test on`; `/windowlight test off` restores that cycle.
 The first view needs a cache warm-up; geometry capture is limited to one building
@@ -16,7 +17,7 @@ per 0.2-second update, and each ground-light bake is split across 16 chunks. Sha
 blocker packing and baking start after the pending captures finish, since each
 capture changes the blocker set and would discard any intermediate bake.
 
-Select a completed standalone and run:
+Select a completed supported Asian house and run:
 
 ```text
 /windowlight debug on
@@ -35,7 +36,7 @@ continue to show the cascade; window light intentionally does not appear there.
 
 | Command | Effect |
 | --- | --- |
-| `/windowlight auto` | Both standalone definitions, automatic discovery |
+| `/windowlight auto` | Procedural Asian houses, split variants and both supported standalone definitions |
 | `/windowlight on [UNITID]` | One selected/specified eligible building |
 | `/windowlight off` | Disable direct window illumination |
 | `/windowlight debug on/off` | Window classification overlay and field preview |
@@ -57,6 +58,8 @@ continue to show the cascade; window light intentionally does not appear there.
    piece list after construction; hidden variants and distant street furniture
    cannot dilute the facade into a fraction of a pixel. Restart the game after
    updating so unit scripts publish this metadata.
+   Procedural houses invalidate their capture on hide/reveal, structural damage
+   and completed settling, so removed facade pieces cannot leave a stale field.
 2. Rasterize wall barriers in four horizontal height bands. Ignore horizontal
    roofs/floors so a courtyard floor cannot turn its yard into a solid mask.
    Conservatively thicken edge-on walls, then flood-fill empty pixels from the

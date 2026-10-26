@@ -2,7 +2,7 @@
 local PATH='luaui/widgets_mosaic/shaders/windowlight/'
 local SIZE,FIELD,ATLAS,GROUND,BLOCK_TILE,LIMIT=64,256,1024,256,512,32
 local BAKE_CHUNKS=16
-local SUPPORTED={house_asian1=true,house_asian3=true}
+local SUPPORTED={house_asian0=true,house_asian1=true,house_asian3=true}
 local DIRECTIONS={{1,0},{-1,0},{0,1},{0,-1}}
 local Exterior=VFS.Include('luaui/widgets_mosaic/include/window_exterior.lua')
 local Bounds=VFS.Include('luaui/widgets_mosaic/include/window_bounds.lua')
@@ -23,7 +23,10 @@ end
 local function valid(id)
     if not id or not Spring.ValidUnitID(id) or Spring.GetUnitIsDead(id) then return end
     local def=Spring.GetUnitDefID(id)
-    if not def or not UnitDefs or not UnitDefs[def] or not SUPPORTED[UnitDefs[def].name] then return end
+    local definition=def and UnitDefs and UnitDefs[def]
+    if not definition then return end
+    local base=definition.customParams and definition.customParams.house_asian_base
+    if not SUPPORTED[definition.name] and base~='house_asian0' then return end
     if Spring.GetUnitIsCloaked and Spring.GetUnitIsCloaked(id) then return end
     if Spring.GetUnitLosState then
         local spectator,full=Spring.GetSpectatingState()
@@ -472,7 +475,7 @@ return function()
     end
     function self:Report()
         local r=self.records[self.focusID]
-        if not r then echo('no cached house; select a completed visible house_asian1/3');return end
+        if not r then echo('no cached house; select a completed visible Asian house');return end
         if r.failed then echo('unit '..r.id..': '..r.failed);return end
         local peak=0
         if r.fieldGeneration then
@@ -490,7 +493,7 @@ return function()
     function self:TextCommand(command)
         if command~='windowlight' and not command:match('^windowlight%s') then return false end
         if command=='windowlight off' then self.enabled=false;self.ready=false;echo('OFF');return true end
-        if command=='windowlight auto' then self.enabled=true;self.automatic=true;echo('automatic house_asian1/3 ON');return true end
+        if command=='windowlight auto' then self.enabled=true;self.automatic=true;echo('automatic Asian houses ON');return true end
         if command=='windowlight debug on' or command=='windowlight debug off' then self.preview=command=='windowlight debug on';return true end
         if command=='windowlight test on' or command=='windowlight test off' then self.test=command=='windowlight test on';return true end
         if command=='windowlight rebuild' then self:Invalidate();return true end
@@ -498,7 +501,7 @@ return function()
         local id=command:match('^windowlight on (%d+)$')
         if command=='windowlight on' or id then
             id=tonumber(id) or (Spring.GetSelectedUnits() or {})[1]
-            if not valid(id) then echo('select a visible house_asian1/3');return true end
+            if not valid(id) then echo('select a visible house_asian0, split variant, house_asian1 or house_asian3');return true end
             self.enabled=true;self.automatic=false;self.unitID=id;self.focusID=id;return true
         end
         local key,value=command:match('^windowlight (%a+) ([%d%.]+)$');value=tonumber(value)

@@ -298,6 +298,7 @@ local function refreshGeometry()
         if detached[p] then rooftop[i] = nil end
     end
     if GG.MarkBuildingShadowVolumeDirty then GG.MarkBuildingShadowVolumeDirty(unitID) end
+    if unitEnv.OnBuildingGeometryChanged then unitEnv.OnBuildingGeometryChanged() end
 end
 
 local function dust(p)
@@ -419,9 +420,9 @@ function M.update(hits, frame)
         return false
     end
     expireEffects(frame)
-    local settling = {}
+    local settling, geometrySettled = {}, false
     for _, entry in ipairs(falling) do
-        if frame >= entry.frame then finishFall(entry.block)
+        if frame >= entry.frame then finishFall(entry.block); geometrySettled = true
         else settling[#settling+1] = entry end
     end
     falling = settling
@@ -442,7 +443,13 @@ function M.update(hits, frame)
         end
     end
     failures = waiting
-    if changed then refreshGeometry() end
+    if changed then
+        refreshGeometry()
+    elseif geometrySettled and unitEnv.OnBuildingGeometryChanged then
+        -- Moving remnants have reached their final pose; their cached window
+        -- capture needs one more refresh, without rebuilding static shadows.
+        unitEnv.OnBuildingGeometryChanged()
+    end
 
     local _, maxHP = Spring.GetUnitHealth(unitID)
     if not maxHP then

@@ -44,6 +44,7 @@ local function assemble(fixture,plan)
             return {name=fixture.pieces[id],children=fixture.children and fixture.children[fixture.pieces[id]] or {}}
         end,
         SetUnitNanoPieces=noop,
+        SetUnitRulesParam=noop,
     }
     -- Actual grouping, random-pool, table and shared-cache helper functions.
     loadEnv('scripts/lib_OS.lua',env)

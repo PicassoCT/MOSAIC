@@ -59,6 +59,9 @@ local function fixture(columnCount, floorCount, scale, id, baseHeight)
         end,
     }
     env.GG.MarkBuildingShadowVolumeDirty=function() dirty=dirty+1 end
+    env.OnBuildingGeometryChanged=function()
+        rules.windowGeometryChanges=(rules.windowGeometryChanges or 0)+1
+    end
     env.GG.SetObjectiveRadiancePieceVisible=function(_,p,on) assert(not on);removed[p]=true end
     loadEnv('scripts/lib_UnitScript.lua',env)
     -- Restore a small hideAll after loading the unrelated helper definitions.
@@ -145,6 +148,7 @@ a.tick(12);assert(#a.losses==0 and a.calls()==1)
 a.hit(94,2);a.tick(18);assert(#a.losses==0, 'failure must be delayed')
 a.tick(23);assert(#a.losses==0)
 a.tick(24);assert(#a.losses==2, 'struck middle block and supported roof must fall')
+assert(a.rules.windowGeometryChanges==1,'detachment did not invalidate the facade capture')
 assert(a.visible[1] and a.visible[4] and a.visible[5] and a.visible[6], 'lower/adjacent supports survive')
 for _,p in ipairs({2,3,1001,1002,1003}) do
     assert(a.env.IsBuildingPieceDetached(p) and a.removed[p], 'falling geometry kept access/lighting')
@@ -179,6 +183,7 @@ assert(shadow.columns[1][1]==1 and shadow.columns[2][1]==3, 'shadow retained uns
 assert(a.dirty()==1, 'geometry notifications should coalesce per update')
 a.tick(29);assert(a.visible[3], 'settling ended outside the fixed interval')
 a.tick(30)
+assert(a.rules.windowGeometryChanges==2,'settled facade kept a capture from its falling pose')
 for _,p in ipairs({2,3,1001,1002,1003}) do
     a.env.Show(p);a.env.Hide(p)
     assert((a.visible[p]==true)==(p~=1003), 'animation changed the retained visibility snapshot')
@@ -187,6 +192,7 @@ end
 assert(a.rules.building_remnant_blocks==2 and not a.env.IsBuildingPieceVisible(1003))
 local healthReads=a.healthReads()
 a.tick(36);a.tick(306)
+assert(a.rules.windowGeometryChanges==2,'effect-only updates repeatedly recaptured the facade')
 assert(a.healthReads()==healthReads, 'effect-only update rescanned structural health')
 assert(a.env.GG.BuildingDamageEffects[42][2].started==12, 'low HP refreshed effect lifetime')
 a.tick(312)

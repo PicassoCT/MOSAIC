@@ -7,6 +7,7 @@ include "lib_UnitScript.lua"
 include "lib_radiance_emitters.lua"
 include "lib_Animation.lua"
 local buildingDamage = include "lib_building_damage.lua"
+local windowGeometryRevision, windowGeometryReady = 0, false
 --include "lib_debug.lua"
 
 local splitPlanner = VFS.Include("scripts/lib_house_asian_split.lua")
@@ -737,6 +738,7 @@ function GetPieceTableGroups()
 end
 
 function script.Create()
+    Spring.SetUnitRulesParam(unitID, 'mosaic_window_revision', 0, {inlos=true})
     TablesOfPiecesGroups = GetSetSharedOneTimeResult("house_asian_script_PiecesTable_" .. unitDefID, GetPieceTableGroups)
 
 	--assertPieceNamesUnique(unitID)
@@ -807,6 +809,9 @@ function absdiff(value, compval)
 end
 
 function script.Killed(recentDamage, _)
+    windowGeometryReady = false
+    windowGeometryRevision = windowGeometryRevision + 1
+    Spring.SetUnitRulesParam(unitID, 'mosaic_window_revision', -windowGeometryRevision, {inlos=true})
 	buildingDamage.collapse(LevelPieces, ToShowTable)
     if GG.ManualRenderedBuildingWithWindowsVisiblePieces then
         GG.ManualRenderedBuildingWithWindowsVisiblePieces[unitID] = nil
@@ -1797,16 +1802,43 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
     end
 end
 
+local function updateWindowGeometryRevision()
+    if not windowGeometryReady then return end
+    if not boolHouseHidden then
+        local seen, count = {}, 0
+        for _, id in ipairs(ToShowTable) do
+            local name = pieceNr_pieceName[id] or ''
+            -- Capture the assembled facade, never hidden style alternatives
+            -- or distant street furniture with its own radiance emitters.
+            if not seen[id] and not name:lower():find('placeable', 1, true) then
+                seen[id] = true
+                count = count + 1
+                Spring.SetUnitRulesParam(unitID, 'mosaic_window_piece_'..count, id, {inlos=true})
+            end
+        end
+        Spring.SetUnitRulesParam(unitID, 'mosaic_window_piece_count', count, {inlos=true})
+    end
+    windowGeometryRevision = windowGeometryRevision + 1
+    Spring.SetUnitRulesParam(unitID, 'mosaic_window_revision',
+        boolHouseHidden and -windowGeometryRevision or windowGeometryRevision, {inlos=true})
+end
+
+function OnBuildingGeometryChanged()
+    updateWindowGeometryRevision()
+end
+
 function showHouse()
     boolHouseHidden = false
     showT(ToShowTable)
     SetRadiancePlaceables(ToShowTable, true)
+    updateWindowGeometryRevision()
 end
 
 function hideHouse()
     boolHouseHidden = true
     hideT(ToShowTable)
     SetRadiancePlaceables(ToShowTable, false)
+    updateWindowGeometryRevision()
 end
 
 function buildAnimation(boolIsReconstruction)
@@ -1819,6 +1851,8 @@ function buildAnimation(boolIsReconstruction)
         showHouse() 
         Hide(Icon)
     end
+    windowGeometryReady = true
+    updateWindowGeometryRevision()
     GG.ManualRenderedBuildingWithWindowsVisiblePieces[unitID] = toShowDict
     if GG.MarkBuildingShadowVolumeDirty then
         GG.MarkBuildingShadowVolumeDirty(unitID)

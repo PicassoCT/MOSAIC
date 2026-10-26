@@ -1,6 +1,6 @@
 local function read(path)local f=assert(io.open(path));local s=f:read('*a');f:close();return s end
 local source=read('luaui/widgets_mosaic/include/window_lighting.lua')
-local function exercise(failure,chunked)
+local function exercise(failure,chunked,definition)
     local serial,draws,readbacks,matrices=0,0,0,0
     local atlasPasses,blockerPasses,bakeChunks=0,0,0
     local allocated,deleted,bound,uniforms={},{},{},{}
@@ -51,7 +51,7 @@ local function exercise(failure,chunked)
     }
     setmetatable(gl,{__index=function()return function()end end})
     local env=setmetatable({gl=gl,GL={},Game={mapSizeX=2048,mapSizeZ=2048},UnitDefs={
-        [7]={name='house_asian1'},[8]={name='house_asian3'},[9]={name='civilian_arab0'}},Spring={
+        [7]=definition or {name='house_asian1'},[8]={name='house_asian3'},[9]={name='civilian_arab0'}},Spring={
         Echo=function()end,ValidUnitID=function(id)return id~=nil end,GetUnitIsDead=function()return false end,
         GetUnitDefID=function(id)return id==42 and 7 or id==43 and 8 or 9 end,
         GetUnitPosition=function(id)return id==42 and 400 or 600,10,600 end,
@@ -185,6 +185,8 @@ local function exercise(failure,chunked)
     return firstAllocations
 end
 local count=exercise(nil,true);exercise(nil,false)
+exercise(nil,true,{name='house_asian0'})
+exercise(nil,true,{name='house_asian_split_1_4',customParams={house_asian_base='house_asian0'}})
 for i=1,count do exercise(i,true) end
 for _,failure in ipairs({'fbo','read','material','draw'}) do exercise(failure,true) end
-print('PASS: two standalone types, both ReadPixels layouts, construction gating, static reuse, visibility revisions, LOS cleanup, day/night, direct cache invalidation, GL cleanup and every allocation failure')
+print('PASS: procedural Asian house, split variant, two standalone types, both ReadPixels layouts, construction gating, static reuse, visibility revisions, LOS cleanup, day/night, direct cache invalidation, GL cleanup and every allocation failure')
