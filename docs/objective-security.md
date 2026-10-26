@@ -52,12 +52,21 @@ than their budget alone would buy. Payouts themselves remain unchanged.
   to a truck's mounted gun. Attack orders queue a return to the passable exit
   followed by GUARD on the surviving objective. Losing sight, cloak, death or
   capture of the attacker immediately cancels pursuit and clears the gun target.
+- Security vehicles use the roaming movement stance. Objective APCs receive
+  1,024 elmos of local patrol sight (or retain a larger existing radius), instead
+  of the stock chassis's 50 elmos. The mounted MG's 300-elmo sight alone cannot
+  acquire many ranged attackers. This is ordinary, terrain-occluded LOS; unseen
+  and cloaked attackers remain untargetable. Capture restores the original
+  sight radius and movement stance.
 - Existing attack, return and guard commands persist across controller updates;
-  only changed targets/sites or missing/interrupted orders rebuild the queue.
+  changed targets/sites, moved approach destinations or interrupted orders rebuild the queue.
   A settled guard is not repeatedly sent back to its exit. Security APCs use
-  90% of their mounted primary gun's range for the truck's aiming proxy and
-  movement range, so the 1,024-unit dummy marker cannot stop them short of
-  firing distance. This adjustment is restored on capture.
+  an explicit MOVE ahead of ATTACK until within 90% of the mounted MG's range.
+  Before the gun attaches, they close to 256 elmos. The movement destination
+  updates at the existing three-second cadence when the attacker moves at least
+  64 elmos; unchanged movement survives updates and reloads. ATTACK takes over
+  in firing range, and a retreating attacker starts another approach. The aiming
+  proxy also uses 90% of the mounted range; its adjustment is restored on capture.
 - The truck's existing 100-ms order-forwarding loop preserves an unchanged
   ATTACK/FIGHT command on its mounted gun, rather than dropping its target lock
   on every pass. It reads only the first command of each queue and still repairs
@@ -101,8 +110,9 @@ builder, payment, construction timer, or progress-driven building animation.
 
 Lua 5.1 tests: `tests/objective_security_test.lua`, `tests/truck_attack_forwarding_test.lua`,
 `tests/objective_income_test.lua`, and `tests/civic_objectives_test.lua` cover
-response scaling/minimums, persistent guard/pursuit orders, mounted-gun approach
-range, bounded blocked-shot recovery, command/probe counts, cooldown, spawn failure, blocked terrain, hidden
+response scaling/minimums, local patrol sight, explicit movement toward a ranged
+attacker, delayed gun attachment, moving targets, persistent guard/pursuit orders,
+mounted-gun approach range, bounded blocked-shot recovery, command/probe counts, cooldown, spawn failure, blocked terrain, hidden
 attackers, capture, reload, lethal hits, restoration and income conservation.
 Recoil playtesting is still needed for actual vehicle exits, mounted-weapon
 behavior and offshore shoreline placement.

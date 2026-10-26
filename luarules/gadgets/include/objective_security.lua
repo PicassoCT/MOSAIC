@@ -125,6 +125,41 @@ function M.New(Spring, Game, UnitDefs, UnitDefNames, CMD, config, state)
             and math.abs(command.params[1]-x) < 1 and math.abs(command.params[3]-z) < 1
     end
 
+    local function prepareVehicle(id, unit)
+        if unit.originalMoveState == nil then
+            unit.originalMoveState = Spring.GetUnitStates(id).movestate
+            Spring.GiveOrderToUnit(id,CMD.MOVE_STATE,{2},{})
+        end
+        if unit.defID == UnitDefNames[config.truck].id and unit.originalSight == nil then
+            -- Military trucks inherit only 50 elmos of sight. The mounted MG
+            -- also sees less far than it fires, so the LOS-gated controller
+            -- otherwise returns home before a ranged attacker can be acquired.
+            unit.originalSight = Spring.GetUnitSensorRadius(id,'los')
+            Spring.SetUnitSensorRadius(id,'los',math.max(unit.originalSight,config.sightRadius))
+        end
+    end
+
+    local function approachTarget(id, unit, target, range, command)
+        if not target then unit.approach=nil;return end
+        local x, _, z = Spring.GetUnitPosition(id)
+        local tx, _, tz = Spring.GetUnitPosition(target) -- only after LOS/cloak checks
+        if not x or not tx then unit.approach=nil;return end
+        local dx,dz = tx-x,tz-z
+        local distance = math.sqrt(dx*dx+dz*dz)
+        -- Before the delayed loadout arrives, close to a conservative distance
+        -- instead of waiting inside the dummy marker's 1024-elmo range.
+        local reach = range and range*0.9 or 256
+        if distance <= reach then unit.approach=nil;return end
+        local old=unit.approach
+        if old and old.target==target and (tx-old.tx)^2+(tz-old.tz)^2<64^2
+            and movesTo(command,old.x,old.z) then return old end
+        local advance = (distance-reach*0.8)/distance
+        local nx,nz = x+dx*advance,z+dz*advance
+        local ny = Spring.GetGroundHeight(nx,nz)
+        unit.approach = {target=target,tx=tx,tz=tz,x=nx,y=ny,z=nz}
+        return unit.approach
+    end
+
     local function recoverBlockedGun(id, unit, target, gun, range, command, frame)
         if unit.target ~= target or unit.recoveryGun ~= gun then
             unit.reposition, unit.blockedChecks, unit.checkX, unit.checkZ = nil, 0, nil, nil
@@ -180,6 +215,7 @@ function M.New(Spring, Game, UnitDefs, UnitDefNames, CMD, config, state)
     end
 
     local function order(id, unit, site, frame)
+        prepareVehicle(id,unit)
         local target = visibleTarget(site)
         local guardSite = alive(site.uid) and site.uid or nil
         local command = currentCommand(id)
@@ -215,10 +251,16 @@ function M.New(Spring, Game, UnitDefs, UnitDefNames, CMD, config, state)
         end
         recoverBlockedGun(id,unit,target,primaryGun,primaryRange,command,frame)
         local maneuver = unit.reposition
+        local approach
+        if unit.defID == UnitDefNames[config.truck].id then
+            approach = approachTarget(id,unit,target,primaryRange,command)
+            if approach then unit.reposition=nil;maneuver=nil end
+        end
+        local destination = maneuver or approach
         local keepOrder = unit.ordered and unit.target == target and unit.guardSite == guardSite
         if target then
-            keepOrder = keepOrder and ((maneuver and movesTo(command,maneuver.x,maneuver.z))
-                or (not maneuver and attacks(command,target)))
+            keepOrder = keepOrder and ((destination and movesTo(command,destination.x,destination.z))
+                or (not destination and attacks(command,target)))
         elseif command then
             keepOrder = keepOrder and (movesTo(command,unit.homeX,unit.homeZ)
                 or (command.id == CMD.GUARD and command.params[1] == guardSite))
@@ -229,8 +271,8 @@ function M.New(Spring, Game, UnitDefs, UnitDefNames, CMD, config, state)
         end
         if not unit.ordered then Spring.GiveOrderToUnit(id,CMD.FIRE_STATE,{0},{}) end
         if not keepOrder then
-            if maneuver then Spring.GiveOrderToUnit(id,CMD.MOVE,{maneuver.x,maneuver.y,maneuver.z},{}) end
-            if target then Spring.GiveOrderToUnit(id,CMD.ATTACK,{target},maneuver and {"shift"} or {}) end
+            if destination then Spring.GiveOrderToUnit(id,CMD.MOVE,{destination.x,destination.y,destination.z},{}) end
+            if target then Spring.GiveOrderToUnit(id,CMD.ATTACK,{target},destination and {"shift"} or {}) end
             -- Preserve return/guard orders after both ordinary attacks and sidesteps.
             Spring.GiveOrderToUnit(id,CMD.MOVE,{unit.homeX,unit.homeY,unit.homeZ},target and {"shift"} or {})
             if guardSite then Spring.GiveOrderToUnit(id,CMD.GUARD,{guardSite},{"shift"}) end
@@ -246,6 +288,12 @@ function M.New(Spring, Game, UnitDefs, UnitDefNames, CMD, config, state)
         if unit.markerRange and alive(id) then
             Spring.SetUnitWeaponState(id,1,{range=unit.markerRange})
             Spring.SetUnitMaxRange(id,unit.markerRange)
+        end
+        if alive(id) then
+            if unit.originalSight then Spring.SetUnitSensorRadius(id,'los',unit.originalSight) end
+            if unit.originalMoveState ~= nil then
+                Spring.GiveOrderToUnit(id,CMD.MOVE_STATE,{unit.originalMoveState},{})
+            end
         end
         local site = state.sites[unit.siteID]
         if site then site.vehicles[id] = nil end

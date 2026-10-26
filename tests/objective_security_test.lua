@@ -12,12 +12,13 @@ local defs={
     {name='ground_tank_day',metalCost=5000,xsize=10,zsize=10},
 }
 local names={};for id,d in ipairs(defs)do names[d.name]={id=id}end
-local CMD={ATTACK=1,MOVE=2,FIRE_STATE=3,STOP=4,GUARD=5}
+local CMD={ATTACK=1,MOVE=2,FIRE_STATE=3,STOP=4,GUARD=5,MOVE_STATE=6}
 local function setup()
     local s={units={},orders={},state={},nextID=100,fail=false,water=false,blocked=false,creates=0,rateCalls=0,commandCount=0,
         clearShot=true,rayChecks=0,moveChecks=0,areaQueries=0}
     local function unit(id,def,team,x,z)
-        s.units[id]={def=def,team=team,x=x or 2048,y=10,z=z or 2048,los=true}
+        s.units[id]={def=def,team=team,x=x or 2048,y=10,z=z or 2048,los=true,
+            moveState=0,sightRadius=def==3 and 50 or 0}
     end
     unit(1,1,0);unit(2,1,1,2200,2200)
     local Spring={
@@ -26,7 +27,20 @@ local function setup()
         GetUnitTeam=function(id)return s.units[id] and s.units[id].team end,
         GetUnitDefID=function(id)return s.units[id].def end,
         GetUnitIsCloaked=function(id)return s.units[id].cloaked end,
-        GetUnitLosState=function(id)return {los=s.units[id].los}end,
+        GetUnitLosState=function(id)
+            local target=s.units[id]
+            if not s.autoSight or target.team==0 then return {los=target.los} end
+            for _,observer in pairs(s.units) do
+                if observer.team==0 and (observer.x-target.x)^2+(observer.z-target.z)^2
+                    <= (observer.sightRadius or 0)^2 then return {los=target.los} end
+            end
+            return {los=false}
+        end,
+        GetUnitStates=function(id)return {movestate=s.units[id].moveState}end,
+        GetUnitSensorRadius=function(id,kind)assert(kind=='los');return s.units[id].sightRadius end,
+        SetUnitSensorRadius=function(id,kind,radius)
+            assert(kind=='los');s.units[id].sightRadius=radius
+        end,
         GetUnitPosition=function(id)
             local u=s.units[id];assert(u.los and not u.cloaked,'queried a hidden attacker position')
             return u.x,u.y,u.z
@@ -54,7 +68,8 @@ local function setup()
         GiveOrderToUnit=function(id,cmd,params,options)
             s.commandCount=s.commandCount+1
             s.orders[id]=s.orders[id] or {};s.orders[id][cmd]=params
-            if cmd~=CMD.FIRE_STATE then
+            if cmd==CMD.MOVE_STATE then s.units[id].moveState=params[1] end
+            if cmd~=CMD.FIRE_STATE and cmd~=CMD.MOVE_STATE then
                 if options and options[1]=='shift' then
                     table.insert(s.orders[id].queue,{id=cmd,cmd=cmd,params=params})
                 else
@@ -132,6 +147,58 @@ assert(resting.orders[restingGuard].queue[1].cmd==CMD.ATTACK,
 -- UnitTaken is dispatched before the team changes.
 resting.api.Remove(restingGuard);resting.units[restingGuard].team=1
 assert(resting.units[restingGuard].weaponRange==1024,'capture restores normal truck range')
+assert(resting.units[restingGuard].sightRadius==50 and resting.units[restingGuard].moveState==0,
+    'capture must restore the normal truck sensors and movement stance')
+
+-- Reproduce the real gap: a ranged attacker is inside the dummy marker range,
+-- but outside both the stock truck's 50-elmo sight and the MG's 300-elmo sight.
+-- Native ATTACK can park here; security must acquire local sight and MOVE.
+local advancing=setup();advancing.autoSight=true
+advancing.units[2].x,advancing.units[2].z=3000,2048
+advancing.hit(0);advancing.tick(15)
+local vehicle=next(advancing.state.units)
+local chassis=advancing.units[vehicle]
+local initialX=chassis.x
+local q=advancing.orders[vehicle].queue
+assert(q[1].cmd==CMD.MOVE and q[1].params[1]>initialX,
+    'ranged objective attack left the truck at its spawn point')
+assert(chassis.moveState==2 and chassis.sightRadius==config.sightRadius)
+assert(q[2].cmd==CMD.ATTACK and q[2].params[1]==2 and q[4].cmd==CMD.GUARD)
+local unchanged=advancing.commandCount
+advancing.reload();advancing.tick(105)
+assert(advancing.commandCount==unchanged,'unchanged approach restarted after reload')
+advancing.units[90]={team=0,transport=vehicle,weaponRange=450,x=chassis.x,y=10,z=chassis.z,sightRadius=300}
+advancing.tick(195)
+assert(advancing.orders[90].queue[1].cmd==CMD.ATTACK,'mounted MG never received the approach target')
+-- Let the chassis follow the actual queued MOVE while the controller ticks.
+-- An ATTACK would remain parked inside the marker range in this regression.
+for frame=210,600,15 do
+    local current=advancing.orders[vehicle].queue[1]
+    if current.cmd==CMD.MOVE then
+        local dx,dz=current.params[1]-chassis.x,current.params[3]-chassis.z
+        local distance=math.sqrt(dx*dx+dz*dz)
+        local step=math.min(1,40/math.max(distance,0.001))
+        chassis.x,chassis.z=chassis.x+dx*step,chassis.z+dz*step
+        if distance<=40 then table.remove(advancing.orders[vehicle].queue,1) end
+    end
+    advancing.units[90].x,advancing.units[90].z=chassis.x,chassis.z
+    advancing.tick(frame)
+end
+assert(chassis.x>initialX+300 and math.abs(3000-chassis.x)<=405,
+    'truck failed to drive into mounted MG range')
+assert(not advancing.state.units[vehicle].approach and advancing.orders[vehicle].queue[1].cmd==CMD.ATTACK)
+-- A retreating attacker starts a fresh approach; a moving target updates it
+-- without discarding the eventual return and guard commands.
+advancing.units[2].x=3500;advancing.tick(690)
+assert(advancing.orders[vehicle].queue[1].cmd==CMD.MOVE)
+local goal=advancing.orders[vehicle].queue[1].params[1]
+advancing.units[2].x=3600;advancing.tick(780)
+assert(advancing.orders[vehicle].queue[1].params[1]>goal)
+advancing.units[2].cloaked=true;advancing.tick(795)
+assert(not advancing.state.units[vehicle].approach and advancing.orders[90].last==CMD.STOP)
+assert(advancing.orders[vehicle].queue[1].params[1]==advancing.state.units[vehicle].homeX)
+advancing.units[2].cloaked=false;advancing.units[2].x=4090;advancing.tick(810)
+assert(not advancing.api.AllowWeaponTarget(vehicle,2),'patrol sight must not reveal the entire map')
 
 -- Engine command positions have float precision; an in-progress return must
 -- not restart just because its stored coordinates were rounded.
@@ -253,8 +320,9 @@ s.units[2].cloaked=false;s.units[2].los=false;s.tick(5445)
 assert(not s.api.AllowWeaponTarget(guard,2))
 s.units[2].los=true;s.units[2].x=4090;s.tick(5460)
 assert(s.api.AllowWeaponTarget(guard,2),'visible attackers beyond 1200 must still be pursued')
-assert(s.orders[guard].last==CMD.ATTACK and s.orders[90].last==CMD.ATTACK)
-assert(s.orders[guard].queue[2].cmd==CMD.MOVE and s.orders[guard].queue[3].cmd==CMD.GUARD)
+assert(s.orders[guard].last==CMD.MOVE and s.orders[90].last==CMD.ATTACK)
+assert(s.orders[guard].queue[2].cmd==CMD.ATTACK and s.orders[guard].queue[3].cmd==CMD.MOVE
+    and s.orders[guard].queue[4].cmd==CMD.GUARD)
 s.units[2].x=2200;s.units[2].team=2;s.tick(5475)
 assert(not s.api.AllowWeaponTarget(guard,2),'captured attacker must not inherit pursuit')
 
@@ -277,7 +345,7 @@ assert(s.orders[90].last==CMD.STOP and not s.api.AllowWeaponTarget(90,2))
 s.reload();s.tick(3700)
 assert(s.units[guard] and s.state.sites[40],'returning force must stay tracked')
 s.hit(3710);s.tick(3720)
-assert(s.count()==1 and s.orders[guard].last==CMD.ATTACK)
+assert(s.count()==1 and s.orders[guard].last==CMD.MOVE and s.orders[guard].queue[2].cmd==CMD.ATTACK)
 s.tick(7310)
 assert(s.units[guard] and s.orders[guard].last==CMD.MOVE)
 s.units[guard].x,s.units[guard].z=home.homeX,home.homeZ

@@ -566,6 +566,7 @@ function getGameConfig()
                 cooldownSeconds = 90,
                 standDownSeconds = 120,
                 orderSeconds = 3,
+                sightRadius = 1024, -- objective APC patrol sight, restored on capture
                 blockedChecks = 2,
                 repositionDistance = 96,
                 repositionSeconds = 9,
