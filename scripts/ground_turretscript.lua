@@ -295,7 +295,6 @@ function fold()
 end
 
 function script.Killed(recentDamage, _)
-    explodeTableOfPiecesGroupsExcludeTable(TablesOfPiecesGroups, {})
     return 1
 end
 
