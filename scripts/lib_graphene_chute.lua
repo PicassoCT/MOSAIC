@@ -52,7 +52,7 @@ function M.Layout(unitID, support)
             cy+y*radius/scale[2]-emitterLocal[2], info.max[3]-emitterLocal[3]}
         -- Soft overlapping veils surround the suspension point and billow
         -- inward/upward. Their material length remains bounded in the shader.
-        layout.directions[i] = {-x/scale[1], -y/scale[2], 0.60/scale[3]}
+        layout.directions[i] = {-x/scale[1], -y/scale[2], 1.15/scale[3]}
         if i % 2 == 1 then layout.arcRoots[#layout.arcRoots+1] = layout.roots[i] end
     end
     return layout
@@ -62,12 +62,12 @@ function M.RibbonOptions(layout, index)
     return {
         mode='canopy', rootOffset=layout.roots[index],
         directionSpace='piece', direction=layout.directions[index],
-        length=layout.radius*1.26, width=layout.radius, strands=2,
-        stiffness=0.20, gravity=0.12, curl=1.3, speed=0.8,
+        length=layout.radius*1.8, width=layout.radius, strands=2,
+        stiffness=0.28, gravity=0.18, curl=1.3, speed=0.8,
         windAffected=true, windInfluence=1.2, motionAffected=true,
-        motionInfluence=0.5, trailTime=0.3,
-        colorStart={0,0,0,1}, colorEnd={0,0,0,1},
-        emission={0,0}, sourceGlow={0,0,0,0},
+        motionInfluence=0.7, trailTime=0.45,
+        colorStart={0,0,0,1}, colorEnd={0.34,0.12,1,1},
+        emission={0,3.2}, sourceGlow={0,0,0,0},
         distanceFactor=40, drawInIcon=true, seed=index*19,
     }
 end

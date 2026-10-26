@@ -34,9 +34,18 @@ void main() {
         float density = mix(0.30,0.90,broad)*mix(0.65,1.0,folds)*mix(0.65,1.0,fibres);
         float fade = smoothstep(0.0,0.18+0.08*broad,age)
             * (1.0-smoothstep(0.65+0.1*folds,1.0,age));
-        vec4 color = mix(colorStart,colorEnd,age);
+        // Keep the graphene body dark; electrical energy collects only in
+        // the last third of the fibres, before the material feathers away.
+        float tip = smoothstep(0.62,0.92,age);
+        vec4 color = mix(colorStart,colorEnd,tip);
         float alpha = clamp(0.68*edge*density*fade*color.a*strandOpacity,0.0,0.92);
-        gl_FragColor = vec4(color.rgb*ambient*alpha,alpha);
+        float glow = mix(emission.x,emission.y,tip);
+        vec3 lighting = mix(ambient,vec3(1.0),clamp(glow,0.0,1.0));
+        // Fine blue cores sit inside a violet halo with the same soft coverage.
+        // Bounded modulation preserves the hue instead of clipping to white.
+        vec3 electric = mix(colorEnd.rgb,vec3(0.08,0.30,1.0),fibres*0.45);
+        vec3 energy = electric*glow*tip*(0.8+0.2*folds);
+        gl_FragColor = vec4((color.rgb*lighting+energy)*alpha,alpha);
         return;
     }
     if (hairMode > 0.5) {

@@ -1,6 +1,7 @@
 -- Unsynced only. Bounded strip meshes are compiled once; all curling is in GLSL.
 return function()
     if not gl.CreateShader then return nil, 'GLSL unavailable' end
+    local CanopyDynamics
     local path = 'luarules/gadgets/shaders/smokeRibbon.'
     local shader = gl.CreateShader({vertex = VFS.LoadFile(path..'vert'), fragment = VFS.LoadFile(path..'frag')})
     if not shader then return nil, gl.GetShaderLog() end
@@ -179,7 +180,15 @@ return function()
                                 driftY=driftY-(velocity[2] or 0)*gain
                                 driftZ=driftZ-(velocity[3] or 0)*gain
                             end
-                            if hair and r.motionAffected then
+                            if r.mode == 'canopy' then
+                                CanopyDynamics = CanopyDynamics or VFS.Include('luarules/gadgets/include/canopy_dynamics.lua')
+                                local state = CanopyDynamics.Step(hairHistory[key],now,
+                                    x+dx*length,y+dy*length,z+dz*length,
+                                    driftX,driftY,driftZ,length,r.stiffness,
+                                    r.trailTime,r.motionAffected and r.motionInfluence or 0)
+                                nextHistory[key] = state
+                                driftX,driftY,driftZ = state.x,state.y,state.z
+                            elseif hair and r.motionAffected then
                                 -- Follow a rest tip, so both translation and head turns create lag.
                                 local tx,ty,tz=x+dx*length,y+dy*length,z+dz*length
                                 local old=hairHistory[key]

@@ -136,12 +136,12 @@ local previousRadius=48 -- This fixture's 8-unit support previously used a 6x ra
 local expectedRadius=previousRadius*2
 for i,r in ipairs(black) do
     assert(r.strands==2,'dense canopy exceeded its bounded sixteen-strip mesh budget')
-    assert(r.emission[1]==0 and r.emission[2]==0,'black canopy is emissive')
+    assert(r.emission[1]==0 and r.emission[2]>1,'canopy lost its dark roots or luminous tips')
     for axis=1,4 do assert(r.sourceGlow[axis]==0,'black canopy gained source glow') end
-    for _,color in ipairs({r.colorStart,r.colorEnd}) do
-        assert(color[1]==0 and color[2]==0 and color[3]==0 and color[4]>0 and color[4]<=1,
-            'graphene mist must remain black with visible material coverage')
-    end
+    assert(r.colorStart[1]==0 and r.colorStart[2]==0 and r.colorStart[3]==0 and r.colorStart[4]>0,
+        'graphene roots must remain black with visible material coverage')
+    assert(r.colorEnd[3]>r.colorEnd[1] and r.colorEnd[1]>r.colorEnd[2] and r.colorEnd[4]>0,
+        'graphene tips lost electric violet-blue colour')
     assert(r.windAffected and r.motionAffected and r.windInfluence>0 and r.motionInfluence>0,
         'canopy stopped responding to wind or the passenger movement')
     assert(r.speed>0 and r.curl>0.3 and r.stiffness<0.72,
@@ -152,7 +152,7 @@ for i,r in ipairs(black) do
     local radial=math.sqrt(tx^2+ty^2)
     assert(math.abs(radial-expectedRadius)<1e-8 and r.rootOffset[3]+5==8,
         'canopy did not double its asset-scaled radius or lost the emitter-vertex correction')
-    assert(r.length>=radial and r.length<radial*1.8 and r.width>radial*.6 and r.width<radial*1.6,
+    assert(r.length>radial*1.7 and r.length<radial*1.9 and r.width>radial*.6 and r.width<radial*1.6,
         'black mist sheets lost their broad, bounded canopy proportions')
     assert(r.direction[1]*tx+r.direction[2]*ty<0,
         'canopy sheets point away from the suspended passenger')

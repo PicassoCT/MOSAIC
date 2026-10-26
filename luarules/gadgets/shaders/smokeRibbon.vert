@@ -36,13 +36,18 @@ vec3 centre(float t, float strand, vec3 u, vec3 v) {
             float crossWave = 0.25*sin(q*4.0+s)
                 + airflow*sin(effectTime*1.3+q*4.0+s);
             if (canopy) {
-                // Rolling folds continue in calm air. Separate travelling
-                // waves avoid a rigid fan or a synchronized flapping sheet.
-                flex = (1.0-stiffness)*(0.3+0.7*smoothstep(0.0,0.9,q));
-                wave = 0.55*sin(q*8.0-effectTime*1.5+s*0.3)
-                    + 0.20*sin(q*17.0-effectTime*2.3+s);
-                crossWave = 0.38*sin(q*9.0-effectTime*1.05+s*0.7)
-                    + 0.14*sin(q*19.0-effectTime*1.75+s);
+                // Bending compliance grows away from the pinned rim. Airflow
+                // excites travelling folds; tension suppresses short ripples.
+                // Baseline folds retain the established calm-air billow.
+                flex = (1.0-stiffness)*q*q;
+                float flutter = 0.70+0.30*airflow;
+                // Airflow changes amplitude, not accumulated phase: multiplying
+                // the clock by changing wind speed would pop at every gust.
+                float travel = effectTime*0.8;
+                wave = flutter*(0.70*sin(q*8.0-travel+s*0.3)
+                    + 0.16*sin(q*17.0-travel*1.53+s));
+                crossWave = flutter*(0.50*sin(q*9.0-travel*0.7+s*0.7)
+                    + 0.11*sin(q*19.0-travel*1.17+s));
             }
             vec3 bend = direction + vec3(0,-gravity*q,0)
                 + directionalDrift/max(plumeLength,0.001)*flex*gust

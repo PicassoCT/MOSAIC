@@ -153,10 +153,19 @@ fine_contrast = np.abs(alpha-smoothed).sum()/alpha.sum()
 assert fine_contrast < .20, f'canopy resolves as sharp individual bands: fine contrast {fine_contrast:.3f}'
 assert combined[:2].max() == 0 and combined[-2:].max() == 0, 'diagnostic clips electrical or canopy tips'
 assert combined[:, :2].max() == 0 and combined[:, -2:].max() == 0, 'diagnostic clips canopy edges'
-assert black[..., :3].max() == 0, 'graphene shader introduced colour or glow'
+energy = black[..., :3]
+signal = energy[..., 2] > .03
+assert signal.sum() > 100, 'violet-blue graphene tips have no visible glow'
+assert energy[..., 2][signal].sum() > energy[..., 0][signal].sum()*2, 'tips lost electric blue'
+assert energy[..., 0][signal].sum() > energy[..., 1][signal].sum(), 'tips lost violet halo'
+assert ((alpha > .25) & (energy.max(axis=2) < .01)).sum() > 1000, 'tip glow coloured the black graphene body'
 assert np.array_equal(black, render(canopy_records)), 'paused canopy changed'
-assert np.array_equal(black, render(canopy_records, overrides={'emission': (8, 8),
-    'sourceGlow': (1, 1, 1, 1), 'ambient': (.01, .01, .01)})), 'black fabric glows or loses coverage at night'
+night = render(canopy_records, overrides={'ambient': (.01, .01, .01)})
+assert np.array_equal(alpha, night[..., 3]), 'night changed graphene coverage'
+assert night[..., 2].sum() > energy[..., 2].sum()*.85, 'electric tips disappear at night'
+unlit = render(canopy_records, overrides={'colorEnd': (0, 0, 0, 1), 'emission': (0, 0)})
+assert unlit[..., :3].max() == 0, 'unlit black graphene gained emission'
+assert np.array_equal(alpha, unlit[..., 3]), 'tip lighting changed material coverage'
 for entry in canopy_records:
     assert render([entry])[..., 3].sum() > 40, 'one canopy sector is invisible from the scene camera'
 assert render(canopy_records, overrides={'colorStart': (0, 0, 0, 0),
@@ -224,6 +233,6 @@ print('Canopy metrics: alpha sum=%.1f, projected coverage=%.1f square world unit
           (x.max()-x.min()+1)*world_per_pixel, (y.max()-y.min()+1)*world_per_pixel,
           soft_fraction, fine_contrast, np.mean(curve_ratios), np.mean(calm_motion)))
 print('PASS: live Lua chute layout on production GLSL, smoky black canopy, soft filtered density, '
-      'no glow, deterministic pause, calm-air billowing, wind, all-strand curvature and fixed length, '
+      'violet-blue luminous tips, deterministic pause, calm-air billowing, wind, all-strand curvature and fixed length, '
       'pinned roots, inward canopy shape and retained electric sources')
 print('Renderer:', ctx.info['GL_RENDERER'])
