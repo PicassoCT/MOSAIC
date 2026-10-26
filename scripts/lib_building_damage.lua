@@ -357,6 +357,8 @@ local function detach(block, frame)
     if block.keepVisible then remnantCount = remnantCount + 1 end
     publishStats()
     for _, p in ipairs(block.pieces) do
+        -- Descendant spinners also survive Hide and rejected future commands.
+        for axis = 1, 3 do StopSpin(p, axis, 0) end
         detached[p] = true
         -- Preserve only the pieces actually drawn at the moment of failure;
         -- hidden alternative meshes and decorations must remain hidden.
@@ -366,6 +368,9 @@ local function detach(block, frame)
         if GG.SetObjectiveRadiancePieceVisible then
             GG.SetObjectiveRadiancePieceVisible(unitID, p, false)
         end
+    end
+    if unitEnv.OnBuildingPiecesDetached then
+        unitEnv.OnBuildingPiecesDetached(block.pieces)
     end
     -- A retained bottom still occupies the bottom shadow cell. Sunken upper
     -- remnants overlap that cell, so their old elevated shadow bits are removed.

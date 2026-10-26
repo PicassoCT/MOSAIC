@@ -1112,7 +1112,9 @@ function buildAnimation()
     Signal(SIG_BUILD_CRANES)
     for _, id in pairs(TablesOfPiecesGroups["BuildCrane"]) do
         local rotation = {Spring.UnitScript.GetPieceRotation(id)}
-        Turn(id, y_axis, rotation[y_axis], 0)
+        -- Speed zero only sets the pose on the old engine; a nonzero speed
+        -- replaces the pending destination and finishes at this pose next tick.
+        Turn(id, y_axis, rotation[y_axis], 1)
     end
 
     for i = 1, 3 do

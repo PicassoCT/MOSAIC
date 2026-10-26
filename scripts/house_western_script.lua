@@ -408,26 +408,16 @@ function selectGroundBuildMaterial(boolRedo)
     return  materialChoiceTable[nice]
 end
 
-function getPieceGroupName(Deco)
-    t = Spring.GetUnitPieceInfo(unitID, Deco)
-    return t.name:gsub('%d+', '')
-end
-
-function trimZero(Deco)
-    return Deco:gsub('0', '')
-end
-
 function DecorateBlockWall(xRealLoc, zRealLoc, level, DecoMaterial, yoffset, materialGroupName)
-    countedElements = count(DecoMaterial)
-    piecename = ""
+    local countedElements = count(DecoMaterial)
     materialGroupName = materialGroupName or "GroupNameUndefined"
     if countedElements <= 0 then return DecoMaterial end
 
-    y_offset = yoffset or 0
-    attempts = 0
-    local Deco, nr = getRandomBuildMaterial(DecoMaterial, materialGroupName.."blockwall")
+    local y_offset = yoffset or 0
+    local attempts = 0
+    local Deco = getRandomBuildMaterial(DecoMaterial, materialGroupName.."blockwall")
     while not Deco and attempts < countedElements do
-        Deco, nr = getRandomBuildMaterial(DecoMaterial, materialGroupName.."blockwall")
+        Deco = getRandomBuildMaterial(DecoMaterial, materialGroupName.."blockwall")
         Sleep(1)
         attempts = attempts + 1
     end
@@ -439,15 +429,11 @@ function DecorateBlockWall(xRealLoc, zRealLoc, level, DecoMaterial, yoffset, mat
         Move(Deco, _x_axis, xRealLoc, 0)
         Move(Deco, _y_axis, level * cubeDim.heigth + y_offset, 0)
         Move(Deco, _z_axis, zRealLoc, 0)
-
         ToShowTable[#ToShowTable + 1] = Deco
-        piecename = getPieceGroupName(Deco)
     end
 
-    if TablesOfPiecesGroups[piecename .. nr .. "Sub"] then
-        showOneOrAll(TablesOfPiecesGroups[piecename .. nr .. "Sub"])
-    end
-
+    -- The caller reveals this piece's children after orienting it. A candidate
+    -- list index is not the numeric suffix of the chosen model piece.
     return DecoMaterial, Deco
 end
 
@@ -799,7 +785,7 @@ function buildDecorateGroundLvl()
                                           StreetDecoMaterial, 0, materialColourName)
                     if StreetDeco then
                         Turn(StreetDeco, 3, math.rad(rotation), 0)
-                        showSubsAnimateSpinsByPiecename(pieceName_pieceNr[StreetDeco]) 
+                        showSubsAnimateSpinsByPiecename(pieceNr_pieceName[StreetDeco])
                     end
                 end
 
@@ -809,14 +795,14 @@ function buildDecorateGroundLvl()
                    
                     if Door then
                         Turn(Door, axis, math.rad(rotation), 0)
-                        showSubsAnimateSpinsByPiecename(pieceName_pieceNr[Door])
+                        showSubsAnimateSpinsByPiecename(pieceNr_pieceName[Door])
                         if chancesAre(10) < decoChances.door then
                         DoorDecoMaterial, DoorDeco =
                             DecorateBlockWall(xRealLoc, zRealLoc, 0,
                                               DoorDecoMaterial, 0, materialColourName)
                             if DoorDeco then
                                 Turn(DoorDeco, axis, math.rad(rotation), 0)
-                                showSubsAnimateSpinsByPiecename(pieceName_pieceNr[DoorDeco]) 
+                                showSubsAnimateSpinsByPiecename(pieceNr_pieceName[DoorDeco])
                             end
                         end
                     end
@@ -959,7 +945,6 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
                 if yardWall then
                     rotation = getWallBackyardDeocrationRotation(index)
                     Turn(yardWall, _z_axis, math.rad(rotation), 0)
-                    showSubsAnimateSpinsByPiecename(pieceNr_pieceName[yardWall])
                 end
             end
         end
@@ -970,14 +955,13 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
 end
 
 function decorateBackYard(index, xLoc, zLoc, buildMaterial, Level)
-
-    countedElements = count(buildMaterial)
+    local countedElements = count(buildMaterial)
     if countedElements == 0 then return buildMaterial end
 
-    local element, nr = getRandomBuildMaterial(buildMaterial, "backyard")
-    attempts = 0
+    local element = getRandomBuildMaterial(buildMaterial, "backyard")
+    local attempts = 0
     while not element and attempts < countedElements do
-        element, nr = getRandomBuildMaterial(buildMaterial, "backyard")
+        element = getRandomBuildMaterial(buildMaterial, "backyard")
         Sleep(1)
         attempts = attempts + 1
     end
@@ -985,42 +969,25 @@ function decorateBackYard(index, xLoc, zLoc, buildMaterial, Level)
     if attempts >= countedElements then return buildMaterial end
 
     buildMaterial = removeElementFromBuildMaterial(element, buildMaterial)
-
-    -- rotation = math.random(0,4) *90
-    xRealLoc, zRealLoc = -centerP.x + (xLoc * cubeDim.length),
-                         -centerP.z + (zLoc * cubeDim.length)
+    local xRealLoc, zRealLoc = -centerP.x + (xLoc * cubeDim.length),
+                              -centerP.z + (zLoc * cubeDim.length)
     Move(element, _x_axis, xRealLoc, 0)
     Move(element, _z_axis, zRealLoc, 0)
     Move(element, _y_axis, Level * cubeDim.heigth, 0)
-
-    pieceGroupName = getPieceGroupName(element)
-
-    showSubsAnimateSpins(pieceGroupName, nr)
-
     ToShowTable[#ToShowTable + 1] = element
+    showSubsAnimateSpinsByPiecename(pieceNr_pieceName[element])
 
     return buildMaterial, element
 end
 
 function showSubsAnimateSpinsByPiecename(piecename)
     if not piecename then return end
-    piecename = trimZero(piecename)
-
-     nr = ""
-    for i=string.len(piecename), 1, -1 do
-        character =  string.sub(piecename, i, i)
-        asciiByteValue = string.byte(character)
-        if asciiByteValue > 47 and asciiByteValue <58 then
-            nr = character..nr
-        else
-            pieceGroupName = string.sub(piecename,1, i)
-            nr = tonumber(nr, 10)
-            if string.len(pieceGroupName) > 0 and type(nr) == "number" then
-             showSubsAnimateSpins(pieceGroupName, nr)
-            end
-        break
-        end
-    end
+    local group, number = piecename:match("^(.-)(%d+)$")
+    if not group or group == "" then return end
+    -- Match getPieceTableByNameGroups: normalize numeric padding, preserving
+    -- meaningful zeros (Door30 stays Door30; Back010 becomes Back10).
+    group = group:gsub("%d+", function(digits) return tostring(tonumber(digits)) end)
+    showSubsAnimateSpins(group, tonumber(number))
 end
 
 function showOneOrAllOfTablePieceGroup(name)
@@ -1067,14 +1034,14 @@ function showSubsAnimateSpins(pieceGroupName, nr)
     showOneOrAllOfTablePieceGroup(spinName)
     showOneOrAllOfTablePieceGroup(spinName.."Sub")
    -- Spring.Echo("SpinGroupName "..spinName)
-    direction = math.random(40,160) * randSign()
+    local direction = math.random(40,160) * randSign()
 
     if TablesOfPiecesGroups[spinName] then
         for i=1,#TablesOfPiecesGroups[spinName] do
             Spin(TablesOfPiecesGroups[spinName][i] , y_axis, math.rad(direction), math.pi)
         end
     elseif pieceName_pieceNr[spinName..1]  then
-        Spin(pieceName_pieceNr[spinName] , y_axis, math.rad(direction), math.pi)
+        Spin(pieceName_pieceNr[spinName..1] , y_axis, math.rad(direction), math.pi)
     end
 end
 logoPiecesToHide = {

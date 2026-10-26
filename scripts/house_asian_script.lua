@@ -8,6 +8,10 @@ include "lib_radiance_emitters.lua"
 include "lib_Animation.lua"
 local buildingDamage = include "lib_building_damage.lua"
 local windowGeometryRevision, windowGeometryReady = 0, false
+local houseAnimations = include "lib_house_asian_animations.lua"
+local selectedSpins = {}
+local animationsReady = false
+function OnBuildingPiecesDetached(pieces) houseAnimations.detach(pieces) end
 --include "lib_debug.lua"
 
 local splitPlanner = VFS.Include("scripts/lib_house_asian_split.lua")
@@ -93,7 +97,6 @@ local cubeDim = {
 holoHeightOffset =  10
 
 dayNightPieceNames = {}
-local SIG_SUBANIMATIONS = 2
 local SIG_STUN = 4
 
 supriseChances = {
@@ -248,7 +251,7 @@ function isWithinPieceLimits(pieceID)
 end
 
 function weldingAnimation(set)
-    robotTable = {}
+    local robotTable = {}
     robotTable[#robotTable+1] = set.robot1T
     robotTable[#robotTable+1] = set.robot2T
     robotTable[#robotTable+1] = set.robot3T
@@ -271,45 +274,45 @@ function weldingAnimation(set)
         WaitForMoves(set.finalWorks)
         reset(set.finalWorks)
 
-        workSteps = math.random(7,15)
+        local workSteps = math.random(7,15)
         for i=1, workSteps do
             for robot=1, #robotTable do
-                boolForward = (robot + i % 2) == 0
+                local boolForward = (robot + i) % 2 == 0
                 for axe=1, #robotTable[robot] do
-                    if forward then
+                    if boolForward then
                         if axe == 3 then
-                            val = math.random(30,60)
+                            local val = math.random(30,60)
                             Turn(robotTable[robot][3],x_axis, math.rad(val), 1)
                             Turn(robotTable[robot][4],x_axis, math.rad(val), 1)
                         end
                         if axe == 5 then
-                            val = math.random(0,70)
+                            local val = math.random(0,70)
                             Turn(robotTable[robot][axe],x_axis, math.rad(val), 1)
                         end
 
                         if axe == 6 then
-                            val= math.random(-90,90)                   
+                            local val= math.random(-90,90)
                             Turn(robotTable[robot][axe],y_axis, math.rad(val), 1)
-                        end                        
+                        end
                     else
                         if axe == 2 then
                             Turn(robotTable[robot][axe],y_axis, math.rad(robot*90 + math.random(-90,90)), 1)
                         end
                         if axe == 3 then
-                            val = math.random(-70,-10)
+                            local val = math.random(-70,-10)
                             Turn(robotTable[robot][3],x_axis, math.rad(val), 1)
                             Turn(robotTable[robot][4],x_axis, math.rad(val*-2), 1)
                         end
 
                         if axe == 5 then
-                            val = math.random(0,70)
+                            local val = math.random(0,70)
                             Turn(robotTable[robot][axe],x_axis, math.rad(val), 1)
                         end
 
                         if axe == 6 then
-                            val= math.random(-90,90)                   
+                            local val= math.random(-90,90)
                             Turn(robotTable[robot][axe],y_axis, math.rad(val), 1)
-                        end    
+                        end
                     end
                 end
             end
@@ -344,16 +347,16 @@ function weldingAnimation(set)
 end
 
 function oilrigAnimation(set)
-   
 
-    jack1 = set.jack1 
-    jack2 = set.jack2      
-    piston1 = set.piston1  
-    piston2 = set.piston2  
-    swing1 = set.swing1    
-    swing2 = set.swing2    
-    crank1 = set.crank1    
-    crank2 = set.crank2    
+
+    local jack1 = set.jack1
+    local jack2 = set.jack2
+    local piston1 = set.piston1
+    local piston2 = set.piston2
+    local swing1 = set.swing1
+    local swing2 = set.swing2
+    local crank1 = set.crank1
+    local crank2 = set.crank2
     Show(jack1)
     Show(jack2)
     Show(piston1)
@@ -362,7 +365,6 @@ function oilrigAnimation(set)
     Show(swing2)
     Show(crank1)
     Show(crank2)
-    lenghtaxis= z_axis
     Spin(swing1,z_axis, math.rad(360/4),0)
     Spin(crank1,z_axis, math.rad(-360/4),0)
     Spin(swing2,z_axis, math.rad(-360/4),0)
@@ -370,36 +372,36 @@ function oilrigAnimation(set)
     while true do
         Turn(jack2, z_axis, math.rad(-28),math.rad(28)/2)
         Turn(jack1, z_axis, math.rad(28),math.rad(28)/2)
-        Move(piston2,y_axis, 22, 5)    
+        Move(piston2,y_axis, 22, 5)
         Move(piston1,y_axis, 22, 5)
 
         Sleep(2000)
         Turn(jack1, z_axis, math.rad(0),math.rad(28)/2)
-        Turn(jack2, z_axis, math.rad(0),math.rad(28)/2)  
-        Move(piston1,y_axis, 0, 5)      
+        Turn(jack2, z_axis, math.rad(0),math.rad(28)/2)
+        Move(piston1,y_axis, 0, 5)
         Move(piston2,y_axis, 0, 5)
         Sleep(2000)
     end
 end
 
 function factoryAnimation( set)
-    spinPiece = set.spinPiece
-    upPiece = set.upPiece
-    lavaContainer = set.lavaContainer
-    moltenPiecesT = set.moltenPiecesT
-    grabPiece = set.grabPiece
+    local spinPiece = set.spinPiece
+    local upPiece = set.upPiece
+    local lavaContainer = set.lavaContainer
+    local moltenPiecesT = set.moltenPiecesT
+    local grabPiece = set.grabPiece
     Show(grabPiece)
     Show(spinPiece)
-    pickedPiece= set.pickedPiece
-    rotationArc= 180 / #moltenPiecesT
-	containerOffsetValue = 70 --TODO
+    local pickedPiece= set.pickedPiece
+    local rotationArc= 180 / #moltenPiecesT
+	local containerOffsetValue = 70 --TODO
 
 	while true do
 		--starting
-		if maRa()== maRa() then			
+		if maRa()== maRa() then
 			Turn(spinPiece,y_axis, 0, 0)
 			--Arriving molten metall containerAnimation
-			startValue = randSign()* containerOffsetValue
+			local startValue = randSign()* containerOffsetValue
 			Move(lavaContainer,x_axis, startValue, 0)
 			Show(lavaContainer)
 			WMove(lavaContainer,x_axis, -50, 10)
@@ -415,7 +417,7 @@ function factoryAnimation( set)
 			end
             Move(lavaContainer,x_axis, containerOffsetValue*-1, 10)
 		-- ending
-			offset = #moltenPiecesT*rotationArc
+			local offset = #moltenPiecesT*rotationArc
 			for i=1, #moltenPiecesT do
                 Show(moltenPiecesT[1])
                 WMove(grabPiece,x_axis,0, 10)
@@ -430,7 +432,7 @@ function factoryAnimation( set)
 				WTurn(spinPiece, y_axis, math.rad(offset + rotationArc - 0.5*rotationArc), 1)
                 --reset
                 hideT(moltenPiecesT)
-                showT(moltenPiecesT, 1,#moltenPiecesT -(i-1) )              
+                showT(moltenPiecesT, 1,#moltenPiecesT -(i-1) )
                 WTurn(spinPiece, y_axis, math.rad(offset  - 0.5*rotationArc), 0)
                 Sleep(100)
 			end
@@ -442,32 +444,35 @@ function factoryAnimation( set)
 	Sleep(500)
 	end
 end
-boolInvisibleCranes = maRa()
-cranePiece = pieceName_pieceNr["ID_a1_Office_Industrial_Pod_Wall3"]
+local boolInvisibleCranes = maRa()
+local cranePiece = pieceName_pieceNr["ID_a1_Office_Industrial_Pod_Wall3"]
 function craneAnimation(set)
-    if boolInvisibleCranes then 
-        Hide (set.movePiece) 
+    if boolInvisibleCranes then
+        Hide (set.movePiece)
         Hide(cranePiece)
+        return
     end
-    WTurn(set.movePiece, y_axis, -math.random(20,90), 0.1)
-    Sleep(10000)
+    while true do
+        WTurn(set.movePiece, y_axis, math.rad(-math.random(20,90)), 0.1)
+        Sleep(10000)
+    end
 end
 
 function stampMill(set)
-    offset= 2
-    movePiece =  set.movePiece
-    stamp1 = set.stamp1
+    local offset= 2
+    local movePiece =  set.movePiece
+    local stamp1 = set.stamp1
     Show(stamp1)
-    stamp2 =  set.stamp2
+    local stamp2 =  set.stamp2
     Show(stamp2)
-    mPs = set.moltenPiecesT
-    preStamped = {mPs[3-offset],mPs[4-offset],mPs[6-offset],mPs[7-offset],mPs[9-offset], mPs[10-offset]} --3,4,6,11,8, 12
-    postStamped={mPs[3-offset],mPs[5-offset],mPs[6-offset],mPs[8-offset], mPs[9-offset]}--3,5,10, 8, 12
+    local mPs = set.moltenPiecesT
+    local preStamped = {mPs[3-offset],mPs[4-offset],mPs[6-offset],mPs[7-offset],mPs[9-offset], mPs[10-offset]} --3,4,6,11,8, 12
+    local postStamped={mPs[3-offset],mPs[5-offset],mPs[6-offset],mPs[8-offset], mPs[9-offset]}--3,5,10, 8, 12
     while true do
 
         hideT(preStamped)
         showT(postStamped)
-            --Move(mPs[10-offset], x_axis, 10, 1)       
+            --Move(mPs[10-offset], x_axis, 10, 1)
 			Move(stamp1, y_axis, 15, 1.5)
 			Move(stamp2, y_axis, 15, 1.5)
         Sleep(1000)
@@ -572,11 +577,36 @@ function initAllPieces()
         } end
     }
 
-    Signal(SIG_SUBANIMATIONS)
-    for pieceName, set in pairs (pieceCyclicOSTable) do
-		if pieceName_pieceNr[pieceName] and inToShowDict(pieceName_pieceNr[pieceName]) then
-			startPieceOS(pieceName, SIG_SUBANIMATIONS, set())
-		end
+    for pieceName, makeTasks in pairs(pieceCyclicOSTable) do
+        local root = pieceName_pieceNr[pieceName]
+        if root and inToShowDict(root) then
+            local tasks = makeTasks()
+            houseAnimations.add(root, function()
+                for _, task in ipairs(tasks) do
+                    local arg = task.arg
+                    if task.func == "func" then
+                        arg.method(arg)
+                    elseif task.func == "wturn" then
+                        WTurn(root, arg[1], math.rad(arg[2]), arg[4])
+                        Sleep(1)
+                        WTurn(root, arg[1], math.rad(arg[3]), arg[4])
+                        Sleep(1)
+                    elseif task.func == "wmove" then
+                        WMove(root, arg[1], arg[3], arg[4])
+                        Sleep(1)
+                        WMove(root, arg[1], arg[2], arg[4])
+                        Sleep(1)
+                    end
+                end
+            end)
+        end
+    end
+    -- Machinery owns its turntable/arm pieces. Do not also give those pieces
+    -- a generic continuous Spin while their sequence controls Turn.
+    for p, speed in pairs(selectedSpins) do
+        if inToShowDict(p) and not houseAnimations.owns(p) then
+            houseAnimations.add(p, function() Spin(p, y_axis, speed, math.pi) end)
+        end
     end
 end
 
@@ -812,6 +842,7 @@ function script.Killed(recentDamage, _)
     windowGeometryReady = false
     windowGeometryRevision = windowGeometryRevision + 1
     Spring.SetUnitRulesParam(unitID, 'mosaic_window_revision', -windowGeometryRevision, {inlos=true})
+    houseAnimations.stop(false, true)
 	buildingDamage.collapse(LevelPieces, ToShowTable)
     if GG.ManualRenderedBuildingWithWindowsVisiblePieces then
         GG.ManualRenderedBuildingWithWindowsVisiblePieces[unitID] = nil
@@ -1493,14 +1524,10 @@ function showSubsAnimateSpins(pieceGroupName, nr)
     local spinName = pieceGroupName .. nr .. "Spin"
     showOneOrAllOfTablePieceGroup(spinName)
     showOneOrAllOfTablePieceGroup(spinName.."Sub")
-    direction = math.random(40,160) * randSign()
-
-    if TablesOfPiecesGroups[spinName] then
-        for i=1,#TablesOfPiecesGroups[spinName] do
-            Spin(TablesOfPiecesGroups[spinName][i] , y_axis, math.rad(direction), math.pi)
-        end
-    elseif pieceName_pieceNr[spinName..1]  then
-        Spin(pieceName_pieceNr[spinName] , y_axis, math.rad(direction), math.pi)
+    local speed = math.rad(math.random(40,160) * randSign())
+    local spins = TablesOfPiecesGroups[spinName] or {pieceName_pieceNr[spinName..1]}
+    for _, p in pairs(spins) do
+        if inToShowDict(p) then selectedSpins[p] = speed end
     end
 end
 
@@ -1831,11 +1858,13 @@ function showHouse()
     boolHouseHidden = false
     showT(ToShowTable)
     SetRadiancePlaceables(ToShowTable, true)
+    if animationsReady then houseAnimations.start() end
     updateWindowGeometryRevision()
 end
 
 function hideHouse()
     boolHouseHidden = true
+    houseAnimations.stop(true)
     hideT(ToShowTable)
     SetRadiancePlaceables(ToShowTable, false)
     updateWindowGeometryRevision()
@@ -1851,6 +1880,11 @@ function buildAnimation(boolIsReconstruction)
         showHouse() 
         Hide(Icon)
     end
+    if not animationsReady then
+        initAllPieces()
+        animationsReady = true
+    end
+    if not boolHouseHidden then houseAnimations.start() end
     windowGeometryReady = true
     updateWindowGeometryRevision()
     GG.ManualRenderedBuildingWithWindowsVisiblePieces[unitID] = toShowDict
@@ -1997,7 +2031,6 @@ function buildBuilding(boolIsReconstruction)
     buildingClearanceReady = true
     if GG.MarkBuildingClearanceDirty then GG.MarkBuildingClearanceDirty(unitID) end
     boolDoneShowing = true
-	initAllPieces()
 end
 
 function script.Activate() return 1 end
