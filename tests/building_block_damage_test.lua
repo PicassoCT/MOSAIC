@@ -14,6 +14,7 @@ local function fixture(columnCount, floorCount, scale, id, baseHeight)
     local losses, puffs, sleeps, moves, turns, removed = {}, {}, {}, {}, {}, {}
     local dirty, calls, destroyed, poseReads, healthReads = 0, 0, false, 0, 0
     local rules = {}
+    local stoppedSpins, retiredPieces = {}, {}
     local childUnits = {}
     local env = setmetatable({unitID=id, x_axis=1, y_axis=2, z_axis=3,
         GG={InstanceCulture='international'}, VFS={}}, {__index=_G})
@@ -30,7 +31,17 @@ local function fixture(columnCount, floorCount, scale, id, baseHeight)
     env.Turn=function(p,axis,goal,speed)
         turns[#turns+1]={piece=p,axis=axis,goal=goal,speed=speed}
     end
-    env.Spin=noop; env.StopSpin=noop
+    env.Spin=noop
+    env.StopSpin=function(p,axis)
+        stoppedSpins[p]=stoppedSpins[p] or {}
+        stoppedSpins[p][axis]=true
+    end
+    env.OnBuildingPiecesDetached=function(pieces)
+        for _,p in ipairs(pieces)do
+            assert(env.IsBuildingPieceDetached(p), 'retirement callback preceded detachment')
+            retiredPieces[p]=true
+        end
+    end
     env.Explode=function() error('building damage must never emit model pieces') end
     env.Sleep=function(ms) sleeps[#sleeps+1]=ms end
     env.hideAll=function() for p in pairs(visible) do visible[p]=nil end end
@@ -122,7 +133,7 @@ local function fixture(columnCount, floorCount, scale, id, baseHeight)
     return {
         env=env,gadget=g,damage=damage,levels=levels,shown=shown,roofs=roofs,windows=windows,
         visible=visible,positions=positions,losses=losses,puffs=puffs,sleeps=sleeps,moves=moves,turns=turns,removed=removed,
-        batchSizes=batchSizes,rules=rules,
+        batchSizes=batchSizes,rules=rules,stoppedSpins=stoppedSpins,retiredPieces=retiredPieces,
         health=function(value) hp=value end,
         tick=function(value) frame=value;g:GameFrame(frame) end,
         hit=function(amount,p,opts)
@@ -152,6 +163,10 @@ assert(a.rules.windowGeometryChanges==1,'detachment did not invalidate the facad
 assert(a.visible[1] and a.visible[4] and a.visible[5] and a.visible[6], 'lower/adjacent supports survive')
 for _,p in ipairs({2,3,1001,1002,1003}) do
     assert(a.env.IsBuildingPieceDetached(p) and a.removed[p], 'falling geometry kept access/lighting')
+    assert(a.retiredPieces[p], 'animation owner did not receive detachment')
+    for axis=1,3 do
+        assert(a.stoppedSpins[p] and a.stoppedSpins[p][axis], 'descendant spin survived detachment')
+    end
 end
 assert(a.visible[2] and a.visible[3], 'model sections disappeared before settling')
 local beforeMoves,beforeTurns=#a.moves,#a.turns
