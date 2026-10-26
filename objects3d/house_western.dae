@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1">
-  <asset><contributor><author></author><authoring_tool>FBX COLLADA exporter</authoring_tool><comments></comments></contributor><created>2026-10-17T15:02:59Z</created><keywords></keywords><modified>2026-10-17T15:02:59Z</modified><revision></revision><subject></subject><title></title><unit meter="0.025400" name="centimeter"></unit><up_axis>Y_UP</up_axis></asset>
+  <asset><contributor><author></author><authoring_tool>FBX COLLADA exporter</authoring_tool><comments></comments></contributor><created>2026-10-25T22:12:49Z</created><keywords></keywords><modified>2026-10-25T22:12:49Z</modified><revision></revision><subject></subject><title></title><unit meter="0.025400" name="centimeter"></unit><up_axis>Y_UP</up_axis></asset>
   <library_images>
     <image id="Map #25-image" name="Map #25"><init_from>file://Z:\MosaicDev\Development\Models\building\house\house_europe\Tex_Dif_Europe_Building copy.png</init_from></image>
     <image id="Map #26-image" name="Map #26"><init_from>file://Z:\MosaicDev\Development\Models\building\house\house_europe\Tex_Alpha.png</init_from></image>
@@ -588065,10 +588065,10 @@
         <triangles count="16" material="_01 - Default"><input semantic="VERTEX" offset="0" source="#ClassicRoof25-VERTEX"/><input semantic="NORMAL" offset="1" source="#ClassicRoof25-Normal0"/><input semantic="TEXCOORD" offset="2" set="0" source="#ClassicRoof25-UV0"/><p> 3 0 2 2 1 1 0 2 0 3 3 2 0 4 0 1 5 3 4 6 22 9 7 24 8 8 23 9 9 24 4 10 22 6 11 25 1 12 7 8 13 8 5 14 4 8 15 8 0 16 6 4 17 9 8 18 8 1 19 7 0 20 6 7 21 5 1 22 10 5 23 12 1 24 10 7 25 5 3 26 11 2 27 14 9 28 16 6 29 15 9 30 16 3 31 13 7 32 17 9 33 16 2 34 14 3 35 13 6 36 21 0 37 19 2 38 18 0 39 19 6 40 21 4 41 20 8 42 23 7 43 27 5 44 26 7 45 27 8 46 23 9 47 24</p></triangles>
       </mesh>
     </geometry>
-    <geometry id="ClassicRoof25Sub1-lib" name="ClassicRoof25Sub1Mesh">
+    <geometry id="ClassicRoof25Sub3-lib" name="ClassicRoof25Sub3Mesh">
       <mesh>
-        <source id="ClassicRoof25Sub1-POSITION">
-          <float_array id="ClassicRoof25Sub1-POSITION-array" count="24">
+        <source id="ClassicRoof25Sub3-POSITION">
+          <float_array id="ClassicRoof25Sub3-POSITION-array" count="24">
 -96.920532 421.104980 341.644775
 -96.920532 -416.059082 341.644775
 96.920654 -426.150879 -341.644775
@@ -588079,15 +588079,15 @@
 82.521774 421.104980 392.550446
 </float_array>
           <technique_common>
-            <accessor source="#ClassicRoof25Sub1-POSITION-array" count="8" stride="3">
+            <accessor source="#ClassicRoof25Sub3-POSITION-array" count="8" stride="3">
               <param name="X" type="float"/>
               <param name="Y" type="float"/>
               <param name="Z" type="float"/>
             </accessor>
           </technique_common>
         </source>
-        <source id="ClassicRoof25Sub1-Normal0">
-          <float_array id="ClassicRoof25Sub1-Normal0-array" count="90">
+        <source id="ClassicRoof25Sub3-Normal0">
+          <float_array id="ClassicRoof25Sub3-Normal0-array" count="90">
 0.003877 0.999899 -0.013668
 0.003877 0.999899 -0.013668
 0.003877 0.999899 -0.013668
@@ -588120,15 +588120,15 @@
 -0.962037 0.000000 -0.272919
 </float_array>
           <technique_common>
-            <accessor source="#ClassicRoof25Sub1-Normal0-array" count="30" stride="3">
+            <accessor source="#ClassicRoof25Sub3-Normal0-array" count="30" stride="3">
               <param name="X" type="float"/>
               <param name="Y" type="float"/>
               <param name="Z" type="float"/>
             </accessor>
           </technique_common>
         </source>
-        <source id="ClassicRoof25Sub1-UV0">
-          <float_array id="ClassicRoof25Sub1-UV0-array" count="40">
+        <source id="ClassicRoof25Sub3-UV0">
+          <float_array id="ClassicRoof25Sub3-UV0-array" count="40">
 0.408185 0.464897
 0.441867 0.464500
 0.441867 0.497822
@@ -588151,22 +588151,22 @@
 0.229815 0.416060
 </float_array>
           <technique_common>
-            <accessor source="#ClassicRoof25Sub1-UV0-array" count="20" stride="2">
+            <accessor source="#ClassicRoof25Sub3-UV0-array" count="20" stride="2">
               <param name="S" type="float"/>
               <param name="T" type="float"/>
             </accessor>
           </technique_common>
         </source>
-        <vertices id="ClassicRoof25Sub1-VERTEX">
-          <input semantic="POSITION" source="#ClassicRoof25Sub1-POSITION"/>
+        <vertices id="ClassicRoof25Sub3-VERTEX">
+          <input semantic="POSITION" source="#ClassicRoof25Sub3-POSITION"/>
         </vertices>
-        <triangles count="10" material="_01 - Default"><input semantic="VERTEX" offset="0" source="#ClassicRoof25Sub1-VERTEX"/><input semantic="NORMAL" offset="1" source="#ClassicRoof25Sub1-Normal0"/><input semantic="TEXCOORD" offset="2" set="0" source="#ClassicRoof25Sub1-UV0"/><p> 4 0 7 5 1 6 1 2 4 1 3 4 5 4 6 2 5 5 3 6 9 2 7 8 6 8 10 6 9 10 2 10 8 5 11 11 6 12 15 0 13 13 3 14 12 0 15 13 6 16 15 7 17 14 1 18 17 0 19 16 4 20 18 4 21 18 0 22 16 7 23 19 7 24 3 6 25 2 4 26 0 4 27 0 6 28 2 5 29 1</p></triangles>
+        <triangles count="10" material="_01 - Default"><input semantic="VERTEX" offset="0" source="#ClassicRoof25Sub3-VERTEX"/><input semantic="NORMAL" offset="1" source="#ClassicRoof25Sub3-Normal0"/><input semantic="TEXCOORD" offset="2" set="0" source="#ClassicRoof25Sub3-UV0"/><p> 4 0 7 5 1 6 1 2 4 1 3 4 5 4 6 2 5 5 3 6 9 2 7 8 6 8 10 6 9 10 2 10 8 5 11 11 6 12 15 0 13 13 3 14 12 0 15 13 6 16 15 7 17 14 1 18 17 0 19 16 4 20 18 4 21 18 0 22 16 7 23 19 7 24 3 6 25 2 4 26 0 4 27 0 6 28 2 5 29 1</p></triangles>
       </mesh>
     </geometry>
-    <geometry id="ClassicRoof25Sub1_ncl1_1-lib" name="ClassicRoof25Sub1_ncl1_1Mesh">
+    <geometry id="ClassicRoof25Sub1-lib" name="ClassicRoof25Sub1Mesh">
       <mesh>
-        <source id="ClassicRoof25Sub1_ncl1_1-POSITION">
-          <float_array id="ClassicRoof25Sub1_ncl1_1-POSITION-array" count="30">
+        <source id="ClassicRoof25Sub1-POSITION">
+          <float_array id="ClassicRoof25Sub1-POSITION-array" count="30">
 -430.889160 416.164490 -0.500021
 -430.889160 283.823669 -0.500041
 423.145813 283.823547 -0.500041
@@ -588179,15 +588179,15 @@
 252.219818 416.164276 812.734863
 </float_array>
           <technique_common>
-            <accessor source="#ClassicRoof25Sub1_ncl1_1-POSITION-array" count="10" stride="3">
+            <accessor source="#ClassicRoof25Sub1-POSITION-array" count="10" stride="3">
               <param name="X" type="float"/>
               <param name="Y" type="float"/>
               <param name="Z" type="float"/>
             </accessor>
           </technique_common>
         </source>
-        <source id="ClassicRoof25Sub1_ncl1_1-Normal0">
-          <float_array id="ClassicRoof25Sub1_ncl1_1-Normal0-array" count="144">
+        <source id="ClassicRoof25Sub1-Normal0">
+          <float_array id="ClassicRoof25Sub1-Normal0-array" count="144">
 0.000000 0.000000 -1.000000
 0.000000 0.000000 -1.000000
 0.000000 0.000000 -1.000000
@@ -588238,15 +588238,15 @@
 0.000000 1.000000 0.000000
 </float_array>
           <technique_common>
-            <accessor source="#ClassicRoof25Sub1_ncl1_1-Normal0-array" count="48" stride="3">
+            <accessor source="#ClassicRoof25Sub1-Normal0-array" count="48" stride="3">
               <param name="X" type="float"/>
               <param name="Y" type="float"/>
               <param name="Z" type="float"/>
             </accessor>
           </technique_common>
         </source>
-        <source id="ClassicRoof25Sub1_ncl1_1-UV0">
-          <float_array id="ClassicRoof25Sub1_ncl1_1-UV0-array" count="56">
+        <source id="ClassicRoof25Sub1-UV0">
+          <float_array id="ClassicRoof25Sub1-UV0-array" count="56">
 0.972138 0.665203
 0.934384 0.745760
 0.891465 0.745760
@@ -588277,16 +588277,16 @@
 0.238359 0.020744
 </float_array>
           <technique_common>
-            <accessor source="#ClassicRoof25Sub1_ncl1_1-UV0-array" count="28" stride="2">
+            <accessor source="#ClassicRoof25Sub1-UV0-array" count="28" stride="2">
               <param name="S" type="float"/>
               <param name="T" type="float"/>
             </accessor>
           </technique_common>
         </source>
-        <vertices id="ClassicRoof25Sub1_ncl1_1-VERTEX">
-          <input semantic="POSITION" source="#ClassicRoof25Sub1_ncl1_1-POSITION"/>
+        <vertices id="ClassicRoof25Sub1-VERTEX">
+          <input semantic="POSITION" source="#ClassicRoof25Sub1-POSITION"/>
         </vertices>
-        <triangles count="16" material="_01 - Default"><input semantic="VERTEX" offset="0" source="#ClassicRoof25Sub1_ncl1_1-VERTEX"/><input semantic="NORMAL" offset="1" source="#ClassicRoof25Sub1_ncl1_1-Normal0"/><input semantic="TEXCOORD" offset="2" set="0" source="#ClassicRoof25Sub1_ncl1_1-UV0"/><p> 1 0 11 3 1 13 2 2 12 3 3 13 1 4 11 0 5 10 4 6 14 6 7 16 5 8 15 6 9 16 4 10 14 7 11 17 9 12 21 2 13 19 3 14 18 2 15 19 9 16 21 8 17 20 4 18 24 1 19 22 7 20 25 1 21 22 4 22 24 0 23 23 5 24 15 8 25 27 9 26 26 8 27 27 5 28 15 6 29 16 7 30 1 1 31 0 6 32 2 2 33 4 6 34 2 1 35 0 6 36 2 2 37 4 8 38 3 9 39 6 3 40 5 5 41 7 0 42 9 5 43 7 3 44 5 5 45 7 0 46 9 4 47 8</p></triangles>
+        <triangles count="16" material="_01 - Default"><input semantic="VERTEX" offset="0" source="#ClassicRoof25Sub1-VERTEX"/><input semantic="NORMAL" offset="1" source="#ClassicRoof25Sub1-Normal0"/><input semantic="TEXCOORD" offset="2" set="0" source="#ClassicRoof25Sub1-UV0"/><p> 1 0 11 3 1 13 2 2 12 3 3 13 1 4 11 0 5 10 4 6 14 6 7 16 5 8 15 6 9 16 4 10 14 7 11 17 9 12 21 2 13 19 3 14 18 2 15 19 9 16 21 8 17 20 4 18 24 1 19 22 7 20 25 1 21 22 4 22 24 0 23 23 5 24 15 8 25 27 9 26 26 8 27 27 5 28 15 6 29 16 7 30 1 1 31 0 6 32 2 2 33 4 6 34 2 1 35 0 6 36 2 2 37 4 8 38 3 9 39 6 3 40 5 5 41 7 0 42 9 5 43 7 3 44 5 5 45 7 0 46 9 4 47 8</p></triangles>
       </mesh>
     </geometry>
     <geometry id="ClassicRoof25Sub2-lib" name="ClassicRoof25Sub2Mesh">
@@ -820991,7 +820991,7 @@
       <node name="ClassicWallBlock23" id="ClassicWallBlock23" sid="ClassicWallBlock23"><matrix sid="matrix">1.000000 0.000000 0.000000 0.000000 0.000000 0.000000 1.058473 64.820786 0.000000 -1.000000 0.000000 0.000000 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#ClassicWallBlock23-lib"><bind_material><technique_common><instance_material symbol="_01 - Default" target="#_01 - Default"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node>
       <node name="_Street_Floor_Deco13" id="_Street_Floor_Deco13" sid="_Street_Floor_Deco13"><matrix sid="matrix">1.000000 0.000000 0.000000 0.000000 0.000000 0.000000 1.000000 84.650040 0.000000 -1.000000 0.000000 0.000000 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#_Street_Floor_Deco13-lib"><bind_material><technique_common><instance_material symbol="_01 - Default" target="#_01 - Default"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node>
       <node name="ClassicRoof18" id="ClassicRoof18" sid="ClassicRoof18"><matrix sid="matrix">1.000000 0.000000 0.000000 -29.918716 0.000000 0.000000 1.000000 84.650040 0.000000 -1.000000 0.000000 -30.239014 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#ClassicRoof18-lib"><bind_material><technique_common><instance_material symbol="_01 - Default" target="#_01 - Default"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra><node name="ClassicRoof18Sub2" id="ClassicRoof18Sub2" sid="ClassicRoof18Sub2"><matrix sid="matrix">0.357200 0.000000 0.000000 308.336426 0.000000 0.279243 0.000000 28.750977 0.000000 0.000000 0.298592 289.535767 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#ClassicRoof18Sub2-lib"><bind_material><technique_common><instance_material symbol="_01 - Default" target="#_01 - Default"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="ClassicRoof18Sub1" id="ClassicRoof18Sub1" sid="ClassicRoof18Sub1"><matrix sid="matrix">1.094391 0.000000 0.000000 0.000000 -0.000000 1.000000 0.000000 -156.941833 0.000000 -0.000000 1.000000 0.000000 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#ClassicRoof18Sub1-lib"><bind_material><technique_common><instance_material symbol="_01 - Default" target="#_01 - Default"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="ClassicRoof18Sub3" id="ClassicRoof18Sub3" sid="ClassicRoof18Sub3"><matrix sid="matrix">1.000000 0.000000 0.000000 31.421698 0.000000 1.000000 0.000000 -57.426575 0.000000 0.000000 1.000000 664.559021 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#ClassicRoof18Sub3-lib"><bind_material><technique_common><instance_material symbol="_01 - Default" target="#_01 - Default"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node></node>
-      <node name="ClassicRoof25" id="ClassicRoof25" sid="ClassicRoof25"><matrix sid="matrix">1.000000 0.000000 0.000000 -29.918716 0.000000 0.000000 1.000000 84.650040 0.000000 -1.000000 0.000000 -14.883301 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#ClassicRoof25-lib"><bind_material><technique_common><instance_material symbol="_01 - Default" target="#_01 - Default"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra><node name="ClassicRoof25Sub1" id="ClassicRoof25Sub1" sid="ClassicRoof25Sub1"><matrix sid="matrix">0.357200 -0.000000 -0.000000 308.336426 -0.000000 -0.279243 -0.000000 22.001465 0.000000 -0.000000 0.298592 289.535767 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#ClassicRoof25Sub1-lib"><bind_material><technique_common><instance_material symbol="_01 - Default" target="#_01 - Default"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="ClassicRoof25Sub1_ncl1_1" id="ClassicRoof25Sub1_ncl1_1" sid="ClassicRoof25Sub1_ncl1_1"><matrix sid="matrix">1.000000 0.000000 0.000000 0.000000 -0.000000 1.000000 0.000000 0.000000 0.000000 -0.000000 1.000000 0.000000 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#ClassicRoof25Sub1_ncl1_1-lib"><bind_material><technique_common><instance_material symbol="_01 - Default" target="#_01 - Default"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="ClassicRoof25Sub2" id="ClassicRoof25Sub2" sid="ClassicRoof25Sub2"><matrix sid="matrix">1.000000 0.000000 0.000000 -300.729248 -0.000000 1.000000 0.000000 -19.965637 0.000000 -0.000000 1.000000 464.763611 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#ClassicRoof25Sub2-lib"><bind_material><technique_common><instance_material symbol="_01 - Default" target="#_01 - Default"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node></node>
+      <node name="ClassicRoof25" id="ClassicRoof25" sid="ClassicRoof25"><matrix sid="matrix">1.000000 0.000000 0.000000 -29.918716 0.000000 0.000000 1.000000 84.650040 0.000000 -1.000000 0.000000 -14.883301 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#ClassicRoof25-lib"><bind_material><technique_common><instance_material symbol="_01 - Default" target="#_01 - Default"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra><node name="ClassicRoof25Sub3" id="ClassicRoof25Sub3" sid="ClassicRoof25Sub3"><matrix sid="matrix">0.357200 -0.000000 -0.000000 308.336426 -0.000000 -0.279243 -0.000000 22.001465 0.000000 -0.000000 0.298592 289.535767 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#ClassicRoof25Sub3-lib"><bind_material><technique_common><instance_material symbol="_01 - Default" target="#_01 - Default"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="ClassicRoof25Sub1" id="ClassicRoof25Sub1" sid="ClassicRoof25Sub1"><matrix sid="matrix">1.000000 0.000000 0.000000 0.000000 -0.000000 1.000000 0.000000 0.000000 0.000000 -0.000000 1.000000 0.000000 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#ClassicRoof25Sub1-lib"><bind_material><technique_common><instance_material symbol="_01 - Default" target="#_01 - Default"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="ClassicRoof25Sub2" id="ClassicRoof25Sub2" sid="ClassicRoof25Sub2"><matrix sid="matrix">1.000000 0.000000 0.000000 -300.729248 -0.000000 1.000000 0.000000 -19.965637 0.000000 -0.000000 1.000000 464.763611 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#ClassicRoof25Sub2-lib"><bind_material><technique_common><instance_material symbol="_01 - Default" target="#_01 - Default"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node></node>
       <node name="ClassicRoof23" id="ClassicRoof23" sid="ClassicRoof23"><matrix sid="matrix">1.000000 0.000000 0.000000 -29.918716 0.000000 0.000000 1.000000 84.650040 0.000000 -1.000000 0.000000 -20.796387 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#ClassicRoof23-lib"><bind_material><technique_common><instance_material symbol="_01 - Default" target="#_01 - Default"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra><node name="ClassicRoof23Sub1" id="ClassicRoof23Sub1" sid="ClassicRoof23Sub1"><matrix sid="matrix">0.357200 -0.000000 -0.000000 308.336426 -0.000000 -0.279243 -0.000000 16.422852 0.000000 -0.000000 0.298592 289.535767 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#ClassicRoof23Sub1-lib"><bind_material><technique_common><instance_material symbol="_01 - Default" target="#_01 - Default"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="ClassicRoof23Sub1_ncl1_1" id="ClassicRoof23Sub1_ncl1_1" sid="ClassicRoof23Sub1_ncl1_1"><matrix sid="matrix">1.066316 0.000000 0.000000 0.000000 -0.000000 1.000000 0.000000 247.768066 -0.000000 -0.000000 1.000000 0.000000 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#ClassicRoof23Sub1_ncl1_1-lib"><bind_material><technique_common><instance_material symbol="_01 - Default" target="#_01 - Default"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="ClassicRoof23Sub2" id="ClassicRoof23Sub2" sid="ClassicRoof23Sub2"><matrix sid="matrix">1.000000 0.000000 0.000000 -300.729248 -0.000000 1.000000 0.000000 -26.213196 0.000000 -0.000000 1.000000 464.763611 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#ClassicRoof23Sub2-lib"><bind_material><technique_common><instance_material symbol="_01 - Default" target="#_01 - Default"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node></node>
       <node name="ClassicRoof20" id="ClassicRoof20" sid="ClassicRoof20"><matrix sid="matrix">1.000000 0.000000 0.000000 -29.918716 0.000000 0.000000 1.000000 84.650040 0.000000 -1.000000 0.000000 -19.393311 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#ClassicRoof20-lib"><bind_material><technique_common><instance_material symbol="_01 - Default" target="#_01 - Default"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra><node name="ClassicRoof20Sub1" id="ClassicRoof20Sub1" sid="ClassicRoof20Sub1"><matrix sid="matrix">0.357200 0.000000 0.000000 308.336426 0.000000 0.279243 0.000000 3.371094 0.000000 0.000000 0.298592 289.535767 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#ClassicRoof20Sub1-lib"><bind_material><technique_common><instance_material symbol="_01 - Default" target="#_01 - Default"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node></node>
       <node name="ClassicRoof21" id="ClassicRoof21" sid="ClassicRoof21"><matrix sid="matrix">1.000000 0.000000 0.000000 -29.918716 0.000000 0.000000 1.000000 84.650040 0.000000 -1.000000 0.000000 0.000000 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#ClassicRoof21-lib"><bind_material><technique_common><instance_material symbol="_01 - Default" target="#_01 - Default"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra><node name="ClassicRoof21Sub1" id="ClassicRoof21Sub1" sid="ClassicRoof21Sub1"><matrix sid="matrix">0.357200 -0.000000 -0.000000 308.336426 -0.000000 -0.279243 -0.000000 -10.309570 0.000000 -0.000000 0.298592 289.535767 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#ClassicRoof21Sub1-lib"><bind_material><technique_common><instance_material symbol="_01 - Default" target="#_01 - Default"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node></node>
