@@ -430,8 +430,16 @@ function M.New(weaponConf, policeProfiles, tankProfiles, debugLampProfiles)
             if unitVisible(id) then
                 local flash=TankMuzzle.Collect(Spring,id,record,frame)
                 if flash then
-                    add(flash.x,flash.y,flash.z,flash.radius*self.radius/1.3,
-                        flash.color,flash.strength*self.brightness/1.3,false,flash.ribbon,nil,id)
+                    -- The visible plume is directional; submit its radiance as
+                    -- a short axis-aligned chain instead of one broad spherical
+                    -- bulb.  Only the first source owns the ribbon so the shared
+                    -- ribbon budget and renderer behavior remain unchanged.
+                    local chain=flash.lights or {flash}
+                    for index,source in ipairs(chain) do
+                        add(source.x,source.y,source.z,source.radius*self.radius/1.3,
+                            flash.color,source.strength*self.brightness/1.3,false,
+                            index==1 and flash.ribbon or nil,nil,id)
+                    end
                 end
             end
         end

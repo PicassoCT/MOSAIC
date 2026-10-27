@@ -190,7 +190,14 @@ local tankMuzzleProfile = {
     durationFrames = 12,
     lengthFactor = 0.85, widthFactor = 0.12,
     minLength = 40, maxLength = 120,
-    clearance = 2, radiusFactor = 2.2, strength = 3.2,
+    clearance = 2, radiusFactor = 0.95, strength = 3.2,
+    -- Keep the visible discharge and the lighting pointed the same way.  The
+    -- previous ~2.2x-radius point source produced a broad bulb around the tank;
+    -- these fractions form a short three-source chain along the barrel axis.
+    lightOffsets = {0.00, 0.36, 0.72},
+    lightRadiusFactors = {0.95, 1.05, 0.72},
+    lightStrengthFactors = {1.00, 0.62, 0.28},
+    lightFadePower = 3.2,
     color = {1, 0.6, 0.16},
     colorStart = {1, 0.92, 0.62, 1}, colorEnd = {1, 0.19, 0.025, 0},
     emission = {4, 0.7}, sourceGlow = {1, 0.48, 0.1, 0.5},
