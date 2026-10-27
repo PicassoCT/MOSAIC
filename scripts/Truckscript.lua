@@ -215,6 +215,7 @@ function script.Create()
     Hide(center)
 
     showAndTell()
+    showRandomPieceSubset(TablesOfPiecesGroups["Custom"])
     if boolTowsGuyInAnarchy then
         StartThread(waitForAnarchy, goingIntoAnarchy, goingOutOfAnarchy )
     end

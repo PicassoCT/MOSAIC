@@ -220,6 +220,7 @@ function script.Create()
     TablesOfPiecesGroups = getPieceTableByNameGroups(false)
 
     showAndTell()
+    showRandomPieceSubset(TablesOfPiecesGroups["Custom"])
 
     StartThread(turnTrailerLoop)
 end

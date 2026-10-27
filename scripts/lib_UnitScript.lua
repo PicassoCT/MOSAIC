@@ -2396,6 +2396,25 @@ function showOnePiece(T, hash)
     end
 end
 
+-- Show a random nonempty subset, hiding the remaining variants. Piece groups
+-- can have gaps in their numbered keys, so pack a copy before selecting.
+function showRandomPieceSubset(T)
+    if not T then return end
+    local pieces = {}
+    for _, id in pairs(T) do
+        Hide(id)
+        pieces[#pieces + 1] = id
+    end
+    if #pieces == 0 then return end
+    table.sort(pieces)
+    local amount = math.random(1, #pieces)
+    for i = 1, amount do
+        local selected = math.random(i, #pieces)
+        pieces[i], pieces[selected] = pieces[selected], pieces[i]
+        Show(pieces[i])
+    end
+end
+
 function showOneOrNonePiece(T)
     if not T then return end
     if maRa() == true then
