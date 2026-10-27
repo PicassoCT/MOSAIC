@@ -96,7 +96,7 @@ weapons.supportmortar = variant("weapons/mortar.lua", "mortar", {
     edgeeffectiveness = 0.15,
     accuracy = 180,
     avoidfriendly = true,
-    customparams = {wall_damage_multiplier = 0.25},
+    customparams = {wall_damage_multiplier = 0.25, mortar_fragment_weapon = "supportmortarfragment"},
 })
 
 weapons.supportgunshipmg = variant("weapons/cGunShipMG.lua", "cgunshipmg", {

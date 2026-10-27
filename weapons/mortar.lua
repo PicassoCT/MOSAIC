@@ -39,7 +39,9 @@ local weaponDef = {
     --CylinderTargetting=true,
     avoidFeature = false,
     avoidFriendly = true,
-    explosionGenerator = "custom:GunShipMGImpact",
+    explosionGenerator = "custom:mortar_burst",
+    soundHit = "sounds/weapons/rocket/impact.wav",
+    customParams = {mortar_fragment_weapon = "mortarfragment"},
     --commandfire=true,
 
     --- -DAMAGE
