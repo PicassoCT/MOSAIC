@@ -150,7 +150,10 @@ if UnitDefNames["caesareagle"] then ignoredUnitDefs[UnitDefNames["caesareagle"].
 if UnitDefNames["decobuilding"] then ignoredUnitDefs[UnitDefNames["decobuilding"].id]= true end
 if UnitDefNames["decoboat"] then ignoredUnitDefs[UnitDefNames["decoboat"].id]= true end
 for id, def in pairs(UnitDefs) do
-  if (def.customParams or {}).house_asian_base then ignoredUnitDefs[id] = true end
+  local params = def.customParams or {}
+  if params.house_asian_base or params.civilian_service_payload then
+    ignoredUnitDefs[id] = true
+  end
 end
 
 --------------------------------------------------------------------------------
