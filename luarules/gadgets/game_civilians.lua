@@ -88,6 +88,13 @@ local loadableTruckType = getLoadAbleTruckTypes(UnitDefs, GameConfig.game.cultur
 --echo("Loadable TruckTypes: ".. toString(loadableTruckType))
 local refugeeableTruckType = getRefugeeAbleTruckTypes(UnitDefs, TruckTypeTable, GameConfig.game.culture)
 local gaiaTeamID = Spring.GetGaiaTeamID() 
+local servicePayloadCatalog = VFS.Include("scripts/lib_truck_service_payloads.lua")
+GG.CivilianServicePayloadSelection = GG.CivilianServicePayloadSelection or {}
+local servicePayloadSelector = servicePayloadCatalog.newSelector({
+    unitDefs = UnitDefs, unitDefNames = UnitDefNames,
+    loadableTypes = loadableTruckType, civilianTypes = TruckTypeTable,
+    gaiaTeamID = gaiaTeamID, state = GG.CivilianServicePayloadSelection,
+})
 local trafficPoint
 local OpimizationFleeing = {accumulatedCivilianDamage = 0}
 local chanceOfCivilianSpawningFromTruck = GameConfig.civilians.traffic.passengerSpawnChance
@@ -508,16 +515,19 @@ function attachPayload(payLoadID, id)
 end
 
 function loadTruck(id, loadType)
-            --echo("checkReSpawnTraffic2.61")
-    if loadableTruckType[spGetUnitDefID(id)] then
-        --echo("checkReSpawnTraffic2.62")
-        --Spring.Echo("createUnitAtUnit ".."game_civilians.lua")     
-        payLoadID = createUnitAtUnit(gaiaTeamID, loadType, id)
-        --echo("checkReSpawnTraffic2.63")
-        if payLoadID then
-            --echo("checkReSpawnTraffic2.64")
-            return attachPayload(payLoadID, id)
-        end
+    local carrierDefID = spGetUnitDefID(id)
+    if not loadableTruckType[carrierDefID] then return end
+    local selected, eligible = servicePayloadSelector:Select(carrierDefID, loadType, spGetUnitTeam(id))
+    local payloadID = createUnitAtUnit(gaiaTeamID, selected, id)
+    if not payloadID and selected ~= loadType then
+        -- An unavailable new asset must not leave ordinary traffic unladen.
+        selected = loadType
+        payloadID = createUnitAtUnit(gaiaTeamID, selected, id)
+    end
+    if payloadID then
+        local attachedID = attachPayload(payloadID, id)
+        if attachedID then servicePayloadSelector:RecordSpawn(eligible, selected) end
+        return attachedID
     end
 end
 

@@ -1,0 +1,716 @@
+{
+  "schema_version": 1,
+  "generator": "tools/truck_service_payloads/generate.py",
+  "model": "objects3d/truckPayloadService.dae",
+  "sha256": "be07dc64e4ef5f9ab6e8bd682c763c8fd87c5cc89616fb4afe1b25ad5eee56c7",
+  "coordinates": {
+    "up": "Y",
+    "forward": "+Z",
+    "unit_meters": 1,
+    "root": "center",
+    "floor_y": 2.1
+  },
+  "culling": {
+    "radius": 37,
+    "height": 43,
+    "midpos": [
+      0.0,
+      19.650000000000002,
+      -0.015000000000000568
+    ],
+    "includes_mount_offsets": [
+      [
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        -3.5
+      ],
+      [
+        0,
+        3.5,
+        1
+      ],
+      [
+        0,
+        4.1,
+        0
+      ]
+    ]
+  },
+  "mounting": "Existing truck attachment point plus validated per-carrier center offsets in lib_truck_service_payloads.lua",
+  "textures": {
+    "diffuse": "unittextures/house_asian_diffuse.dds",
+    "special": "unittextures/house_asian_selfilu_reflection.png",
+    "normal": "unittextures/house_asian_normal.dds"
+  },
+  "atlas_rectangles_top_left": {
+    "paint": [
+      0.821045,
+      0.844482,
+      0.835205,
+      0.858643
+    ],
+    "worn": [
+      0.514,
+      0.92,
+      0.554,
+      0.97
+    ],
+    "teal": [
+      0.773926,
+      0.734863,
+      0.780762,
+      0.741699
+    ],
+    "metal": [
+      0.378,
+      0.005,
+      0.451,
+      0.051
+    ],
+    "dark": [
+      0.843,
+      0.015,
+      0.893,
+      0.043
+    ],
+    "vent": [
+      0.139,
+      0.44,
+      0.163,
+      0.494
+    ],
+    "door": [
+      0.5,
+      0.058,
+      0.58,
+      0.137
+    ],
+    "hazard": [
+      0.131,
+      0.663,
+      0.188,
+      0.672
+    ],
+    "shutter": [
+      0.755,
+      0.569,
+      0.829,
+      0.621
+    ],
+    "window": [
+      0.379,
+      0.301,
+      0.413,
+      0.333
+    ],
+    "amber": [
+      0.191,
+      0.152,
+      0.201,
+      0.163
+    ],
+    "redlamp": [
+      0.429,
+      0.063,
+      0.447,
+      0.067
+    ],
+    "sign": [
+      0.255,
+      0.671,
+      0.284,
+      0.699
+    ],
+    "menu": [
+      0.262,
+      0.44,
+      0.309,
+      0.498
+    ],
+    "warning": [
+      0.706,
+      0.136,
+      0.761,
+      0.173
+    ],
+    "medical": [
+      0.036,
+      0.284,
+      0.082,
+      0.332
+    ],
+    "skin": [
+      0.89892578,
+      0.47705078,
+      0.90185547,
+      0.47998047
+    ],
+    "unato_blue": [
+      0.82275390625,
+      0.231689453125,
+      0.82763671875,
+      0.236083984375
+    ],
+    "unato_glyph_U": [
+      0.217041015625,
+      0.36669921875,
+      0.22412109375,
+      0.375732421875
+    ],
+    "unato_glyph_N": [
+      0.210693359375,
+      0.35888671875,
+      0.21630859375,
+      0.366455078125
+    ],
+    "unato_glyph_A": [
+      0.19091796875,
+      0.35888671875,
+      0.19677734375,
+      0.366455078125
+    ],
+    "unato_glyph_T": [
+      0.19677734375,
+      0.35888671875,
+      0.202392578125,
+      0.366455078125
+    ],
+    "unato_glyph_O": [
+      0.204833984375,
+      0.35888671875,
+      0.210693359375,
+      0.366455078125
+    ]
+  },
+  "variants": [
+    {
+      "name": "air_scrubber",
+      "title": "Air Scrubber",
+      "piece": "container1",
+      "triangles": 1376,
+      "parts": {
+        "skid": 60,
+        "body": 636,
+        "equipment": 252,
+        "details": 428
+      },
+      "bounds": [
+        [
+          -14.08,
+          2.1,
+          -24.0
+        ],
+        [
+          14.08,
+          34,
+          24.0
+        ]
+      ],
+      "radius": 32,
+      "height": 34,
+      "midpos": [
+        0.0,
+        18.05,
+        0.0
+      ],
+      "features": [
+        "unequal twin louvred air scoops",
+        "six latched filter cassettes",
+        "rear duct and compressor grille"
+      ]
+    },
+    {
+      "name": "night_kitchen",
+      "title": "Night Kitchen",
+      "piece": "container2",
+      "triangles": 1176,
+      "parts": {
+        "skid": 60,
+        "body": 300,
+        "equipment": 492,
+        "details": 324
+      },
+      "bounds": [
+        [
+          -14.08,
+          2.1,
+          -24.0
+        ],
+        [
+          14.08,
+          35.1,
+          24.0
+        ]
+      ],
+      "radius": 33,
+      "height": 36,
+      "midpos": [
+        0.0,
+        18.6,
+        0.0
+      ],
+      "features": [
+        "open serving recess with cookware and shelves",
+        "sloped hood and rooftop extractor",
+        "rear fridge and restrained gas cylinders"
+      ]
+    },
+    {
+      "name": "battery_exchange",
+      "title": "Battery Exchange",
+      "piece": "container3",
+      "triangles": 2020,
+      "parts": {
+        "skid": 60,
+        "body": 300,
+        "equipment": 1420,
+        "details": 240
+      },
+      "bounds": [
+        [
+          -14.08,
+          2.1,
+          -24.0
+        ],
+        [
+          14.08,
+          34.05,
+          24.0
+        ]
+      ],
+      "radius": 32,
+      "height": 35,
+      "midpos": [
+        0.0,
+        18.075,
+        0.0
+      ],
+      "features": [
+        "three battery drawers",
+        "large spoke-and-cable reel",
+        "lifting handle and radiator cabinet"
+      ]
+    },
+    {
+      "name": "salvage_press",
+      "title": "Salvage Press",
+      "piece": "container4",
+      "triangles": 1968,
+      "parts": {
+        "skid": 60,
+        "body": 132,
+        "equipment": 1432,
+        "details": 344
+      },
+      "bounds": [
+        [
+          -14.08,
+          2.1,
+          -24.0
+        ],
+        [
+          14.08,
+          30.45,
+          24.0
+        ]
+      ],
+      "radius": 31,
+      "height": 31,
+      "midpos": [
+        0.0,
+        16.275,
+        0.0
+      ],
+      "features": [
+        "segmented beetle compactor shell",
+        "two visible compression rollers",
+        "folded hydraulic arms and salvage cages"
+      ]
+    },
+    {
+      "name": "cold_chain",
+      "title": "Cold Chain",
+      "piece": "container5",
+      "triangles": 1178,
+      "parts": {
+        "skid": 60,
+        "body": 252,
+        "equipment": 432,
+        "details": 434
+      },
+      "bounds": [
+        [
+          -14.08,
+          2.1,
+          -24.0
+        ],
+        [
+          14.08,
+          32.5,
+          24.0
+        ]
+      ],
+      "radius": 32,
+      "height": 33,
+      "midpos": [
+        0.0,
+        17.3,
+        0.0
+      ],
+      "features": [
+        "three inclined sealed caskets",
+        "raised inspection-window gaskets",
+        "paired refrigeration cabinets and coolant loops"
+      ]
+    },
+    {
+      "name": "sleeper_shuttle",
+      "title": "Sleeper Shuttle",
+      "piece": "container6",
+      "triangles": 1980,
+      "parts": {
+        "skid": 60,
+        "body": 1200,
+        "equipment": 324,
+        "details": 396
+      },
+      "bounds": [
+        [
+          -14.08,
+          2.1,
+          -24.04
+        ],
+        [
+          14.08,
+          35.9,
+          24.0
+        ]
+      ],
+      "radius": 33,
+      "height": 36,
+      "midpos": [
+        0.0,
+        19.000000000000004,
+        -0.02000000000000135
+      ],
+      "features": [
+        "six individual chamfered sleeping capsules",
+        "lit door slits and separate latches",
+        "rear HVAC spine, plumbing and stowed ladder"
+      ]
+    },
+    {
+      "name": "mobile_crematorium",
+      "title": "Mobile Crematorium",
+      "piece": "container7",
+      "triangles": 804,
+      "parts": {
+        "skid": 60,
+        "body": 120,
+        "equipment": 244,
+        "details": 380
+      },
+      "bounds": [
+        [
+          -14.08,
+          2.1,
+          -24.0
+        ],
+        [
+          14.08,
+          37.2,
+          24.0
+        ]
+      ],
+      "radius": 33,
+      "height": 38,
+      "midpos": [
+        0.0,
+        19.650000000000002,
+        0.0
+      ],
+      "features": [
+        "sealed octagonal furnace door",
+        "heat-scrubber stack",
+        "six closed urn lockers and refractory panel ribs"
+      ]
+    },
+    {
+      "name": "noodle_stall",
+      "title": "Noodle Stall",
+      "piece": "container8",
+      "triangles": 1712,
+      "parts": {
+        "skid": 60,
+        "body": 180,
+        "equipment": 328,
+        "details": 1144
+      },
+      "bounds": [
+        [
+          -14.08,
+          2.1,
+          -24.0
+        ],
+        [
+          14.08,
+          33.9,
+          24.0
+        ]
+      ],
+      "radius": 32,
+      "height": 34,
+      "midpos": [
+        0.0,
+        18.0,
+        0.0
+      ],
+      "features": [
+        "ribbed barrel roof and noodle-counter recess",
+        "paired stockpots and broth boiler",
+        "folded stools, small clothed cook and extractor"
+      ]
+    },
+    {
+      "name": "mobile_casino",
+      "title": "Mobile Casino",
+      "piece": "container9",
+      "triangles": 1044,
+      "parts": {
+        "skid": 60,
+        "body": 272,
+        "equipment": 172,
+        "details": 540
+      },
+      "bounds": [
+        [
+          -14.08,
+          2.1,
+          -24.0
+        ],
+        [
+          14.08,
+          33.1,
+          24.0
+        ]
+      ],
+      "radius": 32,
+      "height": 34,
+      "midpos": [
+        0.0,
+        17.6,
+        0.0
+      ],
+      "features": [
+        "three physical slot-machine stations",
+        "stepped illuminated jackpot marquee",
+        "small roulette wheel and protected cashier hardware"
+      ]
+    },
+    {
+      "name": "mobile_strip_club",
+      "title": "Mobile Strip Club",
+      "piece": "container10",
+      "triangles": 1744,
+      "parts": {
+        "skid": 60,
+        "body": 228,
+        "equipment": 156,
+        "details": 1300
+      },
+      "bounds": [
+        [
+          -14.08,
+          2.1,
+          -24.0
+        ],
+        [
+          14.08,
+          31.5,
+          24.0
+        ]
+      ],
+      "radius": 32,
+      "height": 32,
+      "midpos": [
+        0.0,
+        16.8,
+        0.0
+      ],
+      "features": [
+        "rounded cabaret shell and shutter frame",
+        "small pole stage with dark curtains",
+        "clothed adult performer, footlights and folded access step"
+      ]
+    },
+    {
+      "name": "mobile_bar",
+      "title": "Mobile Bar",
+      "piece": "container11",
+      "triangles": 1852,
+      "parts": {
+        "skid": 60,
+        "body": 120,
+        "equipment": 268,
+        "details": 1404
+      },
+      "bounds": [
+        [
+          -14.08,
+          2.1,
+          -24.0
+        ],
+        [
+          14.08,
+          33.7,
+          24.0
+        ]
+      ],
+      "radius": 32,
+      "height": 34,
+      "midpos": [
+        0.0,
+        17.900000000000002,
+        0.0
+      ],
+      "features": [
+        "asymmetric canopy and long bar counter",
+        "three taps and bottle shelves",
+        "paired keg cradles and clothed adult bartender"
+      ]
+    },
+    {
+      "name": "mobile_band_stage",
+      "title": "Mobile Band Stage",
+      "piece": "container12",
+      "triangles": 1934,
+      "parts": {
+        "skid": 60,
+        "body": 180,
+        "equipment": 376,
+        "details": 1318
+      },
+      "bounds": [
+        [
+          -14.08,
+          2.1,
+          -24.0
+        ],
+        [
+          14.08,
+          33.7,
+          24.0
+        ]
+      ],
+      "radius": 32,
+      "height": 34,
+      "midpos": [
+        0.0,
+        17.900000000000002,
+        0.0
+      ],
+      "features": [
+        "open truck-mounted stage and twin speaker towers",
+        "three clothed adult musicians with drums, guitar and keyboard",
+        "half-retracted canopy, lamps, amplifiers and microphone"
+      ]
+    },
+    {
+      "name": "unato_rations",
+      "title": "UNATO Ration Dispenser",
+      "piece": "container13",
+      "triangles": 1046,
+      "parts": {
+        "skid": 108,
+        "body": 280,
+        "equipment": 492,
+        "details": 166
+      },
+      "bounds": [
+        [
+          -14.0,
+          2.1,
+          -24.01
+        ],
+        [
+          14.05,
+          30.1,
+          24.01
+        ]
+      ],
+      "radius": 32,
+      "height": 31,
+      "midpos": [
+        0.025000000000000355,
+        16.1,
+        0.0
+      ],
+      "features": [
+        "two recessed ration dispensing bays with token/status faces and meal trays",
+        "off-white cabinet, low-emission blue band and five atlas-sampled UNATO glyphs",
+        "shallow serving awning, refill door and folded queue rail",
+        "four continuous corner supports with aligned flat stacking pads"
+      ],
+      "stack": {
+        "pitch_y": 28.0,
+        "bottom_plane_y": 2.1,
+        "top_plane_y": 30.1,
+        "contacts": [
+          {
+            "center_xz": [
+              -12.2,
+              -21.8
+            ],
+            "size_xz": [
+              3.6,
+              4.4
+            ]
+          },
+          {
+            "center_xz": [
+              -12.2,
+              21.8
+            ],
+            "size_xz": [
+              3.6,
+              4.4
+            ]
+          },
+          {
+            "center_xz": [
+              12.2,
+              -21.8
+            ],
+            "size_xz": [
+              3.6,
+              4.4
+            ]
+          },
+          {
+            "center_xz": [
+              12.2,
+              21.8
+            ],
+            "size_xz": [
+              3.6,
+              4.4
+            ]
+          }
+        ],
+        "max_equipment_y": 29.0,
+        "rationale": [
+          "Four solid corner columns join aligned lower feet to flat roof pads.",
+          "Only the four feet reach the bottom plane; the skid deck starts at y=3.3.",
+          "Roof ventilation, awning and all geometry outside the contact footprints stay below y=29.0.",
+          "A copy translated by +28.0 Y meets all four roof pads at y=30.1 without volume overlap.",
+          "The exported piece is one module; no automatic stacking or additional runtime actor is introduced."
+        ]
+      }
+    }
+  ]
+}
