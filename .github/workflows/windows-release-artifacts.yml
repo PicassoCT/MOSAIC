@@ -27,7 +27,7 @@ on:
   workflow_dispatch:
     inputs:
       expected_version:
-        description: 'Required game version (e.g. 1.033); must match the selected ref'
+        description: 'Required game version (e.g. 1.034); must match the selected ref'
         required: true
         type: string
       portable:
@@ -89,3 +89,4 @@ jobs:
           path: ${{ runner.temp }}/mosaic-release/
           if-no-files-found: error
           retention-days: 14
+
