@@ -12,14 +12,14 @@ Requirements: Git, Python 3.12, and 7-Zip (`7z` or `7zz`) for 7z/SD7 inputs.
 Run from a clean committed checkout. Output must be a new directory.
 
 ```bash
-bash pack_mosaic.sh --output ../mosaic-game --expected-version 1.033
-bash pack_mosaic_full.sh --output ../mosaic-windows --expected-version 1.033
+bash pack_mosaic.sh --output ../mosaic-game --expected-version 1.034
+bash pack_mosaic_full.sh --output ../mosaic-windows --expected-version 1.034
 ```
 
 On Windows, use the Python entry point directly:
 
 ```powershell
-python tools/package_windows_release.py --output ../mosaic-windows --expected-version 1.033 --inputs packaging/windows-inputs.json
+python tools/package_windows_release.py --output ../mosaic-windows --expected-version 1.034 --inputs packaging/windows-inputs.json
 ```
 
 The full build intentionally fails until `packaging/windows-inputs.json` contains
@@ -31,12 +31,13 @@ CI needs URLs; local paths are useful for offline builds. Do not use moving
 `latest` URLs or Rapid tags as version pins. Download the actual archives, verify
 their provenance, and compute hashes with `sha256sum` or `Get-FileHash`.
 
-Engine and lobby require `format` (`zip` or `7z`), the archive `root` containing
-their files (`.` for no wrapper), and `required_files` relative to that root.
-List all required launcher/runtime/configuration files for the selected build,
-including the lobby executable's actual path rather than assuming the example
-`skylobby.exe` spelling. Use a portable lobby archive, never an MSI. Engine
-validation additionally requires `spring.exe`, `unitsync.dll`, and a base SDZ.
+Engine and Java runtime require `format` (`zip` or `7z`), the archive `root`
+containing their files (`.` for no wrapper), and `required_files` relative to
+that root. Engine validation additionally requires `spring.exe`, `unitsync.dll`,
+and a base SDZ. Runtime validation requires `bin/java.exe` plus release metadata
+identifying Windows x64 Java 21 or newer. The accepted lobby is raaar's maintained
+Skylobby 0.9.31016 Windows JAR; it is pinned as a single `file`, not an MSI or an
+assumed `skylobby.exe` bundle.
 The map requires `filename` (`.sdz` or `.sd7`), matching `format`, metadata
 `mapinfo.lua`, and compiled `.smf` terrain. Pin the exact LastDayOfDhubai archive;
 a pr-downloader cache or Rapid game package alone is not a standalone SDZ.
@@ -53,8 +54,9 @@ environment too when byte-for-byte reproduction across machines is required.
 Successful full builds emit:
 
 - `Mosaic_v<version>.sdz`.
-- `Mosaic_v<version>_windows-portable.zip`, containing `engine/`, `lobby/`,
-  `data/games/`, `data/maps/`, `data/springsettings.cfg`, and `Start-Mosaic.cmd`.
+- `Mosaic_v<version>_windows-portable.zip`, containing `runtime/`, `lobby/`,
+  `data/engine/`, `data/games/`, `data/maps/`, `data/springsettings.cfg`, and
+  `Start-Mosaic.cmd`.
 - `manifest.json`: source commit, resolved version, complete input lock,
   artifact hashes/sizes, and hashes/sizes of portable payload files.
 - `SHA256SUMS`: hashes for the SDZ, portable ZIP, and external manifest.
@@ -64,13 +66,13 @@ avoid recursion. The external manifest hashes the final ZIP. No completed
 output directory is exposed on failure. Temporary files are removed, and
 existing output directories are never overwritten.
 
-Extract the portable ZIP anywhere and run `Start-Mosaic.cmd`. It sets
-`SPRING_DATADIR` to the bundled data directory and starts the pinned lobby.
-On first use, configure Skylobby's engine to the bundled `engine/spring.exe`
-and its data directory to the bundled `data/`. The package includes `PLAY.txt`
-with these instructions; no unverified Skylobby command-line API is assumed.
-Lobby/network functionality and Recoil launch must still be smoke-tested on
-Windows, including a path with spaces and no globally installed game data.
+Extract the portable ZIP anywhere and run `Start-Mosaic.cmd`. It launches the
+pinned Skylobby JAR with bundled Java, an isolated state directory, the bundled
+Spring data root, `lobby.springrts.com:8200`, and a `MOSAIC` battle filter. This
+implements the shared lobby plus agreed SPADS room approach; it does not add
+matchmaking or create/host a room. Lobby/network functionality and Recoil launch
+must still be smoke-tested on Windows, including a path with spaces and no
+globally installed game data.
 
 ## CI and publishing boundary
 
@@ -82,3 +84,4 @@ Uploads happen only after all validation passes and are Actions artifacts,
 not GitHub Releases. The workflow has `contents: read`; it does not create a
 release, tag, or push. Publishing is a separate maintainer operation after
 reviewing the manifest/checksums and completing the Windows smoke test.
+
