@@ -9,12 +9,19 @@
     "required_files": ["spring.exe", "unitsync.dll"]
   },
   "lobby": {
+    "version": "0.9.31016",
+    "url": "https://github.com/springraaar/skylobby/releases/download/0.9.31016/skylobby-0.9.31016-windows.jar",
+    "sha256": "2127e20a749c723b4d54244c7df13ed9b73651013e98a102f8450046631ee32e",
+    "format": "file",
+    "filename": "skylobby.jar"
+  },
+  "runtime": {
     "version": null,
     "url": null,
     "sha256": null,
     "format": "zip",
     "root": ".",
-    "required_files": ["skylobby.exe"]
+    "required_files": ["bin/java.exe", "release"]
   },
   "map": {
     "version": "LastDayOfDhubai",
@@ -24,3 +31,4 @@
     "format": "zip"
   }
 }
+
