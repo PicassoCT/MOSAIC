@@ -160,7 +160,7 @@ def build_game(repo, target, expected=None):
 def validate_lock(lock):
     if lock.get('schema_version') != 1:
         raise ValueError('Input lock schema_version must be 1')
-    for role in ('engine', 'lobby', 'map'):
+    for role in ('engine', 'lobby', 'runtime', 'map'):
         asset = lock.get(role, {})
         if not isinstance(asset, dict):
             raise ValueError(f'Invalid {role} lock')
@@ -172,14 +172,20 @@ def validate_lock(lock):
             raise ValueError(f'{role}: specify exactly one HTTPS url or local path')
         if asset.get('url') and urllib.parse.urlparse(asset['url']).scheme != 'https':
             raise ValueError(f'{role}: downloads require HTTPS')
-        if role != 'map':
+        if role in ('engine', 'runtime'):
             if not isinstance(asset.get('required_files'), list) or not asset['required_files']:
                 raise ValueError(f'{role}: required_files cannot be empty')
             safe_name(asset.get('root', '.')) if asset.get('root', '.') != '.' else None
             for name in asset['required_files']:
                 safe_name(name)
-            if not any(name.lower().endswith('.exe') for name in asset['required_files']):
-                raise ValueError(f'{role}: required_files must include its Windows executable')
+            executable = 'spring.exe' if role == 'engine' else 'bin/java.exe'
+            if executable not in [name.replace('\\', '/').lower() for name in asset['required_files']]:
+                raise ValueError(f'{role}: required_files must include {executable}')
+        elif role == 'lobby':
+            name = asset.get('filename', '')
+            safe_name(name)
+            if '/' in name or not name.lower().endswith('.jar') or asset.get('format') != 'file':
+                raise ValueError('lobby: filename must be a JAR basename and format must be file')
         else:
             name = asset.get('filename', '')
             safe_name(name)
@@ -188,7 +194,10 @@ def validate_lock(lock):
 
 
 def acquire(asset, base, temp, role):
-    path = temp / (role + ('.7z' if asset.get('format') == '7z' else '.zip'))
+    suffix = {"7z": ".7z", "zip": ".zip", "file": Path(asset.get('filename', '')).suffix}.get(asset.get('format'))
+    if not suffix:
+        raise ValueError(f'{role}: unsupported input format')
+    path = temp / (role + suffix)
     if asset.get('path'):
         shutil.copyfile(base / asset['path'], path)
     else:
@@ -273,9 +282,14 @@ def package(repo, output, lock_path=None, expected=None):
         if lock:
             portable = temp / f'Mosaic_v{version}_windows-portable'
             portable.mkdir()
-            for role in ('engine', 'lobby', 'map'):
+            for role in ('engine', 'lobby', 'runtime', 'map'):
                 asset = lock[role]
                 archive = acquire(asset, lock_path.resolve().parent, temp, role)
+                if role == 'lobby':
+                    lobby = portable / 'lobby'
+                    lobby.mkdir()
+                    shutil.copyfile(archive, lobby / 'skylobby.jar')
+                    continue
                 unpack = temp / (role + '-unpacked')
                 fmt = asset.get('format') or ('7z' if asset.get('filename', '').endswith('.sd7') else 'zip')
                 extract(archive, unpack, fmt)
@@ -298,7 +312,16 @@ def package(repo, output, lock_path=None, expected=None):
                                 raise ValueError(f'Engine lacks {name}')
                         if not any((source / 'base').rglob('*.sdz')):
                             raise ValueError('Engine lacks base SDZ assets')
-                    shutil.copytree(source, portable / role)
+                        destination = portable / 'data/engine/mosaic-pinned'
+                    else:
+                        release = (source / 'release').read_text(encoding='utf-8')
+                        java_version = re.search(r'JAVA_VERSION="(\d+)', release)
+                        if (not java_version or int(java_version.group(1)) < 21 or
+                                not re.search(r'OS_ARCH="(?:amd64|x86_64)"', release) or
+                                not re.search(r'OS_NAME="Windows"', release)):
+                            raise ValueError('Runtime must be a complete Windows x64 Java 21 or newer build')
+                        destination = portable / 'runtime'
+                    shutil.copytree(source, destination)
             games = portable / 'data/games'
             games.mkdir(parents=True)
             shutil.copyfile(game, games / game.name)
@@ -306,13 +329,19 @@ def package(repo, output, lock_path=None, expected=None):
             if not config.is_file() or not config.stat().st_size:
                 raise ValueError('Missing packaging/springsettings.cfg')
             shutil.copyfile(config, portable / 'data/springsettings.cfg')
-            # SPRING_DATADIR is inherited by lobby/engine; isolation config is explicit.
-            lobby_exe = next(n for n in lock['lobby']['required_files'] if n.lower().endswith('.exe'))
-            if any(c in lobby_exe for c in '%!&|<>^\"\r\n'):
-                raise ValueError('Lobby executable path cannot be safely launched by cmd.exe')
-            launcher = '@echo off\r\nsetlocal\r\nset "SPRING_DATADIR=%~dp0data"\r\ncd /d "%~dp0lobby"\r\nstart "MOSAIC" "' + lobby_exe.replace('/', '\\') + '"\r\n'
+            # Use the accepted maintained Skylobby JAR and an isolated bundled Java runtime.
+            launcher = ('@echo off\r\nsetlocal DisableDelayedExpansion\r\ncd /d "%~dp0"\r\n'
+                        'set "SPRING_DATADIR=%~dp0data"\r\n'
+                        'if not exist "state\\lobby" mkdir "state\\lobby"\r\n'
+                        '"%~dp0runtime\\bin\\java.exe" -XX:+UseZGC -Xmx2g -XX:+ExitOnOutOfMemoryError '
+                        '--add-opens=java.base/java.nio=ALL-UNNAMED --add-opens=java.base/sun.nio.ch=ALL-UNNAMED '
+                        '-Dprism.allowhidpi=true -Dglass.win.minHiDPI=1 -jar "%~dp0lobby\\skylobby.jar" '
+                        '--skylobby-root "%~dp0state\\lobby" --spring-root "%~dp0data" '
+                        '--server-url "lobby.springrts.com:8200" --filter-battles "MOSAIC" --no-update-check\r\n'
+                        'set "MOSAIC_EXIT=%ERRORLEVEL%"\r\nif not "%MOSAIC_EXIT%"=="0" pause\r\n'
+                        'exit /b %MOSAIC_EXIT%\r\n')
             (portable / 'Start-Mosaic.cmd').write_bytes(launcher.encode())
-            (portable / 'PLAY.txt').write_text('Run Start-Mosaic.cmd. In Skylobby configure the engine path to engine/spring.exe and the data directory to data (both beside this file). Select MOSAIC ' + version + ' and the bundled map. Lobby/server access requires internet.\n', encoding='utf-8')
+            (portable / 'PLAY.txt').write_text('Run Start-Mosaic.cmd, sign in to Spring Official, and join the agreed MOSAIC room. The launcher uses the bundled Java runtime and data tree, filters for MOSAIC rooms, and does not provide matchmaking. Select MOSAIC ' + version + ' and the bundled map. Lobby/server access requires internet.\n', encoding='utf-8')
             manifest['payload_files'] = file_manifest(portable)
             write_json(portable / 'manifest.json', manifest)
             bundle = result / (portable.name + '.zip')
@@ -341,3 +370,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
