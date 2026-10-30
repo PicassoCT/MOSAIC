@@ -23,7 +23,7 @@ python tools/package_windows_release.py --output ../mosaic-windows --expected-ve
 ```
 
 The full build intentionally fails until `packaging/windows-inputs.json` contains
-verified pins. No engine, lobby or map download hash has been guessed. The
+verified pins. No engine, Java runtime or map download hash has been guessed. The
 engine version is the migration target, not a claim that an artifact is verified.
 Commit reviewed pins before running CI. Each input requires an exact version,
 SHA-256, and either an HTTPS `url` or a local `path` relative to the lock file.
