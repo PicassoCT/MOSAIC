@@ -69,6 +69,15 @@ function script.Create()
         return
     end
     Show(displayedPiece)
+    -- CONTAINER<NR>Spin<id> belongs only to the selected payload body.
+    -- Keep legacy lowercase names working; spinner IDs may have gaps.
+    for _, groupName in ipairs({variant.pieceName:upper() .. "Spin",
+        variant.pieceName .. "Spin"}) do
+        for _, spinner in pairs(groups[groupName] or {}) do
+            Show(spinner)
+            Spin(spinner, y_axis, math.rad(42), math.pi)
+        end
+    end
     Spring.SetUnitTooltip(unitID, variant.description)
     if variant.passenger then
         -- Reuse the existing bus arrival/departure routines for this body.
