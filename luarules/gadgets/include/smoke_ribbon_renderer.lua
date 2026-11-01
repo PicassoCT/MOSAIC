@@ -100,7 +100,8 @@ return function()
         local nextHistory = {}
         for key, r in pairs(self.records) do
             local id = r.unitID
-            local hair = r.mode == 'hair' or r.mode == 'canopy'
+            local canopy = r.mode == 'canopy' or r.mode == 'canopy_arc'
+            local hair = r.mode == 'hair' or canopy
             local los = fullView or Spring.GetUnitLosState(id,ally)
             if r.enabled and (not r.endFrame or sampleFrame < r.endFrame)
                 and (fullView or (los and los.los)) and not Spring.GetUnitIsDead(id)
@@ -180,7 +181,7 @@ return function()
                                 driftY=driftY-(velocity[2] or 0)*gain
                                 driftZ=driftZ-(velocity[3] or 0)*gain
                             end
-                            if r.mode == 'canopy' then
+                            if canopy then
                                 CanopyDynamics = CanopyDynamics or VFS.Include('luarules/gadgets/include/canopy_dynamics.lua')
                                 local state = CanopyDynamics.Step(hairHistory[key],now,
                                     x+dx*length,y+dy*length,z+dz*length,
@@ -309,7 +310,38 @@ return function()
         end
         hairHistory=nextHistory
         if #draw == 0 then return end
-        table.sort(draw,function(a,b) return a.d2 < b.d2 end)
+        table.sort(draw,function(a,b)
+            if a.d2 ~= b.d2 then return a.d2 < b.d2 end
+            -- Paired cloud/charge records share a midpoint. Reverse drawing
+            -- must place charge over its material consistently, not pairs order.
+            local arcA,arcB = a.r.mode == 'canopy_arc',b.r.mode == 'canopy_arc'
+            if arcA ~= arcB then return arcA end
+            return (a.r.seed or 0) < (b.r.seed or 0)
+        end)
+        local visibleCount = math.min(#draw,self.maxVisible)
+        if visibleCount < #draw then
+            -- An equal-distance tie at the draw budget must retain the cloud,
+            -- not an isolated piece of its electricity. Drawing order and
+            -- budget priority are intentionally different for this pair.
+            local cloudRanks = {}
+            local function materialKey(r)
+                return r.unitID..':'..r.piece..':'..r.seed
+            end
+            for i,d in ipairs(draw) do
+                if d.r.mode == 'canopy' then cloudRanks[materialKey(d.r)] = i end
+            end
+            for i=1,visibleCount do
+                local d = draw[i]
+                if d.r.mode == 'canopy_arc' then
+                    local key = materialKey(d.r)
+                    local rank = cloudRanks[key]
+                    if rank and rank > visibleCount and draw[rank].d2 == d.d2 then
+                        draw[i],draw[rank] = draw[rank],d
+                        cloudRanks[key] = i
+                    end
+                end
+            end
+        end
         local ar,ag,ab = gl.GetSun('ambient','unit')
         gl.PushAttrib(GL.ALL_ATTRIB_BITS)
         gl.DepthTest(true); gl.DepthMask(false); gl.Culling(false)
@@ -317,13 +349,14 @@ return function()
         gl.UseShader(shader)
         gl.Uniform(loc.cameraPosition,cx,cy,cz)
         gl.Uniform(loc.ambient,ar or 0.5,ag or 0.5,ab or 0.5)
-        for i=math.min(#draw,self.maxVisible),1,-1 do
+        for i=visibleCount,1,-1 do
             local d=draw[i]; local r=d.r
-            local hair = r.mode == 'hair' or r.mode == 'canopy'
+            local canopy = r.mode == 'canopy' or r.mode == 'canopy_arc'
+            local hair = r.mode == 'hair' or canopy
             gl.Uniform(loc.origin,d.x,d.y,d.z); gl.Uniform(loc.direction,d.dx,d.dy,d.dz)
             gl.Uniform(loc.directionalDrift,d.driftX,d.driftY,d.driftZ)
-            gl.Uniform(loc.hairMode,r.mode == 'canopy' and 2 or (hair and 1 or 0))
-            gl.Uniform(loc.electricMode,r.mode == 'electric' and 1 or 0)
+            gl.Uniform(loc.hairMode,canopy and 2 or (hair and 1 or 0))
+            gl.Uniform(loc.electricMode,r.mode == 'canopy_arc' and 2 or (r.mode == 'electric' and 1 or 0))
             gl.Uniform(loc.landingMode,r.mode == 'pad' and 2 or (r.mode == 'landing' and 1 or 0))
             gl.Uniform(loc.landingPad,unpack(d.pad or {0,0,0,-1}))
             if r.terrainGuard then
@@ -340,7 +373,11 @@ return function()
             gl.Uniform(loc.strandCount,r.strands)
             gl.Uniform(loc.curl,r.curl); gl.Uniform(loc.seed,r.seed)
             gl.Uniform(loc.colorStart,unpack(r.colorStart)); gl.Uniform(loc.colorEnd,unpack(r.colorEnd))
-            gl.Uniform(loc.emission,unpack(r.emission)); gl.Uniform(loc.strandOpacity,(hair and 1 or 1.6/r.strands)*d.fade)
+            -- More diffuse veils must not turn their overlap into an opaque disc.
+            -- Attached electricity shares the curve, but retains a narrow bright core.
+            local opacity = r.mode == 'canopy' and math.sqrt(2/r.strands)
+                or (r.mode == 'hair' and 1 or 1.6/r.strands)
+            gl.Uniform(loc.emission,unpack(r.emission)); gl.Uniform(loc.strandOpacity,opacity*d.fade)
             gl.Uniform(loc.sourceGlow,unpack(r.sourceGlow))
             local segments = d.d2 > (d.length*20)^2 and 24 or 48
             gl.CallList(meshes[segments][r.strands])

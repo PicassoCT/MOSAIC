@@ -9,11 +9,23 @@ local cameraY,cameraZ,frustumTests,lastOpacity=10,100,0,0
 local wind,velocity,lastDrift={0,0,0},{0,0,0},{}
 local windCalls,velocityCalls=0,0
 local lastLength,lastPad,lastLanding,lastElectric,lastHair,lastSeed,capturedDraws
+local lastWidth,lastStrands,lastCurl,lastStiffness,lastGravity
+local activeRenderer
 GG={}; Game={gameSpeed=30}; gadget={}
 gadgetHandler={IsSyncedCode=function() return synced end,RemoveGadget=function() error('unexpected removal') end,
     AddChatAction=function() end,RemoveChatAction=function() end,
     AddSyncAction=function() end,RemoveSyncAction=function() end}
-VFS={Include=function(p) return dofile(p) end,LoadFile=function() return '' end}
+VFS={Include=function(p)
+    local module=dofile(p)
+    if p=='luarules/gadgets/include/smoke_ribbon_renderer.lua' then
+        return function(...)
+            local renderer,err=module(...)
+            activeRenderer=renderer
+            return renderer,err
+        end
+    end
+    return module
+end,LoadFile=function() return '' end}
 Spring={ValidUnitID=function(id) return id==7 end,GetUnitIsDead=function() return dead end,
     GetWind=function() windCalls=windCalls+1;return unpack(wind) end,
     GetUnitVelocity=function() velocityCalls=velocityCalls+1;return unpack(velocity) end,
@@ -34,7 +46,9 @@ gl=setmetatable({CreateShader=function() return 1 end,GetUniformLocation=functio
         drawn=drawn+1
         if capturedDraws then
             capturedDraws[#capturedDraws+1]={seed=lastSeed,hair=lastHair,electric=lastElectric,
-                landing=lastLanding,opacity=lastOpacity}
+                landing=lastLanding,opacity=lastOpacity,origin=lastOrigin,direction=lastDirection,
+                time=lastTime,drift=lastDrift,length=lastLength,width=lastWidth,strands=lastStrands,
+                curl=lastCurl,stiffness=lastStiffness,gravity=lastGravity}
         end
     end,DeleteList=function() deleted=deleted+1 end,
     GetSun=function() return 0.3,0.3,0.3 end,
@@ -43,6 +57,11 @@ gl=setmetatable({CreateShader=function() return 1 end,GetUniformLocation=functio
         elseif n=='effectTime' then lastTime=(...)
         elseif n=='strandOpacity' then lastOpacity=(...)
         elseif n=='plumeLength' then lastLength=(...)
+        elseif n=='plumeWidth' then lastWidth=(...)
+        elseif n=='strandCount' then lastStrands=(...)
+        elseif n=='curl' then lastCurl=(...)
+        elseif n=='stiffness' then lastStiffness=(...)
+        elseif n=='gravity' then lastGravity=(...)
         elseif n=='landingPad' then lastPad={...}
         elseif n=='landingMode' then lastLanding=(...)
         elseif n=='electricMode' then lastElectric=(...)
@@ -288,19 +307,97 @@ cameraZ=100;wind={0,0,0}
 cloak=true;hidden('canopy mode bypassed cloak');cloak=false
 inlos=false;hidden('canopy mode bypassed LOS');inlos=true
 producer:UnitDestroyed(7);hidden('destroyed canopy retains material records')
+-- Electrical branches share the moving carbon path, not just its piece root.
+-- Equal shader inputs must survive the real snapshot, movement history and
+-- reload, otherwise an initially attached discharge separates during descent.
+local pairedOptions={mode='canopy',directionSpace='piece',directionPiece=5,
+    direction={0.6,0.2,-1.1},rootOffset={1.25,0.5,-0.25},
+    length=30,width=12,strands=3,stiffness=0.28,curl=1.3,gravity=0.18,
+    seed=57,speed=0.8,windAffected=true,windInfluence=1.2,
+    motionAffected=true,motionInfluence=0.7,trailTime=0.45}
+assert(api.Set(7,'paired_cloud',2,pairedOptions))
+pairedOptions.mode='canopy_arc'
+assert(api.Set(7,'paired_arc',2,pairedOptions),'attached canopy electrical mode was rejected')
+local function pairedDraw(check)
+    capturedDraws={};gadget:DrawWorld()
+    assert(#capturedDraws==2,check..': paired cloud/electric record missing')
+    assert(capturedDraws[1].seed==pairedOptions.seed and capturedDraws[1].electric==0
+        and capturedDraws[2].seed==pairedOptions.seed and capturedDraws[2].electric==2,
+        check..': equal-distance charge was drawn behind its carbon cloud')
+    local cloud,arc
+    for _,draw in ipairs(capturedDraws) do
+        assert(draw.hair==2 and draw.landing==0,check..': pinned canopy profile was lost')
+        if draw.electric==0 then cloud=draw
+        elseif draw.electric==2 then arc=draw
+        else error(check..': attached branch used the free electric profile') end
+    end
+    assert(cloud and arc,check..': one profile was submitted twice')
+    assert(math.abs(cloud.opacity-math.sqrt(2/3))<1e-8,
+        check..': extra cloud strips accumulated unnormalized opacity')
+    assert(math.abs(arc.opacity-1.6/3)<1e-8,check..': branch coverage normalization was lost')
+    for _,field in ipairs({'origin','direction','drift'}) do
+        for axis=1,3 do
+            assert(math.abs(cloud[field][axis]-arc[field][axis])<1e-8,
+                check..': branch detached from moving carbon '..field)
+        end
+    end
+    for _,field in ipairs({'time','length','width','strands','curl','stiffness','gravity','seed'}) do
+        assert(cloud[field]==arc[field],check..': branch changed shared path '..field)
+    end
+    capturedDraws=nil
+    return cloud,arc
+end
+local pair=pairedDraw('initial snapshot')
+local drawBudget=activeRenderer.maxVisible
+activeRenderer.maxVisible=1
+capturedDraws={};gadget:DrawWorld()
+assert(#capturedDraws==1 and capturedDraws[1].seed==pairedOptions.seed
+    and capturedDraws[1].hair==2 and capturedDraws[1].electric==0,
+    'draw budget retained isolated charge instead of its equal-distance carbon cloud')
+capturedDraws=nil;activeRenderer.maxVisible=drawBudget
+pair=pairedDraw('restored draw budget')
+local vc=velocityCalls
+x=x+3;viewX=x;frame=frame+1
+pair=pairedDraw('MoveCtrl translation')
+assert(pair.drift[1]<0 and velocityCalls==vc,'attached discharge used generic engine velocity trailing')
+local pausedPair=pair
+pair=pairedDraw('paused frame')
+for axis=1,3 do assert(pair.drift[axis]==pausedPair.drift[axis],'paired material drifts while paused') end
+assert(pair.time==pausedPair.time,'paired material advances time while paused')
+rotated=true;frame=frame+1
+pairedDraw('animated support rotation')
+wind={15,3,-8}
+for i=1,5 do frame=frame+1;pairedDraw('wind response') end
+gadget:Shutdown();gadget={};dofile(path);gadget:Initialize()
+pairedDraw('client reload')
+cloak=true;hidden('attached branches bypassed cloak');cloak=false
+inlos=false;hidden('attached branches bypassed LOS');inlos=true
+nodraw=true;hidden('attached branches bypassed owner no-draw');nodraw=false
+cameraZ=5000;hidden('attached branches bypassed size-based culling');cameraZ=100
+api.Remove(7,'paired_cloud')
+gadget:DrawWorld()
+assert(lastHair==2 and lastElectric==2,'removing carbon also removed its independent branch record')
+assert(api.Set(7,'paired_arc',2,{mode='smoke'}))
+gadget:DrawWorld()
+assert(lastHair==0 and lastElectric==0,'replacing an attached branch leaked canopy/electric uniforms')
+assert(api.Set(7,'paired_arc',2,pairedOptions))
+gadget:DrawWorld();assert(lastHair==2 and lastElectric==2,'restoring an attached branch lost its profile')
+producer:UnitDestroyed(7);hidden('destroyed chute retained its attached branch')
+wind={0,0,0};rotated=false
 -- Sharing a shader in one frame must reset the specialized material uniforms
 -- for each draw, regardless of record/sort order.
-local modes={canopy={hair=2,electric=0,opacity=1},hair={hair=1,electric=0,opacity=1},
+local modes={canopy={hair=2,electric=0,opacity=1},canopy_arc={hair=2,electric=2,opacity=0.8},
+    hair={hair=1,electric=0,opacity=1},
     smoke={hair=0,electric=0,opacity=0.8},electric={hair=0,electric=1,opacity=0.8}}
 local expected={}
-for i,mode in ipairs({'canopy','hair','smoke','electric'}) do
+for i,mode in ipairs({'canopy','canopy_arc','hair','smoke','electric'}) do
     local seed=100+i
     expected[seed]=modes[mode]
     assert(api.Set(7,'mixed_'..mode,2,{mode=mode,seed=seed,strands=2,length=30,width=12,
         directionSpace='world',direction={0,1,0},windAffected=false,motionAffected=false}))
 end
 capturedDraws={};gadget:DrawWorld()
-assert(#capturedDraws==4,'mixed material scene lost a visible effect')
+assert(#capturedDraws==5,'mixed material scene lost a visible effect')
 for _,draw in ipairs(capturedDraws) do
     local wanted=expected[draw.seed]
     assert(wanted and draw.hair==wanted.hair and draw.electric==wanted.electric
@@ -370,4 +467,4 @@ n=drawn;gadget:DrawWorld();assert(drawn==n+1 and lastLanding==2,'reload lost dec
 producer:UnitDestroyed(7);hidden('destroyed launch retains pad fan')
 gadget:Shutdown();assert(deleted==created,'mesh resources leaked')
 producer:Shutdown();assert(GG.SmokeRibbon==nil)
-print('PASS: ribbon lifecycle, hair piece transform, turn lag, pause, settling, separate driver/root transforms, canopy bridge/reload/MoveCtrl lag, mixed-material uniform reset, shared matrix cache and culling')
+print('PASS: ribbon lifecycle, hair piece transform, turn lag, pause, settling, separate driver/root transforms, canopy bridge/reload/MoveCtrl lag, attached cloud/arc motion parity, normalized canopy coverage, mixed-material uniform reset, shared matrix cache and culling')

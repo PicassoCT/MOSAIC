@@ -7,15 +7,15 @@ return {
     tasks = {
         {
             id = 'parachute',
-            title = 'Graphene ribbon parachute and electricity',
-            summary = 'Long black graphene veils end in electric violet-blue glow and trail the first operative drop.',
+            title = 'Graphene cloud parachute and electricity',
+            summary = 'A diffuse black crown rises above the first operative, with occasional visible branches and attached cyan-violet charge.',
             steps = {
                 'Full descent: start a fresh match and watch the first operative arrive under its graphene parachute.',
-                'Repeat the ribbon material check: select an uncloaked operative, zoom in, then enter /luarules smokeribbon center electric.',
+                'Repeat the electrical palette check: select an uncloaked operative, zoom in, then enter /luarules smokeribbon center electric.',
                 'Record /luarules smokeribbon status. End the local preview with /luarules smokeribbon off; the fresh-match drop also checks canopy attachment and descent.',
                 'Do not use /give air_parachut alone: its script waits for a registered passenger.',
             },
-            expect = 'The broad graphene canopy retains its dense, feathered black body, with strands about 43% longer and electric violet-blue tips. Roots remain pinned while the veils bend and settle smoothly after travel or wind changes, without stretching. Fine fibres and calm-air folds remain visible. Cyan-violet rim streamers remain visible, both effects follow the passenger, and both stop on landing.',
+            expect = 'The broad graphene cloud rises from a compact suspension area into an irregular crown. Its blurred black fibres blend together, with occasional distinct branches and soft edges. Roots remain pinned while the veils roll in calm air and settle after travel or wind changes, without stretching. Cyan-violet charge follows the moving material before short tips rise upward; the cloud remains visible beneath it. Check overhead and low views for separate electrical bouquets or a broad purple centre. Both effects follow the passenger and stop on landing.',
         },
         {
             id = 'tank',
