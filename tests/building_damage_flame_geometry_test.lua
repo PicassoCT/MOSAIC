@@ -124,5 +124,44 @@ options=register({floorHeight=600,cellSize=800,modelScale=scale})
 assert(options.direction[2]==1 and options.rootOffset[1]==0,
     'unavailable geometry did not use a valid fallback')
 near(options.length,600*scale*2.2,'geometry fallback lost known block dimensions')
+
+-- Exercise the actual house caller too: helper-only fixtures already supplied
+-- the correct import scale while the Arab script mistakenly supplied 1.
+local houseFile=assert(io.open('scripts/house_arab_script.lua'))
+local houseSource=houseFile:read('*a'); houseFile:close()
+local function section(first,last)
+    local start=assert(houseSource:find(first,1,true))
+    return houseSource:sub(start,assert(houseSource:find(last,start+#first,true))-1)
+end
+local geometry,shadowScale
+local function noop() end
+local houseEnv=setmetatable({
+    Spring=Spring,GG={},LevelPieces={},ToShowTable={},
+    StartThread=noop,selectBase=noop,selectBackYard=noop,addRoofDeocrate=noop,
+    buildDecorateGroundLvl=function() return 'test' end,
+    buildDecorateLvl=noop,
+    initializeBuildingShadowVoxels=function(_,_,importScale) shadowScale=importScale end,
+    buildingDamage={initialize=function(_,_,_,_,height,cell,importScale)
+        geometry={floorHeight=height,cellSize=cell,modelScale=importScale}
+    end},
+}, {__index=_G})
+local code=section('local spGetGroundHeight','supriseChances =')..
+    section('function buildBuilding()','function script.StartMoving()')
+local chunk
+if setfenv then chunk=assert(loadstring(code)); setfenv(chunk,houseEnv)
+else chunk=assert(load(code,'Arab building initialization','t',houseEnv)) end
+chunk(); houseEnv.buildBuilding()
+near(shadowScale,.0254,'Arab shadow geometry lost the export scale')
+state={bounds={min={-400,-300,0},max={400,300,600}},
+    matrix={scale,0,0,0, 0,0,-scale,0, 0,scale,0,0, 40,0,0,1},
+    position={1000,50,2000},emitter={1007.62,50,1970.16,0,1,0},
+    front={1,0,0},up={0,1,0},right={0,0,1},camera={1000,500,4500}}
+register(assert(geometry,'Arab building did not initialize structural damage'))
+draw()
+near(length,33.180147,'Arab caller produced an oversized flame length')
+near(width,11.667744,'Arab caller produced an oversized flame width')
+near(origin[1],1000,'Arab caller moved the flame off the facade midpoint')
+near(origin[2],66.1449131,'Arab caller placed the flame too far above the facade')
+near(origin[3],1947.2943104,'Arab caller placed the flame too far outside the facade')
 renderer:Shutdown()
-print('building damage flame geometry: first-vertex correction, facade exterior, import scale and retained motion passed')
+print('building damage flame geometry: first-vertex correction, facade exterior, import scale, retained motion and Arab caller passed')
