@@ -6,8 +6,28 @@ local variant
 local center = piece("center")
 local parentID, originalTooltip, installedTooltip
 
+-- Stop-and-go timing, in milliseconds: pause X, spin Y, then repeat.
+local SPINNER_SLEEP_MS = 3000
+local SPINNER_SPIN_MS = 5000
+
 local function alive(id)
     return id and Spring.ValidUnitID(id) and not Spring.GetUnitIsDead(id)
+end
+
+local function cycleSpinners(spinners)
+    while alive(unitID) do
+        Sleep(SPINNER_SLEEP_MS)
+        if not alive(unitID) then return end
+        for _, spinner in ipairs(spinners) do
+            Spin(spinner, y_axis, math.rad(42), math.pi)
+        end
+        Sleep(SPINNER_SPIN_MS)
+        if not alive(unitID) then return end
+        for _, spinner in ipairs(spinners) do
+            -- Stop immediately so the entire next pause is stationary.
+            StopSpin(spinner, y_axis, 0)
+        end
+    end
 end
 
 local function clearParentDescription()
@@ -69,6 +89,17 @@ function script.Create()
         return
     end
     Show(displayedPiece)
+    -- CONTAINER<NR>Spin<id> belongs only to the selected payload body.
+    -- Keep legacy lowercase names working; spinner IDs may have gaps.
+    local spinners = {}
+    for _, groupName in ipairs({variant.pieceName:upper() .. "Spin",
+        variant.pieceName .. "Spin"}) do
+        for _, spinner in pairs(groups[groupName] or {}) do
+            Show(spinner)
+            spinners[#spinners + 1] = spinner
+        end
+    end
+    if #spinners > 0 then StartThread(cycleSpinners, spinners) end
     Spring.SetUnitTooltip(unitID, variant.description)
     if variant.passenger then
         -- Reuse the existing bus arrival/departure routines for this body.
