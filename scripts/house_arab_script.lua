@@ -15,6 +15,8 @@ local spGetGroundHeight = Spring.GetGroundHeight
 local TablesOfPiecesGroups = {}
 gridOffset =  {}
 local RoofTopPieces = {}
+-- Match objects3d/house_arab.dae's import scale for world-space geometry.
+local modelScale = 0.0254
 factor = 40
 local cubeDim = {
     length = 14.4 * 1.45* factor,
@@ -1135,7 +1137,7 @@ function buildAnimation()
 end
 
 function buildBuilding()
-    initializeBuildingShadowVoxels(cubeDim.length, cubeDim.heigth, 0.0254)
+    initializeBuildingShadowVoxels(cubeDim.length, cubeDim.heigth, modelScale)
     boolDoneShowing = false
     StartThread(buildAnimation)
     selectBase()
@@ -1152,7 +1154,7 @@ function buildBuilding()
 
     addRoofDeocrate(3, TablesOfPiecesGroups[materialColourName .. "Roof"])
     -- Releases buildAnimation, which publishes voxels after construction finishes.
-    buildingDamage.initialize(LevelPieces, ToShowTable, RoofTopPieces, nil, cubeDim.heigth, cubeDim.length, 1)
+    buildingDamage.initialize(LevelPieces, ToShowTable, RoofTopPieces, nil, cubeDim.heigth, cubeDim.length, modelScale)
     buildingClearanceReady = true
     if GG.MarkBuildingClearanceDirty then GG.MarkBuildingClearanceDirty(unitID) end
     boolDoneShowing = true
