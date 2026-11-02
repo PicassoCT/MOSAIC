@@ -84,6 +84,7 @@ for _, script in ipairs({"civilianscript.lua", "civilianagentscript.lua"}) do
         e.setCivilianUnitInternalStateMode=function(id, state, behaviour)
             e.GG.CivilianUnitInternalLogicActive[id]={state=state,behaviour=behaviour}
         end
+        e.newParadeParticipation = compile(read("scripts/lib_civilian_parade.lua"), e)()
         compile(entry, e)()
         assert(e.startPraying(index))
         assert(queued == 1, "prayer request was not dispatched")
