@@ -71,6 +71,9 @@ function SetParadeVariant(index)
     end
     variant = selected
     for _, name in ipairs(variant.pieces) do Show(pieceMap[name]) end
+    -- The unsynced pixel decorations must follow the actual selected payload,
+    -- including selections queued before Create and later variant changes.
+    Spring.SetUnitRulesParam(unitID, "city_parade_variant", index, {inlos = true})
     Spring.SetUnitTooltip(unitID, variant.title .. " - lantern parade float")
     if variant.motion then StartThread(animate, variant) end
     return true

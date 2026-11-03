@@ -51,6 +51,51 @@ Offsets are relative to each existing truck's `attachPoint`, in native game coor
 
 The existing payload attachment supplies movement. Explicit parade payloads do not consume the ordinary service-payload selection quota. The payload script handles attachment loss and resets hidden articulated variants. See the [payload authoring and runtime notes](../tools/truck_parade_payloads/README.md) for those details.
 
+## Pixel hologram decorations
+
+Each attached float carries **six small animated pixel ornaments**, selected by
+its actual payload variant. They hover beside the float's lower body and use
+the native payload and `center` piece transforms, so they follow turns, movement,
+and the carrier-specific mounting offsets. The glyphs remain camera-facing.
+
+| Float | Pixel decorations |
+| --- | --- |
+| Forest Dreamer | Flickering candles, green leaves, twinkling stars |
+| Wandering Bathhouse | Candles and warm lanterns |
+| Moonwhale | Blue crescent moons and stars |
+| Lantern Koi | Tiny koi, lotus flowers, lanterns |
+| Cloud Mill | Clouds and turning pinwheels |
+| Night Post | Candles, opening envelopes, fluttering moths |
+
+![Exact pixel sprites for the six float themes](images/parade-pixel-holograms.png)
+
+This is a static preview generated from the actual sprite data, not a gameplay
+capture. The catalog contains **11 glyphs and 22 animation frames**, with at
+most **50 lit pixels per frame**. Motifs are **2.6–5.5 world units tall**, sized
+against the floats' measured bounds. Candles flicker through three flame frames;
+other motifs gently pulse, flutter, or turn, with individual timing and slight
+vertical bobbing. Depth testing lets the truck, float, and buildings naturally
+occlude them at oblique camera angles.
+
+The effect uses cached pixel geometry and an unsynced shader. It is self-lit;
+these ornaments do not add individual scene lights. Decorations fade between
+900 and 1,500 world units from the camera, and at most the nearest 12 payloads
+are drawn in dense debug previews. The ordinary parade contains four floats.
+Only attached, living, visible carriers receive ornaments. Loss of attachment,
+carrier death, cloaking, hidden rendering, or loss of line of sight suppresses
+them; full-view spectators retain their normal visibility.
+
+Edit [parade_hologram_decorations.lua](../luarules/configs/parade_hologram_decorations.lua)
+to adjust pixels, palettes, animation timing, or placement. The
+[renderer](../luarules/gadgets/gfx_parade_holograms.lua) selects a theme from the
+payload's `city_parade_variant` rules parameter, published only after a valid
+variant is selected. Future float entries can provide `hologramTheme` to reuse
+an existing arrangement, or add a theme under their own catalog key.
+
+The renderer lifecycle/visibility suite is `tests/parade_holograms_test.lua`.
+The payload suite also checks deferred selection and decoration identity.
+Live Recoil appearance and performance still require an in-game playtest.
+
 ## Preview in a game
 
 For a preview without waiting for day seven, enable cheats in a local test game and use:

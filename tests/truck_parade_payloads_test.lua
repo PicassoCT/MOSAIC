@@ -14,7 +14,7 @@ local function fixture()
     local f = {alive = {[5] = true, [20] = true, [21] = true}, parent = nil,
         visible = {}, moves = {}, turns = {}, spins = {}, stops = {}, threads = {},
         tooltips = {[20] = "Plate 20", [21] = "Plate 21"}, destroyed = {},
-        map = {center = 1}, blocks = {}, selects = {}}
+        map = {center = 1}, blocks = {}, selects = {}, rules = {}}
     local nextID = 1
     for _, v in ipairs(catalog.variants) do
         for _, name in ipairs(v.pieces) do nextID = nextID + 1; f.map[name] = nextID end
@@ -62,6 +62,10 @@ local function fixture()
     env.Spring.SetUnitTooltip = function(id, text) f.tooltips[id] = text end
     env.Spring.SetUnitNoSelect = function(id, value) f.selects[id] = value end
     env.Spring.SetUnitBlocking = function(id, value) f.blocks[id] = value end
+    env.Spring.SetUnitRulesParam = function(id, key, value, visibility)
+        assert(id == 5 and visibility.inlos == true)
+        f.rules[key] = value
+    end
     env.Spring.SetUnitAlwaysVisible, env.Spring.SetUnitNeutral, env.Spring.Echo = noop, noop, noop
     env.Spring.DestroyUnit = function(id, selfDestruct, reclaimed)
         assert(id == 5 and selfDestruct == false and reclaimed == true)
@@ -75,14 +79,18 @@ end
 check("variant selection before Create retains all and only the selected float pieces", function()
     local f = fixture()
     assert(f.env.SetParadeVariant(3))
+    assert(f.rules.city_parade_variant == nil, "pending selection must not publish before Create")
     f.env.script.Create()
+    assert(f.rules.city_parade_variant == 3)
     for index, v in ipairs(catalog.variants) do
         for _, name in ipairs(v.pieces) do assert((f.visible[f.map[name]] == true) == (index == 3)) end
     end
     assert(not f.visible[f.map.center])
     assert(not f.env.SetParadeVariant(0) and not f.env.SetParadeVariant(1.5)
         and not f.env.SetParadeVariant("2") and not f.env.SetParadeVariant(7))
+    assert(f.rules.city_parade_variant == 3, "invalid selection must retain decoration identity")
     assert(f.env.SetParadeVariant(5))
+    assert(f.rules.city_parade_variant == 5, "decoration identity must follow variant changes")
     for index, v in ipairs(catalog.variants) do
         for _, name in ipairs(v.pieces) do assert((f.visible[f.map[name]] == true) == (index == 5)) end
     end
@@ -128,6 +136,7 @@ check("missing model piece fails explicitly and never selects generic cargo", fu
     local f = fixture(); f.map.container66 = nil
     assert(f.env.SetParadeVariant(1)); f.env.script.Create()
     assert(#f.destroyed == 1 and next(f.visible) == nil)
+    assert(f.rules.city_parade_variant == nil, "failed model validation must not publish a theme")
 end)
 
 check("rigid parade carriers stay civilian in every culture without changing military loadouts", function()
