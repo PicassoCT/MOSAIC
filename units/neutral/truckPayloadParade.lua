@@ -12,7 +12,7 @@ end
 
 local definition = copy(base)
 definition.name = "Lantern parade float"
-definition.description = "Illuminated seventh-night procession float"
+definition.description = "We are all floats down here -0.30000001192092896f"
 definition.objectname = catalog.modelName
 definition.script = "truckParadePayloadScript.lua"
 definition.customparams.normaltex = "unittextures/house_asian_normal.dds"
