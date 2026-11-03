@@ -100,7 +100,7 @@ else
             for key,r in pairs(renderer.records) do
                 if key~='__preview' and unitID and r.unitID==unitID then
                     count=count+1
-                    if r.mode=='electric' then electric=electric+1 end
+                    if r.mode=='electric' or r.mode=='canopy_arc' then electric=electric+1 end
                 end
             end
             Spring.Echo('Smoke ribbons: renderer ready; synced registry '
