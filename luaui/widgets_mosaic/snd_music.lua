@@ -69,8 +69,10 @@ local haltMusic = false
 local looping = false
 local paused = false
 local lastTrackTime = -1
+local streamRestarted = false
+local ambientMusicType = 'peace'
 
-local warTracks, peaceDayTracks, peaceNightTracks, briefingTracks, victoryTracks, defeatTracks
+local warTracks, peaceDayTracks, peaceNightTracks, briefingTracks, victoryTracks, defeatTracks, paradeTracks
 
 local firstTime = false
 local wasPaused = false
@@ -134,6 +136,16 @@ local function PlayMusicStream(track)
 	-- Older engines bypass channel gain on start, so reapply it after playback.
 	Spring.PlaySoundStream(track, 1)
 	Spring.SetSoundStreamVolume(GetMusicVolume() / 100)
+	streamRestarted = true
+end
+
+local function GetAvailableParadeTracks()
+	local available = {}
+	local mode = options.useIncludedTracks.value and VFS.RAW_FIRST or VFS.RAW
+	for _, track in ipairs(paradeTracks or {}) do
+		if VFS.FileExists(track, mode) then available[#available + 1] = track end
+	end
+	return available
 end
 
 local function StartLoopingTrack(trackInit, trackLoop)
@@ -186,6 +198,10 @@ local function StartTrack(track)
 			elseif musicType == 'war' then
 				if (#warTracks == 0) then return end
 				newTrack = warTracks[math.random(1, #warTracks)]
+			elseif musicType == 'parade' then
+				local available = GetAvailableParadeTracks()
+				if (#available == 0) then return end
+				newTrack = available[math.random(1, #available)]
 			end
 			tries = tries + 1
 		until newTrack ~= previousTrack or tries >= 10
@@ -254,6 +270,7 @@ function widget:Update(dt)
 			briefingTracks = tracks.briefing
 			victoryTracks = tracks.victory
 			defeatTracks = tracks.defeat
+			paradeTracks = tracks.parade
 		end
 		
 		local vfsMode = (options.useIncludedTracks.value and VFS.RAW_FIRST) or VFS.RAW
@@ -263,6 +280,16 @@ function widget:Update(dt)
 		briefingTracks  = briefingTracks or VFS.DirList('sounds/music/briefing/', '*.ogg', vfsMode)
 		victoryTracks	= victoryTracks or VFS.DirList('sounds/music/victory/', '*.ogg', vfsMode)
 		defeatTracks	= defeatTracks or VFS.DirList('sounds/music/defeat/', '*.ogg', vfsMode)
+		-- A playlist may provide its own parade selection (including an empty
+		-- table to opt out); otherwise discover the dedicated instrumental loop.
+		paradeTracks = paradeTracks or VFS.DirList('sounds/music/parade/', '*.ogg', vfsMode)
+		local validParadeTracks = {}
+		for _, track in ipairs(paradeTracks) do
+			if type(track) == 'string' and VFS.FileExists(track, vfsMode) then
+				validParadeTracks[#validParadeTracks + 1] = track
+			end
+		end
+		paradeTracks = validParadeTracks
 	end
 	
 	timeframetimer_short = timeframetimer_short + dt
@@ -278,6 +305,13 @@ function widget:Update(dt)
 				Spring.StopSoundStream()
 				PlayMusicStream(loopTrack)
 			end
+		elseif musicType == 'parade' and not haltMusic and totalTime > 0
+			and playedTime >= totalTime - LOOP_BUFFER
+			and Spring.GetGameRulesParam('city_parade_active') == 1
+			and #GetAvailableParadeTracks() > 0 then
+			-- Use the existing short polling cadence for the seamless parade
+			-- score, avoiding the ordinary playlist's one-second end-of-track gap.
+			StartTrack()
 		end
 		timeframetimer_short = 0
 	end
@@ -309,20 +343,35 @@ function widget:Update(dt)
 		end
 		dethklok[1] = 0 -- empty the first row
 		
-		if (musicType == 'war' or string.find(musicType,"peace") ) then
+		local previousMusicType = musicType
+		if (musicType == 'war' or string.find(musicType,"peace") or musicType == 'parade') then
+			if musicType ~= 'parade' then ambientMusicType = musicType end
 			if (totalKilled >= warThreshold) then
-				musicType = 'war'
+				ambientMusicType = 'war'
 			elseif (totalKilled <= peaceThreshold) then
 				if isNight() then
-					musicType = 'peace_night'
+					ambientMusicType = 'peace_night'
 				else
-					musicType = 'peace_day'
+					ambientMusicType = 'peace_day'
 				end
 			end
+			-- The synced director publishes only actual touring, so assembly,
+			-- emergencies, and disbanding return immediately to ordinary music.
+			-- Explicit custom/looping tracks and StopTrack(true) retain ownership.
+			local paradeAvailable = #GetAvailableParadeTracks() > 0
+			local paradeTouring = gameStarted and Spring.GetGameRulesParam('city_parade_active') == 1
+			musicType = (paradeTouring and paradeAvailable and not haltMusic and not looping)
+				and 'parade' or ambientMusicType
 		end
+		local paradeChanged = previousMusicType ~= musicType
+			and (previousMusicType == 'parade' or musicType == 'parade')
 		
+		local startedThisUpdate = false
 		if (not firstTime) then
-			StartTrack()
+			if not (haltMusic or looping or musicType == 'custom') then
+				StartTrack()
+				startedThisUpdate = true
+			end
 			firstTime = true -- pop this cherry	
 		end
 		
@@ -347,9 +396,9 @@ function widget:Update(dt)
 			--Spring.SetSoundStreamVolume( playedTime/5)
 		--end
 		--Spring.Echo(previousTrackType, musicType)
-		if ( string.find(previousTrackType, "peace") and musicType == 'war' )
-		 or (playedTime >= totalTime)	-- both zero means track stopped
-		 and not(haltMusic or looping) then
+		if ((string.find(previousTrackType, "peace") and musicType == 'war')
+		 or paradeChanged or (playedTime >= totalTime)) -- both zero means track stopped
+		 and not(startedThisUpdate or haltMusic or looping) then
 			previousTrackType = musicType
 			StartTrack()
 			
@@ -357,10 +406,13 @@ function widget:Update(dt)
 			newTrackWait = 0
 		end
 		local _, _, paused = Spring.GetGameSpeed()
-		if (paused ~= wasPaused) and options.pausemusic.value then
-			Spring.PauseSoundStream()
+		if options.pausemusic.value then
+			if (streamRestarted and paused) or (not streamRestarted and paused ~= wasPaused) then
+				Spring.PauseSoundStream()
+			end
 			wasPaused = paused
 		end
+		streamRestarted = false
 	end
 end
 
@@ -462,6 +514,7 @@ local function PlayGameOverMusic(gameWon)
 end
 
 function widget:GameOver()
+	gameOver = true
 	PlayGameOverMusic(not defeat)
 end
 

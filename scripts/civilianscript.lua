@@ -1,5 +1,7 @@
 local bagAlignment = include "lib_bag_alignment.lua"
 local queueEventThread = include "lib_event_threads.lua"
+local newParadeParticipation = include "lib_civilian_parade.lua"
+local paradeParticipation
 
 include "createCorpse.lua"
 include "lib_UnitScript.lua"
@@ -39,6 +41,7 @@ local SIG_PISTOL = 32
 local SIG_MOLOTOW = 64
 local SIG_INTERNAL = 128
 local SIG_STOP = 512
+local SIG_PARADE = 1024
 local SIG_RPG = 256
 
 local function randomMultipleByNameOrDefault(name, index)
@@ -210,6 +213,7 @@ end
 
 function externalInterruptCivilian()
     if bodyConfig.boolInfluenced then return false end
+    paradeParticipation:Stop(false)
     Signal(SIG_INTERNAL)
     boolStartChatting, boolStartPraying, boolStartFilming, boolStartWailing = false, false, false, false
     boolStartFleeing, boolStartPeaceFullProtest = false, false
@@ -697,12 +701,14 @@ end
 
 function startInterrogationStun()
     if boolStunImpact then return end
+    paradeParticipation:Stop(false)
     boolStunImpact = true
     StartThread(stunImpactAnimation)
 end
 
 function script.HitByWeapon(x, z, weaponDefID, damage)
     if bodyConfig.boolInfluenced then return damage end
+    paradeParticipation:Stop(false)
     if weaponDefID == stunPistolDefID then return damage end
     transportID = spGetUnitIsTransporting(unitID)
     setCivilianUnitInternalStateMode(unitID, GameConfig.civilians.activityStates.ended, "wounded")
@@ -734,6 +740,9 @@ function setCivilianUnitInternalStateMode(unitID, State, name)
     end
 
     local behaviour = name or "unknown"
+    if behaviour ~= "parade" or State ~= GameConfig.civilians.activityStates.started then
+        paradeParticipation:Stop(false)
+    end
     local currentState = GG.CivilianUnitInternalLogicActive[unitID]
     if type(currentState) == "table" and currentState.behaviour == "pray" and
        (State ~= GameConfig.civilians.activityStates.started or behaviour ~= "pray") then
@@ -873,10 +882,55 @@ end
 
 local prayerAnimationName = PrayerAnimations.name(1)
 
+-- The same religious gestures work for stationary spectators and followers:
+-- the registered prayers touch the upper body only, leaving walking legs free.
+paradeParticipation = newParadeParticipation({
+    signal = SIG_PARADE,
+    activityStates = GameConfig.civilians.activityStates,
+    queue = queueEventThread,
+    eligible = function()
+        return GG.GlobalGameState == GameConfig.game.states.normal and
+            spGetUnitTeam(unitID) == gaiaTeamID and
+            not bodyConfig.boolInfluenced and not bodyConfig.boolArmed and
+            not bodyConfig.boolWounded and not bodyConfig.boolCoverWalk and
+            not bodyConfig.boolLoaded and not boolAiming and damagedCoolDown <= 0 and
+            not Spring.GetUnitTransporter(unitID) and
+            not (GG.DisguiseCivilianFor or {})[unitID] and
+            not (GG.AerosolAffectedCivilians or {})[unitID]
+    end,
+    selectAnimation = function(callIndex)
+        prayerAnimationName = PrayerAnimations.name(callIndex)
+    end,
+    prepareAnimation = function()
+        StartThread(animationStateMachineUpper, UpperAnimationStateFunctions)
+    end,
+    playAnimation = function()
+        PlayAnimation(prayerAnimationName, nil, 1.0)
+        WaitForTurns(upperBodyPieces)
+    end,
+    restoreAnimation = function()
+        resetUpperBodyNoTPose()
+        local animation = boolWalking and getWalkingState() or eAnimState.standing
+        setOverrideAnimationState(animation, animation, true, nil, true)
+    end,
+})
+
+function startParadeParticipation(callIndex)
+    return paradeParticipation:Start(callIndex)
+end
+
+function stopParadeParticipation()
+    return paradeParticipation:Stop()
+end
+
 local function isPraying()
     local state = GG.CivilianUnitInternalLogicActive and GG.CivilianUnitInternalLogicActive[unitID]
     return type(state) == "table" and state.behaviour == "pray" and
            state.state == GameConfig.civilians.activityStates.started
+end
+
+local function isPrayerGestureActive()
+    return isPraying() or paradeParticipation:IsActive()
 end
 
 boolStartPraying = false
@@ -1232,7 +1286,7 @@ function PlayAnimation(animname, piecesToFilterOutTable, speed)
                 end
 
                 if not boolStunImpact and not bagAlignment.owns(cmd.p) and not piecesToFilterOutTable[cmd.p] and
-                   not (isPraying() and upperBodyPieces[cmd.p] and
+                   not (isPrayerGestureActive() and upperBodyPieces[cmd.p] and
                         animname ~= prayerAnimationName) then
                     bagAlignment.poseCommand(cmd.p, cmd.a, axisSign[cmd.a] * (cmd.t + randoffset), cmd.s * speedFactor, cmd.c)
                     animCmd[cmd.c](cmd.p, cmd.a,
@@ -1950,7 +2004,7 @@ function animationStateMachineUpper(AnimationTable)
     local animationTable = AnimationTable
 
     while true do
-        while isPraying() do Sleep(33) end
+        while isPrayerGestureActive() do Sleep(33) end
         assert(UpperAnimationState)
         assert(animationTable[UpperAnimationState],
                "Upper Animationstate not existing " .. UpperAnimationState)
@@ -2258,6 +2312,7 @@ end
 
 lastDamageDirX, lastDamageDirZ = randNVec(), randNVec()
 function script.Killed(recentDamage, _)
+    paradeParticipation:Stop(false)
     setSpeedEnv(unitID, 0)
     dropLoot()
     _, maxHealth= Spring.GetUnitHealth(unitID)

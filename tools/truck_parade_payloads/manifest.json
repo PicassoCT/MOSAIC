@@ -1,0 +1,290 @@
+{
+  "schema": 1,
+  "generator": "tools/truck_parade_payloads/generate.py",
+  "source": "MOSAIC Lantern Float Cages, 2026-11-02; original editable sources preserved",
+  "atlas_commit": "2da1acd2b6fe551485e566cb82b64822a8cd48c2",
+  "scale": 0.08,
+  "floor_y": 2.1,
+  "coordinate_system": "Y up, +Z front; meter=1; empty center mount root",
+  "model_sha256": "b55819ba53f38503a84452146e41794cd41bba37eeef389bb89f184a8f4825c2",
+  "culling": {
+    "radius": 39,
+    "height": 67,
+    "midpos": [
+      0.0,
+      27.240422096575422,
+      -1.4396195531460823
+    ]
+  },
+  "variants": [
+    {
+      "key": "forest_dreamer",
+      "title": "The Forest Dreamer",
+      "piece": "container66",
+      "parts": 122,
+      "pieces": [
+        "container66"
+      ],
+      "triangles": 7902,
+      "bounds": [
+        [
+          -9.775127280000001,
+          2.1,
+          -22.8
+        ],
+        [
+          9.775127280000001,
+          44.65423655468141,
+          25.72318392
+        ]
+      ],
+      "groups": []
+    },
+    {
+      "key": "wandering_bathhouse",
+      "title": "The Wandering Bathhouse",
+      "piece": "container67",
+      "parts": 151,
+      "pieces": [
+        "container67"
+      ],
+      "triangles": 7826,
+      "bounds": [
+        [
+          -9.355331262919991,
+          2.1,
+          -22.8
+        ],
+        [
+          9.392000000000001,
+          46.34,
+          22.8
+        ]
+      ],
+      "groups": []
+    },
+    {
+      "key": "moonwhale",
+      "title": "The Moonwhale",
+      "piece": "container68",
+      "parts": 124,
+      "pieces": [
+        "container68",
+        "container68ActFinLeft",
+        "container68ActFinRight",
+        "container68ActTail"
+      ],
+      "triangles": 7892,
+      "bounds": [
+        [
+          -16.45195470582732,
+          2.1,
+          -24.647683551534325
+        ],
+        [
+          16.45195470582732,
+          43.38,
+          22.8
+        ]
+      ],
+      "groups": [
+        {
+          "piece": "container68ActFinLeft",
+          "pivot": [
+            7.12,
+            21.94,
+            6.640000000000001
+          ],
+          "axis": [
+            0.0,
+            0.0,
+            -1.0
+          ],
+          "kind": "hinge",
+          "notes": "Optional slow flipper pitch; not a vertical generic truck spinner."
+        },
+        {
+          "piece": "container68ActFinRight",
+          "pivot": [
+            -7.12,
+            21.94,
+            6.640000000000001
+          ],
+          "axis": [
+            0.0,
+            0.0,
+            -1.0
+          ],
+          "kind": "hinge",
+          "notes": "Optional slow flipper pitch; not a vertical generic truck spinner."
+        },
+        {
+          "piece": "container68ActTail",
+          "pivot": [
+            0.0,
+            24.82,
+            -14.24
+          ],
+          "axis": [
+            -1.0,
+            0.0,
+            0.0
+          ],
+          "kind": "hinge",
+          "notes": "Optional slow tail pitch about transverse axis; keep clear of tea pavilion."
+        }
+      ]
+    },
+    {
+      "key": "lantern_koi",
+      "title": "The Lantern Koi",
+      "piece": "container69",
+      "parts": 99,
+      "pieces": [
+        "container69"
+      ],
+      "triangles": 12612,
+      "bounds": [
+        [
+          -14.555182864601782,
+          2.1,
+          -28.602423026292165
+        ],
+        [
+          14.555182864601782,
+          42.16954139000382,
+          25.28
+        ]
+      ],
+      "groups": []
+    },
+    {
+      "key": "cloud_mill",
+      "title": "The Cloud Mill",
+      "piece": "container70",
+      "parts": 94,
+      "pieces": [
+        "container70",
+        "container70ActWindmillRotor"
+      ],
+      "triangles": 5616,
+      "bounds": [
+        [
+          -10.544000000000004,
+          2.1,
+          -22.8
+        ],
+        [
+          10.32348008,
+          52.38084419315084,
+          24.175135273319395
+        ]
+      ],
+      "groups": [
+        {
+          "piece": "container70ActWindmillRotor",
+          "pivot": [
+            0.0,
+            44.900000000000006,
+            2.72
+          ],
+          "axis": [
+            0.0,
+            0.0,
+            1.0
+          ],
+          "kind": "hinge",
+          "notes": "Four face-on sails; rotate around local rotor axis. Keep separate from vertical spinners."
+        }
+      ]
+    },
+    {
+      "key": "night_post",
+      "title": "The Night Post",
+      "piece": "container71",
+      "parts": 127,
+      "pieces": [
+        "container71",
+        "container71ActForewing1",
+        "container71ActHindwing1",
+        "container71ActForewing3",
+        "container71ActHindwing3"
+      ],
+      "triangles": 11766,
+      "bounds": [
+        [
+          -19.40999429886362,
+          2.1,
+          -22.8
+        ],
+        [
+          19.40999429886362,
+          43.513939505688995,
+          23.295700262708696
+        ]
+      ],
+      "groups": [
+        {
+          "piece": "container71ActForewing1",
+          "pivot": [
+            5.2,
+            28.660000000000004,
+            8.4
+          ],
+          "axis": [
+            0.0,
+            0.0,
+            -1.0
+          ],
+          "kind": "hinge",
+          "notes": "Keep this complete wing assembly together for a future gentle flap."
+        },
+        {
+          "piece": "container71ActHindwing1",
+          "pivot": [
+            5.36,
+            26.580000000000002,
+            2.72
+          ],
+          "axis": [
+            0.0,
+            0.0,
+            -1.0
+          ],
+          "kind": "hinge",
+          "notes": "Keep this complete wing assembly together for a future gentle flap."
+        },
+        {
+          "piece": "container71ActForewing3",
+          "pivot": [
+            -5.2,
+            28.660000000000004,
+            8.4
+          ],
+          "axis": [
+            0.0,
+            0.0,
+            -1.0
+          ],
+          "kind": "hinge",
+          "notes": "Keep this complete wing assembly together for a future gentle flap."
+        },
+        {
+          "piece": "container71ActHindwing3",
+          "pivot": [
+            -5.36,
+            26.580000000000002,
+            2.72
+          ],
+          "axis": [
+            0.0,
+            0.0,
+            -1.0
+          ],
+          "kind": "hinge",
+          "notes": "Keep this complete wing assembly together for a future gentle flap."
+        }
+      ]
+    }
+  ]
+}
