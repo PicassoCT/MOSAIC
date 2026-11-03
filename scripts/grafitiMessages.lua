@@ -177,5 +177,18 @@ return {
     "World is burning",
     "Nowhere to run too",
     "End of the line",
-    "end of times"
+    "end of times",
+    "OUR BLOCK",
+    "EAST MOB",
+    "WEST MOB",
+    "RIP",
+    "FOR U",
+    "WASH ME",
+    "TOY",
+    "NO ADS",
+    "EAT RICH",
+    "ACT UR WAGE",
+    "PAY US",
+    "CEO GO AWAY",
+    "BOTS WIN"
 }
