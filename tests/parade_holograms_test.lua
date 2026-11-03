@@ -1,6 +1,16 @@
 -- Lua 5.1+: exercise visibility, transport, variant changes and GL ownership.
 local catalog = dofile("scripts/lib_truck_parade_payloads.lua")
 local config = dofile("luarules/configs/parade_hologram_decorations.lua")
+local figures = dofile("luarules/configs/parade_hologram_figures.lua")
+local function themeFor(key)
+    local placements = {}
+    for _, source in ipairs({config, figures}) do
+        for _, placement in ipairs(source.themes[key] or {}) do
+            placements[#placements + 1] = placement
+        end
+    end
+    return placements
+end
 local function loadEnv(path, env)
     setmetatable(env, {__index = _G})
     if setfenv then
@@ -20,7 +30,19 @@ local function fixture(options)
         deletedLists = {}, deletedShaders = {}, allUnitReads = 0, removed = false,
         matrixDepth = 0, attribDepth = 0, activeShader = 99, blend = "original",
         depthMask = true, depthTest = false, culling = true, errors = {}}
-    local names = {}; for name, glyph in pairs(config.glyphs) do names[glyph] = name end
+    local figureData = figures
+    if options.invalidTiming then
+        figureData = {glyphs = {}, themes = figures.themes}
+        for name, glyph in pairs(figures.glyphs) do figureData.glyphs[name] = glyph end
+        local name, original = next(figureData.glyphs)
+        local invalid = {}; for key, value in pairs(original) do invalid[key] = value end
+        invalid.frameDurations = options.invalidTiming
+        figureData.glyphs[name] = invalid
+    end
+    local names = {}
+    for _, source in ipairs({config, figureData}) do
+        for name, glyph in pairs(source.glyphs) do names[glyph] = name end
+    end
     local function scope(fn, ...)
         f.matrixDepth = f.matrixDepth + 1
         local ok, reason = pcall(fn, ...)
@@ -32,6 +54,7 @@ local function fixture(options)
         UnitDefNames = {truckpayloadparade = {id = 7}},
         VFS = {Include = function(path)
             if path == "scripts/lib_truck_parade_payloads.lua" then return catalog end
+            if path == "luarules/configs/parade_hologram_figures.lua" then return figureData end
             assert(path == "luarules/configs/parade_hologram_decorations.lua"); return config
         end}, gadgetHandler = {IsSyncedCode = function() return options.synced end,
             RemoveGadget = function() f.removed = true end}}
@@ -67,7 +90,11 @@ local function fixture(options)
         if options.listFailure then return 0 end
         f.listCount = f.listCount + 1
         local id = f.listCount
-        f.lists[id] = {glyph = names[glyph], vertices = 0}
+        local frameIndex
+        for index, candidate in ipairs(glyph.frames) do
+            if candidate == frame then frameIndex = index end
+        end
+        f.lists[id] = {glyph = names[glyph], frame = frameIndex, vertices = 0}
         f.compiling = id; fn(glyph, frame); f.compiling = nil
         return id
     end
@@ -101,7 +128,8 @@ local function fixture(options)
         assert(f.depthMask == false and f.depthTest == env.GL.LEQUAL and f.culling == false)
         assert(f.blend == "770:1")
         f.draws[#f.draws + 1] = {unit = f.unit, glyph = f.lists[id].glyph,
-            opacity = f.uniforms.opacity, pixelSize = f.uniforms.pixelSize, anchor = f.anchor}
+            frame = f.lists[id].frame, opacity = f.uniforms.opacity,
+            pixelSize = f.uniforms.pixelSize, anchor = f.anchor}
     end
     gl.PushPopMatrix = scope
     gl.ActiveShader = function(shaderID, fn, ...)
@@ -158,6 +186,49 @@ check("all selectable floats have bounded, valid pixel decorations", function()
     end
 end)
 
+check("outlined audience is sparse, covers all four roles and preserves the ornaments", function()
+    local categories = {}
+    for name, glyph in pairs(figures.glyphs) do
+        assert(not config.glyphs[name], "figure must not replace an ornament")
+        categories[glyph.category] = true
+        local width, height = #glyph.frames[1][1], #glyph.frames[1]
+        assert(width <= 17 and height <= 21)
+        assert(#glyph.frameDurations == #glyph.frames and #glyph.frames >= 3)
+        local total = 0
+        for index, frame in ipairs(glyph.frames) do
+            assert(#frame == height)
+            local lit = 0
+            for _, row in ipairs(frame) do
+                assert(#row == width)
+                for symbol in row:gmatch(".") do
+                    if symbol ~= "." then assert(glyph.palette[symbol]); lit = lit + 1 end
+                end
+            end
+            assert(lit > 0 and lit <= 110 and lit < width * height * 0.60,
+                "outlined figure should have a hollow interior: " .. name)
+            local duration = glyph.frameDurations[index]
+            assert(type(duration) == "number" and duration > 0 and duration < math.huge)
+            total = total + duration
+        end
+        assert(total >= 3 and total <= 7, "gentle blink/gesture cycle: " .. name)
+    end
+    for _, category in ipairs({"ghost", "memorial", "remote", "ai"}) do assert(categories[category]) end
+    for _, variant in ipairs(catalog.variants) do
+        local key = variant.hologramTheme or variant.key
+        local added, all = assert(figures.themes[key]), themeFor(key)
+        assert(#added == 4 and #all == 10 and #config.themes[key] == 6)
+        for i = 1, 6 do assert(all[i] == config.themes[key][i]) end
+        for _, placement in ipairs(added) do
+            local glyph = assert(figures.glyphs[placement.glyph])
+            local height = placement.pixelSize * #glyph.frames[1]
+            assert(height >= 5 and height <= 8)
+            assert((placement.opacity or 1) >= 0 and (placement.opacity or 1) <= 1)
+            assert((placement.bobAmplitude or 0.24) >= 0 and (placement.bobAmplitude or 0.24) <= 0.6)
+            assert((placement.swayAmplitude or 0) >= 0 and (placement.swayAmplitude or 0) <= 0.4)
+        end
+    end
+end)
+
 check("renderer is entirely unsynced and has no simulation side effects", function()
     local f = fixture({synced = true})
     assert(f.result == false and f.listCount == 0 and f.allUnitReads == 0)
@@ -166,7 +237,7 @@ end)
 check("attached decorations inherit unit and center transforms without rebuilding pixels", function()
     local f = fixture(); local lists = f.listCount
     f.gadget:DrawWorld(); f.gadget:DrawWorld()
-    assert(#f.draws == 12 and f.listCount == lists and f.allUnitReads == 1)
+    assert(#f.draws == 20 and f.listCount == lists and f.allUnitReads == 1)
     assert(f.transforms[1][1] == "unit" and f.transforms[2][1] == "piece")
     assert(f.draws[1].unit == 5 and f.draws[1].glyph == config.themes.forest_dreamer[1].glyph)
     assert(f.matrixDepth == 0 and f.attribDepth == 0 and f.activeShader == 99)
@@ -177,8 +248,9 @@ check("live payload selection changes the motif without using stale carrier iden
     local f = fixture()
     for index, variant in ipairs(catalog.variants) do
         f.variants[5] = index; f.draws = {}; f.gadget:DrawWorld()
-        assert(#f.draws == #config.themes[variant.key])
-        for n, draw in ipairs(f.draws) do assert(draw.glyph == config.themes[variant.key][n].glyph) end
+        local expected = themeFor(variant.key)
+        assert(#f.draws == #expected)
+        for n, draw in ipairs(f.draws) do assert(draw.glyph == expected[n].glyph) end
     end
     for _, invalid in ipairs({0, 999}) do
         f.variants[5] = invalid; f.draws = {}; f.gadget:DrawWorld(); assert(#f.draws == 0)
@@ -202,7 +274,7 @@ check("no symbols on detached, dead, hidden, cloaked, distant or offscreen carri
         assert(#f.draws == 0 and f.attribDepth == 0)
     end
     local f = fixture(); f.los = false; f.fullView = true; f.gadget:DrawWorld()
-    assert(#f.draws == 6, "full-view spectator should see attached float")
+    assert(#f.draws == 10, "full-view spectator should see attached float")
     f.fullView = false; f.draws = {}; f.gadget:DrawWorld()
     assert(#f.draws == 0, "losing full-view must apply immediately")
 end)
@@ -213,7 +285,7 @@ check("decorations fade with distance and discover later units through events", 
     f.draws = {}; f.camera = {0, 0, 1200}; f.gadget:DrawWorld()
     assert(math.abs(f.draws[1].opacity / alpha - 0.5) < 0.000001)
     f.gadget:UnitDestroyed(5); f.draws = {}; f.gadget:DrawWorld(); assert(#f.draws == 0)
-    f.gadget:UnitEnteredLos(5, 0, 2, 7); f.gadget:DrawWorld(); assert(#f.draws == 6)
+    f.gadget:UnitEnteredLos(5, 0, 2, 7); f.gadget:DrawWorld(); assert(#f.draws == 10)
     assert(f.allUnitReads == 1)
 end)
 
@@ -225,7 +297,7 @@ check("dense previews draw a bounded nearest subset and release GPU resources", 
         f.parents[id], f.variants[id], f.positions[parent] = parent, 1, {id, 0, 0}
         f.gadget:UnitCreated(id, 7)
     end
-    f.gadget:DrawWorld(); assert(#f.draws == 12 * 6)
+    f.gadget:DrawWorld(); assert(#f.draws == 12 * 10)
     assert(f.draws[1].unit == 5 and f.draws[#f.draws].unit == 40)
     f.gadget:Shutdown(); f.gadget:Shutdown()
     local deleted = 0; for _ in pairs(f.deletedLists) do deleted = deleted + 1 end
@@ -241,6 +313,50 @@ check("shader failure and draw failure leave no leaked GL state or resources", f
     assert(f.removed and f.matrixDepth == 0 and f.attribDepth == 0 and f.activeShader == 99)
     assert(f.blend == "original" and f.depthMask == true and f.depthTest == false)
     assert(f.deletedShaders[1] and #f.errors == 1)
+end)
+
+check("short blink frames use their authored duration while old animation stays unchanged", function()
+    local placement = figures.themes.forest_dreamer[1]
+    local glyph = figures.glyphs[placement.glyph]
+    local total = 0; for _, duration in ipairs(glyph.frameDurations) do total = total + duration end
+    local phase = (placement.phase or 7 * 0.37) + 5 * 0.173
+    local f = fixture(); local lists = f.listCount
+    local function at(time, expected)
+        f.seconds = total * 10 - phase + time
+        f.draws = {}; f.gadget:DrawWorld()
+        local draw = f.draws[7]
+        assert(draw.glyph == placement.glyph and draw.frame == expected)
+        local clock = f.seconds + phase
+        local shimmer = 0.91 + 0.06 * math.sin(clock * 4.1)
+        assert(math.abs(draw.opacity - shimmer * (placement.opacity or 1)) < 0.000001)
+        assert(math.abs(draw.anchor[2] - placement.y) <= (placement.bobAmplitude or 0.24) + 0.000001)
+        assert(math.abs(draw.anchor[1] - placement.x) <= (placement.swayAmplitude or 0) + 0.000001)
+        local old = config.themes.forest_dreamer[1]
+        local oldClock = f.seconds + (old.phase or 0.37) + 5 * 0.173
+        local oldGlyph = config.glyphs[old.glyph]
+        assert(f.draws[1].frame == math.floor(oldClock / oldGlyph.frameSeconds) % #oldGlyph.frames + 1)
+    end
+    at(0.001, 1)
+    local boundary = 0
+    for index = 1, #glyph.frameDurations - 1 do
+        boundary = boundary + glyph.frameDurations[index]
+        at(boundary - 0.00001, index)
+        at(boundary + 0.00001, index + 1)
+    end
+    at(total + 0.001, 1)
+    assert(f.listCount == lists and f.allUnitReads == 1)
+end)
+
+check("invalid frame-duration data disables the effect and releases its resources", function()
+    local _, glyph = next(figures.glyphs)
+    for _, bad in ipairs({0, -0.1, math.huge, "slow"}) do
+        local durations = {}; for i = 1, #glyph.frames do durations[i] = 1 end
+        durations[2] = bad
+        local f = fixture({invalidTiming = durations})
+        assert(f.removed and f.deletedShaders[1] and #f.errors == 1)
+    end
+    local f = fixture({invalidTiming = {1}})
+    assert(f.removed and f.deletedShaders[1])
 end)
 
 print("PASS: parade pixel hologram regression suite")

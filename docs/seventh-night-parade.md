@@ -70,7 +70,7 @@ and the carrier-specific mounting offsets. The glyphs remain camera-facing.
 ![Exact pixel sprites for the six float themes](images/parade-pixel-holograms.png)
 
 This is a static preview generated from the actual sprite data, not a gameplay
-capture. The catalog contains **11 glyphs and 22 animation frames**, with at
+capture. The original ornament catalog contains **11 glyphs and 22 animation frames**, with at
 most **50 lit pixels per frame**. Motifs are **2.6–5.5 world units tall**, sized
 against the floats' measured bounds. Candles flicker through three flame frames;
 other motifs gently pulse, flutter, or turn, with individual timing and slight
@@ -95,6 +95,41 @@ an existing arrangement, or add a theme under their own catalog key.
 The renderer lifecycle/visibility suite is `tests/parade_holograms_test.lua`.
 The payload suite also checks deferred selection and decoration identity.
 Live Recoil appearance and performance still require an in-game playtest.
+
+### Outlined hologram audience
+
+Four small outlined figures accompany each float in addition to its six
+ornaments. Eight designs provide 30 animation frames. These are original pixel
+silhouettes with transparent interiors,
+thin luminous contours, and expressive eyes. Their rounded spirit shapes and
+quiet gestures give the procession a gentle, uncanny audience.
+
+| Figure type | Appearance and movement |
+| --- | --- |
+| Ghosts | Soft pale or green spirit contours, bright eyes, drifting bob and sway |
+| Deceased humans | Warm ivory and amber memorial outlines, restrained bows or waves |
+| Virtual human spectators | Cyan human outlines with projection marks and blinking or glancing eyes |
+| AI watchers | Geometric faces and curious multiple eyes, gentle hovering motion |
+
+The Forest Dreamer and Bathhouse favor spirits; the Night Post favors memorial
+figures; the Cloud Mill favors virtual and AI spectators. Each arrangement is
+authored alongside that float's measured bounds. Figures are 5–8 world units
+tall and share the ornaments' transport attachment, depth testing, visibility
+checks, camera-facing drawing, and distance fading.
+
+![Actual outlined hologram figure sprites](images/parade-hologram-figures.png)
+
+The [animated sprite preview](images/parade-hologram-figures.gif) shows the same
+figures over their four-second cycles, including brief 140 ms blinks.
+These previews show the authored sprite data. They are not Recoil gameplay
+captures. The silhouettes represent imagined attendees and remembered people;
+they do not identify real connected viewers or individual game casualties.
+
+[parade_hologram_figures.lua](../luarules/configs/parade_hologram_figures.lua)
+defines the contours, eyes, palettes, placements, and motion strengths. Each
+figure has individual timing. Per-frame durations keep a blink brief while
+holding the open-eyed or resting poses for several seconds. The original
+ornament frames and timings remain intact, and all geometry is cached once.
 
 ## Preview in a game
 
