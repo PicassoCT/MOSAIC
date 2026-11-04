@@ -1,7 +1,7 @@
 function gadget:GetInfo()
     return {
         name = "Parade pixel holograms",
-        desc = "Animated pixel ornaments and outlined spirit audiences on parade floats",
+        desc = "Small animated candles and themed pixel decorations on parade floats",
         author = "MOSAIC contributors", license = "GPL3", layer = 3, enabled = true,
     }
 end
@@ -9,23 +9,7 @@ if gadgetHandler:IsSyncedCode() then return false end
 
 local catalog = VFS.Include("scripts/lib_truck_parade_payloads.lua")
 local decorations = VFS.Include("luarules/configs/parade_hologram_decorations.lua")
-local figures = VFS.Include("luarules/configs/parade_hologram_figures.lua")
-local glyphs, themes = {}, {}
--- Keep the original six ornaments, positions, and animation phases intact.
--- Outlined spectators are an additional group, using the same cached renderer.
-for _, source in ipairs({decorations, figures}) do
-    for name, glyph in pairs(source.glyphs) do
-        assert(not glyphs[name], "duplicate parade hologram glyph: " .. name)
-        glyphs[name] = glyph
-    end
-    for key, placements in pairs(source.themes) do
-        themes[key] = themes[key] or {}
-        for _, placement in ipairs(placements) do
-            themes[key][#themes[key] + 1] = placement
-        end
-    end
-end
-local payloads, glyphLists, glyphTimings = {}, {}, {}
+local payloads, glyphLists = {}, {}
 local payloadDefID, shader, sizeUniform, opacityUniform
 local maxDistance, fadeStart, maxVisiblePayloads = 1500, 900, 12
 local maxDistanceSquared = maxDistance * maxDistance
@@ -56,7 +40,6 @@ local function releaseResources()
         for _, list in ipairs(frames) do gl.DeleteList(list) end
     end
     glyphLists = {}
-    glyphTimings = {}
     if shader then gl.DeleteShader(shader); shader = nil end
 end
 
@@ -97,33 +80,6 @@ local function rememberUnit(id, defID)
     end
 end
 
-local function cacheTiming(name, glyph)
-    if not glyph.frameDurations then return true end
-    if #glyph.frameDurations ~= #glyph.frames then return false end
-    local ends, total = {}, 0
-    for index, duration in ipairs(glyph.frameDurations) do
-        if type(duration) ~= "number" or duration <= 0 or duration ~= duration
-            or duration == math.huge then return false end
-        total = total + duration
-        ends[index] = total
-    end
-    if total == 0 or total == math.huge then return false end
-    glyphTimings[name] = {ends = ends, total = total}
-    return true
-end
-
-local function animationFrame(name, glyph, frames, clock)
-    local timing = glyphTimings[name]
-    if timing then
-        local cycle = clock % timing.total
-        for index, ending in ipairs(timing.ends) do
-            if cycle < ending then return index end
-        end
-        return #frames
-    end
-    return math.floor(clock / (glyph.frameSeconds or 0.20)) % #frames + 1
-end
-
 function gadget:Initialize()
     local definition = UnitDefNames[catalog.unitName]
     if not definition then gadgetHandler:RemoveGadget(self); return end
@@ -140,11 +96,7 @@ function gadget:Initialize()
     end
     sizeUniform = gl.GetUniformLocation(shader, "pixelSize")
     opacityUniform = gl.GetUniformLocation(shader, "opacity")
-    for name, glyph in pairs(glyphs) do
-        if not cacheTiming(name, glyph) then
-            disable("invalid frame durations for " .. name)
-            return
-        end
+    for name, glyph in pairs(decorations.glyphs) do
         local frames = {}
         glyphLists[name] = frames
         for index, frame in ipairs(glyph.frames) do
@@ -181,7 +133,7 @@ local function visiblePayloads()
                 local los = fullView or Spring.GetUnitLosState(parent, allyTeamID)
                 local index = Spring.GetUnitRulesParam(id, "city_parade_variant")
                 local variant = index and catalog.variants[index]
-                local theme = variant and themes[variant.hologramTheme or variant.key]
+                local theme = variant and decorations.themes[variant.hologramTheme or variant.key]
                 local x, y, z = Spring.GetUnitPosition(parent)
                 local noDraw = Spring.GetUnitNoDraw and Spring.GetUnitNoDraw(parent)
                 local cloaked = Spring.GetUnitIsCloaked and Spring.GetUnitIsCloaked(parent)
@@ -217,20 +169,17 @@ local function drawVisible(visible, seconds)
             gl.UnitMultMatrix(payload.id)
             gl.UnitPieceMultMatrix(payload.id, payload.center)
             for number, decoration in ipairs(payload.theme) do
-                local glyph = glyphs[decoration.glyph]
+                local glyph = decorations.glyphs[decoration.glyph]
                 local frames = glyphLists[decoration.glyph]
                 if glyph and frames then
                     local phase = (decoration.phase or number * 0.37) + payload.id * 0.173
                     local clock = seconds + phase
-                    local frame = animationFrame(decoration.glyph, glyph, frames, clock)
+                    local frame = math.floor(clock / (glyph.frameSeconds or 0.20)) % #frames + 1
                     local shimmer = 0.91 + 0.06 * math.sin(clock * 4.1)
                     gl.Uniform(sizeUniform, decoration.pixelSize)
-                    gl.Uniform(opacityUniform, fade * shimmer * (decoration.opacity or 1))
+                    gl.Uniform(opacityUniform, fade * shimmer)
                     gl.PushPopMatrix(function()
-                        local bob = (decoration.bobAmplitude or 0.24)
-                            * math.sin(clock * (decoration.bobSpeed or 1.7))
-                        local sway = (decoration.swayAmplitude or 0) * math.sin(clock * 0.83)
-                        gl.Translate(decoration.x + sway, decoration.y + bob, decoration.z)
+                        gl.Translate(decoration.x, decoration.y + 0.24 * math.sin(clock * 1.7), decoration.z)
                         gl.CallList(frames[frame])
                     end)
                 end
