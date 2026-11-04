@@ -53,10 +53,11 @@ The existing payload attachment supplies movement. Explicit parade payloads do n
 
 ## Pixel hologram decorations
 
-Each attached float carries **six small animated pixel ornaments**, selected by
-its actual payload variant. They hover beside the float's lower body and use
-the native payload and `center` piece transforms, so they follow turns, movement,
-and the carrier-specific mounting offsets. The glyphs remain camera-facing.
+Touring floats project animated pixel ornaments onto fixed spots beside the road.
+Each projection keeps its world position and faces the road, while its pixels
+animate. It remains while **any active float is within 160 world units**, even
+when traffic stops, then disappears without a fade. Ending the parade or losing
+all attached float payloads removes the projections.
 
 | Float | Pixel decorations |
 | --- | --- |
@@ -67,34 +68,72 @@ and the carrier-specific mounting offsets. The glyphs remain camera-facing.
 | Cloud Mill | Clouds and turning pinwheels |
 | Night Post | Candles, opening envelopes, fluttering moths |
 
-![Exact pixel sprites for the six float themes](images/parade-pixel-holograms.png)
+![Original pixel artwork for the six float themes](images/parade-pixel-holograms.png)
 
-This is a static preview generated from the actual sprite data, not a gameplay
-capture. The catalog contains **11 glyphs and 22 animation frames**, with at
-most **50 lit pixels per frame**. Motifs are **2.6–5.5 world units tall**, sized
-against the floats' measured bounds. Candles flicker through three flame frames;
-other motifs gently pulse, flutter, or turn, with individual timing and slight
-vertical bobbing. Depth testing lets the truck, float, and buildings naturally
-occlude them at oblique camera angles.
+The artwork preserves all **11 original glyphs and 22 animation frames**. Each
+float cycles its six theme entries and alternates sides of the road. Every third
+successful projection is a modular ghost; the ornament cycle resumes afterward
+without skipping any theme entries. A successful spawn requires
+at least **48 world units of travel** and **four seconds** since the previous
+attempt. Projections appear **60 units sideways** and **four units above ground**;
+water, map edges, blocking units, and overlapping projections are skipped. The
+entire parade is limited to **24 simultaneous projections**.
 
-The effect uses cached pixel geometry and an unsynced shader. It is self-lit;
-these ornaments do not add individual scene lights. Decorations fade between
-900 and 1,500 world units from the camera, and at most the nearest 12 payloads
-are drawn in dense debug previews. The ordinary parade contains four floats.
-Only attached, living, visible carriers receive ornaments. Loss of attachment,
-carrier death, cloaking, hidden rendering, or loss of line of sight suppresses
-them; full-view spectators retain their normal visibility.
+### Modular ghost placeholders
+
+Ghosts combine one **body**, one **face**, and one **mask**. The placeholder
+catalog provides three of each, for **27 combinations**: robe/coat/wisp bodies,
+round/long/skull faces, and visor/veil/chevron masks. Selection cycles
+reproducibly through all combinations, with a different starting offset per
+float. A ghost keeps its selected parts throughout its lifetime. Wisp bodies
+flutter and round faces blink; all three visible pieces feed the same neon and
+radiance passes and disappear together during blackouts or cleanup.
+
+[parade_ghost_parts.lua](../luarules/configs/parade_ghost_parts.lua) defines the
+slots, pixel art, palettes, animation frames and attachment origins. Bodies
+attach at the unit anchor, faces at grid height 12, and masks at height 12 and
+one pixel forward to prevent overlapping surfaces. Each complete placeholder
+is approximately **22.5 world units tall**, relative to the 40–52 unit floats.
+Edit these independent parts and rerun the generator to replace the placeholders.
+Frame pieces use `<part-name>_<frame-number>`; the unit script's
+`SetParadeGhost(body, face, mask, yaw)` selects one valid part per slot.
+
+`ghostEvery = 3` in the spawning configuration controls frequency; `0` disables
+ghost spawning. Ghosts share the existing spacing, stationary lifetime and
+24-projection cap with ornaments. No extra unit is created for an individual
+body, face or mask.
+
+### Native rendering and authoring
+
+The native model uses separated colored cube pixels, **1.25 world units per
+pixel**, sized against the 40–52 unit tall floats. Each animation frame is a
+single mesh piece. Its diffuse palette preserves the original artwork colors.
+The script publishes the visible piece through the existing house hologram
+protocol, so the shared neon shader renders it and the radiance cascade captures
+its colored light. Blackouts hide both the pixels and their emission. Projection
+visibility and light follow local line of sight, including full-view spectators.
+They are neutral, non-selectable, non-blocking visual units with no sight radius.
 
 Edit [parade_hologram_decorations.lua](../luarules/configs/parade_hologram_decorations.lua)
-to adjust pixels, palettes, animation timing, or placement. The
-[renderer](../luarules/gadgets/gfx_parade_holograms.lua) selects a theme from the
-payload's `city_parade_variant` rules parameter, published only after a valid
-variant is selected. Future float entries can provide `hologramTheme` to reuse
-an existing arrangement, or add a theme under their own catalog key.
+for artwork, palettes, timing and theme order. The original attached-placement
+coordinates remain in the catalog for artwork tooling; stationary projection
+positions come from [parade_hologram_spawning.lua](../luarules/configs/parade_hologram_spawning.lua).
+That configuration also controls spacing, lifetime radius and the population cap.
+The payload's `city_parade_variant` selects its theme; future variants can use
+`hologramTheme` to reuse an existing theme.
 
-The renderer lifecycle/visibility suite is `tests/parade_holograms_test.lua`.
-The payload suite also checks deferred selection and decoration identity.
-Live Recoil appearance and performance still require an in-game playtest.
+After changing artwork, colors or `pixelSize`, rebuild the model and palette:
+
+```sh
+python3 tools/generate_parade_holograms.py
+```
+
+The generator requires Lua, NumPy and Pillow. Lifecycle, visibility, blackout,
+reload and shared neon protocol checks are in `tests/parade_holograms_test.lua`.
+Model validation is in `tests/parade_hologram_model_test.py`; the shared cascade
+has lifecycle and GPU tests in `tests/neon_radiance_lifecycle.lua` and
+`tests/neon_radiance_gpu.py`. Live Recoil appearance and performance still require
+an in-game playtest.
 
 ## Preview in a game
 

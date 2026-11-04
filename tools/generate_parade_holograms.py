@@ -1,0 +1,111 @@
+#!/usr/bin/env python3
+"""Bake original Lua pixel art into native coloured cubes for the neon pipeline.
+
+Each animation frame is one mesh piece. Its cube top faces give the cascade's
+top-down capture real coloured area, unlike a zero-thickness upright billboard.
+Requires Lua, NumPy and Pillow; no artwork or animation frames are duplicated.
+"""
+import argparse
+from pathlib import Path
+import subprocess
+import sys
+import xml.etree.ElementTree as ET
+
+import numpy as np
+from PIL import Image
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "tools/truck_parade_payloads"))
+from generate import write_dae
+
+
+def read_art(lua):
+    source = '''
+local c=dofile('luarules/configs/parade_hologram_decorations.lua')
+for name,part in pairs(dofile('luarules/configs/parade_ghost_parts.lua').parts) do c.glyphs[name]=part end
+local size=dofile('luarules/configs/parade_hologram_spawning.lua').pixelSize
+print('SIZE',size)
+local names={}; for name in pairs(c.glyphs) do names[#names+1]=name end; table.sort(names)
+for _,name in ipairs(names) do
+    local g=c.glyphs[name]
+    local origin=g.origin or {0,0,0}; print('O',name,origin[1],origin[2],origin[3])
+    local symbols={}; for symbol in pairs(g.palette) do symbols[#symbols+1]=symbol end; table.sort(symbols)
+    for _,symbol in ipairs(symbols) do local p=g.palette[symbol]; print('C',name,symbol,p[1],p[2],p[3],p[4] or 1) end
+    for i,frame in ipairs(g.frames) do print('F',name,i,table.concat(frame,'/')) end
+end
+'''
+    output = subprocess.check_output([lua, "-"], input=source, text=True, cwd=ROOT)
+    colors, frames, origins, size = {}, {}, {}, None
+    for line in output.splitlines():
+        fields = line.split("\t")
+        if fields[0] == "SIZE": size = float(fields[1])
+        elif fields[0] == "O": origins[fields[1]] = np.array(list(map(float, fields[2:])))
+        elif fields[0] == "C": colors[(fields[1], fields[2])] = tuple(map(float, fields[3:]))
+        elif fields[0] == "F": frames[(fields[1], int(fields[2]))] = fields[3].split("/")
+    assert size and size > 0 and colors and frames
+    return colors, frames, origins, size
+
+
+def cube(x, y, size, uv):
+    # Separated luminous pixels, with finite depth for both world rendering
+    # and top-down emission capture. All six faces have outward winding.
+    vertices = []
+    for normal, u, v in [((1,0,0),(0,1,0),(0,0,1)), ((-1,0,0),(0,0,1),(0,1,0)),
+                         ((0,1,0),(0,0,1),(1,0,0)), ((0,-1,0),(1,0,0),(0,0,1)),
+                         ((0,0,1),(1,0,0),(0,1,0)), ((0,0,-1),(0,1,0),(1,0,0))]:
+        n, a, b = np.array(normal), np.array(u), np.array(v)
+        center = np.array((x,y,0)) + n * size * .4
+        for corner in (0,1,2,0,2,3):
+            su, sv = ((-1,-1),(1,-1),(1,1),(-1,1))[corner]
+            position = center + (a*su+b*sv)*size*.4
+            vertices.append(tuple(position)+normal+(uv[0]+su*uv[2], uv[1]+sv*uv[3]))
+    return vertices
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--lua", default="lua")
+    args = parser.parse_args()
+    colors, frames, origins, size = read_art(args.lua)
+    # Wide constant-colour swatches keep mip/filter bleed away from face UVs.
+    width = 8 * len(colors)
+    palette = Image.new("RGB", (width,8))
+    uvs = {}
+    for index, (key,color) in enumerate(colors.items()):
+        rgb = tuple(round(255*channel*color[3]) for channel in color[:3])
+        palette.paste(rgb,(index*8,0,(index+1)*8,8))
+        uvs[key] = ((index*8+4)/width,.5,1/width,1/8)
+    texture = ROOT / "unittextures/parade_hologram_palette.png"
+    palette.save(texture)
+    pieces = {}
+    for (name,index), frame in frames.items():
+        vertices = []
+        height, columns = len(frame), len(frame[0])
+        for row,line in enumerate(frame):
+            assert len(line) == columns
+            for col,symbol in enumerate(line):
+                if symbol != ".":
+                    vertices.extend(cube((col+.5-columns/2)*size,(height-row-.5)*size,size,uvs[(name,symbol)]))
+        offset = origins[name] * size
+        vertices = [tuple(np.array(v[:3])+offset)+v[3:] for v in vertices]
+        pieces[f"{name}_{index}"] = {"vertices":vertices,"pivot":np.zeros(3),"parent":"center"}
+    model = ROOT / "objects3d/paradeHologram.dae"
+    write_dae(pieces,model)
+    tree=ET.parse(model)
+    ns={"c":"http://www.collada.org/2005/11/COLLADASchema"}
+    tree.find(".//c:library_images/c:image/c:init_from",ns).text="../unittextures/parade_hologram_palette.png"
+    tree.find(".//c:authoring_tool",ns).text="MOSAIC tools/generate_parade_holograms.py"
+    tree.write(model,encoding="utf-8",xml_declaration=True)
+    points=np.array([vertex[:3] for p in pieces.values() for vertex in p["vertices"]])
+    mid=(points.min(0)+points.max(0))/2
+    radius=int(np.ceil(np.linalg.norm(points-mid,axis=1).max()))+1
+    model.with_suffix(".dae.lua").write_text(
+        '-- Generated by tools/generate_parade_holograms.py.\n'
+        f'return {{radius={radius}, height={int(np.ceil(points[:,1].max()))}, '
+        'midpos={'+','.join(map(str,mid))+'},\n'
+        '    tex1="parade_hologram_palette.png",\n'
+        '    tex2="house_asian_selfilu_reflection.png",\n}\n')
+    print(f"Exported {len(pieces)} frames, {len(colors)} colours, {sum(len(p['vertices'])//3 for p in pieces.values())} triangles")
+
+
+if __name__ == "__main__": main()
