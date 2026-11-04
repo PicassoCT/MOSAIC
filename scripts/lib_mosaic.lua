@@ -1192,7 +1192,7 @@ end
 
     function getHologramTypes(UnitDefs)
         local UnitDefNames = getUnitDefNames(UnitDefs)
-        return {
+        local result = {
                     [UnitDefNames["advertising_blimp_hologram"].id] = true,           
                     [UnitDefNames["house_western_hologram_buisness"].id] = true,           
                     [UnitDefNames["house_western_hologram_casino"].id] = true,           
@@ -1202,11 +1202,15 @@ end
                     [UnitDefNames["advertising_blimp_asian_hologram1"].id] = true,
                     [UnitDefNames["advertising_blimp_asian_hologram2"].id] = true 
                 }
+        for id, def in pairs(UnitDefs) do
+            if (def.customParams or {}).neon_hologram_type then result[id] = true end
+        end
+        return result
     end  
 
     function getHologramTypeNames(UnitDefs)
         local UnitDefNames = getUnitDefNames(UnitDefs)
-        return {
+        local result = {
                     [UnitDefNames["advertising_blimp_hologram"].id] = "advertising_blimp_hologram",           
                     [UnitDefNames["house_western_hologram_buisness"].id] = "house_western_hologram_buisness",           
                     [UnitDefNames["house_western_hologram_casino"].id] = "house_western_hologram_casino",           
@@ -1215,6 +1219,10 @@ end
                     [UnitDefNames["advertising_blimp_asian_hologram1"].id] = "advertising_blimp_asian_hologram1",
                     [UnitDefNames["advertising_blimp_asian_hologram2"].id] = "advertising_blimp_asian_hologram2"      
                 }
+        for id, def in pairs(UnitDefs) do
+            if (def.customParams or {}).neon_hologram_type then result[id] = def.name end
+        end
+        return result
     end  
 
 

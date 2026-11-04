@@ -151,7 +151,7 @@ if UnitDefNames["decobuilding"] then ignoredUnitDefs[UnitDefNames["decobuilding"
 if UnitDefNames["decoboat"] then ignoredUnitDefs[UnitDefNames["decoboat"].id]= true end
 for id, def in pairs(UnitDefs) do
   local params = def.customParams or {}
-  if params.house_asian_base or params.civilian_service_payload or params.civilian_parade_payload then
+  if params.house_asian_base or params.civilian_service_payload or params.civilian_parade_payload or params.parade_hologram then
     ignoredUnitDefs[id] = true
   end
 end
