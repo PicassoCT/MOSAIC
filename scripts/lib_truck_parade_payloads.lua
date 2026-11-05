@@ -1,42 +1,61 @@
--- The six existing lantern spline floats, exported together without a truck.
--- Numbering preserves their editable CONTAINER66..CONTAINER71 source roots.
+-- Re-exported Float01..Float24; child names deliberately have no leading zero.
+local variants = {}
+local themes = {"forest_dreamer", "wandering_bathhouse", "moonwhale",
+    "lantern_koi", "night_post", "cloud_mill"}
+for index = 1, 24 do
+    local name = string.format("Float%02d", index)
+    variants[index] = {key = string.format("float_%02d", index),
+        title = "Lantern Float " .. index, pieceName = name, pieces = {name},
+        hologramTheme = themes[(index - 1) % #themes + 1]}
+end
+local function identify(index, key, title)
+    variants[index].key, variants[index].title = key, title
+    variants[index].hologramTheme = key
+end
+identify(1, "forest_dreamer", "The Forest Dreamer")
+identify(2, "wandering_bathhouse", "The Wandering Bathhouse")
+identify(3, "moonwhale", "The Moonwhale")
+identify(4, "lantern_koi", "The Lantern Koi")
+identify(5, "night_post", "The Night Post")
+identify(24, "cloud_mill", "The Cloud Mill")
+
+local function motion(index, child, settings)
+    local entry = variants[index]
+    local name = "Float" .. index .. "Sub" .. child
+    entry.pieces[#entry.pieces + 1] = name
+    entry.motion = entry.motion or {}
+    settings.pieceName = name
+    entry.motion[#entry.motion + 1] = settings
+end
+-- Exported local X points along model -Z; local Z points up.
+-- Gentle, staggered pendulum swings keep the authored suspension pivots fixed.
+motion(1, 1, {axis = "x", angle = 4, halfPeriodMs = 2200})
+-- The flag turns slightly around its upright pole; this is a rigid flag mesh.
+motion(2, 1, {axis = "z", angle = 6, halfPeriodMs = 900})
+for child = 2, 9 do
+    motion(2, child, {axis = "x", angle = child % 2 == 0 and 4 or -4,
+        halfPeriodMs = 1900 + (child % 3) * 200, delayMs = (child - 2) * 130})
+end
+-- Tail at its root, then four dangling ornaments beneath the fins.
+motion(3, 1, {axis = "y", angle = 3, halfPeriodMs = 3000})
+for child = 2, 5 do
+    motion(3, child, {axis = "x", angle = child % 2 == 0 and 4 or -4,
+        halfPeriodMs = 2300, delayMs = (child - 2) * 190})
+end
+-- Only this rotor spins. Its local X is the horizontal axle, not local Z.
+motion(24, 1, {axis = "x", spin = 18, pauseMs = 3000, spinMs = 5000})
+
 return {
     unitName = "truckpayloadparade",
     modelName = "truckPayloadParade.dae",
     carrierNames = {"truck_arab6", "truck_arab7", "truck_arab8"},
-    -- Measured against each actual bed under the 17.6 x 45.6 float skid.
-    -- The narrow skid fits inside truck_arab8's raised service-body walls.
+    -- COLLADA's meter=0.0254 scales the scene above center. Move destinations
+    -- are in that parent's coordinates; convert model-space mounting offsets.
+    centerMoveScale = 1 / 0.0254,
     carrierOffsets = {
         truck_arab6 = {y = 0, z = -3.5},
         truck_arab7 = {y = 3.2, z = 1},
         truck_arab8 = {y = -1.8, z = 0},
     },
-    variants = {
-        {key = "forest_dreamer", title = "The Forest Dreamer", pieceName = "container66",
-            pieces = {"container66"}},
-        {key = "wandering_bathhouse", title = "The Wandering Bathhouse", pieceName = "container67",
-            pieces = {"container67"}},
-        {key = "moonwhale", title = "The Moonwhale", pieceName = "container68",
-            pieces = {"container68", "container68ActFinLeft", "container68ActFinRight", "container68ActTail"},
-            motion = {
-                {pieceName = "container68ActFinLeft", axis = "z", angle = -4},
-                {pieceName = "container68ActFinRight", axis = "z", angle = 4},
-                {pieceName = "container68ActTail", axis = "x", angle = -3},
-            }},
-        {key = "lantern_koi", title = "The Lantern Koi", pieceName = "container69",
-            pieces = {"container69"}},
-        {key = "cloud_mill", title = "The Cloud Mill", pieceName = "container70",
-            pieces = {"container70", "container70ActWindmillRotor"},
-            -- The rotor's authored axis is horizontal, facing the truck's cab.
-            motion = {{pieceName = "container70ActWindmillRotor", axis = "z", spin = 18}}},
-        {key = "night_post", title = "The Night Post", pieceName = "container71",
-            pieces = {"container71", "container71ActForewing1", "container71ActHindwing1",
-                "container71ActForewing3", "container71ActHindwing3"},
-            motion = {
-                {pieceName = "container71ActForewing1", axis = "z", angle = -3},
-                {pieceName = "container71ActHindwing1", axis = "z", angle = -3},
-                {pieceName = "container71ActForewing3", axis = "z", angle = 3},
-                {pieceName = "container71ActHindwing3", axis = "z", angle = 3},
-            }},
-    },
+    variants = variants,
 }

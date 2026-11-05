@@ -19,27 +19,26 @@ local function clearParentDescription()
     parentID, originalTooltip, installedTooltip = nil, nil, nil
 end
 
-local function animate(selected)
+local function animatePiece(motion)
     SetSignalMask(SIG_ANIMATION)
+    local id, axis = pieceMap[motion.pieceName], axes[motion.axis]
     local direction = 1
+    if motion.delayMs then Sleep(motion.delayMs) end
     while alive(unitID) do
-        -- The mill uses the established 3 s pause / 5 s spin cadence.
-        Sleep(3000)
-        if not alive(unitID) then return end
-        for _, motion in ipairs(selected.motion or {}) do
-            local id, axis = pieceMap[motion.pieceName], axes[motion.axis]
-            if motion.spin then
-                Spin(id, axis, math.rad(motion.spin), math.rad(36))
-            else
-                Turn(id, axis, math.rad(motion.angle * direction), math.rad(2))
-            end
+        if motion.spin then
+            Sleep(motion.pauseMs)
+            if not alive(unitID) then return end
+            Spin(id, axis, math.rad(motion.spin), math.rad(36))
+            Sleep(motion.spinMs)
+            if not alive(unitID) then return end
+            StopSpin(id, axis, 0)
+        else
+            local seconds = motion.halfPeriodMs / 1000
+            Turn(id, axis, math.rad(motion.angle * direction),
+                math.rad(2 * math.abs(motion.angle) / seconds))
+            Sleep(motion.halfPeriodMs)
+            direction = -direction
         end
-        Sleep(5000)
-        if not alive(unitID) then return end
-        for _, motion in ipairs(selected.motion or {}) do
-            if motion.spin then StopSpin(pieceMap[motion.pieceName], axes[motion.axis], 0) end
-        end
-        direction = -direction
     end
 end
 
@@ -75,7 +74,7 @@ function SetParadeVariant(index)
     -- including selections queued before Create and later variant changes.
     Spring.SetUnitRulesParam(unitID, "city_parade_variant", index, {inlos = true})
     Spring.SetUnitTooltip(unitID, variant.title .. " - lantern parade float")
-    if variant.motion then StartThread(animate, variant) end
+    for _, motion in ipairs(variant.motion or {}) do StartThread(animatePiece, motion) end
     return true
 end
 
@@ -92,8 +91,9 @@ local function followParent()
                 local definition = UnitDefs[Spring.GetUnitDefID(parent)]
                 offset = definition and catalog.carrierOffsets[definition.name]
             end
-            Move(center, y_axis, offset and offset.y or 0, 0)
-            Move(center, z_axis, offset and offset.z or 0, 0)
+            local scale = catalog.centerMoveScale or 1
+            Move(center, y_axis, (offset and offset.y or 0) * scale, 0)
+            Move(center, z_axis, (offset and offset.z or 0) * scale, 0)
             attachedMs = 0
             Spring.SetUnitNoSelect(unitID, true)
             Spring.SetUnitBlocking(unitID, false)
@@ -126,6 +126,11 @@ function script.Create()
     Spring.SetUnitAlwaysVisible(unitID, true)
     Spring.SetUnitNoSelect(unitID, true)
     pieceMap = Spring.GetUnitPieceMap(unitID) or {}
+    if not pieceMap.center then
+        Spring.Echo("truckpayloadparade: missing center piece")
+        Spring.DestroyUnit(unitID, false, true)
+        return
+    end
     if not SetParadeVariant(pendingVariant or ((unitID - 1) % #catalog.variants + 1)) then
         Spring.DestroyUnit(unitID, false, true)
         return

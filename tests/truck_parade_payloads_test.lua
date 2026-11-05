@@ -1,5 +1,16 @@
 -- Lua 5.1+: exercise the complete payload unitscript with transport lifecycles.
 local catalog = dofile("scripts/lib_truck_parade_payloads.lua")
+-- Read the real export: a catalog-derived mock hid the old naming mismatch.
+local modelFile = assert(io.open("objects3d/" .. catalog.modelName, "r"))
+local modelText = modelFile:read("*a"); modelFile:close()
+local exportedPieces, pieceCount = {}, 0
+for tag in modelText:gmatch("<node%s+([^>]+)>") do
+    local name = assert(tag:match('name="([^"]+)"'))
+    assert(not exportedPieces[name], "duplicate exported piece " .. name)
+    pieceCount = pieceCount + 1; exportedPieces[name] = pieceCount
+end
+assert(pieceCount == 41 and exportedPieces.center)
+assert(#catalog.variants == 24)
 local function loadEnv(path, env)
     setmetatable(env, {__index = _G})
     if setfenv then
@@ -15,10 +26,7 @@ local function fixture()
         visible = {}, moves = {}, turns = {}, spins = {}, stops = {}, threads = {},
         tooltips = {[20] = "Plate 20", [21] = "Plate 21"}, destroyed = {},
         map = {center = 1}, blocks = {}, selects = {}, rules = {}}
-    local nextID = 1
-    for _, v in ipairs(catalog.variants) do
-        for _, name in ipairs(v.pieces) do nextID = nextID + 1; f.map[name] = nextID end
-    end
+    for name, id in pairs(exportedPieces) do f.map[name] = id end
     local function noop() end
     local env = {unitID = 5, script = {}, GG = {}, Spring = {},
         x_axis = 1, y_axis = 2, z_axis = 3,
@@ -87,18 +95,18 @@ check("variant selection before Create retains all and only the selected float p
     end
     assert(not f.visible[f.map.center])
     assert(not f.env.SetParadeVariant(0) and not f.env.SetParadeVariant(1.5)
-        and not f.env.SetParadeVariant("2") and not f.env.SetParadeVariant(7))
+        and not f.env.SetParadeVariant("2") and not f.env.SetParadeVariant(25))
     assert(f.rules.city_parade_variant == 3, "invalid selection must retain decoration identity")
-    assert(f.env.SetParadeVariant(5))
-    assert(f.rules.city_parade_variant == 5, "decoration identity must follow variant changes")
+    assert(f.env.SetParadeVariant(24))
+    assert(f.rules.city_parade_variant == 24, "decoration identity must follow variant changes")
     for index, v in ipairs(catalog.variants) do
-        for _, name in ipairs(v.pieces) do assert((f.visible[f.map[name]] == true) == (index == 5)) end
+        for _, name in ipairs(v.pieces) do assert((f.visible[f.map[name]] == true) == (index == 24)) end
     end
     f.step()
     assert(#f.spins == 1)
     local spin = f.spins[1]
-    assert(spin[1] == f.map.container70ActWindmillRotor and spin[2] == 3,
-        "horizontal mill rotor must rotate around Z, not the vertical axis")
+    assert(spin[1] == f.map.Float24Sub1 and spin[2] == 1,
+        "exported rotor must rotate around its local X axle")
     f.step()
     assert(f.stops[#f.stops][1] == spin[1] and f.stops[#f.stops][3] == 0)
 end)
@@ -108,11 +116,11 @@ check("delayed attachment fits carriers and detachment removes orphaned float", 
     for _ = 1, 10 do f.step() end
     assert(#f.destroyed == 0)
     f.parent = 20; f.step()
-    assert(f.moves[2] == 0 and f.moves[3] == -3.5)
+    assert(f.moves[2] == 0 and f.moves[3] == -3.5 * catalog.centerMoveScale)
     for _ = 1, 5 do f.step() end
     assert(f.tooltips[20] == "Plate 20 carrying The Forest Dreamer")
     f.parent = 21; f.step()
-    assert(f.tooltips[20] == "Plate 20" and f.moves[2] == -1.8 and f.moves[3] == 0)
+    assert(f.tooltips[20] == "Plate 20" and f.moves[2] == -1.8 * catalog.centerMoveScale and f.moves[3] == 0)
     for _ = 1, 5 do f.step() end
     f.tooltips[21] = "External ownership description"
     f.parent = nil; f.step()
@@ -133,10 +141,60 @@ check("never-attached and dead-carrier payloads retire without leaving hover mod
 end)
 
 check("missing model piece fails explicitly and never selects generic cargo", function()
-    local f = fixture(); f.map.container66 = nil
+    local f = fixture(); f.map.Float01 = nil
     assert(f.env.SetParadeVariant(1)); f.env.script.Create()
     assert(#f.destroyed == 1 and next(f.visible) == nil)
     assert(f.rules.city_parade_variant == nil, "failed model validation must not publish a theme")
+end)
+
+check("all 24 exported floats select with their exact children and only Float24 spins", function()
+    local seen, animated = {}, 0
+    for index, entry in ipairs(catalog.variants) do
+        local f = fixture(); f.parent = 20
+        assert(f.env.SetParadeVariant(index)); f.env.script.Create()
+        assert(#f.destroyed == 0 and f.rules.city_parade_variant == index)
+        local expected = {}
+        for _, name in ipairs(entry.pieces) do
+            assert(exportedPieces[name] and not seen[name], name)
+            seen[name] = true; expected[f.map[name]] = true
+        end
+        for name, id in pairs(f.map) do
+            assert((f.visible[id] == true) == (expected[id] == true), name)
+        end
+        local turnsBefore = #f.turns
+        for _ = 1, 4 do f.step() end
+        assert((#f.spins > 0) == (index == 24), "unexpected spinner on Float" .. index)
+        for _, motion in ipairs(entry.motion or {}) do
+            animated = animated + 1
+            assert(motion.pieceName ~= entry.pieceName)
+            if not motion.spin then
+                local positive, negative = false, false
+                for i = turnsBefore + 1, #f.turns do
+                    local turn = f.turns[i]
+                    if turn[1] == f.map[motion.pieceName] then
+                        positive = positive or turn[3] > 0
+                        negative = negative or turn[3] < 0
+                    end
+                end
+                assert(positive and negative, motion.pieceName .. " must sway both ways")
+            end
+        end
+        assert(f.env.SetParadeVariant(4)) -- static float cancels all old motions
+        local turns, spins = #f.turns, #f.spins
+        for _ = 1, 4 do f.step() end
+        assert(#f.turns == turns and #f.spins == spins, "unselected animation kept running")
+    end
+    assert(animated == 16)
+    for name in pairs(exportedPieces) do assert(name == "center" or seen[name], name) end
+end)
+
+check("missing center or articulated child fails before starting animations", function()
+    for _, missing in ipairs({"center", "Float2Sub9", "Float24Sub1"}) do
+        local f = fixture(); f.map[missing] = nil
+        local index = missing == "Float24Sub1" and 24 or 2
+        assert(f.env.SetParadeVariant(index)); f.env.script.Create()
+        assert(#f.destroyed == 1 and next(f.visible) == nil)
+    end
 end)
 
 check("rigid parade carriers stay civilian in every culture without changing military loadouts", function()
