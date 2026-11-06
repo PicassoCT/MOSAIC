@@ -734,7 +734,7 @@ function buildDecorateGroundLvl()
     local yardMaterial = getMaterialElementsContaingNotContaining(materialColourName, {"Yard","Floor", "Deco"}, {"Door"})
 
 
-    boolHasGrafiti = materialColourName ~= "Office" and chancesAre(10) < decoChances.grafiti or materialColourName == "Ghetto"
+    boolHasGrafiti = chancesAre(10) < decoChances.grafiti or materialColourName == "Ghetto"
 
     --echo("House_wester_nColour:"..materialColourName)
     local buildMaterial = getMaterialElementsContaingNotContaining(materialColourName, {"Block"}, {"Wall"}) 

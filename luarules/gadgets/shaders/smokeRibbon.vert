@@ -10,20 +10,70 @@ uniform float terrainPad; // nonzero only for ground-guarded combat flames
 out vec2 ribbonUV;
 out float ribbonSeed;
 
+// The cloud and its attached charge use one material curve, clock and seed.
+// Narrow roots rise above the passenger, then open into a diffuse, rolling crown.
+vec3 canopyCentre(float t, float strand, vec3 u, vec3 v) {
+    float s = seed + strand * 2.399963;
+    float count = max(strandCount,1.0);
+    vec3 axis = vec3(0,1,0);
+    vec3 radial = vec3(direction.x,0,direction.z);
+    if (dot(radial,radial) < 1e-8) radial = vec3(1,0,0);
+    radial = normalize(radial);
+    vec3 around = cross(axis,radial);
+    vec3 p = origin + around*plumeWidth*0.035*((strand+0.5)/count-0.5);
+    float lockLength = plumeLength*(0.90+0.10*sin(s)*sin(s));
+    float airflow = min(1.0,length(directionalDrift)/max(plumeLength,0.001));
+    float gust = 1.0+airflow*0.16*sin(effectTime*1.4+s*0.13);
+    // Common slow billow keeps the cloud coherent; individual folds lag it.
+    vec3 billow = vec3(sin(effectTime*0.43),0,sin(effectTime*0.31+1.4))*0.12;
+    for (int i=0; i<12; ++i) {
+        float q = t*(float(i)+0.5)/12.0;
+        float flex = (1.0-stiffness)*smoothstep(0.06,0.95,q);
+        float reach = mix(0.10,1.35,smoothstep(0.08,0.86,q))
+            * (0.78+0.22*sin(seed*0.37)*sin(seed*0.37));
+        float lift = mix(1.55,0.22,smoothstep(0.30,1.0,q));
+        float travel = effectTime*0.65;
+        float wave = 0.48*sin(q*6.0-travel+s*0.23)
+            + 0.12*sin(q*14.0-travel*1.37+s);
+        float crossWave = 0.36*sin(q*7.5-travel*0.79+s*0.31)
+            + 0.09*sin(q*17.0-travel*1.61+s);
+        float flutter = 0.72+0.28*airflow;
+        vec3 bend = axis*(lift-gravity*q*0.25)+radial*reach
+            + directionalDrift/max(plumeLength,0.001)*flex*gust
+            + (billow+(radial*wave+around*crossWave)*curl*flutter)*flex;
+        // Wind can spread and curl the crown without inverting it onto its owner.
+        bend.y = max(0.10,bend.y);
+        p += normalize(bend)*(lockLength*t/12.0);
+    }
+    return p;
+}
+
 // Analytic, advecting vortex paths: no particle buffers or integration passes.
 vec3 centre(float t, float strand, vec3 u, vec3 v) {
+    if (hairMode > 1.5) {
+        if (electricMode > 1.5) {
+            // Charge crawls on the actual moving material before lifting away.
+            // Its first 72% coincides exactly with material coordinates .48-.84.
+            if (t <= 0.72) return canopyCentre(mix(0.48,0.84,t/0.72),strand,u,v);
+            vec3 tip = canopyCentre(0.84,strand,u,v);
+            vec3 tangent = normalize(tip-canopyCentre(0.80,strand,u,v));
+            float q = (t-0.72)/0.28;
+            float s = seed+strand*2.399963;
+            float tail = plumeLength*(0.18+0.05*sin(s)*sin(s));
+            vec3 curlOffset = u*sin(q*8.0-effectTime*1.7+s)
+                + v*sin(q*6.0-effectTime*1.2+s*0.7)*0.5;
+            return tip + tangent*(tail*q*(1.0-q)*(1.0-q))
+                + vec3(0,tail*q*q,0)
+                + curlOffset*(plumeWidth*0.055*sin(q*3.14159265)*q);
+        }
+        return canopyCentre(t,strand,u,v);
+    }
     if (hairMode > 0.5) {
         // Fixed arc length: integrate short unit tangents; roots never advect.
-        bool canopy = hairMode > 1.5;
         float s = seed + strand * 2.399963;
         float count = max(strandCount,1.0);
         float rootRadius = plumeWidth * 0.22 * sqrt((strand+0.5)/count);
         vec3 p = origin + rootRadius*(u*cos(s)+v*sin(s));
-        if (canopy) {
-            // Two broad, overlapping veils per rim pin; their roots fan along
-            // the rim instead of scattering vertically toward the passenger.
-            p = origin + u*plumeWidth*0.44*((strand+0.5)/count-0.5);
-        }
         float lockLength = plumeLength * (0.88+0.12*sin(s)*sin(s));
         float airflow = min(1.0,length(directionalDrift)/max(plumeLength,0.001));
         float gust = 1.0 + airflow*(0.18*sin(effectTime*1.7+s*0.13)
@@ -35,20 +85,6 @@ vec3 centre(float t, float strand, vec3 u, vec3 v) {
                 + airflow*sin(effectTime*2.1 + q*3.0 + s);
             float crossWave = 0.25*sin(q*4.0+s)
                 + airflow*sin(effectTime*1.3+q*4.0+s);
-            if (canopy) {
-                // Bending compliance grows away from the pinned rim. Airflow
-                // excites travelling folds; tension suppresses short ripples.
-                // Baseline folds retain the established calm-air billow.
-                flex = (1.0-stiffness)*q*q;
-                float flutter = 0.70+0.30*airflow;
-                // Airflow changes amplitude, not accumulated phase: multiplying
-                // the clock by changing wind speed would pop at every gust.
-                float travel = effectTime*0.8;
-                wave = flutter*(0.70*sin(q*8.0-travel+s*0.3)
-                    + 0.16*sin(q*17.0-travel*1.53+s));
-                crossWave = flutter*(0.50*sin(q*9.0-travel*0.7+s*0.7)
-                    + 0.11*sin(q*19.0-travel*1.17+s));
-            }
             vec3 bend = direction + vec3(0,-gravity*q,0)
                 + directionalDrift/max(plumeLength,0.001)*flex*gust
                 + (u*wave+v*crossWave)*curl*flex;
@@ -141,12 +177,17 @@ void main() {
         spread = 0.5/max(strandCount,1.0) * (1.0-smoothstep(0.55,1.0,t));
         breath = 1.0;
         if (hairMode > 1.5) {
-            // Wider layers overlap around the canopy; fine fibres live in
-            // the opacity field, so density does not require particle meshes.
-            // Fade the ends in density, rather than collapsing these wide
-            // billboards into sharp triangular points at the crown.
-            spread = (0.42+0.22*sin(t*3.14159265))/sqrt(max(strandCount,1.0));
+            // Keep the blurred cloud: narrow suspension roots open into soft
+            // overlapping veils. Fine fibres remain in the opacity field.
+            spread = (0.035+0.58*smoothstep(0.06,0.62,t))
+                * (1.0-0.40*smoothstep(0.78,1.0,t))/sqrt(max(strandCount,1.0));
             breath = 0.86+0.14*sin(t*11.0-effectTime*0.95+seed+strand);
+            if (electricMode > 1.5) {
+                // A small part of that veil carries charge; its centre remains
+                // attached even while the surrounding cloud rolls in the wind.
+                spread = 0.07*(1.0-smoothstep(0.82,1.0,t));
+                breath = 1.0;
+            }
         }
     } else if (electricMode > 0.5) {
         // A narrow core plus halo, never the expanding triangular smoke card.

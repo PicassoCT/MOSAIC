@@ -128,15 +128,16 @@ for _,effect in ipairs(s.registered) do
     local r=effect.record
     assert(r.piece==pieces.step,'effect still follows a hidden animated web remnant')
     if r.mode=='canopy' then black[#black+1]=r
-    elseif r.mode=='electric' then arcs[#arcs+1]=r
+    elseif r.mode=='canopy_arc' then arcs[#arcs+1]=r
     else error('chute registered an unrelated material: '..tostring(r.mode)) end
 end
 assert(#black==8 and #arcs==4,'canopy/electric source counts changed')
 local previousRadius=48 -- This fixture's 8-unit support previously used a 6x radius.
 local expectedRadius=previousRadius*2
 for i,r in ipairs(black) do
-    assert(r.strands==2,'dense canopy exceeded its bounded sixteen-strip mesh budget')
-    assert(r.emission[1]==0 and r.emission[2]>1,'canopy lost its dark roots or luminous tips')
+    assert(r.strands==3,'diffuse crown exceeded its bounded twenty-four-strip mesh budget')
+    assert(r.emission[1]==0 and r.emission[2]>0 and r.emission[2]<0.6,
+        'diffuse canopy lost its dark roots or regained broad intense tip emission')
     for axis=1,4 do assert(r.sourceGlow[axis]==0,'black canopy gained source glow') end
     assert(r.colorStart[1]==0 and r.colorStart[2]==0 and r.colorStart[3]==0 and r.colorStart[4]>0,
         'graphene roots must remain black with visible material coverage')
@@ -150,25 +151,38 @@ for i,r in ipairs(black) do
     -- Put back the emitted mesh vertex to recover the desired local target.
     local tx,ty=r.rootOffset[1]+2,r.rootOffset[2]-1
     local radial=math.sqrt(tx^2+ty^2)
-    assert(math.abs(radial-expectedRadius)<1e-8 and r.rootOffset[3]+5==8,
-        'canopy did not double its asset-scaled radius or lost the emitter-vertex correction')
-    assert(r.length>radial*1.7 and r.length<radial*1.9 and r.width>radial*.6 and r.width<radial*1.6,
-        'black mist sheets lost their broad, bounded canopy proportions')
-    assert(r.direction[1]*tx+r.direction[2]*ty<0,
-        'canopy sheets point away from the suspended passenger')
+    -- Root reach now matches the actual support, instead of an outer ring
+    -- that opens a conspicuous hole through the overhead diffuse cloud.
+    assert(radial>=expectedRadius*.02 and radial<=expectedRadius*.04 and r.rootOffset[3]+5==8,
+        'canopy roots escaped the harness area or lost the emitter-vertex correction')
+    assert(r.length>expectedRadius*1.9 and r.length<expectedRadius*2.2
+        and r.width>=expectedRadius*.9 and r.width<=expectedRadius,
+        'diffuse crown lost its tall, broad and bounded asset-scaled proportions')
+    assert(r.direction[1]*tx+r.direction[2]*ty>0,
+        'canopy bundles converge inward instead of spreading from the harness')
     for j=1,i-1 do
         local other=black[j].rootOffset
-        assert((other[1]-r.rootOffset[1])^2+(other[2]-r.rootOffset[2])^2>(expectedRadius*.7)^2,
-            'mist canopy sheets collapsed onto one rim attachment')
+        local ox,oy=other[1]+2,other[2]-1
+        local otherRadius=math.sqrt(ox^2+oy^2)
+        -- Distinct directions remain required as the physical source cluster
+        -- shrinks. Normalizing avoids a minimum gap larger than the harness.
+        assert((tx*ox+ty*oy)/(radial*otherRadius)<0.95,
+            'mist canopy bundles collapsed onto one harness direction')
     end
 end
+local arcBundles={1,3,6,8}
 for i,a in ipairs(arcs) do
-    local rim=black[i*2-1]
-    for axis=1,3 do assert(a.rootOffset[axis]==rim.rootOffset[axis], 'electric source detached from its alternating canopy rim') end
-    assert(a.mode=='electric' and a.strands==4 and math.abs(a.length-expectedRadius*1.5)<1e-8,
-        'electrical fan lost its bounded canopy scale')
-    assert(a.directionSpace=='world' and a.direction[1]==0 and a.direction[2]==1 and a.direction[3]==0,
-        'support rotation pointed the electrical plume downward')
+    local bundle=black[arcBundles[i]]
+    for _,field in ipairs({'rootOffset','direction'}) do
+        for axis=1,3 do assert(a[field][axis]==bundle[field][axis],
+            'electrical branch detached from its canopy '..field) end
+    end
+    assert(a.mode=='canopy_arc','electrical branch lost its attached canopy path')
+    for _,field in ipairs({'directionSpace','length','width','strands','seed','speed','curl',
+        'stiffness','gravity','windAffected','motionAffected','windInfluence','motionInfluence',
+        'trailTime','distanceFactor','drawInIcon'}) do
+        assert(a[field]==bundle[field], 'electrical branch no longer shares canopy '..field)
+    end
     assert(a.colorStart[2]>a.colorStart[1]*4 and a.colorStart[3]>a.colorStart[2], 'electrical source lost cyan')
     assert(a.colorEnd[1]>a.colorEnd[2]*4 and a.colorEnd[3]>a.colorEnd[1], 'electrical tail lost violet')
 end
@@ -220,4 +234,4 @@ for _,option in ipairs({'missingBounds','missingMatrix','noProvider','deadPassen
     else assert(state.attached[2]==8 and state.detached[1]==8,'missing VFX changed transport behavior: '..option) end
     state.assertWebHidden()
 end
-print('PASS: real chute Create/fall/stationary/landing, 159 polygon pieces stay hidden, doubled black mist canopy with sixteen strips, four cyan/violet rim sources, imported scale, emitter correction, cords, passenger movement/cloak and twelve-slot teardown')
+print('PASS: real chute Create/fall/stationary/landing, 159 polygon pieces stay hidden, diffuse outward crown with twenty-four strips, four matched cyan/violet branch paths, imported scale, emitter correction, cords, passenger movement/cloak and twelve-slot teardown')

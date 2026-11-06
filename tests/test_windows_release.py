@@ -106,6 +106,8 @@ class ReleaseTests(unittest.TestCase):
                 self.assertEqual(item['sha256'], hashlib.sha256(data).hexdigest())
                 self.assertEqual(item['bytes'], len(data))
         self.assertEqual(manifest['inputs'], lock)
+        self.assertEqual(manifest['performance_gate'],
+                         {'minimum_zoomed_out_fps': 25, 'status': 'unverified'})
         self.assertEqual(next(f['sha256'] for f in manifest['artifacts'] if f['path'] == bundle.name), p.sha256(bundle))
 
     def test_version_drift_and_duplicates(self):
@@ -227,4 +229,5 @@ class ReleaseTests(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
 

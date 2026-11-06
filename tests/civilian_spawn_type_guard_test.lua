@@ -31,7 +31,7 @@ local function fixture(culture)
     for _, name in ipairs({'house_ruin','gcscrapheap','vehiclecorpse','tankcorpse',
         'closecombatarena','civilianagent','protagonsafehouse','antagonsafehouse',
         'nimrod','propagandaserver','protagonassembly','antagonassembly','launcher',
-        'hivemind','warheadfactory','truckpayload'}) do add(name) end
+        'hivemind','warheadfactory','truckpayload','truckpayloadparade'}) do add(name) end
     local venueDef = add('shopping_market', {civilian_venue='shopping'})
     local live = {
         [100]={def=names.house_arab0.id,x=200,z=220,team=0},
@@ -48,6 +48,9 @@ local function fixture(culture)
         CMD={MOVE=10,STOP=0,GUARD=25}, SendToUnsynced=noop,
         gadgetHandler={IsSyncedCode=function() return true end}}, {__index=_G})
     env._G=env
+    env._setFrame=function(value) frame=value end
+    env._orders={}
+    env._destroyed={}
     local function position(id)
         assert(type(id)=='number', 'engine requires a numeric unit ID')
         local u=live[id]; if u then return u.x,0,u.z end
@@ -78,16 +81,27 @@ local function fixture(culture)
         SetUnitPosition=function(id,x,y,z)
             live[id].x,live[id].z=x,z
         end,
-        GetUnitTransporter=function() end,
+        GetUnitTransporter=function(id) return live[id] and live[id].transporter end,
+        GetUnitPieceMap=function() return {attachPoint=4} end,
+        UnitAttach=function(carrier,payload,piece)
+            assert(live[carrier] and live[payload] and piece==4)
+            live[payload].transporter=carrier
+        end,
+        GetUnitHealth=function() return 100,100 end,
+        GiveOrderToUnit=function(id,command,params,options)
+            env._orders[#env._orders+1]={id,command,params,options}
+        end,
         SetUnitAlwaysVisible=function(id) visible[id]=true end,
         SetUnitNeutral=function(id,value) neutral[id]=value end,
-        SetUnitNoSelect=noop, SetGameRulesParam=noop, DestroyUnit=noop,
+        SetUnitNoSelect=noop, SetGameRulesParam=noop,
+        DestroyUnit=function(id) env._destroyed[id]=true; live[id]=nil end,
         RequestPath=function() return {} end,
         GetUnitRulesParam=function(id,key)
             if id==102 and key=='city_street_name' then return 'Market Street' end
         end,
         UnitScript={GetScriptEnv=function() end},
         CreateUnit=function(defID,x,y,z,dir,team)
+            if type(defID)=='string' then defID=assert(names[defID]).id end
             nextID=nextID+1
             live[nextID]={def=defID,x=x,z=z,team=team}
             created[#created+1]={id=nextID,defID=defID,x=x,y=y,z=z,dir=dir,team=team}
@@ -170,6 +184,34 @@ for _, culture in ipairs({'arabic','western','asian','international'}) do
     local memories=env.GG.CivilianLife.people[onePedestrian].memories
     assert(memories[#memories].place=='on Market Street', 'initial venue registration was lost')
 
+    -- Float carriers are explicitly admitted in every culture, while ordinary
+    -- traffic and its service-payload quota keep their original membership.
+    local traffic=assert(env.GG.CivilianTraffic)
+    local beforePool={}
+    for defID,value in pairs(pools.truck) do beforePool[defID]=value end
+    local quota=env.GG.CivilianServicePayloadSelection.eligibleSpawns
+    for _,name in ipairs({'truck_arab6','truck_arab7','truck_arab8'}) do
+        local defID=names[name].id
+        local carrier=assert(traffic.SpawnParade(defID,400,420,100,101))
+        assert(env.GG.CivilianTable[carrier].defID==defID)
+        local payload=assert(traffic.Load(carrier,'truckpayloadparade'))
+        assert(live[payload].def==names.truckpayloadparade.id)
+        assert(live[payload].transporter==carrier, 'float not attached to its carrier')
+        local route=assert(env.buildRouteSquareFromTwoUnits(100,101,defID))
+        assert((route[1].x-200)^2+(route[1].z-220)^2>90^2,
+            'cross-culture float carrier starts inside a building')
+        env.gadget:UnitDestroyed(carrier,defID,0)
+        live[carrier]=nil
+        assert(not env.GG.CivilianTable[carrier] and not env.GG.UnitArrivedAtTarget[carrier],
+            'dead cross-culture parade carrier leaked a population or arrival record')
+    end
+    assert(env.GG.CivilianServicePayloadSelection.eligibleSpawns==quota,
+        'explicit parade loads consumed the service-payload quota')
+    for id,value in pairs(pools.truck) do assert(beforePool[id]==value) end
+    for id,value in pairs(beforePool) do assert(pools.truck[id]==value) end
+    assert(traffic.SpawnParade(names.house_ruin.id,400,420,100,101)==nil)
+    assert(traffic.SpawnParade(names.truck_western0.id,400,420,100,101)==nil)
+
     env.GG.CivilianTable={}; env.GG.UnitArrivedAtTarget={}
     env.regenerateRoutesTable()
     -- Inject the historical failure into both local pools after their shared
@@ -240,5 +282,34 @@ for _, culture in ipairs({'arabic','western','asian','international'}) do
     assert((rerouted[1].x-car.x)^2+(rerouted[1].z-car.z)^2>90^2,
         'traffic curb was inside a neighbouring civilian building')
 end
+
+-- EventStream runs at gadget layer 0, before traffic (1) and parade (2).
+-- ID multiples of 100 must never schedule their first trip in the past.
+for _,culture in ipairs({'arabic','western','asian','international'}) do
+    local env,names,_,live=fixture(culture)
+    env.regenerateRoutesTable()
+    local cityGadget=env.gadget
+    env.gadget={}
+    loadEnv('luarules/gadgets/game_eventstream.lua',env)
+    local eventGadget=env.gadget
+    env.gadget=cityGadget
+    env._setFrame(1)
+    eventGadget:GameFrame(1)
+    live[50000]={def=names.truck_arab6.id,x=400,z=420,team=0}
+    env.GG.CivilianTable[50000]={defID=names.truck_arab6.id,startID=100,goalID=101}
+    assert(env.GG.CivilianTraffic.BeginTravel(50000))
+    local event=assert(env.GG.EventStream[0])
+    assert(event.startFrame==2, 'new trip was scheduled on the already dispatched frame')
+    env.GG.CityParade={OwnsUnit=function(_,id) return id==50000 end}
+    env._setFrame(2); eventGadget:GameFrame(2)
+    assert(env.GG.EventStream[0] and #env._orders==0,
+        'ordinary traffic interfered with parade ownership')
+    live[50000].team=1
+    env._setFrame(17); eventGadget:GameFrame(17)
+    assert(env.GG.EventStream[0]==nil and env.GG.CivilianTable[50000]==nil,
+        'captured parade traffic retained its civilian event')
+    assert(#env._orders==0 and not env._destroyed[50000] and live[50000],
+        'captured carrier received a city command or was destroyed')
+end
 print('PASS civilian spawn guard: rejected static units and contaminated pools; ' ..
-    checked .. ' culture mobile variants, curbside traffic, routes and initial venues preserved')
+    checked .. ' culture mobile variants, cross-culture parade loads, quotas, future events and capture preserved')

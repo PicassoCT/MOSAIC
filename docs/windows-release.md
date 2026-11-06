@@ -58,7 +58,9 @@ Successful full builds emit:
   `data/engine/`, `data/games/`, `data/maps/`, `data/springsettings.cfg`, and
   `Start-Mosaic.cmd`.
 - `manifest.json`: source commit, resolved version, complete input lock,
-  artifact hashes/sizes, and hashes/sizes of portable payload files.
+  artifact hashes/sizes, hashes/sizes of portable payload files, and an explicit
+  minimum-25-FPS zoomed-out gate marked `unverified` until runtime evidence is
+  validated separately.
 - `SHA256SUMS`: hashes for the SDZ, portable ZIP, and external manifest.
 
 The ZIP contains a payload manifest; its own hash is intentionally absent to
@@ -84,4 +86,5 @@ Uploads happen only after all validation passes and are Actions artifacts,
 not GitHub Releases. The workflow has `contents: read`; it does not create a
 release, tag, or push. Publishing is a separate maintainer operation after
 reviewing the manifest/checksums and completing the Windows smoke test.
+
 

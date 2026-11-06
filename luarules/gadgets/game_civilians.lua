@@ -70,6 +70,19 @@ local TruckTypeTable = getCultureUnitModelTypes(GameConfig.game.culture,
 assert(TruckTypeTable, toString("gameCivilians:",TruckTypeTable))
 --assert(count(TruckTypeTable) > 0, toString("gameCivilians:",TruckTypeTable))
 
+-- Parade carriers use the same traffic lifecycle in every culture. Keep the
+-- ordinary random spawn pool and service-payload quotas culture-specific.
+local paradePayloadCatalog = VFS.Include("scripts/lib_truck_parade_payloads.lua")
+local paradeCarrierTypes, trafficVehicleTypes = {}, {}
+for defID, value in pairs(TruckTypeTable) do trafficVehicleTypes[defID] = value end
+for _, name in ipairs(paradePayloadCatalog.carrierNames) do
+    local def = UnitDefNames[name]
+    if def then
+        paradeCarrierTypes[def.id] = true
+        trafficVehicleTypes[def.id] = true
+    end
+end
+
 local houseTypeTable = getCultureUnitModelTypes(GameConfig.game.culture,
                                                 "house", UnitDefs)
 local allCivilianHouses = getCultureUnitModelTypes("international", "house", UnitDefs)
@@ -99,7 +112,7 @@ local trafficPoint
 local OpimizationFleeing = {accumulatedCivilianDamage = 0}
 local chanceOfCivilianSpawningFromTruck = GameConfig.civilians.traffic.passengerSpawnChance
 local newCivilianLife = VFS.Include("luarules/gadgets/include/civilian_daily_life.lua")
-local civilianLife = newCivilianLife({gameConfig=GameConfig, walkers=civilianWalkingTypeTable, trucks=TruckTypeTable, raining=isRaining})
+local civilianLife = newCivilianLife({gameConfig=GameConfig, walkers=civilianWalkingTypeTable, trucks=trafficVehicleTypes, raining=isRaining})
 GG.CivilianLife = civilianLife
 local lastDangerReport = {}
 
@@ -173,6 +186,10 @@ end
 
 function gadget:UnitDestroyed(unitID, unitDefID, teamID, attackerID)
     civilianLife:UnitDestroyed(unitID, attackerID)
+    -- Explicit parade carriers may be outside this culture's ordinary pool,
+    -- so their records cannot rely on that pool's periodic population sweep.
+    GG.CivilianTable[unitID] = nil
+    GG.UnitArrivedAtTarget[unitID] = nil
     lastDangerReport[unitID] = nil
     if GG.AerosolAffectedCivilians then GG.AerosolAffectedCivilians[unitID] = nil end
     if GG.TollWutoxAfflicted then GG.TollWutoxAfflicted[unitID] = nil end
@@ -244,7 +261,7 @@ end
 function gadget:UnitDamaged(unitID, unitDefID, unitTeam, damage, paralyzer,
                             weaponID, projectileID, attackerID, attackerDefID,
                             attackerTeam)
-    if damage and damage > 0 and (MobileCivilianDefIds[unitDefID] or TruckTypeTable[unitDefID] or houseTypeTable[unitDefID]) then
+    if damage and damage > 0 and (MobileCivilianDefIds[unitDefID] or trafficVehicleTypes[unitDefID] or houseTypeTable[unitDefID]) then
         local frame = Spring.GetGameFrame()
         if frame >= (lastDangerReport[unitID] or 0) then
             lastDangerReport[unitID] = frame + 30
@@ -260,7 +277,7 @@ function gadget:UnitDamaged(unitID, unitDefID, unitTeam, damage, paralyzer,
                 function(id)
                     if id then
                         defID = spGetUnitDefID(id)
-                        if TruckTypeTable[defID] then
+                        if trafficVehicleTypes[defID] then
                             return id
                         end
                     end
@@ -275,7 +292,7 @@ function gadget:UnitDamaged(unitID, unitDefID, unitTeam, damage, paralyzer,
                 end
                 )
 
-            if TruckTypeTable[unitDefID] then
+            if trafficVehicleTypes[unitDefID] then
                 startInternalBehaviourOfState(unitID, "startFleeing", attackerID)
                 OpimizationFleeing[unitID] = Spring.GetGameFrame() + math.random(15,35)
              end       
@@ -516,7 +533,9 @@ end
 
 function loadTruck(id, loadType)
     local carrierDefID = spGetUnitDefID(id)
-    if not loadableTruckType[carrierDefID] then return end
+    local paradeLoad = loadType == "truckpayloadparade"
+        and paradeCarrierTypes[carrierDefID] and spGetUnitTeam(id) == gaiaTeamID
+    if not loadableTruckType[carrierDefID] and not paradeLoad then return end
     local selected, eligible = servicePayloadSelector:Select(carrierDefID, loadType, spGetUnitTeam(id))
     local payloadID = createUnitAtUnit(gaiaTeamID, selected, id)
     if not payloadID and selected ~= loadType then
@@ -617,7 +636,7 @@ function buildRouteSquareFromTwoUnits(unitOne, unitTwo, uType)
     x2, y2, z2 = spGetUnitPosition(unitTwo)
     if not x2 then     x2,y2,z2 = x1 + math.random(100,256)*randSign(), y1, z1 + math.random(100,256)*randSign() end
 
-    if TruckTypeTable[uType] then
+    if trafficVehicleTypes[uType] then
         local start = trafficPoint(unitOne, uType, unitTwo)
         local finish = trafficPoint(unitTwo, uType, unitOne)
         if not start or not finish then return nil end
@@ -711,11 +730,12 @@ function getCultureDependentDiretion(culture)
     return math.max(1, math.floor(math.random(1, 3)))
  end
 
-function spawnUnit(defID, x, z)
+function spawnUnit(defID, x, z, paradeCarrier)
     -- Population origins are occupied building plots. Recheck the shared
     -- property sets at this boundary so a contaminated pool cannot put a
     -- second building or a ruin inside the existing house.
-    if not MobileCivilianDefIds[defID] or allCivilianHouses[defID]
+    local permittedParade = paradeCarrier == true and paradeCarrierTypes[defID]
+    if (not MobileCivilianDefIds[defID] and not permittedParade) or allCivilianHouses[defID]
         or scrapHeapTypeTable[defID] then
         return nil
     end
@@ -735,8 +755,8 @@ function spawnUnit(defID, x, z)
 end
 
 -- truck or Person
-function spawnAMobileCivilianUnit(defID, x, z, startID, goalID)
-    local id = spawnUnit(defID, x, z)
+function spawnAMobileCivilianUnit(defID, x, z, startID, goalID, paradeCarrier)
+    local id = spawnUnit(defID, x, z, paradeCarrier)
     if id then
         -- assert(goalID)
         -- assert(startID)
@@ -772,11 +792,28 @@ function gadget:Initialize()
     startFrame = Spring.GetGameFrame() + 30*5
     setUpRefugeeWayPoints()
     GG.CivilianLife = civilianLife
+    GG.CivilianTraffic = {
+        GetRoutes = function() return RouteTabel end,
+        Point = trafficPoint,
+        Spawn = spawnAMobileCivilianUnit,
+        SpawnParade = function(defID, x, z, startID, goalID)
+            if not paradeCarrierTypes[defID] then return nil end
+            return spawnAMobileCivilianUnit(defID, x, z, startID, goalID, true)
+        end,
+        Load = loadTruck,
+        BeginTravel = function(id)
+            local data = GG.CivilianTable[id]
+            return data and giveWaypointsToUnit(id, data.defID, data.startID) or false
+        end,
+    }
     local units = Spring.GetAllUnits(); table.sort(units)
     for _, id in ipairs(units) do civilianLife:UnitCreated(id,spGetUnitDefID(id)) end
 end
 
-function gadget:Shutdown() civilianLife:Shutdown() end
+function gadget:Shutdown()
+    GG.CivilianTraffic = nil
+    civilianLife:Shutdown()
+end
 
 -----------------------------------------------------------------------------------------------------------------------
 -----------------------------  Civilian Behaviour Part  ---------------------------------------------------------------
@@ -799,7 +836,7 @@ function travelInitialization(evtID, frame, persPack, startFrame, myID)
     if not persPack.myHP then persPack.myHP = hp end
     if hp < maxHp * 0.5 then persPack.boolDamaged = true end
 
-    if persPack.isTruck == nil then persPack.isTruck = TruckTypeTable[spGetUnitDefID(myID)] ~= nil end
+    if persPack.isTruck == nil then persPack.isTruck = trafficVehicleTypes[spGetUnitDefID(myID)] ~= nil end
     if persPack.isTruck == true then
         if not persPack.hasBreaks then 
             persPack.hasBreaks = maRa() == true
@@ -854,7 +891,12 @@ function travelInitialization(evtID, frame, persPack, startFrame, myID)
     -- </External GameState Handling>
 
     --first move order
-    if not persPack.firstTime then 
+    if not persPack.firstTime then
+        local active = GG.CivilianUnitInternalLogicActive and GG.CivilianUnitInternalLogicActive[myID]
+        local state = type(active) == "table" and active.state or active
+        if state == GameConfig.civilians.activityStates.started then
+            return true, frame + 15, persPack, x,y,z, hp
+        end
         persPack.firstTime = true 
         persPack.goalIndex = math.min(persPack.goalIndex + 1, #persPack.goalList)
         persPack = moveToLocation(myID, persPack, {} , true)
@@ -1266,6 +1308,18 @@ function travellFunction(evtID, frame, persPack, startFrame)
     --  only apply if Unit is still alive
     local myID = persPack.unitID
 
+    -- Captured city traffic belongs to its new owner, including after a parade.
+    if persPack.myTeam == gaiaTeamID and spGetUnitTeam(myID) ~= gaiaTeamID then
+        GG.CivilianTable[myID] = nil
+        GG.UnitArrivedAtTarget[myID] = nil
+        return nil, persPack
+    end
+    if GG.CityParade and GG.CityParade:OwnsUnit(myID) then
+        if not doesUnitExistAlive(myID) then return nil, persPack end
+        persPack.stuckCounter = 0
+        return frame + 15, packStep(persPack, frame + 15, frame)
+    end
+
     boolDone, retFrame, persPack, x,y,z, hp = travelInitialization(evtID, frame, persPack, startFrame, myID)
     if boolDone == true then return retFrame,packStep(persPack, retFrame, frame) end
 
@@ -1368,7 +1422,7 @@ function giveWaypointsToUnit(uID, uType, startNodeID)
         unitID = uID,
         goalIndex = 1,
         goalList = route
-    }, spGetGameFrame() + (uID % 100))
+    }, spGetGameFrame() + math.max(1, uID % 100))
     return true
 end
 
@@ -1379,17 +1433,25 @@ function issueArrivedUnitsCommands()
         return
     end
 
-    --assertTable(GG.UnitArrivedAtTarget)
+    local held = {}
     for id in pairs(GG.UnitArrivedAtTarget) do
         local data=GG.CivilianTable[id]
-        if type(id)=="number" and type(data)=="table"
+        if type(id) ~= "number" then
+            -- Invalid arrivals must not reach an engine unit-ID argument.
+        elseif spGetUnitTeam(id) ~= gaiaTeamID then
+            GG.CivilianTable[id] = nil
+        elseif GG.CityParade and GG.CityParade:OwnsUnit(id) then
+            held[id] = true
+        elseif GG.CityParade and GG.CityParade:OnArrived(id) then
+            -- A float retires at an ordinary traffic destination.
+        elseif type(id)=="number" and type(data)=="table"
             and type(data.startID)=="number"
             and doesUnitExistAlive(data.startID) == true
             and doesUnitExistAlive(id) then
             giveWaypointsToUnit(id,data.defID,data.startID)
         end
     end
-    GG.UnitArrivedAtTarget = {}
+    GG.UnitArrivedAtTarget = held
 end
 
 function decimateArrivedCivilians(nrToDecimate, typeTable)
@@ -1400,9 +1462,11 @@ function decimateArrivedCivilians(nrToDecimate, typeTable)
     newUnitsArrivedAtTarget = {}
     for id, bArrived in pairs(GG.UnitArrivedAtTarget) do
         if id and GG.CivilianTable[id] and
+            spGetUnitTeam(id) == gaiaTeamID and
             doesUnitExistAlive(GG.CivilianTable[id].startID) == true and
             doesUnitExistAlive(id) == true and 
             GG.DisguiseCivilianFor[id] == nil and
+            not (GG.CityParade and GG.CityParade:OwnsUnit(id)) and
             not civilianLife:IsProtected(id) and
             typeTable[GG.CivilianTable[id].defID] then
             spDestroyUnit(id, false, true)

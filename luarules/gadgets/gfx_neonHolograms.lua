@@ -106,8 +106,9 @@ if (gadgetHandler:IsSyncedCode()) then
 
     local allNeonUnits= {}
     local neonUnitDataTransfer = {}
+    _G.NeonHologramUnits = neonUnitDataTransfer
     function registerUnitIfHolo(unitID, unitDefID)
-         if neonHologramTypeTable[unitDefID] then
+         if neonHologramTypeTable[unitDefID] and not neonUnitDataTransfer[unitID] then
             Spring.SetUnitNoDraw(unitID, true)     
 
             allNeonUnits[#allNeonUnits + 1]= unitID
@@ -159,7 +160,8 @@ if (gadgetHandler:IsSyncedCode()) then
 
     function gadget:GameFrame(frame)
 		if frame > frameGameStart then  
-            updateDataFromEnvironments()         
+            updateDataFromEnvironments()
+            _G.NeonHologramPieces = GG.VisibleUnitPieces
             if count(neonUnitDataTransfer) > 0 then
                 --echo("gadget:GameFrame:gfx_neonHolograms.lua "..frame)
                 local VisibleUnitPieces = GG.VisibleUnitPieces   
@@ -190,6 +192,10 @@ if (gadgetHandler:IsSyncedCode()) then
     end
 
     function gadget:UnitLeftLos(unitID, unitTeam, allyTeam, unitDefID)
+        -- One ally team's LOS must not stop synced animation updates for
+        -- projections still visible to another team. Gate those per client.
+        local definition = UnitDefs[unitDefID]
+        if definition and (definition.customParams or {}).parade_hologram then return end
         if neonHologramTypeTable[unitDefID] then
             neonUnitDataTransfer[unitID] = nil
         end
@@ -202,6 +208,10 @@ if (gadgetHandler:IsSyncedCode()) then
         end
         if neonHologramTypeTable[unitDefID] then
             neonUnitDataTransfer[unitID] = nil
+            cachedUnitPieces[unitID] = nil
+            if GG.VisibleUnitPieces then GG.VisibleUnitPieces[unitID] = nil end
+            if GG.VisibleUnitPieceUpateStates then GG.VisibleUnitPieceUpateStates[unitID] = nil end
+            SendToUnsynced("unsetUnitNeonLuaDraw", unitID)
             for i=#allNeonUnits, 1, -1 do
                 if allNeonUnits[i] == unitID then
                     table.remove(allNeonUnits, i)
@@ -404,6 +414,7 @@ end
     local neonHoloParts= {}
     local objectiveRadiancePieces = {}
     local objectiveSnapshotPending = true
+    local neonSnapshotPending = true
 
     local function setObjectiveRadiancePiece(_, unitID, pieceID, visible, mode, preset, born)
         local pieces = objectiveRadiancePieces[unitID]
@@ -423,20 +434,21 @@ end
     local function setUnitNeonLuaDraw(callname, unitID, unitDefID)
         Spring.UnitRendering.SetUnitLuaDraw(unitID, false) 
         UnitUnitDefIDMap[unitID] = unitDefID
-        counterNeonUnits = counterNeonUnits + 1     
+        if not neonUnitTables[unitID] then counterNeonUnits = counterNeonUnits + 1 end
         neonUnitTables[unitID] = {}
     end
     local function updateUnitNeonLuaDraw(callname, unitID, unitDefID, ...)
         local piecesTable = {...}
         --Spring.Echo("Drawing Unit with Lua Neonshader "..unitID.. " of type"..UnitDefs[unitDefID].name)
+        if not neonUnitTables[unitID] then counterNeonUnits = counterNeonUnits + 1 end
         neonUnitTables[unitID] =  piecesTable  
         UnitUnitDefIDMap[unitID] = unitDefID     
     end	
 
     local function unsetUnitNeonLuaDraw(callname, unitID)
+        if neonUnitTables[unitID] then counterNeonUnits = counterNeonUnits - 1 end
         neonUnitTables[unitID] = nil
         UnitUnitDefIDMap[unitID] = nil
-        counterNeonUnits= counterNeonUnits - 1
     end    
 
     local function InitializeTextures()
@@ -514,7 +526,29 @@ end
 
     end
 
+    -- Stationary parade projections must obey their own LOS, not their source
+    -- truck's visibility. The same gate feeds both rendering and cascade light.
+    local function neonVisible(unitID)
+        if not Spring.ValidUnitID(unitID) or Spring.GetUnitIsDead(unitID) then return false end
+        local def = UnitDefs[UnitUnitDefIDMap[unitID]]
+        if def and (def.customParams or {}).parade_hologram then
+            if Spring.GetUnitIsCloaked(unitID) then return false end
+            local _, fullView = Spring.GetSpectatingState()
+            local los = Spring.GetUnitLosState(unitID, Spring.GetMyAllyTeamID())
+            return fullView or (los and los.los) or false
+        end
+        return true
+    end
+
     function gadget:GameFrame(frame)
+        if neonSnapshotPending and SYNCED.NeonHologramUnits and SYNCED.NeonHologramPieces then
+            for id, defID in pairs(SYNCED.NeonHologramUnits) do
+                local pieces = {}
+                for i, piece in pairs(SYNCED.NeonHologramPieces[id] or {}) do pieces[i] = piece end
+                updateUnitNeonLuaDraw(nil,id,defID,unpack(pieces))
+            end
+            neonSnapshotPending = false
+        end
         if objectiveSnapshotPending and SYNCED.ObjectiveRadiancePieces then
             objectiveRadiancePieces = {}
             for unitID, pieces in pairs(SYNCED.ObjectiveRadiancePieces) do
@@ -528,7 +562,11 @@ end
             objectiveSnapshotPending = false
         end
         if Script.LuaUI('RecieveAllNeonUnitsPieces') then
-            local message = Script.LuaUI.RecieveAllNeonUnitsPieces(neonUnitTables)
+            local visible = {}
+            for id, pieces in pairs(neonUnitTables) do
+                if neonVisible(id) then visible[id] = pieces end
+            end
+            Script.LuaUI.RecieveAllNeonUnitsPieces(visible)
         end
         if Script.LuaUI('ReceiveObjectiveRadiancePieces') then
             Script.LuaUI.ReceiveObjectiveRadiancePieces(objectiveRadiancePieces)
@@ -614,6 +652,8 @@ end
 
     local holoDefID = nil
     for i=1,#UnitDefs do
+        local custom = tonumber((UnitDefs[i].customParams or {}).neon_hologram_type)
+        if custom then holoNameTypeIDMap[UnitDefs[i].name] = custom end
         if holoNameTypeIDMap[UnitDefs[i].name] ~= nil then
             holoDefIDTypeIDMap[UnitDefs[i].id] = holoNameTypeIDMap[UnitDefs[i].name] 
             --Spring.Echo("gfx_neonHolograms.lua: Defined hologram types for "..UnitDefs[i].name.." as ".. holoNameTypeIDMap[UnitDefs[i].name] )
@@ -649,7 +689,7 @@ end
                 --variables
 
                 for unitID, neonHoloParts in pairs(neonUnitTables) do
-                    if spIsUnitInView(unitID) then --draw only visible units
+                    if neonVisible(unitID) and spIsUnitInView(unitID) then --draw only visible units
                         local x,y,z = spGetUnitPosition(unitID)
                         local unitDefID = UnitUnitDefIDMap[unitID]
                         local timePercentOffset = (timepercent + (unitID/DAYLENGTH))%1.0

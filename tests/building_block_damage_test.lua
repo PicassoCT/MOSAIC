@@ -6,7 +6,7 @@ local function loadEnv(path, env)
     return f()
 end
 local function noop() end
-local function fixture(columnCount, floorCount, scale, id, baseHeight)
+local function fixture(columnCount, floorCount, scale, id, baseHeight, ruinCount)
     columnCount, floorCount, scale = columnCount or 2, floorCount or 3, scale or 1
     id, baseHeight = id or 42, baseHeight or 0
     local hp, frame, lastPiece, lastFrame = 1000, 0, nil, -1
@@ -104,6 +104,22 @@ local function fixture(columnCount, floorCount, scale, id, baseHeight)
         if p~=1003 then shown[#shown+1]=p;windows[p]=p;env.Show(p) end
     end
     roofs.decor=1002
+    if ruinCount then
+        names.house_western=2000
+        for i=1,ruinCount do
+            names['Ruin_Deco'..(i>6 and string.format('%03d',i) or i)]=2000+i
+            positions[2000+i]={0,0,0}
+        end
+        env.Spring.GetUnitPieceInfo=function(_,p)
+            return {children=children[p] or {}, parent='house_western',
+                min={-10,0,-10},max={10,p>2000 and 4 or 10,10}}
+        end
+        env.Spring.GetUnitPieceMatrix=function(_,p)
+            local v=positions[p] or {0,0,0}
+            return scale,0,0,0, 0,scale,0,0, 0,0,scale,0,
+                v[1]*scale,v[2]*scale,v[3]*scale,1
+        end
+    end
     damage.initialize(levels,shown,roofs,windows,10,20,scale)
     local gadgetEnv=setmetatable({gadget={},GG=env.GG,Spring=env.Spring,UnitDefs={
         [1]={name='house_asian0'},[2]={name='house_western0'},[3]={name='house_arab0'},
@@ -337,6 +353,50 @@ end
 last.tick(18)
 assert(last.destroyed() and not last.env.GG.BuildingDamageEffects[42],
     'retained geometry prevented the last support from triggering normal unit death')
+
+-- Twelve optional caps are consumed once per collapsed column, including the
+-- zero-padded names. No caps appear during assembly or before settling ends.
+local ruins=fixture(14,3,.0254,42,7,12)
+ruins.env.math=setmetatable({random=function()error('ruin rotation used shared RNG')end},{__index=math})
+for p=2001,2012 do assert(not ruins.visible[p]) end
+local capHits={}
+for col=1,13 do capHits[#capHits+1]={piece=(col-1)*3+2,damage=20} end
+ruins.damage.update(capHits,6);ruins.damage.update({},12)
+for p=2001,2012 do assert(not ruins.visible[p], 'cap appeared before the column settled') end
+for tick=18,42,6 do ruins.damage.update({},tick) end
+for p=2001,2012 do
+    assert(ruins.visible[p] and ruins.env.IsBuildingPieceDetached(p), 'unused ruin piece or animation access')
+    local col=p-2000
+    assert(math.abs(ruins.positions[p][1]-(col-1)*20)<1e-7, 'cap moved to another column')
+    local top=17
+    for floor=2,3 do
+        local block=(col-1)*3+floor
+        if ruins.visible[block] then top=math.max(top,ruins.positions[block][2]+10) end
+    end
+    assert(math.abs(ruins.positions[p][2]-top)<1e-7, 'cap was not placed above the retained mesh')
+    ruins.env.Hide(p);ruins.env.Move(p,2,-100,10);ruins.env.Turn(p,2,0,10)
+    assert(ruins.visible[p] and math.abs(ruins.positions[p][2]-top)<1e-7, 'animation moved the ruin cap')
+end
+local capTurns={}
+for _,turn in ipairs(ruins.turns) do
+    if turn.piece>2000 and turn.axis==2 then
+        assert(turn.goal>0 and turn.goal<math.pi*2, 'cap did not receive an up-axis rotation')
+        capTurns[turn.goal]=true
+    end
+end
+local rotations=0;for _ in pairs(capTurns) do rotations=rotations+1 end
+assert(rotations==12, 'all ruin caps received the same rotation')
+-- Failing a lower support in an already decorated column repositions its own
+-- cap even when the pool is empty; it cannot consume another column's cap.
+local before=#ruins.moves
+ruins.damage.update({{piece=1,damage=20}},48);ruins.damage.update({},54);ruins.damage.update({},60)
+for i=before+1,#ruins.moves do
+    local p=ruins.moves[i].piece
+    assert(p<=2000 or p==2001, 'repeat collapse stole an occupied cap')
+end
+assert(ruins.visible[2001])
+ruins.damage.collapse(ruins.levels,ruins.shown)
+for p=2001,2012 do ruins.env.Show(p);assert(not ruins.visible[p], 'dead building retained a ruin cap') end
 
 -- Whole-city budget is shared by normal damage and final-collapse scripts, and
 -- resets only at the common fixed interval, not at each building callback.

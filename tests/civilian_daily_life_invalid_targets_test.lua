@@ -105,6 +105,7 @@ e.civilianWalkingTypeTable={[1]=true}
 e.spGetUnitPosition=e.Spring.GetUnitPosition
 e.spGetUnitTeam=e.Spring.GetUnitTeam
 e.spGetGameFrame=e.Spring.GetGameFrame
+e.gaiaTeamID=0
 e.doesUnitExistAlive=function(id)
     assert(type(id)=="number","unsafe unit ID reached old waypoint helper")
     return e.Spring.ValidUnitID(id) and not e.Spring.GetUnitIsDead(id)
@@ -126,4 +127,61 @@ assert(next(e.GG.UnitArrivedAtTarget)==nil,"arrival queue not cleared")
 e.RouteTabel[100]={"101","103",false,{}}
 assert(e.giveWaypointsToUnit(10,1,100)==false,"invalid targets should be skipped")
 assert(#events==2,"invalid targets scheduled a movement event")
-print("PASS civilian waypoint regression: strict numeric IDs, destroyed/stale destinations, safe arrival batch")
+
+-- A completed everyday trip may already be queued when its civilian joins a
+-- parade. Keep that arrival pending without creating a competing travel event.
+e.RouteTabel[100]={102}
+local retired, arrivalCalls=0,0
+local owned=true
+e.GG.CityParade={
+    OwnsUnit=function(_,id) return owned and id==10 end,
+    OnArrived=function(_,id) arrivalCalls=arrivalCalls+1; return false end,
+}
+e.GG.UnitArrivedAtTarget={[10]=true}
+e.issueArrivedUnitsCommands()
+assert(e.GG.UnitArrivedAtTarget[10] and #events==2 and arrivalCalls==0,
+    "held parade arrival was rerouted or consumed")
+
+-- Retiring floats are consumed by their parade callback at a normal traffic
+-- destination, whereas released spectators retain the ordinary route fallback.
+owned=false
+e.GG.CityParade.OnArrived=function(_,id)
+    assert(id==10); retired=retired+1; return true
+end
+e.issueArrivedUnitsCommands()
+assert(retired==1 and #events==2 and next(e.GG.UnitArrivedAtTarget)==nil,
+    "retired float was assigned another civilian trip")
+e.GG.CityParade.OnArrived=function() return false end
+e.GG.UnitArrivedAtTarget={[10]=true}
+e.issueArrivedUnitsCommands()
+assert(#events==3 and next(e.GG.UnitArrivedAtTarget)==nil,
+    "released parade spectator did not resume ordinary routing")
+
+-- Capture can occur AFTER an event reports arrival but BEFORE this batch. A
+-- replacement event would record the new player's team and evade the old
+-- Gaia-event capture guard, so the arrival boundary must reject it itself.
+units[10].team=1
+e.GG.UnitArrivedAtTarget={[10]=true}
+e.issueArrivedUnitsCommands()
+assert(#events==3 and not e.GG.UnitArrivedAtTarget[10],
+    "captured arrived carrier received a replacement civilian travel event")
+
+-- Population trimming runs before arrival routing on some frames. It must
+-- independently protect captured traffic and parade-owned arrivals as well.
+local destroyed={}
+e.spDestroyUnit=function(id)
+    destroyed[id]=true; units[id].dead=true
+end
+chunk(section(source,"function decimateArrivedCivilians(","function gadget:GameFrame("),e)
+e.GG.CivilianTable[10]={defID=1,startID=100}
+e.GG.UnitArrivedAtTarget={[10]=true}
+e.decimateArrivedCivilians(1,{[1]=true})
+assert(not destroyed[10],"population trimming destroyed a captured arrived carrier")
+units[10].team=0;owned=true
+e.decimateArrivedCivilians(1,{[1]=true})
+assert(not destroyed[10],"population trimming destroyed an active parade participant")
+owned=false
+e.decimateArrivedCivilians(1,{[1]=true})
+assert(destroyed[10],"ordinary unprotected Gaia population no longer trims")
+
+print("PASS civilian waypoint regression: strict IDs, stale destinations, held parade arrivals, retirement, resumed routes and captured traffic")

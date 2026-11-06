@@ -278,7 +278,8 @@ def package(repo, output, lock_path=None, expected=None):
         result.mkdir()
         version, commit, game = build_game(repo, result, expected)
         manifest = {'schema_version': 1, 'game_version': version, 'source_commit': commit,
-                    'portable': lock is not None, 'inputs': lock, 'artifacts': []}
+                    'portable': lock is not None, 'inputs': lock, 'artifacts': [],
+                    'performance_gate': {'minimum_zoomed_out_fps': 25, 'status': 'unverified'}}
         if lock:
             portable = temp / f'Mosaic_v{version}_windows-portable'
             portable.mkdir()
@@ -370,4 +371,5 @@ def main():
 
 if __name__ == '__main__':
     main()
+
 

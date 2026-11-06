@@ -6,6 +6,7 @@ local unitEnv = _G
 local config = VFS.Include('scripts/lib_mosaic.lua',
     setmetatable({MOSAIC_CONFIG_ONLY=true}, {__index=unitEnv})).getBuildingDamageConfig()
 local effectsHelper = VFS.Include('scripts/lib_building_damage_effects.lua')
+local ruinHelper = VFS.Include('scripts/lib_building_ruin_deco.lua')
 local unitScript = Spring.UnitScript
 -- Header-local aliases dispatch to our hooks; bypass those aliases for native
 -- commands so a structural move cannot call its own suppression hook.
@@ -16,6 +17,7 @@ local nativeMove, nativeTurn, nativeSpin = unitScript.Move, unitScript.Turn, uni
 local HEIGHT_MOVE_AXIS = 2
 local detached, retained, visible, offsets, rotations, attachments = {}, {}, {}, {}, {}, {}
 local blocks, columns, owners, movable = {}, {}, {}, {}
+local ruinPool, columnRuins = {}, {}
 local selected, rooftop, windowPieces, pieceMap
 local floorHeight, cellSize, modelScale = 1, 1, 1
 local ready, collapsing = false, false
@@ -262,6 +264,16 @@ function M.initialize(levels, shown, roofs, windows, height, width, scale, cache
     end
     for p in pairs(offsets) do if not movable[p] then offsets[p] = nil end end
     for p in pairs(rotations) do if not movable[p] then rotations[p] = nil end end
+    -- Optional western-house ruin pieces, including zero-padded export names.
+    for name, p in pairs(pieceMap) do
+        if name:match('^Ruin_Deco%d+$') and not owners[p] and not visible[p] then
+            ruinPool[#ruinPool+1] = {piece=p, number=tonumber(name:match('%d+$'))}
+        end
+    end
+    table.sort(ruinPool, function(a,b)
+        if a.number == b.number then return a.piece < b.piece end
+        return a.number < b.number
+    end)
     ready = true
     publishStats()
 end
@@ -299,6 +311,24 @@ local function refreshGeometry()
     end
     if GG.MarkBuildingShadowVolumeDirty then GG.MarkBuildingShadowVolumeDirty(unitID) end
     if unitEnv.OnBuildingGeometryChanged then unitEnv.OnBuildingGeometryChanged() end
+end
+
+local function decorateRuinColumn(columnKey)
+    if collapsing then return false end
+    local p = columnRuins[columnKey]
+    if not p and #ruinPool == 0 then return false end
+    p = p or ruinPool[1].piece
+    if not ruinHelper.Place(unitID, p, columns[columnKey], visible, nativeMove, nativeTurn) then
+        return false
+    end
+    if not columnRuins[columnKey] then
+        table.remove(ruinPool, 1)
+        columnRuins[columnKey] = p
+    end
+    -- Keep caps out of live supports and protect them from assembly animations.
+    detached[p], retained[p], visible[p] = true, true, true
+    (unitEnv.CloudPieceShow or nativeShow)(p)
+    return true
 end
 
 local function dust(p)
@@ -426,11 +456,24 @@ function M.update(hits, frame)
     end
     expireEffects(frame)
     local settling, geometrySettled = {}, false
+    local settledColumns, settledOrder = {}, {}
     for _, entry in ipairs(falling) do
-        if frame >= entry.frame then finishFall(entry.block); geometrySettled = true
+        if frame >= entry.frame then
+            finishFall(entry.block)
+            geometrySettled = true
+            local columnKey = entry.block.column
+            if not settledColumns[columnKey] then
+                settledColumns[columnKey] = true
+                settledOrder[#settledOrder+1] = columnKey
+            end
         else settling[#settling+1] = entry end
     end
     falling = settling
+    for _, entry in ipairs(falling) do settledColumns[entry.block.column] = nil end
+    local ruinChanged = false
+    for _, columnKey in ipairs(settledOrder) do
+        if settledColumns[columnKey] and decorateRuinColumn(columnKey) then ruinChanged = true end
+    end
     local changed = false
     local waiting = {}
     for _, failure in ipairs(failures) do
@@ -448,7 +491,7 @@ function M.update(hits, frame)
         end
     end
     failures = waiting
-    if changed then
+    if changed or ruinChanged then
         refreshGeometry()
     elseif geometrySettled and unitEnv.OnBuildingGeometryChanged then
         -- Moving remnants have reached their final pose; their cached window
@@ -500,6 +543,7 @@ end
 function M.collapse(levels, shown)
     if collapsing then return 1 end
     collapsing = true
+    for _, p in pairs(columnRuins) do hidePiece(p) end
     failures = {}
     overloadedPending = false
     for _, entry in ipairs(falling) do finishFall(entry.block) end

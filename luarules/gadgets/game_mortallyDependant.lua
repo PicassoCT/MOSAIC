@@ -13,6 +13,11 @@ end
 
 if (gadgetHandler:IsSyncedCode()) then
 
+    local function doesUnitExistAlive(id)
+        return id ~= nil and Spring.ValidUnitID(id) == true
+            and Spring.GetUnitIsDead(id) == false
+    end
+
     if not GG.mortallyDependant then GG.mortallyDependant = {} end
     if not GG.houseHasSafeHouseTable then GG.houseHasSafeHouseTable = {} end
 
