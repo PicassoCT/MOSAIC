@@ -73,7 +73,7 @@ function SetParadeVariant(index)
     -- The unsynced pixel decorations must follow the actual selected payload,
     -- including selections queued before Create and later variant changes.
     Spring.SetUnitRulesParam(unitID, "city_parade_variant", index, {inlos = true})
-    Spring.SetUnitTooltip(unitID, variant.title .. " - lantern parade float")
+    Spring.SetUnitTooltip(unitID, variant.title .. " - " .. variant.description)
     for _, motion in ipairs(variant.motion or {}) do StartThread(animatePiece, motion) end
     return true
 end
@@ -102,7 +102,7 @@ local function followParent()
             everAttached, unattachedMs = true, 0
             if not installedTooltip and attachedMs >= 1000 then
                 originalTooltip = Spring.GetUnitTooltip(parentID) or "Civilian truck"
-                installedTooltip = originalTooltip .. " carrying " .. variant.title
+                installedTooltip = originalTooltip .. " carrying " .. variant.title .. " - " .. variant.description
                 Spring.SetUnitTooltip(parentID, installedTooltip)
             end
             attachedMs = attachedMs + 250

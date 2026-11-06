@@ -118,7 +118,7 @@ check("delayed attachment fits carriers and detachment removes orphaned float", 
     f.parent = 20; f.step()
     assert(f.moves[2] == 0 and f.moves[3] == -3.5 * catalog.centerMoveScale)
     for _ = 1, 5 do f.step() end
-    assert(f.tooltips[20] == "Plate 20 carrying The Forest Dreamer")
+    assert(f.tooltips[20] == "Plate 20 carrying The Forest Dreamer - " .. catalog.variants[1].description)
     f.parent = 21; f.step()
     assert(f.tooltips[20] == "Plate 20" and f.moves[2] == -1.8 * catalog.centerMoveScale and f.moves[3] == 0)
     for _ = 1, 5 do f.step() end
@@ -153,6 +153,9 @@ check("all 24 exported floats select with their exact children and only Float24 
         local f = fixture(); f.parent = 20
         assert(f.env.SetParadeVariant(index)); f.env.script.Create()
         assert(#f.destroyed == 0 and f.rules.city_parade_variant == index)
+        assert(entry.description and #entry.description > 30)
+        assert(not entry.title:match("^Lantern Float"))
+        assert(f.tooltips[5] == entry.title .. " - " .. entry.description)
         local expected = {}
         for _, name in ipairs(entry.pieces) do
             assert(exportedPieces[name] and not seen[name], name)
