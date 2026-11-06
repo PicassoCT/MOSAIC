@@ -131,20 +131,28 @@ check("six daemon-owned lanterns retain exact thirds and half fixed behavior acr
     for epoch = 0, 15 do
         for _, offset in ipairs({0.00001, interval / 2, interval - 0.00001}) do
             local seconds = station.born + settings.releaseSeconds + epoch * interval + offset
-            local counts, fixedCount, opacity = {stationary = 0, up = 0, down = 0}, 0
+            local counts, fixedCount, visibleCount = {stationary = 0, up = 0, down = 0}, 0, 0
+            local visibility
             for index, item in ipairs(lanterns) do
                 local pose = scene.lanternPose(station, item, seconds, config)
-                assert(counts[pose.lanternMode], "every released lantern needs a supported mode")
-                counts[pose.lanternMode] = counts[pose.lanternMode] + 1
-                histories[index][pose.lanternMode] = true
+                if pose.visible then
+                    visibleCount = visibleCount + 1
+                    assert(counts[pose.lanternMode], "every visible lantern needs a supported mode")
+                    counts[pose.lanternMode] = counts[pose.lanternMode] + 1
+                    histories[index][pose.lanternMode] = true
+                    assert(pose.opacity == item.opacity, "a live lantern cannot dim during its lifecycle")
+                else
+                    assert(pose.opacity == 0 and pose.activity == "hidden")
+                end
                 if pose.fixedBehavior then fixedCount = fixedCount + 1 end
                 if fixed[index] == nil then fixed[index] = pose.fixedBehavior end
                 assert(fixed[index] == pose.fixedBehavior, "an identity cannot change its fixed/switching class")
-                if opacity then assert(close(pose.opacity, opacity), "the cohort must fade together") end
-                opacity = pose.opacity
+                if visibility ~= nil then assert(pose.visible == visibility, "the whole cohort must blink together") end
+                visibility = pose.visible
             end
-            assert(counts.stationary == 2 and counts.up == 2 and counts.down == 2,
-                "switches must preserve one third in each mode")
+            assert(visibleCount == 0 or visibleCount == 6, "a release or blink cannot leave a partial cohort")
+            assert(counts.stationary == visibleCount / 3 and counts.up == visibleCount / 3
+                and counts.down == visibleCount / 3, "switches must preserve one third in each visible mode")
             assert(fixedCount == 3, "exactly half retain their original behavior")
         end
     end
@@ -166,15 +174,16 @@ check("six daemon-owned lanterns retain exact thirds and half fixed behavior acr
         and switchingPairs["down:stationary"] == 1)
 end)
 
-check("lantern heights follow their active mode continuously and recycle only while invisible", function()
+check("lantern heights stay continuous and the cohort blinks off before recycling", function()
     local station, settings = stationAt(11.5), config.lanterns
     local interval, period = settings.switchSeconds, 4 * settings.switchSeconds
     local release, epsilon = station.born + settings.releaseSeconds, 0.00001
     for _, item in ipairs(lanterns) do
         for epoch = 0, 3 do
             local previous
-            for _, fraction in ipairs({0.1, 0.3, 0.7, 0.9}) do
+            for _, fraction in ipairs({0.1, 0.3, 0.7, 0.85}) do
                 local pose = scene.lanternPose(station, item, release + (epoch + fraction) * interval, config)
+                assert(pose.visible and pose.opacity == item.opacity)
                 assert(pose.y >= 0 and pose.y <= settings.airborneHeight + settings.speed * period)
                 assert(pose.x == item.x and pose.z == item.z)
                 if previous then
@@ -201,16 +210,21 @@ check("lantern heights follow their active mode continuously and recycle only wh
                     "switching motion must ease to rest at the mode boundary")
             end
         end
-        local boundary = release + period
-        for _, offset in ipairs({-epsilon, 0, epsilon}) do
-            local pose = scene.lanternPose(station, item, boundary + offset, config)
-            assert(pose.opacity < 0.000001, "height may reset only after the whole cohort fades out")
+        local expiry = release + period - settings.blinkSeconds
+        local before = scene.lanternPose(station, item, expiry - epsilon, config)
+        assert(before.visible and before.opacity == item.opacity, "the last live instant must not fade")
+        for _, offset in ipairs({0, settings.blinkSeconds / 2, settings.blinkSeconds - epsilon}) do
+            local pose = scene.lanternPose(station, item, expiry + offset, config)
+            assert(pose.visible == false and pose.opacity == 0 and pose.activity == "hidden",
+                "the entire recycle window must be invisible")
         end
+        local replacement = scene.lanternPose(station, item, release + period + epsilon, config)
+        assert(replacement.visible and replacement.opacity == item.opacity
+            and close(replacement.spawnTime, release + period), "the next release must appear without a fade-in")
         if item.lanternSlot == 1 then
             assert(scene.lanternPose(station, item, release + period / 2, config).y == 0)
         elseif item.lanternSlot == 3 then
-            assert(scene.lanternPose(station, item, boundary - epsilon, config).y < 0.001,
-                "the fixed falling lantern reaches ground at the invisible recycle")
+            assert(before.y < 0.001, "the fixed falling lantern reaches ground just before blinking off")
         end
     end
 end)
@@ -221,10 +235,11 @@ check("ground lanterns appear during a visible daemon gesture and stay at the pl
     local release, ground = station.born + settings.releaseSeconds, 6.75
     local pairsBySource = {}
     for _, item in ipairs(lanterns) do
-        assert(scene.worldPose(station, item, release - 0.00001, 5, ground, config).opacity == 0)
-        assert(scene.worldPose(station, item, release, 5, ground, config).opacity < 0.000001)
-        local placed = scene.worldPose(station, item, release + settings.fadeSeconds, 5, ground, config)
-        assert(placed.opacity > 0 and placed.spawnedBy == item.emitter and close(placed.spawnTime, release))
+        local waiting = scene.worldPose(station, item, release - 0.00001, 5, ground, config)
+        assert(waiting.visible == false and waiting.opacity == 0)
+        local placed = scene.worldPose(station, item, release, 5, ground, config)
+        assert(placed.visible and placed.opacity == item.opacity
+            and placed.spawnedBy == item.emitter and close(placed.spawnTime, release))
         pairsBySource[item.emitter] = pairsBySource[item.emitter] or {}
         table.insert(pairsBySource[item.emitter], placed)
         if item.lanternSlot == 1 or item.lanternSlot == 4 then
@@ -247,7 +262,7 @@ check("ground lanterns appear during a visible daemon gesture and stay at the pl
         assert(rested.activity == "rest" and close(rested.y, ground))
         assert(not close(task.x, rested.x) or not close(task.z, rested.z), "the daemon should return after placing")
     end
-    local early = scene.worldPose(station, lanterns[1], release + settings.fadeSeconds, 5, ground, config)
+    local early = scene.worldPose(station, lanterns[1], release, 5, ground, config)
     local later = scene.worldPose(station, lanterns[1], station.born + 3, 5, ground, config)
     assert(close(early.x, later.x) and close(early.y, later.y) and close(early.z, later.z),
         "a placed ground lantern must not follow the departing daemon")
@@ -335,7 +350,7 @@ check("cohort recycling is bounded and retired or reset stations cannot emit sta
         end
     end
     station.retired = station.born + settings.releaseSeconds + period - 0.1
-    assert(scene.lanternPose(station, lanterns[1], station.retired - 0.1, config).opacity > 0)
+    assert(scene.lanternPose(station, lanterns[1], station.retired - settings.blinkSeconds, config).visible)
     for _, item in ipairs(lanterns) do
         assert(scene.lanternPose(station, item, station.born + settings.releaseSeconds + period + 0.4, config).opacity == 0)
     end
@@ -363,12 +378,19 @@ check("banknotes only descend to terrain while koi keep their bounded floating h
     assert(money and money.motion == "fall" and koi and koi.motion == "hover")
     local station, ground = stationAt(41.25), 9.5
     local minimum, maximum = math.huge, -math.huge
+    local period, epsilon = money.fallSeconds + money.blinkSeconds, 0.00001
+    local waiting = scene.worldPose(station, money, station.born - epsilon, 5, ground, config)
+    assert(waiting.visible == false and waiting.opacity == 0)
     for cycle = 0, 2 do
+        local born = station.born + cycle * period
+        local initial = scene.worldPose(station, money, born + epsilon, 5, ground, config)
+        assert(initial.visible and initial.opacity == money.opacity and close(initial.spawnTime, born))
         local previous
         for tick = 1, 199 do
-            local seconds = station.born + (cycle + tick / 200) * money.fallSeconds
+            local seconds = born + tick / 200 * money.fallSeconds
             local note = scene.worldPose(station, money, seconds, 5, ground, config)
-            assert(note.opacity > 0 and note.y >= ground and note.y <= ground + money.y)
+            assert(note.visible and note.opacity == money.opacity
+                and note.y >= ground and note.y <= ground + money.y)
             assert(note.activity == "down")
             if previous then
                 assert(note.y < previous.y and note.x == previous.x and note.z == previous.z,
@@ -380,10 +402,14 @@ check("banknotes only descend to terrain while koi keep their bounded floating h
                 "a koi should float around its authored height without accumulating a fall")
             minimum, maximum = math.min(minimum, fish.y), math.max(maximum, fish.y)
         end
-        local boundary = station.born + (cycle + 1) * money.fallSeconds
-        for _, offset in ipairs({-0.00001, 0, 0.00001}) do
-            assert(scene.worldPose(station, money, boundary + offset, 5, ground, config).opacity < 0.000001,
-                "banknotes must be invisible before resetting above the ground")
+        local expiry = born + money.fallSeconds
+        local last = scene.worldPose(station, money, expiry - epsilon, 5, ground, config)
+        assert(last.visible and last.opacity == money.opacity and last.y < ground + 0.001,
+            "a banknote must remain undimmed until it reaches the ground")
+        for _, offset in ipairs({0, money.blinkSeconds / 2, money.blinkSeconds - epsilon}) do
+            local hidden = scene.worldPose(station, money, expiry + offset, 5, ground, config)
+            assert(hidden.visible == false and hidden.opacity == 0 and hidden.y == ground,
+                "banknotes must stay hidden at ground level before resetting above")
         end
     end
     assert(maximum - minimum > 0.3, "the koi retains its gentle floating motion")

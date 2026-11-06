@@ -565,14 +565,16 @@ check("native candles keep their terrain contact and do not follow a moving carr
     assert(count == 4, "all four candles remain at their original curb positions")
 end)
 
-check("native lanterns wait for daemon placement and recycle a complete cohort without fallback flashes", function()
+check("native lanterns appear at daemon release and blink off together before recycling", function()
     local f, settings = fixture({native = true}), sceneConfig.lanterns
     drawAt(f, 0)
-    for _, time in ipairs({0.4, settings.releaseSeconds - 0.01, settings.releaseSeconds}) do
+    for _, time in ipairs({0.4, settings.releaseSeconds - 0.01}) do
         drawAt(f, time)
         assert(#meshDraws(f, "PARADELANTERN") == 0 and #f.draws == 0)
         assert(#f.meshDraws > 0, "the audience must remain visible while lanterns wait")
     end
+    drawAt(f, settings.releaseSeconds)
+    assert(#meshDraws(f, "PARADELANTERN") == 6 and #f.draws == 0)
     for _, item in ipairs(sceneConfig.figures) do
         if item.lanternEmitter then
             local body = meshDraws(f, (item.model .. "body"):upper())
@@ -582,17 +584,22 @@ check("native lanterns wait for daemon placement and recycle a complete cohort w
     end
     for generation = 0, 3 do
         local release = settings.releaseSeconds + generation * 4 * settings.switchSeconds
-        if generation > 0 then
-            advanceTo(f, release - 0.0001)
-            assert(#meshDraws(f, "PARADELANTERN") == 0 and #f.draws == 0,
-                "height recycling must occur while the whole cohort is invisible")
-            drawAt(f, release)
-            assert(#meshDraws(f, "PARADELANTERN") == 0 and #f.draws == 0)
-        end
-        drawAt(f, release + settings.fadeSeconds)
+        drawAt(f, release + 0.0001)
         local lanterns = meshDraws(f, "PARADELANTERN")
         assert(#lanterns == 6 and #f.draws == 0)
         for _, draw in ipairs(lanterns) do assert(close(draw.opacity, lanterns[1].opacity)) end
+        local blink = release + 4 * settings.switchSeconds - settings.blinkSeconds
+        advanceTo(f, blink - 0.0001)
+        lanterns = meshDraws(f, "PARADELANTERN")
+        assert(#lanterns == 6 and #f.draws == 0)
+        for _, draw in ipairs(lanterns) do
+            assert(close(draw.opacity, 0.88), "visible lanterns must not dim before blinking out")
+        end
+        drawAt(f, blink + 0.0001)
+        assert(#meshDraws(f, "PARADELANTERN") == 0 and #f.draws == 0)
+        drawAt(f, release + 4 * settings.switchSeconds - 0.0001)
+        assert(#meshDraws(f, "PARADELANTERN") == 0 and #f.draws == 0,
+            "the hidden interval must last until the next daemon release")
     end
 end)
 
@@ -667,16 +674,17 @@ check("moving native and fallback stations keep bounded cohorts and reset releas
     end
 end)
 
-check("rendered banknotes only descend between invisible resets while koi keep their floating height", function()
+check("rendered banknotes descend then blink out while koi keep their floating height", function()
     local f, money, koi = fixture({native = true})
     for _, item in ipairs(sceneConfig.props) do
         if item.model == "money" then money = item elseif item.model == "koi" then koi = item end
     end
     drawAt(f, 0)
+    local cycle = money.fallSeconds + money.blinkSeconds
     for generation = 0, 1 do
         local previous
         for step = 1, 31 do
-            advanceTo(f, generation * money.fallSeconds + step * money.fallSeconds / 32)
+            advanceTo(f, generation * cycle + step * money.fallSeconds / 32)
             local notes, fish = meshDraws(f, "PARADEMONEY"), meshDraws(f, "PARADEKOI")
             assert(#notes == 1 and #fish == 1)
             local note = notes[1].anchor
@@ -688,9 +696,16 @@ check("rendered banknotes only descend between invisible resets while koi keep t
             assert(close(fish[1].anchor[1], koi.x) and close(fish[1].anchor[3], koi.z))
             assert(math.abs(height - koi.y) <= 0.180001, "koi hover without accumulating a fall")
         end
-        advanceTo(f, (generation + 1) * money.fallSeconds)
+        local disappearance = generation * cycle + money.fallSeconds
+        advanceTo(f, disappearance - 0.0001)
+        local last = meshDraws(f, "PARADEMONEY")
+        assert(#last == 1 and close(last[1].opacity, money.opacity),
+            "money must remain at its material opacity until it blinks out")
+        drawAt(f, disappearance + 0.0001)
         assert(#meshDraws(f, "PARADEMONEY") == 0 and #meshDraws(f, "PARADEKOI") == 1,
-            "money resets invisibly without recycling the floating koi")
+            "money blinks off without recycling the floating koi")
+        drawAt(f, disappearance + money.blinkSeconds - 0.0001)
+        assert(#meshDraws(f, "PARADEMONEY") == 0)
     end
 end)
 
@@ -757,6 +772,16 @@ check("lantern mesh and billboard LOD share release time and every world anchor"
     assert(#meshDraws(f, "PARADELANTERN") == 0 and #pixelLanterns(f) == 6)
     f.camera = {0, 0, 300}; drawAt(f, 2)
     assert(#meshDraws(f, "PARADELANTERN") == 6 and #pixelLanterns(f) == 0)
+    local settings = sceneConfig.lanterns
+    local blink = settings.releaseSeconds + 4 * settings.switchSeconds - settings.blinkSeconds
+    advanceTo(f, blink - 0.0001)
+    f.camera = {0, 0, 950}; drawAt(f, blink - 0.0001)
+    assert(#meshDraws(f, "PARADELANTERN") == 6 and #pixelLanterns(f) == 6)
+    drawAt(f, blink + 0.0001)
+    assert(#meshDraws(f, "PARADELANTERN") == 0 and #pixelLanterns(f) == 0,
+        "neither LOD path may render the hidden cohort")
+    drawAt(f, settings.releaseSeconds + 4 * settings.switchSeconds + 0.0001)
+    assert(#meshDraws(f, "PARADELANTERN") == 6 and #pixelLanterns(f) == 6)
 end)
 
 check("native additions inherit the legacy visibility boundary and bounded nearest payload set", function()

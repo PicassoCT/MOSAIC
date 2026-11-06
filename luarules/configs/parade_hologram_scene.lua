@@ -16,7 +16,7 @@ local scene = {
         switchSeconds = 1.6,
         speed = 0.65,
         airborneHeight = 8.5,
-        fadeSeconds = 0.35,
+        blinkSeconds = 0.2,
         approachSeconds = 0.8,
         gestureSeconds = 0.8,
         returnSeconds = 0.8,
@@ -93,7 +93,7 @@ for index, prop in ipairs(props) do
         opacity = 0.88, phase = (index + 2) * 0.79,
         motion = prop[1] == "money" and "fall" or prop[1] == "koi" and "hover" or nil,
         fallSeconds = prop[1] == "money" and 16 or nil,
-        fadeSeconds = prop[1] == "money" and 0.6 or nil}
+        blinkSeconds = prop[1] == "money" and 0.2 or nil}
 end
 
 return scene

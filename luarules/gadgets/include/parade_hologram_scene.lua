@@ -94,17 +94,23 @@ function scene.lanternPose(station, item, seconds, config)
     local settings = config.lanterns
     local interval = settings.switchSeconds
     local period = 4 * interval
-    local elapsed = seconds - station.born - settings.releaseSeconds
+    local lifetime = period - settings.blinkSeconds
+    local firstRelease = station.born + settings.releaseSeconds
+    local elapsed = seconds - firstRelease
     local pose = {x = item.x, y = 0, z = item.z, yaw = item.x < 0 and 90 or -90,
-        tilt = 0, headTilt = 0, opacity = 0, activity = "unspawned",
+        tilt = 0, headTilt = 0, opacity = 0, visible = false, activity = "unspawned",
         spawnedBy = item.emitter, fixedBehavior = item.lanternSlot <= 3}
     if elapsed < 0 then return pose end
     local generation = math.floor(elapsed / period)
-    local born = station.born + settings.releaseSeconds + generation * period
+    local born = firstRelease + generation * period
     -- A departing audience may finish its existing fade, never place a new
     -- cohort after retirement. There is no growing list of spawned objects.
     if station.retired and born > station.retired then return pose end
     local age = elapsed - generation * period
+    pose.spawnTime = born
+    -- Blink off before the next daemon release. The whole cohort is either
+    -- present or absent, so recycling needs no renderer-specific alpha fade.
+    if age >= lifetime then pose.activity = "hidden"; return pose end
     local epoch = math.floor(age / interval)
     local progress = smooth((age - epoch * interval) / interval)
     local step = settings.speed * interval
@@ -115,7 +121,7 @@ function scene.lanternPose(station, item, seconds, config)
     elseif slot == 2 then
         mode, pose.y = "up", settings.speed * age
     elseif slot == 3 then
-        mode, pose.y = "down", settings.speed * (period - age)
+        mode, pose.y = "down", settings.speed * (lifetime - age)
     elseif slot == 4 then
         mode = epoch % 2 == 0 and "stationary" or "up"
         pose.y = step * (pairs + (epoch % 2 == 1 and progress or 0))
@@ -126,9 +132,8 @@ function scene.lanternPose(station, item, seconds, config)
         mode = epoch % 2 == 0 and "down" or "stationary"
         pose.y = step * (2 - pairs - (epoch % 2 == 0 and progress or 1))
     end
-    pose.activity, pose.lanternMode, pose.spawnTime = mode, mode, born
-    pose.opacity = (item.opacity or 1) * smooth(age / settings.fadeSeconds)
-        * smooth((period - age) / settings.fadeSeconds)
+    pose.activity, pose.lanternMode = mode, mode
+    pose.visible, pose.opacity = true, item.opacity or 1
     if mode ~= "stationary" then pose.tilt = 1.5 * sin(age * 0.7 + slot) end
     return pose
 end
@@ -177,13 +182,17 @@ function scene.worldPose(station, item, seconds, payloadID, ground, config)
     elseif item.lanternEmitter and config then
         pose = daemonPose(station, item, seconds, config)
     elseif item.motion == "fall" then
-        -- Fade at both endpoints before recycling above. Never show an
-        -- upward leg, and never let the banknote pass below sampled terrain.
-        local lifetime, fade = item.fallSeconds or 16, item.fadeSeconds or 0.6
-        local age = math.max(0, seconds - station.born) % lifetime
+        -- Keep the full fall visible, blink off at ground level, then recycle
+        -- above after a short hidden interval. No opacity animation is needed.
+        local lifetime, blink = item.fallSeconds or 16, item.blinkSeconds or 0.2
+        local elapsed = seconds - station.born
+        local period = lifetime + blink
+        local age = math.max(0, elapsed) % period
         pose.y = math.max(0, (item.y or 14) * (1 - age / lifetime))
-        pose.opacity = pose.opacity * smooth(age / fade) * smooth((lifetime - age) / fade)
-        pose.activity = "down"
+        pose.visible = elapsed >= 0 and age < lifetime
+        pose.opacity = pose.visible and (item.opacity or 1) or 0
+        pose.activity = pose.visible and "down" or "hidden"
+        pose.spawnTime = station.born + math.floor(math.max(0, elapsed) / period) * period
     end
     local localX, localZ = pose.x, pose.z
     pose.x = station.x + station.dz * localX + station.dx * localZ

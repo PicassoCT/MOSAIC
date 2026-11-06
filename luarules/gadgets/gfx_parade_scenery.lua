@@ -330,7 +330,7 @@ local function sceneQueue(visible, seconds)
                             local worldX, worldZ = pose.x, pose.z
                             local onMap = (not Game.mapSizeX or (worldX >= 0 and worldX <= Game.mapSizeX))
                                 and (not Game.mapSizeZ or (worldZ >= 0 and worldZ <= Game.mapSizeZ))
-                            if onMap and pose.opacity > 0.002 then
+                            if onMap and pose.visible ~= false and pose.opacity > 0.002 then
                                 local ground = station.grounds[number]
                                 if not ground or seconds >= ground.expires
                                     or ground.x ~= worldX or ground.z ~= worldZ then
@@ -426,7 +426,7 @@ local function drawFallbackLanterns(payload, decoration, seconds, fade)
                 local onMap = (not Game.mapSizeX or (pose.x >= 0 and pose.x <= Game.mapSizeX))
                     and (not Game.mapSizeZ or (pose.z >= 0 and pose.z <= Game.mapSizeZ))
                 local opacity = fade * stationFade * pose.opacity
-                if onMap and opacity > 0.002 then
+                if onMap and pose.visible ~= false and opacity > 0.002 then
                     local ground = Spring.GetGroundHeight and Spring.GetGroundHeight(pose.x, pose.z) or 0
                     local clock = seconds + item.lanternSlot * 0.37 + payload.id * 0.173
                     local frame = animationFrame("lantern", glyph, frames, clock)

@@ -83,7 +83,7 @@ with the carrier.
 | AI spirits | Slow 0.14-unit hover and a small head inclination |
 | Lanterns | Six per station: two stationary, two rising and two descending; three fixed identities and three that alternate between two modes |
 | Koi | Gentle 0.18-unit hover at a fixed horizontal position; no rising/falling lifecycle |
-| Banknotes | Continuous downward travel from the configured height; fade at the ground and restart above only while invisible |
+| Banknotes | Continuous downward travel for 16 seconds, blink out at the ground, then restart above after 0.2 seconds hidden |
 | Other airborne props | Gentle 0.18-unit float and 2-degree inclination |
 | Lantern daemons | Three helpers approach a placement point, gesture, release a pair of lanterns, and return; over half of each cycle is spent resting |
 | Lookout helper | Retains its original ten-second inspection cycle, short trips and bounded hops |
@@ -108,16 +108,25 @@ lanterns appear at the daemons' placement points **1.2 seconds** after a station
 forms, during the placement gesture; they do not appear with the initial scenery.
 Terrain is sampled at the actual placement or moving-helper coordinates.
 
-Each cohort lasts **6.4 seconds**, fades out, and is replaced by the same six
-identities during the next daemon release. Repositioning happens at zero opacity;
-fixed rising and falling lanterns never visibly reverse. Retired stations cannot
-release a new cohort. The existing two-station history bounds each payload to at
-most twelve lanterns during a station transition. Timings are deliberately short
-enough to see both placement and switching while a moving parade passes.
+Each release cycle lasts **6.4 seconds**: the six lanterns remain visible for
+**6.2 seconds**, then blink out together for **0.2 seconds** before the next daemon
+release. Lifecycle visibility is a boolean: there is no lantern or banknote
+fade-in/fade-out envelope. Both render paths omit hidden poses from their draw
+queues, so recycling requires no shader opacity control. Fixed rising and falling
+lanterns never visibly reverse. Retired stations cannot release a new cohort.
+The existing two-station history bounds each payload to at most twelve lanterns
+during a station transition. Timings are deliberately short enough to see both
+placement and switching while a moving parade passes.
 
 The distance/capacity billboard renderer retains its existing artwork and uses
 the same lantern cohort, world anchors and release timing for lantern-themed
 floats. Zooming out therefore does not restore the former arbitrary bobbing.
+
+The scenery integration in `736f09d` introduced a separate shader before these
+behavior changes. That shader still supplies the older station and distance crossfades;
+the shared `gfx_neonHolograms.lua` renderer has no per-object lifecycle-opacity
+input. Binary lifecycle visibility does not migrate the scenery into that shared
+renderer or its radiance capture path. That integration remains separate work.
 
 ### Petals and falling paper from buildings
 
