@@ -1,0 +1,1423 @@
+{
+  "schema": 1,
+  "generator": "tools/parade_holograms/build.py",
+  "coordinate_system": "Raw game units, Y up, +Z front; feet Y=0; identity piece transforms",
+  "runtime_draw": "gl.UnitPiece draws raw buffers; do not apply the imported FBX unit or piece matrix",
+  "figure_count": 16,
+  "prop_count": 12,
+  "models": [
+    {
+      "name": "paradecivilian1",
+      "label": "The coat commuter",
+      "category": "civilian",
+      "height": 7.85,
+      "bounds": [
+        [
+          -1.336052,
+          0.0,
+          -0.6
+        ],
+        [
+          1.336052,
+          7.85,
+          0.91
+        ]
+      ],
+      "cellSize": 0.23,
+      "headPivot": [
+        0.0,
+        6.18,
+        0.0
+      ],
+      "pieces": {
+        "body": "paradecivilian1body",
+        "head": "paradecivilian1head",
+        "mask": "paradecivilian1mask"
+      },
+      "triangles": 852,
+      "cage_parts": 17,
+      "description": "Narrow modern raincoat, visible shoes and quietly clasped hands."
+    },
+    {
+      "name": "paradecivilian2",
+      "label": "The jacket watcher",
+      "category": "civilian",
+      "height": 7.4,
+      "bounds": [
+        [
+          -1.779017,
+          0.0,
+          -0.75
+        ],
+        [
+          2.236492,
+          7.4,
+          0.840549
+        ]
+      ],
+      "cellSize": 0.23,
+      "headPivot": [
+        0.0,
+        5.83,
+        0.0
+      ],
+      "pieces": {
+        "body": "paradecivilian2body",
+        "head": "paradecivilian2head",
+        "mask": "paradecivilian2mask"
+      },
+      "triangles": 756,
+      "cage_parts": 15,
+      "description": "Broad short jacket, loose trousers and one restrained greeting hand."
+    },
+    {
+      "name": "paradecivilian3",
+      "label": "The poncho courier",
+      "category": "civilian",
+      "height": 7.59,
+      "bounds": [
+        [
+          -1.59896,
+          0.0,
+          -0.92
+        ],
+        [
+          1.65,
+          7.59,
+          1.08
+        ]
+      ],
+      "cellSize": 0.23,
+      "headPivot": [
+        0.0,
+        5.93,
+        0.04
+      ],
+      "pieces": {
+        "body": "paradecivilian3body",
+        "head": "paradecivilian3head",
+        "mask": "paradecivilian3mask"
+      },
+      "triangles": 892,
+      "cage_parts": 19,
+      "description": "Offset poncho, messenger bag, peaked rain cap and staggered feet."
+    },
+    {
+      "name": "paradecivilian4",
+      "label": "The umbrella observer",
+      "category": "civilian",
+      "height": 8.342186,
+      "bounds": [
+        [
+          -3.06,
+          0.0,
+          -1.53
+        ],
+        [
+          1.34,
+          8.342186,
+          1.469267
+        ]
+      ],
+      "cellSize": 0.23,
+      "headPivot": [
+        0.16,
+        5.78,
+        -0.02
+      ],
+      "pieces": {
+        "body": "paradecivilian4body",
+        "head": "paradecivilian4head",
+        "mask": "paradecivilian4mask"
+      },
+      "triangles": 930,
+      "cage_parts": 17,
+      "description": "Slim fitted raincoat beneath an offset low polygon umbrella."
+    },
+    {
+      "name": "paradedead1",
+      "label": "The bowler gentleman",
+      "category": "dead",
+      "height": 8.17,
+      "bounds": [
+        [
+          -1.457314,
+          0.0,
+          -0.72
+        ],
+        [
+          1.279881,
+          8.17,
+          0.91
+        ]
+      ],
+      "cellSize": 0.23,
+      "headPivot": [
+        0.0,
+        6.07,
+        0.0
+      ],
+      "pieces": {
+        "body": "paradedead1body",
+        "head": "paradedead1head",
+        "mask": "paradedead1mask"
+      },
+      "triangles": 878,
+      "cage_parts": 18,
+      "description": "A bowler, long frock coat, worn shoes and an old walking cane."
+    },
+    {
+      "name": "paradedead2",
+      "label": "The shawled widow",
+      "category": "dead",
+      "height": 8.122466,
+      "bounds": [
+        [
+          -1.52,
+          0.0,
+          -0.94
+        ],
+        [
+          1.52,
+          8.122466,
+          1.01
+        ]
+      ],
+      "cellSize": 0.23,
+      "headPivot": [
+        0.0,
+        6.15,
+        0.02
+      ],
+      "pieces": {
+        "body": "paradedead2body",
+        "head": "paradedead2head",
+        "mask": "paradedead2mask"
+      },
+      "triangles": 880,
+      "cage_parts": 16,
+      "description": "A long bell dress, folded shawl, broad period hat and clasped hands."
+    },
+    {
+      "name": "paradedead3",
+      "label": "The robed elder",
+      "category": "dead",
+      "height": 7.81,
+      "bounds": [
+        [
+          -2.046132,
+          0.0,
+          -0.8
+        ],
+        [
+          2.075382,
+          7.81,
+          1.114
+        ]
+      ],
+      "cellSize": 0.23,
+      "headPivot": [
+        0.0,
+        6.05,
+        0.22
+      ],
+      "pieces": {
+        "body": "paradedead3body",
+        "head": "paradedead3head",
+        "mask": "paradedead3mask"
+      },
+      "triangles": 754,
+      "cage_parts": 15,
+      "description": "A stooped elder in an old wrap robe, wide sleeves and a tied hair knot."
+    },
+    {
+      "name": "paradedead4",
+      "label": "The travelling shade",
+      "category": "dead",
+      "height": 8.52,
+      "bounds": [
+        [
+          -1.49,
+          0.0,
+          -0.78
+        ],
+        [
+          2.158997,
+          8.52,
+          1.122222
+        ]
+      ],
+      "cellSize": 0.23,
+      "headPivot": [
+        0.0,
+        6.17,
+        0.0
+      ],
+      "pieces": {
+        "body": "paradedead4body",
+        "head": "paradedead4head",
+        "mask": "paradedead4mask"
+      },
+      "triangles": 878,
+      "cage_parts": 17,
+      "description": "A tall period hat, short shoulder cape, crossed arms and trailing scarf."
+    },
+    {
+      "name": "paradeai1",
+      "label": "Null Lux",
+      "category": "ai",
+      "height": 13.26,
+      "bounds": [
+        [
+          -1.76,
+          0.0,
+          -0.919949
+        ],
+        [
+          1.76,
+          13.26,
+          0.724
+        ]
+      ],
+      "cellSize": 0.3,
+      "headPivot": [
+        0.0,
+        10.35,
+        -0.03
+      ],
+      "pieces": {
+        "body": "paradeai1body",
+        "head": "paradeai1head",
+        "mask": "paradeai1mask"
+      },
+      "triangles": 870,
+      "cage_parts": 16,
+      "description": "Null Lux: a tall quiet open mantle, split pale mask and sheltered chest lantern."
+    },
+    {
+      "name": "paradeai2",
+      "label": "The bell-mantled visitor",
+      "category": "ai",
+      "height": 10.63,
+      "bounds": [
+        [
+          -4.1,
+          0.0,
+          -1.5
+        ],
+        [
+          4.1,
+          10.63,
+          1.5
+        ]
+      ],
+      "cellSize": 0.3,
+      "headPivot": [
+        0.0,
+        8.28,
+        0.0
+      ],
+      "pieces": {
+        "body": "paradeai2body",
+        "head": "paradeai2head",
+        "mask": "paradeai2mask"
+      },
+      "triangles": 704,
+      "cage_parts": 10,
+      "description": "A broad bell-shaped ceremonial presence with a tiny elongated masked head."
+    },
+    {
+      "name": "paradeai3",
+      "label": "The many-eyed pilgrim",
+      "category": "ai",
+      "height": 10.565604,
+      "bounds": [
+        [
+          -3.104006,
+          0.0,
+          -0.77
+        ],
+        [
+          3.28,
+          10.565604,
+          0.9158
+        ]
+      ],
+      "cellSize": 0.3,
+      "headPivot": [
+        0.0,
+        7.0,
+        0.0
+      ],
+      "pieces": {
+        "body": "paradeai3body",
+        "head": "paradeai3head",
+        "mask": "paradeai3mask"
+      },
+      "triangles": 736,
+      "cage_parts": 13,
+      "description": "A narrow pilgrim with an enormous oval three-eyed mask and unequal hanging sleeves."
+    },
+    {
+      "name": "paradeai4",
+      "label": "The folded-sail spirit",
+      "category": "ai",
+      "height": 11.403359,
+      "bounds": [
+        [
+          -3.03942,
+          0.0,
+          -0.85
+        ],
+        [
+          3.823986,
+          11.403359,
+          0.94431
+        ]
+      ],
+      "cellSize": 0.3,
+      "headPivot": [
+        0.69,
+        9.22,
+        0.06
+      ],
+      "pieces": {
+        "body": "paradeai4body",
+        "head": "paradeai4head",
+        "mask": "paradeai4mask"
+      },
+      "triangles": 578,
+      "cage_parts": 10,
+      "description": "A kite-like folded mantle with unequal ribbon limbs and a tilted narrow mask."
+    },
+    {
+      "name": "paradehelper1",
+      "label": "The lantern tender",
+      "category": "helper",
+      "height": 3.155,
+      "bounds": [
+        [
+          -0.736658,
+          0.0,
+          -0.4
+        ],
+        [
+          1.21,
+          3.155,
+          0.584
+        ]
+      ],
+      "cellSize": 0.13,
+      "headPivot": [
+        -0.03,
+        1.37,
+        0.0
+      ],
+      "pieces": {
+        "body": "paradehelper1body",
+        "head": "paradehelper1head",
+        "mask": "paradehelper1mask"
+      },
+      "triangles": 868,
+      "cage_parts": 18,
+      "description": "A pear-shaped attendant stretching both hands to guide a small lantern."
+    },
+    {
+      "name": "paradehelper2",
+      "label": "The outline mender",
+      "category": "helper",
+      "height": 2.302859,
+      "bounds": [
+        [
+          -0.79,
+          0.0,
+          -0.73
+        ],
+        [
+          0.797805,
+          2.302859,
+          0.94
+        ]
+      ],
+      "cellSize": 0.13,
+      "headPivot": [
+        -0.02,
+        1.25,
+        0.07
+      ],
+      "pieces": {
+        "body": "paradehelper2body",
+        "head": "paradehelper2head",
+        "mask": "paradehelper2mask"
+      },
+      "triangles": 792,
+      "cage_parts": 17,
+      "description": "A crouching broad-headed helper stitching a loose luminous outline."
+    },
+    {
+      "name": "paradehelper3",
+      "label": "The crane courier",
+      "category": "helper",
+      "height": 3.092481,
+      "bounds": [
+        [
+          -0.927608,
+          0.0,
+          -0.45
+        ],
+        [
+          0.927608,
+          3.092481,
+          0.644
+        ]
+      ],
+      "cellSize": 0.13,
+      "headPivot": [
+        0.0,
+        1.33,
+        0.02
+      ],
+      "pieces": {
+        "body": "paradehelper3body",
+        "head": "paradehelper3head",
+        "mask": "paradehelper3mask"
+      },
+      "triangles": 924,
+      "cage_parts": 18,
+      "description": "A hurrying round-bodied courier carrying a folded crane above its head."
+    },
+    {
+      "name": "paradehelper4",
+      "label": "The curious lookout",
+      "category": "helper",
+      "height": 2.772916,
+      "bounds": [
+        [
+          -0.453582,
+          0.0,
+          -0.47
+        ],
+        [
+          0.875557,
+          2.772916,
+          0.584
+        ]
+      ],
+      "cellSize": 0.13,
+      "headPivot": [
+        0.0,
+        1.64,
+        0.0
+      ],
+      "pieces": {
+        "body": "paradehelper4body",
+        "head": "paradehelper4head",
+        "mask": "paradehelper4mask"
+      },
+      "triangles": 688,
+      "cage_parts": 14,
+      "description": "A long-necked lookout with hands behind its back and a curious tilted mask."
+    },
+    {
+      "name": "paradecandle",
+      "label": "Ground candle",
+      "category": "prop",
+      "height": 2.24,
+      "bounds": [
+        [
+          -0.53,
+          0.05,
+          -0.53
+        ],
+        [
+          0.53,
+          2.24,
+          0.53
+        ]
+      ],
+      "cellSize": 0.13,
+      "piece": "paradecandle",
+      "triangles": 360,
+      "cage_parts": 5,
+      "description": ""
+    },
+    {
+      "name": "paradelantern",
+      "label": "Floating paper lantern",
+      "category": "prop",
+      "height": 3.08,
+      "bounds": [
+        [
+          -1.075,
+          0.001936,
+          -0.77
+        ],
+        [
+          1.075,
+          3.08,
+          0.77
+        ]
+      ],
+      "cellSize": 0.17,
+      "piece": "paradelantern",
+      "triangles": 1248,
+      "cage_parts": 10,
+      "description": ""
+    },
+    {
+      "name": "parademoon",
+      "label": "Flying crescent moon",
+      "category": "prop",
+      "height": 4.84774,
+      "bounds": [
+        [
+          -2.546718,
+          0.15226,
+          -0.68
+        ],
+        [
+          0.95,
+          4.84774,
+          0.68
+        ]
+      ],
+      "cellSize": 0.19,
+      "piece": "parademoon",
+      "triangles": 220,
+      "cage_parts": 1,
+      "description": ""
+    },
+    {
+      "name": "paradeenvelope",
+      "label": "Flying folded envelope",
+      "category": "prop",
+      "height": 2.275,
+      "bounds": [
+        [
+          -1.8,
+          0.025,
+          -0.12
+        ],
+        [
+          1.8,
+          2.275,
+          0.35
+        ]
+      ],
+      "cellSize": 0.15,
+      "piece": "paradeenvelope",
+      "triangles": 172,
+      "cage_parts": 4,
+      "description": ""
+    },
+    {
+      "name": "parademoney",
+      "label": "Flying hyperinflation banknote",
+      "category": "prop",
+      "height": 2.25,
+      "bounds": [
+        [
+          -2.213723,
+          0.05,
+          -0.21
+        ],
+        [
+          2.213723,
+          2.25,
+          0.345
+        ]
+      ],
+      "cellSize": 0.13,
+      "piece": "parademoney",
+      "triangles": 604,
+      "cage_parts": 9,
+      "description": ""
+    },
+    {
+      "name": "paradekoi",
+      "label": "Flying lantern koi",
+      "category": "prop",
+      "height": 1.920059,
+      "bounds": [
+        [
+          -2.568108,
+          0.279179,
+          -1.079468
+        ],
+        [
+          1.62,
+          1.920059,
+          1.079468
+        ]
+      ],
+      "cellSize": 0.15,
+      "piece": "paradekoi",
+      "triangles": 984,
+      "cage_parts": 9,
+      "description": ""
+    },
+    {
+      "name": "paradelotus",
+      "label": "Flying lotus blossom",
+      "category": "prop",
+      "height": 1.816254,
+      "bounds": [
+        [
+          -1.702012,
+          0.147662,
+          -1.483348
+        ],
+        [
+          1.702012,
+          1.816254,
+          1.483348
+        ]
+      ],
+      "cellSize": 0.15,
+      "piece": "paradelotus",
+      "triangles": 1272,
+      "cage_parts": 13,
+      "description": ""
+    },
+    {
+      "name": "paradeleaf",
+      "label": "Flying leaf",
+      "category": "prop",
+      "height": 3.019093,
+      "bounds": [
+        [
+          -0.486164,
+          0.024125,
+          -0.26
+        ],
+        [
+          1.036164,
+          3.019093,
+          0.19
+        ]
+      ],
+      "cellSize": 0.13,
+      "piece": "paradeleaf",
+      "triangles": 340,
+      "cage_parts": 8,
+      "description": ""
+    },
+    {
+      "name": "paradestar",
+      "label": "Flying five-pointed star",
+      "category": "prop",
+      "height": 3.37,
+      "bounds": [
+        [
+          -1.569243,
+          0.385122,
+          -0.22
+        ],
+        [
+          1.569243,
+          3.37,
+          0.22
+        ]
+      ],
+      "cellSize": 0.16,
+      "piece": "paradestar",
+      "triangles": 40,
+      "cage_parts": 1,
+      "description": ""
+    },
+    {
+      "name": "paradecloud",
+      "label": "Floating cloud",
+      "category": "prop",
+      "height": 2.25,
+      "bounds": [
+        [
+          -1.85,
+          0.1,
+          -0.55
+        ],
+        [
+          1.95,
+          2.25,
+          0.55
+        ]
+      ],
+      "cellSize": 0.18,
+      "piece": "paradecloud",
+      "triangles": 360,
+      "cage_parts": 3,
+      "description": ""
+    },
+    {
+      "name": "paradepinwheel",
+      "label": "Flying pinwheel",
+      "category": "prop",
+      "height": 3.583466,
+      "bounds": [
+        [
+          -1.183466,
+          0.06,
+          -0.09
+        ],
+        [
+          1.183466,
+          3.583466,
+          0.33
+        ]
+      ],
+      "cellSize": 0.14,
+      "piece": "paradepinwheel",
+      "triangles": 552,
+      "cage_parts": 6,
+      "description": ""
+    },
+    {
+      "name": "parademoth",
+      "label": "Flying night-post moth",
+      "category": "prop",
+      "height": 2.737003,
+      "bounds": [
+        [
+          -1.824199,
+          0.210433,
+          -0.25
+        ],
+        [
+          1.824199,
+          2.737003,
+          0.25
+        ]
+      ],
+      "cellSize": 0.16,
+      "piece": "parademoth",
+      "triangles": 608,
+      "cage_parts": 7,
+      "description": ""
+    }
+  ],
+  "total_triangles": 19740,
+  "pieces": {
+    "paradecivilian1body": {
+      "triangles": 660,
+      "vertices": 1980,
+      "cage_surface": true,
+      "materials": {
+        "dark": 400,
+        "teal": 128,
+        "cyan_glow": 132
+      }
+    },
+    "paradecivilian1head": {
+      "triangles": 48,
+      "vertices": 144,
+      "cage_surface": true,
+      "materials": {
+        "dark": 48
+      }
+    },
+    "paradecivilian1mask": {
+      "triangles": 144,
+      "vertices": 432,
+      "cage_surface": true,
+      "materials": {
+        "ivory_glow": 48,
+        "dark": 96
+      }
+    },
+    "paradecivilian2body": {
+      "triangles": 564,
+      "vertices": 1692,
+      "cage_surface": true,
+      "materials": {
+        "dark": 320,
+        "teal": 112,
+        "cyan_glow": 132
+      }
+    },
+    "paradecivilian2head": {
+      "triangles": 48,
+      "vertices": 144,
+      "cage_surface": true,
+      "materials": {
+        "dark": 48
+      }
+    },
+    "paradecivilian2mask": {
+      "triangles": 144,
+      "vertices": 432,
+      "cage_surface": true,
+      "materials": {
+        "ivory_glow": 48,
+        "dark": 96
+      }
+    },
+    "paradecivilian3body": {
+      "triangles": 592,
+      "vertices": 1776,
+      "cage_surface": true,
+      "materials": {
+        "dark": 352,
+        "teal": 174,
+        "cyan_glow": 66
+      }
+    },
+    "paradecivilian3head": {
+      "triangles": 144,
+      "vertices": 432,
+      "cage_surface": true,
+      "materials": {
+        "dark": 96,
+        "teal": 48
+      }
+    },
+    "paradecivilian3mask": {
+      "triangles": 156,
+      "vertices": 468,
+      "cage_surface": true,
+      "materials": {
+        "ivory_glow": 48,
+        "dark": 108
+      }
+    },
+    "paradecivilian4body": {
+      "triangles": 738,
+      "vertices": 2214,
+      "cage_surface": true,
+      "materials": {
+        "dark": 496,
+        "teal": 80,
+        "cyan_glow": 162
+      }
+    },
+    "paradecivilian4head": {
+      "triangles": 48,
+      "vertices": 144,
+      "cage_surface": true,
+      "materials": {
+        "dark": 48
+      }
+    },
+    "paradecivilian4mask": {
+      "triangles": 144,
+      "vertices": 432,
+      "cage_surface": true,
+      "materials": {
+        "ivory_glow": 48,
+        "dark": 96
+      }
+    },
+    "paradedead1body": {
+      "triangles": 578,
+      "vertices": 1734,
+      "cage_surface": true,
+      "materials": {
+        "dark": 512,
+        "violet_glow": 66
+      }
+    },
+    "paradedead1head": {
+      "triangles": 144,
+      "vertices": 432,
+      "cage_surface": true,
+      "materials": {
+        "dark": 144
+      }
+    },
+    "paradedead1mask": {
+      "triangles": 156,
+      "vertices": 468,
+      "cage_surface": true,
+      "materials": {
+        "ivory_glow": 48,
+        "dark": 108
+      }
+    },
+    "paradedead2body": {
+      "triangles": 544,
+      "vertices": 1632,
+      "cage_surface": true,
+      "materials": {
+        "dark": 448,
+        "violet_glow": 96
+      }
+    },
+    "paradedead2head": {
+      "triangles": 192,
+      "vertices": 576,
+      "cage_surface": true,
+      "materials": {
+        "dark": 144,
+        "violet_glow": 48
+      }
+    },
+    "paradedead2mask": {
+      "triangles": 144,
+      "vertices": 432,
+      "cage_surface": true,
+      "materials": {
+        "ivory_glow": 48,
+        "dark": 96
+      }
+    },
+    "paradedead3body": {
+      "triangles": 466,
+      "vertices": 1398,
+      "cage_surface": true,
+      "materials": {
+        "dark": 400,
+        "violet_glow": 66
+      }
+    },
+    "paradedead3head": {
+      "triangles": 144,
+      "vertices": 432,
+      "cage_surface": true,
+      "materials": {
+        "dark": 144
+      }
+    },
+    "paradedead3mask": {
+      "triangles": 144,
+      "vertices": 432,
+      "cage_surface": true,
+      "materials": {
+        "ivory_glow": 48,
+        "dark": 96
+      }
+    },
+    "paradedead4body": {
+      "triangles": 578,
+      "vertices": 1734,
+      "cage_surface": true,
+      "materials": {
+        "dark": 512,
+        "violet_glow": 66
+      }
+    },
+    "paradedead4head": {
+      "triangles": 144,
+      "vertices": 432,
+      "cage_surface": true,
+      "materials": {
+        "dark": 144
+      }
+    },
+    "paradedead4mask": {
+      "triangles": 156,
+      "vertices": 468,
+      "cage_surface": true,
+      "materials": {
+        "ivory_glow": 48,
+        "dark": 108
+      }
+    },
+    "paradeai1body": {
+      "triangles": 630,
+      "vertices": 1890,
+      "cage_surface": true,
+      "materials": {
+        "dark": 368,
+        "gold_glow": 130,
+        "cyan_glow": 132
+      }
+    },
+    "paradeai1head": {
+      "triangles": 48,
+      "vertices": 144,
+      "cage_surface": true,
+      "materials": {
+        "dark": 48
+      }
+    },
+    "paradeai1mask": {
+      "triangles": 192,
+      "vertices": 576,
+      "cage_surface": true,
+      "materials": {
+        "ivory_glow": 96,
+        "dark": 96
+      }
+    },
+    "paradeai2body": {
+      "triangles": 500,
+      "vertices": 1500,
+      "cage_surface": true,
+      "materials": {
+        "dark": 152,
+        "teal": 96,
+        "gold_glow": 252
+      }
+    },
+    "paradeai2head": {
+      "triangles": 48,
+      "vertices": 144,
+      "cage_surface": true,
+      "materials": {
+        "dark": 48
+      }
+    },
+    "paradeai2mask": {
+      "triangles": 156,
+      "vertices": 468,
+      "cage_surface": true,
+      "materials": {
+        "ivory_glow": 48,
+        "dark": 108
+      }
+    },
+    "paradeai3body": {
+      "triangles": 370,
+      "vertices": 1110,
+      "cage_surface": true,
+      "materials": {
+        "dark": 208,
+        "teal": 48,
+        "cyan_glow": 66,
+        "gold_glow": 48
+      }
+    },
+    "paradeai3head": {
+      "triangles": 174,
+      "vertices": 522,
+      "cage_surface": true,
+      "materials": {
+        "teal": 48,
+        "cyan_glow": 126
+      }
+    },
+    "paradeai3mask": {
+      "triangles": 192,
+      "vertices": 576,
+      "cage_surface": true,
+      "materials": {
+        "ivory_glow": 48,
+        "dark": 144
+      }
+    },
+    "paradeai4body": {
+      "triangles": 386,
+      "vertices": 1158,
+      "cage_surface": true,
+      "materials": {
+        "dark": 176,
+        "teal": 48,
+        "violet_glow": 96,
+        "gold_glow": 66
+      }
+    },
+    "paradeai4head": {
+      "triangles": 48,
+      "vertices": 144,
+      "cage_surface": true,
+      "materials": {
+        "dark": 48
+      }
+    },
+    "paradeai4mask": {
+      "triangles": 144,
+      "vertices": 432,
+      "cage_surface": true,
+      "materials": {
+        "ivory_glow": 48,
+        "dark": 96
+      }
+    },
+    "paradehelper1body": {
+      "triangles": 628,
+      "vertices": 1884,
+      "cage_surface": true,
+      "materials": {
+        "ivory_glow": 448,
+        "gold_glow": 84,
+        "dark": 96
+      }
+    },
+    "paradehelper1head": {
+      "triangles": 48,
+      "vertices": 144,
+      "cage_surface": true,
+      "materials": {
+        "cream": 48
+      }
+    },
+    "paradehelper1mask": {
+      "triangles": 192,
+      "vertices": 576,
+      "cage_surface": true,
+      "materials": {
+        "ivory_glow": 48,
+        "dark": 144
+      }
+    },
+    "paradehelper2body": {
+      "triangles": 552,
+      "vertices": 1656,
+      "cage_surface": true,
+      "materials": {
+        "ivory_glow": 432,
+        "cyan_glow": 96,
+        "gold_glow": 24
+      }
+    },
+    "paradehelper2head": {
+      "triangles": 48,
+      "vertices": 144,
+      "cage_surface": true,
+      "materials": {
+        "cream": 48
+      }
+    },
+    "paradehelper2mask": {
+      "triangles": 192,
+      "vertices": 576,
+      "cage_surface": true,
+      "materials": {
+        "ivory_glow": 48,
+        "dark": 144
+      }
+    },
+    "paradehelper3body": {
+      "triangles": 684,
+      "vertices": 2052,
+      "cage_surface": true,
+      "materials": {
+        "ivory_glow": 624,
+        "gold_glow": 60
+      }
+    },
+    "paradehelper3head": {
+      "triangles": 48,
+      "vertices": 144,
+      "cage_surface": true,
+      "materials": {
+        "cream": 48
+      }
+    },
+    "paradehelper3mask": {
+      "triangles": 192,
+      "vertices": 576,
+      "cage_surface": true,
+      "materials": {
+        "ivory_glow": 48,
+        "dark": 144
+      }
+    },
+    "paradehelper4body": {
+      "triangles": 448,
+      "vertices": 1344,
+      "cage_surface": true,
+      "materials": {
+        "ivory_glow": 448
+      }
+    },
+    "paradehelper4head": {
+      "triangles": 48,
+      "vertices": 144,
+      "cage_surface": true,
+      "materials": {
+        "cream": 48
+      }
+    },
+    "paradehelper4mask": {
+      "triangles": 192,
+      "vertices": 576,
+      "cage_surface": true,
+      "materials": {
+        "ivory_glow": 48,
+        "dark": 144
+      }
+    },
+    "paradecandle": {
+      "triangles": 360,
+      "vertices": 1080,
+      "cage_surface": true,
+      "materials": {
+        "gold_glow": 120,
+        "ivory_glow": 192,
+        "dark": 48
+      }
+    },
+    "paradelantern": {
+      "triangles": 1248,
+      "vertices": 3744,
+      "cage_surface": true,
+      "materials": {
+        "gold_glow": 216,
+        "dark": 144,
+        "ivory_glow": 888
+      }
+    },
+    "parademoon": {
+      "triangles": 220,
+      "vertices": 660,
+      "cage_surface": true,
+      "materials": {
+        "ivory_glow": 220
+      }
+    },
+    "paradeenvelope": {
+      "triangles": 172,
+      "vertices": 516,
+      "cage_surface": true,
+      "materials": {
+        "ivory_glow": 12,
+        "dark": 20,
+        "gold_glow": 20,
+        "red_glow": 120
+      }
+    },
+    "parademoney": {
+      "triangles": 604,
+      "vertices": 1812,
+      "cage_surface": true,
+      "materials": {
+        "green_glow": 176,
+        "gold_glow": 32,
+        "dark": 396
+      }
+    },
+    "paradekoi": {
+      "triangles": 984,
+      "vertices": 2952,
+      "cage_surface": true,
+      "materials": {
+        "ivory_glow": 312,
+        "orange_glow": 432,
+        "dark": 240
+      }
+    },
+    "paradelotus": {
+      "triangles": 1272,
+      "vertices": 3816,
+      "cage_surface": true,
+      "materials": {
+        "pink_glow": 576,
+        "ivory_glow": 576,
+        "gold_glow": 120
+      }
+    },
+    "paradeleaf": {
+      "triangles": 340,
+      "vertices": 1020,
+      "cage_surface": true,
+      "materials": {
+        "green_glow": 96,
+        "gold_glow": 244
+      }
+    },
+    "paradestar": {
+      "triangles": 40,
+      "vertices": 120,
+      "cage_surface": true,
+      "materials": {
+        "gold_glow": 40
+      }
+    },
+    "paradecloud": {
+      "triangles": 360,
+      "vertices": 1080,
+      "cage_surface": true,
+      "materials": {
+        "ivory_glow": 360
+      }
+    },
+    "paradepinwheel": {
+      "triangles": 552,
+      "vertices": 1656,
+      "cage_surface": true,
+      "materials": {
+        "gold_glow": 144,
+        "cyan_glow": 96,
+        "pink_glow": 96,
+        "green_glow": 96,
+        "ivory_glow": 120
+      }
+    },
+    "parademoth": {
+      "triangles": 608,
+      "vertices": 1824,
+      "cage_surface": true,
+      "materials": {
+        "gold_glow": 224,
+        "ivory_glow": 192,
+        "pink_glow": 192
+      }
+    }
+  },
+  "preserved_payload_definitions": {
+    "asset": "335db1eeccf1e31f2c18d63e6295c9487518a3bdf92eaaee91afc67b95709dc0",
+    "library_images/Map #1-image": "f438da4678653886397147aefef1c4cc7076b70722c87762d9572ce97fbf0f35",
+    "library_images/Map #2-image": "071bd601bc6c1fbb363a1e87f8ce0670a8f9cfcdcafef39414db6d7eeab2f9dc",
+    "library_images/MOSAIC Asian house diffuse RGB-image": "e77c3fb6af622d526b150bc824c022ec8d6d3164ce89142f4be03219300bc487",
+    "library_materials/_01 - Default": "3751cb95b5dd3cfd70e0836edce856d6cafa2ad361f427cc3a3a25d09d0425ce",
+    "library_materials/AsianLantern_ivory_glow": "e444e1a11b91cdeb1406536d4b81e53416b51870369dacbf34dd3912f686644c",
+    "library_materials/AsianLantern_brass": "d0d935da231483ec0254ab4a472ca406bc58acef9ae1b7e56eee65dda9f0eb36",
+    "library_materials/AsianLantern_gold_glow": "375aa881c85aee295c809f74012dfebedb8a30dc25a001502f09b04dd50f2ddb",
+    "library_materials/AsianLantern_dark": "4da7f1bf7b7260b38be64a8cf50ae9048eda76b3beafafb2e3356d1183058dbf",
+    "library_materials/AsianLantern_pink_glow": "843ae3526d07ac410415f28b362a26cb719c9a4eca9b27f1fd085bd6ab093b52",
+    "library_materials/AsianLantern_violet_glow": "ea7a050a9f4e352aefe76e61a3a8f347e882e06f93eab25461f66ac7bc0d958a",
+    "library_materials/AsianLantern_red_trim": "ba20460517d49e2d27f2fed88edb9f5ca45f957f4606e938af18599bc0823c84",
+    "library_materials/AsianLantern_wood": "2bd43c418ae4e33189a79a9eb5bd53ab0a59325b3284018f40330f8d5dc318ad",
+    "library_materials/AsianLantern_teal": "9c8f769e949827c435045d756ee6cca23b81ac6c655051696281a81b49f71669",
+    "library_materials/Asian tex2 RED only-emission-Material": "58b38e5e75242586222d1887cc9a252ec181cb29543ae447bb7715aa6f6f7ef4",
+    "library_effects/_01 - Default-fx": "23f3c8b4fd44bf16ad1d2f9158846a5d661d671e2b58b2bd235e358b3980a037",
+    "library_effects/AsianLantern_ivory_glow-fx": "ded7228312c9a679eba5efbb4c987ee78d89c6bdd3d2a4ecc9742c4a6e964512",
+    "library_effects/AsianLantern_brass-fx": "2edf2c22a43bcd088ab1cbe0e0ef8f6ac8cf0a167b1cd0102cca352912ec0a24",
+    "library_effects/AsianLantern_gold_glow-fx": "2b2f25632a07784e78365646dd0ee588586b3962e4a3a78ea1cb5708ea76fd0b",
+    "library_effects/AsianLantern_dark-fx": "bad4edca9e80e001e1978fca2351051345ec205ebc3231862bfcc694ab84ccdb",
+    "library_effects/AsianLantern_pink_glow-fx": "fb444c094f071fbf191398f236c3b30e835f49535dc975f1b0751da996fd7eb9",
+    "library_effects/AsianLantern_violet_glow-fx": "9e33a247673ce4911beb44180ef968ba91919acc6b933723709fd04fda63e975",
+    "library_effects/AsianLantern_red_trim-fx": "2fad86ebc43027e9cf238e9f8709d9fb0d6863581ea5a51607ce162256d7c864",
+    "library_effects/AsianLantern_wood-fx": "0b82f6e866e8cd4cffdeb801ea6b89cd087b8f22216978b9aaf0807a8e44d7ca",
+    "library_effects/AsianLantern_teal-fx": "9d60a81eafbc8a1f173cc9176651b72c86e5737fadb98031e892fe4f3fc471af",
+    "library_effects/Asian tex2 RED only-emission-Material-fx": "9d722829dec6dd587859f946aa805a49d7e8f8931cc21e961faa7a6169fd7a66",
+    "library_geometries/center-lib": "51fb674c0e78872408f6395b81dba5959a9020d1761b41dc4cb5bf1a1724d1c9",
+    "library_geometries/Float21-lib": "0444864176640953630ce4f0ab3eec9bac92a719e4888b7338c297fe0e033ad1",
+    "library_geometries/Float23-lib": "ccc797838b7c5cefd417fa304411440f9a82d48c60d88145e2176ef739446af6",
+    "library_geometries/Float22-lib": "e14ad981baf69664da0810040b40bbb073bb724ebe6c81460d67adfbed82b747",
+    "library_geometries/Float01-lib": "96da2daaee33d1ae5eef6dcd8a538d7a2afb0194c9c43b33a5924fcd5908da8c",
+    "library_geometries/Float1Sub1-lib": "1fdc02b7b9405c794ff15a1fb2c68952d3d6920ed6ea735ba14bbe1bc5d1c5bb",
+    "library_geometries/Float02-lib": "70e644d4770deb0408b2024f963291dba71a10984b67dab4052c84e989826eaa",
+    "library_geometries/Float2Sub1-lib": "b5f57ddfb05fd4dcdfacbaa52d3bee58bd09ee4bef948cf9965b02b6fe951fd8",
+    "library_geometries/Float2Sub9-lib": "f7318bfe34e8cb8747b5093a3ccd0f00491c81b1b8773a8358afb61623c8ff5b",
+    "library_geometries/Float2Sub8-lib": "e257b40dc38a49cc07d52a2d50b6d54d26ac2bf1dd8d0697bcebde5a3d10b405",
+    "library_geometries/Float2Sub7-lib": "8bf565a51f25ba5081614638ee1b77a3bc89ee5f3eb9967a9a7ed8052bad349e",
+    "library_geometries/Float2Sub6-lib": "b0293d498fd23f42c5a11798c4ba491fbccf392f3ca0284e76192201967ef47a",
+    "library_geometries/Float2Sub5-lib": "2275cab4077aee45bfadf5c53cd7986a821403bbfd2623635bbb416414d1301b",
+    "library_geometries/Float2Sub4-lib": "93e67996ef37fb484a52a92d5833237062e8c26089e049454b42aa50518c2822",
+    "library_geometries/Float2Sub3-lib": "84a5d0a7ba860ef1154fa3da86e0a0c7606a4cef86392dc5c7b0721b82a0f5be",
+    "library_geometries/Float2Sub2-lib": "a0ced4f9f8108fca691322cc83fa436d5687b6ff9a7265add7b1dba8e7a32140",
+    "library_geometries/Float03-lib": "b72f7dc707866477808ee04ad599c534f59fd5d215529bffc7d7e6f5cf3d5a5e",
+    "library_geometries/Float3Sub1-lib": "7ab5e341a9662bd01140ef93bdc9a27df9fb07808ce2f86c328c793789a251c9",
+    "library_geometries/Float3Sub3-lib": "99b52f59d8b053f3a3c22cb56c919441784b44ecae5431e4b98549ba92973f2c",
+    "library_geometries/Float3Sub2-lib": "634f583c8259c0517e723cde6a7bf6199647a320d1ab4a35917df665471ec4b8",
+    "library_geometries/Float3Sub5-lib": "e310c0efd3b131cd453c208fe2d7e492eb6bebeadf06c0f6213e79d410168ff9",
+    "library_geometries/Float3Sub4-lib": "dbd9da62879518911107cf5442319f0e47ccf27ee9e4146b298c47f7cb1537a1",
+    "library_geometries/Float04-lib": "b8b7eca07a48ac6ceba691b778cef78f4f8b62188e61e961fff2522f31bf1b28",
+    "library_geometries/Float05-lib": "f12290c371796087061b0f2c685c207c7cfcee633208ecf21a1f12b33632a086",
+    "library_geometries/Float06-lib": "6bab4e746317b2a44f3db482820623593c1e739bba063cc0b03f28a951d81d31",
+    "library_geometries/Float07-lib": "cbe10f44d248e5d8bee0f888a900d1ae5251685d94b81578cbccfff0c45ea209",
+    "library_geometries/Float08-lib": "fd0639016d0036e2ffb496eeb20cb58db2d6117f25e0ea470c1804ff7ca76a9d",
+    "library_geometries/Float09-lib": "728794c2dbebc02f7d172a011b8570d20c5fbaff724227f05d057fe93402a1e5",
+    "library_geometries/Float10-lib": "14a434040e2f63911be7b0b90a1484a0d27edac5b9191e5a9e04cf534105bd3f",
+    "library_geometries/Float11-lib": "f182d1cde2f3d731d92df917e0511ebdd7f5ac51c0d1b663e2a72d519202ffda",
+    "library_geometries/Float14-lib": "4fad81ca9082550911b91b20660c03a80e1a752d4467aa782cb669b0c60db36a",
+    "library_geometries/Float15-lib": "7f35b041b1ec941c808b8ce005f3d42b85dea13a6bd52919dd6879c6f80b9762",
+    "library_geometries/Float16-lib": "e6ab3fd82f8c46d2d99cf25d59d60565f5fa0833154b9768e1b72f00666ede41",
+    "library_geometries/Float17-lib": "f5272c4064830bda057b2eaac2e209c22a589a52f192c06fc7966e41fdb2ac1e",
+    "library_geometries/Float13-lib": "3c650282d7d6f845d96d3b72c78e13790ea97db6ffdae3941d756e15fbbe2ce9",
+    "library_geometries/Float18-lib": "39194a0c6fd91d876135daf70c744f0acd7f19712b8d3450b607d143759ab581",
+    "library_geometries/Float19-lib": "5655b62248b7d65cff311c206dc2a0e8bed6a339de3bb6a6c242636b529096c9",
+    "library_geometries/Float12-lib": "bd97a79e5620394cf90ea2a8d71004493676984a27d717d4e1e348ffd0003b3a",
+    "library_geometries/Float20-lib": "15f34ae54bda37d970f3078928a10a154645a7c135d33805372cac6fee8ca4b8",
+    "library_geometries/Float24-lib": "a41918d22a8c7554930568c051b317f29a43dd0fc066f2df2258f54fe643eecd",
+    "library_geometries/Float24Sub1-lib": "907d72e5d4bc5597a40cf1277e90d70599a428c4a2a1c2e50605b66e7c296feb",
+    "library_visual_scenes/truckPayloadParade/center": "99f8408a84e567ba0c072e94b7228603f3881f6629994e1a0a2248ec45c66c3a",
+    "library_visual_scenes/truckPayloadParade/extra": "2fa3642ab355f4d27daa6c3f7de3843c9eb9474161d26214f3f72332a5c5a07f",
+    "scene": "c7b06f7782a7d09f48414375250d7afc6c1c778d3235b7900858929ce76c79ca"
+  },
+  "standalone_sha256": "85f16ff104ae7f85460f4e79c7249f724f19f438dd8bd979222e816e0e1b06c3",
+  "payload_sha256": "a3b0a6b9866f449036a056b85ba67b718216861dffd9a2f41086ed91e9553329",
+  "atlas_source": "tools/parade_holograms/palette.json",
+  "authoring": "Editable connected spline cages; native Max Surface/Shell/UVW modifiers are retained"
+}

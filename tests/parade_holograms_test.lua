@@ -280,6 +280,10 @@ check('gadget reload and shutdown clean only projection units',function()
     local env={gadget={},Spring=f.S,GG=f.G,Game={mapSizeX=4096,mapSizeZ=4096},
         UnitDefNames={paradehologram={id=7}},VFS={Include=dofile},
         gadgetHandler={IsSyncedCode=function() return true end}}
+    env.VFS.Include=function(path)
+        if path == 'luarules/configs/parade_hologram_scene.lua' then return {enabled=false} end
+        return dofile(path)
+    end
     loadEnv('luarules/gadgets/gfx_parade_holograms.lua',env)
     env.gadget:Initialize(); assert(#f.destroyed==1 and f.destroyed[1]==90)
     env.gadget:GameFrame(1); assert(#f.created==0)

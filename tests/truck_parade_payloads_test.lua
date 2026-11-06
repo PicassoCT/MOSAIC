@@ -9,7 +9,7 @@ for tag in modelText:gmatch("<node%s+([^>]+)>") do
     assert(not exportedPieces[name], "duplicate exported piece " .. name)
     pieceCount = pieceCount + 1; exportedPieces[name] = pieceCount
 end
-assert(pieceCount == 41 and exportedPieces.center)
+assert(pieceCount >= 41 and exportedPieces.center)
 assert(#catalog.variants == 24)
 local function loadEnv(path, env)
     setmetatable(env, {__index = _G})
@@ -185,7 +185,7 @@ check("all 24 exported floats select with their exact children and only Float24 
         assert(#f.turns == turns and #f.spins == spins, "unselected animation kept running")
     end
     assert(animated == 16)
-    for name in pairs(exportedPieces) do assert(name == "center" or seen[name], name) end
+    for name in pairs(exportedPieces) do assert(name == "center" or seen[name] or name:match("^parade"), name) end
 end)
 
 check("missing center or articulated child fails before starting animations", function()

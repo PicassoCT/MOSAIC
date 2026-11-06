@@ -59,7 +59,8 @@ def main():
             if len(node.mesh_indices): imported.add(node.name)
             for child in node.children: visit(child)
         visit(scene.root_node)
-        assert imported == set(pieces)
+        assert set(pieces) <= imported
+        assert all(name.startswith('parade') for name in imported - set(pieces))
         print('PASS: native Assimp piece import')
 
 

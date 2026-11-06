@@ -2,7 +2,7 @@
   "schema": 2,
   "source": "User-authored FBX COLLADA export, 2026-11-05",
   "generator": "tools/truck_parade_payloads/audit_export.py --write-metadata",
-  "model_sha256": "136e0ca782dbc12298427af5216d208c43690385b28c6c6f03231d3b4286afdb",
+  "model_sha256": "a3b0a6b9866f449036a056b85ba67b718216861dffd9a2f41086ed91e9553329",
   "unit_meter": 0.0254,
   "culling": {
     "radius": 53,
