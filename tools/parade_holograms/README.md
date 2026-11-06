@@ -81,8 +81,55 @@ with the carrier.
 | Civilians | Stationary bodies and a very slow head inclination of at most 1.5 degrees |
 | Dead | Slow 0.10-unit hover and a small head inclination |
 | AI spirits | Slow 0.14-unit hover and a small head inclination |
-| Airborne props | Gentle 0.18-unit float and 2-degree inclination |
-| Helpers | A ten-second cycle with more than half spent resting; short approach and return trips, 0.58-unit hops, and distinct tending, gathering, guiding or inspection gestures |
+| Lanterns | Six per station: two stationary, two rising and two descending; three fixed identities and three that alternate between two modes |
+| Koi | Gentle 0.18-unit hover at a fixed horizontal position; no rising/falling lifecycle |
+| Banknotes | Continuous downward travel from the configured height; fade at the ground and restart above only while invisible |
+| Other airborne props | Gentle 0.18-unit float and 2-degree inclination |
+| Lantern daemons | Three helpers approach a placement point, gesture, release a pair of lanterns, and return; over half of each cycle is spent resting |
+| Lookout helper | Retains its original ten-second inspection cycle, short trips and bounded hops |
+
+### Lantern distribution and placement
+
+The six lantern identities share a station-local clock:
+
+| Identity | First mode | Second mode |
+| --- | --- | --- |
+| Fixed 1 | Stationary | Stationary |
+| Fixed 2 | Rising | Rising |
+| Fixed 3 | Descending | Descending |
+| Switching 1 | Stationary | Rising |
+| Switching 2 | Rising | Descending |
+| Switching 3 | Descending | Stationary |
+
+The switching identities change together every **1.6 seconds**, preserving two
+identities in each mode. Their heights and vertical velocities remain continuous
+at switches. Stationary lanterns have no vertical bob or tilt. Ground-born
+lanterns appear at the daemons' placement points **1.2 seconds** after a station
+forms, during the placement gesture; they do not appear with the initial scenery.
+Terrain is sampled at the actual placement or moving-helper coordinates.
+
+Each cohort lasts **6.4 seconds**, fades out, and is replaced by the same six
+identities during the next daemon release. Repositioning happens at zero opacity;
+fixed rising and falling lanterns never visibly reverse. Retired stations cannot
+release a new cohort. The existing two-station history bounds each payload to at
+most twelve lanterns during a station transition. Timings are deliberately short
+enough to see both placement and switching while a moving parade passes.
+
+The distance/capacity billboard renderer retains its existing artwork and uses
+the same lantern cohort, world anchors and release timing for lantern-themed
+floats. Zooming out therefore does not restore the former arbitrary bobbing.
+
+### Petals and falling paper from buildings
+
+The existing building showers retain their textures and particle counts. Flower
+petals launch downward and use sampled map wind as horizontal acceleration.
+Each new burst samples the current wind; already emitted particles retain that
+sample. Inflation banknotes launch straight downward with downward gravity.
+Confetti and origami retain their original outward toss and variation.
+
+These are the existing `CSimpleParticleSystem` effects: petals and notes pass
+through ground level and become terrain-occluded, then expire. They do not leave
+persistent objects on the ground.
 
 This is unsynced visual behavior. It issues no game orders, adds no simulated
 units and does not use MoveCtrl. Visibility continues to follow the actual

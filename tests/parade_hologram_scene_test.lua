@@ -5,6 +5,17 @@ local config = dofile("luarules/configs/parade_hologram_scene.lua")
 local model = dofile("scripts/lib_truck_parade_model.lua")
 local function check(name, test) test(); print("PASS: " .. name) end
 local function close(a, b) return math.abs(a - b) < 0.000001 end
+local lanterns, emitters = {}, {}
+for _, item in ipairs(config.props) do
+    if item.model == "lantern" then lanterns[#lanterns + 1] = item end
+end
+table.sort(lanterns, function(a, b) return a.lanternSlot < b.lanternSlot end)
+for _, item in ipairs(config.figures) do
+    if item.lanternEmitter then emitters[item.model] = item end
+end
+local function stationAt(seconds)
+    return scene.updateStations({}, 20, 100, 200, 0, 1, seconds, config)[1]
+end
 
 check("all four spectator families have four complete model choices and every motif remains", function()
     local counts, models, props = {}, {}, {}
@@ -101,6 +112,281 @@ check("helpers pause, approach a task, gesture and return with bounded hops", fu
             end
         end
     end
+end)
+
+check("six daemon-owned lanterns retain exact thirds and half fixed behavior across switches", function()
+    assert(#lanterns == 6, "one complete cohort needs six lantern identities")
+    local sources, histories, fixed = {}, {}, {}
+    for index, item in ipairs(lanterns) do
+        assert(item.lanternSlot == index and item.motion == "lantern")
+        assert(emitters[item.emitter], "each lantern needs a real helper daemon")
+        sources[item.emitter] = (sources[item.emitter] or 0) + 1
+        histories[index] = {}
+    end
+    local sourceCount = 0
+    for _, count in pairs(sources) do assert(count == 2); sourceCount = sourceCount + 1 end
+    assert(sourceCount == 3, "three daemons each place one pair")
+    local station, settings = stationAt(17.25), config.lanterns
+    local interval = settings.switchSeconds
+    for epoch = 0, 15 do
+        for _, offset in ipairs({0.00001, interval / 2, interval - 0.00001}) do
+            local seconds = station.born + settings.releaseSeconds + epoch * interval + offset
+            local counts, fixedCount, opacity = {stationary = 0, up = 0, down = 0}, 0
+            for index, item in ipairs(lanterns) do
+                local pose = scene.lanternPose(station, item, seconds, config)
+                assert(counts[pose.lanternMode], "every released lantern needs a supported mode")
+                counts[pose.lanternMode] = counts[pose.lanternMode] + 1
+                histories[index][pose.lanternMode] = true
+                if pose.fixedBehavior then fixedCount = fixedCount + 1 end
+                if fixed[index] == nil then fixed[index] = pose.fixedBehavior end
+                assert(fixed[index] == pose.fixedBehavior, "an identity cannot change its fixed/switching class")
+                if opacity then assert(close(pose.opacity, opacity), "the cohort must fade together") end
+                opacity = pose.opacity
+            end
+            assert(counts.stationary == 2 and counts.up == 2 and counts.down == 2,
+                "switches must preserve one third in each mode")
+            assert(fixedCount == 3, "exactly half retain their original behavior")
+        end
+    end
+    local fixedModes, switchingPairs = {}, {}
+    for index, history in ipairs(histories) do
+        local modes = {}; for mode in pairs(history) do modes[#modes + 1] = mode end
+        table.sort(modes)
+        if fixed[index] then
+            assert(#modes == 1, "a fixed lantern must never reverse or become stationary")
+            fixedModes[modes[1]] = (fixedModes[modes[1]] or 0) + 1
+        else
+            assert(#modes == 2, "each switching lantern uses exactly two behaviors")
+            local pair = table.concat(modes, ":")
+            switchingPairs[pair] = (switchingPairs[pair] or 0) + 1
+        end
+    end
+    assert(fixedModes.stationary == 1 and fixedModes.up == 1 and fixedModes.down == 1)
+    assert(switchingPairs["stationary:up"] == 1 and switchingPairs["down:up"] == 1
+        and switchingPairs["down:stationary"] == 1)
+end)
+
+check("lantern heights follow their active mode continuously and recycle only while invisible", function()
+    local station, settings = stationAt(11.5), config.lanterns
+    local interval, period = settings.switchSeconds, 4 * settings.switchSeconds
+    local release, epsilon = station.born + settings.releaseSeconds, 0.00001
+    for _, item in ipairs(lanterns) do
+        for epoch = 0, 3 do
+            local previous
+            for _, fraction in ipairs({0.1, 0.3, 0.7, 0.9}) do
+                local pose = scene.lanternPose(station, item, release + (epoch + fraction) * interval, config)
+                assert(pose.y >= 0 and pose.y <= settings.airborneHeight + settings.speed * period)
+                assert(pose.x == item.x and pose.z == item.z)
+                if previous then
+                    local delta = pose.y - previous.y
+                    assert(pose.lanternMode == previous.lanternMode)
+                    if pose.lanternMode == "stationary" then
+                        assert(close(delta, 0) and pose.tilt == 0 and pose.headTilt == 0,
+                            "stationary lanterns cannot retain the generic bob or tilt")
+                    elseif pose.lanternMode == "up" then assert(delta > 0, "rising lantern moved down or stopped")
+                    else assert(delta < 0, "falling lantern moved up or stopped") end
+                end
+                previous = pose
+            end
+        end
+        for epoch = 1, 3 do
+            local boundary = release + epoch * interval
+            local before = scene.lanternPose(station, item, boundary - epsilon, config)
+            local at = scene.lanternPose(station, item, boundary, config)
+            local after = scene.lanternPose(station, item, boundary + epsilon, config)
+            assert(math.abs(after.y - before.y) < 0.0001, "a behavior switch teleported the lantern")
+            if not at.fixedBehavior then
+                assert(math.abs((at.y - before.y) / epsilon) < 0.001
+                    and math.abs((after.y - at.y) / epsilon) < 0.001,
+                    "switching motion must ease to rest at the mode boundary")
+            end
+        end
+        local boundary = release + period
+        for _, offset in ipairs({-epsilon, 0, epsilon}) do
+            local pose = scene.lanternPose(station, item, boundary + offset, config)
+            assert(pose.opacity < 0.000001, "height may reset only after the whole cohort fades out")
+        end
+        if item.lanternSlot == 1 then
+            assert(scene.lanternPose(station, item, release + period / 2, config).y == 0)
+        elseif item.lanternSlot == 3 then
+            assert(scene.lanternPose(station, item, boundary - epsilon, config).y < 0.001,
+                "the fixed falling lantern reaches ground at the invisible recycle")
+        end
+    end
+end)
+
+check("ground lanterns appear during a visible daemon gesture and stay at the placement point", function()
+    local station, settings = stationAt(100.25), config.lanterns
+    station.dx, station.dz = 0.6, 0.8
+    local release, ground = station.born + settings.releaseSeconds, 6.75
+    local pairsBySource = {}
+    for _, item in ipairs(lanterns) do
+        assert(scene.worldPose(station, item, release - 0.00001, 5, ground, config).opacity == 0)
+        assert(scene.worldPose(station, item, release, 5, ground, config).opacity < 0.000001)
+        local placed = scene.worldPose(station, item, release + settings.fadeSeconds, 5, ground, config)
+        assert(placed.opacity > 0 and placed.spawnedBy == item.emitter and close(placed.spawnTime, release))
+        pairsBySource[item.emitter] = pairsBySource[item.emitter] or {}
+        table.insert(pairsBySource[item.emitter], placed)
+        if item.lanternSlot == 1 or item.lanternSlot == 4 then
+            assert(close(placed.y, ground), "the initial stationary pair must actually touch ground")
+        end
+    end
+    for modelName, pair in pairs(pairsBySource) do
+        local emitter = emitters[modelName]
+        local task = scene.worldPose(station, emitter, release, 5, ground, config)
+        assert(task.activity == "spawn_lanterns" and math.abs(task.headTilt) > 17
+            and math.abs(task.tilt) > 9, "a ground appearance needs a visible placement gesture")
+        local direction = emitter.x < 0 and 1 or -1
+        local middleX, middleZ = (pair[1].x + pair[2].x) / 2, (pair[1].z + pair[2].z) / 2
+        assert(close(middleX - task.x, station.dz * direction * settings.reach)
+            and close(middleZ - task.z, -station.dx * direction * settings.reach),
+            "the pair must be placed within the daemon's reach, in the station's rotated frame")
+        local separation = math.sqrt((pair[1].x - pair[2].x)^2 + (pair[1].z - pair[2].z)^2)
+        assert(close(separation, 2 * settings.pairSpacing))
+        local rested = scene.worldPose(station, emitter, station.born + 3, 5, ground, config)
+        assert(rested.activity == "rest" and close(rested.y, ground))
+        assert(not close(task.x, rested.x) or not close(task.z, rested.z), "the daemon should return after placing")
+    end
+    local early = scene.worldPose(station, lanterns[1], release + settings.fadeSeconds, 5, ground, config)
+    local later = scene.worldPose(station, lanterns[1], station.born + 3, 5, ground, config)
+    assert(close(early.x, later.x) and close(early.y, later.y) and close(early.z, later.z),
+        "a placed ground lantern must not follow the departing daemon")
+end)
+
+check("emitting daemons retain a long pause and the fourth helper keeps its original task", function()
+    local station = stationAt(0)
+    station.x, station.z = 0, 0
+    local period = 4 * config.lanterns.switchSeconds
+    for _, item in ipairs(config.figures) do
+        if item.category == "helper" then
+            local resting = 0
+            for tick = 0, 639 do
+                local seconds = tick * period / 640
+                local pose = scene.worldPose(station, item, seconds, 5, 0, config)
+                if item.lanternEmitter then
+                    if pose.activity == "rest" then resting = resting + 1 end
+                    assert(pose.y >= -0.000001 and pose.y <= 0.350001)
+                else
+                    local original = scene.pose(item, seconds, 5)
+                    assert(pose.activity == original.activity and pose.x == original.x
+                        and pose.y == original.y and pose.z == original.z
+                        and pose.headTilt == original.headTilt and pose.tilt == original.tilt)
+                end
+            end
+            if item.lanternEmitter then
+                assert(resting > 320, "daemons must genuinely pause for most of a cycle")
+                local retiring = stationAt(0)
+                local duringApproach = period + config.lanterns.approachSeconds / 2
+                local before = scene.worldPose(retiring, item, duringApproach, 5, 0, config)
+                retiring.retired = duringApproach
+                local after = scene.worldPose(retiring, item, duringApproach, 5, 0, config)
+                assert(before.activity == "approach" and after.activity == before.activity
+                    and close(before.x, after.x) and close(before.y, after.y) and close(before.z, after.z),
+                    "retirement should fade a moving daemon, not teleport it home")
+            end
+        end
+    end
+end)
+
+check("fast moving stations release a whole cohort and switch before the carrier moves on", function()
+    local state, first, releasedAt, switchedAt = {}
+    -- Ordinary western truck at maxVelocity 5.2, 30Hz and parade speedFactor .22.
+    local speed = 34.32
+    for tick = 0, 160 do
+        local seconds = tick * 0.05
+        local stations = scene.updateStations(state, 20, 100 + speed * seconds, 200, 1, 0, seconds, config)
+        first = first or stations[1]
+        assert(#stations <= 2)
+        for _, station in ipairs(stations) do
+            local visible = 0
+            for _, item in ipairs(lanterns) do
+                local pose = scene.lanternPose(station, item, seconds, config)
+                if pose.opacity * scene.stationOpacity(station, seconds, config) > 0.002 then
+                    visible = visible + 1
+                    if station == first then
+                        releasedAt = releasedAt or seconds
+                        if item.lanternSlot == 4 and pose.lanternMode == "up" then switchedAt = switchedAt or seconds end
+                    end
+                end
+            end
+            assert(visible == 0 or visible == 6, "partial releases would change the requested ratios")
+        end
+    end
+    assert(first.retired and releasedAt and switchedAt)
+    assert(releasedAt < switchedAt and switchedAt < first.retired,
+        "a traveling audience must demonstrate its switching behavior before retirement")
+    for _, station in ipairs(state.stations) do assert(station ~= first) end
+end)
+
+check("cohort recycling is bounded and retired or reset stations cannot emit stale lanterns", function()
+    local station, settings = stationAt(10), config.lanterns
+    local period = 4 * settings.switchSeconds
+    local reference = scene.lanternPose(station, lanterns[5], 10 + settings.releaseSeconds + 0.4, config)
+    for generation = 200, 0, -1 do
+        for _, item in ipairs(lanterns) do
+            local seconds = station.born + settings.releaseSeconds + generation * period + 0.4
+            local pose = scene.lanternPose(station, item, seconds, config)
+            assert(pose.y >= 0 and pose.y <= settings.airborneHeight + settings.speed * period)
+            assert(pose.spawnTime <= seconds and seconds - pose.spawnTime < period)
+            if item.lanternSlot == 5 then
+                assert(close(pose.y, reference.y) and close(pose.opacity, reference.opacity),
+                    "skipped frames or a long-running procession must not accumulate vertical drift")
+            end
+        end
+    end
+    station.retired = station.born + settings.releaseSeconds + period - 0.1
+    assert(scene.lanternPose(station, lanterns[1], station.retired - 0.1, config).opacity > 0)
+    for _, item in ipairs(lanterns) do
+        assert(scene.lanternPose(station, item, station.born + settings.releaseSeconds + period + 0.4, config).opacity == 0)
+    end
+    local early = stationAt(10)
+    early.retired = early.born + settings.releaseSeconds - 0.1
+    assert(scene.lanternPose(early, lanterns[1], 10 + settings.releaseSeconds + 0.4, config).opacity == 0)
+    local state = {}
+    scene.updateStations(state, 20, 100, 200, 0, 1, 10, config)
+    scene.updateStations(state, 20, 100, 200, 0, 1, 12, config)
+    for _, reset in ipairs({{21, 13}, {21, 20}, {21, 5}}) do
+        local fresh = scene.updateStations(state, reset[1], 100, 200, 0, 1, reset[2], config)[1]
+        assert(fresh.born == reset[2] and #state.stations == 1)
+        for _, item in ipairs(lanterns) do
+            assert(scene.lanternPose(fresh, item, reset[2] + settings.releaseSeconds / 2, config).opacity == 0,
+                "attachment changes, visibility gaps and rewinds require a new daemon placement")
+        end
+    end
+end)
+
+check("banknotes only descend to terrain while koi keep their bounded floating height", function()
+    local money, koi
+    for _, item in ipairs(config.props) do
+        if item.model == "money" then money = item elseif item.model == "koi" then koi = item end
+    end
+    assert(money and money.motion == "fall" and koi and koi.motion == "hover")
+    local station, ground = stationAt(41.25), 9.5
+    local minimum, maximum = math.huge, -math.huge
+    for cycle = 0, 2 do
+        local previous
+        for tick = 1, 199 do
+            local seconds = station.born + (cycle + tick / 200) * money.fallSeconds
+            local note = scene.worldPose(station, money, seconds, 5, ground, config)
+            assert(note.opacity > 0 and note.y >= ground and note.y <= ground + money.y)
+            assert(note.activity == "down")
+            if previous then
+                assert(note.y < previous.y and note.x == previous.x and note.z == previous.z,
+                    "visible notes must fall strictly down without a rising or sideways leg")
+            end
+            previous = note
+            local fish = scene.worldPose(station, koi, seconds, 5, ground, config)
+            assert(math.abs(fish.y - ground - koi.y) <= 0.180001,
+                "a koi should float around its authored height without accumulating a fall")
+            minimum, maximum = math.min(minimum, fish.y), math.max(maximum, fish.y)
+        end
+        local boundary = station.born + (cycle + 1) * money.fallSeconds
+        for _, offset in ipairs({-0.00001, 0, 0.00001}) do
+            assert(scene.worldPose(station, money, boundary + offset, 5, ground, config).opacity < 0.000001,
+                "banknotes must be invisible before resetting above the ground")
+        end
+    end
+    assert(maximum - minimum > 0.3, "the koi retains its gentle floating motion")
 end)
 
 check("artist export case, underscores, descendant meshes and baked fins are preserved", function()

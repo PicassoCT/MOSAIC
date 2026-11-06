@@ -1,5 +1,6 @@
--- Small paper objects thrown from building balconies/roof edges toward a float.
--- The parade director supplies the outward direction and bounds burst cadence.
+-- Small paper objects emitted from building balconies/roof edges.
+-- The director supplies an outward toss for confetti/cranes, and map-wind
+-- acceleration for petals. Banknotes always fall straight down.
 -- These are ordinary LOS-respecting CEG particles, without lights or sub-effects.
 local function paper(texture, count, size, spread, life, color)
     return {
@@ -33,7 +34,7 @@ local function paper(texture, count, size, spread, life, color)
     }
 end
 
-return {
+local effects = {
     parade_confetti = {
         red = paper([[parade_confetti]], 6, 1.4, 0.7, 180,
             [[1 0.25 0.4 1  1 0.25 0.4 1  0.6 0.12 0.2 0]]),
@@ -55,3 +56,18 @@ return {
             [[1 1 1 1  1 1 1 1  0.6 0.8 0.6 0]]),
     },
 }
+
+-- Retain the petal launch cone and speed variation, but aim it downward.
+-- CEG's supported "dir" vector is sampled as gravity when the burst spawns;
+-- the director supplies horizontal map-wind acceleration and negative Y.
+local petals = effects.parade_petals.petals.properties
+petals.emitvector = [[0, -1, 0]]
+petals.gravity = [[dir]]
+
+-- A zero-width downward cone forbids both upward and sideways note travel.
+local notes = effects.parade_inflationmoney.notes.properties
+notes.emitvector = [[0, -1, 0]]
+notes.emitrot = 0
+notes.emitrotspread = 0
+
+return effects

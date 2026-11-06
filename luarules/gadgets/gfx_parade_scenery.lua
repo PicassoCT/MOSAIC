@@ -283,6 +283,21 @@ local function sceneTemplates(payload)
     return templates
 end
 
+local function worldStations(payload, seconds)
+    if Spring.GetUnitRulesParam(payload.parent, "city_parade_retiring") == 1 then
+        payload.state.scene = nil
+        return {}
+    end
+    local dx, dz = 0, 1
+    if Spring.GetUnitDirection then
+        local x, _, z = Spring.GetUnitDirection(payload.parent)
+        dx, dz = x or 0, z or 1
+    end
+    payload.state.scene = payload.state.scene or {}
+    return sceneBehavior.updateStations(payload.state.scene, payload.parent,
+        payload.x, payload.z, dx, dz, seconds, sceneConfig)
+end
+
 local function sceneQueue(visible, seconds)
     local queue, ownership = {}, {}
     if sceneDisabled or not gl.UnitPiece or not gl.Texture or not gl.Rotate
@@ -298,14 +313,7 @@ local function sceneQueue(visible, seconds)
         elseif distance < sceneConfig.maxDistance then
             local templates = sceneTemplates(payload)
             if #templates > 0 then
-                local dx, dz = 0, 1
-                if Spring.GetUnitDirection then
-                    local x, _, z = Spring.GetUnitDirection(payload.parent)
-                    dx, dz = x or 0, z or 1
-                end
-                payload.state.scene = payload.state.scene or {}
-                local stations = sceneBehavior.updateStations(payload.state.scene, payload.parent,
-                    payload.x, payload.z, dx, dz, seconds, sceneConfig)
+                local stations = worldStations(payload, seconds)
                 local distanceFade = math.min(1, (sceneConfig.maxDistance - distance)
                     / (sceneConfig.maxDistance - sceneConfig.fadeStart))
                 -- Ownership does not depend on the station's entry fade: a
@@ -317,18 +325,21 @@ local function sceneQueue(visible, seconds)
                     if fade > 0.002 then
                         for number, template in ipairs(templates) do
                             local item = template.item
-                            local worldX = station.x + station.dz * item.x + station.dx * item.z
-                            local worldZ = station.z - station.dx * item.x + station.dz * item.z
+                            local pose = sceneBehavior.worldPose(station, item, seconds, payload.id,
+                                0, sceneConfig)
+                            local worldX, worldZ = pose.x, pose.z
                             local onMap = (not Game.mapSizeX or (worldX >= 0 and worldX <= Game.mapSizeX))
                                 and (not Game.mapSizeZ or (worldZ >= 0 and worldZ <= Game.mapSizeZ))
-                            if onMap then
+                            if onMap and pose.opacity > 0.002 then
                                 local ground = station.grounds[number]
-                                if not ground or seconds >= ground.expires then
+                                if not ground or seconds >= ground.expires
+                                    or ground.x ~= worldX or ground.z ~= worldZ then
                                     ground = {height = Spring.GetGroundHeight(worldX, worldZ),
+                                        x = worldX, z = worldZ,
                                         expires = seconds + sceneConfig.groundRefreshSeconds}
                                     station.grounds[number] = ground
                                 end
-                                local pose = sceneBehavior.worldPose(station, item, seconds, payload.id, ground.height)
+                                pose.y = pose.y + ground.height
                                 queue[#queue + 1] = {id = payload.id, template = template, pose = pose,
                                     opacity = fade * pose.opacity,
                                     distanceSquared = (pose.x-cx)^2 + (pose.y-cy)^2 + (pose.z-cz)^2}
@@ -404,6 +415,35 @@ local function drawScene(visible, seconds)
     return ownership
 end
 
+local function drawFallbackLanterns(payload, decoration, seconds, fade)
+    local glyph, frames = glyphs.lantern, glyphLists.lantern
+    if not glyph or not frames then return end
+    for _, station in ipairs(worldStations(payload, seconds)) do
+        local stationFade = sceneBehavior.stationOpacity(station, seconds, sceneConfig)
+        for _, item in ipairs(sceneConfig.props) do
+            if item.motion == "lantern" then
+                local pose = sceneBehavior.worldPose(station, item, seconds, payload.id, 0, sceneConfig)
+                local onMap = (not Game.mapSizeX or (pose.x >= 0 and pose.x <= Game.mapSizeX))
+                    and (not Game.mapSizeZ or (pose.z >= 0 and pose.z <= Game.mapSizeZ))
+                local opacity = fade * stationFade * pose.opacity
+                if onMap and opacity > 0.002 then
+                    local ground = Spring.GetGroundHeight and Spring.GetGroundHeight(pose.x, pose.z) or 0
+                    local clock = seconds + item.lanternSlot * 0.37 + payload.id * 0.173
+                    local frame = animationFrame("lantern", glyph, frames, clock)
+                    gl.Uniform(sizeUniform, decoration.pixelSize)
+                    gl.Uniform(opacityUniform, opacity)
+                    -- Billboard art is retained at distance, but its lifecycle,
+                    -- world anchor and daemon release are the same as the mesh.
+                    gl.PushPopMatrix(function()
+                        gl.Translate(pose.x, ground + pose.y, pose.z)
+                        gl.CallList(frames[frame])
+                    end)
+                end
+            end
+        end
+    end
+end
+
 local function drawVisible(visible, seconds, ownership)
     for index = 1, math.min(#visible, maxVisiblePayloads) do
         local payload = visible[index]
@@ -411,6 +451,7 @@ local function drawVisible(visible, seconds, ownership)
         if fallbackWeight > 0.002 then
             local distance = math.sqrt(payload.distanceSquared)
             local fade = fallbackWeight * math.min(1, (maxDistance - distance) / (maxDistance - fadeStart))
+            local lantern
             gl.PushPopMatrix(function()
                 gl.UnitMultMatrix(payload.id)
                 gl.UnitPieceMultMatrix(payload.id, payload.center)
@@ -422,7 +463,9 @@ local function drawVisible(visible, seconds, ownership)
                 for number, decoration in ipairs(payload.theme) do
                     local glyph = glyphs[decoration.glyph]
                     local frames = glyphLists[decoration.glyph]
-                    if glyph and frames then
+                    if decoration.glyph == "lantern" then
+                        lantern = lantern or decoration
+                    elseif glyph and frames then
                         local phase = (decoration.phase or number * 0.37) + payload.id * 0.173
                         local clock = seconds + phase
                         local frame = animationFrame(decoration.glyph, glyph, frames, clock)
@@ -439,6 +482,7 @@ local function drawVisible(visible, seconds, ownership)
                     end
                 end
             end)
+            if lantern then drawFallbackLanterns(payload, lantern, seconds, fade) end
         end
     end
 end

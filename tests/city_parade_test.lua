@@ -16,7 +16,8 @@ local function fixture(options)
     local config=copy(dofile('luarules/configs/city_parade.lua'))
     for k,v in pairs(options.config or {}) do config[k]=v end
     local f={frame=0,units={},orders={},effects={},rules={},speeds={},destroyed={},trips={},
-        unitRules={},poses={},starts=0,polls=0,nextID=1000,config=config}
+        unitRules={},poses={},starts=0,polls=0,nextID=1000,config=config,
+        wind=options.wind or {3,0,-4},windReads=0}
     local defs,names={},{}
     for i,name in ipairs({'truck_arab6','truck_arab7','truck_arab8','truckpayloadparade',
         'civilian_arab0','house_arab0','operative','house_ruin'}) do
@@ -52,6 +53,13 @@ local function fixture(options)
         GetUnitRadius=function(id) return f.units[id].def==6 and 100 or 30 end,
         GetUnitHeight=function(id) return f.units[id].def==6 and 200 or 40 end,
         GetGroundHeight=function() return 0 end,
+        GetWind=function()
+            f.windReads=f.windReads+1
+            local x,y,z=f.wind[1],f.wind[2],f.wind[3]
+            local strength=math.sqrt(x*x+y*y+z*z)
+            local divisor=math.max(strength,1)
+            return x,y,z,strength,x/divisor,y/divisor,z/divisor
+        end,
         TestMoveOrder=function() return not options.blocked end,
         GetAllUnits=function()
             local ids={}; for id in pairs(f.units) do if live(id) then ids[#ids+1]=id end end
@@ -262,6 +270,66 @@ check('roof showers use building height, bounded bursts, cooldown and all four e
     assert(count(names)==4,'not all requested CEG families were emitted')
     local before=#f.effects; f.G.GlobalGameState='anarchy'; f:step(f.frame+15)
     assert(f.d.phase=='idle' and #f.effects==before and f.rules.city_parade_active==0)
+end)
+
+check('petal bursts sample changing map wind without changing their downward launch',function()
+    local f=fixture({config={effects={'parade_petals'},maxBuildingBursts=1,
+        buildingCooldownFrames=0}})
+    f:tour()
+    local first=f.effects[#f.effects]
+    assert(first and first.dx>0 and first.dz<0 and first.dy<0)
+    assert(math.abs(first.dx/first.dz-f.wind[1]/f.wind[3])<1e-9,
+        'petals did not use the map wind vector')
+    f.wind={6,0,-8}; f:step(f.frame+60,2)
+    local stronger=f.effects[#f.effects]
+    assert(math.abs(stronger.dx-first.dx*2)<1e-9 and math.abs(stronger.dz-first.dz*2)<1e-9,
+        'wind strength did not affect petal drift')
+    f.wind={-6,0,8}; f:step(f.frame+60,2)
+    local reversed=f.effects[#f.effects]
+    assert(reversed.dx==-stronger.dx and reversed.dz==-stronger.dz and reversed.dy==first.dy,
+        'new petal bursts ignored the changed wind')
+    f.wind={0,0,0}; f:step(f.frame+60,2)
+    local calm=f.effects[#f.effects]
+    assert(calm.dx==0 and calm.dz==0 and calm.dy<0,'calm petals lost gravity')
+    assert(f.windReads==#f.effects,'wind was not sampled once per petal burst')
+
+    local petals=dofile('gamedata/explosions/parade.lua').parade_petals.petals.properties
+    assert(petals.emitvector=='0, -1, 0' and petals.gravity=='dir')
+    assert(petals.emitrot>=0 and petals.emitrot+petals.emitrotspread<90,
+        'a petal launch can point upward')
+    assert(petals.numparticles==12 and petals.texture=='parade_petal')
+    -- CSimpleParticleSystem updates position, then gravity, then drag. Even
+    -- the slowest downward launch must reach a 170-unit roof's ground before
+    -- the shortest particle life; this is arrival, not terrain collision.
+    local y=first.y+5
+    local vy=-math.cos(math.rad(petals.emitrot+petals.emitrotspread))*petals.particlespeed
+    for frame=1,petals.particlelife do
+        y=y+vy
+        vy=(vy+first.dy)*petals.airdrag
+        assert(vy<0,'petal gravity or drag reversed its descent')
+    end
+    assert(y<=0,'petal expired above the ground')
+end)
+
+check('banknotes fall vertically while confetti and origami keep their toss variation',function()
+    local f=fixture({config={effects={'parade_inflationmoney'}}}); f:tour()
+    assert(#f.effects>0 and f.windReads==0)
+    for _,effect in ipairs(f.effects) do
+        assert(effect.dx==0 and effect.dy<0 and effect.dz==0,
+            'banknote burst received sideways or upward travel')
+    end
+    local effects=dofile('gamedata/explosions/parade.lua')
+    local notes=effects.parade_inflationmoney.notes.properties
+    assert(notes.emitvector=='0, -1, 0' and notes.emitrot==0 and notes.emitrotspread==0)
+    assert(notes.gravity=='0, -0.05, 0' and notes.particlespeed>0 and notes.particlespeedspread>=0)
+    assert(notes.numparticles==8 and notes.texture=='parade_banknote')
+    for _,name in ipairs({'parade_confetti','parade_origami'}) do
+        for _,part in pairs(effects[name]) do
+            local p=part.properties
+            assert(p.emitvector=='dir' and p.emitrot==15 and p.emitrotspread==30)
+            assert(p.gravity=='0, -0.05, 0' and p.particlespeed==1.6 and p.particlespeedspread==1.2)
+        end
+    end
 end)
 
 check('normal retirement despawns attached floats, while captured carriers survive',function()
