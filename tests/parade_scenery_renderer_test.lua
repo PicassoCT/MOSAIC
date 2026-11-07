@@ -20,6 +20,8 @@ local function loadEnv(path, env)
     return assert(loadfile(path, "t", env))()
 end
 local function check(name, test) test(); print("PASS: " .. name) end
+local function close(a, b) return math.abs(a - b) < 0.000001 end
+local function terrainHeight(x, z) return 4 + x * 0.01 + z * 0.02 end
 
 local function fixture(options)
     options = options or {}
@@ -32,7 +34,7 @@ local function fixture(options)
         matrixDepth = 0, attribDepth = 0, activeShader = 99, blend = "original",
         depthMask = true, depthTest = false, culling = true, errors = {},
         shaderCount = 0, meshDraws = {}, texture = "caller-texture",
-        materialTexture = "caller-material", direction = {0, 0, 1}}
+        materialTexture = "caller-material", direction = {0, 0, 1}, groundReads = {}}
     local sceneModels = {figures = {}, props = {}}
     f.pieceMap = {center = f.center}
     if options.native then
@@ -120,6 +122,11 @@ local function fixture(options)
     S.IsSphereInView = function() return f.inView end
     S.GetGameSeconds = function() return f.seconds end
     S.GetFrameTimeOffset = function() return 0 end
+    S.GetGroundHeight = function(x, z)
+        f.groundReads[#f.groundReads + 1] = {x, z}
+        return terrainHeight(x, z)
+    end
+    S.GetUnitDirection = function() return f.direction[1], f.direction[2], f.direction[3] end
     S.Echo = function(message) f.errors[#f.errors + 1] = message end
     gl.CreateShader = function(spec)
         f.shaderCount = f.shaderCount + 1
@@ -173,12 +180,14 @@ local function fixture(options)
     end
     gl.CallList = function(id)
         if f.throwDraw then error("injected draw failure") end
-        assert(f.activeShader == 1 and f.matrixDepth == 2)
+        local world = f.matrixDepth == 1
+        assert(f.activeShader == 1 and (f.matrixDepth == 2 or (world and f.lists[id].glyph == "lantern")),
+            "only world lanterns may bypass the float attachment transform")
         assert(f.depthMask == false and f.depthTest == env.GL.LEQUAL and f.culling == false)
         assert(f.blend == "770:1")
         f.draws[#f.draws + 1] = {unit = f.unit, glyph = f.lists[id].glyph,
             frame = f.lists[id].frame, opacity = f.uniforms.opacity,
-            pixelSize = f.uniforms.pixelSize, anchor = f.anchor}
+            pixelSize = f.uniforms.pixelSize, anchor = f.anchor, world = world}
     end
     gl.PushPopMatrix = scope
     gl.ActiveShader = function(shaderID, fn, ...)
@@ -203,9 +212,9 @@ local function fixture(options)
     gl.Culling = function(value) f.culling = value end
     gl.Blending = function(src, dst) f.blend = src .. ":" .. dst end
     if options.native then
-        S.GetGroundHeight = function(x, z) return 4 + x * 0.01 + z * 0.02 end
-        S.GetUnitDirection = function() return f.direction[1], f.direction[2], f.direction[3] end
-        gl.Rotate = function() end
+        gl.Rotate = function(angle, x, y, z)
+            if f.matrixDepth == 1 and x == 1 and y == 0 and z == 0 then f.rawTilt = angle end
+        end
         gl.Texture = function(unit, texture)
             assert(unit == 0 or unit == 1)
             if unit == 0 then f.texture = texture else f.materialTexture = texture end
@@ -218,13 +227,52 @@ local function fixture(options)
             assert(f.texture == "%7:0")
             assert(f.materialTexture == "%7:1", "opacity comes from packed material, not diffuse team-color alpha")
             f.meshDraws[#f.meshDraws + 1] = {id = id, piece = pieceID,
-                anchor = f.rawAnchor, opacity = f.color[4]}
+                anchor = f.rawAnchor, opacity = f.color[4], tilt = f.rawTilt}
         end
     end
     f.result = loadEnv("luarules/gadgets/gfx_parade_scenery.lua", env)
     f.env, f.gadget = env, env.gadget
     if not options.synced then f.gadget:Initialize() end
     return f
+end
+
+local function drawAt(f, seconds)
+    f.seconds, f.draws, f.meshDraws, f.groundReads = seconds, {}, {}, {}
+    f.gadget:DrawWorld()
+    assert(not f.removed and #f.errors == 0)
+end
+
+local function advanceTo(f, seconds)
+    -- Keep the fixture visible between samples; a long camera gap deliberately
+    -- creates a new station and would not exercise an existing cohort's age.
+    while f.seconds + 1 < seconds do drawAt(f, f.seconds + 1) end
+    drawAt(f, seconds)
+end
+
+local function meshDraws(f, piece)
+    local found = {}
+    for _, draw in ipairs(f.meshDraws) do
+        if draw.piece == f.pieceMap[piece] then found[#found + 1] = draw end
+    end
+    return found
+end
+
+local function pixelLanterns(f)
+    local found = {}
+    for _, draw in ipairs(f.draws) do
+        if draw.glyph == "lantern" then
+            assert(draw.world, "fallback lanterns must use the planted world frame")
+            found[#found + 1] = draw
+        end
+    end
+    return found
+end
+
+local function atAnchor(draws, x, z)
+    for _, draw in ipairs(draws) do
+        if close(draw.anchor[1], x) and close(draw.anchor[3], z) then return draw end
+    end
+    error("missing world anchor " .. x .. ", " .. z)
 end
 
 check("all selectable floats have bounded, valid pixel decorations", function()
@@ -316,11 +364,19 @@ end)
 
 check("live payload selection changes the motif without using stale carrier identity", function()
     local f = fixture()
-    for index, variant in ipairs(catalog.variants) do
-        f.variants[5] = index; f.draws = {}; f.gadget:DrawWorld()
-        local expected = themeFor(variant.hologramTheme or variant.key)
-        assert(#f.draws == #expected)
-        for n, draw in ipairs(f.draws) do assert(draw.glyph == expected[n].glyph) end
+    for _, seconds in ipairs({10, 12}) do
+        for index, variant in ipairs(catalog.variants) do
+            f.variants[5] = index; drawAt(f, seconds)
+            local expected, hasLantern = {}, false
+            for _, item in ipairs(themeFor(variant.hologramTheme or variant.key)) do
+                if item.glyph == "lantern" then hasLantern = true
+                else expected[#expected + 1] = item end
+            end
+            local lanternCount = hasLantern and seconds == 12 and 6 or 0
+            assert(#f.draws == #expected + lanternCount)
+            for n, item in ipairs(expected) do assert(f.draws[n].glyph == item.glyph) end
+            assert(#pixelLanterns(f) == lanternCount)
+        end
     end
     for _, invalid in ipairs({0, 999}) do
         f.variants[5] = invalid; f.draws = {}; f.gadget:DrawWorld(); assert(#f.draws == 0)
@@ -507,6 +563,225 @@ check("native candles keep their terrain contact and do not follow a moving carr
         end
     end
     assert(count == 4, "all four candles remain at their original curb positions")
+end)
+
+check("native lanterns appear at daemon release and blink off together before recycling", function()
+    local f, settings = fixture({native = true}), sceneConfig.lanterns
+    drawAt(f, 0)
+    for _, time in ipairs({0.4, settings.releaseSeconds - 0.01}) do
+        drawAt(f, time)
+        assert(#meshDraws(f, "PARADELANTERN") == 0 and #f.draws == 0)
+        assert(#f.meshDraws > 0, "the audience must remain visible while lanterns wait")
+    end
+    drawAt(f, settings.releaseSeconds)
+    assert(#meshDraws(f, "PARADELANTERN") == 6 and #f.draws == 0)
+    for _, item in ipairs(sceneConfig.figures) do
+        if item.lanternEmitter then
+            local body = meshDraws(f, (item.model .. "body"):upper())
+            assert(#body == 1 and math.abs(body[1].tilt) > 8,
+                "the release must coincide with a rendered placement gesture")
+        end
+    end
+    for generation = 0, 3 do
+        local release = settings.releaseSeconds + generation * 4 * settings.switchSeconds
+        drawAt(f, release + 0.0001)
+        local lanterns = meshDraws(f, "PARADELANTERN")
+        assert(#lanterns == 6 and #f.draws == 0)
+        for _, draw in ipairs(lanterns) do assert(close(draw.opacity, lanterns[1].opacity)) end
+        local blink = release + 4 * settings.switchSeconds - settings.blinkSeconds
+        advanceTo(f, blink - 0.0001)
+        lanterns = meshDraws(f, "PARADELANTERN")
+        assert(#lanterns == 6 and #f.draws == 0)
+        for _, draw in ipairs(lanterns) do
+            assert(close(draw.opacity, 0.88), "visible lanterns must not dim before blinking out")
+        end
+        drawAt(f, blink + 0.0001)
+        assert(#meshDraws(f, "PARADELANTERN") == 0 and #f.draws == 0)
+        drawAt(f, release + 4 * settings.switchSeconds - 0.0001)
+        assert(#meshDraws(f, "PARADELANTERN") == 0 and #f.draws == 0,
+            "the hidden interval must last until the next daemon release")
+    end
+end)
+
+check("daemon terrain samples follow the task pose while placed lanterns remain anchored", function()
+    local f, settings = fixture({native = true}), sceneConfig.lanterns
+    f.positions[20], f.direction, f.camera = {200, 0, 300}, {3, 0, 4}, {200, 0, 600}
+    drawAt(f, 0)
+    for _, time in ipairs({0.4, 0.9}) do
+        drawAt(f, time)
+        for _, item in ipairs(sceneConfig.figures) do
+            if item.lanternEmitter then
+                local body = meshDraws(f, (item.model .. "body"):upper())[1]
+                assert(body)
+                local sampled = false
+                for _, point in ipairs(f.groundReads) do
+                    if close(point[1], body.anchor[1]) and close(point[2], body.anchor[3]) then sampled = true end
+                end
+                assert(sampled, "moving helpers need terrain at their current position before cache expiry")
+                local hop = time == 0.4 and 0.35 or 0
+                assert(close(body.anchor[2], terrainHeight(body.anchor[1], body.anchor[3]) + hop))
+            end
+        end
+    end
+    drawAt(f, settings.releaseSeconds + 0.15)
+    local lanterns, planted = meshDraws(f, "PARADELANTERN")
+    assert(#lanterns == 6)
+    for _, item in ipairs(sceneConfig.props) do
+        if item.motion == "lantern" then
+            local source = meshDraws(f, (item.emitter .. "body"):upper())[1]
+            local inward, along = item.x < 0 and 1 or -1, item.lanternSlot <= 3 and -1 or 1
+            local x = source.anchor[1] + 0.8 * inward * settings.reach + 0.6 * along * settings.pairSpacing
+            local z = source.anchor[3] - 0.6 * inward * settings.reach + 0.8 * along * settings.pairSpacing
+            local draw = atAnchor(lanterns, x, z)
+            assert(draw.anchor[2] >= terrainHeight(x, z))
+            if item.lanternSlot == 1 then
+                assert(close(draw.anchor[2], terrainHeight(x, z)))
+                planted = draw.anchor
+            end
+        end
+    end
+    f.positions[20], f.direction = {250, 200, 320}, {-1, 0, 0}
+    drawAt(f, 3)
+    local same = atAnchor(meshDraws(f, "PARADELANTERN"), planted[1], planted[3])
+    assert(close(same.anchor[2], planted[2]), "a released ground lantern must not follow a returning helper or turning truck")
+end)
+
+check("moving native and fallback stations keep bounded cohorts and reset release after visibility changes", function()
+    for _, native in ipairs({true, false}) do
+        local f = fixture({native = native})
+        f.variants[5] = 2 -- A lantern theme also exercises the fallback route.
+        drawAt(f, 0)
+        local function lanterns() return native and meshDraws(f, "PARADELANTERN") or pixelLanterns(f) end
+        local overlapping = false
+        for tick = 1, 120 do
+            local seconds = tick / 10
+            f.positions[20] = {seconds * 34.32, 0, 0}
+            drawAt(f, seconds)
+            local count = #lanterns()
+            assert(count == 0 or count == 6 or count == 12, "retain at most two complete station cohorts")
+            if count == 12 then overlapping = true end
+        end
+        assert(overlapping, "fast parade travel must still release both crossfading station cohorts")
+        f.los = false; drawAt(f, 14)
+        assert(#lanterns() == 0)
+        f.los = true; drawAt(f, 17)
+        assert(#lanterns() == 0, "returning after a visibility gap must wait for a new daemon release")
+        advanceTo(f, 18.5); assert(#lanterns() == 6)
+        drawAt(f, 16); assert(#lanterns() == 0, "rewinding must discard the previous cohort")
+        advanceTo(f, 17.5); assert(#lanterns() == 6)
+        f.retiring = true; drawAt(f, 17.6)
+        assert(#lanterns() == 0, "a dismissed procession cannot create another ground cohort")
+    end
+end)
+
+check("rendered banknotes descend then blink out while koi keep their floating height", function()
+    local f, money, koi = fixture({native = true})
+    for _, item in ipairs(sceneConfig.props) do
+        if item.model == "money" then money = item elseif item.model == "koi" then koi = item end
+    end
+    drawAt(f, 0)
+    local cycle = money.fallSeconds + money.blinkSeconds
+    for generation = 0, 1 do
+        local previous
+        for step = 1, 31 do
+            advanceTo(f, generation * cycle + step * money.fallSeconds / 32)
+            local notes, fish = meshDraws(f, "PARADEMONEY"), meshDraws(f, "PARADEKOI")
+            assert(#notes == 1 and #fish == 1)
+            local note = notes[1].anchor
+            assert(close(note[1], money.x) and close(note[3], money.z))
+            assert(note[2] >= terrainHeight(note[1], note[3]))
+            if previous then assert(note[2] < previous, "a visible banknote must never take an upward leg") end
+            previous = note[2]
+            local height = fish[1].anchor[2] - terrainHeight(koi.x, koi.z)
+            assert(close(fish[1].anchor[1], koi.x) and close(fish[1].anchor[3], koi.z))
+            assert(math.abs(height - koi.y) <= 0.180001, "koi hover without accumulating a fall")
+        end
+        local disappearance = generation * cycle + money.fallSeconds
+        advanceTo(f, disappearance - 0.0001)
+        local last = meshDraws(f, "PARADEMONEY")
+        assert(#last == 1 and close(last[1].opacity, money.opacity),
+            "money must remain at its material opacity until it blinks out")
+        drawAt(f, disappearance + 0.0001)
+        assert(#meshDraws(f, "PARADEMONEY") == 0 and #meshDraws(f, "PARADEKOI") == 1,
+            "money blinks off without recycling the floating koi")
+        drawAt(f, disappearance + money.blinkSeconds - 0.0001)
+        assert(#meshDraws(f, "PARADEMONEY") == 0)
+    end
+end)
+
+check("both lantern fallback themes keep exact motion thirds in the world frame", function()
+    for _, variant in ipairs({2, 4}) do
+        local f = fixture({rootScale = 0.0254})
+        f.variants[5] = variant
+        f.positions[20], f.direction, f.camera = {200, 0, 300}, {3, 0, 4}, {200, 0, 600}
+        drawAt(f, 0)
+        drawAt(f, sceneConfig.lanterns.releaseSeconds - 0.01)
+        assert(#pixelLanterns(f) == 0, "fallback lanterns cannot appear before daemon release")
+        local seen, planted = {}, nil
+        for epoch = 0, 1 do
+            local time = sceneConfig.lanterns.releaseSeconds + epoch * sceneConfig.lanterns.switchSeconds + 0.4
+            drawAt(f, time)
+            local before = pixelLanterns(f)
+            assert(#before == 6)
+            drawAt(f, time + 0.05)
+            local after, counts = pixelLanterns(f), {stationary = 0, up = 0, down = 0}
+            assert(#after == 6)
+            for _, old in ipairs(before) do
+                local current = atAnchor(after, old.anchor[1], old.anchor[3])
+                local delta = current.anchor[2] - old.anchor[2]
+                local mode = close(delta, 0) and "stationary" or delta > 0 and "up" or "down"
+                counts[mode] = counts[mode] + 1
+                local key = old.anchor[1] .. ":" .. old.anchor[3]
+                seen[key] = seen[key] or {}; seen[key][mode] = true
+                if mode == "stationary" and close(current.anchor[2], terrainHeight(current.anchor[1], current.anchor[3])) then
+                    planted = current.anchor
+                end
+            end
+            assert(counts.stationary == 2 and counts.up == 2 and counts.down == 2)
+        end
+        local fixed, switching = 0, 0
+        for _, modes in pairs(seen) do
+            local count = 0; for _ in pairs(modes) do count = count + 1 end
+            if count == 1 then fixed = fixed + 1 elseif count == 2 then switching = switching + 1 end
+        end
+        assert(fixed == 3 and switching == 3 and planted)
+        f.positions[20], f.direction = {220, 0, 330}, {-1, 0, 0}
+        drawAt(f, 5)
+        local same = atAnchor(pixelLanterns(f), planted[1], planted[3])
+        assert(close(same.anchor[2], planted[2]) and close(f.spriteScale[1], 1 / 0.0254),
+            "world lanterns remain planted while attached ornaments compensate the imported root scale")
+    end
+end)
+
+check("lantern mesh and billboard LOD share release time and every world anchor", function()
+    local f = fixture({native = true})
+    f.variants[5] = 2
+    drawAt(f, 0); drawAt(f, 2)
+    local near = meshDraws(f, "PARADELANTERN")
+    assert(#near == 6 and #pixelLanterns(f) == 0)
+    f.camera = {0, 0, 950}; drawAt(f, 2)
+    local native, fallback = meshDraws(f, "PARADELANTERN"), pixelLanterns(f)
+    assert(#native == 6 and #fallback == 6, "the LOD overlap must not restart the cohort")
+    for _, draw in ipairs(near) do
+        local mesh = atAnchor(native, draw.anchor[1], draw.anchor[3])
+        local pixel = atAnchor(fallback, draw.anchor[1], draw.anchor[3])
+        assert(close(mesh.anchor[2], draw.anchor[2]) and close(pixel.anchor[2], draw.anchor[2]))
+        assert(close(mesh.opacity, draw.opacity * 0.5))
+    end
+    f.camera = {0, 0, 1300}; drawAt(f, 2)
+    assert(#meshDraws(f, "PARADELANTERN") == 0 and #pixelLanterns(f) == 6)
+    f.camera = {0, 0, 300}; drawAt(f, 2)
+    assert(#meshDraws(f, "PARADELANTERN") == 6 and #pixelLanterns(f) == 0)
+    local settings = sceneConfig.lanterns
+    local blink = settings.releaseSeconds + 4 * settings.switchSeconds - settings.blinkSeconds
+    advanceTo(f, blink - 0.0001)
+    f.camera = {0, 0, 950}; drawAt(f, blink - 0.0001)
+    assert(#meshDraws(f, "PARADELANTERN") == 6 and #pixelLanterns(f) == 6)
+    drawAt(f, blink + 0.0001)
+    assert(#meshDraws(f, "PARADELANTERN") == 0 and #pixelLanterns(f) == 0,
+        "neither LOD path may render the hidden cohort")
+    drawAt(f, settings.releaseSeconds + 4 * settings.switchSeconds + 0.0001)
+    assert(#meshDraws(f, "PARADELANTERN") == 6 and #pixelLanterns(f) == 6)
 end)
 
 check("native additions inherit the legacy visibility boundary and bounded nearest payload set", function()

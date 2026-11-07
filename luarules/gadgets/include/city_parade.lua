@@ -483,7 +483,18 @@ function M.New(context)
             local height = math.max(24,(S.GetUnitHeight(id) or 100)*0.85)
             local effect = C.effects[effectsEmitted % #C.effects + 1]
             effectsEmitted = effectsEmitted+1
-            S.SpawnCEG(effect,x+dx*edge,y+height,z+dz*edge,dx,-0.25,dz)
+            local ex,ey,ez = dx,-0.25,dz
+            if effect == "parade_petals" then
+                local windX,_,windZ = S.GetWind()
+                -- Petals consume CEG's dir as gravity, not their launch axis.
+                -- Scale current map wind into per-frame acceleration; retain
+                -- downward gravity even in calm weather. Each burst samples
+                -- the wind once because CEG particles have no live wind hook.
+                ex,ey,ez = windX*0.0015,-0.05,windZ*0.0015
+            elseif effect == "parade_inflationmoney" then
+                ex,ey,ez = 0,-1,0
+            end
+            S.SpawnCEG(effect,x+dx*edge,y+height,z+dz*edge,ex,ey,ez)
             lastBuildingBurst[id] = frame+C.buildingCooldownFrames
         end
     end

@@ -12,6 +12,19 @@ local scene = {
     visibilityResetSeconds = 3,
     groundRefreshSeconds = 1,
     viewRadius = 125,
+    lanterns = {
+        switchSeconds = 1.6,
+        speed = 0.65,
+        airborneHeight = 8.5,
+        blinkSeconds = 0.2,
+        approachSeconds = 0.8,
+        gestureSeconds = 0.8,
+        returnSeconds = 0.8,
+        releaseSeconds = 1.2,
+        travelDistance = 2.8,
+        reach = 1.2,
+        pairSpacing = 1.6,
+    },
     figures = {},
     props = {},
 }
@@ -35,8 +48,29 @@ for _, family in ipairs(families) do
             hover = family.hover, opacity = family.opacity,
             phase = index * 1.71 + #scene.figures * 0.37,
             task = family.category == "helper" and ({"tend", "gather", "guide", "inspect"})[index] or nil,
+            lanternEmitter = family.category == "helper" and index <= 3 or nil,
         }
     end
+end
+
+-- Six is the smallest cohort with exact thirds and an exact fixed/switching
+-- half split. Each daemon places a pair at its task point; no lantern appears
+-- until that daemon's placement gesture reaches its release time.
+local emitters = {}
+for _, item in ipairs(scene.figures) do
+    if item.lanternEmitter then emitters[#emitters + 1] = item end
+end
+for slot = 1, 6 do
+    local source = emitters[(slot - 1) % 3 + 1]
+    local direction = source.x < 0 and 1 or -1
+    scene.props[#scene.props + 1] = {
+        model = "lantern", motion = "lantern", lanternSlot = slot,
+        emitter = source.model,
+        x = source.x + direction * (scene.lanterns.travelDistance + scene.lanterns.reach),
+        z = source.z + (source.task == "gather" and 2.2 or 0.8)
+            + (slot <= 3 and -1 or 1) * scene.lanterns.pairSpacing,
+        y = 0, opacity = 0.88,
+    }
 end
 
 -- Ground candles never bob. Their flames are modeled geometry, with a very
@@ -48,7 +82,6 @@ for _, side in ipairs({-1, 1}) do
     end
 end
 local props = {
-    {"lantern", -30, 8.5, -18}, {"lantern", 30, 10, 18},
     {"moon", -26, 24, 4}, {"envelope", 28, 15, -14},
     {"money", -28, 14, 18}, {"koi", 29, 17, 6},
     {"lotus", -28, 11, -6}, {"leaf", 26, 21, -25},
@@ -57,7 +90,10 @@ local props = {
 }
 for index, prop in ipairs(props) do
     scene.props[#scene.props + 1] = {model = prop[1], x = prop[2], y = prop[3], z = prop[4],
-        opacity = 0.88, phase = index * 0.79}
+        opacity = 0.88, phase = (index + 2) * 0.79,
+        motion = prop[1] == "money" and "fall" or prop[1] == "koi" and "hover" or nil,
+        fallSeconds = prop[1] == "money" and 16 or nil,
+        blinkSeconds = prop[1] == "money" and 0.2 or nil}
 end
 
 return scene

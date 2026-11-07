@@ -88,8 +88,112 @@ function scene.pose(item, seconds, payloadID)
     return pose
 end
 
-function scene.worldPose(station, item, seconds, payloadID, ground)
+-- One shared epoch keeps S/U/D balanced even when all three switchers change
+-- mode. Heights integrate those modes; switching never resets a live mesh.
+function scene.lanternPose(station, item, seconds, config)
+    local settings = config.lanterns
+    local interval = settings.switchSeconds
+    local period = 4 * interval
+    local lifetime = period - settings.blinkSeconds
+    local firstRelease = station.born + settings.releaseSeconds
+    local elapsed = seconds - firstRelease
+    local pose = {x = item.x, y = 0, z = item.z, yaw = item.x < 0 and 90 or -90,
+        tilt = 0, headTilt = 0, opacity = 0, visible = false, activity = "unspawned",
+        spawnedBy = item.emitter, fixedBehavior = item.lanternSlot <= 3}
+    if elapsed < 0 then return pose end
+    local generation = math.floor(elapsed / period)
+    local born = firstRelease + generation * period
+    -- A departing audience may finish its existing fade, never place a new
+    -- cohort after retirement. There is no growing list of spawned objects.
+    if station.retired and born > station.retired then return pose end
+    local age = elapsed - generation * period
+    pose.spawnTime = born
+    -- Blink off before the next daemon release. The whole cohort is either
+    -- present or absent, so recycling needs no renderer-specific alpha fade.
+    if age >= lifetime then pose.activity = "hidden"; return pose end
+    local epoch = math.floor(age / interval)
+    local progress = smooth((age - epoch * interval) / interval)
+    local step = settings.speed * interval
+    local pairs = math.floor(epoch / 2)
+    local slot, mode = item.lanternSlot
+    if slot == 1 then
+        mode = "stationary"
+    elseif slot == 2 then
+        mode, pose.y = "up", settings.speed * age
+    elseif slot == 3 then
+        mode, pose.y = "down", settings.speed * (lifetime - age)
+    elseif slot == 4 then
+        mode = epoch % 2 == 0 and "stationary" or "up"
+        pose.y = step * (pairs + (epoch % 2 == 1 and progress or 0))
+    elseif slot == 5 then
+        mode = epoch % 2 == 0 and "up" or "down"
+        pose.y = settings.airborneHeight + step * (epoch % 2 == 0 and progress or 1 - progress)
+    else
+        mode = epoch % 2 == 0 and "down" or "stationary"
+        pose.y = step * (2 - pairs - (epoch % 2 == 0 and progress or 1))
+    end
+    pose.activity, pose.lanternMode = mode, mode
+    pose.visible, pose.opacity = true, item.opacity or 1
+    if mode ~= "stationary" then pose.tilt = 1.5 * sin(age * 0.7 + slot) end
+    return pose
+end
+
+local function daemonPose(station, item, seconds, config)
+    local settings = config.lanterns
+    local period = 4 * settings.switchSeconds
+    local age = math.max(0, seconds - station.born)
+    local generation = math.floor(age / period)
+    local cycle = age - generation * period
+    local pose = {x = item.x, y = item.hover or 0, z = item.z,
+        yaw = item.x < 0 and 90 or -90, tilt = 0, headTilt = 0,
+        opacity = item.opacity or 1, activity = "rest"}
+    -- lanternPose blocks new releases after retirement. Finish the daemon's
+    -- visible motion during the station fade instead of snapping it home.
+    local approach, gesture, retreat = settings.approachSeconds,
+        settings.gestureSeconds, settings.returnSeconds
+    local travel, hop = 0, 0
+    if cycle < approach then
+        local t = cycle / approach
+        travel, hop = smooth(t), 0.35 * sin(t * pi)
+        pose.activity = "approach"
+    elseif cycle < approach + gesture then
+        local t = (cycle - approach) / gesture
+        travel = 1
+        pose.activity = "spawn_lanterns"
+        pose.headTilt = 18 * sin(t * pi)
+        pose.tilt = (item.task == "gather" and 13 or 10) * sin(t * pi)
+        if item.task == "guide" then pose.yaw = pose.yaw + 22 * sin(t * pi * 2) end
+    elseif cycle < approach + gesture + retreat then
+        local t = (cycle - approach - gesture) / retreat
+        travel, hop = 1 - smooth(t), 0.35 * sin(t * pi)
+        pose.activity = "return"
+    end
+    local direction = item.x < 0 and 1 or -1
+    pose.x = pose.x + direction * travel * settings.travelDistance
+    pose.z = pose.z + travel * (item.task == "gather" and 2.2 or 0.8)
+    pose.y = pose.y + hop
+    return pose
+end
+
+function scene.worldPose(station, item, seconds, payloadID, ground, config)
     local pose = scene.pose(item, seconds, payloadID)
+    if item.motion == "lantern" and config then
+        pose = scene.lanternPose(station, item, seconds, config)
+    elseif item.lanternEmitter and config then
+        pose = daemonPose(station, item, seconds, config)
+    elseif item.motion == "fall" then
+        -- Keep the full fall visible, blink off at ground level, then recycle
+        -- above after a short hidden interval. No opacity animation is needed.
+        local lifetime, blink = item.fallSeconds or 16, item.blinkSeconds or 0.2
+        local elapsed = seconds - station.born
+        local period = lifetime + blink
+        local age = math.max(0, elapsed) % period
+        pose.y = math.max(0, (item.y or 14) * (1 - age / lifetime))
+        pose.visible = elapsed >= 0 and age < lifetime
+        pose.opacity = pose.visible and (item.opacity or 1) or 0
+        pose.activity = pose.visible and "down" or "hidden"
+        pose.spawnTime = station.born + math.floor(math.max(0, elapsed) / period) * period
+    end
     local localX, localZ = pose.x, pose.z
     pose.x = station.x + station.dz * localX + station.dx * localZ
     pose.z = station.z - station.dx * localX + station.dz * localZ
