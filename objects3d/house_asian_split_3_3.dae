@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1">
-  <asset><contributor><author></author><authoring_tool>FBX COLLADA exporter</authoring_tool><comments></comments></contributor><created>2026-10-18T20:13:18Z</created><keywords></keywords><modified>2026-10-18T20:13:18Z</modified><revision></revision><subject></subject><title></title><unit meter="0.025400" name="centimeter"></unit><up_axis>Y_UP</up_axis></asset>
+  <asset><contributor><author></author><authoring_tool>FBX COLLADA exporter</authoring_tool><comments></comments></contributor><created>2026-11-07T13:06:12Z</created><keywords></keywords><modified>2026-11-07T13:06:12Z</modified><revision></revision><subject></subject><title></title><unit meter="0.025400" name="centimeter"></unit><up_axis>Y_UP</up_axis></asset>
   <library_images>
     <image id="Map #0-image" name="Map #0"><init_from>file://Z:\MosaicDev\Development\Models\building\house\house_asia\Tex_Diff_Asia_Building.psd</init_from></image>
     <image id="Map #0_ncl1_1-image" name="Map #0_ncl1_1"><init_from>file://C:\Users\GameDev\Desktop\Tex_Diff_Asia_Building.png</init_from></image>
@@ -393217,35 +393217,35 @@
       <mesh>
         <source id="Roof62Sub1-POSITION">
           <float_array id="Roof62Sub1-POSITION-array" count="87">
-60.346447 4.147993 8.030012
-6.669793 63.084353 7.642209
--63.248879 1.900448 7.921430
-4.550030 -65.898454 7.675809
--3.945687 21.097632 42.599709
-60.791095 37.355803 7.931174
-39.647850 58.340063 7.782667
-2.617359 44.355933 29.067688
--1.197581 40.166045 39.041924
-15.189075 23.729018 39.815277
-34.976333 11.950417 30.569088
--2.384280 2.602209 39.449984
-0.528808 -30.771944 29.526857
-39.899749 -63.466928 7.815435
-58.700450 -31.030439 7.962244
--28.135123 56.267836 7.792038
--56.240071 34.804087 7.871722
--40.151906 9.961350 30.075478
--22.375052 22.645930 39.529221
--58.330712 -33.582155 7.902081
--30.664319 -59.730936 7.780269
-26.378408 35.768927 31.995665
-24.683277 -15.613210 32.370735
--25.003947 34.141485 31.850813
--26.699078 -17.240648 32.143402
-4.064649 -31.976572 7.859251
--29.327004 1.415074 7.893062
-36.917472 2.791345 7.914497
-5.440915 34.267908 7.864023
+60.346447 4.147993 13.452706
+6.669793 63.084353 12.803017
+-63.248879 1.900448 13.270797
+4.550030 -65.898454 12.859307
+-3.945687 21.097632 71.367429
+60.791095 37.355803 13.287122
+39.647850 58.340063 13.038327
+2.617359 44.355933 48.697192
+-1.197581 40.166045 65.407060
+15.189075 23.729018 66.702662
+34.976333 11.950417 51.212492
+-2.384280 2.602209 66.090685
+0.528808 -30.771944 49.466439
+39.899749 -63.466928 13.093224
+58.700450 -31.030439 13.339173
+-28.135123 56.267836 13.054026
+-56.240071 34.804087 13.187522
+-40.151906 9.961350 50.385545
+-22.375052 22.645930 66.223431
+-58.330712 -33.582155 13.238381
+-30.664319 -59.730936 13.034310
+26.378408 35.768927 53.602440
+24.683277 -15.613210 54.230797
+-25.003947 34.141485 53.359770
+-26.699078 -17.240648 53.849945
+4.064649 -31.976572 13.166630
+-29.327004 1.415074 13.223272
+36.917472 2.791345 13.259182
+5.440915 34.267908 13.174623
 </float_array>
           <technique_common>
             <accessor source="#Roof62Sub1-POSITION-array" count="29" stride="3">
@@ -514200,60 +514200,60 @@
       <mesh>
         <source id="Trad_Pod_Industrial_Street_Deco1901-POSITION">
           <float_array id="Trad_Pod_Industrial_Street_Deco1901-POSITION-array" count="162">
-70.626030 0.000000 -40.592110
-66.366768 24.155529 -40.592110
-54.102680 45.397541 -40.592110
-35.313015 61.163948 -40.592110
-12.264077 69.553062 -40.592110
--12.264091 69.553062 -40.592110
--35.313019 61.163940 -40.592110
--54.102680 45.397541 -40.592110
--66.366768 24.155533 -40.592110
--70.626030 0.000011 -40.592110
--66.366776 -24.155512 -40.592110
--54.102695 -45.397526 -40.592110
--35.313038 -61.163925 -40.592110
--12.264112 -69.553055 -40.592110
-12.264049 -69.553070 -40.592110
-35.312981 -61.163963 -40.592110
-54.102650 -45.397572 -40.592110
-66.366753 -24.155575 -40.592110
-70.626030 0.000000 539.646240
-66.366768 24.155529 539.646240
-54.102680 45.397541 539.646240
-35.313015 61.163948 539.646240
-12.264077 69.553062 539.646240
--12.264091 69.553062 539.646240
--35.313019 61.163940 539.646240
--54.102680 45.397541 539.646240
--66.366768 24.155533 539.646240
--70.626030 0.000011 539.646240
--66.366776 -24.155512 539.646240
--54.102695 -45.397526 539.646240
--35.313038 -61.163925 539.646240
--12.264112 -69.553055 539.646240
-12.264049 -69.553070 539.646240
-35.312981 -61.163963 539.646240
-54.102650 -45.397572 539.646240
-66.366753 -24.155575 539.646240
-70.626030 0.000000 254.363205
-66.366768 24.155529 254.483917
-54.102680 45.397541 254.762878
-35.313015 61.163948 255.166504
-12.264077 69.553062 255.646088
--12.264091 69.553062 256.143768
--35.313019 61.163940 256.599518
--54.102684 45.397541 256.958435
--66.366776 24.155533 257.177124
--70.626030 0.000011 257.229279
--66.366776 -24.155512 257.108582
--54.102699 -45.397526 256.829590
--35.313042 -61.163925 256.425964
--12.264112 -69.553055 255.946411
-12.264050 -69.553070 255.448730
-35.312981 -61.163963 254.992950
-54.102650 -45.397572 254.634064
-66.366753 -24.155575 254.415359
+76.191645 0.000000 -40.750063
+71.596736 26.059082 -40.750063
+58.366189 48.975050 -40.750063
+38.095822 65.983913 -40.750063
+13.230536 75.034123 -40.750063
+-13.230550 75.034123 -40.750063
+-38.095827 65.983905 -40.750063
+-58.366189 48.975050 -40.750063
+-71.596736 26.059086 -40.750063
+-76.191645 0.000012 -40.750063
+-71.596744 -26.059063 -40.750063
+-58.366205 -48.975033 -40.750063
+-38.095847 -65.983888 -40.750063
+-13.230573 -75.034115 -40.750063
+13.230505 -75.034131 -40.750063
+38.095785 -65.983929 -40.750063
+58.366156 -48.975083 -40.750063
+71.596719 -26.059131 -40.750063
+76.191645 0.000000 541.746128
+71.596736 26.059082 541.746128
+58.366189 48.975050 541.746128
+38.095822 65.983913 541.746128
+13.230536 75.034123 541.746128
+-13.230550 75.034123 541.746128
+-38.095827 65.983905 541.746128
+-58.366189 48.975050 541.746128
+-71.596736 26.059086 541.746128
+-76.191645 0.000012 541.746128
+-71.596744 -26.059063 541.746128
+-58.366205 -48.975033 541.746128
+-38.095847 -65.983888 541.746128
+-13.230573 -75.034115 541.746128
+13.230505 -75.034131 541.746128
+38.095785 -65.983929 541.746128
+58.366156 -48.975083 541.746128
+71.596719 -26.059131 541.746128
+76.191645 0.000000 255.352991
+71.596736 26.059082 255.474173
+58.366189 48.975050 255.754219
+38.095822 65.983913 256.159415
+13.230536 75.034123 256.640865
+-13.230550 75.034123 257.140483
+-38.095827 65.983905 257.598005
+-58.366193 48.975050 257.958319
+-71.596744 26.059086 258.177859
+-76.191645 0.000012 258.230217
+-71.596744 -26.059063 258.109050
+-58.366209 -48.975033 257.828973
+-38.095851 -65.983888 257.423777
+-13.230573 -75.034115 256.942357
+13.230506 -75.034131 256.442740
+38.095785 -65.983929 255.985187
+58.366156 -48.975083 255.624903
+71.596719 -26.059131 255.405348
 </float_array>
           <technique_common>
             <accessor source="#Trad_Pod_Industrial_Street_Deco1901-POSITION-array" count="54" stride="3">
@@ -659867,7 +659867,7 @@
       <node name="Industrial_Pod_Trad_RoofDeco9" id="Industrial_Pod_Trad_RoofDeco9" sid="Industrial_Pod_Trad_RoofDeco9"><matrix sid="matrix">1.000000 0.000000 0.000000 0.000000 0.000000 0.000000 1.000000 0.000000 0.000000 -1.000000 0.000000 0.000000 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#Industrial_Pod_Trad_RoofDeco9-lib"><bind_material><technique_common><instance_material symbol="_03 - Default" target="#_03 - Default"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node>
       <node name="Industrial_Pod_Trad_RoofDeco10" id="Industrial_Pod_Trad_RoofDeco10" sid="Industrial_Pod_Trad_RoofDeco10"><matrix sid="matrix">1.000000 0.000000 0.000000 0.000000 0.000000 0.000000 1.000000 0.000000 0.000000 -1.000000 0.000000 0.000000 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#Industrial_Pod_Trad_RoofDeco10-lib"><bind_material><technique_common><instance_material symbol="_03 - Default" target="#_03 - Default"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node>
       <node name="Roof67" id="Roof67" sid="Roof67"><matrix sid="matrix">1.000000 0.000000 0.000000 0.000000 0.000000 0.000000 1.000000 0.000000 0.000000 -1.000000 0.000000 0.000000 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#Roof67-lib"><bind_material><technique_common><instance_material symbol="_03 - Default" target="#_03 - Default"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node>
-      <node name="Roof62" id="Roof62" sid="Roof62"><matrix sid="matrix">6.054900 0.000000 0.000000 0.000000 0.000000 0.000000 6.054900 0.000000 0.000000 -6.054900 0.000000 0.000000 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#Roof62-lib"><bind_material><technique_common><instance_material symbol="_03 - Default" target="#_03 - Default"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra><node name="Roof62Sub1" id="Roof62Sub1" sid="Roof62Sub1"><matrix sid="matrix">1.000000 0.000000 0.000000 0.000000 0.000000 1.000000 0.000000 -0.000000 0.000000 0.000000 1.675303 -0.000000 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#Roof62Sub1-lib"><bind_material><technique_common><instance_material symbol="_03 - Default" target="#_03 - Default"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node></node>
+      <node name="Roof62" id="Roof62" sid="Roof62"><matrix sid="matrix">6.054900 0.000000 0.000000 0.000000 0.000000 0.000000 6.054900 0.000000 0.000000 -6.054900 0.000000 0.000000 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#Roof62-lib"><bind_material><technique_common><instance_material symbol="_03 - Default" target="#_03 - Default"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra><node name="Roof62Sub1" id="Roof62Sub1" sid="Roof62Sub1"><matrix sid="matrix">1.000000 0.000000 0.000000 0.000000 0.000000 1.000000 0.000000 -0.000000 0.000000 0.000000 1.000000 -0.000000 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#Roof62Sub1-lib"><bind_material><technique_common><instance_material symbol="_03 - Default" target="#_03 - Default"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node></node>
       <node name="Roof27" id="Roof27" sid="Roof27"><matrix sid="matrix">6.054900 0.000000 0.000000 0.000000 0.000000 0.000000 6.054900 0.000000 0.000000 -6.054900 0.000000 0.000000 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#Roof27-lib"><bind_material><technique_common><instance_material symbol="_03 - Default" target="#_03 - Default"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra><node name="Roof27Sub1" id="Roof27Sub1" sid="Roof27Sub1"><matrix sid="matrix">1.000000 -0.000000 0.000000 1.067383 0.000000 1.000000 -0.000000 -0.570618 -0.000000 0.000000 1.000000 111.236687 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#Roof27Sub1-lib"><bind_material><technique_common><instance_material symbol="_03 - Default" target="#_03 - Default"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="Roof27Sub2" id="Roof27Sub2" sid="Roof27Sub2"><matrix sid="matrix">1.000000 0.000000 0.000000 0.000004 -0.000000 1.000000 0.000000 -0.000002 -0.000000 -0.000000 1.000000 -0.000000 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#Roof27Sub2-lib"><bind_material><technique_common><instance_material symbol="_03 - Default" target="#_03 - Default"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node></node>
       <node name="Roof28" id="Roof28" sid="Roof28"><matrix sid="matrix">6.054900 0.000000 0.000000 0.000000 0.000000 0.000000 6.054900 0.000000 0.000000 -6.054900 0.000000 0.000000 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#Roof28-lib"><bind_material><technique_common><instance_material symbol="_03 - Default" target="#_03 - Default"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra><node name="Roof28Sub1" id="Roof28Sub1" sid="Roof28Sub1"><matrix sid="matrix">1.000000 -0.000000 0.000000 -2.171509 0.000000 1.000000 -0.000000 -0.421783 -0.000000 0.000000 1.000000 86.058464 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#Roof28Sub1-lib"><bind_material><technique_common><instance_material symbol="_03 - Default" target="#_03 - Default"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="Roof28Sub2" id="Roof28Sub2" sid="Roof28Sub2"><matrix sid="matrix">1.000000 -0.000000 0.000000 0.000000 0.000000 1.000000 0.000000 -0.000001 -0.000000 0.000000 1.000000 0.000004 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#Roof28Sub2-lib"><bind_material><technique_common><instance_material symbol="_03 - Default" target="#_03 - Default"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node></node>
       <node name="Roof29" id="Roof29" sid="Roof29"><matrix sid="matrix">6.054900 0.000000 0.000000 0.000000 0.000000 0.000000 6.054900 0.000000 0.000000 -6.054900 0.000000 0.000000 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#Roof29-lib"><bind_material><technique_common><instance_material symbol="_03 - Default" target="#_03 - Default"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra><node name="Roof29Sub2" id="Roof29Sub2" sid="Roof29Sub2"><matrix sid="matrix">1.000000 -0.000000 0.000000 -5.168945 0.000000 1.000000 -0.000000 -4.658447 -0.000000 0.000000 1.000000 86.058464 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#Roof29Sub2-lib"><bind_material><technique_common><instance_material symbol="_03 - Default" target="#_03 - Default"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node><node name="Roof29Sub1" id="Roof29Sub1" sid="Roof29Sub1"><matrix sid="matrix">1.000000 0.000000 0.000000 0.000000 -0.000000 1.000000 0.000000 -0.000003 -0.000000 -0.000000 1.000000 -0.000000 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#Roof29Sub1-lib"><bind_material><technique_common><instance_material symbol="_03 - Default" target="#_03 - Default"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node></node>
@@ -659988,7 +659988,7 @@
       <node name="Trad_Pod_Industrial_Street_Deco2" id="Trad_Pod_Industrial_Street_Deco2" sid="Trad_Pod_Industrial_Street_Deco2"><matrix sid="matrix">1.000000 0.000000 0.000000 0.000000 0.000000 0.000000 1.000000 0.000000 0.000000 -1.000000 0.000000 0.000000 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#Trad_Pod_Industrial_Street_Deco2-lib"><bind_material><technique_common><instance_material symbol="_03 - Default" target="#_03 - Default"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node>
       <node name="Trad_Pod_Industrial_Street_Deco16" id="Trad_Pod_Industrial_Street_Deco16" sid="Trad_Pod_Industrial_Street_Deco16"><matrix sid="matrix">1.000000 0.000000 0.000000 0.000000 0.000000 0.000000 1.000000 0.000000 0.000000 -1.000000 0.000000 0.000000 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#Trad_Pod_Industrial_Street_Deco16-lib"><bind_material><technique_common><instance_material symbol="_03 - Default" target="#_03 - Default"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node>
       <node name="Trad_Pod_Industrial_Street_Deco10" id="Trad_Pod_Industrial_Street_Deco10" sid="Trad_Pod_Industrial_Street_Deco10"><matrix sid="matrix">1.000000 0.000000 0.000000 0.000000 0.000000 0.000000 1.000000 0.000000 0.000000 -1.000000 0.000000 0.000000 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#Trad_Pod_Industrial_Street_Deco10-lib"><bind_material><technique_common><instance_material symbol="_03 - Default" target="#_03 - Default"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node>
-      <node name="Trad_Pod_Industrial_Street_Deco19" id="Trad_Pod_Industrial_Street_Deco19" sid="Trad_Pod_Industrial_Street_Deco19"><matrix sid="matrix">1.000000 0.000000 0.000000 0.000000 0.000000 0.000000 1.000000 0.000000 0.000000 -1.000000 0.000000 0.000000 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#Trad_Pod_Industrial_Street_Deco19-lib"><bind_material><technique_common><instance_material symbol="_03 - Default" target="#_03 - Default"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra><node name="Trad_Pod_Industrial_Street_Deco1901" id="Trad_Pod_Industrial_Street_Deco1901" sid="Trad_Pod_Industrial_Street_Deco1901"><matrix sid="matrix">1.078804 0.000000 0.000000 286.778351 0.000000 1.078804 0.000000 -569.356812 0.000000 0.000000 1.003891 -33.476521 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#Trad_Pod_Industrial_Street_Deco1901-lib"><bind_material><technique_common><instance_material symbol="_03 - Default" target="#_03 - Default"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node></node>
+      <node name="Trad_Pod_Industrial_Street_Deco19" id="Trad_Pod_Industrial_Street_Deco19" sid="Trad_Pod_Industrial_Street_Deco19"><matrix sid="matrix">1.000000 0.000000 0.000000 0.000000 0.000000 0.000000 1.000000 0.000000 0.000000 -1.000000 0.000000 0.000000 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#Trad_Pod_Industrial_Street_Deco19-lib"><bind_material><technique_common><instance_material symbol="_03 - Default" target="#_03 - Default"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra><node name="Trad_Pod_Industrial_Street_Deco1901" id="Trad_Pod_Industrial_Street_Deco1901" sid="Trad_Pod_Industrial_Street_Deco1901"><matrix sid="matrix">1.000000 0.000000 0.000000 286.778351 0.000000 1.000000 0.000000 -569.356812 0.000000 0.000000 1.000000 -33.476521 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#Trad_Pod_Industrial_Street_Deco1901-lib"><bind_material><technique_common><instance_material symbol="_03 - Default" target="#_03 - Default"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node></node>
       <node name="Trad_Pod_Industrial_Street_Deco20" id="Trad_Pod_Industrial_Street_Deco20" sid="Trad_Pod_Industrial_Street_Deco20"><matrix sid="matrix">1.000000 0.000000 0.000000 0.000000 0.000000 0.000000 1.000000 0.000000 0.000000 -1.000000 0.000000 0.000000 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#Trad_Pod_Industrial_Street_Deco20-lib"><bind_material><technique_common><instance_material symbol="_03 - Default" target="#_03 - Default"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node>
       <node name="Roof45" id="Roof45" sid="Roof45"><matrix sid="matrix">1.000000 0.000000 0.000000 0.000000 0.000000 0.000000 1.000000 0.000000 0.000000 -1.000000 0.000000 0.000000 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#Roof45-lib"><bind_material><technique_common><instance_material symbol="_03 - Default" target="#_03 - Default"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node>
       <node name="Trad_Pod_Industrial_Street_Deco21" id="Trad_Pod_Industrial_Street_Deco21" sid="Trad_Pod_Industrial_Street_Deco21"><matrix sid="matrix">1.000000 0.000000 0.000000 0.000000 0.000000 0.000000 1.000000 0.000000 0.000000 -1.000000 0.000000 0.000000 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#Trad_Pod_Industrial_Street_Deco21-lib"><bind_material><technique_common><instance_material symbol="_03 - Default" target="#_03 - Default"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node>
