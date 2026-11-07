@@ -530,6 +530,9 @@ end
     -- truck's visibility. The same gate feeds both rendering and cascade light.
     local function neonVisible(unitID)
         if not Spring.ValidUnitID(unitID) or Spring.GetUnitIsDead(unitID) then return false end
+        -- One gate hides commercial ads and their radiance during the parade.
+        -- Keep receiving piece updates so restoration uses the live animation.
+        if Spring.GetUnitRulesParam(unitID, "city_parade_hide_commercial") == 1 then return false end
         local def = UnitDefs[UnitUnitDefIDMap[unitID]]
         if def and (def.customParams or {}).parade_hologram then
             if Spring.GetUnitIsCloaked(unitID) then return false end

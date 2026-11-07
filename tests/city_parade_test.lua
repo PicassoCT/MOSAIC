@@ -16,13 +16,15 @@ local function fixture(options)
     local config=copy(dofile('luarules/configs/city_parade.lua'))
     for k,v in pairs(options.config or {}) do config[k]=v end
     local f={frame=0,units={},orders={},effects={},rules={},speeds={},destroyed={},trips={},
-        unitRules={},poses={},starts=0,polls=0,nextID=1000,config=config,
+        unitRules={},poses={},nativeHidden={},nativeHiddenCalls={},cylinderQueries={},starts=0,polls=0,nextID=1000,config=config,
         wind=options.wind or {3,0,-4},windReads=0}
     local defs,names={},{}
     for i,name in ipairs({'truck_arab6','truck_arab7','truck_arab8','truckpayloadparade',
-        'civilian_arab0','house_arab0','operative','house_ruin'}) do
+        'civilian_arab0','house_arab0','operative','house_ruin',
+        'house_western_hologram_buisness','paradehologram','animated_hologram','animated_hologramv2'}) do
         defs[i]={id=i,name=name,moveDef={id=1},speed=60}; names[name]=defs[i]
     end
+    defs[10].customParams={parade_hologram=true}
     f.G={GlobalGameState='normal',CitySpawnComplete=true,CivilianTable={},UnitArrivedAtTarget={},
         BuildingTable={},CivilianUnitInternalLogicActive={},DisguiseCivilianFor={},
         AerosolAffectedCivilians={},CityParadeRetired={}}
@@ -66,6 +68,7 @@ local function fixture(options)
             table.sort(ids); return ids
         end,
         GetUnitsInCylinder=function(x,z,radius,team)
+            f.cylinderQueries[#f.cylinderQueries+1]={x=x,z=z,radius=radius}
             local ids={}
             for id,u in pairs(f.units) do
                 if live(id) and (team==nil or u.team==team) and (u.x-x)^2+(u.z-z)^2<=radius^2 then
@@ -92,6 +95,12 @@ local function fixture(options)
             return {SetParadeVariant=function(index)
                 assert(index>=1 and index<=#catalog.variants)
                 f.units[id].variant=index; return not options.rejectVariant
+            end}
+        end
+        if f.units[id].def==11 or f.units[id].def==12 then
+            return {SetParadeCommercialHidden=function(hidden)
+                f.nativeHidden[id]=hidden
+                f.nativeHiddenCalls[#f.nativeHiddenCalls+1]={id=id,hidden=hidden}
             end}
         end
         return {
@@ -152,6 +161,7 @@ local function fixture(options)
         config=config,catalog=catalog,gameConfig={game={states={normal='normal'},dayLengthFrames=28800},
             civilians={activityStates={started='started',ended='ended'}}},
         walkerTypes={[5]=true},truckTypes={[1]=true,[2]=true,[3]=true},buildingTypes={[6]=true},
+        commercialHologramTypes={[9]=true,[11]=true,[12]=true},
         routeBuilder=routeBuilder,setSpeed=function(id,value) f.speeds[id]=value end}
     f.d=controller.New(f.context)
     function f:step(frame,progress)
@@ -216,6 +226,140 @@ check('failed payload, variant and ordinary-trip setup clean up assembly',functi
         assert(count(f.d.vehicles)==0 and count(f.destroyed)>0,key..' leaked a float')
         f:step(when(7,20)); assert(f.d.phase=='idle' and f.rules.city_parade_last_stop=='assembly incomplete')
     end
+end)
+
+check('commercial holos respect the assembly radius without hiding parade scenery or other units',function()
+    local f=fixture({config={commercialHologramRadius=180}})
+    f:add(200,9,650,680); f:add(201,9,650,681)
+    f:add(202,10,650,500); f:add(203,7,650,500); f:add(204,9,660,500,1)
+    f:add(205,11,650,500); f:add(206,12,650,500)
+    local t=when(7,19)
+    f:step(t)
+    assert(not f.unitRules[200].city_parade_hide_commercial,'route preparation hid ads before any floats existed')
+    f:step(t+15)
+    assert(f.d.phase=='assembling' and f.unitRules[200].city_parade_hide_commercial==1,
+        'an ad on the configured radius boundary stayed visible during assembly')
+    assert(f.unitRules[204].city_parade_hide_commercial==1,'nearby ads were filtered by team')
+    assert(f.nativeHidden[205]==true and f.nativeHidden[206]==true,
+        'native animated ads did not receive their hide callbacks')
+    for _,id in ipairs({201,202,203}) do
+        assert(not f.unitRules[id].city_parade_hide_commercial,'a distant ad, parade projection or ordinary unit was hidden')
+    end
+    f.d:Stop('assembly cancelled')
+    assert(f.unitRules[200].city_parade_hide_commercial==0 and f.unitRules[204].city_parade_hide_commercial==0)
+    assert(f.nativeHidden[205]==false and f.nativeHidden[206]==false)
+end)
+
+check('endpoint scans keep ads hidden through gaps and stops until the tail passes',function()
+    local f=fixture({config={commercialHologramRadius=100,stalledFrames=100000}}); f:tour()
+    local radius=f.config.commercialHologramRadius
+    local front,back=f.units[f.d.startFloat],f.units[f.d.endFloat]
+    local middle
+    for id in pairs(f.d.vehicles) do
+        if id~=f.d.startFloat and id~=f.d.endFloat then middle=f.units[id]; break end
+    end
+    assert(front.x-middle.x>radius and middle.x-back.x>radius)
+    local x,z=front.x,front.z
+    f:add(200,9,x,z); f:add(201,9,middle.x,middle.z)
+    f:add(205,11,x,z); f:add(206,12,x,z)
+    f.cylinderQueries={}; f:step(f.frame+15)
+    local scans={}
+    for _,query in ipairs(f.cylinderQueries) do
+        if query.radius==radius then scans[#scans+1]=query end
+    end
+    assert(#scans==2 and scans[1].x~=scans[2].x,'commercial searches must visit exactly two distinct endpoints')
+    for _,query in ipairs(scans) do
+        assert(query.z==z and (query.x==front.x or query.x==back.x),'a middle float searched for ads')
+    end
+    assert(f.unitRules[200].city_parade_hide_commercial==1)
+    assert(f.nativeHidden[205]==true and f.nativeHidden[206]==true and #f.nativeHiddenCalls==2)
+    assert(not f.unitRules[201].city_parade_hide_commercial,'an ad near only a middle float was hidden')
+
+    f:step(f.frame+15,200)
+    assert(front.x-x>radius and x-back.x>radius,'both endpoints must be outside the ad radius')
+    assert(f.unitRules[200].city_parade_hide_commercial==1,'ads returned in the gap before the tail arrived')
+    -- This pause exceeds the roughly 1,614-frame nominal timer for this formation.
+    f:step(f.frame+3000)
+    assert(f.d.phase=='touring' and f.unitRules[200].city_parade_hide_commercial==1,
+        'a stopped tail consumed the ad timer')
+    assert(f.nativeHidden[205]==true and f.nativeHidden[206]==true and #f.nativeHiddenCalls==2,
+        'native ads toggled during the gap or stop')
+
+    f:step(f.frame+15,x-back.x)
+    assert(f.unitRules[200].city_parade_hide_commercial==1 and #f.nativeHiddenCalls==2,
+        'tail arrival interrupted suppression')
+    f:step(f.frame+1,radius+1)
+    assert(f.unitRules[200].city_parade_hide_commercial==1,'suppression changed outside its 15-frame tick')
+    f:step(f.frame+14)
+    assert(f.d.phase=='touring' and back.x-x>radius)
+    assert(f.unitRules[200].city_parade_hide_commercial==0,'observed tail exit did not restore the ad')
+    assert(f.nativeHidden[205]==false and f.nativeHidden[206]==false and #f.nativeHiddenCalls==4,
+        'native ads were not restored once after the tail passed')
+
+    for _,id in ipairs({200,205,206}) do f.units[id].x=back.x end
+    f:add(202,9,back.x+10,back.z+20)
+    f:step(f.frame+15)
+    assert(f.unitRules[200].city_parade_hide_commercial==1,'an ad returning to parade range was not hidden again')
+    assert(f.nativeHidden[205]==true and f.nativeHidden[206]==true and #f.nativeHiddenCalls==6)
+    assert(f.unitRules[202].city_parade_hide_commercial==1,'an ad first encountered by the tail stayed visible')
+end)
+
+check('ad timers expire by travelled parade length without continually rearming near the start',function()
+    local f=fixture({config={commercialHologramRadius=100}}); f:tour()
+    local front,back=f.units[f.d.startFloat],f.units[f.d.endFloat]
+    local radius=f.config.commercialHologramRadius
+    local travelBudget=front.x-back.x+2*radius
+    f:add(200,9,front.x,front.z); f:add(205,11,front.x,front.z)
+    f:step(f.frame+15)
+    assert(f.unitRules[200].city_parade_hide_commercial==1 and f.nativeHidden[205]==true)
+    f:step(f.frame+15,radius)
+    assert(f.unitRules[200].city_parade_hide_commercial==1 and #f.nativeHiddenCalls==1)
+    for _,id in ipairs({200,205}) do f.units[id].x=3000; f.units[id].z=3000 end
+    f:step(f.frame+15,travelBudget-radius-1)
+    assert(f.unitRules[200].city_parade_hide_commercial==1 and f.nativeHidden[205]==true,
+        'a moving ad was restored before its passage timer expired')
+    f:step(f.frame+15,2)
+    assert(f.d.phase=='touring' and f.unitRules[200].city_parade_hide_commercial==0,
+        'the timer failed to expire without an observed tail visit')
+    assert(f.nativeHidden[205]==false and #f.nativeHiddenCalls==2,
+        'fallback expiry did not restore the native ad exactly once')
+end)
+
+check('ending, cancellation and reload restore ads while preserving unrelated visibility flags',function()
+    local endings={
+        {'late night',function(f) f:step(when(8,3)) end},
+        {'city emergency',function(f) f.G.GlobalGameState='anarchy'; f:step(f.frame+15) end},
+        {'attack',function(f) f.d:UnitDamaged(next(f.d.vehicles),1) end},
+        {'manual stop',function(f) f.d:Stop('manual preview stop') end},
+        {'shutdown',function(f) f.d:Shutdown() end},
+        {'reload',function(f) f.d=controller.New(f.context); f.d:Recover() end},
+    }
+    for _,ending in ipairs(endings) do
+        local f=fixture(); f:add(200,9,650,500)
+        f:add(205,11,650,500); f:add(206,12,650,500)
+        f.unitRules[200].unrelated_hidden=1
+        f:tour(); assert(f.unitRules[200].city_parade_hide_commercial==1)
+        assert(f.nativeHidden[205]==true and f.nativeHidden[206]==true)
+        ending[2](f)
+        assert(f.d.phase=='idle' and f.unitRules[200].city_parade_hide_commercial==0,
+            ending[1]..' left an ad suppressed')
+        assert(f.unitRules[200].unrelated_hidden==1,ending[1]..' cleared another visibility owner')
+        assert(f.nativeHidden[205]==false and f.nativeHidden[206]==false,
+            ending[1]..' did not restore native ads through their callbacks')
+    end
+end)
+
+check('destroyed ad IDs can be reused without carrying suppression ownership',function()
+    local f=fixture(); f:tour()
+    local u=f.units[next(f.d.vehicles)]
+    f:add(200,9,u.x,u.z); f:step(f.frame+15)
+    assert(f.unitRules[200].city_parade_hide_commercial==1)
+    f.units[200].dead=true; f.d:UnitDestroyed(200)
+    f:add(200,9,u.x,u.z); f:step(f.frame+15)
+    assert(f.unitRules[200].city_parade_hide_commercial==1,'replacement ad could not be hidden again')
+    f.units[200].dead=true; f.d:UnitDestroyed(200)
+    f:add(200,7,u.x,u.z); f.d:Stop('manual preview stop')
+    assert(f.unitRules[200].city_parade_hide_commercial==nil,'cleanup tagged an unrelated replacement unit')
 end)
 
 check('spectators and followers perform poses; damaged, disguised and protected people stay out',function()
@@ -345,11 +489,17 @@ check('normal retirement despawns attached floats, while captured carriers survi
     assert(not f.G.CivilianTable[id] and #f.orders==orders and f.unitRules[id].city_parade_retiring==0)
 end)
 
-check('capturing an active float releases its speed and civilian ownership',function()
-    local f=fixture(); f:tour(); local id=next(f.d.vehicles); f.units[id].team=2
-    f:step(f.frame+15,5)
-    assert(not f.d:OwnsUnit(id) and not f.d.retired[id] and f.speeds[id]==1)
-    assert(not f.G.CivilianTable[id] and not f.destroyed[id])
+check('capturing endpoint floats releases ownership and republishes roles without spectators',function()
+    local f=fixture({config={maxParticipants=0}}); f:tour()
+    for _,role in ipairs({'endFloat','startFloat'}) do
+        local id=f.d[role]; f.units[id].team=2
+        f:step(f.frame+15,5)
+        assert(not f.d:OwnsUnit(id) and not f.d.retired[id] and f.speeds[id]==1)
+        assert(not f.G.CivilianTable[id] and not f.destroyed[id])
+        assert(f.d.phase=='touring' and f.d[role]~=id)
+        assert(f.rules.city_parade_start_float==f.d.startFloat and f.rules.city_parade_end_float==f.d.endFloat
+            and f.rules.city_parade_vehicle_count==count(f.d.vehicles),'published endpoints retained a captured float')
+    end
 end)
 
 check('reload finds tagged floats and resumes traffic when its registration was lost',function()
