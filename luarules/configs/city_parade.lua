@@ -29,6 +29,7 @@ return {
     recruitFrames = 60,
     audienceRadius = 420,
     audienceReleaseRadius = 700,
+    commercialHologramRadius = 420,
     maxParticipants = 32,
     followerPercent = 25,
     spectatorFrames = 35 * 30,

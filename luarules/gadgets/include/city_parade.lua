@@ -20,6 +20,8 @@ function M.New(context)
     G.CityParadeRetired = G.CityParadeRetired or {}
     local director = {vehicles = {}, participants = {}, retired = G.CityParadeRetired, phase = "idle"}
     local convoy, cooldown, lastBuildingBurst = {}, {}, {}
+    local hiddenCommercialHolograms = {}
+    local commercialHologramTypes = context.commercialHologramTypes or {}
     local route, pendingRoute, pendingDay, carrierDefID, eventDay, endFrame
     local tourStartFrame, previewRequest, preview = nil, nil, false
     local nextRetirementCheck = 0
@@ -49,6 +51,34 @@ function M.New(context)
     end
     local function unitRule(id, key, value)
         if alive(id) then S.SetUnitRulesParam(id, key, value, public) end
+    end
+    local function setCommercialHologramHidden(id, hidden)
+        unitRule(id, "city_parade_hide_commercial", hidden and 1 or 0)
+        -- Native station ads mask their pieces; neon ads read the same rule in
+        -- the shared draw/light gate without losing their current animation.
+        call(id, "SetParadeCommercialHidden", hidden)
+    end
+    local function hideNearbyCommercialHolograms()
+        for _, truck in ipairs(convoy) do
+            local x, _, z = S.GetUnitPosition(truck)
+            if x then
+                local nearby = S.GetUnitsInCylinder(x, z, C.commercialHologramRadius) or {}
+                table.sort(nearby)
+                for _, id in ipairs(nearby) do
+                    if not hiddenCommercialHolograms[id] and commercialHologramTypes[S.GetUnitDefID(id)] then
+                        hiddenCommercialHolograms[id] = true
+                        setCommercialHologramHidden(id, true)
+                    end
+                end
+            end
+        end
+    end
+    local function restoreCommercialHolograms()
+        -- Latch ads off for the whole event, including gaps between floats.
+        for _, id in ipairs(sorted(hiddenCommercialHolograms)) do
+            setCommercialHologramHidden(id, false)
+        end
+        hiddenCommercialHolograms = {}
     end
     local function publish()
         S.SetGameRulesParam("city_parade_active", director.phase == "touring" and 1 or 0, public)
@@ -114,6 +144,7 @@ function M.New(context)
 
     function director:Stop(reason, frame)
         frame = frame or S.GetGameFrame()
+        restoreCommercialHolograms()
         for _, id in ipairs(sorted(self.participants)) do releasePerson(id, frame) end
         for _, id in ipairs(convoy) do retireVehicle(id) end
         convoy = {}
@@ -164,6 +195,9 @@ function M.New(context)
             end
         end
         for _, id in ipairs(units) do
+            if (S.GetUnitRulesParam(id, "city_parade_hide_commercial") or 0) > 0 then
+                setCommercialHologramHidden(id, false)
+            end
             if (S.GetUnitRulesParam(id, "city_parade_role") or 0) > 0 then
                 call(id, "stopParadeParticipation")
                 unitRule(id, "city_parade_role", 0)
@@ -521,6 +555,7 @@ function M.New(context)
                 updateAudience(frame)
                 showerBuildings(frame)
             end
+            hideNearbyCommercialHolograms()
             return
         end
         local requestedPreview = previewRequest ~= nil
@@ -536,7 +571,10 @@ function M.New(context)
         if not G.CitySpawnComplete or not G.CivilianTraffic then return end
         if pendingRoute and pendingDay == day then
             local status = routeBuilder:Poll(pendingRoute)
-            if status == "ready" then startAssembly(day,frame,requestedPreview); spawnVehicle(frame)
+            if status == "ready" then
+                startAssembly(day,frame,requestedPreview)
+                spawnVehicle(frame)
+                hideNearbyCommercialHolograms()
             elseif status == "invalid" then pendingRoute,pendingDay=nil,nil; nextAttempt=frame+C.retryFrames end
             return
         end
@@ -558,6 +596,7 @@ function M.New(context)
 
     function director:UnitDestroyed(id)
         if self.participants[id] then releasePerson(id,S.GetGameFrame()) end
+        hiddenCommercialHolograms[id] = nil
         cooldown[id],lastBuildingBurst[id],self.retired[id] = nil,nil,nil
         if self.vehicles[id] then self:Stop("vehicle lost") end
     end

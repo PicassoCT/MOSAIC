@@ -14,6 +14,8 @@ Nearby eligible civilians move to the roadside, pause, and perform existing reli
 
 Nearby intact buildings shower the procession with **confetti, origami cranes, flower petals, and inflation banknotes**. Ruins, scrap heaps, and construction sites are excluded. Emission positions follow the building's size and face the nearby float. The effects use ordinary CEG particles and respect ground line of sight.
 
+Commercial holograms within **420 world units of any float** switch off during assembly or touring and stay off until the parade ends. This includes building, advertising-blimp, and animated station ads. The parade's own projections remain visible. The shared neon visibility gate removes hidden ads from both drawing and radiance capture while their animations continue; native station ads preserve their current animation beneath the visibility mask. Normal completion, early cancellation, and gadget reload restore the ads to their current ordinary state. The radius is measured in the ground plane from each advertisement unit's position.
+
 The existing music player switches to **Seventh Night Procession**, an original **80-second, 96 BPM, 32-bar instrumental** with low drums, woodblocks, pentatonic bells and reed, and warm organ/synth. It uses the normal music channel and respects its volume, mute, included-track setting, pause-with-game option, explicit stop, and custom-track ownership. Normal music resumes when touring ends. The track is synthesized without sampled recordings.
 
 A city emergency, an attack on a parade participant or float, or an unusable route ends the procession. Civilians release their parade activity without overwriting a newer emergency activity. Surviving trucks resume ordinary traffic and retire peacefully at a destination. Recovery uses the parade unit rules to release stale participation and resume retiring traffic after a gadget reload.
@@ -172,6 +174,7 @@ Edit [luarules/configs/city_parade.lua](../luarules/configs/city_parade.lua). Di
 | `previewRouteTimeoutFrames` | 1,800 | Preview route-preparation timeout |
 | `recruitFrames`, `maxParticipants`, `followerPercent` | 60, 32, 25 | Recruitment cadence, crowd cap, and follower selection |
 | `audienceRadius`, `audienceReleaseRadius` | 420, 700 | Recruitment and release distances |
+| `commercialHologramRadius` | 420 | Hide commercial holograms reached by any float until the parade ends |
 | `spectatorFrames`, `followerFrames` | 1,050, 2,700 | Maximum participation durations |
 | `participantCooldownFrames` | 1,800 | Time before a civilian can rejoin |
 | `curbOffset`, `followerUpdateFrames` | 105, 60 | Roadside offset and follower movement refresh |

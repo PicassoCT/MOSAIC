@@ -235,7 +235,7 @@ check('shared neon registers, streams changed frames and removes projection ligh
     assert(sent[5][1]=='unsetUnitNeonLuaDraw' and not env.NeonHologramUnits[101])
     assert(not env.GG.VisibleUnitPieces[101])
 end)
-check('late join, LOS, cloaking and destruction feed the same filtered cascade list',function()
+check('late join, parade suppression, LOS and cloaking share the draw and cascade gate',function()
     local file=assert(io.open('luarules/gadgets/gfx_neonHolograms.lua'))
     local source=file:read('*a'); file:close()
     local function section(a,b)
@@ -246,8 +246,9 @@ check('late join, LOS, cloaking and destruction feed the same filtered cascade l
         'local neonSnapshotPending,objectiveSnapshotPending=true,false; local objectiveRadiancePieces={}\n'..
         section('    local function setUnitNeonLuaDraw(', '    local function InitializeTextures()')..
         section('    local function neonVisible(', '    local boolActivated = false')..
-        '\nreturn updateUnitNeonLuaDraw,unsetUnitNeonLuaDraw,function() return counterNeonUnits end'
+        '\nreturn updateUnitNeonLuaDraw,unsetUnitNeonLuaDraw,function() return counterNeonUnits end,neonVisible'
     local los,full,cloaked,dead=true,false,false,false
+    local hidden={[102]=1}
     local captured
     local bridge=setmetatable({RecieveAllNeonUnitsPieces=function(t) captured=t end},
         {__call=function(_,name) return name=='RecieveAllNeonUnitsPieces' end})
@@ -255,23 +256,32 @@ check('late join, LOS, cloaking and destruction feed the same filtered cascade l
         UnitDefs={[7]={customParams={parade_hologram=true}},[8]={customParams={}}},
         SYNCED={NeonHologramUnits={[101]=7,[102]=8},NeonHologramPieces={[101]={3},[102]={5}}},
         Spring={ValidUnitID=function() return true end,GetUnitIsDead=function() return dead end,
+            GetUnitRulesParam=function(id,key)
+                assert(key=='city_parade_hide_commercial'); return hidden[id]
+            end,
             GetUnitIsCloaked=function() return cloaked end,GetSpectatingState=function() return full,full end,
             GetMyAllyTeamID=function() return 1 end,GetUnitLosState=function() return {los=los,radar=true} end}},
         {__index=_G})
     local chunk
     if setfenv then chunk=assert(loadstring(body)); setfenv(chunk,env)
     else chunk=assert(load(body,'neon receiver','t',env)) end
-    local update,remove,count=chunk()
-    env.gadget:GameFrame(1); assert(captured[101][1]==3 and count()==2)
+    local update,remove,count,visible=chunk()
+    env.gadget:GameFrame(1); assert(captured[101][1]==3 and not captured[102] and count()==2)
+    assert(visible(101) and not visible(102), 'late join must keep parade projections and suppress ads')
     update(nil,101,7,4); env.gadget:GameFrame(2)
     assert(captured[101][1]==4 and env.SYNCED.NeonHologramPieces[101][1]==3 and count()==2)
-    los=false; env.gadget:GameFrame(3); assert(not captured[101] and captured[102])
-    full=true; env.gadget:GameFrame(4); assert(captured[101])
-    cloaked=true; env.gadget:GameFrame(5); assert(not captured[101])
-    cloaked=false; full=false; los=true; env.gadget:GameFrame(6); assert(captured[101])
-    remove(nil,101); remove(nil,101); env.gadget:GameFrame(7)
+    update(nil,102,8,9); env.gadget:GameFrame(3)
+    assert(not captured[102] and count()==2, 'hidden ad updates must not leak into radiance')
+    hidden[102]=0; env.gadget:GameFrame(4)
+    assert(visible(102) and captured[102][1]==9, 'restore the current animation without re-registering')
+    assert(env.SYNCED.NeonHologramPieces[102][1]==5, 'suppression must not mutate the source snapshot')
+    los=false; env.gadget:GameFrame(5); assert(not captured[101] and captured[102])
+    full=true; env.gadget:GameFrame(6); assert(captured[101])
+    cloaked=true; env.gadget:GameFrame(7); assert(not captured[101])
+    cloaked=false; full=false; los=true; env.gadget:GameFrame(8); assert(captured[101])
+    remove(nil,101); remove(nil,101); env.gadget:GameFrame(9)
     assert(not captured[101] and count()==1)
-    dead=true; env.gadget:GameFrame(8); assert(not next(captured))
+    dead=true; env.gadget:GameFrame(10); assert(not next(captured))
 end)
 check('gadget reload and shutdown clean only projection units',function()
     local f=fixture(); f.alive[90],f.teams[90]=true,0

@@ -60,12 +60,24 @@ function gadget:Initialize()
     for defID, value in pairs(getCultureUnitModelTypes("international", "house", UnitDefs)) do
         if not ruins[defID] and not scrap[defID] then buildingTypes[defID] = value end
     end
+    local commercialHologramTypes = {}
+    for defID in pairs(getHologramTypes(UnitDefs)) do
+        if not (UnitDefs[defID].customParams or {}).parade_hologram then
+            commercialHologramTypes[defID] = true
+        end
+    end
+    -- Station advertisements use native model animation instead of the neon pass.
+    for _, name in ipairs({"animated_hologram", "animated_hologramv2"}) do
+        local def = UnitDefNames[name]
+        if def then commercialHologramTypes[def.id] = true end
+    end
     local context = {
         Spring=Spring, GG=GG, Game=Game, UnitDefs=UnitDefs, UnitDefNames=UnitDefNames,
         gameConfig=gameConfig, config=config, catalog=catalog, setSpeed=setSpeedEnv,
         walkerTypes=getCultureUnitModelTypes("international", "civilian", UnitDefs),
         truckTypes=getCultureUnitModelTypes("international", "truck", UnitDefs),
         buildingTypes=buildingTypes,
+        commercialHologramTypes=commercialHologramTypes,
     }
     context.routeBuilder = routes.new(context)
     parade = controller.New(context)

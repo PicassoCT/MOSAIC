@@ -11,6 +11,14 @@ local function fixture(synced)
     local gameConfig, config, catalog, routeBuilder = {}, {}, {}, {}
     local houses = {[10]=10,[20]=20,[30]=30,[40]=40}
     local walkers, trucks = {[50]=50}, {[60]=60}
+    local holograms = {[70]=true,[71]=true,[72]=true}
+    env.UnitDefs[70]={id=70,customParams={}}
+    env.UnitDefs[71]={id=71,customParams={parade_hologram=true}}
+    env.UnitDefs[72]={id=72}
+    env.UnitDefs[73]={id=73,name='animated_hologram'}
+    env.UnitDefs[74]={id=74,name='animated_hologramv2'}
+    env.UnitDefNames.animated_hologram=env.UnitDefs[73]
+    env.UnitDefNames.animated_hologramv2=env.UnitDefs[74]
     local director = {phase='idle',vehicles={},participants={}}
     s.director=director
     function director:Recover()
@@ -55,6 +63,7 @@ local function fixture(synced)
     end
     env.getBuildingRuinTypeTable=function(defs) assert(defs==env.UnitDefs); return {[20]=20} end
     env.getBuildingScrapHeapTypeTable=function(defs) assert(defs==env.UnitDefs); return {[30]=30} end
+    env.getHologramTypes=function(defs) assert(defs==env.UnitDefs); return holograms end
     env.setSpeedEnv=function() end
     env.VFS={Include=function(path)
         s.includes[#s.includes+1]=path
@@ -81,6 +90,7 @@ local function fixture(synced)
     end}
     s.loadResult=assert(loadfile(source,'t',env))()
     s.houses=houses
+    s.holograms=holograms
     return s
 end
 
@@ -103,6 +113,13 @@ assert(not s.context.buildingTypes[20] and not s.context.buildingTypes[30],
     'ruins and scrap heaps cannot become shower emitters')
 assert(s.houses[20]==20 and s.houses[30]==30,
     'filtering must not remove categories from a shared cultural table')
+assert(s.context.commercialHologramTypes[70] and s.context.commercialHologramTypes[72],
+    'commercial holo types must reach the director even without custom parameters')
+assert(not s.context.commercialHologramTypes[71], 'parade projections must remain visible')
+assert(s.context.commercialHologramTypes[73] and s.context.commercialHologramTypes[74],
+    'native animated station ads must be included despite not using the neon renderer')
+assert(s.holograms[71] and s.context.commercialHologramTypes~=s.holograms,
+    'commercial filtering must preserve the shared hologram type table')
 
 local command=assert(s.commands.parade)
 assert(command('parade','start',{'start'},7)==true)
@@ -151,4 +168,4 @@ replaced.env.GG.CityParade=replacement
 replaced.env.gadget:Shutdown()
 assert(replaced.env.GG.CityParade==replacement, 'shutdown cannot clear a newer controller owner')
 assert(replaced.shutdowns==1 and replaced.removed[1]=='parade')
-print('PASS: synced parade adapter, intact-building filter, recovery, cheat gates, read-only status, preview time, callins and cleanup')
+print('PASS: synced parade adapter, building and commercial-hologram filters, recovery, cheat gates, read-only status, preview time, callins and cleanup')
