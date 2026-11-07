@@ -270,8 +270,18 @@ local function sceneTemplates(payload)
                     headPivot = definition.headPivot or {0, (definition.height or 7) * 0.8, 0}}
             end
         else
-            local pieceID = state.index.find(definition.piece)
-            if pieceID ~= nil then templates[#templates + 1] = {item = item, piece = pieceID} end
+            local choices = definition.variants
+            local choice = choices and choices[(payload.id + #templates) % #choices + 1] or definition
+            local pieceID = state.index.find(choice.piece)
+            local wings, complete = {}, true
+            for _, wing in ipairs(choice.wings or {}) do
+                local id = state.index.find(wing.piece)
+                if id == nil then complete = false; break end
+                wings[#wings + 1] = {piece = id, pivot = wing.pivot, axis = wing.axis, sign = wing.sign}
+            end
+            if pieceID ~= nil and complete then
+                templates[#templates + 1] = {item = item, piece = pieceID, wings = wings}
+            end
         end
     end
     for _, item in ipairs(sceneConfig.figures) do add(item, (sceneModels.figures or {})[item.model], true) end
@@ -365,9 +375,19 @@ local function drawSceneObjects(queue)
             gl.Translate(pose.x, pose.y, pose.z)
             gl.Rotate(pose.yaw, 0, 1, 0)
             gl.Rotate(pose.tilt, 1, 0, 0)
+            if pose.roll then gl.Rotate(pose.roll, 0, 0, 1) end
             gl.Color(1, 1, 1, object.opacity)
             if template.piece ~= nil then
                 gl.UnitPiece(object.id, template.piece)
+                for _, wing in ipairs(template.wings or {}) do
+                    gl.PushPopMatrix(function()
+                        local p, axis = wing.pivot, wing.axis
+                        gl.Translate(p[1], p[2], p[3])
+                        gl.Rotate((pose.wingFlap or 0) * wing.sign, axis[1], axis[2], axis[3])
+                        gl.Translate(-p[1], -p[2], -p[3])
+                        gl.UnitPiece(object.id, wing.piece)
+                    end)
+                end
             else
                 gl.UnitPiece(object.id, template.body)
                 gl.PushPopMatrix(function()

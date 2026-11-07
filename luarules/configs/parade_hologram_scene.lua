@@ -91,7 +91,8 @@ local props = {
 for index, prop in ipairs(props) do
     scene.props[#scene.props + 1] = {model = prop[1], x = prop[2], y = prop[3], z = prop[4],
         opacity = 0.88, phase = (index + 2) * 0.79,
-        motion = prop[1] == "money" and "fall" or prop[1] == "koi" and "hover" or nil,
+        motion = prop[1] == "money" and "fall" or prop[1] == "koi" and "hover"
+            or prop[1] == "moth" and "origami" or prop[1] == "lotus" and "petal" or nil,
         fallSeconds = prop[1] == "money" and 16 or nil,
         blinkSeconds = prop[1] == "money" and 0.2 or nil}
 end

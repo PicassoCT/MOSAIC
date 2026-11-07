@@ -79,6 +79,17 @@ function scene.pose(item, seconds, payloadID)
         pose.headTilt = 1.1 * sin(clock * 0.19)
     elseif item.category == "civilian" then
         pose.headTilt = 1.5 * sin(clock * 0.17)
+    elseif item.motion == "origami" then
+        -- Folded wings open around the exported longitudinal hinges. Slow
+        -- paper-bird strokes, with a quiet glide between pairs of flaps.
+        local cycle = clock % 4.8
+        local stroke = cycle < 3.2 and sin(cycle / 1.6 * 2 * pi) or 0
+        pose.wingFlap = 48 + 30 * stroke
+        pose.y = pose.y + 0.35 * sin(clock * 0.8)
+        pose.x = pose.x + 0.75 * sin(clock * 0.35)
+        pose.z = pose.z + 0.55 * cos(clock * 0.35)
+        pose.tilt = 4 * sin(clock * 0.35)
+        pose.activity = cycle < 3.2 and "flap" or "glide"
     elseif not item.ground then
         pose.y = pose.y + 0.18 * sin(clock * 0.6)
         pose.tilt = 2.0 * sin(clock * 0.31)
@@ -181,6 +192,21 @@ function scene.worldPose(station, item, seconds, payloadID, ground, config)
         pose = scene.lanternPose(station, item, seconds, config)
     elseif item.lanternEmitter and config then
         pose = daemonPose(station, item, seconds, config)
+    elseif item.motion == "petal" then
+        -- A single petal falls, rocks across its broad face and drifts sideways.
+        -- Fade near landing and respawn while invisible; no accumulating stock.
+        local duration = 16
+        local age = math.max(0, seconds - station.born) % (duration + 0.4)
+        local drift = age * 0.65 + (item.phase or 0)
+        pose.y = math.max(0, (item.y or 11) * (1 - age / duration))
+        pose.x = item.x + 1.8 * sin(drift) + 0.08 * age
+        pose.z = item.z + 1.1 * sin(drift * 0.7)
+        pose.tilt = 24 * sin(drift * 1.8)
+        pose.roll = 32 * sin(drift * 1.3)
+        pose.yaw = pose.yaw + 16 * age
+        pose.opacity = (item.opacity or 1) * smooth(age / 0.6) * smooth((duration-age) / 0.8)
+        pose.visible = age < duration
+        pose.activity = pose.visible and "drift" or "hidden"
     elseif item.motion == "fall" then
         -- Keep the full fall visible, blink off at ground level, then recycle
         -- above after a short hidden interval. No opacity animation is needed.

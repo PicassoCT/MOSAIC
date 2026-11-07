@@ -42,7 +42,12 @@ check("runtime choices resolve the generated native meshes and measured head piv
         for _, role in ipairs({"body", "head", "mask"}) do assert(definition.pieces[role] == item.model .. role) end
     end
     assert(generated.figures.paradeai1.label:lower():find("null lux", 1, true))
-    for _, item in ipairs(config.props) do assert(generated.props[item.model].piece == "parade" .. item.model) end
+    for _, item in ipairs(config.props) do
+        local definition = assert(generated.props[item.model])
+        assert(definition.piece == definition.variants[1].piece)
+    end
+    assert(#generated.props.moth.variants == 3)
+    for _, bird in ipairs(generated.props.moth.variants) do assert(#bird.wings == 2) end
 end)
 
 check("ground candles stay planted as the parade passes and stations fade instead of sliding", function()
@@ -445,3 +450,31 @@ check("legacy billboard placements compensate import scale without modifying nat
 end)
 
 print("PASS: parade scene behavior suite")
+
+check("origami bird flaps then glides; cherry petal drifts, lands and respawns invisibly", function()
+    local bird, petal
+    for _, item in ipairs(config.props) do
+        if item.motion == "origami" then bird = item end
+        if item.motion == "petal" then petal = item end
+    end
+    assert(bird and petal)
+    local offset = bird.phase + 5 * 0.173
+    local up = scene.pose(bird, 0.4-offset, 5)
+    local down = scene.pose(bird, 1.2-offset, 5)
+    local glide = scene.pose(bird, 4-offset, 5)
+    assert(close(up.wingFlap,78) and close(down.wingFlap,18))
+    assert(glide.activity == "glide" and close(glide.wingFlap,48))
+    local station = {born=0, x=0, z=0, dx=0, dz=1}
+    local previous = 100
+    for tick=0,160 do
+        local pose = scene.worldPose(station,petal,tick/10,5,0,config)
+        assert(pose.y <= previous and pose.y >= 0)
+        assert(math.abs(pose.x-petal.x) <= 3.1 and math.abs(pose.z-petal.z) <= 1.11)
+        assert(math.abs(pose.tilt) <= 24 and math.abs(pose.roll) <= 32)
+        previous = pose.y
+    end
+    local hidden = scene.worldPose(station,petal,16.2,5,0,config)
+    assert(not hidden.visible and hidden.opacity == 0)
+    local restart = scene.worldPose(station,petal,16.4,5,0,config)
+    assert(close(restart.opacity,0))
+end)

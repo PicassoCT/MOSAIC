@@ -347,6 +347,11 @@ def main():
     parser.add_argument("--json-output", type=Path)
     args = parser.parse_args()
     root = args.root.resolve()
+    if (root / "tools/parade_holograms/import_manifest.json").exists() and not args.model and not args.standalone:
+        from parade_scenery_import_test import run
+        run(args.base_ref or "212ebe79", not args.xml_only, root=root,
+            base_dae=args.base_dae, max_triangles=args.max_triangles, json_output=args.json_output)
+        return
     model = args.model or root / "objects3d/truckPayloadParade.dae"
     standalone = args.standalone or root / "objects3d/paradeHologramScenery.dae"
     document, nodes, pieces = load_export(model)

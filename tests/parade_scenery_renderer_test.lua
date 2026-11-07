@@ -58,6 +58,23 @@ local function fixture(options)
             end
         end
     end
+    if options.authored then
+        sceneModels = dofile("luarules/configs/parade_hologram_models.lua")
+        f.pieceMap = {center = 0}
+        local nextPiece = 1
+        local function add(name)
+            if f.pieceMap[name:upper()] == nil then
+                f.pieceMap[name:upper()] = nextPiece; nextPiece = nextPiece + 1
+            end
+        end
+        for _, def in pairs(sceneModels.figures) do for _, name in pairs(def.pieces) do add(name) end end
+        for _, def in pairs(sceneModels.props) do
+            for _, choice in ipairs(def.variants) do
+                add(choice.piece)
+                for _, wing in ipairs(choice.wings or {}) do add(wing.piece) end
+            end
+        end
+    end
     local figureData = figures
     if options.invalidTiming then
         figureData = {glyphs = {}, themes = figures.themes}
@@ -214,6 +231,7 @@ local function fixture(options)
     if options.native then
         gl.Rotate = function(angle, x, y, z)
             if f.matrixDepth == 1 and x == 1 and y == 0 and z == 0 then f.rawTilt = angle end
+            if f.matrixDepth == 2 and math.abs(x) > .999 and math.abs(y) < .001 and math.abs(z) < .001 then f.wingAngle = angle end
         end
         gl.Texture = function(unit, texture)
             assert(unit == 0 or unit == 1)
@@ -227,7 +245,7 @@ local function fixture(options)
             assert(f.texture == "%7:0")
             assert(f.materialTexture == "%7:1", "opacity comes from packed material, not diffuse team-color alpha")
             f.meshDraws[#f.meshDraws + 1] = {id = id, piece = pieceID,
-                anchor = f.rawAnchor, opacity = f.color[4], tilt = f.rawTilt}
+                anchor = f.rawAnchor, opacity = f.color[4], tilt = f.rawTilt, wingAngle = f.wingAngle}
         end
     end
     f.result = loadEnv("luarules/gadgets/gfx_parade_scenery.lua", env)
@@ -841,3 +859,23 @@ check("missing meshes or native shader/draw failures retain the original billboa
 end)
 
 print("PASS: parade pixel and native hologram regression suite")
+
+check("artist bird variants draw exactly two hinged wings and missing wings restore fallback", function()
+    local f = fixture({native=true, authored=true})
+    drawAt(f,10); drawAt(f,12)
+    assert(#f.errors == 0)
+    local reverse = {}; for name,id in pairs(f.pieceMap) do reverse[id]=name end
+    local angles, birds = {}, 0
+    for _, draw in ipairs(f.meshDraws) do
+        local name = reverse[draw.piece]
+        if name:match("^PARADEMOTH%dSUB%d$") then angles[#angles+1] = draw.wingAngle end
+        if name:match("^PARADEMOTH%d$") then birds=birds+1 end
+    end
+    assert(birds == 1 and #angles == 2)
+    assert(close(angles[1],-angles[2]) and math.abs(angles[1]) >= 18 and math.abs(angles[1]) <= 78)
+    assert(#f.meshDraws <= 71, "one station exceeds 48 figure + 21 prop + 2 wing draw budget")
+    f = fixture({native=true, authored=true})
+    for name in pairs(f.pieceMap) do if name:match("^PARADEMOTH%dSUB2$") then f.pieceMap[name]=nil end end
+    drawAt(f,10); drawAt(f,12)
+    assert(#f.meshDraws == 0 and #f.draws > 0)
+end)

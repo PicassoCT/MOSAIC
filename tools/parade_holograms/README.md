@@ -1,27 +1,49 @@
-# Low-poly parade cage surfaces
+# Re-exported parade scenery
 
-The active export evaluates the editable spline cages directly through
-`cage_surface.py`. Voxelization is retained only as a legacy authoring tool.
-All 16 figures and 12 scenery props use low-poly surfaces, with separate
-body/head/mask pieces and the existing behavior hooks. Total: 19,740 triangles.
+The active source is the artist's `objects3d/paradeHologramScenery.dae`.
+`import_export.py` checks all local and inherited transforms before writing:
+non-uniform scale, shear, mirrored/singular matrices and incomplete exports
+stop the import. The original DAE is never rewritten or repaired automatically.
+Valid transforms and COLLADA units are evaluated into world-space mesh buffers
+for `gl.UnitPiece`, with the same conversion applied to wing hinge axes/pivots.
+The generated inspection model is `paradeHologramSceneryRuntime.dae`; identical
+pieces are embedded in `truckPayloadParade.dae`.
 
-`palette.json` selects existing Asian-house atlas gradient strips for ivory,
-cyan, violet, gold and orange emission. UVs span each cage surface rather than
-sampling a constant swatch. The original atlas files are unchanged. The shader
-reads packed tex2 red for emission intensity and alpha for opacity. Texture
-previews sample the real diffuse and emission maps per pixel.
+All 74 authored meshes are retained, plus the old leaf motif missing from this
+export. The three origami bird variants replace the moth; the cherry blossom
+petal replaces the lotus. Catalog keys `moth` and `lotus` remain for compatibility
+with existing fallback themes. Each station chooses one bird with two separate
+wing draws, alternating two slow strokes with a glide. The petal drifts downward,
+rocks and fades before recycling. Candle, lantern and cloud variants are selected
+deterministically without increasing the number of simultaneous props.
+
+The authoring recipes, cage source and `manifest.json` document the previous
+procedural version. `build.py` refuses to overwrite an artist-exported DAE.
+`import_manifest.json` describes the active import. The Asian-house atlas files
+are unchanged, and all exported UVs and normals are preserved.
+
+The native pass uses 71 mesh draws per fully visible station (previously 69),
+and 21,418–21,466 triangles (previously 27,100 with the same six-lantern layout).
+Four payloads and at most two stations each bound this to 568 draws and 171,728
+triangles. These are static workload counts, not a frame-time benchmark; the
+extra wing transforms and draw calls mean equal performance cannot be guaranteed.
+`audit_runtime_cost.py` reproduces the comparison in `runtime_cost.json`.
+
+[Animated bird/petal proof](../../docs/images/parade-holograms/motion.webp)
+uses actual Lua poses, exported geometry and hinge metadata. It is not an
+in-engine lighting or performance capture.
 
 # Parade hologram models
 
 This package supplies the parade's masked audience and ceremonial scenery as
 editable spline cages and low-poly native COLLADA meshes. It contains four
 civilians, four dead people, four AI spirits, four helper programs, and twelve
-decorations. The game meshes have **19,740 triangles across 60 independently
+decorations. The game meshes have **22,096 triangles across 75 independently
 addressable geometry pieces**. The masks, heads and bodies are separate pieces.
 
 The current artist-authored `truckPayloadParade.dae` is the preservation base.
 Its existing 41 geometries, 41 authored nodes, materials, transforms and float
-variants remain intact. `build.py` replaces only this package's generated
+variants remain intact. `import_export.py` replaces only this package's generated
 namespace and appends the scenery to the existing payload. It does not run the
 historical six-float exporter.
 
@@ -30,7 +52,7 @@ historical six-float exporter.
 | File | Purpose |
 | --- | --- |
 | [`../../objects3d/truckPayloadParade.dae`](../../objects3d/truckPayloadParade.dae) | Existing game payload with the new hidden scenery pieces embedded |
-| [`../../objects3d/paradeHologramScenery.dae`](../../objects3d/paradeHologramScenery.dae) | Standalone model containing all sixteen visitors and twelve props; useful for import and inspection |
+| [`../../objects3d/paradeHologramScenery.dae`](../../objects3d/paradeHologramScenery.dae) | Artist-edited source export; kept intact |
 | [`Build_Parade_Hologram_Cages.ms`](Build_Parade_Hologram_Cages.ms) | Self-contained 3ds Max 2018 builder for the original editable cages |
 | [`source/cages.json`](source/cages.json) | Complete control nets, spline paths, semantic groups and figure descriptions |
 | [`figures.py`](figures.py), [`props.py`](props.py) | Authoring recipes used by deterministic regeneration |
@@ -63,12 +85,9 @@ its name. For example, Null Lux uses `paradeai1body`, `paradeai1head`, and
 
 ## Decorations and behavior
 
-The native props are ground candles, floating paper lanterns, a crescent moon,
-an envelope, a hyperinflation banknote, koi, lotus blossoms, leaves and stars.
-Clouds, pinwheels and moths retain the previous decoration catalog's motifs.
-Their native names are `paradecandle`, `paradelantern`, `parademoon`,
-`paradeenvelope`, `parademoney`, `paradekoi`, `paradelotus`, `paradeleaf`,
-`paradestar`, `paradecloud`, `paradepinwheel`, and `parademoth`.
+The native props include five candles, two lanterns, a moon, envelope, banknote,
+koi, cherry blossom petal, leaf, star, three clouds, a pinwheel and three origami
+birds. Exact exported names and variant/wing definitions are in the runtime catalog.
 
 The audience is placed at persistent world positions while a float passes.
 The next station appears after 108 world units of travel, with a 1.6-second
@@ -189,16 +208,18 @@ gradient. Semantic groups preserve separate body, head and mask pieces.
 From the repository root, with Python 3 and NumPy, lxml and Pillow:
 
 ```sh
-python tools/parade_holograms/build.py
+python tools/parade_holograms/import_export.py
 python tools/parade_holograms/render_preview.py
+python tools/parade_holograms/render_motion_preview.py
+python tools/parade_holograms/audit_runtime_cost.py
 ```
 
 The preview command writes local PNG proofs and self-contained SVG copies in
 `docs/images/parade-holograms`. Each SVG embeds the exact PNG bytes without
 re-encoding; the documentation uses the SVG copies.
 
-The build is idempotent, including the updated payload, standalone model,
-metadata, control-net JSON and MaxScript. The standalone DAE uses metre=1 and
+The import is idempotent, including the updated payload, runtime inspection
+model and metadata. The runtime inspection DAE uses metre=1 and
 identity nodes. Native drawing calls `gl.UnitPiece` on raw final-world-unit
 vertex buffers. It intentionally does not apply the original FBX payload's
 `.0254` root scale, container rotation or piece matrix to these scenery meshes.

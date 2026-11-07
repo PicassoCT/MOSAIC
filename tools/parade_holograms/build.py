@@ -196,6 +196,8 @@ def lua(value,indent=0):
 
 
 def generate(skip_payload=False):
+    if STANDALONE.exists() and b'FBX COLLADA exporter' in STANDALONE.read_bytes()[:4000]:
+        raise ValueError('Artist export detected. Use import_export.py; refusing to overwrite edited source with legacy recipes.')
     from cage_surface import ROTATION, model_cells, mesh
     palette=json.loads((HERE/'palette.json').read_text())
     models=build_figures()+build_props()

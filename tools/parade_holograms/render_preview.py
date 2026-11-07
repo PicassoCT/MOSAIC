@@ -11,6 +11,7 @@ Writes PNG proofs and self-contained SVGs embedding the same PNG bytes.
 from __future__ import annotations
 
 import argparse
+from functools import lru_cache
 import base64
 from dataclasses import dataclass
 from html import escape
@@ -199,12 +200,18 @@ def font(size, bold=False):
     return ImageFont.load_default(size=size)
 
 
-def rasterize(screen, depths, colors, width, height, uvs):
-    atlas = np.asarray(Image.open(ROOT / "unittextures/house_asian_diffuse.dds").convert("RGB")) / 255
-    emission = np.asarray(Image.open(ROOT / "unittextures/house_asian_selfilu_reflection.png"))[:, :, 0] / 255
+@lru_cache(maxsize=1)
+def atlas_textures():
+    atlas = np.asarray(Image.open(ROOT / "unittextures/house_asian_diffuse.dds").convert("RGB"), dtype=np.float32) / 255
+    material = np.asarray(Image.open(ROOT / "unittextures/house_asian_selfilu_reflection.png").convert("RGBA"), dtype=np.float32) / 255
+    return atlas, material
+
+
+def rasterize(screen, depths, width, height, uvs):
+    atlas, material = atlas_textures()
     pixels = np.zeros((height, width, 4), dtype=np.uint8)
     depth_buffer = np.full((height, width), -np.inf, dtype=np.float64)
-    for triangle, depth, color, uv in zip(screen, depths, colors, uvs):
+    for triangle, depth, uv in zip(screen, depths, uvs):
         x0 = max(0, math.floor(triangle[:, 0].min()))
         x1 = min(width - 1, math.ceil(triangle[:, 0].max()))
         y0 = max(0, math.floor(triangle[:, 1].min()))
@@ -230,13 +237,13 @@ def rasterize(screen, depths, colors, width, height, uvs):
             target[visible] = z[visible]
             sample = wa[..., None]*uv[0]+wb[..., None]*uv[1]+wc[..., None]*uv[2]
             tx=np.clip((sample[...,0]*4096).astype(int),0,4095); ty=np.clip(((1-sample[...,1])*4096).astype(int),0,4095)
-            rgb=atlas[ty,tx]*(0.30+0.70*emission[ty,tx,None])
+            rgb=atlas[ty,tx]*(0.30+0.70*material[ty,tx,0,None])
             pixels[y0:y1 + 1, x0:x1 + 1][visible, :3] = np.clip(np.rint(rgb[visible] * 255), 0, 255).astype(np.uint8)
-            pixels[y0:y1 + 1, x0:x1 + 1][visible, 3] = 255
+            pixels[y0:y1 + 1, x0:x1 + 1][visible, 3] = np.rint(material[ty,tx,3][visible] * 255).astype(np.uint8)
     return Image.fromarray(pixels)
 
 
-def render_piece(piece, palette, size, camera=(.72, .28, 1.3), padding=15):
+def render_piece(piece, palette, size, camera=(.72, .28, 1.3), padding=15, frame_bounds=None):
     width, height = size
     camera = np.array(camera, dtype=float)
     camera /= np.linalg.norm(camera)
@@ -245,25 +252,13 @@ def render_piece(piece, palette, size, camera=(.72, .28, 1.3), padding=15):
     up = np.cross(camera, right)
     positions = piece.positions
     projected = np.stack((positions @ right, positions @ up), axis=-1)
-    low, high = projected.min(axis=(0, 1)), projected.max(axis=(0, 1))
+    low, high = frame_bounds if frame_bounds is not None else (projected.min(axis=(0, 1)), projected.max(axis=(0, 1)))
     scale = min((width - 2 * padding) / max(high[0] - low[0], .01),
                 (height - 2 * padding) / max(high[1] - low[1], .01))
     screen = (projected - (low + high) / 2) * [scale, -scale] + [width / 2, height / 2]
-    indices = palette_indices(piece.uvs, palette)
-    swatches = list(palette.values())
-    colors = np.array([patch["preview_rgb"] for patch in swatches], dtype=float)[indices] / 255
-    emissions = np.array([patch.get("emission_R_mean", 255 if patch.get("emissive") else 0)
-                          for patch in swatches], dtype=float)[indices] / 255
     normals = np.cross(positions[:, 1] - positions[:, 0], positions[:, 2] - positions[:, 0])
-    lengths = np.linalg.norm(normals, axis=1)
-    normals /= np.maximum(lengths[:, None], 1e-10)
-    light = np.array([-.5, .7, 1.0]); light /= np.linalg.norm(light)
     front_facing = (normals @ camera) > 1e-7
-    # Readable studio proof, with exact atlas means and no hand-painted detail.
-    # Emissive patches stay bright; darker silhouette swatches get broad fill.
-    shade = (.52 + .48 * np.maximum(0, normals @ light)) * (1 - emissions) + (.88 + .12 * np.maximum(0, normals @ light)) * emissions
-    colors = np.clip(colors * shade[:, None], 0, 1)
-    return rasterize(screen[front_facing], (positions @ camera)[front_facing], colors[front_facing], width, height, piece.uvs[front_facing])
+    return rasterize(screen[front_facing], (positions @ camera)[front_facing], width, height, piece.uvs[front_facing])
 
 
 def _read_labels(root):
@@ -326,11 +321,15 @@ def render_figure_sheet(pieces, palette, output, labels):
 
 
 def render_props_sheet(pieces, palette, output):
-    prop_names = list(PROP_NAMES)
-    extras = sorted(name.removeprefix("parade") for name in pieces
-                    if name.startswith("parade") and name.removeprefix("parade") not in prop_names
-                    and not any(name.startswith(figure) for figure in FIGURE_NAMES))
-    prop_names.extend(extras)
+    catalog = json.loads((ROOT / "tools/parade_holograms/import_manifest.json").read_text())["catalog"]
+    prop_names = []
+    assembled = {}
+    for key, definition in catalog["props"].items():
+        for index, choice in enumerate(definition["variants"], 1):
+            name = definition["label"] + (f" {index}" if len(definition["variants"]) > 1 else "")
+            members = [choice["piece"]] + [w["piece"] for w in choice.get("wings", [])]
+            assembled[name] = combine_pieces(pieces, members)
+            prop_names.append(name)
     cols = min(5, len(prop_names))
     rows = math.ceil(len(prop_names) / cols)
     cell_w, cell_h, margin, header = 370, 390, 36, 128
@@ -343,13 +342,13 @@ def render_props_sheet(pieces, palette, output):
         row, col = divmod(index, cols)
         x, y = margin + col * cell_w, header + row * cell_h
         draw.rounded_rectangle((x + 3, y + 3, x + cell_w - 8, y + cell_h - 8), 9, fill=PANEL, outline=(43, 56, 67))
-        piece = pieces["parade" + prop]
+        piece = assembled[prop]
         draw.text((x + 17, y + 16), prop.upper(), font=font(22, True), fill=INK)
         extents = piece.bounds[1] - piece.bounds[0]
         draw.text((x + 17, y + 48), f"{len(piece.positions):,} triangles  ·  {extents[1]:.2f} units high", font=font(14), fill=MUTED)
         preview = render_piece(piece, palette, (cell_w - 34, cell_h - 116), camera=(.52, .45, 1.35))
         image.paste(preview, (x + 13, y + 80), preview)
-    draw.text((margin, height - 39), "Parsed directly from paradeHologramScenery.dae. Atlas colours; no generated-image reconstruction.", font=font(16), fill=MUTED)
+    draw.text((margin, height - 39), "Parsed directly from paradeHologramSceneryRuntime.dae. Atlas colours; no generated-image reconstruction.", font=font(16), fill=MUTED)
     image.save(output)
     return output
 
@@ -388,13 +387,12 @@ def main():
     parser.add_argument("--model", type=Path)
     parser.add_argument("--output-dir", type=Path)
     args = parser.parse_args()
-    model = args.model or args.root / "objects3d/paradeHologramScenery.dae"
+    model = args.model or args.root / "objects3d/paradeHologramSceneryRuntime.dae"
     output_dir = args.output_dir or args.root / "docs/images/parade-holograms"
     if not output_dir.is_absolute():
         output_dir = args.root / output_dir
     _, _, pieces = load_export(model)
     missing = {piece for figure in FIGURE_NAMES for piece in figure_piece_names(figure)} - pieces.keys()
-    missing |= {"parade" + prop for prop in PROP_NAMES} - pieces.keys()
     if missing:
         raise SystemExit("Missing expected exported pieces: " + ", ".join(sorted(missing)))
     output_dir.mkdir(parents=True, exist_ok=True)
