@@ -22,6 +22,9 @@ function M.New(context)
     local convoy, cooldown, lastBuildingBurst = {}, {}, {}
     local hiddenCommercialHolograms = {}
     local commercialHologramTypes = context.commercialHologramTypes or {}
+    local previousStartHolograms = {}
+    local previousCommercialStart, previousCommercialEnd, previousCommercialFrame
+    local previousCommercialEndX, previousCommercialEndZ
     local route, pendingRoute, pendingDay, carrierDefID, eventDay, endFrame
     local tourStartFrame, previewRequest, preview = nil, nil, false
     local nextRetirementCheck = 0
@@ -58,33 +61,108 @@ function M.New(context)
         -- the shared draw/light gate without losing their current animation.
         call(id, "SetParadeCommercialHidden", hidden)
     end
-    local function hideNearbyCommercialHolograms()
-        for _, truck in ipairs(convoy) do
-            local x, _, z = S.GetUnitPosition(truck)
-            if x then
-                local nearby = S.GetUnitsInCylinder(x, z, C.commercialHologramRadius) or {}
-                table.sort(nearby)
-                for _, id in ipairs(nearby) do
-                    if not hiddenCommercialHolograms[id] and commercialHologramTypes[S.GetUnitDefID(id)] then
-                        hiddenCommercialHolograms[id] = true
-                        setCommercialHologramHidden(id, true)
-                    end
-                end
-            end
-        end
-    end
     local function restoreCommercialHolograms()
-        -- Latch ads off for the whole event, including gaps between floats.
         for _, id in ipairs(sorted(hiddenCommercialHolograms)) do
             setCommercialHologramHidden(id, false)
         end
-        hiddenCommercialHolograms = {}
+        hiddenCommercialHolograms, previousStartHolograms = {}, {}
+        previousCommercialStart, previousCommercialEnd, previousCommercialFrame = nil, nil, nil
+        previousCommercialEndX, previousCommercialEndZ = nil, nil
+    end
+    local function commercialHologramsNear(x, z)
+        local nearby = {}
+        for _, id in ipairs(S.GetUnitsInCylinder(x, z, C.commercialHologramRadius) or {}) do
+            if commercialHologramTypes[S.GetUnitDefID(id)] then nearby[id] = true end
+        end
+        return nearby
+    end
+    local function armCommercialHologram(id, expiresFrame)
+        local timer = hiddenCommercialHolograms[id]
+        if not timer then
+            timer = {}
+            hiddenCommercialHolograms[id] = timer
+            setCommercialHologramHidden(id, true)
+        end
+        timer.expiresFrame = math.max(timer.expiresFrame or expiresFrame, expiresFrame)
+        timer.tailSeen = false
+        return timer
+    end
+    local function updateCommercialHolograms(frame)
+        local startFloat, endFloat = convoy[1], convoy[#convoy]
+        director.startFloat, director.endFloat = startFloat, endFloat
+        if not startFloat then restoreCommercialHolograms(); return end
+        local sx, _, sz = S.GetUnitPosition(startFloat)
+        local ex, _, ez = S.GetUnitPosition(endFloat)
+        if not sx or not ex then return end
+
+        -- Sum the formation segments so bends do not collapse the estimate
+        -- to the straight-line distance between the first and last float.
+        local paradeLength, px, pz = 0, nil, nil
+        for _, id in ipairs(convoy) do
+            local x, _, z = S.GetUnitPosition(id)
+            if x then
+                if px then paradeLength = paradeLength + sqrt(distance(x, z, px, pz)) end
+                px, pz = x, z
+            end
+        end
+        local def = context.UnitDefs[S.GetUnitDefID(endFloat)]
+        local speed = math.max(1, (def and def.speed or 0) * C.speedFactor)
+        local framesPerUnit = (context.Game.gameSpeed or 30) / speed
+        -- Include both sides of the detection radius: lead entry to tail exit.
+        local passageFrames = math.ceil((paradeLength + 2*C.commercialHologramRadius) * framesPerUnit)
+        local endpointsChanged = startFloat ~= previousCommercialStart or endFloat ~= previousCommercialEnd
+        local delay = 0
+        if not endpointsChanged and previousCommercialFrame then
+            local travelled = sqrt(distance(ex, ez, previousCommercialEndX, previousCommercialEndZ))
+            -- Shift deadlines by lost travel time. A stopped tail pauses every
+            -- timer; slow or faster movement adjusts the predicted expiry.
+            delay = frame - previousCommercialFrame - travelled * framesPerUnit
+        end
+        for _, timer in pairs(hiddenCommercialHolograms) do
+            if endpointsChanged then
+                timer.expiresFrame = math.max(timer.expiresFrame, frame + passageFrames)
+                timer.tailSeen = false
+            else
+                timer.expiresFrame = timer.expiresFrame + delay
+            end
+        end
+
+        -- Only the designated first and last float search for advertisements.
+        local startNearby = commercialHologramsNear(sx, sz)
+        local endNearby = startFloat == endFloat and startNearby or commercialHologramsNear(ex, ez)
+        for _, id in ipairs(sorted(startNearby)) do
+            if not hiddenCommercialHolograms[id] or not previousStartHolograms[id] then
+                armCommercialHologram(id, frame + passageFrames)
+            end
+        end
+        for _, id in ipairs(sorted(endNearby)) do
+            local timer = hiddenCommercialHolograms[id]
+                or armCommercialHologram(id, frame + math.ceil(2*C.commercialHologramRadius*framesPerUnit))
+            timer.tailSeen = true
+        end
+        for _, id in ipairs(sorted(hiddenCommercialHolograms)) do
+            local timer = hiddenCommercialHolograms[id]
+            if not startNearby[id] and not endNearby[id] then
+                -- An observed tail exit is more precise than the prediction.
+                if timer.tailSeen then timer.expiresFrame = frame end
+                if frame >= timer.expiresFrame then
+                    setCommercialHologramHidden(id, false)
+                    hiddenCommercialHolograms[id] = nil
+                end
+            end
+        end
+        previousStartHolograms = startNearby
+        previousCommercialStart, previousCommercialEnd, previousCommercialFrame = startFloat, endFloat, frame
+        previousCommercialEndX, previousCommercialEndZ = ex, ez
     end
     local function publish()
+        director.startFloat, director.endFloat = convoy[1], convoy[#convoy]
         S.SetGameRulesParam("city_parade_active", director.phase == "touring" and 1 or 0, public)
         S.SetGameRulesParam("city_parade_phase", director.phase, public)
         S.SetGameRulesParam("city_parade_day", eventDay or 0, public)
         S.SetGameRulesParam("city_parade_vehicle_count", #convoy, public)
+        S.SetGameRulesParam("city_parade_start_float", director.startFloat or -1, public)
+        S.SetGameRulesParam("city_parade_end_float", director.endFloat or -1, public)
         S.SetGameRulesParam("city_parade_participants", count(director.participants), public)
     end
     local function busy(id)
@@ -351,6 +429,7 @@ function M.New(context)
     end
 
     local function updateConvoy(frame)
+        local membershipChanged = false
         for i = #convoy, 1, -1 do
             local id = convoy[i]
             local vehicle = director.vehicles[id]
@@ -358,8 +437,10 @@ function M.New(context)
                 or S.GetUnitTransporter(vehicle.payload) ~= id then
                 retireVehicle(id)
                 table.remove(convoy, i)
+                membershipChanged = true
             end
         end
+        if membershipChanged then publish() end
         for i, id in ipairs(convoy) do
             local vehicle = director.vehicles[id]
             local x, _, z = S.GetUnitPosition(id)
@@ -555,7 +636,7 @@ function M.New(context)
                 updateAudience(frame)
                 showerBuildings(frame)
             end
-            hideNearbyCommercialHolograms()
+            updateCommercialHolograms(frame)
             return
         end
         local requestedPreview = previewRequest ~= nil
@@ -574,7 +655,7 @@ function M.New(context)
             if status == "ready" then
                 startAssembly(day,frame,requestedPreview)
                 spawnVehicle(frame)
-                hideNearbyCommercialHolograms()
+                updateCommercialHolograms(frame)
             elseif status == "invalid" then pendingRoute,pendingDay=nil,nil; nextAttempt=frame+C.retryFrames end
             return
         end
@@ -597,6 +678,7 @@ function M.New(context)
     function director:UnitDestroyed(id)
         if self.participants[id] then releasePerson(id,S.GetGameFrame()) end
         hiddenCommercialHolograms[id] = nil
+        previousStartHolograms[id] = nil
         cooldown[id],lastBuildingBurst[id],self.retired[id] = nil,nil,nil
         if self.vehicles[id] then self:Stop("vehicle lost") end
     end
