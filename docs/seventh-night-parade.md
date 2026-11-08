@@ -194,7 +194,7 @@ Edit [luarules/configs/city_parade.lua](../luarules/configs/city_parade.lua). Di
 
 The four CEG names in `effects` are `parade_confetti`, `parade_origami`, `parade_petals`, and `parade_inflationmoney`. Their [definitions](../gamedata/explosions/parade.lua) emit respectively **18, 6, 12, and 8 particles per burst**. Maximum lifetime is **270 frames**, or nine seconds. Sprite sizes and downward motion are defined there; the director limits how often buildings emit them.
 
-The music player discovers `.ogg` files under `sounds/music/parade/`. An existing `sounds/music/playlist.lua` can supply a `parade` list; an explicit empty list opts out. See [snd_music.lua](../luaui/widgets_mosaic/snd_music.lua) for playlist and playback integration.
+The music player discovers `.ogg` files under `sounds/music/parade/` at each procession start. It randomly chooses one track, plays it from the beginning immediately when touring starts, and repeats that same track until the parade ends. Additional files become candidates for the next procession. The parade score follows camera distance to the nearest visible active carrier: full selected volume within 200 world units, a smooth fade, and silence at 1,200 units including camera height. This is distance attenuation of one synchronized stream, not directional stereo panning. Zooming back in preserves playback position; nearby trucks do not stack volume. Normal ambient music resumes on parade end; explicit custom tracks, stop requests, mute and pause settings keep priority. An existing `sounds/music/playlist.lua` can supply a `parade` list; an explicit empty list opts out. See [snd_music.lua](../luaui/widgets_mosaic/snd_music.lua) for playlist and playback integration.
 
 ## Rebuild assets
 
