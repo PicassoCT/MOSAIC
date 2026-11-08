@@ -45,3 +45,20 @@ do
  assert(not area:IsDangerous(7000,7000,300),'expired incident still blocks parade')
  print('PASS absolute damage threshold, minor incidents, accumulation, decay and legacy quiet period')
 end
+
+do
+    local now=0
+    local config=dofile('luarules/configs/city_area.lua')
+    local area=dofile('luarules/gadgets/include/city_area_state.lua')(config,8192,8192,function()return now end)
+    local zero,key=area:GetHeatAtLocation(1000,1000)
+    assert(zero==0 and key and not next(area.cells),'heat query allocated a cell')
+    area:ReportIncident(1000,1000,500,0)
+    local initial,sameKey=area:GetHeatAtLocation(1000,1000)
+    assert(initial==500 and key==sameKey)
+    now=10
+    assert(area:GetHeatAtLocation(1000,1000)==math.max(0,500-10*config.heatDecayPerFrame))
+    now=config.quietFrames
+    local expired,expiredKey=area:GetHeatAtLocation(1000,1000)
+    assert(expired==0 and expiredKey==key,'heat query retained expired risk or changed spatial key')
+end
+print('PASS absolute heat query, stable empty-cell keys, decay and expiry without allocation')

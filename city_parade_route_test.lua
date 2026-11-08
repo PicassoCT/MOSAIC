@@ -248,7 +248,9 @@ do
     local pending = assert(f.builder:Begin(7, 41))
     area:ReportIncident(1000, 1000, 100, 4000)
     assert(f.builder:Poll(pending) == 'invalid', 'heavy combat crossed by route')
-    assert(not f.builder:Begin(7, 41), 'heavy combat accepted as route nodes')
+    local fallback = assert(f.builder:Begin(7, 41), 'widespread old damage prevented fallback')
+    assert(fallback.fallback and f.builder:Poll(fallback) == 'ready')
+    assert(fallback.peakHeat == 450 and next(fallback.heatBaseline))
 end
 print('PASS parade route damage tolerance')
 
@@ -306,3 +308,93 @@ do
     assert(short.builder:Poll(r)=='invalid' and r.reason=='circuit is too short for convoy spacing')
 end
 print('PASS house crossing, head-on return lanes and convoy circuit capacity')
+
+-- Compare disconnected neighbourhoods, so node ID and daily rotation cannot
+-- accidentally select the hottest component. Water/blocked roads still veto it.
+do
+    local f = fixture(8)
+    local area = dofile('luarules/gadgets/include/city_area_state.lua')(
+        dofile('luarules/configs/city_area.lua'), 8192, 8192, function() return 0 end)
+    f.GG.CityAreaState = area
+    for id=1,8 do
+        local group = id<=4 and 0 or 1
+        local corner = (id-1)%4
+        f.positions[id] = point(500+group*4000+(corner%2)*800,500+math.floor(corner/2)*800)
+        f.graph[id] = {}
+        for other=1,8 do
+            if other~=id and (other<=4)==(id<=4) then f.graph[id][#f.graph[id]+1]=other end
+        end
+    end
+    area:ReportIncident(900,900,1800,1600)
+    area:ReportIncident(4900,900,400,1600)
+    local route = assert(f.builder:Begin(7,41))
+    assert(route.fallback and f.builder:Poll(route)=='ready')
+    for _,id in ipairs(route.nodes) do assert(id>4,'hotter neighbourhood chosen over cooler circuit') end
+    assert(route.peakHeat==400)
+    local heat,key,damage,generation=area:GetHeatAtLocation(route.points[1].x,route.points[1].z)
+    assert(route.heatBaseline[key].damage==damage and route.heatBaseline[key].generation==generation)
+    f.water=function()return true end
+    assert(not f.builder:Begin(14,41),'fallback allowed underwater curbs')
+end
+
+-- Heat midway along a link matters even when its two endpoints are cooler.
+do
+    local f=fixture(8)
+    f.GG.CityAreaState.GetHeatAtLocation=function(_,x,z)
+        return x>1800 and 400 or (z>700 and z<1100 and 2000 or 350),0
+    end
+    f.danger=function()return true end
+    for id=1,8 do
+        local group=id<=4 and 0 or 1
+        local corner=(id-1)%4
+        f.positions[id]=point(500+group*3000+(corner%2)*800,500+math.floor(corner/2)*800)
+        f.graph[id]={group*4+({2,4,1,3})[corner+1]}
+    end
+    local route=assert(f.builder:Begin(7,41))
+    for _,id in ipairs(route.nodes)do assert(id>4,'route scoring ignored damage between its endpoints')end
+    assert(f.builder:Poll(route)=='ready')
+end
+
+-- A hazard discovered on the asynchronous native path enables the ranked
+-- fallback on retry instead of spending the whole preview on strict rejections.
+do
+    local f=fixture(6)
+    local route=assert(f.builder:Begin(7,41))
+    f.danger=function()return true end
+    -- Nodes remain clear; the midpoint of each native leg is now dangerous.
+    f.danger=function(x,z)
+        for _,p in pairs(f.positions)do if same(p,point(x,z))then return false end end
+        return true
+    end
+    assert(f.builder:Poll(route)=='invalid')
+    local retry=assert(f.builder:Begin(7,41))
+    assert(retry.fallback and f.builder:Poll(retry)=='ready')
+    f.terrainBlocked=function()return true end
+    assert(not f.builder:Begin(7,41),'fallback bypassed terrain checks')
+end
+print('PASS least-dangerous fallback, path heat ranking, asynchronous hazard retry, and physical safety')
+
+-- Risk fallback never relaxes the physical convoy restrictions.
+do
+    local f=fixture(2,{routeRejectRetrace=true})
+    f.danger=function()return true end
+    local route=assert(f.builder:Begin(7,41))
+    assert(route.fallback and f.builder:Poll(route)=='invalid')
+    assert(route.reason=='circuit doubles back into the convoy lane')
+    local short=fixture(2,{vehicleCount=12,vehicleSpacing=140})
+    short.danger=function()return true end
+    local r=assert(short.builder:Begin(7,41))
+    assert(r.fallback and short.builder:Poll(r)=='invalid')
+    assert(r.reason=='circuit is too short for convoy spacing')
+    local house=fixture(4)
+    house.danger=function()return true end
+    local clearance={Refresh=function()end,SegmentClear=function(_,a,b)
+        if same(a,b)then return true end;return false,99
+    end}
+    house.builder=Route.new({Spring=house.Spring,GG=house.GG,
+        UnitDefs={[41]={moveDef={id=17}}},clearance=clearance})
+    local crossing=assert(house.builder:Begin(7,41))
+    assert(crossing.fallback and house.builder:Poll(crossing)=='invalid')
+    assert(crossing.reason:find('house footprint 99',1,true))
+end
+print('PASS fallback retains house clearance, convoy capacity and separate return lanes')

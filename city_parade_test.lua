@@ -149,7 +149,7 @@ local function fixture(options)
         Begin=function(_,day,def)
             f.starts=f.starts+1
             if options.noRoute then return nil end
-            return {nodes={100,101,102,103},points={{x=650,y=0,z=500},{x=850,y=0,z=500},
+            return {fallback=options.fallback,heatBaseline=options.heatBaseline,peakHeat=options.peakHeat,nodes={100,101,102,103},points={{x=650,y=0,z=500},{x=850,y=0,z=500},
                 {x=2000,y=0,z=500},{x=2000,y=0,z=2000},{x=500,y=0,z=2000},{x=650,y=0,z=500}}}
         end,
         Poll=function()
@@ -632,4 +632,48 @@ check('every rooftop shower clears a tall mounted float even beside a low buildi
         names[effect.name]=true
     end
     assert(count(names)==4)
+end)
+
+check('least-dangerous fallback assembles amid old damage and stops on new heavy damage or attacks',function()
+    local options={fallback=true,heatBaseline={},peakHeat=500}
+    local f=fixture(options)
+    local area=dofile('luarules/gadgets/include/city_area_state.lua')(
+        dofile('luarules/configs/city_area.lua'),4096,4096,function()return f.frame end)
+    f.G.CityAreaState=area
+    f.frame=150
+    area:ReportIncident(1000,1000,500,4000)
+    for key,cell in pairs(area.cells)do options.heatBaseline[key]={damage=cell.damageTotal,generation=cell.generation} end
+    f:assemble(7,150)
+    f:step(180,5)
+    assert(f.d.phase=='assembling','historical damage immediately cancelled fallback')
+    assert(table.concat(f.messages,'\n'):find('least-dangerous usable candidate',1,true))
+    area:ReportIncident(1000,1000,500,4000)
+    f:step(195,5)
+    assert(f.d.phase=='idle' and f.rules.city_parade_last_stop=='danger','fresh heavy damage did not disperse fallback')
+    local attacked=fixture({fallback=true,heatBaseline={}})
+    attacked:assemble(7,150)
+    local id=next(attacked.d.vehicles)
+    attacked.d:UnitDamaged(id,1)
+    assert(attacked.d.phase=='idle' and attacked.rules.city_parade_last_stop=='parade attacked')
+end)
+
+check('fallback detects fresh damage at the heat cap and after cell expiry',function()
+    for _,expire in ipairs({false,true})do
+        local options={fallback=true,heatBaseline={},peakHeat=20000}
+        local f=fixture(options)
+        local config=dofile('luarules/configs/city_area.lua')
+        local area=dofile('luarules/gadgets/include/city_area_state.lua')(config,4096,4096,function()return f.frame end)
+        f.G.CityAreaState=area;f.frame=150
+        area:ReportIncident(1000,1000,20000,4000)
+        for key,cell in pairs(area.cells)do
+            options.heatBaseline[key]={damage=cell.damageTotal,generation=cell.generation}
+        end
+        f:assemble(7,150)
+        f:step(180,5)
+        assert(f.d.phase=='assembling')
+        if expire then f.frame=3000;area:Update();assert(not next(area.cells)) end
+        area:ReportIncident(1000,1000,500,4000)
+        f:step(f.frame+15,5)
+        assert(f.d.phase=='idle' and f.rules.city_parade_last_stop=='danger')
+    end
 end)
