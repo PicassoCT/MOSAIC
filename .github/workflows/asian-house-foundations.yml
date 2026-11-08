@@ -11,8 +11,8 @@ on:
       - scripts/house_asian_stack_profiles.lua
       - tools/house_asian_split/stack_profiles.py
       - objects3d/house_asian.dae
-      - tests/house_asian_stack*
-      - tests/house_asian_split_assembly_test.lua
+      - .github/mosaic-tests.ref
+      - .github/actions/external-tests/**
   pull_request:
     paths:
       - .github/workflows/asian-house-foundations.yml
@@ -23,8 +23,8 @@ on:
       - scripts/house_asian_stack_profiles.lua
       - tools/house_asian_split/stack_profiles.py
       - objects3d/house_asian.dae
-      - tests/house_asian_stack*
-      - tests/house_asian_split_assembly_test.lua
+      - .github/mosaic-tests.ref
+      - .github/actions/external-tests/**
 
 permissions:
   contents: read
@@ -38,8 +38,10 @@ jobs:
         with:
           sparse-checkout-cone-mode: false
           sparse-checkout: |
+            /.github/actions/external-tests/
+            /.github/mosaic-tests.ref
+            /modinfo.lua
             /scripts/
-            /tests/
             /tools/house_asian_split/
             /objects3d/house_asian.dae
       - uses: actions/setup-python@v5
@@ -49,5 +51,8 @@ jobs:
         run: python -m pip install lupa==2.8
       - name: Check generated geometry interfaces
         run: python tools/house_asian_split/stack_profiles.py --check
+      - name: Prepare pinned external tests
+        uses: ./.github/actions/external-tests
       - name: Check deterministic planning and actual-piece assembly
+        working-directory: ${{ runner.temp }}/mosaic-validation
         run: python tests/house_asian_stacks_runtime_test.py

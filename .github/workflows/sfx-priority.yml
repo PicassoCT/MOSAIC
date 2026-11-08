@@ -11,7 +11,8 @@ on:
       - 'luarules/configs/sticky_bombs.lua'
       - 'scripts/blackoutscript.lua'
       - 'scripts/warheadpayloadscript.lua'
-      - 'tests/combat_sfx_*.lua'
+      - .github/mosaic-tests.ref
+      - .github/actions/external-tests/**
       - '.github/workflows/sfx-priority.yml'
   workflow_dispatch:
 permissions:
@@ -28,18 +29,20 @@ jobs:
         with:
           sparse-checkout-cone-mode: false
           sparse-checkout: |
-            scripts/
-            tests/
-            units/
-            weapons/
+            /.github/actions/external-tests/
+            /.github/mosaic-tests.ref
+            /modinfo.lua
+            /scripts/
+            /units/
+            /weapons/
             gamedata/explosions/railGunCeg.lua
             luaui/*.lua
             luaui/widgets_mosaic/gfx_light_effects.lua
-            luaui/widgets_mosaic/include/
-            luaui/widgets_mosaic/shaders/
-            luarules/configs/
-            luarules/gadgets/include/
-            luarules/gadgets/shaders/
+            /luaui/widgets_mosaic/include/
+            /luaui/widgets_mosaic/shaders/
+            /luarules/configs/
+            /luarules/gadgets/include/
+            /luarules/gadgets/shaders/
             luarules/gadgets/gfx_explosion_lights.lua
             luarules/gadgets/gfx_priority_sfx_events.lua
       - uses: actions/setup-python@v5
@@ -50,13 +53,17 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get install -y lua5.1 libegl1 libgl1 libgl1-mesa-dri
           python -m pip install moderngl numpy
+      - name: Prepare pinned external tests
+        uses: ./.github/actions/external-tests
       - name: Verify priority policy and real event integration
+        working-directory: ${{ runner.temp }}/mosaic-validation
         run: |
           lua5.1 tests/combat_sfx_priority.lua
           lua5.1 tests/combat_sfx_collector.lua
           lua5.1 tests/combat_sfx_events.lua
           lua5.1 tests/combat_sfx_widget.lua
       - name: Verify existing combat paths
+        working-directory: ${{ runner.temp }}/mosaic-validation
         run: |
           lua5.1 tests/light_effects_widget_startup.lua
           lua5.1 tests/combat_effects_lifecycle.lua
@@ -66,6 +73,7 @@ jobs:
           lua5.1 tests/police_radiance_lifecycle.lua
           lua5.1 tests/cinder_flame_budget_test.lua
       - name: Render unchanged production shaders
+        working-directory: ${{ runner.temp }}/mosaic-validation
         run: |
           python tests/smoke_ribbons_gpu.py
           python tests/combat_light_gpu.py

@@ -5,13 +5,15 @@ on:
       - scripts/lib_textFx.lua
       - scripts/house_western_hologram_script.lua
       - scripts/house_western_brothel_hologram_script.lua
-      - tests/hologram_text_fx_test.lua
+      - .github/mosaic-tests.ref
+      - .github/actions/external-tests/**
       - .github/workflows/hologram-text-effects.yml
   pull_request:
     paths:
       - scripts/lib_textFx.lua
       - scripts/house_western*hologram_script.lua
-      - tests/hologram_text_fx_test.lua
+      - .github/mosaic-tests.ref
+      - .github/actions/external-tests/**
       - .github/workflows/hologram-text-effects.yml
 permissions:
   contents: read
@@ -21,10 +23,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          sparse-checkout-cone-mode: false
           sparse-checkout: |
-            scripts
-            tests
+            /.github/actions/external-tests/
+            /.github/mosaic-tests.ref
+            /modinfo.lua
+            /scripts/
       - run: sudo apt-get update && sudo apt-get install -y lua5.1
-      - run: |
+      - name: Prepare pinned external tests
+        uses: ./.github/actions/external-tests
+      - name: Check hologram text effects
+        working-directory: ${{ runner.temp }}/mosaic-validation
+        run: |
           luac5.1 -p scripts/lib_textFx.lua scripts/house_western_hologram_script.lua scripts/house_western_brothel_hologram_script.lua
           lua5.1 tests/hologram_text_fx_test.lua

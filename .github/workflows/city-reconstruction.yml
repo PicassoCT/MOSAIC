@@ -19,10 +19,8 @@ on:
       - 'scripts/lib_building_voxels.lua'
       - 'units/neutral/gCScrapHeap.lua'
       - 'units/neutral/house_ruin.lua'
-      - 'tests/city_*.lua'
-      - 'tests/civilian_reconstruction_blocking_test.lua'
-      - 'tests/building_rubble_lifecycle_test.lua'
-      - 'tests/building_block_damage_test.lua'
+      - .github/mosaic-tests.ref
+      - .github/actions/external-tests/**
       - '.github/workflows/city-reconstruction.yml'
   workflow_dispatch:
 permissions:
@@ -33,16 +31,22 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          sparse-checkout-cone-mode: false
           sparse-checkout: |
-            luarules
-            scripts
-            tests
-            units
+            /.github/actions/external-tests/
+            /.github/mosaic-tests.ref
+            /modinfo.lua
+            /luarules/
+            /scripts/
+            /units/
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
       - run: python -m pip install lupa==2.8
+      - name: Prepare pinned external tests
+        uses: ./.github/actions/external-tests
       - name: Lua 5.1 lifecycle, metadata, animation and occupancy regressions
+        working-directory: ${{ runner.temp }}/mosaic-validation
         run: >-
           python -c "from pathlib import Path; from lupa.lua51 import LuaRuntime;
           [LuaRuntime().execute(Path(p).read_text()) for p in

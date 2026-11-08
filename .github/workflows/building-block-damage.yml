@@ -15,14 +15,8 @@ on:
       - luarules/gadgets/include/smoke_ribbon_*.lua
       - luarules/gadgets/game_sniperPosition.lua
       - gamedata/explosions/building_block_dust.lua
-      - tests/building_block_damage_test.lua
-      - tests/building_damage_header_test.lua
-      - tests/building_rubble_lifecycle_test.lua
-      - tests/building_damage_flame_geometry_test.lua
-      - tests/building_damage_smoke_lifecycle_test.lua
-      - tests/asset_rooftop_test.lua
-      - tests/house_roof_corner_deco_test.lua
-      - tests/piece_group_name_normalization_test.lua
+      - .github/mosaic-tests.ref
+      - .github/actions/external-tests/**
       - .github/workflows/building-block-damage.yml
   pull_request:
     paths:
@@ -38,13 +32,8 @@ on:
       - luarules/gadgets/include/smoke_ribbon_*.lua
       - luarules/gadgets/game_sniperPosition.lua
       - gamedata/explosions/building_block_dust.lua
-      - tests/building_block_damage_test.lua
-      - tests/building_damage_header_test.lua
-      - tests/building_rubble_lifecycle_test.lua
-      - tests/building_damage_flame_geometry_test.lua
-      - tests/building_damage_smoke_lifecycle_test.lua
-      - tests/asset_rooftop_test.lua
-      - tests/piece_group_name_normalization_test.lua
+      - .github/mosaic-tests.ref
+      - .github/actions/external-tests/**
       - .github/workflows/building-block-damage.yml
 
 permissions:
@@ -57,14 +46,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          sparse-checkout-cone-mode: false
           sparse-checkout: |
-            scripts
-            tests
-            luarules
-            luaui/widgets_mosaic
-            gamedata
+            /.github/actions/external-tests/
+            /.github/mosaic-tests.ref
+            /modinfo.lua
+            /scripts/
+            /luarules/
+            /luaui/widgets_mosaic/
+            /gamedata/
       - run: sudo apt-get update && sudo apt-get install -y lua5.1 lua5.4
+      - name: Prepare pinned external tests
+        uses: ./.github/actions/external-tests
       - name: Parse and check behavior
+        working-directory: ${{ runner.temp }}/mosaic-validation
         run: |
           for file in scripts/lib_building_damage.lua scripts/lib_building_damage_effects.lua scripts/lib_building_voxels.lua scripts/lib_UnitScript.lua scripts/lib_mosaic.lua scripts/house_asian_script.lua scripts/house_western_script.lua scripts/house_arab_script.lua gamedata/unit_script_header.lua luarules/gadgets/unit_script.lua luarules/gadgets/game_building_block_damage.lua luarules/gadgets/game_windsfx.lua luarules/gadgets/game_sniperPosition.lua gamedata/explosions/building_block_dust.lua; do
             luac5.1 -p "$file"
