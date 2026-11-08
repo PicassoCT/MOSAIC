@@ -33,6 +33,15 @@ function M.PlaceablesVisible(unitID)
     return fullView or (los and los.los) or false
 end
 
+function M.ParadeCarrier(unitID)
+    local parent = Spring.GetUnitTransporter(unitID)
+    if not parent or not Spring.ValidUnitID(parent) or Spring.GetUnitIsDead(parent)
+        or not M.PlaceablesVisible(parent) then return end
+    if (Spring.GetUnitRulesParam(parent, 'city_parade_vehicle') or 0) ~= 1
+        and (Spring.GetUnitRulesParam(parent, 'city_parade_retiring') or 0) ~= 1 then return end
+    return parent
+end
+
 function M.DrawLamp(source)
     -- drawNeonPieces uses a top-down world view; do not inherit the unit matrix.
     gl.PushMatrix()
@@ -85,6 +94,20 @@ local function pieceFrame(unitID,pieceID)
 end
 
 function M.AttachedLights(unitID,pieceID,preset,frame)
+    if preset == 'parade_procession' then
+        local parent = M.ParadeCarrier(unitID)
+        if not parent then return {} end
+        local x,y,z = Spring.GetUnitViewPosition(parent)
+        if not x then return {} end
+        local sx,sy,sz = Spring.GetUnitCollisionVolumeData(parent)
+        sx,sy,sz = sx or 40,sy or 30,sz or 70
+        -- One broad downlight per carrier, sized from its actual footprint.
+        -- Source sits above the body so its warm wash reaches road and facades.
+        local span = math.max(sx,sz)
+        return {{x=x,y=y+sy+span*.35,z=z,direction={0,-1,0},
+            range=span*1.8,outerCos=math.cos(math.rad(72)),
+            color={1,.32,.075},gain=.65,radius=span*.22,strength=.22,unitID=parent}}
+    end
     if preset~='palace_facade' and preset~='outpost_searchlight' and preset~='outpost_roof' then return {} end
     if not M.PlaceablesVisible(unitID) then return {} end
     local f=pieceFrame(unitID,pieceID)

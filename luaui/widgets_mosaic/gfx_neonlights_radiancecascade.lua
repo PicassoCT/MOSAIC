@@ -29,6 +29,8 @@ local objectiveRadianceUnitTables = {}
 local CloudConfig = VFS.Include('luarules/gadgets/include/cloud_volume_config.lua')
 local ObjectiveSources = VFS.Include('luaui/widgets_mosaic/include/radiance_objective_sources.lua')
 local RadianceTime = VFS.Include('luaui/widgets_mosaic/include/radiance_time.lua')
+local paradeScene = VFS.Include('luaui/widgets_mosaic/include/parade_radiance_scene.lua')(
+    Spring, gl, VFS.Include('scripts/lib_parade_scene_draw.lua'))
 local neonLightPercent = 0.0
 local neonUnitCount = 0
 local neonPieceCount = 0
@@ -754,6 +756,7 @@ function widget:Initialize()
 
     widgetHandler:RegisterGlobal("RecieveAllNeonUnitsPieces", recieveNeonHoloLightPiecesByUnit)
     widgetHandler:RegisterGlobal("ReceiveObjectiveRadiancePieces", receiveObjectiveRadiancePieces)
+    widgetHandler:RegisterGlobal("ReceiveParadeRadianceScene", paradeScene.Receive)
     widgetHandler:RegisterGlobal("ReceiveBuildingShadowColumnsBegin", receiveBuildingShadowBegin)
     widgetHandler:RegisterGlobal("ReceiveBuildingShadowColumn", receiveBuildingShadowColumn)
     widgetHandler:RegisterGlobal("ReceiveBuildingShadowColumnsEnd", receiveBuildingShadowEnd)
@@ -842,6 +845,9 @@ local function drawNeonPieces(captureLayer, domain)
                     end
                     -- Mixed structural meshes must never fall back to all-over emission.
                     if not materialBound then strength=0 else masked=1 end
+                    if descriptor.preset == 'parade_float' and not ObjectiveSources.ParadeCarrier(unitID) then
+                        strength = 0
+                    end
                     local placeable = descriptor.preset and descriptor.preset:match('^placeable:(%d+)$')
                     if placeable and (not ObjectiveSources.PlaceablesVisible(unitID)
                         or not ObjectiveSources.PlaceableEligible(unitID, tonumber(placeable))) then
@@ -900,6 +906,7 @@ local function drawNeonPieces(captureLayer, domain)
     for unitID, pieces in pairs(objectiveRadianceUnitTables) do
         drawUnitPieces(unitID, pieces, true)
     end
+    paradeScene.Capture(propagation)
     if propagation then gl.UniformInt(propagation.materialMaskedLoc,0) end
 
     if propagation and (WG.CaptureVehicleHeadlightEmission or WG.CaptureCombatLightEmission) then
@@ -1207,6 +1214,7 @@ function widget:Shutdown()
     end
     widgetHandler:DeregisterGlobal("RecieveAllNeonUnitsPieces")
     widgetHandler:DeregisterGlobal("ReceiveObjectiveRadiancePieces")
+    widgetHandler:DeregisterGlobal("ReceiveParadeRadianceScene")
     widgetHandler:DeregisterGlobal("ReceiveBuildingShadowColumnsBegin")
     widgetHandler:DeregisterGlobal("ReceiveBuildingShadowColumn")
     widgetHandler:DeregisterGlobal("ReceiveBuildingShadowColumnsEnd")

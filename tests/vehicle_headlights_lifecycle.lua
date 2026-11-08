@@ -43,6 +43,13 @@ cloaked=false; carried=9; renderer:Draw({[1]=true},1,false,true)
 carried=false; built=.5; renderer:Draw({[1]=true},1,false,true)
 built=1; renderer:Draw({[1]=true},0,false,true)
 assert(copies==1,'hidden, transported, unfinished or daytime lights leaked')
+local paradeRule
+Spring.GetUnitRulesParam=function(_,key) return key==paradeRule and 1 or 0 end
+for _,key in ipairs({'city_parade_vehicle','city_parade_retiring'}) do
+ paradeRule=key;renderer:Draw({[1]=true},1,true,true)
+ assert(copies==1,'parade carrier retained ordinary headlights')
+end
+paradeRule=nil
 units={}; renderer:Draw({[1]=true},1,false,true)
 assert(copies==1,'empty scene copied depth')
 for i=1,60 do units[i]=i end

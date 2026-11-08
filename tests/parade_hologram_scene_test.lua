@@ -457,7 +457,7 @@ check("origami bird flaps then glides; cherry petal drifts, lands and respawns i
         if item.motion == "origami" then bird = item end
         if item.motion == "petal" then petal = item end
     end
-    assert(bird and petal)
+    assert(bird and petal and petal.y >= 70, "holographic petals should fall from above the floats")
     local offset = bird.phase + 5 * 0.173
     local up = scene.pose(bird, 0.4-offset, 5)
     local down = scene.pose(bird, 1.2-offset, 5)

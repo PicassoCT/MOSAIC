@@ -60,6 +60,17 @@ assert(lamps[#lamps][1]==267,'named anchor missing/duplicating render offset')
 local fogSources=assert(WG.GetVehicleHeadlightFogSources())
 assert(#fogSources==1 and fogSources[1].a[2]==10 and fogSources[1].unitID==1)
 frame=8;hidden=true;assert(#WG.GetVehicleHeadlightFogSources()==0,'hidden vehicle exposed fog light')
+hidden=false
+local paradeRule
+Spring.GetUnitRulesParam=function(_,key) return key==paradeRule and 1 or 0 end
+for _,key in ipairs({'city_parade_vehicle','city_parade_retiring'}) do
+ paradeRule=key;frame=frame+1
+ local before=cones;capture(0,128,1)
+ assert(cones==before and #WG.GetVehicleHeadlightFogSources()==0,'parade headlights leaked into cascade/fog')
+end
+paradeRule=nil;frame=frame+1
+local before=cones;capture(0,128,1)
+assert(cones>before and #WG.GetVehicleHeadlightFogSources()==1,'ordinary lights did not return after parade')
 renderer:Shutdown();assert(WG.CaptureVehicleHeadlightEmission==nil,'stale capture after shutdown')
 assert(WG.GetVehicleHeadlightFogSources==nil,'stale fog source getter after shutdown')
 print('PASS: shared capture, layer rejection, cloak/disable, standalone suppression/fallback, cleanup')

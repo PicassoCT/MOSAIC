@@ -68,6 +68,16 @@ function SetParadeVariant(index)
             end
         end
     end
+    if GG.SetObjectiveRadiancePieceVisible then
+        if variant then
+            for _, name in ipairs(variant.pieces) do
+                GG.SetObjectiveRadiancePieceVisible(unitID, pieceMap[name], false)
+            end
+        end
+        for _, name in ipairs(selected.pieces) do
+            GG.SetObjectiveRadiancePieceVisible(unitID, pieceMap[name], true, "material", "parade_float")
+        end
+    end
     variant = selected
     for _, name in ipairs(variant.pieces) do Show(pieceMap[name]) end
     -- The unsynced pixel decorations must follow the actual selected payload,
@@ -134,6 +144,9 @@ function script.Create()
     if not SetParadeVariant(pendingVariant or ((unitID - 1) % #catalog.variants + 1)) then
         Spring.DestroyUnit(unitID, false, true)
         return
+    end
+    if GG.SetObjectiveRadiancePieceVisible then
+        GG.SetObjectiveRadiancePieceVisible(unitID, center, true, "lamp", "parade_procession")
     end
     StartThread(followParent)
 end

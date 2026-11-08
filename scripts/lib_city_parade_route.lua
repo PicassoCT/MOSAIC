@@ -53,7 +53,7 @@ function Route.new(context)
     end
 
     local function dangerous(x, z)
-        return G.CityAreaState and G.CityAreaState.IsDangerous and G.CityAreaState:IsDangerous(x, z)
+        return G.CityAreaState and G.CityAreaState.IsDangerous and G.CityAreaState:IsDangerous(x, z, config.combatHeatThreshold or 300)
     end
     local function nodePosition(id)
         if type(id) ~= "number" or not S.ValidUnitID(id) or S.GetUnitIsDead(id) or
@@ -63,21 +63,33 @@ function Route.new(context)
         return {x = x, y = y, z = z}
     end
     local function safePoint(point, defID, terrainOnly)
-        if type(point) ~= "table" then return nil end
+        if type(point) ~= "table" then return nil, "missing point" end
         local x, z = point.x or point[1], point.z or point[3]
-        if not finite(x) or not finite(z) or dangerous(x, z) then return nil end
+        if not finite(x) or not finite(z) then return nil, "nonfinite coordinates" end
+        if dangerous(x, z) then return nil, "heavy recent damage" end
         local y = S.GetGroundHeight(x, z)
-        if not finite(y) or y < 0 then return nil end
+        if not finite(y) then return nil, "nonfinite ground height" end
+        if y < 0 then return nil, "underwater" end
         local traversable
         if terrainOnly then
-            -- Native paths provide static obstacle avoidance. Moving everyday
-            -- traffic must not invalidate an otherwise usable procession route.
-            traversable = S.TestMoveOrder(defID, x, y, z, 0, 0, 0, true, false)
+            -- QTPFS and GroundMoveType test terrain at the footprint centre;
+            -- testing every footprint square rejects valid roads beside steep
+            -- curbs. Native paths already account for static object clearance.
+            -- Keep full footprint/object checks at assembly curbs and spawning.
+            traversable = S.TestMoveOrder(defID, x, y, z, 0, 0, 0, true, false, true)
         else
             traversable = S.TestMoveOrder(defID, x, y, z)
         end
-        if not traversable then return nil end
+        if not traversable then
+            return nil, terrainOnly and "impassable terrain at centre square" or "terrain or object blocks curb"
+        end
         return {x = x, y = y, z = z}
+    end
+    local function pointFailure(message, point, reason)
+        local x = type(point) == "table" and (point.x or point[1])
+        local z = type(point) == "table" and (point.z or point[3])
+        return message .. (finite(x) and finite(z) and string.format(" at x=%.1f z=%.1f", x, z) or "") ..
+            ": " .. tostring(reason or "unknown reason")
     end
     local function invalidate(route, reason)
         route.status, route.reason = "invalid", reason
@@ -144,12 +156,20 @@ function Route.new(context)
             local start = nodes[(attempt - 1) % #nodes + 1]
             local selected, used = {start}, {[start] = true}
             local function extend(id)
-                if #selected == desired then return connected[id][start] == true end
+                if #selected == desired then
+                    -- Reject inside the search so it backtracks into another
+                    -- circuit from this start, within the same search budget.
+                    return connected[id][start] == true and not rejected[table.concat(selected, ",")]
+                end
                 local choices = {}
                 for _, other in ipairs(adjacency[id]) do
                     if not used[other] then choices[#choices + 1] = other end
                 end
                 table.sort(choices, function(a, b)
+                    -- Prefer neighbourhood connections to random cross-city
+                    -- legs that intersect many unrelated combat/terrain areas.
+                    local ad, bd = distance(positions[id], positions[a]), distance(positions[id], positions[b])
+                    if ad ~= bd then return ad < bd end
                     local ar, br = rank(a, seed + attempt * 701), rank(b, seed + attempt * 701)
                     return ar == br and a < b or ar < br
                 end)
@@ -218,8 +238,8 @@ function Route.new(context)
         end
         local raw = {origin}
         for _, waypoint in ipairs(waypoints) do
-            local point = safePoint(waypoint, route.defID, true)
-            if not point then return nil, "unsafe native waypoint" end
+            local point, reason = safePoint(waypoint, route.defID, true)
+            if not point then return nil, pointFailure("unsafe native waypoint", waypoint, reason) end
             if distance(raw[#raw], point) > 0.01 then raw[#raw + 1] = point end
         end
         if distance(raw[#raw], goal) > 0.01 then raw[#raw + 1] = goal end
@@ -230,9 +250,11 @@ function Route.new(context)
             if route._samples > maxSamples then return nil, "native path exceeded safety sample budget" end
             for sample = 1, count do
                 local fraction = sample / count
-                if not safePoint({x = a.x + (b.x - a.x) * fraction,
-                    z = a.z + (b.z - a.z) * fraction}, route.defID, true) then
-                    return nil, "unsafe segment between native waypoints"
+                local samplePoint = {x = a.x + (b.x - a.x) * fraction,
+                    z = a.z + (b.z - a.z) * fraction}
+                local safe, reason = safePoint(samplePoint, route.defID, true)
+                if not safe then
+                    return nil, pointFailure("unsafe segment between native waypoints", samplePoint, reason)
                 end
             end
         end

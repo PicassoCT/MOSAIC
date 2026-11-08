@@ -27,9 +27,13 @@ local function paradeCommand(_, line, words)
         or (type(line) == "string" and line:match("^%s*(%S+)")) or "status"
     action = tostring(action):lower()
     if action == "status" then
-        Spring.Echo("City parade: " .. (parade and parade.phase or "unavailable") ..
+        local phase, waiting, stopped = parade and parade.phase or "unavailable"
+        if parade and parade.GetStatus then phase, waiting, stopped = parade:GetStatus() end
+        Spring.Echo("City parade: " .. phase ..
             ", vehicles=" .. count(parade and parade.vehicles) ..
-            ", participants=" .. count(parade and parade.participants))
+            ", participants=" .. count(parade and parade.participants) ..
+            (waiting and ("; " .. waiting) or "") ..
+            (stopped and ("; last stop: " .. stopped) or ""))
         return true
     end
     if action ~= "start" and action ~= "stop" then

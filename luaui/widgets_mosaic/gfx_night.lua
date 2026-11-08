@@ -243,6 +243,8 @@ local function DrawSearchlights(hours, minutes)
           and  lightList[unitDefID]
           and not GetUnitIsCloaked(unitID)
           and not GetUnitTransporter(unitID)
+          and (Spring.GetUnitRulesParam(unitID, 'city_parade_vehicle') or 0) == 0
+          and (Spring.GetUnitRulesParam(unitID, 'city_parade_retiring') or 0) == 0
           ) then
 
         local leadDistance

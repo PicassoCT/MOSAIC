@@ -124,8 +124,8 @@ for name,effect in pairs(effects) do
     for _,emitter in pairs(effect) do
         local p=emitter.properties
         assert(not p.alwaysvisible and not p.useairlos, name..' leaked outside ground LOS')
-        assert(p.gravity:find('%-0%.05'), name..' must fall toward the parade')
-        assert(p.particlelife+p.particlelifespread<=270, name..' particles outlive budget')
+        assert(p.gravity:find('%-0%.05') or (name=='parade_petals' and p.gravity=='dir'), name..' must fall toward the parade')
+        assert(p.particlelife+p.particlelifespread<=(name=="parade_petals" and 405 or 270), name..' particles outlive budget')
         budget=budget+emitter.count*p.numparticles
         local f=assert(io.open('bitmaps/ProjectileTextures/'..p.texture..'.png','rb'), 'missing parade sprite')
         f:close()

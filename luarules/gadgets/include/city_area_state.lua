@@ -37,9 +37,12 @@ return function(config, sizeX, sizeZ, getFrame)
         local ix, iz = coordinates(x, z)
         return ix and cells[ix*(maxZ+1)+iz]
     end
-    function service:IsDangerous(x, z)
-        local cell = at(x, z)
-        return cell ~= nil and getFrame() < cell.untilFrame
+    function service:IsDangerous(x, z, minimumHeat)
+        local cell, frame = at(x, z), getFrame()
+        if not cell or frame >= cell.untilFrame then return false end
+        -- Optional absolute damage threshold for tolerant activities. Ordinary
+        -- civilian/reconstruction callers still treat every incident as unsafe.
+        return minimumHeat == nil or heat(cell, frame) >= minimumHeat
     end
     service.IsConflictNearby = service.IsDangerous
     function service:IsPeaceful(x, z) return not self:IsConflictNearby(x, z) end

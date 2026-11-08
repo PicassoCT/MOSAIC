@@ -350,7 +350,7 @@ local function sceneQueue(visible, seconds)
                                     station.grounds[number] = ground
                                 end
                                 pose.y = pose.y + ground.height
-                                queue[#queue + 1] = {id = payload.id, template = template, pose = pose,
+                                queue[#queue + 1] = {id = payload.id, parent = payload.parent, template = template, pose = pose,
                                     opacity = fade * pose.opacity,
                                     distanceSquared = (pose.x-cx)^2 + (pose.y-cy)^2 + (pose.z-cz)^2}
                             end
@@ -366,42 +366,16 @@ local function sceneQueue(visible, seconds)
     return queue, ownership
 end
 
+local drawSceneGeometry = VFS.Include("scripts/lib_parade_scene_draw.lua")
+local function publishRadiance(queue)
+    if Script and Script.LuaUI and Script.LuaUI('ReceiveParadeRadianceScene') then
+        Script.LuaUI.ReceiveParadeRadianceScene(queue or {}, payloadDefID)
+    end
+end
 local function drawSceneObjects(queue)
     gl.Texture(0, string.format("%%%d:0", payloadDefID))
     gl.Texture(1, string.format("%%%d:1", payloadDefID))
-    for _, object in ipairs(queue) do
-        local pose, template = object.pose, object.template
-        gl.PushPopMatrix(function()
-            gl.Translate(pose.x, pose.y, pose.z)
-            gl.Rotate(pose.yaw, 0, 1, 0)
-            gl.Rotate(pose.tilt, 1, 0, 0)
-            if pose.roll then gl.Rotate(pose.roll, 0, 0, 1) end
-            gl.Color(1, 1, 1, object.opacity)
-            if template.piece ~= nil then
-                gl.UnitPiece(object.id, template.piece)
-                for _, wing in ipairs(template.wings or {}) do
-                    gl.PushPopMatrix(function()
-                        local p, axis = wing.pivot, wing.axis
-                        gl.Translate(p[1], p[2], p[3])
-                        gl.Rotate((pose.wingFlap or 0) * wing.sign, axis[1], axis[2], axis[3])
-                        gl.Translate(-p[1], -p[2], -p[3])
-                        gl.UnitPiece(object.id, wing.piece)
-                    end)
-                end
-            else
-                gl.UnitPiece(object.id, template.body)
-                gl.PushPopMatrix(function()
-                    local pivot = template.headPivot
-                    gl.Translate(pivot[1], pivot[2], pivot[3])
-                    gl.Rotate(pose.headTilt, 0, 0, 1)
-                    gl.Translate(-pivot[1], -pivot[2], -pivot[3])
-                    gl.UnitPiece(object.id, template.head)
-                    gl.Color(1, 1, 1, math.min(1, object.opacity * 1.12))
-                    gl.UnitPiece(object.id, template.mask)
-                end)
-            end
-        end)
-    end
+    drawSceneGeometry(gl, queue)
 end
 
 local function drawScene(visible, seconds)
@@ -432,6 +406,7 @@ local function drawScene(visible, seconds)
         sceneShader, sceneDisabled = nil, true
         return
     end
+    publishRadiance(queue)
     return ownership
 end
 
@@ -508,6 +483,7 @@ local function drawVisible(visible, seconds, ownership)
 end
 
 function gadget:DrawWorld()
+    publishRadiance({})
     if not shader or not next(payloads) then return end
     local visible = visiblePayloads()
     if #visible == 0 then return end
@@ -532,6 +508,7 @@ function gadget:DrawWorld()
 end
 
 function gadget:Shutdown()
+    publishRadiance({})
     releaseResources()
     payloads = {}
 end

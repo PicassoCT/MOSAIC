@@ -151,6 +151,13 @@ command('parade','nonsense',{'nonsense'},7)
 assert(#s.previewCalls==2 and #s.stopCalls==1, 'unknown commands cannot mutate the parade')
 assert(s.messages[#s.messages]:find('Usage:'))
 
+s.director.GetStatus=function() return 'preparing','route search: no safe circuit',nil end
+command('parade','status',{'status'},7)
+assert(s.messages[#s.messages]:find('preparing') and s.messages[#s.messages]:find('no safe circuit'))
+s.director.GetStatus=function() return 'idle',nil,'preview route unavailable' end
+command('parade','status',{'status'},7)
+assert(s.messages[#s.messages]:find('last stop: preview route unavailable'))
+
 gadget:GameFrame(90123)
 gadget:UnitDamaged(77,5,0,16.5,true)
 gadget:UnitDestroyed(88,9,0)

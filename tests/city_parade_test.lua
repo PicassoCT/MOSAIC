@@ -17,7 +17,7 @@ local function fixture(options)
     for k,v in pairs(options.config or {}) do config[k]=v end
     local f={frame=0,units={},orders={},effects={},rules={},speeds={},destroyed={},trips={},
         unitRules={},poses={},nativeHidden={},nativeHiddenCalls={},cylinderQueries={},starts=0,polls=0,nextID=1000,config=config,
-        wind=options.wind or {3,0,-4},windReads=0}
+        wind=options.wind or {3,0,-4},windReads=0,messages={}}
     local defs,names={},{}
     for i,name in ipairs({'truck_arab6','truck_arab7','truck_arab8','truckpayloadparade',
         'civilian_arab0','house_arab0','operative','house_ruin',
@@ -39,6 +39,7 @@ local function fixture(options)
     local graph={[100]={101,103},[101]={100,102},[102]={101,103},[103]={100,102}}
     local function live(id) local u=f.units[id]; return u and not u.dead end
     local S={
+        Echo=function(message) f.messages[#f.messages+1]=message end,
         GetGaiaTeamID=function() return 0 end,
         GetGameFrame=function() return f.frame end,
         GetGameRulesParam=function(key) return f.rules[key] end,
@@ -406,7 +407,7 @@ check('roof showers use building height, bounded bursts, cooldown and all four e
     for i=1,16 do
         f:step(f.frame+60,2)
         for _,effect in ipairs(f.effects) do
-            assert(effect.y==170 and effect.dy<0,'effect did not originate at the roof')
+            assert(effect.y==(effect.name=='parade_petals' and 320 or 170) and effect.dy<0,'incorrect paper release height')
             names[effect.name]=true
         end
         assert(#f.effects<=(i+1)*f.config.maxBuildingBursts,'unbounded rooftop emission')
@@ -421,6 +422,7 @@ check('petal bursts sample changing map wind without changing their downward lau
         buildingCooldownFrames=0}})
     f:tour()
     local first=f.effects[#f.effects]
+    assert(first.y==320, "petals must start well above the 200-unit building")
     assert(first and first.dx>0 and first.dz<0 and first.dy<0)
     assert(math.abs(first.dx/first.dz-f.wind[1]/f.wind[3])<1e-9,
         'petals did not use the map wind vector')
@@ -531,4 +533,44 @@ check('blocked procession stops without deleting its trucks in place',function()
     local f=fixture(); f:tour(); f:step(f.frame+f.config.stalledFrames+15)
     assert(f.d.phase=='idle' and f.rules.city_parade_last_stop=='route blocked')
     assert(count(f.d.retired)==4 and count(f.destroyed)==0)
+end)
+
+check('preview reports preparation, exact spawn location and distinct failure reasons',function()
+    local f=fixture(); f.frame=150; assert(f.d:RequestPreview(150))
+    local phase,reason=f.d:GetStatus()
+    assert(phase=='preparing' and reason=='searching for a safe route')
+    f:step(150); f:step(165)
+    local messages=table.concat(f.messages,'\n')
+    assert(messages:find('assembly starts at x=650.0 y=0.0 z=500.0',1,true))
+    assert(messages:find('spawned truck=1001 payload=1002 variant=',1,true))
+    assert(messages:find('at x=650.0 y=0.0 z=500.0 (frame 165)',1,true))
+    for option,expected in pairs({rejectSpawn='carrier creation failed',rejectPayload='payload creation failed',
+        rejectVariant='payload rejected float variant',rejectTrip='civilian travel registration failed'}) do
+        local bad=fixture({[option]=true});bad.frame=150;assert(bad.d:RequestPreview(150))
+        bad:step(150);bad:step(165)
+        assert(bad.d.waitingReason:find(expected,1,true))
+        local before=#bad.messages;bad:step(180)
+        assert(#bad.messages==before,'repeated failure spammed the log')
+        bad:step(165+bad.config.previewAssemblyFrames)
+        local status,wait,stopped=bad.d:GetStatus()
+        assert(status=='idle' and wait==nil and stopped=='assembly incomplete')
+        assert(bad.messages[#bad.messages]:find(expected,1,true),'stop omitted last spawn blocker')
+    end
+end)
+
+check('minor area damage permits spawning and touring; heavy damage still disperses',function()
+    local f=fixture({config={combatHeatThreshold=450}})
+    local area=dofile('luarules/gadgets/include/city_area_state.lua')(
+        dofile('luarules/configs/city_area.lua'),4096,4096,function()return f.frame end)
+    f.G.CityAreaState=area
+    f.frame=when(7,19)
+    area:ReportIncident(1000,1000,350,4000)
+    f:assemble(7)
+    f.frame=when(7,20)
+    area:ReportIncident(1000,1000,350,4000)
+    f:step(f.frame,5)
+    assert(f.d.phase=='touring','minor damage cancelled the parade')
+    area:ReportIncident(1000,1000,200,4000)
+    f:step(f.frame+15,5)
+    assert(f.d.phase=='idle' and f.rules.city_parade_last_stop=='danger')
 end)

@@ -257,3 +257,18 @@ check("new payload definition inherits native transport properties and emissive 
 end)
 
 print("PASS: parade payload regression suite")
+
+check('only the selected float emits, with one attached warm procession lamp',function()
+    local f,emit=fixture(),{}
+    f.env.GG.SetObjectiveRadiancePieceVisible=function(id,piece,visible,mode,preset)
+        assert(id==5);emit[piece]=visible and {mode=mode,preset=preset} or nil
+    end
+    f.env.SetParadeVariant(1);f.env.script.Create()
+    assert(emit[f.map.center].mode=='lamp' and emit[f.map.center].preset=='parade_procession')
+    for _,name in ipairs(catalog.variants[1].pieces) do
+        assert(emit[f.map[name]].mode=='material' and emit[f.map[name]].preset=='parade_float')
+    end
+    f.env.SetParadeVariant(24)
+    for _,name in ipairs(catalog.variants[1].pieces) do assert(not emit[f.map[name]]) end
+    for _,name in ipairs(catalog.variants[24].pieces) do assert(emit[f.map[name]].mode=='material') end
+end)

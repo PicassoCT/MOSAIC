@@ -6,6 +6,9 @@ return {
     endHour = 3,
     tickFrames = 15,
     retryFrames = 90,
+    -- Decayed damage in the shared area cell, not relative city-wide heat.
+    -- Minor incidents and missed shots do not cancel an entire parade route.
+    combatHeatThreshold = 300,
     vehicleCount = 4,
     minimumVehicles = 2,
     spawnIntervalFrames = 8 * 30,
@@ -37,6 +40,8 @@ return {
     participantCooldownFrames = 60 * 30,
     curbOffset = 105,
     followerUpdateFrames = 60,
+    petalMinimumHeight = 240,
+    petalHeightFactor = 1.6,
     buildingRadius = 360,
     effectFrames = 60,
     maxBuildingBursts = 3,

@@ -106,6 +106,9 @@ local function fixture(options)
             return dofile(path)
         end}, gadgetHandler = {IsSyncedCode = function() return options.synced end,
             RemoveGadget = function() f.removed = true end}}
+    env.Script = {LuaUI = setmetatable({ReceiveParadeRadianceScene = function(queue, def)
+        f.radiance, f.radianceDef = queue, def
+    end}, {__call = function() return true end})}
     local S, gl = env.Spring, env.gl
     S.ValidUnitID = function(id) return f.alive[id] ~= nil end
     S.GetUnitIsDead = function(id) return not f.alive[id] end
@@ -878,4 +881,17 @@ check("artist bird variants draw exactly two hinged wings and missing wings rest
     for name in pairs(f.pieceMap) do if name:match("^PARADEMOTH%dSUB2$") then f.pieceMap[name]=nil end end
     drawAt(f,10); drawAt(f,12)
     assert(#f.meshDraws == 0 and #f.draws > 0)
+end)
+
+check('radiance receives the displayed world scene and clears hidden or failed scenes',function()
+    local f=fixture({native=true,authored=true})
+    drawAt(f,0);drawAt(f,3)
+    assert(#f.radiance>0 and f.radianceDef==7)
+    for _,object in ipairs(f.radiance) do
+        assert(object.id==5 and object.parent==20 and object.opacity>0 and object.pose)
+    end
+    f.los=false;drawAt(f,3.1);assert(#f.radiance==0)
+    f.los=true;drawAt(f,4);drawAt(f,7);assert(#f.radiance>0)
+    f.throwMeshDraw=true;f.seconds=7.1;f.gadget:DrawWorld();assert(#f.radiance==0)
+    f.gadget:Shutdown();assert(#f.radiance==0)
 end)

@@ -25,13 +25,14 @@ local function fixture(count, config)
             local p = f.positions[id]; if p then return p.x, p.y, p.z end
         end,
         GetGroundHeight = function(x, z) return f.water and f.water(x, z) and -10 or 10 end,
-        TestMoveOrder = function(defID, x, y, z, dx, dy, dz, testTerrain, testObjects)
+        TestMoveOrder = function(defID, x, y, z, dx, dy, dz, testTerrain, testObjects, centerOnly)
             assert(defID == 41 and y >= 0)
             if testObjects == false then
-                assert(dx == 0 and dy == 0 and dz == 0 and testTerrain == true)
+                assert(dx == 0 and dy == 0 and dz == 0 and testTerrain == true and centerOnly == true)
                 f.terrainOnlyCalls = (f.terrainOnlyCalls or 0) + 1
             end
             return (not f.terrainBlocked or not f.terrainBlocked(x, z)) and
+                (centerOnly == true or not f.footprintTerrainBlocked) and
                 (testObjects == false or not f.blocked or not f.blocked(x, z))
         end,
     }
@@ -112,6 +113,8 @@ end
 -- Preserve real native corners while removing redundant collinear samples.
 do
     local f = fixture(6)
+    -- Skew the fixture so nearby-node ordering still exercises real turns.
+    for id, p in pairs(f.positions) do p.x, p.z = p.x + id * 17, p.z + id * 23 end
     f.path = function(a, b) return {a, point(a.x, b.z), b} end
     local route = assert(f.builder:Begin(7, 41))
     assert(f.builder:Poll(route) == "ready")
@@ -149,6 +152,17 @@ end
 -- Assembly retries advance beyond rejected native circuits deterministically,
 -- and the rejection cache cannot poison a later seventh evening.
 do
+    local f = fixture(4)
+    local route = assert(f.builder:Begin(7, 41))
+    -- A steep adjacent square is outside the driven centreline, as in QTPFS.
+    f.footprintTerrainBlocked = true
+    assert(f.builder:Poll(route) == "ready", "valid native road rejected by adjacent terrain")
+    local blocked = fixture(4)
+    blocked.footprintTerrainBlocked = true
+    assert(blocked.builder:Begin(7, 41) == nil, "assembly curbs lost full footprint validation")
+end
+
+do
     local f = fixture(8)
     local route = assert(f.builder:Begin(7, 41))
     local signature = table.concat(route.nodes, ",")
@@ -159,6 +173,17 @@ do
     assert(table.concat(retry.nodes, ",") ~= signature and f.builder:Poll(retry) == "ready")
     local later, clean = assert(f.builder:Begin(14, 41)), fixture(8)
     assert(table.concat(later.nodes, ",") == table.concat(assert(clean.builder:Begin(14, 41)).nodes, ","))
+end
+
+do
+    local f = fixture(4)
+    local route = assert(f.builder:Begin(7, 41))
+    local a, b = route.points[1], route.points[2]
+    local mx, mz = (a.x+b.x)/2, (a.z+b.z)/2
+    f.terrainBlocked=function(x,z) return (x-mx)^2+(z-mz)^2<1 end
+    assert(f.builder:Poll(route)=='invalid')
+    assert(route.reason:find('unsafe native waypoint at x=',1,true))
+    assert(route.reason:find('impassable terrain',1,true))
 end
 
 -- Native API, blocked curbs, dead nodes and unclosed graph edges fail closed.
@@ -208,3 +233,49 @@ do
 end
 
 print("PASS: deterministic parade circuits, native endpoint proof, async retention, safety, corners and bounded staging")
+
+-- Widespread low-level incidents permit a circuit; heavy damage still rejects
+-- native paths, including incidents occurring after path requests were sent.
+do
+    local f = fixture(6, {combatHeatThreshold = 450})
+    local area = dofile('luarules/gadgets/include/city_area_state.lua')(
+        dofile('luarules/configs/city_area.lua'), 8192, 8192, function() return 0 end)
+    f.GG.CityAreaState = area
+    area:ReportIncident(1000, 1000, 350, 4000)
+    assert(area:IsDangerous(1000, 1000))
+    local route = assert(f.builder:Begin(7, 41))
+    assert(f.builder:Poll(route) == 'ready', 'minor combat prevented route')
+    local pending = assert(f.builder:Begin(7, 41))
+    area:ReportIncident(1000, 1000, 100, 4000)
+    assert(f.builder:Poll(pending) == 'invalid', 'heavy combat crossed by route')
+    assert(not f.builder:Begin(7, 41), 'heavy combat accepted as route nodes')
+end
+print('PASS parade route damage tolerance')
+
+-- A bounded retry must explore alternatives from the same starting building,
+-- rather than rediscovering its first rejected circuit and abandoning it.
+do
+    local f = fixture(6, {routeMaxAttempts = 1})
+    local first = assert(f.builder:Begin(7, 41))
+    local start, previousGoal = first.nodes[1], first.nodes[2]
+    f.path = function(a, b) return {a} end
+    assert(f.builder:Poll(first) == 'invalid')
+    f.path = nil
+    local retry = assert(f.builder:Begin(7, 41), 'rejected first circuit hid valid alternatives')
+    assert(retry.nodes[1] == start and retry.nodes[2] ~= previousGoal)
+    assert(f.builder:Poll(retry) == 'ready')
+end
+
+-- Neighbourhood routes try the nearest connected building before distant
+-- cross-city links; the graph, minimum spacing and native validation still apply.
+do
+    local f = fixture(8, {routeMaxAttempts = 1})
+    local route = assert(f.builder:Begin(7, 41))
+    local start, goal = f.positions[route.nodes[1]], f.positions[route.nodes[2]]
+    for id, p in pairs(f.positions) do
+        if id ~= route.nodes[1] then
+            assert(squared(start, goal) <= squared(start, p), 'distant link preferred to nearby circuit')
+        end
+    end
+end
+print('PASS nearby route selection and alternate circuits from a rejected start')

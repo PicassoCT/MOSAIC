@@ -41,9 +41,19 @@ function M.New(context)
         return type(id) == "number" and S.ValidUnitID(id) and not S.GetUnitIsDead(id)
     end
     local function normal() return G.GlobalGameState == gameConfig.game.states.normal end
+    local function log(message)
+        if S.Echo then S.Echo("City parade: " .. message) end
+    end
+    local function waiting(reason)
+        if director.waitingReason ~= reason and (previewRequest or preview) then log(reason) end
+        director.waitingReason = reason
+    end
+    function director:GetStatus()
+        return previewRequest and "preparing" or self.phase, self.waitingReason, self.lastStopReason
+    end
     local function distance(x, z, a, b) return (x-a)^2 + (z-b)^2 end
     local function dangerous(x, z)
-        return G.CityAreaState and G.CityAreaState:IsDangerous(x, z) or false
+        return G.CityAreaState and G.CityAreaState:IsDangerous(x, z, C.combatHeatThreshold or 300) or false
     end
     local function call(id, name, ...)
         local env = alive(id) and S.UnitScript.GetScriptEnv(id)
@@ -222,6 +232,12 @@ function M.New(context)
 
     function director:Stop(reason, frame)
         frame = frame or S.GetGameFrame()
+        if self.phase ~= "idle" or previewRequest then
+            log("stopped: " .. tostring(reason) ..
+                (self.waitingReason and ("; last wait: " .. self.waitingReason) or "") ..
+                (self.lastRouteError and ("; last route rejection: " .. self.lastRouteError) or ""))
+        end
+        self.lastStopReason, self.waitingReason = reason, nil
         restoreCommercialHolograms()
         for _, id in ipairs(sorted(self.participants)) do releasePerson(id, frame) end
         for _, id in ipairs(convoy) do retireVehicle(id) end
@@ -352,6 +368,9 @@ function M.New(context)
         if not G.CitySpawnComplete or not G.CivilianTraffic then return false, "city traffic is not ready" end
         local day = M.Clock(frame, gameConfig.game.dayLengthFrames)
         previewRequest = {day=day, expires=frame+(C.previewRouteTimeoutFrames or 60*30)}
+        self.lastStopReason = nil
+        self.lastRouteError = nil
+        waiting("searching for a safe route")
         pendingRoute, pendingDay, nextAttempt = nil, nil, frame
         return true, "validating a route; preview assembles for 45 seconds and tours for 3 minutes"
     end
@@ -377,20 +396,28 @@ function M.New(context)
 
     local function spawnVehicle(frame)
         local origin = route.points[1]
-        if not validPoint(carrierDefID, origin.x, origin.z) then return end
+        if not validPoint(carrierDefID, origin.x, origin.z) then
+            waiting("assembly point is blocked or unsafe"); return
+        end
         -- Spawn one at a time from the same existing curb. Never overlap the
         -- preceding float or create a parked row across a building footprint.
         for _, id in ipairs(S.GetUnitsInCylinder(origin.x, origin.z, C.vehicleSpacing) or {}) do
-            if context.truckTypes[S.GetUnitDefID(id)] then return end
+            if context.truckTypes[S.GetUnitDefID(id)] then
+                waiting("waiting for truck " .. id .. " to clear the assembly point"); return
+            end
         end
         local id = G.CivilianTraffic.SpawnParade(carrierDefID, origin.x, origin.z, route.nodes[1], route.nodes[2])
-        if not id then return end
+        if not id then waiting("carrier creation failed (check Gaia unit limit and carrier eligibility)"); return end
         local vehicle = {goal = 2, lastProgress = frame, x = origin.x, z = origin.z}
         director.vehicles[id] = vehicle
         local payload = G.CivilianTraffic.Load(id, catalog.unitName)
         local variant = ((floor(eventDay / C.periodDays) - 1 + #convoy) % #catalog.variants) + 1
-        if not payload or not call(payload, "SetParadeVariant", variant)
-            or not G.CivilianTraffic.BeginTravel(id) then
+        local failure
+        if not payload then failure = "payload creation failed"
+        elseif not call(payload, "SetParadeVariant", variant) then failure = "payload rejected float variant"
+        elseif not G.CivilianTraffic.BeginTravel(id) then failure = "civilian travel registration failed" end
+        if failure then
+            waiting(failure)
             director.vehicles[id] = nil
             if alive(payload) then S.DestroyUnit(payload, false, true) end
             G.DiedPeacefully = G.DiedPeacefully or {}; G.DiedPeacefully[id] = true
@@ -408,6 +435,9 @@ function M.New(context)
         if G.UnitArrivedAtTarget then G.UnitArrivedAtTarget[id] = nil end
         move(id, route.points[2])
         nextSpawn = frame + C.spawnIntervalFrames
+        director.waitingReason = nil
+        log(string.format("spawned truck=%d payload=%d variant=%d at x=%.1f y=%.1f z=%.1f (frame %d)",
+            id, payload, variant, origin.x, origin.y, origin.z, frame))
         publish()
     end
 
@@ -423,6 +453,11 @@ function M.New(context)
         director.phase = "assembling"
         convoy, director.vehicles, lastBuildingBurst = {}, {}, {}
         effectsEmitted = 0
+        director.waitingReason = nil
+        director.lastRouteError = nil
+        local origin = route.points[1]
+        log(string.format("assembly starts at x=%.1f y=%.1f z=%.1f; carrier=%s; route nodes=%d; frame=%d",
+            origin.x, origin.y, origin.z, context.UnitDefs[carrierDefID].name, #route.nodes, frame))
         if not preview then consumeDay(day) end
         nextSpawn = frame
         publish()
@@ -600,6 +635,8 @@ function M.New(context)
             effectsEmitted = effectsEmitted+1
             local ex,ey,ez = dx,-0.25,dz
             if effect == "parade_petals" then
+                height = math.max(C.petalMinimumHeight or 240,
+                    (S.GetUnitHeight(id) or 100) * (C.petalHeightFactor or 1.6))
                 local windX,_,windZ = S.GetWind()
                 -- Petals consume CEG's dir as gravity, not their launch axis.
                 -- Scale current map wind into per-frame acceleration; retain
@@ -656,15 +693,21 @@ function M.New(context)
                 startAssembly(day,frame,requestedPreview)
                 spawnVehicle(frame)
                 updateCommercialHolograms(frame)
-            elseif status == "invalid" then pendingRoute,pendingDay=nil,nil; nextAttempt=frame+C.retryFrames end
+            elseif status == "invalid" then
+                self.lastRouteError = pendingRoute.reason
+                waiting("route rejected: " .. tostring(pendingRoute.reason or "unknown reason"))
+                pendingRoute,pendingDay=nil,nil; nextAttempt=frame+C.retryFrames
+            end
             return
         end
         if frame < nextAttempt then return end
         nextAttempt = frame+C.retryFrames
         carrierDefID = carrierFor(day)
-        if not carrierDefID then return end
+        if not carrierDefID then waiting("no eligible carrier or parade payload definition"); return end
         pendingRoute = routeBuilder:Begin(day,carrierDefID)
         pendingDay = pendingRoute and day or nil
+        if not pendingRoute then waiting("route search: " .. tostring(routeBuilder.lastError or "no route"))
+        else waiting("validating native route paths") end
     end
 
     function director:UnitDamaged(id, damage)

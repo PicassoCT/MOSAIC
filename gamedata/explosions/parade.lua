@@ -48,7 +48,7 @@ local effects = {
             [[1 1 1 1  1 1 1 1  0.7 0.8 1 0]]),
     },
     parade_petals = {
-        petals = paper([[parade_petal]], 12, 1.8, 0.8, 200,
+        petals = paper([[parade_petal]], 12, 1.8, 0.8, 360,
             [[1 1 1 1  1 1 1 1  1 0.6 0.8 0]]),
     },
     parade_inflationmoney = {
