@@ -1,19 +1,25 @@
 -- Run from the game checkout, passing this external file to Lua 5.1 or 5.2.
 VFS={Include=dofile}
 local planner=dofile('scripts/lib_house_asian_placeables.lua')
-local file=assert(io.open('scripts/house_asian_script.lua'));local source=file:read('*a');file:close()
-local first=assert(source:find('function addGroundPlaceables()',1,true))
-local last=assert(source:find('\nlocal accumulatedStun',first,true))
-local functionCode=source:sub(first,last-1)..'\nreturn addGroundPlaceables'
-local function compile(env)
- if setfenv then return setfenv(assert(loadstring(functionCode)),env)() end
- return assert(load(functionCode,'house placeable terrain','t',env))()
+local function read(path)
+ local f=assert(io.open(path));local text=f:read('*a');f:close();return text
+end
+local helperCode=read('scripts/lib_house_asian_ground_placeables.lua')
+local function compile(code,env)
+ if setfenv then return setfenv(assert(loadstring(code)),env)() end
+ return assert(load(code,'house placeable terrain','t',env))()
+end
+local function wrapper(family)
+ local source=read('scripts/house_asian'..(family=='standalone' and '_standalone' or '')..'_script.lua')
+ local first=assert(source:find('function addGroundPlaceables()',1,true))
+ local marker=family=='standalone' and '\nif not GG.GlobalPieceCounterArcology' or '\nlocal accumulatedStun'
+ return source:sub(first,assert(source:find(marker,first,true))-1)..'\nreturn addGroundPlaceables'
 end
 local names,ids={},{}
 for i=1,24 do names[i]='Placeable'..i;ids[i]=i end
 local scale=planner.catalogue.scale
 local function close(a,b,message) assert(math.abs(a-b)<.00001,message..': '..a..' / '..b) end
-local function run(angle,terrain)
+local function run(angle,terrain,family)
  local radians=angle*math.pi/180
  local c,s=math.cos(radians),math.sin(radians)
  local ux,uy,uz=1400,37,2200
@@ -25,6 +31,9 @@ local function run(angle,terrain)
   Game={mapName='terrain-test',mapSizeX=8192,mapSizeZ=8192},
   GameConfig={city={alleys={sizeX=25}}},cubeDim={length=770},splitPlan={seed=83},
   pieceNr_pieceName=names,getNameFilteredTable=function() return ids end,
+  buildingClearanceReady=true,ToShowTable={},toShowDict={},TablesOfPieceGroups={Placeable=ids},
+  getDeterministicStationaryUnitHash=function()return 83 end,
+  showSubs=function()end,garbageSimPlaceable={},
   inToShowDict=function() return false end,addToShowTable=function(id) shown[id]=true end,
   Show=function() end,SetRadiancePlaceables=function(p) for _,id in ipairs(p) do lit[id]=true end end,
   Move=function(id,axis,value) moves[id]=moves[id] or {};moves[id][axis]=value end,
@@ -38,11 +47,14 @@ local function run(angle,terrain)
     close(options.roads[1].aX,-6000,'rotated road X');close(options.roads[1].aZ,3500,'rotated road Z')
     options.count=5;placed=planner.plan(options);return placed
    end}}, {__index=_G})
- compile(env)()
+ env.placeGroundProps=compile(helperCode,env)
+ compile(wrapper(family),env)()
  for _,p in ipairs(placed) do
   assert(shown[p.id] and lit[p.id],'selected piece missing visibility or radiance registration')
   local pose=planner.catalogue.pieces[p.name].poses[math.floor(turns[p.id]/(math.pi/4)+.5)+1]
   local m=moves[p.id]
+  -- Independently apply the exported center's rotation to parent-space Moves.
+  if family=='standalone' then m={m[1],m[3],-m[2]} end
   local low=math.huge
   for _,lx in ipairs({pose.footMin[1],pose.footMax[1]}) do
    for _,lz in ipairs({pose.footMin[3],pose.footMax[3]}) do
@@ -57,10 +69,18 @@ local function run(angle,terrain)
  end
  return placed
 end
-for _,angle in ipairs({0,90,180,270,37}) do
- local result=run(angle,function(x,z) return 20+.004*(x-1400)-.002*(z-2200) end)
- assert(#result==5,'valid sloping ground lost props')
- assert(#run(angle,function() return -5 end)==0,'underwater location accepted')
- assert(#run(angle,function(x,z) return 10000+10*x+3*z end)==0,'steep footprint accepted')
+for _,family in ipairs({'modular','standalone'}) do
+ if family=='standalone' then
+  planner=planner.withCatalogue(dofile('scripts/house_asian_standalone_placeable_catalog.lua'))
+  names,ids={},{}
+  for name in pairs(planner.catalogue.pieces) do names[#names+1]=name end
+  table.sort(names);for i=1,#names do ids[i]=i end
+ end
+ for _,angle in ipairs({0,90,180,270,37}) do
+  local result=run(angle,function(x,z) return 20+.004*(x-1400)-.002*(z-2200) end,family)
+  assert(#result==5,'valid sloping ground lost props: '..family)
+  assert(#run(angle,function() return -5 end,family)==0,'underwater location accepted')
+  assert(#run(angle,function(x,z) return 10000+10*x+3*z end,family)==0,'steep footprint accepted')
+ end
 end
-print('PASS: real house placement at 0/90/180/270/37 degrees; rotated road and terrain samples, 0.0254 height conversion, underwater and steep-ground rejection')
+print('PASS: modular and standalone production wrappers; 5 headings, rotated roads/parent axes, terrain grounding, water and slope rejection')

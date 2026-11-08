@@ -1,4 +1,5 @@
 -- Run from the repository root with Lua 5.1+.
+VFS={Include=dofile}
 local function loadEnv(path, env)
     setmetatable(env, {__index = _G})
     local f
@@ -37,6 +38,7 @@ local function standalone(shared, id, opts)
         GG = shared, unitID = id, unitDefID = 1, script = {}, Game = {},
         UnitDefs = {{name = opts.project and 'house_asian3' or 'house_asian1'}},
         include = noop, piece = function() return -1 end,
+        GetSetSharedOneTimeResult = function(_, create) return create() end,
         getGameConfig = function() return config end,
         getBuildingRadianceShadowTypeTable=shadowProperties.getBuildingRadianceShadowTypeTable,
         getPieceTableByNameGroups = function() return groups end,

@@ -193,7 +193,8 @@ local function assemble(fixture,plan)
     loadEnv('scripts/lib_UnitScript.lua',env)
     loadEnv('scripts/lib_Animation.lua',env)
     env.include=function(name)
-        if name == 'lib_building_damage.lua' or name == 'lib_house_asian_animations.lua' then
+        if name == 'lib_building_damage.lua' or name == 'lib_house_asian_animations.lua'
+            or name == 'lib_house_asian_ground_placeables.lua' then
             return loadEnv('scripts/'..name,env)
         end
         return noop

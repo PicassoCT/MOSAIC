@@ -84,7 +84,8 @@ def main():
         if not lua:
             parser.error('Lua is required for the default smoke tests')
         for name in ('house_asian_placeable_terrain_test.lua', 'house_asian_placeables_test.lua',
-                     'lost_and_found_audio_test.lua'):
+                     'house_asian_standalone_placeables_test.lua',
+                     'house_arab_animation_test.lua', 'lost_and_found_audio_test.lua'):
             result = subprocess.call([lua, 'tests/' + name], cwd=workspace)
             if result:
                 return result

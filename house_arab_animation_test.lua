@@ -26,7 +26,7 @@ local function scenario(laterConstruction, selected, clockSelected)
     local env = setmetatable({
         unitID=1, x_axis=1, y_axis=3, z_axis=2, _x_axis=1, _y_axis=2,
         _z_axis=3, cubeDim={heigth=100}, TablesOfPiecesGroups=groups,
-        boolDoneShowing=false, ToShowTable={},
+        boolDoneShowing=false, ToShowTable={}, Icon=piece('Icon'),
         spinYPieces={spin,hiddenSpin},
         pericodicRotationYPieces={[turn]=false,[hiddenTurn]=false},
         windsolar={[wind]=false,[hiddenWind]=false},
@@ -69,6 +69,8 @@ local function scenario(laterConstruction, selected, clockSelected)
     env.foreach=function(t,fn)for _,p in pairs(t)do fn(p)end end
     env.showT=function(t)for _,p in pairs(t)do visible[p]=true end end
     env.hideT=function(t)for _,p in pairs(t)do visible[p]=nil end end
+    env.Show=function(p) assert(p); visible[p]=true end
+    env.Hide=function(p) assert(p); visible[p]=nil end
     env.moveT=function(t,a,v,s)for _,p in pairs(t)do env.Move(p,a,v,s)end end
     env.moveSyncInTimeT=function()end
     env.waitForCityConstruction=function()
@@ -98,6 +100,8 @@ local function scenario(laterConstruction, selected, clockSelected)
     end
     env.StartThread(env.buildAnimation)
     advance(1000); assertNoDecorations()
+    assert((visible[env.Icon] or false)==not laterConstruction,
+        'placeholder must appear only during initial city assembly')
     if selected then env.ToShowTable={spin,turn,wind,move} end
     if clockSelected then env.ToShowTable[#env.ToShowTable+1]=clock end
     env.boolDoneShowing=true
@@ -106,6 +110,7 @@ local function scenario(laterConstruction, selected, clockSelected)
         env.GG.CityConstructionSites[1]=nil
     end
     advance(12000)
+    assert(not visible[env.Icon],'placeholder remained visible after house reveal')
     local seen, stoppedCranes = {}, {}
     for _,e in ipairs(events)do
         seen[e.p]=true
