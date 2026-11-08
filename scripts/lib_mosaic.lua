@@ -4673,18 +4673,22 @@ end
 
 
 function buildRunLostAndFound(unitID)
-    local spPlaySoundFile = Spring.PlaySoundFile
-    local lostAndFoundPath = "sounds/civilian/lostandfound"
-    local nameFiles = VFS.DirList(lostAndFoundPath.."/name", "*.ogg") or {}
-    local surnameFiles = VFS.DirList(lostAndFoundPath.."/surname", "*.ogg") or {}
-    local rewardsFiles = VFS.DirList(lostAndFoundPath.."/rewards", "*.ogg") or {}
-    local additionalInfo = VFS.DirList(lostAndFoundPath.."/additionalInfo", "*.ogg") or {}
-    -- This optional audio pack may not be installed. Do not kill the blimp's
-    -- advertising thread by drawing from an empty pool or playing missing clips.
-    if #nameFiles==0 or #surnameFiles==0 or #rewardsFiles==0 or #additionalInfo==0
-        or not VFS.FileExists(lostAndFoundPath.."/lostandfound_12s.ogg")
-        or not VFS.FileExists(lostAndFoundPath.."/Postlude_9s.ogg") then
-        return false
+    local base = "sounds/civilian/lostandfound/"
+    local folders = {"intro", "name", "surname", "additionalInfo", "rewards", "postlude"}
+    local pools = {}
+    -- All six groups are optional as one pack. Check before waiting for morning.
+    for _, folder in ipairs(folders) do
+        pools[folder] = VFS.DirList(base..folder, "*.ogg") or {}
+        if #pools[folder] == 0 then return false end
+        table.sort(pools[folder])
+    end
+    if not VFS.FileExists(base.."durations.lua") then return false end
+    local durations = VFS.Include(base.."durations.lua")
+    for _, folder in ipairs(folders) do
+        for _, file in ipairs(pools[folder]) do
+            local length = durations[file:sub(#base+1)]
+            if type(length) ~= "number" or length <= 0 then return false end
+        end
     end
     if isNight() then
         waitTillDay()
@@ -4692,29 +4696,21 @@ function buildRunLostAndFound(unitID)
         waitTillNight()
         waitTillDay()
     end
-    spPlaySoundFile(lostAndFoundPath.."/lostandfound_12s.ogg", 1.0)
-    Sleep(12000)
-    local nameNr = math.random(1,3)
-    for i=1, nameNr do
-        local name = nameFiles[math.random(1,#nameFiles)]
-        spPlaySoundFile(name, 1.0)
-        Sleep(1000)
-
-        local surname = surnameFiles[math.random(1,#surnameFiles)]
-        spPlaySoundFile(surname, 1.0)
-        Sleep(1000)
-
-        local additionalInfo = additionalInfo[math.random(1,#additionalInfo)]
-        spPlaySoundFile(additionalInfo, 1.0)
-        Sleep(7000)
-
-        local reward = rewardsFiles[math.random(1,#rewardsFiles)]
-        spPlaySoundFile(reward, 1.0)
-        Sleep(3000)
+    local function play(folder)
+        local files = pools[folder]
+        local file = files[math.random(1,#files)]
+        Spring.PlaySoundFile(file, 1.0)
+        local pause = (folder == "name" or folder == "surname") and 120 or 300
+        Sleep(durations[file:sub(#base+1)] + pause)
     end
-
-    Spring.PlaySoundFile(lostAndFoundPath.."/Postlude_9s.ogg", 1.0)
-    Sleep(9000)
+    play("intro")
+    for i=1,math.random(1,3) do
+        play("name")
+        play("surname")
+        play("additionalInfo")
+        play("rewards")
+    end
+    play("postlude")
     return true
 end
 
