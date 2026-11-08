@@ -18,6 +18,8 @@ math.random = function() error('planner must not consume global RNG') end
 math.randomseed = function() error('planner must not reseed global RNG') end
 for i=1,#planner.catalog.groups + 1000 do
     local x,z = (i * 773) % 8192 + 0.5, (i * 431) % 8192 + 0.25
+    local seed=planner.seed(x,z,'LastDayOfDhubai')
+    assert(seed>=0 and seed*31+255<16777216,'hash exceeds exact float32 integer arithmetic')
     local pa, pb = planner.choose(a,x,z,'LastDayOfDhubai'), planner.choose(b,x,z,'LastDayOfDhubai')
     assert(equal(pa,pb), 'non-deterministic plan')
     assert(equal(pa,planner.choose(a,x,z,'LastDayOfDhubai')), 'failed spawn consumed a group')

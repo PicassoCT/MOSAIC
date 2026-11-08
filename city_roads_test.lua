@@ -82,6 +82,18 @@ assert(tips[99]=='Arcology - Café Street 1 [A1]','Arcology title removed addres
 GG.CityPlotAddresses=nil;GG.BuildingTable={};gadget:Initialize()
 setHouseStreetNameTooltip(99,0,0,Game,false,UnitDefs,{'Shop'})
 assert(params[99].city_house_number=='1' and params[99].city_plot_x==100)
+-- Reconciliation must keep an established network, names and numbering;
+-- even a cold LuaRules reload recovers the serialized engine road network.
+local savedWire=roads.encode(GG.CityRoadNetwork)
+local savedRevision=rules.city_roads_revision
+GG.CityAddressService.Reconcile()
+assert(roads.encode(GG.CityRoadNetwork)==savedWire and rules.city_roads_revision==savedRevision)
+GG.CityRoadNetwork=nil;GG.CityRoadNetworkFrozen=nil
+local oldExists=VFS.FileExists;VFS.FileExists=function()return false end
+gadget:Initialize();GG.CityAddressService.Reconcile()
+assert(roads.encode(GG.CityRoadNetwork)==savedWire and rules.city_roads_revision==savedRevision)
+assert(params[99].city_house_number=='1','cold reload renumbered established plot')
+VFS.FileExists=oldExists
 -- A business array with only one entry must never index beyond it, or use RNG.
 for x=1,300 do
     units[99].x=x;GG.BuildingTable[99]={x=x,z=100}

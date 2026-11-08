@@ -122,7 +122,7 @@ local function fixture(rubbleName)
         elseif name=='house_ruin' then
             addPieces(u,{'Ruin','RuinSub1','RuinCore','RuinCoreSub1','RuinCoreSub1Sub1'})
         else
-            addPieces(u,{'center','block1','block2','block3','block4','block5','block6'})
+            addPieces(u,{'center','block1','block2','block3','block4','block5','block6','Icon'})
         end
         env.gadget:UnitCreated(id,defID,team)
         if state.blocker then state.blocker:UnitCreated(id,defID) end
