@@ -23,6 +23,7 @@ end
 function Route.new(context)
     local S, G, defs = context.Spring, context.GG, context.UnitDefs
     local config = context.config or {}
+    local clearance = context.clearance
     local function option(key, default, low, high)
         local value = config[key]
         if not finite(value) then value = default end
@@ -67,6 +68,10 @@ function Route.new(context)
         local x, z = point.x or point[1], point.z or point[3]
         if not finite(x) or not finite(z) then return nil, "nonfinite coordinates" end
         if dangerous(x, z) then return nil, "heavy recent damage" end
+        if clearance then
+            local clear, house = clearance:SegmentClear({x=x,z=z},{x=x,z=z})
+            if not clear then return nil, "house footprint " .. house end
+        end
         local y = S.GetGroundHeight(x, z)
         if not finite(y) then return nil, "nonfinite ground height" end
         if y < 0 then return nil, "underwater" end
@@ -99,6 +104,7 @@ function Route.new(context)
 
     function builder:Begin(day, defID)
         self.lastError = nil
+        if clearance then clearance:Refresh() end
         local traffic = G.CivilianTraffic
         local def = defs[defID]
         local moveDefID = def and def.moveDef and def.moveDef.id
@@ -236,6 +242,26 @@ function Route.new(context)
         if not terminal or distance(terminal, goal) > endpointTolerance then
             return nil, "native path did not reach its curb"
         end
+        if clearance and clearance.Detour then
+            local lastPoint=origin
+            local crossesHouse=false
+            for _,p in ipairs(waypoints) do
+                local nextPoint={x=p.x or p[1],z=p.z or p[3]}
+                if not finite(nextPoint.x) or not finite(nextPoint.z) then break end
+                if not clearance:SegmentClear(lastPoint,nextPoint) then crossesHouse=true;break end
+                lastPoint=nextPoint
+            end
+            if not crossesHouse then crossesHouse=not clearance:SegmentClear(lastPoint,goal) end
+            if crossesHouse then
+                local remaining=(config.routeDetourSearchBudget or 4096)-(route._detourExpansions or 0)
+                local detour,expanded=clearance:Detour(origin,goal,function(p)
+                    return safePoint(p,route.defID,false)~=nil
+                end,math.max(0,remaining))
+                route._detourExpansions=(route._detourExpansions or 0)+expanded
+                if not detour then return nil,"no house-clear detour within search budget" end
+                waypoints=detour
+            end
+        end
         local raw = {origin}
         for _, waypoint in ipairs(waypoints) do
             local point, reason = safePoint(waypoint, route.defID, true)
@@ -245,6 +271,10 @@ function Route.new(context)
         if distance(raw[#raw], goal) > 0.01 then raw[#raw + 1] = goal end
         for index = 2, #raw do
             local a, b = raw[index - 1], raw[index]
+            if clearance then
+                local clear, house = clearance:SegmentClear(a,b)
+                if not clear then return nil, "native segment crosses house footprint " .. house end
+            end
             local count = math.max(1, math.ceil(distance(a, b) / sampleSpacing))
             route._samples = route._samples + count
             if route._samples > maxSamples then return nil, "native path exceeded safety sample budget" end
@@ -277,6 +307,7 @@ function Route.new(context)
         if type(route) ~= "table" or not route._curbs then return "invalid" end
         if route.status ~= "pending" then return route.status end
         route.polls = route.polls + 1
+        if clearance then clearance:Refresh() end
         for _, id in ipairs(route.nodes) do
             if not nodePosition(id) then return invalidate(route, "route building lost or unsafe") end
         end
@@ -315,6 +346,38 @@ function Route.new(context)
                 if not previous or distance(previous, point) > 0.01 then
                     if previous then length = length + distance(previous, point) end
                     points[#points + 1] = copyPoint(point)
+                end
+            end
+        end
+        local formationLength=(config.vehicleCount or 0)*(config.vehicleSpacing or 140)+stagingGap
+        if config.vehicleCount and length<formationLength then
+            return invalidate(route,"circuit is too short for convoy spacing")
+        end
+        if config.routeRejectRetrace then
+            -- Opposing segments within one truck width put the leader into
+            -- its own followers on out-and-back paths. Keep separate lanes.
+            local laneWidth=(config.routeHouseClearance or 45)*2
+            for i=2,#points do
+                local a,b=points[i-1],points[i]
+                local dx,dz=b.x-a.x,b.z-a.z
+                local segmentLength=math.sqrt(dx*dx+dz*dz)
+                if segmentLength>1 then
+                    dx,dz=dx/segmentLength,dz/segmentLength
+                    for j=i+1,#points do
+                        local c,d=points[j-1],points[j]
+                        local ex,ez=d.x-c.x,d.z-c.z
+                        local otherLength=math.sqrt(ex*ex+ez*ez)
+                        if otherLength>1 and (dx*ex+dz*ez)/otherLength<-.95 then
+                            local sideC=math.abs((c.x-a.x)*dz-(c.z-a.z)*dx)
+                            local sideD=math.abs((d.x-a.x)*dz-(d.z-a.z)*dx)
+                            local alongC=(c.x-a.x)*dx+(c.z-a.z)*dz
+                            local alongD=(d.x-a.x)*dx+(d.z-a.z)*dz
+                            local overlap=math.min(segmentLength,math.max(alongC,alongD))-math.max(0,math.min(alongC,alongD))
+                            if math.max(sideC,sideD)<laneWidth and overlap>20 then
+                                return invalidate(route,"circuit doubles back into the convoy lane")
+                            end
+                        end
+                    end
                 end
             end
         end

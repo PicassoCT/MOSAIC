@@ -14,6 +14,11 @@ return {
     spawnIntervalFrames = 8 * 30,
     speedFactor = 0.22,
     vehicleSpacing = 140,
+    minimumVehicleSpacing = 110,
+    spacingHysteresis = 20,
+    -- 40x70 carrier half-diagonal, plus a small corner clearance.
+    routeHouseClearance = 45,
+    routeRejectRetrace = true,
     maxVehicleGap = 420,
     goalRadius = 42,
     stalledFrames = 60 * 30,

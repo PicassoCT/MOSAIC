@@ -12,6 +12,7 @@ VFS.Include("scripts/lib_mosaic.lua")
 VFS.Include("scripts/lib_staticstring.lua")
 local controller = VFS.Include("luarules/gadgets/include/city_parade.lua")
 local routes = VFS.Include("scripts/lib_city_parade_route.lua")
+local clearance = VFS.Include("scripts/lib_parade_clearance.lua")
 local config = VFS.Include("luarules/configs/city_parade.lua")
 local catalog = VFS.Include("scripts/lib_truck_parade_payloads.lua")
 local parade, chatRegistered
@@ -83,6 +84,7 @@ function gadget:Initialize()
         buildingTypes=buildingTypes,
         commercialHologramTypes=commercialHologramTypes,
     }
+    context.clearance = clearance.new(context)
     context.routeBuilder = routes.new(context)
     parade = controller.New(context)
     GG.CityParade = parade

@@ -163,7 +163,7 @@ local function fixture(options)
             civilians={activityStates={started='started',ended='ended'}}},
         walkerTypes={[5]=true},truckTypes={[1]=true,[2]=true,[3]=true},buildingTypes={[6]=true},
         commercialHologramTypes={[9]=true,[11]=true,[12]=true},
-        routeBuilder=routeBuilder,setSpeed=function(id,value) f.speeds[id]=value end}
+        clearance=options.clearance,routeBuilder=routeBuilder,setSpeed=function(id,value) f.speeds[id]=value end}
     f.d=controller.New(f.context)
     function f:step(frame,progress)
         self.frame=frame
@@ -573,4 +573,51 @@ check('minor area damage permits spawning and touring; heavy damage still disper
     area:ReportIncident(1000,1000,200,4000)
     f:step(f.frame+15,5)
     assert(f.d.phase=='idle' and f.rules.city_parade_last_stop=='danger')
+end)
+
+local function convoyIDs(f)
+    local ids={};for id in pairs(f.d.vehicles)do ids[#ids+1]=id end;table.sort(ids);return ids
+end
+check('convoy slows before stopping and measures separation around a bend',function()
+    local f=fixture();f:tour();local ids=convoyIDs(f)
+    for i,id in ipairs(ids)do
+        f.units[id].x,f.units[id].z=1770-i*170,500
+        f.d.vehicles[id].goal=3
+    end
+    f.units[ids[2]].x=1470
+    f:step(f.frame+15)
+    assert(not f.d.vehicles[ids[2]].held and f.speeds[ids[2]]<f.config.speedFactor,'follower did not brake gradually')
+    f.units[ids[2]].x=1510;f:step(f.frame+15)
+    assert(f.d.vehicles[ids[2]].held,'follower closed below minimum spacing')
+    f.units[ids[1]].x,f.units[ids[1]].z=2000,600;f.d.vehicles[ids[1]].goal=4
+    for i=2,#ids do
+        f.units[ids[i]].x,f.units[ids[i]].z=1930-(i-2)*170,500
+        f.d.vehicles[ids[i]].goal=3
+    end
+    f:step(f.frame+15)
+    assert(not f.d.vehicles[ids[2]].held and f.speeds[ids[2]]==f.config.speedFactor,'bend caused unnecessary bunching')
+end)
+check('lap closure retains convoy order and spacing',function()
+    local f=fixture();f:tour();local ids=convoyIDs(f)
+    f.units[ids[1]].x,f.units[ids[1]].z=700,500
+    f.d.vehicles[ids[1]].goal,f.d.vehicles[ids[1]].lap=2,1
+    for i=2,#ids do
+        local z=640+(i-2)*170
+        f.units[ids[i]].x,f.units[ids[i]].z=650-(z-500)*.1,z
+        f.d.vehicles[ids[i]].goal,f.d.vehicles[ids[i]].lap=6,0
+    end
+    f:step(f.frame+15)
+    assert(not f.d.vehicles[ids[1]].held and not f.d.vehicles[ids[2]].held,'lap seam broke route distance')
+end)
+check('waypoint advancement cannot cut a house corner and a new obstruction stops the truck',function()
+    local obstructed=false
+    local clearance={Refresh=function()end,SegmentClear=function(_,a,b)
+        return not obstructed and not (a.x<849 and b.x==2000 and b.z==500)
+    end}
+    local f=fixture({clearance=clearance});f.frame=150;assert(f.d:RequestPreview(150));f:step(150);f:step(165)
+    local id=next(f.d.vehicles)
+    f.units[id].x=820;f:step(180);assert(f.d.vehicles[id].goal==2,'truck skipped a building corner')
+    f.units[id].x=850;f:step(195);assert(f.d.vehicles[id].goal==3)
+    obstructed=true;f:step(210)
+    assert(f.d.vehicles[id].held and f.orders[#f.orders].cmd==CMD.STOP,'truck drove toward a new house obstruction')
 end)

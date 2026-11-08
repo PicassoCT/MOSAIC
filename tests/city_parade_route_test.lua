@@ -279,3 +279,30 @@ do
     end
 end
 print('PASS nearby route selection and alternate circuits from a rejected start')
+
+-- Native pathfinding does not know about nonblocking city houses. Their
+-- independent footprints must reject a crossing even between sparse samples.
+do
+    local f=fixture(4)
+    local calls=0
+    local clearance={Refresh=function()end,SegmentClear=function(_,a,b)
+        calls=calls+1
+        return same(a,b) -- curbs pass; any connecting segment crosses a fixture house
+    end}
+    f.builder=Route.new({Spring=f.Spring,GG=f.GG,UnitDefs={[41]={moveDef={id=17}}},clearance=clearance})
+    local route=assert(f.builder:Begin(7,41))
+    -- Return a house ID for blocked segments, like the production index.
+    clearance.SegmentClear=function(_,a,b)if same(a,b)then return true end;return false,99 end
+    assert(f.builder:Poll(route)=='invalid' and route.reason:find('house footprint 99',1,true))
+    assert(calls>0)
+end
+
+do
+    local f=fixture(2,{routeRejectRetrace=true})
+    local route=assert(f.builder:Begin(7,41))
+    assert(f.builder:Poll(route)=='invalid' and route.reason=='circuit doubles back into the convoy lane')
+    local short=fixture(2,{vehicleCount=12,vehicleSpacing=140})
+    local r=assert(short.builder:Begin(7,41))
+    assert(short.builder:Poll(r)=='invalid' and r.reason=='circuit is too short for convoy spacing')
+end
+print('PASS house crossing, head-on return lanes and convoy circuit capacity')

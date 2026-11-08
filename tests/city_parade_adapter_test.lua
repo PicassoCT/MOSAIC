@@ -71,6 +71,7 @@ local function fixture(synced)
             or path=='scripts/lib_staticstring.lua' then return end
         if path=='luarules/configs/city_parade.lua' then return config end
         if path=='scripts/lib_truck_parade_payloads.lua' then return catalog end
+        if path=='scripts/lib_parade_clearance.lua' then return dofile(path) end
         if path=='scripts/lib_city_parade_route.lua' then
             return {new=function(context) s.routeContext=context; return routeBuilder end}
         end
@@ -106,7 +107,7 @@ local gadget=s.env.gadget
 local info=gadget:GetInfo()
 assert(info.layer==2 and info.enabled==true)
 gadget:Initialize()
-assert(#s.includes==7 and s.recovered==1)
+assert(#s.includes==8 and s.recovered==1)
 assert(s.env.GG.CityParade==s.director)
 assert(s.context.buildingTypes[10]==10 and s.context.buildingTypes[40]==40)
 assert(not s.context.buildingTypes[20] and not s.context.buildingTypes[30],

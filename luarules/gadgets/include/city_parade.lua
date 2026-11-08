@@ -26,6 +26,8 @@ function M.New(context)
     local previousCommercialStart, previousCommercialEnd, previousCommercialFrame
     local previousCommercialEndX, previousCommercialEndZ
     local route, pendingRoute, pendingDay, carrierDefID, eventDay, endFrame
+    local routeOffsets, routeLength = {}, 0
+    local clearance = context.clearance
     local tourStartFrame, previewRequest, preview = nil, nil, false
     local nextRetirementCheck = 0
     local nextSpawn, nextAttempt, lastEffect, lastRecruit = 0, 0, -C.effectFrames, -C.recruitFrames
@@ -396,7 +398,8 @@ function M.New(context)
 
     local function spawnVehicle(frame)
         local origin = route.points[1]
-        if not validPoint(carrierDefID, origin.x, origin.z) then
+        if (clearance and not clearance:SegmentClear(origin,origin))
+            or not validPoint(carrierDefID, origin.x, origin.z) then
             waiting("assembly point is blocked or unsafe"); return
         end
         -- Spawn one at a time from the same existing curb. Never overlap the
@@ -408,7 +411,7 @@ function M.New(context)
         end
         local id = G.CivilianTraffic.SpawnParade(carrierDefID, origin.x, origin.z, route.nodes[1], route.nodes[2])
         if not id then waiting("carrier creation failed (check Gaia unit limit and carrier eligibility)"); return end
-        local vehicle = {goal = 2, lastProgress = frame, x = origin.x, z = origin.z}
+        local vehicle = {goal = 2, lap = 0, progress = 0, speed = C.speedFactor, lastProgress = frame, x = origin.x, z = origin.z}
         director.vehicles[id] = vehicle
         local payload = G.CivilianTraffic.Load(id, catalog.unitName)
         local variant = ((floor(eventDay / C.periodDays) - 1 + #convoy) % #catalog.variants) + 1
@@ -443,6 +446,11 @@ function M.New(context)
 
     local function startAssembly(day, frame, isPreview)
         route = pendingRoute
+        routeOffsets,routeLength = {0},0
+        for i=2,#route.points do
+            routeLength=routeLength+sqrt(distance(route.points[i-1].x,route.points[i-1].z,route.points[i].x,route.points[i].z))
+            routeOffsets[i]=routeLength
+        end
         pendingRoute, pendingDay = nil, nil
         preview, previewRequest = isPreview == true, nil
         eventDay = day
@@ -476,41 +484,86 @@ function M.New(context)
             end
         end
         if membershipChanged then publish() end
-        for i, id in ipairs(convoy) do
-            local vehicle = director.vehicles[id]
-            local x, _, z = S.GetUnitPosition(id)
-            if not x or dangerous(x, z) or busy(id) then return false, "danger" end
-            local goal = route.points[vehicle.goal]
-            if dangerous(goal.x, goal.z) then return false, "route unsafe" end
-            if distance(x, z, vehicle.x, vehicle.z) > 16 then
-                vehicle.x, vehicle.z, vehicle.lastProgress = x, z, frame
+        if clearance then clearance:Refresh(frame) end
+        local positions = {}
+        -- Snapshot and project every truck before issuing orders. Distances
+        -- along the circuit remain meaningful across bends and the lap seam.
+        for _,id in ipairs(convoy) do
+            local vehicle=director.vehicles[id]
+            local x,_,z=S.GetUnitPosition(id)
+            if not x or dangerous(x,z) or busy(id) then return false,"danger" end
+            local pos={x=x,z=z};positions[id]=pos
+            local goal=route.points[vehicle.goal]
+            if dangerous(goal.x,goal.z) then return false,"route unsafe" end
+            vehicle.advanced=false
+            if distance(x,z,goal.x,goal.z)<=C.goalRadius^2 then
+                local nextGoal=vehicle.goal % #route.points+1
+                if nextGoal==1 then nextGoal=2 end
+                -- Do not cut a building corner merely because its waypoint
+                -- falls within the engine's arrival radius.
+                if not clearance or clearance:SegmentClear(pos,route.points[nextGoal]) then
+                    if nextGoal==2 then vehicle.lap=vehicle.lap+1 end
+                    vehicle.goal,vehicle.advanced=nextGoal,true
+                    goal=route.points[nextGoal]
+                end
             end
-            local hold = false
-            if i > 1 then
-                local px, _, pz = S.GetUnitPosition(convoy[i-1])
-                hold = px and distance(x, z, px, pz) < (C.vehicleSpacing + (vehicle.held and 28 or 0))^2
+            local previous=route.points[vehicle.goal-1]
+            local dx,dz=goal.x-previous.x,goal.z-previous.z
+            local length=sqrt(dx*dx+dz*dz)
+            local along=length>0 and math.max(0,math.min(length,((x-previous.x)*dx+(z-previous.z)*dz)/length)) or 0
+            vehicle.progress=vehicle.lap*routeLength+routeOffsets[vehicle.goal-1]+along
+            if distance(x,z,vehicle.x,vehicle.z)>16 then
+                vehicle.x,vehicle.z,vehicle.lastProgress=x,z,frame
+            end
+        end
+        for i,id in ipairs(convoy) do
+            local vehicle,pos=director.vehicles[id],positions[id]
+            local goal=route.points[vehicle.goal]
+            local hold,obstructed=false,false
+            local speed=C.speedFactor
+            local minimum=C.minimumVehicleSpacing or C.vehicleSpacing
+            local hysteresis=C.spacingHysteresis or 20
+            if i>1 then
+                local ahead=director.vehicles[convoy[i-1]]
+                local gap=ahead.progress-vehicle.progress
+                hold=gap<minimum+(vehicle.held and hysteresis or 0)
+                -- Gradually slow before entering the stopping gap; do not
+                -- race back up to the bumper after every STOP/GO transition.
+                speed=C.speedFactor*math.max(.15,math.min(1,(gap-minimum)/math.max(1,C.vehicleSpacing-minimum)))
             elseif convoy[2] then
-                local tx, _, tz = S.GetUnitPosition(convoy[2])
-                hold = tx and distance(x, z, tx, tz) > C.maxVehicleGap^2
+                local behind=director.vehicles[convoy[2]]
+                hold=vehicle.progress-behind.progress>C.maxVehicleGap
+                local tail=director.vehicles[convoy[#convoy]]
+                hold=hold or tail.progress+routeLength-vehicle.progress<minimum+hysteresis
+            end
+            -- Arc spacing cannot alone protect an intersection or a loop
+            -- folded close to itself. Earlier trucks retain right of way.
+            for j=1,i-1 do
+                local other=positions[convoy[j]]
+                if distance(pos.x,pos.z,other.x,other.z)<minimum^2 then hold=true end
+            end
+            if clearance then
+                obstructed=not clearance:SegmentClear(pos,goal)
+                if not obstructed and S.GetUnitVelocity then
+                    local vx,_,vz=S.GetUnitVelocity(id)
+                    if vx and vz then
+                        local lookahead=C.tickFrames*2
+                        obstructed=not clearance:SegmentClear(pos,{x=pos.x+vx*lookahead,z=pos.z+vz*lookahead})
+                    end
+                end
+                if obstructed then
+                    hold=true
+                    waiting("truck "..id.." waiting before a house footprint")
+                end
             end
             if hold then
-                if not vehicle.held then stop(id); vehicle.held = true end
-                -- Intentional formation waits are not pathfinding failures.
-                vehicle.lastProgress = frame
+                if not vehicle.held then stop(id);vehicle.held=true end
+                if not obstructed then vehicle.lastProgress=frame end
             else
-                local advanced = false
-                if distance(x, z, goal.x, goal.z) <= C.goalRadius^2 then
-                    vehicle.goal = vehicle.goal % #route.points + 1
-                    -- Closing point duplicates the staging point.
-                    if vehicle.goal == 1 then vehicle.goal = 2 end
-                    goal, advanced = route.points[vehicle.goal], true
-                end
-                if vehicle.held or advanced then
-                    vehicle.held = false
-                    move(id, goal)
-                end
-                if frame - vehicle.lastProgress > C.stalledFrames then return false, "route blocked" end
+                if vehicle.speed~=speed then context.setSpeed(id,speed);vehicle.speed=speed end
+                if vehicle.held or vehicle.advanced then vehicle.held=false;move(id,goal) end
             end
+            if frame-vehicle.lastProgress>C.stalledFrames then return false,"route blocked" end
         end
         return true
     end
