@@ -5,6 +5,7 @@ end
 local function noop()end
 local units,rules,actions,logs={}, {}, {}, {}
 local nextID,frame,creates,failTooltip,paths,steep=10,0,0,false,true,false
+local manual=false
 local defs={
  [1]={id=1,name='house_asian1'},[2]={id=2,name='house_arab0'},[3]={id=3,name='house_western0'},
  [4]={id=4,name='gcscrapheap'},[5]={id=5,name='house_asian0'},[6]={id=6,name='truck_arab0',moveDef={name='truck',id=1}},
@@ -48,7 +49,11 @@ local function make()
  getHouseTypeIsInnerCityOnly=function()return {}end,removeDictFromDict=function(t)return t end,
  getHouseTypeLimitations=function()return {}end,getLoadAbleTruckTypes=noop,getRefugeeAbleTruckTypes=noop,
  getCultureDependantRandomOffsets=function()return {xRandOffset=0,zRandOffset=0}end,
- doesUnitExistAlive=function(id)return units[id]~=nil end,isMapControlledBuildingPlacement=function()return false end,
+ doesUnitExistAlive=function(id)return units[id]~=nil end,isMapControlledBuildingPlacement=function()return manual end,
+ conditionalEcho=noop,foreach=function(t,...)
+  local callbacks={...}
+  for _,value in pairs(t)do for _,fn in ipairs(callbacks)do if value==nil then break end;value=fn(value)end end
+ end,
  isNearCityCenter=function()return false,10000 end,toString=tostring,
  randDict=function(t)local keys={};for id in pairs(t)do keys[#keys+1]=id end;table.sort(keys);return keys[1]end,
  randSign=function()return 1 end,maRa=function()return true end,
@@ -123,3 +128,22 @@ steep=true;assert(not city.validFinalCityPlot(1000,1000,false))
 steep=false;shared.CityAddressService={NearestRoad=function()return {distance=0,road={width=25}}end}
 assert(not city.validFinalCityPlot(1000,1000,false),'existing road was buildable')
 print('PASS: adopt existing infrastructure, idempotent reload, failure after CreateUnit, persistent budget, completed city, reconstruction clock, cold metadata recovery, terrain and road rejection')
+
+-- Dubai/map-authored cities can have every house adopted during Initialize.
+-- Zero *new* registrations next frame must not keep traffic/parades gated.
+manual=true;paths=true;units={};rules={};shared={};frame=0
+local authored=add(281,281)
+city=make();city.gadget:Initialize()
+assert(shared.BuildingTable[authored] and not shared.CitySpawnComplete)
+shared.CityAddressService={}
+assert(city.registerManuallyPlacedHouses(1)==0,'fixture must exercise already-adopted houses')
+local existing=creates;frame=1;city.gadget:GameFrame(frame)
+assert(shared.CitySpawnComplete and rules.mosaic_city_spawn_complete==1,'adopted map houses blocked traffic/parade readiness')
+assert(creates==existing,'map-authored completion generated extra houses')
+-- Still wait if the map has not placed any houses yet; finish once they arrive.
+units={};rules={};shared={};frame=0;city=make();city.gadget:Initialize()
+shared.CityAddressService={};frame=1;city.gadget:GameFrame(frame)
+assert(not shared.CitySpawnComplete,'empty authored map declared ready')
+add(562,562);frame=2;city.gadget:GameFrame(frame)
+assert(shared.CitySpawnComplete,'late map house did not release readiness gate')
+print('PASS: map-authored readiness accepts adopted houses, waits for empty maps, and releases traffic/parade startup without extra spawns')
