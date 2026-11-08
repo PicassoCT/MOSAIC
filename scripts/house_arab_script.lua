@@ -1055,6 +1055,7 @@ function hideSunBathersInBadWeather()
 end
 
 boolDoneShowing = false
+local Icon = piece("Icon")
 
 function showHouse() Show(basePlate); showT(ToShowTable) end
 
@@ -1065,15 +1066,18 @@ function buildAnimation()
     axis = _y_axis
 
     if Spring.GetGameSeconds() < 10 and not (GG.CityConstructionSites and GG.CityConstructionSites[unitID]) then
+        Show(Icon)
         hideT(builT)
         hideT(TablesOfPiecesGroups["Build1Sub"])
         hideT(TablesOfPiecesGroups["BuildCrane"])
         while boolDoneShowing == false do Sleep(100) end
         showT(ToShowTable)
+        Hide(Icon)
         StartThread(rotations)
         finalizeBuildingShadowVoxels()
         return
     end
+    Hide(Icon)
     StartThread(PlaySoundByUnitDefID, unitDefID, "sounds/building/construction/construction"..math.random(1,7)..".ogg", 1.0, 20000, 3, 0)
     local builT = TablesOfPiecesGroups["Build"]
     axis = _y_axis
