@@ -329,7 +329,7 @@ local function init()
         dephtCopyTex = dephtCopyTexIndex,
         rainRadianceTex = 10, rainOccupancyTex = 11,
         rainLocalRadianceTex = 12, rainLocalOccupancyTex = 13,
-        terrainRunoffTex = 14
+        terrainRunoffTex = 14, terrainNormalTex = 15
     }
 
     rainShader =
@@ -351,6 +351,7 @@ local function init()
             },
             uniformFloat = {
                 viewPortSize = {vsx, vsy},
+                terrainNormalScale = {1 / Game.mapSizeX, 1 / Game.mapSizeZ},
                 cityCenter  = {0,0,0},
                 sunCol    = {0,0,0},
                 skyCol    = {0,0,0},
@@ -500,7 +501,7 @@ local rainCapture = VFS.Include("luaui/widgets_mosaic/include/rain_capture.lua")
     -- Snapshot stages show settled water at each level, with a repeatable phase.
     setRain = function(amount) rainPercent, terrainWetness = amount, amount end,
     metadata = function()
-        return "rain_isolation\t" .. rainIsolation .. "\nwater_revision\tterrain-shore-relief-v7\nshader_fingerprint\t" .. rainShaderFingerprint .. "\n" .. string.format("time_percent\t%.8f\nsun_rgb\t%s\nsky_rgb\t%s\nsun_direction\t%s\nglitter\t%s\n",
+        return "rain_isolation\t" .. rainIsolation .. "\nwater_revision\tterrain-cliff-runoff-v8\nshader_fingerprint\t" .. rainShaderFingerprint .. "\n" .. string.format("time_percent\t%.8f\nsun_rgb\t%s\nsky_rgb\t%s\nsun_direction\t%s\nglitter\t%s\n",
             timePercent, table.concat(sunCol, ","), table.concat(skyCol, ","),
             table.concat(sunPos, ","), tostring(glitterEnabled))
     end,
@@ -599,7 +600,7 @@ end
 local function cleanUp()    
     glResetState()
     glUseShader(0)
-    for slot=10,14 do glTexture(slot,false) end
+    for slot=10,15 do glTexture(slot,false) end
     glBlending(true)
 end
 
@@ -618,6 +619,7 @@ local function prepareTextures()
     glCopyToTexture(depthCopyTex, 0, 0, vpx, vpy, vsx, vsy)
     glTexture(dephtCopyTexIndex, depthCopyTex)
     glTexture(14, terrainRunoffPath)
+    glTexture(15, "$normals")
 end
 
 local function DrawRain()
@@ -666,6 +668,8 @@ function widget:Initialize()
     startOsClock = os.clock()
     init()
     widget:ViewResize()
+    -- A paused game may not deliver GameFrame after loading this widget.
+    widget:GameFrame()
 end
 
 local function cameraIsUnchanged()

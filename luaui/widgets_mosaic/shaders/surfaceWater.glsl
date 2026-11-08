@@ -238,6 +238,67 @@ vec3 terrainReliefGradient(vec3 p,vec3 n,float height,float pixel) {
     return gradient/max(1.0,length(gradient)/0.25);
 }
 
+// Fine connected cliff drainage from the Terrain_Runoff concept. Banks retain
+// the larger braided network above. Both networks are world seeded and fixed;
+// accumulated rain widens paths without relocating their centres.
+vec4 terrainCliffChart(vec2 at,float pixel,out vec2 gradient) {
+    vec2 scale=vec2(0.32,0.18);
+    vec2 q=at*scale;
+    float warp=0.32*sin(q.y*1.7);
+    float warpDerivative=0.544*cos(q.y*1.7);
+    q.x+=warp;
+    vec2 cell=floor(q),a=vec2(0),b=vec2(0);
+    float first=100.0,second=100.0;
+    for(int y=-1;y<=1;y++) for(int x=-1;x<=1;x++) {
+        vec2 id=cell+vec2(x,y);
+        vec2 site=id+0.2+0.6*hash3(id+vec2(51,87)).xy;
+        float d=dot(q-site,q-site);
+        if(d<first) {second=first;b=a;first=d;a=site;}
+        else if(d<second) {second=d;b=site;}
+    }
+    float da=sqrt(max(first,0.000001)),db=sqrt(max(second,0.000001));
+    float edge=db-da;
+    vec2 edgeGradient=(q-b)/db-(q-a)/da;
+    edgeGradient=vec2(edgeGradient.x,edgeGradient.y+edgeGradient.x*warpDerivative)*scale;
+    float wet=clamp(terrainWetness,0.0,1.0);
+    float grain=(surfaceWetNoise(at*0.65+vec2(37,19))-0.5)
+        *(1.0-smoothstep(0.3,0.85,pixel*0.65));
+    float width=mix(0.025,0.14,wet)*(1.0+0.7*grain);
+    float aa=max(pixel*0.16,0.002);
+    float radius=width+aa+width*0.25;
+    float t=clamp(edge/radius,0.0,1.0);
+    float cap=1.0-t*t*(3.0-2.0*t);
+    float coverage=(1.0-smoothstep(width,radius,edge))*smoothstep(0.0,0.025,wet);
+    vec2 across=normalize(b-a),tangent=vec2(-across.y,across.x);
+    if(tangent.y<0.0) tangent=-tangent;
+    vec2 centre=(a+b)*0.5;
+    float along=centre.y+dot(q-centre,tangent)*tangent.y;
+    float phase=6.2831853*(along*5.5-terrainFlowTime*0.85);
+    float resolved=1.0-smoothstep(0.3,0.85,pixel*0.18*5.5);
+    float moving=resolved*smoothstep(0.03,0.20,tangent.y);
+    float wave=0.5+0.5*cos(phase),crest=wave*wave*wave;
+    float relief=(0.20+0.22*crest*moving)*wet;
+    vec2 alongGradient=tangent*tangent.y;
+    alongGradient=vec2(alongGradient.x,alongGradient.y+alongGradient.x*warpDerivative)*scale;
+    // Analytic rounded-bank and crest slopes: no neighbouring surface/depth
+    // samples and no repeated network searches for finite differences.
+    gradient=(-6.0*t*(1.0-t)/radius*edgeGradient*relief
+        -cap*0.33*wave*wave*sin(phase)*moving*wet*6.2831853*5.5*alongGradient)*0.18;
+    return vec4(coverage,cap*relief,0.0,cap*wet);
+}
+vec4 terrainCliffWater(vec3 p,vec3 n,float pixel,out vec3 gradient) {
+    vec2 ga,gb;
+    vec4 a=terrainCliffChart(vec2(p.x,-p.y*1.41421356),pixel,ga);
+    vec4 b=terrainCliffChart(vec2(p.z,-p.y*1.41421356),pixel,gb);
+    float weight=smoothstep(0.2,0.8,n.z*n.z/max(dot(n.xz,n.xz),0.00001));
+    gradient=vec3(ga.x*weight,-mix(gb.y,ga.y,weight)*1.41421356,gb.x*(1.0-weight));
+    gradient-=n*dot(n,gradient);
+    gradient/=max(1.0,length(gradient)/0.25);
+    vec4 water=mix(b,a,weight);
+    water.x*=surfaceWaterWeights(n.y).x*smoothstep(0.0,1.5,p.y);
+    return water;
+}
+
 // Standalone callers with a continuous analytic surface retain this helper.
 vec4 terrainSurfaceWater(vec3 p, vec3 shadingNormal) {
     return terrainSurfaceWaterGeometry(p,terrainGeometricNormal(p));

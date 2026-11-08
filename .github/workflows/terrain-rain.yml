@@ -1,0 +1,49 @@
+name: Terrain rain regression checks
+on:
+  pull_request:
+    paths:
+      - 'luaui/widgets_mosaic/gfx_rain.lua'
+      - 'luaui/widgets_mosaic/include/rain*.lua'
+      - 'luaui/widgets_mosaic/shaders/rain*'
+      - 'luaui/widgets_mosaic/shaders/worldRain.glsl'
+      - 'luaui/widgets_mosaic/shaders/surfaceWater.glsl'
+      - '.github/mosaic-tests.ref'
+      - '.github/workflows/terrain-rain.yml'
+  workflow_dispatch:
+jobs:
+  rain:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      MESA_GL_VERSION_OVERRIDE: 3.3COMPAT
+      LIBGL_ALWAYS_SOFTWARE: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /.github/actions/external-tests/
+            /.github/mosaic-tests.ref
+            /luaui/widgets_mosaic/gfx_rain.lua
+            /luaui/widgets_mosaic/include/
+            /luaui/widgets_mosaic/shaders/
+            /luaui/images/rain/
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y lua5.1 libegl1 libgl1 libgl1-mesa-dri
+          python -m pip install pillow
+      - uses: ./.github/actions/external-tests
+      - name: Render production rain and validate capture controls
+        working-directory: ${{ runner.temp }}/mosaic-validation
+        run: |
+          python tests/rain_cliff_runoff_gpu.py
+          python tests/rain_geometry_gpu.py
+          python tests/rain_slope_separation_gpu.py
+          python tests/rain_shore_cutoff_gpu.py
+          python tests/rain_relief_edges_gpu.py
+          python tests/rain_visibility_gpu.py
+          lua5.1 tests/rain_capture_weather.lua
+          lua5.1 tests/rain_capture_lifecycle.lua

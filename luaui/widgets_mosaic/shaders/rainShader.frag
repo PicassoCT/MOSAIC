@@ -73,6 +73,8 @@ uniform float rainPercent;
 uniform float terrainWetness;
 uniform float terrainFlowTime;
 uniform sampler2D terrainRunoffTex;
+uniform sampler2D terrainNormalTex;
+uniform vec2 terrainNormalScale;
 uniform float clipZeroToOne;
 uniform float reflectionDebug;
 // 0 normal; 1 no SSR; 2 no terrain relief; 3 no foam/runoff spray.
@@ -391,9 +393,16 @@ float rainSurfaceDepth(vec2 at, bool unitSurface) {
     return unitSurface ? texture2D(modelDepthTex,at).r : texture2D(mapDepthTex,at).r;
 }
 vec3 rainGeometryNormal(vec2 at, bool unitSurface, vec3 fallback) {
-    if(min(viewPortSize.x,viewPortSize.y)<1.0) return fallback;
     float depth=rainSurfaceDepth(at,unitSurface);
     if(depth>=0.999999) return fallback;
+    if(!unitSurface && min(terrainNormalScale.x,terrainNormalScale.y)>0.0) {
+        // The engine's unperturbed world terrain normals are smooth across
+        // mesh triangles and independent of splat/detail normal textures.
+        vec3 p=GetWorldPosAtUV(at,depth);
+        vec2 xz=texture2D(terrainNormalTex,p.xz*terrainNormalScale).ra;
+        return normalize(vec3(xz.x,sqrt(max(1.0-dot(xz,xz),0.0)),xz.y));
+    }
+    if(min(viewPortSize.x,viewPortSize.y)<1.0) return fallback;
     vec2 texel=1.0/viewPortSize;
     vec3 p=GetWorldPosAtUV(at,depth);
     vec3 tangents[4];
@@ -576,13 +585,23 @@ vec4 paintRainSky(vec2 rotatedUV)
 // Terrain water is composited by the existing rain pass from deferred ground
 // position/normal. No landscape geometry, map texture writes or extra draw pass.
 vec4 GetTerrainRainWater(vec3 p, vec3 n) {
-    vec4 water=terrainSurfaceWaterGeometry(p,n);
-    runoffCoverage=water.x;
     float pixel=max(length(dFdx(p)),length(dFdy(p)));
-    if(NormalIsOnUnit || water.x<=0.0001) return NONE;
+    if(NormalIsOnUnit || NormalIsSky || n.y>=0.9995) {runoffCoverage=0.0;return NONE;}
+    float cliff=1.0-smoothstep(0.92,0.97,n.y);
+    vec4 water=vec4(0);
     vec3 gradient=vec3(0);
-    if(!(rainIsolation>1.5 && rainIsolation<2.5))
-        gradient=terrainReliefGradient(p,n,water.y,pixel);
+    if(cliff>0.0) water=terrainCliffWater(p,n,pixel,gradient);
+    if(cliff<1.0) {
+        vec4 bank=terrainSurfaceWaterGeometry(p,n);
+        vec3 bankGradient=vec3(0);
+        if(!NormalIsOnUnit && bank.x>0.0001 && !(rainIsolation>1.5 && rainIsolation<2.5))
+            bankGradient=terrainReliefGradient(p,n,bank.y,pixel);
+        water=mix(bank,water,cliff);
+        gradient=mix(bankGradient,gradient,cliff);
+    }
+    runoffCoverage=water.x;
+    if(NormalIsOnUnit || water.x<=0.0001) return NONE;
+    if(rainIsolation>1.5 && rainIsolation<2.5) gradient=vec3(0);
     // Circular impacts belong to the separate pooled-water layer.
     vec3 waterNormal=normalize(n-gradient);
     vec3 scene=texture2D(screentex,uv).rgb;
@@ -598,12 +617,12 @@ vec4 GetTerrainRainWater(vec3 p, vec3 n) {
     float glint=max(0.0,pow(max(dot(waterNormal,halfDirection),0.0),24.0)
                        -pow(max(dot(n,halfDirection),0.0),24.0));
     float fresnel=0.08+0.55*pow(1.0-max(dot(n,toEye),0.0),3.0);
-    vec3 target=scene*mix(0.96,0.99,clamp(water.w,0.0,1.0))
+    vec3 target=scene*mix(mix(0.96,0.88,cliff),mix(0.99,0.94,cliff),clamp(water.w,0.0,1.0))
         +max(skyCol,vec3(0))*fresnel*0.08;
     vec4 reflected=getReflection(p);
     target=mix(target,reflected.rgb/max(reflected.a,0.0001),
-        reflected.a*smoothstep(0.05,0.4,water.w)*(0.3+fresnel));
-    target*=1.0-0.65*max(-curvedLight,0.0);
+        reflected.a*smoothstep(0.05,0.4,water.w)*(0.3+fresnel)*mix(1.0,0.12,cliff));
+    target*=1.0-mix(0.65,0.25,cliff)*max(-curvedLight,0.0);
     float foam=rainIsolation>2.5 ? 0.0 : clamp(water.z/max(water.x,0.0001),0.0,1.0);
     // Foam scatters the available light rather than depending on specular angle.
     vec3 foamLight=max(sunCol,vec3(0))*max(dot(n,lightDirection),0.0)
