@@ -44,25 +44,51 @@ local ruinCandidateTypeTable = getCityRuinCandidateTypeTable(UnitDefs)
 local ruinDefIDs = {}
 for defID in pairs(ruinTypeTable) do ruinDefIDs[#ruinDefIDs + 1] = defID end
 table.sort(ruinDefIDs)
-local cityPlotGeometry = {}
+GG.CityPlotGeometry = GG.CityPlotGeometry or {}
+local cityPlotGeometry = GG.CityPlotGeometry
 -- Lifecycle coverage is independent of the map's spawn culture and of whether
 -- a model supports block damage. The all-culture set is owned by lib_mosaic.
 local civilianHouseTypeTable = getCultureUnitModelTypes("international", "house", UnitDefs)
-GG.CityConstructionSites = {}
-GG.CityRubble = {}
+GG.CityConstructionSites = GG.CityConstructionSites or {}
+GG.CityRubble = GG.CityRubble or {}
 local newReconstruction = VFS.Include("luarules/gadgets/include/city_reconstruction.lua")
 local reconstruction
+local reloadSnapshot
 local routesDirty = false
 
-GG.BuildingTable = {} -- [BuildingUnitID] = {routeID, stationIndex}
+GG.BuildingTable = GG.BuildingTable or {} -- [BuildingUnitID] = {routeID, stationIndex}
 local houseStreetDim = {}
 local innerCityDim = {}
 houseStreetDim.x, houseStreetDim.y, houseStreetDim.z = GameConfig.city.buildings.sizeX + GameConfig.city.alleys.sizeX, GameConfig.city.buildings.sizeY, GameConfig.city.buildings.sizeZ + GameConfig.city.alleys.sizeZ
 innerCityDim.x, innerCityDim.y, innerCityDim.z = GameConfig.city.buildings.sizeX/2 , GameConfig.city.buildings.sizeY/2, GameConfig.city.buildings.sizeZ /2
 
-local BuildingPlaceTable = makeTable(true, math.ceil(Game.mapSizeX / houseStreetDim.x), math.ceil(Game.mapSizeZ / houseStreetDim.z)) -- SizeOf Map/Divide by Size of Building
-local RouteTabel = {} -- Every start has a subtable of reachable nodes 	
-local boolInitialized = false
+local BuildingPlaceTable = makeTable(false, math.ceil(Game.mapSizeX / houseStreetDim.x), math.ceil(Game.mapSizeZ / houseStreetDim.z)) -- SizeOf Map/Divide by Size of Building
+local RouteTabel = GG.RouteTable or {}
+local occupiedGrid = {}
+local function gameRule(name)
+    return Spring.GetGameRulesParam and Spring.GetGameRulesParam(name)
+end
+local function unitRule(id, name)
+    return Spring.GetUnitRulesParam and Spring.GetUnitRulesParam(id, name)
+end
+local generation = GG.CityGenerationState or {
+    consumed=gameRule("mosaic_city_initial_plots") or 0, seen={},
+    complete=gameRule("mosaic_city_spawn_complete")==1,
+}
+GG.CityGenerationState = generation
+if not generation.target and GameConfig.city.population then
+    generation.target=math.max(0,GameConfig.city.population.buildings-1)
+end
+local boolInitialized = generation.complete or false
+local function plotKey(x,z) return math.floor(x+0.5)..":"..math.floor(z+0.5) end
+local function remainingPlots()
+    return math.max(0, generation.target-generation.consumed)
+end
+local function publishGeneration()
+    Spring.SetGameRulesParam("mosaic_city_initial_plots", generation.consumed)
+    Spring.SetGameRulesParam("mosaic_city_spawn_complete", boolInitialized and 1 or 0, {public=true})
+    GG.CitySpawnComplete = boolInitialized
+end
 
 local TruckTypeTable = getCultureUnitModelTypes(GameConfig.game.culture,
                                                 "truck", UnitDefs)
@@ -73,10 +99,11 @@ local houseSpawnTypeTable = getCityHouseSpawnTypeTable(GameConfig.game.culture, 
 
 local outerCityHouseTypeTable = removeDictFromDict(houseSpawnTypeTable, getHouseTypeIsInnerCityOnly(GameConfig.game.culture, UnitDefs))
 
-local houseTypeLimitationsTable = getHouseTypeLimitations(UnitDefs)
+local houseTypeLimitationsTable = generation.houseLimits or getHouseTypeLimitations(UnitDefs)
+generation.houseLimits=houseTypeLimitationsTable
 local houeArabicDefID = UnitDefNames["house_arab0"].id
 local arcologyDefID = UnitDefNames["house_asian1"].id
-local initialArcologyPlots = 0
+local initialArcologyPlots = generation.arcologies or 0
 local arcologyMinimum = ruinConfig.protectedMinimums[UnitDefs[arcologyDefID].name] or 0
 
 local function isCityHouse(defID)
@@ -94,7 +121,7 @@ local loadableTruckType = getLoadAbleTruckTypes(UnitDefs, TruckTypeTable, GameCo
 local refugeeableTruckType = getRefugeeAbleTruckTypes(UnitDefs, TruckTypeTable, GameConfig.game.culture)
 local gaiaTeamID = Spring.GetGaiaTeamID() 
 
-local boolHasCityCenter = false 
+local boolHasCityCenter = generation.hasCityCenter or false
 local boolCachedMapManualPlacementResult = nil
 
 allreadyRegistredBuilding = {}
@@ -283,6 +310,7 @@ function validateBuildSpotsReachable(start, endindex)
         for z = 1, #BuildingPlaceTable[1] do
             startx, startz = x * tileX, z * tileZ
 
+            BuildingPlaceTable[x][z] = false
             PlacesReachableFromPosition = 0
             local boolEarlyOut
             for xi = 1, #BuildingPlaceTable do
@@ -301,7 +329,7 @@ function validateBuildSpotsReachable(start, endindex)
 
                                 BuildingPlaceTable[x][z] =
                                     spGetGroundHeight(x * tileX, z * tileZ) > 5 and
-                                        slope < 0.2
+                                        slope < 0.2 and not occupiedGrid[plotKey(x,z)]
                                 boolEarlyOut = true
                                 break
                             end
@@ -374,14 +402,17 @@ end
 
 -- spawns intial buildings
 function fromMapCenterOutwards(BuildingPlaceT, startx, startz)
-    local finiteSteps = GameConfig.performance.maxCityGenerationSteps
-    local cursor = {x = startx, z = startz}
-    local mirror = {x = startx, z = startz}
-    local numberOfBuildings = GameConfig.city.population.buildings - 1
-    local cityBlockCounter = 0
+    local finiteSteps = generation.steps or GameConfig.performance.maxCityGenerationSteps
+    local cursor = generation.cursor or {x=startx,z=startz}
+    local mirror = generation.mirror or {x=startx,z=startz}
+    local numberOfBuildings = remainingPlots()
+    generation.running = true
+    local cityBlockCounter = generation.blocks or 0
 
-    while finiteSteps > 0 and numberOfBuildings > 0 do
+    while finiteSteps > 0 and numberOfBuildings > 0 and remainingPlots() > 0 do
         finiteSteps = finiteSteps - 1
+        generation.steps=finiteSteps
+        generation.cursor,generation.mirror=cursor,mirror
 
         dice = math.floor(math.random(5, 31) / 10)
 
@@ -430,8 +461,10 @@ function fromMapCenterOutwards(BuildingPlaceT, startx, startz)
 
         elseif dice == 3 then
             cityBlockCounter = cityBlockCounter + 1
+            generation.blocks=cityBlockCounter
             if cityBlockCounter > 1 and boolHasCityCenter == false then
                 boolHasCityCenter = true
+                generation.hasCityCenter=true
                 if maRa()== true then
                      GG.innerCityCenter.x = cursor.x*houseStreetDim.x
                      GG.innerCityCenter.z = cursor.z*houseStreetDim.z
@@ -453,6 +486,7 @@ function fromMapCenterOutwards(BuildingPlaceT, startx, startz)
                                                    BuildingPlaceT, boolMirrorNearCityCenter, distanceToCityCenter)
         end
     end
+    generation.running = false
 end
 
 function checkCursorInnerCityFree(cursor)
@@ -497,15 +531,16 @@ boolAtLeastOneManualPlacement = false
 function spawnInitialHouses(frame)
   
     -- great Grid of placeable Positions 
-    if distributedPathValidationComplete(frame, 10) == true  then
+    if isMapControlledBuildingPlacement() or distributedPathValidationComplete(frame, 10) == true then
         if  isMapControlledBuildingPlacement() == false then
         -- spawn Buildings from MapCenter Outwards
         fromMapCenterOutwards(BuildingPlaceTable,
                               math.ceil(#BuildingPlaceTable/2),
                               math.ceil(#BuildingPlaceTable[1]/2)
                               )
-            boolInitialized = true   
-            GG.CitySpawnComplete = true
+            boolInitialized = true
+            generation.complete = true
+            publishGeneration()
             regenerateRoutesTable()
             Spring.SetGameRulesParam("mosaic_city_spawn_complete", 1, {public = true})
             --echo("spawnInitialHouses: Default Initialization completed")
@@ -520,6 +555,8 @@ function spawnInitialHouses(frame)
            regenerateRoutesTable()
            Spring.SetGameRulesParam("mosaic_city_spawn_complete", 1, {public = true})
            boolInitialized = true
+           generation.complete = true
+           publishGeneration()
            conditionalEcho(boolDebug, "ManualPlacementInitialization::Completed")
         end
     end
@@ -581,6 +618,9 @@ function spawnUnit(defID, x, z)
             -- when LuaUnitScript.Create runs synchronously inside CreateUnit.
             GG.HouseAsianUnitPlans[id] = plan
             asianSplit.commit(asianSplitState, plan)
+            if Spring.SetUnitRulesParam and plan.group then
+                Spring.SetUnitRulesParam(id, "city_asian_group", plan.group.id)
+            end
         end
         spSetUnitAlwaysVisible(id, true)
         return id
@@ -588,6 +628,7 @@ function spawnUnit(defID, x, z)
 end
 
 function spawnBuilding(defID, x, z, boolInCityCenter, isGapFiller, forceArcology)
+    if generation.running and (generation.seen[plotKey(x,z)] or (not isGapFiller and remainingPlots()<=0)) then return end
     -- Allocate real city plots, not the small blocks filling gaps between them.
     -- Count successful placements only, so a failed CreateUnit is retried.
     local reserveArcology = not boolInitialized and not isGapFiller and ruinCandidateTypeTable[defID]
@@ -609,16 +650,126 @@ function spawnBuilding(defID, x, z, boolInCityCenter, isGapFiller, forceArcology
     local spawnX = x + math.random(-1 * offset.xRandOffset, offset.xRandOffset)
     local spawnZ = z + math.random(-1 * offset.zRandOffset, offset.zRandOffset)
     if hasAlreadyBuilding(spawnX, spawnZ, 35, defID) then return end
+    if generation.running and not validFinalCityPlot(spawnX,spawnZ,isGapFiller) then return end
     local id = spawnUnit(defID, spawnX, spawnZ)
 
     if id then
+        -- Record a successful plot before tooltips/other callbacks can fail.
+        local key=plotKey(x,z)
+        GG.BuildingTable[id] = {x=x,z=z,arcology=reserveArcology or forceArcology or nil,
+            gapFiller=isGapFiller or false}
+        cityPlotGeometry[id] = {x=spawnX,z=spawnZ,defID=defID}
+        local ix,iz=math.floor(x/houseStreetDim.x+0.5),math.floor(z/houseStreetDim.z+0.5)
+        if not isGapFiller then occupiedGrid[plotKey(ix,iz)]=true end
+        if not generation.seen[key] then
+            generation.seen[key]=true
+            if not isGapFiller then generation.consumed=generation.consumed+1 end
+        end
+        if reserveArcology then initialArcologyPlots=initialArcologyPlots+1 end
+        generation.arcologies=initialArcologyPlots
+        if Spring.SetUnitRulesParam then
+            Spring.SetUnitRulesParam(id,"city_plot_x",x,{public=true})
+            Spring.SetUnitRulesParam(id,"city_plot_z",z,{public=true})
+            Spring.SetUnitRulesParam(id,"city_gap_filler",isGapFiller and 1 or 0)
+            Spring.SetUnitRulesParam(id,"city_arcology_plot",(reserveArcology or forceArcology) and 1 or 0)
+        end
+        if Spring.SetGameRulesParam then publishGeneration() end
         spSetUnitAlwaysVisible(id, true)
         setCityBuildingBlocking(id)
-        GG.BuildingTable[id] = {x = x, z = z, arcology = reserveArcology or forceArcology or nil}
-        cityPlotGeometry[id] = {x=spawnX, z=spawnZ, defID=defID}
-        if reserveArcology then initialArcologyPlots = initialArcologyPlots + 1 end
         return id
     end
+end
+
+-- Validate the final footprint, including jitter and inner-city fillers.
+function validFinalCityPlot(x,z,filler)
+    local rx=(filler and innerCityDim.x or GameConfig.city.buildings.sizeX)*0.5
+    local rz=(filler and innerCityDim.z or GameConfig.city.buildings.sizeZ)*0.5
+    if x-rx<0 or z-rz<0 or x+rx>Game.mapSizeX or z+rz>Game.mapSizeZ then return false end
+    for dx=-1,1 do for dz=-1,1 do
+        local px,pz=x+dx*rx,z+dz*rz
+        local _,ny,_,slope=spGetGroundNormal(px,pz)
+        if spGetGroundHeight(px,pz)<=5 or (slope or (1-(ny or 0)))>=0.2 then return false end
+    end end
+    -- An established road is infrastructure, not an empty plot to overwrite.
+    local service=GG.CityAddressService
+    if service and service.NearestRoad then
+        local near=service.NearestRoad(x,z)
+        if near and near.distance<(math.min(rx,rz)+(near.road.width or GameConfig.city.alleys.sizeX)*0.5)^2 then return false end
+    end
+    return true
+end
+
+-- Reconcile live units without touching their models, health, occupants or plans.
+function reconcileCity()
+    local ids=Spring.GetAllUnits();table.sort(ids)
+    local living, count, mainPlots, arcologies = {},0,0,0
+    occupiedGrid={}
+    for _,id in ipairs(ids) do
+        local defID=spGetUnitDefID(id)
+        if isCityHouse(defID) and not GG.CityConstructionSites[id] and not GG.CityRubble[id]
+            and (not Spring.GetUnitIsDead or not Spring.GetUnitIsDead(id)) then
+            local x,_,z=spGetUnitPosition(id)
+            local data=GG.BuildingTable[id] or {}
+            data.x=data.x or unitRule(id,"city_plot_x") or x
+            data.z=data.z or unitRule(id,"city_plot_z") or z
+            if data.gapFiller==nil then data.gapFiller=unitRule(id,"city_gap_filler")==1 end
+            data.arcology=data.arcology or unitRule(id,"city_arcology_plot")==1
+            GG.BuildingTable[id]=data
+            cityPlotGeometry[id]={x=x,z=z,defID=defID}
+            living[id]=true;count=count+1
+            local key=plotKey(data.x,data.z)
+            if not data.gapFiller then mainPlots=mainPlots+1 end
+            if not generation.seen[key] then
+                generation.seen[key]=true
+                if generation.reconciled and not data.gapFiller then generation.consumed=generation.consumed+1 end
+            end
+            if data.arcology or defID==arcologyDefID then arcologies=arcologies+1 end
+            local group=unitRule(id,"city_asian_group")
+            if group then asianSplitState.used[group]=true end
+            allreadyRegistredBuilding[id]=true
+            spSetUnitAlwaysVisible(id,true);setCityBuildingBlocking(id)
+            -- On a full LuaRules reload the address gadget initializes later.
+            -- It reconciles this table when ready; retain existing tooltips now.
+            if GG.CityAddressService then
+                setHouseStreetNameTooltip(id,data.x,data.z,Game,false,UnitDefs,buisnessNeonSigns)
+            end
+        end
+    end
+    for id in pairs(GG.BuildingTable) do
+        if not living[id] then GG.BuildingTable[id]=nil;cityPlotGeometry[id]=nil;allreadyRegistredBuilding[id]=nil end
+    end
+    generation.consumed=math.max(generation.consumed,mainPlots)
+    generation.reconciled=true
+    initialArcologyPlots=math.max(initialArcologyPlots,arcologies)
+    generation.arcologies=initialArcologyPlots
+    -- Every retained plot (also rubble/construction) reserves its grid cell.
+    local function reserve(x,z)
+        local ix,iz=math.floor(x/houseStreetDim.x+0.5),math.floor(z/houseStreetDim.z+0.5)
+        occupiedGrid[plotKey(ix,iz)]=true
+        if BuildingPlaceTable[ix] then BuildingPlaceTable[ix][iz]=false end
+    end
+    for _,data in pairs(cityPlotGeometry) do reserve(data.x,data.z) end
+    if reconstruction then for _,plot in pairs(reconstruction.plots) do reserve(plot.x,plot.z) end end
+    publishGeneration()
+    return count
+end
+
+local function reloadCityCommand(_,line)
+    local action=(line or ""):match("^%s*(.-)%s*$")
+    if action=="status" then
+        Spring.Echo("City: "..(boolInitialized and "complete" or generation.failed and "paused after error" or "generating")
+            ..", initial plots="..generation.consumed..", remaining="..remainingPlots())
+        return true
+    end
+    if action~="" then Spring.Echo("Usage: /luarules cityreload [status]");return true end
+    if not Spring.IsCheatingEnabled() then Spring.Echo("City reload requires /cheat; status is always available.");return true end
+    local count=reconcileCity()
+    generation.failed=false
+    if GG.CityAddressService and GG.CityAddressService.Reconcile then GG.CityAddressService.Reconcile() end
+    regenerateRoutesTable()
+    Spring.Echo("City reload: integrated "..count.." buildings; remaining initial plots="..remainingPlots()
+        .."; "..(boolInitialized and "completed city retained" or "unfinished generation will resume"))
+    return true
 end
 
 function killAllUnitsAtGamestart()
@@ -636,8 +787,11 @@ function gadget:Initialize()
     if not  GG.BuildingTable then  GG.BuildingTable = {} end
     if not  GG.innerCityCenter then  GG.innerCityCenter = {} end
 
-    GG.CitySpawnComplete = false
-    Spring.SetGameRulesParam("mosaic_city_spawn_complete", 0, {public = true})
+    reconcileCity()
+    publishGeneration()
+    if gadgetHandler.AddChatAction then
+        gadgetHandler:AddChatAction("cityreload",reloadCityCommand,"[status]: reconcile existing infrastructure; reload requires cheats")
+    end
     Spring.SetGameRulesParam ( "culture",GameConfig.game.culture )
     Spring.SetGameRulesParam("mosaic_city_country", cityGeography.country, {public=true})
     Spring.SetGameRulesParam("mosaic_city_latitude", cityGeography.latitude, {public=true})
@@ -657,6 +811,35 @@ local function setConstructionProgress(id, progress)
 end
 
 function setupCityReconstruction()
+    reloadSnapshot = VFS.Include("luarules/gadgets/include/city_reload_snapshot.lua")
+    local retained=GG.CityReconstruction
+    if not retained and reloadSnapshot then
+        retained=reloadSnapshot.Load(Spring)
+        if retained and retained.generation then
+            generation=retained.generation
+            generation.target=generation.target or math.max(0,GameConfig.city.population.buildings-1)
+            generation.running=false
+            GG.CityGenerationState=generation
+            houseTypeLimitationsTable=generation.houseLimits or houseTypeLimitationsTable
+            boolHasCityCenter=generation.hasCityCenter or false
+            if retained.center then GG.innerCityCenter=retained.center end
+            boolInitialized=generation.complete or false
+            initialArcologyPlots=generation.arcologies or 0
+            if retained.asianState then
+                asianSplitState=retained.asianState
+                GG.HouseAsianSplitState=asianSplitState
+            end
+            GG.HouseAsianUnitPlans=retained.plans or GG.HouseAsianUnitPlans
+        end
+    end
+    if retained then
+        for _,plot in pairs(retained.plots) do
+            if plot.unitID then
+                if plot.stage=="rubble" then GG.CityRubble[plot.unitID]=plot
+                else GG.CityConstructionSites[plot.unitID]=plot end
+            end
+        end
+    end
     local cfg = GameConfig.city.rubble
     reconstruction = newReconstruction(cfg, {
         Alive = doesUnitExistAlive,
@@ -738,14 +921,19 @@ function setupCityReconstruction()
                 setConstructionProgress(plot.unitID, math.max(0.01, math.min(0.99, progress)))
             end
         end,
-    })
+    }, retained)
     GG.CityReconstruction = reconstruction
 end
 
 function gadget:GameFrame(frame)
 
-    if boolInitialized == false then
-        spawnInitialHouses(frame)
+    if boolInitialized == false and not generation.failed then
+        local ok,err=pcall(spawnInitialHouses,frame)
+        generation.running=false
+        if not ok then
+            generation.failed=true
+            Spring.Echo("City generation paused after error; existing plots retained. Fix the error, then /luarules cityreload: "..tostring(err))
+        end
     end
     if frame > 0 and frame % 15 == 0 then
         reconstruction:Update(15)
@@ -756,3 +944,8 @@ function gadget:GameFrame(frame)
     end
 end
 
+
+function gadget:Shutdown()
+    if reloadSnapshot then reloadSnapshot.Save(Spring,reconstruction,GG) end
+    if gadgetHandler.RemoveChatAction then gadgetHandler:RemoveChatAction("cityreload") end
+end

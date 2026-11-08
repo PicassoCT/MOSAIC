@@ -14,6 +14,8 @@ on:
       - 'scripts/gCScrapHeap.lua'
       - 'scripts/safehousescript.lua'
       - 'scripts/lib_mosaic.lua'
+      - 'scripts/lib_house_asian_split.lua'
+      - 'luarules/gadgets/game_city_roads.lua'
       - 'scripts/lib_UnitScript.lua'
       - 'scripts/lib_building_damage.lua'
       - 'scripts/lib_building_voxels.lua'
@@ -37,6 +39,8 @@ jobs:
             /.github/mosaic-tests.ref
             /modinfo.lua
             /luarules/
+            /luaui/widgets_mosaic/include/city_road_mesh.lua
+            /luaui/widgets_mosaic/gui_city_roads.lua
             /scripts/
             /units/
       - uses: actions/setup-python@v5
@@ -50,7 +54,8 @@ jobs:
         run: >-
           python -c "from pathlib import Path; from lupa.lua51 import LuaRuntime;
           [LuaRuntime().execute(Path(p).read_text()) for p in
-          ['tests/city_reconstruction_test.lua','tests/city_area_events_test.lua',
+          ['tests/city_reload_test.lua','tests/city_roads_test.lua','tests/house_asian_split_test.lua',
+          'tests/city_reconstruction_test.lua','tests/city_area_events_test.lua',
           'tests/city_construction_animation_test.lua','tests/city_arcologies_test.lua',
           'tests/civilian_daily_life_invalid_targets_test.lua',
           'tests/civilian_reconstruction_blocking_test.lua',
