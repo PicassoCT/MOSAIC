@@ -131,8 +131,28 @@ local function receiveBuildingShadowEnd(unitID)
     building.ux, building.uy, building.uz = ux, uy, uz
     building.front, building.up, building.right = front, up, right
     building.columnCount = #building.columns / 4
+    local roof = uy
+    for i=1,#building.columns,4 do
+        local x,z,base,mask=building.columns[i],building.columns[i+1],building.columns[i+2],building.columns[i+3]
+        local levels=0
+        while mask>0 do mask=math.floor(mask/2);levels=levels+1 end
+        local top=base+levels*building.levelHeight
+        roof=math.max(roof,uy-right[2]*x+up[2]*top+front[2]*z
+            +(math.abs(right[2])+math.abs(front[2]))*building.cellSize*.5)
+    end
+    building.roofHeight=roof
     occlusionBuildings[unitID] = building
     occlusionDirty = true
+end
+
+local function getParadeRoofHeight(x,z,radius)
+    local highest
+    for _,building in pairs(occlusionBuildings) do
+        if (building.ux-x)^2+(building.uz-z)^2<=radius*radius then
+            highest=math.max(highest or -math.huge,building.roofHeight)
+        end
+    end
+    return highest
 end
 
 local function receiveBuildingShadowRemove(unitID)
@@ -757,6 +777,7 @@ function widget:Initialize()
     widgetHandler:RegisterGlobal("RecieveAllNeonUnitsPieces", recieveNeonHoloLightPiecesByUnit)
     widgetHandler:RegisterGlobal("ReceiveObjectiveRadiancePieces", receiveObjectiveRadiancePieces)
     widgetHandler:RegisterGlobal("ReceiveParadeRadianceScene", paradeScene.Receive)
+    widgetHandler:RegisterGlobal("GetParadeRoofHeight", getParadeRoofHeight)
     widgetHandler:RegisterGlobal("ReceiveBuildingShadowColumnsBegin", receiveBuildingShadowBegin)
     widgetHandler:RegisterGlobal("ReceiveBuildingShadowColumn", receiveBuildingShadowColumn)
     widgetHandler:RegisterGlobal("ReceiveBuildingShadowColumnsEnd", receiveBuildingShadowEnd)
@@ -1215,6 +1236,7 @@ function widget:Shutdown()
     widgetHandler:DeregisterGlobal("RecieveAllNeonUnitsPieces")
     widgetHandler:DeregisterGlobal("ReceiveObjectiveRadiancePieces")
     widgetHandler:DeregisterGlobal("ReceiveParadeRadianceScene")
+    widgetHandler:DeregisterGlobal("GetParadeRoofHeight")
     widgetHandler:DeregisterGlobal("ReceiveBuildingShadowColumnsBegin")
     widgetHandler:DeregisterGlobal("ReceiveBuildingShadowColumn")
     widgetHandler:DeregisterGlobal("ReceiveBuildingShadowColumnsEnd")

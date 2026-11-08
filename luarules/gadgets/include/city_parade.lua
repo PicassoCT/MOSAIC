@@ -699,6 +699,14 @@ function M.New(context)
             elseif effect == "parade_inflationmoney" then
                 ex,ey,ez = 0,-1,0
             end
+            local vehicle=director.vehicles[candidates[id].truck]
+            local payload=vehicle and vehicle.payload
+            local floatTop=0
+            if alive(payload) then
+                local _,py=S.GetUnitPosition(payload)
+                floatTop=(py or y)+(S.GetUnitHeight(payload) or 77)+(C.paperFloatClearance or 12)
+            end
+            height=math.max(height,C.paperMinimumHeight or 100,floatTop-y)
             S.SpawnCEG(effect,x+dx*edge,y+height,z+dz*edge,ex,ey,ez)
             lastBuildingBurst[id] = frame+C.buildingCooldownFrames
         end

@@ -3,7 +3,10 @@
 return function(gl, queue, beforePiece)
     local function drawPiece(object, piece, opacity)
         if beforePiece then beforePiece(object, piece, opacity)
-        else gl.Color(1, 1, 1, opacity) end
+        else
+            local color=object.color or {1,1,1}
+            gl.Color(color[1],color[2],color[3],opacity)
+        end
         gl.UnitPiece(object.id, piece)
     end
     for _, object in ipairs(queue) do
@@ -13,6 +16,7 @@ return function(gl, queue, beforePiece)
             gl.Rotate(pose.yaw, 0, 1, 0)
             gl.Rotate(pose.tilt, 1, 0, 0)
             if pose.roll then gl.Rotate(pose.roll, 0, 0, 1) end
+            if pose.scale and pose.scale~=1 then gl.Scale(pose.scale,pose.scale,pose.scale) end
             local opacity = object.opacity
             if template.piece ~= nil then
                 drawPiece(object, template.piece, opacity)
@@ -30,6 +34,7 @@ return function(gl, queue, beforePiece)
                 gl.PushPopMatrix(function()
                     local pivot = template.headPivot
                     gl.Translate(pivot[1], pivot[2], pivot[3])
+                    if pose.headYaw then gl.Rotate(pose.headYaw, 0, 1, 0) end
                     gl.Rotate(pose.headTilt, 0, 0, 1)
                     gl.Translate(-pivot[1], -pivot[2], -pivot[3])
                     drawPiece(object, template.head, opacity)

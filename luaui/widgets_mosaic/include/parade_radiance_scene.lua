@@ -33,7 +33,9 @@ return function(Spring, gl, drawGeometry)
             gl.UniformInt(propagation.texturedLoc, 1)
             gl.UniformInt(propagation.materialMaskedLoc, 1)
             gl.Color(1, 1, 1, 1)
-            drawGeometry(gl, queue, function(_, _, opacity)
+            drawGeometry(gl, queue, function(object, _, opacity)
+                local color=object.color or {1,1,1}
+                gl.Color(color[1],color[2],color[3],1)
                 gl.Uniform(propagation.emissionStrengthLoc, opacity)
             end)
         end

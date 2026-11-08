@@ -45,6 +45,8 @@ return {
     participantCooldownFrames = 60 * 30,
     curbOffset = 105,
     followerUpdateFrames = 60,
+    paperMinimumHeight = 100,
+    paperFloatClearance = 12,
     petalMinimumHeight = 240,
     petalHeightFactor = 1.6,
     buildingRadius = 360,

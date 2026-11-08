@@ -14,6 +14,7 @@ local paradeModel = VFS.Include("scripts/lib_truck_parade_model.lua")
 local sceneConfig = VFS.Include("luarules/configs/parade_hologram_scene.lua")
 if sceneConfig.enabled == false then return false end
 local sceneBehavior = VFS.Include("luarules/gadgets/include/parade_hologram_scene.lua")
+local skyBehavior = VFS.Include("scripts/lib_parade_sky_lanterns.lua")
 local modelOK, sceneModels = pcall(VFS.Include, "luarules/configs/parade_hologram_models.lua")
 if not modelOK or type(sceneModels) ~= "table" then sceneModels = {figures = {}, props = {}} end
 local glyphs, themes = {}, {}
@@ -223,8 +224,14 @@ local function visiblePayloads()
                 local cloaked = Spring.GetUnitIsCloaked and Spring.GetUnitIsCloaked(parent)
                 if theme and x and (fullView or (los and los.los)) and not noDraw and not cloaked then
                     local distanceSquared = (cx-x)^2 + (cy-y)^2 + (cz-z)^2
-                    if distanceSquared < maxDistanceSquared
-                        and Spring.IsSphereInView(x, y + 30, z, sceneConfig.viewRadius) then
+                    local inView=Spring.IsSphereInView(x,y+30,z,sceneConfig.viewRadius)
+                    if not inView and sceneConfig.skyLanterns and state.sky then
+                        for _,flight in ipairs(state.sky.flights or {}) do
+                            local p=skyBehavior.Pose(flight,Spring.GetGameSeconds(),sceneConfig.skyLanterns)
+                            if p.visible and Spring.IsSphereInView(p.x,p.y,p.z,8) then inView=true;break end
+                        end
+                    end
+                    if distanceSquared < maxDistanceSquared and inView then
                         if not state.index then
                             local getInfo = Spring.GetUnitPieceInfo and function(pieceID)
                                 return Spring.GetUnitPieceInfo(id, pieceID)
@@ -244,7 +251,7 @@ local function visiblePayloads()
                     end
                 end
             else
-                state.scene = nil
+                state.scene, state.sky = nil, nil
             end
         end
     end
@@ -252,6 +259,9 @@ local function visiblePayloads()
         if a.distanceSquared == b.distanceSquared then return a.id < b.id end
         return a.distanceSquared < b.distanceSquared
     end)
+    for index,payload in ipairs(visible) do
+        payload.skyAllowed=index<=sceneConfig.maxVisiblePayloads
+    end
     return visible
 end
 
@@ -295,7 +305,7 @@ end
 
 local function worldStations(payload, seconds)
     if Spring.GetUnitRulesParam(payload.parent, "city_parade_retiring") == 1 then
-        payload.state.scene = nil
+        payload.state.scene, payload.state.sky = nil,nil
         return {}
     end
     local dx, dz = 0, 1
@@ -304,8 +314,53 @@ local function worldStations(payload, seconds)
         dx, dz = x or 0, z or 1
     end
     payload.state.scene = payload.state.scene or {}
-    return sceneBehavior.updateStations(payload.state.scene, payload.parent,
+    local stations=sceneBehavior.updateStations(payload.state.scene, payload.parent,
         payload.x, payload.z, dx, dz, seconds, sceneConfig)
+    for _,station in ipairs(stations) do
+        station.lookAt={x=payload.x,z=payload.z}
+        if not station.floatTop then
+            local _,py=Spring.GetUnitPosition(payload.id)
+            local height=Spring.GetUnitHeight and Spring.GetUnitHeight(payload.id) or 77
+            -- The payload model's audited bounds include every animated float.
+            station.floatTop=(py or payload.y+25)+(height or 77)
+        end
+    end
+    local settings=sceneConfig.skyLanterns
+    if settings and settings.enabled~=false and payload.skyAllowed then
+        payload.state.sky=payload.state.sky or {}
+        skyBehavior.Update(payload.state.sky,stations[#stations],seconds,settings,function(station,generation)
+            local slot=generation%3+1
+            local item
+            for _,prop in ipairs(sceneConfig.props) do if prop.lanternSlot==slot then item=prop;break end end
+            if not item then return end
+            local pose=sceneBehavior.worldPose(station,item,seconds,payload.id,0,sceneConfig)
+            local ground=Spring.GetGroundHeight(pose.x,pose.z)
+            local roof
+            if Script and Script.LuaUI and Script.LuaUI('GetParadeRoofHeight') then
+                roof=Script.LuaUI.GetParadeRoofHeight(pose.x,pose.z,settings.roofSearchRadius)
+            end
+            local ceiling=math.max(ground+settings.minimumAltitude,(roof or ground)+settings.roofClearance)
+            local wx,_,wz=0,0,0
+            if Spring.GetWind then wx,_,wz=Spring.GetWind() end
+            local factor=settings.windFactor
+            local windLength=math.sqrt(wx*wx+wz*wz)*factor
+            if windLength>settings.maxDriftSpeed then factor=factor*settings.maxDriftSpeed/windLength end
+            return {x=pose.x,y=ground+1.5,z=pose.z,ceiling=ceiling,clearTime=settings.riseSeconds,
+                windX=wx*factor,windZ=wz*factor,phase=payload.id*.173+generation*.79,slot=slot}
+        end)
+    end
+    return stations
+end
+
+local function skyPoses(payload,seconds)
+    local settings=sceneConfig.skyLanterns
+    local result={}
+    if not settings or settings.enabled==false or not payload.skyAllowed then return result end
+    for _,flight in ipairs(payload.state.sky and payload.state.sky.flights or {}) do
+        local pose=skyBehavior.Pose(flight,seconds,settings)
+        if pose.visible and pose.opacity>.002 then result[#result+1]={pose=pose,slot=flight.slot} end
+    end
+    return result
 end
 
 local function sceneQueue(visible, seconds)
@@ -319,7 +374,7 @@ local function sceneQueue(visible, seconds)
         if Spring.GetUnitRulesParam(payload.parent, "city_parade_retiring") == 1 then
             -- A dismissed procession can keep its decorated cargo on the trip
             -- home, but it must not keep creating fresh curb audiences.
-            payload.state.scene = nil
+            payload.state.scene, payload.state.sky = nil,nil
         elseif distance < sceneConfig.maxDistance then
             local templates = sceneTemplates(payload)
             if #templates > 0 then
@@ -349,11 +404,26 @@ local function sceneQueue(visible, seconds)
                                         expires = seconds + sceneConfig.groundRefreshSeconds}
                                     station.grounds[number] = ground
                                 end
-                                pose.y = pose.y + ground.height
+                                if item.motion == "petal" or item.motion == "paper" or item.motion == "fall" then
+                                    pose=sceneBehavior.worldPose(station,item,seconds,payload.id,ground.height,sceneConfig)
+                                else
+                                    pose.y = pose.y + ground.height
+                                end
                                 queue[#queue + 1] = {id = payload.id, parent = payload.parent, template = template, pose = pose,
                                     opacity = fade * pose.opacity,
                                     distanceSquared = (pose.x-cx)^2 + (pose.y-cy)^2 + (pose.z-cz)^2}
                             end
+                        end
+                    end
+                end
+                for _,sky in ipairs(skyPoses(payload,seconds)) do
+                    for _,template in ipairs(templates) do
+                        if template.item.lanternSlot==sky.slot then
+                            local pose=sky.pose
+                            queue[#queue+1]={id=payload.id,parent=payload.parent,template=template,pose=pose,
+                                opacity=pose.opacity*distanceFade,color=sceneConfig.skyLanterns.color,
+                                distanceSquared=(pose.x-cx)^2+(pose.y-cy)^2+(pose.z-cz)^2}
+                            break
                         end
                     end
                 end
@@ -425,7 +495,7 @@ local function drawFallbackLanterns(payload, decoration, seconds, fade)
                     local ground = Spring.GetGroundHeight and Spring.GetGroundHeight(pose.x, pose.z) or 0
                     local clock = seconds + item.lanternSlot * 0.37 + payload.id * 0.173
                     local frame = animationFrame("lantern", glyph, frames, clock)
-                    gl.Uniform(sizeUniform, decoration.pixelSize)
+                    gl.Uniform(sizeUniform, sceneConfig.lanterns.modelHeight / #glyph.frames[1])
                     gl.Uniform(opacityUniform, opacity)
                     -- Billboard art is retained at distance, but its lifecycle,
                     -- world anchor and daemon release are the same as the mesh.
@@ -478,6 +548,26 @@ local function drawVisible(visible, seconds, ownership)
                 end
             end)
             if lantern then drawFallbackLanterns(payload, lantern, seconds, fade) end
+        end
+    end
+    if sceneConfig.skyLanterns and sceneConfig.skyLanterns.enabled~=false then
+        local glyph,frames=glyphs.lantern,glyphLists.lantern
+        for index=1,math.min(#visible,sceneConfig.maxVisiblePayloads) do
+            local payload=visible[index]
+            local weight=1-(ownership and ownership[payload.id] or 0)
+            if weight>.002 and Spring.GetUnitRulesParam(payload.parent,"city_parade_retiring")~=1 then
+                worldStations(payload,seconds)
+                local fade=weight*math.min(1,(maxDistance-math.sqrt(payload.distanceSquared))/(maxDistance-fadeStart))
+                for _,sky in ipairs(skyPoses(payload,seconds)) do
+                    local pose=sky.pose
+                    local frame=animationFrame("lantern",glyph,frames,seconds+payload.id*.173)
+                    gl.Uniform(sizeUniform,sceneConfig.lanterns.modelHeight*pose.scale/#glyph.frames[1])
+                    gl.Uniform(opacityUniform,fade*pose.opacity)
+                    gl.PushPopMatrix(function()
+                        gl.Translate(pose.x,pose.y,pose.z);gl.CallList(frames[frame])
+                    end)
+                end
+            end
         end
     end
 end

@@ -305,6 +305,18 @@ assert(captureUniforms.sourceY[1]==892 and captureUniforms.sourceY[2]==1292,'fog
 env.widget:Update(1);env.widget:DrawWorldPreUnit();assert(not fogAPI(),'unused height field remained ready')
 env.widget:Update(0.21);env.widget:DrawWorldPreUnit();assert(fogAPI(),'fog request did not restart metadata')
 env.widget:TextCommand('radiancelight off');assert(not fogAPI(),'disabled cascade exposed stale fog light')
+-- Sky releases use assembled shadow-column roofs, including ground elevation,
+-- and stop seeing a roof as soon as that building is removed.
+env.Spring.GetUnitBasePosition=function()return 100,25,200 end
+env.Spring.GetUnitVectors=function()return {0,0,1},{0,1,0},{-1,0,0} end
+globals.ReceiveBuildingShadowColumnsBegin(98,7,16,32)
+globals.ReceiveBuildingShadowColumn(98,0,0,10,5) -- highest occupied level is three
+assert(not globals.GetParadeRoofHeight(100,200,20),'partial roof exposed before assembly')
+globals.ReceiveBuildingShadowColumnsEnd(98)
+assert(globals.GetParadeRoofHeight(100,200,20)==131,'roof ignored voxel levels/base/world elevation')
+assert(not globals.GetParadeRoofHeight(500,200,20),'distant roof influenced release')
+globals.ReceiveBuildingShadowColumnsRemove(98)
+assert(not globals.GetParadeRoofHeight(100,200,20),'destroyed building retained a roof')
 env.widget:Shutdown();assert(not env.WG.NeonRadiance and next(globals)==nil)
 assert(not env.WG.GetMosaicFogRadiance,'stale fog provider after shutdown')
 print('PASS: widget propagation/default view, lazy direct diagnostics, height selection, day/night intensity, WG ownership and shutdown')

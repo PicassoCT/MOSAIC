@@ -621,3 +621,15 @@ check('waypoint advancement cannot cut a house corner and a new obstruction stop
     obstructed=true;f:step(210)
     assert(f.d.vehicles[id].held and f.orders[#f.orders].cmd==CMD.STOP,'truck drove toward a new house obstruction')
 end)
+
+check('every rooftop shower clears a tall mounted float even beside a low building',function()
+    local f=fixture();f:tour();f.effects={}
+    f.context.Spring.GetUnitHeight=function(id)return f.units[id].def==4 and 260 or 40 end
+    for i=1,16 do f:step(f.frame+60,2) end
+    local names={}
+    for _,effect in ipairs(f.effects)do
+        assert(effect.y>=272,'paper spawned below tall float')
+        names[effect.name]=true
+    end
+    assert(count(names)==4)
+end)

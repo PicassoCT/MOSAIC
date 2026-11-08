@@ -57,6 +57,12 @@ Offsets are relative to each existing truck's `attachPoint`, in native game coor
 
 The existing payload attachment supplies movement. Explicit parade payloads do not consume the ordinary service-payload selection quota. The payload script handles attachment loss and resets hidden articulated variants. See the [payload authoring and runtime notes](../tools/truck_parade_payloads/README.md) for those details.
 
+## Native roadside audience
+
+In the close-up mesh scene, AI spirits hover with their feet 28 world units above the ground, over the ghosts at the same roadside anchors. Occasionally one same-side pair recognizes each other, drifts to an eight-unit separation, exchanges alternating nods and glances, then separates. Their bodies remain oriented toward the route and their heads also follow the passing carrier. These are silent gestures without text, using the existing figures and the same poses for radiance capture.
+
+Petals, leaves, envelopes and banknotes descend from at least 12 units above the mounted payload's audited model height, with an 80-unit ground-relative minimum. Building paper showers also clear the nearby float; petals retain their higher existing rooftop release. Source meshes and export transforms are unchanged.
+
 ## Pixel hologram decorations
 
 Touring floats project animated pixel ornaments onto fixed spots beside the road.

@@ -84,6 +84,11 @@ local function fixture(options)
         invalid.frameDurations = options.invalidTiming
         figureData.glyphs[name] = invalid
     end
+    local runtimeConfig={}
+    for k,v in pairs(sceneConfig) do runtimeConfig[k]=v end
+    runtimeConfig.skyLanterns={}
+    for k,v in pairs(sceneConfig.skyLanterns) do runtimeConfig.skyLanterns[k]=v end
+    runtimeConfig.skyLanterns.enabled=options.sky==true
     local names = {}
     for _, source in ipairs({config, figureData}) do
         for name, glyph in pairs(source.glyphs) do names[glyph] = name end
@@ -99,6 +104,7 @@ local function fixture(options)
             ONE_MINUS_SRC_ALPHA = 771, BACK = 1029},
         UnitDefNames = {truckpayloadparade = {id = 7}},
         VFS = {Include = function(path)
+            if path == "luarules/configs/parade_hologram_scene.lua" then return runtimeConfig end
             if path == "scripts/lib_truck_parade_payloads.lua" then return catalog end
             if path == "luarules/configs/parade_hologram_figures.lua" then return figureData end
             if path == "luarules/configs/parade_hologram_decorations.lua" then return config end
@@ -106,7 +112,8 @@ local function fixture(options)
             return dofile(path)
         end}, gadgetHandler = {IsSyncedCode = function() return options.synced end,
             RemoveGadget = function() f.removed = true end}}
-    env.Script = {LuaUI = setmetatable({ReceiveParadeRadianceScene = function(queue, def)
+    env.Script = {LuaUI = setmetatable({GetParadeRoofHeight=function()return options.roof or 260 end,
+        ReceiveParadeRadianceScene = function(queue, def)
         f.radiance, f.radianceDef = queue, def
     end}, {__call = function() return true end})}
     local S, gl = env.Spring, env.gl
@@ -250,6 +257,10 @@ local function fixture(options)
             f.meshDraws[#f.meshDraws + 1] = {id = id, piece = pieceID,
                 anchor = f.rawAnchor, opacity = f.color[4], tilt = f.rawTilt, wingAngle = f.wingAngle}
         end
+    end
+    if options.sky then
+        gl.Scale=function(x,y,z)assert(x==y and y==z);f.skyScale=x end
+        S.GetWind=function()return 8,0,-4 end
     end
     f.result = loadEnv("luarules/gadgets/gfx_parade_scenery.lua", env)
     f.env, f.gadget = env, env.gadget
@@ -894,4 +905,62 @@ check('radiance receives the displayed world scene and clears hidden or failed s
     f.los=true;drawAt(f,4);drawAt(f,7);assert(#f.radiance>0)
     f.throwMeshDraw=true;f.seconds=7.1;f.gadget:DrawWorld();assert(#f.radiance==0)
     f.gadget:Shutdown();assert(#f.radiance==0)
+end)
+
+check('sky lanterns clear measured roofs and share their scaled poses with radiance',function()
+    local f=fixture({native=true,authored=true,sky=true,roof=300})
+    drawAt(f,0)
+    for t=1,32 do
+        f.positions[20]={t*20,0,0}
+        drawAt(f,t)
+    end
+    local sky,count=nil,0
+    for _,o in ipairs(f.radiance) do
+        if o.pose.activity=='sky_lantern' then
+            count=count+1
+            if not sky or o.pose.y>sky.pose.y then sky=o end
+            assert(o.pose.scale==1.6 and o.color[1]>o.color[3])
+        end
+    end
+    assert(sky and sky.pose.y>300+40,'lantern never cleared rooftop')
+    assert(count<=sceneConfig.skyLanterns.maxPerPayload,'unbounded sky releases')
+    assert(sky.pose.x<100,'released lantern followed its departing truck')
+    assert(f.skyScale==1.6,'native lantern was not uniformly scaled')
+    f.los=false;drawAt(f,33);assert(#f.radiance==0)
+end)
+check('all themes retain bounded sky lanterns in the billboard fallback',function()
+    local f=fixture({sky=true})
+    f.variants[5]=1
+    drawAt(f,0)
+    for t=1,32 do drawAt(f,t) end
+    local high=0
+    for _,draw in ipairs(f.draws)do
+        if draw.glyph=='lantern' and draw.anchor and draw.anchor[2]>260 then high=high+1 end
+    end
+    assert(high>0 and high<=6,'sky lantern fallback missing or unbounded')
+end)
+
+check('mounted float height reaches every falling native decoration and AI heads retain their gaze',function()
+    local f=fixture({native=true,authored=true})
+    f.positions[5]={0,40,0}
+    drawAt(f,0);drawAt(f,0.05)
+    local paper=0
+    for _,object in ipairs(f.radiance)do
+        local item=object.template.item
+        if item.motion=='paper' or item.motion=='petal' or item.motion=='fall' then
+            paper=paper+1
+            assert(object.pose.y>117,'rendered paper is below the mounted float top')
+        end
+    end
+    assert(paper==4)
+    f.positions[20]={0,0,60};drawAt(f,1.6)
+    local ai,chat=0,0
+    for _,object in ipairs(f.radiance)do
+        if object.template.item.category=='ai' then
+            ai=ai+1
+            assert(object.pose.y>27.8 and math.abs(object.pose.headYaw)<=38)
+            if object.pose.activity=='chat' then chat=chat+1 end
+        end
+    end
+    assert(ai==4 and chat==2,'same-side AI pair is not rendered chatting')
 end)

@@ -186,19 +186,67 @@ local function daemonPose(station, item, seconds, config)
     return pose
 end
 
+-- A same-side pair occasionally recognizes one another. Body silhouettes
+-- keep facing the street; only the heads turn between partner and procession.
+local function aiEncounter(pose, station, item, seconds, payloadID, config)
+    local settings = config and config.aiConversation
+    if not settings then return end
+    local age = math.max(0, seconds-station.born)
+    local generation = math.floor(age/settings.period)
+    if station.retired and station.born+generation*settings.period > station.retired then return end
+    local side = item.x < 0 and -1 or 1
+    local choice = (math.floor(station.x*3+station.z*7+station.born*10)+payloadID*17+generation*7)%6
+    if choice ~= (side < 0 and 0 or 1) then return end
+    local cycle = age-generation*settings.period
+    local order = item.z < 0 and -1 or 1
+    local approachEnd = settings.recognition+settings.approach
+    local chatEnd = approachEnd+settings.chat
+    local finish = chatEnd+settings.retreat
+    if cycle >= finish then return end
+    local progress = 0
+    if cycle < settings.recognition then
+        pose.activity = "recognize"
+        pose.headTilt = 3*math.sin(cycle/settings.recognition*pi)
+    elseif cycle < approachEnd then
+        pose.activity = "approach_partner"
+        progress = smooth((cycle-settings.recognition)/settings.approach)
+    elseif cycle < chatEnd then
+        pose.activity, progress = "chat", 1
+        local beat = (cycle-approachEnd)/0.55
+        local speaking = math.floor(beat)%2 == (order < 0 and 0 or 1)
+        pose.headTilt = (speaking and 2.8 or 0.7)*sin((beat%1)*pi)
+    else
+        pose.activity = "return_from_chat"
+        progress = 1-smooth((cycle-chatEnd)/settings.retreat)
+    end
+    pose.z = item.z+(order*settings.pairSpacing*0.5-item.z)*progress
+    -- Alternate a brief glance at the partner with watching the passing float.
+    pose.partnerGlance = -side*order*38
+    pose.partnerWeight = cycle < approachEnd and smooth(cycle/settings.recognition)
+        or (cycle < chatEnd and (0.25+0.65*(0.5+0.5*sin((cycle-approachEnd)*3))) or progress)
+end
+
+local function rainHeight(station, item, ground, config)
+    local settings = config and config.rain or {}
+    return math.max(item.y or 0, settings.minimumHeight or 80,
+        station.floatTop and station.floatTop-ground+(settings.floatClearance or 12) or 0)
+end
+
 function scene.worldPose(station, item, seconds, payloadID, ground, config)
     local pose = scene.pose(item, seconds, payloadID)
-    if item.motion == "lantern" and config then
+    if item.category == "ai" then
+        aiEncounter(pose, station, item, seconds, payloadID, config)
+    elseif item.motion == "lantern" and config then
         pose = scene.lanternPose(station, item, seconds, config)
     elseif item.lanternEmitter and config then
         pose = daemonPose(station, item, seconds, config)
-    elseif item.motion == "petal" then
+    elseif item.motion == "petal" or item.motion == "paper" then
         -- A single petal falls, rocks across its broad face and drifts sideways.
         -- Fade near landing and respawn while invisible; no accumulating stock.
-        local duration = 16
+        local duration = item.fallSeconds or 16
         local age = math.max(0, seconds - station.born) % (duration + 0.4)
         local drift = age * 0.65 + (item.phase or 0)
-        pose.y = math.max(0, (item.y or 11) * (1 - age / duration))
+        pose.y = math.max(0, rainHeight(station, item, ground, config) * (1 - age / duration))
         pose.x = item.x + 1.8 * sin(drift) + 0.08 * age
         pose.z = item.z + 1.1 * sin(drift * 0.7)
         pose.tilt = 24 * sin(drift * 1.8)
@@ -214,7 +262,7 @@ function scene.worldPose(station, item, seconds, payloadID, ground, config)
         local elapsed = seconds - station.born
         local period = lifetime + blink
         local age = math.max(0, elapsed) % period
-        pose.y = math.max(0, (item.y or 14) * (1 - age / lifetime))
+        pose.y = math.max(0, rainHeight(station, item, ground, config) * (1 - age / lifetime))
         pose.visible = elapsed >= 0 and age < lifetime
         pose.opacity = pose.visible and (item.opacity or 1) or 0
         pose.activity = pose.visible and "down" or "hidden"
@@ -233,6 +281,17 @@ function scene.worldPose(station, item, seconds, payloadID, ground, config)
         if station.dz < 0 then heading = heading + pi end
     end
     pose.yaw = pose.yaw + heading * 180 / pi
+    if item.category == "ai" then
+        local target = station.lookAt or {x=station.x,z=station.z}
+        local dx,dz = target.x-pose.x,target.z-pose.z
+        local angle
+        if math.atan2 then angle=math.atan2(dx,dz)
+        elseif dz==0 then angle=dx>=0 and pi/2 or -pi/2
+        else angle=math.atan(dx/dz);if dz<0 then angle=angle+pi end end
+        local watching=clamp((angle*180/pi-pose.yaw+180)%360-180,-38,38)
+        local weight=pose.partnerWeight or 0
+        pose.headYaw=watching*(1-weight)+(pose.partnerGlance or 0)*weight
+    end
     return pose
 end
 

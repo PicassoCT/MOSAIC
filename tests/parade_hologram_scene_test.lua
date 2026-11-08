@@ -91,7 +91,7 @@ check("main spectators remain still and the darker period dead hover near living
                 assert(math.abs(pose.headTilt) <= 1.5)
                 if item.category == "civilian" then assert(pose.y == 0) end
                 if item.category == "dead" then assert(pose.y >= 8.7 and pose.y <= 8.9 and pose.opacity <= 0.55) end
-                if item.category == "ai" then assert(pose.y >= 0.96 and pose.y <= 1.24) end
+                if item.category == "ai" then assert(pose.y >= 27.86 and pose.y <= 28.14) end
             end
         end
     end
@@ -477,4 +477,48 @@ check("origami bird flaps then glides; cherry petal drifts, lands and respawns i
     assert(not hidden.visible and hidden.opacity == 0)
     local restart = scene.worldPose(station,petal,16.4,5,0,config)
     assert(close(restart.opacity,0))
+end)
+
+check("AI spirits hover above ghosts and occasionally recognize a same-side partner", function()
+    local ai,dead={},{}
+    for _,item in ipairs(config.figures)do
+        if item.category=='ai' then ai[#ai+1]=item elseif item.category=='dead' then dead[#dead+1]=item end
+    end
+    local st={born=0,x=0,z=0,dx=0,dz=1,lookAt={x=0,z=10}}
+    for i,item in ipairs(ai)do
+        assert(item.x==dead[i].x and item.z==dead[i].z)
+        assert(item.hover>dead[i].hover+9,'AI intersects ghost heads')
+    end
+    local a,b=scene.worldPose(st,ai[1],1.6,0,0,config),scene.worldPose(st,ai[3],1.6,0,0,config)
+    assert(a.activity=='chat' and b.activity=='chat' and a.x==b.x)
+    assert(close(math.abs(a.z-b.z),config.aiConversation.pairSpacing),'pair is not side by side')
+    assert(a.headYaw<0 and b.headYaw>0 and a.yaw==90 and b.yaw==90,'heads must glance at partner while bodies face the route')
+    assert(scene.worldPose(st,ai[2],1.6,0,0,config).activity=='rest','both banks chatted in lockstep')
+    assert(scene.worldPose(st,ai[1],0.2,0,0,config).activity=='recognize')
+    assert(scene.worldPose(st,ai[1],0.6,0,0,config).activity=='approach_partner')
+    assert(scene.worldPose(st,ai[1],3.6,0,0,config).activity=='return_from_chat')
+    local home=scene.worldPose(st,ai[1],4.2,0,0,config)
+    assert(home.activity=='rest' and home.z==ai[1].z)
+    st.lookAt.z=100;local forward=scene.worldPose(st,ai[1],8,0,0,config)
+    st.lookAt.z=-100;local backward=scene.worldPose(st,ai[1],8,0,0,config)
+    assert(forward.headYaw<0 and backward.headYaw>0,'idle AI gaze does not follow the passing float')
+    local again=scene.worldPose(st,ai[1],1.6,0,0,config)
+    assert(again.x==a.x and again.z==a.z,'encounter timing depends on render order')
+end)
+
+check("all thrown paper begins above the mounted float, independent of terrain elevation",function()
+    local st={born=0,x=0,z=0,dx=0,dz=1,floatTop=185}
+    local count=0
+    for _,item in ipairs(config.props)do
+        if item.motion=='paper' or item.motion=='petal' or item.motion=='fall' then
+            count=count+1
+            for _,ground in ipairs({0,40,-20})do
+                local initial=scene.worldPose(st,item,0,0,ground,config)
+                assert(initial.y>=st.floatTop+config.rain.floatClearance,'paper launched below float')
+                local later=scene.worldPose(st,item,5,0,ground,config)
+                assert(later.y<initial.y and later.y>ground,'paper does not rain downward')
+            end
+        end
+    end
+    assert(count==4,'petals, leaves, envelopes and banknotes must all fall')
 end)

@@ -13,6 +13,7 @@ local scene = {
     groundRefreshSeconds = 1,
     viewRadius = 125,
     lanterns = {
+        modelHeight = 2.15,
         switchSeconds = 1.6,
         speed = 0.65,
         airborneHeight = 8.5,
@@ -25,6 +26,26 @@ local scene = {
         reach = 1.2,
         pairSpacing = 1.6,
     },
+    skyLanterns = {
+        enabled = true,
+        maxPerPayload = 6,
+        releaseDelay = 1.2,
+        releaseInterval = 6.4,
+        lifetime = 38,
+        riseSeconds = 28,
+        fadeIn = 1.8,
+        fadeOut = 7,
+        minimumAltitude = 180,
+        roofClearance = 55,
+        roofSearchRadius = 360,
+        scale = 1.6, -- 2.1-unit lantern becomes 3.4, below half a person.
+        opacity = 0.82,
+        windFactor = 0.06,
+        maxDriftSpeed = 1.2,
+        color = {1, 0.78, 0.52},
+    },
+    rain = {minimumHeight = 80, floatClearance = 12},
+    aiConversation = {period = 24, approach = 0.8, chat = 2.2, retreat = 0.8, recognition = 0.35, pairSpacing = 8},
     figures = {},
     props = {},
 }
@@ -34,8 +55,8 @@ local families = {
         hover = 0, opacity = 0.74},
     {prefix = "paradedead", category = "dead", side = 43, along = {-13, 13},
         hover = 8.8, opacity = 0.55},
-    {prefix = "paradeai", category = "ai", side = 51, along = {-34, 34},
-        hover = 1.1, opacity = 0.70},
+    {prefix = "paradeai", category = "ai", side = 43, along = {-13, 13},
+        hover = 28, opacity = 0.70},
     {prefix = "paradehelper", category = "helper", side = 32, along = {-22, 22},
         hover = 0, opacity = 0.88},
 }
@@ -82,9 +103,9 @@ for _, side in ipairs({-1, 1}) do
     end
 end
 local props = {
-    {"moon", -26, 24, 4}, {"envelope", 28, 15, -14},
-    {"money", -28, 14, 18}, {"koi", 29, 17, 6},
-    {"lotus", -28, 70, -6}, {"leaf", 26, 21, -25},
+    {"moon", -26, 24, 4}, {"envelope", 28, 80, -14},
+    {"money", -28, 80, 18}, {"koi", 29, 17, 6},
+    {"lotus", -28, 80, -6}, {"leaf", 26, 80, -25},
     {"star", -24, 27, -24}, {"star", 24, 25, 25},
     {"cloud", 22, 23, 0}, {"pinwheel", -25, 18, 28}, {"moth", 26, 14, 29},
 }
@@ -92,7 +113,8 @@ for index, prop in ipairs(props) do
     scene.props[#scene.props + 1] = {model = prop[1], x = prop[2], y = prop[3], z = prop[4],
         opacity = 0.88, phase = (index + 2) * 0.79,
         motion = prop[1] == "money" and "fall" or prop[1] == "koi" and "hover"
-            or prop[1] == "moth" and "origami" or prop[1] == "lotus" and "petal" or nil,
+            or prop[1] == "moth" and "origami" or prop[1] == "lotus" and "petal"
+            or (prop[1] == "leaf" or prop[1] == "envelope") and "paper" or nil,
         fallSeconds = prop[1] == "money" and 16 or nil,
         blinkSeconds = prop[1] == "money" and 0.2 or nil}
 end
