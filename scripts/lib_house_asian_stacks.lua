@@ -3,6 +3,15 @@
 local catalog = VFS.Include("scripts/house_asian_split_catalog.lua")
 local profiles = VFS.Include("scripts/house_asian_stack_profiles.lua")
 local M = {}
+-- Street-level style owns the mix, including buildings with another style above.
+-- Fractions target the whole perimeter; featured components remain protected.
+M.shopfrontPolicies = {
+    trad = {fraction = 0.75},
+    office = {fraction = 0.60},
+    pod = {fraction = 0.25},
+    industrial = {fraction = 1, cornersOnly = true},
+}
+local cornerSlots = {[1]=true, [6]=true, [31]=true, [36]=true}
 local styles = {"pod", "industrial", "trad", "office"}
 
 local function key(name)
@@ -331,12 +340,58 @@ function M.plan(options)
         column.originalFoundation = column.pieces[1]
     end
 
+    -- Restore the varied pre-alignment shopfront pool on a fixed fraction of
+    -- each building, rather than switching whole buildings back at random.
+    -- Upper pieces and their orientation stay exactly as planned. A featured
+    -- authored ground/wall component keeps its own base pieces.
+    local fraction = options.legacyGroundFraction or 0
+    assert(fraction >= 0 and fraction <= 1, "Invalid legacy ground fraction")
+    local eligible, cornerCount = {}, 0
+    for _, index in ipairs(slots) do
+        local column = result.columns[index]
+        local protected = featured and featured.stage ~= "roof" and index <= featured.columns
+        if cornerSlots[index] then cornerCount = cornerCount+1 end
+        if not protected and column.height > 0
+            and (not options.legacyGroundCornersOnly or cornerSlots[index]) then
+            eligible[#eligible+1] = index
+        end
+    end
+    local requested = math.floor((options.legacyGroundCornersOnly and cornerCount or #slots)*fraction)
+    local target = math.min(requested, #eligible)
+    result.legacyFoundationRequested = requested
+    result.legacyFoundationTarget, result.legacyFoundationCount = target, 0
+    local legacyNames, seenLegacy = {}, {}
+    for _, name in ipairs(options.legacyGroundNames or {}) do
+        local actual = inv.name(name)
+        if actual and not seenLegacy[actual] then
+            legacyNames[#legacyNames+1], seenLegacy[actual] = actual, true
+        end
+    end
+    for _, index in ipairs(ranked(eligible, "legacy-ground-slot:")) do
+        if result.legacyFoundationCount >= target then break end
+        local column = result.columns[index]
+        local protected = featured and featured.stage ~= "roof" and index <= featured.columns
+        if not protected and column.height > 0 then
+            for _, name in ipairs(ranked(legacyNames, "legacy-shopfront:" .. index .. ":")) do
+                local profile = inv.profiles[name]
+                if not used[name] and hasStyle(name, groundStyle) and profile and profile.max
+                    and profile.max[2] <= inv.floorHeight+inv.tolerance then
+                    reserve({name})
+                    column.pieces[1], column.legacyFoundation = name, true
+                    result.legacyFoundationCount = result.legacyFoundationCount+1
+                    break
+                end
+            end
+        end
+    end
+
     local chance = options.mismatchChance
     if chance == nil then chance = 0.1 end
     assert(chance >= 0 and chance <= 1, "Invalid foundation mismatch probability")
     for _, index in ipairs(slots) do
         local column = result.columns[index]
-        column.mismatchRequested = column.height > 0
+        column.mismatchRequested = not column.legacyFoundation and column.height > 0
+            and (not options.legacyGroundCornersOnly or cornerSlots[index])
             and hash(seed, "foundation-exception:" .. index) % 10000 < chance * 10000
         if column.mismatchRequested then
             local firstUpper = inv.profiles[column.pieces[2]]

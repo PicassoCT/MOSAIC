@@ -17,6 +17,8 @@ function OnBuildingPiecesDetached(pieces) houseAnimations.detach(pieces) end
 local splitPlanner = VFS.Include("scripts/lib_house_asian_split.lua")
 local stackPlanner = GetSetSharedOneTimeResult("house_asian_stack_planner",
     function() return VFS.Include("scripts/lib_house_asian_stacks.lua") end)
+local placeablePlanner = GetSetSharedOneTimeResult("house_asian_placeable_planner",
+    function() return VFS.Include("scripts/lib_house_asian_placeables.lua") end)
 local splitParams = (UnitDefs[unitDefID] or {}).customParams or {}
 local splitPlan, splitLayout
 local structuralPlan
@@ -1936,35 +1938,55 @@ end
 
 
 function addGroundPlaceables()
-    x,y,z = Spring.GetUnitPosition(unitID)
-    globalHeightUnit = Spring.GetGroundHeight(x, z)
-	placeAbles =  getNameFilteredTable( {},  { "Placeable"}, {})
-	if placeAbles and count(placeAbles) > 0 then
-		groundPiecesToPlace= math.random(1,5)
-		randPlaceAbleID = ""
-		while groundPiecesToPlace > 0 do
-
-			randPlaceAbleID = getSafeRandom(placeAbles)			
-			if randPlaceAbleID and not inToShowDict(randPlaceAbleID) then
-				opx= math.random(cubeDim.length*4, cubeDim.length*7)*randSign()
-				opz= math.random(cubeDim.length*4, cubeDim.length*7)*randSign()
-				WMove(randPlaceAbleID,3, opz, 0)
-				WMove(randPlaceAbleID,1, opx, 0)
-                Sleep(1)
-                x, y, z, _, _, _ = Spring.GetUnitPiecePosDir(unitID, randPlaceAbleID)
-                myHeight = Spring.GetGroundHeight(x, z)
-                if myHeight >0 then
-                    heightdifference = math.abs(globalHeightUnit - myHeight)
-                    if myHeight < globalHeightUnit then heightdifference = -heightdifference end
-				    addToShowTable(randPlaceAbleID)
-				    Show(randPlaceAbleID)
-                    SetRadiancePlaceables({randPlaceAbleID}, true)
+    local ux, uy, uz = Spring.GetUnitPosition(unitID)
+    local front, _, right = Spring.GetUnitVectors(unitID)
+    local scale = placeablePlanner.catalogue.scale
+    local available = {}
+    for _, id in pairs(getNameFilteredTable({}, {"Placeable"}, {})) do
+        if not inToShowDict(id) then available[pieceNr_pieceName[id]] = id end
+    end
+    local function world(x,z)
+        -- Spring's model matrix uses -right, up, front as its basis.
+        return ux+scale*(-right[1]*x+front[1]*z), uz+scale*(-right[3]*x+front[3]*z)
+    end
+    local roads=placeablePlanner.localRoads(GG.CityRoadNetwork,function(x,z)
+        local dx,dz=x-ux,z-uz
+        return (-right[1]*dx-right[3]*dz)/scale,(front[1]*dx+front[3]*dz)/scale
+    end,cubeDim.length*9)
+    local placements = placeablePlanner.plan({
+        seed=splitPlan and splitPlan.seed or splitPlanner.seed(ux,uz,Game.mapName),
+        cell=cubeDim.length, pieces=available, roads=roads,
+        roadWidth=(GameConfig.city.alleys or {}).sizeX or placeablePlanner.roadWidth,
+        accept=function(candidate)
+            local x,z=world(candidate.x,candidate.z)
+            local ground=Spring.GetGroundHeight(x,z)
+            if ground<0 then return false end
+            -- Reject steep/wet patches instead of leaving a large kiosk floating.
+            local low,high=ground,ground
+            for _,px in ipairs({candidate.minX,candidate.maxX}) do
+                for _,pz in ipairs({candidate.minZ,candidate.maxZ}) do
+                    local wx,wz=world(px,pz)
+                    if (Game.mapSizeX and (wx<0 or wx>Game.mapSizeX))
+                        or (Game.mapSizeZ and (wz<0 or wz>Game.mapSizeZ)) then return false end
+                    local h=Spring.GetGroundHeight(wx,wz)
+                    if h<0 then return false end
+                    low,high=math.min(low,h),math.max(high,h)
                 end
-			end	
-		
-			groundPiecesToPlace = groundPiecesToPlace -1
-		end	
-	end
+            end
+            if high-low>2 then return false end
+            candidate.ground=low
+            return true
+        end,
+    })
+    for _,p in ipairs(placements) do
+        Move(p.id,1,p.moveX,0)
+        Move(p.id,3,p.moveZ,0)
+        Move(p.id,2,p.moveY+(p.ground-uy)/scale,0)
+        Turn(p.id,3,p.rotation,0)
+        addToShowTable(p.id)
+        Show(p.id)
+        SetRadiancePlaceables({p.id},true)
+    end
 end
 
 local accumulatedStun = 0
@@ -2025,12 +2047,28 @@ function buildBuilding(boolIsReconstruction)
     local inventory = GetSetSharedOneTimeResult("house_asian_stack_inventory_" .. unitDefID,
         function() return stackPlanner.inventory(pieceName_pieceNr) end)
     height = splitPlan and splitPlan.height or math.random(2,3)
+    local wallStyle = splitPlan and splitPlan.wallStyle or materialColourName
+    local legacyGroundNames = {}
+    local shopfrontPolicy = stackPlanner.shopfrontPolicies[materialColourName] or {fraction = 0}
+    if shopfrontPolicy.fraction > 0 then
+        -- Use the original ground-level material filter, including shop pieces
+        -- excluded from the socket-compatible tower path search.
+        for _, id in pairs(getNameFilteredTable({}, {materialColourName}, {"Roof", "Deco", "Yard"})) do
+            local name = pieceNr_pieceName[id]
+            if name and name:lower():find("floor", 1, true) then
+                legacyGroundNames[#legacyGroundNames + 1] = name
+            end
+        end
+    end
     structuralPlan = stackPlanner.plan({
         inventory = inventory,
         seed = splitPlan and splitPlan.seed or splitPlanner.seed(planX, planZ, Game.mapName),
         height = height,
         groundStyle = materialColourName,
-        wallStyle = splitPlan and splitPlan.wallStyle or materialColourName,
+        wallStyle = wallStyle,
+        legacyGroundNames = legacyGroundNames,
+        legacyGroundFraction = shopfrontPolicy.fraction,
+        legacyGroundCornersOnly = shopfrontPolicy.cornersOnly,
         slots = structuralSlots,
         featured = splitPlan and splitPlan.group,
         mismatchChance = 0.1,
