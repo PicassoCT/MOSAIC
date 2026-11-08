@@ -1,5 +1,5 @@
 -- One bounded placement pass at assembly time. No per-frame work or global RNG.
-local catalogue = VFS.Include('scripts/house_asian_placeable_catalog.lua')
+local function withCatalogue(catalogue)
 local M = {catalogue = catalogue, walkwayWidth = 12, pedestrianWidth = 2.5, roadWidth = 25}
 local function hash(seed, text)
     local n = seed % 2147483647
@@ -116,17 +116,20 @@ function M.plan(options)
             local hx,hz=(high[1]-low[1])/2,(high[3]-low[3])/2
             local tangentHalf = side%2==1 and hx or hz
             local limit = half-cornerClearance-tangentHalf
-            if limit>0 then
-                for station,t in ipairs(stations) do
+            -- Oversized authored plazas/tanks use an open forecourt across the
+            -- road. Do not silently remove them because a facade slot is smaller.
+            local forecourt = catalogue.largeForecourts and tangentHalf > half*.38
+            if limit>0 or forecourt then
+                for station,t in ipairs(forecourt and {0} or stations) do
                     local jitter=(hash(seed,item.name..':'..side..':'..station)%1000/999-.5)*cell*.12
-                    local along=math.max(-limit,math.min(limit,half*t+jitter))
+                    local along=forecourt and 0 or math.max(-limit,math.min(limit,half*t+jitter))
                     -- Leave the middle of every facade open as an approach lane.
-                    if math.abs(along)-tangentHalf >= cell*.22 then
+                    if forecourt or math.abs(along)-tangentHalf >= cell*.22 then
                         local near,far=M.streetEdges(options,side,along,half)
                         local depth=side%2==1 and hz or hx
                         local pedestrian=(options.pedestrianWidth or M.pedestrianWidth)/catalogue.scale
                         local walkwayEnd=math.min(near,half+(options.walkwayWidth or M.walkwayWidth)/catalogue.scale)
-                        local small=prop.walkway and 2*depth+pedestrian <= walkwayEnd-half
+                        local small=not forecourt and prop.walkway and 2*depth+pedestrian <= walkwayEnd-half
                         local curbside=small and (prop.category=='lighting' or prop.category=='barrier')
                         local distance=small and (curbside and walkwayEnd-depth or half+depth)
                             or far+2/catalogue.scale+depth
@@ -171,4 +174,8 @@ function M.plan(options)
     end
     return result
 end
+return M
+end
+local M = withCatalogue(VFS.Include('scripts/house_asian_placeable_catalog.lua'))
+M.withCatalogue = withCatalogue
 return M

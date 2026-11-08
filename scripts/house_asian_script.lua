@@ -19,6 +19,7 @@ local stackPlanner = GetSetSharedOneTimeResult("house_asian_stack_planner",
     function() return VFS.Include("scripts/lib_house_asian_stacks.lua") end)
 local placeablePlanner = GetSetSharedOneTimeResult("house_asian_placeable_planner",
     function() return VFS.Include("scripts/lib_house_asian_placeables.lua") end)
+local placeGroundProps = include "lib_house_asian_ground_placeables.lua"
 local splitParams = (UnitDefs[unitDefID] or {}).customParams or {}
 local splitPlan, splitLayout
 local structuralPlan
@@ -1938,56 +1939,19 @@ end
 
 
 function addGroundPlaceables()
-    local ux, uy, uz = Spring.GetUnitPosition(unitID)
-    local front, _, right = Spring.GetUnitVectors(unitID)
-    local scale = placeablePlanner.catalogue.scale
     local available = {}
     for _, id in pairs(getNameFilteredTable({}, {"Placeable"}, {})) do
         if not inToShowDict(id) then available[pieceNr_pieceName[id]] = id end
     end
-    local function world(x,z)
-        -- Spring's model matrix uses -right, up, front as its basis.
-        return ux+scale*(-right[1]*x+front[1]*z), uz+scale*(-right[3]*x+front[3]*z)
-    end
-    local roads=placeablePlanner.localRoads(GG.CityRoadNetwork,function(x,z)
-        local dx,dz=x-ux,z-uz
-        return (-right[1]*dx-right[3]*dz)/scale,(front[1]*dx+front[3]*dz)/scale
-    end,cubeDim.length*9)
-    local placements = placeablePlanner.plan({
+    local ux, _, uz = Spring.GetUnitPosition(unitID)
+    return placeGroundProps(placeablePlanner, {
         seed=splitPlan and splitPlan.seed or splitPlanner.seed(ux,uz,Game.mapName),
-        cell=cubeDim.length, pieces=available, roads=roads,
-        roadWidth=(GameConfig.city.alleys or {}).sizeX or placeablePlanner.roadWidth,
-        accept=function(candidate)
-            local x,z=world(candidate.x,candidate.z)
-            local ground=Spring.GetGroundHeight(x,z)
-            if ground<0 then return false end
-            -- Reject steep/wet patches instead of leaving a large kiosk floating.
-            local low,high=ground,ground
-            for _,px in ipairs({candidate.minX,candidate.maxX}) do
-                for _,pz in ipairs({candidate.minZ,candidate.maxZ}) do
-                    local wx,wz=world(px,pz)
-                    if (Game.mapSizeX and (wx<0 or wx>Game.mapSizeX))
-                        or (Game.mapSizeZ and (wz<0 or wz>Game.mapSizeZ)) then return false end
-                    local h=Spring.GetGroundHeight(wx,wz)
-                    if h<0 then return false end
-                    low,high=math.min(low,h),math.max(high,h)
-                end
-            end
-            if high-low>2 then return false end
-            candidate.ground=low
-            return true
-        end,
+        cell=cubeDim.length, pieces=available,
+        roadWidth=(GameConfig.city.alleys or {}).sizeX,
+        addToShowTable=addToShowTable,
     })
-    for _,p in ipairs(placements) do
-        Move(p.id,1,p.moveX,0)
-        Move(p.id,3,p.moveZ,0)
-        Move(p.id,2,p.moveY+(p.ground-uy)/scale,0)
-        Turn(p.id,3,p.rotation,0)
-        addToShowTable(p.id)
-        Show(p.id)
-        SetRadiancePlaceables({p.id},true)
-    end
 end
+
 
 local accumulatedStun = 0
 local stunAnimationRunning = false
