@@ -55,6 +55,16 @@ function M.New(context)
     end
     local function distance(x, z, a, b) return (x-a)^2 + (z-b)^2 end
     local function dangerous(x, z)
+        local area = G.CityAreaState
+        if route and route.fallback and area and area.GetHeatAtLocation then
+            local heat, key, damage, generation = area:GetHeatAtLocation(x, z)
+            local baseline = route.heatBaseline and route.heatBaseline[key]
+            if baseline and damage then
+                local previous = baseline.generation == generation and baseline.damage or 0
+                return damage - previous >= (C.combatHeatThreshold or 300)
+            end
+            return heat >= (C.combatHeatThreshold or 300)
+        end
         return G.CityAreaState and G.CityAreaState:IsDangerous(x, z, C.combatHeatThreshold or 300) or false
     end
     local function call(id, name, ...)
@@ -466,6 +476,9 @@ function M.New(context)
         local origin = route.points[1]
         log(string.format("assembly starts at x=%.1f y=%.1f z=%.1f; carrier=%s; route nodes=%d; frame=%d",
             origin.x, origin.y, origin.z, context.UnitDefs[carrierDefID].name, #route.nodes, frame))
+        if route.fallback then
+            log(string.format("using least-dangerous usable candidate; recent damage peak=%.1f; new heavy damage still disperses the parade", route.peakHeat or 0))
+        end
         if not preview then consumeDay(day) end
         nextSpawn = frame
         publish()
