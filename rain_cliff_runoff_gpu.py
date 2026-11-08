@@ -45,6 +45,11 @@ um(loc(p,b'viewProjectionInv'),1,0,(F*16)(1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1))
 u2(loc(p,b'terrainNormalScale'),1/8192,1/8192)
 ui(loc(p,b'terrainNormalTex'),0)
 texture(0,(-.6,0,0,.0))
+ui(loc(p,b'mapDepthTex'),1);texture(1,(.5,0,0,0))
 a=render(p)
 assert max(abs(a[i]-[.2,.9,.5,1][i])for i in range(4))<.005,'smooth geometric normal not used'
 print('PASS: unperturbed terrain normal texture supplies drainage direction independently of shading normals')
+
+texture(1,(1,0,0,0));a=render(p)
+assert max(abs(a[i]-[1,.5,.5,1][i])for i in range(4))<.005,'missing depth lost the normal fallback'
+print('PASS: missing deferred depth retains the populated shading-normal fallback')
