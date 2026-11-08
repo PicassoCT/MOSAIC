@@ -549,7 +549,9 @@ function spawnInitialHouses(frame)
            if boolInitialized then return end
            registeredUnits = registerManuallyPlacedHouses(frame ) 
            conditionalEcho(boolDebug, "ManualPlacementInitialization::Registering Units manually" ..registeredUnits)
-           boolInitializationPreqrequisitsFullfiled = (registeredUnits > 0 and Spring.GetGameFrame() > originalGameFrame )
+           -- Reconciliation may already have registered every map house.
+           -- Readiness depends on the live registry, not additions this frame.
+           boolInitializationPreqrequisitsFullfiled = (next(GG.BuildingTable) ~= nil and Spring.GetGameFrame() > originalGameFrame)
            if not boolInitializationPreqrequisitsFullfiled then return end
            GG.CitySpawnComplete = true
            regenerateRoutesTable()
