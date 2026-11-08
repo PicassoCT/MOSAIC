@@ -1,5 +1,7 @@
 """Flat rain impacts must not inherit the expanding terrain channel atlas."""
 from world_rain_gpu import *
+# Relief height (Y) stays unmasked for same-surface gradients; coverage, foam
+# and depth must be zero where water is ineligible.
 p=program(vert,prefix+'''
 uniform float slope;
 uniform float altitude;
@@ -12,7 +14,8 @@ void main(){
 use(p);uf(loc(p,b'altitude'),100)
 for wet in [.1,.5,1]:
  uf(loc(p,b'terrainWetness'),wet);uf(loc(p,b'slope'),0)
- assert max(abs(v) for v in render(p))==0,'channel atlas visible on level ground'
+ a=render(p)
+ assert max(abs(v) for i,v in enumerate(a) if i%4!=1)==0,'channel atlas visible on level ground'
 for slope in [.2,.7,1.5]:
  uf(loc(p,b'slope'),slope);previous=None;coverage=[]
  for wet in [i/10 for i in range(1,11)]:
@@ -21,5 +24,6 @@ for slope in [.2,.7,1.5]:
   previous=a;coverage.append(sum(a))
  assert coverage[-1]>coverage[0],'lost flooding expansion'
 uf(loc(p,b'altitude'),-1)
-assert max(abs(v) for v in render(p))==0,'submerged terrain runoff'
+a=render(p)
+assert max(abs(v) for i,v in enumerate(a) if i%4!=1)==0,'submerged terrain runoff'
 print('PASS: no channel atlas on flat/submerged ground; flooding still expands on shallow and steep banks')
