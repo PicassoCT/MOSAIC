@@ -25,3 +25,22 @@ for i=2,#detour do assert(c:SegmentClear(detour[i-1],detour[i])) end
 local failed,used=c:Detour(point(300,500),point(700,500),function()return false end,16)
 assert(not failed and used<=16,'detour ignored impassable terrain or search budget')
 print('PASS bounded house detour and impassable-route rejection')
+
+-- A civilian stopping point can lie inside the larger parade footprint. Find
+-- another curb using the real rotated bounds, including neighbouring houses.
+do
+    local checks=0
+    local curb=c:FindCurb(5,point(1000,500),function(p)checks=checks+1;return p end)
+    assert(curb and c:SegmentClear(curb,curb) and curb.x>610)
+    local alternate=c:FindCurb(5,point(1000,500),function(p)
+        checks=checks+1
+        if p.x<500 then return p end
+    end)
+    assert(alternate and alternate.x<390,'did not try opposite side of building')
+    local blocked=c:FindCurb(5,point(1000,500),function()checks=checks+1;return nil end)
+    assert(not blocked and checks<=64,'curb search ignored terrain failure or work bound')
+    angle=math.pi/2;frame=120;c:Refresh()
+    local rotated=c:FindCurb(5,point(500,1000),function(p)return p end)
+    assert(rotated and rotated.z>610 and c:SegmentClear(rotated,rotated))
+end
+print('PASS staging curb search uses rotated house bounds, alternate sides and bounded terrain checks')

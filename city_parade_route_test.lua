@@ -398,3 +398,25 @@ do
     assert(crossing.reason:find('house footprint 99',1,true))
 end
 print('PASS fallback retains house clearance, convoy capacity and separate return lanes')
+
+-- Reproduce the Dubai failure with the real clearance index: ordinary traffic
+-- offers a point inside the live collision footprint. Parade-specific curbs
+-- must move outside it before requesting/validating native paths.
+do
+    local f=fixture(4)
+    f.Spring.GetGameFrame=function()return 100 end
+    f.Spring.GetUnitCollisionVolumeData=function()return 260,100,180,30,0,0 end
+    f.Spring.GetUnitVectors=function()return {0,0,1},{0,1,0},{1,0,0}end
+    local context={Spring=f.Spring,GG=f.GG,Game={mapSizeX=8192,mapSizeZ=8192},
+        UnitDefs={[41]={moveDef={id=17}}},config={routeHouseClearance=45}}
+    context.clearance=dofile('scripts/lib_parade_clearance.lua').new(context)
+    f.builder=Route.new(context)
+    local route=assert(f.builder:Begin(7,41),'ordinary traffic curb inside footprint prevented all routes')
+    for i,p in ipairs(route._curbs)do
+        assert(context.clearance:SegmentClear(p,p))
+        assert(not same(p,f.positions[route.nodes[i]]),'unsafe ordinary curb was retained')
+    end
+    assert(f.builder:Poll(route)=='ready',tostring(route.reason))
+    for i=2,#route.points do assert(context.clearance:SegmentClear(route.points[i-1],route.points[i]))end
+end
+print('PASS actual clearance integration repairs ordinary curbs inside house footprints')
