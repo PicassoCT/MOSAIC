@@ -224,8 +224,13 @@ function Route.new(context)
                 for index, id in ipairs(selected) do
                     local nextID = selected[index % #selected + 1]
                     local point, reason = safePoint(traffic.Point(id, defID, nextID), defID, false, allowDanger)
+                    if not point and clearance and clearance.FindCurb then
+                        point = clearance:FindCurb(id, positions[nextID], function(candidate)
+                            return safePoint(candidate, defID, false, allowDanger)
+                        end)
+                    end
                     if not point then
-                        self.lastError = "assembly curb: " .. tostring(reason)
+                        self.lastError = "assembly curb at building " .. id .. ": " .. tostring(reason)
                         valid = false; break
                     end
                     curbs[index] = point

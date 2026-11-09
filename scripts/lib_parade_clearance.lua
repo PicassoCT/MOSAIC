@@ -20,13 +20,13 @@ end
 function M.new(context)
     local S,G=context.Spring,context.GG
     local padding=(context.config or {}).routeHouseClearance or 45
-    local buckets,updated={},-math.huge
+    local buckets,boxes,updated={},{},-math.huge
     local cell=256
     local api={}
     function api:Refresh(frame)
         frame=frame or S.GetGameFrame()
         if frame>=updated and frame-updated<30 then return end
-        updated,buckets=frame,{}
+        updated,buckets,boxes=frame,{},{}
         for id in pairs(G.BuildingTable or {}) do
             if S.ValidUnitID(id) and not S.GetUnitIsDead(id) then
                 local x,_,z=S.GetUnitPosition(id)
@@ -41,6 +41,7 @@ function M.new(context)
                             math.abs(right[3])*sx*.5+math.abs(front[3])*sz*.5
                     end
                     local box={id=id,x=x,z=z,hx=hx,hz=hz}
+                    boxes[id]=box
                     for ix=math.floor((x-hx-padding)/cell),math.floor((x+hx+padding)/cell) do
                         for iz=math.floor((z-hz-padding)/cell),math.floor((z+hz+padding)/cell) do
                             local key=ix..':'..iz
@@ -64,6 +65,34 @@ function M.new(context)
             end
         end
         return true
+    end
+    -- Ordinary traffic uses a smaller radial exclusion. Parade assembly must
+    -- instead start outside the live, rotated collision box plus truck padding.
+    function api:FindCurb(id, toward, passable)
+        local box=boxes[id]
+        if not box then return nil end
+        for ring=0,3 do
+            local hx,hz=box.hx+padding+16+ring*64,box.hz+padding+16+ring*64
+            local candidates={}
+            for ix=-1,1 do for iz=-1,1 do
+                if ix~=0 or iz~=0 then
+                    candidates[#candidates+1]={x=box.x+ix*hx,z=box.z+iz*hz}
+                end
+            end end
+            table.sort(candidates,function(a,b)
+                local ad=(a.x-toward.x)^2+(a.z-toward.z)^2
+                local bd=(b.x-toward.x)^2+(b.z-toward.z)^2
+                if ad~=bd then return ad<bd end
+                return a.x==b.x and a.z<b.z or a.x<b.x
+            end)
+            for _,p in ipairs(candidates)do
+                if p.x>16 and p.z>16 and p.x<context.Game.mapSizeX-16 and p.z<context.Game.mapSizeZ-16
+                    and self:SegmentClear(p,p) then
+                    local accepted=passable(p)
+                    if accepted then return accepted end
+                end
+            end
+        end
     end
     -- Native paths ignore these houses. Re-route only a rejected leg through
     -- a bounded local road grid; keep native movement for the resulting goals.
