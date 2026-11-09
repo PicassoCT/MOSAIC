@@ -1561,12 +1561,6 @@ function conditionalFilterOutUpperBodyTable()
     end
 end
 
-function cigarettGlowAndSmoke()
-    if isTransported(unitID) then return end
-    Sleep(500)
-    spawnCegAtPiece(unitID, cigarett, "cigarettglowsmoke")
-end
-
 function showHideProps(selectedIdleFunction, bShow)
     -- 1 slaved
     if selectedIdleFunction == 2 then --calling someone
@@ -1576,7 +1570,6 @@ function showHideProps(selectedIdleFunction, bShow)
     elseif selectedIdleFunction == 3 then -- consumption
         if unitID % 2 == 1 then
             showHide(cigarett, bShow)
-            StartThread(cigarettGlowAndSmoke)
         else
             showHide(cofee, bShow)
         end

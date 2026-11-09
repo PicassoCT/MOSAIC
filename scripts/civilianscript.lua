@@ -1650,12 +1650,6 @@ function conditionalFilterOutUpperBodyTable()
     end
 end
 
-function cigarettGlowAndSmoke()
-    if isTransported(unitID) then return end
-    Sleep(500)
-    spawnCegAtPiece(unitID, cigarett, "cigarettglowsmoke")
-end
-
 function showHideProps(selectedIdleFunction, bShow)
     -- 1 slaved
     if selectedIdleFunction == 2 then
@@ -1668,7 +1662,6 @@ function showHideProps(selectedIdleFunction, bShow)
         if unitID % 2 == 1 then
             assert(cigarett)
             showHide(cigarett, bShow)
-            StartThread(cigarettGlowAndSmoke)
         else
             assert(cofee, UnitDefs[Spring.GetUnitDefID(unitID)].name)
             showHide(cofee, bShow)
