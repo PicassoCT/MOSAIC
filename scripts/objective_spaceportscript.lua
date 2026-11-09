@@ -779,12 +779,13 @@ function cloudFallingDown(cloudMovers, cloudGoingUp, cloudCoolingDown)
         if cloudMovers[i+1] then
             Move(cloudMovers[i+1], y_axis, i*4500, 4500)
         end
-        HideRadiancePiece(cloudCoolingDown[i]) -- leave vapour at its current world position
+        -- Keep the cooling cloud attached during the intended suction descent.
         WMove(cloudMovers[i], y_axis, -i*4500, 5500)
+        HideRadiancePiece(cloudCoolingDown[i])
     end
     HideRadiancePieces(cloudCoolingDown)
     --resetSmokeBubbles()
-    Hide(ArenaSmoke) -- release vapour before lowering/resetting the proxy
+    -- Arena smoke follows its piece underground before the final Hide below.
     Move(ArenaSmoke, y_axis, -2900, 290)
     Sleep(4000)
     HideRadiancePiece(turbineHot)
