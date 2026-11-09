@@ -572,6 +572,9 @@ function getGameConfig()
                 maxVehicles = 8,
                 cooldownSeconds = 90,
                 standDownSeconds = 120,
+                evacuateInset = 64,
+                evacuateSpacingSeconds = 1,
+                evacuateTimeoutSeconds = 300, -- bound stranded convoys after objective destruction
                 orderSeconds = 3,
                 sightRadius = 1024, -- objective APC patrol sight, restored on capture
                 blockedChecks = 2,
