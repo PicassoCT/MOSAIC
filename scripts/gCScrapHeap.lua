@@ -76,6 +76,12 @@ end
 function waitForAnEnd()
     hideT(ExcavatorTable)
     Sleep(10)
+    -- Restore the original one-minute arrival without delaying the city's
+    -- rubble clock or taking ownership of reconstruction/removal.
+    StartThread(function()
+        Sleep(60 * 1000)
+        excavator()
+    end)
     -- City rubble has one clock, owned by the plot lifecycle. Never self-delete
     -- it or run an independent sink timer during combat/anarchy.
     if GG.CityRubble and GG.CityRubble[unitID] then
