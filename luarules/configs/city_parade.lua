@@ -18,7 +18,7 @@ return {
     spacingHysteresis = 20,
     -- 40x70 carrier half-diagonal, plus a small corner clearance.
     routeHouseClearance = 45,
-    routeRejectRetrace = true,
+    routeRejectRetrace = false,
     maxVehicleGap = 420,
     goalRadius = 42,
     stalledFrames = 60 * 30,
@@ -33,7 +33,6 @@ return {
     routePathPollLimit = 60,
     previewAssemblyFrames = 45 * 30,
     previewTourFrames = 3 * 60 * 30,
-    previewRouteTimeoutFrames = 60 * 30,
     recruitFrames = 60,
     audienceRadius = 420,
     audienceReleaseRadius = 700,

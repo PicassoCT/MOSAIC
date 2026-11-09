@@ -45,7 +45,7 @@ function Route.new(context)
     local maxPolls = math.floor(option("routePathPollLimit", 60, 1, 300))
     local builder = {}
     local selectionKey, rejected, rejectionOrder = nil, {}, {}
-    local fallbackKey
+    local fallbackKey, relaxedKey
 
     local function rejectCircuit(key, signature)
         if key ~= selectionKey or not signature or rejected[signature] then return end
@@ -111,6 +111,7 @@ function Route.new(context)
     end
     local function invalidate(route, reason)
         route.status, route.reason = "invalid", reason
+        if route.requested then relaxedKey = route._key end
         if not route.fallback and reason:find("heavy recent damage", 1, true) then
             fallbackKey = route._key
         end
@@ -118,8 +119,12 @@ function Route.new(context)
         return "invalid"
     end
 
-    local function begin(day, defID, allowDanger, budget)
+    local function begin(day, defID, allowDanger, budget, requested, relaxed)
         local self = builder
+        -- An explicit request may use short out-and-back trips. Native paths
+        -- still prove both directions; the traffic graph need not be a cycle.
+        local minLeg = relaxed and 1 or minLeg
+        local minLength = relaxed and 1 or minLength
         self.lastError = nil
         if clearance then clearance:Refresh() end
         local traffic = G.CivilianTraffic
@@ -139,7 +144,7 @@ function Route.new(context)
         if type(graph) ~= "table" then self.lastError = "civilian route graph unavailable"; return nil end
         local allIDs = {}
         for id, edges in pairs(graph) do
-            if type(id) == "number" and type(edges) == "table" and #edges > 0 then allIDs[#allIDs + 1] = id end
+            if type(id) == "number" and type(edges) == "table" and (relaxed or #edges > 0) then allIDs[#allIDs + 1] = id end
         end
         table.sort(allIDs)
         if #allIDs < 2 then self.lastError = "fewer than two route nodes"; return nil end
@@ -166,7 +171,7 @@ function Route.new(context)
         local adjacency, connected = {}, {}
         for _, id in ipairs(nodes) do
             adjacency[id], connected[id] = {}, {}
-            for _, other in ipairs(graph[id]) do
+            for _, other in ipairs(relaxed and nodes or graph[id]) do
                 if positions[other] and other ~= id and not connected[id][other] then
                     adjacency[id][#adjacency[id] + 1] = other
                     connected[id][other] = true
@@ -174,13 +179,14 @@ function Route.new(context)
             end
         end
         local searchSteps, candidates = 0, {}
-        local prefix = allowDanger and "fallback:" or "safe:"
+        local prefix = relaxed and "requested:" or (allowDanger and "fallback:" or "safe:")
         local preferred = math.min(#nodes, minNodes + seed % (maxNodes - minNodes + 1))
         for attempt = 1, maxAttempts do
             local desired = preferred
             if attempt > math.floor(maxAttempts * 0.5) then desired = math.min(#nodes, minNodes) end
             -- A sparse reachable component may only offer an out-and-back pair.
             if attempt > math.floor(maxAttempts * 0.8) then desired = 2 end
+            if relaxed then desired = 2 end
             local start = nodes[(attempt - 1) % #nodes + 1]
             local selected, used = {start}, {[start] = true}
             local attemptSteps = 0
@@ -289,6 +295,7 @@ function Route.new(context)
                 points[#points+1] = copyPoint(curbs[1])
                 return {points=points, nodes=candidate.nodes, length=candidate.length, paths=paths,
                     defID=defID, status="pending", polls=0, requests=budget.requests,
+                    requested=requested, relaxed=relaxed,
                     fallback=allowDanger, heatBaseline={}, peakHeat=0,
                     _curbs=curbs, _segments={}, _samples=0, _key=key, _signature=candidate.signature}
             end
@@ -298,8 +305,24 @@ function Route.new(context)
         return nil
     end
 
-    function builder:Begin(day, defID)
+    function builder:Begin(day, defID, requested)
         local budget = {requests=0}
+        if requested and finite(day) then
+            local key = tostring(math.floor(day)) .. ":" .. tostring(defID)
+            if relaxedKey ~= key then
+                -- Rank usable circuits by risk, without making combat a veto.
+                local route = begin(day, defID, true, budget, true, false)
+                if route then return route end
+                relaxedKey = key
+            end
+            local route = begin(day, defID, true, budget, true, true)
+            if not route then
+                -- Obstacles and native path results can change while a manual
+                -- request waits. Do not permanently exhaust its candidates.
+                rejected, rejectionOrder = {}, {}
+            end
+            return route
+        end
         if finite(day) and fallbackKey == tostring(math.floor(day)) .. ":" .. tostring(defID) then
             return begin(day, defID, true, budget)
         end
@@ -413,6 +436,13 @@ function Route.new(context)
         for index, segment in ipairs(route._segments) do
             if #segment >= 2 and distance(segment[1], segment[2]) >= stagingGap then stagingIndex = index; break end
         end
+        if not stagingIndex and route.requested then
+            local longest = 0
+            for index, segment in ipairs(route._segments) do
+                local length = #segment >= 2 and distance(segment[1], segment[2]) or 0
+                if length > longest then stagingIndex, longest = index, length end
+            end
+        end
         if not stagingIndex then return invalidate(route, "no clear staging approach") end
         route.nodes, route.paths = rotate(route.nodes, stagingIndex), rotate(route.paths, stagingIndex)
         route._curbs, route._segments = rotate(route._curbs, stagingIndex), rotate(route._segments, stagingIndex)
@@ -427,10 +457,10 @@ function Route.new(context)
             end
         end
         local formationLength=(config.vehicleCount or 0)*(config.vehicleSpacing or 140)+stagingGap
-        if config.vehicleCount and length<formationLength then
+        if not route.requested and config.vehicleCount and length<formationLength then
             return invalidate(route,"circuit is too short for convoy spacing")
         end
-        if config.routeRejectRetrace then
+        if config.routeRejectRetrace and not route.requested then
             -- Opposing segments within one truck width put the leader into
             -- its own followers on out-and-back paths. Keep separate lanes.
             local laneWidth=(config.routeHouseClearance or 45)*2

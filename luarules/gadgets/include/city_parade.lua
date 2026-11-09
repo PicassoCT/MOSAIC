@@ -56,6 +56,11 @@ function M.New(context)
     local function distance(x, z, a, b) return (x-a)^2 + (z-b)^2 end
     local function dangerous(x, z)
         local area = G.CityAreaState
+        -- Existing trouble cannot veto a manual start. Once floats exist,
+        -- measurable new damage and direct attacks still disperse them.
+        if previewRequest or (preview and (#convoy == 0 or not (area and area.GetHeatAtLocation))) then
+            return false
+        end
         if route and route.fallback and area and area.GetHeatAtLocation then
             local heat, key, damage, generation = area:GetHeatAtLocation(x, z)
             local baseline = route.heatBaseline and route.heatBaseline[key]
@@ -376,13 +381,11 @@ function M.New(context)
     function director:RequestPreview(frame)
         frame = frame or S.GetGameFrame()
         if self.phase ~= "idle" or previewRequest then return false, "a parade is already active or preparing" end
-        if not normal() then return false, "the city is not in normal times" end
-        if not G.CitySpawnComplete or not G.CivilianTraffic then return false, "city traffic is not ready" end
         local day = M.Clock(frame, gameConfig.game.dayLengthFrames)
-        previewRequest = {day=day, expires=frame+(C.previewRouteTimeoutFrames or 60*30)}
+        previewRequest = {day=day}
         self.lastStopReason = nil
         self.lastRouteError = nil
-        waiting("searching for a safe route")
+        waiting("searching for the best available route")
         pendingRoute, pendingDay, nextAttempt = nil, nil, frame
         return true, "validating a route; preview assembles for 45 seconds and tours for 3 minutes"
     end
@@ -476,7 +479,9 @@ function M.New(context)
         local origin = route.points[1]
         log(string.format("assembly starts at x=%.1f y=%.1f z=%.1f; carrier=%s; route nodes=%d; frame=%d",
             origin.x, origin.y, origin.z, context.UnitDefs[carrierDefID].name, #route.nodes, frame))
-        if route.fallback then
+        if preview then
+            log("manual request uses the best available route; short trips and doubling back are allowed")
+        elseif route.fallback then
             log(string.format("using least-dangerous usable candidate; recent damage peak=%.1f; new heavy damage still disperses the parade", route.peakHeat or 0))
         end
         if not preview then consumeDay(day) end
@@ -730,20 +735,34 @@ function M.New(context)
         resumeRecoveredTraffic(frame)
         local day,hour = M.Clock(frame,gameConfig.game.dayLengthFrames)
         if self.phase ~= "idle" then
-            if not normal() then self:Stop("city emergency",frame); return end
-            if frame >= endFrame then self:Stop("late night",frame); return end
+            if not preview and not normal() then self:Stop("city emergency",frame); return end
+            if frame >= endFrame and not (preview and self.phase == "assembling") then self:Stop("late night",frame); return end
             local moving,reason = updateConvoy(frame)
             if not moving then self:Stop(reason,frame); return end
             if self.phase == "assembling" then
                 if frame >= tourStartFrame then
-                    if #convoy < C.minimumVehicles then self:Stop("assembly incomplete",frame); return end
+                    if preview and #convoy == 0 then
+                        -- Transient spawn/payload failures must not consume the
+                        -- request. Keep trying until at least one float exists.
+                        if frame >= nextSpawn then
+                            spawnVehicle(frame)
+                            nextSpawn=frame+C.retryFrames
+                        end
+                        return
+                    end
+                    if not preview and #convoy < C.minimumVehicles then self:Stop("assembly incomplete",frame); return end
+                    if preview then endFrame=frame+(C.previewTourFrames or 3*60*30) end
                     self.phase = "touring"; publish()
                 elseif #convoy < C.vehicleCount and frame >= nextSpawn then
                     spawnVehicle(frame)
                 end
             end
             if self.phase == "touring" then
-                if #convoy < C.minimumVehicles then self:Stop("floats unavailable",frame); return end
+                if #convoy < (preview and 1 or C.minimumVehicles) then self:Stop("floats unavailable",frame); return end
+                if preview and #convoy < C.vehicleCount and frame >= nextSpawn then
+                    spawnVehicle(frame)
+                    nextSpawn=frame+C.spawnIntervalFrames
+                end
                 updateAudience(frame)
                 showerBuildings(frame)
             end
@@ -752,15 +771,13 @@ function M.New(context)
         end
         local requestedPreview = previewRequest ~= nil
         if requestedPreview then
-            if not normal() then self:Stop("city emergency",frame); return end
-            if frame >= previewRequest.expires then self:Stop("preview route unavailable",frame); return end
             day = previewRequest.day
         elseif day % C.periodDays ~= 0 or day <= lastDay or hour < C.assemblyHour or hour >= C.tourHour then
             pendingRoute,pendingDay = nil,nil
             return
         end
-        if not normal() then consumeDay(day); pendingRoute,pendingDay=nil,nil; return end
-        if not G.CitySpawnComplete or not G.CivilianTraffic then return end
+        if not requestedPreview and not normal() then consumeDay(day); pendingRoute,pendingDay=nil,nil; return end
+        if not G.CitySpawnComplete or not G.CivilianTraffic then waiting("waiting for city traffic"); return end
         if pendingRoute and pendingDay == day then
             local status = routeBuilder:Poll(pendingRoute)
             if status == "ready" then
@@ -778,7 +795,7 @@ function M.New(context)
         nextAttempt = frame+C.retryFrames
         carrierDefID = carrierFor(day)
         if not carrierDefID then waiting("no eligible carrier or parade payload definition"); return end
-        pendingRoute = routeBuilder:Begin(day,carrierDefID)
+        pendingRoute = routeBuilder:Begin(day,carrierDefID,requestedPreview)
         pendingDay = pendingRoute and day or nil
         if not pendingRoute then waiting("route search: " .. tostring(routeBuilder.lastError or "no route"))
         else waiting("validating native route paths") end
