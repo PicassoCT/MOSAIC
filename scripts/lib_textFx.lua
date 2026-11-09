@@ -97,7 +97,9 @@ end
 
 
 backdropAxis = x_axis
-spindropAxis = y_axis
+-- Both western exports map text-local +Z to model +Y. Glyph Move and
+-- Turn/Spin use that vertical Z; the spinner's own Move uses parent-space Y.
+spindropAxis = z_axis
 function randomFLickerLetters(allLetters, posLetters)
     if #allLetters == 0 then return end
     local errorDrift, flickerIntervall
@@ -241,7 +243,7 @@ function dnaHelix(allLetters, posLetters)
                 Move(pID,x_axis, xr, math.abs(xr)/2.0)
                 Move(pID,radialAxis, zr, math.abs(zr)/2.0)
                 Move(pID,axialAxis, axialSign * i * spiralIncrease, 0)
-                Turn(pID,axialAxis, math.pi + radiantVal, 0)
+                Turn(pID,axialAxis, math.pi + (axialAxis == z_axis and radiantVal or -radiantVal), 0)
              
             else
                 reset(pID, 0)
@@ -253,7 +255,7 @@ function dnaHelix(allLetters, posLetters)
                 Move(pID,x_axis, xr, math.abs(xr)/2.0)
                 Move(pID,radialAxis, zr, math.abs(zr)/2.0)
                 Move(pID,axialAxis, axialSign * (i- (length/2)) * spiralIncrease, 0)
-                Turn(pID,axialAxis, math.pi + radiantVal, 0)
+                Turn(pID,axialAxis, math.pi + (axialAxis == z_axis and radiantVal or -radiantVal), 0)
             end
                i = i +1
                 if posLetters.spacing[i + 1] == " " then
@@ -290,7 +292,7 @@ function spiralProject(allLetters, posLetters)
         Move(pID,x_axis, xr, math.abs(xr)/2.0)
         Move(pID,radialAxis, zr, math.abs(zr)/2.0)
         Move(pID,axialAxis, axialSign * i * spiralIncrease, 0)
-        Turn(pID,axialAxis, math.pi + radiantVal, 0)
+        Turn(pID,axialAxis, math.pi + (axialAxis == z_axis and radiantVal or -radiantVal), 0)
         i = i +1
         if posLetters.spacing[i + 1] == " " then
             i = i + 1
@@ -402,10 +404,11 @@ function ringProject(allLetters, posLetters)
         ShowReg(pID)
         local xr = radius * math.cos(radiantVal)
         local yr = radius * math.sin(radiantVal)
-        Spin(pID, spindropAxis, math.rad(42),0)
         Move(pID,x_axis, xr, math.abs(xr)/2.0)
         Move(pID,y_axis, yr, math.abs(yr)/2.0)
-        tP(pID,0,  radiantVal, 0, 0)
+        -- Turn takes radians; tP takes degrees and would also cancel the spin.
+        Turn(pID,spindropAxis,math.pi + radiantVal,0)
+        Spin(pID, spindropAxis, math.rad(42),0)
         i = i +1
         if posLetters.spacing[i + 1] == " " then
             i = i + 1
@@ -439,11 +442,11 @@ function circleProject(allLetters, posLetters, extRadiusFactor, boolDoNotRest, b
         radiantVal = radiant*textSlot(posLetters, pID, i)
         ShowReg(pID)
         local xr = radius * math.cos(radiantVal)
-        local zr = radius * math.sin(radiantVal)
+        local yr = radius * math.sin(radiantVal)
 
         Move(pID,x_axis, xr, 100)
-        Move(pID,z_axis, zr, 100)
-        Turn(pID,y_axis, math.pi + radiantVal, 0)
+        Move(pID,y_axis, yr, 100)
+        Turn(pID,z_axis, math.pi + radiantVal, 0)
         i = i +1
         if posLetters.spacing[i + 1] == " " then
             i = i + 1
@@ -461,9 +464,38 @@ function circleProject(allLetters, posLetters, extRadiusFactor, boolDoNotRest, b
         end
 end
 
-function   personalProject(allLetters, posLetters)
+-- Capture the unturned text plane in world space; world compass angles are
+-- not script angles once the model import and the unit heading are applied.
+local function textFacing(owner)
+    local m = {Spring.GetUnitPieceMatrix(owner,textSpinner)}
+    local front, up, right = Spring.GetUnitVectors(owner)
+    local ux,uy,uz = Spring.GetUnitPosition(owner)
+    if not m[16] or not front or not ux then return end
+    local function world(x,y,z)
+        return {-right[1]*x+up[1]*y+front[1]*z,
+                -right[2]*x+up[2]*y+front[2]*z,
+                -right[3]*x+up[3]*y+front[3]*z}
+    end
+    local xAxis, yAxis = world(m[1],m[2],m[3]), world(m[5],m[6],m[7])
+    local origin = world(m[13],m[14],m[15])
+    origin[1],origin[2],origin[3] = origin[1]+ux,origin[2]+uy,origin[3]+uz
+    local function normalize(v)
+        local length = math.sqrt(v[1]^2+v[2]^2+v[3]^2)
+        if length < 1e-9 then return false end
+        for i=1,3 do v[i]=v[i]/length end
+        return true
+    end
+    if not normalize(xAxis) or not normalize(yAxis) then return end
+    return function(x,y,z)
+        local dx,dy,dz = x-origin[1],y-origin[2],z-origin[3]
+        return math.atan2(dx*yAxis[1]+dy*yAxis[2]+dz*yAxis[3],
+                          dx*xAxis[1]+dy*xAxis[2]+dz*xAxis[3])
+    end
+end
+
+function personalProject(allLetters, posLetters)
     if #allLetters == 0 then return end
-    local civilian, civilianTypeTable, civiliansNearby, defID, direction, timeCounter, tx, ty, tz, ux, uy, uz
+    local civilian, civilianTypeTable, civiliansNearby, defID, timeCounter, tx, ty, tz
     local spGetUnitDefID = Spring.GetUnitDefID
     civilianTypeTable = getCivilianTypeTable(UnitDefs)
     civiliansNearby = foreach(getAllNearUnit(posLetters.unitID, 900),
@@ -478,17 +510,20 @@ function   personalProject(allLetters, posLetters)
     if #civiliansNearby > 0 then
         restoreMessageOriginalPosition(allLetters, posLetters)
         StopSpin(textSpinner, spindropAxis, 0)
+        for axis=1,3 do Turn(textSpinner,axis,0,0) end
+        local facing = textFacing(posLetters.unitID)
         civilian = getSafeRandom(civiliansNearby, civiliansNearby[1])
       
         timeCounter= math.random(10, 20) * 1000
-        ux,uy,uz = Spring.GetUnitPosition(posLetters.unitID)
-        while timeCounter > 0 and doesUnitExistAlive(civilian) do
-            tx,ty,tz= Spring.GetUnitPosition(civilian)           
-            direction = getAngleFromCoordinates(tx-ux, tz- uz)
-            Turn(textSpinner, spindropAxis, direction, 0)
+        while facing and timeCounter > 0 and doesUnitExistAlive(civilian) do
+            tx,ty,tz= Spring.GetUnitPosition(civilian)
+            if not tx then break end
+            Turn(textSpinner, spindropAxis, facing(tx,ty,tz), 0)
             Sleep(1000)
             timeCounter = timeCounter- 1000
         end
+        Turn(textSpinner,spindropAxis,0,0)
+        if posLetters.spinnerSpeed then Spin(textSpinner,spindropAxis,posLetters.spinnerSpeed,0) end
     end
 end
 
@@ -501,7 +536,7 @@ function archProject(allLetters, posLetters)
         for i=1, stringlength do
             letterName = allLetters[i]
             val = -(stringlength-i) * (90/stringlength)
-            Turn(letterName, 2, math.rad(val), 0)
+            Turn(letterName, spindropAxis, math.rad(val), 0)
             Move(letterName, 1, (stringlength-i) *sizeSpacingLetter, 0)
             ShowReg(letterName)
         end
@@ -528,21 +563,23 @@ end
 function cubeProject(allLetters, posLetters)
     if #allLetters == 0 then return end
     local cubeSize, index, localX, pID, z
-    cubeSize  = #allLetters*0.5
+    cubeSize  = math.ceil(#allLetters*0.5)
     index = 1
        
-        for x=1, 2*cubeSize do
+        for x=1, #allLetters do
             z=1
             localX=x
             if allLetters[index] then
                 pID = allLetters[index]
                   if x > cubeSize then
-                    z = x - cubeSize
+                    z = x - cubeSize + 1
                     localX = cubeSize
-                    Turn(pID, y_axis, math.rad(90), 0)
+                    Turn(pID, spindropAxis, math.rad(90), 0)
                   end
-                Move(pID,x_axis, localX*sizeSpacingLetter, 0)
-                Move(pID,z_axis, z* sizeSpacingLetter, 0)
+                -- First wall reads along -Y, then bends into +X. Keep the
+                -- glyph face perpendicular to its wall and use the corner once.
+                Move(pID,x_axis, z*sizeSpacingLetter, 0)
+                Move(pID,y_axis, -localX*sizeSpacingLetter, 0)
                 ShowReg(pID)
             end
             index = index +1

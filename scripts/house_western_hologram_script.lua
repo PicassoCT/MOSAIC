@@ -1430,8 +1430,7 @@ function setupMessage(myMessages)
     local boolFirstHighlight, downIndex, stringlength, rowIndex, columnIndex, val
     boolHighlightFirstLetter = math.random(1,100) < 10
     hideResetAllLetters()
-    StopSpin(textSpinner, y_axis, 0)
-    Move(textSpinner, 2 ,0, 0) --Move the text spinner upward so letters dont vannish into the ground
+    reset(textSpinner) -- clear the previous facing/spin before choosing a new layout
     axis= 2
     startValue = 0
     myMessage = selectHologramMessage(myMessages, TableOfPiecesGroups)
@@ -1456,9 +1455,8 @@ function setupMessage(myMessages)
     columnIndex= 0
       
     if boolSpinning then
-        reset(textSpinner)
         val = math.random(5,45)
-        Spin(textSpinner, y_axis, math.rad(val),0)
+        Spin(textSpinner, spindropAxis, math.rad(val),0)
     end
 
     if boolUpright then
@@ -1544,7 +1542,7 @@ function restoreMessageOriginalPosition(message, posLetters)
                         
                     if boolSpinning and posLetters.boolUpright then
                         val = letterIndex * 5
-                        Turn(letter, 2, math.rad(val), 0)
+                        Turn(letter, spindropAxis, math.rad(val), 0)
                     end
                 end    
             end
@@ -1554,7 +1552,7 @@ end
 
 
 backdropAxis = x_axis
-spindropAxis = y_axis
+spindropAxis = z_axis
 
 function resetSpinDrop(allLetters)
 

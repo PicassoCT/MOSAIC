@@ -8,7 +8,11 @@ The shared effect review repairs piece/axis arguments, missing all-piece waits, 
 
 ## Upright spiral and helix axis
 
-Horizontal text runs along local **Y**, while upright text runs down local **-Z**. Spiral and DNA-helix project around their corresponding axes: horizontal uses a Y-axis helix with X/Z radial offsets; upright uses a Z-axis helix with X/Y radial offsets and negative Z progression. Horizontal effects remain unchanged. Only these two corrected effects are eligible for upright text; other projections retain their existing horizontal-only selection.
+Both Western exports map the text spinner's authored **+Z** to model **+Y**. Glyph drops, yaw and continuous spins therefore use local Z. The spinner itself moves vertically along its parent's Y axis, but rotates around its own Z axis. New messages reset the spinner before choosing a new rotation so a previous personalized facing cannot leak into a static sign.
+
+Horizontal text runs along local **-Y**, while upright text runs down local **-Z**. Spiral and DNA-helix project around their corresponding axes: horizontal uses a Y-axis helix with X/Z radial offsets; upright uses a Z-axis helix with X/Y radial offsets and negative Z progression. The facing angle accounts for the engine's opposite Y/Z turn signs, keeping glyph fronts directed toward the helix axis. Only these two effects are eligible for upright text; other projections retain their existing horizontal-only selection.
+
+Circle, ring and cube layouts use the local X/Y ground plane, preserving Z height during fireworks. Ring facing uses radians directly and starts its continuous spin after setting the angle. Matrix, waterfall and fireworks movement uses the vertical Z axis. Personalized signs convert civilian positions into the imported text plane using the unit's heading, and restore the ordinary spin afterward. Deliberate face-plane rocking in conga and takeover effects remains.
 
 ## New effects
 
@@ -24,6 +28,7 @@ Run from the repository root with Lua 5.1:
 ```sh
 luac5.1 -p scripts/lib_textFx.lua scripts/house_western_hologram_script.lua scripts/house_western_brothel_hologram_script.lua
 lua5.1 tests/hologram_text_fx_test.lua
+python3 tests/hologram_text_axes_test.py
 ```
 
 The regression suite executes the real shared library and both scripts' production functions with strict animation-call mocks. It covers exhaustion, direct occurrence ordering, UTF-8 gaps, selection, logical spacing, half-second leases and restoration, matrix parameters, radius/no-rest handling, glow lifetime, all 22 registered modes in both orientations, empty groups, parent rotation/scale inversion, conga lifecycle, takeover crossfire timing/trajectories and scratch-global isolation. CI uses native Lua 5.1; local validation can also run the same suite through `lupa.lua51` (Lua 5.1).
