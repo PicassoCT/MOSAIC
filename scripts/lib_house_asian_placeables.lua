@@ -78,6 +78,7 @@ end
 -- Facades: +Z, +X, -Z, -X. Source meshes face +Z at Turn(Z,0).
 local yaw = {0,6,4,2}
 local stations = {-.65,-.3,.3,.65}
+local forecourtStations = {0,-.65,.65,-1,1}
 
 function M.plan(options)
     local seed, cell = options.seed or 1, options.cell or 770
@@ -120,9 +121,9 @@ function M.plan(options)
             -- road. Do not silently remove them because a facade slot is smaller.
             local forecourt = catalogue.largeForecourts and tangentHalf > half*.38
             if limit>0 or forecourt then
-                for station,t in ipairs(forecourt and {0} or stations) do
+                for station,t in ipairs(forecourt and forecourtStations or stations) do
                     local jitter=(hash(seed,item.name..':'..side..':'..station)%1000/999-.5)*cell*.12
-                    local along=forecourt and 0 or math.max(-limit,math.min(limit,half*t+jitter))
+                    local along=forecourt and half*t or math.max(-limit,math.min(limit,half*t+jitter))
                     -- Leave the middle of every facade open as an approach lane.
                     if forecourt or math.abs(along)-tangentHalf >= cell*.22 then
                         local near,far=M.streetEdges(options,side,along,half)
@@ -154,6 +155,9 @@ function M.plan(options)
                             local distance=preferred and math.min((side-preferred)%4,(preferred-side)%4) or 0
                             -- Spread before reusing a side; function provides softer zoning.
                             c.score=sideCount[side]*10+distance*2+hash(seed,item.name..':score:'..side..':'..station)%1000/1000
+                            -- Preserve the centred forecourt when it fits, but
+                            -- try offsets before dropping a large authored prop.
+                            if forecourt and station>1 then c.score=c.score+100 end
                             candidates[#candidates+1]=c
                         end
                     end

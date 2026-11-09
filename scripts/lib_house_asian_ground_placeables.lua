@@ -20,8 +20,11 @@ return function(placeablePlanner, options)
             local x,z=world(candidate.x,candidate.z)
             local ground=Spring.GetGroundHeight(x,z)
             if ground<0 then return false end
-            -- Reject steep/wet patches instead of leaving a large kiosk floating.
-            local low,high=ground,ground
+            -- A fixed total height range rejects large props even on gentle
+            -- slopes. Allow a 4% grade between samples, retaining the existing
+            -- two-elmo tolerance for small surface irregularities.
+            local low=ground
+            local samples={{x=x,z=z,h=ground}}
             for _,px in ipairs({candidate.minX,candidate.maxX}) do
                 for _,pz in ipairs({candidate.minZ,candidate.maxZ}) do
                     local wx,wz=world(px,pz)
@@ -29,10 +32,16 @@ return function(placeablePlanner, options)
                         or (Game.mapSizeZ and (wz<0 or wz>Game.mapSizeZ)) then return false end
                     local h=Spring.GetGroundHeight(wx,wz)
                     if h<0 then return false end
-                    low,high=math.min(low,h),math.max(high,h)
+                    for _,sample in ipairs(samples) do
+                        local dx,dz=wx-sample.x,wz-sample.z
+                        if math.abs(h-sample.h)>math.max(2,0.04*math.sqrt(dx*dx+dz*dz)) then
+                            return false
+                        end
+                    end
+                    samples[#samples+1]={x=wx,z=wz,h=h}
+                    low=math.min(low,h)
                 end
             end
-            if high-low>2 then return false end
             candidate.ground=low
             return true
         end,
