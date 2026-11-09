@@ -146,8 +146,9 @@ local function fixture(options)
     }
     f.G.CityAreaState={IsDangerous=function(_,x,z) return options.danger==true end}
     local routeBuilder={
-        Begin=function(_,day,def)
+        Begin=function(_,day,def,requested)
             f.starts=f.starts+1
+            f.requestedRoute=requested
             if options.noRoute then return nil end
             return {fallback=options.fallback,heatBaseline=options.heatBaseline,peakHeat=options.peakHeat,nodes={100,101,102,103},points={{x=650,y=0,z=500},{x=850,y=0,z=500},
                 {x=2000,y=0,z=500},{x=2000,y=0,z=2000},{x=500,y=0,z=2000},{x=650,y=0,z=500}}}
@@ -525,8 +526,31 @@ check('preview validates routes, assembles for 45 seconds, tours for 3 minutes a
     assert(f.d.phase=='idle' and f.rules.city_parade_last_day==nil)
     local bad=fixture({noRoute=true}); bad.frame=150
     assert(bad.d:RequestPreview(150)); bad:step(150); bad:step(150+60*30)
-    assert(bad.rules.city_parade_last_stop=='preview route unavailable' and count(bad.d.vehicles)==0)
+    assert(bad.d:GetStatus()=='preparing' and not bad.rules.city_parade_last_stop and count(bad.d.vehicles)==0)
+    assert(bad.starts==2 and bad.requestedRoute,'manual route request expired or lost its fallback flag')
     bad.G.GlobalGameState='anarchy'; assert(not bad.d:RequestPreview(bad.frame))
+end)
+
+check('manual request waits for traffic and survives route or spawn failures',function()
+    local options={noRoute=true,danger=true,rejectSpawn=true}
+    local f=fixture(options)
+    f.G.GlobalGameState='anarchy'; f.G.CitySpawnComplete=false
+    assert(f.d:RequestPreview(150),'manual request rejected city conditions')
+    f:step(150);assert(f.d:GetStatus()=='preparing' and f.starts==0)
+    f.G.CitySpawnComplete=true
+    f:step(150+90);assert(f.starts==1 and f.requestedRoute)
+    f:step(150+3600);assert(f.d:GetStatus()=='preparing' and f.starts==2)
+    options.noRoute=false
+    f:step(150+3690);f:step(150+3705)
+    assert(f.d.phase=='assembling' and count(f.d.vehicles)==0)
+    f:step(f.frame+f.config.previewAssemblyFrames+15)
+    assert(f.d.phase=='assembling','failed spawning consumed the request')
+    options.rejectSpawn=false
+    f:step(f.frame+f.config.retryFrames)
+    assert(count(f.d.vehicles)==1)
+    f:step(f.frame+15)
+    assert(f.d.phase=='touring','single usable float failed to start a manual tour')
+    assert(f.rules.city_parade_last_day==nil)
 end)
 
 check('blocked procession stops without deleting its trucks in place',function()
@@ -538,7 +562,7 @@ end)
 check('preview reports preparation, exact spawn location and distinct failure reasons',function()
     local f=fixture(); f.frame=150; assert(f.d:RequestPreview(150))
     local phase,reason=f.d:GetStatus()
-    assert(phase=='preparing' and reason=='searching for a safe route')
+    assert(phase=='preparing' and reason=='searching for the best available route')
     f:step(150); f:step(165)
     local messages=table.concat(f.messages,'\n')
     assert(messages:find('assembly starts at x=650.0 y=0.0 z=500.0',1,true))
@@ -553,8 +577,8 @@ check('preview reports preparation, exact spawn location and distinct failure re
         assert(#bad.messages==before,'repeated failure spammed the log')
         bad:step(165+bad.config.previewAssemblyFrames)
         local status,wait,stopped=bad.d:GetStatus()
-        assert(status=='idle' and wait==nil and stopped=='assembly incomplete')
-        assert(bad.messages[#bad.messages]:find(expected,1,true),'stop omitted last spawn blocker')
+        assert(status=='assembling' and wait:find(expected,1,true) and stopped==nil,
+            'manual request was discarded after a transient spawn failure')
     end
 end)
 
@@ -646,7 +670,7 @@ check('least-dangerous fallback assembles amid old damage and stops on new heavy
     f:assemble(7,150)
     f:step(180,5)
     assert(f.d.phase=='assembling','historical damage immediately cancelled fallback')
-    assert(table.concat(f.messages,'\n'):find('least-dangerous usable candidate',1,true))
+    assert(table.concat(f.messages,'\n'):find('manual request uses the best available route',1,true))
     area:ReportIncident(1000,1000,500,4000)
     f:step(195,5)
     assert(f.d.phase=='idle' and f.rules.city_parade_last_stop=='danger','fresh heavy damage did not disperse fallback')

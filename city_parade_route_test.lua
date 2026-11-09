@@ -420,3 +420,30 @@ do
     for i=2,#route.points do assert(context.clearance:SegmentClear(route.points[i-1],route.points[i]))end
 end
 print('PASS actual clearance integration repairs ordinary curbs inside house footprints')
+
+-- Explicit requests trade route quality for starting the parade. Native
+-- reachability remains mandatory, even for a short directed graph's return leg.
+do
+    local f=fixture(2,{routeRejectRetrace=true,vehicleCount=12,vehicleSpacing=140})
+    f.positions[2].x=f.positions[1].x+60
+    f.graph={[1]={2},[2]={}}
+    f.danger=function()return true end
+    local r=assert(f.builder:Begin(7,41,true))
+    assert(r.requested and r.relaxed and r.fallback)
+    assert(f.builder:Poll(r)=='ready',tostring(r.reason))
+    assert(r.length==120 and #r.points==3)
+    local tight=fixture(4)
+    tight.path=function(a,b)return {a,point(a.x+20,a.z+20),b}end
+    local r=assert(tight.builder:Begin(7,41,true))
+    assert(tight.builder:Poll(r)=='ready','tight staging cancelled manual parade')
+    local retry=fixture(2)
+    retry.failRequest=true
+    assert(not retry.builder:Begin(7,41,true))
+    retry.failRequest=false
+    local r=assert(retry.builder:Begin(7,41,true),'failed requests poisoned retry')
+    assert(retry.builder:Poll(r)=='ready')
+    retry.water=function()return true end
+    assert(not retry.builder:Begin(7,41,true),'manual request accepted underwater staging')
+    assert(dofile('luarules/configs/city_parade.lua').routeRejectRetrace==false)
+end
+print('PASS manual short out-and-back, directed graphs, tight staging, path retry and default retracing')

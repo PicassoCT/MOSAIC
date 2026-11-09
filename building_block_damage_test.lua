@@ -379,7 +379,8 @@ for p=2001,2012 do
 end
 local capTurns={}
 for _,turn in ipairs(ruins.turns) do
-    if turn.piece>2000 and turn.axis==2 then
+    -- Placement clears the previous script pose before measuring authored up.
+    if turn.piece>2000 and turn.axis==2 and turn.goal~=0 then
         assert(turn.goal>0 and turn.goal<math.pi*2, 'cap did not receive an up-axis rotation')
         capTurns[turn.goal]=true
     end

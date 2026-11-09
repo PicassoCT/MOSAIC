@@ -25,11 +25,12 @@ local function near(a,b,message)
 end
 
 for _,scale in ipairs({1,.0254}) do for _,swappedUp in ipairs({false,true}) do
+for _,authoredUp in ipairs({false,true}) do
     local root=identity()
     root[1],root[6],root[11]=scale,scale,scale
     if swappedUp then root=multiply(root,rotate(1,-math.pi/2)) end
     root[13],root[14],root[15]=3,4,-5
-    local upAxis=swappedUp and 3 or 2
+    local upAxis=(swappedUp ~= authoredUp) and 3 or 2
     local pieces={
         [1]={offset={40,7,20},move={0,0,0},angles={.08,0,.04},min={-10,0,-8},max={10,12,8}},
         -- Deliberately taller, but invisible: it must not anchor the ruin cap.
@@ -40,7 +41,9 @@ for _,scale in ipairs({1,.0254}) do for _,swappedUp in ipairs({false,true}) do
     local function matrix(p)
         if p==99 then return root end
         local data=pieces[p]
-        local m=identity()
+        -- Western Ruin_Deco meshes have their own -90-degree X import
+        -- rotation, independently of any rotation on the model parent.
+        local m=(p>=20 and authoredUp) and rotate(1,-math.pi/2) or identity()
         for axis=1,3 do m=multiply(m,rotate(axis,data.angles[axis])) end
         for axis=1,3 do m[12+axis]=data.offset[axis]+data.move[axis] end
         return multiply(root,m)
@@ -91,5 +94,5 @@ for _,scale in ipairs({1,.0254}) do for _,swappedUp in ipairs({false,true}) do
     placeAndCheck(21)
     assert(pieces[21].angles[upAxis]~=yaw,'pieces all received one rotation')
     assert(not helper.Place(42,20,{{piece=1}},{},move,turn),'empty column received a cap')
-end end
-print('PASS: ruin caps fit tilted column tops, rotated parent axes, authored offsets and import scale')
+end end end
+print('PASS: ruin caps fit tilted column tops with independent authored/parent axes, offsets and import scale')
