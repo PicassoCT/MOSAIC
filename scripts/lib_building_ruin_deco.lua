@@ -46,21 +46,26 @@ function M.Place(unit, piece, column, visible, nativeMove, nativeTurn)
     local parent = Spring.GetUnitPieceMap(unit)[info.parent]
     local parentMatrix = parent and {Spring.GetUnitPieceMatrix(unit, parent)} or identity
     if #parentMatrix ~= 16 then return false end
-    -- Use the parent's actual up axis rather than the script header aliases.
+    -- Turn operates in the piece's authored axes, which need not match its
+    -- parent's axes (western ruin caps import with a 90-degree X rotation).
+    -- Reset first so a previous placement's yaw cannot affect this measurement.
+    for axis = 1, 3 do
+        nativeMove(piece, axis, 0, 0)
+        nativeTurn(piece, axis, 0, 0)
+    end
+    local pieceMatrix = {Spring.GetUnitPieceMatrix(unit, piece)}
+    if #pieceMatrix ~= 16 then return false end
     local upAxis, score = 2, -1
     for axis = 1, 3 do
         local index = (axis-1)*4
-        local length = math.sqrt(parentMatrix[index+1]^2+parentMatrix[index+2]^2+parentMatrix[index+3]^2)
-        local candidate = length > 0 and math.abs(parentMatrix[index+2])/length or 0
+        local length = math.sqrt(pieceMatrix[index+1]^2+pieceMatrix[index+2]^2+pieceMatrix[index+3]^2)
+        local candidate = length > 0 and math.abs(pieceMatrix[index+2])/length or 0
         if candidate > score then upAxis, score = axis, candidate end
     end
     -- Private repeatable randomness avoids perturbing construction/gameplay RNG.
     local seed = (unit*65537+piece*8191) % 2147483647
     local yaw = ((seed*48271) % 2147483647)/2147483647 * 2*math.pi
-    for axis = 1, 3 do
-        nativeMove(piece, axis, 0, 0)
-        nativeTurn(piece, axis, axis == upAxis and yaw or 0, 0)
-    end
+    nativeTurn(piece, upAxis, yaw, 0)
     -- Measure after rotation: off-centre mesh origins must not orbit the column.
     local low, high = bounds(unit, piece)
     if not high then return false end
