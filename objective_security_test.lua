@@ -46,9 +46,10 @@ local function setup()
             return u.x,u.y,u.z
         end,
         GetUnitCollisionVolumeData=function()return 128,9000,128,0,0,0 end,
-        GetGroundHeight=function(x,z)return s.water and -500 or 10 end,
-        TestMoveOrder=function()
+        GetGroundHeight=function(x,z)return (s.water or (s.wetWest and x<128)) and -500 or 10 end,
+        TestMoveOrder=function(def,x,y,z)
             s.moveChecks=s.moveChecks+1
+            if s.moveAllowed and not s.moveAllowed(def,x,z) then return false end
             return not s.blocked and not (s.failFirstMove and s.moveChecks==1)
         end,
         GetUnitsInRectangle=function(x1,z1,x2,z2)
@@ -64,7 +65,10 @@ local function setup()
             if s.fail then return end
             s.nextID=s.nextID+1;unit(s.nextID,def,team,x,z);return s.nextID
         end,
-        DestroyUnit=function(id)assert(s.units[id].team==0);s.units[id]=nil end,
+        DestroyUnit=function(id)
+            assert(s.units[id].team==0);s.units[id]=nil
+            s.api.Remove(id) -- engine destruction calls back synchronously
+        end,
         GiveOrderToUnit=function(id,cmd,params,options)
             s.commandCount=s.commandCount+1
             s.orders[id]=s.orders[id] or {};s.orders[id][cmd]=params
@@ -369,15 +373,80 @@ s.fail=false;s.tick(75);assert(s.count()==1)
 s=setup();s.water=true;s.hit(0);s.tick(15);assert(s.creates==0)
 s.water=false;s.tick(45);assert(s.count()==1)
 
--- A lethal hit still dispatches its convoy from the ruins. Restoring the same
--- site preserves its force/cooldown, without a new mandatory convoy.
-s=setup();s.hit(0,12);s.tick(15);assert(s.count()==1)
-s.api.SiteDestroyed(s.record);s.live={}
-for f=45,120,15 do s.tick(f)end;assert(s.count()==4)
-s.live={[1]=s.record};s.hit(150,12);s.tick(165);assert(s.count()==4)
-s.hit(2700,12);for f=2715,2820,15 do s.tick(f)end;assert(s.count()==4)
+-- Destruction cancels queued reinforcements. Survivors stop fighting and
+-- leave through a shared edge exit, departing one second apart.
+s=setup();s.hit(0,12);s.tick(15);s.tick(45);assert(s.count()==2)
+local first,second=101,102
+s.units[90]={team=0,transport=first}
+s.tick(60)
+s.api.SiteDestroyed(s.record);s.live={};s.units[1]=nil
+assert(not s.api.AllowWeaponTarget(first,2) and not s.api.AllowWeaponTarget(90,2))
+s.tick(75)
+local site=s.state.sites[40]
+local exit=site.exit
+assert(exit and #site.pending==0 and s.count()==2 and s.creates==2)
+assert(s.orders[first].last==CMD.MOVE and #s.orders[first].queue==1)
+assert(s.orders[first].queue[1].params[1]==exit.x and s.orders[first].queue[1].params[3]==exit.z)
+assert(s.orders[second].last==CMD.STOP and s.orders[90].last==CMD.STOP)
+s.tick(105)
+assert(s.orders[second].last==CMD.MOVE and s.orders[second].queue[1].params[1]==exit.x)
+before=s.commandCount;s.reload();s.tick(195)
+assert(s.commandCount==before and s.state.sites[40].exit==exit,'reload must preserve convoy orders')
+-- Marker destruction/restoration must neither reset the deadline nor recall it.
+s.api.SiteDestroyed({siteID=40,uid=50})
+s.units[1]={team=0,x=2048,y=10,z=2048,los=true}
+s.live={[1]=s.record};s.hit(2700,12);s.tick(2715)
+assert(s.creates==2 and site.withdrawStarted==75 and not s.api.AllowWeaponTarget(first,2))
+s.units[first].x,s.units[first].z=exit.x,exit.z;s.tick(2730)
+assert(not s.units[first] and not s.units[90] and s.units[second],'remove only vehicles that reached the exit')
+-- A weapon attaching after departure must still hold fire and be cleaned up.
+s.units[91]={team=0,transport=second};s.tick(2805)
+assert(s.orders[91].last==CMD.STOP and not s.api.AllowWeaponTarget(91,2))
+s.units[second].x,s.units[second].z=exit.x,exit.z;s.tick(2820)
+assert(not s.units[second] and not s.units[91] and not s.state.sites[40])
+s.hit(2830);s.tick(2835);assert(s.count()==1,'restored objective can respond once its old convoy has left')
+
+-- A lethal first hit cannot spawn a fresh convoy from rubble.
 s=setup();s.hit(0);s.api.SiteDestroyed(s.record);s.live={};s.units[1]=nil
-s.tick(15);assert(s.count()==1,'lethal first hit must not cancel the response')
+s.tick(15);assert(s.count()==0 and s.creates==0 and not s.state.sites[40])
+
+-- All chassis must fit the exit; water and blocked edge samples are skipped.
+s=setup();s.record.defID=2;s.hit(0);s.tick(15);s.tick(45)
+s.wetWest=true
+s.moveAllowed=function(def,x,z)return def~=4 or z<128 end
+s.api.SiteDestroyed(s.record);s.live={};s.tick(60)
+exit=s.state.sites[40].exit
+assert(exit and exit.x>=128 and exit.z<128,'mixed convoy must share a dry tank-passable exit')
+
+-- Trapped vehicles retry bounded exit searches and eventually clean up.
+-- Capture during evacuation releases the vehicle; cleanup cannot delete it.
+s=setup();s.hit(0,5);s.tick(15);s.tick(45)
+s.api.SiteDestroyed(s.record);s.live={};s.blocked=true;s.tick(60)
+assert(not s.state.sites[40].exit and s.count()==2)
+s.units[90]={team=0,transport=102}
+s.api.Remove(101);s.units[101].team=1
+s.reload();s.tick(60+config.evacuateTimeoutSeconds*30)
+assert(s.units[101] and not s.units[102] and not s.units[90] and not s.state.sites[40])
+-- A valid endpoint with an unreachable route must time out as well.
+s=setup();s.hit(0);s.tick(15);s.api.SiteDestroyed(s.record);s.live={};s.tick(30)
+assert(s.state.sites[40].exit)
+s.tick(30+config.evacuateTimeoutSeconds*30)
+assert(s.count()==0 and not s.state.sites[40])
+
+-- Saved forces from the old ruins behavior migrate; other live sites stay active.
+s=setup();s.hit(0);s.tick(15)
+s.units[3]={team=0,x=3000,y=10,z=3000,los=true}
+local other={uid=3,siteID=41,defID=1,x=3000,z=3000};s.live[3]=other
+s.api.Damage(other,20,10,2,1,function()return 1 end);s.tick(30)
+s.state.sites[40].uid=nil;s.live[1]=nil;s.units[1]=nil;s.reload();s.tick(45)
+assert(s.state.sites[40].withdrawing and not s.state.sites[41].withdrawing)
+assert(not s.api.AllowWeaponTarget(101,2) and s.api.AllowWeaponTarget(102,2))
+
+-- Captured mounted weapons survive their departing Gaia transport's removal.
+s=setup();s.hit(0);s.tick(15);s.units[90]={team=1,transport=101}
+s.api.SiteDestroyed(s.record);s.live={};s.tick(30)
+exit=s.state.sites[40].exit;s.units[101].x,s.units[101].z=exit.x,exit.z;s.tick(45)
+assert(s.units[90] and not s.units[101])
 
 -- Invalid/environmental hits cannot trigger a response; paralysis with positive
 -- damage can (it is still an attack). No dependency on attacker coordinates.
