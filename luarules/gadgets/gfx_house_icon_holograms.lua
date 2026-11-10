@@ -79,7 +79,7 @@ end
 
 local function restore(id)
     if suppressed[id] then
-        if Spring.ValidUnitID(id) then Spring.SetUnitIconDraw(id, true) end
+        if Spring.ValidUnitID(id) then Spring.UnitIconSetDraw(id, true) end
         suppressed[id] = nil
     end
 end
@@ -151,7 +151,8 @@ end
 function gadget:UnitLeftLos(id) restore(id) end
 
 function gadget:Initialize()
-    if not (gl.CreateShader and Spring.SetUnitIconDraw and Spring.IsUnitIcon) then
+    if not (gl.CreateShader and Spring.UnitIconSetDraw and Spring.IsUnitIcon) then
+        Spring.Echo('[House icon holograms] Disabled: requires gl.CreateShader, Spring.UnitIconSetDraw and Spring.IsUnitIcon')
         gadgetHandler:RemoveGadget(self); return
     end
     shader = gl.CreateShader({
@@ -212,7 +213,7 @@ function gadget:DrawWorldPreUnit()
                     active[id] = true
                     visible[#visible+1] = id
                     if not suppressed[id] then
-                        Spring.SetUnitIconDraw(id,false); suppressed[id] = true
+                        Spring.UnitIconSetDraw(id,false); suppressed[id] = true
                     end
                 end
             end
