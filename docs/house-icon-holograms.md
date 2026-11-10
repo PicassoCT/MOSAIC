@@ -7,6 +7,12 @@ faces and a slowly moving horizontal scan pattern resemble a tactical hologram.
 Selected houses turn amber. Zooming back to model range restores normal icons
 and leaves normal model rendering to the engine.
 
+Residential units use the `residential_house` icon type. In Recoil's distance-based
+icon mode, the 0.5 multiplier switches houses at roughly 2,740 elmos with the
+default `UnitIconDist` of 200. The **Strategic icon distance** slider in the
+graphics settings scales that threshold. With `UnitIconsAsUI` enabled, Recoil
+uses projected size and icon fade settings to decide when to drop the model.
+
 ## Geometry and scope
 
 Each icon is a five-face box (20 vertices), scaled and offset from the house's
@@ -18,7 +24,8 @@ redraws or a full-screen postprocess.
 
 Asian, Western and Arab base houses, structural variants identified by their
 `house_*_base` custom parameter, and Asian residential megaprojects are included.
-Other definitions can opt in with `customParams.house_icon_hologram = '1'`.
+Other definitions can opt in with `customParams.house_icon_hologram = '1'` and
+use `iconType = 'residential_house'` to get the same distance.
 Advertising holograms, decals and other units retain their original rendering.
 
 The pass checks current LOS, cloak, noDraw, view and icon state each frame.
