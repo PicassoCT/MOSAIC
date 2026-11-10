@@ -41,6 +41,7 @@ function buildBuilding()
   hideAll(unitID)
   Show(Icon)
   registerRooftopSubPieces(piece("House"))
+  Spring.SetUnitRulesParam(unitID, "house_icon_bodies", ToShowTable[1], {inlos=true})
   buildingClearanceReady = true
   if GG.MarkBuildingClearanceDirty then GG.MarkBuildingClearanceDirty(unitID) end
   Sleep(9000)

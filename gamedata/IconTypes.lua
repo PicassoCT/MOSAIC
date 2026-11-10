@@ -39,6 +39,13 @@ size =2,
 radiusadjust = true,
     distance = 100,
 },
+-- Residential model-to-icon distance, scaled by the player's UnitIconDist.
+residential_house = {
+    bitmap = "icons/house.png",
+    size = 2,
+    radiusadjust = true,
+    distance = 0.5,
+},
 interrogationicon = {
 bitmap = "icons/interrogationicon.png",
 size =1.5,

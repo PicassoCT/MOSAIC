@@ -68,6 +68,9 @@ local function buildStandaloneShadowVoxels()
     for _,id in ipairs(ToShowTable) do
         if mainPieces[id] and not seen[id] then seen[id]=true;selected[#selected+1]=id end
     end
+    if Spring.SetUnitRulesParam then
+        Spring.SetUnitRulesParam(unitID, "house_icon_bodies", table.concat(selected, ","), {inlos=true})
+    end
     if not buildingShadowProfile then return end
     local grid,reason=BuildSolidBuildingShadowColumns(unitID,selected,buildingShadowProfile)
     buildingShadowColumns=grid or emptyBuildingShadow
