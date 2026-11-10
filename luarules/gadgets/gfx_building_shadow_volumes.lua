@@ -113,6 +113,10 @@ if gadgetHandler:IsSyncedCode() then
 
     function gadget:Initialize()
         GG.MarkBuildingShadowVolumeDirty = markDirty
+        -- Unit scripts can finish planning before a LuaRules reload.
+        for _, id in ipairs(Spring.GetAllUnits and Spring.GetAllUnits() or {}) do
+            if shadowTypes[Spring.GetUnitDefID(id)] then markDirty(id) end
+        end
     end
 
     function gadget:UnitDestroyed(unitID)
@@ -136,33 +140,43 @@ if gadgetHandler:IsSyncedCode() then
         GG.MarkBuildingShadowVolumeDirty = nil
     end
 else
+    -- Unsynced consumers share the same completed snapshot. A mesh can compare
+    -- table identity to invalidate its display list after a damage update.
+    local grids, pending = {}, {}
     local function beginColumns(_, unitID, unitDefID, cellSize, levelHeight)
+        pending[unitID] = {dx=cellSize, dy=levelHeight, dz=cellSize, columns={}}
         if Script.LuaUI("ReceiveBuildingShadowColumnsBegin") then
             Script.LuaUI.ReceiveBuildingShadowColumnsBegin(unitID, unitDefID, cellSize, levelHeight)
         end
     end
     local function addColumn(_, unitID, x, z, base, mask)
+        local g = pending[unitID]
+        if g then g.columns[#g.columns+1] = {x=x, z=z, base=base, mask=mask} end
         if Script.LuaUI("ReceiveBuildingShadowColumn") then
             Script.LuaUI.ReceiveBuildingShadowColumn(unitID, x, z, base, mask)
         end
     end
     local function endColumns(_, unitID)
+        grids[unitID], pending[unitID] = pending[unitID], nil
         if Script.LuaUI("ReceiveBuildingShadowColumnsEnd") then
             Script.LuaUI.ReceiveBuildingShadowColumnsEnd(unitID)
         end
     end
     local function removeColumns(_, unitID)
+        grids[unitID], pending[unitID] = nil, nil
         if Script.LuaUI("ReceiveBuildingShadowColumnsRemove") then
             Script.LuaUI.ReceiveBuildingShadowColumnsRemove(unitID)
         end
     end
     function gadget:Initialize()
+        if GG then GG.HouseIconShadowGrids = grids end
         gadgetHandler:AddSyncAction("buildingShadowColumnsBegin", beginColumns)
         gadgetHandler:AddSyncAction("buildingShadowColumn", addColumn)
         gadgetHandler:AddSyncAction("buildingShadowColumnsEnd", endColumns)
         gadgetHandler:AddSyncAction("buildingShadowColumnsRemove", removeColumns)
     end
     function gadget:Shutdown()
+        if GG then GG.HouseIconShadowGrids = nil end
         gadgetHandler:RemoveSyncAction("buildingShadowColumnsBegin")
         gadgetHandler:RemoveSyncAction("buildingShadowColumn")
         gadgetHandler:RemoveSyncAction("buildingShadowColumnsEnd")

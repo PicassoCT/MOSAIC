@@ -2034,6 +2034,13 @@ function init()
 		 end,
 		},
 
+		{id="householograms", group="gfx", basic=true, name="House holograms", type="bool",
+         value=Spring.GetConfigInt("MosaicHouseHolograms", 1) ~= 0,
+         description="Draw voxel silhouettes of residential buildings at strategic zoom.",
+         onchange=function(i, value)
+             Spring.SetConfigInt("MosaicHouseHolograms", value and 1 or 0)
+         end,
+        },
 		{id="disticon", group="gfx", basic=true, name="Strategic icon distance", type="slider", min=100, max=700, step=10, value=tonumber(Spring.GetConfigInt("UnitIconDist",1) or 200), description='Set a lower value to get better performance',
 		 onload = function(i) end,
 		 onchange = function(i, value)

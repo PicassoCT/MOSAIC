@@ -21,7 +21,10 @@ return function(id, team, options)
     if GG.Counterintelligence then GG.Counterintelligence.UnitReplaced(id,newID) end
     if options.preserveGraph~=false and GG.BetrayalUnitReplaced then GG.BetrayalUnitReplaced(id,newID,oldTeam,team) end
     for house, occupant in pairs(GG.houseHasSafeHouseTable or {}) do
-        if occupant==id then GG.houseHasSafeHouseTable[house]=newID end
+        if occupant==id then
+            GG.houseHasSafeHouseTable[house]=newID
+            if GG.SetHouseIconHost then GG.SetHouseIconHost(newID, house) end
+        end
     end
     if options.beforeDestroy then options.beforeDestroy(newID) end
     Spring.DestroyUnit(id,false,true)

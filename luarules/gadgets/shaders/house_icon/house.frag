@@ -2,7 +2,6 @@
 in vec2 faceUV;
 in float localHeight;
 uniform float time;
-uniform float height;
 uniform float selected;
 out vec4 fragColor;
 void main() {
@@ -10,7 +9,7 @@ void main() {
     vec2 d = min(faceUV, 1.0 - faceUV);
     vec2 aa = max(fwidth(faceUV), vec2(0.0001));
     float edge = 1.0 - smoothstep(0.65, 1.8, min(d.x / aa.x, d.y / aa.y));
-    float h = localHeight * height;
+    float h = localHeight;
     float phase = h / 10.0 - time * 0.18;
     float width = max(fwidth(phase), 0.03);
     float scan = 1.0 - smoothstep(0.06, 0.06 + width, abs(fract(phase) - 0.5));
