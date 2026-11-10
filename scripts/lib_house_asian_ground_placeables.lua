@@ -20,9 +20,9 @@ return function(placeablePlanner, options)
             local x,z=world(candidate.x,candidate.z)
             local ground=Spring.GetGroundHeight(x,z)
             if ground<0 then return false end
-            -- A fixed total height range rejects large props even on gentle
-            -- slopes. Allow a 4% grade between samples, retaining the existing
-            -- two-elmo tolerance for small surface irregularities.
+            -- Relax cosmetic siting on pass two, but never water/map bounds.
+            -- Permit a 20% slope instead of 4%; cliffs remain unsuitable.
+            local grade=candidate.relaxed and 0.20 or 0.04
             local low=ground
             local samples={{x=x,z=z,h=ground}}
             for _,px in ipairs({candidate.minX,candidate.maxX}) do
@@ -34,11 +34,27 @@ return function(placeablePlanner, options)
                     if h<0 then return false end
                     for _,sample in ipairs(samples) do
                         local dx,dz=wx-sample.x,wz-sample.z
-                        if math.abs(h-sample.h)>math.max(2,0.04*math.sqrt(dx*dx+dz*dz)) then
+                        if math.abs(h-sample.h)>math.max(2,grade*math.sqrt(dx*dx+dz*dz)) then
                             return false
                         end
                     end
                     samples[#samples+1]={x=wx,z=wz,h=h}
+                    low=math.min(low,h)
+                end
+            end
+            -- Centre/corners alone can straddle a river. Sample the footprint
+            -- at terrain-square spacing, including its edges, on both passes.
+            local step=Game.squareSize or 8
+            local nx=math.max(1,math.ceil((candidate.maxX-candidate.minX)*scale/step))
+            local nz=math.max(1,math.ceil((candidate.maxZ-candidate.minZ)*scale/step))
+            for ix=0,nx do
+                for iz=0,nz do
+                    local wx,wz=world(candidate.minX+(candidate.maxX-candidate.minX)*ix/nx,
+                        candidate.minZ+(candidate.maxZ-candidate.minZ)*iz/nz)
+                    local h=Spring.GetGroundHeight(wx,wz)
+                    if h<0 then return false end
+                    local dx,dz=wx-x,wz-z
+                    if math.abs(h-ground)>math.max(2,grade*math.sqrt(dx*dx+dz*dz)) then return false end
                     low=math.min(low,h)
                 end
             end

@@ -1,4 +1,4 @@
--- One bounded placement pass at assembly time. No per-frame work or global RNG.
+-- Two bounded placement passes at assembly time. No per-frame work or global RNG.
 local function withCatalogue(catalogue)
 local M = {catalogue = catalogue, walkwayWidth = 12, pedestrianWidth = 2.5, roadWidth = 25}
 local function hash(seed, text)
@@ -79,6 +79,17 @@ end
 local yaw = {0,6,4,2}
 local stations = {-.65,-.3,.3,.65}
 local forecourtStations = {0,-.65,.65,-1,1}
+local fallbackStations = {0,-.35,.35,-.7,.7,-1,1}
+
+-- A large ground prop has a footprint at least as wide as the walkway.
+-- Height alone must not let a thin lamp satisfy the large-prop requirement.
+function M.isLarge(name)
+    local prop = catalogue.pieces[name]
+    if not prop or prop.walkway then return false end
+    local pose = prop.poses[1]
+    return math.max(pose.footMax[1]-pose.footMin[1],
+        pose.footMax[3]-pose.footMin[3])*catalogue.scale >= M.walkwayWidth
+end
 
 function M.plan(options)
     local seed, cell = options.seed or 1, options.cell or 770
@@ -94,10 +105,14 @@ function M.plan(options)
         local ha,hb=hash(seed,a.name),hash(seed,b.name)
         return ha==hb and a.name<b.name or ha<hb
     end)
-    local result,sideCount = {},{0,0,0,0}
-    local requested = math.min(options.count or (1+hash(seed,'count')%5),#pool)
-    for _,item in ipairs(pool) do
-        if #result >= requested then break end
+    local result,sideCount,used = {},{0,0,0,0},{}
+    local minimum = options.minimum or (2+hash(seed,'minimum')%2)
+    local requested = math.min(options.count or math.max(minimum,1+hash(seed,'count')%5),#pool)
+    minimum = math.min(minimum,requested)
+    local hasLarge,needsLarge = false,false
+    for _,item in ipairs(pool) do if M.isLarge(item.name) then needsLarge=true;break end end
+    local function tryItem(item,relaxed)
+        if used[item.id] then return false end
         local prop = catalogue.pieces[item.name]
         local policy = policies[prop.category]
         local candidates = {}
@@ -120,12 +135,12 @@ function M.plan(options)
             -- Oversized authored plazas/tanks use an open forecourt across the
             -- road. Do not silently remove them because a facade slot is smaller.
             local forecourt = catalogue.largeForecourts and tangentHalf > half*.38
-            if limit>0 or forecourt then
-                for station,t in ipairs(forecourt and forecourtStations or stations) do
+            if limit>0 or forecourt or relaxed then
+                for station,t in ipairs(relaxed and fallbackStations or (forecourt and forecourtStations or stations)) do
                     local jitter=(hash(seed,item.name..':'..side..':'..station)%1000/999-.5)*cell*.12
-                    local along=forecourt and half*t or math.max(-limit,math.min(limit,half*t+jitter))
+                    local along=(forecourt or relaxed) and half*t or math.max(-limit,math.min(limit,half*t+jitter))
                     -- Leave the middle of every facade open as an approach lane.
-                    if forecourt or math.abs(along)-tangentHalf >= cell*.22 then
+                    if relaxed or forecourt or math.abs(along)-tangentHalf >= cell*.22 then
                         local near,far=M.streetEdges(options,side,along,half)
                         local depth=side%2==1 and hz or hx
                         local pedestrian=(options.pedestrianWidth or M.pedestrianWidth)/catalogue.scale
@@ -134,31 +149,45 @@ function M.plan(options)
                         local curbside=small and (prop.category=='lighting' or prop.category=='barrier')
                         local distance=small and (curbside and walkwayEnd-depth or half+depth)
                             or far+2/catalogue.scale+depth
-                        local x,z
-                        if side==1 then x,z=along,distance
-                        elseif side==2 then x,z=distance,along
-                        elseif side==3 then x,z=along,-distance
-                        else x,z=-distance,along end
-                        local c={name=item.name,id=item.id,category=prop.category,side=side,
-                            x=x,z=z,rotation=orientation*math.pi/4, zone=small and "walkway" or "far-curb",
-                            roadNear=near,roadFar=far, facade=half, curbside=curbside,
-                            moveX=x-(low[1]+high[1])/2,
-                            moveZ=z-(low[3]+high[3])/2,moveY=-pose.min[2],
-                            minX=x-hx,maxX=x+hx,minZ=z-hz,maxZ=z+hz}
-                        local clear=true
-                        for _,road in ipairs(options.roads or {}) do
-                            if M.roadOverlap(c,road) then clear=false;break end
-                        end
-                        for _,other in ipairs(result) do if overlap(c,other,separation) then clear=false;break end end
-                        if clear then
-                            local preferred=policy.front and front or policy.service and service
-                            local distance=preferred and math.min((side-preferred)%4,(preferred-side)%4) or 0
-                            -- Spread before reusing a side; function provides softer zoning.
-                            c.score=sideCount[side]*10+distance*2+hash(seed,item.name..':score:'..side..':'..station)%1000/1000
-                            -- Preserve the centred forecourt when it fits, but
-                            -- try offsets before dropping a large authored prop.
-                            if forecourt and station>1 then c.score=c.score+100 end
-                            candidates[#candidates+1]=c
+                        -- Fall back towards the house, including the street,
+                        -- before using a more distant dry site. Keep the entire
+                        -- footprint outside the selected building's bounds.
+                        local distances=relaxed and {half+depth+2/catalogue.scale,
+                            half+depth+cell*.5,half+depth+cell,
+                            math.max(distance,half+depth+2/catalogue.scale)} or {distance}
+                        for ring,distance in ipairs(distances) do
+                            local x,z
+                            if side==1 then x,z=along,distance
+                            elseif side==2 then x,z=distance,along
+                            elseif side==3 then x,z=along,-distance
+                            else x,z=-distance,along end
+                            local c={name=item.name,id=item.id,category=prop.category,side=side,
+                                x=x,z=z,rotation=orientation*math.pi/4, zone=relaxed and "fallback" or (small and "walkway" or "far-curb"),
+                                relaxed=relaxed, large=M.isLarge(item.name),
+                                roadNear=near,roadFar=far, facade=half, curbside=curbside,
+                                moveX=x-(low[1]+high[1])/2,
+                                moveZ=z-(low[3]+high[3])/2,moveY=-pose.min[2],
+                                minX=x-hx,maxX=x+hx,minZ=z-hz,maxZ=z+hz}
+                            local clear=true
+                            local onRoad=false
+                            for _,road in ipairs(options.roads or {}) do
+                                if M.roadOverlap(c,road) then onRoad=true;break end
+                            end
+                            if onRoad and not relaxed then clear=false end
+                            for _,other in ipairs(result) do
+                                if overlap(c,other,relaxed and 0 or separation) then clear=false;break end
+                            end
+                            if clear then
+                                local preferred=policy.front and front or policy.service and service
+                                local distance=preferred and math.min((side-preferred)%4,(preferred-side)%4) or 0
+                                -- Spread before reusing a side; function provides softer zoning.
+                                c.score=sideCount[side]*10+distance*2+hash(seed,item.name..':score:'..side..':'..station)%1000/1000
+                                -- Preserve the centred forecourt when it fits, but
+                                -- try offsets before dropping a large authored prop.
+                                if forecourt and station>1 and not relaxed then c.score=c.score+100 end
+                                if relaxed then c.score=c.score+(onRoad and 1000 or 0)+ring*.1 end
+                                candidates[#candidates+1]=c
+                            end
                         end
                     end
                 end
@@ -172,9 +201,30 @@ function M.plan(options)
         for _,c in ipairs(candidates) do
             if not options.accept or options.accept(c) then
                 result[#result+1]=c;sideCount[c.side]=sideCount[c.side]+1
-                break
+                used[item.id]=true
+                hasLarge=hasLarge or c.large
+                return true
             end
         end
+        return false
+    end
+    local function tryLarge(relaxed)
+        if hasLarge or not needsLarge or requested==0 then return end
+        for _,item in ipairs(pool) do
+            if M.isLarge(item.name) and tryItem(item,relaxed) then return end
+        end
+    end
+    tryLarge(false)
+    -- Reserve one slot for a large prop if it needs the fallback pass.
+    local strictTarget=requested-((needsLarge and not hasLarge) and 1 or 0)
+    for _,item in ipairs(pool) do
+        if #result>=strictTarget then break end
+        tryItem(item,false)
+    end
+    tryLarge(true)
+    for _,item in ipairs(pool) do
+        if #result>=minimum then break end
+        tryItem(item,true)
     end
     return result
 end
