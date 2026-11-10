@@ -1,4 +1,4 @@
-"""Validate the animation basis against both actual exported letter models."""
+"""Validate exported bind poses, not the runtime parent-spinner rotation axis."""
 import math
 import re
 import xml.etree.ElementTree as ET
@@ -35,9 +35,9 @@ for path in ("objects3d/house_western_hologram.DAE", "objects3d/house_western_br
             walk(node, IDENTITY)
 
     _, parent, spinner = pieces["text_spin"]
-    # Script Move precedes baked rotation; script Turn follows it.
+    # These are authored bind-pose bases, not a native engine animation test.
     assert vertical(parent, 1), path + ": spinner lift must use parent Y"
-    assert vertical(spinner, 2), path + ": spinner yaw must use authored Z"
+    assert vertical(spinner, 2), path + ": authored spinner Z must map to model up"
     letters = [v for name, v in pieces.items() if re.fullmatch(r"[A-Z]\d+", name)]
     assert len(letters) >= 26
     for node, parent, world in letters:
@@ -49,4 +49,4 @@ for path in ("objects3d/house_western_hologram.DAE", "objects3d/house_western_br
         coords = list(map(float, mesh.findtext('c:source[@id="' + source + '"]/c:float_array', namespaces=ns).split()))
         extents = [max(coords[i::3])-min(coords[i::3]) for i in range(3)]
         assert extents[0] < min(extents[1:]), (path, node.get("name"), "glyph face must lie in Y/Z")
-    print(path + ": spinner lift/yaw and " + str(len(letters)) + " letter axes PASS")
+    print(path + ": authored spinner basis and " + str(len(letters)) + " letter axes PASS")

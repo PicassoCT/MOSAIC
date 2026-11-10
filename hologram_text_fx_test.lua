@@ -18,14 +18,17 @@ end
 function Sleep(ms) assert(finite(ms) and ms>=0); sleeps[#sleeps+1]=ms end
 function Turn(id,axis,angle,speed)
     assert(type(id)=='number' and axis>=1 and axis<=3 and finite(angle) and finite(speed) and speed>=0)
+    if id==textSpinner and angle~=0 then assert(axis==y_axis,'parent facing must use Y, not glyph Z') end
     turns[#turns+1]={id,axis,angle,speed}
     if spins[id] then spins[id][axis]=nil end
 end
 function Spin(id,axis,speed,accel)
+    if id==textSpinner then assert(axis==y_axis,'whole-pillar spin must use Y, not glyph Z') end
     assert(type(id)=='number' and finite(speed) and finite(accel))
     spins[id]=spins[id] or {};spins[id][axis]=speed
 end
 function StopSpin(id,axis,decel)
+    if id==textSpinner then assert(axis==y_axis,'pause must stop the parent Y spin') end
     assert(type(decel)=='number')
     if spins[id] then spins[id][axis]=nil end
 end
@@ -159,8 +162,8 @@ for _,path in ipairs({'scripts/house_western_hologram_script.lua','scripts/house
     assert(p[3][2]==-1200 and p[4][2]==-2400 and p.slotPositions[3][2]==-600)
     maRa=function()return true end
     clear();ids,p=setupMessage({'AB'})
-    assert(spins[textSpinner][z_axis] and not spins[textSpinner][y_axis],
-        'the imported text spinner must yaw around its authored vertical axis')
+    assert(spins[textSpinner][y_axis] and not spins[textSpinner][z_axis],
+        'whole-pillar yaw must remain independent of glyph Z')
     loadFunction(path,'restoreMessageOriginalPosition','resetSpinDrop')
     clear();restoreMessageOriginalPosition(ids,p)
     for _,turn in ipairs(turns) do assert(turn[2]==z_axis,'upright-letter twist must not pitch the glyph') end
@@ -190,14 +193,15 @@ for _,heading in ipairs({0,1}) do
         return {1,0,0},{0,1,0},{0,0,1}
     end
     clear();personalProject(letters,pos)
-    assert(turns[4][1]==textSpinner and turns[4][2]==z_axis)
+    assert(turns[4][1]==textSpinner and turns[4][2]==y_axis)
     assert(math.abs(turns[4][3]-(-math.pi/4-heading*math.pi/2))<1e-7)
-    assert(spins[textSpinner][z_axis]==0.25)
+    assert(spins[textSpinner][y_axis]==0.25)
 end
 lostPosition=true;clear();personalProject(letters,pos);lostPosition=false
 Spring.GetUnitPieceMatrix,Spring.GetUnitVectors=savedMatrix,savedVectors
 pos.spinnerSpeed=nil
--- Exercise every registered mode in both orientations with strict animation APIs.
+-- Exercise every registered mode in both orientations, including spin resumption.
+pos.spinnerSpeed=0.25
 local modes=getAllTextFx();assert(count((function() local a={} for k in pairs(modes) do a[#a+1]=k end return a end)())==22)
 for name,fn in pairs(modes) do
     for _,upright in ipairs({false,true}) do
@@ -206,6 +210,7 @@ for name,fn in pairs(modes) do
         clear();assert(pcall(fn,{},pos,groups),name..' empty')
     end
 end
+pos.spinnerSpeed=nil
 -- A parent rotated and scaled in model space must invert correctly for world targets.
 local saved=Spring.GetUnitPieceMatrix
 Spring.GetUnitPieceMatrix=function(owner,id)
