@@ -921,7 +921,7 @@ function setupMessage(myMessages)
       
     if boolSpinning then
         val = math.random(5,45)
-        Spin(textSpinner, spindropAxis, math.rad(val),0)
+        Spin(textSpinner, textSpinnerAxis, math.rad(val),0)
     end
 
     if boolUpright then

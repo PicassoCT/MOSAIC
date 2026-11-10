@@ -97,8 +97,10 @@ end
 
 
 backdropAxis = x_axis
--- Both western exports map text-local +Z to model +Y. Glyph Move and
--- Turn/Spin use that vertical Z; the spinner's own Move uses parent-space Y.
+-- Keep the parent spinner separate from the letters' local layout axes.
+-- Restore the parent Y rotation used before eb6c1863: sharing glyph Z here
+-- made the whole upright pillar tip over in game.
+textSpinnerAxis = y_axis
 spindropAxis = z_axis
 function randomFLickerLetters(allLetters, posLetters)
     if #allLetters == 0 then return end
@@ -509,7 +511,7 @@ function personalProject(allLetters, posLetters)
 
     if #civiliansNearby > 0 then
         restoreMessageOriginalPosition(allLetters, posLetters)
-        StopSpin(textSpinner, spindropAxis, 0)
+        StopSpin(textSpinner, textSpinnerAxis, 0)
         for axis=1,3 do Turn(textSpinner,axis,0,0) end
         local facing = textFacing(posLetters.unitID)
         civilian = getSafeRandom(civiliansNearby, civiliansNearby[1])
@@ -518,12 +520,12 @@ function personalProject(allLetters, posLetters)
         while facing and timeCounter > 0 and doesUnitExistAlive(civilian) do
             tx,ty,tz= Spring.GetUnitPosition(civilian)
             if not tx then break end
-            Turn(textSpinner, spindropAxis, facing(tx,ty,tz), 0)
+            Turn(textSpinner, textSpinnerAxis, facing(tx,ty,tz), 0)
             Sleep(1000)
             timeCounter = timeCounter- 1000
         end
-        Turn(textSpinner,spindropAxis,0,0)
-        if posLetters.spinnerSpeed then Spin(textSpinner,spindropAxis,posLetters.spinnerSpeed,0) end
+        Turn(textSpinner,textSpinnerAxis,0,0)
+        if posLetters.spinnerSpeed then Spin(textSpinner,textSpinnerAxis,posLetters.spinnerSpeed,0) end
     end
 end
 
@@ -814,7 +816,7 @@ function civilianCongaText(allLetters, posLetters)
         end
     end
     if not civilian then return end
-    StopSpin(textSpinner, spindropAxis, 0)
+    StopSpin(textSpinner, textSpinnerAxis, 0)
     for axis = 1, 3 do Turn(textSpinner, axis, 0, 0) end
     restoreMessageOriginalPosition(allLetters, posLetters)
     resetSpinDrop(allLetters)
@@ -823,7 +825,7 @@ function civilianCongaText(allLetters, posLetters)
         movers[id] = hologramWorldMover(owner, id, posLetters[id], pieceMap)
         if not movers[id] then
             restoreMessageOriginalPosition(allLetters, posLetters)
-            if posLetters.spinnerSpeed then Spin(textSpinner,spindropAxis,posLetters.spinnerSpeed,0) end
+            if posLetters.spinnerSpeed then Spin(textSpinner,textSpinnerAxis,posLetters.spinnerSpeed,0) end
             return
         end
     end
@@ -885,7 +887,7 @@ function civilianCongaText(allLetters, posLetters)
     end
     resetSpinDrop(allLetters)
     restoreMessageOriginalPosition(allLetters, posLetters)
-    if posLetters.spinnerSpeed then Spin(textSpinner,spindropAxis,posLetters.spinnerSpeed,0) end
+    if posLetters.spinnerSpeed then Spin(textSpinner,textSpinnerAxis,posLetters.spinnerSpeed,0) end
 end
 
 -- Two advertisements compete for the same physical alphabet. Private letters
@@ -915,7 +917,7 @@ function hostileTakeoverText(allLetters, posLetters, groups)
     for _, id in ipairs(allLetters) do used[id] = true end
     for id in pairs(used) do pieces[#pieces+1] = id end
     table.sort(pieces)
-    StopSpin(textSpinner, spindropAxis, 0)
+    StopSpin(textSpinner, textSpinnerAxis, 0)
     resetSpinDrop(pieces)
     local current = {}
     for phase = 0, 23 do
@@ -970,7 +972,7 @@ function hostileTakeoverText(allLetters, posLetters, groups)
     hideTReg(pieces)
     resetSpinDrop(pieces)
     restoreMessageOriginalPosition(allLetters,posLetters)
-    if posLetters.spinnerSpeed then Spin(textSpinner,spindropAxis,posLetters.spinnerSpeed,0) end
+    if posLetters.spinnerSpeed then Spin(textSpinner,textSpinnerAxis,posLetters.spinnerSpeed,0) end
 end
 
 function getAllTextFx()

@@ -8,7 +8,9 @@ The shared effect review repairs piece/axis arguments, missing all-piece waits, 
 
 ## Upright spiral and helix axis
 
-Both Western exports map the text spinner's authored **+Z** to model **+Y**. Glyph drops, yaw and continuous spins therefore use local Z. The spinner itself moves vertically along its parent's Y axis, but rotates around its own Z axis. New messages reset the spinner before choosing a new rotation so a previous personalized facing cannot leak into a static sign.
+Glyph layout, drops and individual-letter yaw use local Z. The whole text spinner has a separate `textSpinnerAxis = y_axis`, restoring the parent rotation used before `eb6c1863`. Sharing the glyph Z axis with the parent caused the entire upright pillar to tip over in game. Setup, personalized facing, and spin pause/resume after conga or takeover all use the separate parent axis. New messages still reset the spinner before choosing a new rotation so a previous personalized facing cannot leak into a static sign.
+
+The DAE basis test checks exported bind poses and glyph geometry; it does not establish the running engine's parent rotation behavior. The Y-axis restoration follows the reported in-game regression and still needs a live visual recheck.
 
 Horizontal text runs along local **-Y**, while upright text runs down local **-Z**. Spiral and DNA-helix project around their corresponding axes: horizontal uses a Y-axis helix with X/Z radial offsets; upright uses a Z-axis helix with X/Y radial offsets and negative Z progression. The facing angle accounts for the engine's opposite Y/Z turn signs, keeping glyph fronts directed toward the helix axis. Only these two effects are eligible for upright text; other projections retain their existing horizontal-only selection.
 
