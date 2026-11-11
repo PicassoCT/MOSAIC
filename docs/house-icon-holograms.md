@@ -13,6 +13,11 @@ The draw pass checks local selection and current team and excludes spectators.
 Cyan geometry follows the building's normal line-of-sight and cloak checks.
 Recoil builds without private player rules parameters use cyan silhouettes.
 
+Bright cyan edges with a soft inner glow emphasize the voxel silhouette over
+the faint face fill. Border widths are measured in screen pixels, so they stay
+readable at strategic zoom. A selected host uses a slightly thicker, brighter
+amber border. The glow shares the existing draw pass and cached geometry.
+
 Procedural Arab, Asian and Western houses reuse the assembled building's
 shadow columns, including floor masks, terrain offsets, courtyards and updates
 from structural damage. The renderer meshes the exterior of the occupied runs.
