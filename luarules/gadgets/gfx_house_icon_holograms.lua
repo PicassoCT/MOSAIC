@@ -66,7 +66,10 @@ end
 local mesh = VFS.Include('luarules/gadgets/include/house_icon_mesh.lua')
 local bodies = VFS.Include('luarules/gadgets/include/house_icon_bodies.lua')
 local shaderDir = 'luarules/gadgets/shaders/house_icon/'
-local shader, timeUniform, selectedUniform
+local shader, contourShader, timeUniform, selectedUniform, keyUniform, originUniform
+local maskTexture, depthTexture, maskFBO
+local viewWidth, viewHeight, viewX, viewY = 0,0,0,0
+local failedWidth, failedHeight
 local houses, suppressed, cached, visible = {}, {}, {}, {}
 local bases = {house_asian0=true, house_western0=true, house_arab0=true}
 local houseDefs, standalone = {}, {}
@@ -86,6 +89,47 @@ end
 
 local function forget(id)
     if cached[id] then gl.DeleteList(cached[id].list); cached[id] = nil end
+end
+
+local function releaseTargets()
+    if maskFBO then gl.DeleteFBO(maskFBO); maskFBO = nil end
+    if maskTexture then gl.DeleteTexture(maskTexture); maskTexture = nil end
+    if depthTexture then gl.DeleteTexture(depthTexture); depthTexture = nil end
+end
+
+local function ensureTargets()
+    local width,height,x,y = Spring.GetViewGeometry()
+    viewX,viewY = x or 0,y or 0
+    if width <= 0 or height <= 0 then return false end
+    if maskFBO and width == viewWidth and height == viewHeight then return true end
+    if width == failedWidth and height == failedHeight then return false end
+    releaseTargets()
+    viewWidth,viewHeight = width,height
+    -- One shared ID mask for all visible houses, not one texture per house.
+    maskTexture = gl.CreateTexture(width,height, {
+        format=GL.RGBA8, min_filter=GL.NEAREST, mag_filter=GL.NEAREST,
+        wrap_s=GL.CLAMP_TO_EDGE, wrap_t=GL.CLAMP_TO_EDGE,
+    })
+    depthTexture = gl.CreateTexture(width,height, {
+        format=GL.DEPTH_COMPONENT24, min_filter=GL.NEAREST, mag_filter=GL.NEAREST,
+        wrap_s=GL.CLAMP_TO_EDGE, wrap_t=GL.CLAMP_TO_EDGE,
+    })
+    if maskTexture and depthTexture then
+        maskFBO = gl.CreateFBO({color0=maskTexture, depth=depthTexture})
+    end
+    if not maskFBO or not gl.IsValidFBO(maskFBO) then
+        releaseTargets()
+        failedWidth,failedHeight = width,height
+        Spring.Echo('[House icon holograms] Contour framebuffer unavailable; using regular icons.')
+        return false
+    end
+    failedWidth,failedHeight = nil,nil
+    return true
+end
+
+function gadget:ViewResize()
+    releaseTargets()
+    failedWidth,failedHeight = nil,nil
 end
 
 local function emit(x0,y0,z0, x1,y1,z1, x2,y2,z2, x3,y3,z3)
@@ -151,19 +195,29 @@ end
 function gadget:UnitLeftLos(id) restore(id) end
 
 function gadget:Initialize()
-    if not (gl.CreateShader and Spring.SetUnitIconDraw and Spring.IsUnitIcon) then
+    if not (gl.CreateShader and gl.CreateFBO and gl.ActiveFBO and gl.CopyToTexture
+        and Spring.SetUnitIconDraw and Spring.IsUnitIcon) then
         gadgetHandler:RemoveGadget(self); return
     end
     shader = gl.CreateShader({
         vertex = VFS.LoadFile(shaderDir .. 'house.vert'),
         fragment = VFS.LoadFile(shaderDir .. 'house.frag'),
     })
-    if not shader then
+    contourShader = gl.CreateShader({
+        vertex = VFS.LoadFile(shaderDir .. 'contour.vert'),
+        fragment = VFS.LoadFile(shaderDir .. 'contour.frag'),
+        uniformInt = {buildingMask=0},
+    })
+    if not shader or not contourShader then
         Spring.Echo('[House icon holograms] Shader failed:', gl.GetShaderLog() or '')
+        if shader then gl.DeleteShader(shader); shader=nil end
+        if contourShader then gl.DeleteShader(contourShader); contourShader=nil end
         gadgetHandler:RemoveGadget(self); return
     end
     timeUniform = gl.GetUniformLocation(shader,'time')
     selectedUniform = gl.GetUniformLocation(shader,'selected')
+    keyUniform = gl.GetUniformLocation(shader,'buildingKey')
+    originUniform = gl.GetUniformLocation(contourShader,'viewportOrigin')
     for _, id in ipairs(Spring.GetAllUnits()) do self:UnitCreated(id, Spring.GetUnitDefID(id)) end
 end
 
@@ -218,15 +272,18 @@ function gadget:DrawWorldPreUnit()
             end
         end
     end
+    if #visible > 0 and not ensureTargets() then
+        visible = {}
+        for id in pairs(suppressed) do restore(id) end
+        return
+    end
     for id in pairs(suppressed) do if not active[id] then restore(id) end end
 end
 
-function gadget:DrawWorld()
-    if #visible == 0 then return end
-    local selected = selectedHosts()
-    gl.PushAttrib(GL.ALL_ATTRIB_BITS)
-    gl.DepthTest(true); gl.DepthMask(false); gl.Culling(GL.BACK)
-    gl.Blending(GL.SRC_ALPHA, GL.ONE)
+local function drawMask(selected)
+    gl.DepthTest(GL.LEQUAL); gl.DepthMask(true); gl.Culling(GL.BACK)
+    gl.Blending(false); gl.AlphaTest(false); gl.ColorMask(true,true,true,true)
+    gl.Clear(GL.COLOR_BUFFER_BIT,0,0,0,0)
     gl.UseShader(shader)
     gl.Uniform(timeUniform,Spring.GetGameSeconds())
     for _, id in ipairs(visible) do
@@ -235,6 +292,11 @@ function gadget:DrawWorld()
         local entry = cached[id]
         if entry and x and front and up and right then
             gl.Uniform(selectedUniform,selected[id] and 1 or 0)
+            -- RGB8 exactly stores a 24-bit identity. Every piece uses the same
+            -- key, so even overlapping standalone bodies have one contour.
+            local key = id + 1
+            gl.Uniform(keyUniform,(key % 256)/255,(math.floor(key/256) % 256)/255,
+                (math.floor(key/65536) % 256)/255)
             gl.PushMatrix()
             gl.MultMatrix(-right[1],-right[2],-right[3],0, up[1],up[2],up[3],0,
                 front[1],front[2],front[3],0, x,y,z,1)
@@ -242,10 +304,30 @@ function gadget:DrawWorld()
             gl.PopMatrix()
         end
     end
+end
+
+function gadget:DrawWorld()
+    if #visible == 0 or not maskFBO then return end
+    gl.PushAttrib(GL.ALL_ATTRIB_BITS)
+    gl.Scissor(false)
+    -- Keep the main framebuffer's depth untouched. This private copy both
+    -- hides houses behind the scene and resolves occlusion among their pieces.
+    gl.CopyToTexture(depthTexture,0,0,viewX,viewY,viewWidth,viewHeight)
+    gl.Texture(false)
+    gl.ActiveFBO(maskFBO,drawMask,selectedHosts())
+    gl.DepthTest(false); gl.DepthMask(false); gl.Culling(false)
+    gl.Blending(GL.SRC_ALPHA,GL.ONE)
+    gl.UseShader(contourShader)
+    gl.Uniform(originUniform,viewX,viewY)
+    gl.Texture(0,maskTexture)
+    gl.TexRect(-1,-1,1,1)
+    gl.Texture(0,false)
     gl.UseShader(0); gl.PopAttrib()
 end
 function gadget:Shutdown()
     for id in pairs(suppressed) do restore(id) end
     for id in pairs(cached) do forget(id) end
+    releaseTargets()
     if shader then gl.DeleteShader(shader); shader=nil end
+    if contourShader then gl.DeleteShader(contourShader); contourShader=nil end
 end

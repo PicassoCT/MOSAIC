@@ -13,10 +13,19 @@ The draw pass checks local selection and current team and excludes spectators.
 Cyan geometry follows the building's normal line-of-sight and cloak checks.
 Recoil builds without private player rules parameters use cyan silhouettes.
 
-Bright cyan edges with a soft inner glow emphasize the voxel silhouette over
-the faint face fill. Border widths are measured in screen pixels, so they stay
-readable at strategic zoom. A selected host uses a slightly thicker, brighter
-amber border. The glow shares the existing draw pass and cached geometry.
+Each complete building has one screen-space identity mask. A bright cyan rim
+follows the visible contour of the combined building, including openings.
+Overlapping pieces and internal voxel boundaries have only faint grid detail.
+Adjacent buildings keep separate identities and outlines. Border widths are
+measured in screen pixels; a selected host gets a wider amber rim.
+
+The renderer draws the cached geometry once into a shared viewport-sized mask
+and composites it in one additional screen pass. A private copy of scene depth
+resolves occlusion between pieces, houses and foreground terrain/units without
+changing the main depth buffer. Glow extends inward, so it cannot spill onto
+foreground objects. The RGBA8 mask and 24-bit depth target are reused until
+the viewport changes. If framebuffer allocation fails, regular icons remain.
+The extra screen pass and depth copy have not been profiled in-game.
 
 Procedural Arab, Asian and Western houses reuse the assembled building's
 shadow columns, including floor masks, terrain offsets, courtyards and updates
@@ -24,7 +33,8 @@ from structural damage. The renderer meshes the exterior of the occupied runs.
 Arcologies, projects, camps and Luxor Combs use an 8×8×8 mask per selected main
 mesh, its imported bounds and its unit-piece transform. The silhouettes omit
 small decorations and animation. The preview shows three individually framed
-main meshes rendered offscreen with the production shader.
+building silhouettes rendered offscreen with the production shaders; the Luxor
+Combs combines its plate and selected base, and Project 5 is shown selected.
 
 ![Three standalone building voxel silhouettes](images/house-icon-voxels.png)
 
