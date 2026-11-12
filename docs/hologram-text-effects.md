@@ -31,6 +31,8 @@ The production script header defines `x_axis=1`, `y_axis=3`, `z_axis=2`; these a
 
 **One-armed bandit:** horizontal text becomes a row of slot-machine reels. Six shuffled rolls cycle the phrase's available glyphs downward through their slots, then reels slow and stop from left to right on the original phrase. Each physical glyph belongs to exactly one reel at a time; locked letters cannot be borrowed by the remaining reels. Spaces stay empty, and exhausted repeated-letter leases resume during the final three-second readable hold. Parent spin pauses during the effect and resumes afterward. There are no extra meshes or background workers.
 
+**Meteor crater:** the first glyph leads the slogan down a diagonal wake into a common ground impact. Letters scatter in tumbling ballistic arcs, then reform the original phrase around a terrain-following crater rim for six seconds. Word gaps keep their slots and repeated glyphs rotate through their leases. The effect restores the original layout and parent spin, uses the actual model scale and unit heading, and bounds its movement waits. It creates no terrain damage or separate rock mesh.
+
 **Letter tornado:** the phrase winds upward around an expanding cone, with eight logical slots per turn and word gaps preserved. Letters stay upright with the corrected cube/DNA facing. The letters orbit the cone in their actual horizontal plane at 30 Hz for 15 seconds, with their facing following the orbit. Speed is at least 60°/s and follows the selected direction; the parent stays still during the effect. It then restores the phrase for a three-second hold and resumes the previous parent spin.
 
 **Heart monitor:** a separate mode; the existing `SinusLetter` is unchanged. Two ECG-shaped pulses travel along one straight line, including a small lead-in, negative dip, sharp upward spike, undershoot and recovery. Only glyph height changes. Word gaps remain, parent spin pauses for readability, and the line returns to its baseline before restoring the original layout.
@@ -57,7 +59,7 @@ lua5.1 tests/hologram_text_fx_test.lua
 python3 tests/hologram_text_axes_test.py
 ```
 
-The regression suite executes the real shared library and both scripts' production functions with strict animation-call mocks. It covers exhaustion, direct occurrence ordering, UTF-8 gaps, selection, logical spacing, half-second leases and restoration, matrix parameters, radius/no-rest handling, glow lifetime, all 27 registered modes, empty groups, parent rotation/scale inversion, conga lifecycle, takeover crossfire timing/trajectories, slot-machine reel ownership/ordered stops, projection geometry, travelling pulses, terrain-based growth, borrowed-piece cleanup and scratch-global isolation. CI uses native Lua 5.1; local validation can also run the same suite through `lupa.lua51` (Lua 5.1).
+The regression suite executes the real shared library and both scripts' production functions with strict animation-call mocks. It covers exhaustion, direct occurrence ordering, UTF-8 gaps, selection, logical spacing, half-second leases and restoration, matrix parameters, radius/no-rest handling, glow lifetime, all 28 registered modes, empty groups, parent rotation/scale inversion, conga lifecycle, takeover crossfire timing/trajectories, slot-machine reel ownership/ordered stops, projection geometry, travelling pulses, terrain-based growth, borrowed-piece cleanup and scratch-global isolation. CI uses native Lua 5.1; local validation can also run the same suite through `lupa.lua51` (Lua 5.1).
 
 No Recoil visual or target-hardware performance validation has been performed. In Recoil, check a long repeated-letter slogan, day/night and blackout transitions, all projection modes, conga descent on slopes and rotated houses, turns/stops/death of the target civilian, and takeover cleanup when a phrase changes or the hologram is destroyed. Confirm glyph size, facing, ground clearance and movement timing against actual exported models. Compare zoomed-out frame times in a dense city.
 
@@ -82,7 +84,7 @@ The production signs use the same cleanup. Conga tracks actual piece translation
 when calculating speeds, and fireworks bounds its launch/burst/fall waits too.
 Continuous spins keep running during the hold. All glyph transforms/spins are
 reset between cases; long effects are no longer cut short. The cycle has
-90 cases: plain horizontal/upright text, all 27 shared modes (matrix and arch use
+93 cases: plain horizontal/upright text, all 28 shared modes (matrix and arch use
 upright), an extra upright DNA-helix case, each at 0, +20 and -20 degrees/second
 around the same parent Y axis used by production holograms.
 

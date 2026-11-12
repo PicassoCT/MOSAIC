@@ -241,7 +241,7 @@ function canProjectTextFx(name, posLetters)
     if name == "matrixTextFx" then return posLetters.boolUpright == true end
     return not posLetters.boolUpright
         or name == "dnaHelix" or name == "spiralProject" or name == "archProject" or name == "letterTornado"
-        or name == "smilingFace" or name == "letterPlant"
+        or name == "smilingFace" or name == "letterPlant" or name == "meteorCraterText"
 end
 
 function dnaHelix(allLetters, posLetters)
@@ -1038,6 +1038,107 @@ function hologramWorldMover(owner, id, base, pieceMap)
     return moveToWorld, origin, basis
 end
 
+function meteorCraterText(allLetters, posLetters)
+    if #allLetters == 0 then return end
+    StopSpin(textSpinner,textSpinnerAxis,0)
+    hardResetHologramLetters(allLetters)
+    local function finish()
+        hardResetHologramLetters(allLetters)
+        restoreMessageOriginalPosition(allLetters,posLetters)
+        if posLetters.spinnerSpeed then Spin(textSpinner,textSpinnerAxis,posLetters.spinnerSpeed,0) end
+    end
+    local owner = posLetters.unitID
+    local pieceMap = Spring.GetUnitPieceMap(owner)
+    local movers,anchor,basis = {}
+    for _,id in ipairs(allLetters) do
+        local move,origin,axes = hologramWorldMover(owner,id,{0,0,0},pieceMap)
+        if not move then finish();return end
+        movers[id]=move;anchor,basis=anchor or origin,basis or axes
+    end
+    local function length(v) return math.sqrt(textDot(v,v)) end
+    local height = sizeDownLetter*length(basis[glyphHeightAxis])
+    local spacing = math.max(sizeSpacingLetter*length(basis[glyphBaselineAxis]),height)*1.15
+    local slots = math.max(1,#(posLetters.spacing or allLetters))
+    local radius = math.max(spacing*2,slots*spacing/(2*math.pi))
+    local dx,dz = -basis[glyphBaselineAxis][1],-basis[glyphBaselineAxis][3]
+    local span = math.sqrt(dx*dx+dz*dz)
+    if span<1e-9 then dx,dz,span=1,0,1 end
+    dx,dz=dx/span,dz/span
+    local x,z = anchor[1],anchor[3]
+    local ground = Spring.GetGroundHeight(x,z)+height*0.5
+    local altitude = math.max(height*12,anchor[2]-ground+height*4)
+    local reach = math.max(radius*3,height*10)
+    local function place(id,along,rise,across,seconds)
+        local tx,tz = x+dx*along+dz*across,z+dz*along-dx*across
+        movers[id](tx,Spring.GetGroundHeight(tx,tz)+height*0.5+math.max(0,rise),tz,seconds)
+    end
+    -- The leading glyph is the meteor core. Later logical slots trail behind
+    -- it up the same diagonal wake; acceleration pulls the tail into impact.
+    local function incoming(t,seconds)
+        local remaining = 1-t*t
+        for index,id in ipairs(allLetters) do
+            local tail = textSlot(posLetters,id,index-1)*spacing*remaining
+            place(id,-reach*remaining-tail,altitude*remaining+tail*0.45,0,seconds)
+        end
+    end
+    incoming(0,0)
+    showTReg(allLetters)
+    for tick=1,24 do incoming(tick/24,0.1);Sleep(100) end
+    if not waitTextMoves(allLetters,1500) then finish();return end
+    Sleep(80)
+    local debris = {}
+    for index,id in ipairs(allLetters) do
+        local angle = 2*math.pi*(index-1)/#allLetters + math.random()*0.6
+        debris[id]={angle=angle,reach=radius*(1.5+math.random()*1.5),
+            loft=height*(2+math.random()*5),spin=(index%2==0 and 1 or -1)*math.pi*4}
+    end
+    -- Radial ballistic debris, with terrain clearance at each sampled target.
+    for tick=1,24 do
+        local t=tick/24
+        for _,id in ipairs(allLetters) do
+            local d=debris[id]
+            local along,across=math.sin(d.angle)*d.reach*t,math.cos(d.angle)*d.reach*t
+            local clearance=height*0.5*math.abs(math.sin(d.spin*t))
+            place(id,along,4*d.loft*t*(1-t)+clearance,across,0.1)
+            Turn(id,glyphDepthAxis,d.spin*t,math.abs(d.spin)/2.4)
+            Turn(id,glyphHeightAxis,-d.spin*t,math.abs(d.spin)/2.4)
+        end
+        Sleep(100)
+    end
+    if not waitTextMoves(allLetters,1500) then finish();return end
+    Sleep(350)
+    local function ring(id,slot,seconds)
+        local angle=2*math.pi*slot/slots
+        place(id,radius*math.sin(angle),0,radius*math.cos(angle),seconds)
+    end
+    -- Gather into source-slot order with a small lift. Word gaps retain cells.
+    for tick=1,18 do
+        local t=tick/18
+        local ease=t*t*(3-2*t)
+        for index,id in ipairs(allLetters) do
+            local d=debris[id]
+            local angle=2*math.pi*textSlot(posLetters,id,index-1)/slots
+            local along=(1-ease)*math.sin(d.angle)*d.reach+ease*radius*math.sin(angle)
+            local across=(1-ease)*math.cos(d.angle)*d.reach+ease*radius*math.cos(angle)
+            place(id,along,height*math.sin(math.pi*t),across,0.1)
+            for axis=1,3 do Turn(id,axis,0,math.pi*8) end
+        end
+        Sleep(100)
+    end
+    if not waitTextMoves(allLetters,1500) then finish();return end
+    -- Lease repeated glyphs on the ring, not at the original sign positions.
+    for phase=0,11 do
+        for _,id in ipairs(allLetters) do
+            local leases=posLetters.leases and posLetters.leases[id]
+            if leases and #leases>1 then
+                HideReg(id);ring(id,leases[phase%#leases+1]-1,0);ShowReg(id)
+            end
+        end
+        Sleep(500)
+    end
+    finish()
+end
+
 function civilianCongaText(allLetters, posLetters)
     if #allLetters == 0 then return end
     local owner = posLetters.unitID
@@ -1423,6 +1524,7 @@ end
 
 function getAllTextFx()
 return {
+        ["meteorCraterText"] = meteorCraterText,
         ["smilingFace"] = smilingFace,
         ["letterPlant"] = letterPlant,
         ["heartMonitor"] = heartMonitor,

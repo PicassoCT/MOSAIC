@@ -88,6 +88,7 @@ local function cycle()
                 if case.name=='achromaticShivering' then note='; shared effect skips repeated letters in Lorem Ipsum' end
                 if case.name=='dnaHelix' then note='; upright back-to-back pairs; uses 20 deg/s when parent rotation is zero' end
                 if case.name=='spiralProject' then note='; upright spiral, independent of starting layout' end
+                if case.name=='meteorCraterText' then note='; diagonal meteor wake, impact, debris and a terrain-following crater ring' end
                 if case.name=='letterTornado' then note='; widening upright cone; letters orbit at least 60 deg/s' end
                 if case.name=='heartMonitor' then note='; two travelling ECG pulses, upright letters on one baseline' end
                 if case.name=='matrixTextFx' then note='; three fast upright console sweeps' end
