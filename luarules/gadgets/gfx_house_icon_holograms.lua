@@ -67,6 +67,7 @@ local mesh = VFS.Include('luarules/gadgets/include/house_icon_mesh.lua')
 local bodies = VFS.Include('luarules/gadgets/include/house_icon_bodies.lua')
 local shaderDir = 'luarules/gadgets/shaders/house_icon/'
 local shader, contourShader, timeUniform, selectedUniform, keyUniform, originUniform
+local maskPassUniform
 local maskTexture, depthTexture, maskFBO
 local viewWidth, viewHeight, viewX, viewY = 0,0,0,0
 local failedWidth, failedHeight
@@ -206,7 +207,7 @@ function gadget:Initialize()
     contourShader = gl.CreateShader({
         vertex = VFS.LoadFile(shaderDir .. 'contour.vert'),
         fragment = VFS.LoadFile(shaderDir .. 'contour.frag'),
-        uniformInt = {buildingMask=0},
+        uniformInt = {buildingMask=0, resolvedDepth=1},
     })
     if not shader or not contourShader then
         Spring.Echo('[House icon holograms] Shader failed:', gl.GetShaderLog() or '')
@@ -217,6 +218,7 @@ function gadget:Initialize()
     timeUniform = gl.GetUniformLocation(shader,'time')
     selectedUniform = gl.GetUniformLocation(shader,'selected')
     keyUniform = gl.GetUniformLocation(shader,'buildingKey')
+    maskPassUniform = gl.GetUniformLocation(shader,'maskPass')
     originUniform = gl.GetUniformLocation(contourShader,'viewportOrigin')
     for _, id in ipairs(Spring.GetAllUnits()) do self:UnitCreated(id, Spring.GetUnitDefID(id)) end
 end
@@ -280,12 +282,10 @@ function gadget:DrawWorldPreUnit()
     for id in pairs(suppressed) do if not active[id] then restore(id) end end
 end
 
-local function drawMask(selected)
-    gl.DepthTest(GL.LEQUAL); gl.DepthMask(true); gl.Culling(GL.BACK)
-    gl.Blending(false); gl.AlphaTest(false); gl.ColorMask(true,true,true,true)
-    gl.Clear(GL.COLOR_BUFFER_BIT,0,0,0,0)
+local function drawGeometry(selected, maskPass)
     gl.UseShader(shader)
     gl.Uniform(timeUniform,Spring.GetGameSeconds())
+    gl.Uniform(maskPassUniform,maskPass)
     for _, id in ipairs(visible) do
         local x,y,z = Spring.GetUnitBasePosition(id)
         local front,up,right = Spring.GetUnitVectors(id)
@@ -306,6 +306,13 @@ local function drawMask(selected)
     end
 end
 
+local function drawMask(selected)
+    gl.DepthTest(GL.LEQUAL); gl.DepthMask(true); gl.Culling(GL.BACK)
+    gl.Blending(false); gl.AlphaTest(false); gl.ColorMask(true,true,true,true)
+    gl.Clear(GL.COLOR_BUFFER_BIT,0,0,0,0)
+    drawGeometry(selected,1)
+end
+
 function gadget:DrawWorld()
     if #visible == 0 or not maskFBO then return end
     gl.PushAttrib(GL.ALL_ATTRIB_BITS)
@@ -314,13 +321,21 @@ function gadget:DrawWorld()
     -- hides houses behind the scene and resolves occlusion among their pieces.
     gl.CopyToTexture(depthTexture,0,0,viewX,viewY,viewWidth,viewHeight)
     gl.Texture(false)
-    gl.ActiveFBO(maskFBO,drawMask,selectedHosts())
+    local selected = selectedHosts()
+    gl.ActiveFBO(maskFBO,drawMask,selected)
+    -- Restore the original translucent wireframe, including overlapping
+    -- internal edges. Only the private mask resolves self-occlusion.
+    gl.DepthTest(GL.LEQUAL); gl.DepthMask(false); gl.Culling(GL.BACK)
+    gl.Blending(GL.SRC_ALPHA,GL.ONE)
+    drawGeometry(selected,0)
     gl.DepthTest(false); gl.DepthMask(false); gl.Culling(false)
     gl.Blending(GL.SRC_ALPHA,GL.ONE)
     gl.UseShader(contourShader)
     gl.Uniform(originUniform,viewX,viewY)
     gl.Texture(0,maskTexture)
+    gl.Texture(1,depthTexture)
     gl.TexRect(-1,-1,1,1)
+    gl.Texture(1,false)
     gl.Texture(0,false)
     gl.UseShader(0); gl.PopAttrib()
 end

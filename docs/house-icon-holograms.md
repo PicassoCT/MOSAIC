@@ -15,17 +15,21 @@ Recoil builds without private player rules parameters use cyan silhouettes.
 
 Each complete building has one screen-space identity mask. A bright cyan rim
 follows the visible contour of the combined building, including openings.
-Overlapping pieces and internal voxel boundaries have only faint grid detail.
+The original bright translucent wireframe and animated scanlines remain fully
+visible inside it, including overlapping piece edges. The contour and a broader
+soft glow are added over that material without dimming its internals.
 Adjacent buildings keep separate identities and outlines. Border widths are
 measured in screen pixels; a selected host gets a wider amber rim.
 
-The renderer draws the cached geometry once into a shared viewport-sized mask
-and composites it in one additional screen pass. A private copy of scene depth
+The renderer draws the same cached geometry into a shared viewport-sized mask
+and again as the original additive hologram, then adds the contour/glow in one
+screen pass. A private copy of scene depth
 resolves occlusion between pieces, houses and foreground terrain/units without
-changing the main depth buffer. Glow extends inward, so it cannot spill onto
-foreground objects. The RGBA8 mask and 24-bit depth target are reused until
+changing the main depth buffer. The glow extends inside and outside the outline;
+outer halo samples are depth-checked against foreground objects. The RGBA8 mask
+and 24-bit depth target are reused until
 the viewport changes. If framebuffer allocation fails, regular icons remain.
-The extra screen pass and depth copy have not been profiled in-game.
+The second geometry draw, screen pass and depth copy have not been profiled in-game.
 
 Procedural Arab, Asian and Western houses reuse the assembled building's
 shadow columns, including floor masks, terrain offsets, courtyards and updates
