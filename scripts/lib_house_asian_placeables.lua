@@ -1,4 +1,5 @@
 -- Two bounded placement passes at assembly time. No per-frame work or global RNG.
+local variation = VFS.Include('scripts/lib_house_placeable_variation.lua')
 local function withCatalogue(catalogue)
 local M = {catalogue = catalogue, walkwayWidth = 12, pedestrianWidth = 2.5, roadWidth = 25}
 local function hash(seed, text)
@@ -101,18 +102,22 @@ function M.plan(options)
     for name,id in pairs(options.pieces) do
         if catalogue.pieces[name] then pool[#pool+1]={name=name,id=id} end
     end
-    table.sort(pool,function(a,b)
-        local ha,hb=hash(seed,a.name),hash(seed,b.name)
-        return ha==hb and a.name<b.name or ha<hb
-    end)
-    local result,sideCount,used = {},{0,0,0,0},{}
+    if options.selection then
+        variation.order(pool, catalogue, options.selection.seed, options.selection.getUses)
+    else
+        table.sort(pool,function(a,b)
+            local ha,hb=hash(seed,a.name),hash(seed,b.name)
+            return ha==hb and a.name<b.name or ha<hb
+        end)
+    end
+    local result,sideCount,used,usedTypes = {},{0,0,0,0},{},{}
     local minimum = options.minimum or (2+hash(seed,'minimum')%2)
     local requested = math.min(options.count or math.max(minimum,1+hash(seed,'count')%5),#pool)
     minimum = math.min(minimum,requested)
     local hasLarge,needsLarge = false,false
     for _,item in ipairs(pool) do if M.isLarge(item.name) then needsLarge=true;break end end
     local function tryItem(item,relaxed)
-        if used[item.id] then return false end
+        if used[item.id] or (item.typeKey and usedTypes[item.typeKey]) then return false end
         local prop = catalogue.pieces[item.name]
         local policy = policies[prop.category]
         local candidates = {}
@@ -202,11 +207,37 @@ function M.plan(options)
             if not options.accept or options.accept(c) then
                 result[#result+1]=c;sideCount[c.side]=sideCount[c.side]+1
                 used[item.id]=true
+                c.typeKey = item.typeKey
+                if item.typeKey then usedTypes[item.typeKey] = true end
                 hasLarge=hasLarge or c.large
                 return true
             end
         end
         return false
+    end
+    if options.selection then
+        local function choose(largeOnly, relaxed)
+            -- Exhaust a usage tier before repeating more common types. For
+            -- required slots, try that tier's dry fallback sites first too.
+            local first = 1
+            while first <= #pool do
+                local last = first
+                while last < #pool and pool[last+1].uses == pool[first].uses do last=last+1 end
+                for pass=1,(relaxed and 2 or 1) do
+                    for i=first,last do
+                        local item=pool[i]
+                        if (not largeOnly or M.isLarge(item.name)) and tryItem(item,pass==2) then return true end
+                    end
+                end
+                first=last+1
+            end
+            return false
+        end
+        if needsLarge and requested>0 then choose(true,true) end
+        while #result<requested do
+            if not choose(false,#result<minimum) then break end
+        end
+        return result
     end
     local function tryLarge(relaxed)
         if hasLarge or not needsLarge or requested==0 then return end
