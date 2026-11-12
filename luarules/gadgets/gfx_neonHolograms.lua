@@ -264,7 +264,6 @@ else -- unsynced
 
     local glTexture                 = gl.Texture
     local glUnitShapeTextures       = gl.UnitShapeTextures
-    local glCopyToTexture           = gl.CopyToTexture
     local glCreateTexture           = gl.CreateTexture
     local glDeleteTexture           = gl.DeleteTexture
     local neonUnitTables            = {}
@@ -677,7 +676,7 @@ end
             function()  
                 glTexture(2, "$normal") 
                 glTexture(3, "$reflection") 
-                glCopyToTexture(screentex, 0, 0, 0, 0, vsx, vsy) -- the depth texture
+                -- The active shader does not sample the framebuffer.
 
                -- neonHologramShader:SetUniformMatrix("viewInvMat", "viewinverse")
                --neonHologramShader:SetUniformFloatArray("vCamPositionWorld", {cx,cy,cz} )
