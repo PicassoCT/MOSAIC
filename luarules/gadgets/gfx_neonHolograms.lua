@@ -184,22 +184,8 @@ if (gadgetHandler:IsSyncedCode()) then
        registerUnitIfHolo(unitID, unitDefID)
     end
 
-   function gadget:UnitEnteredLos(unitID, unitTeam, allyTeam, unitDefID)
-        if neonHologramTypeTable[unitDefID] then
-
-            neonUnitDataTransfer[unitID] = unitDefID
-        end
-    end
-
-    function gadget:UnitLeftLos(unitID, unitTeam, allyTeam, unitDefID)
-        -- One ally team's LOS must not stop synced animation updates for
-        -- projections still visible to another team. Gate those per client.
-        local definition = UnitDefs[unitDefID]
-        if definition and (definition.customParams or {}).parade_hologram then return end
-        if neonHologramTypeTable[unitDefID] then
-            neonUnitDataTransfer[unitID] = nil
-        end
-    end
+    -- Registration follows unit lifetime, not an individual ally team's LOS.
+    -- Visibility remains an unsynced per-client rendering decision.
 
     function gadget:UnitDestroyed(unitID, unitDefID)
         if objectiveRadiancePieces[unitID] then
