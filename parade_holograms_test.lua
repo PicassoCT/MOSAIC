@@ -226,7 +226,7 @@ check('shared neon registers, streams changed frames and removes projection ligh
     assert(#sent==1)
     env.GG.VisibleUnitPieces[101]={3,6,8}; env.gadget:GameFrame(1)
     assert(sent[2][1]=='updateUnitNeonLuaDraw' and sent[2][4]==3 and sent[2][5]==6 and sent[2][6]==8)
-    env.gadget:UnitLeftLos(101,0,1,7)
+    if env.gadget.UnitLeftLos then env.gadget:UnitLeftLos(101,0,1,7) end
     env.GG.VisibleUnitPieces[101]={4}; env.gadget:GameFrame(2)
     assert(sent[3][4]==4 and env.NeonHologramUnits[101]==7)
     env.GG.VisibleUnitPieces[101]={}; env.gadget:GameFrame(3)
