@@ -36,3 +36,25 @@ python3 tests/hologram_text_axes_test.py
 The regression suite executes the real shared library and both scripts' production functions with strict animation-call mocks. It covers exhaustion, direct occurrence ordering, UTF-8 gaps, selection, logical spacing, half-second leases and restoration, matrix parameters, radius/no-rest handling, glow lifetime, all 22 registered modes in both orientations, empty groups, parent rotation/scale inversion, conga lifecycle, takeover crossfire timing/trajectories and scratch-global isolation. CI uses native Lua 5.1; local validation can also run the same suite through `lupa.lua51` (Lua 5.1).
 
 No Recoil visual or target-hardware performance validation has been performed. In Recoil, check a long repeated-letter slogan, day/night and blackout transitions, all projection modes, conga descent on slopes and rotated houses, turns/stops/death of the target civilian, and takeover cleanup when a phrase changes or the hologram is destroyed. Confirm glyph size, facing, ground clearance and movement timing against actual exported models. Compare zoomed-out frame times in a dense city.
+
+## Ordinary-model test unit
+
+Start a new local match, enter `/cheat`, then `/give text_fx_test` to spawn at the
+cursor. It uses `house_western_hologram.dae` and the real `lib_textFx.lua` functions,
+with ordinary engine Show/Hide drawing and no neon registration. The phrase is
+`Lorem Ipsum`; console messages identify each mode, layout and parent rotation.
+
+Each case gets exactly five simulation seconds. A signalled worker is cancelled
+at that deadline and all glyph transforms/spins are reset before the next case.
+Long effects are therefore previews, not full-length performances. The cycle has
+78 cases: plain horizontal/upright text, all 22 shared modes (matrix and arch use
+upright), extra upright spiral/helix cases, each at 0, +20 and -20 degrees/second
+around the same parent Y axis used by production holograms.
+
+Existing effect eligibility is preserved: personal projection and conga need a
+nearby civilian; night flicker needs night. Achromatic shivering rejects repeated
+letters, so `Lorem Ipsum` makes it return without animating; the console notes
+this. Takeover uses `Ipsum Lorem` as the opposing phrase. The external
+`text_fx_test_unit_test.lua` runs the actual shared functions with a unit-thread
+scheduler and verifies coverage, deadlines and parent rotation. Live model
+appearance still needs an in-game check.
