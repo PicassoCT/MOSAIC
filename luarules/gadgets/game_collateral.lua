@@ -283,8 +283,6 @@ else -- UNSYNCED
     local spGetGameFrame = Spring.GetGameFrame
     local spGetLocalTeamID = Spring.GetLocalTeamID
     local myTeamID = spGetLocalTeamID()
-    local spGetAllUnits = Spring.GetAllUnits
-    local spGetUnitTeam = Spring.GetUnitTeam
     local spGetUnitPosition = Spring.GetUnitPosition
     local spWorldToScreenCoords = Spring.WorldToScreenCoords
     local glText = gl.Text
@@ -366,32 +364,26 @@ else -- UNSYNCED
         --	Spring.Echo(GetInfo().name.." Initialization ended")
     end
 
+    function gadget:UnitDestroyed(unitID)
+        Unit_StartFrame_Message[unitID] = nil
+    end
+
     function gadget:DrawScreenEffects()
         local currFrame = spGetGameFrame()
-        UnitsToNil = {}
-
-        for _, id in ipairs(spGetAllUnits()) do
-            -- Spring.Echo("itterating over all units")
-            for uid, valueT in pairs(Unit_StartFrame_Message) do
-
-                -- Spring.Echo("itterating over all damaged")
-                -- Check if Time has expsired
-                if id == uid and valueT then
-                    -- if attacker was me or i get a reward for another team attack a gaia unit
-                    teamid = spGetUnitTeam(id)
-                    if currFrame < valueT.frame + DrawForFrames then
-                        -- Spring.Echo("Drawing Prizes")
-                        x, y, z = spGetUnitPosition(uid)
-                        if x then
-                            frameOffset = (255 - (valueT.frame + DrawForFrames - currFrame)) * 0.25
-                            local sx, sy =
-                                spWorldToScreenCoords(x, y + frameOffset, z)
-                                if valueT.col then
-                                     gl.Color(valueT.col.r, valueT.col.g, valueT.col.b, valueT.col.a)
-                                 end
-                                gl.Text(valueT.message, sx, sy, valueT.size, valueT.format)                       
-                        end
+        for uid, valueT in pairs(Unit_StartFrame_Message) do
+            if currFrame >= valueT.frame + DrawForFrames then
+                Unit_StartFrame_Message[uid] = nil
+            else
+                local x, y, z = spGetUnitPosition(uid)
+                if x then
+                    local frameOffset = (255 - (valueT.frame + DrawForFrames - currFrame)) * 0.25
+                    local sx, sy = spWorldToScreenCoords(x, y + frameOffset, z)
+                    if valueT.col then
+                        gl.Color(valueT.col.r, valueT.col.g, valueT.col.b, valueT.col.a)
                     end
+                    gl.Text(valueT.message, sx, sy, valueT.size, valueT.format)
+                else
+                    Unit_StartFrame_Message[uid] = nil
                 end
             end
         end
@@ -415,9 +407,7 @@ else -- UNSYNCED
             end
         end
 
-        for id, _ in pairs(UnitsToNil) do
-            Unit_StartFrame_Message[id] = nil
-        end
+
     end
 
 end
