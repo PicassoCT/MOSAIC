@@ -15,6 +15,7 @@ function WaitForMove(id,axis)
     assert(type(id)=='number' and axis and axis>=1 and axis<=3)
     waits[#waits+1]={id,axis}
 end
+function WaitForTurn(id,axis) assert(type(id)=='number' and axis>=1 and axis<=3) end
 function Sleep(ms) assert(finite(ms) and ms>=0); sleeps[#sleeps+1]=ms end
 function Turn(id,axis,angle,speed)
     assert(type(id)=='number' and axis>=1 and axis<=3 and finite(angle) and finite(speed) and speed>=0)
@@ -61,6 +62,7 @@ function getAngleFromCoordinates(x,z) return math.atan2(x,z) end
 UnitDefs={}
 local identity={1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1}
 Spring={
+    UnitScript={IsInMove=function() return false end,IsInTurn=function()return false end},
     GetUnitDefID=function() return 4 end,
     GetGameSeconds=function() return 1 end,
     GetUnitPosition=function(id) if id==10 and lostPosition then return nil end; if id==10 then return 20,0,20 end; return 0,0,0 end,
@@ -93,26 +95,38 @@ clear();transitionHologramText(letters,pos,true,400)
 assert(#waits==4 and #moves==8 and #sleeps==0)
 assert(moves[1][3]==105 and moves[2][3]==0 and moves[2][4]==262.5)
 clear();transitionHologramText(letters,pos,false,400);assert(not next(visible))
-clear();matrixTextFx(letters,pos);assert(#waits==4)
-assert(spindropAxis==z_axis and moves[4][2]==z_axis and moves[4][3]==1400)
-for _,w in ipairs(waits) do assert(w[2]==z_axis,'matrix fall must wait for vertical motion') end
+clear();matrixTextFx(letters,pos);assert(#waits==3*3*#letters and #sleeps==6)
+for i=1,6,2 do assert(sleeps[i]==100 and sleeps[i+1]==150,'matrix must repeat fast console sweeps') end
+for _,m in ipairs(moves) do
+    assert(m[4]==1200)
+    local target=m[2]==3 and -(pos.slotByPiece[m[1]]-1)*sizeDownLetter or 0
+    assert(m[3]==target,'matrix must stream into the true vertical column')
+end
 clear();circleProject(letters,pos,2,true,true)
 local radius=9*300*2/math.pi
 assert(math.abs(moves[1][3]-radius)<1e-7 and #sleeps==0 and visible[1])
 for _,m in ipairs(moves) do assert(m[2]~=z_axis,'circle must preserve fireworks altitude') end
 for _,t in ipairs(turns) do assert(t[2]==z_axis,'circle yaw must keep glyphs upright') end
 clear();ringProject(letters,pos)
-assert(math.abs(turns[2][3]-(math.pi+math.pi/9))<1e-7,'ring must pass radians directly to Turn')
-for _,id in ipairs(letters) do assert(spins[id][z_axis],'ring facing must not cancel its spin') end
+assert(#turns==0 and not next(spins),'ring must keep glyph facing fixed')
+assert(sleeps[1]==15000 and #waits==3*#letters)
+local ringTargets={}
+for _,move in ipairs(moves) do ringTargets[move[1]]=ringTargets[move[1]] or {};ringTargets[move[1]][move[2]]=move[3] end
+local ringRadius=(#letters+10)*sizeDownLetter/(2*math.pi)
+for _,id in ipairs(letters) do
+    local angle=2*math.pi*(pos.slotByPiece[id]-1)/#pos.spacing
+    assert(math.abs(ringTargets[id][2]+ringRadius*math.sin(angle))<1e-7)
+    assert(math.abs(ringTargets[id][3]-(ringRadius+ringRadius*math.cos(angle)))<1e-7)
+end
 clear();cubeProject(letters,pos)
-for _,m in ipairs(moves) do assert(m[2]~=z_axis,'cube corners must lie on the ground plane') end
-for _,t in ipairs(turns) do assert(t[2]==z_axis,'cube glyphs must remain upright') end
+for _,t in ipairs(turns) do assert(t[3]==0 or t[2]==3,'cube glyphs must remain upright') end
 local cubePositions={}
 for _,m in ipairs(moves) do cubePositions[m[1]]=cubePositions[m[1]] or {};cubePositions[m[1]][m[2]]=m[3] end
-assert(cubePositions[1][1]==300 and cubePositions[2][1]==300)
-assert(cubePositions[2][2]==-600 and cubePositions[3][2]==-600)
-assert(cubePositions[3][1]==600 and cubePositions[4][1]==900,'corner must not stack two glyphs')
--- Curved text effects must use the matching layout/rotation axis in both orientations.
+assert(cubePositions[1][1]==450 and cubePositions[2][1]==450)
+assert(cubePositions[1][2]==300 and cubePositions[2][2]==0)
+assert(math.abs(cubePositions[3][2]+450)<1e-7 and math.abs(cubePositions[4][2]-450)<1e-7)
+for _,id in ipairs(letters) do assert(cubePositions[id][3]==0,'cube row changes height around perimeter') end
+-- Spiral keeps the approved vertical geometry in either starting layout.
 local function movedTarget(id, axis)
     for _,m in ipairs(moves) do
         if m[1]==id and m[2]==axis then return m[3] end
@@ -121,30 +135,41 @@ end
 local helixRadius=7*sizeSpacingLetter/(2*math.pi)
 for _,upright in ipairs({false,true}) do
     pos.boolUpright=upright
-    local axial=upright and z_axis or y_axis
-    local radial=upright and y_axis or z_axis
-    local sign=upright and -1 or 1
-    for _,fx in ipairs({spiralProject,dnaHelix}) do
+    local axial,radial=3,2
+    for _,fx in ipairs({spiralProject}) do
         clear();fx(letters,pos)
         assert(#turns==#letters)
         for _,turn in ipairs(turns) do assert(turn[2]==axial) end
-        -- Engine Turn Z rotates +X toward +Y; Turn Y rotates +X toward -Z.
-        -- Each glyph's front must face the helix axis, in either orientation.
+        -- Preserve the facing of the first, visually approved spiral variant.
         local angle=turns[2][3]
-        local normalX=math.cos(angle)
-        local normalRadial=(upright and 1 or -1)*math.sin(angle)
-        assert(math.abs(normalX+math.cos(math.pi/7))<1e-7)
-        assert(math.abs(normalRadial+math.sin(math.pi/7))<1e-7)
+        assert(math.abs(angle-(math.pi-math.pi/7))<1e-7)
         for _,id in ipairs(letters) do
             assert(movedTarget(id,x_axis) and movedTarget(id,radial) and movedTarget(id,axial))
         end
         assert(math.abs(movedTarget(2,radial)-helixRadius*math.sin(math.pi/7))<1e-7)
-        assert(movedTarget(2,axial)==sign*sizeDownLetter)
-        local tailOffset=(fx==dnaHelix) and (8-#slots/2) or 8
-        assert(movedTarget(4,axial)==sign*tailOffset*sizeDownLetter)
+        assert(movedTarget(2,axial)==sizeDownLetter)
+        assert(movedTarget(4,axial)==8*sizeDownLetter)
     end
     assert(canProjectTextFx('dnaHelix',pos) and canProjectTextFx('spiralProject',pos))
     assert(canProjectTextFx('SpinLetters',pos)==(not upright))
+end
+-- DNA always rises vertically, pairing consecutive available glyphs even
+-- when the original phrase has whitespace or unavailable glyph slots.
+for _,upright in ipairs({false,true}) do
+    pos.boolUpright=upright
+    clear();dnaHelix(letters,pos)
+    local targets,facings={},{}
+    for _,m in ipairs(moves) do targets[m[1]]=targets[m[1]] or {};targets[m[1]][m[2]]=m[3] end
+    for _,t in ipairs(turns) do if t[1]~=textSpinner and t[2]==3 then facings[t[1]]=t[3] end end
+    for i,id in ipairs(letters) do
+        local step=math.floor((i-1)/2)
+        local theta=step*math.pi/7+((i-1)%2)*math.pi
+        assert(math.abs(targets[id][1]-helixRadius*math.cos(theta))<1e-7)
+        assert(math.abs(targets[id][2]-helixRadius*math.sin(theta))<1e-7)
+        assert(targets[id][3]==step*sizeDownLetter)
+        assert(math.abs(facings[id]-(theta+math.pi))<1e-7)
+    end
+    assert(not spins[textSpinner][y_axis],'DNA leaked its default parent spin')
 end
 -- Both script integrations execute the same allocation/layout path, not a test clone.
 local function loadFunction(path,name,nextName)
@@ -202,7 +227,29 @@ Spring.GetUnitPieceMatrix,Spring.GetUnitVectors=savedMatrix,savedVectors
 pos.spinnerSpeed=nil
 -- Exercise every registered mode in both orientations, including spin resumption.
 pos.spinnerSpeed=0.25
-local modes=getAllTextFx();assert(count((function() local a={} for k in pairs(modes) do a[#a+1]=k end return a end)())==22)
+-- Arch keeps glyphs unrotated in the Y/Z face plane and preserves logical gaps.
+for _,upright in ipairs({false,true}) do
+    local arc={20,21,22}
+    local arcPos={spacing={20,' ',21,' ',22},slotByPiece={[20]=1,[21]=3,[22]=5},
+        slotPositions={{15,25,35}},boolUpright=upright,
+        [20]={15,25,35},[21]={15,25,35},[22]={15,25,35}}
+    clear();archProject(arc,arcPos)
+    local targets={}
+    for _,m in ipairs(moves) do targets[m[1]]=targets[m[1]] or {};targets[m[1]][m[2]]=m[3] end
+    for _,t in ipairs(turns) do assert(t[3]==0,'arch must not tilt individual glyphs') end
+    for _,id in ipairs(arc) do assert(targets[id][1]==15,'arch moved glyph out of face plane') end
+    local radius=5*sizeSpacingLetter/math.pi
+    for i,id in ipairs(arc) do
+        local angle=math.pi*((i-1)*2+0.5)/5
+        assert(math.abs(targets[id][2]-(25-radius+radius*math.cos(angle)))<1e-7)
+        assert(math.abs(targets[id][3]-(35+radius*math.sin(angle)))<1e-7)
+    end
+    assert(canProjectTextFx('archProject',arcPos),'arch unavailable for this layout')
+    assert(sleeps[#sleeps]==35000,'arch hold duration changed')
+end
+clear();archProject({20},{spacing={20},[20]={0,0,0},boolUpright=true})
+for _,m in ipairs(moves) do assert(finite(m[3]),'single-letter arch produced invalid coordinates') end
+local modes=getAllTextFx();assert(count((function() local a={} for k in pairs(modes) do a[#a+1]=k end return a end)())==27)
 for name,fn in pairs(modes) do
     for _,upright in ipairs({false,true}) do
         clear();pos.boolUpright=upright
@@ -219,6 +266,12 @@ Spring.GetUnitPieceMatrix=function(owner,id)
 end
 clear();local mover=assert(hologramWorldMover(9,1,{0,0,0},{root=99}));mover(6,8,12,0.2)
 assert(moves[1][3]==4 and moves[2][3]==-2 and moves[3][3]==3)
+clear();local launchMover=assert(hologramWorldMover(9,1,{0,0,0},{root=99}));launchMover(6,8,12,0)
+assert(moves[1][3]==4 and moves[3][3]==-2 and moves[5][3]==3)
+for i=1,6,2 do
+    assert(moves[i][4]>0 and moves[i+1][4]==0,'instant placement must replace queued target before snapping')
+    assert(moves[i][3]==moves[i+1][3])
+end
 Spring.GetUnitPieceMatrix=saved
 nearby={};clear();civilianCongaText(letters,pos);assert(#moves==0)
 nearby={10};alive=false;clear();civilianCongaText(letters,pos);assert(#moves==0)
@@ -245,4 +298,4 @@ restoreMessageOriginalPosition=oldRestore
 for _,name in ipairs({'radius','radiant','circumference','civilian','speed','waitTime','oldValue','timeOut'}) do
     assert(rawget(_G,name)==nil,'leaked scratch global '..name)
 end
-print('hologram text effects: allocation, leases, layout, 22 modes, transforms and transitions passed')
+print('hologram text effects: allocation, leases, layout, 27 modes, transforms and transitions passed')
