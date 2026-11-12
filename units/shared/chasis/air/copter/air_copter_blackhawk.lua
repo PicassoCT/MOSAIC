@@ -66,7 +66,6 @@ local blackHawk = VTOL:New{
     ShowNanoSpray = false,
     CanBeAssisted = false,
     CanReclaim = false,
-    customParams = {},
     sfxtypes = {
         explosiongenerators = {
             "custom:chopperdirt",
