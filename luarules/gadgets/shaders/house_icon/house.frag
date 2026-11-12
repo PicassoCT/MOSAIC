@@ -3,9 +3,17 @@ in vec2 faceUV;
 in float localHeight;
 uniform float time;
 uniform float selected;
+uniform float maskPass;
+uniform vec3 buildingKey;
 out vec4 fragColor;
 void main() {
-    // Derivatives keep the border approximately one pixel wide at any zoom.
+    if (maskPass > 0.5) {
+        // All pieces share one identity; the visible material is drawn separately.
+        fragColor = vec4(buildingKey, selected);
+        return;
+    }
+    // Keep the original thin, subdued internal lines. Stronger highlights
+    // belong to the combined building contour in the separate overlay.
     vec2 d = min(faceUV, 1.0 - faceUV);
     vec2 aa = max(fwidth(faceUV), vec2(0.0001));
     float edge = 1.0 - smoothstep(0.65, 1.8, min(d.x / aa.x, d.y / aa.y));

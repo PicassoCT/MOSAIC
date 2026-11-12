@@ -13,13 +13,34 @@ The draw pass checks local selection and current team and excludes spectators.
 Cyan geometry follows the building's normal line-of-sight and cloak checks.
 Recoil builds without private player rules parameters use cyan silhouettes.
 
+Each complete building has one screen-space identity mask. A bright cyan rim
+follows the visible contour of the combined building, including openings.
+The original thin translucent wireframe and animated scanlines retain their
+initial brightness, including overlapping piece edges. The contour and a broader
+soft glow are added over that material without dimming its internals.
+Adjacent buildings keep separate identities and outlines. Border widths are
+measured in screen pixels; a selected host gets a wider amber rim.
+
+The renderer draws the same cached geometry into a shared viewport-sized mask
+and again as the original additive hologram, then adds the contour/glow in one
+screen pass. A private copy of scene depth
+resolves occlusion between pieces, houses and foreground terrain/units without
+changing the main depth buffer. The glow extends inside and outside the outline;
+outer halo samples are depth-checked against foreground objects. The RGBA8 mask
+and 24-bit depth target are reused until
+the viewport changes. If contour APIs, shader compilation or framebuffer allocation
+fail, the original wireframe/scanline hologram remains active without the extra
+contour. Failure of the base shader leaves regular icons visible.
+The second geometry draw, screen pass and depth copy have not been profiled in-game.
+
 Procedural Arab, Asian and Western houses reuse the assembled building's
 shadow columns, including floor masks, terrain offsets, courtyards and updates
 from structural damage. The renderer meshes the exterior of the occupied runs.
 Arcologies, projects, camps and Luxor Combs use an 8×8×8 mask per selected main
 mesh, its imported bounds and its unit-piece transform. The silhouettes omit
 small decorations and animation. The preview shows three individually framed
-main meshes rendered offscreen with the production shader.
+building silhouettes rendered offscreen with the production shaders; the Luxor
+Combs combines its plate and selected base, and Project 5 is shown selected.
 
 ![Three standalone building voxel silhouettes](images/house-icon-voxels.png)
 
@@ -27,3 +48,10 @@ The draw pass caches one display list per house and builds up to three changed
 lists per frame. Ordinary icons cover houses awaiting geometry. To rebake the
 standalone profiles after editing a model, run
 `python tools/house_icons/bake.py` at the game root with NumPy and SciPy.
+
+Regression checks live in the external `mosaic-tests` suite:
+`house_icon_holograms_lifecycle.lua` checks the Recoil icon API, both render
+passes, fallback, resize and cleanup. `house_icon_holograms_gpu.py` compiles the
+production shaders on Mesa EGL, compares the material against the pre-contour
+shader, and checks contours, selection, occlusion and viewport offsets. These
+checks do not replace live Recoil appearance and performance validation.
