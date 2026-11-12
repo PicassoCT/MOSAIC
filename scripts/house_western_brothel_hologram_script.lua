@@ -87,7 +87,7 @@ local TableOfPiecesGroups = {}
 local boolDebugActive = false
 
 sizeDownLetter  = 350
-sizeSpacingLetter = 300
+sizeSpacingLetter = 321
 local _x_axis = 1
 local _y_axis = 2
 local _z_axis = 3
@@ -859,16 +859,17 @@ function showOneOrAll(T)
 end
 
 function hideResetAllLetters()
-    letters = {"A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"}
+    local pieces = {}
+    local letters = {"A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"}
     for i=1, #letters do
         local letter = letters[i] 
         if TableOfPiecesGroups[letter] then
-            resetT(TableOfPiecesGroups[letter])
-            hideTReg(TableOfPiecesGroups[letter])
+            for _,id in ipairs(TableOfPiecesGroups[letter]) do pieces[#pieces+1]=id end
         else
             echo("hideResetAllLetters failed for:"..letter)
         end
     end
+    hardResetHologramLetters(pieces)
 end
 
 function delayedFlickerSingleLetter(letterPiece)
@@ -1129,14 +1130,14 @@ function addHologramLetters( myMessages)
             if name and canProjectTextFx(name, posLetters) then
                 textFX(allLetters, posLetters, TableOfPiecesGroups)
                 Signal(SIG_FLICKER)
-                HideLetters(allLetters, posLetters)
+                HideLetters(allLetters,posLetters,nil,5000)
             end
-            WaitForMoves(allLetters)
+            waitHologramTextCleanup(allLetters,cachedCopyDict,5000)
             restTime = math.max(5000, #allLetters*150)
             holdHologramText(allLetters, posLetters, restTime)
             restoreMessageOriginalPosition(allLetters, posLetters)
             resetSpinDrop(allLetters)
-            WaitForTurns(allLetters)
+            waitHologramTextCleanup(allLetters,cachedCopyDict,5000)
             holdHologramText(allLetters, posLetters, restTime)
             if boolIsEverChanging == true then
                 transitionHologramText(allLetters, posLetters, false, 400)

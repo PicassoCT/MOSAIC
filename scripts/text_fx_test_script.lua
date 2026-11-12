@@ -5,17 +5,17 @@ include 'lib_Animation.lua'
 include 'lib_textFx.lua'
 
 -- Ordinary engine model drawing: never register pieces with the neon gadget.
-local groups, glyphs = {}, {}
+local groups, glyphs, visibleGlyphs = {}, {}, {}
 local SIG_EFFECT=1
 local message='Lorem Ipsum'
 textSpinner=piece('text_spin')
-sizeSpacingLetter,sizeDownLetter=300,350
-function ShowReg(id) if id then Show(id) end end
-function HideReg(id) if id then Hide(id) end end
+sizeSpacingLetter,sizeDownLetter=321,350
+function ShowReg(id) if id then Show(id);visibleGlyphs[id]=true end end
+function HideReg(id) if id then Hide(id);visibleGlyphs[id]=nil end end
 function showTReg(ids) for _,id in ipairs(ids) do ShowReg(id) end end
 function hideTReg(ids) for _,id in ipairs(ids) do HideReg(id) end end
 function hideResetAllLetters()
-    for _,id in ipairs(glyphs) do Hide(id);reset(id,0) end
+    hardResetHologramLetters(glyphs)
 end
 function restoreMessageOriginalPosition(ids,pos)
     hideResetAllLetters()
@@ -31,13 +31,14 @@ local function layout(upright,speed)
     local ids,pos={}, {unitID=unitID,myMessage=message,messages={message,'Ipsum Lorem'},
         TriLetters=groups,spacing=slots,leases=leases,slotByPiece={},slotPositions={},
         boolUpright=upright,spinnerSpeed=speed~=0 and speed or nil}
+    pos.debugTextFx=function(detail) Spring.Echo(string.format('[Text FX test %d] %s',unitID,detail)) end
     for i,id in ipairs(slots) do
         local position={0,upright and 0 or -(i-1)*sizeSpacingLetter,upright and -(i-1)*sizeDownLetter or 0}
         pos.slotPositions[i]=position
         if id~=' ' then
             ids[#ids+1]=id;pos[id]=position;pos.slotByPiece[id]=i
             for axis=1,3 do Move(id,axis,position[axis],0) end
-            Show(id)
+            ShowReg(id)
         end
     end
     -- Match the production upright layout's ground-clearance adjustment.
@@ -46,13 +47,8 @@ local function layout(upright,speed)
     return ids,pos
 end
 
-local function runEffect(effect,ids,pos)
-    SetSignalMask(SIG_EFFECT)
-    if effect then effect(ids,pos,groups) end
-    while true do holdHologramText(ids,pos,500) end
-end
-
 local function cycle()
+    SetSignalMask(SIG_EFFECT)
     local effects=getAllTextFx()
     local cases={{name='plain',upright=false},{name='plain',upright=true}}
     local names={}
@@ -60,25 +56,33 @@ local function cycle()
     table.sort(names)
     for _,name in ipairs(names) do
         cases[#cases+1]={name=name,upright=name=='matrixTextFx' or name=='archProject'}
-        if name=='dnaHelix' or name=='spiralProject' then cases[#cases+1]={name=name,upright=true} end
+        if name=='dnaHelix' then cases[#cases+1]={name=name,upright=true} end
     end
     while true do
         for _,degrees in ipairs({0,20,-20}) do
             for _,case in ipairs(cases) do
-                Signal(SIG_EFFECT)
                 local ids,pos=layout(case.upright,math.rad(degrees))
                 local note=''
                 if case.name=='personalProject' or case.name=='civilianCongaText' then note='; needs a nearby civilian' end
                 if case.name=='randomFLickerLetters' then note='; night-only effect' end
                 if case.name=='achromaticShivering' then note='; shared effect skips repeated letters in Lorem Ipsum' end
-                Spring.Echo(string.format('[Text FX test %d] %s | %s | parent Y %d deg/s | 5 seconds%s',
+                if case.name=='dnaHelix' then note='; upright back-to-back pairs; uses 20 deg/s when parent rotation is zero' end
+                if case.name=='spiralProject' then note='; upright spiral, independent of starting layout' end
+                if case.name=='letterTornado' then note='; widening upright cone; letters orbit at least 60 deg/s' end
+                if case.name=='heartMonitor' then note='; two travelling ECG pulses, upright letters on one baseline' end
+                if case.name=='matrixTextFx' then note='; three fast upright console sweeps' end
+                Spring.Echo(string.format('[Text FX test %d] %s | %s | parent Y %d deg/s | full animation, then 5 seconds%s',
                     unitID,case.name,case.upright and 'upright' or 'horizontal',degrees,note))
                 Spring.SetUnitRulesParam(unitID,'text_fx_test_mode',case.name,{public=true})
                 Spring.SetUnitRulesParam(unitID,'text_fx_test_rotation',degrees,{public=true})
-                StartThread(runEffect,effects[case.name],ids,pos)
-                -- Effects can contain long sleeps. Cancel their worker at the
-                -- deadline, then reset every glyph/spin before the next case.
-                Sleep(5000)
+                local effect=effects[case.name]
+                if effect then effect(ids,pos,groups) end
+                -- Active effects still run to completion. Cleanup gets at
+                -- most five seconds; already-hidden glyphs reset immediately.
+                if not waitHologramTextCleanup(glyphs,visibleGlyphs,5000) then
+                    pos.debugTextFx('cleanup exceeded 5 seconds; letters hidden and hard-reset')
+                end
+                holdHologramText(ids,pos,5000)
             end
         end
     end

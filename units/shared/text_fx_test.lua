@@ -1,6 +1,6 @@
 return lowerkeys({text_fx_test = {
     name='Text FX test',
-    description='Lorem Ipsum: shared text effects and parent rotation, five seconds per case',
+    description='Lorem Ipsum: full text effects and parent rotation, then a five-second hold',
     objectName='house_western_hologram.dae',
     script='text_fx_test_script.lua',
     buildCostEnergy=0, buildCostMetal=0, buildTime=1,

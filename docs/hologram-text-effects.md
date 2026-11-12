@@ -12,16 +12,40 @@ Glyph layout, drops and individual-letter yaw use local Z. The whole text spinne
 
 The DAE basis test checks exported bind poses and glyph geometry; it does not establish the running engine's parent rotation behavior. The Y-axis restoration follows the reported in-game regression and still needs a live visual recheck.
 
-Horizontal text runs along local **-Y**, while upright text runs down local **-Z**. Spiral and DNA-helix project around their corresponding axes: horizontal uses a Y-axis helix with X/Z radial offsets; upright uses a Z-axis helix with X/Y radial offsets and negative Z progression. The facing angle accounts for the engine's opposite Y/Z turn signs, keeping glyph fronts directed toward the helix axis. Only these two effects are eligible for upright text; other projections retain their existing horizontal-only selection.
+Spiral now always uses the visually approved vertical variant: radial engine components 1/2, upward progression on component 3, and its existing facing and spacing. The lengthwise branch is removed from the shared library used by the house, brothel and blimp scripts, and from the preview cycle. Its old horizontal/upright console labels described the starting text layout, not the resulting spiral orientation. DNA helix also replaces either starting layout with a vertical staircase. Spiral, DNA helix, arch, tornado, smile and plant accept either starting layout; matrix is selected only for upright text.
 
-Circle, ring and cube layouts use the local X/Y ground plane, preserving Z height during fireworks. Ring facing uses radians directly and starts its continuous spin after setting the angle. Matrix, waterfall and fireworks movement uses the vertical Z axis. Personalized signs convert civilian positions into the imported text plane using the unit's heading, and restore the ordinary spin afterward. Deliberate face-plane rocking in conga and takeover effects remains.
+DNA pairs consecutive available letters at the same height, on opposite sides of the helix, with their backs toward each other and fronts facing outward. Each successive pair rises by `sizeDownLetter` and advances by π/7 around the vertical axis. Spaces have no mesh and do not consume a partner; an odd final letter occupies the last step alone. The radius remains seven letter spacings divided by 2π. The whole staircase rotates rigidly through the parent spinner for 15 seconds, using the selected parent speed/direction or 20°/s when no rotation was selected. That temporary default spin is stopped and its heading reset after the letters hide; an existing parent spin continues. Glyph placement/yaw use explicit engine components 1/2/3 to avoid the header's swapped aliases.
+
+Arch divides a semicircle into equal angular cells and applies a 2D rotation matrix to each slot position in the DAE Y/Z text face plane. Glyphs remain unrotated; spaces and unavailable glyphs reserve their cells, giving uniform spacing along the curve. Up to 20 logical phrase slots use one arch; longer phrases split evenly across two stacked arches, with the first half above the second and at least 1.25 glyph heights between the rows. The radius uses the longer row's slot count and the configured letter spacing; exceptionally long phrases enlarge both arches instead of dropping letters. It supports both initial layouts and keeps its 35-second hold.
+
+Cube wraps the phrase around the four vertical faces of an invisible square cube. Letters stay upright and face outward, turning by 90 degrees at each corner. Logical slots are balanced across the faces, with cell centres keeping letters away from corners and spaces preserving gaps. Phrases over 20 slots continue on a second row around the same cube, 1.25 glyph heights below the first. The side length grows with the busiest face to retain the configured letter spacing; no phrase content is truncated or duplicated. The effect keeps its 35-second hold and hides the letters afterward.
+
+Fireworks launches balanced groups of up to 12 available letters from one shared world-space point just above the terrain under the sign. A group rises together for two seconds, then expands over one second into a complete circle in the sign's vertical text plane. Letter order and word gaps are retained, all glyphs stay upright, and the burst pauses for three seconds. It then accelerates downward over four seconds while preserving its arrangement; each glyph disappears at its own ground contact. Groups launch sequentially with a half-second gap. World-space conversion accounts for model scale, heading and differing glyph bind offsets. Radius and launch height follow the glyph proportions. Parent rotation pauses during the effect for readability and resumes afterward if it was selected. A circular phrase is read clockwise from its crown; legibility still depends on camera angle and needs a live visual check.
+
+The production script header defines `x_axis=1`, `y_axis=3`, `z_axis=2`; these aliases are not the DAE axis names. Circle therefore uses explicit engine components 1/2 for its ground-plane spread and component 3 for upright yaw. Arch, cube and DNA also use explicit glyph components; fireworks uses world-space targets rather than the circle effect. The circle's radius, angular span, facing direction and hold duration are unchanged. The projection regression loads the actual header aliases; the preview scheduler does too. Ring projects a full 360° circle in the DAE Y/Z text plane, reading clockwise from its crown with upright, unturned glyphs and preserved logical gaps. Its lowest point stays at the original text baseline. It retains its authored radius unless more clearance is needed between letters, waits for the two-second formation move, then holds for 15 seconds. Parent spin pauses during the readable hold and resumes afterward; individual letters no longer spin edge-on. Personalized signs convert civilian positions into the imported text plane using the unit's heading, and restore the ordinary spin afterward. Deliberate face-plane rocking in conga and takeover effects remains.
 
 ## New effects
 
 - **Civilian conga:** chooses a live civilian within 650 world units, drops the physical letters to terrain height over 800 ms, and follows a bounded path history with phased sway and hopping. Letter spacing uses the authored glyph's transformed bounds. A cached inverse of each glyph's parent-world basis accounts for house heading, parent rotation, imported scale and axes. Motion updates at 5 Hz for at most 16.6 seconds, ending early on disappearance or departure beyond 750 units. Letter leases also rotate through conga positions. No civilian orders, MoveCtrl or new gadgets are involved.
 - **Hostile takeover:** selects a different phrase from the sign's existing phrase pool and places it below the original. Private glyphs stay in formation and recoil while shared physical glyphs shoot across the gap in opposing directions on a 500-ms beat for 12 seconds. Each shot travels through a raised midpoint for 120 ms, lands over 130 ms, then holds for 250 ms; engine interpolation supplies the motion. There are no weapon projectiles, damage, extra letter meshes or per-frame workers. Repeated occurrences cycle through their leased slots too. The original layout is restored afterward.
 
-Both modes join the existing uniformly selected effect catalogue: each now has a **1/22 chance (~4.55%) per selection**. The existing sign eligibility and horizontal-layout gates still apply. Conga requires a nearby live civilian; takeover requires another phrase. Ineligible effects return without a new retry loop.
+**One-armed bandit:** horizontal text becomes a row of slot-machine reels. Six shuffled rolls cycle the phrase's available glyphs downward through their slots, then reels slow and stop from left to right on the original phrase. Each physical glyph belongs to exactly one reel at a time; locked letters cannot be borrowed by the remaining reels. Spaces stay empty, and exhausted repeated-letter leases resume during the final three-second readable hold. Parent spin pauses during the effect and resumes afterward. There are no extra meshes or background workers.
+
+**Letter tornado:** the phrase winds upward around an expanding cone, with eight logical slots per turn and word gaps preserved. Letters stay upright with the corrected cube/DNA facing. The letters orbit the cone in their actual horizontal plane at 30 Hz for 15 seconds, with their facing following the orbit. Speed is at least 60°/s and follows the selected direction; the parent stays still during the effect. It then restores the phrase for a three-second hold and resumes the previous parent spin.
+
+**Heart monitor:** a separate mode; the existing `SinusLetter` is unchanged. Two ECG-shaped pulses travel along one straight line, including a small lead-in, negative dip, sharp upward spike, undershoot and recovery. Only glyph height changes. Word gaps remain, parent spin pauses for readability, and the line returns to its baseline before restoring the original layout.
+
+**Smiling face:** letters form exactly two eyes and a curved smiling mouth in the text plane, without a nose or face outline. Tiny phrases can borrow unused alphabet pieces to complete the features. Every borrowed piece is hidden/reset afterward; the original phrase and selected parent spin return after a seven-second hold.
+
+**Letter plant:** letters sprout from terrain beneath the sign, first growing a vertical stem from the ground and then alternating branches from that stem. Growth uses the imported model's scale and heading; branch ends stay above the terrain. After a six-second grown hold, the original phrase and selected parent spin return.
+
+**Travelling push (`syncToFrontLetters`):** a four-slot-wide pressure wave travels behind one straight line of text, pushing neighbouring letters forward in depth and smoothly releasing them back to the same positions. No glyph rotates or leaves its baseline. This remains distinct from the vertical heart-monitor pulse.
+
+**Cross letters:** two phrase segments cross at a shared character, preferably near the middle of both segments. A near-middle space is preferred for splitting. The intersection uses one physical glyph; the duplicate occurrence is hidden during the cross. If the segments share no letter, the existing middle glyph becomes their junction without inventing or reordering text. The layout holds for seven seconds and restores the phrase.
+
+**Matrix:** three repeats of the same motion used by `consoleLetters`, arranged as a vertical column at eight times the normal console speed. Each repeat waits for its moves to finish and holds for 150 ms. The ordinary console effect retains its original layout, speed and ten-second hold.
+
+The uniformly selected catalogue now has 27 modes: each has a **1/27 chance (~3.70%) per selection**. Sign eligibility and layout gates still apply. Conga requires a nearby live civilian; takeover requires another phrase. Ineligible effects return without a new retry loop.
 
 ## Validation
 
@@ -33,7 +57,7 @@ lua5.1 tests/hologram_text_fx_test.lua
 python3 tests/hologram_text_axes_test.py
 ```
 
-The regression suite executes the real shared library and both scripts' production functions with strict animation-call mocks. It covers exhaustion, direct occurrence ordering, UTF-8 gaps, selection, logical spacing, half-second leases and restoration, matrix parameters, radius/no-rest handling, glow lifetime, all 22 registered modes in both orientations, empty groups, parent rotation/scale inversion, conga lifecycle, takeover crossfire timing/trajectories and scratch-global isolation. CI uses native Lua 5.1; local validation can also run the same suite through `lupa.lua51` (Lua 5.1).
+The regression suite executes the real shared library and both scripts' production functions with strict animation-call mocks. It covers exhaustion, direct occurrence ordering, UTF-8 gaps, selection, logical spacing, half-second leases and restoration, matrix parameters, radius/no-rest handling, glow lifetime, all 27 registered modes, empty groups, parent rotation/scale inversion, conga lifecycle, takeover crossfire timing/trajectories, slot-machine reel ownership/ordered stops, projection geometry, travelling pulses, terrain-based growth, borrowed-piece cleanup and scratch-global isolation. CI uses native Lua 5.1; local validation can also run the same suite through `lupa.lua51` (Lua 5.1).
 
 No Recoil visual or target-hardware performance validation has been performed. In Recoil, check a long repeated-letter slogan, day/night and blackout transitions, all projection modes, conga descent on slopes and rotated houses, turns/stops/death of the target civilian, and takeover cleanup when a phrase changes or the hologram is destroyed. Confirm glyph size, facing, ground clearance and movement timing against actual exported models. Compare zoomed-out frame times in a dense city.
 
@@ -44,11 +68,18 @@ cursor. It uses `house_western_hologram.dae` and the real `lib_textFx.lua` funct
 with ordinary engine Show/Hide drawing and no neon registration. The phrase is
 `Lorem Ipsum`; console messages identify each mode, layout and parent rotation.
 
-Each case gets exactly five simulation seconds. A signalled worker is cancelled
-at that deadline and all glyph transforms/spins are reset before the next case.
-Long effects are therefore previews, not full-length performances. The cycle has
-78 cases: plain horizontal/upright text, all 22 shared modes (matrix and arch use
-upright), extra upright spiral/helix cases, each at 0, +20 and -20 degrees/second
+Each case runs its shared animation to completion, allows about five seconds
+for remaining finite glyph moves/turns, then holds for five simulation seconds
+before the next case. Cleanup immediately hard-resets already-hidden glyphs;
+if visible cleanup exceeds the deadline, it hides and hard-resets those too.
+Reset replaces queued engine targets before snapping and leaves the glyphs
+hidden for an engine tick so an old target cannot pull the next layout apart.
+The production signs use the same cleanup. Conga tracks actual piece translations
+when calculating speeds, and fireworks bounds its launch/burst/fall waits too.
+Continuous spins keep running during the hold. All glyph transforms/spins are
+reset between cases; long effects are no longer cut short. The cycle has
+90 cases: plain horizontal/upright text, all 27 shared modes (matrix and arch use
+upright), an extra upright DNA-helix case, each at 0, +20 and -20 degrees/second
 around the same parent Y axis used by production holograms.
 
 Existing effect eligibility is preserved: personal projection and conga need a
@@ -56,5 +87,5 @@ nearby civilian; night flicker needs night. Achromatic shivering rejects repeate
 letters, so `Lorem Ipsum` makes it return without animating; the console notes
 this. Takeover uses `Ipsum Lorem` as the opposing phrase. The external
 `text_fx_test_unit_test.lua` runs the actual shared functions with a unit-thread
-scheduler and verifies coverage, deadlines and parent rotation. Live model
+scheduler and verifies coverage, completion-before-hold timing and parent rotation. Live model
 appearance still needs an in-game check.

@@ -89,14 +89,59 @@ function transitionHologramText(allLetters, posLetters, appearing, duration)
     if not appearing then hideTReg(allLetters) end
 end
 
-local function waitTextMoves(letters)
+function hardResetHologramLetters(letters)
+    if #letters == 0 then return end
+    hideTReg(letters)
+    for _,id in ipairs(letters) do
+        for axis=1,3 do
+            StopSpin(id,axis,0)
+            -- Replace queued animation destinations before snapping. A plain
+            -- speed-zero reset leaves the old engine animations alive.
+            Move(id,axis,0,1);Move(id,axis,0,0)
+            Turn(id,axis,0,1);Turn(id,axis,0,0)
+        end
+    end
+    -- Let the engine retire those zero-distance commands while still hidden,
+    -- before any new layout can be pulled back toward their reset targets.
+    Sleep(34)
+end
+
+function waitHologramTextCleanup(letters, visible, timeout)
+    timeout = timeout or 5000
+    local elapsed,resetHidden = 0,{}
+    while true do
+        local hidden,busy = {},false
+        for _,id in ipairs(letters) do
+            if visible and not visible[id] then
+                if not resetHidden[id] then hidden[#hidden+1]=id;resetHidden[id]=true end
+            else
+                for axis=1,3 do
+                    if Spring.UnitScript.IsInMove(id,axis) or Spring.UnitScript.IsInTurn(id,axis) then busy=true end
+                end
+            end
+        end
+        if #hidden>0 then hardResetHologramLetters(hidden) end
+        if not busy then return true end
+        if elapsed>=timeout then hardResetHologramLetters(letters);return false end
+        local step = math.min(33,timeout-elapsed)
+        Sleep(step);elapsed=elapsed+step
+    end
+end
+
+local function waitTextMoves(letters, timeout)
+    if timeout then return waitHologramTextCleanup(letters,nil,timeout) end
     for _, id in ipairs(letters) do
         for axis = 1, 3 do WaitForMove(id, axis) end
     end
+    return true
 end
 
 
 backdropAxis = x_axis
+-- Engine component indices in the exported glyph parent basis. The script
+-- header aliases y_axis=3 and z_axis=2; those names are not DAE Y/Z.
+-- DAE X/Y span the ground plane, while DAE Z maps to model/world up.
+local glyphDepthAxis, glyphBaselineAxis, glyphHeightAxis = 1, 2, 3
 -- Keep the parent spinner separate from the letters' local layout axes.
 -- Restore the parent Y rotation used before eb6c1863: sharing glyph Z here
 -- made the whole upright pillar tip over in game.
@@ -159,113 +204,75 @@ function waitAllLetters(allLetters)
 end
 
 
-function consoleLetters(allLetters, posLetters)
-    if #allLetters == 0 then return end
-    if not posLetters.boolUpright then
-       --echo("consoleLetters with "..toString(allLetters))
-        foreach(allLetters,
-        function(id)
-          reset(id,0)
-          HideReg(id)
-        end)
-
-        foreach(allLetters,
-        function(id)
-                for axis=1,3 do
-                    Move(id, axis, posLetters[id][axis], 150)
-                end            
-            ShowReg(id)
-        end)
-        Sleep(100)
-        waitTextMoves(allLetters)
-        Sleep(10000)
+local function consoleLetterRoll(allLetters, positions, speed, hold)
+    for _,id in ipairs(allLetters) do
+        reset(id,0)
+        HideReg(id)
     end
+    for _,id in ipairs(allLetters) do
+        for axis=1,3 do Move(id,axis,positions[id][axis],speed) end
+        ShowReg(id)
+    end
+    Sleep(100)
+    waitTextMoves(allLetters)
+    Sleep(hold)
+end
+
+function consoleLetters(allLetters, posLetters)
+    if #allLetters == 0 or posLetters.boolUpright then return end
+    consoleLetterRoll(allLetters,posLetters,150,10000)
 end
 
 function matrixTextFx(allLetters, posLetters)
-    if #allLetters == 0 then return end
-    if posLetters.boolUpright then
-        foreach(allLetters,
-            function(id)
-                reset(id)
-                HideReg(id)
-                for axis = 1, 3 do Move(id, axis, posLetters[id][axis], 0) end
-                Move(id, spindropAxis, posLetters[id][spindropAxis] + sizeDownLetter * 4, 0)
-                ShowReg(id)
-                Move(id,spindropAxis, posLetters[id][spindropAxis], 1400)
-            end)
-
-         foreach(allLetters,
-            function(id)
-                WaitForMove(id, spindropAxis)
-            end)
-         Sleep(1000)
-        
+    if #allLetters == 0 or not posLetters.boolUpright then return end
+    local origin = posLetters.slotPositions and posLetters.slotPositions[1] or posLetters[allLetters[1]]
+    local column = {}
+    for index,id in ipairs(allLetters) do
+        column[id] = {origin[glyphDepthAxis],origin[glyphBaselineAxis],
+            origin[glyphHeightAxis]-textSlot(posLetters,id,index-1)*sizeDownLetter}
     end
+    -- The same motion as consoleLetters, at eight times its speed, repeated
+    -- down a vertical column instead of the old one-off drop.
+    for pass=1,3 do consoleLetterRoll(allLetters,column,1200,150) end
 end
 
--- Horizontal lines flow along Y; upright text stacks downward along negative Z.
--- Keep helical rotation and its radial plane aligned to the text layout.
-local function helixTextAxes(posLetters)
-    if posLetters.boolUpright then
-        return z_axis, y_axis, -1
-    end
-    return y_axis, z_axis, 1
-end
-
--- Only spiral and helix currently support upright text's Z-axis baseline.
+-- These projections replace either initial text baseline with their own shape.
 function canProjectTextFx(name, posLetters)
+    if name == "matrixTextFx" then return posLetters.boolUpright == true end
     return not posLetters.boolUpright
-        or name == "dnaHelix" or name == "spiralProject"
+        or name == "dnaHelix" or name == "spiralProject" or name == "archProject" or name == "letterTornado"
+        or name == "smilingFace" or name == "letterPlant"
 end
 
 function dnaHelix(allLetters, posLetters)
     if #allLetters == 0 then return end
-    local circumference, i, length, radiant, radiantVal, radius, spiralIncrease
-    local axialAxis, radialAxis, axialSign = helixTextAxes(posLetters)
-    circumference = 7 * sizeSpacingLetter 
-    length = #posLetters.spacing
-    radius = circumference / (2 * math.pi)
-    radiant = (math.pi)/(7 )
+    local radius = 7*sizeSpacingLetter/(2*math.pi)
+    local origin = posLetters.slotPositions and posLetters.slotPositions[1] or posLetters[allLetters[1]]
+    local previousSpeed = posLetters.spinnerSpeed
+    local speed = previousSpeed and previousSpeed ~= 0 and previousSpeed or math.rad(20)
     hideTReg(allLetters)
-
-    i = 0
-    spiralIncrease = sizeDownLetter
-    foreach(allLetters,
-        function(pID)
-            reset(pID, 0)
-            i = textSlot(posLetters, pID, i)
-            if i < length/2 then
-             
-                radiantVal = radiant*textSlot(posLetters, pID, i)
-                ShowReg(pID)
-                local xr = radius * math.cos(radiantVal)
-                local zr = radius * math.sin(radiantVal)
-
-                Move(pID,x_axis, xr, math.abs(xr)/2.0)
-                Move(pID,radialAxis, zr, math.abs(zr)/2.0)
-                Move(pID,axialAxis, axialSign * i * spiralIncrease, 0)
-                Turn(pID,axialAxis, math.pi + (axialAxis == z_axis and radiantVal or -radiantVal), 0)
-             
-            else
-                reset(pID, 0)
-                radiantVal = radiant* ((i- (length/2))+ 3)
-                ShowReg(pID)
-                local xr = radius * math.cos(radiantVal)
-                local zr = radius * math.sin(radiantVal)
-
-                Move(pID,x_axis, xr, math.abs(xr)/2.0)
-                Move(pID,radialAxis, zr, math.abs(zr)/2.0)
-                Move(pID,axialAxis, axialSign * (i- (length/2)) * spiralIncrease, 0)
-                Turn(pID,axialAxis, math.pi + (axialAxis == z_axis and radiantVal or -radiantVal), 0)
-            end
-               i = i +1
-                if posLetters.spacing[i + 1] == " " then
-                    i = i + 1
-                end
-    end)
+    for i,id in ipairs(allLetters) do
+        -- Pair consecutive available letters, not two halves of the phrase.
+        -- Spaces have no mesh; an odd final letter keeps its own last step.
+        local step = math.floor((i-1)/2)
+        local angle = step*math.pi/7+((i-1)%2)*math.pi
+        reset(id,0)
+        Move(id,glyphDepthAxis,origin[glyphDepthAxis]+radius*math.cos(angle),0)
+        Move(id,glyphBaselineAxis,origin[glyphBaselineAxis]+radius*math.sin(angle),0)
+        Move(id,glyphHeightAxis,origin[glyphHeightAxis]+step*sizeDownLetter,0)
+        -- Flip the glyph facing without changing its paired helix position.
+        Turn(id,glyphHeightAxis,angle+math.pi,0)
+        ShowReg(id)
+    end
+    -- One engine spinner rotates the staircase rigidly in the ground plane.
+    -- Never spin the individual glyphs independently of their positions.
+    Spin(textSpinner,textSpinnerAxis,speed,0)
     Sleep(15000)
-    hideTReg(allLetters) 
+    hideTReg(allLetters)
+    if not previousSpeed or previousSpeed == 0 then
+        StopSpin(textSpinner,textSpinnerAxis,0)
+        Turn(textSpinner,textSpinnerAxis,0,0)
+    end
 end
 
 
@@ -273,7 +280,9 @@ end
 function spiralProject(allLetters, posLetters)
     if #allLetters == 0 then return end
     local circumference, i, radiant, radiantVal, radius, spiralIncrease
-    local axialAxis, radialAxis, axialSign = helixTextAxes(posLetters)
+    -- Always use the visually verified vertical variant. The script header's
+    -- swapped Y/Z names made the old "upright" branch run lengthwise.
+    local axialAxis, radialAxis = glyphHeightAxis, glyphBaselineAxis
     circumference = 7 * sizeSpacingLetter 
     radius = circumference / (2 * math.pi)
     radiant = (math.pi)/(7 )
@@ -293,8 +302,8 @@ function spiralProject(allLetters, posLetters)
 
         Move(pID,x_axis, xr, math.abs(xr)/2.0)
         Move(pID,radialAxis, zr, math.abs(zr)/2.0)
-        Move(pID,axialAxis, axialSign * i * spiralIncrease, 0)
-        Turn(pID,axialAxis, math.pi + (axialAxis == z_axis and radiantVal or -radiantVal), 0)
+        Move(pID,axialAxis, i * spiralIncrease, 0)
+        Turn(pID,axialAxis, math.pi-radiantVal, 0)
         i = i +1
         if posLetters.spacing[i + 1] == " " then
             i = i + 1
@@ -309,32 +318,100 @@ end
 
 function fireWorksProjectTextFx(allLetters, posLetters)
     if #allLetters == 0 then return end
-    local fallFactor, highPoint, lowPoint
-    lowPoint = -5000
-    highPoint = 1000
-    foreach(allLetters,
-        function(id)
-            Move(id, spindropAxis, lowPoint , 0)
-        end)
-    waitAllLetters(allLetters)
-    showTReg(allLetters)
-    foreach(allLetters,
-    function(id)
-        Move(id, spindropAxis, highPoint, 1000)
-    end)
-    waitAllLetters(allLetters)
-    -- for downwards outwards circle
-    for i= 100, 250, 50 do
-        fallFactor = math.ceil(i/25)
-        circleProject(allLetters, posLetters, i/100, true, true)
-        foreach(allLetters,
-            function(id)
-                Move(id, spindropAxis, highPoint - fallFactor * sizeDownLetter , 150)
-            end)
-        Sleep(1000)
-    end
-    waitAllLetters(allLetters)
     hideTReg(allLetters)
+    -- Freeze the parent while using cached world-space conversions. The
+    -- readable burst must not turn away from the sign's original facing.
+    StopSpin(textSpinner,textSpinnerAxis,0)
+    local owner = posLetters.unitID
+    local pieceMap = Spring.GetUnitPieceMap(owner)
+    local movers, anchor, basis = {}
+    for _,id in ipairs(allLetters) do
+        reset(id,0)
+        local move, origin, axes = hologramWorldMover(owner,id,{0,0,0},pieceMap)
+        if not move then
+            restoreMessageOriginalPosition(allLetters,posLetters)
+            if posLetters.spinnerSpeed then Spin(textSpinner,textSpinnerAxis,posLetters.spinnerSpeed,0) end
+            return
+        end
+        movers[id] = move
+        anchor, basis = anchor or origin, basis or axes
+    end
+    local function length(v) return math.sqrt(v[1]^2+v[2]^2+v[3]^2) end
+    local height = sizeDownLetter*length(basis[glyphHeightAxis])
+    local spacing = math.max(sizeSpacingLetter*length(basis[glyphBaselineAxis]),height)*1.15
+    local dx,dz = -basis[glyphBaselineAxis][1],-basis[glyphBaselineAxis][3]
+    local span = math.sqrt(dx*dx+dz*dz)
+    if span < 1e-9 then dx,dz,span = 1,0,1 end
+    dx,dz = dx/span,dz/span
+    local x,z = anchor[1],anchor[3]
+    local ground = Spring.GetGroundHeight(x,z)
+    local launchY = ground+height*0.5
+    local highY = math.max(anchor[2]+height*2,launchY+height*8)
+    -- Balanced groups avoid one giant burst or a tiny leftover launch.
+    local groupCount = math.ceil(#allLetters/12)
+    for groupIndex=1,groupCount do
+        local first = math.floor((groupIndex-1)*#allLetters/groupCount)+1
+        local last = math.floor(groupIndex*#allLetters/groupCount)
+        local firstSlot = textSlot(posLetters,allLetters[first],first-1)
+        local slotCount = textSlot(posLetters,allLetters[last],last-1)-firstSlot+1
+        local radius = slotCount > 1 and spacing/(2*math.sin(math.pi/slotCount)) or 0
+        local peakY = math.max(highY,launchY+radius+height*2)
+        local group = {}
+        for index=first,last do
+            local id = allLetters[index]
+            group[#group+1] = id
+            movers[id](x,launchY,z,0)
+        end
+        showTReg(group)
+        for _,id in ipairs(group) do movers[id](x,peakY,z,2) end
+        if not waitTextMoves(group,5000) then
+            if posLetters.spinnerSpeed then Spin(textSpinner,textSpinnerAxis,posLetters.spinnerSpeed,0) end
+            return
+        end
+        local offsets = {}
+        for index,id in ipairs(group) do
+            -- A complete circle in the text plane; rotate positions only.
+            -- Start at the crown and read clockwise, with all glyphs upright.
+            local slot = textSlot(posLetters,id,first+index-2)-firstSlot
+            local angle = 2*math.pi*slot/slotCount
+            local horizontal,vertical = radius*math.sin(angle),radius*math.cos(angle)
+            offsets[id] = {horizontal,vertical}
+            movers[id](x+dx*horizontal,peakY+vertical,z+dz*horizontal,1)
+        end
+        if not waitTextMoves(group,5000) then
+            if posLetters.spinnerSpeed then Spin(textSpinner,textSpinnerAxis,posLetters.spinnerSpeed,0) end
+            return
+        end
+        Sleep(3000)
+        -- Preserve the circle/order while it accelerates downward. Each
+        -- spark disappears at its own terrain contact, never below ground.
+        local landed = {}
+        local lowestGround = ground
+        for _,id in ipairs(group) do
+            local horizontal = offsets[id][1]
+            lowestGround = math.min(lowestGround,Spring.GetGroundHeight(x+dx*horizontal,z+dz*horizontal))
+        end
+        local fallDistance = peakY+radius-lowestGround+height
+        for tick=1,20 do
+            local drop = fallDistance*(tick/20)^2
+            for _,id in ipairs(group) do
+                if not landed[id] then
+                    local horizontal,vertical = offsets[id][1],offsets[id][2]
+                    local tx,tz = x+dx*horizontal,z+dz*horizontal
+                    local floor = Spring.GetGroundHeight(tx,tz)+height*0.5
+                    local target = peakY+vertical-drop
+                    movers[id](tx,math.max(floor,target),tz,0.2)
+                    if target <= floor then landed[id] = tick end
+                end
+            end
+            Sleep(200)
+            for _,id in ipairs(group) do if landed[id] == tick then HideReg(id) end end
+        end
+        waitTextMoves(group,5000)
+        hideTReg(group)
+        if groupIndex < groupCount then Sleep(500) end
+    end
+    if posLetters.spinnerSpeed then Spin(textSpinner,textSpinnerAxis,posLetters.spinnerSpeed,0) end
 end
 
 function messageUniqueLettered( posLetters)
@@ -390,35 +467,33 @@ end
 
 function ringProject(allLetters, posLetters)
     if #allLetters == 0 then return end
-    local circumference, i, radiant, radiantVal, radius
-    circumference = count(allLetters) * sizeDownLetter + 10* sizeDownLetter
-
-    radius = circumference / (2 * math.pi)
-    radiant = (math.pi *2)/(math.max(1, #posLetters.spacing)*2.0)
+    local slots = math.max(1,#(posLetters.spacing or allLetters))
+    local radius = 0
+    if slots > 1 then
+        -- Retain the authored ring scale, enlarging only when necessary to
+        -- keep upright glyphs apart around a full circle (including gaps).
+        local spacing = math.max(sizeSpacingLetter,sizeDownLetter)*1.15
+        radius = math.max((#allLetters+10)*sizeDownLetter/(2*math.pi),
+            spacing/(2*math.sin(math.pi/slots)))
+    end
+    local origin = posLetters.slotPositions and posLetters.slotPositions[1] or posLetters[allLetters[1]]
     hideTReg(allLetters)
-
-    i=0
-    foreach(allLetters,
-        function(pID)
-            reset(pID, 0)
-        
-        radiantVal = radiant*textSlot(posLetters, pID, i)
-        ShowReg(pID)
-        local xr = radius * math.cos(radiantVal)
-        local yr = radius * math.sin(radiantVal)
-        Move(pID,x_axis, xr, math.abs(xr)/2.0)
-        Move(pID,y_axis, yr, math.abs(yr)/2.0)
-        -- Turn takes radians; tP takes degrees and would also cancel the spin.
-        Turn(pID,spindropAxis,math.pi + radiantVal,0)
-        Spin(pID, spindropAxis, math.rad(42),0)
-        i = i +1
-        if posLetters.spacing[i + 1] == " " then
-            i = i + 1
-        end
-        end)
-    
-        Sleep(15000)    
+    StopSpin(textSpinner,textSpinnerAxis,0)
+    for index,id in ipairs(allLetters) do
+        local angle = 2*math.pi*textSlot(posLetters,id,index-1)/slots
+        local target = {origin[glyphDepthAxis],
+            origin[glyphBaselineAxis]-radius*math.sin(angle),
+            origin[glyphHeightAxis]+radius+radius*math.cos(angle)}
+        reset(id,0)
+        for axis=1,3 do Move(id,axis,target[axis],math.abs(target[axis])/2) end
+        -- The positions form the ring; glyphs retain the original text facing.
+        -- No per-letter spins that turn them edge-on or upside-down.
+        ShowReg(id)
+    end
+    waitTextMoves(allLetters)
+    Sleep(15000)
     hideTReg(allLetters)
+    if posLetters.spinnerSpeed then Spin(textSpinner,textSpinnerAxis,posLetters.spinnerSpeed,0) end
 end
 
 
@@ -446,9 +521,9 @@ function circleProject(allLetters, posLetters, extRadiusFactor, boolDoNotRest, b
         local xr = radius * math.cos(radiantVal)
         local yr = radius * math.sin(radiantVal)
 
-        Move(pID,x_axis, xr, 100)
-        Move(pID,y_axis, yr, 100)
-        Turn(pID,z_axis, math.pi + radiantVal, 0)
+        Move(pID,glyphDepthAxis, xr, 100)
+        Move(pID,glyphBaselineAxis, yr, 100)
+        Turn(pID,glyphHeightAxis, math.pi + radiantVal, 0)
         i = i +1
         if posLetters.spacing[i + 1] == " " then
             i = i + 1
@@ -531,19 +606,34 @@ end
 
 function archProject(allLetters, posLetters)
     if #allLetters == 0 then return end
-    local letterName, stringlength, val
-    if posLetters.boolUpright then
-        restoreMessageOriginalPosition(allLetters, posLetters)
-        stringlength = #allLetters
-        for i=1, stringlength do
-            letterName = allLetters[i]
-            val = -(stringlength-i) * (90/stringlength)
-            Turn(letterName, spindropAxis, math.rad(val), 0)
-            Move(letterName, 1, (stringlength-i) *sizeSpacingLetter, 0)
-            ShowReg(letterName)
-        end
-        Sleep(35000)
+    restoreMessageOriginalPosition(allLetters, posLetters)
+    resetSpinDrop(allLetters)
+    local count = math.max(1, #(posLetters.spacing or allLetters))
+    local rows = count > 20 and 2 or 1
+    local firstRowCount = math.ceil(count/rows)
+    local radius = firstRowCount > 1 and firstRowCount*sizeSpacingLetter/math.pi or 0
+    local origin = posLetters.slotPositions and posLetters.slotPositions[1] or posLetters[allLetters[1]]
+    local centerY = origin[glyphBaselineAxis]-radius
+    -- Leave a glyph-height gap between the lower arch's crown and the
+    -- upper arch's baseline. Long phrases enlarge both arcs, never truncate.
+    local rowHeight = radius+sizeDownLetter*1.25
+    for i,id in ipairs(allLetters) do
+        local slot = textSlot(posLetters,id,i-1)
+        local row = slot >= firstRowCount and 1 or 0
+        local rowCount = row == 0 and firstRowCount or count-firstRowCount
+        local column = slot-row*firstRowCount
+        local angle = math.pi*(column+0.5)/rowCount
+        -- Apply the 2D rotation matrix [cos -sin; sin cos] to (radius,0).
+        -- Equal angular cells give equal arc lengths, including word gaps.
+        -- Rotate positions only: glyphs themselves remain unturned.
+        local along = radius*math.cos(angle)
+        local rise = radius*math.sin(angle)
+        Move(id,glyphDepthAxis,origin[glyphDepthAxis],0)
+        Move(id,glyphBaselineAxis,centerY+along,0)
+        Move(id,glyphHeightAxis,origin[glyphHeightAxis]+(rows-1-row)*rowHeight+rise,0)
+        ShowReg(id)
     end
+    Sleep(35000)
 end
 
 function getSpiral()
@@ -564,28 +654,40 @@ end
 
 function cubeProject(allLetters, posLetters)
     if #allLetters == 0 then return end
-    local cubeSize, index, localX, pID, z
-    cubeSize  = math.ceil(#allLetters*0.5)
-    index = 1
-       
-        for x=1, #allLetters do
-            z=1
-            localX=x
-            if allLetters[index] then
-                pID = allLetters[index]
-                  if x > cubeSize then
-                    z = x - cubeSize + 1
-                    localX = cubeSize
-                    Turn(pID, spindropAxis, math.rad(90), 0)
-                  end
-                -- First wall reads along -Y, then bends into +X. Keep the
-                -- glyph face perpendicular to its wall and use the corner once.
-                Move(pID,x_axis, z*sizeSpacingLetter, 0)
-                Move(pID,y_axis, -localX*sizeSpacingLetter, 0)
-                ShowReg(pID)
-            end
-            index = index +1
+    local count = math.max(1, #(posLetters.spacing or allLetters))
+    local rows = count > 20 and 2 or 1
+    local firstRowCount = math.ceil(count/rows)
+    local side = math.ceil(firstRowCount/4)*sizeSpacingLetter
+    local halfSide = side/2
+    local origin = posLetters.slotPositions and posLetters.slotPositions[1] or posLetters[allLetters[1]]
+    for i,id in ipairs(allLetters) do
+        local slot = textSlot(posLetters,id,i-1)
+        local row = slot >= firstRowCount and 1 or 0
+        local rowCount = row == 0 and firstRowCount or count-firstRowCount
+        local column = slot-row*firstRowCount
+        -- Balance logical slots across all four faces. Cell centres leave
+        -- clearance at corners, including when a row is not divisible by four.
+        local perFace, extra = math.floor(rowCount/4), rowCount%4
+        local face = 0
+        local faceCount = perFace+(face < extra and 1 or 0)
+        while column >= faceCount do
+            column = column-faceCount
+            face = face+1
+            faceCount = perFace+(face < extra and 1 or 0)
         end
+        local along = halfSide-(column+0.5)*side/faceCount
+        local angle = -face*math.pi/2
+        local cosine, sine = math.cos(angle), math.sin(angle)
+        -- Rotate the +X wall around actual glyph Z.
+        -- Text reads along -Y on the first face, then around the perimeter.
+        reset(id,0)
+        Move(id,glyphDepthAxis,origin[glyphDepthAxis]+halfSide*cosine-along*sine,0)
+        Move(id,glyphBaselineAxis,origin[glyphBaselineAxis]+halfSide*sine+along*cosine,0)
+        Move(id,glyphHeightAxis,origin[glyphHeightAxis]+(rows-1-row)*sizeDownLetter*1.25,0)
+        -- Flip the glyph facing without changing its place on the wall.
+        Turn(id,glyphHeightAxis,angle+math.pi,0)
+        ShowReg(id)
+    end
     Sleep(35000)
     hideTReg(allLetters) 
 end
@@ -665,21 +767,42 @@ function SpinLetters(allLetters, posLetters)
     hideTReg(allLetters)
 end
 
-function HideLetters(allLetters, posLetters)
+function HideLetters(allLetters, posLetters, _, cleanupLimit)
     if #allLetters == 0 then return end
     local direction, rest
+    local started = cleanupLimit and Spring.GetGameFrame()
+    local function remaining()
+        return cleanupLimit - (Spring.GetGameFrame()-started)*1000/30
+    end
    --echo("HideLetters with "..toString(allLetters))
     direction =  randSign()
     --Setup
      for j=1, #allLetters do
+            if cleanupLimit and remaining()<=34 then hardResetHologramLetters(allLetters);return false end
             HideReg(allLetters[j])
-            WMove(allLetters[j],backdropAxis, 150, 300)
+            if cleanupLimit then
+                hardResetHologramLetters({allLetters[j]})
+                for axis=1,3 do
+                    if axis~=backdropAxis then Move(allLetters[j],axis,posLetters[allLetters[j]][axis],0) end
+                end
+                Move(allLetters[j],backdropAxis,150,300)
+                if not waitHologramTextCleanup({allLetters[j]},nil,math.max(0,remaining())) then
+                    hardResetHologramLetters(allLetters);return false
+                end
+            else
+                WMove(allLetters[j],backdropAxis, 150, 300)
+            end
             ShowReg(allLetters[j])
             Move(allLetters[j],backdropAxis, posLetters[allLetters[j]][backdropAxis], 600)                
      end
 
     rest = math.random(4, 16)*500
+    if cleanupLimit and rest>=remaining() then
+        Sleep(math.max(0,remaining()))
+        hardResetHologramLetters(allLetters);return false
+    end
     Sleep(rest)
+    return true
 end
 
 function SinusLetter(allLetters, posLetters)
@@ -715,52 +838,153 @@ end
 
 function CrossLetters(allLetters, posLetters)
     if #allLetters == 0 then return end
-    local axis, direction, id, rest
-   --echo("CrossLetters with "..toString(allLetters))
-    direction =  randSign()
-    -- Reset
-    for i=1, #allLetters do
-        id =allLetters[i]
-        axis = math.random(1,3)
-        Move(id, axis, posLetters[id][axis] + math.random(250,500)*direction, 0)
-        HideReg(id)
+    local slots = posLetters.spacing or allLetters
+    local count = #slots
+    local chars = {}
+    for glyph in (posLetters.myMessage or ''):gmatch("[%z\1-\127\194-\244][\128-\191]*") do
+        chars[#chars+1] = glyph:upper()
     end
-    for i=1, #allLetters do
-        id =allLetters[i]
-        for a=1,3 do
-             Move(id, a, posLetters[id][a], 1600)
+    local leftEnd, rightStart = math.floor(count/2),math.floor(count/2)+1
+    local splitDistance = math.huge
+    for slot=2,count-1 do
+        if chars[slot] and chars[slot]:match('%s') and math.abs(slot-(count+1)/2)<splitDistance then
+            leftEnd,rightStart,splitDistance = slot-1,slot+1,math.abs(slot-(count+1)/2)
         end
-        ShowReg(id)
-        WaitForMoves(id)
     end
-
-    rest = math.random(4, 16)*500
-    Sleep(rest)
+    local leftCross,rightCross,best
+    for left=1,leftEnd do
+        for right=rightStart,count do
+            if chars[left] and not chars[left]:match('%s') and chars[left]==chars[right]
+                and (type(slots[left])=='number' or type(slots[right])=='number') then
+                local score = math.abs(left-(leftEnd+1)/2)+math.abs(right-(rightStart+count)/2)
+                if not best or score<best then leftCross,rightCross,best = left,right,score end
+            end
+        end
+    end
+    if not leftCross then
+        -- Without a common letter, share the middle existing glyph as the
+        -- junction of the two segments; never invent or reorder characters.
+        local pivotIndex = math.ceil(#allLetters/2)
+        leftCross = textSlot(posLetters,allLetters[pivotIndex],pivotIndex-1)+1
+        rightCross,leftEnd,rightStart = leftCross,leftCross,leftCross
+    end
+    local shared = type(slots[leftCross])=='number' and slots[leftCross] or slots[rightCross]
+    local origin = posLetters.slotPositions and posLetters.slotPositions[1] or posLetters[allLetters[1]]
+    local pivotZ = origin[glyphHeightAxis]+(count-rightCross)*sizeDownLetter
+    local layout = {slotPositions={},leases=posLetters.leases}
+    for slot=1,count do
+        if slot<=leftEnd then
+            layout.slotPositions[slot] = {origin[glyphDepthAxis],
+                origin[glyphBaselineAxis]-(slot-leftCross)*sizeSpacingLetter,pivotZ}
+        else
+            layout.slotPositions[slot] = {origin[glyphDepthAxis],origin[glyphBaselineAxis],
+                pivotZ-(slot-rightCross)*sizeDownLetter}
+        end
+    end
+    hideTReg(allLetters)
+    StopSpin(textSpinner,textSpinnerAxis,0)
+    local shown = {}
+    for index,id in ipairs(allLetters) do
+        local slot = textSlot(posLetters,id,index-1)+1
+        if (slot~=leftCross and slot~=rightCross) or id==shared then
+            local target = layout.slotPositions[slot]
+            layout[id] = target
+            reset(id,0)
+            for axis=1,3 do Move(id,axis,target[axis],math.abs(target[axis])/0.5) end
+            ShowReg(id)
+            shown[#shown+1] = id
+        end
+    end
+    waitTextMoves(shown)
+    holdHologramText(shown,layout,7000)
+    restoreMessageOriginalPosition(allLetters,posLetters)
+    if posLetters.spinnerSpeed then Spin(textSpinner,textSpinnerAxis,posLetters.spinnerSpeed,0) end
 end
 
 
 
-function syncToFrontLetters(allLetters)
-    if #allLetters == 0 then return end
-    local direction, rest
-    --echo("syncToFrontLetters with "..toString(allLetters))
-    direction =  randSign()
+local function prepareTextLine(allLetters, posLetters)
+    local count = math.max(1,#(posLetters.spacing or allLetters))
+    local origin = posLetters.slotPositions and posLetters.slotPositions[1] or posLetters[allLetters[1]]
+    local line = {slotPositions={},leases=posLetters.leases}
     hideTReg(allLetters)
-    --Setup
-    for j=1, #allLetters do
-        WMove(allLetters[j],backdropAxis, -500 + math.sin((j/#allLetters)*(math.pi/2))*50, 0)            
-    end    
-    showTReg(allLetters)
-    for j=1, #allLetters do
-        WMove(allLetters[j],backdropAxis, 150 + math.cos((j/#allLetters)*(math.pi/2))*50, 250)            
+    StopSpin(textSpinner,textSpinnerAxis,0)
+    for slot=1,count do
+        line.slotPositions[slot] = {origin[glyphDepthAxis],
+            origin[glyphBaselineAxis]-(slot-1)*sizeSpacingLetter,origin[glyphHeightAxis]}
     end
-    for j=1, #allLetters do
-        WMove(allLetters[j],backdropAxis,0, 150)            
+    for index,id in ipairs(allLetters) do
+        local target = line.slotPositions[textSlot(posLetters,id,index-1)+1]
+        line[id] = target
+        reset(id,0)
+        for axis=1,3 do Move(id,axis,target[axis],0) end
+        ShowReg(id)
     end
+    return line,origin,count
+end
 
+function syncToFrontLetters(allLetters, posLetters)
+    if #allLetters == 0 then return end
+    local line,origin,count = prepareTextLine(allLetters,posLetters)
+    local previous = {}
+    for _,id in ipairs(allLetters) do previous[id] = origin[glyphDepthAxis] end
+    -- A pressure wave travels behind the line. Its four-slot-wide footprint
+    -- pushes neighbours together, then releases them smoothly back in place.
+    -- Only depth changes; letters never leave their baseline or word slots.
+    local halfWidth, depth = 2,sizeSpacingLetter*0.75
+    for tick=0,2*(count-1+2*halfWidth) do
+        local center = -halfWidth+tick*0.5
+        for index,id in ipairs(allLetters) do
+            local distance = math.abs(textSlot(posLetters,id,index-1)-center)
+            local weight = distance < halfWidth and math.cos(distance*math.pi/(2*halfWidth))^2 or 0
+            local target = origin[glyphDepthAxis]+depth*weight
+            Move(id,glyphDepthAxis,target,math.abs(target-previous[id])/0.1)
+            previous[id] = target
+        end
+        Sleep(100)
+    end
     waitTextMoves(allLetters)
-    rest = math.random(4, 16)*500
-    Sleep(rest)
+    holdHologramText(allLetters,line,2000)
+    restoreMessageOriginalPosition(allLetters,posLetters)
+    if posLetters.spinnerSpeed then Spin(textSpinner,textSpinnerAxis,posLetters.spinnerSpeed,0) end
+end
+
+function heartMonitor(allLetters, posLetters)
+    if #allLetters == 0 then return end
+    local line,origin,count = prepareTextLine(allLetters,posLetters)
+    local previous = {}
+    local height,amplitude = origin[glyphHeightAxis],sizeDownLetter*1.2
+    for _,id in ipairs(allLetters) do previous[id] = height end
+    local function bump(distance,center,width)
+        return math.exp(-((distance-center)/width)^2)
+    end
+    -- A recognisable ECG-shaped pulse: small lead-in, dip, sharp spike,
+    -- undershoot and recovery. The line stays flat outside its footprint.
+    for beat=1,2 do
+        for tick=0,4*(count-1+6) do
+            local center = -3+tick*0.25
+            for index,id in ipairs(allLetters) do
+                local distance = textSlot(posLetters,id,index-1)-center
+                local pulse = 0
+                if math.abs(distance)<3 then
+                    pulse = 0.12*bump(distance,1.6,0.45)-0.2*bump(distance,0.5,0.22)
+                        +bump(distance,0,0.25)-0.3*bump(distance,-0.45,0.25)
+                        +0.22*bump(distance,-1.5,0.55)
+                end
+                local target = height+amplitude*pulse
+                if target~=previous[id] then
+                    Move(id,glyphHeightAxis,target,math.abs(target-previous[id])/0.075)
+                    previous[id] = target
+                end
+            end
+            Sleep(75)
+        end
+        waitTextMoves(allLetters)
+        if beat==1 then Sleep(600) end
+    end
+    holdHologramText(allLetters,line,2000)
+    restoreMessageOriginalPosition(allLetters,posLetters)
+    if posLetters.spinnerSpeed then Spin(textSpinner,textSpinnerAxis,posLetters.spinnerSpeed,0) end
 end
 --matrix like textfx
 
@@ -794,20 +1018,33 @@ function hologramWorldMover(owner, id, base, pieceMap)
     local origin = world(own[13],own[14],own[15])
     origin[1], origin[2], origin[3] = origin[1]+ux, origin[2]+uy, origin[3]+uz
     local previous = {base[1],base[2],base[3]}
-    return function(x,y,z,seconds)
+    local function moveToWorld(x,y,z,seconds)
         local delta = {x-origin[1],y-origin[2],z-origin[3]}
+        local current = previous
+        if Spring.UnitScript and Spring.UnitScript.GetPieceTranslation then
+            local translation = {Spring.UnitScript.GetPieceTranslation(id)}
+            if translation[3] then current = translation end
+        end
         for axis = 1, 3 do
             local target = base[axis] + textDot(delta,cof[axis])/det
-            Move(id, axis, target, math.abs(target-previous[axis])/seconds)
+            -- Move(...,0) teleports but does not cancel the engine's queued
+            -- animation. Replace its destination even for a stationary axis.
+            local speed = seconds > 0 and math.max(1e-6,math.abs(target-current[axis])/seconds) or 1
+            Move(id,axis,target,speed)
+            if seconds <= 0 then Move(id,axis,target,0) end
             previous[axis] = target
         end
     end
+    return moveToWorld, origin, basis
 end
 
 function civilianCongaText(allLetters, posLetters)
     if #allLetters == 0 then return end
     local owner = posLetters.unitID
     local types = getCivilianTypeTable(UnitDefs)
+    local function report(message)
+        if posLetters.debugTextFx then posLetters.debugTextFx('conga: '..message) end
+    end
     local civilian
     for _, candidate in ipairs(getAllNearUnit(owner, 650) or {}) do
         if types[Spring.GetUnitDefID(candidate)] and doesUnitExistAlive(candidate) then
@@ -815,7 +1052,9 @@ function civilianCongaText(allLetters, posLetters)
             break
         end
     end
-    if not civilian then return end
+    if not civilian then report('skipped: no eligible target within 650');return end
+    local def = UnitDefs[Spring.GetUnitDefID(civilian)]
+    report('following unit '..civilian..' ('..(def and def.name or 'unknown type')..')')
     StopSpin(textSpinner, textSpinnerAxis, 0)
     for axis = 1, 3 do Turn(textSpinner, axis, 0, 0) end
     restoreMessageOriginalPosition(allLetters, posLetters)
@@ -824,6 +1063,7 @@ function civilianCongaText(allLetters, posLetters)
     for _, id in ipairs(allLetters) do
         movers[id] = hologramWorldMover(owner, id, posLetters[id], pieceMap)
         if not movers[id] then
+            report('stopped: could not convert glyph '..id..' to world coordinates')
             restoreMessageOriginalPosition(allLetters, posLetters)
             if posLetters.spinnerSpeed then Spin(textSpinner,textSpinnerAxis,posLetters.spinnerSpeed,0) end
             return
@@ -842,12 +1082,14 @@ function civilianCongaText(allLetters, posLetters)
         end
     end
     local trail = {}
+    local ticks,reason = 0,'completed'
     -- 5 Hz for at most 16 seconds; engine interpolation fills the gaps. Keep a
     -- bounded path history so the conga follows corners instead of cutting them.
     for tick = 0, 79 do
-        if not doesUnitExistAlive(civilian) then break end
+        if not doesUnitExistAlive(civilian) then reason='target disappeared';break end
         local x, _, z = Spring.GetUnitPosition(civilian)
-        if not x or (x-ox)^2+(z-oz)^2 > 750^2 then break end
+        if not x then reason='target position unavailable';break end
+        if (x-ox)^2+(z-oz)^2 > 750^2 then reason='target moved beyond 750';break end
         local front = Spring.GetUnitVectors(civilian)
         local dx, dz = x-(previousX or x), z-(previousZ or z)
         if dx*dx+dz*dz < 0.01 then dx,dz = front[1],front[3] end
@@ -884,10 +1126,15 @@ function civilianCongaText(allLetters, posLetters)
             ShowReg(id)
         end
         Sleep(tick == 0 and 800 or 200)
+        ticks=ticks+1
     end
+    -- Finish the last follow/rocking commands before restoring the phrase.
+    -- Instant resets alone leave old engine animations running afterward.
+    if not waitHologramTextCleanup(allLetters,nil,5000) then reason=reason..'; cleanup hard-reset after 5 seconds' end
     resetSpinDrop(allLetters)
     restoreMessageOriginalPosition(allLetters, posLetters)
     if posLetters.spinnerSpeed then Spin(textSpinner,textSpinnerAxis,posLetters.spinnerSpeed,0) end
+    report(reason..' after '..ticks..' follow updates')
 end
 
 -- Two advertisements compete for the same physical alphabet. Private letters
@@ -975,8 +1222,212 @@ function hostileTakeoverText(allLetters, posLetters, groups)
     if posLetters.spinnerSpeed then Spin(textSpinner,textSpinnerAxis,posLetters.spinnerSpeed,0) end
 end
 
+function smilingFace(allLetters, posLetters, groups)
+    if #allLetters == 0 then return end
+    local pieces,used = {},{}
+    for _,id in ipairs(allLetters) do pieces[#pieces+1]=id;used[id]=true end
+    -- Tiny phrases can borrow spare glyph meshes for two eyes and a mouth.
+    -- Borrow deterministically and release every extra piece on completion.
+    groups = groups or posLetters.TriLetters or {}
+    for code=65,90 do
+        for _,id in ipairs(groups[string.char(code)] or {}) do
+            if #pieces<5 and not used[id] then pieces[#pieces+1]=id;used[id]=true end
+        end
+    end
+    if #pieces<3 then return end
+    local origin = posLetters.slotPositions and posLetters.slotPositions[1] or posLetters[allLetters[1]]
+    local mouthCount = #pieces-2
+    local radius = math.max(sizeSpacingLetter*1.5,(mouthCount-1)*sizeSpacingLetter/math.pi)
+    hideTReg(pieces)
+    StopSpin(textSpinner,textSpinnerAxis,0)
+    for index,id in ipairs(pieces) do
+        local along,rise
+        if index<=2 then
+            along = (index==1 and 1 or -1)*radius*0.45
+            rise = radius+sizeDownLetter*1.25
+        else
+            local angle = mouthCount==1 and math.pi/2 or math.pi*(index-3)/(mouthCount-1)
+            along,rise = radius*math.cos(angle),radius*(1-math.sin(angle))
+        end
+        local target = {origin[glyphDepthAxis],origin[glyphBaselineAxis]+along,origin[glyphHeightAxis]+rise}
+        reset(id,0)
+        for axis=1,3 do Move(id,axis,target[axis],math.abs(target[axis])/0.6) end
+        ShowReg(id)
+    end
+    waitTextMoves(pieces)
+    Sleep(7000)
+    hideTReg(pieces)
+    for _,id in ipairs(pieces) do reset(id,0) end
+    restoreMessageOriginalPosition(allLetters,posLetters)
+    if posLetters.spinnerSpeed then Spin(textSpinner,textSpinnerAxis,posLetters.spinnerSpeed,0) end
+end
+
+function letterPlant(allLetters, posLetters)
+    if #allLetters == 0 then return end
+    hideTReg(allLetters)
+    StopSpin(textSpinner,textSpinnerAxis,0)
+    local movers,anchor,basis = {}
+    local owner = posLetters.unitID
+    local pieceMap = Spring.GetUnitPieceMap(owner)
+    for _,id in ipairs(allLetters) do
+        reset(id,0)
+        local move,origin,axes = hologramWorldMover(owner,id,{0,0,0},pieceMap)
+        if not move then
+            restoreMessageOriginalPosition(allLetters,posLetters)
+            if posLetters.spinnerSpeed then Spin(textSpinner,textSpinnerAxis,posLetters.spinnerSpeed,0) end
+            return
+        end
+        movers[id]=move;anchor,basis=anchor or origin,basis or axes
+    end
+    local function length(v) return math.sqrt(v[1]^2+v[2]^2+v[3]^2) end
+    local height = sizeDownLetter*length(basis[glyphHeightAxis])
+    local width = sizeSpacingLetter*length(basis[glyphBaselineAxis])
+    local dx,dz = -basis[glyphBaselineAxis][1],-basis[glyphBaselineAxis][3]
+    local span = math.sqrt(dx*dx+dz*dz)
+    if span<1e-9 then dx,dz,span=1,0,1 end
+    dx,dz=dx/span,dz/span
+    local x,z = anchor[1],anchor[3]
+    local rootY = Spring.GetGroundHeight(x,z)+height*0.5
+    local stemCount = math.ceil(#allLetters/2)
+    local branchCount = math.ceil((#allLetters-stemCount)/2)
+    for index,id in ipairs(allLetters) do
+        if index<=stemCount then
+            movers[id](x,rootY,z,0)
+            ShowReg(id)
+            movers[id](x,rootY+(index-1)*height*1.1,z,0.3)
+        else
+            local leaf = index-stemCount
+            local branch = math.ceil(leaf/2)
+            local side = leaf%2==1 and -1 or 1
+            local attachY = rootY+branch/(branchCount+1)*(stemCount-1)*height*1.1
+            local reach = side*width*(1.25+branch*0.15)
+            local tx,tz = x+dx*reach,z+dz*reach
+            local leafY = math.max(attachY+height*0.5,Spring.GetGroundHeight(tx,tz)+height*0.5)
+            movers[id](x,attachY,z,0)
+            ShowReg(id)
+            movers[id](tx,leafY,tz,0.4)
+        end
+        -- Grow one part at a time, using engine interpolation for each sprout.
+        for axis=1,3 do WaitForMove(id,axis) end
+    end
+    Sleep(6000)
+    restoreMessageOriginalPosition(allLetters,posLetters)
+    if posLetters.spinnerSpeed then Spin(textSpinner,textSpinnerAxis,posLetters.spinnerSpeed,0) end
+end
+
+function letterTornado(allLetters, posLetters)
+    if #allLetters == 0 then return end
+    local origin = posLetters.slotPositions and posLetters.slotPositions[1] or posLetters[allLetters[1]]
+    local previousSpeed = posLetters.spinnerSpeed
+    local speed = math.max(math.rad(60),math.abs(previousSpeed or 0))
+    if previousSpeed and previousSpeed<0 then speed=-speed end
+    local cone = {}
+    hardResetHologramLetters(allLetters)
+    StopSpin(textSpinner,textSpinnerAxis,0)
+    for index,id in ipairs(allLetters) do
+        local slot = textSlot(posLetters,id,index-1)
+        -- Eight logical slots per turn; rising letters trace an expanding
+        -- cone. Reserve whitespace instead of compressing the phrase.
+        local angle = slot*math.pi/4
+        local height = slot*sizeDownLetter*0.5
+        local radius = sizeSpacingLetter*1.5+height*0.35
+        cone[id]={angle=angle,radius=radius}
+        local target = {origin[glyphDepthAxis]+radius*math.cos(angle),
+            origin[glyphBaselineAxis]+radius*math.sin(angle),
+            origin[glyphHeightAxis]+height}
+        for axis=1,3 do Move(id,axis,target[axis],math.abs(target[axis])) end
+        -- Match the corrected outward-facing glyph orientation of cube/DNA.
+        Turn(id,glyphHeightAxis,angle+math.pi,0)
+        ShowReg(id)
+    end
+    waitTextMoves(allLetters)
+    -- Orbit in the glyphs' actual horizontal plane instead of relying on the
+    -- imported parent pivot. Facing follows the orbit, keeping the cone intact.
+    local step=1/30
+    for frame=1,450 do
+        for _,id in ipairs(allLetters) do
+            local c=cone[id]
+            local angle=c.angle+speed*frame*step
+            local oldAngle=angle-speed*step
+            local x=origin[glyphDepthAxis]+c.radius*math.cos(angle)
+            local y=origin[glyphBaselineAxis]+c.radius*math.sin(angle)
+            local oldX=origin[glyphDepthAxis]+c.radius*math.cos(oldAngle)
+            local oldY=origin[glyphBaselineAxis]+c.radius*math.sin(oldAngle)
+            if Spring and Spring.UnitScript and Spring.UnitScript.GetPieceTranslation then
+                oldX,oldY=Spring.UnitScript.GetPieceTranslation(id)
+            end
+            Move(id,glyphDepthAxis,x,math.max(0.000001,math.abs(x-oldX)/step))
+            Move(id,glyphBaselineAxis,y,math.max(0.000001,math.abs(y-oldY)/step))
+            Turn(id,glyphHeightAxis,angle+math.pi,math.abs(speed))
+        end
+        Sleep(33)
+    end
+    hideTReg(allLetters)
+    StopSpin(textSpinner,textSpinnerAxis,0)
+    Turn(textSpinner,textSpinnerAxis,0,0)
+    resetSpinDrop(allLetters)
+    restoreMessageOriginalPosition(allLetters,posLetters)
+    holdHologramText(allLetters,posLetters,3000)
+    if previousSpeed and previousSpeed ~= 0 then Spin(textSpinner,textSpinnerAxis,previousSpeed,0) end
+end
+
+function oneArmedBandit(allLetters, posLetters)
+    if #allLetters == 0 then return end
+    hideTReg(allLetters)
+    StopSpin(textSpinner,textSpinnerAxis,0)
+    for _,id in ipairs(allLetters) do reset(id,0) end
+    local travel = sizeDownLetter*1.25
+    local locked = 0
+    -- Six free rolls, then stop one reel per roll from left to right.
+    for roll=1,6+#allLetters do
+        local stopping = roll > 6
+        local pool = {}
+        local first = locked+1
+        -- The stopping reel owns its final glyph. Only shuffle the remaining
+        -- pieces, so no physical letter can serve two reels simultaneously.
+        for index=first+(stopping and 1 or 0),#allLetters do
+            pool[#pool+1] = allLetters[index]
+        end
+        for index=#pool,2,-1 do
+            local other = math.random(1,index)
+            pool[index],pool[other] = pool[other],pool[index]
+        end
+        if stopping then table.insert(pool,1,allLetters[first]) end
+        local seconds = 0.12+0.18*locked/#allLetters
+        for index,id in ipairs(pool) do
+            local target = posLetters[allLetters[first+index-1]]
+            HideReg(id)
+            for axis=1,3 do Move(id,axis,target[axis],0) end
+            Move(id,glyphHeightAxis,target[glyphHeightAxis]+travel,0)
+            ShowReg(id)
+            Move(id,glyphHeightAxis,target[glyphHeightAxis],travel/seconds)
+        end
+        waitTextMoves(pool)
+        Sleep(40)
+        for index,id in ipairs(pool) do
+            if not stopping or index > 1 then
+                local target = posLetters[allLetters[first+index-1]]
+                Move(id,glyphHeightAxis,target[glyphHeightAxis]-travel,travel/0.08)
+            end
+        end
+        waitTextMoves(pool)
+        for index,id in ipairs(pool) do
+            if not stopping or index > 1 then HideReg(id) end
+        end
+        if stopping then locked = locked+1 end
+    end
+    -- Lease exhausted repeated glyphs only after the reels have all stopped.
+    holdHologramText(allLetters,posLetters,3000)
+    if posLetters.spinnerSpeed then Spin(textSpinner,textSpinnerAxis,posLetters.spinnerSpeed,0) end
+end
+
 function getAllTextFx()
 return {
+        ["smilingFace"] = smilingFace,
+        ["letterPlant"] = letterPlant,
+        ["heartMonitor"] = heartMonitor,
+        ["letterTornado"] = letterTornado,
+        ["oneArmedBandit"] = oneArmedBandit,
         ["civilianCongaText"] = civilianCongaText,
         ["hostileTakeoverText"] = hostileTakeoverText,
         ["SinusLetter"]   = SinusLetter, 
