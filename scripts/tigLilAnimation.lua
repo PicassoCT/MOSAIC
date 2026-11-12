@@ -2,6 +2,66 @@
 local SIG_SWING, SIG_WHIR, SIG_WALK, SIG_IDLE = 512, 1024, 2048, 4096
 local animationLifetime = (SIG_CORE or 0) + (SIG_TIGLIL or 0)
 
+-- Keep smoothing local: text FX and other hologram pieces retain their own
+-- movement rules. The authored routines below still issue the same poses.
+local tiglilMotion = include("lib_tiglil_motion.lua")(Spring.UnitScript, animationLifetime)
+local Turn, Move = tiglilMotion.Turn, tiglilMotion.Move
+local Spin, StopSpin = tiglilMotion.Spin, tiglilMotion.StopSpin
+function TigLilStopSmoothing() tiglilMotion.cancel() end
+local function tP(id, x, y, z, speed, wait)
+    Turn(id, x_axis, math.rad(x), speed)
+    Turn(id, y_axis, math.rad(y), speed)
+    Turn(id, z_axis, math.rad(z), speed)
+    if wait then WaitForTurn(id,x_axis);WaitForTurn(id,y_axis);WaitForTurn(id,z_axis) end
+end
+local function WTurn(id, axis, target, speed)
+    Turn(id, axis, target, speed);WaitForTurn(id, axis)
+end
+local function WMove(id, axis, target, speed)
+    Move(id, axis, target, speed);WaitForMove(id, axis)
+end
+local function mP(id, x, y, z, speed, wait)
+    Move(id,x_axis,x,speed);Move(id,y_axis,y,speed);Move(id,z_axis,z,speed)
+    if wait then WaitForMoves(id) end
+end
+local function tSyncIn(id, x, y, z, milliseconds)
+    -- The original timed-turn helper addresses raw components 1/2/3.
+    -- Keep that convention, distinct from tP's historical axis aliases.
+    for axis,value in ipairs({x,y,z}) do
+        tiglilMotion.TurnInTime(id,axis,math.rad(value),milliseconds)
+    end
+end
+local function mSyncIn(id, x, y, z, milliseconds)
+    tiglilMotion.MoveInTime(id,x_axis,x,milliseconds)
+    tiglilMotion.MoveInTime(id,y_axis,y,milliseconds)
+    tiglilMotion.MoveInTime(id,z_axis,z,milliseconds)
+end
+local function TurnTowardsWind(id, speed, offset)
+    local dx, _, dz = Spring.GetWind()
+    local heading = math.atan2(dx,dz)
+    Turn(id,y_axis,heading+(offset or 0),speed)
+    return heading
+end
+local function syncTurn(_, id, x, y, z, speed)
+    local targets = {[x_axis]=math.rad(x),[y_axis]=math.rad(y),[z_axis]=math.rad(z)}
+    local current = {Spring.UnitScript.GetPieceRotation(id)}
+    local longest = 0
+    for axis=1,3 do
+        longest=math.max(longest,math.abs((targets[axis]-current[axis]+math.pi)%(2*math.pi)-math.pi))
+    end
+    -- Give the three axes a common arrival time without the old division by
+    -- zero for neutral components (which snapped those joints instantly).
+    local milliseconds=1000*longest/math.max(0.0001,math.abs(speed))
+    for axis=1,3 do tiglilMotion.TurnInTime(id,axis,targets[axis],milliseconds) end
+end
+local function reset(id, speed, wait)
+    if not id then return end
+    for axis=1,3 do
+        StopSpin(id,axis,0);Turn(id,axis,0,speed);Move(id,axis,0,speed)
+    end
+    if wait then for axis=1,3 do WaitForTurn(id,axis) end end
+end
+
 -------------------------------------------TIGLILI COPIED CRAP --------------------------
 local tldrum = piece "tldrum"
 local dancepivot = piece "dancepivot"
@@ -19,7 +79,8 @@ local tllegUpR = piece "tllegUpR"
 local tlpole = piece "tlpole"
 local tlflute = piece "tlflute"
 
-function TigLilSetup()    
+function TigLilSetup()
+    TigLilStopSmoothing()
     --echo("dancing tilgil a1")
     HideReg(tlpole)
     HideReg(deathpivot)

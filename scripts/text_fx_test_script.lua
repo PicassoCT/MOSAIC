@@ -7,6 +7,12 @@ include 'lib_textFx.lua'
 -- Ordinary engine model drawing: never register pieces with the neon gadget.
 local groups, glyphs, visibleGlyphs = {}, {}, {}
 local SIG_EFFECT=1
+-- Match the shared performer's signal layout, separate from the text cycle.
+SIG_CORE,SIG_HAIR,SIG_INCIRCLE,SIG_TALKHEAD,SIG_GESTE=2,4,8,16,32
+SIG_ONTHEMOVE,SIG_TIGLIL,SIG_FLICKER=64,128,256
+DirectionArcPoint=piece('DirectionArcPoint')
+BallArcPoint=piece('BallArcPoint')
+handr,handl,ball=piece('handr'),piece('handl'),piece('ball')
 local message='Lorem Ipsum'
 textSpinner=piece('text_spin')
 sizeSpacingLetter,sizeDownLetter=321,350
@@ -23,6 +29,20 @@ function restoreMessageOriginalPosition(ids,pos)
         for axis=1,3 do Move(id,axis,pos[id][axis],0) end
     end
     transitionHologramText(ids,pos,true,400)
+end
+
+local tiglilAnimations=include('tigLilAnimation.lua')
+local function dance()
+    SetSignalMask(SIG_CORE+SIG_TIGLIL)
+    local routines={idle_stance_10,idle_stance17,idle_stance_12,tiglilAnimations.idle_stance11}
+    while true do
+        for _,routine in ipairs(routines) do
+            Signal(SIG_HAIR);Signal(SIG_GESTE);Signal(SIG_TALKHEAD);Signal(SIG_INCIRCLE)
+            TigLilSetup()
+            -- Always present, including daytime and text cleanup/hold periods.
+            routine()
+        end
+    end
 end
 
 local function layout(upright,speed)
@@ -100,5 +120,10 @@ function script.Create()
         for _,id in ipairs(groups[string.char(code)] or {}) do glyphs[#glyphs+1]=id end
     end
     StartThread(cycle)
+    StartThread(dance)
 end
-function script.Killed() Signal(SIG_EFFECT);return 0 end
+function script.Killed()
+    Signal(SIG_EFFECT);Signal(SIG_CORE)
+    TigLilStopSmoothing()
+    return 0
+end

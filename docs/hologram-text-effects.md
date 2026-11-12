@@ -67,6 +67,10 @@ Start a new local match, enter `/cheat`, then `/give text_fx_test` to spawn at t
 cursor. It uses `house_western_hologram.dae` and the real `lib_textFx.lua` functions,
 with ordinary engine Show/Hide drawing and no neon registration. The phrase is
 `Lorem Ipsum`; console messages identify each mode, layout and parent rotation.
+Tiglil dances continuously alongside the letters using the shared smoothed drum,
+tango, headshake and dance routines. This preview has no night-only eligibility
+or shared performer cap, and text cleanup never hides the dancer. Both loops
+and their child animations stop when the unit is destroyed.
 
 Each case runs its shared animation to completion, allows about five seconds
 for remaining finite glyph moves/turns, then holds for five simulation seconds
@@ -89,3 +93,28 @@ this. Takeover uses `Ipsum Lorem` as the opposing phrase. The external
 `text_fx_test_unit_test.lua` runs the actual shared functions with a unit-thread
 scheduler and verifies coverage, completion-before-hold timing and parent rotation. Live model
 appearance still needs an in-game check.
+
+## Tiglil motion
+
+The Journeywar performer remains in `scripts/tigLilAnimation.lua`, used by both
+western hologram scripts and the advertising blimp. Its authored poses, routine
+order, random branches and holds are retained. Scoped helpers route movement
+through `lib_tiglil_motion.lua`; other hologram animations use their existing
+helpers.
+
+One worker per active performer updates native speeds at 30 Hz toward the
+original final targets. Quintic easing softens starts and stops; interrupted
+poses carry forward same-direction velocity without overshooting. Native
+`WaitForMove`/`WaitForTurn` still wait for the final pose. Speed-based movements
+retain their nominal duration with a 100 ms minimum blend. Timed poses keep
+their requested duration subject to that minimum. The synchronized yoga helper
+uses a common arrival time and avoids division by zero on neutral angles.
+Spins without authored acceleration/deceleration use a 180 ms ramp; explicit
+spin settings remain intact. Setup and show shutdown cancel the motion worker,
+and hidden shutdown resets replace queued engine targets.
+
+The external `tiglil_motion_test.lua` checks trajectories, shortest-angle turns,
+native waits, interruptions, cancellation/restart and real setup, gait, pose,
+yoga and shutdown callbacks. This is procedural smoothing, not captured motion;
+foot contact, silhouette and perceived weight still need a fresh-match visual
+check with the actual model.
