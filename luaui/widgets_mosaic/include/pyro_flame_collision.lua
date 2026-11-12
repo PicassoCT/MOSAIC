@@ -91,7 +91,8 @@ return function(S)
         if not px or not sx or not sy or not sz then
             return normalize(-dx,max(.06,-dy),-dz)
         end
-        local front,up,right=vectors and vectors(id)
+        local front,up,right
+        if vectors then front,up,right=vectors(id) end
         front=front or {0,0,1};up=up or {0,1,0};right=right or {1,0,0}
         -- Model-X in Mosaic uses -right, consistent with flame piece transforms.
         local ax={-right[1],-right[2],-right[3]}
