@@ -35,23 +35,29 @@ if (gadgetHandler:IsSyncedCode()) then
     local Events = {}
     local EventStreamID = 0
     local function DeactivateEvent(self, evtID)
-        boolRemovedFunction = false
-
-        for frames, EventTables in ipairs(Events) do
-            for i = #EventTables, 1, -1 do
-                if EventTables[i] == evtID then
-                    table.remove(Events[frames], evtID)
-                    boolRemovedFunction = true
-                end
-            end
-        end
-        return boolRemovedFunction
+        if type(evtID) ~= "number" or self[evtID] == nil then return false end
+        -- Queued IDs are skipped at dispatch; release the persistent data now.
+        self[evtID] = nil
+        return true
     end
-    --GG.EventStream:CreateEvent(self, action, persPack, startFrame)
+
+    local function ScheduleFrame(requested, current)
+        assert(type(requested) == "number" and requested == requested
+            and requested > -math.huge and requested < math.huge,
+            "EventStream requires a finite frame number")
+        -- The current frame may already be dispatching or have finished.
+        return math.max(current + 1, math.ceil(requested))
+    end
+
+    local function QueueEvent(id, frame)
+        if not Events[frame] then Events[frame] = {} end
+        Events[frame][#Events[frame] + 1] = id
+    end
+
     local function CreateEvent(self, action, persPack, startFrame)
-        startFrame = math.max(startFrame, Spring.GetGameFrame())
-        --	Spring.Echo("Create event "..(GG.EventStreamID+1).. "waiting for frame  "..startFrame)
-        myID = EventStreamID
+        assert(type(action) == "function", "EventStream requires a callback")
+        startFrame = ScheduleFrame(startFrame, Spring.GetGameFrame())
+        local myID = EventStreamID
         EventStreamID = EventStreamID + 1
         self[myID] = {
             id = myID,
@@ -59,9 +65,7 @@ if (gadgetHandler:IsSyncedCode()) then
             persPack = persPack,
             startFrame = startFrame
         }
-        if not Events[startFrame] then Events[startFrame] = {} end
-        Events[startFrame][#Events[startFrame] + 1] = myID
-
+        QueueEvent(myID, startFrame)
         return myID
     end
 
@@ -75,29 +79,26 @@ if (gadgetHandler:IsSyncedCode()) then
 
 
     function gadget:GameFrame(frame)
-        if Events[frame] then
-            for i = 1, #Events[frame] do
-               local evtID = Events[frame][i]
-
-                if GG.EventStream[evtID] then
-                    nextFrame, GG.EventStream[evtID].persPack =
-                        GG.EventStream[evtID].action(evtID, frame,
-                                                     GG.EventStream[evtID].persPack,
-                                                     GG.EventStream[evtID].startFrame)
-
+        local due = Events[frame]
+        Events[frame] = nil
+        if not due then return end
+        for i = 1, #due do
+            local evtID = due[i]
+            local event = GG.EventStream[evtID]
+            if event then
+                local nextFrame, persPack = event.action(evtID, frame,
+                    event.persPack, event.startFrame)
+                -- A callback may cancel itself or another queued event.
+                if GG.EventStream[evtID] == event then
                     if nextFrame then
-                        if not Events[nextFrame] then
-                            Events[nextFrame] = {}
-                        end
-                        Events[nextFrame][#Events[nextFrame] + 1] = evtID
+                        nextFrame = ScheduleFrame(nextFrame, frame)
+                        event.persPack = persPack
+                        QueueEvent(evtID, nextFrame)
                     else
                         GG.EventStream[evtID] = nil
                     end
                 end
             end
         end
-
-        -- handle EventStream
-        Events[frame] = nil
     end
 end

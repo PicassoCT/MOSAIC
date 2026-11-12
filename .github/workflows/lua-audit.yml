@@ -1,0 +1,53 @@
+name: Lua audit regressions
+
+on:
+  pull_request:
+    paths:
+      - 'luarules/gadgets/game_collateral.lua'
+      - 'luarules/gadgets/game_eventstream.lua'
+      - 'luarules/gadgets/game_delayedCodeExecution.lua'
+      - 'luarules/gadgets/gfx_neonHolograms.lua'
+      - 'luaui/widgets_mosaic/include/pyro_flame_collision.lua'
+      - 'luaui/widgets_mosaic/gui_team_platter.lua'
+      - 'units/shared/chasis/air/copter/air_copter_blackhawk.lua'
+      - 'gamedata/protagon.lua'
+      - 'luaui/widgets_mosaic/chili/gui_chiliguidemo.lua'
+      - 'scripts/tetris.lua'
+      - '.github/mosaic-tests.ref'
+      - '.github/lua-audit-cases/**'
+      - '.github/actions/external-tests/**'
+      - '.github/workflows/lua-audit.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  regressions:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /.github/
+            *.lua
+      - name: Install Lua 5.1
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y lua5.1
+      - name: Prepare pinned external tests
+        uses: ./.github/actions/external-tests
+      - name: Check installed fixes
+        working-directory: ${{ runner.temp }}/mosaic-validation
+        shell: bash
+        run: |
+          set -euo pipefail
+          luac5.1 -p tests/lua_audit_regressions.lua
+          for manifest in .github/lua-audit-cases/*.txt; do
+            case_name="$(basename "$manifest" .txt)"
+            source_path="$(cat "$manifest")"
+            luac5.1 -p "$source_path"
+            lua5.1 tests/lua_audit_regressions.lua "$case_name"
+          done
