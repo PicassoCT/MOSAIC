@@ -15,8 +15,8 @@ Recoil builds without private player rules parameters use cyan silhouettes.
 
 Each complete building has one screen-space identity mask. A bright cyan rim
 follows the visible contour of the combined building, including openings.
-The original bright translucent wireframe and animated scanlines remain fully
-visible inside it, including overlapping piece edges. The contour and a broader
+The original thin translucent wireframe and animated scanlines retain their
+initial brightness, including overlapping piece edges. The contour and a broader
 soft glow are added over that material without dimming its internals.
 Adjacent buildings keep separate identities and outlines. Border widths are
 measured in screen pixels; a selected host gets a wider amber rim.
