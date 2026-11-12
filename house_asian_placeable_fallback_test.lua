@@ -77,6 +77,7 @@ local function accepted(candidate,terrain,angle)
                 local dx,dz=x-200,z-200
                 return terrain(c*dx-s*dz,s*dx+c*dz)
             end}}, {__index=_G})
+    env.GG.HousePlaceableSelection={Request=function(_,id,apply) return {done=true,result=apply(nil)} end}
     local f=assert(loadfile('scripts/lib_house_asian_ground_placeables.lua'))
     setfenv(f,env)
     f()(planner,{cell=20,seed=1,pieces={}})

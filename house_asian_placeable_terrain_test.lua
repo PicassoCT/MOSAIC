@@ -47,6 +47,7 @@ local function run(angle,terrain,family)
     close(options.roads[1].aX,-6000,'rotated road X');close(options.roads[1].aZ,3500,'rotated road Z')
     options.count=5;placed=planner.plan(options);return placed
    end}}, {__index=_G})
+ env.GG.HousePlaceableSelection={Request=function(_,id,apply) return {done=true,result=apply(nil)} end}
  env.placeGroundProps=compile(helperCode,env)
  compile(wrapper(family),env)()
  for _,p in ipairs(placed) do
