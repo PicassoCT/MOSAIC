@@ -266,7 +266,7 @@ if (gadgetHandler:IsSyncedCode()) then
                             assertNum(data.location.x)
                             assertNum(data.location.y)
                             assertNum(data.location.z)
-                            SendToUnsynced("DisplayAtLocation", data.uid, data.location.x, data.location.y, data.location.z , team,
+                            SendToUnsynced("DisplayAtLocation", uid, data.location.x, data.location.y, data.location.z , team,
                                            data.damage, data.colour.r, data.colour.g, data.colour.b)
                         end
                 end
@@ -346,12 +346,12 @@ else -- UNSYNCED
         Spring.Echo("Display at Location Widget called")
         local storedData ={}
         storedData.team = team
-        storedData.message = damage
+        storedData.message = GetMoneyMessage(damage)
         storedData.x = x
         storedData.y = y
         storedData.z = z
-        storedData.frame = frame
-        storedData.col = {r = r, g = g, b = b, a= a}
+        storedData.frame = spGetGameFrame()
+        storedData.col = damage < 0 and colRed or colGreen
             
         UID_Location_Message[uid] = storedData
             
@@ -361,6 +361,7 @@ else -- UNSYNCED
         Spring.Echo(GetInfo().name .. " Initialization started")
         -- This associate the messages with the functions
         gadgetHandler:AddSyncAction("DisplaytAtUnit", DisplaytAtUnit)
+        gadgetHandler:AddSyncAction("DisplayAtLocation", DisplayAtLocation)
         --	Spring.Echo(GetInfo().name.." Initialization ended")
     end
 
@@ -389,21 +390,13 @@ else -- UNSYNCED
         end
 
         for uid, data in pairs(UID_Location_Message) do
-            if data then --and data.team == myTeamID 
-
-                if currFrame > data.frame and  currFrame < data.frame + DrawForFrames then
-                        local frameOffset = (255 - (data.frame + DrawForFrames - currFrame)) * 0.25
-                        local sx, sy = spWorldToScreenCoords(data.x,
-                                                             data.y + frameOffset,
-                                                             data.z)
-
-                        if valueT.message < 0 then
-                            gl.Color(1.0, 0.0, 0.0, 1.0)
-                        else
-                            gl.Color(0.0, 1.0, 0.0, 1.0)
-                        end
-                        gl.Text("$ " .. valueT.message, sx, sy, 16, "od")
-                end
+            if currFrame >= data.frame + DrawForFrames then
+                UID_Location_Message[uid] = nil
+            elseif currFrame > data.frame then
+                local frameOffset = (255 - (data.frame + DrawForFrames - currFrame)) * 0.25
+                local sx, sy = spWorldToScreenCoords(data.x, data.y + frameOffset, data.z)
+                gl.Color(data.col.r, data.col.g, data.col.b, data.col.a)
+                gl.Text(data.message, sx, sy, 16, "od")
             end
         end
 
