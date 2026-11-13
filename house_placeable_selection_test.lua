@@ -130,8 +130,8 @@ local function applyHouse()
         Move=function(id) assert(id>0) end,Turn=function(id) assert(id>0) end,
         Show=function(id) shown[id]=true end,SetRadiancePlaceables=function() end,
         Sleep=function() f:step() end},{__index=_G})
-    local helper=setfenv(assert(loadfile('scripts/lib_house_asian_ground_placeables.lua')),env)()
-    return helper(planner,{seed=83,cell=770,pieces=pieces,addToShowTable=function() end})
+    local helper=planner:bindPlacement(env)
+    return helper({seed=83,cell=770,pieces=pieces,addToShowTable=function() end})
 end
 local applied=applyHouse();assert(#applied>=2)
 for _,p in ipairs(applied) do assert(shown[p.id]) end
@@ -142,3 +142,32 @@ local reloaded=applyHouse()
 assert(signature(reloaded)==signatureBefore and f.rules.house_placeable_v1_sequence==sequence)
 for _,p in ipairs(reloaded) do assert(p.id>100 and shown[p.id]) end
 print('PASS: queued production helper, actual placement, persisted replay and piece-ID remapping')
+-- One cached planner can serve several units, without capturing the first or
+-- most recently bound unit's identity, coordinates, or engine hooks.
+local requests,shownByUnit={},{}
+local sharedService={Request=function(_,unit,apply)
+    requests[#requests+1]=unit
+    return {done=true,result=apply(nil)}
+end}
+local function bindUnit(unit)
+    local pool=pool(planner)
+    for name,id in pairs(pool) do pool[name]=unit*1000+id end
+    shownByUnit[unit]=0
+    local env={unitID=unit,GG={HousePlaceableSelection=sharedService},
+        Game={mapSizeX=8192,mapSizeZ=8192,squareSize=8},
+        Spring={GetUnitPosition=function(id) assert(id==unit);return 2000,20,2000 end,
+            GetUnitVectors=function(id) assert(id==unit);return {0,0,1},{0,1,0},{-1,0,0} end,
+            GetGroundHeight=function() return 20 end},
+        Move=function(id) assert(math.floor(id/1000)==unit,'wrong unit Move binding') end,
+        Turn=function(id) assert(math.floor(id/1000)==unit,'wrong unit Turn binding') end,
+        Show=function(id) assert(math.floor(id/1000)==unit);shownByUnit[unit]=shownByUnit[unit]+1 end,
+        SetRadiancePlaceables=function(ids) assert(math.floor(ids[1]/1000)==unit) end,
+        Sleep=function() error('completed request should not sleep') end}
+    return planner:bindPlacement(env),{seed=83,cell=770,pieces=pool,addToShowTable=function() end}
+end
+local placeA,optionsA=bindUnit(101)
+local placeB,optionsB=bindUnit(202)
+assert(#placeA(optionsA)>=2 and #placeB(optionsB)>=2 and #placeA(optionsA)>=2)
+assert(requests[1]==101 and requests[2]==202 and requests[3]==101)
+assert(shownByUnit[101]>shownByUnit[202] and shownByUnit[202]>0)
+print('PASS: cached planner preserves each house identity, coordinate queries and header-local engine hooks')

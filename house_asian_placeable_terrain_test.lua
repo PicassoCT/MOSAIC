@@ -4,7 +4,6 @@ local planner=dofile('scripts/lib_house_asian_placeables.lua')
 local function read(path)
  local f=assert(io.open(path));local text=f:read('*a');f:close();return text
 end
-local helperCode=read('scripts/lib_house_asian_ground_placeables.lua')
 local function compile(code,env)
  if setfenv then return setfenv(assert(loadstring(code)),env)() end
  return assert(load(code,'house placeable terrain','t',env))()
@@ -48,7 +47,7 @@ local function run(angle,terrain,family)
     options.count=5;placed=planner.plan(options);return placed
    end}}, {__index=_G})
  env.GG.HousePlaceableSelection={Request=function(_,id,apply) return {done=true,result=apply(nil)} end}
- env.placeGroundProps=compile(helperCode,env)
+ env.placeGroundProps=planner.bindPlacement(env.placeablePlanner,env)
  compile(wrapper(family),env)()
  for _,p in ipairs(placed) do
   assert(shown[p.id] and lit[p.id],'selected piece missing visibility or radiance registration')

@@ -12,6 +12,9 @@ setmetatable(plannerEnv,{__index=_G})
 local planner=loadEnv('scripts/lib_house_asian_split.lua',plannerEnv)
 local profiles=dofile('scripts/house_asian_stack_profiles.lua')
 local shared={ManualRenderedBuildingWithWindowsVisiblePieces={},HouseAsianUnitPlans={}}
+shared.HousePlaceableSelection={Request=function(_,id,apply)
+    return {done=true,result=apply(nil)}
+end}
 local fixtureByName={}
 for i,fixture in ipairs(MODEL_FIXTURES) do fixture.id=i;fixtureByName[fixture.name]=fixture end
 local stats={buildings=0,columns=0,shopfrontBuildings=0,shopfronts=0,shopfrontStyles={},requested=0,mismatched=0,shortened=0,foundationOnly=0,
@@ -193,8 +196,7 @@ local function assemble(fixture,plan)
     loadEnv('scripts/lib_UnitScript.lua',env)
     loadEnv('scripts/lib_Animation.lua',env)
     env.include=function(name)
-        if name == 'lib_building_damage.lua' or name == 'lib_house_asian_animations.lua'
-            or name == 'lib_house_asian_ground_placeables.lua' then
+        if name == 'lib_building_damage.lua' or name == 'lib_house_asian_animations.lua' then
             return loadEnv('scripts/'..name,env)
         end
         return noop
