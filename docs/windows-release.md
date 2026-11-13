@@ -12,14 +12,14 @@ Requirements: Git, Python 3.12, and 7-Zip (`7z` or `7zz`) for 7z/SD7 inputs.
 Run from a clean committed checkout. Output must be a new directory.
 
 ```bash
-bash pack_mosaic.sh --output ../mosaic-game --expected-version 1.034
-bash pack_mosaic_full.sh --output ../mosaic-windows --expected-version 1.034
+bash pack_mosaic.sh --output ../mosaic-game --expected-version 1.035
+bash pack_mosaic_full.sh --output ../mosaic-windows --expected-version 1.035
 ```
 
 On Windows, use the Python entry point directly:
 
 ```powershell
-python tools/package_windows_release.py --output ../mosaic-windows --expected-version 1.034 --inputs packaging/windows-inputs.json
+python tools/package_windows_release.py --output ../mosaic-windows --expected-version 1.035 --inputs packaging/windows-inputs.json
 ```
 
 The full build intentionally fails until `packaging/windows-inputs.json` contains
