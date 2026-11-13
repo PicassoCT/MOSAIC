@@ -37,6 +37,8 @@ local function dance()
     local routines={
         {name='idle_stance_10',run=idle_stance_10},
         {name='idle_stance17',run=idle_stance17},
+        {name='idle_stance4 (acrobatics)',run=idle_stance4},
+        {name='idle_stance5 (backflip and handstand)',run=idle_stance5},
         {name='idle_stance_12',run=idle_stance_12},
         {name='idle_stance11',run=tiglilAnimations.idle_stance11},
     }

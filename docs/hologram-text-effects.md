@@ -76,7 +76,9 @@ cursor. It uses `house_western_hologram.dae` and the real `lib_textFx.lua` funct
 with ordinary engine Show/Hide drawing and no neon registration. The phrase is
 `Lorem Ipsum`; console messages identify each mode, layout and parent rotation.
 Tiglil dances continuously alongside the letters using the shared smoothed drum,
-tango, headshake and dance routines. This preview has no night-only eligibility
+tango, acrobatic poses, full backflip/handstand, headshake and dance routines.
+Each routine echoes its name. `idle_stance17` is tango; `idle_stance4` and
+`idle_stance5` are separate, explicit acrobatic entries. This preview has no night-only eligibility
 or shared performer cap, and text cleanup never hides the dancer. Both loops
 and their child animations stop when the unit is destroyed.
 
@@ -126,7 +128,7 @@ and hidden shutdown resets replace queued engine targets.
 The external `tiglil_motion_test.lua` checks trajectories, shortest-angle turns,
 native waits, interruptions, cancellation/restart and real setup, gait, pose,
 yoga and shutdown callbacks. `tiglil_precision_test.lua` also models the engine’s
-float32 angle normalization and runs setup plus all four preview routines.
+float32 angle normalization and runs setup plus all six preview routines.
 This is procedural smoothing, not captured motion;
 foot contact, silhouette and perceived weight still need a fresh-match visual
 check with the actual model.
@@ -137,3 +139,7 @@ at their bind positions; palm contacts lie on the flute with separate grips.
 Both musical variants and the up/down sway remain, and grips settle before
 their readable hold. The flute tests cover the actual DAE contact geometry and
 force both branches through the float32 animation scheduler.
+
+The backflip waits for its last 3 rad/s landing turn before normalizing the
+body angle. Its trajectory test checks a full revolution without the former
+fast-reset snap at the end.

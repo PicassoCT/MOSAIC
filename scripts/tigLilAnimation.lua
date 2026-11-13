@@ -1701,7 +1701,10 @@ function idle_stance5()
     Turn(tllegLowR, z_axis, math.rad(0), 3)
     Turn(tllegLowR, x_axis, math.rad(0), 3)
 
-    Turn(tigLil, x_axis, math.rad(360), 360)
+    -- Finish the last quarter of the flip before normalizing its angle.
+    -- Issuing the fast reset immediately replaced the 3 rad/s landing turn.
+    WaitForTurn(tigLil, x_axis)
+    Turn(tigLil, x_axis, 0, 0)
 
     WaitForTurn(tigLil, x_axis)
     WaitForTurn(tigLil, x_axis)
