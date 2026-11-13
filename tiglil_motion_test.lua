@@ -164,6 +164,29 @@ for _,choice in ipairs({0,1}) do
     end
 end
 math.random=savedRandom
+-- The opening cartwheel pose must always lead through all three body poses
+-- and back to neutral, without consulting randomness to skip the sequence.
+StartThread(TigLilSetup);drain(1000)
+math.random=function() error('cartwheel must not choose an early exit') end
+local stages={{-90,0,0},{1,-90,90},{90,-187,0}}
+local stage,deadline=1,frame+1000
+StartThread(idle_stance4)
+while next(threads) do
+    assert(frame<deadline,'cartwheel did not finish')
+    tick()
+    if stages[stage] then
+        local angles=rotations[pieceIDs.tigLil]
+        local expected=stages[stage]
+        if math.abs(delta(math.rad(expected[1]),angles[x_axis],true))<1e-6
+            and math.abs(delta(math.rad(expected[2]),angles[y_axis],true))<1e-6
+            and math.abs(delta(math.rad(expected[3]),angles[z_axis],true))<1e-6 then
+            stage=stage+1
+        end
+    end
+end
+assert(stage==4,'cartwheel skipped an acrobatic pose')
+for axis=1,3 do near(delta(0,rotations[pieceIDs.tigLil][axis],true),0) end
+math.random=savedRandom
 -- Real gait and timed pose callbacks exercise the scoped helpers too.
 StartThread(tradWalk);drain(1000)
 StartThread(shakeWalk);drain(1000)
