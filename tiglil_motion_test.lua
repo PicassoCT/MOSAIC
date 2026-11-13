@@ -187,6 +187,23 @@ end
 assert(stage==4,'cartwheel skipped an acrobatic pose')
 for axis=1,3 do near(delta(0,rotations[pieceIDs.tigLil][axis],true),0) end
 math.random=savedRandom
+-- The full backflip crosses inverted, continues through 360 degrees and
+-- finishes its slow landing turn before normalizing the angle.
+StartThread(TigLilSetup);drain(1000)
+local previousAngle=rotations[pieceIDs.tigLil][x_axis]
+local travelled,minimum,largestStep=0,0,0
+local flipDeadline=frame+2000
+StartThread(idle_stance5)
+while next(threads) do
+    assert(frame<flipDeadline,'backflip stalled')
+    tick()
+    local angle=rotations[pieceIDs.tigLil][x_axis]
+    local step=delta(angle,previousAngle,true)
+    travelled=travelled+step;minimum=math.min(minimum,travelled)
+    largestStep=math.max(largestStep,math.abs(step));previousAngle=angle
+end
+assert(minimum<-2*math.pi+0.01,'backflip never completed a full revolution')
+assert(largestStep<math.rad(40),'landing turn was replaced by a fast reset')
 -- Real gait and timed pose callbacks exercise the scoped helpers too.
 StartThread(tradWalk);drain(1000)
 StartThread(shakeWalk);drain(1000)

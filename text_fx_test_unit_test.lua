@@ -11,6 +11,7 @@ local completed,pendingMove,pendingTurn={},0,0
 local cleanupFinished,visibleAtFinish={},{}
 local groups,pieceMap={}, {text_spin=1}
 local danceCalls,stoppedDance=0,false
+local danceAnnouncements={}
 for i,name in ipairs({'DirectionArcPoint','BallArcPoint','handr','handl','ball','tigLil'}) do pieceMap[name]=100+i end
 for code=65,90 do
     local name=string.char(code);groups[name]={}
@@ -71,6 +72,7 @@ function getCivilianTypeTable() return {} end
 function getPieceTableByNameGroups() return groups end
 Spring={UnitScript={IsInMove=function()return now<pendingMove end,IsInTurn=function()return now<pendingTurn end},GetGameSeconds=function()return now/1000 end,GetUnitPieceMap=function() return pieceMap end,SetUnitBlocking=function() end,SetUnitNeutral=function() end,
     SetUnitRulesParam=function() end,Echo=function(text)
+        if text:find('Tiglil animation:',1,true) then danceAnnouncements[text]=true end
         if text:find(' | ',1,true) then announcements[#announcements+1]={time=now,text=text} end
     end}
 Spring.GetUnitPieceInfo=function() return {parent='text_spin'} end
@@ -88,7 +90,7 @@ function include(file)
             assert(drawn[pieceMap.tigLil],'dancer hidden during text effects')
             Sleep(650)
         end
-        idle_stance_10,idle_stance17,idle_stance_12=routine,routine,routine
+        idle_stance_10,idle_stance17,idle_stance_12,idle_stance4,idle_stance5=routine,routine,routine,routine,routine
         return {idle_stance11=routine}
     end
 end
@@ -144,6 +146,9 @@ end
 assert(spiralCases==3,'spiral must appear once per rotation, without a lengthwise variant')
 for name in pairs(effects) do assert(invoked[name],'mode skipped: '..name) end
 assert(spins[math.rad(20)] and spins[math.rad(-20)],'missing rotation direction')
+for _,name in ipairs({'idle_stance4 (acrobatics)','idle_stance5 (backflip and handstand)'}) do
+    assert(danceAnnouncements['[Text FX test 7] Tiglil animation: '..name],'preview omitted '..name)
+end
 assert(danceCalls>96 and drawn[pieceMap.tigLil],'Tiglil must keep dancing through the full text cycle')
 assert(script.Killed()==0 and stoppedDance)
 assert(not next(threads),'killed unit left its cycling thread running')
