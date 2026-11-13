@@ -310,3 +310,13 @@ gaze changes, a shoulder-driven beckoning gesture, slow sways, a step aside and
 a held invitation. It uses the same pedestrian selection, grounding and
 interruption rules. These four personalized routines are named in `text_fx_test`;
 place an idle civilian nearby to exercise them.
+
+
+`lingerBrothel` adds ten held model poses to the brothel pool: hip-shift,
+overhead stretch, one-arm arch, over-shoulder glance, narrow crossed stance,
+inclined invitation, open-chest silhouette, opposing hip and gaze, side-leg
+extension and low curtsy. Each pose transitions for 0.9 seconds and holds for
+2.1 seconds; the complete mirrored sequence lasts about 31 seconds including
+entry/exit. This is a stage routine, independent of pedestrian availability.
+It plays first in the diagnostic preview and remains absent from ordinary
+advertisement and blimp pools.

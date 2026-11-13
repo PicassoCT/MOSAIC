@@ -36,6 +36,7 @@ tiglilAnimations.enablePeopleAnimations()
 local function dance()
     SetSignalMask(SIG_CORE+SIG_TIGLIL)
     local routines={
+        {name='lingerBrothel (ten lingering poses)',run=lingerBrothel},
         {name='greetPasserby (personal greeting dance)',run=greetPasserby},
         {name='embracePasserby (personal embrace)',run=embracePasserby},
         {name='kissPasserby (personal cheek kiss)',run=kissPasserby},

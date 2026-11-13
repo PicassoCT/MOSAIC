@@ -6,7 +6,24 @@ end
 local low={{0,-12,60},{0,12,-60}}
 local open={{0,-12,8},{0,12,-8}}
 local crown={{0,-15,-65},{0,15,65}}
+local function held(name,body,left,right,arms,head)
+    local p=pose(body,left,right,arms,nil,.7)
+    p.cue,p.head,p.beats=name,head,3
+    return p
+end
 return {
+    linger={beat=1000,headings={0},frames={
+        held('hip-shift silhouette',{0,-8,-4},{-4,0,-5,8},{-10,0,3,20},{{0,-12,55},{0,25,-45}},{0,8,3}),
+        held('overhead stretch',{-6,0,0},{-3,0,-3,6},{-3,0,3,6},crown,{-3,0,0}),
+        held('one-arm arch',{-4,10,4},{-10,0,-3,20},{-4,0,5,8},{{0,-20,55},{0,12,65}},{0,-10,4}),
+        held('over-shoulder glance',{0,45,-2},{-4,0,-3,8},{-8,0,3,16},{{0,-12,60},{0,12,-50}},{0,-35,6}),
+        held('narrow crossed stance',{0,-15,3},{-3,0,5,6},{-12,0,-4,24},{{0,-35,40},{0,20,-55}},{0,15,-3}),
+        held('inclined invitation',{10,0,0},{-14,0,-3,28},{-14,0,3,28},{{0,-50,25},{0,50,-25}},{-8,0,0}),
+        held('open-chest silhouette',{-7,0,0},{-4,0,-4,8},{-4,0,4,8},open,{4,0,0}),
+        held('opposing hip and gaze',{0,-20,-4},{-4,0,-5,8},{-12,0,3,24},{{0,-12,-45},{0,25,-45}},{0,30,4}),
+        held('side-leg extension',{0,10,3},{-4,0,-3,8},{0,0,24,0},{{0,-15,5},{0,12,55}},{0,-10,-3}),
+        held('low curtsy silhouette',{7,-12,-2},{-18,0,-3,30},{-18,0,3,30},{{0,-20,25},{0,20,-25}},{-4,12,3}),
+    }},
     sway={beat=650,headings={0,20},frames={
         pose({0,-8,-4},{-6,0,-5,12},{-12,0,3,24},low,{.45,0}),
         pose({2,0,0},{-14,0,-4,28},{-14,0,4,28},{{0,-30,40},{0,30,-40}}),
