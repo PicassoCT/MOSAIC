@@ -115,6 +115,8 @@ local footVertices={
     {0.42747,0.31761,-3.63706},
     {0.43421,0.73112,-3.62572},
 }
+-- Shared rigid-leg geometry for grounded floor choreography.
+M.legGeometry,M.footVertices=legs,footVertices
 local function rotate(v,a)
     local x,y,z=math.rad(a[1]),math.rad(a[3]),math.rad(a[2])
     local cx,sx,cy,sy,cz,sz=math.cos(x),math.sin(x),math.cos(y),math.sin(y),math.cos(z),math.sin(z)

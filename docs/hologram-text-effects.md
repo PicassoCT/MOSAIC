@@ -195,3 +195,17 @@ blimp's different pole mount and shorter pole, limiting its climb accordingly.
 Interpolated grips, floor clearance, completion, cancellation and restoration of
 parent placement are tested. Shoulder arcs approximate grip changes on this rig,
 which has no elbow joints; live visual review is still needed.
+
+Pole routines are now composed from support-compatible components, rather than
+playing one fixed list. Each performance varies orbit direction, tempo, aerial
+skill order, fan-kick direction and two to four floor-bridge lifts. The split,
+salvaged sideways tuck, climb, extended-leg turn and descent remain present.
+Grounded body waves can precede the orbit; fan kicks return to a two-hand hang.
+A lowering lunge connects the grounded descent to floor work, and a supported
+rise closes the routine.
+
+For the floor bridge, the dancer lies back, bends both knees and raises/lowers
+the pelvis. An analytic two-bone solve keeps the feet planted while the torso
+pivots about the upper back. Tests check actual mesh clearance for the head,
+torso and feet, as well as planted-foot stability through native interpolation.
+Forty seeded compositions cover both directions and all retained components.

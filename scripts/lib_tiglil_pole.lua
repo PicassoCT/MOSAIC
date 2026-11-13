@@ -58,6 +58,10 @@ M.sequence={
     {name='side flourish',ms=1000,angle=650,height=3,radius=3.8,pitch=4,roll=-8,left=-34,leftKnee=108,right=12,rightKnee=18,freeLeft=0,freeRight=1},
     {name='recover both grips',ms=800,angle=680,height=2.5,radius=3.8,pitch=3,roll=0,left=-30,leftKnee=95,right=-30,rightKnee=95,freeLeft=0,freeRight=0},
     {name='controlled descent',ground=1,ms=2400,angle=720,height=0,radius=3.8,pitch=3,roll=0,left=-8,leftKnee=16,right=-8,rightKnee=16,freeLeft=0,freeRight=0},
+    {name='lower to floor',ground=1,ms=2600,angle=720,height=0,radius=3.8,pitch=0,roll=0,left=-8,leftKnee=16,right=-8,rightKnee=16,freeLeft=0,freeRight=0,floorBlend=1,bridge=0},
+    {name='floor bridge rise',ground=1,ms=1500,angle=720,height=0,radius=3.8,pitch=0,roll=0,left=-8,leftKnee=16,right=-8,rightKnee=16,freeLeft=0,freeRight=0,floorBlend=1,bridge=1},
+    {name='floor bridge lower',ground=1,ms=1500,angle=720,height=0,radius=3.8,pitch=0,roll=0,left=-8,leftKnee=16,right=-8,rightKnee=16,freeLeft=0,freeRight=0,floorBlend=1,bridge=0},
+    {name='stand from floor',ground=1,ms=2600,angle=720,height=0,radius=3.8,pitch=0,roll=0,left=-8,leftKnee=16,right=-8,rightKnee=16,freeLeft=0,freeRight=0,floorBlend=0,bridge=0},
 }
 function M.calibrate(info,scale)
     local body,pivot,pole=info('tigLil'),info('dancepivot'),info('tlpole')
@@ -70,6 +74,81 @@ function M.calibrate(info,scale)
     return {bodyBind=bind,pole={pole.offset[1]/scale,pole.offset[2]/scale},
         radius=math.max(math.abs(pole.min[1]),math.abs(pole.max[1]))/scale,top=pole.offset[3]/scale+half}
 end
+-- Bridge foot contacts are solved in the sagittal plane from the actual two
+-- rigid leg lengths. Raising the pelvis changes knee/hip angles, not foot sites.
+local function floorPose(p,stage,rig,standing)
+    local blend=p.floorBlend or 0
+    local yaw=rotation({0,0,p.angle-90})
+    local bridge=p.bridge or 0
+    local pelvis=1.35+bridge*2.1
+    local backY,backZ=1.2,5.4
+    local pitch=math.atan2(backY,backZ)-math.acos(-pelvis/math.sqrt(backY*backY+backZ*backZ))
+    local backForward=math.cos(pitch)*backY-math.sin(pitch)*backZ
+    local floorRoot={0,8.5+(5.4-backForward),pelvis}
+    local standWorld=add(standing.move,rig.bodyBind)
+    local standLocal=apply(transpose(yaw),sub(standWorld,{rig.pole[1],rig.pole[2],stage}))
+    local root={}
+    for k=1,3 do root[k]=standLocal[k]+(floorRoot[k]-standLocal[k])*blend end
+    local bodyPitch=p.pitch+(math.deg(pitch)-p.pitch)*blend
+    local bodyLocal=rotation({bodyPitch,0,0})
+    local bodyR={{},{},{}}
+    for i=1,3 do for j=1,3 do bodyR[i][j]=0;for k=1,3 do bodyR[i][j]=bodyR[i][j]+yaw[i][k]*bodyLocal[k][j]end end end
+    local worldRoot=add({rig.pole[1],rig.pole[2],stage},apply(yaw,root))
+    local result={move=sub(worldRoot,rig.bodyBind),turns={tigLil=euler(bodyR)},contacts={},support='feet',feet={}}
+    local standingBody=rotation(standing.turns.tigLil)
+    for side,names in ipairs({{'tllegUp','tllegLow'},{'tllegUpR','tllegLowR'}}) do
+        local leg=footGeometry.legGeometry[side]
+        local sign=side==1 and 1 or -1
+        local sole={sign*.14313,.32547,-5.44968}
+        local startFoot=add(leg.hip,apply(rotation(standing.turns[names[1]]),add(leg.knee,apply(rotation(standing.turns[names[2]]),sole))))
+        startFoot=apply(transpose(yaw),sub(add(standWorld,apply(standingBody,startFoot)),{rig.pole[1],rig.pole[2],stage}))
+        local target={leg.hip[1]+leg.knee[1]+sole[1],1,.035}
+        for k=1,3 do target[k]=startFoot[k]+(target[k]-startFoot[k])*blend end
+        -- Choosing the actual lowest mesh vertex prevents the pointed foot
+        -- from clipping when the lower leg changes angle during a bridge.
+        local hip,knee
+        for iteration=1,4 do
+            local joint=add(root,apply(bodyLocal,leg.hip))
+            local d=apply(transpose(bodyLocal),sub(target,joint))
+            local a,b=leg.knee,sole
+            local l1=math.sqrt(a[2]^2+a[3]^2);local l2=math.sqrt(b[2]^2+b[3]^2)
+            local cosine=(d[2]^2+d[3]^2-l1*l1-l2*l2)/(2*l1*l2)
+            assert(cosine<1.001 and cosine>-1.001,'floor step is beyond leg reach')
+            local bend=math.acos(math.max(-1,math.min(1,cosine)))
+            hip=math.atan2(d[3],d[2])-math.atan2(l2*math.sin(bend),l1+l2*math.cos(bend))-math.atan2(a[3],a[2])
+            knee=bend+math.atan2(a[3],a[2])-math.atan2(b[3],b[2])
+            local R=rotation({bodyPitch+math.deg(hip+knee),0,0})
+            local lowest,best=math.huge,sole
+            for _,point in ipairs(footGeometry.footVertices) do
+                local v={point[1]*sign,point[2],point[3]}
+                local z=apply(R,v)[3]
+                if z<lowest then lowest,best=z,v end
+            end
+            sole=best
+        end
+        result.turns[names[1]]={math.deg(hip),0,0}
+        result.turns[names[2]]={math.deg(knee),0,0}
+        result.feet[names[2]]=add({rig.pole[1],rig.pole[2],stage},apply(yaw,target))
+    end
+    result.turns.tlHead={(-90-bodyPitch)*blend,0,0}
+    result.turns.tlhairup={-60*(1-blend),0,0}
+    result.turns.tlhairdown={-19*(1-blend),0,0}
+    for side,name in ipairs({'tlarm','tlarmr'})do
+        local shoulder=add(worldRoot,apply(bodyR,shoulders[side]))
+        local dz=stage+.08-shoulder[3]
+        local reach=dot(palms[side],palms[side])-dz*dz
+        local a=standing.turns[name]
+        if reach>0 then
+            local d=apply(yaw,{(side==1 and 1 or -1)*.6,-.8,0})
+            local hand={shoulder[1]+d[1]*math.sqrt(reach),shoulder[2]+d[2]*math.sqrt(reach),stage+.08}
+            a=aim(palms[side],apply(transpose(bodyR),sub(hand,shoulder)))
+        end
+        result.turns[name]=a
+    end
+    if blend==1 then result.support='bridge' end
+    return result
+end
+
 function M.pose(p,stage,rig)
     stage=stage or 0
     rig=rig or M
@@ -87,7 +166,7 @@ function M.pose(p,stage,rig)
         R[i][j]=0;for k=1,3 do R[i][j]=R[i][j]+yaw[i][k]*lean[k][j]end
     end end
     local body=euler(R)
-    local result={move=sub(center,rig.bodyBind),turns={tigLil=body},contacts={}}
+    local result={move=sub(center,rig.bodyBind),turns={tigLil=body},contacts={},support='pole'}
     local walk=p.walk or 0
     local step=math.sin(angle*8)*walk
     result.turns.tllegUp={p.left+step*16,p.leftSpread or -3,0}
@@ -126,15 +205,96 @@ function M.pose(p,stage,rig)
         result.turns[name]=aim(palms[side],vector)
         if release==0 then result.contacts[name]=contact end
     end
+    if (p.floorBlend or 0)>0 then return floorPose(p,stage,rig,result) end
     return result
 end
+-- Components have explicit entry/exit support states. Aerial skills always
+-- return to a two-hand hang; floor work follows a grounded descent, never a spin.
+local templates={}
+for _,p in ipairs(M.sequence)do templates[p.name]=p end
+M.components={
+    approach={'approach and grip'},
+    orbit={'walking turn','second grip','tucked spin'},
+    climb={'reach for climb','first climb','change lower grip','second climb'},
+    split={'inverted tuck','open overhead split','hold overhead split','fold from overhead split'},
+    sideHold={'sideways tucked hold'},
+    extension={'extended-leg turn','side flourish'},
+    descent={'recover both grips','controlled descent'},
+    floor={'lower to floor','floor bridge rise','floor bridge lower','stand from floor'},
+}
+local function copy(p)local r={};for k,v in pairs(p)do r[k]=v end;return r end
+function M.compose(random)
+    random=random or math.random
+    local sequence,heading={},0
+    local direction=random(0,1)==0 and -1 or 1
+    local tempo=random(90,110)/100
+    local function append(name,delta,changes)
+        local p=copy(assert(templates[name],name))
+        heading=heading+(delta or 0);p.angle=heading
+        if changes then for k,v in pairs(changes)do p[k]=v end end
+        p.ms=math.floor(p.ms*tempo+.5)
+        sequence[#sequence+1]=p
+    end
+    local function hang(delta,changes)
+        local p={name='settle into supported hang',ms=1100}
+        if changes then for k,v in pairs(changes)do p[k]=v end end
+        append('second climb',delta,p)
+    end
+    append('approach and grip')
+    -- Low-amplitude body waves remain a grounded, two-hand component.
+    if random(0,1)==1 then
+        for _,pitch in ipairs({-7,6,-3,0})do
+            append('second grip',0,{name='supported body wave',pitch=pitch,ms=550})
+        end
+    end
+    append('walking turn',random(80,120))
+    append('second grip',20)
+    append('tucked spin',random(180,240))
+    for _,name in ipairs(M.components.climb)do append(name,20)end
+    local skills={'split','sideHold','extension'}
+    for i=#skills,2,-1 do local j=random(1,i);skills[i],skills[j]=skills[j],skills[i]end
+    for _,skill in ipairs(skills)do
+        -- Inversion at this heading avoids native Euler singularities while
+        -- the body rolls through horizontal. The opposite direction is valid too.
+        local aligned=90+180*math.ceil((heading-90)/180)
+        hang(aligned-heading,{ms=math.max(1100,(aligned-heading)*12)})
+        for i,name in ipairs(M.components[skill])do
+            local delta=skill=='extension' and (i==1 and 170 or 30) or 0
+            append(name,delta)
+        end
+        hang(0,{ms=1600})
+    end
+    -- A supported fan kick opens one straight leg, sweeps it, then folds it.
+    local kickSign=random(0,1)==0 and -1 or 1
+    hang(0,{name='fan kick open',right=-45,rightKnee=6,rightSpread=35,rightYaw=kickSign*25,ms=1100})
+    hang(25,{name='fan kick sweep',right=25,rightKnee=6,rightSpread=45,rightYaw=-kickSign*25,ms=1400})
+    hang(0,{name='fan kick recover',ms=1000})
+    append('recover both grips',30)
+    append('controlled descent',30)
+    -- A floor-aligned heading keeps the native Euler interpolation smooth as
+    -- the torso lies back. Feet take over support before the hands release.
+    local aligned=180*math.ceil(heading/180)
+    append('controlled descent',aligned-heading,{name='grounded floor preparation',ms=math.max(1000,(aligned-heading)*12),pitch=0})
+    append('lower to floor',0,{name='lowering lunge',floorBlend=.45,ms=1400})
+    append('lower to floor',0,{ms=1800})
+    for i=1,random(2,4)do
+        append('floor bridge rise',0,{bridge=random(70,100)/100,ms=random(1100,1600)})
+        append('floor bridge lower',0,{ms=random(1100,1600)})
+    end
+    append('stand from floor',0,{name='rise through lunge',floorBlend=.45,ms=1800})
+    append('stand from floor',0,{ms=1400})
+    for _,p in ipairs(sequence)do p.angle=p.angle*direction end
+    return sequence
+end
+
 function M.play(api,stage,rig)
-    local previous=M.sequence[1]
+    local sequence=M.compose()
+    local previous=sequence[1]
     api.show()
     api.apply(M.pose(previous,stage,rig),previous.ms)
     api.sleep(previous.ms)
-    for index=2,#M.sequence do
-        local target=M.sequence[index]
+    for index=2,#sequence do
+        local target=sequence[index]
         if api.phase then api.phase(target.name) end
         local ticks=math.ceil(target.ms/50)
         local dt=target.ms/ticks
@@ -142,7 +302,7 @@ function M.play(api,stage,rig)
             local t=tick/ticks
             local ease=t*t*t*(10+t*(-15+6*t))
             local p={}
-            for _,key in ipairs({'angle','height','radius','pitch','roll','left','leftKnee','right','rightKnee','freeLeft','freeRight','walk','ground','rightYaw'}) do
+            for _,key in ipairs({'angle','height','radius','pitch','roll','left','leftKnee','right','rightKnee','freeLeft','freeRight','walk','ground','rightYaw','floorBlend','bridge'}) do
                 p[key]=(previous[key] or 0)+((target[key] or 0)-(previous[key] or 0))*ease
             end
             p.leftSpread=(previous.leftSpread or -3)+((target.leftSpread or -3)-(previous.leftSpread or -3))*ease
