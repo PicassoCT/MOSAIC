@@ -37,7 +37,10 @@ return function(options)
             Signal(SIG_TALKHEAD)
             Signal(SIG_INCIRCLE)
             TigLilSetup()
-            if options.techno then
+            local animation = animations[math.random(1, #animations)]
+            local techno = options.techno and (not options.isTechnoAnimation or options.isTechnoAnimation(animation))
+            hideTReg(options.glowSticks)
+            if techno then
                 local sticks = options.glowSticks or {}
                 if #sticks > 0 then
                     ShowReg(sticks[math.random(1, #sticks)])
@@ -46,7 +49,7 @@ return function(options)
             end
             Sleep(math.random(512, 4096))
             if options.available() then
-                animations[math.random(1, #animations)](options.techno)
+                animation(techno)
             end
         end
     end

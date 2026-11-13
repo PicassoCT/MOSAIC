@@ -173,8 +173,8 @@ function M.height(p)
     return -12-lowest
 end
 local neutral=pose({0,0,0},{0,0,0,0},{0,0,0,0},{{0,0,68},{0,0,-68}})
-function M.play(name,api)
-    local style=assert(M.styles[name],'unknown solo dance: '..tostring(name))
+function M.play(name,api,style)
+    style=assert(style or M.styles[name],'unknown solo dance: '..tostring(name))
     local sign=math.random(0,1)==0 and -1 or 1
     local function mirrored(a) return {a[1],a[2]*sign,a[3]*sign,a[4]} end
     local function perform(source,ms)
@@ -184,7 +184,7 @@ function M.play(name,api)
         local arms={mirrored(source.arms[sign==1 and 1 or 2]),mirrored(source.arms[sign==1 and 2 or 1])}
         api.move('tigLil',{p.travel[1],M.height(p),p.travel[2]},ms)
         api.turn('tigLil',p.body,ms)
-        api.turn('tlHead',{-p.body[1]*.65,-p.body[2]*.6,-p.body[3]*.5},ms)
+        api.turn('tlHead',source.head and mirrored(source.head) or {-p.body[1]*.65,-p.body[2]*.6,-p.body[3]*.5},ms)
         api.turn('tlhairup',{-65-p.body[1],-p.body[2]*.3,-p.body[3]*.5},ms)
         api.turn('tlhairdown',{-19-p.body[1]*.4,0,0},ms)
         api.turn('tlarm',arms[1],ms);api.turn('tlarmr',arms[2],ms)

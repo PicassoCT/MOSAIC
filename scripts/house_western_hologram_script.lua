@@ -41,6 +41,8 @@ local casino_spin = piece("casino_spin")
 local JLantern = piece("JLantern")
 local idleAnimations = {}
 local technoAnimations = {}
+local businessAnimations = {}
+local businessPresentations = {}
 
 local tldrum = piece "tldrum"
 local tldancedru = piece "tldancedru"
@@ -216,7 +218,8 @@ local function tiglLilLoop()
         glowSticks = TableOfPiecesGroups["GlowStick"],
         skimpy = nil,
         techno = techno,
-        animations = techno and technoAnimations or idleAnimations,
+        animations = boolIsBuisness and businessAnimations or (techno and technoAnimations or idleAnimations),
+        isTechnoAnimation = function(animation) return not businessPresentations[animation] end,
         available = function()
             local hour = getDayTime()
             return (hour > 20 or hour < 6) and not hologramBlackout
@@ -1639,6 +1642,16 @@ technoAnimations[#technoAnimations +1] = danceJoi
 technoAnimations[#technoAnimations +1] = strikeAPose
 technoAnimations[#technoAnimations +1] = idle_stance_10
 technoAnimations[#technoAnimations +1] = idle_stance
+
+-- Retain the business unit's existing dance selection and add its exclusive
+-- advertisement routines. Casino and ordinary advertisements keep their pools.
+for _,animation in ipairs(technoAnimations) do
+    businessAnimations[#businessAnimations+1] = animation
+end
+for _,animation in ipairs({advertiseSales,modelWalk,presentGala}) do
+    businessAnimations[#businessAnimations+1] = animation
+    businessPresentations[animation] = true
+end
                 
 
 function waterFallProject(allLetters, posLetters)

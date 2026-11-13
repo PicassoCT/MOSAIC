@@ -4996,7 +4996,7 @@ end
 
 -- Shared solo choreography; timed commands stay inside the Tiglil smoother.
 local soloDances=include("lib_tiglil_dance.lua")
-local function soloDance(name)
+local function soloDance(name,style)
     soloDances.play(name,{
         turn=function(name,a,ms) tSyncIn(piece(name),a[1],a[2],a[3],ms) end,
         move=function(name,a,ms) mSyncIn(piece(name),a[1],a[2],a[3],ms) end,
@@ -5006,7 +5006,7 @@ local function soloDance(name)
                 tlarm,tlarmr,tllegUp,tllegLow,tllegUpR,tllegLowR)
             WaitForMoves(tigLil)
         end,
-    })
+    },style)
 end
 function idle_stance17() soloDance('solo') end
 function danceShuffle() soloDance('shuffle') end
@@ -5014,6 +5014,10 @@ function danceDisco() soloDance('disco') end
 function dancePopping() soloDance('popping') end
 function danceJoi() soloDance('joi') end
 function danceBallet() soloDance('ballet') end
+local businessDances=include("lib_tiglil_business.lua")
+function advertiseSales() soloDance('sales',businessDances.sales) end
+function modelWalk() soloDance('runway',businessDances.runway) end
+function presentGala() soloDance('presenter',businessDances.presenter) end
 
 --even numbers left foot up
 function drumPose1(mspeed, tspeed)

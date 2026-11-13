@@ -217,7 +217,7 @@ are shared wherever the pole routine already plays.
 ## Standalone ballet
 
 `danceBallet` is a separate solo routine, available in all three hologram idle
-pools. It plays first in `text_fx_test`, announced as `danceBallet (solo ballet)`.
+pools. The preview announces it as `danceBallet (solo ballet)`.
 The roughly twenty-second phrase includes a demi-plié, overhead port de bras,
 left/right side extensions, a held arabesque, a raised-knee full turn, a soft
 landing and a closing reverence. Each performance can mirror the choreography.
@@ -229,3 +229,26 @@ Four timed quarter-turn targets preserve a full revolution despite the engine's
 shortest-path rotation rules; stationary balances do not rotate the stage.
 Native scheduler checks cover both turn directions, floor clearance during
 transitions and a neutral exit. Mesh checks cover the poses on all three models.
+
+
+## Western business advertisements
+
+Only `house_western_hologram_buisness` adds `advertiseSales`, `modelWalk` and
+`presentGala` to its existing techno selection. The ordinary idle, casino,
+brothel and blimp pools do not register them. Diagnostic `text_fx_test` previews
+all three first and announces their business-only labels.
+
+The sales routine welcomes the audience, directs attention to each side of a
+display, explains features with arm gestures and head nods, and closes with an
+invitation. The runway routine walks eight body units forward, holds front and
+profile poses, turns, walks back and faces the audience again. The gala presenter
+walks to a nearer mark, addresses the audience, introduces a guest to one side,
+thanks the audience and walks back. Walk-and-talk is conveyed through gestures;
+these routines do not add speech audio. They mirror between performances, keep
+limbs attached, and return to neutral at the starting mark.
+
+The controller clears glow sticks between routines and uses them for the existing
+techno dances only. Tests execute the production pool selection for business,
+casino and ordinary holograms, check that old dances remain available, and verify
+prop changes between a dance and a presentation. Native motion tests cover both
+mirrors of each new routine; model tests check grounding against the DAE meshes.
