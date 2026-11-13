@@ -9,6 +9,7 @@ function include(name)
         local play=module.play
         module.play=function(api,stage,rig)
             local original=api.apply
+            api.phase=function(name)capture.phase=name end
             api.apply=function(p,ms)
                 capture.pose,capture.active=p,ms<=100
                 original(p,ms)
@@ -31,7 +32,7 @@ local visible,shows,hides={},0,0
 function ShowReg(id)visible[id]=true;if id==pieceIDs.tlpole then shows=shows+1 end end
 function HideReg(id)visible[id]=nil;if id==pieceIDs.tlpole then hides=hides+1 end end
 local scale=11060.378906/12
-local grips,samples=0,0
+local grips,samples,splitFrames=0,0,0
 for _,entryYaw in ipairs({0,.7})do
     StartThread(TigLilSetup);drain(1000)
     rotations[pieceIDs.dancepivot]={0,0,entryYaw}
@@ -43,6 +44,20 @@ for _,entryYaw in ipairs({0,.7})do
         if capture.active then
             samples=samples+1;assert(visible[pieceIDs.tlpole],'pole hidden during grip')
             local R=rotation(rotations[pieceIDs.tigLil])
+            if capture.phase=='hold overhead split' then
+                splitFrames=splitFrames+1
+                assert(R[3][3]<-.999,'split torso is not inverted')
+                local directions={}
+                for _,name in ipairs({'tllegUp','tllegUpR'})do
+                    directions[#directions+1]=apply(R,apply(rotation(rotations[pieceIDs[name]]),{0,0,-1}))
+                end
+                local a,b=directions[1],directions[2]
+                assert(a[1]*b[1]+a[2]*b[2]+a[3]*b[3]<-.999,'legs never reach a full split')
+                for _,name in ipairs({'tllegLow','tllegLowR'})do
+                    near(delta(0,rotations[pieceIDs[name]][1],true),0,1e-5)
+                end
+                assert(capture.pose.contacts.tlarm and capture.pose.contacts.tlarmr,'split must keep both grips')
+            end
             local move=translations[pieceIDs.tigLil]
             local center={.07735+move[1]/scale,.8718+move[2]/scale,12+move[3]/scale}
             local contacts=0
@@ -68,6 +83,7 @@ for _,entryYaw in ipairs({0,.7})do
     assert(frame-started>30*15,'sequence ended before completing its choreography')
 end
 assert(samples>600 and grips>1000 and shows==2)
+assert(splitFrames>=72,'overhead split did not hold for both performances')
 -- The normal hologram stop must terminate this synchronous sequence as well.
 unitID,unitDefID,GG=3,4,{}
 Move,Turn,StopSpin=api.Move,api.Turn,api.StopSpin
