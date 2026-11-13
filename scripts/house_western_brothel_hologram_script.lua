@@ -1100,6 +1100,7 @@ idleAnimations[#idleAnimations +1] = danceBurlesqueSway
 idleAnimations[#idleAnimations +1] = danceBurlesqueWave
 idleAnimations[#idleAnimations +1] = danceBurlesqueFan
 idleAnimations[#idleAnimations +1] = lingerBrothel
+idleAnimations[#idleAnimations +1] = danceBehindGlass
 idleAnimations[#idleAnimations +1] = greetPasserby
 idleAnimations[#idleAnimations +1] = embracePasserby
 idleAnimations[#idleAnimations +1] = danceEmbracePasserby

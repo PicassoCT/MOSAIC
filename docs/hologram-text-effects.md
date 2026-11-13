@@ -318,7 +318,7 @@ inclined invitation, open-chest silhouette, opposing hip and gaze, side-leg
 extension and low curtsy. Each pose transitions for 0.9 seconds and holds for
 2.1 seconds; the complete mirrored sequence lasts about 31 seconds including
 entry/exit. This is a stage routine, independent of pedestrian availability.
-It plays first in the diagnostic preview and remains absent from ordinary
+It appears in the diagnostic preview and remains absent from ordinary
 advertisement and blimp pools.
 
 
@@ -328,4 +328,14 @@ alternating knee bends and lateral steps, settles briefly, releases and steps
 back. Forward placement stays constant during the sways. The mirrored routine
 lasts about 12.5 seconds, uses the existing close-embrace distance/height checks,
 and ends early when its pedestrian leaves. It is excluded from normal western
-and blimp pools and plays first in `text_fx_test` when a suitable civilian is near.
+and blimp pools and appears in `text_fx_test` when a suitable civilian is near.
+
+`danceBehindGlass` is a brothel-only stage placeholder, previewed first in
+`text_fx_test`. Edit its eight named poses in `scripts/lib_tiglil_glass.lua`.
+The 25.3-second sequence places both hands against an imaginary pane, slides
+them upward, alternates shoulder stretches and head turns, holds silhouettes,
+and returns to neutral. Each pose has a 1.5-second transition and hold; the
+shared player mirrors the sequence and grounds the supporting foot. There is
+no glass mesh or pedestrian dependency. Hands approximate contact using the
+rig's rigid arms; there are no wrist joints. Normal advertisements and blimps
+do not register this routine.

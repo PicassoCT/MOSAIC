@@ -5029,6 +5029,8 @@ function danceBurlesqueSway() soloDance('sway',brothelDances.sway) end
 function danceBurlesqueWave() soloDance('wave',brothelDances.wave) end
 function danceBurlesqueFan() soloDance('fan',brothelDances.fan) end
 function lingerBrothel() soloDance('linger',brothelDances.linger) end
+local glassDance=include("lib_tiglil_glass.lua")
+function danceBehindGlass() soloDance('behindGlass',glassDance) end
 local socialDances=include("lib_tiglil_social.lua")
 local function personalRoutine(name)
     if not peopleAnimationsEnabled then return false end
