@@ -32,7 +32,8 @@ local visible,shows,hides={},0,0
 function ShowReg(id)visible[id]=true;if id==pieceIDs.tlpole then shows=shows+1 end end
 function HideReg(id)visible[id]=nil;if id==pieceIDs.tlpole then hides=hides+1 end end
 local scale=11060.378906/12
-local grips,samples,splitFrames=0,0,0
+local grips,samples,splitFrames,bridgeFrames=0,0,0,0
+local geometry=include('lib_tiglil_dance.lua')
 for _,entryYaw in ipairs({0,.7})do
     StartThread(TigLilSetup);drain(1000)
     rotations[pieceIDs.dancepivot]={0,0,entryYaw}
@@ -40,7 +41,7 @@ for _,entryYaw in ipairs({0,.7})do
     local started=frame
     StartThread(dancePole)
     while next(threads)do
-        assert(frame-started<30*40,'pole routine stalled');tick()
+        assert(frame-started<30*90,'pole routine stalled');tick()
         if capture.active then
             samples=samples+1;assert(visible[pieceIDs.tlpole],'pole hidden during grip')
             local R=rotation(rotations[pieceIDs.tigLil])
@@ -60,6 +61,27 @@ for _,entryYaw in ipairs({0,.7})do
             end
             local move=translations[pieceIDs.tigLil]
             local center={.07735+move[1]/scale,.8718+move[2]/scale,12+move[3]/scale}
+            if capture.pose.support=='bridge' then
+                bridgeFrames=bridgeFrames+1
+                for side,names in ipairs({{'tllegUp','tllegLow'},{'tllegUpR','tllegLowR'}})do
+                    local leg=geometry.legGeometry[side]
+                    local hip=rotation(rotations[pieceIDs[names[1]]])
+                    local knee=rotation(rotations[pieceIDs[names[2]]])
+                    local lowest,site=math.huge,nil
+                    for _,v in ipairs(geometry.footVertices)do
+                        local foot=apply(knee,{v[1]*(side==1 and 1 or -1),v[2],v[3]})
+                        for a=1,3 do foot[a]=foot[a]+leg.knee[a]end
+                        foot=apply(hip,foot)
+                        for a=1,3 do foot[a]=foot[a]+leg.hip[a]end
+                        foot=apply(R,foot)
+                        for a=1,3 do foot[a]=foot[a]+center[a]end
+                        if foot[3]<lowest then lowest,site=foot[3],foot end
+                    end
+                    local goal=capture.pose.feet[names[2]]
+                    local distance=math.sqrt((site[1]-goal[1])^2+(site[2]-goal[2])^2+(site[3]-goal[3])^2)
+                    assert(lowest>-.15 and distance<.3,'native bridge foot slides or clips: '..distance)
+                end
+            end
             local contacts=0
             for _,entry in ipairs({{'tlarm',1,1.86521},{'tlarmr',-1,-1.49415}})do
                 local name,sign,shoulderX=entry[1],entry[2],entry[3]
@@ -73,7 +95,7 @@ for _,entryYaw in ipairs({0,.7})do
                     contacts=contacts+1;grips=grips+1
                 end
             end
-            assert(contacts>=1,'no supporting hand')
+            if capture.pose.support=='pole' then assert(contacts>=1,'no supporting hand')end
             for axis=1,3 do near((rotations[pieceIDs.tldancedru]or{0,0,0})[axis],0,1e-5)end
         end
     end
@@ -83,6 +105,7 @@ for _,entryYaw in ipairs({0,.7})do
     assert(frame-started>30*15,'sequence ended before completing its choreography')
 end
 assert(samples>600 and grips>1000 and shows==2)
+assert(bridgeFrames>120,'floor bridge was never performed')
 assert(splitFrames>=72,'overhead split did not hold for both performances')
 -- The normal hologram stop must terminate this synchronous sequence as well.
 unitID,unitDefID,GG=3,4,{}

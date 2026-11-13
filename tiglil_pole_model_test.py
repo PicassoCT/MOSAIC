@@ -35,11 +35,12 @@ for _,stage in ipairs({0,9})do
  local index=0
  pole.play({show=function()end,sleep=function()end,apply=function(p,ms)
   index=index+1
+  print(filename..';'..stage..';'..index..';support;'..p.support)
   print(filename..';'..stage..';'..index..';move;'..table.concat(p.move,','))
   for name,a in pairs(p.turns)do print(filename..';'..stage..';'..index..';'..name..';'..table.concat(a,','))end
   local contacts=0
   for name,v in pairs(p.contacts)do contacts=contacts+1;print(filename..';'..stage..';'..index..';contact_'..name..';'..table.concat(v,','))end
-  assert(contacts>=1,'both hands release during the pole sequence')
+  if p.support=='pole' then assert(contacts>=1,'both hands release during the pole sequence')end
  end},stage,rig)
 end
 end
@@ -51,7 +52,7 @@ with tempfile.NamedTemporaryFile(mode='w',suffix='.lua') as f:
 poses={}
 for line in output.splitlines():
     filename,stage,index,name,values=line.split(';')
-    poses.setdefault((filename,int(stage),int(index)),{})[name]=list(map(float,values.split(',')))
+    poses.setdefault((filename,int(stage),int(index)),{})[name]=values if name=='support' else list(map(float,values.split(',')))
 for filename in FILES:
     tree=ET.parse(Path('objects3d')/filename)
     nodes={n.get('name'):n for n in tree.findall('.//c:visual_scene//c:node',NS)}
@@ -70,6 +71,8 @@ for filename in FILES:
     pole_z=[pm[8]*v[0]+pm[9]*v[1]+pm[10]*v[2]+pole[2]for v in pole_mesh]
     low,high=min(pole_z),max(pole_z)
     feet={name:vertices(name)for name in ('tllegLow','tllegLowR')}
+    torso,head=vertices('tigLil'),vertices('tlHead')
+    planted={};bridge_heights=[]
     errors=[];minimum_floor=math.inf
     for (model,stage,index),p in poses.items():
         if model!=filename:continue
@@ -89,6 +92,21 @@ for filename in FILES:
             hip,knee=rotation(p[upper]),rotation(p[lower]);R=mul(body,mul(hip,knee))
             base=apply(body,add(offset(upper),apply(hip,offset(lower))))
             floor=min(floor,min(apply(R,v)[2]for v in feet[lower])+base[2]+center[2]-stage)
+        if p['support']=='bridge':
+            bridge_heights.append(center[2]-stage)
+            back=min(apply(body,v)[2]+center[2]-stage for v in torso)
+            neck=add(center,apply(body,offset('tlHead')))
+            headR=mul(body,rotation(p['tlHead']))
+            head_floor=min(apply(headR,v)[2]+neck[2]-stage for v in head)
+            assert back>-.1 and head_floor>-.1,(filename,index,'floor bridge clips torso/head',back,head_floor)
+            for upper,lower in (('tllegUp','tllegLow'),('tllegUpR','tllegLowR')):
+                hip,knee=rotation(p[upper]),rotation(p[lower]);R=mul(body,mul(hip,knee))
+                base=add(center,apply(body,add(offset(upper),apply(hip,offset(lower)))))
+                support=min((add(base,apply(R,v))for v in feet[lower]),key=lambda v:v[2])
+                key=(stage,lower)
+                if key not in planted:planted[key]=support
+                assert math.dist(support,planted[key])<.25,(filename,index,'bridge foot slides',support,planted[key])
         minimum_floor=min(minimum_floor,floor)
         assert floor>-.03,(filename,stage,index,'foot penetrates stage',floor)
+    assert max(bridge_heights)-min(bridge_heights)>1.4,'bridge never raises the pelvis'
     print(f'PASS: {filename}: {sum(k[0]==filename for k in poses)} pole samples; max grip error {max(errors):.5f}, min floor {minimum_floor:.5f}')
