@@ -113,7 +113,7 @@ function waitHologramTextCleanup(...)
     return ok
 end
 script.Create()
-while #announcements<94 do
+while #announcements<97 do
     local nextThread
     for _,t in pairs(threads) do
         if not nextThread or t.wake<nextThread.wake or (t.wake==nextThread.wake and t.id<nextThread.id) then nextThread=t end
@@ -135,7 +135,7 @@ for i=2,#announcements do
 end
 assert(longEffect,'did not exercise an animation longer than five seconds')
 local spiralCases=0
-for i=1,93 do
+for i=1,96 do
     if announcements[i].text:find('] spiralProject |',1,true) then
         spiralCases=spiralCases+1
         assert(announcements[i].text:find('upright spiral',1,true))
@@ -144,7 +144,7 @@ end
 assert(spiralCases==3,'spiral must appear once per rotation, without a lengthwise variant')
 for name in pairs(effects) do assert(invoked[name],'mode skipped: '..name) end
 assert(spins[math.rad(20)] and spins[math.rad(-20)],'missing rotation direction')
-assert(danceCalls>93 and drawn[pieceMap.tigLil],'Tiglil must keep dancing through the full text cycle')
+assert(danceCalls>96 and drawn[pieceMap.tigLil],'Tiglil must keep dancing through the full text cycle')
 assert(script.Killed()==0 and stoppedDance)
 assert(not next(threads),'killed unit left its cycling thread running')
 local defEnv={lowerkeys=function(t)return t end}
@@ -152,4 +152,4 @@ setmetatable(defEnv,{__index=_G})
 local def=setfenv(assert(loadfile('units/shared/text_fx_test.lua')),defEnv)().text_fx_test
 assert(def.objectName=='house_western_hologram.dae' and def.script=='text_fx_test_script.lua')
 assert(not def.customParams.neon_hologram_type and not def.customParams.house_icon_hologram)
-print('PASS: all 28 shared FX, 93 complete animations followed by five-second holds, vertical-only spiral, both parent rotations and glyph cleanup')
+print('PASS: all 29 shared FX, 96 complete animations followed by five-second holds, vertical-only spiral, both parent rotations and glyph cleanup')
