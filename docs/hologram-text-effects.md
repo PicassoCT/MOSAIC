@@ -170,3 +170,9 @@ neutral. This is a rig-adapted interpretation: Tiglil's rigid arm pieces cannot
 reproduce the reference's elbow bends. The clip and audio are not game assets.
 The preview starts with `danceJoi (Joi-inspired solo)`, then the other solo styles; normal and techno pools
 include it alongside the other styles.
+
+The circle/drum dance retains its five laps, randomized quarter-lap stops,
+overhead/front drum gestures and both twirl directions. Its torso now leans at
+most 8 degrees forward/back and 4 degrees sideways, with at least 450 ms for
+body changes and 300 ms for limb changes. Twirls use 3 rad/s instead of 7 rad/s,
+retain the entry heading, and settle upright before the next orbit segment.

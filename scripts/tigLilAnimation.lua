@@ -183,7 +183,23 @@ function TigLilSetup()
 end
 
 --------------------- IdleStance10-Fucntions-------
+
+-- Circle-dance poses keep their authored gestures, but use a balanced torso
+-- and a minimum blend time. Tiny target changes must not become instant jerks.
+local function circleDanceTurn(id,axis,target,speed)
+    if id==tigLil then
+        if axis==x_axis then target=math.max(math.rad(-8),math.min(math.rad(8),target*.15)) end
+        if axis==z_axis then target=math.max(math.rad(-4),math.min(math.rad(4),target*.35)) end
+    end
+    if not speed or speed==0 then return Turn(id,axis,target,speed) end
+    local current={Spring.UnitScript.GetPieceRotation(id)}
+    local distance=math.abs((target-current[axis]+math.pi)%(2*math.pi)-math.pi)
+    local milliseconds=math.max(id==tigLil and 450 or 300,1000*distance/math.abs(speed))
+    tiglilMotion.TurnInTime(id,axis,target,milliseconds)
+end
+
 function drumClapOverhead()
+    local Turn=circleDanceTurn
 
 
 
@@ -463,6 +479,7 @@ function drumClapOverhead()
 end
 
 function drumClapFront()
+    local Turn=circleDanceTurn
     Turn(tigLil, x_axis, math.rad(25), 3)
     Turn(tigLil, z_axis, math.rad(0), 4)
 
@@ -706,6 +723,7 @@ end
 
 
 function danceEnd()
+    local Turn=circleDanceTurn
 
 
     Turn(tigLil, x_axis, math.rad(0), 3)
@@ -867,6 +885,7 @@ function danceEnd()
 end
 
 function danceTurnLeft()
+    local Turn=circleDanceTurn
     Signal(SIG_INCIRCLE)
     SetSignalMask(SIG_INCIRCLE + animationLifetime)
     while (true) do
@@ -1046,6 +1065,7 @@ end
 
 
 function danceTurnRight()
+    local Turn=circleDanceTurn
 
     Signal(SIG_INCIRCLE)
     SetSignalMask(SIG_INCIRCLE + animationLifetime)
@@ -4506,14 +4526,19 @@ function danceInCircle()
     local direction = math.random(0,1)==1 and -1 or 1
     -- Preserve the forward-facing entry yaw. Resetting to zero made every
     -- subsequent orbit segment run backwards after the first twirl.
-    Turn(tigLil,y_axis,heading+direction*math.rad(179),7)
+    Turn(tigLil,y_axis,heading+direction*math.rad(179),3)
     StartThread(direction<0 and danceTurnRight or danceTurnLeft)
     WaitForTurn(tigLil,y_axis)
-    Turn(tigLil,y_axis,heading+direction*math.rad(358),7)
+    Turn(tigLil,y_axis,heading+direction*math.rad(358),3)
     WaitForTurn(tigLil,y_axis)
-    Turn(tigLil,y_axis,heading+direction*math.rad(360),7)
+    Turn(tigLil,y_axis,heading+direction*math.rad(360),3)
     WaitForTurn(tigLil,y_axis)
     Signal(SIG_INCIRCLE)
+    -- Retire the lean before walking onward; killing the pose thread alone
+    -- leaves its native body targets active in the smoothing worker.
+    tiglilMotion.TurnInTime(tigLil,x_axis,0,350)
+    tiglilMotion.TurnInTime(tigLil,z_axis,0,350)
+    WaitForTurns(tigLil)
 end
 --dancestance
 function idle_stance_10()
