@@ -43,6 +43,7 @@ local idleAnimations = {}
 local technoAnimations = {}
 
 local tldrum = piece "tldrum"
+local tldancedru = piece "tldancedru"
 local dancepivot = piece "dancepivot"
 local deathpivot = piece "deathpivot"
 local tigLil = piece "tigLil"
@@ -67,6 +68,7 @@ handr = piece "handr"
 handl = piece "handl"
 ball = piece "ball"
 tigLilHoloPices = {
+    tldancedru,
     tldrum ,
     dancepivot, 
     deathpivot ,

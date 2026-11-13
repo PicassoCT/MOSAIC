@@ -5,6 +5,7 @@ local animationLifetime = (SIG_CORE or 0) + (SIG_TIGLIL or 0)
 -- Keep smoothing local: text FX and other hologram pieces retain their own
 -- movement rules. The authored routines below still issue the same poses.
 local tiglilMotion = include("lib_tiglil_motion.lua")(Spring.UnitScript, animationLifetime)
+tiglilMotion = include("lib_tiglil_retarget.lua")(tiglilMotion, piece)
 local Turn, Move = tiglilMotion.Turn, tiglilMotion.Move
 local Spin, StopSpin = tiglilMotion.Spin, tiglilMotion.StopSpin
 function TigLilStopSmoothing() tiglilMotion.cancel() end
@@ -25,9 +26,10 @@ local function mP(id, x, y, z, speed, wait)
     if wait then WaitForMoves(id) end
 end
 local function tSyncIn(id, x, y, z, milliseconds)
-    -- The original timed-turn helper addresses raw components 1/2/3.
-    -- Keep that convention, distinct from tP's historical axis aliases.
-    for axis,value in ipairs({x,y,z}) do
+    -- Authored Y is up and Z is forward, just as in tP. The imported rig
+    -- maps those to components 3 and 2; raw component order tips yaw sideways.
+    local targets = {[x_axis]=x, [y_axis]=y, [z_axis]=z}
+    for axis,value in ipairs(targets) do
         tiglilMotion.TurnInTime(id,axis,math.rad(value),milliseconds)
     end
 end
@@ -64,6 +66,7 @@ end
 
 -------------------------------------------TIGLILI COPIED CRAP --------------------------
 local tldrum = piece "tldrum"
+local tldancedru = piece "tldancedru"
 local dancepivot = piece "dancepivot"
 local deathpivot = piece "deathpivot"
 local tigLil = piece "tigLil"
@@ -1401,9 +1404,9 @@ function  legs_down()
     HideReg(tlflute)
     --HideReg(tldancedru)
         --printf(unitID, "legs_down")
-    --Move(tldancedru, y_axis, 0, 60)
-    --Move(tldancedru, x_axis, 0, 60)
-    --Move(tldancedru, z_axis, 0, 60)
+    Move(tldancedru, y_axis, 0, 60)
+    Move(tldancedru, x_axis, 0, 60)
+    Move(tldancedru, z_axis, 0, 60)
     Move(tlHead, y_axis, 0, 60)
     Move(tlHead, x_axis, 0, 60)
     Move(tlHead, z_axis, 0, 60)
@@ -1432,6 +1435,8 @@ function  legs_down()
     StopSpin(tigLil, y_axis)
     StopSpin(tigLil, z_axis)
     StopSpin(tigLil, x_axis)
+    StopSpin(tldancedru, y_axis, 0)
+    Turn(tldancedru, y_axis, 0, 0)
     StopSpin(dancepivot, y_axis)
     Move(deathpivot, y_axis, 0, 60)
     Move(deathpivot, x_axis, 0, 60)
@@ -4496,23 +4501,19 @@ function idle_stance9()
 end
 
 function danceInCircle()
-        flopFlip = math.random(0, 1)
-        Turn(tigLil, y_axis, math.rad(0), 0)
-
-        if flopFlip == 1 then
-            Turn(tigLil, y_axis, math.rad(-179), 7)
-            StartThread(danceTurnRight)
-            WaitForTurn(tigLil,y_axis)
-             Turn(tigLil, y_axis, math.rad(-359), 7)
-        else
-            Turn(tigLil, y_axis, math.rad(179), 7)
-            StartThread(danceTurnLeft)
-            WaitForTurn(tigLil,y_axis)
-            Turn(tigLil, y_axis, math.rad(359), 7)
-        end
-        WaitForTurn(tigLil, y_axis)
-        Signal(SIG_INCIRCLE)
-
+    local rotation = {Spring.UnitScript.GetPieceRotation(tigLil)}
+    local heading = rotation[y_axis]
+    local direction = math.random(0,1)==1 and -1 or 1
+    -- Preserve the forward-facing entry yaw. Resetting to zero made every
+    -- subsequent orbit segment run backwards after the first twirl.
+    Turn(tigLil,y_axis,heading+direction*math.rad(179),7)
+    StartThread(direction<0 and danceTurnRight or danceTurnLeft)
+    WaitForTurn(tigLil,y_axis)
+    Turn(tigLil,y_axis,heading+direction*math.rad(358),7)
+    WaitForTurn(tigLil,y_axis)
+    Turn(tigLil,y_axis,heading+direction*math.rad(360),7)
+    WaitForTurn(tigLil,y_axis)
+    Signal(SIG_INCIRCLE)
 end
 --dancestance
 function idle_stance_10()
@@ -4538,14 +4539,14 @@ function idle_stance_10()
      -- searchmebookmark
         -- do
         tempTurnRandA = math.random(75, 105)
-        Turn(dancepivot, y_axis, math.rad(-tempTurnRandA), 0.35)       
+        Turn(dancepivot, y_axis, math.rad(tempTurnRandA), 0.35)
         whileInTurn(dancepivot,y_axis,onTheMove)
 
         danceInCircle()
         
 
         tempTurnRandB = math.random(160, 190)
-        Turn(dancepivot, y_axis, math.rad(-tempTurnRandB), 0.35)
+        Turn(dancepivot, y_axis, math.rad(tempTurnRandB), 0.35)
         whileInTurn(dancepivot,y_axis,onTheMove)
 
         
@@ -4555,7 +4556,7 @@ function idle_stance_10()
      
 
         tempTurnRandC = math.random(245, 290)
-        Turn(dancepivot, y_axis, math.rad(-tempTurnRandC), 0.35)
+        Turn(dancepivot, y_axis, math.rad(tempTurnRandC), 0.35)
         whileInTurn(dancepivot,y_axis,onTheMove)
 
  
@@ -4563,13 +4564,13 @@ function idle_stance_10()
         danceInCircle()
 
         
-        Turn(dancepivot, y_axis, math.rad(-360), 0.35)      
+        Turn(dancepivot, y_axis, math.rad(360), 0.35)
         whileInTurn(dancepivot,y_axis,onTheMove)
 
 
        danceInCircle()
-        Turn(dancepivot, y_axis, math.rad(0), 0)      
-        Turn(tigLil, y_axis, math.rad(0), 0,true)
+        Turn(dancepivot, y_axis, math.rad(0), 0)
+        Turn(tigLil, y_axis, math.rad(180), 0)
     end
     Signal(SIG_ONTHEMOVE)
     Signal(SIG_INCIRCLE)
@@ -5471,11 +5472,11 @@ local function drumPosePoledancin(mspeed, tspeed, addUp)
         tSyncIn(tllegLowR,  142,0,0,250)
         WaitForTurns(deathpivot,tigLil,tllegUp,tllegLow,tllegUpR,tllegLow,tlarm,tlarmr,tlHead,tlhairup,tlhairdown)
         Spin(deathpivot, y_axis, math.rad(140), 90)
-        --Spin(tldancedru, y_axis, math.rad(-140), 90)
+        Spin(tldancedru, y_axis, math.rad(-140), 90)
         mSyncIn(tigLil,     0,addUp-21,0,8000)
         WaitForMoves(tigLil)
         StopSpin(deathpivot, y_axis)
-        --StopSpin(tldancedru, y_axis)
+        StopSpin(tldancedru, y_axis)
         HideReg(tlpole)
     
 
@@ -5524,7 +5525,7 @@ local function idle_stance11()
         ---------------------------------------------------
         mspeed = 1
         growBeatBox = math.random(-3, 18)
-        --Move(tldancedru, y_axis, growBeatBox, math.abs(growBeatBox/3))
+        Move(tldancedru, y_axis, growBeatBox, math.abs(growBeatBox/3))
         growBeatBox = growBeatBox + 3
         addUp = growBeatBox
         Move(tigLil, y_axis, growBeatBox, math.abs(growBeatBox/3))

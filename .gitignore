@@ -48,3 +48,6 @@ __pycache__/
 # Regression sources are maintained outside the playable game checkout.
 /tests/
 /.mosaic-tests-source/
+
+# Tiglil animation retargeting helper
+!scripts/lib_tiglil_retarget.lua
