@@ -5019,6 +5019,8 @@ function danceShuffle() soloDance('shuffle') end
 function danceDisco() soloDance('disco') end
 function dancePopping() soloDance('popping') end
 function danceJoi() soloDance('joi') end
+local shakiraDance=include("lib_tiglil_shakira.lua")
+function danceShakira() soloDance('shakira',shakiraDance) end
 function danceBallet() soloDance('ballet') end
 local businessDances=include("lib_tiglil_business.lua")
 function advertiseSales() soloDance('sales',businessDances.sales) end

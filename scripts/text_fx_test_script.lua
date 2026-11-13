@@ -36,6 +36,7 @@ tiglilAnimations.enablePeopleAnimations()
 local function dance()
     SetSignalMask(SIG_CORE+SIG_TIGLIL)
     local routines={
+        {name='danceShakira (Shakira-inspired solo)',run=danceShakira},
         {name='danceBehindGlass (behind-glass placeholder)',run=danceBehindGlass},
         {name='danceEmbracePasserby (brothel close dance embrace)',run=danceEmbracePasserby},
         {name='lingerBrothel (ten lingering poses)',run=lingerBrothel},

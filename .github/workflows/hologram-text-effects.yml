@@ -70,6 +70,7 @@ jobs:
           python3 tests/tiglil_ground_model_test.py
           lua5.1 tests/tiglil_solo_dance_test.lua
           lua5.1 tests/tiglil_ballet_test.lua
+          lua5.1 tests/tiglil_shakira_motion_test.lua
           lua5.1 tests/tiglil_business_test.lua
           lua5.1 tests/tiglil_business_motion_test.lua
           lua5.1 tests/tiglil_brothel_test.lua

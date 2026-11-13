@@ -339,3 +339,11 @@ shared player mirrors the sequence and grounds the supporting foot. There is
 no glass mesh or pedestrian dependency. Hands approximate contact using the
 rig's rigid arms; there are no wrist joints. Normal advertisements and blimps
 do not register this routine.
+
+`danceShakira` adds an approximately 19-second solo phrase: hip isolations,
+two figure-eights, a short knee-driven shimmy, a torso wave and overhead arm
+sweeps. It suggests Shakira-inspired movement using Tiglil's rigid torso and
+arms rather than reproducing a particular performance. Its editable sequence
+is in `scripts/lib_tiglil_shakira.lua`; the shared player mirrors it, grounds
+the feet and restores neutral. It is available in normal western, techno,
+business, brothel and blimp dance pools, and previews first in `text_fx_test`.
