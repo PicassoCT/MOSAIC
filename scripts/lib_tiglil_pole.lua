@@ -49,6 +49,10 @@ M.sequence={
     {name='first climb',ms=1100,angle=400,height=2.5,radius=3.7,pitch=3,roll=0,left=-32,leftKnee=105,right=-34,rightKnee=110,freeLeft=0,freeRight=0},
     {name='change lower grip',ms=700,angle=420,height=2.5,radius=3.7,pitch=3,roll=3,left=-32,leftKnee=105,right=-34,rightKnee=110,freeLeft=0,freeRight=.8},
     {name='second climb',ms=1100,angle=440,height=3.5,radius=3.7,pitch=3,roll=0,left=-35,leftKnee=110,right=-32,rightKnee=105,freeLeft=0,freeRight=0},
+    {name='inverted tuck',ms=1800,angle=450,height=3,radius=3.7,pitch=0,roll=-180,left=-20,leftKnee=100,right=-20,rightKnee=100,freeLeft=0,freeRight=0},
+    {name='open overhead split',ms=1400,angle=450,height=3,radius=3.7,pitch=0,roll=-180,left=0,leftKnee=0,leftSpread=-90,right=0,rightKnee=0,rightSpread=90,freeLeft=0,freeRight=0},
+    {name='hold overhead split',ms=1200,angle=450,height=3,radius=3.7,pitch=0,roll=-180,left=0,leftKnee=0,leftSpread=-90,right=0,rightKnee=0,rightSpread=90,freeLeft=0,freeRight=0},
+    {name='fold from overhead split',ms=1400,angle=450,height=3,radius=3.7,pitch=0,roll=-180,left=-20,leftKnee=100,right=-20,rightKnee=100,freeLeft=0,freeRight=0},
     {name='sideways tucked hold',ms=1500,angle=450,height=3.5,radius=3.7,pitch=0,roll=-75,left=-39,leftKnee=147,right=-71,rightKnee=142,rightYaw=69,freeLeft=0,freeRight=0},
     {name='extended-leg turn',ms=2300,angle=620,height=3.5,radius=3.9,pitch=7,roll=-10,left=-34,leftKnee=112,right=30,rightKnee=8,freeLeft=0,freeRight=0},
     {name='side flourish',ms=1000,angle=650,height=3,radius=3.8,pitch=4,roll=-8,left=-34,leftKnee=108,right=12,rightKnee=18,freeLeft=0,freeRight=1},
@@ -86,17 +90,18 @@ function M.pose(p,stage,rig)
     local result={move=sub(center,rig.bodyBind),turns={tigLil=body},contacts={}}
     local walk=p.walk or 0
     local step=math.sin(angle*8)*walk
-    result.turns.tllegUp={p.left+step*16,-3,0}
+    result.turns.tllegUp={p.left+step*16,p.leftSpread or -3,0}
     result.turns.tllegLow={p.leftKnee+math.max(0,-step)*22,0,0}
-    result.turns.tllegUpR={p.right-step*16,3,p.rightYaw or 0}
+    result.turns.tllegUpR={p.right-step*16,p.rightSpread or 3,p.rightYaw or 0}
     result.turns.tllegLowR={p.rightKnee+math.max(0,step)*22,0,0}
     local floor=footGeometry.height({body={body[1],body[3],body[2]},
-        left={result.turns.tllegUp[1],0,-3,result.turns.tllegLow[1]},
-        right={result.turns.tllegUpR[1],result.turns.tllegUpR[3],3,result.turns.tllegLowR[1]}})
+        left={result.turns.tllegUp[1],0,result.turns.tllegUp[2],result.turns.tllegLow[1]},
+        right={result.turns.tllegUpR[1],result.turns.tllegUpR[3],result.turns.tllegUpR[2],result.turns.tllegLowR[1]}})
     center[3]=center[3]+floor*(p.ground or 0)
     result.move=sub(center,rig.bodyBind)
-    result.turns.tlHead={-p.pitch*.65,-p.roll*.5,8}
-    result.turns.tlhairup={-65-p.pitch,-p.roll*.5,-8}
+    local neckLean=math.max(-37.5,math.min(37.5,-p.roll*.5))
+    result.turns.tlHead={-p.pitch*.65,neckLean,8}
+    result.turns.tlhairup={-65-p.pitch,neckLean,-8}
     result.turns.tlhairdown={-19-p.pitch*.4,0,0}
     local lead=add(center,apply(R,shoulders[1]))
     local gx=rig.pole[1]+radial[1]*rig.radius-lead[1]
@@ -140,6 +145,8 @@ function M.play(api,stage,rig)
             for _,key in ipairs({'angle','height','radius','pitch','roll','left','leftKnee','right','rightKnee','freeLeft','freeRight','walk','ground','rightYaw'}) do
                 p[key]=(previous[key] or 0)+((target[key] or 0)-(previous[key] or 0))*ease
             end
+            p.leftSpread=(previous.leftSpread or -3)+((target.leftSpread or -3)-(previous.leftSpread or -3))*ease
+            p.rightSpread=(previous.rightSpread or 3)+((target.rightSpread or 3)-(previous.rightSpread or 3))*ease
             api.apply(M.pose(p,stage,rig),dt)
             api.sleep(dt)
         end

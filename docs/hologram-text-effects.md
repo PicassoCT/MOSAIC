@@ -180,7 +180,10 @@ retain the entry heading, and settle upright before the next orbit segment.
 ## Pole choreography
 
 `dancePole` now performs an approach, walking turn, tucked spin, two-stage climb,
-sideways tucked hold, extended-leg turn, free-arm flourish and controlled descent.
+inverted overhead split, sideways tucked hold, extended-leg turn, free-arm flourish
+and controlled descent. The split opens from an inverted tuck, straightens both
+legs into a full straddle above the head, holds for 1.2 authored seconds, and folds
+back before the sideways hold. Both hands remain on the pole throughout.
 The old sideways pose and folded-leg silhouette survive as a short adapted hold;
 the drum branch still calls the routine at its current stage height. It is also
 selectable independently and plays first in `text_fx_test`.
