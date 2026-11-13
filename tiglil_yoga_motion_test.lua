@@ -83,6 +83,6 @@ for i=1,230 do tick()end -- interrupt after the warmup, during acceleration
 Signal(SIG_CORE);TigLilStopSmoothing()
 for i=1,10 do tick()end
 assert(not next(threads) and not finished,'cancelled yoga left a worker running')
-print('PASS: yoga warms up then accelerates to 2x; all XYZ poses reached; hover clearance '..lowestHover..'; neutral exit and cancellation')
+print('PASS: yoga warms up then accelerates to '..yoga.maxSpeed..'x; all XYZ poses reached; hover clearance '..lowestHover..'; neutral exit and cancellation')
 ]=]
 assert(loadstring(source))()
