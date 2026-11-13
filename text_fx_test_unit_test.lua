@@ -96,6 +96,7 @@ function include(file)
         danceBurlesqueSway,danceBurlesqueWave,danceBurlesqueFan=routine,routine,routine
         idle_stance,idle_stance2=routine,routine
         danceEmbracePasserby=routine
+        danceBehindGlass=routine
         greetPasserby,embracePasserby,kissPasserby,invitePasserby,lingerBrothel=routine,routine,routine,routine,routine
         return {idle_stance11=routine,enablePeopleAnimations=function()end}
     end
@@ -152,7 +153,7 @@ end
 assert(spiralCases==3,'spiral must appear once per rotation, without a lengthwise variant')
 for name in pairs(effects) do assert(invoked[name],'mode skipped: '..name) end
 assert(spins[math.rad(20)] and spins[math.rad(-20)],'missing rotation direction')
-for _,name in ipairs({'idle_stance17 (solo footwork)','danceShuffle (solo shuffle)','danceDisco (solo disco)','dancePopping (solo popping)','danceJoi (Joi-inspired solo)','dancePole (pole choreography)','danceBallet (solo ballet)','lingerBrothel (ten lingering poses)','greetPasserby (personal greeting dance)','embracePasserby (personal embrace)','danceEmbracePasserby (brothel close dance embrace)','kissPasserby (personal cheek kiss)','invitePasserby (brothel seductress invitation)','idle_stance (street conversation)','idle_stance2 (street gestures)','danceBurlesqueSway (brothel hip sway)','danceBurlesqueWave (brothel body wave)','danceBurlesqueFan (brothel fan dance)','advertiseSales (business sales presentation)','modelWalk (business runway walk)','presentGala (business gala presenter)','idle_stance4 (acrobatics)','idle_stance5 (backflip and handstand)'}) do
+for _,name in ipairs({'idle_stance17 (solo footwork)','danceShuffle (solo shuffle)','danceDisco (solo disco)','dancePopping (solo popping)','danceJoi (Joi-inspired solo)','dancePole (pole choreography)','danceBallet (solo ballet)','lingerBrothel (ten lingering poses)','danceBehindGlass (behind-glass placeholder)','greetPasserby (personal greeting dance)','embracePasserby (personal embrace)','danceEmbracePasserby (brothel close dance embrace)','kissPasserby (personal cheek kiss)','invitePasserby (brothel seductress invitation)','idle_stance (street conversation)','idle_stance2 (street gestures)','danceBurlesqueSway (brothel hip sway)','danceBurlesqueWave (brothel body wave)','danceBurlesqueFan (brothel fan dance)','advertiseSales (business sales presentation)','modelWalk (business runway walk)','presentGala (business gala presenter)','idle_stance4 (acrobatics)','idle_stance5 (backflip and handstand)'}) do
     assert(danceAnnouncements['[Text FX test 7] Tiglil animation: '..name],'preview omitted '..name)
 end
 assert(danceCalls>99 and drawn[pieceMap.tigLil],'Tiglil must keep dancing through the full text cycle')
