@@ -67,6 +67,8 @@ jobs:
           python3 tests/hologram_text_axes_test.py
           lua5.1 tests/tiglil_motion_test.lua
           lua5.1 tests/tiglil_precision_test.lua
+          lua5.1 tests/tiglil_flute_test.lua
+          python3 tests/tiglil_flute_model_test.py
           lua5.1 tests/tiglil_retarget_test.lua
           python3 tests/tiglil_retarget_model_test.py
           lua5.1 tests/hologram_spline_test.lua

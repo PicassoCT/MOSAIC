@@ -130,3 +130,10 @@ float32 angle normalization and runs setup plus all four preview routines.
 This is procedural smoothing, not captured motion;
 foot contact, silhouette and perceived weight still need a fresh-match visual
 check with the actual model.
+
+Flute grips use five poses calibrated to the shorter arms and instrument of the
+three hologram rigs (`lib_tiglil_flute.lua`). Shoulders and the mouthpiece remain
+at their bind positions; palm contacts lie on the flute with separate grips.
+Both musical variants and the up/down sway remain, and grips settle before
+their readable hold. The flute tests cover the actual DAE contact geometry and
+force both branches through the float32 animation scheduler.
