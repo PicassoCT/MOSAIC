@@ -94,7 +94,7 @@ The production signs use the same cleanup. Tornado formation has a 2.5-second mo
 when calculating speeds, and fireworks bounds its launch/burst/fall waits too.
 Continuous spins keep running during the hold. All glyph transforms/spins are
 reset between cases; long effects are no longer cut short. The cycle has
-99 cases: plain horizontal/upright text, all 30 shared modes (matrix and arch use
+96 cases: plain horizontal/upright text, all 29 runnable shared modes (matrix and arch use
 upright), an extra upright DNA-helix case, each at 0, +20 and -20 degrees/second
 around the same parent Y axis used by production holograms.
 
@@ -330,7 +330,7 @@ lasts about 12.5 seconds, uses the existing close-embrace distance/height checks
 and ends early when its pedestrian leaves. It is excluded from normal western
 and blimp pools and appears in `text_fx_test` when a suitable civilian is near.
 
-`danceBehindGlass` is a brothel-only stage placeholder, previewed first in
+`danceBehindGlass` is a brothel-only stage placeholder, available in
 `text_fx_test`. Edit its eight named poses in `scripts/lib_tiglil_glass.lua`.
 The 25.3-second sequence places both hands against an imaginary pane, slides
 them upward, alternates shoulder stretches and head turns, holds silhouettes,
@@ -347,3 +347,15 @@ arms rather than reproducing a particular performance. Its editable sequence
 is in `scripts/lib_tiglil_shakira.lua`; the shared player mirrors it, grounds
 the feet and restores neutral. It is available in normal western, techno,
 business, brothel and blimp dance pools, and previews first in `text_fx_test`.
+
+The test unit plays both text effects and Tiglil routines newest-added first.
+Text starts with wall impact, restored spline and meteor, followed by older
+addition groups; repairs do not move an effect forward. Each effect runs its
+0, +20 and -20 degree/second parent variants together. The two plain layouts
+come last, and the next cycle starts with the newest effect again. Every
+registered effect remains in the cycle. Entries added together retain their
+registry order. (`waterFallProject` is only defined by production house
+scripts, so it is absent from this unit’s shared registry.)
+Prepend new effects to `newestFirst` and dances to `routines` in the preview
+script. Unlisted registered effects still run first as a fallback; list them
+explicitly to establish their relative addition order.

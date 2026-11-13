@@ -35,6 +35,7 @@ local tiglilAnimations=include('tigLilAnimation.lua')
 tiglilAnimations.enablePeopleAnimations()
 local function dance()
     SetSignalMask(SIG_CORE+SIG_TIGLIL)
+    -- Newest additions first; prepend new routines, preserve same-commit order.
     local routines={
         {name='danceShakira (Shakira-inspired solo)',run=danceShakira},
         {name='danceBehindGlass (behind-glass placeholder)',run=danceBehindGlass},
@@ -44,11 +45,11 @@ local function dance()
         {name='embracePasserby (personal embrace)',run=embracePasserby},
         {name='kissPasserby (personal cheek kiss)',run=kissPasserby},
         {name='invitePasserby (brothel seductress invitation)',run=invitePasserby},
-        {name='idle_stance (street conversation)',run=idle_stance},
-        {name='idle_stance2 (street gestures)',run=idle_stance2},
         {name='danceBurlesqueSway (brothel hip sway)',run=danceBurlesqueSway},
         {name='danceBurlesqueWave (brothel body wave)',run=danceBurlesqueWave},
         {name='danceBurlesqueFan (brothel fan dance)',run=danceBurlesqueFan},
+        {name='idle_stance (street conversation)',run=idle_stance},
+        {name='idle_stance2 (street gestures)',run=idle_stance2},
         {name='advertiseSales (business sales presentation)',run=advertiseSales},
         {name='modelWalk (business runway walk)',run=modelWalk},
         {name='presentGala (business gala presenter)',run=presentGala},
@@ -101,17 +102,39 @@ end
 local function cycle()
     SetSignalMask(SIG_EFFECT)
     local effects=getAllTextFx()
-    local cases={{name='plain',upright=false},{name='plain',upright=true}}
-    local names={}
-    for name in pairs(effects) do names[#names+1]=name end
+    -- Addition order from Git history, newest first (not last modification).
+    -- Count the restored spline at its restoration. Prepend future additions.
+    local newestFirst={
+        'wallImpactText', -- 7a68750a
+        'splineShapeFollowing', -- 089377c6, restored runnable choreography
+        'meteorCraterText', -- 9fa5d254
+        'smilingFace','letterPlant','heartMonitor','letterTornado','oneArmedBandit', -- d51f1011
+        'civilianCongaText','hostileTakeoverText', -- 19d8b3e6
+        -- Imported together in 51772130; retain their registry order.
+        'SinusLetter','CrossLetters','HideLetters','SpinLetters','SwarmLetters',
+        'SpiralUpwards','randomFLickerLetters','syncToFrontLetters','consoleLetters',
+        'dnaHelix','circleProject','ringProject','cubeProject','spiralProject',
+        'matrixTextFx','fireWorksProjectTextFx','waterFallProject','personalProject',
+        'archProject','achromaticShivering',
+    }
+    local cases,names,known={},{},{}
+    for _,name in ipairs(newestFirst) do known[name]=true end
+    -- An effect added to the registry alone must still appear, ahead of known
+    -- older entries. Explicit insertion above records ordering among additions.
+    for name in pairs(effects) do if not known[name] then names[#names+1]=name end end
     table.sort(names)
+    for _,name in ipairs(newestFirst) do
+        if effects[name] then names[#names+1]=name end
+    end
     for _,name in ipairs(names) do
         cases[#cases+1]={name=name,upright=name=='matrixTextFx' or name=='archProject'}
         if name=='dnaHelix' then cases[#cases+1]={name=name,upright=true} end
     end
+    cases[#cases+1]={name='plain',upright=false}
+    cases[#cases+1]={name='plain',upright=true}
     while true do
-        for _,degrees in ipairs({0,20,-20}) do
-            for _,case in ipairs(cases) do
+        for _,case in ipairs(cases) do
+            for _,degrees in ipairs({0,20,-20}) do
                 local ids,pos=layout(case.upright,math.rad(degrees))
                 local effect=effects[case.name]
                 local multiplier=effect and math.random(100,300)/100 or 1
