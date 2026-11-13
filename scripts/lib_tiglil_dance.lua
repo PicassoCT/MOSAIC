@@ -4,9 +4,42 @@ local M={}
 local function pose(body,left,right,arms,travel,beats,hold)
     return {body=body,left=left,right=right,arms=arms,travel=travel or {0,0},beats=beats or 1,hold=hold or 0}
 end
+local function balletPose(cue,body,left,right,arms,beats,hold,heading)
+    local p=pose(body,left,right,arms,{0,0},beats,hold)
+    p.cue,p.heading=cue,heading
+    return p
+end
 -- Leg tuples: hip pitch, yaw, roll, knee bend. Arms are rigid shoulder-to-hand
 -- pieces: use open silhouettes instead of pretending the rig has elbows.
 M.styles={
+    -- A self-contained adagio and turn, independent of the pole composer.
+    -- Rigid arms/feet suggest ballet lines without fictitious elbow/ankle bends.
+    ballet={beat=800,headings={0},frames={
+        balletPose('preparation',{0,0,0},{0,-12,0,0},{0,12,0,0},{{0,-25,50},{0,25,-50}},.75),
+        balletPose('demi plie',{0,0,0},{-16,-12,-3,32},{-16,12,3,32},{{0,-45,30},{0,45,-30}}),
+        balletPose('port de bras',{0,0,0},{0,-12,0,0},{0,12,0,0},{{0,-10,-70},{0,10,70}}),
+        balletPose('left tendu',{0,0,-2},{0,-12,-16,0},{0,12,2,0},{{0,-8,4},{0,8,-4}},1.25),
+        balletPose('left extension',{0,0,-3},{0,-12,-42,0},{0,12,3,0},{{0,-12,-65},{0,8,-4}},1.25),
+        balletPose('left balance',{0,-5,-3},{0,-12,-42,0},{0,12,3,0},{{0,-12,-65},{0,8,-4}},1,.4),
+        balletPose('close left',{0,0,0},{0,-12,0,0},{0,12,0,0},{{0,-30,35},{0,30,-35}}),
+        balletPose('right tendu',{0,0,2},{0,-12,-2,0},{0,12,16,0},{{0,-8,4},{0,8,-4}}),
+        balletPose('right extension',{0,0,3},{0,-12,-3,0},{0,12,42,0},{{0,-8,4},{0,12,65}},1.25),
+        balletPose('close right',{0,0,0},{0,-12,0,0},{0,12,0,0},{{0,-30,35},{0,30,-35}}),
+        balletPose('arabesque preparation',{4,0,0},{-4,-8,0,4},{18,8,0,0},{{0,-50,10},{0,8,-5}},.75),
+        balletPose('arabesque',{8,0,0},{-8,-8,0,0},{46,8,0,0},{{0,-65,-5},{0,8,0}},1.25),
+        balletPose('arabesque balance',{8,-3,0},{-8,-8,0,0},{46,8,0,0},{{0,-65,-5},{0,8,0}},1,.5),
+        balletPose('recover arabesque',{0,0,0},{0,-12,0,0},{0,12,0,0},{{0,-8,4},{0,8,-4}}),
+        balletPose('turn preparation',{0,0,0},{-14,-12,-2,28},{-14,12,2,28},{{0,-45,25},{0,45,-25}}),
+        balletPose('retire balance',{0,0,-2},{0,-8,2,0},{-40,12,20,80},{{0,-60,5},{0,60,-5}}),
+        balletPose('turn quarter',{0,0,-2},{0,-8,2,0},{-40,12,20,80},{{0,-60,5},{0,60,-5}},.75,0,90),
+        balletPose('turn half',{0,0,-2},{0,-8,2,0},{-40,12,20,80},{{0,-60,5},{0,60,-5}},.75,0,180),
+        balletPose('turn three quarters',{0,0,-2},{0,-8,2,0},{-40,12,20,80},{{0,-60,5},{0,60,-5}},.75,0,270),
+        balletPose('complete turn',{0,0,-2},{0,-8,2,0},{-40,12,20,80},{{0,-60,5},{0,60,-5}},.75,0,360),
+        balletPose('soft landing',{0,0,0},{-14,-12,-2,28},{-14,12,2,28},{{0,-8,4},{0,8,-4}}),
+        balletPose('open finish',{-2,0,0},{0,-12,0,0},{0,12,0,0},{{0,-10,-65},{0,10,65}}),
+        balletPose('reverence',{12,0,0},{-18,-8,0,12},{-6,8,0,12},{{0,-8,15},{0,8,-15}},.75),
+        balletPose('settle',{0,0,0},{0,-12,0,0},{0,12,0,0},{{0,-25,50},{0,25,-50}}),
+    }},
     -- Adapted from the overhead reach, arm sweeps, hip rocks and turning steps
     -- in the source linked by the user's Reddit post: youtube.com/watch?v=6Ov9EL709cc.
     -- Tiglil has no elbow joints: shoulder arcs preserve the silhouette.
@@ -165,6 +198,9 @@ function M.play(name,api)
         api.turn('deathpivot',{0,heading*sign,0},style.beat*(style.turnBeats or 2))
         for _,p in ipairs(style.frames) do
             local duration=style.beat*p.beats
+            -- Only the turn component rotates the ballet stage. Quarter-turn
+            -- targets avoid the native shortest-path collapse of a full 360.
+            if p.heading then api.turn('deathpivot',{0,(heading+p.heading)*sign,0},duration) end
             perform(p,duration*(1-p.hold))
             api.sleep(duration)
         end

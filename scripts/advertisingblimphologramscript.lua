@@ -263,6 +263,7 @@ idleAnimations[#idleAnimations +1] = danceDisco
 idleAnimations[#idleAnimations +1] = dancePopping
 idleAnimations[#idleAnimations +1] = danceJoi
 idleAnimations[#idleAnimations +1] = dancePole
+idleAnimations[#idleAnimations +1] = danceBallet
 idleAnimations[#idleAnimations +1] = strikeAPose
 local function tiglLilLoop()
 

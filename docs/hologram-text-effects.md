@@ -186,7 +186,7 @@ legs into a full straddle above the head, holds for 1.2 authored seconds, and fo
 back before the sideways hold. Both hands remain on the pole throughout.
 The old sideways pose and folded-leg silhouette survive as a short adapted hold;
 the drum branch still calls the routine at its current stage height. It is also
-selectable independently and plays first in `text_fx_test`.
+selectable independently in `text_fx_test`.
 
 The body moves around the pole's actual centre while the pole remains stationary.
 Hand contacts follow the imported shoulder offsets and rigid arm lengths; a free
@@ -209,3 +209,20 @@ the pelvis. An analytic two-bone solve keeps the feet planted while the torso
 pivots about the upper back. Tests check actual mesh clearance for the head,
 torso and feet, as well as planted-foot stability through native interpolation.
 Forty seeded compositions cover both directions and all retained components.
+
+
+## Standalone ballet
+
+`danceBallet` is a separate solo routine, available in all three hologram idle
+pools. It plays first in `text_fx_test`, announced as `danceBallet (solo ballet)`.
+The roughly twenty-second phrase includes a demi-plié, overhead port de bras,
+left/right side extensions, a held arabesque, a raised-knee full turn, a soft
+landing and a closing reverence. Each performance can mirror the choreography.
+It does not invoke the pole sequence or display its prop.
+
+The torso stays upright, with a modest forward inclination for the arabesque
+and bow. The existing rigid arms and feet limit classical elbow/ankle positions.
+Four timed quarter-turn targets preserve a full revolution despite the engine's
+shortest-path rotation rules; stationary balances do not rotate the stage.
+Native scheduler checks cover both turn directions, floor clearance during
+transitions and a neutral exit. Mesh checks cover the poses on all three models.
