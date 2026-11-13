@@ -1624,8 +1624,14 @@ idleAnimations[#idleAnimations +1] = idle_stance15
 idleAnimations[#idleAnimations +1] = tigLilAnimations.idle_playBall
 idleAnimations[#idleAnimations +1] = idle_stance18
 idleAnimations[#idleAnimations +1] = idle_stance17
+idleAnimations[#idleAnimations +1] = danceShuffle
+idleAnimations[#idleAnimations +1] = danceDisco
+idleAnimations[#idleAnimations +1] = dancePopping
 idleAnimations[#idleAnimations +1] = strikeAPose
 
+technoAnimations[#technoAnimations +1] = danceShuffle
+technoAnimations[#technoAnimations +1] = danceDisco
+technoAnimations[#technoAnimations +1] = dancePopping
 technoAnimations[#technoAnimations +1] = strikeAPose
 technoAnimations[#technoAnimations +1] = idle_stance_10
 technoAnimations[#technoAnimations +1] = idle_stance

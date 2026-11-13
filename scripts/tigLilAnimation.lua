@@ -4969,125 +4969,24 @@ function idle_stance14()
     legs_down()
 end
 
-function tangoStep(times,boolLeft, offset)
-    threequarter,half,quarter= math.ceil(times*0.75), math.ceil(times/2), math.ceil(times*0.25)
-    RLegUp,RLegDown,LLegUp,LLegDown = tllegUp,tllegLow,tllegUpR,tllegLowR
-    if boolLeft==true then
-        RLegUp,RLegDown,LLegUp,LLegDown=tllegUpR,tllegLowR,tllegUp,tllegLow
-    end
-
-    tSyncIn(LLegUp,-88,0,0,threequarter)
-    tSyncIn(LLegDown,113,0,0,threequarter)
-
-    tSyncIn(RLegUp, 57,0,0,threequarter)
-    tSyncIn(RLegDown,0,0,0,threequarter)
-
-    Sleep(threequarter)
-    tSyncIn(LLegUp,-64,0,0,threequarter)
-    tSyncIn(LLegDown,56,0,0,threequarter)
-
-    tSyncIn(RLegUp, 42,0,0,quarter)
-    tSyncIn(RLegDown,0,0,0,quarter)
-    Sleep(quarter)
-    end
-
-    --Tango
-    function idle_stance17()
-        --echo("idle_stance17")
-    orgDirection=0
-
-    for t=1,6 do
-        numberTangoSteps=3
-        taktZeit=450
-        dreiViertel=math.ceil(taktZeit*0.75)
-        half=math.ceil(taktZeit/2)
-        bLeft,bRight=true,false
-        tSign=-1
-        for i=1,numberTangoSteps,2 do
-            lArm,rArm=tlarm,tlarmr
-            if math.ceil(i/2)%2== 0 then 
-            lArm,rArm=tlarmr,tlarm 
-            end
-            tSign=tSign*-1
-            tSyncIn( lArm,9,71*tSign,35,taktZeit)
-            tSyncIn( rArm,0,-87*tSign,5,taktZeit)
-            
-            mSyncIn(tigLil,0,-2,(i-0.5)*3, half)
-            StartThread(tangoStep,taktZeit,bLeft,-6)
-            Sleep(half)
-            mSyncIn(tigLil,0,-4,(i)*3, half)
-            Sleep(half)
-                
-            StartThread(tangoStep,taktZeit,bRight,-4)
-            mSyncIn(tigLil,0,-2,(i+0.5)*3, half)
-            Sleep(half)
-            mSyncIn(tigLil,0,-5,(i+1)*3, half)
-            Sleep(half)
-            Sleep(150)
-        end
-
-        -- shaking
-        for i=1,3 do
-            tangoShakeMovement(half,taktZeit,qater,numberTangoSteps)
-        end
-
-            
-        sideStep(half,taktZeit,numberTangoSteps)
-        orgDirection=orgDirection+1
-        Sleep(taktZeit*2)
-        Turn(deathpivot,y_axis,math.rad(orgDirection*90),60)
-        reset(tigLil,60)
-
-    end
-
+-- Shared solo choreography; timed commands stay inside the Tiglil smoother.
+local soloDances=include("lib_tiglil_dance.lua")
+local function soloDance(name)
+    soloDances.play(name,{
+        turn=function(name,a,ms) tSyncIn(piece(name),a[1],a[2],a[3],ms) end,
+        move=function(name,a,ms) mSyncIn(piece(name),a[1],a[2],a[3],ms) end,
+        sleep=Sleep,
+        finish=function()
+            WaitForTurns(deathpivot,dancepivot,tigLil,tlHead,tlhairup,tlhairdown,
+                tlarm,tlarmr,tllegUp,tllegLow,tllegUpR,tllegLowR)
+            WaitForMoves(tigLil)
+        end,
+    })
 end
-
-function tangoShakeMovement(half,taktZeit,qater,numberTangoSteps)
-offset=math.random(-40,0)
-    tSyncIn( lArm,9-offset,-71,35,taktZeit)
-    tSyncIn( rArm,0-offset,87,5,taktZeit)
-    mSyncIn(tigLil,0,-4,(numberTangoSteps+1)*3 +math.random(0,10)/10, taktZeit)
-    tSyncIn(tigLil,21+offset,0,0,taktZeit)
-    
-    tSyncIn(tllegUp,0-offset,0,0,taktZeit)
-    tSyncIn(tllegLow,44,0,0,taktZeit)
-    tSyncIn(tllegUpR, -85-offset,0,0,taktZeit)
-    tSyncIn(tllegLowR,61,0,0,taktZeit)
-    Sleep(taktZeit)
-
-    mSyncIn(tigLil,0, -2,(numberTangoSteps+1)*3 +math.random(0,10)/10, taktZeit)
-    tSyncIn(tigLil,5+offset,0,0,taktZeit)
-    
-    tSyncIn(tllegUp,18-offset,0,0,taktZeit)
-    tSyncIn(tllegLow,22,0,0,taktZeit)
-    tSyncIn(tllegUpR, -50-offset,0,0,taktZeit)
-    tSyncIn(tllegLowR,43 ,0,0,taktZeit)
-    Sleep(taktZeit)
-end
-function sideStep(half,taktZeit,numberTangoSteps,orgDirection)
-
-
-    tSyncIn(tllegUp, 15, -39, -30,half)
-    tSyncIn(tllegLow,10,0,0,half)
-    tSyncIn(tllegUpR, 57,0,0,half)
-    tSyncIn(tllegLowR,0,0,0,half)
-
-    
-    mSyncIn(tigLil,0, 0,(numberTangoSteps)*3 +math.random(0,10)/10, taktZeit)
-    tSyncIn(tigLil,0,90,0,taktZeit)
-    
-    Sleep(half)
-    tSyncIn(tllegUpR, 0,0,42,half)
-    tSyncIn(tllegLowR,0,0,0,half)
-    tSyncIn(tllegUp,0,0,0,half)
-    tSyncIn(tllegLow,0,0,0,half)
-    Sleep(half)
-    tSyncIn(tllegUpR, 0,0,0,half)
--- seitlich zurück
-    engsign=randSign()
-    tSyncIn( lArm,0,0,75*engsign,taktZeit)
-    tSyncIn( rArm,0,0,-75*engsign,taktZeit)
-end
+function idle_stance17() soloDance('solo') end
+function danceShuffle() soloDance('shuffle') end
+function danceDisco() soloDance('disco') end
+function dancePopping() soloDance('popping') end
 
 --even numbers left foot up
 function drumPose1(mspeed, tspeed)

@@ -78,8 +78,8 @@ cursor. It uses `house_western_hologram.dae` and the real `lib_textFx.lua` funct
 with ordinary engine Show/Hide drawing and no neon registration. The phrase is
 `Lorem Ipsum`; console messages identify each mode, layout and parent rotation.
 Tiglil dances continuously alongside the letters using the shared smoothed drum,
-tango, acrobatic poses, full backflip/handstand, headshake and dance routines.
-Each routine echoes its name. `idle_stance17` is tango; `idle_stance4` and
+solo footwork, shuffle, disco, popping, acrobatic poses, full backflip/handstand, headshake and dance routines.
+Each routine echoes its name. `idle_stance17` now performs six phrases of solo footwork with controlled turns; `idle_stance4` and
 `idle_stance5` are separate, explicit acrobatic entries. This preview has no night-only eligibility
 or shared performer cap, and text cleanup never hides the dancer. Both loops
 and their child animations stop when the unit is destroyed.
@@ -145,3 +145,19 @@ force both branches through the float32 animation scheduler.
 The backflip waits for its last 3 rad/s landing turn before normalizing the
 body angle. Its trajectory test checks a full revolution without the former
 fast-reset snap at the end.
+
+## Solo dance styles
+
+`idle_stance17` replaces the old deep tango dips and abrupt quarter-turn resets
+with six phrases of crossing steps, side weight shifts and opposing arm sweeps.
+`danceShuffle` uses running-man lifts and heel-toe steps; `danceDisco` alternates
+diagonal overhead reaches and side steps; `dancePopping` uses short torso and arm
+accents with deliberate holds. Every routine works without a partner or props.
+
+The routines share `lib_tiglil_dance.lua`, use the existing Tiglil smoothing and
+retargeting, randomly mirror their choreography, and finish in a neutral stance.
+Body height follows the supporting foot using the exported leg geometry instead
+of an arbitrary vertical bob. Both western holograms and the advertising blimp
+include the new routines; the western techno pool includes them too. The preview
+announces each style by name. Model and scheduler checks do not replace a live
+visual review of timing, foot sliding and silhouettes.
