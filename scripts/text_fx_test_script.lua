@@ -35,6 +35,7 @@ local tiglilAnimations=include('tigLilAnimation.lua')
 local function dance()
     SetSignalMask(SIG_CORE+SIG_TIGLIL)
     local routines={
+        {name='dancePole (pole choreography)',run=dancePole},
         {name='danceJoi (Joi-inspired solo)',run=danceJoi},
         {name='idle_stance17 (solo footwork)',run=idle_stance17},
         {name='danceShuffle (solo shuffle)',run=danceShuffle},

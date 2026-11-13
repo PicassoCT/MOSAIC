@@ -168,7 +168,7 @@ and its linked [source clip](https://www.youtube.com/watch?v=6Ov9EL709cc).
 It performs four 16-beat phrases with gradual quarter-turns, then settles to
 neutral. This is a rig-adapted interpretation: Tiglil's rigid arm pieces cannot
 reproduce the reference's elbow bends. The clip and audio are not game assets.
-The preview starts with `danceJoi (Joi-inspired solo)`, then the other solo styles; normal and techno pools
+The preview includes `danceJoi (Joi-inspired solo)` alongside the other solo styles; normal and techno pools
 include it alongside the other styles.
 
 The circle/drum dance retains its five laps, randomized quarter-lap stops,
@@ -176,3 +176,19 @@ overhead/front drum gestures and both twirl directions. Its torso now leans at
 most 8 degrees forward/back and 4 degrees sideways, with at least 450 ms for
 body changes and 300 ms for limb changes. Twirls use 3 rad/s instead of 7 rad/s,
 retain the entry heading, and settle upright before the next orbit segment.
+
+## Pole choreography
+
+`dancePole` now performs an approach, walking turn, tucked spin, two-stage climb,
+sideways tucked hold, extended-leg turn, free-arm flourish and controlled descent.
+The old sideways pose and folded-leg silhouette survive as a short adapted hold;
+the drum branch still calls the routine at its current stage height. It is also
+selectable independently and plays first in `text_fx_test`.
+
+The body moves around the pole's actual centre while the pole remains stationary.
+Hand contacts follow the imported shoulder offsets and rigid arm lengths; a free
+arm returns before the other releases. Piece offsets and bounds account for the
+blimp's different pole mount and shorter pole, limiting its climb accordingly.
+Interpolated grips, floor clearance, completion, cancellation and restoration of
+parent placement are tested. Shoulder arcs approximate grip changes on this rig,
+which has no elbow joints; live visual review is still needed.

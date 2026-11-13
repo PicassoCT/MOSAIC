@@ -5378,34 +5378,74 @@ local function drumPoseMorphStage(mspeed, tspeed, addUp)
  
 end
 
-local function drumPosePoledancin(mspeed, tspeed, addUp)
-        addUp = addUp + 12
-        mSyncIn(tigLil,     5,addUp,-3,250)
-        tSyncIn(tigLil,     0,0,-90,250)
-        ShowReg(tlpole)
-        tSyncIn(tlHead,     6,0,-9,250)
-        tSyncIn(tlhairup,   -57,90,17,250)
-        tSyncIn(tlhairdown, 0,0,0,250)
-                            
-        tSyncIn(tlflute,    0,0,0,250)
-        tSyncIn(tlarm,      0,0,-46,250)
-        tSyncIn(tlarmr,     0,0,76,250)
-                            
-        tSyncIn(tllegUp,    -39,0,0,250)
-        tSyncIn(tllegLow,   147,0,0,250)
-        tSyncIn(tllegUpR,   -71,69,0,250)
-        tSyncIn(tllegLowR,  142,0,0,250)
-        WaitForTurns(deathpivot,tigLil,tllegUp,tllegLow,tllegUpR,tllegLow,tlarm,tlarmr,tlHead,tlhairup,tlhairdown)
-        Spin(deathpivot, y_axis, math.rad(140), 90)
-        Spin(tldancedru, y_axis, math.rad(-140), 90)
-        mSyncIn(tigLil,     0,addUp-21,0,8000)
-        WaitForMoves(tigLil)
-        StopSpin(deathpivot, y_axis)
-        StopSpin(tldancedru, y_axis)
-        HideReg(tlpole)
-    
-
+local poleDance=include("lib_tiglil_pole.lua")
+local function performPoleDance(stage)
+    stage=stage or 0
+    TigLilStopSmoothing()
+    local api=Spring.UnitScript
+    local bodyScale=11060.378906/12
+    local saved={}
+    -- Preserve the caller's parent placement, including a preceding orbit.
+    for _,id in ipairs({deathpivot,dancepivot,tldancedru,tlpole}) do
+        saved[id]={turn={api.GetPieceRotation(id)},move={api.GetPieceTranslation(id)}}
+        for axis=1,3 do StopSpin(id,axis,0) end
+    end
+    for axis=1,3 do StopSpin(tigLil,axis,0) end
+    for _,id in ipairs({dancepivot,tldancedru}) do
+        for axis=1,3 do tiglilMotion.TurnInTime(id,axis,0,700);tiglilMotion.MoveInTime(id,axis,0,700) end
+    end
+    -- The drum branch can perform on a raised stage; raise the whole pole to it.
+    tiglilMotion.MoveInTime(tlpole,1,0,700)
+    tiglilMotion.MoveInTime(tlpole,2,0,700)
+    tiglilMotion.MoveInTime(tlpole,3,stage,700)
+    for axis=1,3 do tiglilMotion.TurnInTime(tlpole,axis,0,700) end
+    WaitForTurns(dancepivot,tldancedru,tlpole);WaitForMoves(dancepivot,tldancedru,tlpole)
+    TigLilStopSmoothing()
+    local function apply(p,ms)
+        local seconds=ms/1000
+        for name,a in pairs(p.turns) do
+            local id=piece(name)
+            local current={api.GetPieceRotation(id)}
+            for axis=1,3 do
+                local target=math.rad(a[axis])
+                local delta=(target-current[axis]+math.pi)%(2*math.pi)-math.pi
+                api.Turn(id,axis,target,math.max(.001,math.abs(delta)/seconds))
+            end
+        end
+        local current={api.GetPieceTranslation(tigLil)}
+        for axis=1,3 do
+            local target=p.move[axis]*bodyScale
+            api.Move(tigLil,axis,target,math.max(.001,math.abs(target-current[axis])/seconds))
+        end
+    end
+    local rig=poleDance.calibrate(function(name)
+        return Spring.GetUnitPieceInfo and Spring.GetUnitPieceInfo(unitID,piece(name))
+    end,bodyScale)
+    poleDance.play({apply=apply,sleep=Sleep,show=function()ShowReg(tlpole)end},stage,rig)
+    -- Feet return to the stage before releasing the pole and leaving it.
+    for axis=1,3 do tiglilMotion.TurnInTime(tigLil,axis,0,900) end
+    mSyncIn(tigLil,0,stage,0,900)
+    tSyncIn(tlarm,0,0,68,900);tSyncIn(tlarmr,0,0,-68,900)
+    tSyncIn(tllegUp,0,0,0,900);tSyncIn(tllegUpR,0,0,0,900)
+    tSyncIn(tllegLow,0,0,0,900);tSyncIn(tllegLowR,0,0,0,900)
+    WaitForMoves(tigLil);WaitForTurns(tigLil,tlarm,tlarmr,tllegUp,tllegUpR,tllegLow,tllegLowR)
+    HideReg(tlpole)
+    for id,pose in pairs(saved) do
+        -- Saved translations are already in model units. Ease back to the
+        -- caller's arrangement instead of snapping a visible parent pivot.
+        local move={api.GetPieceTranslation(id)}
+        local turn={api.GetPieceRotation(id)}
+        for axis=1,3 do
+            api.Move(id,axis,pose.move[axis],math.max(.001,math.abs(pose.move[axis]-move[axis])/.7))
+            local delta=(pose.turn[axis]-turn[axis]+math.pi)%(2*math.pi)-math.pi
+            api.Turn(id,axis,pose.turn[axis],math.max(.001,math.abs(delta)/.7))
+        end
+    end
+    WaitForMoves(deathpivot,dancepivot,tldancedru,tlpole)
+    WaitForTurns(deathpivot,dancepivot,tldancedru,tlpole)
 end
+function dancePole() performPoleDance(0) end
+local function drumPosePoledancin(mspeed,tspeed,addUp) performPoleDance(addUp) end
 
 local flutePoses = include("lib_tiglil_flute.lua")
 local function poseFlute(name)
