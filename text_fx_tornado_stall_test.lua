@@ -22,4 +22,4 @@ end
 local start=assert(source:find(marker,1,true))
 source=source:sub(1,start-1)..injected..source:sub(start)
 assert(loadstring(source))()
-print('PASS: permanently stalled tornado formation/restoration recover and all 96 preview cases complete')
+print('PASS: permanently stalled tornado formation/restoration recover and all 99 preview cases complete')
