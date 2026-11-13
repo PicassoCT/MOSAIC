@@ -7,11 +7,13 @@ for _,file in ipairs({'house_western_hologram_script.lua','house_western_brothel
 end
 local brothel=read('scripts/house_western_brothel_hologram_script.lua')
 assert(brothel:find('idleAnimations[#idleAnimations +1] = invitePasserby\n',1,true))
+assert(brothel:find('idleAnimations[#idleAnimations +1] = danceEmbracePasserby\n',1,true))
 local normal=read('scripts/house_western_hologram_script.lua')
+assert(not normal:find('danceEmbracePasserby',1,true),'close dance embrace leaks into ordinary advertising')
 assert(not normal:find('invitePasserby',1,true),'seductress invitation leaks into ordinary advertising')
 assert(normal:find('businessPresentations[animation] = true',1,true),'personal interactions inherit glow sticks')
 local blimp=read('scripts/advertisingblimphologramscript.lua')
-for _,name in ipairs({'greetPasserby','embracePasserby','kissPasserby','invitePasserby','enablePeopleAnimations'})do
+for _,name in ipairs({'greetPasserby','embracePasserby','kissPasserby','invitePasserby','danceEmbracePasserby','enablePeopleAnimations'})do
     assert(not blimp:find(name,1,true),'blimp enables personalized interaction: '..name)
 end
 local player=dofile('scripts/lib_tiglil_dance.lua')
@@ -27,6 +29,17 @@ for name,style in pairs(styles)do
     assert(finished and time>6000 and time<15000 and poses==#style.frames+2)
     local held=0;for _,p in ipairs(style.frames)do if p.hold>0 then held=held+1 end end
     assert(held>=1,'social routine does not pause for its gesture')
+    if name=='danceEmbrace' then
+        local left,right=0,0
+        for _,p in ipairs(style.frames)do
+            if p.cue:find('sway') then
+                if p.travel[1]>0 then left=left+1 else right=right+1 end
+                assert(p.arms[1][2]<=-60 and p.arms[2][2]>=60,'sway releases embrace too early')
+                assert(p.travel[2]==-.3,'lateral dance drifts toward the pedestrian')
+            end
+        end
+        assert(left==2 and right==2,'close dance loses its alternating steps')
+    end
 end
 assert(styles.embrace.distance>styles.kiss.distance,'close interactions have no distinct staging')
 print('PASS: shared building interactions, brothel-only invitation, blimp exclusion and bounded social choreography')

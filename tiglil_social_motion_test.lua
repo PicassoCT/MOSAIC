@@ -30,7 +30,7 @@ local function angles(name)
     return {math.deg(r[1]),math.deg(r[3]),math.deg(r[2])}
 end
 local random=math.random
-for _,entry in ipairs({{'greeting',greetPasserby},{'embrace',embracePasserby},{'kiss',kissPasserby},{'invitation',invitePasserby}})do
+for _,entry in ipairs({{'greeting',greetPasserby},{'embrace',embracePasserby},{'danceEmbrace',danceEmbracePasserby},{'kiss',kissPasserby},{'invitation',invitePasserby}})do
 for _,sign in ipairs({0,1})do
     StartThread(TigLilSetup);drain(1000)
     math.random=function(a,b)assert(a==0 and b==1);return sign end
@@ -63,13 +63,16 @@ end
 end
 math.random=random
 assert(not projection,'projection leaked at end of interaction')
-StartThread(TigLilSetup);drain(1000)
-local started=frame
-StartThread(embracePasserby)
-for i=1,40 do tick()end
-targetAvailable=false
-drain(100)
-assert(frame-started<30*5 and not projection,'departed pedestrian leaves an embrace running')
+for _,routine in ipairs({embracePasserby,danceEmbracePasserby})do
+    targetAvailable=true
+    StartThread(TigLilSetup);drain(1000)
+    local started=frame
+    StartThread(routine)
+    for i=1,40 do tick()end
+    targetAvailable=false
+    drain(100)
+    assert(frame-started<30*5 and not projection,'departed pedestrian leaves an embrace running')
+end
 assert(greetPasserby()==false,'no-target interaction did not skip')
 print('PASS: target departure interrupts interaction and absent people skip it')
 ]=]
