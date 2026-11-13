@@ -1754,11 +1754,8 @@ function idle_stance4()
     WaitForTurn(tllegLow, x_axis)
     WaitForTurn(tllegUpR, z_axis)
     Sleep(1675)
-    dice = math.random(0, 1)
-    if dice == 0 then
-        --endless poseIbilitys
-    end
-    if dice == 1 then
+    -- Always complete the acrobatics after the opening pose.
+    do
 
         --Move(tigLil,z_axis,-7,5)--i-7
         --Move(tigLil,x_axis,-7,3)
