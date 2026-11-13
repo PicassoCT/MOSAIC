@@ -171,7 +171,9 @@ function M.plan(options)
                                 relaxed=relaxed, large=M.isLarge(item.name),
                                 roadNear=near,roadFar=far, facade=half, curbside=curbside,
                                 moveX=x-(low[1]+high[1])/2,
-                                moveZ=z-(low[3]+high[3])/2,moveY=-pose.min[2],
+                                -- The authored rest-plane is ground level.
+                                -- Negative mesh coordinates belong underground.
+                                moveZ=z-(low[3]+high[3])/2,moveY=0,
                                 minX=x-hx,maxX=x+hx,minZ=z-hz,maxZ=z+hz}
                             local clear=true
                             local onRoad=false
@@ -334,7 +336,10 @@ function M:bindPlacement(env)
             for _,p in ipairs(placements) do
                 -- Resolve local IDs again when replaying a saved layout.
                 p.id=assert(options.pieces[p.name],'Saved placeable is absent from this model: '..p.name)
-                local offsets={p.moveX,p.moveY+(p.ground-uy)/scale,p.moveZ}
+                -- Preserve authored burial depth, including layouts saved by the
+                -- old mesh-bottom grounding rule. Only terrain changes elevation.
+                p.moveY=0
+                local offsets={p.moveX,(p.ground-uy)/scale,p.moveZ}
                 local basis=placeablePlanner.catalogue.moveBasis
                 for axis=1,3 do
                     local value=offsets[axis]
