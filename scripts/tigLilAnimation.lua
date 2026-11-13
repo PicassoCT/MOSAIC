@@ -4771,7 +4771,7 @@ function idle_stance15()
         tP(tllegLow, 79 , math.random(-5,5), math.random(-5,5), 2* factor * i)
         tP(tllegUpR, 35 , math.random(-5,5), math.random(-5,5), 3*factor * i)
         tP(tllegLowR, 78 , math.random(-5,5), math.random(-5,5),2* factor * i)
-            WaitForTurns(tigLil,tigLil,tlHead,tlhairup,tlhairdow,tlarm, tlarmr, tllegUp,tllegLow,tllegUpR,tllegLowR)
+            WaitForTurns(tigLil,tlHead,tlhairup,tlhairdown,tlarm, tlarmr, tllegUp,tllegLow,tllegUpR,tllegLowR)
     end
     
     Sleep(3000)
@@ -5023,6 +5023,10 @@ local businessDances=include("lib_tiglil_business.lua")
 function advertiseSales() soloDance('sales',businessDances.sales) end
 function modelWalk() soloDance('runway',businessDances.runway) end
 function presentGala() soloDance('presenter',businessDances.presenter) end
+local brothelDances=include("lib_tiglil_brothel.lua")
+function danceBurlesqueSway() soloDance('sway',brothelDances.sway) end
+function danceBurlesqueWave() soloDance('wave',brothelDances.wave) end
+function danceBurlesqueFan() soloDance('fan',brothelDances.fan) end
 
 --even numbers left foot up
 function drumPose1(mspeed, tspeed)

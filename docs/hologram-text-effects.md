@@ -272,3 +272,18 @@ away, or the show is cancelled; the anchor then returns to its authored identity
 Conversation gesture/head threads are stopped at the end of the routine.
 The preview includes both street routines; placing a stationary civilian nearby
 exercises relocation, while an empty test area exercises the fallback.
+
+
+## Brothel choreography
+
+The original suggestive routines (`idle_stance13`, `idle_stance15`,
+`idle_stance18`, the mixed gestures in `idle_stance2`, and the drum/pole branch)
+were already included in the brothel pool and remain available. A misspelled
+hair-piece reference in stance 15's final waits is corrected.
+
+The brothel alone adds `danceBurlesqueSway`, `danceBurlesqueWave` and
+`danceBurlesqueFan`: weight-shifting hip sways, rising/falling body waves with
+arm arcs, and alternating fan-like arm/leg silhouettes. They use the rigid arm
+pieces directly, mirror their phrases and return to neutral. The diagnostic
+preview includes all three. Native motion checks cover the new dances and the
+original conversational and suggestive routines across multiple seeds.

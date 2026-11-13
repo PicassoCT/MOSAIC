@@ -38,6 +38,9 @@ local function dance()
     local routines={
         {name='idle_stance (street conversation)',run=idle_stance},
         {name='idle_stance2 (street gestures)',run=idle_stance2},
+        {name='danceBurlesqueSway (brothel hip sway)',run=danceBurlesqueSway},
+        {name='danceBurlesqueWave (brothel body wave)',run=danceBurlesqueWave},
+        {name='danceBurlesqueFan (brothel fan dance)',run=danceBurlesqueFan},
         {name='advertiseSales (business sales presentation)',run=advertiseSales},
         {name='modelWalk (business runway walk)',run=modelWalk},
         {name='presentGala (business gala presenter)',run=presentGala},

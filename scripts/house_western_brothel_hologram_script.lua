@@ -1096,6 +1096,9 @@ idleAnimations[#idleAnimations +1] = dancePopping
 idleAnimations[#idleAnimations +1] = danceJoi
 idleAnimations[#idleAnimations +1] = dancePole
 idleAnimations[#idleAnimations +1] = danceBallet
+idleAnimations[#idleAnimations +1] = danceBurlesqueSway
+idleAnimations[#idleAnimations +1] = danceBurlesqueWave
+idleAnimations[#idleAnimations +1] = danceBurlesqueFan
 idleAnimations[#idleAnimations +1] = strikeAPose
 
                 
