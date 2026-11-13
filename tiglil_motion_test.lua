@@ -3,7 +3,7 @@
 assert(_VERSION=='Lua 5.1')
 local function read(path)local f=assert(io.open(path));local s=f:read('*a');f:close();return s end
 local header=read('gamedata/unit_script_header.lua')
-for _,name in ipairs({'tigLilAnimation.lua','lib_tiglil_motion.lua','lib_hologram_tiglil.lua'})do
+for _,name in ipairs({'tigLilAnimation.lua','lib_tiglil_motion.lua','lib_tiglil_retarget.lua','lib_hologram_tiglil.lua'})do
     assert(loadstring(header..'\n'..read('scripts/'..name)),name..' fails with production header')
 end
 local frame, threads, current, nextID = 0, {}, nil, 0
@@ -153,11 +153,22 @@ local setupDone=false
 StartThread(function()TigLilSetup();setupDone=true end);drain(1000);assert(setupDone)
 near(delta(math.rad(-74),rotations[pieceIDs.tlhairup][1],true),0)
 near(delta(math.rad(-19),rotations[pieceIDs.tlhairdown][1],true),0)
+-- Every twirl must return to the entry heading, in either direction.
+local savedRandom=math.random
+for _,choice in ipairs({0,1}) do
+    math.random=function() return choice end
+    rotations[pieceIDs.tigLil][y_axis]=math.pi
+    for repeatIndex=1,3 do
+        StartThread(danceInCircle);drain(1000)
+        near(delta(math.pi,rotations[pieceIDs.tigLil][y_axis],true),0)
+    end
+end
+math.random=savedRandom
 -- Real gait and timed pose callbacks exercise the scoped helpers too.
 StartThread(tradWalk);drain(1000)
 StartThread(shakeWalk);drain(1000)
-near(delta(math.rad(-16),rotations[pieceIDs.tlHead][3],true),0)
-near(delta(math.rad(-29),rotations[pieceIDs.tllegUpR][3],true),0)
+near(delta(math.rad(-16),rotations[pieceIDs.tlHead][2],true),0)
+near(delta(math.rad(-29),rotations[pieceIDs.tllegUpR][2],true),0)
 StartThread(function()strikeAPose(false)end);drain(3000)
 StartThread(idle_stance14);drain(3000) -- synchronized turns, including zero components
 TigLilStopSmoothing();Signal(130);advance(2)
