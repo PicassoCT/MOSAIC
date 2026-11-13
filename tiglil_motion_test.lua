@@ -159,11 +159,46 @@ for _,choice in ipairs({0,1}) do
     math.random=function() return choice end
     rotations[pieceIDs.tigLil][y_axis]=math.pi
     for repeatIndex=1,3 do
-        StartThread(danceInCircle);drain(1000)
+        local started=frame
+        local previous={unpack(rotations[pieceIDs.tigLil])}
+        local maximumLean,travelled=0,0
+        StartThread(danceInCircle)
+        while next(threads) do
+            assert(frame-started<1000,'circle dance failed to settle')
+            tick()
+            local angles=rotations[pieceIDs.tigLil]
+            local pitch=delta(angles[x_axis],0,true)
+            local roll=delta(angles[z_axis],0,true)
+            maximumLean=math.max(maximumLean,math.abs(pitch))
+            assert(math.abs(pitch)<=math.rad(8)+1e-6,'circle dance topples forward')
+            assert(math.abs(roll)<=math.rad(4)+1e-6,'circle dance topples sideways')
+            assert(math.abs(delta(angles[x_axis],previous[x_axis],true))<math.rad(2),'torso pose jerks')
+            local yawStep=delta(angles[y_axis],previous[y_axis],true)
+            assert(math.abs(yawStep)<math.rad(12),'twirl is too fast')
+            assert(yawStep*(choice==1 and -1 or 1)>-1e-6,'twirl reversed direction')
+            travelled=travelled+yawStep
+            previous={unpack(angles)}
+        end
+        assert(maximumLean>math.rad(1),'circle dance lost its weight shift')
+        near(travelled,(choice==1 and -1 or 1)*2*math.pi)
+        assert(frame-started>=72,'twirl and settling finished too abruptly')
         near(delta(math.pi,rotations[pieceIDs.tigLil][y_axis],true),0)
+        near(delta(0,rotations[pieceIDs.tigLil][x_axis],true),0)
+        near(delta(0,rotations[pieceIDs.tigLil][z_axis],true),0)
     end
 end
 math.random=savedRandom
+-- Both traveling drum variations use the same balanced torso, not just twirls.
+for _,fn in ipairs({drumClapOverhead,drumClapFront}) do
+    local deadline=frame+2000
+    StartThread(fn)
+    while next(threads) do
+        assert(frame<deadline,'drum gesture stalled');tick()
+        local a=rotations[pieceIDs.tigLil]
+        assert(math.abs(delta(a[x_axis],0,true))<=math.rad(8)+1e-6,'drum gesture exceeds lean limit')
+        assert(math.abs(delta(a[z_axis],0,true))<=math.rad(4)+1e-6)
+    end
+end
 -- The opening cartwheel pose must always lead through all three body poses
 -- and back to neutral, without consulting randomness to skip the sequence.
 StartThread(TigLilSetup);drain(1000)
