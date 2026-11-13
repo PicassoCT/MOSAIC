@@ -209,6 +209,9 @@ the pelvis. An analytic two-bone solve keeps the feet planted while the torso
 pivots about the upper back. Tests check actual mesh clearance for the head,
 torso and feet, as well as planted-foot stability through native interpolation.
 Forty seeded compositions cover both directions and all retained components.
+Each show now also selects one held accent: a raised stag, long-leg diagonal,
+or supported pike. Both hands stay on the pole for these shapes. The new accents
+are shared wherever the pole routine already plays.
 
 
 ## Standalone ballet

@@ -56,6 +56,9 @@ M.sequence={
     {name='sideways tucked hold',ms=1500,angle=450,height=3.5,radius=3.7,pitch=0,roll=-75,left=-39,leftKnee=147,right=-71,rightKnee=142,rightYaw=69,freeLeft=0,freeRight=0},
     {name='extended-leg turn',ms=2300,angle=620,height=3.5,radius=3.9,pitch=7,roll=-10,left=-34,leftKnee=112,right=30,rightKnee=8,freeLeft=0,freeRight=0},
     {name='side flourish',ms=1000,angle=650,height=3,radius=3.8,pitch=4,roll=-8,left=-34,leftKnee=108,right=12,rightKnee=18,freeLeft=0,freeRight=1},
+    {name='raised stag',ms=1300,angle=450,height=3.5,radius=3.7,pitch=0,roll=-20,left=-20,leftKnee=115,leftSpread=-8,right=-55,rightKnee=85,rightSpread=30,freeLeft=0,freeRight=0},
+    {name='long-leg diagonal',ms=1500,angle=450,height=3.5,radius=3.7,pitch=0,roll=-45,left=0,leftKnee=6,leftSpread=-28,right=20,rightKnee=8,rightSpread=32,freeLeft=0,freeRight=0},
+    {name='supported pike',ms=1400,angle=450,height=3.5,radius=3.7,pitch=0,roll=0,left=-75,leftKnee=6,leftSpread=-5,right=-75,rightKnee=6,rightSpread=5,freeLeft=0,freeRight=0},
     {name='recover both grips',ms=800,angle=680,height=2.5,radius=3.8,pitch=3,roll=0,left=-30,leftKnee=95,right=-30,rightKnee=95,freeLeft=0,freeRight=0},
     {name='controlled descent',ground=1,ms=2400,angle=720,height=0,radius=3.8,pitch=3,roll=0,left=-8,leftKnee=16,right=-8,rightKnee=16,freeLeft=0,freeRight=0},
     {name='lower to floor',ground=1,ms=2600,angle=720,height=0,radius=3.8,pitch=0,roll=0,left=-8,leftKnee=16,right=-8,rightKnee=16,freeLeft=0,freeRight=0,floorBlend=1,bridge=0},
@@ -219,6 +222,9 @@ M.components={
     split={'inverted tuck','open overhead split','hold overhead split','fold from overhead split'},
     sideHold={'sideways tucked hold'},
     extension={'extended-leg turn','side flourish'},
+    stag={'raised stag'},
+    diagonal={'long-leg diagonal'},
+    pike={'supported pike'},
     descent={'recover both grips','controlled descent'},
     floor={'lower to floor','floor bridge rise','floor bridge lower','stand from floor'},
 }
@@ -252,6 +258,10 @@ function M.compose(random)
     append('tucked spin',random(180,240))
     for _,name in ipairs(M.components.climb)do append(name,20)end
     local skills={'split','sideHold','extension'}
+    -- Add one contrasting silhouette each time, without dropping old skills
+    -- or stretching the show into an indefinitely growing checklist.
+    local accents={'stag','diagonal','pike'}
+    skills[#skills+1]=accents[random(1,#accents)]
     for i=#skills,2,-1 do local j=random(1,i);skills[i],skills[j]=skills[j],skills[i]end
     for _,skill in ipairs(skills)do
         -- Inversion at this heading avoids native Euler singularities while
@@ -261,6 +271,9 @@ function M.compose(random)
         for i,name in ipairs(M.components[skill])do
             local delta=skill=='extension' and (i==1 and 170 or 30) or 0
             append(name,delta)
+            if skill=='stag' or skill=='diagonal' or skill=='pike' then
+                append(name,0,{name=name..' hold',ms=650})
+            end
         end
         hang(0,{ms=1600})
     end
