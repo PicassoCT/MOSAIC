@@ -91,7 +91,7 @@ function include(file)
             Sleep(650)
         end
         idle_stance_10,idle_stance17,idle_stance_12,idle_stance4,idle_stance5=routine,routine,routine,routine,routine
-        danceShuffle,danceDisco,dancePopping=routine,routine,routine
+        danceShuffle,danceDisco,dancePopping,danceJoi=routine,routine,routine,routine
         return {idle_stance11=routine}
     end
 end
@@ -147,7 +147,7 @@ end
 assert(spiralCases==3,'spiral must appear once per rotation, without a lengthwise variant')
 for name in pairs(effects) do assert(invoked[name],'mode skipped: '..name) end
 assert(spins[math.rad(20)] and spins[math.rad(-20)],'missing rotation direction')
-for _,name in ipairs({'idle_stance17 (solo footwork)','danceShuffle (solo shuffle)','danceDisco (solo disco)','dancePopping (solo popping)','idle_stance4 (acrobatics)','idle_stance5 (backflip and handstand)'}) do
+for _,name in ipairs({'idle_stance17 (solo footwork)','danceShuffle (solo shuffle)','danceDisco (solo disco)','dancePopping (solo popping)','danceJoi (Joi-inspired solo)','idle_stance4 (acrobatics)','idle_stance5 (backflip and handstand)'}) do
     assert(danceAnnouncements['[Text FX test 7] Tiglil animation: '..name],'preview omitted '..name)
 end
 assert(danceCalls>99 and drawn[pieceMap.tigLil],'Tiglil must keep dancing through the full text cycle')

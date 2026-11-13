@@ -11,9 +11,9 @@ for _,sign in ipairs({0,1}) do
         local signature={}
         dance.play(name,{
             turn=function(id,a,ms)
-                assert(ms>=100 and ms<=1000,'dance must use readable, bounded transitions')
+                assert(ms>=100 and ms<=(id=='deathpivot' and 6000 or 1000),'dance must use readable, bounded transitions')
                 assert(#a>=3)
-                for i=1,3 do assert(a[i]==a[i] and math.abs(a[i])<=90,'uncontrolled spin or inverted solo pose')end
+                for i=1,3 do assert(a[i]==a[i] and math.abs(a[i])<=(id=='deathpivot' and 360 or 90),'uncontrolled spin or inverted solo pose')end
                 rotation[id]={a[1],a[2],a[3]}
                 if id=='deathpivot' then headings[#headings+1]=a[2] end
                 if id=='tigLil' then poses=poses+1;signature[#signature+1]=table.concat(a,',')end
@@ -38,13 +38,14 @@ for _,sign in ipairs({0,1}) do
             local key=table.concat(signature,';');assert(not signatures[key],'styles have identical body choreography');signatures[key]=name
         end
         for _,p in ipairs(style.frames)do if p.hold>0 then held=held+1 end end
+        if name=='joi' then assert(#style.frames==16 and style.turnBeats==8,'Joi lost its full phrase or slow turns')end
         if name=='popping' then assert(held==#style.frames,'popping lost its accented holds')end
     end
 end
 math.random=random
 for _,file in ipairs({'house_western_hologram_script.lua','house_western_brothel_hologram_script.lua','advertisingblimphologramscript.lua'})do
     local f=assert(io.open('scripts/'..file));local source=f:read('*a');f:close()
-    for _,name in ipairs({'danceShuffle','danceDisco','dancePopping'})do
+    for _,name in ipairs({'danceShuffle','danceDisco','dancePopping','danceJoi'})do
         assert(source:find('idleAnimations[#idleAnimations +1] = '..name,1,true),file..' omits '..name)
     end
 end
