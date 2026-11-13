@@ -5026,6 +5026,33 @@ local businessDances=include("lib_tiglil_business.lua")
 function advertiseSales() soloDance('sales',businessDances.sales) end
 function modelWalk() soloDance('runway',businessDances.runway) end
 function presentGala() soloDance('presenter',businessDances.presenter) end
+local yoga=include("lib_tiglil_yoga.lua")
+function advertiseWeightlessYoga()
+    local floorHeight=soloDances.height({body={0,0,0},left={0,0,0,0},right={0,0,0,0}})
+    local function settle(height,ms)
+        for _,id in ipairs({deathpivot,dancepivot,tigLil,tlHead,tllegUp,tllegUpR,tllegLow,tllegLowR}) do
+            tSyncIn(id,0,0,0,ms)
+        end
+        tSyncIn(tlarm,0,0,68,ms);tSyncIn(tlarmr,0,0,-68,ms)
+        tSyncIn(tlhairup,-74,0,0,ms);tSyncIn(tlhairdown,-19,0,0,ms)
+        mSyncIn(tigLil,0,floorHeight+height,0,ms)
+    end
+    yoga.play({
+        prepare=settle,
+        restore=function(ms) settle(0,ms) end,
+        turn=function(name,angles,ms)
+            -- Editor angles use native component order, unlike tSyncIn's
+            -- authored Y-up convention. Preserve the supplied local XYZ.
+            for axis=1,3 do tiglilMotion.TurnInTime(piece(name),axis,math.rad(angles[axis]),ms) end
+        end,
+        sleep=Sleep,
+        finish=function()
+            WaitForTurns(deathpivot,dancepivot,tigLil,tlHead,tlhairup,tlhairdown,
+                tlarm,tlarmr,tllegUp,tllegUpR,tllegLow,tllegLowR)
+            WaitForMoves(tigLil)
+        end,
+    })
+end
 local brothelDances=include("lib_tiglil_brothel.lua")
 function danceBurlesqueSway() soloDance('sway',brothelDances.sway) end
 function danceBurlesqueWave() soloDance('wave',brothelDances.wave) end

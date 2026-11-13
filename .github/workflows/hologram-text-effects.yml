@@ -73,6 +73,7 @@ jobs:
           lua5.1 tests/tiglil_shakira_motion_test.lua
           lua5.1 tests/tiglil_business_test.lua
           lua5.1 tests/tiglil_business_motion_test.lua
+          lua5.1 tests/tiglil_yoga_motion_test.lua
           lua5.1 tests/tiglil_brothel_test.lua
           lua5.1 tests/tiglil_brothel_motion_test.lua
           lua5.1 tests/tiglil_social_test.lua

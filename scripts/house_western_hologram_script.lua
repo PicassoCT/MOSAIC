@@ -1659,7 +1659,7 @@ end
 for _,animation in ipairs(technoAnimations) do
     businessAnimations[#businessAnimations+1] = animation
 end
-for _,animation in ipairs({advertiseSales,modelWalk,presentGala}) do
+for _,animation in ipairs({advertiseSales,modelWalk,presentGala,advertiseWeightlessYoga}) do
     businessAnimations[#businessAnimations+1] = animation
     businessPresentations[animation] = true
 end

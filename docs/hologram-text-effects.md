@@ -346,7 +346,7 @@ sweeps. It suggests Shakira-inspired movement using Tiglil's rigid torso and
 arms rather than reproducing a particular performance. Its editable sequence
 is in `scripts/lib_tiglil_shakira.lua`; the shared player mirrors it, grounds
 the feet and restores neutral. It is available in normal western, techno,
-business, brothel and blimp dance pools, and previews first in `text_fx_test`.
+business, brothel and blimp dance pools, and appears in `text_fx_test`.
 
 The test unit plays both text effects and Tiglil routines newest-added first.
 Text starts with wall impact, restored spline and meteor, followed by older
@@ -359,3 +359,14 @@ scripts, so it is absent from this unit’s shared registry.)
 Prepend new effects to `newestFirst` and dances to `routines` in the preview
 script. Unlisted registered effects still run first as a fallback; list them
 explicitly to establish their relative addition order.
+
+`advertiseWeightlessYoga` is exclusive to normal western business advertisements
+and appears first in the diagnostic preview. It alternates the two supplied
+yoga poses four times, with a 1.6-second transition and 0.4-second hold per pose.
+Entry and exit bring the total to approximately 18.2 seconds. Tiglil floats
+three body units above its neutral floor position, then settles back to neutral.
+The poses and timing live in `scripts/lib_tiglil_yoga.lua`. Supplied angles are
+interpreted as native DAE-local XYZ degrees (Z up), including knee twist and
+roll; they are not mirrored or passed through the authored Y-up axis mapping.
+Unspecified head/hair/body components are zero; lower hair stays at -19 degrees
+on X. This stage routine needs no pedestrian and receives no glow sticks.
