@@ -16,9 +16,12 @@ def rotation(angles):
     return mul(mul([[cy,0,sy],[0,1,0],[-sy,0,cy]],[[1,0,0],[0,cx,-sx],[0,sx,cx]]),[[cz,-sz,0],[sz,cz,0],[0,0,1]])
 EXPORT='''
 local dance=dofile('scripts/lib_tiglil_dance.lua')
+local styles={}
+for name,style in pairs(dance.styles)do styles[name]=style end
+for name,style in pairs(dofile('scripts/lib_tiglil_business.lua'))do styles[name]=style end
 for sign=0,1 do
  math.random=function()return sign end
- for name in pairs(dance.styles) do
+ for name,style in pairs(styles) do
   local state,index={},0
   dance.play(name,{
    turn=function(id,a)state[id]={a[1],a[2],a[3]}end,
@@ -28,7 +31,7 @@ for sign=0,1 do
     for id,a in pairs(state)do print(name..';'..sign..';'..index..';'..id..';'..table.concat(a,','))end
    end,
    finish=function()end,
-  })
+  },style)
  end
 end
 '''
