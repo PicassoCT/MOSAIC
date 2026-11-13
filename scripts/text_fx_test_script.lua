@@ -28,7 +28,7 @@ function restoreMessageOriginalPosition(ids,pos)
     for _,id in ipairs(ids) do
         for axis=1,3 do Move(id,axis,pos[id][axis],0) end
     end
-    transitionHologramText(ids,pos,true,400)
+    transitionHologramText(ids,pos,true,400,1500)
 end
 
 local tiglilAnimations=include('tigLilAnimation.lua')

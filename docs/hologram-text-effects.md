@@ -82,7 +82,7 @@ before the next case. Cleanup immediately hard-resets already-hidden glyphs;
 if visible cleanup exceeds the deadline, it hides and hard-resets those too.
 Reset replaces queued engine targets before snapping and leaves the glyphs
 hidden for an engine tick so an old target cannot pull the next layout apart.
-The production signs use the same cleanup. Conga tracks actual piece translations
+The production signs use the same cleanup. Tornado formation has a 2.5-second movement deadline. In the test unit, phrase restoration has a 1.5-second deadline; stalled movement targets are cancelled and the phrase is restored so the cycle can continue. Recovery emits a diagnostic in the console. Conga tracks actual piece translations
 when calculating speeds, and fireworks bounds its launch/burst/fall waits too.
 Continuous spins keep running during the hold. All glyph transforms/spins are
 reset between cases; long effects are no longer cut short. The cycle has

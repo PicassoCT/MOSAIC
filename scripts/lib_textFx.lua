@@ -69,7 +69,7 @@ end
 
 -- Unit-script Show/Hide has no opacity control. Use engine-interpolated motion
 -- for text arrivals instead of a pop; no polling thread or per-frame Lua work.
-function transitionHologramText(allLetters, posLetters, appearing, duration)
+function transitionHologramText(allLetters, posLetters, appearing, duration, timeout)
     if #allLetters == 0 then return end
     duration = math.max(1, duration or 400)
     local distance = sizeSpacingLetter * 0.35
@@ -85,7 +85,22 @@ function transitionHologramText(allLetters, posLetters, appearing, duration)
             Move(id, backdropAxis, target + distance, speed)
         end
     end
-    for _, id in ipairs(allLetters) do WaitForMove(id, backdropAxis) end
+    if timeout then
+        if not waitHologramTextCleanup(allLetters,nil,timeout) then
+            -- Cleanup retired stalled targets while hidden. Restore the exact
+            -- phrase instead of leaving the preview thread waiting forever.
+            for _,id in ipairs(allLetters) do
+                for axis=1,3 do
+                    local target=posLetters[id][axis]
+                    Move(id,axis,target,1);Move(id,axis,target,0)
+                end
+                if appearing then ShowReg(id) end
+            end
+            if posLetters.debugTextFx then posLetters.debugTextFx('text transition timed out; phrase restored') end
+        end
+    else
+        for _, id in ipairs(allLetters) do WaitForMove(id, backdropAxis) end
+    end
     if not appearing then hideTReg(allLetters) end
 end
 
@@ -1441,7 +1456,14 @@ function letterTornado(allLetters, posLetters)
         Turn(id,glyphHeightAxis,angle+math.pi,0)
         ShowReg(id)
     end
-    waitTextMoves(allLetters)
+    if not waitTextMoves(allLetters,2500) then
+        StopSpin(textSpinner,textSpinnerAxis,0)
+        Turn(textSpinner,textSpinnerAxis,0,1);Turn(textSpinner,textSpinnerAxis,0,0)
+        restoreMessageOriginalPosition(allLetters,posLetters)
+        if previousSpeed and previousSpeed~=0 then Spin(textSpinner,textSpinnerAxis,previousSpeed,0) end
+        if posLetters.debugTextFx then posLetters.debugTextFx('tornado formation timed out; continuing preview') end
+        return
+    end
     -- Orbit in the glyphs' actual horizontal plane instead of relying on the
     -- imported parent pivot. Facing follows the orbit, keeping the cone intact.
     local step=1/30
@@ -1465,8 +1487,8 @@ function letterTornado(allLetters, posLetters)
     end
     hideTReg(allLetters)
     StopSpin(textSpinner,textSpinnerAxis,0)
-    Turn(textSpinner,textSpinnerAxis,0,0)
-    resetSpinDrop(allLetters)
+    Turn(textSpinner,textSpinnerAxis,0,1);Turn(textSpinner,textSpinnerAxis,0,0)
+    hardResetHologramLetters(allLetters)
     restoreMessageOriginalPosition(allLetters,posLetters)
     holdHologramText(allLetters,posLetters,3000)
     if previousSpeed and previousSpeed ~= 0 then Spin(textSpinner,textSpinnerAxis,previousSpeed,0) end
