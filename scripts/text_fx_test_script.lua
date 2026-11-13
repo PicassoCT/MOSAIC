@@ -34,13 +34,19 @@ end
 local tiglilAnimations=include('tigLilAnimation.lua')
 local function dance()
     SetSignalMask(SIG_CORE+SIG_TIGLIL)
-    local routines={idle_stance_10,idle_stance17,idle_stance_12,tiglilAnimations.idle_stance11}
+    local routines={
+        {name='idle_stance_10',run=idle_stance_10},
+        {name='idle_stance17',run=idle_stance17},
+        {name='idle_stance_12',run=idle_stance_12},
+        {name='idle_stance11',run=tiglilAnimations.idle_stance11},
+    }
     while true do
         for _,routine in ipairs(routines) do
             Signal(SIG_HAIR);Signal(SIG_GESTE);Signal(SIG_TALKHEAD);Signal(SIG_INCIRCLE)
             TigLilSetup()
             -- Always present, including daytime and text cleanup/hold periods.
-            routine()
+            Spring.Echo(string.format('[Text FX test %d] Tiglil animation: %s',unitID,routine.name))
+            routine.run()
         end
     end
 end
