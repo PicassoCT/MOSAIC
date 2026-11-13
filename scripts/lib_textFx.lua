@@ -1519,51 +1519,122 @@ function letterTornado(allLetters, posLetters)
     if previousSpeed and previousSpeed ~= 0 then Spin(textSpinner,textSpinnerAxis,previousSpeed,0) end
 end
 
-function oneArmedBandit(allLetters, posLetters)
+function oneArmedBandit(allLetters, posLetters, groups)
     if #allLetters == 0 then return end
-    hideTReg(allLetters)
-    StopSpin(textSpinner,textSpinnerAxis,0)
-    for _,id in ipairs(allLetters) do reset(id,0) end
-    local travel = sizeDownLetter*1.25
-    local locked = 0
-    -- Six free rolls, then stop one reel per roll from left to right.
-    for roll=1,6+#allLetters do
-        local stopping = roll > 6
-        local pool = {}
-        local first = locked+1
-        -- The stopping reel owns its final glyph. Only shuffle the remaining
-        -- pieces, so no physical letter can serve two reels simultaneously.
-        for index=first+(stopping and 1 or 0),#allLetters do
-            pool[#pool+1] = allLetters[index]
+    groups = groups or posLetters.TriLetters or {}
+    local reserved, phraseCharacters, character = {}, {}, {}
+    for _,id in ipairs(allLetters) do reserved[id]=true end
+    for code=65,90 do
+        local ch=string.char(code)
+        for _,id in ipairs(groups[ch] or {}) do
+            character[id]=ch
+            if reserved[id] then phraseCharacters[ch]=true end
         end
-        for index=#pool,2,-1 do
-            local other = math.random(1,index)
-            pool[index],pool[other] = pool[other],pool[index]
-        end
-        if stopping then table.insert(pool,1,allLetters[first]) end
-        local seconds = 0.12+0.18*locked/#allLetters
-        for index,id in ipairs(pool) do
-            local target = posLetters[allLetters[first+index-1]]
-            HideReg(id)
-            for axis=1,3 do Move(id,axis,target[axis],0) end
-            Move(id,glyphHeightAxis,target[glyphHeightAxis]+travel,0)
-            ShowReg(id)
-            Move(id,glyphHeightAxis,target[glyphHeightAxis],travel/seconds)
-        end
-        waitTextMoves(pool)
-        Sleep(40)
-        for index,id in ipairs(pool) do
-            if not stopping or index > 1 then
-                local target = posLetters[allLetters[first+index-1]]
-                Move(id,glyphHeightAxis,target[glyphHeightAxis]-travel,travel/0.08)
+    end
+    local unrelated, other = {}, {}
+    for code=65,90 do
+        local ch=string.char(code)
+        for _,id in ipairs(groups[ch] or {}) do
+            if not reserved[id] then
+                reserved[id]=true
+                local pool=phraseCharacters[ch] and other or unrelated
+                pool[#pool+1]=id
             end
         end
-        waitTextMoves(pool)
-        for index,id in ipairs(pool) do
-            if not stopping or index > 1 then HideReg(id) end
-        end
-        if stopping then locked = locked+1 end
     end
+    for _,pool in ipairs({unrelated,other}) do
+        for i=#pool,2,-1 do
+            local j=math.random(1,i);pool[i],pool[j]=pool[j],pool[i]
+        end
+    end
+    -- Prefer characters absent from the phrase. With a small alphabet, spare
+    -- copies of other characters can still dress a reel, never its final glyph.
+    local wheels, borrowed, pieces = {}, {}, {}
+    for i,id in ipairs(allLetters) do wheels[i]={};pieces[#pieces+1]=id end
+    for symbol=1,3 do
+        for i,id in ipairs(allLetters) do
+            local chosen
+            for _,pool in ipairs({unrelated,other}) do
+                for index=#pool,1,-1 do
+                    if character[pool[index]]~=character[id] then
+                        chosen=table.remove(pool,index);break
+                    end
+                end
+                if chosen then break end
+            end
+            if chosen then
+                wheels[i][#wheels[i]+1]=chosen
+                borrowed[#borrowed+1]=chosen;pieces[#pieces+1]=chosen
+            end
+        end
+    end
+    StopSpin(textSpinner,textSpinnerAxis,0)
+    hardResetHologramLetters(pieces)
+    local radius, tau = sizeDownLetter*0.85, 2*math.pi
+    local previous = {}
+    local function place(id, target, angle, seconds)
+        local depth=target[glyphDepthAxis]+radius*(math.cos(angle)-1)
+        local height=target[glyphHeightAxis]-radius*math.sin(angle)
+        local old=previous[id]
+        Move(id,glyphBaselineAxis,target[glyphBaselineAxis],0)
+        Move(id,glyphDepthAxis,depth,old and seconds>0 and math.abs(depth-old[1])/seconds or 0)
+        Move(id,glyphHeightAxis,height,old and seconds>0 and math.abs(height-old[2])/seconds or 0)
+        local turnSpeed=old and seconds>0 and math.abs((angle-old[3]+math.pi)%tau-math.pi)/seconds or 0
+        Turn(id,glyphBaselineAxis,angle,turnSpeed)
+        previous[id]={depth,height,angle}
+    end
+    for i,wheel in ipairs(wheels) do
+        for symbol,id in ipairs(wheel) do
+            place(id,posLetters[allLetters[i]],tau*(symbol-1)/#wheel,0)
+            ShowReg(id)
+        end
+    end
+    local locked=0
+    -- Six full free spins. Unfinished wheels keep rotating throughout every
+    -- later stop; only the stopping wheel exchanges a rear symbol for its prize.
+    for roll=1,6+#allLetters do
+        local stopping=roll>6
+        local seconds=0.6+0.3*locked/#allLetters
+        local frames=math.max(6,math.floor(seconds*30/GetHologramTextFxSpeed()))
+        -- An even count puts the hidden-to-final exchange exactly at the rear.
+        frames=frames-frames%2
+        local step=seconds/frames
+        for frame=1,frames do
+            local angle=tau*frame/frames
+            for i=locked+1,#allLetters do
+                local finalID=allLetters[i]
+                local target=posLetters[finalID]
+                local wheel=wheels[i]
+                local landing=stopping and i==locked+1 and frame>=frames/2
+                for symbol,id in ipairs(wheel) do
+                    if not (landing and symbol==1) then
+                        place(id,target,angle+tau*(symbol-1)/#wheel,step)
+                    end
+                end
+                if landing then
+                    if frame==frames/2 then
+                        if wheel[1] then HideReg(wheel[1]) end
+                        place(finalID,target,angle,0)
+                        ShowReg(finalID)
+                    else
+                        place(finalID,target,angle,step)
+                    end
+                end
+            end
+            Sleep(step*1000)
+        end
+        if stopping then
+            locked=locked+1
+            hideTReg(wheels[locked])
+            local id=allLetters[locked]
+            -- Retire interpolated destinations before leaving the prize still.
+            for axis=1,3 do
+                Move(id,axis,posLetters[id][axis],1);Move(id,axis,posLetters[id][axis],0)
+                Turn(id,axis,0,1);Turn(id,axis,0,0)
+            end
+        end
+    end
+    hardResetHologramLetters(borrowed)
     -- Lease exhausted repeated glyphs only after the reels have all stopped.
     holdHologramText(allLetters,posLetters,3000)
     if posLetters.spinnerSpeed then Spin(textSpinner,textSpinnerAxis,posLetters.spinnerSpeed,0) end
