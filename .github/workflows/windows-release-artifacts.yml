@@ -4,11 +4,11 @@ on:
   pull_request:
     paths:
       - 'tools/package_windows_release.py'
+      - 'tools/qualify_windows_release.py'
+      - 'tools/validate_performance_gate.py'
       - 'tests/test_windows_release.py'
       - 'tests/test_performance_gate.py'
-      - 'tools/validate_performance_gate.py'
-      - 'tests/test_performance_gate.py'
-      - 'tools/validate_performance_gate.py'
+      - 'tests/test_release_qualification.py'
       - 'packaging/**'
       - 'pack_mosaic*.sh'
       - '.github/workflows/windows-release-artifacts.yml'
@@ -18,7 +18,11 @@ on:
     branches: [master]
     paths:
       - 'tools/package_windows_release.py'
+      - 'tools/qualify_windows_release.py'
+      - 'tools/validate_performance_gate.py'
       - 'tests/test_windows_release.py'
+      - 'tests/test_performance_gate.py'
+      - 'tests/test_release_qualification.py'
       - 'packaging/**'
       - 'pack_mosaic*.sh'
       - '.github/workflows/windows-release-artifacts.yml'
@@ -56,7 +60,7 @@ jobs:
       - name: Packaging regression tests
         run: python -m unittest discover -s tests -p test_windows_release.py -v
       - name: Performance gate regression tests
-        run: python -m unittest discover -s tests -p test_performance_gate.py -v
+        run: python -m unittest discover -s tests -p test_release_qualification.py -v && python -m unittest discover -s tests -p test_performance_gate.py -v
 
   artifacts:
     if: github.event_name == 'workflow_dispatch'
