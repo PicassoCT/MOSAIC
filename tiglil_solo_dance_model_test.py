@@ -21,6 +21,7 @@ for name,style in pairs(dance.styles)do styles[name]=style end
 for name,style in pairs(dofile('scripts/lib_tiglil_business.lua'))do styles[name]=style end
 for name,style in pairs(dofile('scripts/lib_tiglil_brothel.lua'))do styles[name]=style end
 for name,style in pairs(dofile('scripts/lib_tiglil_social.lua'))do styles[name]=style end
+styles.shakira=dofile('scripts/lib_tiglil_shakira.lua')
 styles.behindGlass=dofile('scripts/lib_tiglil_glass.lua')
 for sign=0,1 do
  math.random=function()return sign end

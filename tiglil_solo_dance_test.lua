@@ -1,6 +1,7 @@
 -- Beat ownership, solo silhouettes and grounding inputs; native completion is
 -- covered separately by the real float32 scheduler in tiglil_precision_test.
 local dance=dofile('scripts/lib_tiglil_dance.lua')
+dance.styles.shakira=dofile('scripts/lib_tiglil_shakira.lua')
 local random=math.random
 local signatures={}
 for _,sign in ipairs({0,1}) do
@@ -59,7 +60,7 @@ end
 math.random=random
 for _,file in ipairs({'house_western_hologram_script.lua','house_western_brothel_hologram_script.lua','advertisingblimphologramscript.lua'})do
     local f=assert(io.open('scripts/'..file));local source=f:read('*a');f:close()
-    for _,name in ipairs({'danceShuffle','danceDisco','dancePopping','danceJoi','danceBallet'})do
+    for _,name in ipairs({'danceShuffle','danceDisco','dancePopping','danceJoi','danceShakira','danceBallet'})do
         assert(source:find('idleAnimations[#idleAnimations +1] = '..name,1,true),file..' omits '..name)
     end
 end

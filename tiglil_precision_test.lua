@@ -135,6 +135,7 @@ local routines={
     {'danceDisco',danceDisco},
     {'dancePopping',dancePopping},
     {'danceJoi',danceJoi},
+    {'danceShakira',danceShakira},
     {'dancePole',dancePole},
     {'danceBallet',danceBallet},
     {'advertiseSales',advertiseSales},
@@ -164,4 +165,4 @@ for _,seed in ipairs({1,17,99}) do
         assert(completed,entry[1]..' was interrupted')
     end
 end
-print('PASS: float32 native turns complete Tiglil setup and all twenty-five tested routines across three random seeds')
+print('PASS: float32 native turns complete Tiglil setup and all twenty-six tested routines across three random seeds')
