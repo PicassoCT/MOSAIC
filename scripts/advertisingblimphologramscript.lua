@@ -273,6 +273,7 @@ local function tiglLilLoop()
 
             waitTillDay()
 
+            TigLilStopSmoothing()
             Signal(SIG_TIGLIL)
             HideReg(skimpy)
             HideReg(tlpole)

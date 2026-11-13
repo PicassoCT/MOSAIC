@@ -1,6 +1,8 @@
 -- Signal bits absent from the old hologram callers, used by child routines.
 local SIG_SWING, SIG_WHIR, SIG_WALK, SIG_IDLE = 512, 1024, 2048, 4096
 local animationLifetime = (SIG_CORE or 0) + (SIG_TIGLIL or 0)
+local groundConversation
+local peopleAnimationsEnabled=false
 
 -- Keep smoothing local: text FX and other hologram pieces retain their own
 -- movement rules. The authored routines below still issue the same poses.
@@ -8,7 +10,10 @@ local tiglilMotion = include("lib_tiglil_motion.lua")(Spring.UnitScript, animati
 tiglilMotion = include("lib_tiglil_retarget.lua")(tiglilMotion, piece)
 local Turn, Move = tiglilMotion.Turn, tiglilMotion.Move
 local Spin, StopSpin = tiglilMotion.Spin, tiglilMotion.StopSpin
-function TigLilStopSmoothing() tiglilMotion.cancel() end
+function TigLilStopSmoothing()
+    if groundConversation then groundConversation.stop() end
+    tiglilMotion.cancel()
+end
 local function tP(id, x, y, z, speed, wait)
     Turn(id, x_axis, math.rad(x), speed)
     Turn(id, y_axis, math.rad(y), speed)
@@ -7001,5 +7006,19 @@ function waitPosition()
     WaitForTurn(tigLil, y_axis)
 end
 
+groundConversation=include("lib_tiglil_ground.lua").new(Spring,Spring.UnitScript,unitID,UnitDefs or {},animationLifetime)
+local function groundIdle(animation)
+    return function(...)
+        if peopleAnimationsEnabled then groundConversation.begin() end
+        animation(...)
+        Signal(SIG_GESTE)
+        Signal(SIG_TALKHEAD)
+        groundConversation.stop()
+    end
+end
+idle_stance=groundIdle(idle_stance)
+idle_stance2=groundIdle(idle_stance2)
+
 -- Includes have their own lexical scope: export these local routines explicitly.
-return {idle_stance11 = idle_stance11, idle_playBall = idle_playBall}
+return {idle_stance11 = idle_stance11, idle_playBall = idle_playBall,
+    enablePeopleAnimations=function() peopleAnimationsEnabled=true end}

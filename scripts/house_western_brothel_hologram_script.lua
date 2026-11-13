@@ -198,6 +198,7 @@ end
 
 --VFS.Include("scripts/lib_textFx.lua")
 local tigLilAnimations = include("tigLilAnimation.lua")
+tigLilAnimations.enablePeopleAnimations()
 include("lib_textFx.lua")
 
 local function tiglLilLoop()

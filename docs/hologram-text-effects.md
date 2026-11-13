@@ -252,3 +252,23 @@ techno dances only. Tests execute the production pool selection for business,
 casino and ordinary holograms, check that old dances remain available, and verify
 prop changes between a dance and a presentation. Native motion tests cover both
 mirrors of each new routine; model tests check grounding against the DAE meshes.
+
+
+## Street conversations
+
+`idle_stance` and `idle_stance2` can project beside a nearby stationary civilian
+on the normal western and brothel building holograms. The blimp does not enable
+personalized animations and retains its stage presentations.
+A clear, nearly level patch is selected within 400 world units of the hologram;
+trucks, buildings, dead or transported people and moving pedestrians are excluded.
+With no suitable person or space, the original stage presentation still runs.
+
+An identity `tiglil_anchor` parent was added to all three models without changing
+any rest transforms. It isolates street placement from the old animation pivots,
+faces the projection toward the person and compensates for moving parent pieces.
+Animated mesh bounds keep the silhouette above the ground, including floor poses.
+Placement ends when the routine finishes, the person moves away, the blimp moves
+away, or the show is cancelled; the anchor then returns to its authored identity.
+Conversation gesture/head threads are stopped at the end of the routine.
+The preview includes both street routines; placing a stationary civilian nearby
+exercises relocation, while an empty test area exercises the fallback.

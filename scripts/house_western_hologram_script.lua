@@ -210,6 +210,7 @@ function showTReg(l_tableName, l_lowLimit, l_upLimit, l_delay)
 end
 
 local tigLilAnimations = include("tigLilAnimation.lua")
+tigLilAnimations.enablePeopleAnimations()
 include("lib_textFx.lua")
 local function tiglLilLoop()
     local techno = boolIsBuisness or boolIsCasino

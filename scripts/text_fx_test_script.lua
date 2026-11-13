@@ -32,9 +32,12 @@ function restoreMessageOriginalPosition(ids,pos)
 end
 
 local tiglilAnimations=include('tigLilAnimation.lua')
+tiglilAnimations.enablePeopleAnimations()
 local function dance()
     SetSignalMask(SIG_CORE+SIG_TIGLIL)
     local routines={
+        {name='idle_stance (street conversation)',run=idle_stance},
+        {name='idle_stance2 (street gestures)',run=idle_stance2},
         {name='advertiseSales (business sales presentation)',run=advertiseSales},
         {name='modelWalk (business runway walk)',run=modelWalk},
         {name='presentGala (business gala presenter)',run=presentGala},
