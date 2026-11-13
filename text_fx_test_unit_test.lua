@@ -93,7 +93,8 @@ function include(file)
         idle_stance_10,idle_stance17,idle_stance_12,idle_stance4,idle_stance5=routine,routine,routine,routine,routine
         danceShuffle,danceDisco,dancePopping,danceJoi,dancePole,danceBallet=routine,routine,routine,routine,routine,routine
         advertiseSales,modelWalk,presentGala=routine,routine,routine
-        return {idle_stance11=routine}
+        idle_stance,idle_stance2=routine,routine
+        return {idle_stance11=routine,enablePeopleAnimations=function()end}
     end
 end
 -- Detect accidental neon registration or special-renderer dependencies.
@@ -148,7 +149,7 @@ end
 assert(spiralCases==3,'spiral must appear once per rotation, without a lengthwise variant')
 for name in pairs(effects) do assert(invoked[name],'mode skipped: '..name) end
 assert(spins[math.rad(20)] and spins[math.rad(-20)],'missing rotation direction')
-for _,name in ipairs({'idle_stance17 (solo footwork)','danceShuffle (solo shuffle)','danceDisco (solo disco)','dancePopping (solo popping)','danceJoi (Joi-inspired solo)','dancePole (pole choreography)','danceBallet (solo ballet)','advertiseSales (business sales presentation)','modelWalk (business runway walk)','presentGala (business gala presenter)','idle_stance4 (acrobatics)','idle_stance5 (backflip and handstand)'}) do
+for _,name in ipairs({'idle_stance17 (solo footwork)','danceShuffle (solo shuffle)','danceDisco (solo disco)','dancePopping (solo popping)','danceJoi (Joi-inspired solo)','dancePole (pole choreography)','danceBallet (solo ballet)','idle_stance (street conversation)','idle_stance2 (street gestures)','advertiseSales (business sales presentation)','modelWalk (business runway walk)','presentGala (business gala presenter)','idle_stance4 (acrobatics)','idle_stance5 (backflip and handstand)'}) do
     assert(danceAnnouncements['[Text FX test 7] Tiglil animation: '..name],'preview omitted '..name)
 end
 assert(danceCalls>99 and drawn[pieceMap.tigLil],'Tiglil must keep dancing through the full text cycle')
