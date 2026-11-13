@@ -281,7 +281,7 @@ function canProjectTextFx(name, posLetters)
     if name == "matrixTextFx" then return posLetters.boolUpright == true end
     return not posLetters.boolUpright
         or name == "dnaHelix" or name == "spiralProject" or name == "archProject" or name == "letterTornado"
-        or name == "smilingFace" or name == "letterPlant" or name == "meteorCraterText" or name == "splineShapeFollowing"
+        or name == "wallImpactText" or name == "smilingFace" or name == "letterPlant" or name == "meteorCraterText" or name == "splineShapeFollowing"
 end
 
 function dnaHelix(allLetters, posLetters)
@@ -1078,6 +1078,209 @@ function hologramWorldMover(owner, id, base, pieceMap)
     return moveToWorld, origin, basis
 end
 
+-- Selected house pieces include their imported scale and ancestor transforms.
+-- Never use a procedural house's whole model bounds: those contain hidden variants.
+local function textUnitVector(v)
+    local length=math.sqrt(textDot(v,v))
+    if length<1e-9 then return end
+    return {v[1]/length,v[2]/length,v[3]/length}
+end
+local function textWallTarget(owner,anchor,height,spacing,slots)
+    if not (Spring.GetUnitsInCylinder and Spring.UnitScript
+        and Spring.UnitScript.GetScriptEnv and Spring.UnitScript.CallAsUnit
+        and getCivilianHouseTypeTable) then return end
+    local types=getCivilianHouseTypeTable(UnitDefs)
+    local nearest,best
+    local candidates=Spring.GetUnitsInCylinder(anchor[1],anchor[3],900) or {}
+    table.sort(candidates)
+    for _,target in ipairs(candidates) do
+        if target~=owner and types[Spring.GetUnitDefID(target)]
+            and not Spring.GetUnitIsDead(target) then
+            local env=Spring.UnitScript.GetScriptEnv(target)
+            local selected
+            if env and env.GetBuildingClearancePieces then
+                Spring.UnitScript.CallAsUnit(target,function() selected=env.GetBuildingClearancePieces() end)
+            end
+            local ux,uy,uz=Spring.GetUnitPosition(target)
+            local front,up,right=Spring.GetUnitVectors(target)
+            if selected and ux and front and up and right then
+                local function vector(x,y,z)
+                    return {-right[1]*x+up[1]*y+front[1]*z,
+                        -right[2]*x+up[2]*y+front[2]*z,-right[3]*x+up[3]*y+front[3]*z}
+                end
+                local pieces,seen={},{}
+                for _,id in pairs(selected) do
+                    if type(id)=='number' and not seen[id] then pieces[#pieces+1]=id;seen[id]=true end
+                end
+                table.sort(pieces)
+                for _,id in ipairs(pieces) do
+                    local info=Spring.GetUnitPieceInfo(target,id)
+                    local m={Spring.GetUnitPieceMatrix(target,id)}
+                    if info and not info.isEmpty and info.min and info.max and m[16] then
+                        local axes={vector(m[1],m[2],m[3]),vector(m[5],m[6],m[7]),vector(m[9],m[10],m[11])}
+                        local center=vector(m[13],m[14],m[15])
+                        center[1],center[2],center[3]=center[1]+ux,center[2]+uy,center[3]+uz
+                        local halves={}
+                        for a=1,3 do
+                            halves[a]=(info.max[a]-info.min[a])*0.5
+                            for k=1,3 do center[k]=center[k]+axes[a][k]*(info.max[a]+info.min[a])*0.5 end
+                        end
+                        for a=1,3 do
+                            local b,c=a%3+1,(a+1)%3+1
+                            local normal=textUnitVector(textCross(axes[b],axes[c]))
+                            if normal and math.abs(normal[2])<0.01 then
+                                if textDot(normal,axes[a])<0 then for k=1,3 do normal[k]=-normal[k] end end
+                                for _,sign in ipairs({-1,1}) do
+                                    local n,face={},{}
+                                    for k=1,3 do n[k]=normal[k]*sign;face[k]=center[k]+axes[a][k]*halves[a]*sign end
+                                    local toward={anchor[1]-face[1],anchor[2]-face[2],anchor[3]-face[3]}
+                                    if textDot(toward,n)>height then
+                                        local tangent={n[3],0,-n[1]}
+                                        -- Accept rectangular upright faces, excluding sloped roofs.
+                                        local bw,cw=math.abs(textDot(axes[b],tangent)),math.abs(textDot(axes[c],tangent))
+                                        local bh,ch=math.abs(axes[b][2]),math.abs(axes[c][2])
+                                        local aligned=(bw<1e-6 and ch<1e-6) or (cw<1e-6 and bh<1e-6)
+                                        local width=2*(bw*halves[b]+cw*halves[c])
+                                        local tall=2*(bh*halves[b]+ch*halves[c])
+                                        local columns=math.min(slots,math.floor((width-height)/spacing))
+                                        if aligned and columns>0 then
+                                            local rows=math.ceil(slots/columns)
+                                            if (rows+1)*height*1.35<=tall then
+                                                local distance=textDot(toward,toward)
+                                                if not best or distance<best then
+                                                    best=distance
+                                                    nearest={unit=target,piece=id,center=face,normal=n,right=tangent,
+                                                        columns=columns,rows=rows}
+                                                end
+                                            end
+                                        end
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+    return nearest
+end
+
+function wallImpactText(allLetters,posLetters)
+    if #allLetters==0 then return end
+    StopSpin(textSpinner,textSpinnerAxis,0)
+    hardResetHologramLetters(allLetters)
+    local function finish()
+        hardResetHologramLetters(allLetters)
+        restoreMessageOriginalPosition(allLetters,posLetters)
+        if posLetters.spinnerSpeed then Spin(textSpinner,textSpinnerAxis,posLetters.spinnerSpeed,0) end
+    end
+    local owner=posLetters.unitID
+    local pieceMap=Spring.GetUnitPieceMap(owner)
+    local movers,anchor,basis={}
+    for _,id in ipairs(allLetters) do
+        local move,origin,axes=hologramWorldMover(owner,id,{0,0,0},pieceMap)
+        if not move then finish();return end
+        movers[id]=move;anchor,basis=anchor or origin,basis or axes
+    end
+    local height=sizeDownLetter*math.sqrt(textDot(basis[glyphHeightAxis],basis[glyphHeightAxis]))
+    local spacing=math.max(height,sizeSpacingLetter*math.sqrt(textDot(basis[glyphBaselineAxis],basis[glyphBaselineAxis])))*1.2
+    local slots=math.max(1,#(posLetters.spacing or allLetters))
+    local wall=textWallTarget(owner,anchor,height,spacing,slots)
+    if not wall then
+        if posLetters.debugTextFx then posLetters.debugTextFx('wall impact: skipped; no suitable house wall within 900') end
+        finish();return
+    end
+    if posLetters.debugTextFx then posLetters.debugTextFx('wall impact: house '..wall.unit..', piece '..wall.piece) end
+    local cof={textCross(basis[2],basis[3]),textCross(basis[3],basis[1]),textCross(basis[1],basis[2])}
+    local det=textDot(basis[1],cof[1])
+    local function localVector(v) return {textDot(v,cof[1])/det,textDot(v,cof[2])/det,textDot(v,cof[3])/det} end
+    -- Glyphs read along -Y and stand along +Z, with their face toward -X.
+    local x=textUnitVector(localVector({-wall.normal[1],-wall.normal[2],-wall.normal[3]}))
+    local up=localVector({0,1,0})
+    local y=textUnitVector(textCross(up,x))
+    local z=textCross(x,y)
+    local previous={}
+    local function orient(id,angle,seconds)
+        local c,s=math.cos(angle),math.sin(angle)
+        local yy,zz={},{}
+        for k=1,3 do yy[k]=y[k]*c+z[k]*s;zz[k]=-y[k]*s+z[k]*c end
+        -- Native piece rotation is Y * X * Z. Choose the nearest equivalent
+        -- Euler angles so a branch crossing never produces a full extra turn.
+        local rx=-math.asin(math.max(-1,math.min(1,zz[2])))
+        local ry,rz
+        if math.abs(math.cos(rx))<1e-6 then
+            ry=math.atan2(-x[3],x[1]);rz=0
+        else ry=math.atan2(zz[1],zz[3]);rz=math.atan2(x[2],yy[2]) end
+        local angles={rx,ry,rz}
+        local old=previous[id] or angles
+        for axis=1,3 do
+            local value=old[axis]+(angles[axis]-old[axis]+math.pi)%(2*math.pi)-math.pi
+            Turn(id,axis,value,seconds>0 and math.max(1e-6,math.abs(value-old[axis])/seconds) or 1)
+            if seconds<=0 then Turn(id,axis,value,0) end
+            angles[axis]=value
+        end
+        previous[id]=angles
+    end
+    local function destination(slot)
+        local row=math.floor(slot/wall.columns)
+        local count=math.min(wall.columns,slots-row*wall.columns)
+        local across=(slot%wall.columns-(count-1)*0.5)*spacing
+        local rise=((wall.rows-1)*0.5-row)*height*1.35
+        local p={}
+        for k=1,3 do p[k]=wall.center[k]+wall.right[k]*across+wall.normal[k]*height*0.04 end
+        p[2]=p[2]+rise
+        return p
+    end
+    local flights,last={},0
+    for index,id in ipairs(allLetters) do
+        local slot=textSlot(posLetters,id,index-1)
+        local target=destination(slot)
+        local delay=slot*120
+        local duration=450+math.random(0,200)
+        local reach=height*(9+math.random()*4)
+        local across=(math.random()-0.5)*height*6
+        local start={}
+        for k=1,3 do start[k]=target[k]+wall.normal[k]*reach+wall.right[k]*across end
+        start[2]=start[2]+height*(1+math.random()*3)
+        flights[id]={start=start,target=target,delay=delay,duration=duration,
+            spin=(index%2==0 and -1 or 1)*2*math.pi*(index%3==0 and 0 or 2)}
+        last=math.max(last,delay+duration+240)
+        movers[id](start[1],start[2],start[3],0);orient(id,0,0)
+    end
+    local function alive() return Spring.ValidUnitID(wall.unit) and not Spring.GetUnitIsDead(wall.unit) end
+    for time=0,last+33,33 do
+        if not alive() then finish();return end
+        for _,id in ipairs(allLetters) do
+            local f=flights[id]
+            local age=time-f.delay
+            if age>=0 then
+                ShowReg(id)
+                local t=math.min(1,age/f.duration)
+                local p={}
+                for k=1,3 do p[k]=f.start[k]+(f.target[k]-f.start[k])*t end
+                local settle=math.max(0,age-f.duration)/240
+                local wobble=settle<1 and math.sin(settle*math.pi*4)*(1-settle)*0.18 or 0
+                movers[id](p[1],p[2],p[3],0.033)
+                orient(id,f.spin*t+wobble,0.033)
+            end
+        end
+        Sleep(33)
+    end
+    for phase=0,7 do
+        if not alive() then finish();return end
+        for _,id in ipairs(allLetters) do
+            local leases=posLetters.leases and posLetters.leases[id]
+            if leases and #leases>1 then
+                local p=destination(leases[phase%#leases+1]-1)
+                HideReg(id);movers[id](p[1],p[2],p[3],0);ShowReg(id)
+            end
+        end
+        Sleep(500)
+    end
+    finish()
+end
+
 function meteorCraterText(allLetters, posLetters)
     if #allLetters == 0 then return end
     StopSpin(textSpinner,textSpinnerAxis,0)
@@ -1742,6 +1945,7 @@ function getAllTextFx()
 return {
         ["splineShapeFollowing"] = splineShapeFollowing,
         ["meteorCraterText"] = meteorCraterText,
+        ["wallImpactText"] = wallImpactText,
         ["smilingFace"] = smilingFace,
         ["letterPlant"] = letterPlant,
         ["heartMonitor"] = heartMonitor,

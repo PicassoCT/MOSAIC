@@ -30,6 +30,8 @@ Each selected effect runs at a fresh random multiplier between 1.00x and 3.00x. 
 
 ## New effects
 
+**Wall impact (`wallImpactText`):** a staggered volley of letters flies toward a nearby house, mixing straight bullet-like arrivals with spinning throwing stars. Each letter settles against the wall; the complete phrase holds for four seconds before returning to the sign. Visible piece bounds supply upright wall faces, including imported scale and house rotation. Long phrases wrap into rows; word gaps and repeated-letter leases retain their slots. Walls must fit the glyphs at their existing size. Missing, unfinished, too-small or destroyed houses exit cleanly. Both starting layouts and the shared 1–3× speed multiplier are supported. Place the preview unit near a house to see this mode.
+
 **Spline following (`splineShapeFollowing`):** upright letters traverse a short randomized cubic Bezier curve in source order, entering every 300 ms. Spaces reserve their delay; repeated glyph meshes alternate between active occurrences. An arc-length lookup keeps travel speed steady through bends. The lead letter takes at most 12 seconds, and the last letter finishes at most `12 + 0.3 × (logical slots − 1)` seconds after the first enters. There is no extra hold. The effect restores the phrase and parent spin afterward; both initial layouts are supported. Engine-interpolated motion updates at 20 Hz.
 
 - **Civilian conga:** chooses a live civilian within 650 world units, drops the physical letters to terrain height over 800 ms, and follows a bounded path history with phased sway and hopping. Letter spacing uses the authored glyph's transformed bounds. A cached inverse of each glyph's parent-world basis accounts for house heading, parent rotation, imported scale and axes. Motion updates at 5 Hz for at most 16.6 seconds, ending early on disappearance or departure beyond 750 units. Letter leases also rotate through conga positions. No civilian orders, MoveCtrl or new gadgets are involved.
@@ -53,7 +55,7 @@ Each selected effect runs at a fresh random multiplier between 1.00x and 3.00x. 
 
 **Matrix:** three repeats of the same motion used by `consoleLetters`, arranged as a vertical column at eight times the normal console speed. Each repeat waits for its moves to finish and holds for 150 ms. The ordinary console effect retains its original layout, speed and ten-second hold.
 
-The uniformly selected catalogue now has 29 modes: each has a **1/29 chance (~3.45%) per selection**. Sign eligibility and layout gates still apply. Conga requires a nearby live civilian; takeover requires another phrase. Ineligible effects return without a new retry loop.
+The uniformly selected catalogue now has 30 modes: each has a **1/30 chance (~3.33%) per selection**. Sign eligibility and layout gates still apply. Conga requires a nearby live civilian; takeover requires another phrase. Ineligible effects return without a new retry loop.
 
 ## Validation
 
@@ -65,7 +67,7 @@ lua5.1 tests/hologram_text_fx_test.lua
 python3 tests/hologram_text_axes_test.py
 ```
 
-The regression suite executes the real shared library and both scripts' production functions with strict animation-call mocks. It covers exhaustion, direct occurrence ordering, UTF-8 gaps, selection, logical spacing, half-second leases and restoration, matrix parameters, radius/no-rest handling, glow lifetime, all 29 registered modes, empty groups, parent rotation/scale inversion, conga lifecycle, takeover crossfire timing/trajectories, slot-machine reel ownership/ordered stops, projection geometry, travelling pulses, terrain-based growth, borrowed-piece cleanup and scratch-global isolation. CI uses native Lua 5.1; local validation can also run the same suite through `lupa.lua51` (Lua 5.1).
+The regression suite executes the real shared library and both scripts' production functions with strict animation-call mocks. It covers exhaustion, direct occurrence ordering, UTF-8 gaps, selection, logical spacing, half-second leases and restoration, matrix parameters, radius/no-rest handling, glow lifetime, all 30 registered modes, empty groups, parent rotation/scale inversion, conga lifecycle, takeover crossfire timing/trajectories, slot-machine reel ownership/ordered stops, projection geometry, travelling pulses, terrain-based growth, borrowed-piece cleanup and scratch-global isolation. CI uses native Lua 5.1; local validation can also run the same suite through `lupa.lua51` (Lua 5.1).
 
 No Recoil visual or target-hardware performance validation has been performed. In Recoil, check a long repeated-letter slogan, day/night and blackout transitions, all projection modes, conga descent on slopes and rotated houses, turns/stops/death of the target civilian, and takeover cleanup when a phrase changes or the hologram is destroyed. Confirm glyph size, facing, ground clearance and movement timing against actual exported models. Compare zoomed-out frame times in a dense city.
 
@@ -92,7 +94,7 @@ The production signs use the same cleanup. Tornado formation has a 2.5-second mo
 when calculating speeds, and fireworks bounds its launch/burst/fall waits too.
 Continuous spins keep running during the hold. All glyph transforms/spins are
 reset between cases; long effects are no longer cut short. The cycle has
-96 cases: plain horizontal/upright text, all 29 shared modes (matrix and arch use
+99 cases: plain horizontal/upright text, all 30 shared modes (matrix and arch use
 upright), an extra upright DNA-helix case, each at 0, +20 and -20 degrees/second
 around the same parent Y axis used by production holograms.
 
