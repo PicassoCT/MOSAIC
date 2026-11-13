@@ -12,6 +12,7 @@ local cleanupFinished,visibleAtFinish={},{}
 local groups,pieceMap={}, {text_spin=1}
 local danceCalls,stoppedDance=0,false
 local danceAnnouncements={}
+local danceOrder={}
 for i,name in ipairs({'DirectionArcPoint','BallArcPoint','handr','handl','ball','tigLil'}) do pieceMap[name]=100+i end
 for code=65,90 do
     local name=string.char(code);groups[name]={}
@@ -72,7 +73,10 @@ function getCivilianTypeTable() return {} end
 function getPieceTableByNameGroups() return groups end
 Spring={UnitScript={IsInMove=function()return now<pendingMove end,IsInTurn=function()return now<pendingTurn end},GetGameSeconds=function()return now/1000 end,GetUnitPieceMap=function() return pieceMap end,SetUnitBlocking=function() end,SetUnitNeutral=function() end,
     SetUnitRulesParam=function() end,Echo=function(text)
-        if text:find('Tiglil animation:',1,true) then danceAnnouncements[text]=true end
+        if text:find('Tiglil animation:',1,true) then
+            if not danceAnnouncements[text] then danceOrder[#danceOrder+1]=text:match('Tiglil animation: ([%w_]+)') end
+            danceAnnouncements[text]=true
+        end
         if text:find(' | ',1,true) then announcements[#announcements+1]={time=now,text=text} end
     end}
 Spring.GetUnitPieceInfo=function() return {parent='text_spin'} end
@@ -106,6 +110,8 @@ end
 setmetatable(GG,{__newindex=function() error('test unit registered shared renderer state') end})
 dofile('scripts/text_fx_test_script.lua')
 local effects=getAllTextFx();local invoked={}
+local effectCount=0;for _ in pairs(effects)do effectCount=effectCount+1 end
+local caseCount=(effectCount+3)*3 -- two plain layouts and the extra DNA layout
 for name,fn in pairs(effects) do effects[name]=function(...)
     invoked[name]=true
     fn(...)
@@ -123,7 +129,7 @@ function waitHologramTextCleanup(...)
     return ok
 end
 script.Create()
-while #announcements<100 do
+while #announcements<caseCount+1 do
     local nextThread
     for _,t in pairs(threads) do
         if not nextThread or t.wake<nextThread.wake or (t.wake==nextThread.wake and t.id<nextThread.id) then nextThread=t end
@@ -145,7 +151,7 @@ for i=2,#announcements do
 end
 assert(longEffect,'did not exercise an animation longer than five seconds')
 local spiralCases=0
-for i=1,99 do
+for i=1,caseCount do
     if announcements[i].text:find('] spiralProject |',1,true) then
         spiralCases=spiralCases+1
         assert(announcements[i].text:find('upright spiral',1,true))
@@ -154,10 +160,41 @@ end
 assert(spiralCases==3,'spiral must appear once per rotation, without a lengthwise variant')
 for name in pairs(effects) do assert(invoked[name],'mode skipped: '..name) end
 assert(spins[math.rad(20)] and spins[math.rad(-20)],'missing rotation direction')
+-- Historical addition groups (restored spline counts at restoration). All
+-- rotation variants stay adjacent; plain layouts belong at the end.
+local rank={wallImpactText=7,splineShapeFollowing=6,meteorCraterText=5,
+    smilingFace=4,letterPlant=4,heartMonitor=4,letterTornado=4,oneArmedBandit=4,
+    civilianCongaText=3,hostileTakeoverText=3,plain=0}
+local previous=math.huge
+for i=1,caseCount,3 do
+    local name=announcements[i].text:match('%] ([%w_]+) |')
+    local age=rank[name] or 1
+    assert(age<=previous,'preview jumped from an older addition back to a newer effect: '..name)
+    previous=age
+    for offset,degrees in ipairs({0,20,-20})do
+        local label=announcements[i+offset-1].text
+        assert(label:find('] '..name..' |',1,true),'rotation variants split across the cycle')
+        assert(label:find('parent Y '..degrees..' deg/s',1,true),'parent rotation order changed')
+    end
+end
+assert(announcements[1].text:find('] wallImpactText |',1,true))
+assert(announcements[caseCount-5].text:find('] plain |',1,true))
+assert(announcements[caseCount+1].text:find('] wallImpactText |',1,true),'next cycle does not restart newest-first')
+local danceRank={danceShakira=12,danceBehindGlass=11,danceEmbracePasserby=10,lingerBrothel=9,
+    greetPasserby=8,embracePasserby=8,kissPasserby=8,invitePasserby=8,
+    danceBurlesqueSway=7,danceBurlesqueWave=7,danceBurlesqueFan=7,idle_stance=6,idle_stance2=6,
+    advertiseSales=5,modelWalk=5,presentGala=5,danceBallet=4,dancePole=3,danceJoi=2,
+    idle_stance17=1,danceShuffle=1,danceDisco=1,dancePopping=1}
+previous=math.huge
+assert(danceOrder[1]=='danceShakira','new solo dance must preview first')
+for _,name in ipairs(danceOrder)do
+    local age=danceRank[name] or 0
+    assert(age<=previous,'Tiglil routines are not newest-first: '..name);previous=age
+end
 for _,name in ipairs({'idle_stance17 (solo footwork)','danceShuffle (solo shuffle)','danceDisco (solo disco)','dancePopping (solo popping)','danceJoi (Joi-inspired solo)','danceShakira (Shakira-inspired solo)','dancePole (pole choreography)','danceBallet (solo ballet)','lingerBrothel (ten lingering poses)','danceBehindGlass (behind-glass placeholder)','greetPasserby (personal greeting dance)','embracePasserby (personal embrace)','danceEmbracePasserby (brothel close dance embrace)','kissPasserby (personal cheek kiss)','invitePasserby (brothel seductress invitation)','idle_stance (street conversation)','idle_stance2 (street gestures)','danceBurlesqueSway (brothel hip sway)','danceBurlesqueWave (brothel body wave)','danceBurlesqueFan (brothel fan dance)','advertiseSales (business sales presentation)','modelWalk (business runway walk)','presentGala (business gala presenter)','idle_stance4 (acrobatics)','idle_stance5 (backflip and handstand)'}) do
     assert(danceAnnouncements['[Text FX test 7] Tiglil animation: '..name],'preview omitted '..name)
 end
-assert(danceCalls>99 and drawn[pieceMap.tigLil],'Tiglil must keep dancing through the full text cycle')
+assert(danceCalls>caseCount and drawn[pieceMap.tigLil],'Tiglil must keep dancing through the full text cycle')
 assert(script.Killed()==0 and stoppedDance)
 assert(not next(threads),'killed unit left its cycling thread running')
 local defEnv={lowerkeys=function(t)return t end}
@@ -165,4 +202,4 @@ setmetatable(defEnv,{__index=_G})
 local def=setfenv(assert(loadfile('units/shared/text_fx_test.lua')),defEnv)().text_fx_test
 assert(def.objectName=='house_western_hologram.dae' and def.script=='text_fx_test_script.lua')
 assert(not def.customParams.neon_hologram_type and not def.customParams.house_icon_hologram)
-print('PASS: all 30 shared FX, 99 complete animations followed by five-second holds, vertical-only spiral, both parent rotations and glyph cleanup')
+print('PASS: all '..effectCount..' shared FX, '..caseCount..' complete cases newest-first, grouped rotations, five-second holds and glyph cleanup')
