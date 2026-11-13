@@ -30,17 +30,37 @@ end
 StartThread(TigLilSetup);drain(1000)
 local started=frame
 local entryFrames=math.ceil((yoga.entryExitMs+100)*30/1000)
-local poseFrames=math.ceil((yoga.transitionMs+yoga.holdMs)*30/1000)
+-- Capture timing, then verify every target in the native scheduler; support
+-- editing the repetition count without weakening the warmup/ramp checks.
+local sleeps,transitions={},{}
+yoga.play({prepare=function()end,restore=function()end,finish=function()end,
+    turn=function(name,a,ms)if name=='tigLil' then transitions[#transitions+1]=ms end end,
+    sleep=function(ms)sleeps[#sleeps+1]=ms end})
+local poseCount=yoga.repetitions*#yoga.poses
+assert(#transitions==poseCount and #sleeps==poseCount+2)
+local samples,posesEnd={},entryFrames
+for i=1,poseCount do
+    local ms=sleeps[i+1]
+    if i<=yoga.warmupRepetitions*2 then
+        assert(transitions[i]==yoga.transitionMs and ms==yoga.transitionMs+yoga.holdMs,'warmup accelerated')
+    elseif i%2==1 then
+        assert(transitions[i]<transitions[i-2] and ms<sleeps[i-1],'pair did not accelerate')
+    end
+    if i%2==0 then assert(transitions[i]==transitions[i-1],'speed changed midway through a pair')end
+    assert(transitions[i]>=yoga.transitionMs/yoga.maxSpeed-.5,'speed exceeds maximum')
+    posesEnd=posesEnd+math.ceil(ms*30/1000);samples[i]=posesEnd-3
+end
+near(transitions[poseCount],yoga.transitionMs/yoga.maxSpeed,.51)
+local endFrames=posesEnd+math.ceil(sleeps[#sleeps]*30/1000)
 local checked,lowestHover=0,math.huge
 StartThread(advertiseWeightlessYoga)
 while next(threads)do
     tick();local elapsed=frame-started
-    assert(elapsed<30*25,'yoga routine never finishes')
-    if elapsed>entryFrames and elapsed<entryFrames+poseFrames*8 then
+    assert(elapsed<endFrames+30,'yoga routine never finishes')
+    if elapsed>entryFrames and elapsed<posesEnd then
         lowestHover=math.min(lowestHover,footHeight())
     end
-    local sample=elapsed-entryFrames+3
-    if sample>0 and sample%poseFrames==0 and checked<8 then
+    if elapsed==samples[checked+1] then
         checked=checked+1
         local expected=yoga.poses[(checked-1)%2+1]
         for name,a in pairs(expected)do
@@ -48,9 +68,9 @@ while next(threads)do
         end
     end
 end
-assert(checked==8,'did not hold both supplied poses in all four repetitions')
+assert(checked==poseCount,'did not hold both supplied poses in every repetition')
 assert(lowestHover>1,'weightless yoga touches the floor: '..lowestHover)
-assert(frame-started>=30*18 and frame-started<30*20,'unexpected yoga duration')
+assert(frame-started>=endFrames and frame-started<endFrames+10,'unexpected accelerated yoga duration')
 for _,name in ipairs({'tigLil','tlHead','tllegUp','tllegUpR','tllegLow','tllegLowR','deathpivot','dancepivot'})do
     for _,v in ipairs(rotations[pieceIDs[name]])do near(delta(0,v,true),0,1e-5)end
 end
@@ -59,10 +79,10 @@ near(footHeight(),0,.001)
 -- Destruction must stop the routine and its smoothing worker together.
 local finished=false
 StartThread(function()SetSignalMask(SIG_CORE+SIG_TIGLIL);advertiseWeightlessYoga();finished=true end)
-for i=1,70 do tick()end
+for i=1,230 do tick()end -- interrupt after the warmup, during acceleration
 Signal(SIG_CORE);TigLilStopSmoothing()
 for i=1,10 do tick()end
 assert(not next(threads) and not finished,'cancelled yoga left a worker running')
-print('PASS: all eight native yoga poses match supplied XYZ; hover clearance '..lowestHover..'; neutral exit and cancellation')
+print('PASS: yoga warms up then accelerates to 2x; all XYZ poses reached; hover clearance '..lowestHover..'; neutral exit and cancellation')
 ]=]
 assert(loadstring(source))()
