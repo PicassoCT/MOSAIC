@@ -7,6 +7,28 @@ end
 -- Leg tuples: hip pitch, yaw, roll, knee bend. Arms are rigid shoulder-to-hand
 -- pieces: use open silhouettes instead of pretending the rig has elbows.
 M.styles={
+    -- Adapted from the overhead reach, arm sweeps, hip rocks and turning steps
+    -- in the source linked by the user's Reddit post: youtube.com/watch?v=6Ov9EL709cc.
+    -- Tiglil has no elbow joints: shoulder arcs preserve the silhouette.
+    joi={beat=360,turnBeats=8,headings={0,90,180,270},frames={
+        pose({-3,-8,-5},{-6,0,-5,12},{-12,0,4,24},{{0,-20,55},{-8,12,80}},{.5,0}),
+        pose({-2,0,4},{-12,0,-4,24},{-6,0,5,12},{{-8,-12,-40},{0,12,65}},{-.5,0}),
+        pose({-3,8,5},{-12,0,-4,24},{-6,0,5,12},{{-8,-12,-80},{0,20,-55}},{-.5,0}),
+        pose({2,-8,-4},{-6,0,-5,12},{-12,0,4,24},{{0,-25,-45},{8,40,-40}},{.5,0}),
+        pose({4,-15,-6},{-10,0,-7,20},{-6,0,3,12},{{10,-30,50},{-5,30,-45}},{.65,-.15}),
+        pose({0,10,6},{-6,0,-3,12},{-10,0,7,20},{{-5,-40,45},{10,30,-50}},{-.65,.15}),
+        pose({7,15,2},{-18,0,-4,36},{-18,0,4,36},{{0,-65,10},{0,65,-10}},{0,-.2}),
+        pose({-3,5,-3},{-7,0,-4,14},{-9,0,4,18},{{-8,-45,25},{-8,45,-25}},{.3,0}),
+        pose({3,-12,-5},{-8,0,-5,16},{-12,0,3,24},{{0,-78,0},{0,78,0}},{.5,-.25}),
+        pose({-2,12,5},{-12,0,-3,24},{-8,0,5,16},{{8,-35,48},{8,35,-48}},{-.5,.25}),
+        pose({3,18,5},{-10,-8,-3,20},{-6,8,5,12},{{0,-60,20},{-8,25,-35}},{-.55,-.1}),
+        pose({0,-18,-5},{-6,-8,-5,12},{-10,8,3,20},{{-8,-25,35},{0,60,-20}},{.55,.1}),
+        pose({5,-10,-4},{-14,0,-5,28},{-7,0,3,14},{{8,-45,50},{0,40,-35}},{.4,-.2}),
+        pose({-2,10,4},{-7,0,-3,14},{-14,0,5,28},{{0,-40,35},{8,45,-50}},{-.4,.2}),
+        pose({1,8,3},{-8,0,-3,16},{-8,0,3,16},{{-8,-20,-20},{-8,20,20}},{-.3,0}),
+        pose({-2,-8,-3},{-6,0,-4,12},{-10,0,4,20},{{0,-20,45},{-8,12,65}},{.3,0}),
+    }},
+
     solo={beat=420,headings={30,-30,60,-60,30,0},frames={
         pose({3,-8,-3},{-24,0,-4,32},{12,0,2,12},{{-12,-35,35},{8,25,-58}},{.35,-1},2),
         pose({1,4,2},{-8,0,-2,12},{-18,0,4,30},{{8,-20,58},{-12,35,-35}},{-.25,-.4}),
@@ -138,7 +160,7 @@ function M.play(name,api)
     api.turn('dancepivot',{0,0,0},600)
     perform(neutral,600);api.sleep(650)
     for _,heading in ipairs(style.headings) do
-        api.turn('deathpivot',{0,heading*sign,0},style.beat*2)
+        api.turn('deathpivot',{0,heading*sign,0},style.beat*(style.turnBeats or 2))
         for _,p in ipairs(style.frames) do
             local duration=style.beat*p.beats
             perform(p,duration*(1-p.hold))

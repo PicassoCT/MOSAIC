@@ -35,7 +35,7 @@ local tiglilAnimations=include('tigLilAnimation.lua')
 local function dance()
     SetSignalMask(SIG_CORE+SIG_TIGLIL)
     local routines={
-        {name='idle_stance_10',run=idle_stance_10},
+        {name='danceJoi (Joi-inspired solo)',run=danceJoi},
         {name='idle_stance17 (solo footwork)',run=idle_stance17},
         {name='danceShuffle (solo shuffle)',run=danceShuffle},
         {name='danceDisco (solo disco)',run=danceDisco},
@@ -44,6 +44,7 @@ local function dance()
         {name='idle_stance5 (backflip and handstand)',run=idle_stance5},
         {name='idle_stance_12',run=idle_stance_12},
         {name='idle_stance11',run=tiglilAnimations.idle_stance11},
+        {name='idle_stance_10',run=idle_stance_10},
     }
     while true do
         for _,routine in ipairs(routines) do

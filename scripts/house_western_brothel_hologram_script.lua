@@ -1092,6 +1092,7 @@ idleAnimations[#idleAnimations +1] = idle_stance17
 idleAnimations[#idleAnimations +1] = danceShuffle
 idleAnimations[#idleAnimations +1] = danceDisco
 idleAnimations[#idleAnimations +1] = dancePopping
+idleAnimations[#idleAnimations +1] = danceJoi
 idleAnimations[#idleAnimations +1] = strikeAPose
 
                 

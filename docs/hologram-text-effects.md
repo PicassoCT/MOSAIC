@@ -161,3 +161,12 @@ of an arbitrary vertical bob. Both western holograms and the advertising blimp
 include the new routines; the western techno pool includes them too. The preview
 announces each style by name. Model and scheduler checks do not replace a live
 visual review of timing, foot sliding and silhouettes.
+
+`danceJoi` adds a solo routine inspired by the overhead reach, alternating arm
+sweeps, hip rocks and turning steps in the [user's reference](https://www.reddit.com/r/bladerunner/comments/z83alc/the_joi_dance_was_trending_on_tik_tok_so_i_made/)
+and its linked [source clip](https://www.youtube.com/watch?v=6Ov9EL709cc).
+It performs four 16-beat phrases with gradual quarter-turns, then settles to
+neutral. This is a rig-adapted interpretation: Tiglil's rigid arm pieces cannot
+reproduce the reference's elbow bends. The clip and audio are not game assets.
+The preview starts with `danceJoi (Joi-inspired solo)`, then the other solo styles; normal and techno pools
+include it alongside the other styles.

@@ -4987,6 +4987,7 @@ function idle_stance17() soloDance('solo') end
 function danceShuffle() soloDance('shuffle') end
 function danceDisco() soloDance('disco') end
 function dancePopping() soloDance('popping') end
+function danceJoi() soloDance('joi') end
 
 --even numbers left foot up
 function drumPose1(mspeed, tspeed)
