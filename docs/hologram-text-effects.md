@@ -115,7 +115,9 @@ original final targets. Quintic easing softens starts and stops; interrupted
 poses carry forward same-direction velocity without overshooting. Native
 `WaitForMove`/`WaitForTurn` still wait for the final pose. Speed-based movements
 retain their nominal duration with a 100 ms minimum blend. Timed poses keep
-their requested duration subject to that minimum. The synchronized yoga helper
+their requested duration subject to that minimum. At the end of easing, a native
+completion step uses at least the authored speed so float precision cannot
+leave a turn queued forever. The synchronized yoga helper
 uses a common arrival time and avoids division by zero on neutral angles.
 Spins without authored acceleration/deceleration use a 180 ms ramp; explicit
 spin settings remain intact. Setup and show shutdown cancel the motion worker,
@@ -123,6 +125,8 @@ and hidden shutdown resets replace queued engine targets.
 
 The external `tiglil_motion_test.lua` checks trajectories, shortest-angle turns,
 native waits, interruptions, cancellation/restart and real setup, gait, pose,
-yoga and shutdown callbacks. This is procedural smoothing, not captured motion;
+yoga and shutdown callbacks. `tiglil_precision_test.lua` also models the engine’s
+float32 angle normalization and runs setup plus all four preview routines.
+This is procedural smoothing, not captured motion;
 foot contact, silhouette and perceived weight still need a fresh-match visual
 check with the actual model.

@@ -2,6 +2,7 @@
 -- One worker changes speeds toward the FINAL target, never temporary waypoints.
 return function(api, lifetime)
     local STEP, TICK, MIN_DURATION = 1 / 30, 33, 3 / 30
+    local MIN_FINISH_SPEED = 0.001 -- safely above float32 angular-wrap noise
     local SIG_MOTION = 16384 -- Tiglil's other private bits end at SIG_BALL=8192.
     local channels, spins, running = {}, {}, false
     local tau = 2 * math.pi
@@ -38,7 +39,11 @@ return function(api, lifetime)
         -- Recoil treats speed zero as a teleport, not as a paused animation.
         c.speed = math.max(0.000001, advance * direction / STEP)
         if now - c.time >= c.duration then
-            c.speed = math.max(0.000001, math.abs(remaining) / STEP)
+            -- Lua measures in doubles, but native turns normalize float angles.
+            -- Their residual can exceed ours even at the same apparent target.
+            -- Finish with a resolvable native step so its completion event wakes
+            -- WaitForTurn/WaitForMove; a tiny residual-only speed can stall forever.
+            c.speed = math.max(c.authoredSpeed, MIN_FINISH_SPEED, math.abs(remaining) / STEP)
         end
         local command = c.turn and api.Turn or api.Move
         command(c.id, c.axis, c.target, c.speed)
@@ -78,7 +83,9 @@ return function(api, lifetime)
         local distance = difference(target, start, turn)
         if math.abs(distance) < 0.000001 then
             channels[k] = nil
-            return native(id, axis, target, speed)
+            -- Timed poses can request an almost-identical angle, deriving an
+            -- unusably small speed from the Lua/native rounding difference.
+            return native(id, axis, target, math.max(speed, MIN_FINISH_SPEED))
         end
         local duration = math.max(MIN_DURATION, math.abs(distance) / speed)
         local direction = distance < 0 and -1 or 1
