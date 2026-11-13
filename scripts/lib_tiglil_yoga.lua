@@ -1,7 +1,7 @@
 -- Two user-authored weightless-yoga poses, native DAE X/Y/Z degrees (Z up).
 -- Keep all three lower-leg axes: these poses do not use hinge-only knees.
-local M={repetitions=12,transitionMs=1600,holdMs=400,entryExitMs=1000,hoverHeight=3}
-M.warmupRepetitions,M.maxSpeed=1,2
+local M={repetitions=18,transitionMs=1600,holdMs=400,entryExitMs=1000,hoverHeight=3}
+M.warmupRepetitions,M.maxSpeed=1,3
 M.poses={
     {
         tlHead={-15.6,0,0},tlhairup={-71,0,0},tigLil={10.4,0,0},

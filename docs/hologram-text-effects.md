@@ -362,9 +362,9 @@ explicitly to establish their relative addition order.
 
 `advertiseWeightlessYoga` is exclusive to normal western business advertisements
 and appears first in the diagnostic preview. It alternates the two supplied
-yoga poses for the configured number of repetitions (currently 12). The first
+yoga poses for the configured number of repetitions (currently 18). The first
 pair warms up with a 1.6-second transition and 0.4-second hold per pose.
-Subsequent pairs gradually accelerate to 2x, scaling transitions and holds
+Subsequent pairs gradually accelerate to 3x, scaling transitions and holds
 together. Entry and exit remain slow. `repetitions`, `warmupRepetitions` and
 `maxSpeed` control the sequence in the pose file. Tiglil floats
 three body units above its neutral floor position, then settles back to neutral.
