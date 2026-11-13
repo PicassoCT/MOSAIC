@@ -10,6 +10,8 @@ for _,name in ipairs({'x_axis','y_axis','z_axis'}) do
 end
 sizeSpacingLetter,sizeDownLetter=321,350
 textSpinner=99
+-- This fixture applies native movement immediately.
+Spring={UnitScript={IsInMove=function() return false end,IsInTurn=function() return false end}}
 local positions,angles,sleeps,moves,waits={},{},{},{},{}
 local spinSpeeds,spinEvents,sleepObserver={},{},nil
 local visible={}
