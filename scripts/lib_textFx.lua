@@ -1667,7 +1667,7 @@ function letterTornado(allLetters, posLetters)
     if previousSpeed and previousSpeed<0 then speed=-speed end
     local cone = {}
     hardResetHologramLetters(allLetters)
-    StopSpin(textSpinner,textSpinnerAxis,0)
+    Spin(textSpinner,textSpinnerAxis, -12,  0.01 )
     for index,id in ipairs(allLetters) do
         local slot = textSlot(posLetters,id,index-1)
         -- Eight logical slots per turn; rising letters trace an expanding
@@ -1694,25 +1694,7 @@ function letterTornado(allLetters, posLetters)
     end
     -- Orbit in the glyphs' actual horizontal plane instead of relying on the
     -- imported parent pivot. Facing follows the orbit, keeping the cone intact.
-    local step=1/30
-    for frame=1,450 do
-        for _,id in ipairs(allLetters) do
-            local c=cone[id]
-            local angle=c.angle+speed*frame*step
-            local oldAngle=angle-speed*step
-            local x=origin[glyphDepthAxis]+c.radius*math.cos(angle)
-            local y=origin[glyphBaselineAxis]+c.radius*math.sin(angle)
-            local oldX=origin[glyphDepthAxis]+c.radius*math.cos(oldAngle)
-            local oldY=origin[glyphBaselineAxis]+c.radius*math.sin(oldAngle)
-            if Spring and Spring.UnitScript and Spring.UnitScript.GetPieceTranslation then
-                oldX,oldY=Spring.UnitScript.GetPieceTranslation(id)
-            end
-            Move(id,glyphDepthAxis,x,math.max(0.000001,math.abs(x-oldX)/step))
-            Move(id,glyphBaselineAxis,y,math.max(0.000001,math.abs(y-oldY)/step))
-            Turn(id,glyphHeightAxis,angle+math.pi,math.abs(speed))
-        end
-        Sleep(33)
-    end
+    Sleep(3000)
     hideTReg(allLetters)
     StopSpin(textSpinner,textSpinnerAxis,0)
     Turn(textSpinner,textSpinnerAxis,0,1);Turn(textSpinner,textSpinnerAxis,0,0)
