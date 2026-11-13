@@ -18,7 +18,7 @@ local names,ids={},{}
 for i=1,24 do names[i]='Placeable'..i;ids[i]=i end
 local scale=planner.catalogue.scale
 local function close(a,b,message) assert(math.abs(a-b)<.00001,message..': '..a..' / '..b) end
-local function run(angle,terrain,family)
+local function run(angle,terrain,family,onlyName,replay)
  local radians=angle*math.pi/180
  local c,s=math.cos(radians),math.sin(radians)
  local ux,uy,uz=1400,37,2200
@@ -44,9 +44,21 @@ local function run(angle,terrain,family)
    plan=function(options)
     -- Check the real wrapper's world-to-local road conversion.
     close(options.roads[1].aX,-6000,'rotated road X');close(options.roads[1].aZ,3500,'rotated road Z')
-    options.count=5;placed=planner.plan(options);return placed
+    options.count=5
+    if onlyName then
+     options.pieces={[onlyName]=assert(options.pieces[onlyName])};options.count=1
+    end
+    placed=planner.plan(options);return placed
    end}}, {__index=_G})
- env.GG.HousePlaceableSelection={Request=function(_,id,apply) return {done=true,result=apply(nil)} end}
+ env.GG.HousePlaceableSelection={Request=function(_,id,apply)
+  local result=apply(nil)
+  if replay then
+   for _,p in ipairs(result) do p.moveY=1234;p.id=-1 end
+   moves,turns,shown,lit={},{},{},{}
+   result=apply(nil,result)
+  end
+  return {done=true,result=result}
+ end}
  env.placeGroundProps=planner.bindPlacement(env.placeablePlanner,env)
  compile(wrapper(family),env)()
  for _,p in ipairs(placed) do
@@ -65,7 +77,9 @@ local function run(angle,terrain,family)
     assert(sampled,'terrain sampled in unrotated or incorrectly scaled coordinates')
    end
   end
-  close(uy+scale*(m[2]+pose.min[2]),low,'mesh bottom not at sampled world terrain height')
+  assert(p.moveY==0,'saved mesh-bottom correction survived replay')
+  close(uy+scale*m[2],low,'authored rest-plane not at sampled terrain height')
+  close(uy+scale*(m[2]+pose.min[2]),low+scale*pose.min[2],'authored burial depth changed')
  end
  return placed
 end
@@ -82,5 +96,14 @@ for _,family in ipairs({'modular','standalone'}) do
   assert(#run(angle,function() return -5 end,family)==0,'underwater location accepted')
   assert(#run(angle,function(x,z) return 10000+10*x+3*z end,family)==0,'steep footprint accepted')
  end
+ -- Every catalogue entry uses the same grounding rule, including old saves.
+ local buried,above=false,false
+ for _,name in ipairs(names) do
+  local result=run(37,function()return 20 end,family,name,true)
+  assert(#result==1,'catalogue prop was lost: '..name)
+  local minimum=planner.catalogue.pieces[name].poses[1].min[2]
+  buried=buried or minimum<0;above=above or minimum>0
+ end
+ assert(buried and above,'fixture must cover authored geometry below and above zero')
 end
-print('PASS: modular and standalone production wrappers; 5 headings, rotated roads/parent axes, terrain grounding, water and slope rejection')
+print('PASS: all 83 placeables preserve authored burial depth; saved layouts, 5 headings, terrain grounding, water and slope rejection')

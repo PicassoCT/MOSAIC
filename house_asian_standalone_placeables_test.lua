@@ -9,6 +9,7 @@ local all={}
 local function check(result)
  local ids={}
  for _,p in ipairs(result) do
+  assert(p.moveY==0,'authored burial depth was removed')
   assert(not ids[p.id]);ids[p.id]=true;all[p.name]=true
   local near,far
   if p.side==1 then near,far=p.minZ,p.maxZ

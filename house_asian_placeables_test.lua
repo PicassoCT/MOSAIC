@@ -10,7 +10,7 @@ local function check(result)
         local pose=profile.poses[math.floor(p.rotation/(math.pi/4)+.5)+1]
         assert(math.abs(p.moveX+pose.footMin[1]-p.minX)<.001,'pivot offset lost')
         assert(math.abs(p.moveZ+pose.footMax[3]-p.maxZ)<.001,'pivot offset lost')
-        assert(math.abs(p.moveY+pose.min[2])<.001,'mesh not grounded')
+        assert(p.moveY==0,'authored rest-plane must be the ground reference')
         local half=770*3+2/planner.catalogue.scale
         local nearEdge,farEdge
         if p.side==1 then nearEdge,farEdge=p.minZ,p.maxZ
