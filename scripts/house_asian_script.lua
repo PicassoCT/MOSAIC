@@ -15,8 +15,14 @@ function OnBuildingPiecesDetached(pieces) houseAnimations.detach(pieces) end
 --include "lib_debug.lua"
 
 local splitPlanner = VFS.Include("scripts/lib_house_asian_split.lua")
+local stackPlanner = GetSetSharedOneTimeResult("house_asian_stack_planner",
+    function() return VFS.Include("scripts/lib_house_asian_stacks.lua") end)
+local placeablePlanner = GetSetSharedOneTimeResult("house_asian_placeable_planner",
+    function() return VFS.Include("scripts/lib_house_asian_placeables.lua") end)
+local placeGroundProps = include "lib_house_asian_ground_placeables.lua"
 local splitParams = (UnitDefs[unitDefID] or {}).customParams or {}
 local splitPlan, splitLayout
+local structuralPlan
 local reservedSplitPieces = {}
 local splitPhase
 local function optionalPieceSet(names)
@@ -31,6 +37,9 @@ local ToShowTable = {}
 local buildingClearanceReady = false
 function GetBuildingClearancePieces()
     return buildingClearanceReady and ToShowTable or nil
+end
+function GetBuildingStructuralPlan()
+    return structuralPlan
 end
 IDGroupsDirection = { 
     "u", --upright
@@ -1059,6 +1068,12 @@ function convertIndexToRoundNr(groupIndex)
 end
 
 function getRandomBuildMaterial(buildMaterial, name, index, x, z, level, buildingGroups)
+    if structuralPlan and (buildingGroups == buildingGroupsFloor or buildingGroups == buildingGroupsLevel) then
+        local phase = buildingGroups == buildingGroupsFloor and "floor" or "wall"
+        local slots = structuralPlan.layout[phase][level]
+        local planned = slots and slots[index]
+        return planned and assert(pieceName_pieceNr[planned], "Missing planned structural piece: " .. planned)
+    end
     if splitPlan then
         local phase = buildingGroups == buildingGroupsFloor and "floor"
             or buildingGroups == buildingGroupsLevel and "wall"
@@ -1113,6 +1128,10 @@ end
 
 -- x:0-6 z:0-6
 function getLocationInPlan(index, materialColourName)
+    if structuralPlan then
+        if not structuralPlan.columns[index] then return false, math.huge, math.huge end
+        return true, (index - 1) % 6, math.floor((index - 1) / 6)
+    end
     if materialColourName == "office" and boolOpenBuilding and NotInPlanIndeces[index] then return false, math.huge, math.huge end
 
     if index < 7 then return true, (index - 1), 0 end
@@ -1150,6 +1169,9 @@ function getWallBackyardDeocrationRotation(index)
 end
 
 function getOutsideFacingRotationOfBlockFromPlan(index)
+    if structuralPlan and structuralPlan.columns[index] then
+        return structuralPlan.columns[index].rotation
+    end
 
     if (index > 30 and index < 37) then
         if (index == 31) then return 270 - math.random(0, 1) * 90 + rotationOffset end
@@ -1329,6 +1351,9 @@ function buildDecorateLvl(Level, materialGroupName, buildMaterial)
         rotation = getOutsideFacingRotationOfBlockFromPlan(i)
 
         partOfPlan, xLoc, zLoc = getLocationInPlan(index, materialGroupName)
+        if structuralPlan and partOfPlan and Level > structuralPlan.columns[index].height then
+            partOfPlan = false
+        end
         xRealLoc, zRealLoc = xLoc, zLoc
         if partOfPlan == true then
 			--assert(xRealLoc)
@@ -1695,6 +1720,8 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
         local index = i
         partOfPlan, xLoc, zLoc = getLocationInPlan(index, materialColourName)
         if partOfPlan == true then
+            local columnRoofHeight = structuralPlan and structuralPlan.columns[index].roofHeight or Level * cubeDim.heigth
+            local columnRoofLevel = math.ceil(columnRoofHeight / cubeDim.heigth - 1e-6)
             --assert(xLoc)
             --assert(zLoc)
             xRealLoc, zRealLoc = -centerP.x + (xLoc * cubeDim.length),-centerP.z + (zLoc * cubeDim.length)
@@ -1744,17 +1771,17 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
 
                 offset = 0
                 --offset if one of the last level was not placed due to offset
-                if not lvlPlaced[i] then
+                if not structuralPlan and not lvlPlaced[i] then
                     offset = -cubeDim.heigth 
                 end
             
                 Move(element, _x_axis, xRealLoc, 0)
                 Move(element, _z_axis, zRealLoc, 0)
-                Move(element, _y_axis, Level * cubeDim.heigth - 0.5 + offset, 0)
+                Move(element, _y_axis, columnRoofHeight - 0.5 + offset, 0)
                 WaitForMoves(element)
                 RoofTopPieces[i]= element
                 WTurn(element, _z_axis, math.rad(rotation), 0)
-				LevelPieces = houseAddDestructionTable(LevelPieces, Level + 1, element, xRealLoc, zRealLoc, Level * cubeDim.heigth + offset)
+				LevelPieces = houseAddDestructionTable(LevelPieces, columnRoofLevel + 1, element, xRealLoc, zRealLoc, columnRoofHeight + offset)
 				addToShowTable(element, xLoc, zLoc)
                 decoPieceUsedOrientation[element] = getRotationFromPiece(element)
 
@@ -1780,6 +1807,7 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
         local index = i
         partOfPlan, xLoc, zLoc = getLocationInPlan(i, materialColourName)
         if partOfPlan == true then
+            local columnRoofHeight = structuralPlan and structuralPlan.columns[index].roofHeight or Level * cubeDim.heigth
             xRealLoc, zRealLoc = -centerP.x + (xLoc * cubeDim.length),
                                  -centerP.z + (zLoc * cubeDim.length)
             local slotDecoMaterial = getRoofDecoMaterialForPlanIndex(decoMaterial, index)
@@ -1803,7 +1831,7 @@ function addRoofDeocrate(Level, buildMaterial, materialColourName)
                 Move(element, _x_axis, xRealLoc, 0)
                 Move(element, _z_axis, zRealLoc, 0)
                 Move(element, _y_axis,
-                     Level * cubeDim.heigth - 0.5 + cubeDim.roofHeigth, 0)
+                     columnRoofHeight - 0.5 + cubeDim.roofHeigth, 0)
                 WaitForMoves(element)
                 RoofTopPieces[i]= element
                 WTurn(element, _z_axis, math.rad(rotation), 0)
@@ -1911,36 +1939,19 @@ end
 
 
 function addGroundPlaceables()
-    x,y,z = Spring.GetUnitPosition(unitID)
-    globalHeightUnit = Spring.GetGroundHeight(x, z)
-	placeAbles =  getNameFilteredTable( {},  { "Placeable"}, {})
-	if placeAbles and count(placeAbles) > 0 then
-		groundPiecesToPlace= math.random(1,5)
-		randPlaceAbleID = ""
-		while groundPiecesToPlace > 0 do
-
-			randPlaceAbleID = getSafeRandom(placeAbles)			
-			if randPlaceAbleID and not inToShowDict(randPlaceAbleID) then
-				opx= math.random(cubeDim.length*4, cubeDim.length*7)*randSign()
-				opz= math.random(cubeDim.length*4, cubeDim.length*7)*randSign()
-				WMove(randPlaceAbleID,3, opz, 0)
-				WMove(randPlaceAbleID,1, opx, 0)
-                Sleep(1)
-                x, y, z, _, _, _ = Spring.GetUnitPiecePosDir(unitID, randPlaceAbleID)
-                myHeight = Spring.GetGroundHeight(x, z)
-                if myHeight >0 then
-                    heightdifference = math.abs(globalHeightUnit - myHeight)
-                    if myHeight < globalHeightUnit then heightdifference = -heightdifference end
-				    addToShowTable(randPlaceAbleID)
-				    Show(randPlaceAbleID)
-                    SetRadiancePlaceables({randPlaceAbleID}, true)
-                end
-			end	
-		
-			groundPiecesToPlace = groundPiecesToPlace -1
-		end	
-	end
+    local available = {}
+    for _, id in pairs(getNameFilteredTable({}, {"Placeable"}, {})) do
+        if not inToShowDict(id) then available[pieceNr_pieceName[id]] = id end
+    end
+    local ux, _, uz = Spring.GetUnitPosition(unitID)
+    return placeGroundProps(placeablePlanner, {
+        seed=splitPlan and splitPlan.seed or splitPlanner.seed(ux,uz,Game.mapName),
+        cell=cubeDim.length, pieces=available,
+        roadWidth=(GameConfig.city.alleys or {}).sizeX,
+        addToShowTable=addToShowTable,
+    })
 end
+
 
 local accumulatedStun = 0
 local stunAnimationRunning = false
@@ -1968,6 +1979,8 @@ end
 
 
 function buildBuilding(boolIsReconstruction)
+    structuralPlan = nil
+    reservedSplitPieces = {}
     splitPlan = splitPlan or (GG.HouseAsianUnitPlans and GG.HouseAsianUnitPlans[unitID])
     if not splitPlan and splitParams.house_asian_base then
         local x, _, z = spGetUnitPosition(unitID)
@@ -1975,7 +1988,6 @@ function buildBuilding(boolIsReconstruction)
             tonumber(splitParams.house_asian_style_b), x, z, Game.mapName)
     end
     if splitPlan then
-        splitLayout, reservedSplitPieces = splitPlanner.layout(splitPlan)
         -- Do not cut holes through the reserved authored component.
         if splitPlan.group then boolOpenBuilding = false end
     end
@@ -1989,6 +2001,44 @@ function buildBuilding(boolIsReconstruction)
      
     --lecho( "selectBase")
     materialColourName = selectGroundBuildMaterial()
+    local planX, _, planZ = spGetUnitPosition(unitID)
+    local structuralSlots = {}
+    for index = 1, 36 do
+        if getLocationInPlan(index, materialColourName) then
+            structuralSlots[#structuralSlots + 1] = index
+        end
+    end
+    local inventory = GetSetSharedOneTimeResult("house_asian_stack_inventory_" .. unitDefID,
+        function() return stackPlanner.inventory(pieceName_pieceNr) end)
+    height = splitPlan and splitPlan.height or math.random(2,3)
+    local wallStyle = splitPlan and splitPlan.wallStyle or materialColourName
+    local legacyGroundNames = {}
+    local shopfrontPolicy = stackPlanner.shopfrontPolicies[materialColourName] or {fraction = 0}
+    if shopfrontPolicy.fraction > 0 then
+        -- Use the original ground-level material filter, including shop pieces
+        -- excluded from the socket-compatible tower path search.
+        for _, id in pairs(getNameFilteredTable({}, {materialColourName}, {"Roof", "Deco", "Yard"})) do
+            local name = pieceNr_pieceName[id]
+            if name and name:lower():find("floor", 1, true) then
+                legacyGroundNames[#legacyGroundNames + 1] = name
+            end
+        end
+    end
+    structuralPlan = stackPlanner.plan({
+        inventory = inventory,
+        seed = splitPlan and splitPlan.seed or splitPlanner.seed(planX, planZ, Game.mapName),
+        height = height,
+        groundStyle = materialColourName,
+        wallStyle = wallStyle,
+        legacyGroundNames = legacyGroundNames,
+        legacyGroundFraction = shopfrontPolicy.fraction,
+        legacyGroundCornersOnly = shopfrontPolicy.cornersOnly,
+        slots = structuralSlots,
+        featured = splitPlan and splitPlan.group,
+        mismatchChance = 0.1,
+    })
+    splitLayout, reservedSplitPieces = structuralPlan.layout, structuralPlan.reserved
+    height = structuralPlan.height
     --materialColourName = "office"
     buildingGroupsFloor.Upright = getNameFilteredDictionary( {"ID_u", "ID_a"},  { materialColourName}, {"Roof", "Deco"})
 	buildingGroupsLevel.Upright = getNameFilteredDictionary({"ID_u", "ID_a"},{materialColourName}, {"Floor", "Roof","Deco"})
@@ -2007,7 +2057,6 @@ function buildBuilding(boolIsReconstruction)
     materialColourName = splitPlan and splitPlan.wallStyle or materialColourName
     levelBuildMaterial = getNameFilteredTable({}, {materialColourName}, {"Floor","Roof", "Deco"})
 
-    height = splitPlan and splitPlan.height or math.random(2,3)
 	for i = 1, height do
       --  lecho( "buildDecorateLvl start "..i)
       --  assert(levelBuildMaterial, "no material table in" ..i.." for "..materialColourName)

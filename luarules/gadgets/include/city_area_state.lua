@@ -2,7 +2,7 @@
 -- A touched cell is conservatively unsafe until the incident expires. Queries
 -- never allocate cells; cost/storage depend on active incidents, not city size.
 return function(config, sizeX, sizeZ, getFrame)
-    local cells = {}
+    local cells, generation = {}, 0
     local service = {cells = cells, normalizationValue = 1}
     local size = config.cellSize
     local maxX, maxZ = math.ceil(sizeX / size) - 1, math.ceil(sizeZ / size) - 1
@@ -24,7 +24,12 @@ return function(config, sizeX, sizeZ, getFrame)
                 local dz = math.max(iz*size-z, 0, z-(iz+1)*size)
                 if dx*dx+dz*dz <= radius*radius then
                     local key = ix*(maxZ+1)+iz
-                    local cell = cells[key] or {x=ix, z=iz, heat=0, frame=frame}
+                    local cell = cells[key]
+                    if not cell then
+                        generation = generation + 1
+                        cell = {x=ix, z=iz, heat=0, frame=frame, generation=generation, damageTotal=0}
+                    end
+                    cell.damageTotal = cell.damageTotal + math.max(0, damage or 0)
                     cell.heat = math.min(config.maxHeat, heat(cell, frame) + math.max(0, damage or 0))
                     cell.frame, cell.untilFrame = frame, frame+config.quietFrames
                     cells[key] = cell
@@ -37,9 +42,24 @@ return function(config, sizeX, sizeZ, getFrame)
         local ix, iz = coordinates(x, z)
         return ix and cells[ix*(maxZ+1)+iz]
     end
-    function service:IsDangerous(x, z)
-        local cell = at(x, z)
-        return cell ~= nil and getFrame() < cell.untilFrame
+    -- Absolute decayed damage and stable spatial key for route comparisons.
+    -- Incident totals distinguish new damage from old heat even at the heat
+    -- cap. Generations distinguish cells removed by expiry and later recreated.
+    -- Also return a key for untouched cells so a new incident can be detected.
+    function service:GetHeatAtLocation(x, z)
+        local ix, iz = coordinates(x, z)
+        if not ix then return 0 end
+        local key, frame = ix*(maxZ+1)+iz, getFrame()
+        local cell = cells[key]
+        return cell and frame < cell.untilFrame and heat(cell, frame) or 0, key,
+            cell and cell.damageTotal or 0, cell and cell.generation or 0
+    end
+    function service:IsDangerous(x, z, minimumHeat)
+        local cell, frame = at(x, z), getFrame()
+        if not cell or frame >= cell.untilFrame then return false end
+        -- Optional absolute damage threshold for tolerant activities. Ordinary
+        -- civilian/reconstruction callers still treat every incident as unsafe.
+        return minimumHeat == nil or heat(cell, frame) >= minimumHeat
     end
     service.IsConflictNearby = service.IsDangerous
     function service:IsPeaceful(x, z) return not self:IsConflictNearby(x, z) end

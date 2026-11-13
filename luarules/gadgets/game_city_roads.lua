@@ -80,11 +80,24 @@ local function finalize()
         if Spring.ValidUnitID(id) and not Spring.GetUnitIsDead(id) then apply(id,addresses[p.key],p.descriptor) end
     end
     pending={}; frozen=true
+    GG.CityRoadNetworkFrozen=true
+    Spring.SetGameRulesParam('city_roads_frozen',1)
 end
 function gadget:Initialize()
     addresses=GG.CityPlotAddresses or {}; GG.CityPlotAddresses=addresses; pending={}; frozen=false
     config=getGameConfig();mapNetwork=false
-    if VFS.FileExists('mosaic/roads.lua',VFS.MAP) then
+    local retained=GG.CityRoadNetwork
+    local ready=GG.CityRoadNetworkFrozen or Spring.GetGameRulesParam('city_roads_frozen')==1
+    if not retained and ready then
+        local chunks={}
+        for i=1,(Spring.GetGameRulesParam('city_roads_chunks') or 0) do
+            chunks[i]=Spring.GetGameRulesParam('city_roads_chunk_'..i) or ''
+        end
+        if #chunks>0 then retained=roads.decode(table.concat(chunks)) end
+    end
+    if retained and ready then
+        network=retained;mapNetwork=true;frozen=true
+    elseif VFS.FileExists('mosaic/roads.lua',VFS.MAP) then
         network=roads.normalize(VFS.Include('mosaic/roads.lua',nil,VFS.MAP));mapNetwork=true
     elseif Game.mapSizeX==8192 and Game.mapSizeZ==8192 and Game.mapName:lower():find('lastdayofdh?ubai') then
         network=roads.normalize(VFS.Include('scripts/city_roads/dhubai.lua'));mapNetwork=true
@@ -106,8 +119,23 @@ function gadget:Initialize()
             if count>0 then network=roads.trace(mask,nx,nz,step,config.game.culture,Game.mapName);mapNetwork=#network.roads>0 end
         end
     end
-    GG.CityAddressService={Register=register,SetDescriptor=function(id,title) return register(id,nil,title) end}
-    publish()
+    local function reconcile()
+        local ids={};for id in pairs(GG.BuildingTable or {}) do ids[#ids+1]=id end;table.sort(ids)
+        for _,id in ipairs(ids) do
+            if Spring.ValidUnitID(id) and not Spring.GetUnitIsDead(id) then register(id) end
+        end
+        if not frozen and GG.CitySpawnComplete then finalize() end
+    end
+    GG.CityAddressService={Register=register,SetDescriptor=function(id,title) return register(id,nil,title) end,
+        Reconcile=reconcile,NearestRoad=function(x,z) return roads.nearest(network,x,z) end}
+    if not (retained and ready) then publish() else
+        GG.CityRoadNetwork=network
+        GG.UsedStreetNameCounterDict=GG.UsedStreetNameCounterDict or {}
+        for _,road in ipairs(network.roads) do
+            GG.UsedStreetNameCounterDict[road.name]=GG.UsedStreetNameCounterDict[road.name] or 0
+        end
+    end
+    reconcile()
 end
 function gadget:GameFrame(frame)
     if not frozen and GG.CitySpawnComplete then finalize() end

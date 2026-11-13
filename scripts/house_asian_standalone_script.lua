@@ -6,6 +6,11 @@ include "lib_physics.lua"
 include "lib_UnitScript.lua"
 include "lib_radiance_emitters.lua"
 
+local placeGroundProps = include "lib_house_asian_ground_placeables.lua"
+local placeablePlanner = GetSetSharedOneTimeResult("house_asian_standalone_placeable_planner", function()
+    return VFS.Include("scripts/lib_house_asian_placeables.lua").withCatalogue(
+        VFS.Include("scripts/house_asian_standalone_placeable_catalog.lua"))
+end)
 local TablesOfPieceGroups = {}
 local boolDebug = false
 
@@ -62,6 +67,9 @@ local function buildStandaloneShadowVoxels()
     end
     for _,id in ipairs(ToShowTable) do
         if mainPieces[id] and not seen[id] then seen[id]=true;selected[#selected+1]=id end
+    end
+    if Spring.SetUnitRulesParam then
+        Spring.SetUnitRulesParam(unitID, "house_icon_bodies", table.concat(selected, ","), {inlos=true})
     end
     if not buildingShadowProfile then return end
     local grid,reason=BuildSolidBuildingShadowColumns(unitID,selected,buildingShadowProfile)
@@ -430,43 +438,34 @@ local orgPieceParams =
 }
 
 function addGroundPlaceables()
-    Sleep(500)
-    x,y,z = Spring.GetUnitPosition(unitID)
-    globalHeightUnit = Spring.GetGroundHeight(x, z)
-    placeAbles =  TablesOfPieceGroups["Placeable"]
-    if not GG.SimPlaceableCounter then GG.SimPlaceableCounter = 0 end
-    if placeAbles and count(placeAbles) > 0 then
-        groundPiecesToPlace= math.random(1,5)
-        randPlaceAbleID = ""
-        while groundPiecesToPlace > 0 do
-            randPlaceAbleID = getSafeRandom(placeAbles)     
-
-            if randPlaceAbleID  then
-                opx= math.random(cubeDim.length * 4, cubeDim.length * 7) * randSign()
-                opz= math.random(cubeDim.length * 4, cubeDim.length * 7) * randSign()
-
-
-                if garbageSimPlaceable[randPlaceAbleID] and GG.SimPlaceableCounter < 1 then
-                    GG.SimPlaceableCounter = GG.SimPlaceableCounter +1
-                    StartThread(runGarbageSim, orgPieceParams, opx, opz)
-                end
-                WMove(randPlaceAbleID,x_axis, opz, 0)
-                WMove(randPlaceAbleID,z_axis, opx, 0)
-                Sleep(1)
-                x, y, z, _, _, _ = Spring.GetUnitPiecePosDir(unitID, randPlaceAbleID)
-                myHeight = Spring.GetGroundHeight(x, z)
-                if myHeight > 0 then
-                    heightdifference =  myHeight -globalHeightUnit
-                    WMove(randPlaceAbleID,y_axis, heightdifference, 0)
-                    showSubs(pieceNr_pieceName[randPlaceAbleID])   
-                    addToShowTable(randPlaceAbleID)
-                    Show(randPlaceAbleID)
-                    SetRadiancePlaceables({randPlaceAbleID}, true)
-                end
-            end
-            groundPiecesToPlace = groundPiecesToPlace - 1
-        end 
+    -- Selection determines the actual facade extent, including dual projects.
+    while not buildingClearanceReady do Sleep(100) end
+    local available = {}
+    for _, id in pairs(TablesOfPieceGroups.Placeable or {}) do
+        if not toShowDict[id] then available[pieceNr_pieceName[id]] = id end
     end
+    local halfExtent = cubeDim.length*3 + 2/placeablePlanner.catalogue.scale
+    for _, id in ipairs(ToShowTable) do
+        halfExtent=math.max(halfExtent,placeablePlanner.catalogue.buildings[pieceNr_pieceName[id]] or 0)
+    end
+    return placeGroundProps(placeablePlanner, {
+        seed=getDeterministicStationaryUnitHash(unitID), cell=cubeDim.length,
+        pieces=available, halfExtent=halfExtent,
+        roadWidth=(GameConfig.city.alleys or {}).sizeX,
+        addToShowTable=addToShowTable,
+        onPlaced=function(p)
+            showSubs(p.name)
+            GG.SimPlaceableCounter=GG.SimPlaceableCounter or 0
+            if garbageSimPlaceable[p.id] and GG.SimPlaceableCounter<1 then
+                GG.SimPlaceableCounter=GG.SimPlaceableCounter+1
+                -- The simulator takes negated offsets in the rotated center's
+                -- x/y plane; z is height. Keep the emitter at the placed prop.
+                local _,uy=Spring.GetUnitPosition(unitID)
+                StartThread(runGarbageSim, orgPieceParams, -p.x, p.z,
+                    (p.ground-uy)/placeablePlanner.catalogue.scale+100)
+            end
+        end,
+    })
 end
 
 if not GG.GlobalPieceCounterArcology then GG.GlobalPieceCounterArcology = {} end

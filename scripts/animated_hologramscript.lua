@@ -3,8 +3,11 @@ include "lib_UnitScript.lua"
 local TablesOfPiecesGroups = {}
 local pieceID_NameMap = Spring.GetUnitPieceList(unitID)
 local Frame = piece("Frame")
+local intendedVisiblePieces = {}
+local paradeCommercialHidden = false
 
 function script.Create()
+    paradeCommercialHidden = Spring.GetUnitRulesParam(unitID, "city_parade_hide_commercial") == 1
     Spring.SetUnitAlwaysVisible(unitID, true)
     Spring.SetUnitNoSelect(unitID, true)
     Spring.SetUnitBlocking(unitID, false)
@@ -17,7 +20,18 @@ end
 
 function ShowReg(pieceID)
     if not pieceID then return end
-    Show(pieceID)
+    intendedVisiblePieces[pieceID] = true
+    if not paradeCommercialHidden then Show(pieceID) end
+end
+
+-- Keep the animation's intended pieces current while the parade masks drawing.
+function SetParadeCommercialHidden(hidden)
+    hidden = not not hidden
+    if paradeCommercialHidden == hidden then return end
+    paradeCommercialHidden = hidden
+    for pieceID in pairs(intendedVisiblePieces) do
+        if hidden then Hide(pieceID) else Show(pieceID) end
+    end
 end
 
 function displayPieceTable(T)
@@ -35,6 +49,7 @@ end
 function HideReg(pieceID)
     if not pieceID then return end
     assert(pieceID_NameMap[pieceID], "Not a piece".. displayPieceTable(pieceID))
+    intendedVisiblePieces[pieceID] = nil
     Hide(pieceID)  
     --TODO make dictionary for efficiency
 end
@@ -121,7 +136,7 @@ function flickerAnimation()
     local index = 1
     local lastPiece = TablesOfPiecesGroups["Flicker"][index]
     local currentPiece = TablesOfPiecesGroups["Flicker"][index]
-    Show(currentPiece)
+    ShowReg(currentPiece)
     Sleep(125)
     while true do
         currentPiece = TablesOfPiecesGroups["Flicker"][index]

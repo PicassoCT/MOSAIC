@@ -6,8 +6,8 @@ on:
       - 'luaui/widgets_mosaic/gfx_orbital_arrival.lua'
       - 'luaui/widgets_mosaic/include/orbital_arrival.lua'
       - 'luaui/widgets_mosaic/shaders/orbital_arrival_*.frag'
-      - 'tests/orbital_arrival*'
-      - 'tests/fixtures/orbital_arrival_composite_before_holotable.frag'
+      - .github/mosaic-tests.ref
+      - .github/actions/external-tests/**
       - '.github/workflows/orbital-arrival.yml'
   workflow_dispatch:
 jobs:
@@ -26,23 +26,30 @@ jobs:
           python-version: '3.11'
       - name: Install shader test dependencies
         run: python -m pip install numpy
+      - name: Prepare pinned external tests
+        uses: ./.github/actions/external-tests
       - name: Verify frame-clock transitions and cleanup
+        working-directory: ${{ runner.temp }}/mosaic-validation
         run: lua5.1 tests/orbital_arrival.lua
       - name: Verify persistent telemetry and optional map survey
+        working-directory: ${{ runner.temp }}/mosaic-validation
         run: |
           lua5.1 tests/orbital_arrival_telemetry.lua
           lua5.1 tests/orbital_arrival_survey.lua
       - name: Verify transition-only holotable lifecycle
+        working-directory: ${{ runner.temp }}/mosaic-validation
         run: lua5.1 tests/orbital_arrival_holotable.lua
       - name: Compile and render production orbital shaders
         env:
           EGL_PLATFORM: surfaceless
           LIBGL_ALWAYS_SOFTWARE: '1'
+        working-directory: ${{ runner.temp }}/mosaic-validation
         run: python tests/orbital_arrival_gpu.py
       - name: Compare holotable endpoints and unchanged zoom pixels
         env:
           EGL_PLATFORM: surfaceless
           LIBGL_ALWAYS_SOFTWARE: '1'
+        working-directory: ${{ runner.temp }}/mosaic-validation
         run: |
           python tests/orbital_arrival_holotable_gpu.py
           python tests/orbital_arrival_holotable_gpu.py --width 320 --height 240

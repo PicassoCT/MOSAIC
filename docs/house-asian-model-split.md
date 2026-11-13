@@ -173,3 +173,29 @@ exclusions recognize the variants as well.
 No Recoil executable or GPU session was available in the implementation
 environment. Assimp imports and Lua regression/assembly checks were run;
 the in-engine and performance checks above remain a merge gate.
+
+## Shared placeable variety
+
+Modular and standalone Asian houses share a synced usage ledger. A prop's
+catalog label (or explicit `typeKey`) identifies its type across models, including
+pieces whose numbering differs. Each house prioritizes the least-used suitable
+types, with a dedicated deterministic shuffle breaking ties. Failed sites never
+consume a type; successful types cannot repeat within one house. Required large
+props and the two/three minimum may reuse a type when less-used alternatives
+cannot fit. For required slots, each usage tier gets both the tidy and relaxed
+placement attempts before a more-used tier is considered. Water, actual overlaps
+and map bounds remain forbidden. Optional extra slots keep the strict siting rules.
+
+The selection gadget processes requests by request frame then unit ID, at most
+eight per simulation frame. It uses no simulation RNG. Its seed derives from
+map name and the engine match ID when available before the first request; the
+chosen seed is then fixed. Usage counts, request sequence and applied layouts
+are persisted in rules parameters. Repeating an existing request does not spend
+another choice; replay after reload remaps saved names to local piece IDs.
+Destroyed houses leave historical usage counted so reconstruction continues the
+rotation. Pending callbacks survive a gadget-only reload through shared state.
+The older Luxor Comb script retains its separate placement path.
+
+External checks: `house_placeable_selection_test.lua` covers shared types,
+request ordering, reload, failed candidates, required repeats and all 59 authored
+types. The existing placeable layout, terrain and fallback suites still apply.

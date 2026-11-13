@@ -44,3 +44,7 @@ __pycache__/
 
 *.db
 *.lua
+
+# Regression sources are maintained outside the playable game checkout.
+/tests/
+/.mosaic-tests-source/

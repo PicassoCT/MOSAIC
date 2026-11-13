@@ -4,9 +4,10 @@
   "status": "unverified",
   "measured_at": "YYYY-MM-DDTHH:MM:SSZ",
   "source_commit": "REPLACE_WITH_40_CHARACTER_COMMIT_SHA",
-  "engine_build": "BAR105 105.1.1-1544-g058c8ea",
+  "game_version": "1.035",
+  "engine_build": "BAR105-105.1.1-1544-g058c8ea",
   "map": "LastDayOfDhubai",
-  "resolution": {"width": 1280, "height": 720},
+  "resolution": {"width": 1920, "height": 1080},
   "settings_profile": "packaging/springsettings.cfg plus list any overrides",
   "gpu": "NVIDIA GeForce GTX 1050 Ti",
   "load": {"city_buildings": 0, "units_total": 0},
@@ -14,5 +15,7 @@
   "duration_seconds": 600,
   "minimum_fps": 0,
   "average_fps": 0,
-  "evidence_file": "relative path or URL to the raw frame-time/FPS capture"
+  "evidence_file": "gtx1050ti-zoomed-out.csv",
+  "raw_evidence_sha256": "REPLACE_WITH_64_CHARACTER_SHA256"
 }
+

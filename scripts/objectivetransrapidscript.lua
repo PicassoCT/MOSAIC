@@ -51,12 +51,9 @@ function setup()
     airPortConnection()
     Sleep(10)
     ShowRadiancePiece(center, 'material')
-    StartThread(trainLoop, 1)
-    StartThread(trainLoop, 2)
-
- 
     StartThread(deployTrack, 25, -25,  rail1,  TablesOfPiecesGroups["Rail1Sub"] , sub1, piece("EndPoint1"))
     StartThread(deployTrack, 25, -25,  rail2,  TablesOfPiecesGroups["Rail2Sub"] , sub2, piece("EndPoint2"))
+    -- One controller owns both directions; duplicate loops interrupt moving trains.
     StartThread(trainLoop)
     foreach(TablesOfPiecesGroups["Add"],
             function(id)
@@ -193,11 +190,12 @@ function hideTrain(nr)
 end
 
 function forth(direction)
+    local train
     while true do        
         train = buildTrain(3)
         WMove(train, trainAxis, maxDistanceTrain*direction, 0)
         WMove(train, trainAxis, 0, trainspeed)    
-        breakTime = math.random(0,10)*1000
+        local breakTime = math.random(0,10)*1000
         Sleep(breakTime)
         hideTrain(3)
         train = buildTrain(1)
@@ -207,11 +205,12 @@ function forth(direction)
 end
 
 function back(direction)
+    local train
     while true do        
         train = buildTrain(2)
         WMove(train, trainAxis,  maxDistanceTrain*direction*-1, 0)
         WMove(train, trainAxis, 0, trainspeed)    
-        breakTime = math.random(0,10)*1000
+        local breakTime = math.random(0,10)*1000
         Sleep(breakTime)
         hideTrain(2)
         train = buildTrain(4)
@@ -232,7 +231,7 @@ function trainLoop()
     while (semaphore < 2) do Sleep(100) end
     deployTunnels(tunnelDetectionPlus , 1, tunnelPlus)    
     deployTunnels(tunnelDetectionMinus, -1, tunnelMinus)   
-    direction = randSign()
+    local direction = randSign()
     StartThread(back, direction)
     StartThread(forth, direction)
 end

@@ -171,6 +171,7 @@ function buildBuilding()
     base = addToShowTable(showOne(TablesOfPieceGroups["base"], true))
     -- Retain the pieces chosen by this existing random selection for physical
     -- clearance; do not change the house's visibility/raid selection table.
+    Spring.SetUnitRulesParam(unitID, "house_icon_bodies", Plate .. "," .. base, {inlos=true})
     clearanceExtraPieces = showTSubSpins(base, TablesOfPieceGroups)
     if base == base1 then  
         showSeveral(TablesOfPieceGroups["ShowCombe"])   

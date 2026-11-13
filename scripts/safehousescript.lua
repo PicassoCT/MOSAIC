@@ -55,6 +55,7 @@ function script.Create()
             if occupant == replacingID and isCityBuildingHabitable(houseID) then
                 containingHouseID = houseID
                 GG.houseHasSafeHouseTable[houseID] = unitID
+                if GG.SetHouseIconHost then GG.SetHouseIconHost(unitID, houseID) end
                 break
             end
         end
@@ -124,6 +125,7 @@ function houseAttach()
             containingHouseID = houseID
 
             GG.houseHasSafeHouseTable[houseID] = unitID
+            if GG.SetHouseIconHost then GG.SetHouseIconHost(unitID, houseID) end
             moveUnitToUnit(unitID, houseID)
             return houseID
         end

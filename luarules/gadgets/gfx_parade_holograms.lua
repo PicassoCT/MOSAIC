@@ -6,6 +6,10 @@ function gadget:GetInfo()
     }
 end
 if not gadgetHandler:IsSyncedCode() then return false end
+-- Keep the original native projections selectable without duplicating the
+-- recovered scene. Its renderer owns near scenery and distance fallback.
+local scene = VFS.Include("luarules/configs/parade_hologram_scene.lua")
+if scene.enabled ~= false then return false end
 local config = VFS.Include("luarules/configs/parade_hologram_spawning.lua")
 local factory = VFS.Include("luarules/gadgets/include/parade_hologram_spawning.lua")
 local catalog = VFS.Include("scripts/lib_truck_parade_payloads.lua")

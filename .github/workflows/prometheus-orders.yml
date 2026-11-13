@@ -7,8 +7,8 @@ on:
       - 'luarules/configs/side_morph_defs/**'
       - 'units/**'
       - 'baseclasses/units/**'
-      - 'tests/prometheus*'
-      - 'tests/civic_objectives_test.lua'
+      - .github/mosaic-tests.ref
+      - .github/actions/external-tests/**
       - '.github/workflows/prometheus-orders.yml'
   push:
     branches: ['feat/prometheus-strategic-play-*']
@@ -23,11 +23,13 @@ jobs:
         with:
           sparse-checkout-cone-mode: false
           sparse-checkout: |
+            /.github/actions/external-tests/
+            /.github/mosaic-tests.ref
+            /modinfo.lua
             /luarules/
             /scripts/
             /baseclasses/
             /units/
-            /tests/
             /gamedata/
             /objects3d/*.lua
             /unitpics/
@@ -35,7 +37,10 @@ jobs:
         with:
           python-version: '3.12'
       - run: python -m pip install lupa==2.8
+      - name: Prepare pinned external tests
+        uses: ./.github/actions/external-tests
       - name: Lua 5.1 real managers, bridge and objective lifecycle
+        working-directory: ${{ runner.temp }}/mosaic-validation
         run: >-
           python -c "from pathlib import Path; from lupa.lua51 import LuaRuntime;
           [LuaRuntime().execute(Path(p).read_text(encoding='utf-8')) for p in

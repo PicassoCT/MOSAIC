@@ -804,6 +804,7 @@ local function FinishMorph(unitID, morphData)
     if GG.Counterintelligence then GG.Counterintelligence.EndMorph(unitID,newUnitID) end
     --echo("unitMorph: Created unit:".. newUnitID)
     GG.houseHasSafeHouseTable[containingHouseID] = newUnitID
+    if newUnitID and GG.SetHouseIconHost then GG.SetHouseIconHost(newUnitID, containingHouseID) end
 end
 
 local function UpdateMorph(unitID, morphData)

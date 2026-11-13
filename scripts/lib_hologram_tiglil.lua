@@ -9,6 +9,7 @@ return function(options)
     end
 
     local function stop()
+        TigLilStopSmoothing()
         Signal(SIG_TIGLIL)
         playing = false
         registry()[unitID] = nil
@@ -16,7 +17,9 @@ return function(options)
             HideReg(id)
             for axis = 1, 3 do
                 StopSpin(id, axis, 0)
+                Move(id, axis, 0, 1)
                 Move(id, axis, 0, 0)
+                Turn(id, axis, 0, 1)
                 Turn(id, axis, 0, 0)
             end
         end

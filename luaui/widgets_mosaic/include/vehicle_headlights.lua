@@ -108,7 +108,10 @@ return function()
             local def = defID and UnitDefs[defID]
             if def and lightList[defID] and (def.speed or 0)>0 and not def.canFly
                 and not Spring.GetUnitIsDead(id) and not Spring.GetUnitIsCloaked(id)
-                and not Spring.GetUnitTransporter(id) then
+                and not Spring.GetUnitTransporter(id)
+                and (not Spring.GetUnitRulesParam or
+                    ((Spring.GetUnitRulesParam(id, 'city_parade_vehicle') or 0) == 0
+                    and (Spring.GetUnitRulesParam(id, 'city_parade_retiring') or 0) == 0)) then
                 local _,_,_,_,built = Spring.GetUnitHealth(id)
                 local front, up, right = Spring.GetUnitVectors(id)
                 if front and up and right and (not built or built >= 1) then

@@ -1,0 +1,28 @@
+name: Prepare external MOSAIC tests
+description: Fetch the pinned regression suite and build a workspace outside the game checkout.
+runs:
+  using: composite
+  steps:
+    - name: Read test suite revision
+      id: revision
+      shell: bash
+      run: |
+        python - <<'PY'
+        import os, re
+        from pathlib import Path
+        revision = Path('.github/mosaic-tests.ref').read_text().strip()
+        if not re.fullmatch(r'[0-9a-f]{40}', revision):
+            raise SystemExit('Expected a pinned external test-suite commit')
+        with open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as output:
+            output.write('ref=' + revision + '\n')
+        PY
+    - name: Checkout test suite
+      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      with:
+        repository: PicassoCT/MOSAIC
+        ref: ${{ steps.revision.outputs.ref }}
+        path: .mosaic-tests-source
+        persist-credentials: false
+    - name: Prepare external workspace
+      shell: bash
+      run: python .mosaic-tests-source/prepare_workspace.py --game "$GITHUB_WORKSPACE" --workspace "$RUNNER_TEMP/mosaic-validation"

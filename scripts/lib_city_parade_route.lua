@@ -23,6 +23,7 @@ end
 function Route.new(context)
     local S, G, defs = context.Spring, context.GG, context.UnitDefs
     local config = context.config or {}
+    local clearance = context.clearance
     local function option(key, default, low, high)
         local value = config[key]
         if not finite(value) then value = default end
@@ -44,49 +45,88 @@ function Route.new(context)
     local maxPolls = math.floor(option("routePathPollLimit", 60, 1, 300))
     local builder = {}
     local selectionKey, rejected, rejectionOrder = nil, {}, {}
+    local fallbackKey, relaxedKey
 
     local function rejectCircuit(key, signature)
         if key ~= selectionKey or not signature or rejected[signature] then return end
         rejected[signature] = true
         rejectionOrder[#rejectionOrder + 1] = signature
-        if #rejectionOrder > 32 then rejected[table.remove(rejectionOrder, 1)] = nil end
+        if #rejectionOrder > 128 then rejected[table.remove(rejectionOrder, 1)] = nil end
     end
 
     local function dangerous(x, z)
-        return G.CityAreaState and G.CityAreaState.IsDangerous and G.CityAreaState:IsDangerous(x, z)
+        return G.CityAreaState and G.CityAreaState.IsDangerous and G.CityAreaState:IsDangerous(x, z, config.combatHeatThreshold or 300)
     end
-    local function nodePosition(id)
+    local function heatAt(x, z)
+        local area = G.CityAreaState
+        if area and area.GetHeatAtLocation then return area:GetHeatAtLocation(x, z) end
+        return dangerous(x, z) and (config.combatHeatThreshold or 300) or 0
+    end
+    local function recordHeat(route, point)
+        local heat, key, damage, generation = heatAt(point.x, point.z)
+        route.peakHeat = math.max(route.peakHeat or 0, heat)
+        if key then
+            route.heatBaseline[key] = {damage=damage or 0, generation=generation or 0}
+        end
+    end
+    local function nodePosition(id, allowDanger)
         if type(id) ~= "number" or not S.ValidUnitID(id) or S.GetUnitIsDead(id) or
             (G.BuildingTable and not G.BuildingTable[id]) then return nil end
         local x, y, z = S.GetUnitPosition(id)
-        if not finite(x) or not finite(y) or not finite(z) or dangerous(x, z) then return nil end
+        if not finite(x) or not finite(y) or not finite(z) or (not allowDanger and dangerous(x, z)) then return nil end
         return {x = x, y = y, z = z}
     end
-    local function safePoint(point, defID, terrainOnly)
-        if type(point) ~= "table" then return nil end
+    local function safePoint(point, defID, terrainOnly, allowDanger)
+        if type(point) ~= "table" then return nil, "missing point" end
         local x, z = point.x or point[1], point.z or point[3]
-        if not finite(x) or not finite(z) or dangerous(x, z) then return nil end
+        if not finite(x) or not finite(z) then return nil, "nonfinite coordinates" end
+        if not allowDanger and dangerous(x, z) then return nil, "heavy recent damage" end
+        if clearance then
+            local clear, house = clearance:SegmentClear({x=x,z=z},{x=x,z=z})
+            if not clear then return nil, "house footprint " .. house end
+        end
         local y = S.GetGroundHeight(x, z)
-        if not finite(y) or y < 0 then return nil end
+        if not finite(y) then return nil, "nonfinite ground height" end
+        if y < 0 then return nil, "underwater" end
         local traversable
         if terrainOnly then
-            -- Native paths provide static obstacle avoidance. Moving everyday
-            -- traffic must not invalidate an otherwise usable procession route.
-            traversable = S.TestMoveOrder(defID, x, y, z, 0, 0, 0, true, false)
+            -- QTPFS and GroundMoveType test terrain at the footprint centre;
+            -- testing every footprint square rejects valid roads beside steep
+            -- curbs. Native paths already account for static object clearance.
+            -- Keep full footprint/object checks at assembly curbs and spawning.
+            traversable = S.TestMoveOrder(defID, x, y, z, 0, 0, 0, true, false, true)
         else
             traversable = S.TestMoveOrder(defID, x, y, z)
         end
-        if not traversable then return nil end
+        if not traversable then
+            return nil, terrainOnly and "impassable terrain at centre square" or "terrain or object blocks curb"
+        end
         return {x = x, y = y, z = z}
+    end
+    local function pointFailure(message, point, reason)
+        local x = type(point) == "table" and (point.x or point[1])
+        local z = type(point) == "table" and (point.z or point[3])
+        return message .. (finite(x) and finite(z) and string.format(" at x=%.1f z=%.1f", x, z) or "") ..
+            ": " .. tostring(reason or "unknown reason")
     end
     local function invalidate(route, reason)
         route.status, route.reason = "invalid", reason
+        if route.requested then relaxedKey = route._key end
+        if not route.fallback and reason:find("heavy recent damage", 1, true) then
+            fallbackKey = route._key
+        end
         rejectCircuit(route._key, route._signature)
         return "invalid"
     end
 
-    function builder:Begin(day, defID)
+    local function begin(day, defID, allowDanger, budget, requested, relaxed)
+        local self = builder
+        -- An explicit request may use short out-and-back trips. Native paths
+        -- still prove both directions; the traffic graph need not be a cycle.
+        local minLeg = relaxed and 1 or minLeg
+        local minLength = relaxed and 1 or minLength
         self.lastError = nil
+        if clearance then clearance:Refresh() end
         local traffic = G.CivilianTraffic
         local def = defs[defID]
         local moveDefID = def and def.moveDef and def.moveDef.id
@@ -104,7 +144,7 @@ function Route.new(context)
         if type(graph) ~= "table" then self.lastError = "civilian route graph unavailable"; return nil end
         local allIDs = {}
         for id, edges in pairs(graph) do
-            if type(id) == "number" and type(edges) == "table" and #edges > 0 then allIDs[#allIDs + 1] = id end
+            if type(id) == "number" and type(edges) == "table" and (relaxed or #edges > 0) then allIDs[#allIDs + 1] = id end
         end
         table.sort(allIDs)
         if #allIDs < 2 then self.lastError = "fewer than two route nodes"; return nil end
@@ -113,49 +153,69 @@ function Route.new(context)
         local first = seed % #allIDs
         for offset = 0, #allIDs - 1 do
             local id = allIDs[(first + offset) % #allIDs + 1]
-            local position = nodePosition(id)
+            local position = nodePosition(id, allowDanger)
             if position then
                 nodes[#nodes + 1], positions[id] = id, position
                 if #nodes == maxCandidates then break end
             end
         end
-        if #nodes < 2 then self.lastError = "fewer than two peaceful live nodes"; return nil end
+        if #nodes < 2 then self.lastError = allowDanger and "fewer than two live nodes" or "fewer than two peaceful live nodes"; return nil end
         table.sort(nodes, function(a, b)
+            if allowDanger then
+                local ah, bh = heatAt(positions[a].x, positions[a].z), heatAt(positions[b].x, positions[b].z)
+                if ah ~= bh then return ah < bh end
+            end
             local ar, br = rank(a, seed), rank(b, seed)
             return ar == br and a < b or ar < br
         end)
         local adjacency, connected = {}, {}
         for _, id in ipairs(nodes) do
             adjacency[id], connected[id] = {}, {}
-            for _, other in ipairs(graph[id]) do
+            for _, other in ipairs(relaxed and nodes or graph[id]) do
                 if positions[other] and other ~= id and not connected[id][other] then
                     adjacency[id][#adjacency[id] + 1] = other
                     connected[id][other] = true
                 end
             end
         end
-        local searchSteps, requests = 0, 0
+        local searchSteps, candidates = 0, {}
+        local prefix = relaxed and "requested:" or (allowDanger and "fallback:" or "safe:")
         local preferred = math.min(#nodes, minNodes + seed % (maxNodes - minNodes + 1))
         for attempt = 1, maxAttempts do
             local desired = preferred
             if attempt > math.floor(maxAttempts * 0.5) then desired = math.min(#nodes, minNodes) end
             -- A sparse reachable component may only offer an out-and-back pair.
             if attempt > math.floor(maxAttempts * 0.8) then desired = 2 end
+            if relaxed then desired = 2 end
             local start = nodes[(attempt - 1) % #nodes + 1]
             local selected, used = {start}, {[start] = true}
+            local attemptSteps = 0
             local function extend(id)
-                if #selected == desired then return connected[id][start] == true end
+                if #selected == desired then
+                    -- Reject inside the search so it backtracks into another
+                    -- circuit from this start, within the same search budget.
+                    return connected[id][start] == true and not rejected[prefix .. table.concat(selected, ",")]
+                end
                 local choices = {}
                 for _, other in ipairs(adjacency[id]) do
                     if not used[other] then choices[#choices + 1] = other end
                 end
                 table.sort(choices, function(a, b)
+                    -- Prefer neighbourhood connections to random cross-city
+                    -- legs that intersect many unrelated combat/terrain areas.
+                    if allowDanger then
+                        local ah, bh = heatAt(positions[a].x, positions[a].z), heatAt(positions[b].x, positions[b].z)
+                        if ah ~= bh then return ah < bh end
+                    end
+                    local ad, bd = distance(positions[id], positions[a]), distance(positions[id], positions[b])
+                    if ad ~= bd then return ad < bd end
                     local ar, br = rank(a, seed + attempt * 701), rank(b, seed + attempt * 701)
                     return ar == br and a < b or ar < br
                 end)
                 for _, other in ipairs(choices) do
-                    searchSteps = searchSteps + 1
-                    if searchSteps > maxSearchSteps then return false end
+                    searchSteps, attemptSteps = searchSteps + 1, attemptSteps + 1
+                    -- Reserve work for later starts and sparse two-node circuits.
+                    if searchSteps > maxSearchSteps or attemptSteps > math.ceil(maxSearchSteps/maxAttempts) then return false end
                     if distance(positions[id], positions[other]) >= minLeg then
                         used[other], selected[#selected + 1] = true, other
                         if extend(other) then return true end
@@ -164,13 +224,21 @@ function Route.new(context)
                 end
                 return false
             end
-            if extend(start) and not rejected[table.concat(selected, ",")] then
-                local signature = table.concat(selected, ",")
+            if extend(start) and not rejected[prefix .. table.concat(selected, ",")] then
+                local signature = prefix .. table.concat(selected, ",")
                 local curbs, length, valid = {}, 0, true
                 for index, id in ipairs(selected) do
                     local nextID = selected[index % #selected + 1]
-                    local point = safePoint(traffic.Point(id, defID, nextID), defID)
-                    if not point then valid = false; break end
+                    local point, reason = safePoint(traffic.Point(id, defID, nextID), defID, false, allowDanger)
+                    if not point and clearance and clearance.FindCurb then
+                        point = clearance:FindCurb(id, positions[nextID], function(candidate)
+                            return safePoint(candidate, defID, false, allowDanger)
+                        end)
+                    end
+                    if not point then
+                        self.lastError = "assembly curb at building " .. id .. ": " .. tostring(reason)
+                        valid = false; break
+                    end
                     curbs[index] = point
                 end
                 if valid then
@@ -181,58 +249,142 @@ function Route.new(context)
                     end
                 end
                 local requiredLength = #selected < minNodes and math.min(minLength, minLeg * #selected) or minLength
-                if valid and length >= requiredLength and requests + #curbs <= maxRequests then
-                    local paths = {}
-                    for index, origin in ipairs(curbs) do
-                        local goal = curbs[index % #curbs + 1]
-                        requests = requests + 1
-                        local ok, path = pcall(S.RequestPath, moveDefID, origin.x, origin.y, origin.z,
-                            goal.x, goal.y, goal.z, endpointTolerance)
-                        if not ok or (type(path) ~= "table" and type(path) ~= "userdata") or
-                            type(path.GetPathWayPoints) ~= "function" then valid = false; break end
-                        paths[index] = path
+                if valid and length >= requiredLength then
+                    -- Cheap bounded heat sampling ranks candidate circuits before
+                    -- requesting native paths; physical validation still follows.
+                    local peak, total, samples = 0, 0, 0
+                    for index, a in ipairs(curbs) do
+                        local b = curbs[index % #curbs + 1]
+                        local n = math.min(32, math.max(1, math.ceil(distance(a,b)/sampleSpacing)))
+                        for j = 0, n do
+                            local h = heatAt(a.x+(b.x-a.x)*j/n, a.z+(b.z-a.z)*j/n)
+                            peak, total, samples = math.max(peak,h), total+h, samples+1
+                        end
                     end
-                    if valid then
-                        local points = {}
-                        for _, point in ipairs(curbs) do points[#points + 1] = copyPoint(point) end
-                        points[#points + 1] = copyPoint(curbs[1])
-                        return {points = points, nodes = selected, length = length, paths = paths,
-                            defID = defID, status = "pending", polls = 0, requests = requests,
-                            _curbs = curbs, _segments = {}, _samples = 0, _key = key, _signature = signature}
-                    end
+                    candidates[#candidates+1] = {nodes=selected, curbs=curbs, length=length,
+                        signature=signature, peak=peak, mean=total/samples, order=attempt}
+                else
+                    self.lastError = self.lastError or "circuit too short"
                     rejectCircuit(key, signature)
                 end
             end
-            if searchSteps >= maxSearchSteps or requests >= maxRequests then break end
+            if searchSteps >= maxSearchSteps then break end
         end
-        self.lastError = "no safe circuit within route search budget"
+        if allowDanger then
+            table.sort(candidates,function(a,b)
+                if a.peak ~= b.peak then return a.peak < b.peak end
+                if a.mean ~= b.mean then return a.mean < b.mean end
+                return a.order < b.order
+            end)
+        end
+        for _, candidate in ipairs(candidates) do
+            local curbs, paths, valid = candidate.curbs, {}, true
+            if budget.requests + #curbs > maxRequests then break end
+            for index, origin in ipairs(curbs) do
+                local goal = curbs[index % #curbs + 1]
+                budget.requests = budget.requests + 1
+                local ok, path = pcall(S.RequestPath, moveDefID, origin.x, origin.y, origin.z,
+                    goal.x, goal.y, goal.z, endpointTolerance)
+                if not ok or (type(path) ~= "table" and type(path) ~= "userdata") or
+                    type(path.GetPathWayPoints) ~= "function" then valid = false; break end
+                paths[index] = path
+            end
+            if valid then
+                local points = {}
+                for _, point in ipairs(curbs) do points[#points+1] = copyPoint(point) end
+                points[#points+1] = copyPoint(curbs[1])
+                return {points=points, nodes=candidate.nodes, length=candidate.length, paths=paths,
+                    defID=defID, status="pending", polls=0, requests=budget.requests,
+                    requested=requested, relaxed=relaxed,
+                    fallback=allowDanger, heatBaseline={}, peakHeat=0,
+                    _curbs=curbs, _segments={}, _samples=0, _key=key, _signature=candidate.signature}
+            end
+            rejectCircuit(key, candidate.signature)
+        end
+        self.lastError = self.lastError or "no connected circuit within route search budget"
         return nil
+    end
+
+    function builder:Begin(day, defID, requested)
+        local budget = {requests=0}
+        if requested and finite(day) then
+            local key = tostring(math.floor(day)) .. ":" .. tostring(defID)
+            if relaxedKey ~= key then
+                -- Rank usable circuits by risk, without making combat a veto.
+                local route = begin(day, defID, true, budget, true, false)
+                if route then return route end
+                relaxedKey = key
+            end
+            local route = begin(day, defID, true, budget, true, true)
+            if not route then
+                -- Obstacles and native path results can change while a manual
+                -- request waits. Do not permanently exhaust its candidates.
+                rejected, rejectionOrder = {}, {}
+            end
+            return route
+        end
+        if finite(day) and fallbackKey == tostring(math.floor(day)) .. ":" .. tostring(defID) then
+            return begin(day, defID, true, budget)
+        end
+        local route = begin(day, defID, false, budget)
+        if route then return route end
+        -- Historical combat is a preference, not a permanent city-wide veto.
+        -- Both passes share the native-request cap.
+        return begin(day, defID, true, budget)
     end
 
     local function validateSegment(route, origin, goal, waypoints)
         if #waypoints > maxWaypoints then return nil, "native path exceeded waypoint budget" end
         local last = waypoints[#waypoints]
-        local terminal = last and safePoint(last, route.defID, true)
+        local terminal = last and safePoint(last, route.defID, true, route.fallback)
         if not terminal or distance(terminal, goal) > endpointTolerance then
             return nil, "native path did not reach its curb"
         end
+        if clearance and clearance.Detour then
+            local lastPoint=origin
+            local crossesHouse=false
+            for _,p in ipairs(waypoints) do
+                local nextPoint={x=p.x or p[1],z=p.z or p[3]}
+                if not finite(nextPoint.x) or not finite(nextPoint.z) then break end
+                if not clearance:SegmentClear(lastPoint,nextPoint) then crossesHouse=true;break end
+                lastPoint=nextPoint
+            end
+            if not crossesHouse then crossesHouse=not clearance:SegmentClear(lastPoint,goal) end
+            if crossesHouse then
+                local remaining=(config.routeDetourSearchBudget or 4096)-(route._detourExpansions or 0)
+                local detour,expanded=clearance:Detour(origin,goal,function(p)
+                    return safePoint(p,route.defID,false,route.fallback)~=nil
+                end,math.max(0,remaining))
+                route._detourExpansions=(route._detourExpansions or 0)+expanded
+                if not detour then return nil,"no house-clear detour within search budget" end
+                waypoints=detour
+            end
+        end
         local raw = {origin}
         for _, waypoint in ipairs(waypoints) do
-            local point = safePoint(waypoint, route.defID, true)
-            if not point then return nil, "unsafe native waypoint" end
+            local point, reason = safePoint(waypoint, route.defID, true, route.fallback)
+            if not point then return nil, pointFailure("unsafe native waypoint", waypoint, reason) end
+            recordHeat(route, point)
             if distance(raw[#raw], point) > 0.01 then raw[#raw + 1] = point end
         end
         if distance(raw[#raw], goal) > 0.01 then raw[#raw + 1] = goal end
         for index = 2, #raw do
             local a, b = raw[index - 1], raw[index]
+            if clearance then
+                local clear, house = clearance:SegmentClear(a,b)
+                if not clear then return nil, "native segment crosses house footprint " .. house end
+            end
             local count = math.max(1, math.ceil(distance(a, b) / sampleSpacing))
             route._samples = route._samples + count
             if route._samples > maxSamples then return nil, "native path exceeded safety sample budget" end
             for sample = 1, count do
                 local fraction = sample / count
-                if not safePoint({x = a.x + (b.x - a.x) * fraction,
-                    z = a.z + (b.z - a.z) * fraction}, route.defID, true) then
-                    return nil, "unsafe segment between native waypoints"
+                local samplePoint = {x = a.x + (b.x - a.x) * fraction,
+                    z = a.z + (b.z - a.z) * fraction}
+                local safe, reason = safePoint(samplePoint, route.defID, true, route.fallback)
+                recordHeat(route, samplePoint)
+                if not safe then
+                    return nil, pointFailure("unsafe segment between native waypoints", samplePoint, reason)
                 end
             end
         end
@@ -255,8 +407,9 @@ function Route.new(context)
         if type(route) ~= "table" or not route._curbs then return "invalid" end
         if route.status ~= "pending" then return route.status end
         route.polls = route.polls + 1
+        if clearance then clearance:Refresh() end
         for _, id in ipairs(route.nodes) do
-            if not nodePosition(id) then return invalidate(route, "route building lost or unsafe") end
+            if not nodePosition(id, route.fallback) then return invalidate(route, "route building lost or unsafe") end
         end
         local pending, nativePoints = false, {}
         for index, path in ipairs(route.paths) do
@@ -283,6 +436,13 @@ function Route.new(context)
         for index, segment in ipairs(route._segments) do
             if #segment >= 2 and distance(segment[1], segment[2]) >= stagingGap then stagingIndex = index; break end
         end
+        if not stagingIndex and route.requested then
+            local longest = 0
+            for index, segment in ipairs(route._segments) do
+                local length = #segment >= 2 and distance(segment[1], segment[2]) or 0
+                if length > longest then stagingIndex, longest = index, length end
+            end
+        end
         if not stagingIndex then return invalidate(route, "no clear staging approach") end
         route.nodes, route.paths = rotate(route.nodes, stagingIndex), rotate(route.paths, stagingIndex)
         route._curbs, route._segments = rotate(route._curbs, stagingIndex), rotate(route._segments, stagingIndex)
@@ -293,6 +453,38 @@ function Route.new(context)
                 if not previous or distance(previous, point) > 0.01 then
                     if previous then length = length + distance(previous, point) end
                     points[#points + 1] = copyPoint(point)
+                end
+            end
+        end
+        local formationLength=(config.vehicleCount or 0)*(config.vehicleSpacing or 140)+stagingGap
+        if not route.requested and config.vehicleCount and length<formationLength then
+            return invalidate(route,"circuit is too short for convoy spacing")
+        end
+        if config.routeRejectRetrace and not route.requested then
+            -- Opposing segments within one truck width put the leader into
+            -- its own followers on out-and-back paths. Keep separate lanes.
+            local laneWidth=(config.routeHouseClearance or 45)*2
+            for i=2,#points do
+                local a,b=points[i-1],points[i]
+                local dx,dz=b.x-a.x,b.z-a.z
+                local segmentLength=math.sqrt(dx*dx+dz*dz)
+                if segmentLength>1 then
+                    dx,dz=dx/segmentLength,dz/segmentLength
+                    for j=i+1,#points do
+                        local c,d=points[j-1],points[j]
+                        local ex,ez=d.x-c.x,d.z-c.z
+                        local otherLength=math.sqrt(ex*ex+ez*ez)
+                        if otherLength>1 and (dx*ex+dz*ez)/otherLength<-.95 then
+                            local sideC=math.abs((c.x-a.x)*dz-(c.z-a.z)*dx)
+                            local sideD=math.abs((d.x-a.x)*dz-(d.z-a.z)*dx)
+                            local alongC=(c.x-a.x)*dx+(c.z-a.z)*dz
+                            local alongD=(d.x-a.x)*dx+(d.z-a.z)*dz
+                            local overlap=math.min(segmentLength,math.max(alongC,alongD))-math.max(0,math.min(alongC,alongD))
+                            if math.max(sideC,sideD)<laneWidth and overlap>20 then
+                                return invalidate(route,"circuit doubles back into the convoy lane")
+                            end
+                        end
+                    end
                 end
             end
         end

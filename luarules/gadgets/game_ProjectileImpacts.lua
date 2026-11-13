@@ -1009,6 +1009,32 @@ if (gadgetHandler:IsSyncedCode()) then
 
     local NewUnitsInPanic = {}
 
+    -- One FIFO shared by shooting-triggered gulls and ravens. Keep it across
+    -- gadget reloads; naturally expired swarms release their slots immediately.
+    local MAX_SHOT_BIRD_SWARMS = 10
+    GG.ShotBirdSwarms = GG.ShotBirdSwarms or {}
+    local shotBirdSwarms = GG.ShotBirdSwarms
+
+    function gadget:UnitDestroyed(unitID)
+        for i = #shotBirdSwarms, 1, -1 do
+            if shotBirdSwarms[i] == unitID then table.remove(shotBirdSwarms, i) end
+        end
+    end
+
+    local function registerShotBirdSwarm(swarm)
+        for i = #shotBirdSwarms, 1, -1 do
+            local id = shotBirdSwarms[i]
+            if id == swarm or not Spring.ValidUnitID(id) or Spring.GetUnitIsDead(id) then
+                table.remove(shotBirdSwarms, i)
+            end
+        end
+        shotBirdSwarms[#shotBirdSwarms + 1] = swarm
+        while #shotBirdSwarms > MAX_SHOT_BIRD_SWARMS do
+            local oldest = table.remove(shotBirdSwarms, 1)
+            Spring.DestroyUnit(oldest, false, true)
+        end
+    end
+
     function gadget:ProjectileCreated(proID, proOwnerID, projWeaponDefID)
 
         if ProjectileCreatedFunc[projWeaponDefID] then 
@@ -1053,6 +1079,7 @@ if (gadgetHandler:IsSyncedCode()) then
                 local height = Spring.GetUnitHeight(nearest) or 200
                 local swarm = Spring.CreateUnit(birdType,hx,hy+height,hz,0,GaiaTeamID)
                 if swarm then
+                    registerShotBirdSwarm(swarm)
                     civilianBuildingBirdTimer[nearest] = frame + coolDownTimerCrowsInFrame
                     genericCallUnitFunctionPassArgs(swarm, "setShotNearby",
                         {x=x,y=y,z=z, height=hy+height})

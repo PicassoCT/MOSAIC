@@ -89,10 +89,20 @@ than their budget alone would buy. Payouts themselves remain unchanged.
   pursuing and returns before being removed within 128 units of its exit.
   Blocked returning vehicles remain tracked and retry their return. Captured
   guards leave this system immediately and are not removed by its cleanup.
-- The already-triggered response finishes even after a lethal first hit destroys
-  the building. Attacking the destroyed marker does not call further security.
-- Site IDs retain the force and cooldown across destruction/restoration and
-  LuaRules reloads. Restoration cannot manufacture another minimum convoy.
+- Destroying the objective cancels queued reinforcements and withdraws its
+  surviving security as a convoy. Combat and mounted-gun targets clear; vehicles
+  depart one second apart toward a shared map-edge exit. The controller samples
+  up to 68 edge destinations, choosing the nearest dry point passable for every
+  chassis in the convoy. Native movement supplies the route. Vehicles and their
+  Gaia mounted weapons are removed within 128 units of that exit.
+- If no edge destination is passable, the convoy holds and retries every three
+  seconds. An evacuation has a five-minute cleanup deadline, including when a
+  passable destination has no traversable route. Captured vehicles and captured
+  mounted weapons are excluded from cleanup.
+- Evacuation orders, departure times and the deadline survive LuaRules reloads.
+  Destroying the marker or restoring the objective cannot recall or duplicate
+  the departing force. Once it has left, a new hit on the restored objective can
+  call security again. A lethal first hit cannot deploy security from the ruins.
 
 All tuning is in `getGameConfig().objectives.security` in `scripts/lib_mosaic.lua`.
 The controller is `luarules/gadgets/include/objective_security.lua`, called by the
@@ -113,6 +123,7 @@ Lua 5.1 tests: `tests/objective_security_test.lua`, `tests/truck_attack_forwardi
 response scaling/minimums, local patrol sight, explicit movement toward a ranged
 attacker, delayed gun attachment, moving targets, persistent guard/pursuit orders,
 mounted-gun approach range, bounded blocked-shot recovery, command/probe counts, cooldown, spawn failure, blocked terrain, hidden
-attackers, capture, reload, lethal hits, restoration and income conservation.
+attackers, capture, reload, lethal hits, convoy departure/arrival, stranded-convoy
+cleanup, restoration and income conservation.
 Recoil playtesting is still needed for actual vehicle exits, mounted-weapon
 behavior and offshore shoreline placement.

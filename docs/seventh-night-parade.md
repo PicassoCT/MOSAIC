@@ -14,6 +14,12 @@ Nearby eligible civilians move to the roadside, pause, and perform existing reli
 
 Nearby intact buildings shower the procession with **confetti, origami cranes, flower petals, and inflation banknotes**. Ruins, scrap heaps, and construction sites are excluded. Emission positions follow the building's size and face the nearby float. The effects use ordinary CEG particles and respect ground line of sight.
 
+The first and last active floats are designated as the parade's **start** and **end**. Every **15 simulation frames** (half a second), only these two floats search for commercial holograms within **420 world units**. The start float gives each newly encountered ad its own off-timer. Its initial duration is `(parade length + 2 * radius) / float speed`: parade length is the sum of distances between successive floats, speed is the end float's ordinary speed times `speedFactor`, and the extra diameter covers entry into and exit from the detection area. Deadlines adjust to the end float's actual ground movement, so traffic stops pause the timers. Staying near the start does not repeatedly restart a timer; entering its radius again does.
+
+The end float also tracks nearby ads, including any missed by the start. Once it has reached an ad and both ends have moved clear, that ad's timer expires immediately and the ad returns. An expired prediction also releases an ad when neither end is nearby, covering moving advertisements and route deviations. Changing the designated ends during assembly or retirement conservatively rearms outstanding timers. The current unit IDs are published as `city_parade_start_float` and `city_parade_end_float` (`-1` while absent).
+
+This covers building, advertising-blimp, and animated station ads. The parade's own projections remain visible. The shared neon visibility gate removes hidden ads from both drawing and radiance capture while their animations continue; native station ads preserve their current animation beneath the visibility mask. Normal completion, early cancellation, and gadget reload restore any remaining hidden ads to their current ordinary state. Proximity uses the ground-plane position of each advertisement unit.
+
 The existing music player switches to **Seventh Night Procession**, an original **80-second, 96 BPM, 32-bar instrumental** with low drums, woodblocks, pentatonic bells and reed, and warm organ/synth. It uses the normal music channel and respects its volume, mute, included-track setting, pause-with-game option, explicit stop, and custom-track ownership. Normal music resumes when touring ends. The track is synthesized without sampled recordings.
 
 A city emergency, an attack on a parade participant or float, or an unusable route ends the procession. Civilians release their parade activity without overwriting a newer emergency activity. Surviving trucks resume ordinary traffic and retire peacefully at a destination. Recovery uses the parade unit rules to release stale participation and resume retiring traffic after a gadget reload.
@@ -50,6 +56,12 @@ Offsets are relative to each existing truck's `attachPoint`, in native game coor
 | `truck_arab8` | -1.8 | 0 |
 
 The existing payload attachment supplies movement. Explicit parade payloads do not consume the ordinary service-payload selection quota. The payload script handles attachment loss and resets hidden articulated variants. See the [payload authoring and runtime notes](../tools/truck_parade_payloads/README.md) for those details.
+
+## Native roadside audience
+
+In the close-up mesh scene, AI spirits hover with their feet 28 world units above the ground, over the ghosts at the same roadside anchors. Occasionally one same-side pair recognizes each other, drifts to an eight-unit separation, exchanges alternating nods and glances, then separates. Their bodies remain oriented toward the route and their heads also follow the passing carrier. These are silent gestures without text, using the existing figures and the same poses for radiance capture.
+
+Petals, leaves, envelopes and banknotes descend from at least 12 units above the mounted payload's audited model height, with an 80-unit ground-relative minimum. Building paper showers also clear the nearby float; petals retain their higher existing rooftop release. Source meshes and export transforms are unchanged.
 
 ## Pixel hologram decorations
 
@@ -172,6 +184,7 @@ Edit [luarules/configs/city_parade.lua](../luarules/configs/city_parade.lua). Di
 | `previewRouteTimeoutFrames` | 1,800 | Preview route-preparation timeout |
 | `recruitFrames`, `maxParticipants`, `followerPercent` | 60, 32, 25 | Recruitment cadence, crowd cap, and follower selection |
 | `audienceRadius`, `audienceReleaseRadius` | 420, 700 | Recruitment and release distances |
+| `commercialHologramRadius` | 420 | Start/end float ad search radius and off-timer clearance |
 | `spectatorFrames`, `followerFrames` | 1,050, 2,700 | Maximum participation durations |
 | `participantCooldownFrames` | 1,800 | Time before a civilian can rejoin |
 | `curbOffset`, `followerUpdateFrames` | 105, 60 | Roadside offset and follower movement refresh |
@@ -181,7 +194,7 @@ Edit [luarules/configs/city_parade.lua](../luarules/configs/city_parade.lua). Di
 
 The four CEG names in `effects` are `parade_confetti`, `parade_origami`, `parade_petals`, and `parade_inflationmoney`. Their [definitions](../gamedata/explosions/parade.lua) emit respectively **18, 6, 12, and 8 particles per burst**. Maximum lifetime is **270 frames**, or nine seconds. Sprite sizes and downward motion are defined there; the director limits how often buildings emit them.
 
-The music player discovers `.ogg` files under `sounds/music/parade/`. An existing `sounds/music/playlist.lua` can supply a `parade` list; an explicit empty list opts out. See [snd_music.lua](../luaui/widgets_mosaic/snd_music.lua) for playlist and playback integration.
+The music player discovers `.ogg` files under `sounds/music/parade/` at each procession start. It randomly chooses one track, plays it from the beginning immediately when touring starts, and repeats that same track until the parade ends. Additional files become candidates for the next procession. The parade score follows camera distance to the nearest visible active carrier: full selected volume within 200 world units, a smooth fade, and silence at 1,200 units including camera height. This is distance attenuation of one synchronized stream, not directional stereo panning. Zooming back in preserves playback position; nearby trucks do not stack volume. Normal ambient music resumes on parade end; explicit custom tracks, stop requests, mute and pause settings keep priority. An existing `sounds/music/playlist.lua` can supply a `parade` list; an explicit empty list opts out. See [snd_music.lua](../luaui/widgets_mosaic/snd_music.lua) for playlist and playback integration.
 
 ## Rebuild assets
 

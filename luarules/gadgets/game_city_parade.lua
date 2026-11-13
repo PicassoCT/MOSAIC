@@ -12,6 +12,7 @@ VFS.Include("scripts/lib_mosaic.lua")
 VFS.Include("scripts/lib_staticstring.lua")
 local controller = VFS.Include("luarules/gadgets/include/city_parade.lua")
 local routes = VFS.Include("scripts/lib_city_parade_route.lua")
+local clearance = VFS.Include("scripts/lib_parade_clearance.lua")
 local config = VFS.Include("luarules/configs/city_parade.lua")
 local catalog = VFS.Include("scripts/lib_truck_parade_payloads.lua")
 local parade, chatRegistered
@@ -27,9 +28,13 @@ local function paradeCommand(_, line, words)
         or (type(line) == "string" and line:match("^%s*(%S+)")) or "status"
     action = tostring(action):lower()
     if action == "status" then
-        Spring.Echo("City parade: " .. (parade and parade.phase or "unavailable") ..
+        local phase, waiting, stopped = parade and parade.phase or "unavailable"
+        if parade and parade.GetStatus then phase, waiting, stopped = parade:GetStatus() end
+        Spring.Echo("City parade: " .. phase ..
             ", vehicles=" .. count(parade and parade.vehicles) ..
-            ", participants=" .. count(parade and parade.participants))
+            ", participants=" .. count(parade and parade.participants) ..
+            (waiting and ("; " .. waiting) or "") ..
+            (stopped and ("; last stop: " .. stopped) or ""))
         return true
     end
     if action ~= "start" and action ~= "stop" then
@@ -60,13 +65,26 @@ function gadget:Initialize()
     for defID, value in pairs(getCultureUnitModelTypes("international", "house", UnitDefs)) do
         if not ruins[defID] and not scrap[defID] then buildingTypes[defID] = value end
     end
+    local commercialHologramTypes = {}
+    for defID in pairs(getHologramTypes(UnitDefs)) do
+        if not (UnitDefs[defID].customParams or {}).parade_hologram then
+            commercialHologramTypes[defID] = true
+        end
+    end
+    -- Station advertisements use native model animation instead of the neon pass.
+    for _, name in ipairs({"animated_hologram", "animated_hologramv2"}) do
+        local def = UnitDefNames[name]
+        if def then commercialHologramTypes[def.id] = true end
+    end
     local context = {
         Spring=Spring, GG=GG, Game=Game, UnitDefs=UnitDefs, UnitDefNames=UnitDefNames,
         gameConfig=gameConfig, config=config, catalog=catalog, setSpeed=setSpeedEnv,
         walkerTypes=getCultureUnitModelTypes("international", "civilian", UnitDefs),
         truckTypes=getCultureUnitModelTypes("international", "truck", UnitDefs),
         buildingTypes=buildingTypes,
+        commercialHologramTypes=commercialHologramTypes,
     }
+    context.clearance = clearance.new(context)
     context.routeBuilder = routes.new(context)
     parade = controller.New(context)
     GG.CityParade = parade

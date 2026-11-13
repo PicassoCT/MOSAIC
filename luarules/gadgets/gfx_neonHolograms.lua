@@ -184,22 +184,8 @@ if (gadgetHandler:IsSyncedCode()) then
        registerUnitIfHolo(unitID, unitDefID)
     end
 
-   function gadget:UnitEnteredLos(unitID, unitTeam, allyTeam, unitDefID)
-        if neonHologramTypeTable[unitDefID] then
-
-            neonUnitDataTransfer[unitID] = unitDefID
-        end
-    end
-
-    function gadget:UnitLeftLos(unitID, unitTeam, allyTeam, unitDefID)
-        -- One ally team's LOS must not stop synced animation updates for
-        -- projections still visible to another team. Gate those per client.
-        local definition = UnitDefs[unitDefID]
-        if definition and (definition.customParams or {}).parade_hologram then return end
-        if neonHologramTypeTable[unitDefID] then
-            neonUnitDataTransfer[unitID] = nil
-        end
-    end
+    -- Registration follows unit lifetime, not an individual ally team's LOS.
+    -- Visibility remains an unsynced per-client rendering decision.
 
     function gadget:UnitDestroyed(unitID, unitDefID)
         if objectiveRadiancePieces[unitID] then
@@ -264,7 +250,6 @@ else -- unsynced
 
     local glTexture                 = gl.Texture
     local glUnitShapeTextures       = gl.UnitShapeTextures
-    local glCopyToTexture           = gl.CopyToTexture
     local glCreateTexture           = gl.CreateTexture
     local glDeleteTexture           = gl.DeleteTexture
     local neonUnitTables            = {}
@@ -452,35 +437,7 @@ end
     end    
 
     local function InitializeTextures()
-        vsx, vsy, vpx, vpy = Spring.GetViewGeometry()
-
-        if (screentex ~= nil) then
-            glDeleteTexture(screentex)
-        end  
-
-        if (afterglowbuffertex ~= nil) then
-            glDeleteTexture(afterglowbuffertex)
-        end  
-
-        screentex= glCreateTexture(vsx,vsy, 
-            {
-            target = target,
-            min_filter = GL.LINEAR,
-            mag_filter = GL.LINEAR,
-            wrap_s   = GL.CLAMP_TO_EDGE,
-            wrap_t   = GL.CLAMP_TO_EDGE,
-            })
-
-        afterglowbuffertex = glCreateTexture(vsx,vsy,
-            {
-            fbo = true,
-            min_filter = GL.LINEAR, 
-            mag_filter = GL.LINEAR,
-            wrap_s = GL.CLAMP_TO_EDGE, 
-            wrap_t = GL.CLAMP_TO_EDGE,
-            }
-        )
-
+        gadget:ViewResize()
     end
 
     local str_blurShader_part1 = 
@@ -530,6 +487,9 @@ end
     -- truck's visibility. The same gate feeds both rendering and cascade light.
     local function neonVisible(unitID)
         if not Spring.ValidUnitID(unitID) or Spring.GetUnitIsDead(unitID) then return false end
+        -- One gate hides commercial ads and their radiance during the parade.
+        -- Keep receiving piece updates so restoration uses the live animation.
+        if Spring.GetUnitRulesParam(unitID, "city_parade_hide_commercial") == 1 then return false end
         local def = UnitDefs[UnitUnitDefIDMap[unitID]]
         if def and (def.customParams or {}).parade_hologram then
             if Spring.GetUnitIsCloaked(unitID) then return false end
@@ -577,7 +537,6 @@ end
     local boolActivated = false
     function gadget:Initialize() 
 		InitializeTextures()
-		gadget:ViewResize(vsx, vsy)
         gadgetHandler:AddSyncAction("setUnitNeonLuaDraw", setUnitNeonLuaDraw)
         gadgetHandler:AddSyncAction("updateUnitNeonLuaDraw", updateUnitNeonLuaDraw)
         gadgetHandler:AddSyncAction("unsetUnitNeonLuaDraw", unsetUnitNeonLuaDraw) --TODO debug
@@ -585,9 +544,6 @@ end
         gadgetHandler:AddSyncAction("unsetObjectiveRadianceUnit", unsetObjectiveRadianceUnit)
 		frameGameStart = Spring.GetGameFrame()+1
 
-        if blurtex ~= nil then glDeleteTexture(blurtex) end
-        if blurtex2 ~= nil then glDeleteTexture(blurtex2) end
-        if screencopy ~= nil then glDeleteTexture(screencopy) end
 
 
         neonHologramShader = LuaShader({
@@ -674,7 +630,7 @@ end
             function()  
                 glTexture(2, "$normal") 
                 glTexture(3, "$reflection") 
-                glCopyToTexture(screentex, 0, 0, 0, 0, vsx, vsy) -- the depth texture
+                -- The active shader does not sample the framebuffer.
 
                -- neonHologramShader:SetUniformMatrix("viewInvMat", "viewinverse")
                --neonHologramShader:SetUniformFloatArray("vCamPositionWorld", {cx,cy,cz} )
@@ -777,17 +733,19 @@ end
 
     function gadget:Shutdown()
         Spring.Echo("NeonShader:: shutting down gadget")
-        neonHologramShader:Finalize()
-        if (gl.DeleteTextureFBO) then
-            gl.DeleteTextureFBO(blurtex)
-            gl.DeleteTextureFBO(blurtex2)
+        boolActivated = false
+        if neonHologramShader then
+            neonHologramShader:Finalize()
+            neonHologramShader = nil
         end
-        gl.DeleteTexture(screencopy or 0)
+        -- DeleteTexture also releases the texture's FBO and depth attachment.
+        if screentex then glDeleteTexture(screentex); screentex = nil end
+        if afterglowbuffertex then glDeleteTexture(afterglowbuffertex); afterglowbuffertex = nil end
 
-        gadgetHandler.RemoveSyncAction("setUnitNeonLuaDraw")
-        gadgetHandler.RemoveSyncAction("updateUnitNeonLuaDraw")
-        gadgetHandler.RemoveSyncAction("unsetUnitNeonLuaDraw")
-        gadgetHandler.RemoveSyncAction("setObjectiveRadiancePiece")
-        gadgetHandler.RemoveSyncAction("unsetObjectiveRadianceUnit")
+        gadgetHandler:RemoveSyncAction("setUnitNeonLuaDraw")
+        gadgetHandler:RemoveSyncAction("updateUnitNeonLuaDraw")
+        gadgetHandler:RemoveSyncAction("unsetUnitNeonLuaDraw")
+        gadgetHandler:RemoveSyncAction("setObjectiveRadiancePiece")
+        gadgetHandler:RemoveSyncAction("unsetObjectiveRadianceUnit")
     end
 end

@@ -1,7 +1,8 @@
 -- Plot records are independent of unit IDs (which the engine reuses).
 -- The adapter owns units/visuals; this state machine owns every stage clock.
-return function(config, adapter)
-    local self = {plots={}, byUnit={}, retiring={}, nextID=0, completed=0}
+return function(config, adapter, retained)
+    -- Rebind callbacks after a gadget reload without losing plot stage clocks.
+    local self = retained or {plots={}, byUnit={}, retiring={}, nextID=0, completed=0}
     local function retire(plot, unitID)
         plot.sourceUnitID = unitID
         if unitID then self.retiring[unitID] = plot end

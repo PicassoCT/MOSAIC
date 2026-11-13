@@ -38,20 +38,8 @@ on:
       - 'luarules/gadgets/gfx_explosion_lights.lua'
       - 'luarules/gadgets/include/smoke_ribbon_*.lua'
       - 'luarules/gadgets/shaders/smokeRibbon.*'
-      - 'tests/light_effects_widget_startup.lua'
-      - 'tests/mobile_shadow_failure_lifecycle.lua'
-      - 'tests/mobile_radiance_shadows_gpu.py'
-      - 'tests/radiance_capture_state_gpu.py'
-      - 'tests/city_geography_test.lua'
-      - 'tests/validation_widget.lua'
-      - 'tests/graphene_arcs_*'
-      - 'tests/graphene_chute_gpu.py'
-      - 'tests/smoke_ribbon_commands.lua'
-      - 'tests/tank_muzzle_effects.lua'
-      - 'tests/smoke_ribbons_lifecycle.lua'
-      - 'tests/aircraft_ribbon_lifecycle.lua'
-      - 'tests/f35_rearm_test.lua'
-      - 'tests/railgun_*'
+      - .github/mosaic-tests.ref
+      - .github/actions/external-tests/**
       - '.github/workflows/effects-validation.yml'
   workflow_dispatch:
 
@@ -67,10 +55,12 @@ jobs:
         with:
           sparse-checkout-cone-mode: false
           sparse-checkout: |
-            scripts/
-            tests/
-            units/
-            weapons/
+            /.github/actions/external-tests/
+            /.github/mosaic-tests.ref
+            /modinfo.lua
+            /scripts/
+            /units/
+            /weapons/
             gamedata/explosions/railGunCeg.lua
             luaui/*.lua
             luaui/configs/mosaic_validation.lua
@@ -78,11 +68,11 @@ jobs:
             luaui/widgets_mosaic/gfx_light_effects.lua
             luaui/widgets_mosaic/gfx_neonlights_radiancecascade.lua
             luaui/widgets_mosaic/gui_cityname.lua
-            luaui/widgets_mosaic/include/
-            luaui/widgets_mosaic/shaders/
+            /luaui/widgets_mosaic/include/
+            /luaui/widgets_mosaic/shaders/
             luarules/*.lua
-            luarules/gadgets/include/
-            luarules/gadgets/shaders/
+            /luarules/gadgets/include/
+            /luarules/gadgets/shaders/
             luarules/gadgets/game_validation_session.lua
             luarules/gadgets/gfx_smoke_ribbons.lua
             luarules/gadgets/gfx_explosion_lights.lua
@@ -94,7 +84,10 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get install -y lua5.1 libegl1 libgl1 libgl1-mesa-dri
           python -m pip install moderngl numpy lupa
+      - name: Prepare pinned external tests
+        uses: ./.github/actions/external-tests
       - name: Verify real widget startup and manual validation commands
+        working-directory: ${{ runner.temp }}/mosaic-validation
         run: |
           lua5.1 tests/light_effects_widget_startup.lua
           lua5.1 tests/mobile_shadow_failure_lifecycle.lua
@@ -105,12 +98,14 @@ jobs:
           lua5.1 tests/combat_effects_lifecycle.lua
           lua5.1 tests/combat_effect_events.lua
       - name: Verify railgun trajectory, radiance and renderer lifecycles
+        working-directory: ${{ runner.temp }}/mosaic-validation
         run: |
           lua5.1 tests/railgun_wakes.lua
           lua5.1 tests/railgun_effect_events.lua
           lua5.1 tests/railgun_radiance.lua
           lua5.1 tests/railgun_wake_renderer.lua
       - name: Verify parachute attachments and existing ribbon lifecycles
+        working-directory: ${{ runner.temp }}/mosaic-validation
         run: |
           lua5.1 tests/graphene_arcs_lifecycle.lua
           lua5.1 tests/smoke_ribbon_commands.lua
@@ -118,10 +113,12 @@ jobs:
           lua5.1 tests/objective_ribbon_flames_lifecycle.lua
           lua5.1 tests/smoke_cigarette_lifecycle.lua
       - name: Verify aircraft contrails, flight exhaust and F35 rearming
+        working-directory: ${{ runner.temp }}/mosaic-validation
         run: |
           lua5.1 tests/aircraft_ribbon_lifecycle.lua
           lua5.1 tests/f35_rearm_test.lua
       - name: Render production electrical, smoke and combat shaders
+        working-directory: ${{ runner.temp }}/mosaic-validation
         run: |
           python tests/graphene_arcs_gpu.py
           python tests/graphene_chute_gpu.py

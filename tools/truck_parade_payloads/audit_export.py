@@ -81,6 +81,8 @@ def read_model(path=MODEL):
 
     scene = root.find('c:library_visual_scenes/c:visual_scene', NS)
     for node in scene.findall('c:node', NS):
+        if node.get('name') == 'paradeholograms':
+            continue  # Independently audited, engine-hidden scenery stock.
         visit(node, np.diag([scale, scale, scale, 1]))
     return pieces, transforms, parents, scale, degenerate_uv
 

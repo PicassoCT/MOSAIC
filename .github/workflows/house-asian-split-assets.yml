@@ -10,7 +10,8 @@ on:
       - scripts/lib_house_asian_split.lua
       - objects3d/house_asian.dae
       - objects3d/house_asian.dae.lua
-      - tests/house_asian_split*
+      - .github/mosaic-tests.ref
+      - .github/actions/external-tests/**
 
 permissions:
   contents: write
@@ -24,6 +25,9 @@ jobs:
         with:
           sparse-checkout-cone-mode: false
           sparse-checkout: |
+            /.github/actions/external-tests/
+            /.github/mosaic-tests.ref
+            /modinfo.lua
             /*
             !/objects3d/*
             !/unittextures/*
@@ -36,7 +40,10 @@ jobs:
         run: |
           python3 tools/house_asian_split/generate.py
           python3 tools/house_asian_split/generate.py --check
+      - name: Prepare pinned external tests
+        uses: ./.github/actions/external-tests
       - name: Check imports, assembly, deterministic plans and gameplay
+        working-directory: ${{ runner.temp }}/mosaic-validation
         run: |
           python3 -m venv /tmp/mosaic-model-tests
           /tmp/mosaic-model-tests/bin/pip install assimp_py==1.2.0 lupa==2.8

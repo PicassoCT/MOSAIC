@@ -40,7 +40,7 @@ local glLineWidth            = gl.LineWidth
 local glPolygonOffset        = gl.PolygonOffset
 local glVertex               = gl.Vertex
 local spDiffTimers           = Spring.DiffTimers
-local spGetAllUnits          = Spring.GetAllUnits
+local spGetVisibleUnits      = Spring.GetVisibleUnits
 local spGetGroundNormal      = Spring.GetGroundNormal
 local spGetSelectedUnits     = Spring.GetSelectedUnits
 local spGetTeamColor         = Spring.GetTeamColor
@@ -224,16 +224,11 @@ end
 --Table: UnitSelectedBy : [unitID] -> playerID
 if not WG.UnitSelectedBy then WG.UnitSelectedBy={} end
 
-function GetUnitLastSelectedBy(unitID, selectedUnits)
-	for k,_unitID in ipairs(selectedUnits) do
-		if _unitID== unitID then
-			playerID=Spring.GetMyPlayerID()
-			WG.UnitSelectedBy[unitID]=playerID
-		return playerID
-		end
-	end
-	
-return WG.UnitSelectedBy[unitID] or nil 
+local function GetUnitLastSelectedBy(unitID, selectedUnits)
+  if selectedUnits[unitID] then
+    WG.UnitSelectedBy[unitID] = Spring.GetMyPlayerID()
+  end
+  return WG.UnitSelectedBy[unitID]
 end
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -345,6 +340,11 @@ local unitCache={}
 local colorCache={}
 local gaiaTeamID=Spring.GetGaiaTeamID()
 
+function widget:UnitDestroyed(unitID)
+  unitCache[unitID] = nil
+  WG.UnitSelectedBy[unitID] = nil
+end
+
 function widget:DrawWorldPreUnit()
   glLineWidth(3.0)
 
@@ -352,9 +352,11 @@ function widget:DrawWorldPreUnit()
   
   glPolygonOffset(-50, -2)
 
-	local selectedUnits=spGetSelectedUnits()
+  local selectedUnits = spGetSelectedUnits()
+  local selectedSet = {}
+  for _, unitID in ipairs(selectedUnits) do selectedSet[unitID] = true end
 
-  for _,unitID in ipairs(spGetAllUnits()) do
+  for _,unitID in ipairs(spGetVisibleUnits(-1, nil, true)) do
     if (spIsUnitVisible(unitID)) then
       local teamID = spGetUnitTeam(unitID)
       if (teamID ) then	
@@ -385,7 +387,7 @@ function widget:DrawWorldPreUnit()
 				computeTeamColorOffsetByPlayer(teamID,25)
 			end
 			
-		local	playerID= GetUnitLastSelectedBy(teamID,selectedUnits)
+		local	playerID= GetUnitLastSelectedBy(unitID,selectedSet)
 			
 			if  playerID and teamColorPlayers[teamID][playerID] then
 				colorSet=teamColorPlayers[teamID][playerID] 

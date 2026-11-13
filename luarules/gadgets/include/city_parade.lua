@@ -20,7 +20,14 @@ function M.New(context)
     G.CityParadeRetired = G.CityParadeRetired or {}
     local director = {vehicles = {}, participants = {}, retired = G.CityParadeRetired, phase = "idle"}
     local convoy, cooldown, lastBuildingBurst = {}, {}, {}
+    local hiddenCommercialHolograms = {}
+    local commercialHologramTypes = context.commercialHologramTypes or {}
+    local previousStartHolograms = {}
+    local previousCommercialStart, previousCommercialEnd, previousCommercialFrame
+    local previousCommercialEndX, previousCommercialEndZ
     local route, pendingRoute, pendingDay, carrierDefID, eventDay, endFrame
+    local routeOffsets, routeLength = {}, 0
+    local clearance = context.clearance
     local tourStartFrame, previewRequest, preview = nil, nil, false
     local nextRetirementCheck = 0
     local nextSpawn, nextAttempt, lastEffect, lastRecruit = 0, 0, -C.effectFrames, -C.recruitFrames
@@ -36,9 +43,34 @@ function M.New(context)
         return type(id) == "number" and S.ValidUnitID(id) and not S.GetUnitIsDead(id)
     end
     local function normal() return G.GlobalGameState == gameConfig.game.states.normal end
+    local function log(message)
+        if S.Echo then S.Echo("City parade: " .. message) end
+    end
+    local function waiting(reason)
+        if director.waitingReason ~= reason and (previewRequest or preview) then log(reason) end
+        director.waitingReason = reason
+    end
+    function director:GetStatus()
+        return previewRequest and "preparing" or self.phase, self.waitingReason, self.lastStopReason
+    end
     local function distance(x, z, a, b) return (x-a)^2 + (z-b)^2 end
     local function dangerous(x, z)
-        return G.CityAreaState and G.CityAreaState:IsDangerous(x, z) or false
+        local area = G.CityAreaState
+        -- Existing trouble cannot veto a manual start. Once floats exist,
+        -- measurable new damage and direct attacks still disperse them.
+        if previewRequest or (preview and (#convoy == 0 or not (area and area.GetHeatAtLocation))) then
+            return false
+        end
+        if route and route.fallback and area and area.GetHeatAtLocation then
+            local heat, key, damage, generation = area:GetHeatAtLocation(x, z)
+            local baseline = route.heatBaseline and route.heatBaseline[key]
+            if baseline and damage then
+                local previous = baseline.generation == generation and baseline.damage or 0
+                return damage - previous >= (C.combatHeatThreshold or 300)
+            end
+            return heat >= (C.combatHeatThreshold or 300)
+        end
+        return G.CityAreaState and G.CityAreaState:IsDangerous(x, z, C.combatHeatThreshold or 300) or false
     end
     local function call(id, name, ...)
         local env = alive(id) and S.UnitScript.GetScriptEnv(id)
@@ -50,11 +82,114 @@ function M.New(context)
     local function unitRule(id, key, value)
         if alive(id) then S.SetUnitRulesParam(id, key, value, public) end
     end
+    local function setCommercialHologramHidden(id, hidden)
+        unitRule(id, "city_parade_hide_commercial", hidden and 1 or 0)
+        -- Native station ads mask their pieces; neon ads read the same rule in
+        -- the shared draw/light gate without losing their current animation.
+        call(id, "SetParadeCommercialHidden", hidden)
+    end
+    local function restoreCommercialHolograms()
+        for _, id in ipairs(sorted(hiddenCommercialHolograms)) do
+            setCommercialHologramHidden(id, false)
+        end
+        hiddenCommercialHolograms, previousStartHolograms = {}, {}
+        previousCommercialStart, previousCommercialEnd, previousCommercialFrame = nil, nil, nil
+        previousCommercialEndX, previousCommercialEndZ = nil, nil
+    end
+    local function commercialHologramsNear(x, z)
+        local nearby = {}
+        for _, id in ipairs(S.GetUnitsInCylinder(x, z, C.commercialHologramRadius) or {}) do
+            if commercialHologramTypes[S.GetUnitDefID(id)] then nearby[id] = true end
+        end
+        return nearby
+    end
+    local function armCommercialHologram(id, expiresFrame)
+        local timer = hiddenCommercialHolograms[id]
+        if not timer then
+            timer = {}
+            hiddenCommercialHolograms[id] = timer
+            setCommercialHologramHidden(id, true)
+        end
+        timer.expiresFrame = math.max(timer.expiresFrame or expiresFrame, expiresFrame)
+        timer.tailSeen = false
+        return timer
+    end
+    local function updateCommercialHolograms(frame)
+        local startFloat, endFloat = convoy[1], convoy[#convoy]
+        director.startFloat, director.endFloat = startFloat, endFloat
+        if not startFloat then restoreCommercialHolograms(); return end
+        local sx, _, sz = S.GetUnitPosition(startFloat)
+        local ex, _, ez = S.GetUnitPosition(endFloat)
+        if not sx or not ex then return end
+
+        -- Sum the formation segments so bends do not collapse the estimate
+        -- to the straight-line distance between the first and last float.
+        local paradeLength, px, pz = 0, nil, nil
+        for _, id in ipairs(convoy) do
+            local x, _, z = S.GetUnitPosition(id)
+            if x then
+                if px then paradeLength = paradeLength + sqrt(distance(x, z, px, pz)) end
+                px, pz = x, z
+            end
+        end
+        local def = context.UnitDefs[S.GetUnitDefID(endFloat)]
+        local speed = math.max(1, (def and def.speed or 0) * C.speedFactor)
+        local framesPerUnit = (context.Game.gameSpeed or 30) / speed
+        -- Include both sides of the detection radius: lead entry to tail exit.
+        local passageFrames = math.ceil((paradeLength + 2*C.commercialHologramRadius) * framesPerUnit)
+        local endpointsChanged = startFloat ~= previousCommercialStart or endFloat ~= previousCommercialEnd
+        local delay = 0
+        if not endpointsChanged and previousCommercialFrame then
+            local travelled = sqrt(distance(ex, ez, previousCommercialEndX, previousCommercialEndZ))
+            -- Shift deadlines by lost travel time. A stopped tail pauses every
+            -- timer; slow or faster movement adjusts the predicted expiry.
+            delay = frame - previousCommercialFrame - travelled * framesPerUnit
+        end
+        for _, timer in pairs(hiddenCommercialHolograms) do
+            if endpointsChanged then
+                timer.expiresFrame = math.max(timer.expiresFrame, frame + passageFrames)
+                timer.tailSeen = false
+            else
+                timer.expiresFrame = timer.expiresFrame + delay
+            end
+        end
+
+        -- Only the designated first and last float search for advertisements.
+        local startNearby = commercialHologramsNear(sx, sz)
+        local endNearby = startFloat == endFloat and startNearby or commercialHologramsNear(ex, ez)
+        for _, id in ipairs(sorted(startNearby)) do
+            if not hiddenCommercialHolograms[id] or not previousStartHolograms[id] then
+                armCommercialHologram(id, frame + passageFrames)
+            end
+        end
+        for _, id in ipairs(sorted(endNearby)) do
+            local timer = hiddenCommercialHolograms[id]
+                or armCommercialHologram(id, frame + math.ceil(2*C.commercialHologramRadius*framesPerUnit))
+            timer.tailSeen = true
+        end
+        for _, id in ipairs(sorted(hiddenCommercialHolograms)) do
+            local timer = hiddenCommercialHolograms[id]
+            if not startNearby[id] and not endNearby[id] then
+                -- An observed tail exit is more precise than the prediction.
+                if timer.tailSeen then timer.expiresFrame = frame end
+                if frame >= timer.expiresFrame then
+                    setCommercialHologramHidden(id, false)
+                    hiddenCommercialHolograms[id] = nil
+                end
+            end
+        end
+        previousStartHolograms = startNearby
+        previousCommercialStart, previousCommercialEnd, previousCommercialFrame = startFloat, endFloat, frame
+        previousCommercialEndX, previousCommercialEndZ = ex, ez
+    end
     local function publish()
+        director.startFloat, director.endFloat = convoy[1], convoy[#convoy]
         S.SetGameRulesParam("city_parade_active", director.phase == "touring" and 1 or 0, public)
         S.SetGameRulesParam("city_parade_phase", director.phase, public)
         S.SetGameRulesParam("city_parade_day", eventDay or 0, public)
         S.SetGameRulesParam("city_parade_vehicle_count", #convoy, public)
+        S.SetGameRulesParam("city_parade_start_float", director.startFloat or -1, public)
+        S.SetGameRulesParam("city_parade_end_float", director.endFloat or -1, public)
         S.SetGameRulesParam("city_parade_participants", count(director.participants), public)
     end
     local function busy(id)
@@ -114,6 +249,13 @@ function M.New(context)
 
     function director:Stop(reason, frame)
         frame = frame or S.GetGameFrame()
+        if self.phase ~= "idle" or previewRequest then
+            log("stopped: " .. tostring(reason) ..
+                (self.waitingReason and ("; last wait: " .. self.waitingReason) or "") ..
+                (self.lastRouteError and ("; last route rejection: " .. self.lastRouteError) or ""))
+        end
+        self.lastStopReason, self.waitingReason = reason, nil
+        restoreCommercialHolograms()
         for _, id in ipairs(sorted(self.participants)) do releasePerson(id, frame) end
         for _, id in ipairs(convoy) do retireVehicle(id) end
         convoy = {}
@@ -164,6 +306,9 @@ function M.New(context)
             end
         end
         for _, id in ipairs(units) do
+            if (S.GetUnitRulesParam(id, "city_parade_hide_commercial") or 0) > 0 then
+                setCommercialHologramHidden(id, false)
+            end
             if (S.GetUnitRulesParam(id, "city_parade_role") or 0) > 0 then
                 call(id, "stopParadeParticipation")
                 unitRule(id, "city_parade_role", 0)
@@ -236,10 +381,11 @@ function M.New(context)
     function director:RequestPreview(frame)
         frame = frame or S.GetGameFrame()
         if self.phase ~= "idle" or previewRequest then return false, "a parade is already active or preparing" end
-        if not normal() then return false, "the city is not in normal times" end
-        if not G.CitySpawnComplete or not G.CivilianTraffic then return false, "city traffic is not ready" end
         local day = M.Clock(frame, gameConfig.game.dayLengthFrames)
-        previewRequest = {day=day, expires=frame+(C.previewRouteTimeoutFrames or 60*30)}
+        previewRequest = {day=day}
+        self.lastStopReason = nil
+        self.lastRouteError = nil
+        waiting("searching for the best available route")
         pendingRoute, pendingDay, nextAttempt = nil, nil, frame
         return true, "validating a route; preview assembles for 45 seconds and tours for 3 minutes"
     end
@@ -265,20 +411,29 @@ function M.New(context)
 
     local function spawnVehicle(frame)
         local origin = route.points[1]
-        if not validPoint(carrierDefID, origin.x, origin.z) then return end
+        if (clearance and not clearance:SegmentClear(origin,origin))
+            or not validPoint(carrierDefID, origin.x, origin.z) then
+            waiting("assembly point is blocked or unsafe"); return
+        end
         -- Spawn one at a time from the same existing curb. Never overlap the
         -- preceding float or create a parked row across a building footprint.
         for _, id in ipairs(S.GetUnitsInCylinder(origin.x, origin.z, C.vehicleSpacing) or {}) do
-            if context.truckTypes[S.GetUnitDefID(id)] then return end
+            if context.truckTypes[S.GetUnitDefID(id)] then
+                waiting("waiting for truck " .. id .. " to clear the assembly point"); return
+            end
         end
         local id = G.CivilianTraffic.SpawnParade(carrierDefID, origin.x, origin.z, route.nodes[1], route.nodes[2])
-        if not id then return end
-        local vehicle = {goal = 2, lastProgress = frame, x = origin.x, z = origin.z}
+        if not id then waiting("carrier creation failed (check Gaia unit limit and carrier eligibility)"); return end
+        local vehicle = {goal = 2, lap = 0, progress = 0, speed = C.speedFactor, lastProgress = frame, x = origin.x, z = origin.z}
         director.vehicles[id] = vehicle
         local payload = G.CivilianTraffic.Load(id, catalog.unitName)
         local variant = ((floor(eventDay / C.periodDays) - 1 + #convoy) % #catalog.variants) + 1
-        if not payload or not call(payload, "SetParadeVariant", variant)
-            or not G.CivilianTraffic.BeginTravel(id) then
+        local failure
+        if not payload then failure = "payload creation failed"
+        elseif not call(payload, "SetParadeVariant", variant) then failure = "payload rejected float variant"
+        elseif not G.CivilianTraffic.BeginTravel(id) then failure = "civilian travel registration failed" end
+        if failure then
+            waiting(failure)
             director.vehicles[id] = nil
             if alive(payload) then S.DestroyUnit(payload, false, true) end
             G.DiedPeacefully = G.DiedPeacefully or {}; G.DiedPeacefully[id] = true
@@ -296,11 +451,19 @@ function M.New(context)
         if G.UnitArrivedAtTarget then G.UnitArrivedAtTarget[id] = nil end
         move(id, route.points[2])
         nextSpawn = frame + C.spawnIntervalFrames
+        director.waitingReason = nil
+        log(string.format("spawned truck=%d payload=%d variant=%d at x=%.1f y=%.1f z=%.1f (frame %d)",
+            id, payload, variant, origin.x, origin.y, origin.z, frame))
         publish()
     end
 
     local function startAssembly(day, frame, isPreview)
         route = pendingRoute
+        routeOffsets,routeLength = {0},0
+        for i=2,#route.points do
+            routeLength=routeLength+sqrt(distance(route.points[i-1].x,route.points[i-1].z,route.points[i].x,route.points[i].z))
+            routeOffsets[i]=routeLength
+        end
         pendingRoute, pendingDay = nil, nil
         preview, previewRequest = isPreview == true, nil
         eventDay = day
@@ -311,12 +474,23 @@ function M.New(context)
         director.phase = "assembling"
         convoy, director.vehicles, lastBuildingBurst = {}, {}, {}
         effectsEmitted = 0
+        director.waitingReason = nil
+        director.lastRouteError = nil
+        local origin = route.points[1]
+        log(string.format("assembly starts at x=%.1f y=%.1f z=%.1f; carrier=%s; route nodes=%d; frame=%d",
+            origin.x, origin.y, origin.z, context.UnitDefs[carrierDefID].name, #route.nodes, frame))
+        if preview then
+            log("manual request uses the best available route; short trips and doubling back are allowed")
+        elseif route.fallback then
+            log(string.format("using least-dangerous usable candidate; recent damage peak=%.1f; new heavy damage still disperses the parade", route.peakHeat or 0))
+        end
         if not preview then consumeDay(day) end
         nextSpawn = frame
         publish()
     end
 
     local function updateConvoy(frame)
+        local membershipChanged = false
         for i = #convoy, 1, -1 do
             local id = convoy[i]
             local vehicle = director.vehicles[id]
@@ -324,43 +498,90 @@ function M.New(context)
                 or S.GetUnitTransporter(vehicle.payload) ~= id then
                 retireVehicle(id)
                 table.remove(convoy, i)
+                membershipChanged = true
             end
         end
-        for i, id in ipairs(convoy) do
-            local vehicle = director.vehicles[id]
-            local x, _, z = S.GetUnitPosition(id)
-            if not x or dangerous(x, z) or busy(id) then return false, "danger" end
-            local goal = route.points[vehicle.goal]
-            if dangerous(goal.x, goal.z) then return false, "route unsafe" end
-            if distance(x, z, vehicle.x, vehicle.z) > 16 then
-                vehicle.x, vehicle.z, vehicle.lastProgress = x, z, frame
+        if membershipChanged then publish() end
+        if clearance then clearance:Refresh(frame) end
+        local positions = {}
+        -- Snapshot and project every truck before issuing orders. Distances
+        -- along the circuit remain meaningful across bends and the lap seam.
+        for _,id in ipairs(convoy) do
+            local vehicle=director.vehicles[id]
+            local x,_,z=S.GetUnitPosition(id)
+            if not x or dangerous(x,z) or busy(id) then return false,"danger" end
+            local pos={x=x,z=z};positions[id]=pos
+            local goal=route.points[vehicle.goal]
+            if dangerous(goal.x,goal.z) then return false,"route unsafe" end
+            vehicle.advanced=false
+            if distance(x,z,goal.x,goal.z)<=C.goalRadius^2 then
+                local nextGoal=vehicle.goal % #route.points+1
+                if nextGoal==1 then nextGoal=2 end
+                -- Do not cut a building corner merely because its waypoint
+                -- falls within the engine's arrival radius.
+                if not clearance or clearance:SegmentClear(pos,route.points[nextGoal]) then
+                    if nextGoal==2 then vehicle.lap=vehicle.lap+1 end
+                    vehicle.goal,vehicle.advanced=nextGoal,true
+                    goal=route.points[nextGoal]
+                end
             end
-            local hold = false
-            if i > 1 then
-                local px, _, pz = S.GetUnitPosition(convoy[i-1])
-                hold = px and distance(x, z, px, pz) < (C.vehicleSpacing + (vehicle.held and 28 or 0))^2
+            local previous=route.points[vehicle.goal-1]
+            local dx,dz=goal.x-previous.x,goal.z-previous.z
+            local length=sqrt(dx*dx+dz*dz)
+            local along=length>0 and math.max(0,math.min(length,((x-previous.x)*dx+(z-previous.z)*dz)/length)) or 0
+            vehicle.progress=vehicle.lap*routeLength+routeOffsets[vehicle.goal-1]+along
+            if distance(x,z,vehicle.x,vehicle.z)>16 then
+                vehicle.x,vehicle.z,vehicle.lastProgress=x,z,frame
+            end
+        end
+        for i,id in ipairs(convoy) do
+            local vehicle,pos=director.vehicles[id],positions[id]
+            local goal=route.points[vehicle.goal]
+            local hold,obstructed=false,false
+            local speed=C.speedFactor
+            local minimum=C.minimumVehicleSpacing or C.vehicleSpacing
+            local hysteresis=C.spacingHysteresis or 20
+            if i>1 then
+                local ahead=director.vehicles[convoy[i-1]]
+                local gap=ahead.progress-vehicle.progress
+                hold=gap<minimum+(vehicle.held and hysteresis or 0)
+                -- Gradually slow before entering the stopping gap; do not
+                -- race back up to the bumper after every STOP/GO transition.
+                speed=C.speedFactor*math.max(.15,math.min(1,(gap-minimum)/math.max(1,C.vehicleSpacing-minimum)))
             elseif convoy[2] then
-                local tx, _, tz = S.GetUnitPosition(convoy[2])
-                hold = tx and distance(x, z, tx, tz) > C.maxVehicleGap^2
+                local behind=director.vehicles[convoy[2]]
+                hold=vehicle.progress-behind.progress>C.maxVehicleGap
+                local tail=director.vehicles[convoy[#convoy]]
+                hold=hold or tail.progress+routeLength-vehicle.progress<minimum+hysteresis
+            end
+            -- Arc spacing cannot alone protect an intersection or a loop
+            -- folded close to itself. Earlier trucks retain right of way.
+            for j=1,i-1 do
+                local other=positions[convoy[j]]
+                if distance(pos.x,pos.z,other.x,other.z)<minimum^2 then hold=true end
+            end
+            if clearance then
+                obstructed=not clearance:SegmentClear(pos,goal)
+                if not obstructed and S.GetUnitVelocity then
+                    local vx,_,vz=S.GetUnitVelocity(id)
+                    if vx and vz then
+                        local lookahead=C.tickFrames*2
+                        obstructed=not clearance:SegmentClear(pos,{x=pos.x+vx*lookahead,z=pos.z+vz*lookahead})
+                    end
+                end
+                if obstructed then
+                    hold=true
+                    waiting("truck "..id.." waiting before a house footprint")
+                end
             end
             if hold then
-                if not vehicle.held then stop(id); vehicle.held = true end
-                -- Intentional formation waits are not pathfinding failures.
-                vehicle.lastProgress = frame
+                if not vehicle.held then stop(id);vehicle.held=true end
+                if not obstructed then vehicle.lastProgress=frame end
             else
-                local advanced = false
-                if distance(x, z, goal.x, goal.z) <= C.goalRadius^2 then
-                    vehicle.goal = vehicle.goal % #route.points + 1
-                    -- Closing point duplicates the staging point.
-                    if vehicle.goal == 1 then vehicle.goal = 2 end
-                    goal, advanced = route.points[vehicle.goal], true
-                end
-                if vehicle.held or advanced then
-                    vehicle.held = false
-                    move(id, goal)
-                end
-                if frame - vehicle.lastProgress > C.stalledFrames then return false, "route blocked" end
+                if vehicle.speed~=speed then context.setSpeed(id,speed);vehicle.speed=speed end
+                if vehicle.held or vehicle.advanced then vehicle.held=false;move(id,goal) end
             end
+            if frame-vehicle.lastProgress>C.stalledFrames then return false,"route blocked" end
         end
         return true
     end
@@ -483,7 +704,28 @@ function M.New(context)
             local height = math.max(24,(S.GetUnitHeight(id) or 100)*0.85)
             local effect = C.effects[effectsEmitted % #C.effects + 1]
             effectsEmitted = effectsEmitted+1
-            S.SpawnCEG(effect,x+dx*edge,y+height,z+dz*edge,dx,-0.25,dz)
+            local ex,ey,ez = dx,-0.25,dz
+            if effect == "parade_petals" then
+                height = math.max(C.petalMinimumHeight or 240,
+                    (S.GetUnitHeight(id) or 100) * (C.petalHeightFactor or 1.6))
+                local windX,_,windZ = S.GetWind()
+                -- Petals consume CEG's dir as gravity, not their launch axis.
+                -- Scale current map wind into per-frame acceleration; retain
+                -- downward gravity even in calm weather. Each burst samples
+                -- the wind once because CEG particles have no live wind hook.
+                ex,ey,ez = windX*0.0015,-0.05,windZ*0.0015
+            elseif effect == "parade_inflationmoney" then
+                ex,ey,ez = 0,-1,0
+            end
+            local vehicle=director.vehicles[candidates[id].truck]
+            local payload=vehicle and vehicle.payload
+            local floatTop=0
+            if alive(payload) then
+                local _,py=S.GetUnitPosition(payload)
+                floatTop=(py or y)+(S.GetUnitHeight(payload) or 77)+(C.paperFloatClearance or 12)
+            end
+            height=math.max(height,C.paperMinimumHeight or 100,floatTop-y)
+            S.SpawnCEG(effect,x+dx*edge,y+height,z+dz*edge,ex,ey,ez)
             lastBuildingBurst[id] = frame+C.buildingCooldownFrames
         end
     end
@@ -493,48 +735,70 @@ function M.New(context)
         resumeRecoveredTraffic(frame)
         local day,hour = M.Clock(frame,gameConfig.game.dayLengthFrames)
         if self.phase ~= "idle" then
-            if not normal() then self:Stop("city emergency",frame); return end
-            if frame >= endFrame then self:Stop("late night",frame); return end
+            if not preview and not normal() then self:Stop("city emergency",frame); return end
+            if frame >= endFrame and not (preview and self.phase == "assembling") then self:Stop("late night",frame); return end
             local moving,reason = updateConvoy(frame)
             if not moving then self:Stop(reason,frame); return end
             if self.phase == "assembling" then
                 if frame >= tourStartFrame then
-                    if #convoy < C.minimumVehicles then self:Stop("assembly incomplete",frame); return end
+                    if preview and #convoy == 0 then
+                        -- Transient spawn/payload failures must not consume the
+                        -- request. Keep trying until at least one float exists.
+                        if frame >= nextSpawn then
+                            spawnVehicle(frame)
+                            nextSpawn=frame+C.retryFrames
+                        end
+                        return
+                    end
+                    if not preview and #convoy < C.minimumVehicles then self:Stop("assembly incomplete",frame); return end
+                    if preview then endFrame=frame+(C.previewTourFrames or 3*60*30) end
                     self.phase = "touring"; publish()
                 elseif #convoy < C.vehicleCount and frame >= nextSpawn then
                     spawnVehicle(frame)
                 end
             end
             if self.phase == "touring" then
-                if #convoy < C.minimumVehicles then self:Stop("floats unavailable",frame); return end
+                if #convoy < (preview and 1 or C.minimumVehicles) then self:Stop("floats unavailable",frame); return end
+                if preview and #convoy < C.vehicleCount and frame >= nextSpawn then
+                    spawnVehicle(frame)
+                    nextSpawn=frame+C.spawnIntervalFrames
+                end
                 updateAudience(frame)
                 showerBuildings(frame)
             end
+            updateCommercialHolograms(frame)
             return
         end
         local requestedPreview = previewRequest ~= nil
         if requestedPreview then
-            if not normal() then self:Stop("city emergency",frame); return end
-            if frame >= previewRequest.expires then self:Stop("preview route unavailable",frame); return end
             day = previewRequest.day
         elseif day % C.periodDays ~= 0 or day <= lastDay or hour < C.assemblyHour or hour >= C.tourHour then
             pendingRoute,pendingDay = nil,nil
             return
         end
-        if not normal() then consumeDay(day); pendingRoute,pendingDay=nil,nil; return end
-        if not G.CitySpawnComplete or not G.CivilianTraffic then return end
+        if not requestedPreview and not normal() then consumeDay(day); pendingRoute,pendingDay=nil,nil; return end
+        if not G.CitySpawnComplete or not G.CivilianTraffic then waiting("waiting for city traffic"); return end
         if pendingRoute and pendingDay == day then
             local status = routeBuilder:Poll(pendingRoute)
-            if status == "ready" then startAssembly(day,frame,requestedPreview); spawnVehicle(frame)
-            elseif status == "invalid" then pendingRoute,pendingDay=nil,nil; nextAttempt=frame+C.retryFrames end
+            if status == "ready" then
+                startAssembly(day,frame,requestedPreview)
+                spawnVehicle(frame)
+                updateCommercialHolograms(frame)
+            elseif status == "invalid" then
+                self.lastRouteError = pendingRoute.reason
+                waiting("route rejected: " .. tostring(pendingRoute.reason or "unknown reason"))
+                pendingRoute,pendingDay=nil,nil; nextAttempt=frame+C.retryFrames
+            end
             return
         end
         if frame < nextAttempt then return end
         nextAttempt = frame+C.retryFrames
         carrierDefID = carrierFor(day)
-        if not carrierDefID then return end
-        pendingRoute = routeBuilder:Begin(day,carrierDefID)
+        if not carrierDefID then waiting("no eligible carrier or parade payload definition"); return end
+        pendingRoute = routeBuilder:Begin(day,carrierDefID,requestedPreview)
         pendingDay = pendingRoute and day or nil
+        if not pendingRoute then waiting("route search: " .. tostring(routeBuilder.lastError or "no route"))
+        else waiting("validating native route paths") end
     end
 
     function director:UnitDamaged(id, damage)
@@ -547,6 +811,8 @@ function M.New(context)
 
     function director:UnitDestroyed(id)
         if self.participants[id] then releasePerson(id,S.GetGameFrame()) end
+        hiddenCommercialHolograms[id] = nil
+        previousStartHolograms[id] = nil
         cooldown[id],lastBuildingBurst[id],self.retired[id] = nil,nil,nil
         if self.vehicles[id] then self:Stop("vehicle lost") end
     end

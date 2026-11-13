@@ -87,7 +87,7 @@ local TableOfPiecesGroups = {}
 local boolDebugActive = false
 
 sizeDownLetter  = 350
-sizeSpacingLetter = 300
+sizeSpacingLetter = 321
 local _x_axis = 1
 local _y_axis = 2
 local _z_axis = 3
@@ -859,16 +859,17 @@ function showOneOrAll(T)
 end
 
 function hideResetAllLetters()
-    letters = {"A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"}
+    local pieces = {}
+    local letters = {"A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"}
     for i=1, #letters do
         local letter = letters[i] 
         if TableOfPiecesGroups[letter] then
-            resetT(TableOfPiecesGroups[letter])
-            hideTReg(TableOfPiecesGroups[letter])
+            for _,id in ipairs(TableOfPiecesGroups[letter]) do pieces[#pieces+1]=id end
         else
             echo("hideResetAllLetters failed for:"..letter)
         end
     end
+    hardResetHologramLetters(pieces)
 end
 
 function delayedFlickerSingleLetter(letterPiece)
@@ -895,8 +896,7 @@ function setupMessage(myMessages)
     local boolFirstHighlight, downIndex, stringlength, rowIndex, columnIndex, val
     boolHighlightFirstLetter = math.random(1,100) < 10
     hideResetAllLetters()
-    StopSpin(textSpinner, y_axis, 0)
-    Move(textSpinner, 2 ,0, 0) --Move the text spinner upward so letters dont vannish into the ground
+    reset(textSpinner) -- clear the previous facing/spin before choosing a new layout
     axis= 2
     startValue = 0
     myMessage = selectHologramMessage(myMessages, TableOfPiecesGroups)
@@ -921,9 +921,8 @@ function setupMessage(myMessages)
     columnIndex= 0
       
     if boolSpinning then
-        reset(textSpinner)
         val = math.random(5,45)
-        Spin(textSpinner, y_axis, math.rad(val),0)
+        Spin(textSpinner, textSpinnerAxis, math.rad(val),0)
     end
 
     if boolUpright then
@@ -1009,7 +1008,7 @@ function restoreMessageOriginalPosition(message, posLetters)
                         
                     if boolSpinning and posLetters.boolUpright then
                         val = letterIndex * 5
-                        Turn(letter, 2, math.rad(val), 0)
+                        Turn(letter, spindropAxis, math.rad(val), 0)
                     end
                 end    
             end
@@ -1019,7 +1018,7 @@ end
 
 
 backdropAxis = x_axis
-spindropAxis = y_axis
+spindropAxis = z_axis
 
 function resetSpinDrop(allLetters)
 
@@ -1131,14 +1130,14 @@ function addHologramLetters( myMessages)
             if name and canProjectTextFx(name, posLetters) then
                 textFX(allLetters, posLetters, TableOfPiecesGroups)
                 Signal(SIG_FLICKER)
-                HideLetters(allLetters, posLetters)
+                HideLetters(allLetters,posLetters,nil,5000)
             end
-            WaitForMoves(allLetters)
+            waitHologramTextCleanup(allLetters,cachedCopyDict,5000)
             restTime = math.max(5000, #allLetters*150)
             holdHologramText(allLetters, posLetters, restTime)
             restoreMessageOriginalPosition(allLetters, posLetters)
             resetSpinDrop(allLetters)
-            WaitForTurns(allLetters)
+            waitHologramTextCleanup(allLetters,cachedCopyDict,5000)
             holdHologramText(allLetters, posLetters, restTime)
             if boolIsEverChanging == true then
                 transitionHologramText(allLetters, posLetters, false, 400)

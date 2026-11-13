@@ -87,4 +87,24 @@ not GitHub Releases. The workflow has `contents: read`; it does not create a
 release, tag, or push. Publishing is a separate maintainer operation after
 reviewing the manifest/checksums and completing the Windows smoke test.
 
+## Qualify the performance gate
+
+Packaging deliberately leaves the 25-FPS gate unverified. Record at least 600
+seconds while fully zoomed out on the GTX 1050 Ti, including the exact candidate
+commit, game/engine/map versions, resolution, settings and city/unit load. Keep
+the raw per-sample CSV beside a completed copy of
+`packaging/performance-gate.example.json`, then bind it to the portable manifest:
+
+```powershell
+python tools/qualify_windows_release.py --manifest ../mosaic-windows/manifest.json `
+  --evidence ../captures/performance-gate.json `
+  --output ../mosaic-windows/release-qualification.json
+```
+
+Qualification fails if minimum FPS is below 25 (regardless of average FPS), the
+capture is shorter than ten minutes, the raw capture hash differs, or the tested
+commit/version/engine/map is not the packaged candidate. The qualification file
+is evidence for review; it does not publish a release.
+
+
 

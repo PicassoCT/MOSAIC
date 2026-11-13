@@ -264,7 +264,7 @@ if MOSAIC_CONFIG_ONLY then
 end
 
  GG.unitFactor = 0.80
- GameVersion = "1.034"  --UpdateFlag
+ GameVersion = "1.035"  --UpdateFlag
  function setUnitFactor(modOptions)
     GG.unitFactor = modOptions.unitfactor or 0.8
  end
@@ -572,6 +572,9 @@ function getGameConfig()
                 maxVehicles = 8,
                 cooldownSeconds = 90,
                 standDownSeconds = 120,
+                evacuateInset = 64,
+                evacuateSpacingSeconds = 1,
+                evacuateTimeoutSeconds = 300, -- bound stranded convoys after objective destruction
                 orderSeconds = 3,
                 sightRadius = 1024, -- objective APC patrol sight, restored on capture
                 blockedChecks = 2,
@@ -4496,67 +4499,54 @@ sounds/civilian/mostWanted/
 
 ]]
 function buildRunMostWanted(unitID)
-    local spPlaySoundFile = Spring.PlaySoundFile
-    local basePath = "sounds/civilian/mostwanted"
-
-    if isNight() then
-        waitTillDay()
-    else
-        waitTillNight()
-        waitTillDay()
-    end
-
-    local function getFiles(folder)
-        return VFS.DirList(basePath .. "/" .. folder, "*.wav")
-    end
-
-    local function playRandom(files, fallbackDuration)
-        if not files or #files == 0 then
-            return
+    local base = "sounds/civilian/mostwanted/"
+    local folders = {"intro","name","surname","alias","offence","lastseen",
+        "description","warning","consequence","postlude"}
+    if not VFS.FileExists(base.."durations.lua") then return false end
+    local durations = VFS.Include(base.."durations.lua")
+    local pools = {}
+    for _,folder in ipairs(folders) do
+        local files = VFS.DirList(base..folder, "*.wav") or {}
+        if #files == 0 then return false end
+        table.sort(files)
+        for _,file in ipairs(files) do
+            local duration=durations[file:sub(#base+1)]
+            if type(duration)~="number" or duration<=0 then return false end
         end
-
-        local file = files[math.random(1, #files)]
-        spPlaySoundFile(file, 1.0)
-        Sleep(fallbackDuration or 1500)
+        pools[folder]=files
     end
+    if isNight() then waitTillDay() else waitTillNight();waitTillDay() end
 
-    local introFiles       = getFiles("intro")
-    local nameFiles        = getFiles("name")
-    local surnameFiles     = getFiles("surname")
-    local aliasFiles       = getFiles("alias")
-    local offenceFiles     = getFiles("offence")
-    local lastSeenFiles    = getFiles("lastseen")
-    local descriptionFiles = getFiles("description")
-    local warningFiles     = getFiles("warning")
-    local consequenceFiles = getFiles("consequence")
-    local postludeFiles    = getFiles("postlude")
-
-    playRandom(introFiles, 12000)
-
-    local suspectCount = math.random(1, 2)
-
-    for i = 1, suspectCount do
-        playRandom(nameFiles, 1000)
-        playRandom(surnameFiles, 1200)
-
-        -- Alias information should not appear for every suspect.
-        if math.random() < 0.65 then
-            playRandom(aliasFiles, 2500)
-        end
-
-        playRandom(offenceFiles, 4500)
-        playRandom(lastSeenFiles, 3500)
-
-        -- Optional identifying or behavioural detail.
-        if math.random() < 0.75 then
-            playRandom(descriptionFiles, 4000)
-        end
-
-        playRandom(warningFiles, 4000)
-        playRandom(consequenceFiles, 4500)
+    local playlist = {}
+    local function pick(folder)
+        local files=pools[folder]
+        local file=files[math.random(1,#files)]
+        local pause=(folder=="name" or folder=="surname") and 120 or 300
+        playlist[#playlist+1]={file=file,ms=durations[file:sub(#base+1)]+pause}
     end
+    pick("intro")
+    for i=1,math.random(1,2) do
+        pick("name");pick("surname")
+        if math.random()<0.65 then pick("alias") end
+        pick("offence");pick("lastseen")
+        if math.random()<0.75 then pick("description") end
+        pick("warning");pick("consequence")
+    end
+    pick("postlude")
 
-    playRandom(postludeFiles, 5000)
+    -- All blimps wake at dawn. Reserve the entire bulletin, not one clip at
+    -- a time, so two names/offences cannot interleave. The timed reservation
+    -- expires even if its unit is destroyed and its script stops mid-speech.
+    local fps=Game.gameSpeed or 30
+    while (GG.MostWantedAudioUntil or 0)>Spring.GetGameFrame() do Sleep(250) end
+    local frames=fps -- one second between complete bulletins
+    for _,clip in ipairs(playlist) do frames=frames+math.ceil(clip.ms*fps/1000) end
+    GG.MostWantedAudioUntil=Spring.GetGameFrame()+frames
+    for _,clip in ipairs(playlist) do
+        Spring.PlaySoundFile(clip.file,1.0)
+        Sleep(clip.ms)
+    end
+    return true
 end
 
 --[[
@@ -4673,42 +4663,45 @@ end
 
 
 function buildRunLostAndFound(unitID)
-    local spPlaySoundFile = Spring.PlaySoundFile
+    local base = "sounds/civilian/lostandfound/"
+    local folders = {"intro", "name", "surname", "additionalInfo", "rewards", "postlude"}
+    local pools = {}
+    -- All six groups are optional as one pack. Check before waiting for morning.
+    for _, folder in ipairs(folders) do
+        pools[folder] = VFS.DirList(base..folder, "*.ogg") or {}
+        if #pools[folder] == 0 then return false end
+        table.sort(pools[folder])
+    end
+    if not VFS.FileExists(base.."durations.lua") then return false end
+    local durations = VFS.Include(base.."durations.lua")
+    for _, folder in ipairs(folders) do
+        for _, file in ipairs(pools[folder]) do
+            local length = durations[file:sub(#base+1)]
+            if type(length) ~= "number" or length <= 0 then return false end
+        end
+    end
     if isNight() then
         waitTillDay()
     else
         waitTillNight()
         waitTillDay()
     end
-    local lostAndFoundPath = "sounds/civilian/lostandfound"
-    spPlaySoundFile(lostAndFoundPath.."/lostandfound_12s.ogg", 1.0)
-    Sleep(12000)      
-    local nameFiles = VFS.DirList(lostAndFoundPath.."/name", "*.ogg")
-    local surnameFiles = VFS.DirList(lostAndFoundPath.."/surname", "*.ogg")
-    local rewardsFiles = VFS.DirList(lostAndFoundPath.."/rewards", "*.ogg")
-    local additionalInfo = VFS.DirList(lostAndFoundPath.."/additionalInfo", "*.ogg")
-
-    local nameNr = math.random(1,3)
-    for i=1, nameNr do
-        local name = nameFiles[math.random(1,#nameFiles)]
-        spPlaySoundFile(name, 1.0)
-        Sleep(1000)
-
-        local surname = surnameFiles[math.random(1,#surnameFiles)]
-        spPlaySoundFile(surname, 1.0)
-        Sleep(1000)
-
-        local additionalInfo = additionalInfo[math.random(1,#additionalInfo)]
-        spPlaySoundFile(additionalInfo, 1.0)
-        Sleep(7000)
-
-        local reward = rewardsFiles[math.random(1,#rewardsFiles)]
-        spPlaySoundFile(reward, 1.0)
-        Sleep(3000)
+    local function play(folder)
+        local files = pools[folder]
+        local file = files[math.random(1,#files)]
+        Spring.PlaySoundFile(file, 1.0)
+        local pause = (folder == "name" or folder == "surname") and 120 or 300
+        Sleep(durations[file:sub(#base+1)] + pause)
     end
-
-    Spring.PlaySoundFile(lostAndFoundPath.."/Postlude_9s.ogg", 1.0)
-    Sleep(9000)  
+    play("intro")
+    for i=1,math.random(1,3) do
+        play("name")
+        play("surname")
+        play("additionalInfo")
+        play("rewards")
+    end
+    play("postlude")
+    return true
 end
 
 
