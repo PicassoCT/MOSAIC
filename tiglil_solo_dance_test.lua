@@ -38,6 +38,20 @@ for _,sign in ipairs({0,1}) do
             local key=table.concat(signature,';');assert(not signatures[key],'styles have identical body choreography');signatures[key]=name
         end
         for _,p in ipairs(style.frames)do if p.hold>0 then held=held+1 end end
+        if name=='ballet' then
+            local cues,turns={},{}
+            for _,p in ipairs(style.frames)do
+                cues[p.cue]=p
+                if p.heading then turns[#turns+1]=p.heading end
+                assert(math.abs(p.body[1])<=12 and math.abs(p.body[3])<=3,'ballet lost its upright posture')
+            end
+            assert(#style.headings==1 and #turns==4,'ballet must complete one deliberate full turn')
+            for i,a in ipairs(turns)do assert(a==i*90,'turn collapses into a native full-circle no-op')end
+            assert(cues['arabesque balance'].hold>=.4 and cues['left balance'].hold>=.4,'balances are rushed')
+            assert(cues['left extension'].left[3]<=-40 and cues['right extension'].right[3]>=40,'missing opposing extensions')
+            assert(cues['arabesque'].right[1]>=40 and cues['arabesque'].right[4]==0,'arabesque needs a straight back leg')
+            assert(cues['demi plie'].left[4]>20 and cues['soft landing'].right[4]>20,'missing bent-knee preparations/landing')
+        end
         if name=='joi' then assert(#style.frames==16 and style.turnBeats==8,'Joi lost its full phrase or slow turns')end
         if name=='popping' then assert(held==#style.frames,'popping lost its accented holds')end
     end
@@ -45,7 +59,7 @@ end
 math.random=random
 for _,file in ipairs({'house_western_hologram_script.lua','house_western_brothel_hologram_script.lua','advertisingblimphologramscript.lua'})do
     local f=assert(io.open('scripts/'..file));local source=f:read('*a');f:close()
-    for _,name in ipairs({'danceShuffle','danceDisco','dancePopping','danceJoi'})do
+    for _,name in ipairs({'danceShuffle','danceDisco','dancePopping','danceJoi','danceBallet'})do
         assert(source:find('idleAnimations[#idleAnimations +1] = '..name,1,true),file..' omits '..name)
     end
 end
