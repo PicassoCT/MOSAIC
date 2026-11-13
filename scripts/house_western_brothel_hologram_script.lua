@@ -1102,6 +1102,7 @@ idleAnimations[#idleAnimations +1] = danceBurlesqueFan
 idleAnimations[#idleAnimations +1] = lingerBrothel
 idleAnimations[#idleAnimations +1] = greetPasserby
 idleAnimations[#idleAnimations +1] = embracePasserby
+idleAnimations[#idleAnimations +1] = danceEmbracePasserby
 idleAnimations[#idleAnimations +1] = kissPasserby
 idleAnimations[#idleAnimations +1] = invitePasserby
 idleAnimations[#idleAnimations +1] = strikeAPose

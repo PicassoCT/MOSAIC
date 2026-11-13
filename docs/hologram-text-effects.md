@@ -320,3 +320,12 @@ extension and low curtsy. Each pose transitions for 0.9 seconds and holds for
 entry/exit. This is a stage routine, independent of pedestrian availability.
 It plays first in the diagnostic preview and remains absent from ordinary
 advertisement and blimp pools.
+
+
+`danceEmbracePasserby` adds a brothel-only close dance embrace. After opening
+and closing the arms, Tiglil performs two left/right sway pairs with small
+alternating knee bends and lateral steps, settles briefly, releases and steps
+back. Forward placement stays constant during the sways. The mirrored routine
+lasts about 12.5 seconds, uses the existing close-embrace distance/height checks,
+and ends early when its pedestrian leaves. It is excluded from normal western
+and blimp pools and plays first in `text_fx_test` when a suitable civilian is near.

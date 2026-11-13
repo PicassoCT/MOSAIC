@@ -5041,6 +5041,7 @@ local function personalRoutine(name)
 end
 function greetPasserby() return personalRoutine('greeting') end
 function embracePasserby() return personalRoutine('embrace') end
+function danceEmbracePasserby() return personalRoutine('danceEmbrace') end
 function kissPasserby() return personalRoutine('kiss') end
 function invitePasserby() return personalRoutine('invitation') end
 
