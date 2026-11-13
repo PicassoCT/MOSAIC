@@ -6,11 +6,15 @@ include "lib_physics.lua"
 include "lib_UnitScript.lua"
 include "lib_radiance_emitters.lua"
 
-local placeGroundProps = include "lib_house_asian_ground_placeables.lua"
 local placeablePlanner = GetSetSharedOneTimeResult("house_asian_standalone_placeable_planner", function()
     return VFS.Include("scripts/lib_house_asian_placeables.lua").withCatalogue(
         VFS.Include("scripts/house_asian_standalone_placeable_catalog.lua"))
 end)
+local placeGroundProps = placeablePlanner:bindPlacement({
+    unitID=unitID, GG=GG, Game=Game, Spring=Spring,
+    Move=Move, Turn=Turn, Show=Show, Sleep=Sleep,
+    SetRadiancePlaceables=SetRadiancePlaceables,
+})
 local TablesOfPieceGroups = {}
 local boolDebug = false
 
@@ -448,7 +452,7 @@ function addGroundPlaceables()
     for _, id in ipairs(ToShowTable) do
         halfExtent=math.max(halfExtent,placeablePlanner.catalogue.buildings[pieceNr_pieceName[id]] or 0)
     end
-    return placeGroundProps(placeablePlanner, {
+    return placeGroundProps({
         seed=getDeterministicStationaryUnitHash(unitID), cell=cubeDim.length,
         pieces=available, halfExtent=halfExtent,
         roadWidth=(GameConfig.city.alleys or {}).sizeX,

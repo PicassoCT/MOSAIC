@@ -19,7 +19,11 @@ local stackPlanner = GetSetSharedOneTimeResult("house_asian_stack_planner",
     function() return VFS.Include("scripts/lib_house_asian_stacks.lua") end)
 local placeablePlanner = GetSetSharedOneTimeResult("house_asian_placeable_planner",
     function() return VFS.Include("scripts/lib_house_asian_placeables.lua") end)
-local placeGroundProps = include "lib_house_asian_ground_placeables.lua"
+local placeGroundProps = placeablePlanner:bindPlacement({
+    unitID=unitID, GG=GG, Game=Game, Spring=Spring,
+    Move=Move, Turn=Turn, Show=Show, Sleep=Sleep,
+    SetRadiancePlaceables=SetRadiancePlaceables,
+})
 local splitParams = (UnitDefs[unitDefID] or {}).customParams or {}
 local splitPlan, splitLayout
 local structuralPlan
@@ -1944,7 +1948,7 @@ function addGroundPlaceables()
         if not inToShowDict(id) then available[pieceNr_pieceName[id]] = id end
     end
     local ux, _, uz = Spring.GetUnitPosition(unitID)
-    return placeGroundProps(placeablePlanner, {
+    return placeGroundProps({
         seed=splitPlan and splitPlan.seed or splitPlanner.seed(ux,uz,Game.mapName),
         cell=cubeDim.length, pieces=available,
         roadWidth=(GameConfig.city.alleys or {}).sizeX,
