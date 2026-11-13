@@ -1130,7 +1130,7 @@ function addHologramLetters( myMessages)
             restoreMessageOriginalPosition(allLetters, posLetters)
             name, textFX = randDict(allFunctions)
             if name and canProjectTextFx(name, posLetters) then
-                textFX(allLetters, posLetters, TableOfPiecesGroups)
+                runHologramTextFx(textFX, allLetters, posLetters, TableOfPiecesGroups)
                 Signal(SIG_FLICKER)
                 HideLetters(allLetters,posLetters,nil,5000)
             end

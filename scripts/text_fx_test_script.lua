@@ -82,6 +82,8 @@ local function cycle()
         for _,degrees in ipairs({0,20,-20}) do
             for _,case in ipairs(cases) do
                 local ids,pos=layout(case.upright,math.rad(degrees))
+                local effect=effects[case.name]
+                local multiplier=effect and math.random(100,300)/100 or 1
                 local note=''
                 if case.name=='personalProject' or case.name=='civilianCongaText' then note='; needs a nearby civilian' end
                 if case.name=='randomFLickerLetters' then note='; night-only effect' end
@@ -93,12 +95,13 @@ local function cycle()
                 if case.name=='letterTornado' then note='; widening upright cone; letters orbit at least 60 deg/s' end
                 if case.name=='heartMonitor' then note='; two travelling ECG pulses, upright letters on one baseline' end
                 if case.name=='matrixTextFx' then note='; three fast upright console sweeps' end
+                note=note..string.format('; speed %.2fx',multiplier)
+                Spring.SetUnitRulesParam(unitID,'text_fx_test_speed',multiplier,{public=true})
                 Spring.Echo(string.format('[Text FX test %d] %s | %s | parent Y %d deg/s | full animation, then 5 seconds%s',
                     unitID,case.name,case.upright and 'upright' or 'horizontal',degrees,note))
                 Spring.SetUnitRulesParam(unitID,'text_fx_test_mode',case.name,{public=true})
                 Spring.SetUnitRulesParam(unitID,'text_fx_test_rotation',degrees,{public=true})
-                local effect=effects[case.name]
-                if effect then effect(ids,pos,groups) end
+                if effect then runHologramTextFx(effect,ids,pos,groups,multiplier) end
                 -- Active effects still run to completion. Cleanup gets at
                 -- most five seconds; already-hidden glyphs reset immediately.
                 if not waitHologramTextCleanup(glyphs,visibleGlyphs,5000) then

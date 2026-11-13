@@ -1,3 +1,28 @@
+-- Rates belong to the effect coroutine, never to the whole unit. Weak keys
+-- prevent interrupted/killed threads retaining speed state indefinitely.
+local textFxRates = setmetatable({}, {__mode="k"})
+local textFxMainThread = {}
+function GetHologramTextFxSpeed()
+    return textFxRates[coroutine.running() or textFxMainThread] or 1
+end
+
+function runHologramTextFx(effect, allLetters, posLetters, groups, multiplier)
+    multiplier = multiplier or math.random(100,300)/100
+    if type(multiplier)~="number" or multiplier~=multiplier then multiplier=1 end
+    multiplier=math.max(1,math.min(3,multiplier))
+    local thread=coroutine.running() or textFxMainThread
+    local previous=textFxRates[thread]
+    textFxRates[thread]=multiplier
+    effect(allLetters,posLetters,groups)
+    textFxRates[thread]=previous
+    -- Effects may resume the caller's parent spin while accelerated. Restore
+    -- its actual requested speed after leaving the effect's timing context.
+    if posLetters.spinnerSpeed and posLetters.spinnerSpeed~=0 then
+        Spin(textSpinner,textSpinnerAxis,posLetters.spinnerSpeed,0)
+    end
+    return multiplier
+end
+
 -- Select complete phrases when possible, retaining the full source pool as fallback.
 function selectHologramMessage(messages, groups)
     local eligible = {}

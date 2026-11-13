@@ -7,6 +7,10 @@ on:
       - scripts/lib_hologram_tiglil.lua
       - scripts/advertisingblimphologramscript.lua
       - objects3d/advertiseblimp_hologram.DAE
+      - gamedata/unit_script_header.lua
+      - units/neutral/house_western_hologram.lua
+      - units/shared/text_fx_test.lua
+      - scripts/text_fx_test_script.lua
       - scripts/lib_textFx.lua
       - scripts/house_western_hologram_script.lua
       - scripts/house_western_brothel_hologram_script.lua
@@ -22,6 +26,10 @@ on:
       - scripts/lib_hologram_tiglil.lua
       - scripts/advertisingblimphologramscript.lua
       - objects3d/advertiseblimp_hologram.DAE
+      - gamedata/unit_script_header.lua
+      - units/neutral/house_western_hologram.lua
+      - units/shared/text_fx_test.lua
+      - scripts/text_fx_test_script.lua
       - scripts/lib_textFx.lua
       - scripts/house_western*hologram_script.lua
       - objects3d/house_western_hologram.DAE
@@ -61,5 +69,6 @@ jobs:
           lua5.1 tests/tiglil_retarget_test.lua
           python3 tests/tiglil_retarget_model_test.py
           lua5.1 tests/hologram_spline_test.lua
+          lua5.1 tests/text_fx_speed_test.lua
           lua5.1 tests/text_fx_test_unit_test.lua
           lua5.1 tests/text_fx_tornado_stall_test.lua
