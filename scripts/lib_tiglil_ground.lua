@@ -52,13 +52,22 @@ function M.new(spring,native,owner,defs,lifetime)
         if math.abs(y-spring.GetGroundHeight(x,z))>8 then return end
         return x,y,z
     end
-    local function spot(id,x,z,radius)
-        local separation=radius+(spring.GetUnitRadius(id) or 5)+4
-        for i=0,7 do
-            local angle=(i+(owner%8))*math.pi/4
+    local function spot(id,x,z,radius,config,bodyScale)
+        local personRadius=spring.GetUnitRadius(id) or 5
+        if spring.GetUnitCollisionVolumeData then
+            local sx,_,sz=spring.GetUnitCollisionVolumeData(id)
+            if sx and sz then personRadius=math.max(sx,sz)*.5 end
+        end
+        local separation=config.distance and math.max(bodyScale*config.distance,personRadius*.65+bodyScale)
+            or radius+personRadius+4
+        local front=config.personal and spring.GetUnitVectors(id)
+        local heading=front and math.atan2(front[3],front[1]) or (owner%8)*math.pi/4
+        for i=0,(config.personal and 0 or 7) do
+            local angle=heading+i*math.pi/4
             local px,pz=x+math.cos(angle)*separation,z+math.sin(angle)*separation
             local py=spring.GetGroundHeight(px,pz)
-            local clear=py>=0 and not spring.GetGroundBlocked(px-radius,pz-radius,px+radius,pz+radius)
+            local kind,blocked=spring.GetGroundBlocked(px-radius,pz-radius,px+radius,pz+radius)
+            local clear=py>=0 and (not kind or (config.distance and kind=='unit' and blocked==id))
             for _,v in ipairs({{-radius,-radius},{radius,-radius},{-radius,radius},{radius,radius}})do
                 if math.abs(spring.GetGroundHeight(px+v[1],pz+v[2])-py)>1.5 then clear=false end
             end
@@ -102,7 +111,8 @@ function M.new(spring,native,owner,defs,lifetime)
         end
         return true
     end
-    local function begin()
+    local function begin(config)
+        config=config or {}
         -- Old models and isolated animation previews can omit placement APIs.
         for _,name in ipairs({'GetUnitPieceMap','GetUnitPieceInfo','GetUnitPieceMatrix','GetUnitVectors','GetUnitsInCylinder',
             'GetUnitPosition','GetUnitVelocity','GetGroundHeight','GetGroundBlocked','GetUnitRadius','GetUnitDefID','ValidUnitID','GetUnitIsDead'})do
@@ -126,7 +136,8 @@ function M.new(spring,native,owner,defs,lifetime)
         local relative=mul(inv,body);local invRelative=inverse(relative)
         if not invRelative then return false end
         local scale=math.sqrt(body[1][3]^2+body[2][3]^2+body[3][3]^2)
-        local radius=math.max(6,scale*(11060.378906/12)*7)
+        local bodyScale=scale*(11060.378906/12)
+        local radius=math.max(6,bodyScale*7)
         local ox,_,oz=spring.GetUnitPosition(owner)
         local candidates=spring.GetUnitsInCylinder(ox,oz,400) or {}
         table.sort(candidates,function(l,r)
@@ -137,7 +148,19 @@ function M.new(spring,native,owner,defs,lifetime)
         end)
         for _,id in ipairs(candidates)do
             local x,_,z=person(id)
-            local goal=x and spot(id,x,z,radius)
+            local height=spring.GetUnitHeight and spring.GetUnitHeight(id) or 18*bodyScale
+            -- Civilian metadata uses a generic height/radius. Prefer the
+            -- actual head location and collision width for close staging.
+            if x and config.distance and spring.GetUnitPiecePosDir then
+                local targetMap=spring.GetUnitPieceMap(id) or {}
+                local head=targetMap.Head1 or targetMap.head or targetMap.Head
+                if head then
+                    local _,hy=spring.GetUnitPiecePosDir(id,head)
+                    if hy then height=hy-spring.GetGroundHeight(x,z)+2*bodyScale end
+                end
+            end
+            local compatible=not config.distance or (height>bodyScale*11 and height<bodyScale*26)
+            local goal=x and compatible and spot(id,x,z,radius,config,bodyScale)
             if goal then
                 local fx,fz=x-goal[1],z-goal[3];local len=math.sqrt(fx*fx+fz*fz);fx,fz=fx/len,fz/len
                 local desiredBody={{fz*scale,-fx*scale,0},{0,0,scale},{-fx*scale,-fz*scale,0}}
@@ -150,11 +173,11 @@ function M.new(spring,native,owner,defs,lifetime)
                     SetSignalMask((lifetime or 0)+SIG_GROUND)
                     while active do Sleep(33);if not update()then return end end
                 end)
-                return true
+                return {person=id,height=height,bodyScale=bodyScale}
             end
         end
         return false
     end
-    return {begin=begin,stop=stop,update=update}
+    return {begin=begin,stop=stop,update=update,isActive=function()return active~=nil end}
 end
 return M

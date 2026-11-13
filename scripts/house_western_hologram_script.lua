@@ -1634,6 +1634,9 @@ idleAnimations[#idleAnimations +1] = dancePopping
 idleAnimations[#idleAnimations +1] = danceJoi
 idleAnimations[#idleAnimations +1] = dancePole
 idleAnimations[#idleAnimations +1] = danceBallet
+idleAnimations[#idleAnimations +1] = greetPasserby
+idleAnimations[#idleAnimations +1] = embracePasserby
+idleAnimations[#idleAnimations +1] = kissPasserby
 idleAnimations[#idleAnimations +1] = strikeAPose
 
 technoAnimations[#technoAnimations +1] = danceShuffle
@@ -1643,6 +1646,11 @@ technoAnimations[#technoAnimations +1] = danceJoi
 technoAnimations[#technoAnimations +1] = strikeAPose
 technoAnimations[#technoAnimations +1] = idle_stance_10
 technoAnimations[#technoAnimations +1] = idle_stance
+
+for _,animation in ipairs({greetPasserby,embracePasserby,kissPasserby}) do
+    technoAnimations[#technoAnimations+1] = animation
+    businessPresentations[animation] = true
+end
 
 -- Retain the business unit's existing dance selection and add its exclusive
 -- advertisement routines. Casino and ordinary advertisements keep their pools.

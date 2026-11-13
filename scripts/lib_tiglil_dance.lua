@@ -194,9 +194,11 @@ function M.play(name,api,style)
     api.turn('deathpivot',{0,0,0},600)
     api.turn('dancepivot',{0,0,0},600)
     perform(neutral,600);api.sleep(650)
+    local interrupted=false
     for _,heading in ipairs(style.headings) do
         api.turn('deathpivot',{0,heading*sign,0},style.beat*(style.turnBeats or 2))
         for _,p in ipairs(style.frames) do
+            if api.available and not api.available() then interrupted=true;break end
             local duration=style.beat*p.beats
             -- Only the turn component rotates the ballet stage. Quarter-turn
             -- targets avoid the native shortest-path collapse of a full 360.
@@ -204,6 +206,7 @@ function M.play(name,api,style)
             perform(p,duration*(1-p.hold))
             api.sleep(duration)
         end
+        if interrupted then break end
     end
     api.turn('deathpivot',{0,0,0},600)
     perform(neutral,600);api.sleep(650)

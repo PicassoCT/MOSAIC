@@ -5001,11 +5001,12 @@ end
 
 -- Shared solo choreography; timed commands stay inside the Tiglil smoother.
 local soloDances=include("lib_tiglil_dance.lua")
-local function soloDance(name,style)
+local function soloDance(name,style,available)
     soloDances.play(name,{
         turn=function(name,a,ms) tSyncIn(piece(name),a[1],a[2],a[3],ms) end,
         move=function(name,a,ms) mSyncIn(piece(name),a[1],a[2],a[3],ms) end,
         sleep=Sleep,
+        available=available,
         finish=function()
             WaitForTurns(deathpivot,dancepivot,tigLil,tlHead,tlhairup,tlhairdown,
                 tlarm,tlarmr,tllegUp,tllegLow,tllegUpR,tllegLowR)
@@ -5027,6 +5028,20 @@ local brothelDances=include("lib_tiglil_brothel.lua")
 function danceBurlesqueSway() soloDance('sway',brothelDances.sway) end
 function danceBurlesqueWave() soloDance('wave',brothelDances.wave) end
 function danceBurlesqueFan() soloDance('fan',brothelDances.fan) end
+local socialDances=include("lib_tiglil_social.lua")
+local function personalRoutine(name)
+    if not peopleAnimationsEnabled then return false end
+    local style=socialDances[name]
+    local context=groundConversation.begin({personal=true,distance=style.distance})
+    if not context then return false end
+    soloDance(name,style,groundConversation.isActive)
+    groundConversation.stop()
+    return true
+end
+function greetPasserby() return personalRoutine('greeting') end
+function embracePasserby() return personalRoutine('embrace') end
+function kissPasserby() return personalRoutine('kiss') end
+function invitePasserby() return personalRoutine('invitation') end
 
 --even numbers left foot up
 function drumPose1(mspeed, tspeed)

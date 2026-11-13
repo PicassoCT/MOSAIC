@@ -287,3 +287,26 @@ arm arcs, and alternating fan-like arm/leg silhouettes. They use the rigid arm
 pieces directly, mirror their phrases and return to neutral. The diagnostic
 preview includes all three. Native motion checks cover the new dances and the
 original conversational and suggestive routines across multiple seeds.
+
+
+## Personalized pedestrian performances
+
+Building holograms add `greetPasserby`, `embracePasserby` and `kissPasserby`.
+They play a greeting dance, a rigid-arm embrace, or a brief cheek-kiss gesture
+in front of a stationary civilian. The normal western idle/techno/business pools
+and the brothel pool include them; the blimp neither registers nor enables them.
+These performances are skipped when no suitable pedestrian or clear space exists.
+They never issue movement orders to the pedestrian, and end early if the person
+leaves. Business/casino interactions do not receive glow sticks.
+
+Close staging uses the pedestrian's collision width and actual head location
+where available: the generic model radius/height can substantially overstate
+both. Incompatible heights skip the close gesture. Contact is an approximation
+on this rig, which has no elbow, wrist or mouth articulation; live visual review
+is still needed for different civilian silhouettes.
+
+Only the brothel adds `invitePasserby`, its seductress interaction: attention and
+gaze changes, a shoulder-driven beckoning gesture, slow sways, a step aside and
+a held invitation. It uses the same pedestrian selection, grounding and
+interruption rules. These four personalized routines are named in `text_fx_test`;
+place an idle civilian nearby to exercise them.
