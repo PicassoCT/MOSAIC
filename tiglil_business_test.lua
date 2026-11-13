@@ -44,7 +44,7 @@ setmetatable(environment,{__index=_G})
 for name in source:sub(first,last-1):gmatch('= ([%w_]+)\n')do
     if name~='true' then environment[name]=function()end end
 end
-for _,name in ipairs({'advertiseSales','modelWalk','presentGala'})do environment[name]=function()end end
+for _,name in ipairs({'advertiseSales','modelWalk','presentGala','greetPasserby','embracePasserby','kissPasserby'})do environment[name]=function()end end
 environment.tigLilAnimations.idle_stance11=function()end
 environment.tigLilAnimations.idle_playBall=function()end
 assert(setfenv(assert(loadstring(source:sub(first,last-1))),environment))()
@@ -66,7 +66,8 @@ for _,kind in ipairs({'business','casino','normal'})do
     if kind=='business' or kind=='casino' then
         for _,fn in ipairs(environment.technoAnimations)do
             assert(contains(options.animations,fn),'existing dance was removed from '..kind)
-            assert(options.isTechnoAnimation(fn),'existing techno dance lost its props')
+            local personal=fn==environment.greetPasserby or fn==environment.embracePasserby or fn==environment.kissPasserby
+            assert(options.isTechnoAnimation(fn)==not personal,'wrong props for dance/personal interaction')
         end
     end
 end

@@ -28,8 +28,9 @@ for filename,fixture in pairs(fixtures)do
     end
     local people={[10]={x=130,z=100,def=1},[11]={x=101,z=100,def=2},[12]={x=105,z=100,def=1,fast=true},[13]={x=108,z=100,def=1,dead=true},[14]={x=110,z=100,def=1,transport=true}}
     local blocked=false
+    local personHead=false
     local spring={}
-    function spring.GetUnitPieceMap()return map end
+    function spring.GetUnitPieceMap(id)if id==10 and personHead then return {Head1=30}end;return map end
     function spring.GetUnitPieceInfo(_,id)if id==1 then return {parent='brothel_spin'}end;return parts[id-2]end
     function spring.GetUnitPieceMatrix(_,id)
         local m=model(id);local result={};for j=1,4 do for i=1,4 do result[#result+1]=m[i][j]end end;return unpack(result)
@@ -88,6 +89,27 @@ for filename,fixture in pairs(fixtures)do
     blocked=false;assert(placement.begin());placement.stop()
     assert(not worker)
     for i=1,3 do assert(moves[i]==0 and turns[i]==0,'cancellation leaves anchor displaced')end
+    actorChange=rotation({0,0,0})
+    local context=placement.begin({personal=true,distance=4.8})
+    assert(context and context.person==10)
+    local closeBody=mul(unitR,model(map.tigLil))
+    local dx,dz=closeBody[1][4]-people[10].x,closeBody[3][4]-people[10].z
+    local front=spring.GetUnitVectors(10)
+    assert((dx*front[1]+dz*front[3])/math.sqrt(dx*dx+dz*dz)>.999,'personal interaction is not in front of pedestrian')
+    placement.stop()
+    spring.GetUnitHeight=function()return context.bodyScale*3 end
+    assert(not placement.begin({personal=true,distance=2.8}),'contact gesture ignores incompatible actor heights')
+    spring.GetUnitHeight=function()return 40 end
+    spring.GetUnitRadius=function()return 25 end
+    spring.GetUnitCollisionVolumeData=function()return 10,25,10 end
+    spring.GetUnitPiecePosDir=function(id,head)assert(id==10 and head==30);return 130,spring.GetGroundHeight(130)+18*context.bodyScale,100 end
+    personHead=true
+    assert(placement.begin({personal=true,distance=4.8}),'generic metadata height hides a valid head match')
+    closeBody=mul(unitR,model(map.tigLil))
+    dx,dz=closeBody[1][4]-people[10].x,closeBody[3][4]-people[10].z
+    assert(math.sqrt(dx*dx+dz*dz)<context.bodyScale*6,'generic metadata radius keeps embrace out of reach')
+    placement.stop()
+    spring.GetUnitHeight=nil
     people[10].dead=true;assert(not placement.begin(),'truck/dead/moving/transported units selected')
  end
  print('PASS: '..filename..': grounded conversation, person selection, facing, rotated parents, animated bounds, fallback and restoration')
