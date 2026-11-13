@@ -49,18 +49,12 @@ near(find('MoveInTime',ids.tigLil,2)[4],12*scale)
 near(find('MoveInTime',ids.tigLil,2)[5],450)
 helpers.Move(piece('ball'),2,7,3)
 c=find('Move',ids.ball,2);near(c[4],7);near(c[5],3)
--- Exercise the actual pole routine without relying on random branch selection.
-local first=assert(source:find('local function drumPosePoledancin',1,true))
-local last=assert(source:find('local function idle_stance11',first,true))
-local pole=assert(loadstring(source:sub(1,prefix-1)..
-    'local tigLil,deathpivot,tldancedru,tlpole=piece("tigLil"),piece("deathpivot"),piece("tldancedru"),piece("tlpole")\n'..
-    source:sub(first,last-1)..'return drumPosePoledancin'))()
--- Other joint handles only identify unrelated commands in this capture.
-pole(3,2,0)
-local parent=find('Spin',ids.deathpivot,3);local child=find('Spin',ids.tldancedru,3)
-near(parent[4],-child[4]);near(parent[5],child[5])
-assert(find('StopSpin',ids.deathpivot,3) and find('StopSpin',ids.tldancedru,3))
-near(find('TurnInTime',ids.tigLil,2)[4],-math.pi/2)
+-- The expanded pole routine keeps the prop still and moves the body around
+-- the pole centre. Contact/geometry checks now live in tiglil_pole_model_test.
+local pole=dofile('scripts/lib_tiglil_pole.lua')
+local sample=pole.pose(pole.sequence[1],0)
+near(sample.move[1]+pole.bodyBind[1],pole.pole[1]+pole.sequence[1].radius)
+near(sample.move[2]+pole.bodyBind[2],pole.pole[2])
 -- Exercise the production orbit scheduler; inner limb routines are irrelevant.
 assert(loadstring(source))()
 function danceInCircle() end
@@ -82,4 +76,4 @@ for i=1,#orbit,4 do
     assert(orbit[i+2]>=245 and orbit[i+2]<=290)
     near(orbit[i+3],360)
 end
-print('PASS: Tiglil timed axes, body/root scale and timing, positive orbit, pole counter-spin, ball exclusion')
+print('PASS: Tiglil timed axes, body/root scale and timing, positive orbit, pole-centred orbit, ball exclusion')
