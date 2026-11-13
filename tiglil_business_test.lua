@@ -44,7 +44,7 @@ setmetatable(environment,{__index=_G})
 for name in source:sub(first,last-1):gmatch('= ([%w_]+)\n')do
     if name~='true' then environment[name]=function()end end
 end
-for _,name in ipairs({'advertiseSales','modelWalk','presentGala','greetPasserby','embracePasserby','kissPasserby'})do environment[name]=function()end end
+for _,name in ipairs({'advertiseSales','modelWalk','presentGala','advertiseWeightlessYoga','greetPasserby','embracePasserby','kissPasserby'})do environment[name]=function()end end
 environment.tigLilAnimations.idle_stance11=function()end
 environment.tigLilAnimations.idle_playBall=function()end
 assert(setfenv(assert(loadstring(source:sub(first,last-1))),environment))()
@@ -58,7 +58,7 @@ local function contains(pool,fn)for _,f in ipairs(pool)do if f==fn then return t
 for _,kind in ipairs({'business','casino','normal'})do
     environment.boolIsBuisness=kind=='business';environment.boolIsCasino=kind=='casino'
     configure()
-    for _,name in ipairs({'advertiseSales','modelWalk','presentGala'})do
+    for _,name in ipairs({'advertiseSales','modelWalk','presentGala','advertiseWeightlessYoga'})do
         local fn=environment[name]
         assert(contains(options.animations,fn)==(kind=='business'),name..' leaked into '..kind)
         assert(not options.isTechnoAnimation(fn),'advertisement receives techno props')
@@ -73,7 +73,7 @@ for _,kind in ipairs({'business','casino','normal'})do
 end
 for _,file in ipairs({'house_western_brothel_hologram_script.lua','advertisingblimphologramscript.lua'})do
     local code=read('scripts/'..file)
-    for _,name in ipairs({'advertiseSales','modelWalk','presentGala'})do
+    for _,name in ipairs({'advertiseSales','modelWalk','presentGala','advertiseWeightlessYoga'})do
         assert(not code:find(name,1,true),name..' registered outside business')
     end
 end
@@ -109,4 +109,4 @@ assert(danceThread)
 while coroutine.status(danceThread)~='dead' do assert(coroutine.resume(danceThread))end
 assert(performed==2)
 math.random=random
-print('PASS: three bounded business routines; exclusive production pools; old dances retained; no glow sticks during presentations')
+print('PASS: three bounded business dances plus yoga registration; exclusive production pools; old dances retained; no glow sticks during presentations')

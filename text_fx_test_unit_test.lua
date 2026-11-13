@@ -102,6 +102,7 @@ function include(file)
         danceEmbracePasserby=routine
         danceBehindGlass=routine
         danceShakira=routine
+        advertiseWeightlessYoga=routine
         greetPasserby,embracePasserby,kissPasserby,invitePasserby,lingerBrothel=routine,routine,routine,routine,routine
         return {idle_stance11=routine,enablePeopleAnimations=function()end}
     end
@@ -180,18 +181,18 @@ end
 assert(announcements[1].text:find('] wallImpactText |',1,true))
 assert(announcements[caseCount-5].text:find('] plain |',1,true))
 assert(announcements[caseCount+1].text:find('] wallImpactText |',1,true),'next cycle does not restart newest-first')
-local danceRank={danceShakira=12,danceBehindGlass=11,danceEmbracePasserby=10,lingerBrothel=9,
+local danceRank={advertiseWeightlessYoga=13,danceShakira=12,danceBehindGlass=11,danceEmbracePasserby=10,lingerBrothel=9,
     greetPasserby=8,embracePasserby=8,kissPasserby=8,invitePasserby=8,
     danceBurlesqueSway=7,danceBurlesqueWave=7,danceBurlesqueFan=7,idle_stance=6,idle_stance2=6,
     advertiseSales=5,modelWalk=5,presentGala=5,danceBallet=4,dancePole=3,danceJoi=2,
     idle_stance17=1,danceShuffle=1,danceDisco=1,dancePopping=1}
 previous=math.huge
-assert(danceOrder[1]=='danceShakira','new solo dance must preview first')
+assert(danceOrder[1]=='advertiseWeightlessYoga','new solo dance must preview first')
 for _,name in ipairs(danceOrder)do
     local age=danceRank[name] or 0
     assert(age<=previous,'Tiglil routines are not newest-first: '..name);previous=age
 end
-for _,name in ipairs({'idle_stance17 (solo footwork)','danceShuffle (solo shuffle)','danceDisco (solo disco)','dancePopping (solo popping)','danceJoi (Joi-inspired solo)','danceShakira (Shakira-inspired solo)','dancePole (pole choreography)','danceBallet (solo ballet)','lingerBrothel (ten lingering poses)','danceBehindGlass (behind-glass placeholder)','greetPasserby (personal greeting dance)','embracePasserby (personal embrace)','danceEmbracePasserby (brothel close dance embrace)','kissPasserby (personal cheek kiss)','invitePasserby (brothel seductress invitation)','idle_stance (street conversation)','idle_stance2 (street gestures)','danceBurlesqueSway (brothel hip sway)','danceBurlesqueWave (brothel body wave)','danceBurlesqueFan (brothel fan dance)','advertiseSales (business sales presentation)','modelWalk (business runway walk)','presentGala (business gala presenter)','idle_stance4 (acrobatics)','idle_stance5 (backflip and handstand)'}) do
+for _,name in ipairs({'idle_stance17 (solo footwork)','danceShuffle (solo shuffle)','danceDisco (solo disco)','dancePopping (solo popping)','danceJoi (Joi-inspired solo)','danceShakira (Shakira-inspired solo)','advertiseWeightlessYoga (weightless yoga studio)','dancePole (pole choreography)','danceBallet (solo ballet)','lingerBrothel (ten lingering poses)','danceBehindGlass (behind-glass placeholder)','greetPasserby (personal greeting dance)','embracePasserby (personal embrace)','danceEmbracePasserby (brothel close dance embrace)','kissPasserby (personal cheek kiss)','invitePasserby (brothel seductress invitation)','idle_stance (street conversation)','idle_stance2 (street gestures)','danceBurlesqueSway (brothel hip sway)','danceBurlesqueWave (brothel body wave)','danceBurlesqueFan (brothel fan dance)','advertiseSales (business sales presentation)','modelWalk (business runway walk)','presentGala (business gala presenter)','idle_stance4 (acrobatics)','idle_stance5 (backflip and handstand)'}) do
     assert(danceAnnouncements['[Text FX test 7] Tiglil animation: '..name],'preview omitted '..name)
 end
 assert(danceCalls>caseCount and drawn[pieceMap.tigLil],'Tiglil must keep dancing through the full text cycle')
