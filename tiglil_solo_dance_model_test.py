@@ -19,6 +19,7 @@ local dance=dofile('scripts/lib_tiglil_dance.lua')
 local styles={}
 for name,style in pairs(dance.styles)do styles[name]=style end
 for name,style in pairs(dofile('scripts/lib_tiglil_business.lua'))do styles[name]=style end
+for name,style in pairs(dofile('scripts/lib_tiglil_brothel.lua'))do styles[name]=style end
 for sign=0,1 do
  math.random=function()return sign end
  for name,style in pairs(styles) do
