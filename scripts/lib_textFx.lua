@@ -241,7 +241,7 @@ function canProjectTextFx(name, posLetters)
     if name == "matrixTextFx" then return posLetters.boolUpright == true end
     return not posLetters.boolUpright
         or name == "dnaHelix" or name == "spiralProject" or name == "archProject" or name == "letterTornado"
-        or name == "smilingFace" or name == "letterPlant" or name == "meteorCraterText"
+        or name == "smilingFace" or name == "letterPlant" or name == "meteorCraterText" or name == "splineShapeFollowing"
 end
 
 function dnaHelix(allLetters, posLetters)
@@ -1522,8 +1522,107 @@ function oneArmedBandit(allLetters, posLetters)
     if posLetters.spinnerSpeed then Spin(textSpinner,textSpinnerAxis,posLetters.spinnerSpeed,0) end
 end
 
+-- A short cubic Bezier spline, sampled by arc length so glyphs keep a steady
+-- pace through bends. Logical slots enter every 300 ms, including whitespace.
+function splineShapeFollowing(allLetters, posLetters)
+    if #allLetters == 0 then return end
+    local origin = posLetters.slotPositions and posLetters.slotPositions[1] or posLetters[allLetters[1]]
+    local spacing = math.max(sizeSpacingLetter,sizeDownLetter)*1.15
+    local height = sizeDownLetter
+    local function point(depth,along,rise)
+        return {origin[1]+depth,origin[2]+along,origin[3]+rise}
+    end
+    local side = math.random(0,1)==0 and -1 or 1
+    local controls = {
+        point(0,3*spacing,2*height),
+        point(side*spacing, -spacing, math.random(4,7)*height),
+        point(-side*spacing, -9*spacing, math.random(0,2)*height),
+        point(0,-13*spacing,2*height),
+    }
+    local samples,length = {},0
+    for i=0,96 do
+        local t=i/96;local u=1-t
+        local p={}
+        for axis=1,3 do
+            p[axis]=u*u*u*controls[1][axis]+3*u*u*t*controls[2][axis]
+                +3*u*t*t*controls[3][axis]+t*t*t*controls[4][axis]
+        end
+        if i>0 then
+            local last=samples[#samples].p
+            length=length+math.sqrt((p[1]-last[1])^2+(p[2]-last[2])^2+(p[3]-last[3])^2)
+        end
+        samples[#samples+1]={p=p,d=length}
+    end
+    local function sample(fraction)
+        local distance=math.max(0,math.min(1,fraction))*length
+        local lo,hi=1,#samples
+        while hi-lo>1 do
+            local mid=math.floor((lo+hi)/2)
+            if samples[mid].d<distance then lo=mid else hi=mid end
+        end
+        local a,b=samples[lo],samples[hi]
+        local blend=(distance-a.d)/math.max(1e-9,b.d-a.d)
+        return {a.p[1]+(b.p[1]-a.p[1])*blend,
+                a.p[2]+(b.p[2]-a.p[2])*blend,a.p[3]+(b.p[3]-a.p[3])*blend}
+    end
+    local step,delay=50,300
+    local travel=math.min(12000,math.max(step,math.ceil(length/spacing*delay/step)*step))
+    local slots=math.max(1,#(posLetters.spacing or allLetters))
+    local duration=travel+(slots-1)*delay
+    local current,lastPosition,leaseBeat={},{},{}
+    hardResetHologramLetters(allLetters)
+    StopSpin(textSpinner,textSpinnerAxis,0)
+    for elapsed=0,duration-step,step do
+        for index,id in ipairs(allLetters) do
+            local leases=posLetters.leases and posLetters.leases[id]
+                or {textSlot(posLetters,id,index-1)+1}
+            local active={}
+            for _,slot in ipairs(leases) do
+                local age=elapsed-(slot-1)*delay
+                if age>=0 and age<travel then active[#active+1]=slot end
+            end
+            local slot=current[id]
+            local beat=math.floor(elapsed/150)
+            local stillActive=false
+            for _,candidate in ipairs(active) do if candidate==slot then stillActive=true end end
+            if #active==0 then
+                if slot then HideReg(id) end
+                current[id]=nil
+            else
+                -- Exhausted meshes take turns at their active logical slots.
+                -- Never move a still-visible piece across the intervening path.
+                if not stillActive or leaseBeat[id]~=beat then
+                    local nextSlot=active[1]
+                    for _,candidate in ipairs(active) do
+                        if candidate>(slot or 0) then nextSlot=candidate;break end
+                    end
+                    slot=nextSlot;leaseBeat[id]=beat
+                end
+                local age=elapsed-(slot-1)*delay
+                if current[id]~=slot then
+                    HideReg(id)
+                    local start=sample(age/travel)
+                    for axis=1,3 do Move(id,axis,start[axis],1);Move(id,axis,start[axis],0) end
+                    lastPosition[id]=start
+                    ShowReg(id)
+                end
+                local target=sample((age+step)/travel)
+                for axis=1,3 do
+                    Move(id,axis,target[axis],math.max(1e-6,math.abs(target[axis]-lastPosition[id][axis])/(step/1000)))
+                end
+                current[id],lastPosition[id]=slot,target
+            end
+        end
+        Sleep(step)
+    end
+    hardResetHologramLetters(allLetters)
+    restoreMessageOriginalPosition(allLetters,posLetters)
+    if posLetters.spinnerSpeed then Spin(textSpinner,textSpinnerAxis,posLetters.spinnerSpeed,0) end
+end
+
 function getAllTextFx()
 return {
+        ["splineShapeFollowing"] = splineShapeFollowing,
         ["meteorCraterText"] = meteorCraterText,
         ["smilingFace"] = smilingFace,
         ["letterPlant"] = letterPlant,
@@ -1552,7 +1651,7 @@ return {
         ["personalProject"] = personalProject,
         ["archProject"] = archProject,
         ["achromaticShivering"] = achromaticShivering
-        --["splineShapeFollowing"] = splineShapeFollowing
+
 
         }
 end
