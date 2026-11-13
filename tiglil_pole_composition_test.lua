@@ -1,6 +1,6 @@
 function include(name)return dofile('scripts/'..name)end
 local pole=include('lib_tiglil_pole.lua')
-local signatures,directions={},{}
+local signatures,directions,accents={},{},{}
 local minTime,maxTime=math.huge,0
 for seed=1,40 do
     math.randomseed(seed)
@@ -17,6 +17,10 @@ for seed=1,40 do
         assert((p.angle-previous)*direction>=-1e-7,'orbit reverses inside a component')
         previous=p.angle;time=time+p.ms
         seen[p.name]=(seen[p.name]or 0)+1
+        if p.name=='raised stag hold' or p.name=='long-leg diagonal hold' or p.name=='supported pike hold' then
+            accents[p.name]=true
+            assert(p.freeLeft==0 and p.freeRight==0,'new aerial accent lost its two-hand support')
+        end
         signature[#signature+1]=p.name..':'..p.ms..':'..p.angle
         assert(p.freeLeft==0 or p.freeRight==0,'aerial pose releases both hands')
         if p.name=='open overhead split' or p.name=='hold overhead split' then
@@ -34,11 +38,15 @@ for seed=1,40 do
     for _,name in ipairs({'tucked spin','first climb','second climb','sideways tucked hold','hold overhead split','extended-leg turn','side flourish','fan kick sweep','controlled descent','lowering lunge','stand from floor'})do
         assert(seen[name],name..' lost from composition')
     end
+    local accentCount=0
+    for _,name in ipairs({'raised stag hold','long-leg diagonal hold','supported pike hold'})do if seen[name]then accentCount=accentCount+1 end end
+    assert(accentCount==1,'each routine should contain one held accent')
     assert(bridgeRises>=2 and bridgeRises<=4 and bridgeLowers==bridgeRises)
     assert(time<80000,'composed routine is unbounded')
     minTime,maxTime=math.min(minTime,time),math.max(maxTime,time)
     signatures[table.concat(signature,';')]=true
 end
+assert(accents['raised stag hold'] and accents['long-leg diagonal hold'] and accents['supported pike hold'],'new pole poses are unreachable')
 local count=0;for _ in pairs(signatures)do count=count+1 end
 assert(count==40 and directions[-1]and directions[1],'composer lacks independent variation')
 print('PASS: 40 distinct supported pole compositions, both orbit directions, all skills retained, 2–4 grounded bridge repetitions; '..minTime..'–'..maxTime..' ms')

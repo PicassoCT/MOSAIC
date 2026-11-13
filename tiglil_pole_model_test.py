@@ -33,7 +33,7 @@ for filename,info in pairs(PROFILES)do
 local rig=pole.calibrate(function(name)return info[name]end,11060.378906/12)
 for _,stage in ipairs({0,9})do
  local index=0
- pole.play({show=function()end,sleep=function()end,apply=function(p,ms)
+ local function emit(p,ms)
   index=index+1
   print(filename..';'..stage..';'..index..';support;'..p.support)
   print(filename..';'..stage..';'..index..';move;'..table.concat(p.move,','))
@@ -41,7 +41,11 @@ for _,stage in ipairs({0,9})do
   local contacts=0
   for name,v in pairs(p.contacts)do contacts=contacts+1;print(filename..';'..stage..';'..index..';contact_'..name..';'..table.concat(v,','))end
   if p.support=='pole' then assert(contacts>=1,'both hands release during the pole sequence')end
- end},stage,rig)
+ end
+ pole.play({show=function()end,sleep=function()end,apply=emit},stage,rig)
+ for _,p in ipairs(pole.sequence)do
+  if p.name=='raised stag' or p.name=='long-leg diagonal' or p.name=='supported pike' then emit(pole.pose(p,stage,rig),p.ms)end
+ end
 end
 end
 '''
