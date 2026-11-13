@@ -1,7 +1,7 @@
 local function read(path)local f=assert(io.open(path));local s=f:read('*a');f:close();return s end
 local source=read('scripts/house_western_brothel_hologram_script.lua')
 for _,name in ipairs({'idle_stance','idle_stance2','idle_stance13','idle_stance15','idle_stance18','dancePole',
-    'danceBurlesqueSway','danceBurlesqueWave','danceBurlesqueFan'})do
+    'danceBurlesqueSway','danceBurlesqueWave','danceBurlesqueFan','lingerBrothel'})do
     assert(source:find('idleAnimations[#idleAnimations +1] = '..name..'\n',1,true),'brothel omits '..name)
 end
 for _,file in ipairs({'house_western_hologram_script.lua','advertisingblimphologramscript.lua'})do
@@ -16,7 +16,7 @@ for name,style in pairs(styles)do
     local last,signature={},{}
     player.play(name,{
         turn=function(id,a,ms)
-            assert(ms>=100 and ms<=1600)
+            assert(ms>=100 and ms<=(id=='deathpivot' and 2000 or 1000))
             for i=1,3 do assert(math.abs(a[i])<=90,'burlesque pose exceeds intended range')end
             last[id]=a
             if id=='tigLil' then signature[#signature+1]=table.concat(a,',')end
@@ -28,11 +28,19 @@ for name,style in pairs(styles)do
         sleep=function(ms)time=time+ms end,
         finish=function()finished=true end,
     },style)
-    assert(finished and time>=12000 and time<30000)
+    assert(finished and time>=12000 and time<(name=='linger' and 35000 or 30000))
     assert(moves==#style.frames*#style.headings+2)
     for _,id in ipairs({'tigLil','tlHead','tllegUp','tllegUpR','tllegLow','tllegLowR','deathpivot'})do
         for i=1,3 do assert(last[id][i]==0,'pose leaks into next routine')end
     end
+    if name=='linger' then
+        local poses={}
+        assert(#style.frames==10,'lingering needs ten distinct poses')
+        for _,p in ipairs(style.frames)do
+            assert(p.cue and not poses[p.cue]);poses[p.cue]=true
+            assert(style.beat*p.beats*p.hold>=2000,'lingering hold is rushed')
+        end
+    end
     local key=table.concat(signature,';');assert(not signatures[key]);signatures[key]=true
 end
-print('PASS: original suggestive routines retained; three distinct bounded new routines exclusive to brothel')
+print('PASS: original suggestive routines retained; four distinct bounded new routines including ten lingering poses exclusive to brothel')

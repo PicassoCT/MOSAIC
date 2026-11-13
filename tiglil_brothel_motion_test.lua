@@ -9,7 +9,7 @@ local function angles(name)
     return {math.deg(r[1]),math.deg(r[3]),math.deg(r[2])}
 end
 local random=math.random
-for _,entry in ipairs({{'sway',danceBurlesqueSway},{'wave',danceBurlesqueWave},{'fan',danceBurlesqueFan}})do
+for _,entry in ipairs({{'sway',danceBurlesqueSway},{'wave',danceBurlesqueWave},{'fan',danceBurlesqueFan},{'linger',lingerBrothel}})do
 for _,sign in ipairs({0,1})do
     StartThread(TigLilSetup);drain(1000)
     math.random=function(a,b)assert(a==0 and b==1);return sign end
