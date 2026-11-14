@@ -15,6 +15,7 @@ local UPDATE_SECONDS = 1
 local FOLD_ALIGNMENT, CANCEL_ALIGNMENT = 0.95, 0.8
 local phaseNumber = {building=0, ascent=1, unfolding=2, loiter=3,
                      transit=4, folding=5, released=6, crashing=7}
+local transitCommands = {[CMD.ATTACK]=true, [CMD.MOVE]=true, [CMD.PATROL]=true, [CMD.FIGHT]=true}
 local phase, stopped, released, committed = "building", false, false, false
 local nativeReady, exhausted, orderDirty, refreshPending = false, false, true, false
 local wings, currentOrder, impactProjectile = "closed", nil, nil
@@ -84,8 +85,7 @@ end
 
 local function setFlightPhase()
     local id = currentOrder and currentOrder.id
-    setPhase((id == CMD.ATTACK or id == CMD.MOVE or id == CMD.PATROL or id == CMD.FIGHT)
-        and "transit" or "loiter")
+    setPhase(transitCommands[id] and "transit" or "loiter")
 end
 
 local function targetPosition()
