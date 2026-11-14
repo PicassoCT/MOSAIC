@@ -102,12 +102,29 @@ local function layout(upright,speed,phrase)
     return ids,pos
 end
 
-local kineticPreviewNotes={
+local uprightPreviewEffects={matrixTextFx=true,archProject=true,neonHotelText=true}
+local civilianPreviewNote='; needs a nearby civilian'
+local previewNotes={
     orbitTransferText='; needs a nearby civilian; orbiting letters peel off into the sign',
     typewriterText='; individual strikes, carriage advance/return and a paper feed',
     venetianBlindsText='; rows hinge open together, send a flip wave, then close',
     trainArrivalText='; carriages brake into the phrase, hold at the platform, then depart',
     rainOnGlassText='; falling letters stick to glass, slide into lines, then drip away',
+    personalProject=civilianPreviewNote,
+    civilianCongaText=civilianPreviewNote,
+    randomFLickerLetters='; night-only effect',
+    achromaticShivering='; shared effect skips repeated letters in Lorem Ipsum',
+    dnaHelix='; upright back-to-back pairs; uses 20 deg/s when parent rotation is zero',
+    spiralProject='; upright spiral, independent of starting layout',
+    splineShapeFollowing='; random spline, <=12s per letter; 300ms between slots',
+    wallImpactText='; spinning letter volley; needs a nearby house wall',
+    rollingTextBall='; letter sphere chases a walking civilian, accelerates past and breaks apart',
+    tetrisText='; falling letter blocks; completed rows dissolve and the stack settles',
+    neonHotelText='; upright street-level neon column; power stutters and one faulty tube',
+    meteorCraterText='; diagonal meteor wake, impact, debris and a terrain-following crater ring',
+    letterTornado='; widening upright cone; letters orbit at least 60 deg/s',
+    heartMonitor='; two travelling ECG pulses, upright letters on one baseline',
+    matrixTextFx='; three fast upright console sweeps',
 }
 
 local function cycle()
@@ -146,7 +163,7 @@ local function cycle()
         if effects[name] then names[#names+1]=name end
     end
     for _,name in ipairs(names) do
-        cases[#cases+1]={name=name,upright=name=='matrixTextFx' or name=='archProject' or name=='neonHotelText'}
+        cases[#cases+1]={name=name,upright=uprightPreviewEffects[name]==true}
         if name=='dnaHelix' then cases[#cases+1]={name=name,upright=true} end
     end
     cases[#cases+1]={name='plain',upright=false}
@@ -158,21 +175,7 @@ local function cycle()
                 local ids,pos=layout(case.upright,math.rad(degrees),phrase)
                 local effect=effects[case.name]
                 local multiplier=effect and math.random(100,300)/100 or 1
-                local note=kineticPreviewNotes[case.name] or ''
-                if case.name=='personalProject' or case.name=='civilianCongaText' then note='; needs a nearby civilian' end
-                if case.name=='randomFLickerLetters' then note='; night-only effect' end
-                if case.name=='achromaticShivering' then note='; shared effect skips repeated letters in Lorem Ipsum' end
-                if case.name=='dnaHelix' then note='; upright back-to-back pairs; uses 20 deg/s when parent rotation is zero' end
-                if case.name=='spiralProject' then note='; upright spiral, independent of starting layout' end
-                if case.name=='splineShapeFollowing' then note='; random spline, <=12s per letter; 300ms between slots' end
-                if case.name=='wallImpactText' then note='; spinning letter volley; needs a nearby house wall' end
-                if case.name=='rollingTextBall' then note='; letter sphere chases a walking civilian, accelerates past and breaks apart' end
-                if case.name=='tetrisText' then note='; falling letter blocks; completed rows dissolve and the stack settles' end
-                if case.name=='neonHotelText' then note='; upright street-level neon column; power stutters and one faulty tube' end
-                if case.name=='meteorCraterText' then note='; diagonal meteor wake, impact, debris and a terrain-following crater ring' end
-                if case.name=='letterTornado' then note='; widening upright cone; letters orbit at least 60 deg/s' end
-                if case.name=='heartMonitor' then note='; two travelling ECG pulses, upright letters on one baseline' end
-                if case.name=='matrixTextFx' then note='; three fast upright console sweeps' end
+                local note=previewNotes[case.name] or ''
                 note=note..string.format('; speed %.2fx',multiplier)
                 Spring.SetUnitRulesParam(unitID,'text_fx_test_speed',multiplier,{public=true})
                 Spring.Echo(string.format('[Text FX test %d] %s | %s | parent Y %d deg/s | full animation, then 5 seconds%s',
