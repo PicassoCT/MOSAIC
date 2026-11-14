@@ -30,6 +30,7 @@ local antiDefID = UnitDefNames["satelliteanti"].id
 local godrodDefID = UnitDefNames["satellitegodrod"].id
 local shrapnelDefID = UnitDefNames["satelliteshrapnell"].id
 local nooneDefID = UnitDefNames["noone"].id
+local operationalSatelliteTypes = {[scanDefID]=true, [antiDefID]=true, [godrodDefID]=true}
 
 local gaiaTeamID = Spring.GetGaiaTeamID()
 local mapSizeX, mapSizeZ = Game.mapSizeX, Game.mapSizeZ
@@ -142,7 +143,7 @@ local function courseSlewSpeed(data)
 end
 
 local function isOperationalSatellite(defID)
-    return defID == scanDefID or defID == antiDefID or defID == godrodDefID
+    return operationalSatelliteTypes[defID] == true
 end
 
 local function makeOrbitPublic(unitID)

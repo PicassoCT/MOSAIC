@@ -11,6 +11,7 @@ local roads=VFS.Include('scripts/lib_city_roads.lua')
 local network, frozen, pending, addresses, mapNetwork
 local config
 local public={public=true}
+local roadSurfaceNames={street=true,road=true,asphalt=true}
 local function plot(id)
     local x=Spring.GetUnitRulesParam(id,'city_plot_x')
     local z=Spring.GetUnitRulesParam(id,'city_plot_z')
@@ -112,7 +113,7 @@ function gadget:Initialize()
                 local px,pz=(x-0.5)*step,(z-0.5)*step
                 local values={Spring.GetGroundInfo(px,pz)};local name
                 for _,v in ipairs(values) do if type(v)=='string' then name=v:lower();break end end
-                if name and (name=='street' or name=='road' or name=='asphalt') and Spring.GetGroundHeight(px,pz)>0 then
+                if name and roadSurfaceNames[name] and Spring.GetGroundHeight(px,pz)>0 then
                     mask[(z-1)*nx+x]=true;count=count+1
                 end
             end end
