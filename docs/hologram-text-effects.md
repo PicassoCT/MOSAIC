@@ -30,6 +30,18 @@ Each selected effect runs at a fresh random multiplier between 1.00x and 3.00x. 
 
 ## New effects
 
+**Rolling textball (`rollingTextBall`):** the phrase forms a sphere behind a
+nearby walking civilian, rolls after them briefly, then accelerates along an
+overtaking lane and breaks into tumbling letters that fall to the terrain.
+Rotation follows distance travelled; sphere size and clearance use the actual
+glyph bounds and imported scale. Repeated letters cycle through their logical
+slots. The pass follows the civilian's live position along their initial heading.
+It lasts about 8.3 seconds at 1x and uses the shared 1–3x speed control. Missing,
+transported or departed targets exit cleanly; civilian orders are unaffected.
+The original phrase and parent spin return afterward. This is the newest preview
+entry: place a walking civilian within 650 units to see it. Missing transforms
+or non-upright glyph exports are reported and skipped.
+
 **Tetris (`tetrisText`):** phrase letters fall in upright I/O/T/S/Z/L/J blocks
 onto a six-column board. Phrases with at least 16 drawable letters open with
 O/O/I/O: the fourth block fills two rows, those rows flash and break apart, and
@@ -40,7 +52,7 @@ the board animation, then restored with the original phrase. Repeated letters
 share their available meshes between logical cells instead of losing slots.
 Letter bounds determine cell size. Parent rotation pauses during play and
 resumes after cleanup. The shared 1–3x speed control applies throughout.
-The preview runs this effect first with `THE FUTURE FALLS INTO PLACE`, then
+The preview runs this effect with `THE FUTURE FALLS INTO PLACE`, then
 returns to `Lorem Ipsum` for the other effects. Invalid model axes are reported
 and skipped rather than corrected.
 
@@ -53,7 +65,7 @@ create the hotel-sign flicker. Production holograms use their existing additive
 neon material; the ordinary-model test unit previews layout and visibility.
 The effect lasts roughly 12 seconds at 1x, supports the shared 1–3x speed, and
 restores the original phrase and parent rotation afterward. It accepts either
-starting layout and previews first. Missing transforms or a non-upright glyph
+starting layout. Missing transforms or a non-upright glyph
 parent emit a diagnostic and skip the effect; model axes are never corrected.
 
 **Wall impact (`wallImpactText`):** a staggered volley of letters flies toward a nearby house, mixing straight bullet-like arrivals with spinning throwing stars. Each letter settles against the wall; the complete phrase holds for four seconds before returning to the sign. Visible piece bounds supply upright wall faces, including imported scale and house rotation. Long phrases wrap into rows; word gaps and repeated-letter leases retain their slots. Walls must fit the glyphs at their existing size. Missing, unfinished, too-small or destroyed houses exit cleanly. Both starting layouts and the shared 1–3× speed multiplier are supported. Place the preview unit near a house to see this mode.
@@ -81,7 +93,7 @@ parent emit a diagnostic and skip the effect; model axes are never corrected.
 
 **Matrix:** three repeats of the same motion used by `consoleLetters`, arranged as a vertical column at eight times the normal console speed. Each repeat waits for its moves to finish and holds for 150 ms. The ordinary console effect retains its original layout, speed and ten-second hold.
 
-The uniformly selected catalogue now has 30 modes: each has a **1/30 chance (~3.33%) per selection**. Sign eligibility and layout gates still apply. Conga requires a nearby live civilian; takeover requires another phrase. Ineligible effects return without a new retry loop.
+The uniformly selected catalogue now has 33 modes: each has a **1/33 chance (~3.03%) per selection**. Sign eligibility and layout gates still apply. Conga requires a nearby live civilian; takeover requires another phrase. Ineligible effects return without a new retry loop.
 
 ## Validation
 
@@ -93,7 +105,7 @@ lua5.1 tests/hologram_text_fx_test.lua
 python3 tests/hologram_text_axes_test.py
 ```
 
-The regression suite executes the real shared library and both scripts' production functions with strict animation-call mocks. It covers exhaustion, direct occurrence ordering, UTF-8 gaps, selection, logical spacing, half-second leases and restoration, matrix parameters, radius/no-rest handling, glow lifetime, all 30 registered modes, empty groups, parent rotation/scale inversion, conga lifecycle, takeover crossfire timing/trajectories, slot-machine reel ownership/ordered stops, projection geometry, travelling pulses, terrain-based growth, borrowed-piece cleanup and scratch-global isolation. CI uses native Lua 5.1; local validation can also run the same suite through `lupa.lua51` (Lua 5.1).
+The regression suite executes the real shared library and both scripts' production functions with strict animation-call mocks. It covers exhaustion, direct occurrence ordering, UTF-8 gaps, selection, logical spacing, half-second leases and restoration, matrix parameters, radius/no-rest handling, glow lifetime, all 33 registered modes, empty groups, parent rotation/scale inversion, conga lifecycle, takeover crossfire timing/trajectories, slot-machine reel ownership/ordered stops, projection geometry, travelling pulses, terrain-based growth, borrowed-piece cleanup and scratch-global isolation. CI uses native Lua 5.1; local validation can also run the same suite through `lupa.lua51` (Lua 5.1).
 
 No Recoil visual or target-hardware performance validation has been performed. In Recoil, check a long repeated-letter slogan, day/night and blackout transitions, all projection modes, conga descent on slopes and rotated houses, turns/stops/death of the target civilian, and takeover cleanup when a phrase changes or the hologram is destroyed. Confirm glyph size, facing, ground clearance and movement timing against actual exported models. Compare zoomed-out frame times in a dense city.
 
@@ -120,7 +132,7 @@ The production signs use the same cleanup. Tornado formation has a 2.5-second mo
 when calculating speeds, and fireworks bounds its launch/burst/fall waits too.
 Continuous spins keep running during the hold. All glyph transforms/spins are
 reset between cases; long effects are no longer cut short. The cycle has
-102 cases: plain horizontal/upright text, all 31 runnable shared modes (matrix, hotel and arch use
+105 cases: plain horizontal/upright text, all 32 runnable shared modes (matrix, hotel and arch use
 upright), an extra upright DNA-helix case, each at 0, +20 and -20 degrees/second
 around the same parent Y axis used by production holograms.
 
@@ -375,7 +387,7 @@ the feet and restores neutral. It is available in normal western, techno,
 business, brothel and blimp dance pools, and appears in `text_fx_test`.
 
 The test unit plays both text effects and Tiglil routines newest-added first.
-Text starts with Tetris, neon hotel, wall impact, restored spline and meteor, followed by older
+Text starts with rolling textball, Tetris, neon hotel, wall impact, restored spline and meteor, followed by older
 addition groups; repairs do not move an effect forward. Each effect runs its
 0, +20 and -20 degree/second parent variants together. The two plain layouts
 come last, and the next cycle starts with the newest effect again. Every

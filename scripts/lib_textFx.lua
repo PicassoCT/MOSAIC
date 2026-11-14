@@ -281,7 +281,7 @@ function canProjectTextFx(name, posLetters)
     if name == "matrixTextFx" then return posLetters.boolUpright == true end
     return not posLetters.boolUpright
         or name == "dnaHelix" or name == "spiralProject" or name == "archProject" or name == "letterTornado"
-        or name == "wallImpactText" or name == "smilingFace" or name == "letterPlant" or name == "meteorCraterText" or name == "splineShapeFollowing" or name == "neonHotelText" or name == "tetrisText"
+        or name == "wallImpactText" or name == "smilingFace" or name == "letterPlant" or name == "meteorCraterText" or name == "splineShapeFollowing" or name == "neonHotelText" or name == "tetrisText" or name == "rollingTextBall"
 end
 
 function dnaHelix(allLetters, posLetters)
@@ -1359,6 +1359,186 @@ local function textUnitVector(v)
     if length<1e-9 then return end
     return {v[1]/length,v[2]/length,v[3]/length}
 end
+-- A rolling letter boulder: form behind a walking civilian, follow briefly,
+-- accelerate past on one side, then shed the letters under gravity.
+function rollingTextBall(allLetters,posLetters)
+    if #allLetters==0 then return end
+    local function note(s)if posLetters.debugTextFx then posLetters.debugTextFx('textball: '..s)end end
+    if not (Spring.GetUnitVelocity and Spring.GetUnitsInCylinder and Spring.GetUnitDefID
+        and Spring.GetUnitIsDead and Spring.GetUnitPosition) then note('skipped; pedestrian APIs unavailable');return end
+    local owner=posLetters.unitID
+    local ox,_,oz=Spring.GetUnitPosition(owner)
+    if not ox then return end
+    local person,nearest,fx,fz
+    for _,id in ipairs(Spring.GetUnitsInCylinder(ox,oz,650) or {})do
+        local def=UnitDefs[Spring.GetUnitDefID(id)]
+        local base=def and def.customParams and def.customParams.baseclass
+        if id~=owner and base and base:lower()=='civilian' and not def.isBuilding and not def.canFly
+            and not Spring.GetUnitIsDead(id) and not (Spring.GetUnitTransporter and Spring.GetUnitTransporter(id)) then
+            local x,y,z=Spring.GetUnitPosition(id)
+            local vx,_,vz=Spring.GetUnitVelocity(id)
+            if x and vx and vx*vx+vz*vz>.0025 and math.abs(y-Spring.GetGroundHeight(x,z))<8 then
+                local distance=(x-ox)^2+(z-oz)^2
+                if not nearest or distance<nearest then
+                    local speed=math.sqrt(vx*vx+vz*vz)
+                    person,nearest,fx,fz=id,distance,vx/speed,vz/speed
+                end
+            end
+        end
+    end
+    if not person then note('skipped; no walking civilian within 650');return end
+    local function personPosition()
+        if Spring.GetUnitIsDead(person) or (Spring.ValidUnitID and not Spring.ValidUnitID(person))
+            or (Spring.GetUnitTransporter and Spring.GetUnitTransporter(person)) then return end
+        local x,y,z=Spring.GetUnitPosition(person)
+        if not x or (x-ox)^2+(z-oz)^2>900^2 or math.abs(y-Spring.GetGroundHeight(x,z))>12 then return end
+        return x,y,z
+    end
+    StopSpin(textSpinner,textSpinnerAxis,0)
+    hardResetHologramLetters(allLetters)
+    local function finish()
+        hardResetHologramLetters(allLetters)
+        restoreMessageOriginalPosition(allLetters,posLetters)
+        if posLetters.spinnerSpeed then Spin(textSpinner,textSpinnerAxis,posLetters.spinnerSpeed,0) end
+    end
+    local movers,frames,previousAngles,lastSlot={},{},{},{}
+    local map=Spring.GetUnitPieceMap(owner)
+    local height,extent,slots=0,0,math.max(1,#(posLetters.spacing or allLetters))
+    for _,id in ipairs(allLetters)do
+        local move,origin,basis=hologramWorldMover(owner,id,{0,0,0},map)
+        if not move then note('skipped; missing glyph transform');finish();return end
+        local scale={};for a=1,3 do scale[a]=math.sqrt(textDot(basis[a],basis[a]))end
+        if scale[3]<1e-9 or basis[3][2]/scale[3]<.999 then
+            note('skipped; glyph local Z is not upright; check the model export')
+            if not posLetters.debugTextFx and Spring.Echo then Spring.Echo('textball: glyph local Z is not upright; check the model export')end
+            finish();return
+        end
+        local info=Spring.GetUnitPieceInfo(owner,id)
+        local lo,hi=info.min or {0,0,0},info.max or {0,sizeSpacingLetter,sizeDownLetter}
+        local bound=0;for a=1,3 do bound=bound+(math.max(math.abs(lo[a]),math.abs(hi[a]))*scale[a])^2 end
+        extent=math.max(extent,math.sqrt(bound))
+        height=math.max(height,sizeDownLetter*scale[3],(hi[3]-lo[3])*scale[3])
+        local cof={textCross(basis[2],basis[3]),textCross(basis[3],basis[1]),textCross(basis[1],basis[2])}
+        local det=textDot(basis[1],cof[1])
+        frames[id]={scale=scale,lo=lo,hi=hi,cof=cof,det=det}
+        movers[id]=move
+        for _,slot in ipairs(posLetters.leases and posLetters.leases[id] or {})do slots=math.max(slots,slot)end
+        -- Assemble from the original phrase, without teleporting visible letters.
+        for axis=1,3 do Move(id,axis,posLetters[id][axis],0)end
+    end
+    local radius=math.max(height*2, height*math.sqrt(slots)*.42)
+    local clearance=radius+extent+(Spring.GetUnitRadius and Spring.GetUnitRadius(person) or 6)
+    local px,_,pz=personPosition()
+    if not px then finish();return end
+    local cx,cz=px-fx*radius*3,pz-fz*radius*3
+    local cy,angle,elapsed=0,0,0
+    local previousX,previousZ=cx,cz
+    local lastPositions={}
+    local function localVector(frame,v)
+        return textUnitVector({textDot(v,frame.cof[1])/frame.det,textDot(v,frame.cof[2])/frame.det,textDot(v,frame.cof[3])/frame.det})
+    end
+    local function orient(id,normal,up,seconds,snap)
+        local frame=frames[id]
+        local x=localVector(frame,normal)
+        local z=localVector(frame,up)
+        local y=textUnitVector(textCross(z,x))
+        local pitch=-math.asin(math.max(-1,math.min(1,z[2])))
+        local a={pitch,math.atan2(z[1],z[3]),math.atan2(x[2],y[2])}
+        if math.abs(math.cos(pitch))<1e-6 then a[2],a[3]=math.atan2(-x[3],x[1]),0 end
+        local old=previousAngles[id] or {0,0,0}
+        for axis=1,3 do
+            local delta=(a[axis]-old[axis]+math.pi)%(2*math.pi)-math.pi
+            a[axis]=old[axis]+delta
+            Turn(id,axis,a[axis],math.max(1e-6,math.abs(delta)/math.max(.001,seconds)))
+            if snap then Turn(id,axis,a[axis],0)end
+        end
+        previousAngles[id]=a
+    end
+    local function roll(seconds)
+        angle=angle+math.sqrt((cx-previousX)^2+(cz-previousZ)^2)/radius
+        previousX,previousZ=cx,cz
+        local ca,sa=math.cos(angle),math.sin(angle)
+        local layout,lowest={},math.huge
+        for i,id in ipairs(allLetters)do
+            local leases=posLetters.leases and posLetters.leases[id]
+            local slot=leases and leases[math.floor(elapsed/400)%#leases+1] or textSlot(posLetters,id,i-1)+1
+            local b=1-2*(slot-.5)/slots
+            local ring=math.sqrt(math.max(0,1-b*b));local phi=(slot-1)*math.pi*(3-math.sqrt(5))
+            local a,c=ring*math.cos(phi),ring*math.sin(phi)
+            local function world(side,up,forward)
+                local f,u=forward*ca+up*sa,up*ca-forward*sa
+                return {fz*side+fx*f,u,-fx*side+fz*f}
+            end
+            local n=world(a,b,c)
+            local up=world(-b*math.cos(phi),ring,-b*math.sin(phi))
+            local across=textCross(up,n)
+            local frame=frames[id]
+            local low=radius*n[2]
+            for axis,v in ipairs({n,across,up})do
+                local coefficient=v[2]*frame.scale[axis]
+                low=low+coefficient*(coefficient>=0 and frame.lo[axis] or frame.hi[axis])
+            end
+            lowest=math.min(lowest,low)
+            layout[id]={normal=n,up=up,slot=slot}
+        end
+        local ground=Spring.GetGroundHeight(cx,cz)
+        for _,d in ipairs({{radius+extent,0},{-radius-extent,0},{0,radius+extent},{0,-radius-extent}})do
+            ground=math.max(ground,Spring.GetGroundHeight(cx+d[1],cz+d[2]))
+        end
+        cy=ground-lowest+height*.08
+        for _,id in ipairs(allLetters)do
+            local p=layout[id];local n=p.normal
+            local changed=lastSlot[id] and lastSlot[id]~=p.slot
+            if changed then HideReg(id)end
+            local target={cx+radius*n[1],cy+radius*n[2],cz+radius*n[3]}
+            movers[id](target[1],target[2],target[3],changed and 0 or seconds)
+            orient(id,n,p.up,seconds,changed)
+            ShowReg(id);lastSlot[id]=p.slot;lastPositions[id]=target
+        end
+    end
+    note('forming behind civilian '..person)
+    roll(1);Sleep(1000)
+    note('rolling behind civilian '..person)
+    for tick=1,30 do
+        px,_,pz=personPosition();if not px then note('stopped; pedestrian left');finish();return end
+        cx,cz=px-fx*radius*3,pz-fz*radius*3
+        roll(.05);Sleep(50);elapsed=elapsed+50
+    end
+    note('accelerating past civilian '..person)
+    local vx,vz=0,0
+    for tick=1,80 do
+        px,_,pz=personPosition();if not px then note('stopped; pedestrian left');finish();return end
+        local u=tick/80
+        local along=radius*(-3+7*u*u)
+        local side=math.min(1,u*2);side=side*side*(3-2*side)*clearance
+        local nx,nz=px+fx*along+fz*side,pz+fz*along-fx*side
+        vx,vz=(nx-cx)/.05,(nz-cz)/.05;cx,cz=nx,nz
+        roll(.05);Sleep(50);elapsed=elapsed+50
+    end
+    note('breaking apart')
+    local debris={}
+    for i,id in ipairs(allLetters)do
+        local p=lastPositions[id]
+        debris[id]={start=p,vx=vx*.6+(p[1]-cx)*1.8,vy=height*2+(p[2]-cy),vz=vz*.6+(p[3]-cz)*1.8}
+        Spin(id,(i%3)+1,(i%2==0 and 1 or -1)*math.pi*2,0)
+    end
+    for tick=1,36 do
+        local t=tick*.05
+        for _,id in ipairs(allLetters)do
+            local d=debris[id]
+            if not d.landed then
+                local x,z=d.start[1]+d.vx*t,d.start[3]+d.vz*t
+                local floor=Spring.GetGroundHeight(x,z)+extent
+                local y=d.start[2]+d.vy*t-radius*2.5*t*t
+                movers[id](x,math.max(floor,y),z,.05)
+                if y<=floor then HideReg(id);d.landed=true end
+            end
+        end
+        Sleep(50)
+    end
+    finish()
+end
+
 local function textWallTarget(owner,anchor,height,spacing,slots)
     if not (Spring.GetUnitsInCylinder and Spring.UnitScript
         and Spring.UnitScript.GetScriptEnv and Spring.UnitScript.CallAsUnit
@@ -2199,6 +2379,7 @@ end
 
 function getAllTextFx()
 return {
+        ["rollingTextBall"] = rollingTextBall,
         ["tetrisText"] = tetrisText,
         ["neonHotelText"] = neonHotelText,
         ["splineShapeFollowing"] = splineShapeFollowing,
