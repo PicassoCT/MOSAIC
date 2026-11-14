@@ -456,8 +456,9 @@ function Route.new(context)
                 end
             end
         end
-        local formationLength=(config.vehicleCount or 0)*(config.vehicleSpacing or 140)+stagingGap
-        if not route.requested and config.vehicleCount and length<formationLength then
+        local vehicleCount=route.vehicleCount or config.maximumVehicleCount or config.vehicleCount
+        local formationLength=(vehicleCount or 0)*(config.vehicleSpacing or 140)+stagingGap
+        if not route.requested and vehicleCount and length<formationLength then
             return invalidate(route,"circuit is too short for convoy spacing")
         end
         if config.routeRejectRetrace and not route.requested then
