@@ -29,6 +29,7 @@ function M.New(context)
     local routeOffsets, routeLength = {}, 0
     local clearance = context.clearance
     local tourStartFrame, previewRequest, preview = nil, nil, false
+    local targetVehicleCount, assemblyDeadline
     local nextRetirementCheck = 0
     local nextSpawn, nextAttempt, lastEffect, lastRecruit = 0, 0, -C.effectFrames, -C.recruitFrames
     local lastDay = S.GetGameRulesParam("city_parade_last_day") or 0
@@ -188,6 +189,7 @@ function M.New(context)
         S.SetGameRulesParam("city_parade_phase", director.phase, public)
         S.SetGameRulesParam("city_parade_day", eventDay or 0, public)
         S.SetGameRulesParam("city_parade_vehicle_count", #convoy, public)
+        S.SetGameRulesParam("city_parade_target_vehicle_count", targetVehicleCount or 0, public)
         S.SetGameRulesParam("city_parade_start_float", director.startFloat or -1, public)
         S.SetGameRulesParam("city_parade_end_float", director.endFloat or -1, public)
         S.SetGameRulesParam("city_parade_participants", count(director.participants), public)
@@ -262,6 +264,7 @@ function M.New(context)
         self.phase = "idle"
         route, pendingRoute, pendingDay = nil, nil, nil
         previewRequest, preview, tourStartFrame = nil, false, nil
+        targetVehicleCount, assemblyDeadline = nil, nil
         S.SetGameRulesParam("city_parade_last_stop", reason, public)
         publish()
     end
@@ -387,7 +390,7 @@ function M.New(context)
         self.lastRouteError = nil
         waiting("searching for the best available route")
         pendingRoute, pendingDay, nextAttempt = nil, nil, frame
-        return true, "validating a route; preview assembles for 45 seconds and tours for 3 minutes"
+        return true, "validating a route; preview assembles its planned floats and tours for 3 minutes"
     end
 
     local function carrierFor(day)
@@ -467,8 +470,10 @@ function M.New(context)
         pendingRoute, pendingDay = nil, nil
         preview, previewRequest = isPreview == true, nil
         eventDay = day
+        targetVehicleCount = route.vehicleCount
         tourStartFrame = preview and frame+(C.previewAssemblyFrames or 45*30)
             or floor((day-1+C.tourHour/24-0.5)*gameConfig.game.dayLengthFrames)
+        assemblyDeadline = math.max(tourStartFrame, frame+(C.assemblyTimeoutFrames or 90*30))
         endFrame = preview and tourStartFrame+(C.previewTourFrames or 3*60*30)
             or M.EndFrame(day, gameConfig.game.dayLengthFrames, C.endHour)
         director.phase = "assembling"
@@ -477,8 +482,8 @@ function M.New(context)
         director.waitingReason = nil
         director.lastRouteError = nil
         local origin = route.points[1]
-        log(string.format("assembly starts at x=%.1f y=%.1f z=%.1f; carrier=%s; route nodes=%d; frame=%d",
-            origin.x, origin.y, origin.z, context.UnitDefs[carrierDefID].name, #route.nodes, frame))
+        log(string.format("assembly starts at x=%.1f y=%.1f z=%.1f; carrier=%s; floats=%d; route nodes=%d; frame=%d",
+            origin.x, origin.y, origin.z, context.UnitDefs[carrierDefID].name, targetVehicleCount, #route.nodes, frame))
         if preview then
             log("manual request uses the best available route; short trips and doubling back are allowed")
         elseif route.fallback then
@@ -740,26 +745,27 @@ function M.New(context)
             local moving,reason = updateConvoy(frame)
             if not moving then self:Stop(reason,frame); return end
             if self.phase == "assembling" then
-                if frame >= tourStartFrame then
+                if frame >= tourStartFrame and (preview or #convoy >= targetVehicleCount) then
+                    -- Manual previews still show the best available short
+                    -- route and fill out the target while touring.
                     if preview and #convoy == 0 then
-                        -- Transient spawn/payload failures must not consume the
-                        -- request. Keep trying until at least one float exists.
                         if frame >= nextSpawn then
                             spawnVehicle(frame)
                             nextSpawn=frame+C.retryFrames
                         end
                         return
                     end
-                    if not preview and #convoy < C.minimumVehicles then self:Stop("assembly incomplete",frame); return end
                     if preview then endFrame=frame+(C.previewTourFrames or 3*60*30) end
                     self.phase = "touring"; publish()
-                elseif #convoy < C.vehicleCount and frame >= nextSpawn then
+                elseif not preview and frame >= assemblyDeadline then
+                    self:Stop("assembly incomplete",frame); return
+                elseif #convoy < targetVehicleCount and frame >= nextSpawn then
                     spawnVehicle(frame)
                 end
             end
             if self.phase == "touring" then
                 if #convoy < (preview and 1 or C.minimumVehicles) then self:Stop("floats unavailable",frame); return end
-                if preview and #convoy < C.vehicleCount and frame >= nextSpawn then
+                if preview and #convoy < targetVehicleCount and frame >= nextSpawn then
                     spawnVehicle(frame)
                     nextSpawn=frame+C.spawnIntervalFrames
                 end
@@ -795,7 +801,14 @@ function M.New(context)
         nextAttempt = frame+C.retryFrames
         carrierDefID = carrierFor(day)
         if not carrierDefID then waiting("no eligible carrier or parade payload definition"); return end
+        -- Rotate through the inclusive size range by event day. This stays
+        -- identical on every client and across native-path retries.
+        local minimum = C.minimumVehicleCount or C.vehicleCount or 4
+        local maximum = C.maximumVehicleCount or C.vehicleCount or minimum
+        local eventIndex = math.max(0, floor(day / C.periodDays) - 1)
+        targetVehicleCount = minimum + eventIndex % (maximum - minimum + 1)
         pendingRoute = routeBuilder:Begin(day,carrierDefID,requestedPreview)
+        if pendingRoute then pendingRoute.vehicleCount = targetVehicleCount end
         pendingDay = pendingRoute and day or nil
         if not pendingRoute then waiting("route search: " .. tostring(routeBuilder.lastError or "no route"))
         else waiting("validating native route paths") end
