@@ -46,6 +46,7 @@ Spring={
 }
 local F={}
 local observer,phase,logicalTime,phaseStart
+local targetMode
 local function center(id)
     local w=world(id);local angle=rotations[id] and rotations[id][2] or 0
     -- Fixture bounds centre = (0, 0, 160), rotated around native baseline Y.
@@ -53,6 +54,8 @@ local function center(id)
     return {w[1]+x,w[2]+math.cos(angle)*160*scale,w[3]+z}
 end
 function Sleep(ms)
+    local tx,ty,tz=Spring.GetUnitPosition(800)
+    F.target={tx,ty,tz}
     time=time+ms
     local logical=ms*GetHologramTextFxSpeed();logicalTime=logicalTime+logical
     if math.abs(logical-34)<1e-7 then return end
@@ -70,12 +73,28 @@ end
 unitID,unitDefID=7,1
 UnitDefs={[1]={customParams={text_fx_speed=1}}}
 Spring.GetUnitTeam=function()return 0 end
+Spring.GetUnitsInCylinder=function()return targetMode=='absent' and {7,801} or {7,801,800}end
+Spring.GetUnitDefID=function(id)return id==800 and 2 or 1 end
+Spring.GetUnitRadius=function()return 6 end
+Spring.GetUnitHeight=function()return 18 end
+Spring.ValidUnitID=function(id)return not (id==800 and targetMode=='invalid' and logicalTime>4500)end
+Spring.GetUnitIsDead=function(id)return id==800 and targetMode=='dead' and logicalTime>4500 end
+Spring.GetUnitTransporter=function(id)return id==800 and targetMode=='transported' and logicalTime>4500 end
+Spring.GetUnitPosition=function(id)
+    if id~=800 then return 100,0,200 end
+    local x,z=140+time*.003,200+time*.001
+    if targetMode=='departed' and logicalTime>4500 then x=x+1000 end
+    if targetMode=='missing' and logicalTime>4500 then return end
+    return x,Spring.GetGroundHeight(x,z),z
+end
+UnitDefs[2]={customParams={baseclass='Civilian'}}
 Spring.UnitScript={Move=Move,Turn=Turn,Spin=Spin,StopSpin=StopSpin,Sleep=Sleep}
 local function read(path)local f=assert(io.open(path));local s=f:read('*a');f:close();return s end
 assert(loadstring(read('gamedata/unit_script_header.lua')..'\n'..read('scripts/lib_textFx.lua')))()
 F.near=near
 function F.run(name,options,inspect)
     options=options or {}
+    targetMode=options.targetMode
     scale,heading,mode=options.scale or .0254,options.heading or 0,options.mode or 'normal'
     positions,rotations,visible={},{},{}
     spin,restored,time,logicalTime,phaseStart=.3,0,0,0,0
@@ -95,10 +114,10 @@ function F.run(name,options,inspect)
     local fn=assert(getAllTextFx()[name])
     runHologramTextFx(fn,ids,p,nil,options.speed or 1)
     assert(spin==.3,'parent spin was not restored')
-    assert(restored==(#ids==0 and 0 or 1),'original phrase was not restored exactly once')
-    for _,id in ipairs(ids)do for axis=1,3 do near(positions[id][axis],p[id][axis])end end
+    assert(restored==((#ids==0 or options.skipTarget) and 0 or 1),'original phrase was not restored exactly once')
+    if not options.skipTarget then for _,id in ipairs(ids)do for axis=1,3 do near(positions[id][axis],p[id][axis])end end end
     if mode~='normal' then assert(phase:find('skipped',1,true) and logicalTime<100,'malformed export was corrected silently')end
-    F.time,F.logicalTime=time,logicalTime
+    F.time,F.logicalTime,F.phase=time,logicalTime,phase
     return F
 end
 return F
