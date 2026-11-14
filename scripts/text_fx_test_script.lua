@@ -108,6 +108,7 @@ local function cycle()
     -- Addition order from Git history, newest first (not last modification).
     -- Count the restored spline at its restoration. Prepend future additions.
     local newestFirst={
+        'trainArrivalText', -- braking carriages and accelerating departure
         'rollingTextBall', -- rolling boulder chase, pass and breakup
         'tetrisText', -- falling phrase blocks and completed-row clears
         'neonHotelText', -- vertical street-level neon hotel sign
@@ -153,6 +154,7 @@ local function cycle()
                 if case.name=='spiralProject' then note='; upright spiral, independent of starting layout' end
                 if case.name=='splineShapeFollowing' then note='; random spline, <=12s per letter; 300ms between slots' end
                 if case.name=='wallImpactText' then note='; spinning letter volley; needs a nearby house wall' end
+                if case.name=='trainArrivalText' then note='; carriages brake into the phrase, hold at the platform, then depart' end
                 if case.name=='rollingTextBall' then note='; letter sphere chases a walking civilian, accelerates past and breaks apart' end
                 if case.name=='tetrisText' then note='; falling letter blocks; completed rows dissolve and the stack settles' end
                 if case.name=='neonHotelText' then note='; upright street-level neon column; power stutters and one faulty tube' end

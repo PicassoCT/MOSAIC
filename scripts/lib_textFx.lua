@@ -281,7 +281,7 @@ function canProjectTextFx(name, posLetters)
     if name == "matrixTextFx" then return posLetters.boolUpright == true end
     return not posLetters.boolUpright
         or name == "dnaHelix" or name == "spiralProject" or name == "archProject" or name == "letterTornado"
-        or name == "wallImpactText" or name == "smilingFace" or name == "letterPlant" or name == "meteorCraterText" or name == "splineShapeFollowing" or name == "neonHotelText" or name == "tetrisText" or name == "rollingTextBall"
+        or name == "wallImpactText" or name == "smilingFace" or name == "letterPlant" or name == "meteorCraterText" or name == "splineShapeFollowing" or name == "neonHotelText" or name == "tetrisText" or name == "rollingTextBall" or name == "trainArrivalText"
 end
 
 function dnaHelix(allLetters, posLetters)
@@ -1076,6 +1076,143 @@ function hologramWorldMover(owner, id, base, pieceMap)
         end
     end
     return moveToWorld, origin, basis
+end
+
+-- Shared stage for planar typography. Work in world units so every glyph's
+-- bind offset and imported scale are respected; never repair a model's axes.
+local function prepareKineticText(allLetters,posLetters,name,maxColumns)
+    if #allLetters==0 then return end
+    local function note(message)
+        if posLetters.debugTextFx then posLetters.debugTextFx(name..': '..message)
+        elseif message:find('skipped',1,true) and Spring.Echo then Spring.Echo(name..': '..message)end
+    end
+    StopSpin(textSpinner,textSpinnerAxis,0)
+    hardResetHologramLetters(allLetters)
+    local function finish()
+        hardResetHologramLetters(allLetters)
+        restoreMessageOriginalPosition(allLetters,posLetters)
+        if posLetters.spinnerSpeed then Spin(textSpinner,textSpinnerAxis,posLetters.spinnerSpeed,0)end
+    end
+    local stage={width=0,height=0,slots=math.max(1,#(posLetters.spacing or allLetters)),elapsed=0,note=note,finish=finish}
+    local glyphs,anchor,basis={},nil,nil
+    local map=Spring.GetUnitPieceMap(posLetters.unitID)
+    for index,id in ipairs(allLetters)do
+        local move,origin,axes=hologramWorldMover(posLetters.unitID,id,{0,0,0},map)
+        if not move then note('skipped; missing glyph transform');finish();return end
+        local scale={};for axis=1,3 do scale[axis]=math.sqrt(textDot(axes[axis],axes[axis]))end
+        if scale[3]<1e-9 or axes[3][2]/scale[3]<.999 then
+            note('skipped; glyph local Z is not upright; check the model export');finish();return
+        end
+        local info=Spring.GetUnitPieceInfo(posLetters.unitID,id)
+        local lo,hi=info.min or {0,0,0},info.max or {0,sizeSpacingLetter,sizeDownLetter}
+        local center={};for axis=1,3 do center[axis]=(lo[axis]+hi[axis])*.5 end
+        stage.width=math.max(stage.width,sizeSpacingLetter*scale[2],(hi[2]-lo[2])*scale[2])
+        stage.height=math.max(stage.height,sizeDownLetter*scale[3],(hi[3]-lo[3])*scale[3])
+        local slots=posLetters.leases and posLetters.leases[id] or {textSlot(posLetters,id,index-1)+1}
+        for _,slot in ipairs(slots)do stage.slots=math.max(stage.slots,slot)end
+        glyphs[id]={move=move,axes=axes,center=center,slots=slots,angle=0}
+        anchor,basis=anchor or origin,basis or axes
+    end
+    local span=math.sqrt(basis[2][1]^2+basis[2][3]^2)
+    if span<1e-9 then note('skipped; missing horizontal glyph axis');finish();return end
+    stage.right={-basis[2][1]/span,0,-basis[2][3]/span}
+    local depth=math.sqrt(textDot(basis[1],basis[1]))
+    stage.normal={basis[1][1]/depth,basis[1][2]/depth,basis[1][3]/depth}
+    stage.columns=math.min(maxColumns or stage.slots,stage.slots)
+    stage.rows=math.ceil(stage.slots/stage.columns)
+    stage.step,stage.line=stage.width*1.2,stage.height*1.35
+    stage.anchor={anchor[1],anchor[2]+stage.height*.5,anchor[3]}
+    local ground=Spring.GetGroundHeight(anchor[1],anchor[3])
+    for column=0,stage.columns-1 do
+        local x=(column-(stage.columns-1)/2)*stage.step
+        ground=math.max(ground,Spring.GetGroundHeight(anchor[1]+stage.right[1]*x,anchor[3]+stage.right[3]*x))
+    end
+    stage.anchor[2]=math.max(stage.anchor[2],ground+(stage.rows-1)*stage.line+stage.height*.75)
+    function stage.home(slot)
+        return ((slot-1)%stage.columns-(stage.columns-1)/2)*stage.step,-math.floor((slot-1)/stage.columns)*stage.line
+    end
+    function stage.world(x,y,z)
+        z=z or 0
+        return stage.anchor[1]+stage.right[1]*x+stage.normal[1]*z,
+            stage.anchor[2]+y+stage.normal[2]*z,stage.anchor[3]+stage.right[3]*x+stage.normal[3]*z
+    end
+    -- pose(slot) supplies a glyph CENTRE, optionally rotated about its baseline.
+    -- A shared mesh visits only visible occurrences; striking letters can take
+    -- priority over already printed occurrences of that same character.
+    function stage.frame(ms,pose)
+        for _,id in ipairs(allLetters)do
+            local glyph=glyphs[id];local choices,priority={},-math.huge
+            for _,slot in ipairs(glyph.slots)do
+                local p=pose(slot)
+                if p and p.visible~=false then
+                    local rank=p.priority or 0
+                    if rank>priority then choices={};priority=rank end
+                    if rank==priority then choices[#choices+1]={slot=slot,p=p}end
+                end
+            end
+            if #choices==0 then HideReg(id);glyph.slot=nil
+            else
+                local chosen=choices[math.floor(stage.elapsed/400)%#choices+1]
+                local p=chosen.p;local snap=glyph.slot~=chosen.slot
+                if snap then HideReg(id)end
+                local x,y,z=stage.world(p.x,p.y,p.z)
+                local angle=p.angle or 0
+                local c=glyph.center;local ca,sa=math.cos(angle),math.sin(angle)
+                local offset={ca*c[1]+sa*c[3],c[2],-sa*c[1]+ca*c[3]}
+                for axis=1,3 do
+                    x=x-glyph.axes[axis][1]*offset[axis]
+                    y=y-glyph.axes[axis][2]*offset[axis]
+                    z=z-glyph.axes[axis][3]*offset[axis]
+                end
+                glyph.move(x,y,z,snap and 0 or ms/1000)
+                local speed=math.max(1e-6,math.abs(angle-glyph.angle)/math.max(.001,ms/1000))
+                Turn(id,2,angle,speed)
+                if snap or ms==0 then Turn(id,2,angle,0)end
+                glyph.angle,glyph.slot=angle,chosen.slot
+                ShowReg(id)
+            end
+        end
+        if ms>0 then Sleep(ms);stage.elapsed=stage.elapsed+ms end
+    end
+    function stage.animate(duration,pose)
+        stage.frame(0,function(slot)return pose(slot,0,0)end)
+        local time=0
+        while time<duration do
+            local ms=math.min(50,duration-time);time=time+ms
+            stage.frame(ms,function(slot)return pose(slot,time/duration,time)end)
+        end
+    end
+    function stage.hold(duration)
+        stage.animate(duration,function(slot)local x,y=stage.home(slot);return {x=x,y=y}end)
+    end
+    return stage
+end
+
+-- Leading carriage stops furthest down the platform; following glyphs brake
+-- behind it, so arrivals do not run through letters that already stopped.
+function trainArrivalText(allLetters,posLetters)
+    local stage=prepareKineticText(allLetters,posLetters,'train')
+    if not stage then return end
+    local beat=math.min(100,1800/math.max(1,stage.slots-1))
+    local stagger=(stage.slots-1)*beat
+    local left=-(stage.columns+5)*stage.step*.5
+    stage.note('arriving and braking')
+    stage.animate(1800+stagger,function(slot,_,time)
+        local age=time-(stage.slots-slot)*beat
+        if age<0 then return end
+        local x,y=stage.home(slot)
+        local u=math.min(1,age/1500)
+        local recoil=age>1500 and age<1800 and math.sin((age-1500)/300*math.pi)*stage.step*.06 or 0
+        return {x=left+(x-left)*(1-(1-u)^3)+recoil,y=y}
+    end)
+    stage.note('at the platform');stage.hold(2500)
+    stage.note('departing')
+    stage.animate(1500+stagger,function(slot,_,time)
+        local age=math.max(0,time-(stage.slots-slot)*beat)
+        local x,y=stage.home(slot)
+        return {x=x+(stage.columns+5)*stage.step*(age/1500)^2,y=y,visible=age<1500}
+    end)
+    stage.finish()
 end
 
 -- Letter tetrominoes with real occupied cells, row clears and gravity. Logical
@@ -2379,6 +2516,7 @@ end
 
 function getAllTextFx()
 return {
+        ["trainArrivalText"] = trainArrivalText,
         ["rollingTextBall"] = rollingTextBall,
         ["tetrisText"] = tetrisText,
         ["neonHotelText"] = neonHotelText,
