@@ -163,7 +163,7 @@ for name in pairs(effects) do assert(invoked[name],'mode skipped: '..name) end
 assert(spins[math.rad(20)] and spins[math.rad(-20)],'missing rotation direction')
 -- Historical addition groups (restored spline counts at restoration). All
 -- rotation variants stay adjacent; plain layouts belong at the end.
-local rank={neonHotelText=8,wallImpactText=7,splineShapeFollowing=6,meteorCraterText=5,
+local rank={tetrisText=9,neonHotelText=8,wallImpactText=7,splineShapeFollowing=6,meteorCraterText=5,
     smilingFace=4,letterPlant=4,heartMonitor=4,letterTornado=4,oneArmedBandit=4,
     civilianCongaText=3,hostileTakeoverText=3,plain=0}
 local previous=math.huge
@@ -178,9 +178,9 @@ for i=1,caseCount,3 do
         assert(label:find('parent Y '..degrees..' deg/s',1,true),'parent rotation order changed')
     end
 end
-assert(announcements[1].text:find('] neonHotelText |',1,true))
+assert(announcements[1].text:find('] tetrisText |',1,true))
 assert(announcements[caseCount-5].text:find('] plain |',1,true))
-assert(announcements[caseCount+1].text:find('] neonHotelText |',1,true),'next cycle does not restart newest-first')
+assert(announcements[caseCount+1].text:find('] tetrisText |',1,true),'next cycle does not restart newest-first')
 local danceRank={advertiseWeightlessYoga=13,danceShakira=12,danceBehindGlass=11,danceEmbracePasserby=10,lingerBrothel=9,
     greetPasserby=8,embracePasserby=8,kissPasserby=8,invitePasserby=8,
     danceBurlesqueSway=7,danceBurlesqueWave=7,danceBurlesqueFan=7,idle_stance=6,idle_stance2=6,
