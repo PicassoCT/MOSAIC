@@ -281,7 +281,7 @@ local baselineIndependentTextFx = {
     dnaHelix=true, spiralProject=true, archProject=true, letterTornado=true,
     wallImpactText=true, smilingFace=true, letterPlant=true, meteorCraterText=true,
     splineShapeFollowing=true, neonHotelText=true, tetrisText=true, rollingTextBall=true,
-    trainArrivalText=true, rainOnGlassText=true, venetianBlindsText=true, typewriterText=true,
+    trainArrivalText=true, rainOnGlassText=true, venetianBlindsText=true, typewriterText=true, orbitTransferText=true,
 }
 function canProjectTextFx(name, posLetters)
     if name == "matrixTextFx" then return posLetters.boolUpright == true end
@@ -1140,7 +1140,7 @@ local function prepareKineticText(allLetters,posLetters,name,maxColumns)
         return stage.anchor[1]+stage.right[1]*x+stage.normal[1]*z,
             stage.anchor[2]+y+stage.normal[2]*z,stage.anchor[3]+stage.right[3]*x+stage.normal[3]*z
     end
-    -- pose(slot) supplies a glyph CENTRE, optionally rotated about its baseline.
+    -- pose(slot) supplies a local/world glyph CENTRE, optionally rotated about its baseline.
     -- A shared mesh visits only visible occurrences; striking letters can take
     -- priority over already printed occurrences of that same character.
     function stage.frame(ms,pose)
@@ -1159,7 +1159,9 @@ local function prepareKineticText(allLetters,posLetters,name,maxColumns)
                 local chosen=choices[math.floor(stage.elapsed/400)%#choices+1]
                 local p=chosen.p;local snap=glyph.slot~=chosen.slot
                 if snap then HideReg(id)end
-                local x,y,z=stage.world(p.x,p.y,p.z)
+                local x,y,z
+                if p.world then x,y,z=p.world[1],p.world[2],p.world[3]
+                else x,y,z=stage.world(p.x,p.y,p.z)end
                 local angle=p.angle or 0
                 local c=glyph.center;local ca,sa=math.cos(angle),math.sin(angle)
                 local offset={ca*c[1]+sa*c[3],c[2],-sa*c[1]+ca*c[3]}
@@ -1334,6 +1336,101 @@ function typewriterText(allLetters,posLetters)
         local x,y=stage.home(slot)
         return {x=x,y=y+u*u*(stage.rows*stage.line+stage.height*2),visible=u<1}
     end)
+    stage.finish()
+end
+
+-- Satellites follow a real pedestrian, then leave their orbits in phrase order
+-- on tangent-led Bezier arcs and settle into a readable sign at the emitter.
+function orbitTransferText(allLetters,posLetters)
+    if #allLetters==0 then return end
+    local function note(message)
+        if posLetters.debugTextFx then posLetters.debugTextFx('orbit transfer: '..message)end
+    end
+    if not (Spring.GetUnitsInCylinder and Spring.GetUnitDefID and Spring.GetUnitIsDead) then
+        note('skipped; pedestrian APIs unavailable');return
+    end
+    local owner=posLetters.unitID
+    local ox,_,oz=Spring.GetUnitPosition(owner)
+    if not ox then return end
+    local function personPosition(id,range)
+        if id==owner or (Spring.ValidUnitID and not Spring.ValidUnitID(id)) or Spring.GetUnitIsDead(id)
+            or (Spring.GetUnitTransporter and Spring.GetUnitTransporter(id)) then return end
+        local def=UnitDefs[Spring.GetUnitDefID(id)]
+        local base=def and def.customParams and def.customParams.baseclass
+        if not base or base:lower()~='civilian' or def.isBuilding or def.canFly then return end
+        local x,y,z=Spring.GetUnitPosition(id)
+        if not x or (x-ox)^2+(z-oz)^2>range^2 or math.abs(y-Spring.GetGroundHeight(x,z))>12 then return end
+        return x,y,z
+    end
+    local person,nearest
+    local candidates=Spring.GetUnitsInCylinder(ox,oz,650) or {};table.sort(candidates)
+    for _,id in ipairs(candidates)do
+        local x,_,z=personPosition(id,650)
+        if x then
+            local distance=(x-ox)^2+(z-oz)^2
+            if not nearest or distance<nearest then person,nearest=id,distance end
+        end
+    end
+    if not person then note('skipped; no nearby civilian');return end
+    local stage=prepareKineticText(allLetters,posLetters,'orbit transfer',12)
+    if not stage then return end
+    local personRadius=Spring.GetUnitRadius and Spring.GetUnitRadius(person) or 6
+    local personHeight=Spring.GetUnitHeight and Spring.GetUnitHeight(person) or personRadius*2
+    local radius=math.max(personRadius+stage.height*1.5+stage.width*.5,math.min(stage.slots,18)*stage.step/(2*math.pi))
+    local px,py,pz
+    local omega=2*math.pi/2.6
+    local function orbit(slot,clock)
+        local tier=math.floor((slot-1)/18)
+        local count=math.min(18,stage.slots-tier*18)
+        local angle=omega*clock/1000+2*math.pi*((slot-1)%18+.5)/count+tier*.4
+        local x,z=px+radius*math.cos(angle),pz+radius*math.sin(angle)
+        local y=py+math.max(personHeight*.65,stage.height*1.2)+tier*stage.line+math.sin(angle)*stage.height*.35
+        y=math.max(y,Spring.GetGroundHeight(x,z)+stage.height*.75)
+        return {x,y,z},angle
+    end
+    local function play(duration,pose)
+        local start=stage.elapsed
+        local time,previousTime=0,0
+        repeat
+            px,py,pz=personPosition(person,900)
+            if not px then note('stopped; pedestrian left');return false end
+            local step=time-previousTime
+            stage.frame(step,function(slot)return pose(slot,time/duration,time,start+time)end)
+            if time==duration then break end
+            previousTime=time
+            time=math.min(duration,time+50)
+        until false
+        return true
+    end
+    note('forming around civilian '..person)
+    if not play(1000,function(slot,u,_,clock)
+        local x,y=stage.home(slot);local a={stage.world(x,y)};local b=orbit(slot,clock)
+        local ease=u*u*(3-2*u)
+        return {world={a[1]+(b[1]-a[1])*ease,a[2]+(b[2]-a[2])*ease,a[3]+(b[3]-a[3])*ease}}
+    end)then stage.finish();return end
+    note('orbiting civilian '..person)
+    if not play(2800,function(slot,_,_,clock)return {world=orbit(slot,clock)}end)then stage.finish();return end
+    note('peeling into the phrase')
+    local flights={}
+    local beat=math.min(140,2400/math.max(1,stage.slots-1))
+    if not play(1200+(stage.slots-1)*beat,function(slot,_,time,clock)
+        local age=time-(slot-1)*beat
+        if age<0 then return {world=orbit(slot,clock)}end
+        local flight=flights[slot]
+        if not flight then
+            local start,angle=orbit(slot,clock-age)
+            local x,y=stage.home(slot);local target={stage.world(x,y)}
+            flight={start,
+                {start[1]-math.sin(angle)*radius*.9,start[2]+stage.height,start[3]+math.cos(angle)*radius*.9},
+                {target[1]+stage.normal[1]*stage.height*2,target[2]+stage.height,target[3]+stage.normal[3]*stage.height*2},target}
+            flights[slot]=flight
+        end
+        local u=math.min(1,age/1200);local v=1-u;local p={}
+        for axis=1,3 do p[axis]=v^3*flight[1][axis]+3*v*v*u*flight[2][axis]+3*v*u*u*flight[3][axis]+u^3*flight[4][axis]end
+        p[2]=math.max(p[2],Spring.GetGroundHeight(p[1],p[3])+stage.height*.6)
+        return {world=p}
+    end)then stage.finish();return end
+    note('assembled');stage.hold(3000)
     stage.finish()
 end
 
@@ -2638,6 +2735,7 @@ end
 
 function getAllTextFx()
 return {
+        ["orbitTransferText"] = orbitTransferText,
         ["typewriterText"] = typewriterText,
         ["venetianBlindsText"] = venetianBlindsText,
         ["rainOnGlassText"] = rainOnGlassText,
