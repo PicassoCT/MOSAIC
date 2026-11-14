@@ -3,6 +3,7 @@
 local M = {placeableMinSize = 32, maxDirectLights = 24}
 local atan2 = math.atan2 or math.atan
 local placeableSizes = {}
+local attachedLampPresets = {palace_facade = true, outpost_searchlight = true, outpost_roof = true}
 local function geometry(unitID, pieceID)
     local info = Spring.GetUnitPieceInfo(unitID, pieceID)
     local matrix = {Spring.GetUnitPieceMatrix(unitID, pieceID)}
@@ -108,7 +109,7 @@ function M.AttachedLights(unitID,pieceID,preset,frame)
             range=span*1.8,outerCos=math.cos(math.rad(72)),
             color={1,.32,.075},gain=.65,radius=span*.22,strength=.22,unitID=parent}}
     end
-    if preset~='palace_facade' and preset~='outpost_searchlight' and preset~='outpost_roof' then return {} end
+    if not attachedLampPresets[preset] then return {} end
     if not M.PlaceablesVisible(unitID) then return {} end
     local f=pieceFrame(unitID,pieceID)
     if not f then return {} end

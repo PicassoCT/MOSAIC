@@ -19,6 +19,12 @@ local highWeapons={railgun=true,orbitalrailgun=true,tankcannon=true,breachingcan
 local missiles={s16rocket=true,javelinrocket=true,militaryantiair=true,
     militaryantitank=true,interceptormissile=true,campaignrocket=true}
 local mortars={mortar=true,supportmortar=true}
+local explosionProfiles={
+    sticky={life=.55,radius=150,high=true},
+    emp={life=.45,radius=95,high=true,merge=true},
+    mortar={life=.45,radius=115},
+    gun={life=.09,radius=65,merge=true},
+}
 local function clamp(v,a,b) return math.max(a,math.min(b,v)) end
 local function finite(v) return type(v)=='number' and v==v and math.abs(v)<1e9 end
 function M.CloseGain(d2)
@@ -112,23 +118,23 @@ function M.New(api,game,defs,names)
     function self:Explosion(x,y,z,id,muzzle,owner,visible,unitVisible)
         local p=self:Profile(id)
         local kind=id==M.stickyEvent and 'sticky' or id==M.empEvent and 'emp' or p.kind
-        if kind~='sticky' and kind~='emp' and kind~='mortar' and kind~='gun' then return false end
+        local effect=explosionProfiles[kind]
+        if not effect then return false end
         if p.skip or not finite(x) or not finite(y) or not finite(z) or not visible(x,y,z) then return true end
         if kind=='gun' and not muzzle then return true end -- no per-bullet hit lights
         if kind=='mortar' and muzzle then return false end
-        local priority=(kind=='sticky' or kind=='emp') and M.HIGH or p.priority
+        local priority=effect.high and M.HIGH or p.priority
         if self:Gain(priority,x,y,z)<=0 then return true end
         if kind=='emp' and owner and owner>=0 and not unitVisible(owner) then return true end
         local frame=api.GetGameFrame()
         self:Update()
         local pool=priority==M.HIGH and self.high or self.low
         -- Merge pulses from the same gun/victim, not one light per bullet/arc.
-        if kind=='gun' or kind=='emp' then
+        if effect.merge then
             for _,r in pairs(pool) do
                 if r.kind==kind and r.owner==owner and frame<r.expires then return true end
             end
         end
-        local life=kind=='sticky' and .55 or kind=='emp' and .45 or kind=='mortar' and .45 or .09
         if kind=='gun' then
             local ground=api.GetGroundHeight(x,z)
             -- An aircraft gun high above the road must not create ground light.
@@ -143,8 +149,8 @@ function M.New(api,game,defs,names)
         end
         self.serial=self.serial+1
         pool[index]={kind=kind,priority=priority,x=x,y=y,z=z,owner=owner,
-            born=frame,expires=frame+math.max(1,math.ceil(life*fps)),seed=self.serial,
-            radius=kind=='sticky' and 150 or kind=='emp' and 95 or kind=='mortar' and 115 or 65}
+            born=frame,expires=frame+math.max(1,math.ceil(effect.life*fps)),seed=self.serial,
+            radius=effect.radius}
         return true
     end
     function self:Collect(frame,cx,cy,cz,visible,unitVisible,add,extraFlames,brightness,radius)
