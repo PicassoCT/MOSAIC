@@ -281,7 +281,7 @@ function canProjectTextFx(name, posLetters)
     if name == "matrixTextFx" then return posLetters.boolUpright == true end
     return not posLetters.boolUpright
         or name == "dnaHelix" or name == "spiralProject" or name == "archProject" or name == "letterTornado"
-        or name == "wallImpactText" or name == "smilingFace" or name == "letterPlant" or name == "meteorCraterText" or name == "splineShapeFollowing"
+        or name == "wallImpactText" or name == "smilingFace" or name == "letterPlant" or name == "meteorCraterText" or name == "splineShapeFollowing" or name == "neonHotelText"
 end
 
 function dnaHelix(allLetters, posLetters)
@@ -1076,6 +1076,86 @@ function hologramWorldMover(owner, id, base, pieceMap)
         end
     end
     return moveToWorld, origin, basis
+end
+
+-- A stationary, top-to-bottom neon sign. Keep the authored glyphs upright,
+-- anchor the bottom to the street, and flicker visibility through ShowReg so
+-- production signs retain the existing bright additive neon material.
+function neonHotelText(allLetters,posLetters)
+    if #allLetters==0 then return end
+    StopSpin(textSpinner,textSpinnerAxis,0)
+    hardResetHologramLetters(allLetters)
+    local function finish()
+        hardResetHologramLetters(allLetters)
+        restoreMessageOriginalPosition(allLetters,posLetters)
+        if posLetters.spinnerSpeed then Spin(textSpinner,textSpinnerAxis,posLetters.spinnerSpeed,0) end
+    end
+    local function report(reason)
+        local message='neon hotel skipped: '..reason
+        if posLetters.debugTextFx then posLetters.debugTextFx(message)
+        elseif Spring.Echo then Spring.Echo(message) end
+    end
+    local owner=posLetters.unitID
+    local pieceMap=Spring.GetUnitPieceMap(owner)
+    local movers,slots,current,lit={},{},{},{}
+    local anchor,height,lowest,lastSlot=nil,0,0,1
+    local faulty=allLetters[#allLetters]
+    for index,id in ipairs(allLetters) do
+        local move,origin,basis=hologramWorldMover(owner,id,{0,0,0},pieceMap)
+        if not move then report('missing glyph transform for '..id);finish();return end
+        local up=basis[glyphHeightAxis]
+        local scale=math.sqrt(textDot(up,up))
+        if scale<1e-9 or up[2]/scale<.999 then
+            report('glyph '..id..' local Z is not upright; check the model export')
+            finish();return
+        end
+        local info=Spring.GetUnitPieceInfo(owner,id)
+        local low=info.min and info.min[glyphHeightAxis] or 0
+        local high=info.max and info.max[glyphHeightAxis] or sizeDownLetter
+        height=math.max(height,(high-low)*scale,sizeDownLetter*scale)
+        lowest=math.min(lowest,low*scale)
+        slots[id]=posLetters.leases and posLetters.leases[id] or {textSlot(posLetters,id,index-1)+1}
+        for _,slot in ipairs(slots[id]) do
+            if slot>=lastSlot then lastSlot,faulty=slot,id end
+        end
+        movers[id],anchor=move,anchor or origin
+    end
+    local x,z=anchor[1],anchor[3]
+    local bottom=Spring.GetGroundHeight(x,z)+height*.35-lowest
+    local spacing=height*1.2
+    local elapsed=0
+    local function display(duration,dark,blackout)
+        while duration>0 do
+            for _,id in ipairs(allLetters) do
+                local choices=slots[id]
+                local slot=choices[math.floor(elapsed/600)%#choices+1]
+                if current[id]~=slot then
+                    HideReg(id);lit[id]=false
+                    movers[id](x,bottom+(lastSlot-slot)*spacing,z,0)
+                    current[id]=slot
+                end
+                local on=not blackout and id~=dark
+                if lit[id]~=on then
+                    if on then ShowReg(id) else HideReg(id) end
+                    lit[id]=on
+                end
+            end
+            local step=math.min(duration,100)
+            Sleep(step);duration=duration-step;elapsed=elapsed+step
+        end
+    end
+    -- Failed starts, a bright readable stretch, then an unreliable last tube.
+    display(180);display(240,nil,true);display(300);display(180,nil,true)
+    display(1800)
+    for cycle=1,3 do
+        display(math.random(160,260),faulty)
+        display(math.random(180,300))
+        display(math.random(240,400),faulty)
+        display(1600)
+        if cycle==2 then display(300,nil,true);display(350) end
+    end
+    display(1600)
+    finish()
 end
 
 -- Selected house pieces include their imported scale and ancestor transforms.
@@ -1925,6 +2005,7 @@ end
 
 function getAllTextFx()
 return {
+        ["neonHotelText"] = neonHotelText,
         ["splineShapeFollowing"] = splineShapeFollowing,
         ["meteorCraterText"] = meteorCraterText,
         ["wallImpactText"] = wallImpactText,

@@ -30,6 +30,18 @@ Each selected effect runs at a fresh random multiplier between 1.00x and 3.00x. 
 
 ## New effects
 
+**Neon hotel (`neonHotelText`):** the current phrase becomes a stationary,
+top-to-bottom column of upright letters, with its lowest glyph just above local
+street terrain. Spacing and clearance use the glyph dimensions and imported
+scale. Word gaps and repeated-letter leases remain intact. Failed ignition,
+bright readable holds, a faulty bottom tube and occasional whole-sign outages
+create the hotel-sign flicker. Production holograms use their existing additive
+neon material; the ordinary-model test unit previews layout and visibility.
+The effect lasts roughly 12 seconds at 1x, supports the shared 1–3x speed, and
+restores the original phrase and parent rotation afterward. It accepts either
+starting layout and previews first. Missing transforms or a non-upright glyph
+parent emit a diagnostic and skip the effect; model axes are never corrected.
+
 **Wall impact (`wallImpactText`):** a staggered volley of letters flies toward a nearby house, mixing straight bullet-like arrivals with spinning throwing stars. Each letter settles against the wall; the complete phrase holds for four seconds before returning to the sign. Visible piece bounds supply upright wall faces, including imported scale and house rotation. Long phrases wrap into rows; word gaps and repeated-letter leases retain their slots. Walls must fit the glyphs at their existing size. Missing, unfinished, too-small or destroyed houses exit cleanly. Both starting layouts and the shared 1–3× speed multiplier are supported. Place the preview unit near a house to see this mode.
 
 **Spline following (`splineShapeFollowing`):** upright letters traverse a short randomized cubic Bezier curve in source order, entering every 300 ms. Spaces reserve their delay; repeated glyph meshes alternate between active occurrences. An arc-length lookup keeps travel speed steady through bends. The lead letter takes at most 12 seconds, and the last letter finishes at most `12 + 0.3 × (logical slots − 1)` seconds after the first enters. There is no extra hold. The effect restores the phrase and parent spin afterward; both initial layouts are supported. Engine-interpolated motion updates at 20 Hz.
@@ -94,7 +106,7 @@ The production signs use the same cleanup. Tornado formation has a 2.5-second mo
 when calculating speeds, and fireworks bounds its launch/burst/fall waits too.
 Continuous spins keep running during the hold. All glyph transforms/spins are
 reset between cases; long effects are no longer cut short. The cycle has
-96 cases: plain horizontal/upright text, all 29 runnable shared modes (matrix and arch use
+99 cases: plain horizontal/upright text, all 30 runnable shared modes (matrix, hotel and arch use
 upright), an extra upright DNA-helix case, each at 0, +20 and -20 degrees/second
 around the same parent Y axis used by production holograms.
 
@@ -349,7 +361,7 @@ the feet and restores neutral. It is available in normal western, techno,
 business, brothel and blimp dance pools, and appears in `text_fx_test`.
 
 The test unit plays both text effects and Tiglil routines newest-added first.
-Text starts with wall impact, restored spline and meteor, followed by older
+Text starts with neon hotel, wall impact, restored spline and meteor, followed by older
 addition groups; repairs do not move an effect forward. Each effect runs its
 0, +20 and -20 degree/second parent variants together. The two plain layouts
 come last, and the next cycle starts with the newest effect again. Every

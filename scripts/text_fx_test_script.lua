@@ -106,6 +106,7 @@ local function cycle()
     -- Addition order from Git history, newest first (not last modification).
     -- Count the restored spline at its restoration. Prepend future additions.
     local newestFirst={
+        'neonHotelText', -- vertical street-level neon hotel sign
         'wallImpactText', -- 7a68750a
         'splineShapeFollowing', -- 089377c6, restored runnable choreography
         'meteorCraterText', -- 9fa5d254
@@ -128,7 +129,7 @@ local function cycle()
         if effects[name] then names[#names+1]=name end
     end
     for _,name in ipairs(names) do
-        cases[#cases+1]={name=name,upright=name=='matrixTextFx' or name=='archProject'}
+        cases[#cases+1]={name=name,upright=name=='matrixTextFx' or name=='archProject' or name=='neonHotelText'}
         if name=='dnaHelix' then cases[#cases+1]={name=name,upright=true} end
     end
     cases[#cases+1]={name='plain',upright=false}
@@ -147,6 +148,7 @@ local function cycle()
                 if case.name=='spiralProject' then note='; upright spiral, independent of starting layout' end
                 if case.name=='splineShapeFollowing' then note='; random spline, <=12s per letter; 300ms between slots' end
                 if case.name=='wallImpactText' then note='; spinning letter volley; needs a nearby house wall' end
+                if case.name=='neonHotelText' then note='; upright street-level neon column; power stutters and one faulty tube' end
                 if case.name=='meteorCraterText' then note='; diagonal meteor wake, impact, debris and a terrain-following crater ring' end
                 if case.name=='letterTornado' then note='; widening upright cone; letters orbit at least 60 deg/s' end
                 if case.name=='heartMonitor' then note='; two travelling ECG pulses, upright letters on one baseline' end
