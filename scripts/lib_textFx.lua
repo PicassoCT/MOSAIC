@@ -277,11 +277,15 @@ function matrixTextFx(allLetters, posLetters)
 end
 
 -- These projections replace either initial text baseline with their own shape.
+local baselineIndependentTextFx = {
+    dnaHelix=true, spiralProject=true, archProject=true, letterTornado=true,
+    wallImpactText=true, smilingFace=true, letterPlant=true, meteorCraterText=true,
+    splineShapeFollowing=true, neonHotelText=true, tetrisText=true, rollingTextBall=true,
+    trainArrivalText=true, rainOnGlassText=true,
+}
 function canProjectTextFx(name, posLetters)
     if name == "matrixTextFx" then return posLetters.boolUpright == true end
-    return not posLetters.boolUpright
-        or name == "dnaHelix" or name == "spiralProject" or name == "archProject" or name == "letterTornado"
-        or name == "wallImpactText" or name == "smilingFace" or name == "letterPlant" or name == "meteorCraterText" or name == "splineShapeFollowing" or name == "neonHotelText" or name == "tetrisText" or name == "rollingTextBall" or name == "trainArrivalText"
+    return not posLetters.boolUpright or baselineIndependentTextFx[name] == true
 end
 
 function dnaHelix(allLetters, posLetters)
@@ -1211,6 +1215,40 @@ function trainArrivalText(allLetters,posLetters)
         local age=math.max(0,time-(stage.slots-slot)*beat)
         local x,y=stage.home(slot)
         return {x=x+(stage.columns+5)*stage.step*(age/1500)^2,y=y,visible=age<1500}
+    end)
+    stage.finish()
+end
+
+-- Rain beads catch above their assigned cells, then creep down the pane into
+-- readable lines. Each occurrence has its own fixed delay and sideways drift.
+function rainOnGlassText(allLetters,posLetters)
+    local stage=prepareKineticText(allLetters,posLetters,'rain',12)
+    if not stage then return end
+    local drops={}
+    for slot=1,stage.slots do
+        drops[slot]={delay=math.random(0,1400),drift=(math.random()-.5)*stage.step*.7,release=math.random(0,900)}
+    end
+    stage.note('collecting on glass')
+    stage.animate(3500,function(slot,_,time)
+        local d=drops[slot];local age=time-d.delay
+        if age<0 then return end
+        local x,y=stage.home(slot)
+        if age<850 then
+            local top=(stage.rows+3)*stage.height
+            return {x=x+d.drift,y=y+stage.height*.8+top*(1-(age/850)^2)}
+        end
+        local u=math.min(1,(age-850)/950);local ease=u*u*(3-2*u)
+        return {x=x+d.drift*(1-ease),y=y+stage.height*.8*(1-ease)}
+    end)
+    stage.note('readable on glass');stage.hold(2500)
+    stage.note('dripping away')
+    stage.animate(3200,function(slot,_,time)
+        local x,y=stage.home(slot)
+        local t=math.max(0,time-drops[slot].release)/1000
+        x=x+math.sin(t*3+slot)*stage.width*.08*math.min(1,t)
+        y=y-stage.height*2.2*t*t
+        local wx,wy,wz=stage.world(x,y)
+        return {x=x,y=y,visible=t<2.2 and wy-stage.height*.5>Spring.GetGroundHeight(wx,wz)}
     end)
     stage.finish()
 end
@@ -2516,6 +2554,7 @@ end
 
 function getAllTextFx()
 return {
+        ["rainOnGlassText"] = rainOnGlassText,
         ["trainArrivalText"] = trainArrivalText,
         ["rollingTextBall"] = rollingTextBall,
         ["tetrisText"] = tetrisText,

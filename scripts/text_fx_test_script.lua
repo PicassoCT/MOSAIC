@@ -102,12 +102,18 @@ local function layout(upright,speed,phrase)
     return ids,pos
 end
 
+local kineticPreviewNotes={
+    trainArrivalText='; carriages brake into the phrase, hold at the platform, then depart',
+    rainOnGlassText='; falling letters stick to glass, slide into lines, then drip away',
+}
+
 local function cycle()
     SetSignalMask(SIG_EFFECT)
     local effects=getAllTextFx()
     -- Addition order from Git history, newest first (not last modification).
     -- Count the restored spline at its restoration. Prepend future additions.
     local newestFirst={
+        'rainOnGlassText', -- rain on an invisible pane
         'trainArrivalText', -- braking carriages and accelerating departure
         'rollingTextBall', -- rolling boulder chase, pass and breakup
         'tetrisText', -- falling phrase blocks and completed-row clears
@@ -146,7 +152,7 @@ local function cycle()
                 local ids,pos=layout(case.upright,math.rad(degrees),phrase)
                 local effect=effects[case.name]
                 local multiplier=effect and math.random(100,300)/100 or 1
-                local note=''
+                local note=kineticPreviewNotes[case.name] or ''
                 if case.name=='personalProject' or case.name=='civilianCongaText' then note='; needs a nearby civilian' end
                 if case.name=='randomFLickerLetters' then note='; night-only effect' end
                 if case.name=='achromaticShivering' then note='; shared effect skips repeated letters in Lorem Ipsum' end
@@ -154,7 +160,6 @@ local function cycle()
                 if case.name=='spiralProject' then note='; upright spiral, independent of starting layout' end
                 if case.name=='splineShapeFollowing' then note='; random spline, <=12s per letter; 300ms between slots' end
                 if case.name=='wallImpactText' then note='; spinning letter volley; needs a nearby house wall' end
-                if case.name=='trainArrivalText' then note='; carriages brake into the phrase, hold at the platform, then depart' end
                 if case.name=='rollingTextBall' then note='; letter sphere chases a walking civilian, accelerates past and breaks apart' end
                 if case.name=='tetrisText' then note='; falling letter blocks; completed rows dissolve and the stack settles' end
                 if case.name=='neonHotelText' then note='; upright street-level neon column; power stutters and one faulty tube' end
