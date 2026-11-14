@@ -1,3 +1,12 @@
+# Preserve decision sets
+
+- Read [Decision set style for agents](docs/decision-set-style.md) when adding or changing classification, eligibility, dispatch, or per-kind configuration.
+- Represent a domain's membership rules as named lookup sets and its associated values as dictionaries or profiles. Extend existing sets instead of appending chains such as `name == "a" or name == "b" or name == "c"` or the equivalent exclusions.
+- Follow the property-set and profile patterns in `scripts/lib_mosaic.lua`. Reuse an existing helper when its membership and meaning match exactly; do not merge distinct policies just because their members overlap.
+- Construct stable sets once per owning module/environment, or once after the required definitions become available. Keep changing game-state checks live and preserve short-circuit evaluation.
+- Preserve exact return values, defaults, accepted members, branch priority, iteration/random ordering, and side effects. A style refactor must not change reachable content or gameplay.
+- Keep ordinary guards, range checks, and conditions on independent facts readable. Do not turn every `and`/`or` into a table or introduce a generic rule engine.
+
 # Visual effect sizing
 
 - When the emitting object's proportions are known, use those proportions to size new visual effects.
