@@ -97,6 +97,34 @@ local Sleep = UnitScript.Sleep
 local WaitForMove = UnitScript.WaitForMove
 local WaitForTurn = UnitScript.WaitForTurn
 
+-- Only opted-in holograms dispatch through the coroutine-local FX rate.
+-- Includes get this header too, so shared animation helpers use the same rate;
+-- the simultaneous Tiglil and other unit-script threads remain at 1x.
+if unitDef.customParams and unitDef.customParams.text_fx_speed then
+    local env = _G
+    local move,turn,spin,stopSpin,sleep = Move,Turn,Spin,StopSpin,Sleep
+    local function rate()
+        return env.GetHologramTextFxSpeed and env.GetHologramTextFxSpeed() or 1
+    end
+    Move = function(id,axis,target,speed,...)
+        return move(id,axis,target,speed and speed*rate(),...)
+    end
+    Turn = function(id,axis,target,speed,...)
+        return turn(id,axis,target,speed and speed*rate(),...)
+    end
+    Spin = function(id,axis,speed,acceleration)
+        local r=rate()
+        return spin(id,axis,speed*r,acceleration and acceleration*r*r)
+    end
+    StopSpin = function(id,axis,deceleration,...)
+        local r=rate()
+        return stopSpin(id,axis,deceleration and deceleration*r*r,...)
+    end
+    Sleep = function(milliseconds)
+        return sleep(milliseconds/rate())
+    end
+end
+
 local x_axis = 1
 local y_axis = 3
 local z_axis = 2

@@ -3,9 +3,11 @@
 local catalog = VFS.Include("scripts/house_asian_split_catalog.lua")
 local M = {catalog = catalog}
 
+-- Spring Lua uses float32. Keep every multiply/add below 2^24 so modulo
+-- cannot round a catalogue index outside 1..N. All authored choices remain.
 local function hash(text)
     local value = 0
-    for i = 1, #text do value = (value * 31 + string.byte(text, i)) % 2147483647 end
+    for i = 1, #text do value = (value * 31 + string.byte(text, i)) % 524287 end
     return value
 end
 

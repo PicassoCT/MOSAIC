@@ -1,0 +1,821 @@
+{
+  "source": "objects3d/paradeHologramScenery.dae",
+  "source_sha256": "08eb29f3fbdf6d5dcb44d3424a5dec334cfa1d7d856831ecb6b3fa27815a9ef0",
+  "runtime": "objects3d/paradeHologramSceneryRuntime.dae",
+  "pieces": {
+    "paradecivilian1body": 660,
+    "paradecivilian1head": 48,
+    "paradecivilian1mask": 144,
+    "paradecivilian2body": 564,
+    "paradecivilian2head": 48,
+    "paradecivilian2mask": 144,
+    "paradecivilian3body": 592,
+    "paradecivilian3head": 144,
+    "paradecivilian3mask": 156,
+    "paradecivilian4body": 738,
+    "paradecivilian4head": 48,
+    "paradecivilian4mask": 144,
+    "paradedead1body": 578,
+    "paradedead1head": 144,
+    "paradedead1mask": 156,
+    "paradedead2body": 544,
+    "paradedead2head": 192,
+    "paradedead2mask": 144,
+    "paradedead3body": 466,
+    "paradedead3head": 144,
+    "paradedead3mask": 144,
+    "paradedead4body": 578,
+    "paradedead4head": 144,
+    "paradedead4mask": 156,
+    "paradeai1body": 630,
+    "paradeai1head": 48,
+    "paradeai1mask": 192,
+    "paradeai2body": 500,
+    "paradeai2head": 48,
+    "paradeai2mask": 156,
+    "paradeai3body": 370,
+    "paradeai3head": 174,
+    "paradeai3mask": 192,
+    "paradeai4body": 386,
+    "paradeai4head": 48,
+    "paradeai4mask": 144,
+    "paradehelper1body": 628,
+    "paradehelper1head": 48,
+    "paradehelper1mask": 192,
+    "paradehelper2body": 552,
+    "paradehelper2head": 48,
+    "paradehelper2mask": 192,
+    "paradehelper3body": 684,
+    "paradehelper3head": 48,
+    "paradehelper3mask": 192,
+    "paradehelper4body": 448,
+    "paradehelper4head": 48,
+    "paradehelper4mask": 192,
+    "parademoon": 220,
+    "paradeenvelope": 172,
+    "parademoney": 456,
+    "paradestar": 40,
+    "paradecloud": 360,
+    "paradepinwheel": 552,
+    "paradecloud001": 360,
+    "paradecloud002": 360,
+    "paradelantern1": 140,
+    "paradelantern2": 36,
+    "paradelotus1": 108,
+    "paradekoi": 4962,
+    "paradecandle1": 166,
+    "paradecandle2": 166,
+    "parademoth1": 60,
+    "parademoth1Sub1": 16,
+    "parademoth1Sub2": 16,
+    "parademoth2": 60,
+    "parademoth2Sub1": 16,
+    "parademoth2Sub2": 16,
+    "parademoth3": 60,
+    "parademoth3Sub1": 16,
+    "parademoth3Sub2": 16,
+    "paradecandle003": 118,
+    "paradecandle004": 166,
+    "paradecandle005": 118,
+    "paradeleaf": 340
+  },
+  "preserved_payload_definitions": {
+    "asset": "335db1eeccf1e31f2c18d63e6295c9487518a3bdf92eaaee91afc67b95709dc0",
+    "library_images/Map #1-image": "f438da4678653886397147aefef1c4cc7076b70722c87762d9572ce97fbf0f35",
+    "library_images/Map #2-image": "071bd601bc6c1fbb363a1e87f8ce0670a8f9cfcdcafef39414db6d7eeab2f9dc",
+    "library_images/MOSAIC Asian house diffuse RGB-image": "e77c3fb6af622d526b150bc824c022ec8d6d3164ce89142f4be03219300bc487",
+    "library_materials/_01 - Default": "3751cb95b5dd3cfd70e0836edce856d6cafa2ad361f427cc3a3a25d09d0425ce",
+    "library_materials/AsianLantern_ivory_glow": "e444e1a11b91cdeb1406536d4b81e53416b51870369dacbf34dd3912f686644c",
+    "library_materials/AsianLantern_brass": "d0d935da231483ec0254ab4a472ca406bc58acef9ae1b7e56eee65dda9f0eb36",
+    "library_materials/AsianLantern_gold_glow": "375aa881c85aee295c809f74012dfebedb8a30dc25a001502f09b04dd50f2ddb",
+    "library_materials/AsianLantern_dark": "4da7f1bf7b7260b38be64a8cf50ae9048eda76b3beafafb2e3356d1183058dbf",
+    "library_materials/AsianLantern_pink_glow": "843ae3526d07ac410415f28b362a26cb719c9a4eca9b27f1fd085bd6ab093b52",
+    "library_materials/AsianLantern_violet_glow": "ea7a050a9f4e352aefe76e61a3a8f347e882e06f93eab25461f66ac7bc0d958a",
+    "library_materials/AsianLantern_red_trim": "ba20460517d49e2d27f2fed88edb9f5ca45f957f4606e938af18599bc0823c84",
+    "library_materials/AsianLantern_wood": "2bd43c418ae4e33189a79a9eb5bd53ab0a59325b3284018f40330f8d5dc318ad",
+    "library_materials/AsianLantern_teal": "9c8f769e949827c435045d756ee6cca23b81ac6c655051696281a81b49f71669",
+    "library_materials/Asian tex2 RED only-emission-Material": "58b38e5e75242586222d1887cc9a252ec181cb29543ae447bb7715aa6f6f7ef4",
+    "library_effects/_01 - Default-fx": "23f3c8b4fd44bf16ad1d2f9158846a5d661d671e2b58b2bd235e358b3980a037",
+    "library_effects/AsianLantern_ivory_glow-fx": "ded7228312c9a679eba5efbb4c987ee78d89c6bdd3d2a4ecc9742c4a6e964512",
+    "library_effects/AsianLantern_brass-fx": "2edf2c22a43bcd088ab1cbe0e0ef8f6ac8cf0a167b1cd0102cca352912ec0a24",
+    "library_effects/AsianLantern_gold_glow-fx": "2b2f25632a07784e78365646dd0ee588586b3962e4a3a78ea1cb5708ea76fd0b",
+    "library_effects/AsianLantern_dark-fx": "bad4edca9e80e001e1978fca2351051345ec205ebc3231862bfcc694ab84ccdb",
+    "library_effects/AsianLantern_pink_glow-fx": "fb444c094f071fbf191398f236c3b30e835f49535dc975f1b0751da996fd7eb9",
+    "library_effects/AsianLantern_violet_glow-fx": "9e33a247673ce4911beb44180ef968ba91919acc6b933723709fd04fda63e975",
+    "library_effects/AsianLantern_red_trim-fx": "2fad86ebc43027e9cf238e9f8709d9fb0d6863581ea5a51607ce162256d7c864",
+    "library_effects/AsianLantern_wood-fx": "0b82f6e866e8cd4cffdeb801ea6b89cd087b8f22216978b9aaf0807a8e44d7ca",
+    "library_effects/AsianLantern_teal-fx": "9d60a81eafbc8a1f173cc9176651b72c86e5737fadb98031e892fe4f3fc471af",
+    "library_effects/Asian tex2 RED only-emission-Material-fx": "9d722829dec6dd587859f946aa805a49d7e8f8931cc21e961faa7a6169fd7a66",
+    "library_geometries/center-lib": "51fb674c0e78872408f6395b81dba5959a9020d1761b41dc4cb5bf1a1724d1c9",
+    "library_geometries/Float21-lib": "0444864176640953630ce4f0ab3eec9bac92a719e4888b7338c297fe0e033ad1",
+    "library_geometries/Float23-lib": "ccc797838b7c5cefd417fa304411440f9a82d48c60d88145e2176ef739446af6",
+    "library_geometries/Float22-lib": "e14ad981baf69664da0810040b40bbb073bb724ebe6c81460d67adfbed82b747",
+    "library_geometries/Float01-lib": "96da2daaee33d1ae5eef6dcd8a538d7a2afb0194c9c43b33a5924fcd5908da8c",
+    "library_geometries/Float1Sub1-lib": "1fdc02b7b9405c794ff15a1fb2c68952d3d6920ed6ea735ba14bbe1bc5d1c5bb",
+    "library_geometries/Float02-lib": "70e644d4770deb0408b2024f963291dba71a10984b67dab4052c84e989826eaa",
+    "library_geometries/Float2Sub1-lib": "b5f57ddfb05fd4dcdfacbaa52d3bee58bd09ee4bef948cf9965b02b6fe951fd8",
+    "library_geometries/Float2Sub9-lib": "f7318bfe34e8cb8747b5093a3ccd0f00491c81b1b8773a8358afb61623c8ff5b",
+    "library_geometries/Float2Sub8-lib": "e257b40dc38a49cc07d52a2d50b6d54d26ac2bf1dd8d0697bcebde5a3d10b405",
+    "library_geometries/Float2Sub7-lib": "8bf565a51f25ba5081614638ee1b77a3bc89ee5f3eb9967a9a7ed8052bad349e",
+    "library_geometries/Float2Sub6-lib": "b0293d498fd23f42c5a11798c4ba491fbccf392f3ca0284e76192201967ef47a",
+    "library_geometries/Float2Sub5-lib": "2275cab4077aee45bfadf5c53cd7986a821403bbfd2623635bbb416414d1301b",
+    "library_geometries/Float2Sub4-lib": "93e67996ef37fb484a52a92d5833237062e8c26089e049454b42aa50518c2822",
+    "library_geometries/Float2Sub3-lib": "84a5d0a7ba860ef1154fa3da86e0a0c7606a4cef86392dc5c7b0721b82a0f5be",
+    "library_geometries/Float2Sub2-lib": "a0ced4f9f8108fca691322cc83fa436d5687b6ff9a7265add7b1dba8e7a32140",
+    "library_geometries/Float03-lib": "b72f7dc707866477808ee04ad599c534f59fd5d215529bffc7d7e6f5cf3d5a5e",
+    "library_geometries/Float3Sub1-lib": "7ab5e341a9662bd01140ef93bdc9a27df9fb07808ce2f86c328c793789a251c9",
+    "library_geometries/Float3Sub3-lib": "99b52f59d8b053f3a3c22cb56c919441784b44ecae5431e4b98549ba92973f2c",
+    "library_geometries/Float3Sub2-lib": "634f583c8259c0517e723cde6a7bf6199647a320d1ab4a35917df665471ec4b8",
+    "library_geometries/Float3Sub5-lib": "e310c0efd3b131cd453c208fe2d7e492eb6bebeadf06c0f6213e79d410168ff9",
+    "library_geometries/Float3Sub4-lib": "dbd9da62879518911107cf5442319f0e47ccf27ee9e4146b298c47f7cb1537a1",
+    "library_geometries/Float04-lib": "b8b7eca07a48ac6ceba691b778cef78f4f8b62188e61e961fff2522f31bf1b28",
+    "library_geometries/Float05-lib": "f12290c371796087061b0f2c685c207c7cfcee633208ecf21a1f12b33632a086",
+    "library_geometries/Float06-lib": "6bab4e746317b2a44f3db482820623593c1e739bba063cc0b03f28a951d81d31",
+    "library_geometries/Float07-lib": "cbe10f44d248e5d8bee0f888a900d1ae5251685d94b81578cbccfff0c45ea209",
+    "library_geometries/Float08-lib": "fd0639016d0036e2ffb496eeb20cb58db2d6117f25e0ea470c1804ff7ca76a9d",
+    "library_geometries/Float09-lib": "728794c2dbebc02f7d172a011b8570d20c5fbaff724227f05d057fe93402a1e5",
+    "library_geometries/Float10-lib": "14a434040e2f63911be7b0b90a1484a0d27edac5b9191e5a9e04cf534105bd3f",
+    "library_geometries/Float11-lib": "f182d1cde2f3d731d92df917e0511ebdd7f5ac51c0d1b663e2a72d519202ffda",
+    "library_geometries/Float14-lib": "4fad81ca9082550911b91b20660c03a80e1a752d4467aa782cb669b0c60db36a",
+    "library_geometries/Float15-lib": "7f35b041b1ec941c808b8ce005f3d42b85dea13a6bd52919dd6879c6f80b9762",
+    "library_geometries/Float16-lib": "e6ab3fd82f8c46d2d99cf25d59d60565f5fa0833154b9768e1b72f00666ede41",
+    "library_geometries/Float17-lib": "f5272c4064830bda057b2eaac2e209c22a589a52f192c06fc7966e41fdb2ac1e",
+    "library_geometries/Float13-lib": "3c650282d7d6f845d96d3b72c78e13790ea97db6ffdae3941d756e15fbbe2ce9",
+    "library_geometries/Float18-lib": "39194a0c6fd91d876135daf70c744f0acd7f19712b8d3450b607d143759ab581",
+    "library_geometries/Float19-lib": "5655b62248b7d65cff311c206dc2a0e8bed6a339de3bb6a6c242636b529096c9",
+    "library_geometries/Float12-lib": "bd97a79e5620394cf90ea2a8d71004493676984a27d717d4e1e348ffd0003b3a",
+    "library_geometries/Float20-lib": "15f34ae54bda37d970f3078928a10a154645a7c135d33805372cac6fee8ca4b8",
+    "library_geometries/Float24-lib": "a41918d22a8c7554930568c051b317f29a43dd0fc066f2df2258f54fe643eecd",
+    "library_geometries/Float24Sub1-lib": "907d72e5d4bc5597a40cf1277e90d70599a428c4a2a1c2e50605b66e7c296feb",
+    "library_visual_scenes/truckPayloadParade/center": "99f8408a84e567ba0c072e94b7228603f3881f6629994e1a0a2248ec45c66c3a",
+    "library_visual_scenes/truckPayloadParade/extra": "2fa3642ab355f4d27daa6c3f7de3843c9eb9474161d26214f3f72332a5c5a07f",
+    "scene": "c7b06f7782a7d09f48414375250d7afc6c1c778d3235b7900858929ce76c79ca"
+  },
+  "catalog": {
+    "root": "paradeholograms",
+    "figures": {
+      "paradecivilian1": {
+        "label": "The coat commuter",
+        "category": "civilian",
+        "pieces": {
+          "body": "paradecivilian1body",
+          "head": "paradecivilian1head",
+          "mask": "paradecivilian1mask"
+        },
+        "bounds": [
+          [
+            -1.336052008817943,
+            -8.128e-09,
+            -0.5999998769599999
+          ],
+          [
+            1.336052008817943,
+            7.850000051809999,
+            0.91000020057
+          ]
+        ],
+        "height": 7.850000051809999,
+        "headPivot": [
+          0.0,
+          6.180000040787999,
+          3.1394399999999997e-07
+        ]
+      },
+      "paradecivilian2": {
+        "label": "The jacket watcher",
+        "category": "civilian",
+        "pieces": {
+          "body": "paradecivilian2body",
+          "head": "paradecivilian2head",
+          "mask": "paradecivilian2mask"
+        },
+        "bounds": [
+          [
+            -1.779017011741512,
+            -7.112e-09,
+            -0.7499998220699999
+          ],
+          [
+            2.2364910147608406,
+            7.400000048839999,
+            0.8405492134642508
+          ]
+        ],
+        "height": 7.400000048839999,
+        "headPivot": [
+          0.0,
+          5.8300000384779995,
+          2.96164e-07
+        ]
+      },
+      "paradecivilian3": {
+        "label": "The poncho courier",
+        "category": "civilian",
+        "pieces": {
+          "body": "paradecivilian3body",
+          "head": "paradecivilian3head",
+          "mask": "paradecivilian3mask"
+        },
+        "bounds": [
+          [
+            -1.5989600105531356,
+            -2.4384e-08,
+            -0.919999861292
+          ],
+          [
+            1.6500000108899997,
+            7.590000049077999,
+            1.080000017796
+          ]
+        ],
+        "height": 7.590000049077999,
+        "headPivot": [
+          0.0,
+          5.930000037105999,
+          0.040000301508
+        ]
+      },
+      "paradecivilian4": {
+        "label": "The umbrella observer",
+        "category": "civilian",
+        "pieces": {
+          "body": "paradecivilian4body",
+          "head": "paradecivilian4head",
+          "mask": "paradecivilian4mask"
+        },
+        "bounds": [
+          [
+            -3.0600000201959996,
+            -1.1176e-08,
+            -1.529999629606
+          ],
+          [
+            1.3400000088439998,
+            8.34218605641052,
+            1.469267394007798
+          ]
+        ],
+        "height": 8.34218605641052,
+        "headPivot": [
+          0.16000000105599999,
+          5.780000039163999,
+          -0.019999706508
+        ]
+      },
+      "paradedead1": {
+        "label": "The bowler gentleman",
+        "category": "dead",
+        "pieces": {
+          "body": "paradedead1body",
+          "head": "paradedead1head",
+          "mask": "paradedead1mask"
+        },
+        "bounds": [
+          [
+            -1.4573140096182722,
+            -9.652e-09,
+            -0.7199996222279998
+          ],
+          [
+            1.2798810084472145,
+            8.170000070686,
+            0.9100001878699999
+          ]
+        ],
+        "height": 8.170000070686,
+        "headPivot": [
+          0.0,
+          6.070000040061999,
+          3.08356e-07
+        ]
+      },
+      "paradedead2": {
+        "label": "The shawled widow",
+        "category": "dead",
+        "pieces": {
+          "body": "paradedead2body",
+          "head": "paradedead2head",
+          "mask": "paradedead2mask"
+        },
+        "bounds": [
+          [
+            -1.520000010032,
+            -1.7779999999999998e-08,
+            -0.9399999889319998
+          ],
+          [
+            1.520000010032,
+            8.122466058688275,
+            1.010000228154
+          ]
+        ],
+        "height": 8.122466058688275,
+        "headPivot": [
+          0.0,
+          6.1500000395739995,
+          0.020000312551999997
+        ]
+      },
+      "paradedead3": {
+        "label": "The robed elder",
+        "category": "dead",
+        "pieces": {
+          "body": "paradedead3body",
+          "head": "paradedead3head",
+          "mask": "paradedead3mask"
+        },
+        "bounds": [
+          [
+            -2.046132013504471,
+            -8.636e-09,
+            -0.7999999900399999
+          ],
+          [
+            2.0753820136975207,
+            7.810000038337999,
+            1.1140003627542798
+          ]
+        ],
+        "height": 7.810000038337999,
+        "headPivot": [
+          0.0,
+          6.050000028753999,
+          0.22000030879199997
+        ]
+      },
+      "paradedead4": {
+        "label": "The travelling shade",
+        "category": "dead",
+        "pieces": {
+          "body": "paradedead4body",
+          "head": "paradedead4head",
+          "mask": "paradedead4mask"
+        },
+        "bounds": [
+          [
+            -1.4900000098339998,
+            -4.5719999999999995e-09,
+            -0.779999766388
+          ],
+          [
+            2.1589970142493797,
+            8.520000079599999,
+            1.122222239838052
+          ]
+        ],
+        "height": 8.520000079599999,
+        "headPivot": [
+          0.0,
+          6.170000040721999,
+          3.13436e-07
+        ]
+      },
+      "paradeai1": {
+        "label": "Null Lux",
+        "category": "ai",
+        "pieces": {
+          "body": "paradeai1body",
+          "head": "paradeai1head",
+          "mask": "paradeai1mask"
+        },
+        "bounds": [
+          [
+            -1.7600000116159997,
+            -8.3176872e-09,
+            -0.9162147366363816
+          ],
+          [
+            1.7600000116159997,
+            13.260000088850312,
+            0.7277346181266843
+          ]
+        ],
+        "height": 13.260000088850312,
+        "headPivot": [
+          0.0,
+          10.350000069644313,
+          -0.026265474393355595
+        ]
+      },
+      "paradeai2": {
+        "label": "The bell-mantled visitor",
+        "category": "ai",
+        "pieces": {
+          "body": "paradeai2body",
+          "head": "paradeai2head",
+          "mask": "paradeai2mask"
+        },
+        "bounds": [
+          [
+            -4.100000027059999,
+            -6.47220448e-08,
+            -1.5459439543232303
+          ],
+          [
+            4.100000027059999,
+            10.630000072491955,
+            1.4540560654767696
+          ]
+        ],
+        "height": 10.630000072491955,
+        "headPivot": [
+          0.0,
+          8.280000056981953,
+          -0.04594357967923039
+        ]
+      },
+      "paradeai3": {
+        "label": "The many-eyed pilgrim",
+        "category": "ai",
+        "pieces": {
+          "body": "paradeai3body",
+          "head": "paradeai3head",
+          "mask": "paradeai3mask"
+        },
+        "bounds": [
+          [
+            -3.1040060204864393,
+            -2.4892e-08,
+            -0.7699995605819999
+          ],
+          [
+            3.280000021647999,
+            10.565604055398191,
+            0.9158004865868798
+          ]
+        ],
+        "height": 10.565604055398191,
+        "headPivot": [
+          0.0,
+          7.000000046199999,
+          3.556e-07
+        ]
+      },
+      "paradeai4": {
+        "label": "The folded-sail spirit",
+        "category": "ai",
+        "pieces": {
+          "body": "paradeai4body",
+          "head": "paradeai4head",
+          "mask": "paradeai4mask"
+        },
+        "bounds": [
+          [
+            -3.0394200200601715,
+            -5.588e-09,
+            -0.8499997627859999
+          ],
+          [
+            3.823986025238307,
+            11.403359071706168,
+            0.9443102631009694
+          ]
+        ],
+        "height": 11.403359071706168,
+        "headPivot": [
+          0.6900000045539999,
+          9.220000057804,
+          0.060000468771999986
+        ]
+      },
+      "paradehelper1": {
+        "label": "The lantern tender",
+        "category": "helper",
+        "pieces": {
+          "body": "paradehelper1body",
+          "head": "paradehelper1head",
+          "mask": "paradehelper1mask"
+        },
+        "bounds": [
+          [
+            -0.7366580048619428,
+            -1.524e-09,
+            -0.39999990296786
+          ],
+          [
+            1.2100000079859998,
+            3.1550000101549998,
+            0.5840001098005431
+          ]
+        ],
+        "height": 3.1550000101549998,
+        "headPivot": [
+          -0.030000000197999994,
+          1.370000009042,
+          6.9596e-08
+        ]
+      },
+      "paradehelper2": {
+        "label": "The outline mender",
+        "category": "helper",
+        "pieces": {
+          "body": "paradehelper2body",
+          "head": "paradehelper2head",
+          "mask": "paradehelper2mask"
+        },
+        "bounds": [
+          [
+            -0.7900000052139999,
+            1.27e-08,
+            -0.7299999997379999
+          ],
+          [
+            0.7978050052655129,
+            2.3028590091028693,
+            0.9400000265239998
+          ]
+        ],
+        "height": 2.3028590091028693,
+        "headPivot": [
+          -0.020000000131999998,
+          1.2500000046939999,
+          0.070000063962
+        ]
+      },
+      "paradehelper3": {
+        "label": "The crane courier",
+        "category": "helper",
+        "pieces": {
+          "body": "paradehelper3body",
+          "head": "paradehelper3head",
+          "mask": "paradehelper3mask"
+        },
+        "bounds": [
+          [
+            -0.9276080061222127,
+            -6.604e-09,
+            -0.449999985698
+          ],
+          [
+            0.9276080061222127,
+            3.0924810230697033,
+            0.6440001050636095
+          ]
+        ],
+        "height": 3.0924810230697033,
+        "headPivot": [
+          0.0,
+          1.330000007762,
+          0.020000067695999997
+        ]
+      },
+      "paradehelper4": {
+        "label": "The curious lookout",
+        "category": "helper",
+        "pieces": {
+          "body": "paradehelper4body",
+          "head": "paradehelper4head",
+          "mask": "paradehelper4mask"
+        },
+        "bounds": [
+          [
+            -0.45358200299364115,
+            -2.032e-09,
+            -0.4699999660179999
+          ],
+          [
+            0.8755570057786761,
+            2.7729160183012453,
+            0.5840001225263495
+          ]
+        ],
+        "height": 2.7729160183012453,
+        "headPivot": [
+          0.0,
+          1.6400000108239996,
+          8.3312e-08
+        ]
+      }
+    },
+    "props": {
+      "candle": {
+        "piece": "paradecandle1",
+        "variants": [
+          {
+            "piece": "paradecandle1"
+          },
+          {
+            "piece": "paradecandle2"
+          },
+          {
+            "piece": "paradecandle003"
+          },
+          {
+            "piece": "paradecandle004"
+          },
+          {
+            "piece": "paradecandle005"
+          }
+        ],
+        "label": "Candle"
+      },
+      "lantern": {
+        "piece": "paradelantern1",
+        "variants": [
+          {
+            "piece": "paradelantern1"
+          },
+          {
+            "piece": "paradelantern2"
+          }
+        ],
+        "label": "Lantern"
+      },
+      "moon": {
+        "piece": "parademoon",
+        "variants": [
+          {
+            "piece": "parademoon"
+          }
+        ],
+        "label": "Moon"
+      },
+      "envelope": {
+        "piece": "paradeenvelope",
+        "variants": [
+          {
+            "piece": "paradeenvelope"
+          }
+        ],
+        "label": "Envelope"
+      },
+      "money": {
+        "piece": "parademoney",
+        "variants": [
+          {
+            "piece": "parademoney"
+          }
+        ],
+        "label": "Money"
+      },
+      "koi": {
+        "piece": "paradekoi",
+        "variants": [
+          {
+            "piece": "paradekoi"
+          }
+        ],
+        "label": "Koi"
+      },
+      "lotus": {
+        "piece": "paradelotus1",
+        "variants": [
+          {
+            "piece": "paradelotus1"
+          }
+        ],
+        "label": "Cherry blossom petal"
+      },
+      "leaf": {
+        "piece": "paradeleaf",
+        "variants": [
+          {
+            "piece": "paradeleaf"
+          }
+        ],
+        "label": "Leaf"
+      },
+      "star": {
+        "piece": "paradestar",
+        "variants": [
+          {
+            "piece": "paradestar"
+          }
+        ],
+        "label": "Star"
+      },
+      "cloud": {
+        "piece": "paradecloud",
+        "variants": [
+          {
+            "piece": "paradecloud"
+          },
+          {
+            "piece": "paradecloud001"
+          },
+          {
+            "piece": "paradecloud002"
+          }
+        ],
+        "label": "Cloud"
+      },
+      "pinwheel": {
+        "piece": "paradepinwheel",
+        "variants": [
+          {
+            "piece": "paradepinwheel"
+          }
+        ],
+        "label": "Pinwheel"
+      },
+      "moth": {
+        "piece": "parademoth1",
+        "variants": [
+          {
+            "piece": "parademoth1",
+            "wings": [
+              {
+                "piece": "parademoth1Sub1",
+                "pivot": [
+                  0.3123142598,
+                  -0.045656906399999996,
+                  0.024835307199999997
+                ],
+                "axis": [
+                  1.0,
+                  0.0,
+                  0.0
+                ],
+                "sign": 1
+              },
+              {
+                "piece": "parademoth1Sub2",
+                "pivot": [
+                  0.3123142598,
+                  -0.045656906399999996,
+                  -0.0420497508
+                ],
+                "axis": [
+                  1.0,
+                  0.0,
+                  0.0
+                ],
+                "sign": -1
+              }
+            ]
+          },
+          {
+            "piece": "parademoth2",
+            "wings": [
+              {
+                "piece": "parademoth2Sub1",
+                "pivot": [
+                  0.3123142598,
+                  -0.045656906399999996,
+                  0.024835307199999997
+                ],
+                "axis": [
+                  1.0,
+                  0.0,
+                  0.0
+                ],
+                "sign": 1
+              },
+              {
+                "piece": "parademoth2Sub2",
+                "pivot": [
+                  0.3421628412,
+                  -0.045656906399999996,
+                  -0.0420497508
+                ],
+                "axis": [
+                  1.0,
+                  0.0,
+                  0.0
+                ],
+                "sign": -1
+              }
+            ]
+          },
+          {
+            "piece": "parademoth3",
+            "wings": [
+              {
+                "piece": "parademoth3Sub1",
+                "pivot": [
+                  0.3123142598,
+                  -0.045656906399999996,
+                  0.024835307199999997
+                ],
+                "axis": [
+                  1.0,
+                  0.0,
+                  0.0
+                ],
+                "sign": 1
+              },
+              {
+                "piece": "parademoth3Sub2",
+                "pivot": [
+                  0.3421628412,
+                  -0.045656906399999996,
+                  -0.0420497508
+                ],
+                "axis": [
+                  1.0,
+                  0.0,
+                  0.0
+                ],
+                "sign": -1
+              }
+            ]
+          }
+        ],
+        "label": "Origami bird"
+      }
+    }
+  },
+  "preserved_missing_motifs": [
+    "paradeleaf"
+  ]
+}

@@ -1,9 +1,77 @@
 -- Signal bits absent from the old hologram callers, used by child routines.
 local SIG_SWING, SIG_WHIR, SIG_WALK, SIG_IDLE = 512, 1024, 2048, 4096
 local animationLifetime = (SIG_CORE or 0) + (SIG_TIGLIL or 0)
+local groundConversation
+local peopleAnimationsEnabled=false
+
+-- Keep smoothing local: text FX and other hologram pieces retain their own
+-- movement rules. The authored routines below still issue the same poses.
+local tiglilMotion = include("lib_tiglil_motion.lua")(Spring.UnitScript, animationLifetime)
+tiglilMotion = include("lib_tiglil_retarget.lua")(tiglilMotion, piece)
+local Turn, Move = tiglilMotion.Turn, tiglilMotion.Move
+local Spin, StopSpin = tiglilMotion.Spin, tiglilMotion.StopSpin
+function TigLilStopSmoothing()
+    if groundConversation then groundConversation.stop() end
+    tiglilMotion.cancel()
+end
+local function tP(id, x, y, z, speed, wait)
+    Turn(id, x_axis, math.rad(x), speed)
+    Turn(id, y_axis, math.rad(y), speed)
+    Turn(id, z_axis, math.rad(z), speed)
+    if wait then WaitForTurn(id,x_axis);WaitForTurn(id,y_axis);WaitForTurn(id,z_axis) end
+end
+local function WTurn(id, axis, target, speed)
+    Turn(id, axis, target, speed);WaitForTurn(id, axis)
+end
+local function WMove(id, axis, target, speed)
+    Move(id, axis, target, speed);WaitForMove(id, axis)
+end
+local function mP(id, x, y, z, speed, wait)
+    Move(id,x_axis,x,speed);Move(id,y_axis,y,speed);Move(id,z_axis,z,speed)
+    if wait then WaitForMoves(id) end
+end
+local function tSyncIn(id, x, y, z, milliseconds)
+    -- Authored Y is up and Z is forward, just as in tP. The imported rig
+    -- maps those to components 3 and 2; raw component order tips yaw sideways.
+    local targets = {[x_axis]=x, [y_axis]=y, [z_axis]=z}
+    for axis,value in ipairs(targets) do
+        tiglilMotion.TurnInTime(id,axis,math.rad(value),milliseconds)
+    end
+end
+local function mSyncIn(id, x, y, z, milliseconds)
+    tiglilMotion.MoveInTime(id,x_axis,x,milliseconds)
+    tiglilMotion.MoveInTime(id,y_axis,y,milliseconds)
+    tiglilMotion.MoveInTime(id,z_axis,z,milliseconds)
+end
+local function TurnTowardsWind(id, speed, offset)
+    local dx, _, dz = Spring.GetWind()
+    local heading = math.atan2(dx,dz)
+    Turn(id,y_axis,heading+(offset or 0),speed)
+    return heading
+end
+local function syncTurn(_, id, x, y, z, speed)
+    local targets = {[x_axis]=math.rad(x),[y_axis]=math.rad(y),[z_axis]=math.rad(z)}
+    local current = {Spring.UnitScript.GetPieceRotation(id)}
+    local longest = 0
+    for axis=1,3 do
+        longest=math.max(longest,math.abs((targets[axis]-current[axis]+math.pi)%(2*math.pi)-math.pi))
+    end
+    -- Give the three axes a common arrival time without the old division by
+    -- zero for neutral components (which snapped those joints instantly).
+    local milliseconds=1000*longest/math.max(0.0001,math.abs(speed))
+    for axis=1,3 do tiglilMotion.TurnInTime(id,axis,targets[axis],milliseconds) end
+end
+local function reset(id, speed, wait)
+    if not id then return end
+    for axis=1,3 do
+        StopSpin(id,axis,0);Turn(id,axis,0,speed);Move(id,axis,0,speed)
+    end
+    if wait then for axis=1,3 do WaitForTurn(id,axis) end end
+end
 
 -------------------------------------------TIGLILI COPIED CRAP --------------------------
 local tldrum = piece "tldrum"
+local tldancedru = piece "tldancedru"
 local dancepivot = piece "dancepivot"
 local deathpivot = piece "deathpivot"
 local tigLil = piece "tigLil"
@@ -19,7 +87,8 @@ local tllegUpR = piece "tllegUpR"
 local tlpole = piece "tlpole"
 local tlflute = piece "tlflute"
 
-function TigLilSetup()    
+function TigLilSetup()
+    TigLilStopSmoothing()
     --echo("dancing tilgil a1")
     HideReg(tlpole)
     HideReg(deathpivot)
@@ -119,7 +188,23 @@ function TigLilSetup()
 end
 
 --------------------- IdleStance10-Fucntions-------
+
+-- Circle-dance poses keep their authored gestures, but use a balanced torso
+-- and a minimum blend time. Tiny target changes must not become instant jerks.
+local function circleDanceTurn(id,axis,target,speed)
+    if id==tigLil then
+        if axis==x_axis then target=math.max(math.rad(-8),math.min(math.rad(8),target*.15)) end
+        if axis==z_axis then target=math.max(math.rad(-4),math.min(math.rad(4),target*.35)) end
+    end
+    if not speed or speed==0 then return Turn(id,axis,target,speed) end
+    local current={Spring.UnitScript.GetPieceRotation(id)}
+    local distance=math.abs((target-current[axis]+math.pi)%(2*math.pi)-math.pi)
+    local milliseconds=math.max(id==tigLil and 450 or 300,1000*distance/math.abs(speed))
+    tiglilMotion.TurnInTime(id,axis,target,milliseconds)
+end
+
 function drumClapOverhead()
+    local Turn=circleDanceTurn
 
 
 
@@ -399,6 +484,7 @@ function drumClapOverhead()
 end
 
 function drumClapFront()
+    local Turn=circleDanceTurn
     Turn(tigLil, x_axis, math.rad(25), 3)
     Turn(tigLil, z_axis, math.rad(0), 4)
 
@@ -642,6 +728,7 @@ end
 
 
 function danceEnd()
+    local Turn=circleDanceTurn
 
 
     Turn(tigLil, x_axis, math.rad(0), 3)
@@ -803,6 +890,7 @@ function danceEnd()
 end
 
 function danceTurnLeft()
+    local Turn=circleDanceTurn
     Signal(SIG_INCIRCLE)
     SetSignalMask(SIG_INCIRCLE + animationLifetime)
     while (true) do
@@ -982,6 +1070,7 @@ end
 
 
 function danceTurnRight()
+    local Turn=circleDanceTurn
 
     Signal(SIG_INCIRCLE)
     SetSignalMask(SIG_INCIRCLE + animationLifetime)
@@ -1340,9 +1429,9 @@ function  legs_down()
     HideReg(tlflute)
     --HideReg(tldancedru)
         --printf(unitID, "legs_down")
-    --Move(tldancedru, y_axis, 0, 60)
-    --Move(tldancedru, x_axis, 0, 60)
-    --Move(tldancedru, z_axis, 0, 60)
+    Move(tldancedru, y_axis, 0, 60)
+    Move(tldancedru, x_axis, 0, 60)
+    Move(tldancedru, z_axis, 0, 60)
     Move(tlHead, y_axis, 0, 60)
     Move(tlHead, x_axis, 0, 60)
     Move(tlHead, z_axis, 0, 60)
@@ -1371,6 +1460,8 @@ function  legs_down()
     StopSpin(tigLil, y_axis)
     StopSpin(tigLil, z_axis)
     StopSpin(tigLil, x_axis)
+    StopSpin(tldancedru, y_axis, 0)
+    Turn(tldancedru, y_axis, 0, 0)
     StopSpin(dancepivot, y_axis)
     Move(deathpivot, y_axis, 0, 60)
     Move(deathpivot, x_axis, 0, 60)
@@ -1635,7 +1726,10 @@ function idle_stance5()
     Turn(tllegLowR, z_axis, math.rad(0), 3)
     Turn(tllegLowR, x_axis, math.rad(0), 3)
 
-    Turn(tigLil, x_axis, math.rad(360), 360)
+    -- Finish the last quarter of the flip before normalizing its angle.
+    -- Issuing the fast reset immediately replaced the 3 rad/s landing turn.
+    WaitForTurn(tigLil, x_axis)
+    Turn(tigLil, x_axis, 0, 0)
 
     WaitForTurn(tigLil, x_axis)
     WaitForTurn(tigLil, x_axis)
@@ -1688,11 +1782,8 @@ function idle_stance4()
     WaitForTurn(tllegLow, x_axis)
     WaitForTurn(tllegUpR, z_axis)
     Sleep(1675)
-    dice = math.random(0, 1)
-    if dice == 0 then
-        --endless poseIbilitys
-    end
-    if dice == 1 then
+    -- Always complete the acrobatics after the opening pose.
+    do
 
         --Move(tigLil,z_axis,-7,5)--i-7
         --Move(tigLil,x_axis,-7,3)
@@ -4435,23 +4526,24 @@ function idle_stance9()
 end
 
 function danceInCircle()
-        flopFlip = math.random(0, 1)
-        Turn(tigLil, y_axis, math.rad(0), 0)
-
-        if flopFlip == 1 then
-            Turn(tigLil, y_axis, math.rad(-179), 7)
-            StartThread(danceTurnRight)
-            WaitForTurn(tigLil,y_axis)
-             Turn(tigLil, y_axis, math.rad(-359), 7)
-        else
-            Turn(tigLil, y_axis, math.rad(179), 7)
-            StartThread(danceTurnLeft)
-            WaitForTurn(tigLil,y_axis)
-            Turn(tigLil, y_axis, math.rad(359), 7)
-        end
-        WaitForTurn(tigLil, y_axis)
-        Signal(SIG_INCIRCLE)
-
+    local rotation = {Spring.UnitScript.GetPieceRotation(tigLil)}
+    local heading = rotation[y_axis]
+    local direction = math.random(0,1)==1 and -1 or 1
+    -- Preserve the forward-facing entry yaw. Resetting to zero made every
+    -- subsequent orbit segment run backwards after the first twirl.
+    Turn(tigLil,y_axis,heading+direction*math.rad(179),3)
+    StartThread(direction<0 and danceTurnRight or danceTurnLeft)
+    WaitForTurn(tigLil,y_axis)
+    Turn(tigLil,y_axis,heading+direction*math.rad(358),3)
+    WaitForTurn(tigLil,y_axis)
+    Turn(tigLil,y_axis,heading+direction*math.rad(360),3)
+    WaitForTurn(tigLil,y_axis)
+    Signal(SIG_INCIRCLE)
+    -- Retire the lean before walking onward; killing the pose thread alone
+    -- leaves its native body targets active in the smoothing worker.
+    tiglilMotion.TurnInTime(tigLil,x_axis,0,350)
+    tiglilMotion.TurnInTime(tigLil,z_axis,0,350)
+    WaitForTurns(tigLil)
 end
 --dancestance
 function idle_stance_10()
@@ -4477,14 +4569,14 @@ function idle_stance_10()
      -- searchmebookmark
         -- do
         tempTurnRandA = math.random(75, 105)
-        Turn(dancepivot, y_axis, math.rad(-tempTurnRandA), 0.35)       
+        Turn(dancepivot, y_axis, math.rad(tempTurnRandA), 0.35)
         whileInTurn(dancepivot,y_axis,onTheMove)
 
         danceInCircle()
         
 
         tempTurnRandB = math.random(160, 190)
-        Turn(dancepivot, y_axis, math.rad(-tempTurnRandB), 0.35)
+        Turn(dancepivot, y_axis, math.rad(tempTurnRandB), 0.35)
         whileInTurn(dancepivot,y_axis,onTheMove)
 
         
@@ -4494,7 +4586,7 @@ function idle_stance_10()
      
 
         tempTurnRandC = math.random(245, 290)
-        Turn(dancepivot, y_axis, math.rad(-tempTurnRandC), 0.35)
+        Turn(dancepivot, y_axis, math.rad(tempTurnRandC), 0.35)
         whileInTurn(dancepivot,y_axis,onTheMove)
 
  
@@ -4502,13 +4594,13 @@ function idle_stance_10()
         danceInCircle()
 
         
-        Turn(dancepivot, y_axis, math.rad(-360), 0.35)      
+        Turn(dancepivot, y_axis, math.rad(360), 0.35)
         whileInTurn(dancepivot,y_axis,onTheMove)
 
 
        danceInCircle()
-        Turn(dancepivot, y_axis, math.rad(0), 0)      
-        Turn(tigLil, y_axis, math.rad(0), 0,true)
+        Turn(dancepivot, y_axis, math.rad(0), 0)
+        Turn(tigLil, y_axis, math.rad(180), 0)
     end
     Signal(SIG_ONTHEMOVE)
     Signal(SIG_INCIRCLE)
@@ -4679,7 +4771,7 @@ function idle_stance15()
         tP(tllegLow, 79 , math.random(-5,5), math.random(-5,5), 2* factor * i)
         tP(tllegUpR, 35 , math.random(-5,5), math.random(-5,5), 3*factor * i)
         tP(tllegLowR, 78 , math.random(-5,5), math.random(-5,5),2* factor * i)
-            WaitForTurns(tigLil,tigLil,tlHead,tlhairup,tlhairdow,tlarm, tlarmr, tllegUp,tllegLow,tllegUpR,tllegLowR)
+            WaitForTurns(tigLil,tlHead,tlhairup,tlhairdown,tlarm, tlarmr, tllegUp,tllegLow,tllegUpR,tllegLowR)
     end
     
     Sleep(3000)
@@ -4907,125 +4999,82 @@ function idle_stance14()
     legs_down()
 end
 
-function tangoStep(times,boolLeft, offset)
-    threequarter,half,quarter= math.ceil(times*0.75), math.ceil(times/2), math.ceil(times*0.25)
-    RLegUp,RLegDown,LLegUp,LLegDown = tllegUp,tllegLow,tllegUpR,tllegLowR
-    if boolLeft==true then
-        RLegUp,RLegDown,LLegUp,LLegDown=tllegUpR,tllegLowR,tllegUp,tllegLow
-    end
-
-    tSyncIn(LLegUp,-88,0,0,threequarter)
-    tSyncIn(LLegDown,113,0,0,threequarter)
-
-    tSyncIn(RLegUp, 57,0,0,threequarter)
-    tSyncIn(RLegDown,0,0,0,threequarter)
-
-    Sleep(threequarter)
-    tSyncIn(LLegUp,-64,0,0,threequarter)
-    tSyncIn(LLegDown,56,0,0,threequarter)
-
-    tSyncIn(RLegUp, 42,0,0,quarter)
-    tSyncIn(RLegDown,0,0,0,quarter)
-    Sleep(quarter)
-    end
-
-    --Tango
-    function idle_stance17()
-        --echo("idle_stance17")
-    orgDirection=0
-
-    for t=1,6 do
-        numberTangoSteps=3
-        taktZeit=450
-        dreiViertel=math.ceil(taktZeit*0.75)
-        half=math.ceil(taktZeit/2)
-        bLeft,bRight=true,false
-        tSign=-1
-        for i=1,numberTangoSteps,2 do
-            lArm,rArm=tlarm,tlarmr
-            if math.ceil(i/2)%2== 0 then 
-            lArm,rArm=tlarmr,tlarm 
-            end
-            tSign=tSign*-1
-            tSyncIn( lArm,9,71*tSign,35,taktZeit)
-            tSyncIn( rArm,0,-87*tSign,5,taktZeit)
-            
-            mSyncIn(tigLil,0,-2,(i-0.5)*3, half)
-            StartThread(tangoStep,taktZeit,bLeft,-6)
-            Sleep(half)
-            mSyncIn(tigLil,0,-4,(i)*3, half)
-            Sleep(half)
-                
-            StartThread(tangoStep,taktZeit,bRight,-4)
-            mSyncIn(tigLil,0,-2,(i+0.5)*3, half)
-            Sleep(half)
-            mSyncIn(tigLil,0,-5,(i+1)*3, half)
-            Sleep(half)
-            Sleep(150)
+-- Shared solo choreography; timed commands stay inside the Tiglil smoother.
+local soloDances=include("lib_tiglil_dance.lua")
+local function soloDance(name,style,available)
+    soloDances.play(name,{
+        turn=function(name,a,ms) tSyncIn(piece(name),a[1],a[2],a[3],ms) end,
+        move=function(name,a,ms) mSyncIn(piece(name),a[1],a[2],a[3],ms) end,
+        sleep=Sleep,
+        available=available,
+        finish=function()
+            WaitForTurns(deathpivot,dancepivot,tigLil,tlHead,tlhairup,tlhairdown,
+                tlarm,tlarmr,tllegUp,tllegLow,tllegUpR,tllegLowR)
+            WaitForMoves(tigLil)
+        end,
+    },style)
+end
+function idle_stance17() soloDance('solo') end
+function danceShuffle() soloDance('shuffle') end
+function danceDisco() soloDance('disco') end
+function dancePopping() soloDance('popping') end
+function danceJoi() soloDance('joi') end
+local shakiraDance=include("lib_tiglil_shakira.lua")
+function danceShakira() soloDance('shakira',shakiraDance) end
+function danceBallet() soloDance('ballet') end
+local businessDances=include("lib_tiglil_business.lua")
+function advertiseSales() soloDance('sales',businessDances.sales) end
+function modelWalk() soloDance('runway',businessDances.runway) end
+function presentGala() soloDance('presenter',businessDances.presenter) end
+local yoga=include("lib_tiglil_yoga.lua")
+function advertiseWeightlessYoga()
+    local floorHeight=soloDances.height({body={0,0,0},left={0,0,0,0},right={0,0,0,0}})
+    local function settle(height,ms)
+        for _,id in ipairs({deathpivot,dancepivot,tigLil,tlHead,tllegUp,tllegUpR,tllegLow,tllegLowR}) do
+            tSyncIn(id,0,0,0,ms)
         end
-
-        -- shaking
-        for i=1,3 do
-            tangoShakeMovement(half,taktZeit,qater,numberTangoSteps)
-        end
-
-            
-        sideStep(half,taktZeit,numberTangoSteps)
-        orgDirection=orgDirection+1
-        Sleep(taktZeit*2)
-        Turn(deathpivot,y_axis,math.rad(orgDirection*90),60)
-        reset(tigLil,60)
-
+        tSyncIn(tlarm,0,0,68,ms);tSyncIn(tlarmr,0,0,-68,ms)
+        tSyncIn(tlhairup,-74,0,0,ms);tSyncIn(tlhairdown,-19,0,0,ms)
+        mSyncIn(tigLil,0,floorHeight+height,0,ms)
     end
-
+    yoga.play({
+        prepare=settle,
+        restore=function(ms) settle(0,ms) end,
+        turn=function(name,angles,ms)
+            -- Editor angles use native component order, unlike tSyncIn's
+            -- authored Y-up convention. Preserve the supplied local XYZ.
+            for axis=1,3 do tiglilMotion.TurnInTime(piece(name),axis,math.rad(angles[axis]),ms) end
+        end,
+        sleep=Sleep,
+        finish=function()
+            WaitForTurns(deathpivot,dancepivot,tigLil,tlHead,tlhairup,tlhairdown,
+                tlarm,tlarmr,tllegUp,tllegUpR,tllegLow,tllegLowR)
+            WaitForMoves(tigLil)
+        end,
+    })
 end
-
-function tangoShakeMovement(half,taktZeit,qater,numberTangoSteps)
-offset=math.random(-40,0)
-    tSyncIn( lArm,9-offset,-71,35,taktZeit)
-    tSyncIn( rArm,0-offset,87,5,taktZeit)
-    mSyncIn(tigLil,0,-4,(numberTangoSteps+1)*3 +math.random(0,10)/10, taktZeit)
-    tSyncIn(tigLil,21+offset,0,0,taktZeit)
-    
-    tSyncIn(tllegUp,0-offset,0,0,taktZeit)
-    tSyncIn(tllegLow,44,0,0,taktZeit)
-    tSyncIn(tllegUpR, -85-offset,0,0,taktZeit)
-    tSyncIn(tllegLowR,61,0,0,taktZeit)
-    Sleep(taktZeit)
-
-    mSyncIn(tigLil,0, -2,(numberTangoSteps+1)*3 +math.random(0,10)/10, taktZeit)
-    tSyncIn(tigLil,5+offset,0,0,taktZeit)
-    
-    tSyncIn(tllegUp,18-offset,0,0,taktZeit)
-    tSyncIn(tllegLow,22,0,0,taktZeit)
-    tSyncIn(tllegUpR, -50-offset,0,0,taktZeit)
-    tSyncIn(tllegLowR,43 ,0,0,taktZeit)
-    Sleep(taktZeit)
+local brothelDances=include("lib_tiglil_brothel.lua")
+function danceBurlesqueSway() soloDance('sway',brothelDances.sway) end
+function danceBurlesqueWave() soloDance('wave',brothelDances.wave) end
+function danceBurlesqueFan() soloDance('fan',brothelDances.fan) end
+function lingerBrothel() soloDance('linger',brothelDances.linger) end
+local glassDance=include("lib_tiglil_glass.lua")
+function danceBehindGlass() soloDance('behindGlass',glassDance) end
+local socialDances=include("lib_tiglil_social.lua")
+local function personalRoutine(name)
+    if not peopleAnimationsEnabled then return false end
+    local style=socialDances[name]
+    local context=groundConversation.begin({personal=true,distance=style.distance})
+    if not context then return false end
+    soloDance(name,style,groundConversation.isActive)
+    groundConversation.stop()
+    return true
 end
-function sideStep(half,taktZeit,numberTangoSteps,orgDirection)
-
-
-    tSyncIn(tllegUp, 15, -39, -30,half)
-    tSyncIn(tllegLow,10,0,0,half)
-    tSyncIn(tllegUpR, 57,0,0,half)
-    tSyncIn(tllegLowR,0,0,0,half)
-
-    
-    mSyncIn(tigLil,0, 0,(numberTangoSteps)*3 +math.random(0,10)/10, taktZeit)
-    tSyncIn(tigLil,0,90,0,taktZeit)
-    
-    Sleep(half)
-    tSyncIn(tllegUpR, 0,0,42,half)
-    tSyncIn(tllegLowR,0,0,0,half)
-    tSyncIn(tllegUp,0,0,0,half)
-    tSyncIn(tllegLow,0,0,0,half)
-    Sleep(half)
-    tSyncIn(tllegUpR, 0,0,0,half)
--- seitlich zurück
-    engsign=randSign()
-    tSyncIn( lArm,0,0,75*engsign,taktZeit)
-    tSyncIn( rArm,0,0,-75*engsign,taktZeit)
-end
+function greetPasserby() return personalRoutine('greeting') end
+function embracePasserby() return personalRoutine('embrace') end
+function danceEmbracePasserby() return personalRoutine('danceEmbrace') end
+function kissPasserby() return personalRoutine('kiss') end
+function invitePasserby() return personalRoutine('invitation') end
 
 --even numbers left foot up
 function drumPose1(mspeed, tspeed)
@@ -5391,33 +5440,89 @@ local function drumPoseMorphStage(mspeed, tspeed, addUp)
  
 end
 
-local function drumPosePoledancin(mspeed, tspeed, addUp)
-        addUp = addUp + 12
-        mSyncIn(tigLil,     5,addUp,-3,250)
-        tSyncIn(tigLil,     0,0,-90,250)
-        ShowReg(tlpole)
-        tSyncIn(tlHead,     6,0,-9,250)
-        tSyncIn(tlhairup,   -57,90,17,250)
-        tSyncIn(tlhairdown, 0,0,0,250)
-                            
-        tSyncIn(tlflute,    0,0,0,250)
-        tSyncIn(tlarm,      0,0,-46,250)
-        tSyncIn(tlarmr,     0,0,76,250)
-                            
-        tSyncIn(tllegUp,    -39,0,0,250)
-        tSyncIn(tllegLow,   147,0,0,250)
-        tSyncIn(tllegUpR,   -71,69,0,250)
-        tSyncIn(tllegLowR,  142,0,0,250)
-        WaitForTurns(deathpivot,tigLil,tllegUp,tllegLow,tllegUpR,tllegLow,tlarm,tlarmr,tlHead,tlhairup,tlhairdown)
-        Spin(deathpivot, y_axis, math.rad(140), 90)
-        --Spin(tldancedru, y_axis, math.rad(-140), 90)
-        mSyncIn(tigLil,     0,addUp-21,0,8000)
-        WaitForMoves(tigLil)
-        StopSpin(deathpivot, y_axis)
-        --StopSpin(tldancedru, y_axis)
-        HideReg(tlpole)
-    
+local poleDance=include("lib_tiglil_pole.lua")
+local function performPoleDance(stage)
+    stage=stage or 0
+    TigLilStopSmoothing()
+    local api=Spring.UnitScript
+    local bodyScale=11060.378906/12
+    local saved={}
+    -- Preserve the caller's parent placement, including a preceding orbit.
+    for _,id in ipairs({deathpivot,dancepivot,tldancedru,tlpole}) do
+        saved[id]={turn={api.GetPieceRotation(id)},move={api.GetPieceTranslation(id)}}
+        for axis=1,3 do StopSpin(id,axis,0) end
+    end
+    for axis=1,3 do StopSpin(tigLil,axis,0) end
+    for _,id in ipairs({dancepivot,tldancedru}) do
+        for axis=1,3 do tiglilMotion.TurnInTime(id,axis,0,700);tiglilMotion.MoveInTime(id,axis,0,700) end
+    end
+    -- The drum branch can perform on a raised stage; raise the whole pole to it.
+    tiglilMotion.MoveInTime(tlpole,1,0,700)
+    tiglilMotion.MoveInTime(tlpole,2,0,700)
+    tiglilMotion.MoveInTime(tlpole,3,stage,700)
+    for axis=1,3 do tiglilMotion.TurnInTime(tlpole,axis,0,700) end
+    WaitForTurns(dancepivot,tldancedru,tlpole);WaitForMoves(dancepivot,tldancedru,tlpole)
+    TigLilStopSmoothing()
+    local function apply(p,ms)
+        local seconds=ms/1000
+        for name,a in pairs(p.turns) do
+            local id=piece(name)
+            local current={api.GetPieceRotation(id)}
+            for axis=1,3 do
+                local target=math.rad(a[axis])
+                local delta=(target-current[axis]+math.pi)%(2*math.pi)-math.pi
+                api.Turn(id,axis,target,math.max(.001,math.abs(delta)/seconds))
+            end
+        end
+        local current={api.GetPieceTranslation(tigLil)}
+        for axis=1,3 do
+            local target=p.move[axis]*bodyScale
+            api.Move(tigLil,axis,target,math.max(.001,math.abs(target-current[axis])/seconds))
+        end
+    end
+    local rig=poleDance.calibrate(function(name)
+        return Spring.GetUnitPieceInfo and Spring.GetUnitPieceInfo(unitID,piece(name))
+    end,bodyScale)
+    poleDance.play({apply=apply,sleep=Sleep,show=function()ShowReg(tlpole)end},stage,rig)
+    -- Feet return to the stage before releasing the pole and leaving it.
+    for axis=1,3 do tiglilMotion.TurnInTime(tigLil,axis,0,900) end
+    mSyncIn(tigLil,0,stage,0,900)
+    tSyncIn(tlarm,0,0,68,900);tSyncIn(tlarmr,0,0,-68,900)
+    tSyncIn(tllegUp,0,0,0,900);tSyncIn(tllegUpR,0,0,0,900)
+    tSyncIn(tllegLow,0,0,0,900);tSyncIn(tllegLowR,0,0,0,900)
+    WaitForMoves(tigLil);WaitForTurns(tigLil,tlarm,tlarmr,tllegUp,tllegUpR,tllegLow,tllegLowR)
+    HideReg(tlpole)
+    for id,pose in pairs(saved) do
+        -- Saved translations are already in model units. Ease back to the
+        -- caller's arrangement instead of snapping a visible parent pivot.
+        local move={api.GetPieceTranslation(id)}
+        local turn={api.GetPieceRotation(id)}
+        for axis=1,3 do
+            api.Move(id,axis,pose.move[axis],math.max(.001,math.abs(pose.move[axis]-move[axis])/.7))
+            local delta=(pose.turn[axis]-turn[axis]+math.pi)%(2*math.pi)-math.pi
+            api.Turn(id,axis,pose.turn[axis],math.max(.001,math.abs(delta)/.7))
+        end
+    end
+    WaitForMoves(deathpivot,dancepivot,tldancedru,tlpole)
+    WaitForTurns(deathpivot,dancepivot,tldancedru,tlpole)
+end
+function dancePole() performPoleDance(0) end
+local function drumPosePoledancin(mspeed,tspeed,addUp) performPoleDance(addUp) end
 
+local flutePoses = include("lib_tiglil_flute.lua")
+local function poseFlute(name)
+    local pose=flutePoses[name]
+    for _,entry in ipairs({{tlflute,pose.tlflute},{tlarm,pose.tlarm},{tlarmr,pose.tlarmr}}) do
+        local id,angles=entry[1],entry[2]
+        for axis=1,3 do
+            tiglilMotion.MoveInTime(id,axis,0,250)
+            tiglilMotion.TurnInTime(id,axis,math.rad(angles[axis]),250)
+        end
+    end
+    -- Complete the grip before showing/holding it; long source Euler turns
+    -- previously got interrupted by the next musical beat.
+    WaitForTurns(tlHead,tlflute,tlarm,tlarmr)
+    WaitForMoves(tlflute,tlarm,tlarmr)
 end
 
 local function idle_stance11()
@@ -5463,7 +5568,7 @@ local function idle_stance11()
         ---------------------------------------------------
         mspeed = 1
         growBeatBox = math.random(-3, 18)
-        --Move(tldancedru, y_axis, growBeatBox, math.abs(growBeatBox/3))
+        Move(tldancedru, y_axis, growBeatBox, math.abs(growBeatBox/3))
         growBeatBox = growBeatBox + 3
         addUp = growBeatBox
         Move(tigLil, y_axis, growBeatBox, math.abs(growBeatBox/3))
@@ -5585,18 +5690,6 @@ local function idle_stance11()
                 Turn(tlhairdown, x_axis, math.rad(-20), tspeed)
                 Turn(tlhairdown, y_axis, math.rad(0), tspeed)
                 Turn(tlhairdown, z_axis, math.rad(0), tspeed)
-                Move(tlflute, x_axis, -0.099999986588955, mspeed)
-                Move(tlflute, y_axis, 0.19999998807907, mspeed)
-                Move(tlflute, z_axis, -0.099999964237213, mspeed)
-                Turn(tlflute, x_axis, math.rad(5.0000009536743), tspeed)
-                Turn(tlflute, y_axis, math.rad(-90), tspeed)
-                Turn(tlflute, z_axis, math.rad(-607.00006103516), tspeed)
-                Move(tlarm, x_axis, 0.49999988079071, mspeed)
-                Move(tlarm, y_axis, 0, mspeed)
-                Move(tlarm, z_axis, -0.39999997615814, mspeed)
-                Turn(tlarm, x_axis, math.rad(69.999992370605), tspeed)
-                Turn(tlarm, y_axis, math.rad(20), tspeed)
-                Turn(tlarm, z_axis, math.rad(-11.000000953674), tspeed)
 
                 Move(tldrum, x_axis, 0, mspeed)
                 Move(tldrum, y_axis, 0, mspeed)
@@ -5604,12 +5697,6 @@ local function idle_stance11()
                 Turn(tldrum, x_axis, math.rad(0), tspeed)
                 Turn(tldrum, y_axis, math.rad(0), tspeed)
                 Turn(tldrum, z_axis, math.rad(0), tspeed)
-                Move(tlarmr, x_axis, 1.0000001192093, mspeed)
-                Move(tlarmr, y_axis, 0, mspeed)
-                Move(tlarmr, z_axis, -1, mspeed)
-                Turn(tlarmr, x_axis, math.rad(-208.99992370605), tspeed)
-                Turn(tlarmr, y_axis, math.rad(52.000022888184), tspeed)
-                Turn(tlarmr, z_axis, math.rad(202.90002441406), tspeed)
              --[[   Move(tlsparksemit, x_axis, 0, mspeed)
                 Move(tlsparksemit, y_axis, 0, mspeed)
                 Move(tlsparksemit, z_axis, 0, mspeed)
@@ -5647,6 +5734,7 @@ local function idle_stance11()
                 Turn(tllegLowR, y_axis, math.rad(0), tspeed)
                 Turn(tllegLowR, z_axis, math.rad(0), tspeed)
 
+                poseFlute('across')
                 ShowReg(tlflute)
                 Sleep(950)
 
@@ -5671,18 +5759,6 @@ local function idle_stance11()
                 Turn(tlhairdown, x_axis, math.rad(1.9999989271164), tspeed)
                 Turn(tlhairdown, y_axis, math.rad(-1), tspeed)
                 Turn(tlhairdown, z_axis, math.rad(0), tspeed)
-                Move(tlflute, x_axis, -0.099999986588955, mspeed)
-                Move(tlflute, y_axis, 0.19999998807907, mspeed)
-                Move(tlflute, z_axis, -0.099999964237213, mspeed)
-                Turn(tlflute, x_axis, math.rad(4.0000009536743), tspeed)
-                Turn(tlflute, y_axis, math.rad(-80.999984741211), tspeed)
-                Turn(tlflute, z_axis, math.rad(-607.00006103516), tspeed)
-                Move(tlarm, x_axis, 0.49999988079071, mspeed)
-                Move(tlarm, y_axis, 0, mspeed)
-                Move(tlarm, z_axis, -0.39999997615814, mspeed)
-                Turn(tlarm, x_axis, math.rad(67.999992370605), tspeed)
-                Turn(tlarm, y_axis, math.rad(20), tspeed)
-                Turn(tlarm, z_axis, math.rad(-16.000001907349), tspeed)
            --[[     Move(tlsparksemit2, x_axis, 0, mspeed)
                 Move(tlsparksemit2, y_axis, 0, mspeed)
                 Move(tlsparksemit2, z_axis, 0, mspeed)
@@ -5695,12 +5771,6 @@ local function idle_stance11()
                 Turn(tldrum, x_axis, math.rad(0), tspeed)
                 Turn(tldrum, y_axis, math.rad(0), tspeed)
                 Turn(tldrum, z_axis, math.rad(0), tspeed)
-                Move(tlarmr, x_axis, 1.0000001192093, mspeed)
-                Move(tlarmr, y_axis, 0, mspeed)
-                Move(tlarmr, z_axis, -1, mspeed)
-                Turn(tlarmr, x_axis, math.rad(-204.99995422363), tspeed)
-                Turn(tlarmr, y_axis, math.rad(52.000022888184), tspeed)
-                Turn(tlarmr, z_axis, math.rad(202.90002441406), tspeed)
 --[[                Move(tlsparksemit, x_axis, 0, mspeed)
                 Move(tlsparksemit, y_axis, 0, mspeed)
                 Move(tlsparksemit, z_axis, 0, mspeed)
@@ -5740,17 +5810,13 @@ local function idle_stance11()
 
 
 
+                poseFlute('acrossSway')
                 Sleep(460)
             end
-            Move(tlarm, x_axis, 0, 4)
-            Move(tlarm, y_axis, 0, 4)
-            Move(tlarm, z_axis, 0, 4)
             HideReg(tlflute)
         end
         if randOneZero == 0 then
             --querTr򴥍
-            ShowReg(tlflute)
-
             jamin = math.random(5, 19)
             for ot = 0, jamin, 1 do
                 tspeed = 2
@@ -5777,18 +5843,6 @@ local function idle_stance11()
                 Turn(tlhairdown, x_axis, math.rad(0), tspeed)
                 Turn(tlhairdown, y_axis, math.rad(0), tspeed)
                 Turn(tlhairdown, z_axis, math.rad(0), tspeed)
-                Move(tlflute, x_axis, -0.3999999165535, mspeed)
-                Move(tlflute, y_axis, 0.099999994039536, mspeed)
-                Move(tlflute, z_axis, -5.9604644775391e-008, mspeed)
-                Turn(tlflute, x_axis, math.rad(30.000001907349), tspeed)
-                Turn(tlflute, y_axis, math.rad(0), tspeed)
-                Turn(tlflute, z_axis, math.rad(-199.99998474121), tspeed)
-                Move(tlarm, x_axis, 0, mspeed)
-                Move(tlarm, y_axis, 0, mspeed)
-                Move(tlarm, z_axis, 0, mspeed)
-                Turn(tlarm, x_axis, math.rad(-159.99998474121), 15)
-                Turn(tlarm, y_axis, math.rad(109.99998474121), 10)
-                Turn(tlarm, z_axis, math.rad(0), tspeed)
              --[[   Move(tlsparksemit2, x_axis, 0, mspeed)
                 Move(tlsparksemit2, y_axis, 0, mspeed)
                 Move(tlsparksemit2, z_axis, 0, mspeed)
@@ -5801,12 +5855,6 @@ local function idle_stance11()
                 Turn(tldrum, x_axis, math.rad(0), tspeed)
                 Turn(tldrum, y_axis, math.rad(0), tspeed)
                 Turn(tldrum, z_axis, math.rad(0), tspeed)
-                Move(tlarmr, x_axis, 0, mspeed)
-                Move(tlarmr, y_axis, 0, mspeed)
-                Move(tlarmr, z_axis, 0, mspeed)
-                Turn(tlarmr, x_axis, math.rad(-167.69998168945), 16)
-                Turn(tlarmr, y_axis, math.rad(-99.999984741211), 10)
-                Turn(tlarmr, z_axis, math.rad(10.000001907349), tspeed)
 --[[                Move(tlsparksemit, x_axis, 0, mspeed)
                 Move(tlsparksemit, y_axis, 0, mspeed)
                 Move(tlsparksemit, z_axis, 0, mspeed)
@@ -5845,9 +5893,11 @@ local function idle_stance11()
                 Turn(tllegLowR, z_axis, math.rad(0), tspeed)
                 iWantRand = math.random(400, 1200)
 
+                poseFlute('forward')
+                ShowReg(tlflute)
                 Sleep(iWantRand)
-                ranZig = math.random(0, 1)
-                if ranzig == 1 then
+                local ranZig = math.random(0, 1)
+                if ranZig == 1 then
                     --down
                     Move(deathpivot, x_axis, 0, mspeed)
 
@@ -5875,18 +5925,6 @@ local function idle_stance11()
                     Turn(tlhairdown, x_axis, math.rad(-30.000001907349), tspeed)
                     Turn(tlhairdown, y_axis, math.rad(0), tspeed)
                     Turn(tlhairdown, z_axis, math.rad(0), tspeed)
-                    Move(tlflute, x_axis, -0.3999999165535, mspeed)
-                    Move(tlflute, y_axis, 0.099999994039536, mspeed)
-                    Move(tlflute, z_axis, -5.9604644775391e-008, mspeed)
-                    Turn(tlflute, x_axis, math.rad(30.000001907349), tspeed)
-                    Turn(tlflute, y_axis, math.rad(0), tspeed)
-                    Turn(tlflute, z_axis, math.rad(-199.99998474121), 20)
-                    Move(tlarm, x_axis, 0, mspeed)
-                    Move(tlarm, y_axis, 0, mspeed)
-                    Move(tlarm, z_axis, 0, mspeed)
-                    Turn(tlarm, x_axis, math.rad(-159.99998474121), 15)
-                    Turn(tlarm, y_axis, math.rad(116.99997711182), 11)
-                    Turn(tlarm, z_axis, math.rad(-9), tspeed)
 
                     Move(tldrum, x_axis, 0, mspeed)
                     Move(tldrum, y_axis, 0, mspeed)
@@ -5894,12 +5932,6 @@ local function idle_stance11()
                     Turn(tldrum, x_axis, math.rad(0), tspeed)
                     Turn(tldrum, y_axis, math.rad(0), tspeed)
                     Turn(tldrum, z_axis, math.rad(0), tspeed)
-                    Move(tlarmr, x_axis, 0, mspeed)
-                    Move(tlarmr, y_axis, 0, mspeed)
-                    Move(tlarmr, z_axis, 0, mspeed)
-                    Turn(tlarmr, x_axis, math.rad(-157.69998168945), 15)
-                    Turn(tlarmr, y_axis, math.rad(-103.99999237061), 10)
-                    Turn(tlarmr, z_axis, math.rad(18), tspeed)
 
                     --Move(tlharp, x_axis, 0, mspeed)
                     --Move(tlharp, y_axis, 0, mspeed)
@@ -5931,8 +5963,10 @@ local function idle_stance11()
                     Turn(tllegLowR, x_axis, math.rad(0), tspeed)
                     Turn(tllegLowR, y_axis, math.rad(0), tspeed)
                     Turn(tllegLowR, z_axis, math.rad(0), tspeed)
+                    poseFlute('down')
+                    Sleep(math.random(600,1200))
                 end
-                if ranzig == 0 then
+                if ranZig == 0 then
                     --up
 
 
@@ -5957,18 +5991,6 @@ local function idle_stance11()
                     Turn(tlhairdown, x_axis, math.rad(-30.000001907349), tspeed)
                     Turn(tlhairdown, y_axis, math.rad(0), tspeed)
                     Turn(tlhairdown, z_axis, math.rad(0), tspeed)
-                    Move(tlflute, x_axis, -0.3999999165535, mspeed)
-                    Move(tlflute, y_axis, 0.099999994039536, mspeed)
-                    Move(tlflute, z_axis, -5.9604644775391e-008, mspeed)
-                    Turn(tlflute, x_axis, math.rad(30.000001907349), tspeed)
-                    Turn(tlflute, y_axis, math.rad(0), tspeed)
-                    Turn(tlflute, z_axis, math.rad(-199.99998474121), 20)
-                    Move(tlarm, x_axis, 0, mspeed)
-                    Move(tlarm, y_axis, 0, mspeed)
-                    Move(tlarm, z_axis, 0, mspeed)
-                    Turn(tlarm, x_axis, math.rad(-159.99998474121), 16) --159
-                    Turn(tlarm, y_axis, math.rad(86.999984741211), tspeed)
-                    Turn(tlarm, z_axis, math.rad(41), tspeed)
                    --[[ Move(tlsparksemit2, x_axis, 0, mspeed)
                     Move(tlsparksemit2, y_axis, 0, mspeed)
                     Move(tlsparksemit2, z_axis, 0, mspeed)
@@ -5981,12 +6003,6 @@ local function idle_stance11()
                     Turn(tldrum, x_axis, math.rad(0), tspeed)
                     Turn(tldrum, y_axis, math.rad(0), tspeed)
                     Turn(tldrum, z_axis, math.rad(0), tspeed)
-                    Move(tlarmr, x_axis, 0, mspeed)
-                    Move(tlarmr, y_axis, 0, mspeed)
-                    Move(tlarmr, z_axis, 0, mspeed)
-                    Turn(tlarmr, x_axis, math.rad(-167.69998168945), 16)
-                    Turn(tlarmr, y_axis, math.rad(-93.999992370605), 10)
-                    Turn(tlarmr, z_axis, math.rad(-41.999996185303), 4)
                    --[[ Move(tlsparksemit, x_axis, 0, mspeed)
                     Move(tlsparksemit, y_axis, 0, mspeed)
                     Move(tlsparksemit, z_axis, 0, mspeed)
@@ -6024,6 +6040,7 @@ local function idle_stance11()
                     Turn(tllegLowR, y_axis, math.rad(0), tspeed)
                     Turn(tllegLowR, z_axis, math.rad(0), tspeed)
                     anotherRandomSleepVal = math.random(600, 1200)
+                    poseFlute('up')
                     Sleep(anotherRandomSleepVal)
                 end
             end
@@ -7041,5 +7058,19 @@ function waitPosition()
     WaitForTurn(tigLil, y_axis)
 end
 
+groundConversation=include("lib_tiglil_ground.lua").new(Spring,Spring.UnitScript,unitID,UnitDefs or {},animationLifetime)
+local function groundIdle(animation)
+    return function(...)
+        if peopleAnimationsEnabled then groundConversation.begin() end
+        animation(...)
+        Signal(SIG_GESTE)
+        Signal(SIG_TALKHEAD)
+        groundConversation.stop()
+    end
+end
+idle_stance=groundIdle(idle_stance)
+idle_stance2=groundIdle(idle_stance2)
+
 -- Includes have their own lexical scope: export these local routines explicitly.
-return {idle_stance11 = idle_stance11, idle_playBall = idle_playBall}
+return {idle_stance11 = idle_stance11, idle_playBall = idle_playBall,
+    enablePeopleAnimations=function() peopleAnimationsEnabled=true end}

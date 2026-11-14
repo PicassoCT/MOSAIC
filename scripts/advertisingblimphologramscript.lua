@@ -30,6 +30,7 @@ JoyZoom = piece("Joy2")
 JoyRide = piece("JoyRide")
 local boolDebugHologram = true
 local tldrum = piece "tldrum"
+local tldancedru = piece "tldancedru"
 local dancepivot = piece "dancepivot"
 local deathpivot = piece "deathpivot"
 local tigLil = piece "tigLil"
@@ -65,6 +66,7 @@ handr = piece "handr"
 handl = piece "handl"
 ball = piece "ball"
 tigLilHoloPices = {
+    tldancedru,
     tldrum ,
     dancepivot, 
     deathpivot ,
@@ -256,6 +258,13 @@ idleAnimations[#idleAnimations +1] = idle_stance15
 idleAnimations[#idleAnimations +1] = idle_playBall
 idleAnimations[#idleAnimations +1] = idle_stance18
 idleAnimations[#idleAnimations +1] = idle_stance17
+idleAnimations[#idleAnimations +1] = danceShuffle
+idleAnimations[#idleAnimations +1] = danceDisco
+idleAnimations[#idleAnimations +1] = dancePopping
+idleAnimations[#idleAnimations +1] = danceJoi
+idleAnimations[#idleAnimations +1] = danceShakira
+idleAnimations[#idleAnimations +1] = dancePole
+idleAnimations[#idleAnimations +1] = danceBallet
 idleAnimations[#idleAnimations +1] = strikeAPose
 local function tiglLilLoop()
 
@@ -265,6 +274,7 @@ local function tiglLilLoop()
 
             waitTillDay()
 
+            TigLilStopSmoothing()
             Signal(SIG_TIGLIL)
             HideReg(skimpy)
             HideReg(tlpole)

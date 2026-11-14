@@ -29,6 +29,8 @@ local objectiveRadianceUnitTables = {}
 local CloudConfig = VFS.Include('luarules/gadgets/include/cloud_volume_config.lua')
 local ObjectiveSources = VFS.Include('luaui/widgets_mosaic/include/radiance_objective_sources.lua')
 local RadianceTime = VFS.Include('luaui/widgets_mosaic/include/radiance_time.lua')
+local paradeScene = VFS.Include('luaui/widgets_mosaic/include/parade_radiance_scene.lua')(
+    Spring, gl, VFS.Include('scripts/lib_parade_scene_draw.lua'))
 local neonLightPercent = 0.0
 local neonUnitCount = 0
 local neonPieceCount = 0
@@ -129,8 +131,28 @@ local function receiveBuildingShadowEnd(unitID)
     building.ux, building.uy, building.uz = ux, uy, uz
     building.front, building.up, building.right = front, up, right
     building.columnCount = #building.columns / 4
+    local roof = uy
+    for i=1,#building.columns,4 do
+        local x,z,base,mask=building.columns[i],building.columns[i+1],building.columns[i+2],building.columns[i+3]
+        local levels=0
+        while mask>0 do mask=math.floor(mask/2);levels=levels+1 end
+        local top=base+levels*building.levelHeight
+        roof=math.max(roof,uy-right[2]*x+up[2]*top+front[2]*z
+            +(math.abs(right[2])+math.abs(front[2]))*building.cellSize*.5)
+    end
+    building.roofHeight=roof
     occlusionBuildings[unitID] = building
     occlusionDirty = true
+end
+
+local function getParadeRoofHeight(x,z,radius)
+    local highest
+    for _,building in pairs(occlusionBuildings) do
+        if (building.ux-x)^2+(building.uz-z)^2<=radius*radius then
+            highest=math.max(highest or -math.huge,building.roofHeight)
+        end
+    end
+    return highest
 end
 
 local function receiveBuildingShadowRemove(unitID)
@@ -754,6 +776,8 @@ function widget:Initialize()
 
     widgetHandler:RegisterGlobal("RecieveAllNeonUnitsPieces", recieveNeonHoloLightPiecesByUnit)
     widgetHandler:RegisterGlobal("ReceiveObjectiveRadiancePieces", receiveObjectiveRadiancePieces)
+    widgetHandler:RegisterGlobal("ReceiveParadeRadianceScene", paradeScene.Receive)
+    widgetHandler:RegisterGlobal("GetParadeRoofHeight", getParadeRoofHeight)
     widgetHandler:RegisterGlobal("ReceiveBuildingShadowColumnsBegin", receiveBuildingShadowBegin)
     widgetHandler:RegisterGlobal("ReceiveBuildingShadowColumn", receiveBuildingShadowColumn)
     widgetHandler:RegisterGlobal("ReceiveBuildingShadowColumnsEnd", receiveBuildingShadowEnd)
@@ -842,6 +866,9 @@ local function drawNeonPieces(captureLayer, domain)
                     end
                     -- Mixed structural meshes must never fall back to all-over emission.
                     if not materialBound then strength=0 else masked=1 end
+                    if descriptor.preset == 'parade_float' and not ObjectiveSources.ParadeCarrier(unitID) then
+                        strength = 0
+                    end
                     local placeable = descriptor.preset and descriptor.preset:match('^placeable:(%d+)$')
                     if placeable and (not ObjectiveSources.PlaceablesVisible(unitID)
                         or not ObjectiveSources.PlaceableEligible(unitID, tonumber(placeable))) then
@@ -900,6 +927,7 @@ local function drawNeonPieces(captureLayer, domain)
     for unitID, pieces in pairs(objectiveRadianceUnitTables) do
         drawUnitPieces(unitID, pieces, true)
     end
+    paradeScene.Capture(propagation)
     if propagation then gl.UniformInt(propagation.materialMaskedLoc,0) end
 
     if propagation and (WG.CaptureVehicleHeadlightEmission or WG.CaptureCombatLightEmission) then
@@ -1207,6 +1235,8 @@ function widget:Shutdown()
     end
     widgetHandler:DeregisterGlobal("RecieveAllNeonUnitsPieces")
     widgetHandler:DeregisterGlobal("ReceiveObjectiveRadiancePieces")
+    widgetHandler:DeregisterGlobal("ReceiveParadeRadianceScene")
+    widgetHandler:DeregisterGlobal("GetParadeRoofHeight")
     widgetHandler:DeregisterGlobal("ReceiveBuildingShadowColumnsBegin")
     widgetHandler:DeregisterGlobal("ReceiveBuildingShadowColumn")
     widgetHandler:DeregisterGlobal("ReceiveBuildingShadowColumnsEnd")

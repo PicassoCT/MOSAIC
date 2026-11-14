@@ -1,0 +1,59 @@
+name: Verify house props and announcements
+on:
+  push:
+    paths:
+      - 'scripts/house_asian*_script.lua'
+      - 'scripts/house_arab_script.lua'
+      - 'scripts/*placeable*.lua'
+      - 'scripts/lib_mosaic.lua'
+      - 'sounds/civilian/lostandfound/**'
+      - '.github/mosaic-tests.ref'
+      - '.github/actions/external-tests/**'
+      - '.github/workflows/house-props-and-announcements.yml'
+  pull_request:
+    paths:
+      - 'scripts/house_asian*_script.lua'
+      - 'scripts/house_arab_script.lua'
+      - 'scripts/*placeable*.lua'
+      - 'scripts/lib_mosaic.lua'
+      - 'sounds/civilian/lostandfound/**'
+      - '.github/mosaic-tests.ref'
+      - '.github/actions/external-tests/**'
+      - '.github/workflows/house-props-and-announcements.yml'
+permissions:
+  contents: read
+jobs:
+  props-and-audio:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /.github/actions/external-tests/
+            /.github/mosaic-tests.ref
+            /modinfo.lua
+            /scripts/
+            /sounds/civilian/lostandfound/
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install lupa==2.8
+      - name: Prepare pinned external tests
+        uses: ./.github/actions/external-tests
+      - name: Check Lua 5.1 placement, icon lifecycle and announcement sequencing
+        working-directory: ${{ runner.temp }}/mosaic-validation
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from lupa.lua51 import LuaRuntime
+          for name in (
+              'house_asian_placeables_test.lua',
+              'house_asian_standalone_placeables_test.lua',
+              'house_asian_placeable_terrain_test.lua',
+              'house_arab_animation_test.lua',
+              'lost_and_found_audio_test.lua',
+          ):
+              LuaRuntime().execute(Path('tests', name).read_text(encoding='utf-8'))
+          PY

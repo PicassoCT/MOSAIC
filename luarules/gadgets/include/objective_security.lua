@@ -62,6 +62,8 @@ function M.New(Spring, Game, UnitDefs, UnitDefNames, CMD, config, state)
         if type(damage) ~= "number" or damage ~= damage or damage <= 0 or damage == math.huge
             or not attackerTeam or attackerTeam == gaia then return end
         local site = state.sites[record.siteID]
+        -- A restored objective cannot recall a convoy already leaving the city.
+        if site and site.withdrawing then return end
         if not site then
             site = {vehicles={}, nextResponse=0, nextSpawn=frame}
             state.sites[record.siteID] = site
@@ -217,7 +219,7 @@ function M.New(Spring, Game, UnitDefs, UnitDefNames, CMD, config, state)
     local function order(id, unit, site, frame)
         prepareVehicle(id,unit)
         local target = visibleTarget(site)
-        local guardSite = alive(site.uid) and site.uid or nil
+        local guardSite = not site.withdrawing and alive(site.uid) and site.uid or nil
         local command = currentCommand(id)
         local primaryGun, primaryRange
         -- Truckscript forwards ATTACK but does not clear its mounted gun's
@@ -243,11 +245,25 @@ function M.New(Spring, Game, UnitDefs, UnitDefNames, CMD, config, state)
                     Spring.GiveOrderToUnit(passenger,CMD.FIRE_STATE,{0},{})
                 end
                 if (target and not attacks(gunCommand,target))
-                    or (not target and (gunCommand or not unit.passengers[passenger])) then
+                    or (not target and ((gunCommand and gunCommand.id ~= CMD.STOP) or not unit.passengers[passenger])) then
                     Spring.GiveOrderToUnit(passenger,target and CMD.ATTACK or CMD.STOP,target and {target} or {},{})
                 end
                 unit.passengers[passenger] = true
             end
+        end
+        if site.withdrawing then
+            local exit = frame >= unit.departAt and site.exit
+            if exit then
+                if not movesTo(command,exit.x,exit.z) or unit.target then
+                    Spring.GiveOrderToUnit(id,CMD.MOVE,{exit.x,exit.y,exit.z},{})
+                end
+            elseif not command or command.id ~= CMD.STOP then
+                Spring.GiveOrderToUnit(id,CMD.STOP,{},{})
+            end
+            unit.target, unit.guardSite, unit.approach, unit.reposition = nil, nil, nil, nil
+            unit.nextOrder = frame + config.orderSeconds*fps
+            if frame < unit.departAt then unit.nextOrder = math.min(unit.nextOrder,unit.departAt) end
+            return
         end
         recoverBlockedGun(id,unit,target,primaryGun,primaryRange,command,frame)
         local maneuver = unit.reposition
@@ -302,9 +318,63 @@ function M.New(Spring, Game, UnitDefs, UnitDefNames, CMD, config, state)
 
     function api.SiteDestroyed(record)
         local site = state.sites[record.siteID]
-        -- Finish the already-triggered convoy from the ruins, including a
-        -- lethal first hit. The destroyed marker cannot call new convoys.
-        if site then site.uid = nil end
+        if site and (not site.uid or site.uid == record.uid) then
+            site.uid, site.pending = nil, {}
+            site.withdrawing, site.standingDown = true, true
+        end
+    end
+
+    local function removeVehicle(id)
+        local passengers = Spring.GetUnitIsTransporting(id) or {}
+        api.Remove(id) -- detach tracking before synchronous destruction callbacks
+        Spring.DestroyUnit(id,false,true)
+        -- Reclaiming a transport may release its weapon.
+        table.sort(passengers)
+        for _, passenger in ipairs(passengers) do
+            if alive(passenger) and Spring.GetUnitTeam(passenger) == gaia then
+                Spring.DestroyUnit(passenger,false,true)
+            end
+        end
+    end
+
+    local function evacuationExit(site)
+        -- A shared, deterministic map-edge destination keeps the convoy together.
+        -- Check every chassis type: a truck exit may not fit a tank.
+        local types, inset = {}, config.evacuateInset
+        for id in pairs(site.vehicles) do
+            local unit = state.units[id]
+            if unit and alive(id) and Spring.GetUnitTeam(id) == gaia then
+                types[unit.defID] = true
+                local def = UnitDefs[unit.defID]
+                inset = math.max(inset,(def.xsize or 4)*4,(def.zsize or 4)*4)
+            end
+        end
+        if not next(types) then return end
+        local candidates = {}
+        local function add(x,z)
+            candidates[#candidates+1] = {x=x,z=z,distance=(x-site.x)^2+(z-site.z)^2,index=#candidates+1}
+        end
+        for i=0,16 do
+            local x = inset+(Game.mapSizeX-2*inset)*i/16
+            local z = inset+(Game.mapSizeZ-2*inset)*i/16
+            add(inset,z);add(Game.mapSizeX-inset,z)
+            add(x,inset);add(x,Game.mapSizeZ-inset)
+        end
+        table.sort(candidates,function(a,b)
+            if a.distance == b.distance then return a.index < b.index end
+            return a.distance < b.distance
+        end)
+        local chassis = sortedKeys(types)
+        for _, exit in ipairs(candidates) do
+            exit.y = Spring.GetGroundHeight(exit.x,exit.z)
+            local passable = exit.y >= 0
+            for _, defID in ipairs(chassis) do
+                if not passable or not Spring.TestMoveOrder(defID,exit.x,exit.y,exit.z,0,0,0,true,true,false) then
+                    passable = false; break
+                end
+            end
+            if passable then return exit end
+        end
     end
 
     function api.AllowWeaponTarget(id, target)
@@ -321,10 +391,26 @@ function M.New(Spring, Game, UnitDefs, UnitDefNames, CMD, config, state)
     function api.Update(frame, objectives)
         for _, siteID in ipairs(sortedKeys(state.sites)) do
             local site = state.sites[siteID]
-            local active = frame < site.expires
+            -- Also reconcile forces saved by the old controller after a site's death.
+            if not site.withdrawing and (not site.uid or not objectives[site.uid] or not alive(site.uid)) then
+                api.SiteDestroyed({siteID=siteID,uid=site.uid})
+            end
+            local active = not site.withdrawing and frame < site.expires
             site.standingDown = not active
-            if active and (not site.uid or (objectives[site.uid] and alive(site.uid)))
-                and #site.pending > 0 and frame >= site.nextSpawn then
+            if site.withdrawing then
+                if not site.withdrawStarted then
+                    site.withdrawStarted = frame
+                    for i, id in ipairs(sortedKeys(site.vehicles)) do
+                        state.units[id].departAt = frame+(i-1)*config.evacuateSpacingSeconds*fps
+                        state.units[id].nextOrder = frame
+                    end
+                end
+                if not site.exit and frame >= (site.nextExitSearch or 0) then
+                    site.exit = evacuationExit(site)
+                    site.nextExitSearch = frame+config.orderSeconds*fps
+                end
+            end
+            if active and #site.pending > 0 and frame >= site.nextSpawn then
                 local defID = site.pending[1]
                 local total = #sortedKeys(site.vehicles)
                 local x,y,z
@@ -347,18 +433,19 @@ function M.New(Spring, Game, UnitDefs, UnitDefNames, CMD, config, state)
                 local unit = state.units[id]
                 if not alive(id) or Spring.GetUnitTeam(id) ~= gaia then
                     api.Remove(id)
+                elseif site.withdrawing then
+                    local x, _, z = Spring.GetUnitPosition(id)
+                    local exit = site.exit
+                    local arrived = exit and x and (x-exit.x)^2+(z-exit.z)^2 <= config.returnRadius^2
+                    if arrived or frame >= site.withdrawStarted+config.evacuateTimeoutSeconds*fps then
+                        removeVehicle(id)
+                    elseif frame >= unit.nextOrder or unit.target then
+                        order(id,unit,site,frame)
+                    end
                 elseif not active then
                     local x, _, z = Spring.GetUnitPosition(id)
                     if x and (x-unit.homeX)^2 + (z-unit.homeZ)^2 <= config.returnRadius^2 then
-                        local passengers = Spring.GetUnitIsTransporting(id) or {}
-                        api.Remove(id)
-                        Spring.DestroyUnit(id,false,true)
-                        -- Reclaiming a transport may release its weapon.
-                        for _, passenger in ipairs(passengers) do
-                            if alive(passenger) and Spring.GetUnitTeam(passenger) == gaia then
-                                Spring.DestroyUnit(passenger,false,true)
-                            end
-                        end
+                        removeVehicle(id)
                     elseif unit.target or frame >= unit.nextOrder then
                         order(id,unit,site,frame)
                     end

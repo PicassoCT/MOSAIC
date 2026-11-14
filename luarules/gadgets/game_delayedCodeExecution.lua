@@ -28,8 +28,9 @@ function gadget:GameFrame(frame)
             GG.ExecuteDelayed = {PushCode = PushCode}
 --            Spring.Echo("Spawn Units")
             for i = 1, #cur, 1 do
-                local codeToExecute = cur[2]
-                codeToExecute(cur[3])          
+                local entry = cur[i]
+                local codeToExecute = entry[2]
+                codeToExecute(entry[3])
             end
         end    
     end

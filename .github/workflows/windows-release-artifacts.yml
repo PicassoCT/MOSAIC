@@ -4,10 +4,9 @@ on:
   pull_request:
     paths:
       - 'tools/package_windows_release.py'
-      - 'tests/test_windows_release.py'
-      - 'tests/test_performance_gate.py'
+      - .github/mosaic-tests.ref
+      - .github/actions/external-tests/**
       - 'tools/validate_performance_gate.py'
-      - 'tests/test_performance_gate.py'
       - 'tools/validate_performance_gate.py'
       - 'packaging/**'
       - 'pack_mosaic*.sh'
@@ -18,7 +17,8 @@ on:
     branches: [master]
     paths:
       - 'tools/package_windows_release.py'
-      - 'tests/test_windows_release.py'
+      - .github/mosaic-tests.ref
+      - .github/actions/external-tests/**
       - 'packaging/**'
       - 'pack_mosaic*.sh'
       - '.github/workflows/windows-release-artifacts.yml'
@@ -53,9 +53,13 @@ jobs:
       - name: Install 7-Zip for archive regression tests
         if: runner.os == 'Linux'
         run: sudo apt-get update && sudo apt-get install -y p7zip-full
+      - name: Prepare pinned external tests
+        uses: ./.github/actions/external-tests
       - name: Packaging regression tests
+        working-directory: ${{ runner.temp }}/mosaic-validation
         run: python -m unittest discover -s tests -p test_windows_release.py -v
       - name: Performance gate regression tests
+        working-directory: ${{ runner.temp }}/mosaic-validation
         run: python -m unittest discover -s tests -p test_performance_gate.py -v
 
   artifacts:

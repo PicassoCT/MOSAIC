@@ -39,6 +39,7 @@ local JLantern = piece("JLantern")
 local idleAnimations = {}
 
 local tldrum = piece "tldrum"
+local tldancedru = piece "tldancedru"
 local dancepivot = piece "dancepivot"
 local deathpivot = piece "deathpivot"
 local tigLil = piece "tigLil"
@@ -62,6 +63,7 @@ handr = piece "handr"
 handl = piece "handl"
 ball = piece "ball"
 tigLilHoloPices = {
+    tldancedru,
     tldrum ,
     dancepivot, 
     deathpivot ,
@@ -87,7 +89,7 @@ local TableOfPiecesGroups = {}
 local boolDebugActive = false
 
 sizeDownLetter  = 350
-sizeSpacingLetter = 300
+sizeSpacingLetter = 321
 local _x_axis = 1
 local _y_axis = 2
 local _z_axis = 3
@@ -196,6 +198,7 @@ end
 
 --VFS.Include("scripts/lib_textFx.lua")
 local tigLilAnimations = include("tigLilAnimation.lua")
+tigLilAnimations.enablePeopleAnimations()
 include("lib_textFx.lua")
 
 local function tiglLilLoop()
@@ -859,16 +862,17 @@ function showOneOrAll(T)
 end
 
 function hideResetAllLetters()
-    letters = {"A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"}
+    local pieces = {}
+    local letters = {"A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"}
     for i=1, #letters do
         local letter = letters[i] 
         if TableOfPiecesGroups[letter] then
-            resetT(TableOfPiecesGroups[letter])
-            hideTReg(TableOfPiecesGroups[letter])
+            for _,id in ipairs(TableOfPiecesGroups[letter]) do pieces[#pieces+1]=id end
         else
             echo("hideResetAllLetters failed for:"..letter)
         end
     end
+    hardResetHologramLetters(pieces)
 end
 
 function delayedFlickerSingleLetter(letterPiece)
@@ -895,8 +899,7 @@ function setupMessage(myMessages)
     local boolFirstHighlight, downIndex, stringlength, rowIndex, columnIndex, val
     boolHighlightFirstLetter = math.random(1,100) < 10
     hideResetAllLetters()
-    StopSpin(textSpinner, y_axis, 0)
-    Move(textSpinner, 2 ,0, 0) --Move the text spinner upward so letters dont vannish into the ground
+    reset(textSpinner) -- clear the previous facing/spin before choosing a new layout
     axis= 2
     startValue = 0
     myMessage = selectHologramMessage(myMessages, TableOfPiecesGroups)
@@ -921,9 +924,8 @@ function setupMessage(myMessages)
     columnIndex= 0
       
     if boolSpinning then
-        reset(textSpinner)
         val = math.random(5,45)
-        Spin(textSpinner, y_axis, math.rad(val),0)
+        Spin(textSpinner, textSpinnerAxis, math.rad(val),0)
     end
 
     if boolUpright then
@@ -1009,7 +1011,7 @@ function restoreMessageOriginalPosition(message, posLetters)
                         
                     if boolSpinning and posLetters.boolUpright then
                         val = letterIndex * 5
-                        Turn(letter, 2, math.rad(val), 0)
+                        Turn(letter, spindropAxis, math.rad(val), 0)
                     end
                 end    
             end
@@ -1019,7 +1021,7 @@ end
 
 
 backdropAxis = x_axis
-spindropAxis = y_axis
+spindropAxis = z_axis
 
 function resetSpinDrop(allLetters)
 
@@ -1088,6 +1090,23 @@ idleAnimations[#idleAnimations +1] = idle_stance15
 idleAnimations[#idleAnimations +1] = tigLilAnimations.idle_playBall
 idleAnimations[#idleAnimations +1] = idle_stance18
 idleAnimations[#idleAnimations +1] = idle_stance17
+idleAnimations[#idleAnimations +1] = danceShuffle
+idleAnimations[#idleAnimations +1] = danceDisco
+idleAnimations[#idleAnimations +1] = dancePopping
+idleAnimations[#idleAnimations +1] = danceJoi
+idleAnimations[#idleAnimations +1] = danceShakira
+idleAnimations[#idleAnimations +1] = dancePole
+idleAnimations[#idleAnimations +1] = danceBallet
+idleAnimations[#idleAnimations +1] = danceBurlesqueSway
+idleAnimations[#idleAnimations +1] = danceBurlesqueWave
+idleAnimations[#idleAnimations +1] = danceBurlesqueFan
+idleAnimations[#idleAnimations +1] = lingerBrothel
+idleAnimations[#idleAnimations +1] = danceBehindGlass
+idleAnimations[#idleAnimations +1] = greetPasserby
+idleAnimations[#idleAnimations +1] = embracePasserby
+idleAnimations[#idleAnimations +1] = danceEmbracePasserby
+idleAnimations[#idleAnimations +1] = kissPasserby
+idleAnimations[#idleAnimations +1] = invitePasserby
 idleAnimations[#idleAnimations +1] = strikeAPose
 
                 
@@ -1129,16 +1148,16 @@ function addHologramLetters( myMessages)
             restoreMessageOriginalPosition(allLetters, posLetters)
             name, textFX = randDict(allFunctions)
             if name and canProjectTextFx(name, posLetters) then
-                textFX(allLetters, posLetters, TableOfPiecesGroups)
+                runHologramTextFx(textFX, allLetters, posLetters, TableOfPiecesGroups)
                 Signal(SIG_FLICKER)
-                HideLetters(allLetters, posLetters)
+                HideLetters(allLetters,posLetters,nil,5000)
             end
-            WaitForMoves(allLetters)
+            waitHologramTextCleanup(allLetters,cachedCopyDict,5000)
             restTime = math.max(5000, #allLetters*150)
             holdHologramText(allLetters, posLetters, restTime)
             restoreMessageOriginalPosition(allLetters, posLetters)
             resetSpinDrop(allLetters)
-            WaitForTurns(allLetters)
+            waitHologramTextCleanup(allLetters,cachedCopyDict,5000)
             holdHologramText(allLetters, posLetters, restTime)
             if boolIsEverChanging == true then
                 transitionHologramText(allLetters, posLetters, false, 400)

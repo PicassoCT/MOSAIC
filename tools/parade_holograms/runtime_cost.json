@@ -1,0 +1,27 @@
+{
+  "comparison": "Prior embedded cage scenery with the same merged six-lantern station configuration",
+  "scope": "Fully visible native pass only; excludes sprites, buildings, radiance and CPU pose cost. Not an FPS measurement.",
+  "max_simultaneous_stations": 8,
+  "per_station": {
+    "before_draws": {
+      "min": 69,
+      "max": 69
+    },
+    "after_draws": {
+      "min": 71,
+      "max": 71
+    },
+    "before_triangles": {
+      "min": 27100,
+      "max": 27100
+    },
+    "after_triangles": {
+      "min": 21418,
+      "max": 21466
+    }
+  },
+  "worst_case_native_draws_before": 552,
+  "worst_case_native_draws_after": 568,
+  "worst_case_native_triangles_before": 216800,
+  "worst_case_native_triangles_after": 171728
+}

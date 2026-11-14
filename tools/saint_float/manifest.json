@@ -1,0 +1,402 @@
+{
+  "name": "Mother and Child \u2014 another float saint",
+  "source": "MosaicConcept/another float.png",
+  "mesh_objects": 1,
+  "materials": 1,
+  "triangles": 3616,
+  "bounds": [
+    [
+      -4.4885,
+      0.01881,
+      -1.67875
+    ],
+    [
+      2.494841,
+      11.679551,
+      1.829072
+    ]
+  ],
+  "cages": 53,
+  "parts": [
+    {
+      "name": "BackFoot",
+      "material": "skin",
+      "first_triangle": 0,
+      "triangles": 60
+    },
+    {
+      "name": "ForwardShin",
+      "material": "skin",
+      "first_triangle": 60,
+      "triangles": 60
+    },
+    {
+      "name": "ForwardFoot",
+      "material": "skin",
+      "first_triangle": 120,
+      "triangles": 80
+    },
+    {
+      "name": "Toe0",
+      "material": "skin",
+      "first_triangle": 200,
+      "triangles": 24
+    },
+    {
+      "name": "Toe1",
+      "material": "skin",
+      "first_triangle": 224,
+      "triangles": 24
+    },
+    {
+      "name": "Toe2",
+      "material": "skin",
+      "first_triangle": 248,
+      "triangles": 24
+    },
+    {
+      "name": "Toe3",
+      "material": "skin",
+      "first_triangle": 272,
+      "triangles": 24
+    },
+    {
+      "name": "InnerRobe",
+      "material": "robe",
+      "first_triangle": 296,
+      "triangles": 256
+    },
+    {
+      "name": "WindSweptMantle",
+      "material": "cloak",
+      "first_triangle": 552,
+      "triangles": 212
+    },
+    {
+      "name": "LeftMantleLap",
+      "material": "cloak",
+      "first_triangle": 764,
+      "triangles": 44
+    },
+    {
+      "name": "RightMantleFall",
+      "material": "cloak",
+      "first_triangle": 808,
+      "triangles": 56
+    },
+    {
+      "name": "RaisedKneeDrape",
+      "material": "robe",
+      "first_triangle": 864,
+      "triangles": 44
+    },
+    {
+      "name": "CradlingSleeve",
+      "material": "robe",
+      "first_triangle": 908,
+      "triangles": 80
+    },
+    {
+      "name": "CradlingForearm",
+      "material": "skin",
+      "first_triangle": 988,
+      "triangles": 48
+    },
+    {
+      "name": "CradlingPalm",
+      "material": "skin",
+      "first_triangle": 1036,
+      "triangles": 48
+    },
+    {
+      "name": "CradlingFinger0",
+      "material": "skin",
+      "first_triangle": 1084,
+      "triangles": 36
+    },
+    {
+      "name": "CradlingFinger1",
+      "material": "skin",
+      "first_triangle": 1120,
+      "triangles": 36
+    },
+    {
+      "name": "CradlingFinger2",
+      "material": "skin",
+      "first_triangle": 1156,
+      "triangles": 36
+    },
+    {
+      "name": "CradlingFinger3",
+      "material": "skin",
+      "first_triangle": 1192,
+      "triangles": 36
+    },
+    {
+      "name": "SwaddledChild",
+      "material": "swaddle",
+      "first_triangle": 1228,
+      "triangles": 120
+    },
+    {
+      "name": "SwaddleFold0",
+      "material": "swaddle",
+      "first_triangle": 1348,
+      "triangles": 32
+    },
+    {
+      "name": "SwaddleFold1",
+      "material": "swaddle",
+      "first_triangle": 1380,
+      "triangles": 32
+    },
+    {
+      "name": "SwaddleFold2",
+      "material": "swaddle",
+      "first_triangle": 1412,
+      "triangles": 32
+    },
+    {
+      "name": "InfantFace",
+      "material": "skin",
+      "first_triangle": 1444,
+      "triangles": 240
+    },
+    {
+      "name": "InfantNose",
+      "material": "skin",
+      "first_triangle": 1684,
+      "triangles": 48
+    },
+    {
+      "name": "InfantLeftLid",
+      "material": "shadow",
+      "first_triangle": 1732,
+      "triangles": 36
+    },
+    {
+      "name": "InfantRightLid",
+      "material": "shadow",
+      "first_triangle": 1768,
+      "triangles": 36
+    },
+    {
+      "name": "InfantMouth",
+      "material": "lip",
+      "first_triangle": 1804,
+      "triangles": 36
+    },
+    {
+      "name": "ProtectingSleeve",
+      "material": "cloak",
+      "first_triangle": 1840,
+      "triangles": 48
+    },
+    {
+      "name": "ProtectingForearm",
+      "material": "skin",
+      "first_triangle": 1888,
+      "triangles": 48
+    },
+    {
+      "name": "ProtectingPalm",
+      "material": "skin",
+      "first_triangle": 1936,
+      "triangles": 48
+    },
+    {
+      "name": "ProtectingFinger0",
+      "material": "skin",
+      "first_triangle": 1984,
+      "triangles": 36
+    },
+    {
+      "name": "ProtectingFinger1",
+      "material": "skin",
+      "first_triangle": 2020,
+      "triangles": 36
+    },
+    {
+      "name": "ProtectingFinger2",
+      "material": "skin",
+      "first_triangle": 2056,
+      "triangles": 36
+    },
+    {
+      "name": "ProtectingFinger3",
+      "material": "skin",
+      "first_triangle": 2092,
+      "triangles": 36
+    },
+    {
+      "name": "ProtectingThumb",
+      "material": "skin",
+      "first_triangle": 2128,
+      "triangles": 36
+    },
+    {
+      "name": "Neck",
+      "material": "skin",
+      "first_triangle": 2164,
+      "triangles": 40
+    },
+    {
+      "name": "MotherFace",
+      "material": "skin",
+      "first_triangle": 2204,
+      "triangles": 440
+    },
+    {
+      "name": "MotherNose",
+      "material": "skin",
+      "first_triangle": 2644,
+      "triangles": 48
+    },
+    {
+      "name": "MotherLeftEye",
+      "material": "eye",
+      "first_triangle": 2692,
+      "triangles": 60
+    },
+    {
+      "name": "MotherLeftIris",
+      "material": "hair",
+      "first_triangle": 2752,
+      "triangles": 48
+    },
+    {
+      "name": "MotherLeftBrow",
+      "material": "hair",
+      "first_triangle": 2800,
+      "triangles": 36
+    },
+    {
+      "name": "MotherLeftLid",
+      "material": "shadow",
+      "first_triangle": 2836,
+      "triangles": 36
+    },
+    {
+      "name": "MotherRightEye",
+      "material": "eye",
+      "first_triangle": 2872,
+      "triangles": 60
+    },
+    {
+      "name": "MotherRightIris",
+      "material": "hair",
+      "first_triangle": 2932,
+      "triangles": 48
+    },
+    {
+      "name": "MotherRightBrow",
+      "material": "hair",
+      "first_triangle": 2980,
+      "triangles": 36
+    },
+    {
+      "name": "MotherRightLid",
+      "material": "shadow",
+      "first_triangle": 3016,
+      "triangles": 36
+    },
+    {
+      "name": "MotherMouth",
+      "material": "lip",
+      "first_triangle": 3052,
+      "triangles": 36
+    },
+    {
+      "name": "MotherLowerLip",
+      "material": "skin",
+      "first_triangle": 3088,
+      "triangles": 36
+    },
+    {
+      "name": "HairM1",
+      "material": "hair",
+      "first_triangle": 3124,
+      "triangles": 48
+    },
+    {
+      "name": "Hair1",
+      "material": "hair",
+      "first_triangle": 3172,
+      "triangles": 48
+    },
+    {
+      "name": "Hood",
+      "material": "cloak",
+      "first_triangle": 3220,
+      "triangles": 240
+    },
+    {
+      "name": "HoodRim",
+      "material": "rim",
+      "first_triangle": 3460,
+      "triangles": 156
+    }
+  ],
+  "atlas_rectangles_pixels": {
+    "cloak": [
+      1129,
+      417,
+      1160,
+      466
+    ],
+    "rim": [
+      1075,
+      417,
+      1105,
+      459
+    ],
+    "robe": [
+      976,
+      105,
+      999,
+      139
+    ],
+    "skin": [
+      1008,
+      80,
+      1011,
+      130
+    ],
+    "swaddle": [
+      970,
+      91,
+      997,
+      134
+    ],
+    "eye": [
+      1134,
+      182,
+      1164,
+      249
+    ],
+    "hair": [
+      1188,
+      344,
+      1212,
+      447
+    ],
+    "shadow": [
+      1190,
+      398,
+      1212,
+      452
+    ],
+    "lip": [
+      1189,
+      225,
+      1215,
+      293
+    ]
+  },
+  "source_sha256": "bc82adc99e88e432bb195474d8848e15c9b9329839f487ce28cca7fa5560197c",
+  "maxscript": {
+    "unique_vertices": 1912,
+    "triangles": 3616,
+    "splines": 740
+  }
+}

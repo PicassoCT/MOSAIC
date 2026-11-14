@@ -44,12 +44,14 @@ parachute. `giveParachutToUnit` registers a passenger and drop position; the
 parachute script waits for that registration before enabling its ribbons.
 `/give air_parachut` alone does not perform this step and is not a complete test.
 
-The canopy should span twice its previous width and form dense black mist with
-soft edges. Look for clear waves in calm air as well as a response to wind and
-movement; the fine strands should blend together at ordinary play distances.
-The four cyan-violet discharge sources should rise above the rim, follow the
-passenger and disappear with the canopy on landing. Check from above and at a
-low angle while the operative descends.
+The canopy should rise from a narrow suspension area into a broad, irregular
+crown of diffuse black mist. Its fine fibres should blend together at ordinary
+play distances, with only occasional distinct branches and softly frayed edges.
+Look for continuous rolling waves in calm air and a response to wind and
+movement. Cyan-violet charge should follow the moving cloud before its short
+free tips rise upward; a broad purple centre or separate rim bouquets indicates
+a regression. Check from above and at a low angle while the operative descends,
+then check that both material and electricity disappear on landing.
 
 For a repeatable check of the electrical material, select an uncloaked operative,
 zoom in and enter:
@@ -60,11 +62,24 @@ zoom in and enter:
 /luarules smokeribbon off
 ```
 
-The preview shares the live graphene electrical profile and shader. A preview
-on an operative tests that profile; the actual first-operative drop additionally
-checks all canopy-tip attachments and the descent. The `/luarules` prefix is
+The preview shares the graphene electrical palette and emission profile. It
+tests a free electrical streamer; the actual first-operative drop also checks
+the attached `canopy_arc` curves, diffuse material and descent. The `/luarules` prefix is
 needed for this gadget command; its chat action is forwarded to the requesting
 client's unsynced renderer.
+
+The production GLSL and actual imported support dimensions can also be checked
+without starting a match. With Python, `moderngl`, `numpy`, `lupa` (Lua 5.1) and
+Pillow available, run from the repository root:
+
+```sh
+MESA_GL_VERSION_OVERRIDE=3.3COMPAT python tests/graphene_chute_gpu.py --views-preview /tmp/graphene-views.png
+```
+
+This renders front, oblique and overhead views at a common scale and checks
+soft coverage, bounded material length, pinned roots and exact cloud/charge
+attachment during wind and billow. It is a shader diagnostic; the actual game
+scene, postprocessing and hardware performance still require a live match.
 
 ## Moving shadow comparison
 

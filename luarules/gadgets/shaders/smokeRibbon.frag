@@ -19,6 +19,34 @@ float noise(vec2 p) {
 }
 void main() {
     float x=ribbonUV.x, age=ribbonUV.y;
+    if (hairMode > 1.5 && electricMode > 1.5) {
+        // Sparse cyan/violet branches are embedded in the moving cloud curve.
+        // Each bundle has a different smooth pulse; long upward tips are occasional.
+        float activation = smoothstep(0.46,0.80,
+            noise(vec2(effectTime*0.47,ribbonSeed*0.19+11.0)));
+        float flow = age*18.0-effectTime*3.4;
+        float jitter = (noise(vec2(flow,ribbonSeed))-0.5)*0.28;
+        float aa = max(fwidth(x),0.008);
+        float core = (1.0-smoothstep(0.075,0.075+aa,abs(x-jitter)))
+            * min(1.0,0.15/aa);
+        float forkGate = smoothstep(0.14,0.30,age)*(1.0-smoothstep(0.52,0.73,age));
+        float forkX = jitter+(sin(ribbonSeed)>0.0 ? 1.0 : -1.0)
+            *(0.38+0.12*sin(flow*1.3))*forkGate;
+        float fork = (1.0-smoothstep(0.04,0.04+aa,abs(x-forkX)))
+            * min(1.0,0.08/aa)*forkGate;
+        float halo = exp(-9.0*x*x)*0.10;
+        float fade = smoothstep(0.0,0.05,age)*(1.0-smoothstep(0.80,1.0,age));
+        float pulse = (0.10+0.90*activation)
+            * (0.55+0.45*noise(vec2(age*7.0-effectTime*2.6,ribbonSeed+4.0)));
+        pulse *= mix(1.0,0.15+0.85*activation,smoothstep(0.68,0.80,age));
+        vec4 color = mix(colorStart,colorEnd,age);
+        float coverage = color.a*strandOpacity*fade*pulse;
+        float alpha = clamp((core+fork*0.65+halo)*coverage,0.0,0.96);
+        vec3 hot = mix(color.rgb,vec3(1.0),0.12);
+        float glow = max(1.0,mix(emission.x,emission.y,age));
+        gl_FragColor = vec4((hot*(core+fork*0.65)*1.4+color.rgb*halo)*glow*coverage,alpha);
+        return;
+    }
     if (hairMode > 1.5) {
         // A cloud of unresolved fibres, not a handful of hard black stripes.
         // Broad moving folds carry fine anisotropic detail. Average subpixel
@@ -32,19 +60,28 @@ void main() {
         fibres = mix(fibres,0.5,smoothstep(0.6,1.5,fwidth(fibreCoord)));
         float edge = 1.0-smoothstep(0.30,1.0,abs(x)+(broad-0.5)*0.22);
         float density = mix(0.30,0.90,broad)*mix(0.65,1.0,folds)*mix(0.65,1.0,fibres);
-        float fade = smoothstep(0.0,0.18+0.08*broad,age)
+        // The material remains a blurred cloud. Only a few short dark branches
+        // emerge from it; their contrast vanishes as they become subpixel.
+        float branchX = 0.24*sin(age*5.0-effectTime*0.22+ribbonSeed);
+        float branchWidth = max(0.045,fwidth(x)*1.4);
+        float branchDistance = (x-branchX)/branchWidth;
+        float branch = exp(-branchDistance*branchDistance)
+            * smoothstep(0.76,0.94,hash(vec2(ribbonSeed,3.1)))
+            * smoothstep(0.24,0.43,age)*(1.0-smoothstep(0.72,0.90,age));
+        branch *= 0.045/branchWidth;
+        density = clamp(density+branch*0.16,0.0,1.0);
+        float fade = smoothstep(0.0,0.10+0.05*broad,age)
             * (1.0-smoothstep(0.65+0.1*folds,1.0,age));
-        // Keep the graphene body dark; electrical energy collects only in
-        // the last third of the fibres, before the material feathers away.
+        // A faint tint lets nearby charge show through the soot-like material.
+        // Bright energy belongs to the attached filaments, not every broad tip.
         float tip = smoothstep(0.62,0.92,age);
-        vec4 color = mix(colorStart,colorEnd,tip);
+        vec4 color = mix(colorStart,colorEnd,tip*0.035);
         float alpha = clamp(0.68*edge*density*fade*color.a*strandOpacity,0.0,0.92);
         float glow = mix(emission.x,emission.y,tip);
         vec3 lighting = mix(ambient,vec3(1.0),clamp(glow,0.0,1.0));
-        // Fine blue cores sit inside a violet halo with the same soft coverage.
-        // Bounded modulation preserves the hue instead of clipping to white.
         vec3 electric = mix(colorEnd.rgb,vec3(0.08,0.30,1.0),fibres*0.45);
-        vec3 energy = electric*glow*tip*(0.8+0.2*folds);
+        float pulse = 0.25+0.75*noise(vec2(effectTime*0.34,ribbonSeed));
+        vec3 energy = electric*glow*tip*(0.025+branch*0.3)*pulse;
         gl_FragColor = vec4((color.rgb*lighting+energy)*alpha,alpha);
         return;
     }

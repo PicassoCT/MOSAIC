@@ -1,0 +1,870 @@
+{
+  "schema": 1,
+  "source_repository": "PicassoCT/MOSAIC",
+  "source_commit": "2da1acd2b6fe551485e566cb82b64822a8cd48c2",
+  "verified_against_current_master_utc": "2026-11-02",
+  "dimensions": [
+    4096,
+    4096
+  ],
+  "texture1": "house_asian_diffuse.dds",
+  "texture2": "house_asian_selfilu_reflection.png",
+  "uv_convention": "U grows right, V grows up; bottom-left UV origin; both source textures use identical UVs",
+  "channel_semantics": {
+    "texture1_RGB": "surface and emission colour",
+    "texture1_A": "team colour mix",
+    "texture2_R": "emission intensity",
+    "texture2_G": "reflection/specular mask",
+    "texture2_A": "opacity/cutout mask"
+  },
+  "shader_source": "https://github.com/beyond-all-reason/RecoilEngine/blob/master/cont/base/springcontent/shaders/GLSL/ModelFragProg.glsl",
+  "files": {
+    "house_asian_diffuse.dds": {
+      "bytes": 22369776,
+      "sha256": "818da3a29085fdbd61eb90d23aad57fb722868d8d0421df958b7f941c90ddff9",
+      "git_blob_sha1": "da0c6c7f79d71e84df448ca7cd8ff8f5d961f47c",
+      "source_url": "https://github.com/PicassoCT/MOSAIC/blob/2da1acd2b6fe551485e566cb82b64822a8cd48c2/unittextures/house_asian_diffuse.dds"
+    },
+    "house_asian_selfilu_reflection.png": {
+      "bytes": 10210143,
+      "sha256": "d9be7dad2062f36e69bbe7adf8cb2679bb3dbe22262f46cac333051c4ae3e406",
+      "git_blob_sha1": "b487959c10e3190c8f04fa4981279b86fea197fd",
+      "source_url": "https://github.com/PicassoCT/MOSAIC/blob/2da1acd2b6fe551485e566cb82b64822a8cd48c2/unittextures/house_asian_selfilu_reflection.png"
+    },
+    "house_asian_preview_emission_R.png": {
+      "derived_from": "house_asian_selfilu_reflection.png",
+      "operation": "Exact raw 8-bit R channel, no gamma, scaling, threshold or hue change",
+      "sha256": "2c4605732fcbd3089fcd4dbfb9a3c71edbb328b9b6c08ad7d1f8d042eaa739dd",
+      "role": "3ds Max authoring preview only; keep the packed source as game tex2"
+    },
+    "house_asian_preview_reflection_G.png": {
+      "derived_from": "house_asian_selfilu_reflection.png",
+      "operation": "Exact raw 8-bit G channel, no gamma, scaling, threshold or hue change",
+      "sha256": "9f3ca086b5422d29daf52782e4672f77a3ccedde5b97a06a06f3adfea3efad15",
+      "role": "3ds Max authoring preview only; keep the packed source as game tex2"
+    }
+  },
+  "patches": {
+    "ivory_glow": {
+      "emissive": true,
+      "target_rgb": [
+        250,
+        232,
+        189
+      ],
+      "uv_rect": [
+        0.2344970703125,
+        0.9727783203125,
+        0.2452392578125,
+        0.9979248046875
+      ],
+      "pixel_rect_top_left": [
+        960,
+        8,
+        1005,
+        112
+      ],
+      "pixel_rect_convention": "x0,y0 inclusive; x1,y1 exclusive; original bitmap top-left origin",
+      "preview_rgb": [
+        250.60811965811965,
+        238.37371794871794,
+        193.50064102564102
+      ],
+      "rgb_min": [
+        241,
+        231,
+        181
+      ],
+      "rgb_max": [
+        255,
+        251,
+        198
+      ],
+      "rgb_std": [
+        1.921,
+        1.715,
+        2.48
+      ],
+      "emission_R_min": 255,
+      "emission_R_max": 255,
+      "emission_R_mean": 255.0,
+      "reflection_G_mean": 0.0,
+      "source_opacity_A_min": 255,
+      "diffuse_teamcolor_A_max": 0,
+      "verified_gutter_pixels": 12,
+      "mapping": "full cage surface gradient"
+    },
+    "gold_glow": {
+      "emissive": true,
+      "target_rgb": [
+        245,
+        193,
+        32
+      ],
+      "uv_rect": [
+        0.3284912109375,
+        0.9329833984375,
+        0.3416748046875,
+        0.9559326171875
+      ],
+      "pixel_rect_top_left": [
+        1345,
+        180,
+        1400,
+        275
+      ],
+      "pixel_rect_convention": "x0,y0 inclusive; x1,y1 exclusive; original bitmap top-left origin",
+      "preview_rgb": [
+        239.05033492822966,
+        161.391004784689,
+        28.642870813397128
+      ],
+      "rgb_min": [
+        249,
+        189,
+        57
+      ],
+      "rgb_max": [
+        255,
+        192,
+        57
+      ],
+      "rgb_std": [
+        0.862,
+        0.227,
+        0.0
+      ],
+      "emission_R_min": 255,
+      "emission_R_max": 255,
+      "emission_R_mean": 255,
+      "reflection_G_mean": 0.0,
+      "source_opacity_A_min": 255,
+      "diffuse_teamcolor_A_max": 0,
+      "verified_gutter_pixels": 12,
+      "mapping": "full cage surface gradient"
+    },
+    "orange_glow": {
+      "emissive": true,
+      "target_rgb": [
+        235,
+        105,
+        35
+      ],
+      "uv_rect": [
+        0.3424072265625,
+        0.9329833984375,
+        0.3612060546875,
+        0.9559326171875
+      ],
+      "pixel_rect_top_left": [
+        1402,
+        180,
+        1480,
+        275
+      ],
+      "pixel_rect_convention": "x0,y0 inclusive; x1,y1 exclusive; original bitmap top-left origin",
+      "preview_rgb": [
+        245.09203778677463,
+        108.44318488529015,
+        65.81524966261809
+      ],
+      "rgb_min": [
+        244,
+        82,
+        41
+      ],
+      "rgb_max": [
+        255,
+        93,
+        49
+      ],
+      "rgb_std": [
+        2.035,
+        1.108,
+        1.545
+      ],
+      "emission_R_min": 255,
+      "emission_R_max": 255,
+      "emission_R_mean": 255,
+      "reflection_G_mean": 0.0,
+      "source_opacity_A_min": 255,
+      "diffuse_teamcolor_A_max": 0,
+      "verified_gutter_pixels": 12,
+      "mapping": "full cage surface gradient"
+    },
+    "red_glow": {
+      "emissive": true,
+      "target_rgb": [
+        213,
+        38,
+        39
+      ],
+      "uv_rect": [
+        0.1646728515625,
+        0.8394775390625,
+        0.1741943359375,
+        0.8489990234375
+      ],
+      "pixel_rect_top_left": [
+        674,
+        618,
+        714,
+        658
+      ],
+      "pixel_rect_convention": "x0,y0 inclusive; x1,y1 exclusive; original bitmap top-left origin",
+      "preview_rgb": [
+        225.0,
+        63.0,
+        44.0
+      ],
+      "rgb_min": [
+        225,
+        63,
+        44
+      ],
+      "rgb_max": [
+        225,
+        63,
+        44
+      ],
+      "rgb_std": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "emission_R_min": 255,
+      "emission_R_max": 255,
+      "emission_R_mean": 255.0,
+      "reflection_G_mean": 0.0,
+      "source_opacity_A_min": 255,
+      "diffuse_teamcolor_A_max": 0,
+      "verified_gutter_pixels": 12
+    },
+    "pink_glow": {
+      "emissive": true,
+      "target_rgb": [
+        242,
+        132,
+        190
+      ],
+      "uv_rect": [
+        0.2476806640625,
+        0.8209228515625,
+        0.2572021484375,
+        0.8304443359375
+      ],
+      "pixel_rect_top_left": [
+        1014,
+        694,
+        1054,
+        734
+      ],
+      "pixel_rect_convention": "x0,y0 inclusive; x1,y1 exclusive; original bitmap top-left origin",
+      "preview_rgb": [
+        254.919,
+        131.348,
+        173.038
+      ],
+      "rgb_min": [
+        252,
+        124,
+        164
+      ],
+      "rgb_max": [
+        255,
+        135,
+        183
+      ],
+      "rgb_std": [
+        0.485,
+        1.317,
+        2.132
+      ],
+      "emission_R_min": 255,
+      "emission_R_max": 255,
+      "emission_R_mean": 255.0,
+      "reflection_G_mean": 0.0,
+      "source_opacity_A_min": 255,
+      "diffuse_teamcolor_A_max": 0,
+      "verified_gutter_pixels": 12
+    },
+    "cyan_glow": {
+      "emissive": true,
+      "target_rgb": [
+        99,
+        223,
+        225
+      ],
+      "uv_rect": [
+        0.3126220703125,
+        0.8145751953125,
+        0.3636474609375,
+        0.8363037109375
+      ],
+      "pixel_rect_top_left": [
+        1280,
+        670,
+        1490,
+        760
+      ],
+      "pixel_rect_convention": "x0,y0 inclusive; x1,y1 exclusive; original bitmap top-left origin",
+      "preview_rgb": [
+        53.82560846560847,
+        211.35322751322752,
+        251.6801058201058
+      ],
+      "rgb_min": [
+        82,
+        235,
+        239
+      ],
+      "rgb_max": [
+        82,
+        235,
+        239
+      ],
+      "rgb_std": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "emission_R_min": 255,
+      "emission_R_max": 255,
+      "emission_R_mean": 255.0,
+      "reflection_G_mean": 0.0,
+      "source_opacity_A_min": 255,
+      "diffuse_teamcolor_A_max": 0,
+      "verified_gutter_pixels": 12,
+      "mapping": "full cage surface gradient"
+    },
+    "blue_glow": {
+      "emissive": true,
+      "target_rgb": [
+        49,
+        112,
+        197
+      ],
+      "uv_rect": [
+        0.0279541015625,
+        0.8717041015625,
+        0.0374755859375,
+        0.8812255859375
+      ],
+      "pixel_rect_top_left": [
+        114,
+        486,
+        154,
+        526
+      ],
+      "pixel_rect_convention": "x0,y0 inclusive; x1,y1 exclusive; original bitmap top-left origin",
+      "preview_rgb": [
+        19.0,
+        159.0,
+        211.0
+      ],
+      "rgb_min": [
+        19,
+        159,
+        211
+      ],
+      "rgb_max": [
+        19,
+        159,
+        211
+      ],
+      "rgb_std": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "emission_R_min": 255,
+      "emission_R_max": 255,
+      "emission_R_mean": 255.0,
+      "reflection_G_mean": 0.0,
+      "source_opacity_A_min": 255,
+      "diffuse_teamcolor_A_max": 0,
+      "verified_gutter_pixels": 12
+    },
+    "green_glow": {
+      "emissive": true,
+      "target_rgb": [
+        90,
+        173,
+        81
+      ],
+      "uv_rect": [
+        0.6304931640625,
+        0.8375244140625,
+        0.6400146484375,
+        0.8470458984375
+      ],
+      "pixel_rect_top_left": [
+        2582,
+        626,
+        2622,
+        666
+      ],
+      "pixel_rect_convention": "x0,y0 inclusive; x1,y1 exclusive; original bitmap top-left origin",
+      "preview_rgb": [
+        110.32,
+        141.964,
+        50.121
+      ],
+      "rgb_min": [
+        95,
+        125,
+        38
+      ],
+      "rgb_max": [
+        123,
+        159,
+        66
+      ],
+      "rgb_std": [
+        4.419,
+        5.935,
+        3.718
+      ],
+      "emission_R_min": 255,
+      "emission_R_max": 255,
+      "emission_R_mean": 255.0,
+      "reflection_G_mean": 0.0,
+      "source_opacity_A_min": 255,
+      "diffuse_teamcolor_A_max": 0,
+      "verified_gutter_pixels": 12
+    },
+    "violet_glow": {
+      "emissive": true,
+      "target_rgb": [
+        157,
+        108,
+        198
+      ],
+      "uv_rect": [
+        0.3004150390625,
+        0.8951416015625,
+        0.3636474609375,
+        0.9156494140625
+      ],
+      "pixel_rect_top_left": [
+        1230,
+        345,
+        1490,
+        430
+      ],
+      "pixel_rect_convention": "x0,y0 inclusive; x1,y1 exclusive; original bitmap top-left origin",
+      "preview_rgb": [
+        116.9656108597285,
+        15.79180995475113,
+        231.43819004524886
+      ],
+      "rgb_min": [
+        143,
+        92,
+        231
+      ],
+      "rgb_max": [
+        143,
+        92,
+        231
+      ],
+      "rgb_std": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "emission_R_min": 255,
+      "emission_R_max": 255,
+      "emission_R_mean": 255.0,
+      "reflection_G_mean": 0.0,
+      "source_opacity_A_min": 255,
+      "diffuse_teamcolor_A_max": 0,
+      "verified_gutter_pixels": 12,
+      "mapping": "full cage surface gradient"
+    },
+    "wood": {
+      "emissive": false,
+      "target_rgb": [
+        87,
+        58,
+        34
+      ],
+      "uv_rect": [
+        0.9010009765625,
+        0.7769775390625,
+        0.9105224609375,
+        0.7864990234375
+      ],
+      "pixel_rect_top_left": [
+        3690,
+        874,
+        3730,
+        914
+      ],
+      "pixel_rect_convention": "x0,y0 inclusive; x1,y1 exclusive; original bitmap top-left origin",
+      "preview_rgb": [
+        75.716,
+        68.409,
+        47.577
+      ],
+      "rgb_min": [
+        63,
+        56,
+        38
+      ],
+      "rgb_max": [
+        87,
+        78,
+        54
+      ],
+      "rgb_std": [
+        5.009,
+        4.405,
+        3.489
+      ],
+      "emission_R_min": 0,
+      "emission_R_max": 7,
+      "emission_R_mean": 0.5463,
+      "reflection_G_mean": 64.9887,
+      "source_opacity_A_min": 255,
+      "diffuse_teamcolor_A_max": 0,
+      "verified_gutter_pixels": 12
+    },
+    "dark": {
+      "emissive": false,
+      "target_rgb": [
+        24,
+        30,
+        36
+      ],
+      "uv_rect": [
+        0.2252197265625,
+        0.1109619140625,
+        0.2347412109375,
+        0.1204833984375
+      ],
+      "pixel_rect_top_left": [
+        922,
+        3602,
+        962,
+        3642
+      ],
+      "pixel_rect_convention": "x0,y0 inclusive; x1,y1 exclusive; original bitmap top-left origin",
+      "preview_rgb": [
+        32.248,
+        28.982,
+        33.107
+      ],
+      "rgb_min": [
+        24,
+        24,
+        27
+      ],
+      "rgb_max": [
+        41,
+        36,
+        41
+      ],
+      "rgb_std": [
+        2.167,
+        1.944,
+        2.016
+      ],
+      "emission_R_min": 0,
+      "emission_R_max": 6,
+      "emission_R_mean": 0.31,
+      "reflection_G_mean": 64.9019,
+      "source_opacity_A_min": 255,
+      "diffuse_teamcolor_A_max": 0,
+      "verified_gutter_pixels": 12
+    },
+    "red_trim": {
+      "emissive": false,
+      "target_rgb": [
+        109,
+        40,
+        33
+      ],
+      "uv_rect": [
+        0.7984619140625,
+        0.0806884765625,
+        0.8079833984375,
+        0.0902099609375
+      ],
+      "pixel_rect_top_left": [
+        3270,
+        3726,
+        3310,
+        3766
+      ],
+      "pixel_rect_convention": "x0,y0 inclusive; x1,y1 exclusive; original bitmap top-left origin",
+      "preview_rgb": [
+        107.512,
+        8.75,
+        12.411
+      ],
+      "rgb_min": [
+        104,
+        8,
+        8
+      ],
+      "rgb_max": [
+        137,
+        9,
+        16
+      ],
+      "rgb_std": [
+        8.219,
+        0.433,
+        1.578
+      ],
+      "emission_R_min": 0,
+      "emission_R_max": 12,
+      "emission_R_mean": 0.8569,
+      "reflection_G_mean": 65.0,
+      "source_opacity_A_min": 255,
+      "diffuse_teamcolor_A_max": 0,
+      "verified_gutter_pixels": 12
+    },
+    "teal": {
+      "emissive": false,
+      "target_rgb": [
+        41,
+        88,
+        88
+      ],
+      "uv_rect": [
+        0.4893798828125,
+        0.2589111328125,
+        0.4930419921875,
+        0.2625732421875
+      ],
+      "pixel_rect_top_left": [
+        2004,
+        3020,
+        2020,
+        3036
+      ],
+      "pixel_rect_convention": "x0,y0 inclusive; x1,y1 exclusive; original bitmap top-left origin",
+      "preview_rgb": [
+        18.676,
+        99.828,
+        71.523
+      ],
+      "rgb_min": [
+        16,
+        97,
+        66
+      ],
+      "rgb_max": [
+        21,
+        103,
+        74
+      ],
+      "rgb_std": [
+        2.045,
+        2.173,
+        2.537
+      ],
+      "emission_R_min": 0,
+      "emission_R_max": 11,
+      "emission_R_mean": 0.5117,
+      "reflection_G_mean": 65.0,
+      "source_opacity_A_min": 255,
+      "diffuse_teamcolor_A_max": 0,
+      "verified_gutter_pixels": 8
+    },
+    "moss": {
+      "emissive": false,
+      "target_rgb": [
+        75,
+        88,
+        42
+      ],
+      "uv_rect": [
+        0.8980712890625,
+        0.7896728515625,
+        0.9075927734375,
+        0.7991943359375
+      ],
+      "pixel_rect_top_left": [
+        3678,
+        822,
+        3718,
+        862
+      ],
+      "pixel_rect_convention": "x0,y0 inclusive; x1,y1 exclusive; original bitmap top-left origin",
+      "preview_rgb": [
+        82.908,
+        75.589,
+        53.558
+      ],
+      "rgb_min": [
+        74,
+        67,
+        46
+      ],
+      "rgb_max": [
+        90,
+        81,
+        57
+      ],
+      "rgb_std": [
+        2.321,
+        2.285,
+        2.909
+      ],
+      "emission_R_min": 0,
+      "emission_R_max": 11,
+      "emission_R_mean": 0.3937,
+      "reflection_G_mean": 64.9869,
+      "source_opacity_A_min": 255,
+      "diffuse_teamcolor_A_max": 0,
+      "verified_gutter_pixels": 12
+    },
+    "brass": {
+      "emissive": false,
+      "target_rgb": [
+        162,
+        119,
+        54
+      ],
+      "uv_rect": [
+        0.0728759765625,
+        0.0875244140625,
+        0.0823974609375,
+        0.0970458984375
+      ],
+      "pixel_rect_top_left": [
+        298,
+        3698,
+        338,
+        3738
+      ],
+      "pixel_rect_convention": "x0,y0 inclusive; x1,y1 exclusive; original bitmap top-left origin",
+      "preview_rgb": [
+        169.453,
+        119.256,
+        31.963
+      ],
+      "rgb_min": [
+        142,
+        87,
+        10
+      ],
+      "rgb_max": [
+        195,
+        150,
+        54
+      ],
+      "rgb_std": [
+        13.04,
+        14.904,
+        10.821
+      ],
+      "emission_R_min": 0,
+      "emission_R_max": 9,
+      "emission_R_mean": 1.3013,
+      "reflection_G_mean": 64.9631,
+      "source_opacity_A_min": 255,
+      "diffuse_teamcolor_A_max": 0,
+      "verified_gutter_pixels": 12
+    },
+    "cream": {
+      "emissive": false,
+      "target_rgb": [
+        187,
+        181,
+        161
+      ],
+      "uv_rect": [
+        0.2222900390625,
+        0.4830322265625,
+        0.2318115234375,
+        0.4925537109375
+      ],
+      "pixel_rect_top_left": [
+        910,
+        2078,
+        950,
+        2118
+      ],
+      "pixel_rect_convention": "x0,y0 inclusive; x1,y1 exclusive; original bitmap top-left origin",
+      "preview_rgb": [
+        177.133,
+        176.541,
+        163.826
+      ],
+      "rgb_min": [
+        173,
+        174,
+        159
+      ],
+      "rgb_max": [
+        192,
+        193,
+        175
+      ],
+      "rgb_std": [
+        3.292,
+        3.379,
+        2.845
+      ],
+      "emission_R_min": 0,
+      "emission_R_max": 7,
+      "emission_R_mean": 0.07,
+      "reflection_G_mean": 64.85,
+      "source_opacity_A_min": 255,
+      "diffuse_teamcolor_A_max": 0,
+      "verified_gutter_pixels": 12
+    },
+    "copper": {
+      "emissive": false,
+      "target_rgb": [
+        151,
+        78,
+        47
+      ],
+      "uv_rect": [
+        0.0816650390625,
+        0.0885009765625,
+        0.0911865234375,
+        0.0980224609375
+      ],
+      "pixel_rect_top_left": [
+        334,
+        3694,
+        374,
+        3734
+      ],
+      "pixel_rect_convention": "x0,y0 inclusive; x1,y1 exclusive; original bitmap top-left origin",
+      "preview_rgb": [
+        138.928,
+        82.146,
+        6.526
+      ],
+      "rgb_min": [
+        128,
+        73,
+        0
+      ],
+      "rgb_max": [
+        161,
+        101,
+        18
+      ],
+      "rgb_std": [
+        6.397,
+        6.487,
+        4.934
+      ],
+      "emission_R_min": 0,
+      "emission_R_max": 11,
+      "emission_R_mean": 0.5444,
+      "reflection_G_mean": 64.8812,
+      "source_opacity_A_min": 255,
+      "diffuse_teamcolor_A_max": 0,
+      "verified_gutter_pixels": 12
+    }
+  }
+}

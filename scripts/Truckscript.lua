@@ -25,6 +25,15 @@ local boolGaiaUnit = myTeamID == Spring.GetGaiaTeamID()
 local truckTypeTable = getCultureUnitModelTypes(GameConfig.game.culture,
                                                 "truck", UnitDefs)
 local boolIsCivilianTruck = (truckTypeTable[unitDefID] ~= nil)
+-- The parade reuses these rigid carriers in every city culture. Their model
+-- names do not imply military equipment when the local traffic pool happens
+-- to contain only Western vehicles; they must never start a nil loadout loop.
+if not boolIsCivilianTruck then
+    local paradeCarriers = VFS.Include("scripts/lib_truck_parade_payloads.lua").carrierNames
+    for _, name in ipairs(paradeCarriers) do
+        if UnitDefs[unitDefID].name == name then boolIsCivilianTruck = true; break end
+    end
+end
 local boolIsPoliceTruck = unitDefID == UnitDefNames["policetruck"].id
 local myLoadOutType = LoadOutTypes[unitDefID]
 local loadOutUnitID

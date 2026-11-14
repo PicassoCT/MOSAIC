@@ -23,11 +23,8 @@ on:
       - 'luarules/gadgets/game_building_clearance.lua'
       - 'luarules/gadgets/game_spawnCity.lua'
       - 'luaui/widgets_mosaic/include/railgun_*.lua'
-      - 'tests/icarus_*'
-      - 'tests/nimrod_launch_fx.lua'
-      - 'tests/aircraft_crashing_test.lua'
-      - 'tests/orbital_bands_test.lua'
-      - 'tests/railgun_*.lua'
+      - .github/mosaic-tests.ref
+      - .github/actions/external-tests/**
   pull_request:
     paths:
       - '.github/workflows/nimrod-icarus.yml'
@@ -46,11 +43,8 @@ on:
       - 'luarules/gadgets/game_building_clearance.lua'
       - 'luarules/gadgets/game_spawnCity.lua'
       - 'luaui/widgets_mosaic/include/railgun_*.lua'
-      - 'tests/icarus_*'
-      - 'tests/nimrod_launch_fx.lua'
-      - 'tests/aircraft_crashing_test.lua'
-      - 'tests/orbital_bands_test.lua'
-      - 'tests/railgun_*.lua'
+      - .github/mosaic-tests.ref
+      - .github/actions/external-tests/**
   workflow_dispatch:
 
 permissions:
@@ -65,6 +59,9 @@ jobs:
         with:
           sparse-checkout-cone-mode: false
           sparse-checkout: |
+            /.github/actions/external-tests/
+            /.github/mosaic-tests.ref
+            /modinfo.lua
             /baseclasses/
             /scripts/
             /units/
@@ -81,7 +78,6 @@ jobs:
             /luarules/gadgets/include/
             /luaui/widgets_mosaic/include/
             /luaui/widgets_mosaic/shaders/railgun_wake/
-            /tests/
       - name: Install Lua 5.1
         run: |
           sudo apt-get update -qq
@@ -99,7 +95,10 @@ jobs:
           luac5.1 -p luarules/gadgets/unit_aircraft_crashing.lua
           luac5.1 -p luarules/gadgets/unit_icarus_lifecycle.lua
           luac5.1 -p luarules/gadgets/game_building_clearance.lua
+      - name: Prepare pinned external tests
+        uses: ./.github/actions/external-tests
       - name: Verify launch, flight and crash transitions
+        working-directory: ${{ runner.temp }}/mosaic-validation
         run: |
           lua5.1 tests/nimrod_launch_fx.lua
           lua5.1 tests/icarus_flight_test.lua
@@ -108,8 +107,10 @@ jobs:
           lua5.1 tests/orbital_bands_test.lua
           lua5.1 tests/aircraft_crashing_test.lua
       - name: Verify the folded model falls nose first
+        working-directory: ${{ runner.temp }}/mosaic-validation
         run: python3 tests/icarus_model_basis_test.py
       - name: Verify shared effect and visibility lifecycles
+        working-directory: ${{ runner.temp }}/mosaic-validation
         run: |
           lua5.1 tests/railgun_effect_events.lua
           lua5.1 tests/railgun_wakes.lua

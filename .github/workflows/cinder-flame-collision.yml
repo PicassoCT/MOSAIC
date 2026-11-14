@@ -8,11 +8,8 @@ on:
       - 'luaui/widgets_mosaic/include/combat_light_sources.lua'
       - 'luarules/gadgets/include/smoke_ribbon_renderer.lua'
       - 'luarules/gadgets/shaders/smokeRibbon.vert'
-      - 'tests/cinder_flame_stream_test.lua'
-      - 'tests/cinder_flame_budget_test.lua'
-      - 'tests/pyro_flame_collision_test.lua'
-      - 'tests/combat_effects_lifecycle.lua'
-      - 'tests/smoke_ribbons_lifecycle.lua'
+      - .github/mosaic-tests.ref
+      - .github/actions/external-tests/**
       - '.github/workflows/cinder-flame-collision.yml'
   workflow_dispatch:
 
@@ -26,12 +23,14 @@ jobs:
           # Avoid pulling the large DAE/texture assets for Lua-only checks.
           sparse-checkout-cone-mode: false
           sparse-checkout: |
-            tests/
-            luaui/widgets_mosaic/include/
-            luaui/widgets_mosaic/shaders/
+            /.github/actions/external-tests/
+            /.github/mosaic-tests.ref
+            /modinfo.lua
+            /luaui/widgets_mosaic/include/
+            /luaui/widgets_mosaic/shaders/
             luaui/widgets_mosaic/gfx_light_effects.lua
-            luarules/gadgets/include/
-            luarules/gadgets/shaders/
+            /luarules/gadgets/include/
+            /luarules/gadgets/shaders/
             luarules/gadgets/gfx_smoke_ribbons.lua
             luarules/gadgets/gfx_explosion_lights.lua
             luarules/gadgets/gfx_neonHolograms.lua
@@ -40,7 +39,10 @@ jobs:
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y lua5.1
+      - name: Prepare pinned external tests
+        uses: ./.github/actions/external-tests
       - name: Parse changed Lua modules and tests
+        working-directory: ${{ runner.temp }}/mosaic-validation
         run: |
           luac5.1 -p luaui/widgets_mosaic/include/pyro_flame_collision.lua
           luac5.1 -p luaui/widgets_mosaic/include/pyro_flame_budget.lua
@@ -50,6 +52,7 @@ jobs:
           luac5.1 -p tests/cinder_flame_stream_test.lua
           luac5.1 -p tests/cinder_flame_budget_test.lua
       - name: Run collision and renderer regressions
+        working-directory: ${{ runner.temp }}/mosaic-validation
         run: |
           lua5.1 tests/pyro_flame_collision_test.lua
           lua5.1 tests/cinder_flame_stream_test.lua

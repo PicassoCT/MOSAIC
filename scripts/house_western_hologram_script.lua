@@ -41,8 +41,11 @@ local casino_spin = piece("casino_spin")
 local JLantern = piece("JLantern")
 local idleAnimations = {}
 local technoAnimations = {}
+local businessAnimations = {}
+local businessPresentations = {}
 
 local tldrum = piece "tldrum"
+local tldancedru = piece "tldancedru"
 local dancepivot = piece "dancepivot"
 local deathpivot = piece "deathpivot"
 local tigLil = piece "tigLil"
@@ -67,6 +70,7 @@ handr = piece "handr"
 handl = piece "handl"
 ball = piece "ball"
 tigLilHoloPices = {
+    tldancedru,
     tldrum ,
     dancepivot, 
     deathpivot ,
@@ -92,7 +96,7 @@ local TableOfPiecesGroups = {}
 local boolDebugActive = false
 
 sizeDownLetter  = 350
-sizeSpacingLetter = 300
+sizeSpacingLetter = 321
 local _x_axis = 1
 local _y_axis = 2
 local _z_axis = 3
@@ -206,6 +210,7 @@ function showTReg(l_tableName, l_lowLimit, l_upLimit, l_delay)
 end
 
 local tigLilAnimations = include("tigLilAnimation.lua")
+tigLilAnimations.enablePeopleAnimations()
 include("lib_textFx.lua")
 local function tiglLilLoop()
     local techno = boolIsBuisness or boolIsCasino
@@ -214,7 +219,8 @@ local function tiglLilLoop()
         glowSticks = TableOfPiecesGroups["GlowStick"],
         skimpy = nil,
         techno = techno,
-        animations = techno and technoAnimations or idleAnimations,
+        animations = boolIsBuisness and businessAnimations or (techno and technoAnimations or idleAnimations),
+        isTechnoAnimation = function(animation) return not businessPresentations[animation] end,
         available = function()
             local hour = getDayTime()
             return (hour > 20 or hour < 6) and not hologramBlackout
@@ -1394,16 +1400,17 @@ function showOneOrAll(T)
 end
 
 function hideResetAllLetters()
-    letters = {"A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"}
+    local pieces = {}
+    local letters = {"A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"}
     for i=1, #letters do
         local letter = letters[i] 
         if TableOfPiecesGroups[letter] then
-            resetT(TableOfPiecesGroups[letter])
-            hideTReg(TableOfPiecesGroups[letter])
+            for _,id in ipairs(TableOfPiecesGroups[letter]) do pieces[#pieces+1]=id end
         else
             echo("hideResetAllLetters failed for:"..letter)
         end
     end
+    hardResetHologramLetters(pieces)
 end
 
 function delayedFlickerSingleLetter(letterPiece)
@@ -1430,8 +1437,7 @@ function setupMessage(myMessages)
     local boolFirstHighlight, downIndex, stringlength, rowIndex, columnIndex, val
     boolHighlightFirstLetter = math.random(1,100) < 10
     hideResetAllLetters()
-    StopSpin(textSpinner, y_axis, 0)
-    Move(textSpinner, 2 ,0, 0) --Move the text spinner upward so letters dont vannish into the ground
+    reset(textSpinner) -- clear the previous facing/spin before choosing a new layout
     axis= 2
     startValue = 0
     myMessage = selectHologramMessage(myMessages, TableOfPiecesGroups)
@@ -1456,9 +1462,8 @@ function setupMessage(myMessages)
     columnIndex= 0
       
     if boolSpinning then
-        reset(textSpinner)
         val = math.random(5,45)
-        Spin(textSpinner, y_axis, math.rad(val),0)
+        Spin(textSpinner, textSpinnerAxis, math.rad(val),0)
     end
 
     if boolUpright then
@@ -1544,7 +1549,7 @@ function restoreMessageOriginalPosition(message, posLetters)
                         
                     if boolSpinning and posLetters.boolUpright then
                         val = letterIndex * 5
-                        Turn(letter, 2, math.rad(val), 0)
+                        Turn(letter, spindropAxis, math.rad(val), 0)
                     end
                 end    
             end
@@ -1554,7 +1559,7 @@ end
 
 
 backdropAxis = x_axis
-spindropAxis = y_axis
+spindropAxis = z_axis
 
 function resetSpinDrop(allLetters)
 
@@ -1623,11 +1628,41 @@ idleAnimations[#idleAnimations +1] = idle_stance15
 idleAnimations[#idleAnimations +1] = tigLilAnimations.idle_playBall
 idleAnimations[#idleAnimations +1] = idle_stance18
 idleAnimations[#idleAnimations +1] = idle_stance17
+idleAnimations[#idleAnimations +1] = danceShuffle
+idleAnimations[#idleAnimations +1] = danceDisco
+idleAnimations[#idleAnimations +1] = dancePopping
+idleAnimations[#idleAnimations +1] = danceJoi
+idleAnimations[#idleAnimations +1] = danceShakira
+idleAnimations[#idleAnimations +1] = dancePole
+idleAnimations[#idleAnimations +1] = danceBallet
+idleAnimations[#idleAnimations +1] = greetPasserby
+idleAnimations[#idleAnimations +1] = embracePasserby
+idleAnimations[#idleAnimations +1] = kissPasserby
 idleAnimations[#idleAnimations +1] = strikeAPose
 
+technoAnimations[#technoAnimations +1] = danceShuffle
+technoAnimations[#technoAnimations +1] = danceDisco
+technoAnimations[#technoAnimations +1] = dancePopping
+technoAnimations[#technoAnimations +1] = danceJoi
+technoAnimations[#technoAnimations +1] = danceShakira
 technoAnimations[#technoAnimations +1] = strikeAPose
 technoAnimations[#technoAnimations +1] = idle_stance_10
 technoAnimations[#technoAnimations +1] = idle_stance
+
+for _,animation in ipairs({greetPasserby,embracePasserby,kissPasserby}) do
+    technoAnimations[#technoAnimations+1] = animation
+    businessPresentations[animation] = true
+end
+
+-- Retain the business unit's existing dance selection and add its exclusive
+-- advertisement routines. Casino and ordinary advertisements keep their pools.
+for _,animation in ipairs(technoAnimations) do
+    businessAnimations[#businessAnimations+1] = animation
+end
+for _,animation in ipairs({advertiseSales,modelWalk,presentGala,advertiseWeightlessYoga}) do
+    businessAnimations[#businessAnimations+1] = animation
+    businessPresentations[animation] = true
+end
                 
 
 function waterFallProject(allLetters, posLetters)
@@ -1714,16 +1749,16 @@ function addHologramLetters( myMessages)
             restoreMessageOriginalPosition(allLetters, posLetters)
             name, textFX = randDict(allFunctions)
             if name and canProjectTextFx(name, posLetters) then
-                textFX(allLetters, posLetters, TableOfPiecesGroups)
+                runHologramTextFx(textFX, allLetters, posLetters, TableOfPiecesGroups)
                 Signal(SIG_FLICKER)
-                HideLetters(allLetters, posLetters)
+                HideLetters(allLetters,posLetters,nil,5000)
             end
-            WaitForMoves(allLetters)
+            waitHologramTextCleanup(allLetters,cachedCopyDict,5000)
             restTime = math.max(5000, #allLetters*150)
             holdHologramText(allLetters, posLetters, restTime)
             restoreMessageOriginalPosition(allLetters, posLetters)
             resetSpinDrop(allLetters)
-            WaitForTurns(allLetters)
+            waitHologramTextCleanup(allLetters,cachedCopyDict,5000)
             holdHologramText(allLetters, posLetters, restTime)
             if boolIsEverChanging == true then
                 transitionHologramText(allLetters, posLetters, false, 400)

@@ -12,6 +12,7 @@ local house_western_hologram = Abstract:New{
 
 	customparams = {	
 		normaltex = "unittextures/house_europe_normal.dds",
+        text_fx_speed = 1,
 		helptext			= "Civilian Building",
 		baseclass			= "Abstract", -- TODO: hacks
     },
@@ -41,6 +42,7 @@ local house_western_hologram_brothel = Abstract:New{
 
 	customparams = {	
 		normaltex = "unittextures/house_europe_normal.dds",
+        text_fx_speed = 1,
 		helptext			= "Civilian Building",
 		baseclass			= "Abstract", -- TODO: hacks
     },

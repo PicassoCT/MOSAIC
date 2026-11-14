@@ -14,10 +14,14 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y lua5.1
+      - name: Prepare pinned external tests
+        uses: ./.github/actions/external-tests
       - name: Parse orbital Lua
+        working-directory: ${{ runner.temp }}/mosaic-validation
         run: |
           luac5.1 -p luarules/gadgets/game_sattelite.lua
           luac5.1 -p luaui/widgets_mosaic/gfx_orbital_bands.lua
           luac5.1 -p tests/orbital_bands_test.lua
       - name: Run orbital regression
+        working-directory: ${{ runner.temp }}/mosaic-validation
         run: lua5.1 tests/orbital_bands_test.lua

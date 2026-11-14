@@ -1,0 +1,190 @@
+include 'lib_OS.lua'
+include 'lib_mosaic.lua'
+include 'lib_UnitScript.lua'
+include 'lib_Animation.lua'
+include 'lib_textFx.lua'
+
+-- Ordinary engine model drawing: never register pieces with the neon gadget.
+local groups, glyphs, visibleGlyphs = {}, {}, {}
+local SIG_EFFECT=1
+-- Match the shared performer's signal layout, separate from the text cycle.
+SIG_CORE,SIG_HAIR,SIG_INCIRCLE,SIG_TALKHEAD,SIG_GESTE=2,4,8,16,32
+SIG_ONTHEMOVE,SIG_TIGLIL,SIG_FLICKER=64,128,256
+DirectionArcPoint=piece('DirectionArcPoint')
+BallArcPoint=piece('BallArcPoint')
+handr,handl,ball=piece('handr'),piece('handl'),piece('ball')
+local message='Lorem Ipsum'
+textSpinner=piece('text_spin')
+sizeSpacingLetter,sizeDownLetter=321,350
+function ShowReg(id) if id then Show(id);visibleGlyphs[id]=true end end
+function HideReg(id) if id then Hide(id);visibleGlyphs[id]=nil end end
+function showTReg(ids) for _,id in ipairs(ids) do ShowReg(id) end end
+function hideTReg(ids) for _,id in ipairs(ids) do HideReg(id) end end
+function hideResetAllLetters()
+    hardResetHologramLetters(glyphs)
+end
+function restoreMessageOriginalPosition(ids,pos)
+    hideResetAllLetters()
+    for _,id in ipairs(ids) do
+        for axis=1,3 do Move(id,axis,pos[id][axis],0) end
+    end
+    transitionHologramText(ids,pos,true,400,1500)
+end
+
+local tiglilAnimations=include('tigLilAnimation.lua')
+tiglilAnimations.enablePeopleAnimations()
+local function dance()
+    SetSignalMask(SIG_CORE+SIG_TIGLIL)
+    -- Newest additions first; prepend new routines, preserve same-commit order.
+    local routines={
+        {name='advertiseWeightlessYoga (weightless yoga studio)',run=advertiseWeightlessYoga},
+        {name='danceShakira (Shakira-inspired solo)',run=danceShakira},
+        {name='danceBehindGlass (behind-glass placeholder)',run=danceBehindGlass},
+        {name='danceEmbracePasserby (brothel close dance embrace)',run=danceEmbracePasserby},
+        {name='lingerBrothel (ten lingering poses)',run=lingerBrothel},
+        {name='greetPasserby (personal greeting dance)',run=greetPasserby},
+        {name='embracePasserby (personal embrace)',run=embracePasserby},
+        {name='kissPasserby (personal cheek kiss)',run=kissPasserby},
+        {name='invitePasserby (brothel seductress invitation)',run=invitePasserby},
+        {name='danceBurlesqueSway (brothel hip sway)',run=danceBurlesqueSway},
+        {name='danceBurlesqueWave (brothel body wave)',run=danceBurlesqueWave},
+        {name='danceBurlesqueFan (brothel fan dance)',run=danceBurlesqueFan},
+        {name='idle_stance (street conversation)',run=idle_stance},
+        {name='idle_stance2 (street gestures)',run=idle_stance2},
+        {name='advertiseSales (business sales presentation)',run=advertiseSales},
+        {name='modelWalk (business runway walk)',run=modelWalk},
+        {name='presentGala (business gala presenter)',run=presentGala},
+        {name='danceBallet (solo ballet)',run=danceBallet},
+        {name='dancePole (pole choreography)',run=dancePole},
+        {name='danceJoi (Joi-inspired solo)',run=danceJoi},
+        {name='idle_stance17 (solo footwork)',run=idle_stance17},
+        {name='danceShuffle (solo shuffle)',run=danceShuffle},
+        {name='danceDisco (solo disco)',run=danceDisco},
+        {name='dancePopping (solo popping)',run=dancePopping},
+        {name='idle_stance4 (acrobatics)',run=idle_stance4},
+        {name='idle_stance5 (backflip and handstand)',run=idle_stance5},
+        {name='idle_stance_12',run=idle_stance_12},
+        {name='idle_stance11',run=tiglilAnimations.idle_stance11},
+        {name='idle_stance_10',run=idle_stance_10},
+    }
+    while true do
+        for _,routine in ipairs(routines) do
+            Signal(SIG_HAIR);Signal(SIG_GESTE);Signal(SIG_TALKHEAD);Signal(SIG_INCIRCLE)
+            TigLilSetup()
+            -- Always present, including daytime and text cleanup/hold periods.
+            Spring.Echo(string.format('[Text FX test %d] Tiglil animation: %s',unitID,routine.name))
+            routine.run()
+        end
+    end
+end
+
+local function layout(upright,speed)
+    hideResetAllLetters();reset(textSpinner,0)
+    local slots,leases=allocateHologramSlots(message,groups)
+    local ids,pos={}, {unitID=unitID,myMessage=message,messages={message,'Ipsum Lorem'},
+        TriLetters=groups,spacing=slots,leases=leases,slotByPiece={},slotPositions={},
+        boolUpright=upright,spinnerSpeed=speed~=0 and speed or nil}
+    pos.debugTextFx=function(detail) Spring.Echo(string.format('[Text FX test %d] %s',unitID,detail)) end
+    for i,id in ipairs(slots) do
+        local position={0,upright and 0 or -(i-1)*sizeSpacingLetter,upright and -(i-1)*sizeDownLetter or 0}
+        pos.slotPositions[i]=position
+        if id~=' ' then
+            ids[#ids+1]=id;pos[id]=position;pos.slotByPiece[id]=i
+            for axis=1,3 do Move(id,axis,position[axis],0) end
+            ShowReg(id)
+        end
+    end
+    -- Match the production upright layout's ground-clearance adjustment.
+    if upright and #slots>10 then Move(textSpinner,2,(#slots-10)*sizeDownLetter,0) end
+    if speed~=0 then Spin(textSpinner,textSpinnerAxis,speed,0) end
+    return ids,pos
+end
+
+local function cycle()
+    SetSignalMask(SIG_EFFECT)
+    local effects=getAllTextFx()
+    -- Addition order from Git history, newest first (not last modification).
+    -- Count the restored spline at its restoration. Prepend future additions.
+    local newestFirst={
+        'wallImpactText', -- 7a68750a
+        'splineShapeFollowing', -- 089377c6, restored runnable choreography
+        'meteorCraterText', -- 9fa5d254
+        'smilingFace','letterPlant','heartMonitor','letterTornado','oneArmedBandit', -- d51f1011
+        'civilianCongaText','hostileTakeoverText', -- 19d8b3e6
+        -- Imported together in 51772130; retain their registry order.
+        'SinusLetter','CrossLetters','HideLetters','SpinLetters','SwarmLetters',
+        'SpiralUpwards','randomFLickerLetters','syncToFrontLetters','consoleLetters',
+        'dnaHelix','circleProject','ringProject','cubeProject','spiralProject',
+        'matrixTextFx','fireWorksProjectTextFx','waterFallProject','personalProject',
+        'archProject','achromaticShivering',
+    }
+    local cases,names,known={},{},{}
+    for _,name in ipairs(newestFirst) do known[name]=true end
+    -- An effect added to the registry alone must still appear, ahead of known
+    -- older entries. Explicit insertion above records ordering among additions.
+    for name in pairs(effects) do if not known[name] then names[#names+1]=name end end
+    table.sort(names)
+    for _,name in ipairs(newestFirst) do
+        if effects[name] then names[#names+1]=name end
+    end
+    for _,name in ipairs(names) do
+        cases[#cases+1]={name=name,upright=name=='matrixTextFx' or name=='archProject'}
+        if name=='dnaHelix' then cases[#cases+1]={name=name,upright=true} end
+    end
+    cases[#cases+1]={name='plain',upright=false}
+    cases[#cases+1]={name='plain',upright=true}
+    while true do
+        for _,case in ipairs(cases) do
+            for _,degrees in ipairs({0,20,-20}) do
+                local ids,pos=layout(case.upright,math.rad(degrees))
+                local effect=effects[case.name]
+                local multiplier=effect and math.random(100,300)/100 or 1
+                local note=''
+                if case.name=='personalProject' or case.name=='civilianCongaText' then note='; needs a nearby civilian' end
+                if case.name=='randomFLickerLetters' then note='; night-only effect' end
+                if case.name=='achromaticShivering' then note='; shared effect skips repeated letters in Lorem Ipsum' end
+                if case.name=='dnaHelix' then note='; upright back-to-back pairs; uses 20 deg/s when parent rotation is zero' end
+                if case.name=='spiralProject' then note='; upright spiral, independent of starting layout' end
+                if case.name=='splineShapeFollowing' then note='; random spline, <=12s per letter; 300ms between slots' end
+                if case.name=='wallImpactText' then note='; spinning letter volley; needs a nearby house wall' end
+                if case.name=='meteorCraterText' then note='; diagonal meteor wake, impact, debris and a terrain-following crater ring' end
+                if case.name=='letterTornado' then note='; widening upright cone; letters orbit at least 60 deg/s' end
+                if case.name=='heartMonitor' then note='; two travelling ECG pulses, upright letters on one baseline' end
+                if case.name=='matrixTextFx' then note='; three fast upright console sweeps' end
+                note=note..string.format('; speed %.2fx',multiplier)
+                Spring.SetUnitRulesParam(unitID,'text_fx_test_speed',multiplier,{public=true})
+                Spring.Echo(string.format('[Text FX test %d] %s | %s | parent Y %d deg/s | full animation, then 5 seconds%s',
+                    unitID,case.name,case.upright and 'upright' or 'horizontal',degrees,note))
+                Spring.SetUnitRulesParam(unitID,'text_fx_test_mode',case.name,{public=true})
+                Spring.SetUnitRulesParam(unitID,'text_fx_test_rotation',degrees,{public=true})
+                if effect then runHologramTextFx(effect,ids,pos,groups,multiplier) end
+                -- Active effects still run to completion. Cleanup gets at
+                -- most five seconds; already-hidden glyphs reset immediately.
+                if not waitHologramTextCleanup(glyphs,visibleGlyphs,5000) then
+                    pos.debugTextFx('cleanup exceeded 5 seconds; letters hidden and hard-reset')
+                end
+                holdHologramText(ids,pos,5000)
+            end
+        end
+    end
+end
+
+function script.Create()
+    Spring.SetUnitBlocking(unitID,false)
+    Spring.SetUnitNeutral(unitID,true)
+    groups=getPieceTableByNameGroups(false,true)
+    local ids={}
+    for _,id in pairs(Spring.GetUnitPieceMap(unitID)) do ids[#ids+1]=id end
+    table.sort(ids)
+    for _,id in ipairs(ids) do Hide(id);reset(id,0) end
+    for code=65,90 do
+        for _,id in ipairs(groups[string.char(code)] or {}) do glyphs[#glyphs+1]=id end
+    end
+    StartThread(cycle)
+    StartThread(dance)
+end
+function script.Killed()
+    Signal(SIG_EFFECT);Signal(SIG_CORE)
+    TigLilStopSmoothing()
+    return 0
+end

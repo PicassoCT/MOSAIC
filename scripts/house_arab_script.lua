@@ -15,6 +15,8 @@ local spGetGroundHeight = Spring.GetGroundHeight
 local TablesOfPiecesGroups = {}
 gridOffset =  {}
 local RoofTopPieces = {}
+-- Match objects3d/house_arab.dae's import scale for world-space geometry.
+local modelScale = 0.0254
 factor = 40
 local cubeDim = {
     length = 14.4 * 1.45* factor,
@@ -1053,6 +1055,7 @@ function hideSunBathersInBadWeather()
 end
 
 boolDoneShowing = false
+local Icon = piece("Icon")
 
 function showHouse() Show(basePlate); showT(ToShowTable) end
 
@@ -1063,15 +1066,18 @@ function buildAnimation()
     axis = _y_axis
 
     if Spring.GetGameSeconds() < 10 and not (GG.CityConstructionSites and GG.CityConstructionSites[unitID]) then
+        Show(Icon)
         hideT(builT)
         hideT(TablesOfPiecesGroups["Build1Sub"])
         hideT(TablesOfPiecesGroups["BuildCrane"])
         while boolDoneShowing == false do Sleep(100) end
         showT(ToShowTable)
+        Hide(Icon)
         StartThread(rotations)
         finalizeBuildingShadowVoxels()
         return
     end
+    Hide(Icon)
     StartThread(PlaySoundByUnitDefID, unitDefID, "sounds/building/construction/construction"..math.random(1,7)..".ogg", 1.0, 20000, 3, 0)
     local builT = TablesOfPiecesGroups["Build"]
     axis = _y_axis
@@ -1135,7 +1141,7 @@ function buildAnimation()
 end
 
 function buildBuilding()
-    initializeBuildingShadowVoxels(cubeDim.length, cubeDim.heigth, 0.0254)
+    initializeBuildingShadowVoxels(cubeDim.length, cubeDim.heigth, modelScale)
     boolDoneShowing = false
     StartThread(buildAnimation)
     selectBase()
@@ -1152,7 +1158,7 @@ function buildBuilding()
 
     addRoofDeocrate(3, TablesOfPiecesGroups[materialColourName .. "Roof"])
     -- Releases buildAnimation, which publishes voxels after construction finishes.
-    buildingDamage.initialize(LevelPieces, ToShowTable, RoofTopPieces, nil, cubeDim.heigth, cubeDim.length, 1)
+    buildingDamage.initialize(LevelPieces, ToShowTable, RoofTopPieces, nil, cubeDim.heigth, cubeDim.length, modelScale)
     buildingClearanceReady = true
     if GG.MarkBuildingClearanceDirty then GG.MarkBuildingClearanceDirty(unitID) end
     boolDoneShowing = true
