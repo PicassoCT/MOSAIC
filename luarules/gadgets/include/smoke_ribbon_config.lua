@@ -1,5 +1,11 @@
 -- Shared by the synced registration API and local preview. No rendering state.
 local M = {}
+local ribbonModes = {
+    smoke = {hair = false}, electric = {hair = false},
+    hair = {hair = true}, canopy = {hair = true}, canopy_arc = {hair = true},
+    landing = {hair = false, needsPad = true}, pad = {hair = false, needsPad = true},
+}
+local directionSpaces = {world = true, unit = true, emitter = true, piece = true}
 local function number(v, default, lo, hi)
     if v == nil then return default end
     assert(type(v) == 'number' and v == v and math.abs(v) < math.huge, 'expected finite number')
@@ -21,15 +27,15 @@ function M.Normalize(unitID, piece, options)
     assert(found, 'unknown smoke emitter piece')
     local o = options or {}
     local mode = o.mode or 'smoke'
-    assert(mode == 'smoke' or mode == 'hair' or mode == 'canopy' or mode == 'canopy_arc'
-        or mode == 'landing' or mode == 'pad' or mode == 'electric', 'unknown ribbon mode')
-    local hair = mode == 'hair' or mode == 'canopy' or mode == 'canopy_arc'
+    local profile = ribbonModes[mode]
+    assert(profile, 'unknown ribbon mode')
+    local hair = profile.hair
     local direction = vector(o.direction, (hair and {0, 0, -1} or {0, 1, 0}), 3, -1e6, 1e6)
     local length = math.sqrt(direction[1]^2 + direction[2]^2 + direction[3]^2)
     assert(length > 1e-6, 'smoke direction must be nonzero')
     for i = 1, 3 do direction[i] = direction[i] / length end
     local space = o.directionSpace or (hair and 'piece' or 'world')
-    assert(space == 'world' or space == 'unit' or space == 'emitter' or space == 'piece', 'unknown directionSpace')
+    assert(directionSpaces[space], 'unknown directionSpace')
     local directionPiece = o.directionPiece
     if directionPiece ~= nil then
         assert(space == 'piece', 'directionPiece requires piece directionSpace')
@@ -39,7 +45,7 @@ function M.Normalize(unitID, piece, options)
         assert(valid, 'unknown ribbon direction piece')
     end
     local padPiece = o.padPiece
-    if mode == 'landing' or mode == 'pad' then
+    if profile.needsPad then
         if type(padPiece) == 'string' then padPiece = map[padPiece] end
         local valid = false
         for _, p in pairs(map) do if p == padPiece then valid = true; break end end
