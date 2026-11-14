@@ -281,7 +281,7 @@ local baselineIndependentTextFx = {
     dnaHelix=true, spiralProject=true, archProject=true, letterTornado=true,
     wallImpactText=true, smilingFace=true, letterPlant=true, meteorCraterText=true,
     splineShapeFollowing=true, neonHotelText=true, tetrisText=true, rollingTextBall=true,
-    trainArrivalText=true, rainOnGlassText=true, venetianBlindsText=true,
+    trainArrivalText=true, rainOnGlassText=true, venetianBlindsText=true, typewriterText=true,
 }
 function canProjectTextFx(name, posLetters)
     if name == "matrixTextFx" then return posLetters.boolUpright == true end
@@ -1284,6 +1284,55 @@ function venetianBlindsText(allLetters,posLetters)
         local row=math.floor((slot-1)/stage.columns)
         local u=math.max(0,math.min(1,(time-(stage.rows-1-row)*beat)/800))
         return pose(slot,eased(u)*math.pi*.5,u<1)
+    end)
+    stage.finish()
+end
+
+-- The paper carriage advances with every slot, including spaces. New glyphs
+-- strike from in front of the page, recoil, and become part of the printed line.
+function typewriterText(allLetters,posLetters)
+    local stage=prepareKineticText(allLetters,posLetters,'typewriter',12)
+    if not stage then return end
+    local typed,carriage=0,(stage.columns-1)*stage.step*.5
+    local drawable={}
+    for i,id in ipairs(allLetters)do
+        for _,slot in ipairs(posLetters.leases and posLetters.leases[id] or {textSlot(posLetters,id,i-1)+1})do drawable[slot]=true end
+    end
+    local function printed(slot,offset,depth,priority)
+        if slot>typed then return end
+        local x,y=stage.home(slot)
+        return {x=x+offset,y=y,z=depth or 0,priority=priority}
+    end
+    for slot=1,stage.slots do
+        local column=(slot-1)%stage.columns
+        if column==0 and slot>1 then
+            local start,finish=carriage,(stage.columns-1)*stage.step*.5
+            stage.note('carriage return')
+            stage.animate(350,function(s,u)
+                return printed(s,start+(finish-start)*u*u*(3-2*u))
+            end)
+            carriage=finish
+        end
+        typed=slot
+        local start,finish=carriage,((stage.columns-1)*.5-column)*stage.step
+        stage.note('typing slot '..slot)
+        stage.animate(drawable[slot] and 180 or 100,function(s,u,time)
+            local depth=0
+            if s==slot and drawable[slot] then
+                if time<70 then depth=stage.height*2*(1-time/70)^2
+                else depth=-stage.height*.12*math.sin((time-70)/110*math.pi)end
+            else depth=-stage.height*.025*math.sin(u*math.pi)end
+            return printed(s,start+(finish-start)*u*u*(3-2*u),depth,s==slot and 1 or 0)
+        end)
+        carriage=finish
+    end
+    stage.note('centering page')
+    stage.animate(500,function(slot,u)return printed(slot,carriage*(1-u*u*(3-2*u)))end)
+    stage.note('printed');stage.hold(2200)
+    stage.note('feeding out')
+    stage.animate(800,function(slot,u)
+        local x,y=stage.home(slot)
+        return {x=x,y=y+u*u*(stage.rows*stage.line+stage.height*2),visible=u<1}
     end)
     stage.finish()
 end
@@ -2589,6 +2638,7 @@ end
 
 function getAllTextFx()
 return {
+        ["typewriterText"] = typewriterText,
         ["venetianBlindsText"] = venetianBlindsText,
         ["rainOnGlassText"] = rainOnGlassText,
         ["trainArrivalText"] = trainArrivalText,
