@@ -91,6 +91,7 @@ jobs:
           lua5.1 tests/hologram_neon_hotel_test.lua
           lua5.1 tests/hologram_tetris_test.lua
           lua5.1 tests/hologram_textball_test.lua
+          lua5.1 tests/hologram_venetian_test.lua
           lua5.1 tests/hologram_rain_test.lua
           lua5.1 tests/hologram_train_test.lua
           lua5.1 tests/hologram_spline_test.lua

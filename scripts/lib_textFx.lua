@@ -281,7 +281,7 @@ local baselineIndependentTextFx = {
     dnaHelix=true, spiralProject=true, archProject=true, letterTornado=true,
     wallImpactText=true, smilingFace=true, letterPlant=true, meteorCraterText=true,
     splineShapeFollowing=true, neonHotelText=true, tetrisText=true, rollingTextBall=true,
-    trainArrivalText=true, rainOnGlassText=true,
+    trainArrivalText=true, rainOnGlassText=true, venetianBlindsText=true,
 }
 function canProjectTextFx(name, posLetters)
     if name == "matrixTextFx" then return posLetters.boolUpright == true end
@@ -1249,6 +1249,41 @@ function rainOnGlassText(allLetters,posLetters)
         y=y-stage.height*2.2*t*t
         local wx,wy,wz=stage.world(x,y)
         return {x=x,y=y,visible=t<2.2 and wy-stage.height*.5>Spring.GetGroundHeight(wx,wz)}
+    end)
+    stage.finish()
+end
+
+-- Each row is one slat: all its glyphs share the same baseline rotation,
+-- while centre compensation keeps the strip on its horizontal hinge.
+function venetianBlindsText(allLetters,posLetters)
+    local slots=math.max(1,#(posLetters.spacing or allLetters))
+    local stage=prepareKineticText(allLetters,posLetters,'venetian',math.min(10,math.ceil(slots/3)))
+    if not stage then return end
+    local beat=math.min(180,1500/math.max(1,stage.rows-1))
+    local stagger=(stage.rows-1)*beat
+    local function pose(slot,angle,visible)
+        local x,y=stage.home(slot);return {x=x,y=y,angle=angle,visible=visible}
+    end
+    local function eased(u)return u*u*u*(10+u*(-15+6*u))end
+    stage.note('opening slats')
+    stage.animate(900+stagger,function(slot,_,time)
+        local row=math.floor((slot-1)/stage.columns)
+        local u=math.max(0,math.min(1,(time-row*beat)/900))
+        return pose(slot,(1-eased(u))*math.pi*.5)
+    end)
+    stage.note('open');stage.hold(1500)
+    stage.note('flip wave')
+    stage.animate(1100+stagger,function(slot,_,time)
+        local row=math.floor((slot-1)/stage.columns)
+        local u=math.max(0,math.min(1,(time-row*beat)/1100))
+        return pose(slot,math.sin(u*math.pi)^2*math.pi*.5)
+    end)
+    stage.note('open');stage.hold(1500)
+    stage.note('closing slats')
+    stage.animate(800+stagger,function(slot,_,time)
+        local row=math.floor((slot-1)/stage.columns)
+        local u=math.max(0,math.min(1,(time-(stage.rows-1-row)*beat)/800))
+        return pose(slot,eased(u)*math.pi*.5,u<1)
     end)
     stage.finish()
 end
@@ -2554,6 +2589,7 @@ end
 
 function getAllTextFx()
 return {
+        ["venetianBlindsText"] = venetianBlindsText,
         ["rainOnGlassText"] = rainOnGlassText,
         ["trainArrivalText"] = trainArrivalText,
         ["rollingTextBall"] = rollingTextBall,

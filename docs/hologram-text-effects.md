@@ -30,6 +30,13 @@ Each selected effect runs at a fresh random multiplier between 1.00x and 3.00x. 
 
 ## New effects
 
+**Venetian blinds (`venetianBlindsText`):** letters form narrow rows (up to ten
+slots per row). Each row hinges open around its horizontal centre, with rows
+following in sequence. A second flip wave sweeps through the readable message;
+then the slats close from bottom to top. Glyph bounds compensate for off-centre
+piece pivots, so rows turn in place. No extra blind meshes are required. Short
+phrases, spaces, repeated letters, both starting layouts and 1–3x speed work too.
+
 **Rain on glass (`rainOnGlassText`):** staggered letters fall onto an invisible
 vertical pane, catch just above their cells, then slide sideways and downward
 into lines of up to 12 slots. The message holds for 2.5 seconds before individual
@@ -107,7 +114,7 @@ parent emit a diagnostic and skip the effect; model axes are never corrected.
 
 **Matrix:** three repeats of the same motion used by `consoleLetters`, arranged as a vertical column at eight times the normal console speed. Each repeat waits for its moves to finish and holds for 150 ms. The ordinary console effect retains its original layout, speed and ten-second hold.
 
-The uniformly selected catalogue now has 35 modes: each has a **1/35 chance (~2.86%) per selection**. Sign eligibility and layout gates still apply. Conga requires a nearby live civilian; takeover requires another phrase. Ineligible effects return without a new retry loop.
+The uniformly selected catalogue now has 36 modes: each has a **1/36 chance (~2.78%) per selection**. Sign eligibility and layout gates still apply. Conga requires a nearby live civilian; takeover requires another phrase. Ineligible effects return without a new retry loop.
 
 ## Validation
 
@@ -119,7 +126,7 @@ lua5.1 tests/hologram_text_fx_test.lua
 python3 tests/hologram_text_axes_test.py
 ```
 
-The regression suite executes the real shared library and both scripts' production functions with strict animation-call mocks. It covers exhaustion, direct occurrence ordering, UTF-8 gaps, selection, logical spacing, half-second leases and restoration, matrix parameters, radius/no-rest handling, glow lifetime, all 35 registered modes, empty groups, parent rotation/scale inversion, conga lifecycle, takeover crossfire timing/trajectories, slot-machine reel ownership/ordered stops, projection geometry, travelling pulses, terrain-based growth, borrowed-piece cleanup and scratch-global isolation. CI uses native Lua 5.1; local validation can also run the same suite through `lupa.lua51` (Lua 5.1).
+The regression suite executes the real shared library and both scripts' production functions with strict animation-call mocks. It covers exhaustion, direct occurrence ordering, UTF-8 gaps, selection, logical spacing, half-second leases and restoration, matrix parameters, radius/no-rest handling, glow lifetime, all 36 registered modes, empty groups, parent rotation/scale inversion, conga lifecycle, takeover crossfire timing/trajectories, slot-machine reel ownership/ordered stops, projection geometry, travelling pulses, terrain-based growth, borrowed-piece cleanup and scratch-global isolation. CI uses native Lua 5.1; local validation can also run the same suite through `lupa.lua51` (Lua 5.1).
 
 No Recoil visual or target-hardware performance validation has been performed. In Recoil, check a long repeated-letter slogan, day/night and blackout transitions, all projection modes, conga descent on slopes and rotated houses, turns/stops/death of the target civilian, and takeover cleanup when a phrase changes or the hologram is destroyed. Confirm glyph size, facing, ground clearance and movement timing against actual exported models. Compare zoomed-out frame times in a dense city.
 
@@ -146,7 +153,7 @@ The production signs use the same cleanup. Tornado formation has a 2.5-second mo
 when calculating speeds, and fireworks bounds its launch/burst/fall waits too.
 Continuous spins keep running during the hold. All glyph transforms/spins are
 reset between cases; long effects are no longer cut short. The cycle has
-111 cases: plain horizontal/upright text, all 34 runnable shared modes (matrix, hotel and arch use
+114 cases: plain horizontal/upright text, all 35 runnable shared modes (matrix, hotel and arch use
 upright), an extra upright DNA-helix case, each at 0, +20 and -20 degrees/second
 around the same parent Y axis used by production holograms.
 
@@ -401,7 +408,7 @@ the feet and restores neutral. It is available in normal western, techno,
 business, brothel and blimp dance pools, and appears in `text_fx_test`.
 
 The test unit plays both text effects and Tiglil routines newest-added first.
-Text starts with rain, train, rolling textball, Tetris, neon hotel, wall impact, restored spline and meteor, followed by older
+Text starts with venetian, rain, train, rolling textball, Tetris, neon hotel, wall impact, restored spline and meteor, followed by older
 addition groups; repairs do not move an effect forward. Each effect runs its
 0, +20 and -20 degree/second parent variants together. The two plain layouts
 come last, and the next cycle starts with the newest effect again. Every

@@ -103,6 +103,7 @@ local function layout(upright,speed,phrase)
 end
 
 local kineticPreviewNotes={
+    venetianBlindsText='; rows hinge open together, send a flip wave, then close',
     trainArrivalText='; carriages brake into the phrase, hold at the platform, then depart',
     rainOnGlassText='; falling letters stick to glass, slide into lines, then drip away',
 }
@@ -113,6 +114,7 @@ local function cycle()
     -- Addition order from Git history, newest first (not last modification).
     -- Count the restored spline at its restoration. Prepend future additions.
     local newestFirst={
+        'venetianBlindsText', -- hinged rows of letter slats
         'rainOnGlassText', -- rain on an invisible pane
         'trainArrivalText', -- braking carriages and accelerating departure
         'rollingTextBall', -- rolling boulder chase, pass and breakup
