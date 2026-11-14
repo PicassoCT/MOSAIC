@@ -249,7 +249,7 @@ for _,upright in ipairs({false,true}) do
 end
 clear();archProject({20},{spacing={20},[20]={0,0,0},boolUpright=true})
 for _,m in ipairs(moves) do assert(finite(m[3]),'single-letter arch produced invalid coordinates') end
-local modes=getAllTextFx();assert(count((function() local a={} for k in pairs(modes) do a[#a+1]=k end return a end)())==33)
+local modes=getAllTextFx();assert(count((function() local a={} for k in pairs(modes) do a[#a+1]=k end return a end)())==34)
 for name,fn in pairs(modes) do
     for _,upright in ipairs({false,true}) do
         clear();pos.boolUpright=upright
@@ -298,4 +298,4 @@ restoreMessageOriginalPosition=oldRestore
 for _,name in ipairs({'radius','radiant','circumference','civilian','speed','waitTime','oldValue','timeOut'}) do
     assert(rawget(_G,name)==nil,'leaked scratch global '..name)
 end
-print('hologram text effects: allocation, leases, layout, 33 modes, transforms and transitions passed')
+print('hologram text effects: allocation, leases, layout, 34 modes, transforms and transitions passed')
