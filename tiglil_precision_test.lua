@@ -154,6 +154,7 @@ local routines={
     {'danceBehindGlass',danceBehindGlass},
     {'idle_stance4',idle_stance4},
     {'idle_stance5',idle_stance5},
+    {'danceHandstandSplit',danceHandstandSplit},
     {'idle_stance_12',idle_stance_12},
     {'idle_stance11',library.idle_stance11},
 }
@@ -166,4 +167,4 @@ for _,seed in ipairs({1,17,99}) do
         assert(completed,entry[1]..' was interrupted')
     end
 end
-print('PASS: float32 native turns complete Tiglil setup and all twenty-seven tested routines across three random seeds')
+print('PASS: float32 native turns complete Tiglil setup and all twenty-eight tested routines across three random seeds')
