@@ -9,9 +9,13 @@ return {
     -- Decayed damage in the shared area cell, not relative city-wide heat.
     -- Minor incidents and missed shots do not cancel an entire parade route.
     combatHeatThreshold = 300,
-    vehicleCount = 4,
+    minimumVehicleCount = 4,
+    maximumVehicleCount = 8,
+    -- Emergency continuation threshold; planned departures use the full count.
     minimumVehicles = 2,
     spawnIntervalFrames = 8 * 30,
+    -- Eight carriers need about 66 seconds to clear the shared spawn point.
+    assemblyTimeoutFrames = 90 * 30,
     speedFactor = 0.22,
     vehicleSpacing = 140,
     minimumVehicleSpacing = 110,
