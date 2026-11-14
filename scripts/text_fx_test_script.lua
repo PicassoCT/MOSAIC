@@ -78,7 +78,8 @@ local function dance()
     end
 end
 
-local function layout(upright,speed)
+local function layout(upright,speed,phrase)
+    local message=phrase or message
     hideResetAllLetters();reset(textSpinner,0)
     local slots,leases=allocateHologramSlots(message,groups)
     local ids,pos={}, {unitID=unitID,myMessage=message,messages={message,'Ipsum Lorem'},
@@ -106,6 +107,7 @@ local function cycle()
     -- Addition order from Git history, newest first (not last modification).
     -- Count the restored spline at its restoration. Prepend future additions.
     local newestFirst={
+        'tetrisText', -- falling phrase blocks and completed-row clears
         'neonHotelText', -- vertical street-level neon hotel sign
         'wallImpactText', -- 7a68750a
         'splineShapeFollowing', -- 089377c6, restored runnable choreography
@@ -137,7 +139,8 @@ local function cycle()
     while true do
         for _,case in ipairs(cases) do
             for _,degrees in ipairs({0,20,-20}) do
-                local ids,pos=layout(case.upright,math.rad(degrees))
+                local phrase=case.name=='tetrisText' and 'THE FUTURE FALLS INTO PLACE' or message
+                local ids,pos=layout(case.upright,math.rad(degrees),phrase)
                 local effect=effects[case.name]
                 local multiplier=effect and math.random(100,300)/100 or 1
                 local note=''
@@ -148,6 +151,7 @@ local function cycle()
                 if case.name=='spiralProject' then note='; upright spiral, independent of starting layout' end
                 if case.name=='splineShapeFollowing' then note='; random spline, <=12s per letter; 300ms between slots' end
                 if case.name=='wallImpactText' then note='; spinning letter volley; needs a nearby house wall' end
+                if case.name=='tetrisText' then note='; falling letter blocks; completed rows dissolve and the stack settles' end
                 if case.name=='neonHotelText' then note='; upright street-level neon column; power stutters and one faulty tube' end
                 if case.name=='meteorCraterText' then note='; diagonal meteor wake, impact, debris and a terrain-following crater ring' end
                 if case.name=='letterTornado' then note='; widening upright cone; letters orbit at least 60 deg/s' end

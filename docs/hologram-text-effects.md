@@ -30,6 +30,20 @@ Each selected effect runs at a fresh random multiplier between 1.00x and 3.00x. 
 
 ## New effects
 
+**Tetris (`tetrisText`):** phrase letters fall in upright I/O/T/S/Z/L/J blocks
+onto a six-column board. Phrases with at least 16 drawable letters open with
+O/O/I/O: the fourth block fills two rows, those rows flash and break apart, and
+the surviving row drops into their place. Subsequent blocks choose landings
+that favour completed rows and avoid buried holes. Tail fragments use smaller
+blocks; short phrases use a narrower board. Word spaces are omitted during
+the board animation, then restored with the original phrase. Repeated letters
+share their available meshes between logical cells instead of losing slots.
+Letter bounds determine cell size. Parent rotation pauses during play and
+resumes after cleanup. The shared 1–3x speed control applies throughout.
+The preview runs this effect first with `THE FUTURE FALLS INTO PLACE`, then
+returns to `Lorem Ipsum` for the other effects. Invalid model axes are reported
+and skipped rather than corrected.
+
 **Neon hotel (`neonHotelText`):** the current phrase becomes a stationary,
 top-to-bottom column of upright letters, with its lowest glyph just above local
 street terrain. Spacing and clearance use the glyph dimensions and imported
@@ -106,7 +120,7 @@ The production signs use the same cleanup. Tornado formation has a 2.5-second mo
 when calculating speeds, and fireworks bounds its launch/burst/fall waits too.
 Continuous spins keep running during the hold. All glyph transforms/spins are
 reset between cases; long effects are no longer cut short. The cycle has
-99 cases: plain horizontal/upright text, all 30 runnable shared modes (matrix, hotel and arch use
+102 cases: plain horizontal/upright text, all 31 runnable shared modes (matrix, hotel and arch use
 upright), an extra upright DNA-helix case, each at 0, +20 and -20 degrees/second
 around the same parent Y axis used by production holograms.
 
@@ -361,7 +375,7 @@ the feet and restores neutral. It is available in normal western, techno,
 business, brothel and blimp dance pools, and appears in `text_fx_test`.
 
 The test unit plays both text effects and Tiglil routines newest-added first.
-Text starts with neon hotel, wall impact, restored spline and meteor, followed by older
+Text starts with Tetris, neon hotel, wall impact, restored spline and meteor, followed by older
 addition groups; repairs do not move an effect forward. Each effect runs its
 0, +20 and -20 degree/second parent variants together. The two plain layouts
 come last, and the next cycle starts with the newest effect again. Every

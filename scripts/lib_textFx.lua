@@ -281,7 +281,7 @@ function canProjectTextFx(name, posLetters)
     if name == "matrixTextFx" then return posLetters.boolUpright == true end
     return not posLetters.boolUpright
         or name == "dnaHelix" or name == "spiralProject" or name == "archProject" or name == "letterTornado"
-        or name == "wallImpactText" or name == "smilingFace" or name == "letterPlant" or name == "meteorCraterText" or name == "splineShapeFollowing" or name == "neonHotelText"
+        or name == "wallImpactText" or name == "smilingFace" or name == "letterPlant" or name == "meteorCraterText" or name == "splineShapeFollowing" or name == "neonHotelText" or name == "tetrisText"
 end
 
 function dnaHelix(allLetters, posLetters)
@@ -1076,6 +1076,200 @@ function hologramWorldMover(owner, id, base, pieceMap)
         end
     end
     return moveToWorld, origin, basis
+end
+
+-- Letter tetrominoes with real occupied cells, row clears and gravity. Logical
+-- cells retain their phrase slots; scarce repeated glyphs time-share those cells.
+function tetrisText(allLetters,posLetters)
+    if #allLetters==0 then return end
+    local bySlot,tokens={},{}
+    for i,id in ipairs(allLetters) do
+        for _,slot in ipairs(posLetters.leases and posLetters.leases[id] or {textSlot(posLetters,id,i-1)+1}) do
+            bySlot[slot]=id
+        end
+    end
+    local ordered={};for slot in pairs(bySlot) do ordered[#ordered+1]=slot end;table.sort(ordered)
+    for _,slot in ipairs(ordered) do tokens[#tokens+1]={id=bySlot[slot],slot=slot} end
+    if #tokens==0 then return end
+    StopSpin(textSpinner,textSpinnerAxis,0)
+    hardResetHologramLetters(allLetters)
+    local function finish()
+        hardResetHologramLetters(allLetters)
+        restoreMessageOriginalPosition(allLetters,posLetters)
+        if posLetters.spinnerSpeed then Spin(textSpinner,textSpinnerAxis,posLetters.spinnerSpeed,0) end
+    end
+    local function note(message)
+        if posLetters.debugTextFx then posLetters.debugTextFx('tetris: '..message) end
+    end
+    local movers,anchor,basis={},nil,nil
+    local height,width,lowest=0,0,0
+    local map=Spring.GetUnitPieceMap(posLetters.unitID)
+    for _,id in ipairs(allLetters) do
+        local move,origin,axes=hologramWorldMover(posLetters.unitID,id,{0,0,0},map)
+        if not move then note('skipped; missing glyph transform');finish();return end
+        local vertical=math.sqrt(textDot(axes[3],axes[3]))
+        if vertical<1e-9 or axes[3][2]/vertical<.999 then
+            local warning='skipped; glyph local Z is not upright; check the model export'
+            note(warning)
+            if not posLetters.debugTextFx and Spring.Echo then Spring.Echo('tetris: '..warning) end
+            finish();return
+        end
+        local horizontal=math.sqrt(textDot(axes[2],axes[2]))
+        local info=Spring.GetUnitPieceInfo(posLetters.unitID,id)
+        local lo,hi=info.min or {0,0,0},info.max or {0,sizeSpacingLetter,sizeDownLetter}
+        height=math.max(height,sizeDownLetter*vertical,(hi[3]-lo[3])*vertical)
+        width=math.max(width,sizeSpacingLetter*horizontal,(hi[2]-lo[2])*horizontal)
+        lowest=math.min(lowest,lo[3]*vertical)
+        movers[id],anchor,basis=move,anchor or origin,basis or axes
+    end
+    height,width=height*1.15,width*1.15
+    local columns=math.min(6,#tokens)
+    local base=math.max(anchor[2],Spring.GetGroundHeight(anchor[1],anchor[3])+height*.4-lowest)
+    local span=math.sqrt(basis[2][1]^2+basis[2][3]^2)
+    if span<1e-9 then note('skipped; missing horizontal glyph axis');finish();return end
+    local dx,dz=-basis[2][1]/span,-basis[2][3]/span
+    local board,elapsed,lastCell={},0,{}
+    local function render(extra,ms,progress,clearing,flash)
+        local choices={}
+        local function add(cell,y)
+            if clearing and clearing[cell.y] then
+                if flash or progress> .2+.75*(cell.x+1)/columns then return end
+            end
+            local x=cell.x
+            if clearing and clearing[cell.y] then
+                x=x+math.sin(cell.slot*2.4)*progress*.55
+                y=y+progress*.7
+            end
+            choices[cell.id]=choices[cell.id] or {}
+            choices[cell.id][#choices[cell.id]+1]={cell=cell,x=x,y=y}
+        end
+        for _,cell in ipairs(board) do add(cell,cell.fromY and cell.fromY+(cell.y-cell.fromY)*progress or cell.y) end
+        for _,cell in ipairs(extra or {}) do add(cell,cell.y+progress) end
+        for _,id in ipairs(allLetters) do
+            local list=choices[id]
+            if not list then HideReg(id);lastCell[id]=nil
+            else
+                local p=list[math.floor(elapsed/160)%#list+1]
+                if lastCell[id]~=p.cell then HideReg(id) end
+                local across=(p.x-(columns-1)/2)*width
+                movers[id](anchor[1]+dx*across,base+p.y*height,anchor[3]+dz*across,
+                    lastCell[id]==p.cell and ms/1000 or 0)
+                ShowReg(id);lastCell[id]=p.cell
+            end
+        end
+        Sleep(ms);elapsed=elapsed+ms
+    end
+    local shapes={
+        {{0,0},{1,0},{2,0},{3,0}}, -- I
+        {{0,0},{1,0},{0,1},{1,1}}, -- O
+        {{0,0},{1,0},{2,0},{1,1}}, -- T
+        {{0,0},{1,0},{1,1},{2,1}}, -- S
+        {{1,0},{2,0},{0,1},{1,1}}, -- Z
+        {{0,0},{1,0},{2,0},{0,1}}, -- L
+        {{0,0},{1,0},{2,0},{2,1}}, -- J
+    }
+    local function choose(count,block)
+        local occupied,top={},0
+        for _,c in ipairs(board) do occupied[c.y*columns+c.x]=true;top=math.max(top,c.y+1) end
+        local function landing(shape,x)
+            local function fits(y)
+                for _,p in ipairs(shape) do
+                    if x+p[1]>=columns or y+p[2]<0 or occupied[(y+p[2])*columns+x+p[1]] then return false end
+                end
+                return true
+            end
+            local y=top+4
+            if not fits(y) then return end
+            while fits(y-1) do y=y-1 end
+            return y
+        end
+        -- Long phrases start with O,O,I,O: the last O completes two rows;
+        -- the I above them then settles. This makes the first clear legible.
+        if #tokens>=16 and block<=4 then
+            local shape=shapes[block==3 and 1 or 2]
+            local x=({0,2,0,4})[block]
+            return shape,x,landing(shape,x),top
+        end
+        local candidates=shapes
+        if count<4 then
+            local line={};for i=0,count-1 do line[#line+1]={i,0} end
+            candidates={line}
+            if count==3 then candidates[#candidates+1]={{0,0},{1,0},{0,1}} end
+        end
+        local best,bestX,bestY,bestScore
+        for _,source in ipairs(candidates) do
+            local shape=source
+            for rotation=1,4 do
+                for x=0,columns-1 do
+                    local y=landing(shape,x)
+                    if y then
+                        local fill,maxY={},top-1
+                        for key in pairs(occupied) do fill[key]=true end
+                        for _,p in ipairs(shape) do fill[(y+p[2])*columns+x+p[1]]=true;maxY=math.max(maxY,y+p[2]) end
+                        local cleared,holes,heights=0,0,0
+                        for row=0,maxY do
+                            local full=true;for col=0,columns-1 do if not fill[row*columns+col] then full=false end end
+                            if full then cleared=cleared+1 end
+                        end
+                        for col=0,columns-1 do
+                            local covered=false
+                            for row=maxY,0,-1 do
+                                if fill[row*columns+col] then
+                                    if not covered then heights=heights+row+1 end;covered=true
+                                elseif covered then holes=holes+1 end
+                            end
+                        end
+                        local score=cleared*10000-holes*300-maxY*25-heights
+                        if not bestScore or score>bestScore then best,bestX,bestY,bestScore=shape,x,y,score end
+                    end
+                end
+                local nextShape,minX,minY={},math.huge,math.huge
+                for _,p in ipairs(shape) do minX=math.min(minX,-p[2]);minY=math.min(minY,p[1]) end
+                for _,p in ipairs(shape) do nextShape[#nextShape+1]={-p[2]-minX,p[1]-minY} end
+                shape=nextShape
+            end
+        end
+        return best,bestX,bestY,top
+    end
+    local nextToken,block=1,0
+    while nextToken<=#tokens do
+        block=block+1
+        local count=math.min(4,#tokens-nextToken+1)
+        local shape,x,y,top=choose(count,block)
+        local falling={}
+        for i,p in ipairs(shape) do
+            local token=tokens[nextToken+i-1]
+            falling[i]={id=token.id,slot=token.slot,x=x+p[1],y=y+p[2]}
+        end
+        local distance=top+5-y
+        for step=0,10 do render(falling,60,distance*(1-(step/10)^2)) end
+        for _,cell in ipairs(falling) do board[#board+1]=cell end
+        nextToken=nextToken+count
+        note('locked block '..block)
+        render(nil,240,0)
+        local counts,clearing={},{}
+        for _,c in ipairs(board) do counts[c.y]=(counts[c.y] or 0)+1 end
+        local cleared=0
+        for row,n in pairs(counts) do if n==columns then clearing[row]=true;cleared=cleared+1 end end
+        if cleared>0 then
+            note('clearing '..cleared..' rows')
+            render(nil,100,0,clearing,true);render(nil,100,0,clearing,false)
+            for step=1,6 do render(nil,80,step/6,clearing,false) end
+            local survivors={}
+            for _,cell in ipairs(board) do
+                if not clearing[cell.y] then
+                    local drop=0;for row in pairs(clearing) do if row<cell.y then drop=drop+1 end end
+                    cell.fromY,cell.y=cell.y,cell.y-drop;survivors[#survivors+1]=cell
+                end
+            end
+            board=survivors
+            for step=1,6 do render(nil,60,(step/6)^2) end
+            for _,cell in ipairs(board) do cell.fromY=nil end
+            note('settled after row clear')
+        end
+    end
+    render(nil,800,0)
+    finish()
 end
 
 -- A stationary, top-to-bottom neon sign. Keep the authored glyphs upright,
@@ -2005,6 +2199,7 @@ end
 
 function getAllTextFx()
 return {
+        ["tetrisText"] = tetrisText,
         ["neonHotelText"] = neonHotelText,
         ["splineShapeFollowing"] = splineShapeFollowing,
         ["meteorCraterText"] = meteorCraterText,
