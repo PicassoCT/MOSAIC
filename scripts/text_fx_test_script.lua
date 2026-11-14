@@ -37,6 +37,7 @@ local function dance()
     SetSignalMask(SIG_CORE+SIG_TIGLIL)
     -- Newest additions first; prepend new routines, preserve same-commit order.
     local routines={
+        {name='danceHandstandSplit (handstand with mid-air split)',run=danceHandstandSplit},
         {name='advertiseWeightlessYoga (weightless yoga studio)',run=advertiseWeightlessYoga},
         {name='danceShakira (Shakira-inspired solo)',run=danceShakira},
         {name='danceBehindGlass (behind-glass placeholder)',run=danceBehindGlass},

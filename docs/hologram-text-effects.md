@@ -399,3 +399,11 @@ interpreted as native DAE-local XYZ degrees (Z up), including knee twist and
 roll; they are not mirrored or passed through the authored Y-up axis mapping.
 Unspecified head/hair/body components are zero; lower hair stays at -19 degrees
 on X. This stage routine needs no pedestrian and receives no glow sticks.
+
+
+`danceHandstandSplit` is a separate variation of `idle_stance5`. It uses the
+existing backflip and recovery, settles its inverted stance onto both palms,
+opens the straight legs to a 180-degree side split, holds for 1.8 seconds,
+then closes the legs before recovery. The original handstand remains unchanged.
+Normal western, brothel and blimp idle pools include it; the diagnostic dancer
+previews it first. It is a stage performance, with no pedestrian dependency.

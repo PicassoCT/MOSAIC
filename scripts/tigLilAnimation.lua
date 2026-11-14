@@ -1504,7 +1504,7 @@ function  legs_down()
 end
 
 
-function idle_stance5()
+local function backflipHandstand(withSplit)
     --echo("idle_stance5")
     Turn(tigLil, x_axis, math.rad(-37), 2)
     Turn(tlHead, x_axis, math.rad(-38), 2)
@@ -1643,6 +1643,23 @@ function idle_stance5()
     WaitForTurn(tllegLowR, y_axis)
     WaitForTurn(tllegLowR, z_axis)
     WaitForTurn(tllegLowR, x_axis)
+    if withSplit then
+        -- Both rigid palms share a support plane at body height 4.57199+5.1.
+        -- Keep shoulders/body still while the straight legs open and close.
+        tSyncIn(tlarm,0,0,-90,900)
+        tSyncIn(tlarmr,0,0,90,900)
+        mSyncIn(tigLil,0,9.67199-12,0,900)
+        Sleep(1000)
+        tSyncIn(tllegUp,0,0,-90,1400)
+        tSyncIn(tllegUpR,0,0,90,1400)
+        Sleep(1500)
+        Sleep(1800)
+        tSyncIn(tllegUp,0,0,0,1400)
+        tSyncIn(tllegUpR,0,0,0,1400)
+        Sleep(1500)
+        mSyncIn(tigLil,0,0,0,900)
+        Sleep(1000)
+    end
     Sleep(3141)
     --reasumePosition
 
@@ -1765,6 +1782,9 @@ function idle_stance5()
 
     legs_down()
 end
+
+function idle_stance5() backflipHandstand(false) end
+function danceHandstandSplit() backflipHandstand(true) end
 
 --like a bitch over troubled water (expandable)
 function idle_stance4()

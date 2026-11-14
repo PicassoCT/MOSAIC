@@ -245,6 +245,7 @@ idleAnimations[#idleAnimations +1] = idle_stance2
 idleAnimations[#idleAnimations +1] = idle_stance3
 idleAnimations[#idleAnimations +1] = idle_stance4
 idleAnimations[#idleAnimations +1] = idle_stance5
+idleAnimations[#idleAnimations +1] = danceHandstandSplit
 idleAnimations[#idleAnimations +1] = idle_stance6
 idleAnimations[#idleAnimations +1] = idle_stance7
 idleAnimations[#idleAnimations +1] = idle_stance8
