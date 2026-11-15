@@ -120,7 +120,7 @@ local function exercise(stage,shutdownFails)
         if path:find('radiance_objective_sources.lua',1,true) then return {CollectDirect=function() return {} end} end
         if path:find('radiance_propagation.lua',1,true) then return function() return propagation end end
         if path:find('radiance_local.lua',1,true) then return {New=function() return detail end} end
-        if path:find('radiance_scene.lua',1,true) then return function() return scene end end
+        if path=='luaui/widgets_mosaic/include/radiance_scene.lua' then return function() return scene end end
         if path:find('headlight_live_field.lua',1,true) then return function() return headlights end end
         if path:find('window_lighting.lua',1,true) then return function() return window end end
         if path:find('mobile_shadow_field.lua',1,true) then
