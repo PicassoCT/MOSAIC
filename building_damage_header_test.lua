@@ -38,7 +38,8 @@ script.testPrimitives={Show=Show,Hide=Hide,Move=Move,Turn=Turn,Spin=Spin}
 local function fixture(id, defID)
     local state={shown={},positions={},moves={},turns={},spins={},fires={},removedFires={},rules={},cloudShows=0,cloudHides=0,
         frame=0,healthReads=0}
-    local names={center=1,block1=2,block2=3,block3=4,block4=5,block5=6,block6=7,base=8}
+    -- The real Arab house now binds its existing construction icon at load.
+    local names={center=1,block1=2,block2=3,block3=4,block4=5,block5=6,block6=7,base=8,Icon=9}
     local raw = {
         Show=function(p) assert(p);state.shown[p]=true end,
         Hide=function(p) assert(p);state.shown[p]=nil end,

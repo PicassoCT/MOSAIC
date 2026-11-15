@@ -241,9 +241,11 @@ local function assemble(fixture,plan)
             propCount=propCount+1
             assert(env.toShowDict[id] and radiance[id],'street prop visibility/radiance not registered')
             local rotation=assert(turns[id] and turns[id][3])
-            local pose=profile.poses[math.floor(rotation/(math.pi/4)+.5)+1]
-            assert(math.abs((moves[id][2]+pose.min[2])*props.scale-7)<.001,
-                'world terrain height was not converted to model units')
+            assert(profile.poses[math.floor(rotation/(math.pi/4)+.5)+1], 'invalid street prop orientation')
+            -- Authored negative mesh coordinates stay buried; terrain aligns
+            -- the model rest-plane, not the lowest vertex of the prop.
+            assert(math.abs(moves[id][2]*props.scale-7)<.001,
+                'authored rest-plane was not aligned to world terrain height')
         end
     end
     assert(propCount>=1 and propCount<=5,'ground furniture missing or duplicated')
