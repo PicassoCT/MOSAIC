@@ -8,6 +8,7 @@ import shutil
 import subprocess
 import tempfile
 import unittest
+from unittest import mock
 import zipfile
 
 SPEC = importlib.util.spec_from_file_location('packaging_tool', Path(__file__).resolve().parents[1] / 'tools/package_windows_release.py')
@@ -110,6 +111,22 @@ class ReleaseTests(unittest.TestCase):
         self.assertEqual(manifest['performance_gate'],
                          {'minimum_zoomed_out_fps': 25, 'status': 'unverified'})
         self.assertEqual(next(f['sha256'] for f in manifest['artifacts'] if f['path'] == bundle.name), p.sha256(bundle))
+
+    def test_portable_game_archive_uses_zip64_when_required(self):
+        path, _ = self.lock()
+        # Exercise the real large-file boundary with a tiny committed fixture.
+        with mock.patch.object(zipfile, 'ZIP64_LIMIT', 512):
+            p.package(self.repo, self.out, path, '1.034')
+        game = self.out / 'Mosaic_v1.034.sdz'
+        self.assertGreater(game.stat().st_size, 512)
+        with zipfile.ZipFile(self.out / 'Mosaic_v1.034_windows-portable.zip') as bundle:
+            member = bundle.getinfo('data/games/' + game.name)
+            self.assertGreaterEqual(member.extract_version, 45)
+            self.assertEqual(member.file_size, game.stat().st_size)
+            packaged_game = bundle.read(member)
+            self.assertEqual(packaged_game, game.read_bytes())
+        with zipfile.ZipFile(io.BytesIO(packaged_game)) as nested:
+            self.assertIn("version = '1.034'", nested.read('modinfo.lua').decode())
 
     def test_version_drift_and_duplicates(self):
         for lib, mod, expected in [
