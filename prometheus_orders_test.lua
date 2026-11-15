@@ -300,6 +300,21 @@ do
     w.tick(2)
     assert(w.has(-names.ground_turret_rocket.id,22),'Antagon must choose buildable anti-air')
 end
+-- Scouts spread out and do not loop over adjacent buildings indefinitely.
+do
+    local w=world('protagon');w.metal=0;w.energy=0
+    w.add(10,'air_copter_scoutlett',1,500,500);w.add(11,'civilianagent',1,500,500)
+    w.add(100,'house_asian1',0,600,600);w.add(101,'house_asian1',0,900,900)
+    w.add(102,'house_asian1',0,3000,3000);w.add(103,'house_asian1',0,5500,5500)
+    w.tick(2)
+    local first=assert(w.has(10,10));local second=assert(w.has(10,11))
+    assert(first.params[1]==600 and second.params[1]==3000,'scouts must reserve distinct city sectors')
+    w.units[10].x=600;w.units[10].z=600;w.units[10].queue={}
+    w.tick(92)
+    local last
+    for _,o in ipairs(w.orders) do if o.id==10 and o.cmd==10 then last=o end end
+    assert(last.params[1]==5500,'new sectors must outrank another nearby house')
+end
 -- Split combat assignments never converge more than three units on one target.
 do
     local w=world('antagon');w.metal=0;w.energy=0
