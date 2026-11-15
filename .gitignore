@@ -60,3 +60,6 @@ __pycache__/
 
 # Prometheus engagement adaptation
 !luarules/gadgets/prometheus/adaptation.lua
+
+# Asian house vehicle assembly choreography
+!scripts/lib_house_asian_vehicle_assembly.lua

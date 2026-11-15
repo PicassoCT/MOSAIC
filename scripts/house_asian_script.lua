@@ -9,6 +9,7 @@ include "lib_Animation.lua"
 local buildingDamage = include "lib_building_damage.lua"
 local windowGeometryRevision, windowGeometryReady = 0, false
 local houseAnimations = include "lib_house_asian_animations.lua"
+local vehicleAssembly = include "lib_house_asian_vehicle_assembly.lua"
 local selectedSpins = {}
 local animationsReady = false
 function OnBuildingPiecesDetached(pieces) houseAnimations.detach(pieces) end
@@ -264,99 +265,7 @@ function isWithinPieceLimits(pieceID)
 end
 
 function weldingAnimation(set)
-    local robotTable = {}
-    robotTable[#robotTable+1] = set.robot1T
-    robotTable[#robotTable+1] = set.robot2T
-    robotTable[#robotTable+1] = set.robot3T
-    robotTable[#robotTable+1] = set.robot4T
-
-    while (true) do
-        Show(set.elevator)
-        WMove(set.elevator,y_axis, 0, 10)
-        Show(set.rawWorks)
-        showT(set.doors)
-        showT(set.robot1T)
-        showT(set.robot2T)
-        showT(set.robot3T)
-        showT(set.robot4T)
-
-        resetT(set.robot1T,1)
-        resetT(set.robot2T,1)
-        resetT(set.robot3T,1)
-        resetT(set.robot4T,1)
-        WaitForMoves(set.finalWorks)
-        reset(set.finalWorks)
-
-        local workSteps = math.random(7,15)
-        for i=1, workSteps do
-            for robot=1, #robotTable do
-                local boolForward = (robot + i) % 2 == 0
-                for axe=1, #robotTable[robot] do
-                    if boolForward then
-                        if axe == 3 then
-                            local val = math.random(30,60)
-                            Turn(robotTable[robot][3],x_axis, math.rad(val), 1)
-                            Turn(robotTable[robot][4],x_axis, math.rad(val), 1)
-                        end
-                        if axe == 5 then
-                            local val = math.random(0,70)
-                            Turn(robotTable[robot][axe],x_axis, math.rad(val), 1)
-                        end
-
-                        if axe == 6 then
-                            local val= math.random(-90,90)
-                            Turn(robotTable[robot][axe],y_axis, math.rad(val), 1)
-                        end
-                    else
-                        if axe == 2 then
-                            Turn(robotTable[robot][axe],y_axis, math.rad(robot*90 + math.random(-90,90)), 1)
-                        end
-                        if axe == 3 then
-                            local val = math.random(-70,-10)
-                            Turn(robotTable[robot][3],x_axis, math.rad(val), 1)
-                            Turn(robotTable[robot][4],x_axis, math.rad(val*-2), 1)
-                        end
-
-                        if axe == 5 then
-                            local val = math.random(0,70)
-                            Turn(robotTable[robot][axe],x_axis, math.rad(val), 1)
-                        end
-
-                        if axe == 6 then
-                            local val= math.random(-90,90)
-                            Turn(robotTable[robot][axe],y_axis, math.rad(val), 1)
-                        end
-                    end
-                end
-            end
-            Sleep(3000)
-        end
-        Sleep(500)
-        for robot=1, #robotTable do
-            for axe=1, #robotTable[robot] do
-                reset(robotTable[robot][axe],1)
-            end
-        end
-        Hide(set.rawWorks)
-        Show(set.finalWorks)
-        Move(set.elevator,y_axis, 85 , 10)
-        Turn(set.doors[1],x_axis, math.rad(-110),1)
-        Turn(set.doors[2],x_axis, math.rad(-110),1)
-        Sleep(4000)
-        WaitForMoves(set.elevator, y_axis)
-        Move(set.elevator,y_axis, 0 , 4)
-        WMove(set.finalWorks,y_axis, 150, 35)
-        Turn(set.finalWorks,x_axis, math.rad(-20),0.1)
-        Move(set.finalWorks, z_axis, 720, 100)
-        WMove(set.finalWorks,y_axis, 600, 100)
-        Hide(set.finalWorks)
-        reset(set.finalWorks)
-        Sleep(5000)
-        Turn(set.doors[1],x_axis, math.rad(0),1)
-        Turn(set.doors[2],x_axis, math.rad(0),1)
-        Move(set.elevator,y_axis, 0 , 5)
-        Sleep(5000)
-    end
+    vehicleAssembly.run(set)
 end
 
 function oilrigAnimation(set)
@@ -581,10 +490,10 @@ function initAllPieces()
                 rawWorks = TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock1Sub"][26],
                 finalWorks = TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock1Sub"][27],
                 doors = takeTableSubRange(TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock1Sub"], 28, 29),
-                robot1T = takeTableSubRange(TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock1Sub"], 1, 6), 
-                robot2T = takeTableSubRange(TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock1Sub"], 7, 12), 
-                robot3T = takeTableSubRange(TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock1Sub"], 13, 18), 
-                robot4T = takeTableSubRange(TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock1Sub"], 19, 24) 
+                robot1T = vehicleAssembly.robotChain(TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock1Sub"][1]),
+                robot2T = vehicleAssembly.robotChain(TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock1Sub"][7]),
+                robot3T = vehicleAssembly.robotChain(TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock1Sub"][13]),
+                robot4T = vehicleAssembly.robotChain(TablesOfPiecesGroups["ID_l100_Industrial_RoofBlock1Sub"][19])
                 }
             }
         } end
