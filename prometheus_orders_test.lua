@@ -218,7 +218,64 @@ do
     assert(not w.has(-names.antagonsafehouse.id),'no unfunded construction')
     local joined=table.concat(w.logs,'\n')
     assert(joined:find('waiting: resources'),'resource waiting diagnosed')
-    assert(#w.logs<=6,'default diagnostics bounded')
+    local reports=0
+    for _,message in ipairs(w.logs) do
+        if message:find('Prometheus team 1:',1,true) then
+            reports=reports+1
+            assert(message:find('ticks=',1,true) and message:find('units=',1,true)
+                and message:find('ready=',1,true) and message:find('queued_total=',1,true),
+                'summary counters must be unambiguous')
+        end
+    end
+    eq(reports,12,'summaries continue beyond startup, at most once per 900 frames')
+    local before=#w.logs
+    w.tick(174762)
+    assert(#w.logs==before+1,'long-running match still emits a strategy summary')
+end
+-- Bridge counters remain observable after its old five-report startup limit.
+do
+    local w=world('antagon')
+    w.add(10,'operativepropagator',1);w.add(100,'house_asian1',0,600,500)
+    w.tick(2)
+    for f=900,6300,900 do w.server.gadget:GameFrame(f) end
+    local reports=0
+    for _,message in ipairs(w.logs) do
+        if message:find('Prometheus bridge team 1:',1,true) then
+            reports=reports+1
+            assert(message:find('dispatched_total=',1,true) and message:find('rejected_total=0',1,true))
+        end
+    end
+    eq(reports,7,'bridge reports continue beyond startup')
+    local before=#w.logs
+    w.server.gadget:GameFrame(6301)
+    eq(#w.logs,before,'bridge remains rate limited')
+    w.server.gadget:GameFrame(175500)
+    eq(#w.logs,before+1,'bridge still reports near the end of a long match')
+end
+-- Damage/destruction callbacks pass through both actual framework realms.
+do
+    local w=world('protagon')
+    w.add(10,'operativeinvestigator',1);w.add(30,'ground_walker_mg',1)
+    w.add(40,'ground_walker_mg',2,600,600)
+    w.tick(2)
+    w.server.gadget:UnitDamaged(30,names.ground_walker_mg.id,1,100,false,1,1,40,names.ground_walker_mg.id,2)
+    w.server.gadget:UnitDestroyed(30,names.ground_walker_mg.id,1,40,names.ground_walker_mg.id,2)
+    w.units[30]=nil
+    w.tick(902)
+    local logs=table.concat(w.logs,'\n')
+    assert(logs:find('opponent victory',1,true) and logs:find('response_tier=1',1,true),
+        'real damage/destruction forwarding must raise the next engagement response')
+end
+-- Seen air forces change actual factory orders; hidden aircraft do not.
+for _,visible in ipairs({true,false}) do
+    local w=world('protagon')
+    w.add(10,'operativeinvestigator',1);w.add(20,'protagonsafehouse',1)
+    w.add(21,'propagandaserver',1);w.add(22,'protagonassembly',1)
+    w.add(30,'air_copter_scoutlett',1)
+    w.add(40,'air_copter_antiarmor',2,3000,3000);w.units[40].los=visible
+    w.tick(2)
+    if visible then assert(w.has(-names.ground_truck_rocket.id,22),'visible air must produce a legal anti-air counter')
+    else assert(not w.has(-names.ground_truck_rocket.id,22),'hidden air must not influence production') end
 end
 -- Split combat assignments never converge more than three units on one target.
 do

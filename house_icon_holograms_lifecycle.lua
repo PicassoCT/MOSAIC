@@ -8,7 +8,7 @@ local function fixture(options)
     options = options or {}
     local s = {icon=true, drawIcon=true, enabled=1, los=true, draws=0,
         vertices=0, lists=0, deleted=0, messages={}, grids={}, masks=0, contours=0,
-        textures=0, deletedTextures=0, fbos=0, deletedFBOs=0, shaders=0, deletedShaders=0,
+        textures=0, textureAttempts=0, deletedTextures=0, fbos=0, deletedFBOs=0, shaders=0, deletedShaders=0,
         width=640, height=480, originX=17, originY=23}
     local function noop() end
     local spring = {
@@ -46,8 +46,13 @@ local function fixture(options)
             if name=='maskPass' then s.pass=value end
             if name=='viewportOrigin' then assert(value==s.originX and x==s.originY) end
         end,
-        CreateTexture=function(w,h)
+        CreateTexture=function(w,h,spec)
             assert(w==s.width and h==s.height)
+            -- Match the engine's default: a missing format creates RGBA8.
+            -- BAR105 omits sized texture formats from the Lua GL table.
+            local expected=s.textureAttempts%2==0 and 0x8058 or 0x81A6
+            s.textureAttempts=s.textureAttempts+1
+            assert((spec.format or 0x8058)==expected, 'depth attachment must use a depth texture')
             if options.textureFailure then return nil end
             s.textures=s.textures+1; return s.textures
         end,
@@ -83,7 +88,8 @@ local function fixture(options)
     }, {__index=function() return noop end})
     if options.missingContourAPI then gl.CreateFBO=false end
     local env=setmetatable({gadget={}, Spring=spring, gl=gl,
-        GL={QUADS=7,COLOR_BUFFER_BIT=1}, GG={HouseIconShadowGrids=s.grids},
+        GL=options.exportedFormats and {QUADS=7,COLOR_BUFFER_BIT=1,RGBA8=0x8058,DEPTH_COMPONENT24=0x81A6}
+            or {QUADS=7,COLOR_BUFFER_BIT=1}, GG={HouseIconShadowGrids=s.grids},
         UnitDefs={[1]={name='house_western0'}},
         VFS={Include=dofile, LoadFile=read},
         gadgetHandler={IsSyncedCode=function() return false end,
@@ -133,6 +139,10 @@ assert(s.drawIcon and s.deleted==2, 'shutdown must restore icon and release mesh
 local missing=fixture({missingAPI=true})
 assert(missing.removed and not missing.shaderAttempted and missing.drawIcon)
 assert(missing.messages[1]:find('Spring.UnitIconSetDraw',1,true), 'missing API must produce a diagnostic')
+local exported=fixture({exportedFormats=true})
+exported:geometry(); exported:frame()
+assert(exported.masks==1 and exported.contours==1, 'also support engines exporting sized formats')
+exported.gadget:Shutdown()
 local failed=fixture({shaderFailure=true})
 assert(failed.removed and failed.drawIcon and failed.messages[1]:find('Shader failed',1,true))
 for _,option in ipairs({'missingContourAPI','contourFailure','textureFailure','fboFailure'}) do
