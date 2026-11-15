@@ -2,25 +2,40 @@
   "schema_version": 1,
   "engine": {
     "version": "BAR105-105.1.1-1544-g058c8ea",
-    "url": null,
-    "sha256": null,
+    "url": "https://github.com/beyond-all-reason/RecoilEngine/releases/download/spring_bar_%7BBAR105%7D105.1.1-1544-g058c8ea/spring_bar_.BAR105.105.1.1-1544-g058c8ea_windows-64-minimal-portable.7z",
+    "sha256": "dbc5f05ba5a0338f3afbe5345aa8ae3981390252ad723ce1b733780603fe67b6",
     "format": "7z",
     "root": ".",
-    "required_files": ["spring.exe", "unitsync.dll"]
+    "required_files": [
+      "spring.exe",
+      "unitsync.dll",
+      "spring-headless.exe"
+    ]
   },
   "lobby": {
-    "version": null,
-    "url": null,
-    "sha256": null,
+    "version": "0.9.31016",
+    "url": "https://github.com/springraaar/skylobby/releases/download/0.9.31016/skylobby-0.9.31016-windows.jar",
+    "sha256": "2127e20a749c723b4d54244c7df13ed9b73651013e98a102f8450046631ee32e",
+    "format": "file",
+    "filename": "skylobby.jar"
+  },
+  "runtime": {
+    "version": "Temurin-21.0.13+9",
+    "url": "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.13%2B9/OpenJDK21U-jre_x64_windows_hotspot_21.0.13_9.zip",
+    "sha256": "2332c0b4cff6bed722da3567c91d5e47568bcba863fa4945d0a8d6fc76158628",
     "format": "zip",
-    "root": ".",
-    "required_files": ["skylobby.exe"]
+    "root": "jdk-21.0.13+9-jre",
+    "required_files": [
+      "bin/java.exe",
+      "release"
+    ]
   },
   "map": {
-    "version": "LastDayOfDhubai",
-    "filename": "LastDayOfDhubai.sdz",
-    "url": null,
-    "sha256": null,
-    "format": "zip"
+    "version": "MOSAIC_LastDayOfDubai_V3 1",
+    "filename": "MOSAIC_LastDayOfDubai_V3_1.sdz",
+    "url": "https://github.com/PicassoCT/MOSAIC_LastDayOfDubai/archive/f7938d012affd4cd2fc4c50fe3d92dd5c0af894e.zip",
+    "sha256": "2456c0ffa458bb0575733159df95db6477f0fc96de73fb58e1723c478d62f515",
+    "format": "zip",
+    "root": "MOSAIC_LastDayOfDubai-f7938d012affd4cd2fc4c50fe3d92dd5c0af894e"
   }
 }

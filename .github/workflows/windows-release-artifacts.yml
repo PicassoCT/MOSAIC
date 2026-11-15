@@ -4,9 +4,11 @@ on:
   pull_request:
     paths:
       - 'tools/package_windows_release.py'
+      - 'tools/qualify_windows_release.py'
+      - 'tools/smoke_windows_portable.ps1'
+      - 'tools/smoke_windows_portable.py'
       - .github/mosaic-tests.ref
       - .github/actions/external-tests/**
-      - 'tools/validate_performance_gate.py'
       - 'tools/validate_performance_gate.py'
       - 'packaging/**'
       - 'pack_mosaic*.sh'
@@ -17,6 +19,10 @@ on:
     branches: [master]
     paths:
       - 'tools/package_windows_release.py'
+      - 'tools/qualify_windows_release.py'
+      - 'tools/smoke_windows_portable.ps1'
+      - 'tools/smoke_windows_portable.py'
+      - 'tools/validate_performance_gate.py'
       - .github/mosaic-tests.ref
       - .github/actions/external-tests/**
       - 'packaging/**'
@@ -27,7 +33,7 @@ on:
   workflow_dispatch:
     inputs:
       expected_version:
-        description: 'Required game version (e.g. 1.033); must match the selected ref'
+        description: 'Required game version (e.g. 1.036); must match the selected ref'
         required: true
         type: string
       portable:
@@ -39,6 +45,9 @@ on:
 permissions:
   contents: read
 
+env:
+  CANDIDATE_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
+
 jobs:
   test:
     strategy:
@@ -47,6 +56,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          ref: ${{ env.CANDIDATE_COMMIT }}
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
           python-version: '3.12'
@@ -61,14 +72,24 @@ jobs:
       - name: Performance gate regression tests
         working-directory: ${{ runner.temp }}/mosaic-validation
         run: python -m unittest discover -s tests -p test_performance_gate.py -v
+      - name: Release qualification regression tests
+        working-directory: ${{ runner.temp }}/mosaic-validation
+        run: python -m unittest discover -s tests -p test_release_qualification.py -v
 
   artifacts:
-    if: github.event_name == 'workflow_dispatch'
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'pull_request' &&
+       startsWith(github.head_ref, 'release/windows-portable-') &&
+       github.event.pull_request.head.repo.full_name == github.repository)
     needs: test
     runs-on: ubuntu-latest
+    outputs:
+      portable: ${{ steps.build.outputs.portable }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
         with:
+          ref: ${{ env.CANDIDATE_COMMIT }}
           persist-credentials: false
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
@@ -76,20 +97,56 @@ jobs:
       - name: Install archive reader
         run: sudo apt-get update && sudo apt-get install -y p7zip-full
       - name: Build and validate artifacts
+        id: build
         env:
           EXPECTED_VERSION: ${{ inputs.expected_version }}
-          PORTABLE: ${{ inputs.portable }}
+          PORTABLE: ${{ github.event_name == 'pull_request' || inputs.portable }}
         shell: bash
         run: |
-          args=(--output "$RUNNER_TEMP/mosaic-release" --expected-version "$EXPECTED_VERSION")
+          args=(--output "$RUNNER_TEMP/mosaic-release")
+          if [[ -n "$EXPECTED_VERSION" ]]; then
+            args+=(--expected-version "$EXPECTED_VERSION")
+          fi
           if [[ "$PORTABLE" == true ]]; then
             args+=(--inputs packaging/windows-inputs.json)
           fi
           python tools/package_windows_release.py "${args[@]}"
+          echo "portable=$PORTABLE" >> "$GITHUB_OUTPUT"
       - name: Upload only successful build outputs
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: mosaic-windows-release-${{ github.sha }}
+          name: mosaic-windows-release-${{ env.CANDIDATE_COMMIT }}
           path: ${{ runner.temp }}/mosaic-release/
           if-no-files-found: error
+          retention-days: 14
+          compression-level: 0
+
+  windows-smoke:
+    needs: artifacts
+    if: needs.artifacts.outputs.portable == 'true'
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          ref: ${{ env.CANDIDATE_COMMIT }}
+          sparse-checkout: tools
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: '3.12'
+      - name: Download the exact candidate
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: mosaic-windows-release-${{ env.CANDIDATE_COMMIT }}
+          path: ${{ runner.temp }}/mosaic-artifacts
+      - name: Verify portable binaries from a path with spaces
+        shell: pwsh
+        run: |
+          ./tools/smoke_windows_portable.ps1 -ArtifactsDirectory "$env:RUNNER_TEMP/mosaic-artifacts" -OutputDirectory "$env:RUNNER_TEMP/MOSAIC smoke evidence"
+      - name: Upload Windows smoke evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: mosaic-windows-smoke-${{ env.CANDIDATE_COMMIT }}
+          path: ${{ runner.temp }}/MOSAIC smoke evidence/
+          if-no-files-found: warn
           retention-days: 14
