@@ -195,8 +195,13 @@ local function assemble(fixture,plan)
     loadEnv('scripts/lib_OS.lua',env)
     loadEnv('scripts/lib_UnitScript.lua',env)
     loadEnv('scripts/lib_Animation.lua',env)
+    local unitIncludeModules = {
+        ['lib_building_damage.lua']=true,
+        ['lib_house_asian_animations.lua']=true,
+        ['lib_house_asian_vehicle_assembly.lua']=true,
+    }
     env.include=function(name)
-        if name == 'lib_building_damage.lua' or name == 'lib_house_asian_animations.lua' then
+        if unitIncludeModules[name] then
             return loadEnv('scripts/'..name,env)
         end
         return noop

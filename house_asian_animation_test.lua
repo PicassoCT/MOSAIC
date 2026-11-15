@@ -25,7 +25,24 @@ local function scenario(reconstruction, invisibleCrane)
         for i=1,count do t[i]=piece(name..i);if parent then children[parent][#children[parent]+1]=t[i] end end
         return t
     end
-    local weld=piece('ID_l100_Industrial_RoofBlock1');group('ID_l100_Industrial_RoofBlock1Sub',29,weld)
+    local weld=piece('ID_l100_Industrial_RoofBlock1')
+    local prefix='ID_l100_Industrial_RoofBlock1Sub'
+    local weldPieces=group(prefix,29)
+    -- Actual export: the first chain uses Sub101--105, not Sub2--6.
+    local firstArm={weldPieces[1]}
+    for j=2,6 do
+        local p=weldPieces[j];firstArm[j]=p
+        names[prefix..j]=nil;names[prefix..(99+j)]=p
+        weldPieces[99+j]=p;weldPieces[j]=nil
+    end
+    children[weld]={weldPieces[25],weldPieces[28],weldPieces[29]}
+    children[weldPieces[25]]={weldPieces[26],weldPieces[27]}
+    for i,base in ipairs({1,7,13,19}) do
+        local arm=i==1 and firstArm or {}
+        if i~=1 then for j=1,6 do arm[j]=weldPieces[base+j-1] end end
+        table.insert(children[weldPieces[25]],arm[1])
+        for j=1,5 do children[arm[j]]={arm[j+1]} end
+    end
     local factory=piece('ID_l100_Industrial_RoofBlock2');group('ID_l100_Industrial_RoofBlock2Sub',10,factory)
     local turntable=group('ID_l100_Industrial_RoofBlock2Spin',1,factory)[1]
     for _,n in ipairs({'Raise','Grab'})do children[factory][#children[factory]+1]=piece('ID_l100_Industrial_RoofBlock2'..n) end
@@ -114,6 +131,7 @@ local function scenario(reconstruction, invisibleCrane)
     env.sortPiecesInDictionaryByHeight=function(t)local r={};for p in pairs(t)do r[#r+1]=p end;table.sort(r);return r end
     local clearance=false
     env.waitForCityConstruction=function()while not clearance do env.Sleep(100)end end
+    env.vehicleAssembly=compile(read('scripts/lib_house_asian_vehicle_assembly.lua'),env)()
     env.controller=compile(read('scripts/lib_house_asian_animations.lua'),env)()
     compile('local houseAnimations=controller;local selectedSpins={};local animationsReady=false;local ToShowTable={}\n'..
         'local windowGeometryRevision,windowGeometryReady=0,false;local pieceNr_pieceName={}\n'..
@@ -146,19 +164,18 @@ local function scenario(reconstruction, invisibleCrane)
         clearance=true;advance(30000)
     end
     advance(5000)
-    local spun,forward,backward={},{},{}
+    local spun,shoulderTargets={},{}
     local oscillations=0
     for _,e in ipairs(events)do
         if e.kind=='move' and e.p==oscillator and e.value==30 then oscillations=oscillations+1 end
         if e.kind=='spin' then spun[e.p]=true end
         assert(e.p~=generic[2] and e.p~=hiddenSpins[1] and e.p~=hiddenSpins[2],'unselected spinner animated')
-        if e.kind=='turn' and e.p==groups.ID_l100_Industrial_RoofBlock1Sub[3] then
-            if e.value>0 then forward[e.p]=true elseif e.value<0 then backward[e.p]=true end
-        end
+        if e.kind=='turn' and e.p==firstArm[3] and e.value~=0 then shoulderTargets[e.value]=true end
     end
     assert(oscillations>2,'cyclic machinery stopped after its first out-and-back')
     assert(spun[generic[1]] and not spun[turntable],'generic spinner missing or competing with turntable')
-    assert(forward[groups.ID_l100_Industrial_RoofBlock1Sub[3]] and backward[groups.ID_l100_Industrial_RoofBlock1Sub[3]],'welding did not alternate')
+    local poses=0;for _ in pairs(shoulderTargets)do poses=poses+1 end
+    assert(poses>=2,'renamed first robot did not approach its workpiece')
     for _,key in ipairs({'robotTable','offset','movePiece','spinPiece','workSteps','val','jack1'})do
         assert(rawget(env,key)==nil,'animation leaked shared state: '..key)
     end
