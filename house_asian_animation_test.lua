@@ -33,9 +33,10 @@ local function scenario(reconstruction, invisibleCrane)
     local oil=piece('Industrial_Floor1');group('Industrial_Floor1Sub',8,oil)
     local crane=piece('ID_a1_Office_Industrial_Pod_Wall3Sub1')
     piece('ID_a1_Office_Industrial_Pod_Wall3')
+    local oscillator=piece('ID_l100_Industrial_RoofBlock3Sub1')
     local generic=group('Roof84Spin',2)
     local hiddenRoot=piece('Roof89');local hiddenSpins=group('Roof89Spin',2,hiddenRoot)
-    for _,p in ipairs({weld,factory,mill,oil,crane,generic[1],turntable})do selected[p]=p end
+    for _,p in ipairs({weld,factory,mill,oil,crane,oscillator,generic[1],turntable})do selected[p]=p end
     local function event(kind,p,a,value,speed)
         events[#events+1]={kind=kind,p=p,axis=a,value=value,speed=speed,time=now}
     end
@@ -146,13 +147,16 @@ local function scenario(reconstruction, invisibleCrane)
     end
     advance(5000)
     local spun,forward,backward={},{},{}
+    local oscillations=0
     for _,e in ipairs(events)do
+        if e.kind=='move' and e.p==oscillator and e.value==30 then oscillations=oscillations+1 end
         if e.kind=='spin' then spun[e.p]=true end
         assert(e.p~=generic[2] and e.p~=hiddenSpins[1] and e.p~=hiddenSpins[2],'unselected spinner animated')
         if e.kind=='turn' and e.p==groups.ID_l100_Industrial_RoofBlock1Sub[3] then
             if e.value>0 then forward[e.p]=true elseif e.value<0 then backward[e.p]=true end
         end
     end
+    assert(oscillations>2,'cyclic machinery stopped after its first out-and-back')
     assert(spun[generic[1]] and not spun[turntable],'generic spinner missing or competing with turntable')
     assert(forward[groups.ID_l100_Industrial_RoofBlock1Sub[3]] and backward[groups.ID_l100_Industrial_RoofBlock1Sub[3]],'welding did not alternate')
     for _,key in ipairs({'robotTable','offset','movePiece','spinPiece','workSteps','val','jack1'})do
