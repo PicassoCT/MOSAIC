@@ -1,0 +1,63 @@
+name: Spaceport smoke attachment
+
+on:
+  push:
+    paths:
+      - 'scripts/objective_spaceportscript.lua'
+      - 'scripts/lib_cloud_pieces.lua'
+      - 'scripts/lib_Animation.lua'
+      - 'scripts/lib_UnitScript.lua'
+      - 'scripts/lib_radiance_emitters.lua'
+      - 'gamedata/unit_script_header.lua'
+      - 'luarules/gadgets/gfx_cloud_volumes.lua'
+      - 'luarules/gadgets/include/cloud_volume_*.lua'
+      - '.github/mosaic-tests.ref'
+      - '.github/actions/external-tests/**'
+      - '.github/workflows/spaceport-smoke.yml'
+  pull_request:
+    paths:
+      - 'scripts/objective_spaceportscript.lua'
+      - 'scripts/lib_cloud_pieces.lua'
+      - 'scripts/lib_Animation.lua'
+      - 'scripts/lib_UnitScript.lua'
+      - 'scripts/lib_radiance_emitters.lua'
+      - 'gamedata/unit_script_header.lua'
+      - 'luarules/gadgets/gfx_cloud_volumes.lua'
+      - 'luarules/gadgets/include/cloud_volume_*.lua'
+      - '.github/mosaic-tests.ref'
+      - '.github/actions/external-tests/**'
+      - '.github/workflows/spaceport-smoke.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  suction:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /.github/actions/external-tests/
+            /.github/mosaic-tests.ref
+            /modinfo.lua
+            /scripts/
+            /gamedata/unit_script_header.lua
+            /luarules/gadgets/gfx_cloud_volumes.lua
+            /luarules/gadgets/include/cloud_volume_config.lua
+            /luarules/gadgets/include/cloud_volume_renderer.lua
+      - run: sudo apt-get update && sudo apt-get install -y lua5.1
+      - name: Prepare pinned external tests
+        uses: ./.github/actions/external-tests
+      - name: Verify attachment through suction and final hide
+        working-directory: ${{ runner.temp }}/mosaic-validation
+        run: |
+          lua5.1 tests/spaceport_smoke_suction.lua
+          lua5.1 tests/spaceport_flight_lifecycle.lua
+          lua5.1 tests/cloud_piece_header.lua
+          lua5.1 tests/cloud_volume_release.lua
+          lua5.1 tests/cloud_volume_curves.lua
+          lua5.1 tests/cloud_volumes_lifecycle.lua
+          lua5.1 tests/cloud_volumes_renderer.lua

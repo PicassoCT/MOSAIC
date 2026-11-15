@@ -103,7 +103,7 @@ emissionCurve = {{0,.8}, {.2,1.3}, {.8,1}, {1.8,.55}, {3,0}},
   both respond to wind. The molten-pot ribbon remains separate.
 
 `GG.CloudVolume.ReleasePiece(id,piece)` detaches profiles marked `linger=true`
-(steam/launchVapour/soot/risingSmoke), preserving their original age and freezing an enclosing world-space
+(steam/soot/risingSmoke), preserving their original age and freezing an enclosing world-space
 box before piece reset. Other profiles are removed immediately. Show/Hide
 wrappers use this automatically. `RemovePiece` remains immediate for shutdown.
 Released smoke survives source removal and expires at the original lifetime;
@@ -112,6 +112,13 @@ of strongly rotated or elongated smoke proxies slightly. It does not yet advect
 with wind. Continuous effects hold their final curve value; finite attached
 curves stay registered but incur no drawing after opacity reaches zero, until
 Hide removes them. Repeated Show does not restart their clock.
+
+Spaceport `launchVapour` explicitly sets `linger=false`. Cooling spheres and
+arena smoke remain attached throughout their scripted suction descent into the
+ventilation system. Their final Hide removes the volume without a detached tail.
+`spaceport_smoke_suction.lua` runs the actual recovery routine, production script
+header, cloud visibility hooks and synced registry together; it covers every
+descent, arena recovery, repeated launches and destruction during suction.
 
 Validation additions: `tests/cloud_volume_curves.lua` and
 `tests/cloud_volume_release.lua` cover curve interpolation, relative lifetimes,
