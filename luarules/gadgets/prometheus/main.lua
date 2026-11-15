@@ -85,6 +85,11 @@ if not gadgetHandler:IsSyncedCode() then
         local event=name
         gadget[event]=function(self,u,def,t,...)
             if teams[t] and teams[t][event] then teams[t][event](u,def,t,...) end
+            if event=="UnitDestroyed" then
+                for id,team in pairs(teams) do
+                    if id~=t and team.EnemyDestroyed then team.EnemyDestroyed(u,def,t,...) end
+                end
+            end
         end
     end
 end

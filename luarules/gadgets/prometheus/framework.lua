@@ -198,7 +198,6 @@ local function Initialize(self)
 end
 
 
-local reportCount=0
 local function GameFrame(self,f)
     local queue=messageQueue
     messageQueue={};numMessages=0
@@ -207,13 +206,12 @@ local function GameFrame(self,f)
         if not ok or not valid then Warning("Dropped malformed AI command packet") end
     end
     if f and f%900==0 then
-        reportCount=reportCount+1
         for team,c in pairs(audit) do
             if Spring.SetTeamRulesParam then
                 for field,n in pairs(c) do Spring.SetTeamRulesParam(team,"prometheus_orders_"..field,n,{public=true}) end
             end
-            if reportCount<=5 and Spring.Echo then
-                Spring.Echo("Prometheus bridge team "..team..": dispatched="..c.dispatched.." rejected="..c.rejected.." unconfirmed="..c.unconfirmed)
+            if Spring.Echo then
+                Spring.Echo("Prometheus bridge team "..team..": dispatched_total="..c.dispatched.." rejected_total="..c.rejected.." unconfirmed_total="..c.unconfirmed)
             end
         end
     end

@@ -14,7 +14,9 @@ function CreateTeam(teamID, allyTeamID, side)
     team.UnitCreated=strategy.UnitCreated
     team.UnitFinished=strategy.UnitFinished
     team.UnitDestroyed=strategy.UnitDestroyed
-    team.UnitTaken=strategy.UnitDestroyed
+    team.UnitTaken=strategy.UnitTaken
+    team.UnitDamaged=strategy.UnitDamaged
+    team.EnemyDestroyed=strategy.EnemyDestroyed
     function team.UnitGiven(u,def,t) strategy.UnitCreated(u,def,t);strategy.UnitFinished(u,def,t) end
     function team.UnitIdle() end -- manager polls queues, never overwrites long jobs on an idle callback
     function team.Shutdown() rescue.Shutdown() end

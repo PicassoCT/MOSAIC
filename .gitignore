@@ -57,3 +57,6 @@ __pycache__/
 
 # Shared civilian death animation
 !scripts/lib_civilian_death.lua
+
+# Prometheus engagement adaptation
+!luarules/gadgets/prometheus/adaptation.lua
