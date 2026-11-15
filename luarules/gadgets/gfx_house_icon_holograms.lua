@@ -109,11 +109,13 @@ local function ensureTargets()
     viewWidth,viewHeight = width,height
     -- One shared ID mask for all visible houses, not one texture per house.
     maskTexture = gl.CreateTexture(width,height, {
-        format=GL.RGBA8, min_filter=GL.NEAREST, mag_filter=GL.NEAREST,
+        format=GL.RGBA8 or 0x8058, min_filter=GL.NEAREST, mag_filter=GL.NEAREST,
         wrap_s=GL.CLAMP_TO_EDGE, wrap_t=GL.CLAMP_TO_EDGE,
     })
     depthTexture = gl.CreateTexture(width,height, {
-        format=GL.DEPTH_COMPONENT24, min_filter=GL.NEAREST, mag_filter=GL.NEAREST,
+        -- BAR105 does not export this enum to Lua; omitting it creates an
+        -- RGBA8 texture, which cannot be used as the FBO's depth attachment.
+        format=GL.DEPTH_COMPONENT24 or 0x81A6, min_filter=GL.NEAREST, mag_filter=GL.NEAREST,
         wrap_s=GL.CLAMP_TO_EDGE, wrap_t=GL.CLAMP_TO_EDGE,
     })
     if maskTexture and depthTexture then
