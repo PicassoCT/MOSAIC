@@ -2,6 +2,9 @@ local bagAlignment = include "lib_bag_alignment.lua"
 local queueEventThread = include "lib_event_threads.lua"
 local newParadeParticipation = include "lib_civilian_parade.lua"
 local paradeParticipation
+local boolDying = false
+local deathAnimation
+local lastDamageDirX, lastDamageDirZ = 0, 0
 
 include "createCorpse.lua"
 include "lib_UnitScript.lua"
@@ -671,11 +674,11 @@ lowerBodyAnimations = {
 }
 
 accumulatedTimeInSeconds = 5
-lastDamageDirX, lastDamageDirZ = 0, 0
 -- Called once at the start of a stun interrogation by the impact gadget.
 -- A finite thread owns the pose briefly; ordinary animation resumes afterwards.
 local function stunImpactAnimation()
     for pulse = 1, 3 do
+        if boolDying then return end
         local lean = (pulse % 2 == 0) and -8 or 12
         Turn(UpBody, x_axis, math.rad(lean), 12)
         Turn(UpArm1, x_axis, math.rad(-40), 14)
@@ -689,9 +692,11 @@ local function stunImpactAnimation()
         spawnCegAtPiece(unitID, UpBody, "interrogation_stun")
         Sleep(120)
     end
+    if boolDying then return end
     Turn(UpBody, x_axis, math.rad(28), 4)
     Turn(Head1, x_axis, math.rad(20), 4)
     Sleep(840)
+    if boolDying then return end
     resetT(lowerBodyPiecesNoCenter, 4)
     resetUpperBodyNoTPose()
     boolStunImpact = false
@@ -707,6 +712,8 @@ function startInterrogationStun()
 end
 
 function script.HitByWeapon(x, z, weaponDefID, damage)
+    if boolDying then return damage end
+    lastDamageDirX, lastDamageDirZ = x or 0, z or 0
     if bodyConfig.boolInfluenced then return damage end
     paradeParticipation:Stop(false)
     if weaponDefID == stunPistolDefID then return damage end
@@ -724,7 +731,7 @@ function script.HitByWeapon(x, z, weaponDefID, damage)
     if damage > 10 and randChance(10) then
         -- conditionalEcho(boolDebugActive, "Damage to civilian drawing blood at "..locationstring(unitID))
         bloodyHell= {"bloodspray", "bloodslay"}
-        StartThread(spawnCegAtPiece, unitID, Head, bloodyHell[math.random(1,2)])
+        StartThread(spawnCegAtPiece, unitID, Head1, bloodyHell[math.random(1,2)])
     end
     bodyBuild()
     --Set coverwalk or wounded walk
@@ -1259,6 +1266,7 @@ local animCmd = {['turn'] = Turn, ['move'] = Move};
 local axisSign = {[x_axis] = 1, [y_axis] = 1, [z_axis] = 1}
 
 function PlayAnimation(animname, piecesToFilterOutTable, speed)
+    if boolDying then return 0 end
     local speedFactor = speed or 1.0
     if not piecesToFilterOutTable then piecesToFilterOutTable = {} end
 
@@ -1269,6 +1277,7 @@ function PlayAnimation(animname, piecesToFilterOutTable, speed)
     local randoffset
     for i = 1, #anim do
         while boolStunImpact do Sleep(33) end
+        if boolDying then return 0 end
         local commands = anim[i].commands;
         for j = 1, #commands do
             local cmd = commands[j];
@@ -2044,6 +2053,7 @@ function getWalkingState()
 end
 
 function script.StartMoving()
+    if boolDying then return end
     -- Cancel a pending delayedStop when a new follow order arrives. Without
     -- this, the old stop thread can switch the decoy back to standing while
     -- it is already moving again.
@@ -2052,7 +2062,7 @@ function script.StartMoving()
     setOverrideAnimationState(eAnimState.walking, eAnimState.walking, true, nil, true)
 end
 
-function script.StopMoving() StartThread(delayedStop) end
+function script.StopMoving() if not boolDying then StartThread(delayedStop) end end
 ---------------------------------------------------------------------ANIMATIONS-------------------------------------
 function script.Activate() return 1 end
 
@@ -2222,6 +2232,7 @@ function script.QueryWeapon(weaponID)
 end
 
 function script.AimWeapon(weaponID, heading, pitch)
+    if boolDying then return false end
     if bodyConfig.boolInfluenced then return false end
     if boolCloaked then return false end 
 
@@ -2248,81 +2259,25 @@ function dropLoot()
     end
 end
 
-function ExplosiveDeath(dx, dz)
-    _x_axis =1
-    _y_axis =2
-    _z_axis = 3
-    Spring.AddUnitImpulse(unitID, dx, 0, dz)
-    -- fling body away from explosion
-    Turn(root, _y_axis, math.atan2(dx, dz), 0.5) 
-    Spin(UpBody, _x_axis, math.random(-10, 10), 15)
-    Spin(UpBody, _z_axis, math.random(-10, 10), 15)
+deathAnimation = include('lib_civilian_death.lua')(unitID, {
+    root=root, center=center, UpBody=UpBody, Head1=Head1,
+    UpArm1=UpArm1, UpArm2=UpArm2, LowArm1=LowArm1, LowArm2=LowArm2,
+    UpLeg1=UpLeg1, UpLeg2=UpLeg2, LowLeg1=LowLeg1, LowLeg2=LowLeg2,
+    Feet1=Feet1, Feet2=Feet2,
+})
 
-    -- arms flailing
-    for i, limb in ipairs({UpArm1, LowArm1, UpArm2, LowArm2}) do
-        Spin(limb, _x_axis, math.random(-20, 20), 20)
-    end
-
-    -- legs flailing
-    for i, limb in ipairs({UpLeg1, LowLeg1, Feet1, UpLeg2, LowLeg2, Feet2}) do
-        Spin(limb, _x_axis, math.random(-15, 15), 20)
-    end
-    Turn(root,x_axis, math.rad(90),10)
-    Sleep(1200) -- let the ragdoll fling happen for a bit
-  -- arms flailing
-    stopAllSpins(unitID, 15)
-    -- curl into embryonic position
-    Turn(Head1,  _x_axis, math.rad(30), 1.5)
-    Turn(UpBody, _x_axis, math.rad(20), 1.5)
-    
-    Turn(UpLeg1, _x_axis, math.rad(-60), 1.5)
-    Turn(LowLeg1, _x_axis, math.rad(40), 1.5)
-
-    Turn(UpLeg2, _x_axis, math.rad(-60), 1.5)
-    Turn(LowLeg2, _x_axis, math.rad(40), 1.5)
-  
-    Turn(UpArm1, _x_axis, math.rad(-50), 1.5)
-    Turn(UpArm2, _x_axis, math.rad(-50), 1.5)
-  
-
-    Sleep(1000)
-    ragDoll = {
-        UpArm1, LowArm1, UpArm2, LowArm2,
-        UpLeg1, LowLeg1, Feet1,
-        UpLeg2, LowLeg2, Feet2,
-        Head1, UpBody
-    }
-    -- relax into random final pose
-    for _, p in ipairs(ragDoll) do
-        Turn(p, _x_axis, math.rad(math.random(-30, 30)), 0.5)
-        Turn(p, _z_axis, math.rad(math.random(-20, 20)), 0.5)
-    end
-    WaitForTurns(ragDoll)
-    Sleep(500)
-
-end
-
-
-lastDamageDirX, lastDamageDirZ = randNVec(), randNVec()
-function script.Killed(recentDamage, _)
+function script.Killed(recentDamage, maxHealth)
+    boolDying = true
     paradeParticipation:Stop(false)
+    if Handbag then bagAlignment.remove(Handbag) end
+    if ShoppingBag then bagAlignment.remove(ShoppingBag) end
+    SetSignalMask(0)
+    Signal(SIG_ANIM+SIG_UP+SIG_LOW+SIG_COVER_WALK+SIG_BEHAVIOUR_STATE_MACHINE+
+        SIG_PISTOL+SIG_MOLOTOW+SIG_INTERNAL+SIG_STOP+SIG_PARADE+SIG_RPG)
     setSpeedEnv(unitID, 0)
     dropLoot()
-    _, maxHealth= Spring.GetUnitHealth(unitID)
-    -- Spring.Echo("Unit civilian got final damage ".. (recentDamage/maxHealth).." %")
-    if (recentDamage/maxHealth) > 2.5 then
-        ExplosiveDeath(lastDamageDirX, lastDamageDirZ )
-        return 1 -- signal custom animation handled
-    else
-        val = 5*randSign()
-        Turn(root,y_axis,math.rad(val),0.8)
-        for i=1,3 do
-            turnTableRand(TablesOfPiecesGroups["UpArm"], i, 90, -90, 1.4)
-            turnTableRand(TablesOfPiecesGroups["LowArm"], i, 90, -90, 1.4)
-        end
-        val = 90*randSign()
-        WTurn(root,x_axis, math.rad(val),1.4)
-        return 1
-    end
+    boolStunImpact = false
+    deathAnimation(recentDamage, maxHealth, lastDamageDirX, lastDamageDirZ)
+    return 1
 end
 
