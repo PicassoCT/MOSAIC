@@ -3,6 +3,7 @@ on:
   push:
     paths:
       - 'scripts/house_asian*_script.lua'
+      - 'scripts/lib_house_asian_animations.lua'
       - 'scripts/house_arab_script.lua'
       - 'scripts/*placeable*.lua'
       - 'scripts/lib_mosaic.lua'
@@ -13,6 +14,7 @@ on:
   pull_request:
     paths:
       - 'scripts/house_asian*_script.lua'
+      - 'scripts/lib_house_asian_animations.lua'
       - 'scripts/house_arab_script.lua'
       - 'scripts/*placeable*.lua'
       - 'scripts/lib_mosaic.lua'
@@ -53,6 +55,8 @@ jobs:
               'house_asian_standalone_placeables_test.lua',
               'house_asian_placeable_terrain_test.lua',
               'house_arab_animation_test.lua',
+              'house_asian_animation_test.lua',
+              'house_asian_recovery_test.lua',
               'lost_and_found_audio_test.lua',
           ):
               LuaRuntime().execute(Path('tests', name).read_text(encoding='utf-8'))

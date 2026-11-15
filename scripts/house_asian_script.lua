@@ -593,24 +593,33 @@ function initAllPieces()
     for pieceName, makeTasks in pairs(pieceCyclicOSTable) do
         local root = pieceName_pieceNr[pieceName]
         if root and inToShowDict(root) then
-            local tasks = makeTasks()
+            local makeSequence=makeTasks
             houseAnimations.add(root, function()
-                for _, task in ipairs(tasks) do
-                    local arg = task.arg
-                    if task.func == "func" then
-                        arg.method(arg)
-                    elseif task.func == "wturn" then
-                        WTurn(root, arg[1], math.rad(arg[2]), arg[4])
-                        Sleep(1)
-                        WTurn(root, arg[1], math.rad(arg[3]), arg[4])
-                        Sleep(1)
-                    elseif task.func == "wmove" then
-                        WMove(root, arg[1], arg[3], arg[4])
-                        Sleep(1)
-                        WMove(root, arg[1], arg[2], arg[4])
-                        Sleep(1)
+                -- Resolve optional model pieces inside the recoverable worker;
+                -- one malformed machinery set must not abort all registrations.
+                local tasks = makeSequence()
+                local repeatCycle
+                repeat
+                    repeatCycle=false
+                    for _, task in ipairs(tasks) do
+                        local arg = task.arg
+                        if task.func == "func" then
+                            arg.method(arg)
+                        elseif task.func == "wturn" then
+                            repeatCycle=true
+                            WTurn(root, arg[1], math.rad(arg[2]), arg[4])
+                            Sleep(1)
+                            WTurn(root, arg[1], math.rad(arg[3]), arg[4])
+                            Sleep(1)
+                        elseif task.func == "wmove" then
+                            repeatCycle=true
+                            WMove(root, arg[1], arg[3], arg[4])
+                            Sleep(1)
+                            WMove(root, arg[1], arg[2], arg[4])
+                            Sleep(1)
+                        end
                     end
-                end
+                until not repeatCycle
             end)
         end
     end
