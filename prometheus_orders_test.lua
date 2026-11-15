@@ -35,6 +35,7 @@ local function definitions()
         'units/shared/chasis/ground/walker/ground_walker_flame.lua',
         'units/shared/chasis/air/copter/air_copter_antiarmor.lua',
         'units/shared/chasis/air/copter/air_copter_mg.lua',
+        'units/shared/chasis/ground/turret/groundturret.lua',
         'units/shared/chasis/ground/wheels/Truck.lua','units/shared/abstracts/Icons.lua',
     }
     local raw={}
@@ -276,6 +277,28 @@ for _,visible in ipairs({true,false}) do
     w.tick(2)
     if visible then assert(w.has(-names.ground_truck_rocket.id,22),'visible air must produce a legal anti-air counter')
     else assert(not w.has(-names.ground_truck_rocket.id,22),'hidden air must not influence production') end
+end
+-- Optional replacements must not consume the next economic expansion.
+do
+    local w=world('protagon');w.metal=1999;w.energy=1999
+    w.add(10,'operativeinvestigator',1);w.add(11,'operativeinvestigator',1)
+    w.add(20,'protagonsafehouse',1);w.add(21,'propagandaserver',1)
+    w.add(30,'air_copter_scoutlett',1);w.add(31,'civilianagent',1)
+    w.add(100,'house_asian1',0,1200,800)
+    w.tick(6002)
+    assert(not w.has(-names.ground_walker_mg.id),'optional combat must not starve safehouse savings')
+    assert(not w.has(-names.operativeinvestigator.id),'optional third builder must respect savings')
+    w.metal=6000;w.energy=6000;w.tick(6092)
+    assert(w.has(-names.protagonsafehouse.id),'saved funds must unlock expansion')
+end
+-- Antagon lacks the mobile AA truck; use its actual legal AA turret menu.
+do
+    local w=world('antagon')
+    w.add(10,'operativepropagator',1);w.add(20,'antagonsafehouse',1)
+    w.add(21,'propagandaserver',1);w.add(22,'antagonassembly',1)
+    w.add(30,'air_copter_scoutlett',1);w.add(40,'air_copter_mg',2,3000,3000)
+    w.tick(2)
+    assert(w.has(-names.ground_turret_rocket.id,22),'Antagon must choose buildable anti-air')
 end
 -- Split combat assignments never converge more than three units on one target.
 do
