@@ -51,3 +51,6 @@ __pycache__/
 
 # Tiglil animation retargeting helper
 !scripts/lib_tiglil_retarget.lua
+
+# Airport ferry flight controller
+!scripts/lib_airport_ferry_flight.lua
