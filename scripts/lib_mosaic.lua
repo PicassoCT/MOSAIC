@@ -1124,6 +1124,7 @@ end
             [UnitDefNames["icon_blackout"].id] = true,
             [UnitDefNames["icon_hijacksatellite"].id] = true,
             [UnitDefNames["icon_emc"].id] = true,
+            [UnitDefNames["icon_cameradeception"].id] = true,
         }
     end      
 
@@ -1157,6 +1158,7 @@ end
             [UnitDefNames["icon_blackout"].id] = true,
             [UnitDefNames["icon_hijacksatellite"].id] = true,
             [UnitDefNames["icon_emc"].id] = true,
+            [UnitDefNames["icon_cameradeception"].id] = true,
         }
     end      
 

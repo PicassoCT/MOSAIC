@@ -63,3 +63,8 @@ __pycache__/
 
 # Asian house vehicle assembly choreography
 !scripts/lib_house_asian_vehicle_assembly.lua
+
+# Camera deception gameplay and presentation
+!scripts/cameradeceptionscript.lua
+!scripts/lib_camera_deception.lua
+!luarules/gadgets/game_camera_deception.lua

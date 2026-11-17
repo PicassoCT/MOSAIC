@@ -59,7 +59,8 @@ local Hivemind = Building:New{
 		"icon_blackout",
 		"icon_cybercrime",
 		"icon_bribe",
-		"icon_emc"
+		"icon_emc",
+		"icon_cameradeception"
 	},
 
 	customparams = {
@@ -129,7 +130,8 @@ local AICore = Building:New{
 		"icon_hijacksatellite",	
 		"icon_blackout",	
 		"icon_bribe",
-		"icon_emc"
+		"icon_emc",
+		"icon_cameradeception"
 	},
 	
 }
