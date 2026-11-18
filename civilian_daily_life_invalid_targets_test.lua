@@ -98,6 +98,10 @@ life:UnitDestroyed(103)
 assert(life.people[10].work==nil,"destroyed venue remained remembered as work")
 
 local source=read("luarules/gadgets/game_civilians.lua")
+if source:find("local function isHumanShieldHostage(",1,true) then
+    e.isHumanShieldHostage=chunk(section(source,"local function isHumanShieldHostage(",
+        "function startInternalBehaviourOfState(").."\nreturn isHumanShieldHostage",e)
+end
 local events={}
 e.RouteTabel={[100]={"101",false,{},101,102,103}}
 e.civilianLife=life
