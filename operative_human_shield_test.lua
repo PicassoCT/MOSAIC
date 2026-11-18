@@ -1,6 +1,6 @@
 -- Run through run.sh against the game checkout with Lua 5.1+.
--- Actual synced gadget: explicit target capture, mixed weapons, interception,
--- changing faction/ownership, cleanup and composition with other speed changes.
+-- Actual synced gadget: Antagon-only capture, native command acceptance,
+-- mixed weapons, car/arena lifecycle, cleanup and speed composition.
 local function check(value, message) assert(value, message) end
 local function eq(a, b, message)
     assert(a == b, message .. ': ' .. tostring(a) .. ' ~= ' .. tostring(b))
@@ -9,22 +9,26 @@ local function near(a, b, message)
     assert(math.abs(a - b) < 1e-7, message .. ': ' .. tostring(a) .. ' ~= ' .. tostring(b))
 end
 local function world()
-    local w = {units = {}, frame = 0, registered = {}, watched = {}, attached = 0,
+    local w = {units = {}, frame = 0, registered = {}, watched = {}, destroyed = {}, attached = 0,
         detached = 0, stopped = {}, interrupted = {}, teams = {
             [0] = {side = ''}, [1] = {side = 'antagon'}, [2] = {side = 'Protagon'},
             [3] = {side = 'antagon'}, [4] = {side = 'protagon', ally = 1},
             [5] = {side = '', start = 4}, [6] = {side = '', start = 1},
+            [7] = {side = 'unknown'},
         }}
-    CMD = {STOP = 0, INSERT = 1, MOVE = 10, ATTACK = 20, DGUN = 105, CLOAK = 95}
+    CMD = {STOP = 0, INSERT = 1, MOVE = 10, ATTACK = 20, AREA_ATTACK = 21, DGUN = 105, CLOAK = 95,
+        FIRE_STATE = 45, REPAIR = 40, RECLAIM = 90, RESURRECT = 125, CAPTURE = 130,
+        RESTORE = 110, GUARD = 25, PATROL = 15, FIGHT = 16, OPT_INTERNAL = 8, OPT_SHIFT = 32}
     CMDTYPE = {ICON = 0, ICON_UNIT = 12}
     Game = {gameSpeed = 30, mapSizeX = 8192, mapSizeZ = 8192}
     GG = {DisguiseCivilianFor = {}, InterrogationTable = {}, CloseCombatInvolved = {}}
     UnitDefNames = {operativepropagator = {id = 1}, civilian_arab0 = {id = 2},
         truck = {id = 3}, operativeinvestigator = {id = 4}, operativeasset = {id = 5},
-        air_plane_sniper = {id = 6}}
+        air_plane_sniper = {id = 6}, air_parachut = {id = 7}, closecombatarena = {id = 8},
+        meleeoperative = {id = 9}}
     WeaponDefNames = {stunpistol = {id = 10}, pistol = {id = 11},
-        sniperrifle = {id = 12}, slowsniperrifle = {id = 13}}
-    WeaponDefs = {[10] = {}, [11] = {}, [12] = {}, [13] = {}}
+        sniperrifle = {id = 12}, slowsniperrifle = {id = 13}, closecombat = {id = 14}}
+    WeaponDefs = {[10] = {}, [11] = {}, [12] = {}, [13] = {}, [14] = {}}
     UnitDefs = {
         [1] = {name = 'operativepropagator', speed = 66, weapons = {{weaponDef = 10}}},
         [2] = {name = 'civilian_arab0', speed = 36, weapons = {{weaponDef = 11}}},
@@ -32,18 +36,29 @@ local function world()
         [4] = {name = 'operativeinvestigator', speed = 66, weapons = {{weaponDef = 10}}},
         [5] = {name = 'operativeasset', speed = 66, weapons = {{weaponDef = 11}, {weaponDef = 12}}},
         [6] = {name = 'air_plane_sniper', speed = 100, weapons = {{weaponDef = 13}}},
+        [7] = {name = 'air_parachut', speed = 20, weapons = {}},
+        [8] = {name = 'closecombatarena', speed = 0, weapons = {}},
+        [9] = {name = 'meleeoperative', speed = 66, weapons = {{weaponDef = 11}, {weaponDef = 14}}},
     }
     function w:add(id, def, team, x)
         self.units[id] = {def = def, team = team, x = x or 0, y = 0, z = 0,
             rules = {}, descs = {}, blocking = {true, true, true, false, true, false, true},
             noSelect = false, capturable = true, speed = 1, hp = 100, built = 1,
-            pieces = {center = 1}, pose = false}
+            pieces = {center = 1, hostagePoint = 2}, pose = false, shieldReady = true,
+            weaponStates = {}}
+        for number in ipairs(UnitDefs[def].weapons or {}) do
+            self.units[id].weaponStates[number] = {salvoLeft=0,reloadFrame=123}
+        end
         if self.gadget then self.gadget:UnitCreated(id, def) end
         return self.units[id]
     end
     function w:all()
         local ids = {}; for id in pairs(self.units) do ids[#ids + 1] = id end
         table.sort(ids); return ids
+    end
+    function w:commands(id)
+        local unit=self.units[id]
+        return unit.commands or (unit.command and {unit.command}) or {}
     end
     Spring = {
         GetGaiaTeamID = function() return 0 end,
@@ -68,6 +83,18 @@ local function world()
         GetUnitIsStunned = function(id) local u = w.units[id]; return u.stunned, false, u.built < 1 end,
         GetUnitHealth = function(id) local u = w.units[id]; return u.hp, 100, 0, 0, u.built end,
         GetUnitTransporter = function(id) return w.units[id] and w.units[id].transporter end,
+        GetUnitIsBuilding = function(id) return w.units[id] and w.units[id].building end,
+        GetUnitWeaponState = function(id,number,key)
+            local state=w.units[id].weaponStates[number]
+            return key and state[key] or state
+        end,
+        SetUnitWeaponState = function(id,number,values)
+            local state=assert(w.units[id].weaponStates[number],'only actual weapons may be changed')
+            for key,value in pairs(values) do state[key]=value end
+        end,
+        GetUnitVelocity = function(id)
+            local u = w.units[id]; return u.vx or 0, u.vy or 0, u.vz or 0, u.velocity or 0
+        end,
         GetUnitLosState = function(id) return {los = not w.units[id].hidden} end,
         GetUnitPosition = function(id) local u = w.units[id]; if u then return u.x, u.y, u.z end end,
         SetUnitPosition = function(id, x, z) local u = w.units[id]; u.x, u.y, u.z = x, 0, z end,
@@ -82,17 +109,30 @@ local function world()
         GetUnitIsCloaked = function(id) return w.units[id].cloaked end,
         SetUnitCloak = function(id, value) w.units[id].cloaked = value end,
         GetGameFrame = function() return w.frame end,
+        GetUnitCurrentCommand = function(id)
+            local command = w:commands(id)[1]
+            if command then return command.id, command.options or {}, command.tag, unpack(command.params) end
+        end,
+        GetCommandQueue = function(id) return w:commands(id) end,
+        GetUnitCommands = function(id) return w:commands(id) end,
         SetUnitMoveGoal = function(id, x, y, z, radius) w.units[id].goal = {x, y, z, radius} end,
         ClearUnitGoal = function(id) w.units[id].goal = nil end,
         GiveOrderToUnit = function(id, cmd) if cmd == CMD.STOP then w.stopped[id] = true end end,
         UnitAttach = function(carrier, civilian, piece, force)
-            eq(piece, 1, 'attachment uses carrier center'); check(force, 'forced Lua attachment')
+            eq(piece, 2, 'attachment uses authored hostagePoint, never the center'); check(force, 'forced Lua attachment')
             w.attached = w.attached + 1
             if not w.failAttach then w.units[civilian].transporter = carrier end
         end,
         UnitDetach = function(id) w.detached = w.detached + 1; w.units[id].transporter = nil end,
+        DestroyUnit = function(id, selfDestruct, reclaimed, attacker)
+            w.destroyed[#w.destroyed + 1] = {id=id, selfDestruct=selfDestruct,
+                reclaimed=reclaimed, attacker=attacker, held=GG.HumanShield.IsHostage(id)}
+            w.units[id].dead = true
+            if w.gadget then w.gadget:UnitDestroyed(id, w.units[id].def, w.units[id].team) end
+        end,
         FindUnitCmdDesc = function(id, cmd) return w.units[id].descs[cmd] and cmd end,
         InsertUnitCmdDesc = function(id, desc) w.units[id].descs[desc.id] = desc end,
+        RemoveUnitCmdDesc = function(id, cmd) w.units[id].descs[cmd] = nil end,
         EditUnitCmdDesc = function(id, cmd, desc)
             for key, value in pairs(desc) do w.units[id].descs[cmd][key] = value end
         end,
@@ -101,10 +141,12 @@ local function world()
     Spring.UnitScript.GetScriptEnv = function(id)
         local u = w.units[id]; if not u or u.noScript then return nil end
         return {
+            canUseHumanShield = function() return u.shieldReady end,
             canBeHumanShield = function() return u.capturable end,
-            setHumanShieldCarrier = function(carrier)
+            setHumanShieldCarrier = function(carrier, reason)
                 if u.rejectCapture and carrier then return false end
                 u.heldBy = carrier
+                if not carrier then u.releaseReason = reason end
                 return true
             end,
             setHumanShieldActive = function(active) u.pose = active end,
@@ -114,6 +156,7 @@ local function world()
     GG.CivilianLife = {Interrupt = function(_, id) w.interrupted[id] = true end}
     function getCultureUnitModelTypes(culture, kind)
         eq(culture, 'international', 'all authored civilian cultures are eligible')
+        if kind == 'truck' then return {[3] = true} end
         eq(kind, 'civilian', 'walking civilians only'); return {[2] = true}
     end
     function setSpeedEnv(id, factor)
@@ -135,11 +178,55 @@ local function world()
     w:add(1, 1, 1); w:add(2, 1, 1); w:add(10, 2, 0, 40); w:add(11, 2, 0, 400)
     w:add(20, 4, 2); w:add(21, 5, 2); w:add(22, 6, 2); w:add(23, 5, 3)
     w:add(24, 4, 4); w:add(25, 4, 5); w:add(26, 4, 6); w:add(30, 3, 0, 20)
+    w:add(31, 7, 0, 20)
+    w:add(32, 8, 0, 20)
+    w:add(33, 9, 2)
     gadget = {}; dofile('luarules/gadgets/game_operative_human_shield.lua')
     w.gadget = gadget; gadget:Initialize(); w.api = GG.HumanShield
-    function w:order(id, cmd, params)
+    function w:order(id, cmd, params, options)
         local u = self.units[id]
-        return self.gadget:AllowCommand(id, u.def, u.team, cmd, params or {}, {})
+        return self.gadget:AllowCommand(id, u.def, u.team, cmd, params or {}, options or {})
+    end
+    function w:issue(id, cmd, params, options, engineResult)
+        local u = self.units[id]
+        params, options = params or {}, options or {}
+        if not self:order(id, cmd, params, options) then return false end
+        self.commandTag = (self.commandTag or 0) + 1
+        -- The native UnitCommand call-in runs before command-AI validation and
+        -- queue insertion. A callback alone is not evidence the order survived.
+        if self.gadget.UnitCommand then
+            self.gadget:UnitCommand(id, u.def, u.team, cmd, params, options, self.commandTag)
+        end
+        if engineResult == 'reject' then return false end
+        if cmd == CMD.CLOAK or cmd == CMD.FIRE_STATE then return true end
+        local installedCmd, installedParams, installedOptions = cmd, params, options
+        if cmd == CMD.INSERT then
+            installedCmd, installedParams, installedOptions = params[2], {}, {coded=params[3]}
+            for index=4,#params do installedParams[#installedParams+1]=params[index] end
+        end
+        local queue=self:commands(id)
+        if engineResult == 'cancel' then
+            local retained={}
+            for _,old in ipairs(queue) do
+                if old.id~=installedCmd then retained[#retained+1]=old end
+            end
+            u.commands, u.command=retained,nil
+            return true
+        end
+        installedParams=self.nextInstalledParams or installedParams
+        self.nextInstalledParams=nil
+        local installed={id=installedCmd,params=installedParams,options=installedOptions,tag=self.commandTag}
+        local shifted=options.shift or (options.coded and options.coded % (CMD.OPT_SHIFT*2)>=CMD.OPT_SHIFT)
+        if cmd==CMD.INSERT or shifted then
+            local appended={}
+            for _,old in ipairs(queue) do appended[#appended+1]=old end
+            appended[#appended+1]=installed
+            u.commands=appended
+        else
+            u.commands={installed}
+        end
+        u.command=nil
+        return true
     end
     function w:execute(id, cmd, params)
         local u = self.units[id]
@@ -150,8 +237,8 @@ local function world()
         local used, done = self:execute(id, CMD_HUMAN_SHIELD, {civilian})
         check(used and done and self.api.HasShield(id), 'capture completed')
     end
-    function w:tick()
-        self.frame = self.frame + 5; self.gadget:GameFrame(self.frame)
+    function w:tick(frames)
+        self.frame = self.frame + (frames or 5); self.gadget:GameFrame(self.frame)
     end
     return w
 end
@@ -184,9 +271,36 @@ w.units[1].stunned = true; check(not w:order(1, TAKE, {10}), 'stunned carrier ca
 GG.InterrogationTable[1] = {[20] = true}
 check(not w:order(1, TAKE, {10}), 'already detained carrier cannot grab a civilian')
 GG.InterrogationTable[1] = nil
+GG.InterrogationTable[20] = {[1] = true}
+check(not w:order(1, TAKE, {10}), 'an active interrogator cannot capture after replacing its attack command')
+GG.InterrogationTable[20][1] = false
+check(w:order(1, TAKE, {10}), 'completed interrogation entries do not permanently disable capture')
+GG.InterrogationTable[20] = nil
 w.units[1].rules.betrayal_pending = 1
 check(not w:order(1, TAKE, {10}), 'betrayal cannot be bypassed by taking a hostage')
 w.units[1].rules.betrayal_pending = nil
+
+-- A unit definition is shared across factions. Its current owning faction and
+-- live activity, rather than the definition's directory, grant this ability.
+check(w.units[23].descs[TAKE] and not w.units[21].descs[TAKE],
+    'only the Antagon-owned Asset receives Human Shield')
+for _, team in ipairs({0, 2, 5, 7}) do
+    local unit = w:add(40, 1, team)
+    check(not unit.descs[TAKE] and not unit.descs[RELEASE], 'ineligible faction has no shield controls')
+    check(not w:order(40, TAKE, {10}), 'forged capture rejected for ineligible faction')
+end
+w:add(40, 5, 6)
+check(w.units[40].descs[TAKE] and w:order(40, TAKE, {10}),
+    'Antagon startUnit fallback also grants shared Asset ability')
+w.units[1].pieces.hostagePoint = nil
+check(not w:order(1, TAKE, {10}), 'missing authored hostagePoint rejects capture without center fallback')
+w.units[1].pieces.hostagePoint = 2
+w.units[1].shieldReady = false
+check(not w:order(1, TAKE, {10}), 'private script activity may veto capture')
+w.units[1].shieldReady = true
+w.units[1].building = 30
+check(not w:order(1, TAKE, {10}), 'engine build activity independently vetoes capture')
+w.units[1].building = nil
 
 check(w:order(1, TAKE, {11}), 'distant explicit civilian accepted for approach')
 local used, done = w:execute(1, TAKE, {11})
@@ -223,10 +337,22 @@ check(w.api.BlockShot(21, 1, 1), 'mixed sniper unit pistol cannot bypass firing 
 check(not w.api.BlockShot(21, 2, 1), 'mixed sniper unit sniper still fires')
 check(not w.api.BlockShot(22, 1, 1), 'sniper aircraft still fires')
 check(w.api.BlockShot(10, 1, 20), 'captive cannot fire weapons while held')
+check(w.api.BlockShot(1, 1, 20) and w.api.BlockShot(1, 1, nil),
+    'carrier cannot fire at a unit or ground while holding a hostage')
+check(w:order(1, CMD.FIRE_STATE, {2}) and w.api.HasShield(1),
+    'aim and fire-state controls retain the hostage without firing')
 check(not w.api.BlockShot(23, 1, 1), 'Antagon pistol still fires')
 local allowed, priority = w.gadget:AllowWeaponTarget(20, 1, 1, 10, 37)
 check(not allowed and priority == 37, 'automatic targeting preserves priority while rejecting target')
 check(w.gadget:AllowWeaponTarget(21, 1, 2, 12, 37), 'automatic sniper targeting permitted')
+check(w.gadget:AllowWeaponTarget(33, 1, 2, 14, 37), 'incoming melee can initiate the hostage escape transition')
+check(not w.gadget:AllowWeaponTarget(33, 1, 1, 11, 37), 'melee-capable attacker still cannot use its pistol')
+check(w:order(33, CMD.ATTACK, {1}), 'a melee-capable unit can receive an explicit melee approach order')
+check(w.api.BlockShot(33, 1, 1) and not w.api.BlockShot(33, 2, 1),
+    'per-shot protection admits only the contact weapon of a mixed melee attacker')
+check(not w.api.IsProtected(1, 2, 14), 'projectile impact dispatcher can reach the close-combat callback')
+check(w.gadget:UnitPreDamaged(1, 1, 1, 1, false, 14, 500, 33, 9, 2) == nil,
+    'native damage hook does not cancel the contact that starts melee')
 check(not w:order(20, CMD.ATTACK, {1}), 'new non-sniper direct attack rejected')
 check(w:order(21, CMD.ATTACK, {1}), 'mixed unit may receive sniper target')
 check(not w:order(21, CMD_INVESTIGATE, {1}), 'sniper ownership cannot permit interrogation')
@@ -250,10 +376,12 @@ eq(w.detached, 1, 'release detaches once')
 w.api.Release(1); w.gadget:UnitDestroyed(10); eq(w.detached, 1, 'repeated cleanup is idempotent')
 
 w = world(); w.failAttach = true
+w.units[1].weaponStates[1].salvoLeft=4
 w:execute(1, TAKE, {10})
 check(not w.api.HasShield(1) and not w.api.IsHostage(10), 'failed native attachment grants no protection')
 check(not w.units[10].noSelect and w.units[10].heldBy == nil, 'failed attachment restores civilian state')
 near(w.units[1].speed, 1, 'failed attachment leaves normal speed')
+eq(w.units[1].weaponStates[1].salvoLeft,4,'failed capture does not cancel an unrelated weapon burst')
 w.failAttach = false; w.units[10].rejectCapture = true
 w:execute(1, TAKE, {10}); check(not w.api.HasShield(1), 'script refusal grants no protection')
 
@@ -267,10 +395,155 @@ for _, event in ipairs({'UnitTaken', 'UnitGiven'}) do
     w.gadget[event](w.gadget, 1, 1, 1, 2)
     check(not w.api.HasShield(1) and not w.api.IsHostage(10), event .. ' frees captive after carrier transfer')
     near(w.units[1].speed, 1, event .. ' restores speed')
+    if event == 'UnitTaken' then w.gadget:UnitGiven(1, 1, 2, 1) end
+    check(not w.units[1].descs[TAKE] and not w.units[1].descs[RELEASE],
+        event .. ' removes Antagon-only commands after a Protagon transfer')
+    check(not w:order(1, TAKE, {10}), event .. ' does not leave a forged capture route')
     w = world(); w:capture(1, 10); w.units[10].team = 3
     w.gadget[event](w.gadget, 10, 2, 0, 3)
     check(not w.api.HasShield(1) and not w.api.IsHostage(10), event .. ' frees transferred captive')
 end
+w = world(); w.units[21].team = 1; w.gadget:UnitGiven(21, 5, 1, 2)
+check(w.units[21].descs[TAKE], 'an Asset acquired by Antagon gains the ability')
+w:capture(21, 10)
+check(w.api.BlockShot(21, 1, 20) and w.api.BlockShot(21, 2, 20)
+    and w.api.BlockShot(21, 2, nil), 'a carrier cannot fire even its sniper at unit or ground targets')
+w.api.Release(21)
+check(not w.api.BlockShot(21, 1, 20) and not w.api.BlockShot(21, 2, nil),
+    'ordinary Asset firing resumes after release')
+w=world()
+w.units[23].weaponStates[1]={salvoLeft=4,reloadFrame=600,stockpileQueued=3}
+w.units[23].weaponStates[2]={salvoLeft=2,reloadFrame=700,stockpileQueued=5}
+w:capture(23,10)
+for number,reload in ipairs({600,700}) do
+    local weapon=w.units[23].weaponStates[number]
+    eq(weapon.salvoLeft,0,'capture cancels already-started burst rounds that bypass BlockShot')
+    eq(weapon.reloadFrame,reload,'capture preserves weapon reload debt')
+    eq(weapon.stockpileQueued,number==1 and 3 or 5,'capture does not refund or consume other weapon state')
+end
+w.api.Release(23)
+check(w.units[23].weaponStates[1].salvoLeft==0 and w.units[23].weaponStates[2].salvoLeft==0,
+    'release never restarts a cancelled pre-hostage burst')
+
+local incompatibleActivities = {
+    script = function(unit) unit.shieldReady = false end,
+    construction = function(unit) unit.building = 30 end,
+    stunned = function(unit) unit.stunned = true end,
+    closeCombat = function() GG.CloseCombatInvolved[1] = true end,
+    interrogation = function() GG.InterrogationTable[1] = {[20] = true} end,
+    interrogator = function() GG.InterrogationTable[20] = {[1] = true} end,
+    faction = function(unit) unit.team = 2 end,
+    rooftop = function(unit) unit.rules.asset_rooftop = 1 end,
+}
+for name, begin in pairs(incompatibleActivities) do
+    w = world(); w:capture(1, 10); begin(w.units[1]); w:tick()
+    check(not w.api.HasShield(1) and not w.api.IsHostage(10),
+        'live ' .. name .. ' activity ends an existing shield')
+    check(not w.units[10].dead and not w.units[10].transporter,
+        'incompatible ' .. name .. ' activity releases the hostage safely')
+    near(w.units[1].speed, 1, 'incompatible ' .. name .. ' activity restores speed')
+    if name == 'closeCombat' then
+        eq(w.units[10].releaseReason, 'melee', 'close combat requests the liberated civilian panic escape')
+    end
+end
+
+for _, command in ipairs({-3, CMD.REPAIR, CMD.RECLAIM, CMD.RESTORE,
+        CMD.RESURRECT, CMD.CAPTURE, CMD_INVESTIGATE, CMD_ASSET_ROOFTOP}) do
+    w = world(); w.units[1].command = {id=command,params={30},tag=1}
+    check(not w:order(1, TAKE, {10}), 'active incompatible work cannot start Human Shield: ' .. command)
+    w.units[1].command = nil; w:capture(1, 10)
+    w:issue(1, command, {30}); w:tick()
+    check(not w.api.HasShield(1) and not w.units[10].dead,
+        'starting incompatible work safely releases captive: ' .. command)
+end
+
+local explicitFireOrders = {
+    {CMD.ATTACK, {20}},
+    {CMD.ATTACK, {50, 0, 50}},
+    {CMD.DGUN, {20}},
+    {CMD.DGUN, {50, 0, 50}},
+    {CMD.AREA_ATTACK, {50, 0, 50, 30}},
+    {CMD.ATTACK, {20}, {shift=true, coded=CMD.OPT_SHIFT}},
+    {CMD.INSERT, {0, CMD.ATTACK, 0, 20}},
+    {CMD.INSERT, {1, CMD.DGUN, CMD.OPT_SHIFT, 50, 0, 50}},
+}
+for index, order in ipairs(explicitFireOrders) do
+    w = world(); w:capture(1, 10)
+    check(w:order(1, order[1], order[2], order[3]), 'valid fire command accepted: ' .. index)
+    check(w.api.HasShield(1) and not w.units[10].dead and #w.destroyed == 0,
+        'AllowCommand is a pure veto stage, not a premature hostage execution: ' .. index)
+    check(w:issue(1, order[1], order[2], order[3]), 'engine accepts explicit fire order: ' .. index)
+    check(w.api.HasShield(1) and not w.units[10].dead,
+        'UnitCommand alone cannot prove the native command was queued: ' .. index)
+    w:tick(1)
+    check(w.units[10].dead and not w.api.HasShield(1) and not w.api.IsHostage(10),
+        'accepted explicit fire kills the hostage and ends shielding: ' .. index)
+    eq(#w.destroyed, 1, 'one accepted fire order kills only the held civilian')
+    local death=w.destroyed[1]
+    check(death.id == 10 and death.attacker == 1 and death.held,
+        'hostage dies while still owned by shield lifecycle and attributed to its carrier')
+    check(death.selfDestruct == false and death.reclaimed == false,
+        'explicit fire uses the real civilian death path, not silent removal')
+    near(w.units[1].speed, 1, 'fire command restores operative movement')
+    check(not w.api.BlockShot(1, 1, 20), 'the operative can fire only after the hostage has died')
+end
+for _, params in ipairs({{}, {9999}, {'20'}, {50,0}, {0/0,0,0}, {math.huge,0,0}}) do
+    w = world(); w:capture(1, 10)
+    check(not w:issue(1, CMD.ATTACK, params), 'malformed fire command is rejected')
+    w:tick()
+    check(w.api.HasShield(1) and not w.units[10].dead, 'malformed command cannot kill a captive')
+end
+for index, order in ipairs({
+        {CMD.ATTACK,{20},{internal=true}},
+        {CMD.ATTACK,{20},{coded=CMD.OPT_INTERNAL}},
+        {CMD.INSERT,{0,CMD.ATTACK,CMD.OPT_INTERNAL,20}},
+        {CMD.INSERT,{0,CMD.ATTACK,0,20},{internal=true}},
+        {CMD.INSERT,{0,CMD.ATTACK,0,20},{coded=CMD.OPT_INTERNAL}},
+        {CMD.FIGHT,{50,0,50}},
+        {CMD.FIRE_STATE,{2}},
+        {CMD.MOVE,{50,0,50}},
+    }) do
+    w = world(); w:capture(1, 10)
+    check(w:issue(1, order[1], order[2], order[3]), 'non-fire or internal order remains accepted')
+    w:tick()
+    check(w.api.HasShield(1) and not w.units[10].dead,
+        'aim/fire stance, movement and internal AI commands do not execute a hostage: ' .. index)
+    check(w.api.BlockShot(1, 1, 20), 'ordinary automatic or internally targeted firing remains blocked')
+end
+w = world(); w:issue(1, CMD.ATTACK, {20}); w:capture(1, 10)
+w:tick()
+check(w.api.HasShield(1) and w.api.BlockShot(1,1,20) and not w.units[10].dead,
+    'an attack ordered before capture cannot execute the newly acquired hostage')
+
+for _, order in ipairs({
+        {CMD.ATTACK,{-1000,0,50}},
+        {CMD.DGUN,{20}},
+        {CMD.INSERT,{999999,CMD.ATTACK,0,20}},
+    }) do
+    w=world(); w:capture(1,10)
+    w:issue(1,order[1],order[2],{},'reject'); w:tick()
+    check(w.api.HasShield(1) and not w.units[10].dead and #w.destroyed==0,
+        'off-map, unsupported or invalid-insert native rejection must not execute a hostage')
+end
+w=world(); w:issue(1,CMD.ATTACK,{20}); w:capture(1,10)
+w:issue(1,CMD.ATTACK,{20},{shift=true,coded=CMD.OPT_SHIFT},'cancel'); w:tick()
+check(w.api.HasShield(1) and not w.units[10].dead,
+    'shift-click cancellation of an old queued attack is not a new fire order')
+w=world(); w:issue(1,CMD.ATTACK,{20}); w:capture(1,10)
+w:issue(1,CMD.ATTACK,{20},{shift=true,coded=CMD.OPT_SHIFT},'reject'); w:tick()
+check(w.api.HasShield(1) and not w.units[10].dead,
+    'an old matching queue tag cannot satisfy a rejected new fire order')
+w=world(); w:capture(1,10); w.nextInstalledParams={50,27,50}
+w:issue(1,CMD.ATTACK,{50,0,50}); w:tick()
+check(w.units[10].dead and not w.api.HasShield(1),
+    'native adjustment of ground Y does not disguise a genuinely new fire order')
+w=world(); w:capture(1,10); w:issue(1,CMD.ATTACK,{20})
+w.api.Release(1); w:capture(1,10); w:tick()
+check(w.api.HasShield(1) and not w.units[10].dead,
+    'release cancels pending fire evidence so it cannot execute a recaptured hostage')
+w = world(); w:capture(1, 10); w:issue(1, CMD.CLOAK, {1})
+check(not w.api.HasShield(1) and not w.units[10].dead,
+    'explicitly requesting cloak safely releases the hostage')
 w = world(); w:capture(1, 10); w.units[1].dead = true; w.gadget:UnitDestroyed(1)
 check(not w.api.IsHostage(10) and not w.units[10].transporter and not w.units[10].dead, 'carrier death releases living civilian')
 w = world(); w:capture(1, 10); w.units[10].dead = true; w.gadget:UnitDestroyed(10)
@@ -279,8 +552,30 @@ check(not w.units[10].transporter, 'dying hostage is detached before death clean
 near(w.units[1].speed, 1, 'hostage death restores movement')
 w = world(); w:capture(1, 10); w.units[10].transporter = nil; w:tick()
 check(not w.api.IsHostage(10), 'unexpected engine detachment clears stale state')
-w = world(); w:capture(1, 10); w.units[1].transporter = 30; w:tick()
-check(not w.api.IsHostage(10), 'boarding a transport frees captive')
+w = world(); w:capture(1, 10); w.units[1].transporter = 31; w:tick()
+check(not w.api.IsHostage(10), 'boarding a parachute frees captive')
+w = world(); w:capture(1, 10); w.units[1].transporter = 30
+w.gadget:UnitLoaded(1, 1, 1, 30, 0); w:tick()
+check(w.api.HasShield(1) and w.units[10].transporter == 1,
+    'boarding an approved road car preserves the nested captive attachment')
+check(w.api.IsTransportAllowed(1) and not w.api.IsProtected(30, 2, 11),
+    'the car is allowed transport but receives no hostage protection')
+check(w:order(20, CMD.ATTACK, {30}) and not w.api.BlockShot(20, 1, 30),
+    'ordinary Protagon weapons can attack the occupied car')
+check(w.gadget:UnitPreDamaged(30, 3, 0, 100, false, 11, 500, 20, 4, 2) == nil,
+    'car damage passes through unchanged')
+w.units[30].transporter = 31; w:tick()
+check(not w.api.HasShield(1), 'a road car in another transport cannot bypass the parachute restriction')
+w = world(); w:capture(1, 10); w.units[1].transporter = 31
+w.gadget:UnitLoaded(1, 1, 1, 31, 0)
+check(not w.api.HasShield(1), 'illegal boarding releases immediately without waiting for GameFrame')
+for _, event in ipairs({'UnitLoaded','UnitStunned'}) do
+    w=world(); w:capture(1,10); w.units[1].transporter=32
+    if event=='UnitLoaded' then w.gadget:UnitLoaded(1,1,1,32,0)
+    else w.gadget:UnitStunned(1,1,1,true) end
+    check(not w.api.HasShield(1) and not w.units[10].dead and w.units[10].releaseReason=='melee',
+        event .. ' recognizes close-combat arena before the script/GG flag is set and triggers escape')
+end
 w = world(); w:capture(1, 10); w.units[1].cloaked = true; w:tick()
 check(not w.units[1].cloaked, 'forced cloak cannot conceal active hostage')
 w.gadget:Shutdown()
@@ -302,6 +597,65 @@ local function execute(text, env)
     if setfenv then return setfenv(assert(loadstring(text)), env)() end
     return assert(load(text, 'human shield framework', 't', env))()
 end
+
+-- Load the final unit definition: a duplicate category key used to erase the
+-- engine targeting category even when the Lua melee whitelist admitted it.
+local humanBase = {}
+function humanBase:New(values) return setmetatable(values or {}, {__index = self}) end
+local propagatorDefs = execute(read('units/antagon/OperativePropagator.lua'), {
+    Human = humanBase, lowerkeys = function(defs) return defs end,
+})
+check((' ' .. propagatorDefs.operativepropagator.category .. ' '):find(' CLOSECOMBATABLE ', 1, true),
+    'the final Propagator definition remains targetable by enemy close-combat weapons')
+
+-- Drive the production impact dispatcher, arena setup and operative callback
+-- together. Only native arena/model operations are mocked here.
+w = world(); w:capture(1, 10)
+local callbackEnv = {
+    unitID = 1, CLOSE_COMBAT_SIGHTED = 0.1,
+    releaseHumanShield = function(reason) w.api.Release(1, reason) end,
+    setViewRadius = function() end,
+}
+execute(assert(read('scripts/operativePropagatorScript.lua'):match(
+    '(function isNowInCloseCombat%([^)]*%)[%s%S]-\nend)')), callbackEnv)
+local originalScriptEnv = Spring.UnitScript.GetScriptEnv
+local arenaParticipants
+Spring.UnitScript.GetScriptEnv = function(id)
+    if id == 1 then return callbackEnv end
+    if id == 32 then return {addCloseCombatants = function(attacker, victim)
+        arenaParticipants = {attacker, victim}
+    end} end
+    return originalScriptEnv(id)
+end
+Spring.GetUnitRotation = function() return 0, 0, 0 end
+Spring.SetUnitRotation = function() end
+Spring.CreateUnit = function(name)
+    eq(name, 'closecombatarena', 'melee creates the existing arena type')
+    return 32
+end
+local projectileSource = read('luarules/gadgets/game_ProjectileImpacts.lua')
+local meleeEnv = {
+    GG = GG, Spring = Spring, GaiaTeamID = 0, gadget = {},
+    spGetUnitTeam = Spring.GetUnitTeam,
+    UnitDamageFuncT = {}, closeCombatWeaponDefID = 14,
+    isCloseCombatCapabaleType = {[1] = true, [9] = true},
+    makeDisguiseUnitTransparent = function(id, defID) return id, defID end,
+    doesUnitExistAlive = function(id) return w.units[id] and not w.units[id].dead end,
+    currentlyInterrogationRunning = function() return false end,
+    isInterrogatingAttacker = function() return false end,
+    RaidExternalAbort = {}, FireWeapons = {},
+}
+execute(section(projectileSource, '    local function humanShieldProtects(', '    local MobileInterrogateAbleType')
+    .. section(projectileSource, '    function initiateCloseCombat(', '    function isEngagedInAnotherRaidAlready(')
+    .. section(projectileSource, '    UnitDamageFuncT[closeCombatWeaponDefID]', '    UnitDamageFuncT[nimrodRailungDefID]')
+    .. section(projectileSource, '    function gadget:UnitDamaged(', '    -- ===========Projectile Persistence Functions'), meleeEnv)
+meleeEnv.gadget:UnitDamaged(1, 1, 1, 1, false, 14, 999, 33, 9, 2)
+check(arenaParticipants and arenaParticipants[1] == 33 and arenaParticipants[2] == 1,
+    'Protagon close-combat contact reaches the existing arena dispatch')
+check(not w.api.HasShield(1) and not w.units[10].dead and not w.units[10].transporter,
+    'the production operative melee callback immediately frees the living hostage')
+eq(w.units[10].releaseReason, 'melee', 'the real melee path selects civilian escape behaviour')
+
 w = world()
 local originalCalls = 0
 local callins = {BlockShot = function(weapon, target, userTarget)
@@ -346,4 +700,4 @@ eq(speedValue, math.ceil(66 * 0.5 * 2184.53), 'unaffected operative speed unchan
 w.api.Release(1)
 near(w.units[1].speed, 0.25, 'release restores last independent speed request from real setters')
 
-print('PASS: Human Shield capture, exact approach target, eligibility, factions/allies, mixed sniper weapons, direct/inserted/queued attacks, real BlockShot delegation, impact protection, real speed setters and release lifecycles')
+print('PASS: Antagon-only Human Shield, authored anchor, native queued-fire proof, internal/rejected/cancelled order safety, burst cancellation, vulnerable cars, melee escape, mixed sniper protection, speed and ownership lifecycles')

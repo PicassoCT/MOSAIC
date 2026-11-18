@@ -90,15 +90,32 @@ eq(effectCount, 3, 'impact behavior is unchanged when the ability gadget is abse
 
 -- A hostage must survive arrival, traffic pruning and social activity without
 -- losing their traffic record. Release resumes the ordinary path next tick.
-local held, alive, assigned, destroyed = {[10] = true}, {[10] = true, [11] = true, [50] = true}, {}, {}
+local held, alive, assigned, destroyed = {[10] = true},
+    {[10] = true, [11] = true, [12] = true, [50] = true, [51] = true}, {}, {}
+local transported, transportReads = {[12] = 51}, {}
 local cityGG = {
     HumanShield = {IsHostage = function(id) return held[id] == true end},
-    CivilianTable = {[10] = {startID = 50, defID = 2}, [11] = {startID = 50, defID = 2}},
-    UnitArrivedAtTarget = {[10] = true, [11] = true}, DisguiseCivilianFor = {},
+    CivilianTable = {[10] = {startID = 50, defID = 2}, [11] = {startID = 50, defID = 2},
+        [12] = {startID = 50, defID = 2}},
+    UnitArrivedAtTarget = {[10] = true, [11] = true, [12] = true}, DisguiseCivilianFor = {},
 }
-local initialized = 0
+local initialized, activities = 0, 0
 local city = {
     GG = cityGG, gaiaTeamID = 0,
+    GameConfig = {civilians = {activityStates = {started = 'started'}}},
+    Spring = {
+        ValidUnitID = function(id) return alive[id] ~= nil end,
+        GetUnitIsDead = function(id) return alive[id] ~= true end,
+        GetUnitTransporter = function(id)
+            assert(type(id)=='number' and id==id,'only real numeric IDs reach the passenger query')
+            transportReads[id]=(transportReads[id] or 0)+1
+            return transported[id]
+        end,
+        UnitScript = {
+            GetScriptEnv = function() return {startFleeing=function() activities=activities+1; return true end} end,
+            CallAsUnit = function(_,fn,...) return fn(...) end,
+        },
+    },
     spGetUnitTeam = function() return 0 end,
     doesUnitExistAlive = function(id) return alive[id] == true end,
     packStep = function(pack) return pack end,
@@ -111,27 +128,49 @@ local city = {
     spDestroyUnit = function(id) destroyed[id], alive[id] = true, nil end,
 }
 local civilians = source('luarules/gadgets/game_civilians.lua')
-local heldHelper = between(civilians, 'local function isHumanShieldHostage(', 'function startInternalBehaviourOfState(')
+local heldHelper = between(civilians, 'local function isCivilianPassenger(', 'function startInternalBehaviourOfState(')
+local internal = between(civilians, 'function startInternalBehaviourOfState(', 'function callInternalFunction(')
 local travel = between(civilians, 'function travellFunction(', 'function getTargetNodeInWalkingDistance(')
 local arrivals = between(civilians, 'function issueArrivedUnitsCommands(', 'function decimateArrivedCivilians(')
 local decimate = assert(civilians:match('(function decimateArrivedCivilians%([%s%S]-\nend)'))
-run(heldHelper .. travel .. arrivals .. decimate, city)
+run(heldHelper .. travel .. arrivals .. decimate .. '\n' .. internal .. '\npassenger = isCivilianPassenger', city)
+assert(not city.passenger('10') and not city.passenger(0/0) and not city.passenger({}),
+    'invalid IDs do not reach a native transporter query')
 local pack = {unitID = 10, myTeam = 0, stuckCounter = 99, currPos = {0, 0, 0}}
 local due, samePack = city.travellFunction(5, 100, pack, 0)
 eq(due, 115, 'held traffic checks again without advancing its journey')
 assert(samePack == pack and initialized == 0, 'held traffic skips ordinary initialization')
 assert(pack.stuckCounter == 0 and pack.currPos == nil, 'stale stuck detection cannot kill a hostage')
+eq(transportReads[10],nil,'known hostage ownership takes priority over the generic transport query')
+local passengerPack={unitID=12,myTeam=0,stuckCounter=99,currPos={0,0,0}}
+due,samePack=city.travellFunction(6,100,passengerPack,0)
+assert(due==115 and samePack==passengerPack and initialized==0,
+    'ordinary truck rider retains a paused traffic journey')
+assert(passengerPack.stuckCounter==0 and passengerPack.currPos==nil,
+    'a truck rider is not classified as a stuck pedestrian')
+assert(not city.startInternalBehaviourOfState(10,'startFleeing')
+    and not city.startInternalBehaviourOfState(12,'startFleeing') and activities==0,
+    'ambient reaction callbacks cannot seize either passenger animation')
 city.issueArrivedUnitsCommands()
-assert(not assigned[10] and assigned[11], 'arrival only redirects free civilians')
-assert(cityGG.UnitArrivedAtTarget[10] and not cityGG.UnitArrivedAtTarget[11], 'held arrival survives for release')
+assert(not assigned[10] and not assigned[12] and assigned[11], 'arrival only redirects free civilians')
+assert(cityGG.UnitArrivedAtTarget[10] and cityGG.UnitArrivedAtTarget[12]
+    and not cityGG.UnitArrivedAtTarget[11], 'passenger arrivals survive for release or disembarking')
 cityGG.UnitArrivedAtTarget[11] = true
 city.decimateArrivedCivilians(10, {[2] = true})
-assert(not destroyed[10] and destroyed[11], 'population trimming preserves hostage')
+assert(not destroyed[10] and not destroyed[12] and destroyed[11], 'population trimming preserves hostage and ordinary rider')
 held[10] = nil
 city.travellFunction(5, 115, pack, 0)
 eq(initialized, 1, 'release resumes the ordinary traffic callback')
 city.issueArrivedUnitsCommands()
 assert(assigned[10], 'released arrival receives ordinary waypoints')
 assert(cityGG.CivilianTable[10], 'civilian journey record survives captivity')
+transported[12]=nil
+city.travellFunction(6,115,passengerPack,0)
+eq(initialized,2,'disembarking resumes the same ordinary traffic record')
+city.issueArrivedUnitsCommands()
+assert(assigned[12] and cityGG.CivilianTable[12] and not cityGG.UnitArrivedAtTarget[12],
+    'disembarked civilian resumes waypoints without replacing or losing the journey record')
+assert(city.startInternalBehaviourOfState(12,'startFleeing') and activities==1,
+    'ordinary ambient reactions resume after disembarking')
 
 print('PASS: Human Shield impact dispatch, disguise aliases, sniper exception, interrogation start/cancellation, traffic pause, arrival retention and population pruning')
