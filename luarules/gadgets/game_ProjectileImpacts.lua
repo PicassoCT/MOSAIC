@@ -44,6 +44,15 @@ if (gadgetHandler:IsSyncedCode()) then
     local spSpawnCEG = Spring.SpawnCEG
     local spEcho =  Spring.Echo 
     local GaiaTeamID = Spring.GetGaiaTeamID()
+
+    local function humanShieldProtects(unitID, attackerID, attackerTeam, weaponDefID)
+        local shield = GG.HumanShield
+        if not shield then return false end
+        local team = attackerTeam or (attackerID and spGetUnitTeam(attackerID))
+        if shield.IsProtected(unitID, team, weaponDefID) then return true end
+        local suspectID = (GG.DisguiseCivilianFor or {})[unitID]
+        return suspectID and shield.IsProtected(suspectID, team, weaponDefID) or false
+    end
     local MobileInterrogateAbleType = getMobileInterrogateAbleTypeTable(UnitDefs)
     if GameConfig.game.culture == "arabic" then
         assert(MobileInterrogateAbleType[UnitDefNames["civilian_arab0"].id] ~= nil)
@@ -603,6 +612,7 @@ if (gadgetHandler:IsSyncedCode()) then
                                                 attackerID, attackerDefID,
                                                 attackerTeam, iconUnitTypeName)
 
+        if humanShieldProtects(unitID, attackerID, attackerTeam) then return end
         if GG.InterrogationTable[unitID] == nil then
             GG.InterrogationTable[unitID] = {}
         end
@@ -632,6 +642,12 @@ if (gadgetHandler:IsSyncedCode()) then
                 -- check wether the interrogator is still alive
                 if false == doesUnitExistAlive(persPack.interrogatorID) then
                     --conditionalEcho(boolDebugProjectile,"Interrogation End: Interrogator died")
+                    postInterrogationCleanUp(persPack.unitID, persPack.interrogatorID, persPack.IconID)
+                    return true, persPack
+                end
+
+                -- Recheck live protection before advancing an existing interrogation.
+                if humanShieldProtects(persPack.unitID, persPack.interrogatorID) then
                     postInterrogationCleanUp(persPack.unitID, persPack.interrogatorID, persPack.IconID)
                     return true, persPack
                 end
@@ -949,6 +965,9 @@ if (gadgetHandler:IsSyncedCode()) then
     function gadget:UnitDamaged(unitID, unitDefID, unitTeam, damage, paralyzer,
                                 weaponDefID, projectileID, attackerID,
                                 attackerDefID, attackerTeam)
+        -- Absorbed hits can still reach UnitDamaged. Prevent their scripted stun,
+        -- close-combat and fire effects before resolving civilian disguises.
+        if humanShieldProtects(unitID, attackerID, attackerTeam, weaponDefID) then return 0 end
         if weaponDefID and WeaponDef and WeaponDef[weaponDefID] then
             conditionalEcho(boolDebugProjectile,"UnitDamaged called with weapon"..WeaponDef[weaponDefID].name)
         end

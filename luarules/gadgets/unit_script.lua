@@ -812,6 +812,19 @@ function gadget:UnitCreated(unitID, unitDefID, unitTeamID, parentID)
         end
     end
 
+    -- A queued or explicit target bypasses AllowWeaponTarget. Check each shot,
+    -- preserving the unit's original weapon-specific firing policy.
+    if #ud.weapons > 0 then
+        local originalBlockShot = callins.BlockShot
+        callins.BlockShot = function(weaponNum, targetID, ...)
+            if GG.HumanShield and GG.HumanShield.BlockShot(unitID, weaponNum, targetID) then
+                return true
+            end
+            if originalBlockShot then return originalBlockShot(weaponNum, targetID, ...) end
+            return false
+        end
+    end
+
     -- Wrap certain callins in a thread and/or safety net.
     for i = 1, #thread_wrap do Wrap(callins, thread_wrap[i]) end
     Wrap_AimWeapon(unitID, callins)

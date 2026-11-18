@@ -217,6 +217,9 @@ local boolDecoupled = false
 local boolFlying = false
 local boolAiming = false
 local boolIsBuilding = false
+local function hasHumanShield()
+    return GG.HumanShield and GG.HumanShield.HasShield(unitID)
+end
 if not GG.OperativesDiscovered then GG.OperativesDiscovered = {} end
 
 function showBody()
@@ -579,6 +582,7 @@ function dropHatIfWorrn()
 end
 
 function script.Killed(recentDamage, _)
+    if GG.HumanShield then GG.HumanShield.Release(unitID) end
     cigaretteSmoke.Shutdown()
 	if doesUnitExistAlive(civilianID) == true then
 		Spring.DestroyUnit(civilianID,true,true) 
@@ -1098,8 +1102,14 @@ function delayedStop()
 end
 
 function showFoldLaptop(boolUnfold)
+	if hasHumanShield() then
+		Hide(FoldtopUnfolded)
+		Show(FoldtopFolded)
+		return
+	end
 	if boolUnfold == true then
 		Sleep(2500)
+		if hasHumanShield() then return end
         Hide(FoldtopFolded)
 		Show(FoldtopUnfolded)
 	else
@@ -1126,6 +1136,7 @@ local civilianID
 function spawnDecoyCivilian()
 --spawnDecoyCivilian
 		Sleep(10)	
+		if hasHumanShield() then return end
 		if civilianID ~= nil and doesUnitExistAlive(civilianID) == true then return end
 
 		x,y,z= Spring.GetUnitPosition(unitID)
@@ -1174,6 +1185,7 @@ function transitionToUncloaked()
 end
 
 function setWantCloak(boolWantCloak)
+    if hasHumanShield() then boolWantCloak = false end
     if Spring.GetUnitRulesParam(unitID, "betrayal_defector") == 1 or Spring.GetUnitRulesParam(unitID, "betrayal_pending") == 1 then boolWantCloak = false end
 	if boolWantCloak == true then
 		Spring.UnitScript.SetUnitValue(COB.WANT_CLOAK, 1)
@@ -1183,6 +1195,7 @@ function setWantCloak(boolWantCloak)
 end
 
 function transitionToCloaked()
+    if hasHumanShield() then return transitionToUncloaked() end
     if Spring.GetUnitRulesParam(unitID, "betrayal_defector") == 1 or Spring.GetUnitRulesParam(unitID, "betrayal_pending") == 1 then return transitionToUncloaked() end
 	setWantCloak(true)
 	setSpeedEnv(unitID, mySpeedReductionCloaked)
@@ -1192,6 +1205,7 @@ function transitionToCloaked()
 end
 
 function OperativesDiscovered()
+    if hasHumanShield() then return true end
     if Spring.GetUnitRulesParam(unitID, "betrayal_defector") == 1 or Spring.GetUnitRulesParam(unitID, "betrayal_pending") == 1 then return true end
 	if  GG.OperativesDiscovered == nil then
 	 return false 
@@ -1209,6 +1223,17 @@ end
 local currentCloakState = "decloaked"
 previousState = currentCloakState
 boolRecloakOnceDone = false
+function setHumanShieldActive(active)
+    if active then
+        boolRecloakOnceDone = boolRecloakOnceDone or currentCloakState == "cloaked" or getWantCloak()
+        currentCloakState = transitionToUncloaked()
+        previousState = currentCloakState
+        Hide(FoldtopUnfolded)
+        Show(FoldtopFolded)
+    end
+    -- The cloak loop resumes the previous disguise request after release.
+end
+
 function cloakLoop()
 	local cloakStateMachine = {
 	["cloaked"] = function (boolCloakRequest,  boolPreviouslyCloaked, visibleForced)

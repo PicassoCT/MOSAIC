@@ -1,0 +1,61 @@
+name: Human Shield regressions
+
+on:
+  pull_request:
+    paths:
+      - 'luarules/configs/commandsIDs.lua'
+      - 'luarules/configs/human_shield.lua'
+      - 'luarules/gadgets/game_operative_human_shield.lua'
+      - 'luarules/gadgets/game_ProjectileImpacts.lua'
+      - 'luarules/gadgets/game_counterintelligence.lua'
+      - 'luarules/gadgets/game_civilians.lua'
+      - 'luarules/gadgets/include/civilian_daily_life.lua'
+      - 'luarules/gadgets/unit_script.lua'
+      - 'scripts/civilianscript.lua'
+      - 'scripts/lib_human_shield_pose.lua'
+      - 'scripts/lib_UnitScript.lua'
+      - 'scripts/operativePropagatorScript.lua'
+      - 'units/antagon/OperativePropagator.lua'
+      - 'luaui/widgets_mosaic/cmd_human_shield.lua'
+      - '.github/mosaic-tests.ref'
+      - '.github/actions/external-tests/**'
+      - '.github/workflows/human-shield.yml'
+  push:
+    branches: ['feat/operative-human-shield']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /.github/
+            *.lua
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install lupa==2.8
+      - name: Prepare pinned external tests
+        uses: ./.github/actions/external-tests
+      - name: Verify capture, protection and civilian lifecycle on Lua 5.1
+        working-directory: ${{ runner.temp }}/mosaic-validation
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from lupa.lua51 import LuaRuntime
+          for name in (
+              'operative_human_shield_test.lua',
+              'operative_human_shield_integrations_test.lua',
+              'operative_human_shield_pose_test.lua',
+              'civilian_daily_life_invalid_targets_test.lua',
+              'counterintelligence_test.lua',
+          ):
+              LuaRuntime().execute(Path('tests', name).read_text(encoding='utf-8'))
+          PY

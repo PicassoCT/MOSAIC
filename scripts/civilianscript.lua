@@ -3,6 +3,7 @@ local queueEventThread = include "lib_event_threads.lua"
 local newParadeParticipation = include "lib_civilian_parade.lua"
 local paradeParticipation
 local boolDying = false
+local humanShieldCarrier
 local deathAnimation
 local lastDamageDirX, lastDamageDirZ = 0, 0
 
@@ -155,6 +156,12 @@ home = {}
 
 local damagedCoolDown = 0
 local bodyConfig = {}
+local humanShieldPose = include("lib_human_shield_pose.lua")(unitID, {
+    root=root, center=center, UpBody=UpBody, Head1=Head1,
+    UpArm1=UpArm1, UpArm2=UpArm2, LowArm1=LowArm1, LowArm2=LowArm2,
+    UpLeg1=UpLeg1, UpLeg2=UpLeg2, LowLeg1=LowLeg1, LowLeg2=LowLeg2,
+    Feet1=Feet1, Feet2=Feet2,
+})
 local TruckTypeTable = getCultureUnitModelTypes(GameConfig.game.culture, "truck", UnitDefs)
 local NORMAL_WALK_SPEED =  GameConfig.civilians.movement.walkingSpeedFactor
 local SPRINT_SPEED = GameConfig.civilians.movement.runningSpeedFactor
@@ -178,6 +185,7 @@ function variousBodyConfigs()
 end
 
 function externalPickUpHandbag()
+    if humanShieldCarrier then return false end
     bodyConfig.boolHandbag = true
     if Handbag then
         Hide(Handbag)
@@ -193,7 +201,7 @@ end
 
 -- Shared visible civilian actions, also available on operative disguise bodies.
 function externalSetCivilianBags(kind)
-    if bodyConfig.boolArmed or bodyConfig.boolInfluenced then return false end
+    if humanShieldCarrier or bodyConfig.boolArmed or bodyConfig.boolInfluenced then return false end
     if kind ~= "none" and (bodyConfig.boolCarrysBaby or bodyConfig.boolTrolley) then return false end
     if ShoppingBag then Hide(ShoppingBag); bagAlignment.remove(ShoppingBag) end
     if Handbag then Hide(Handbag); bagAlignment.remove(Handbag) end
@@ -229,6 +237,45 @@ function externalInterruptCivilian()
     return true
 end
 
+function canBeHumanShield()
+    return not humanShieldCarrier and not boolDying and not boolStunImpact and
+        not bodyConfig.boolInfluenced and not bodyConfig.boolArmed and
+        not boolStartAerosolBehaviour and
+        not (GG.InterrogationTable or {})[unitID] and
+        not (GG.AerosolAffectedCivilians or {})[unitID] and
+        not Spring.GetUnitTransporter(unitID)
+end
+
+-- Called by the synced hostage gadget through CallAsUnit. No yielding occurs
+-- here: pending activity/animation requests recheck the same ownership flag.
+function setHumanShieldCarrier(carrierID)
+    if carrierID == humanShieldCarrier then return true end
+    if carrierID then
+        if not canBeHumanShield() then return false end
+        externalInterruptCivilian()
+        humanShieldCarrier = carrierID
+        boolStartAnarchyBehaviour = false
+        boolWalking, boolAiming = false, false
+        Signal(SIG_ANIM + SIG_UP + SIG_LOW +
+            SIG_BEHAVIOUR_STATE_MACHINE + SIG_PISTOL + SIG_MOLOTOW +
+            SIG_RPG + SIG_STOP)
+        if TablesOfPiecesGroups.Umbrella then hideT(TablesOfPiecesGroups.Umbrella) end
+        humanShieldPose:Capture(carrierID)
+        return true
+    end
+
+    humanShieldCarrier = nil
+    humanShieldPose:Release()
+    if not boolDying then
+        local animation = boolWalking and getWalkingState() or eAnimState.standing
+        setOverrideAnimationState(animation, animation, true, nil, true)
+        if boolStartAerosolBehaviour then
+            queueEventThread("behaviour", threadStateStarter, 1)
+        end
+    end
+    return true
+end
+
 function civilianPhoneCall(duration)
     local current = GG.CivilianUnitInternalLogicActive and GG.CivilianUnitInternalLogicActive[unitID]
     if not current or current.behaviour ~= "phone" then return end
@@ -248,7 +295,7 @@ function civilianPhoneCall(duration)
 end
 
 function startPhoneCall(duration)
-    if bodyConfig.boolInfluenced or bodyConfig.boolArmed then return false end
+    if humanShieldCarrier or bodyConfig.boolInfluenced or bodyConfig.boolArmed then return false end
     setCivilianUnitInternalStateMode(unitID, GameConfig.civilians.activityStates.started, "phone")
     queueEventThread("behaviour", civilianPhoneCall, 1, duration)
     return true
@@ -347,7 +394,7 @@ function animationTestLoop()
 end
 
 function umbrellaCondition(boolSunUmbrella)
-    return isANormalDay() and (isRaining() or boolSunUmbrella and not isNight())
+    return not humanShieldCarrier and isANormalDay() and (isRaining() or boolSunUmbrella and not isNight())
 end
 
 function rainyDayCare()
@@ -476,8 +523,9 @@ end
 
 function headAnimationLoop()
     while true do
-        if boolAiming == false and not boolStunImpact then
+        if boolAiming == false and not boolStunImpact and not humanShieldCarrier then
             WaitForTurns(Head1)
+            while humanShieldCarrier do Sleep(100) end
             headTurnValue = math.random(-10,10)
             if TablesOfPiecesGroups["Eye"] then
                 rx,ry,rz = math.random(-40,40)/10, math.random(-40,40)/10, math.random(-40,40)/10
@@ -493,10 +541,12 @@ function headAnimationLoop()
 end
 
 function attachLoot()
+    if humanShieldCarrier then return end
     transportID =  Spring.GetUnitIsTransporting(unitID) 
     if not transportID then 
        val = math.random(1,25)
        Sleep(val)
+       if humanShieldCarrier then return end
        lootID = createUnitAtUnit(myTeamID, "civilianloot", unitID)
        if lootID then
        Spring.UnitAttach( unitID, lootID, UpBody)
@@ -705,7 +755,7 @@ local function stunImpactAnimation()
 end
 
 function startInterrogationStun()
-    if boolStunImpact then return end
+    if boolStunImpact or humanShieldCarrier then return end
     paradeParticipation:Stop(false)
     boolStunImpact = true
     StartThread(stunImpactAnimation)
@@ -714,6 +764,7 @@ end
 function script.HitByWeapon(x, z, weaponDefID, damage)
     if boolDying then return damage end
     lastDamageDirX, lastDamageDirZ = x or 0, z or 0
+    if humanShieldCarrier then return damage end
     if bodyConfig.boolInfluenced then return damage end
     paradeParticipation:Stop(false)
     if weaponDefID == stunPistolDefID then return damage end
@@ -740,6 +791,7 @@ function script.HitByWeapon(x, z, weaponDefID, damage)
 end
 
 function setCivilianUnitInternalStateMode(unitID, State, name)
+    if humanShieldCarrier then return false end
     if bodyConfig.boolInfluenced and name ~= 'aerosol' then return end
     assert(State)
     if not GG.CivilianUnitInternalLogicActive then
@@ -768,6 +820,7 @@ end
 filmLocation = {}
 boolStartFilming = false
 function startFilmLocation(ux, uy, uz, time)
+    if humanShieldCarrier then return false end
     setCivilianUnitInternalStateMode(unitID, GameConfig.civilians.activityStates.started, "filming")
     filmLocation.x=ux
     filmLocation.y=uy
@@ -781,6 +834,7 @@ end
 wailingTime = 0
 boolStartWailing = false
 function startWailing(time)
+    if humanShieldCarrier then return false end
     setCivilianUnitInternalStateMode(unitID, GameConfig.civilians.activityStates.started, "wailing")
     wailingTime = time
     boolStartWailing = true
@@ -792,6 +846,7 @@ chattingTime = 0
 chatPartner = nil
 boolStartChatting = false
 function startChatting(time, chatPartners)
+    if humanShieldCarrier then return false end
     setCivilianUnitInternalStateMode(unitID, GameConfig.civilians.activityStates.started, "talk")
     chattingTime = time
     chatPartner = chatPartners
@@ -803,6 +858,7 @@ end
 attackerID = 0
 boolStartFleeing = false 
 function startFleeing(enemyID)
+    if humanShieldCarrier then return false end
     attackerID = enemyID
     setCivilianUnitInternalStateMode(unitID, GameConfig.civilians.activityStates.started, "fleeing")
     boolStartFleeing = true
@@ -813,6 +869,7 @@ end
 boolStartPeaceFullProtest = false
 socialEngineerID = nil
 function startPeacefullProtest( id)
+    if humanShieldCarrier then return false end
     setCivilianUnitInternalStateMode(unitID, GameConfig.civilians.activityStates.started, "protest")
 	socialEngineerID= id
     boolStartPeaceFullProtest = true
@@ -896,7 +953,8 @@ paradeParticipation = newParadeParticipation({
     activityStates = GameConfig.civilians.activityStates,
     queue = queueEventThread,
     eligible = function()
-        return GG.GlobalGameState == GameConfig.game.states.normal and
+        return not humanShieldCarrier and not boolDying and
+            GG.GlobalGameState == GameConfig.game.states.normal and
             spGetUnitTeam(unitID) == gaiaTeamID and
             not bodyConfig.boolInfluenced and not bodyConfig.boolArmed and
             not bodyConfig.boolWounded and not bodyConfig.boolCoverWalk and
@@ -942,6 +1000,7 @@ end
 
 boolStartPraying = false
 function startPraying(callIndex)
+    if humanShieldCarrier then return false end
     prayerAnimationName = PrayerAnimations.name(callIndex)
     setCivilianUnitInternalStateMode(unitID, GameConfig.civilians.activityStates.started, "pray")
     boolStartPraying = true
@@ -972,6 +1031,7 @@ end
 
 boolStartAnarchyBehaviour = false
 function startAnarchyBehaviour()
+    if humanShieldCarrier then return false end
     setCivilianUnitInternalStateMode(unitID, GameConfig.civilians.activityStates.started, "anarchy")
     boolStartAnarchyBehaviour = true
     queueEventThread("behaviour", threadStateStarter, 250)
@@ -979,6 +1039,9 @@ function startAnarchyBehaviour()
 end
 
 function anarchyBehaviour()   
+    -- Give an already-running ambient anarchy job a cancellation owner when
+    -- capture interrupts it; its spawned jobs inherit the same signal mask.
+    SetSignalMask(SIG_BEHAVIOUR_STATE_MACHINE)
     oldBehaviourState = GameConfig.game.states.normal
     newState = GG.GlobalGameState
 
@@ -1014,6 +1077,10 @@ end
 boolStartAerosolBehaviour = false
 aeroSolType = "undefinedAerosolState"
 function startAerosolBehaviour(extAerosolStateToSet)
+    -- A hostage remains subject to externally applied aerosol effects.
+    if humanShieldCarrier and GG.HumanShield and GG.HumanShield.Release then
+        GG.HumanShield.Release(humanShieldCarrier)
+    end
     boolStartAerosolBehaviour= true
     queueEventThread("behaviour", threadStateStarter, 250)
     aeroSolType = extAerosolStateToSet
@@ -1266,7 +1333,7 @@ local animCmd = {['turn'] = Turn, ['move'] = Move};
 local axisSign = {[x_axis] = 1, [y_axis] = 1, [z_axis] = 1}
 
 function PlayAnimation(animname, piecesToFilterOutTable, speed)
-    if boolDying then return 0 end
+    if boolDying or humanShieldCarrier then return 0 end
     local speedFactor = speed or 1.0
     if not piecesToFilterOutTable then piecesToFilterOutTable = {} end
 
@@ -1277,7 +1344,7 @@ function PlayAnimation(animname, piecesToFilterOutTable, speed)
     local randoffset
     for i = 1, #anim do
         while boolStunImpact do Sleep(33) end
-        if boolDying then return 0 end
+        if boolDying or humanShieldCarrier then return 0 end
         local commands = anim[i].commands;
         for j = 1, #commands do
             local cmd = commands[j];
@@ -1530,7 +1597,7 @@ normalBehavourStateMachine = {
 
 local behaviourDispatcherClosed = false
 function threadStateStarter()
-    if behaviourDispatcherClosed then return end
+    if behaviourDispatcherClosed or humanShieldCarrier then return end
     if boolStartFilming == true then
         boolStartFilming = false
         -- conditionalEcho(boolDebugActive,"Starting filming at location "..locationstring(unitID))
@@ -1577,6 +1644,7 @@ end
 function deferedOverrideAnimationState(AnimationstateUpperOverride,
                                        AnimationstateLowerOverride,
                                        boolInstantOverride, conditionFunction)
+    if humanShieldCarrier then return end
 
     if boolInstantOverride == true then
         if AnimationstateUpperOverride then
@@ -1600,6 +1668,7 @@ end
 
 function setAnimationState(AnimationstateUpperOverride,
                            AnimationstateLowerOverride)
+    if humanShieldCarrier then return end
     -- if we are already animating correctly early out
     if AnimationstateUpperOverride == UpperAnimationState and
         AnimationstateLowerOverride == LowerAnimationState then return end
@@ -1639,7 +1708,7 @@ function setOverrideAnimationState(AnimationstateUpperOverride,
                                    AnimationstateLowerOverride,
                                    boolInstantOverride, conditionFunction,
                                    boolDecoupledStates)
-    if boolStunImpact then return end
+    if boolStunImpact or humanShieldCarrier then return end
     boolDecoupled = boolDecoupledStates
     locAnimationstateUpperOverride = AnimationstateUpperOverride
     locAnimationstateLowerOverride = AnimationstateLowerOverride
@@ -2053,7 +2122,7 @@ function getWalkingState()
 end
 
 function script.StartMoving()
-    if boolDying then return end
+    if boolDying or humanShieldCarrier then return end
     -- Cancel a pending delayedStop when a new follow order arrives. Without
     -- this, the old stop thread can switch the decoy back to standing while
     -- it is already moving again.
@@ -2062,7 +2131,9 @@ function script.StartMoving()
     setOverrideAnimationState(eAnimState.walking, eAnimState.walking, true, nil, true)
 end
 
-function script.StopMoving() if not boolDying then StartThread(delayedStop) end end
+function script.StopMoving()
+    if not boolDying and not humanShieldCarrier then StartThread(delayedStop) end
+end
 ---------------------------------------------------------------------ANIMATIONS-------------------------------------
 function script.Activate() return 1 end
 
@@ -2232,7 +2303,7 @@ function script.QueryWeapon(weaponID)
 end
 
 function script.AimWeapon(weaponID, heading, pitch)
-    if boolDying then return false end
+    if boolDying or humanShieldCarrier then return false end
     if bodyConfig.boolInfluenced then return false end
     if boolCloaked then return false end 
 
@@ -2248,8 +2319,12 @@ function script.AimWeapon(weaponID, heading, pitch)
     return false
 end
 
+function script.BlockShot()
+    return humanShieldCarrier ~= nil
+end
+
 function allowTarget(weaponID) 
-    return true 
+    return not humanShieldCarrier
 end
 
 function dropLoot()
@@ -2268,6 +2343,12 @@ deathAnimation = include('lib_civilian_death.lua')(unitID, {
 
 function script.Killed(recentDamage, maxHealth)
     boolDying = true
+    if humanShieldCarrier and GG.HumanShield and GG.HumanShield.Release then
+        GG.HumanShield.Release(humanShieldCarrier)
+    end
+    -- The gadget deliberately avoids normal script callbacks on dead units.
+    -- Restore the local body before the existing death animation takes over.
+    setHumanShieldCarrier(nil)
     paradeParticipation:Stop(false)
     if Handbag then bagAlignment.remove(Handbag) end
     if ShoppingBag then bagAlignment.remove(ShoppingBag) end
