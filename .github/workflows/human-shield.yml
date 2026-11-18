@@ -13,9 +13,16 @@ on:
       - 'luarules/gadgets/unit_script.lua'
       - 'scripts/civilianscript.lua'
       - 'scripts/lib_human_shield_pose.lua'
+      - 'scripts/lib_human_shield_carrier_animation.lua'
+      - 'scripts/lib_civilian_transport.lua'
+      - 'scripts/lib_civilian_death.lua'
       - 'scripts/lib_UnitScript.lua'
       - 'scripts/operativePropagatorScript.lua'
+      - 'scripts/operativeassetscript.lua'
       - 'units/antagon/OperativePropagator.lua'
+      - 'units/shared/human/OperativeAsset.lua'
+      - 'objects3d/operative_propagator.dae'
+      - 'objects3d/operative_asset.dae'
       - 'luaui/widgets_mosaic/cmd_human_shield.lua'
       - '.github/mosaic-tests.ref'
       - '.github/actions/external-tests/**'
@@ -44,7 +51,7 @@ jobs:
       - run: python -m pip install lupa==2.8
       - name: Prepare pinned external tests
         uses: ./.github/actions/external-tests
-      - name: Verify capture, protection and civilian lifecycle on Lua 5.1
+      - name: Verify capture, animation ownership and civilian lifecycle on Lua 5.1
         working-directory: ${{ runner.temp }}/mosaic-validation
         run: |
           python - <<'PY'
@@ -54,6 +61,9 @@ jobs:
               'operative_human_shield_test.lua',
               'operative_human_shield_integrations_test.lua',
               'operative_human_shield_pose_test.lua',
+              'operative_human_shield_carrier_animation_test.lua',
+              'civilian_truck_transport_animation_test.lua',
+              'civilian_death_test.lua',
               'civilian_daily_life_invalid_targets_test.lua',
               'counterintelligence_test.lua',
           ):

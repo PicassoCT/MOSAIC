@@ -1,73 +1,134 @@
-# Propagator Human Shield
+# Antagon Human Shield and passenger animations
 
-Select a Propagator, choose **Human Shield**, then click an ordinary civilian.
-The operative approaches within 80 world units and takes that civilian hostage.
-The civilian is visibly attached in front of the operative and stops ordinary
-city and parade activities until released.
+Select an **Antagon-owned Propagator or Asset**, choose **Human Shield**, and
+click an ordinary civilian. The operative approaches within 80 world units and
+attaches the civilian to the model's authored **`hostagePoint`**. Protagon-owned
+versions of either unit do not receive the ability. The command also checks the
+current owner when it executes, including after a capture or team transfer.
 
-While a hostage is attached:
+The civilian stops normal city and parade activities while held. The operative
+uses a restraint stance with breathing, short matching steps, and a one-arm
+aiming pose. The hostage breathes, struggles, and shuffles with the operative.
+Inside an allowed car, both use a seated restraint pose. Releasing the civilian
+restores the ordinary animation systems and movement.
 
-- The Propagator moves at **60% of normal speed**. The factor also applies to
-  subsequent scripted speed changes.
-- Hostile **Protagon** units cannot attack or interrogate the operative or his
-  hostage with ordinary weapons. This includes queued attacks, automatic
-  targeting, projectiles already in flight, and the effects of absorbed hits.
-- **Sniper Rifle** and **Slow Sniper Rifle** can still fire and deal damage.
-  The exception is per weapon: an Asset's other weapons remain blocked.
-- The Propagator remains visibly uncloaked. A previously requested disguise can
-  resume after release.
-- **Release Hostage** replaces the capture button. It releases the civilian and
-  restores the operative's speed and vulnerability.
+## Rules while holding a hostage
 
-The ability accepts living, visible, unarmed Gaia pedestrians. Other operatives'
-disguise bodies, player-owned agents, already transported civilians, and
-participants in an interrogation or close combat are ineligible. The hostage is
-also released if the operative dies, changes team, or enters another transport.
-If the hostage dies, protection ends immediately. Aerosol effects release the
-hostage before continuing their existing behaviour. The existing safehouse
-human-shield purchase and propaganda system is unchanged.
+- The operative moves at **60% of normal speed**. The factor composes with later
+  scripted speed changes and does not slow a car carrying the operative.
+- Hostile **Protagon** units cannot attack, damage, or interrogate the operative
+  or hostage with ordinary weapons. Protection includes automatic targeting,
+  explicit and queued attacks, in-flight damage, and scripted hit effects.
+- **Sniper Rifle** and **Slow Sniper Rifle** remain effective. This is a
+  per-weapon exception; a mixed-weapon Asset's ordinary guns stay blocked.
+- An opponent can also initiate **close combat**. Its contact weapon remains
+  available, and entering the fight releases the civilian to run away. A unit
+  with a melee weapon still cannot shoot through the shield with its guns.
+- The carrier cannot fire **any** weapon while holding someone. Taking a
+  hostage cancels unfinished burst rounds without resetting reload time or
+  returning ammunition. Projectiles already fired remain in flight.
+- An explicit **fire/attack order kills the hostage**, ends the shield, and
+  leaves the ordinary attack order available to the operative. The gadget waits
+  until the engine actually adds a new matching command to the queue. Rejected
+  orders, invalid insertion tags, shift-click cancellation, and internal AI
+  targeting cannot accidentally execute a hostage. A valid newly queued fire
+  order has the same consequence as an immediate order.
+- **Aim mode keeps the hostage.** Looking at or tracking a target, changing fire
+  stance, moving, or an attack that was already queued before capture does not
+  execute the captive. Actual weapon discharge remains blocked.
+- **Release Hostage** replaces the capture button while holding someone.
 
-## Configuration and integration
+| Activity or transition | Hostage behaviour |
+| --- | --- |
+| Standing, walking, turning, aim mode | Keep the hostage and animate the hold. |
+| Riding in an ordinary civilian road car or truck | Keep the hostage; use seated poses. **The vehicle remains attackable.** |
+| Entering disguise | Release the hostage before cloaking. Taking a hostage decloaks the operative. |
+| Building, repairing, reclaiming, resurrecting, capture work, or interrogation | Cannot hold a hostage during the activity; release safely. |
+| Rooftop approach, grappling, traversal, or perching | Release; no rooftop hostage use. |
+| Parachuting, flight, motorcycles, or other unsupported transport | Release; cannot take a hostage in that state. |
+| Entering melee | Release immediately and send the civilian running away from the fight. |
+| Incapacitation or ownership change | Release and remove any unavailable command. |
+| Operative death | Release a living hostage. |
+| Hostage death | End protection immediately and run the normal civilian death animation. |
 
-`luarules/configs/human_shield.lua` holds capture range, movement factor and the
-named sniper-weapon set. The command IDs in `commandsIDs.lua` are 33461 and
-33462. `game_operative_human_shield.lua` owns attachment, rules parameters,
-command validation, targeting, damage filtering and cleanup.
+Car permission applies to the existing civilian road-vehicle pool. A vehicle
+being carried by another transport is not a valid exception. The shield never
+extends to the enclosing vehicle. Building the Steal Vehicle icon is still a
+building activity and releases a hostage; boarding an existing car can retain
+the hold.
 
-The unit-script framework checks the protection rule before each weapon's
-existing `BlockShot` callback. This is needed because the engine's
-`AllowWeaponTarget` call-in only controls automatic target selection; queued
-and explicit attack commands also need a firing check. Projectile impact and
-counterintelligence handlers use the same protection predicate before applying
-interrogation or other hit effects. See the [Recoil Lua API](https://recoilengine.org/docs/lua-api/).
+The capture target must be a living, visible, unarmed Gaia pedestrian. Disguise
+bodies, player-owned agents, already transported civilians, and participants in
+interrogation or close combat cannot be taken. Aerosol effects release a hostage
+before continuing their existing behaviour. Safehouse human-shield purchases
+and propaganda retain their existing rules.
 
-Civilian travel records remain registered and paused while held. The civilian
-pose helper preserves and restores the model transforms it changes. The command
-icon is a dark operative behind an amber civilian, with a crimson restraining
-arm and an ivory outline. The PNG and single-frame cursor are included in the
-game source.
+## Ordinary truck passengers
+
+Civilian passengers also have a dedicated seated, bracing transport animation.
+It pauses their ordinary walking and ambient poses, reacts to vehicle movement,
+and restores the previous transforms and normal activity after unloading. The
+hostage animation has priority when the civilian is held by an operative, so
+boarding a car with a hostage does not replace the restraint pose. Parachute and
+other airborne transport keep their own activity rules.
+
+## Configuration and model integration
+
+`luarules/configs/human_shield.lua` defines capture range, movement factor,
+eligible carrier names, the attachment piece name, and sniper and melee weapon names.
+The command IDs are 33461 and 33462. `game_operative_human_shield.lua` owns
+attachment, owner/activity eligibility, targeting, damage filtering, accepted
+fire-order handling, and cleanup. Each operative script exposes live activity
+readiness and manages its animation and disguise state.
+
+The attachment uses **`hostagePoint` exactly**, with no inferred center or
+collision-volume offsets. A missing point disables capture. The marker geometry
+is hidden while its transform continues to position the hostage. The repaired
+Propagator export preserves the complete original body and rig together with
+the newly authored point; the initial point-only export is not used as the
+whole operative model.
+
+The unit-script framework checks protection before existing `BlockShot`
+callbacks. Native burst rounds also require the explicit capture-time salvo
+cancellation described above. Projectile impact and counterintelligence handlers
+use the same protection predicate. See the
+[Recoil Lua API](https://recoilengine.org/docs/lua-api/).
+
+Civilian traffic records remain registered while held or performing their escape
+activity. Animation helpers replace outstanding native movement targets before
+restoring saved transforms. Signal ownership and generation tokens prevent old
+animation threads from taking over a later capture or transport cycle.
 
 ## Validation
 
-Regression tests belong to the external `mosaic-tests` suite, as required by
-`AGENTS.md`. The Human Shield workflow runs the production gadget and relevant
-integration functions under Lua 5.1 with mocked engine boundaries. The tests
-cover target eligibility, faction and weapon exceptions, queued and inserted
-commands, attachment failures, release/death/team changes, speed composition,
-interrogation interruption, and preservation of civilian traffic records.
+Tests live in the external `mosaic-tests` suite, as required by `AGENTS.md`.
+The Human Shield workflow runs the production gadget, animation helpers, and
+relevant script callbacks under Lua 5.1 with mocked engine boundaries. Coverage
+includes faction ownership, attachment failure, activity exclusions, vehicles,
+melee escape, target and weapon rules, real command-queue evidence, burst
+cancellation, animation ownership/restoration, and civilian traffic recovery.
 
 An in-engine visual and multiplayer smoke test remains necessary:
 
-1. Capture a civilian while moving and while disguised; check the command icon,
-   the visible hostage pose, grounded feet, turns and 40% speed penalty.
-2. Test ordinary Protagon infantry, an Investigator, an Asset, a sniper turret
-   and an Argus III. Only their sniper weapons should fire at the protected
-   target; existing attack orders and investigation attempts must respect this.
-3. Release manually, kill the carrier with a sniper, kill the hostage with a
-   permitted weapon, and transfer the carrier to another team. Check normal
-   movement and civilian behaviour resume, with no lingering attachment.
-4. Repeat with a parade participant, during rain and with an incoming aerosol
-   effect. Confirm ordinary city activities recover after release.
+1. Take and release civilians using both Antagon operatives, including while
+   moving and while disguised. Check attachment height, feet, restrained arms,
+   turns, aim tracking, and the movement penalty.
+2. Try Protagon-owned versions and transfer a carrier between factions. Verify
+   command availability changes and a held civilian is released.
+3. Compare aim mode with a real attack order. Aim keeps the captive; a valid new
+   fire order kills the captive and ends protection. Try capture during an
+   Asset's SMG burst and confirm no remaining burst rounds fire.
+4. Test normal Protagon infantry, interrogation, mixed-weapon Assets, sniper
+   turrets, and Argus III. Only sniper fire and the close-combat contact weapon
+   bypass protection; melee frees the hostage. Try taking a hostage while
+   already interrogating someone and verify that capture is unavailable.
+5. Board and leave a civilian car with a hostage. Attack the car itself. Also
+   test roof movement, parachutes, building, disguise, stun, and melee escape.
+6. Load ordinary male and female civilian variants onto trucks, drive, stop,
+   and unload. Check seated bracing, absence of parachute/walking poses on the
+   truck, and normal ambient behaviour after unloading.
+7. Repeat release and death cases with parade participants, rain, aerosol
+   effects, and multiple capture/transport cycles.
 
-No in-engine appearance, frame-rate or multiplayer result is implied by the
-Lua regression tests.
+Lua regression results do not establish native visual alignment, frame rate,
+or multiplayer synchronization results.

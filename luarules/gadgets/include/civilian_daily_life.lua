@@ -692,6 +692,7 @@ return function(context)
     end
     function life:IsProtected(id)
         if G.HumanShield and G.HumanShield.IsHostage(id) then return true end
+        if alive(id) and S.GetUnitTransporter(id) then return true end
         local frame=S.GetGameFrame()
         if (guardedUntil[id] or 0)>frame then return true end
         local p=people[id]; local group=p and p.group and groups[p.group]

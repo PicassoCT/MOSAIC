@@ -19,6 +19,6 @@ CMD_STICKY_BUILD = 33457 -- immediate carried bomb production
 CMD_STICKY_PLANT = 33458 -- explicit unit target for planting
 CMD_INVESTIGATE = 33459 -- operative investigates another unit
 CMD_ACTIVATE_NETWORK = 33460 -- handler activates a compromised hub/individual
-CMD_HUMAN_SHIELD = 33461 -- Propagator takes a civilian hostage
+CMD_HUMAN_SHIELD = 33461 -- Antagon operative takes a civilian hostage
 CMD_RELEASE_HUMAN_SHIELD = 33462 -- release the attached hostage
 CMD_CIVILIAN_BLEND = 34971 -- explicit civilian cover movement and idle activity

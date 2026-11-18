@@ -67,7 +67,7 @@ VFS.Include("gamedata/unitdefs_post_dependency.lua")
 -- Keep the ECM tooltip explicit about its two roles: destroying hostile
 -- software entities and capturing surveillance hardware.
 if UnitDefs and UnitDefs["icon_emc"] then
-	UnitDefs["icon_emc"].description = "Destroys enemy software and hijacks surveillance cameras"
+	UnitDefs["icon_emc"].description = "Destroys enemy software, clears false camera feeds and hijacks cameras"
 	UnitDefs["icon_emc"].customparams = UnitDefs["icon_emc"].customparams or {}
-	UnitDefs["icon_emc"].customparams.helptext = "Electronic warfare unit that removes enemy software entities and captures hackable surveillance cameras"
+	UnitDefs["icon_emc"].customparams.helptext = "Electronic warfare unit that removes enemy software entities, clears camera deception within 100 elmos and captures hackable surveillance cameras"
 end

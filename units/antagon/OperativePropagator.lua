@@ -105,7 +105,7 @@ local OperativePropagator = Human:New{
 			},
 		},
 		
-	category = [[GROUND ARRESTABLE]],
+	category = [[GROUND ARRESTABLE CLOSECOMBATABLE]],
 }
 
 

@@ -4,6 +4,9 @@ local newParadeParticipation = include "lib_civilian_parade.lua"
 local paradeParticipation
 local boolDying = false
 local humanShieldCarrier
+local humanShieldGeneration = 0
+local humanShieldEscapeSprint = false
+local passengerTransport
 local deathAnimation
 local lastDamageDirX, lastDamageDirZ = 0, 0
 
@@ -46,6 +49,8 @@ local SIG_MOLOTOW = 64
 local SIG_INTERNAL = 128
 local SIG_STOP = 512
 local SIG_PARADE = 1024
+local SIG_HUMAN_SHIELD = 2048
+local SIG_TRANSPORT = 4096
 local SIG_RPG = 256
 
 local function randomMultipleByNameOrDefault(name, index)
@@ -166,6 +171,53 @@ local TruckTypeTable = getCultureUnitModelTypes(GameConfig.game.culture, "truck"
 local NORMAL_WALK_SPEED =  GameConfig.civilians.movement.walkingSpeedFactor
 local SPRINT_SPEED = GameConfig.civilians.movement.runningSpeedFactor
 
+passengerTransport = include("lib_civilian_transport.lua")(unitID, {
+    root=root, center=center, UpBody=UpBody, Head1=Head1,
+    UpArm1=UpArm1, UpArm2=UpArm2, LowArm1=LowArm1, LowArm2=LowArm2,
+    UpLeg1=UpLeg1, UpLeg2=UpLeg2, LowLeg1=LowLeg1, LowLeg2=LowLeg2,
+    Feet1=Feet1, Feet2=Feet2,
+}, {
+    blocked = function()
+        return boolDying or humanShieldCarrier ~= nil or boolStunImpact or
+            bodyConfig.boolInfluenced or boolStartAerosolBehaviour
+    end,
+    upperBodyFree = function() return bodyConfig.boolArmed == true end,
+    begin = function()
+        externalInterruptCivilian()
+        Signal(SIG_ANIM + SIG_UP + SIG_LOW + SIG_STOP + SIG_COVER_WALK +
+            SIG_BEHAVIOUR_STATE_MACHINE)
+        boolWalking = false
+        if passengerTransport:OwnsUpperBody() then
+            boolAiming = false
+            Signal(SIG_PISTOL + SIG_MOLOTOW + SIG_RPG)
+        else
+            -- An armed passenger keeps the existing firing/aiming behaviour;
+            -- only the legs belong to the seat animation in this case.
+            setOverrideAnimationState(eAnimState.aiming, nil, true, nil, true)
+        end
+        if TablesOfPiecesGroups.Umbrella then hideT(TablesOfPiecesGroups.Umbrella) end
+    end,
+    reclaimUpper = function()
+        Signal(SIG_ANIM + SIG_UP + SIG_PISTOL + SIG_MOLOTOW + SIG_RPG)
+        boolAiming = false
+    end,
+    finish = function(resume)
+        if resume and not boolDying and not humanShieldCarrier then
+            local animation = boolWalking and getWalkingState() or eAnimState.standing
+            setOverrideAnimationState(animation, animation, true, nil, true)
+        end
+    end,
+})
+
+function civilianTransportLoop()
+    Signal(SIG_TRANSPORT)
+    SetSignalMask(SIG_TRANSPORT)
+    while not boolDying do
+        passengerTransport:Update(spGetGameFrame())
+        Sleep(100)
+    end
+end
+
 function naked()
     isBeachBabe = UnitDefNames["civilian_western4"].id == unitDefID
     return isBeachBabe and (unitID % 2 == 0)
@@ -228,6 +280,7 @@ function externalInterruptCivilian()
     Signal(SIG_INTERNAL)
     boolStartChatting, boolStartPraying, boolStartFilming, boolStartWailing = false, false, false, false
     boolStartFleeing, boolStartPeaceFullProtest = false, false
+    humanShieldEscapeSprint = false
     chattingTime = 0
     Hide(cellphone1)
     if GG.CivilianUnitInternalLogicActive then GG.CivilianUnitInternalLogicActive[unitID] = nil end
@@ -246,30 +299,69 @@ function canBeHumanShield()
         not Spring.GetUnitTransporter(unitID)
 end
 
+local function runFromHumanShieldCarrier(carrierID)
+    local x, y, z = Spring.GetUnitPosition(unitID)
+    local cx, _, cz = Spring.GetUnitPosition(carrierID)
+    if not x or not cx then return end
+    local dx, dz = x - cx, z - cz
+    local distance = math.sqrt(dx * dx + dz * dz)
+    if distance < 0.01 then
+        -- An authored attachment may put both origins at exactly the same
+        -- point. Pick a stable direction instead of dividing by zero.
+        local direction = (unitID % 8) * math.pi / 4
+        dx, dz, distance = math.cos(direction), math.sin(direction), 1
+    end
+    local flightDistance = GameConfig.civilians.panic.fleeDistance
+    local targetX = math.max(0, math.min(Game.mapSizeX, x + dx / distance * flightDistance))
+    local targetZ = math.max(0, math.min(Game.mapSizeZ, z + dz / distance * flightDistance))
+    Spring.SetUnitMoveGoal(unitID, targetX, y, targetZ)
+end
+
+local function animateHumanShield(carrierID, generation)
+    SetSignalMask(SIG_HUMAN_SHIELD)
+    while humanShieldCarrier == carrierID and generation == humanShieldGeneration and not boolDying do
+        humanShieldPose:Animate(carrierID, Spring.GetGameFrame())
+        Sleep(100)
+    end
+end
+
 -- Called by the synced hostage gadget through CallAsUnit. No yielding occurs
 -- here: pending activity/animation requests recheck the same ownership flag.
-function setHumanShieldCarrier(carrierID)
+function setHumanShieldCarrier(carrierID, reason)
     if carrierID == humanShieldCarrier then return true end
     if carrierID then
         if not canBeHumanShield() then return false end
+        -- An unload and capture can share a frame before the passenger loop
+        -- notices the detach. Restore the seat before taking the captive pose.
+        if passengerTransport then passengerTransport:Stop(false) end
         externalInterruptCivilian()
         humanShieldCarrier = carrierID
+        humanShieldGeneration = humanShieldGeneration + 1
         boolStartAnarchyBehaviour = false
         boolWalking, boolAiming = false, false
         Signal(SIG_ANIM + SIG_UP + SIG_LOW +
             SIG_BEHAVIOUR_STATE_MACHINE + SIG_PISTOL + SIG_MOLOTOW +
-            SIG_RPG + SIG_STOP)
+            SIG_RPG + SIG_STOP + SIG_HUMAN_SHIELD)
         if TablesOfPiecesGroups.Umbrella then hideT(TablesOfPiecesGroups.Umbrella) end
         humanShieldPose:Capture(carrierID)
+        StartThread(animateHumanShield, carrierID, humanShieldGeneration)
         return true
     end
 
+    local previousCarrier = humanShieldCarrier
     humanShieldCarrier = nil
+    humanShieldGeneration = humanShieldGeneration + 1
+    Signal(SIG_HUMAN_SHIELD)
     humanShieldPose:Release()
     if not boolDying then
         local animation = boolWalking and getWalkingState() or eAnimState.standing
         setOverrideAnimationState(animation, animation, true, nil, true)
-        if boolStartAerosolBehaviour then
+        if reason == "melee" and previousCarrier then
+            startFleeing(previousCarrier)
+            humanShieldEscapeSprint = true
+            setSpeedEnv(unitID, SPRINT_SPEED)
+            runFromHumanShieldCarrier(previousCarrier)
+        elseif boolStartAerosolBehaviour then
             queueEventThread("behaviour", threadStateStarter, 1)
         end
     end
@@ -296,6 +388,7 @@ end
 
 function startPhoneCall(duration)
     if humanShieldCarrier or bodyConfig.boolInfluenced or bodyConfig.boolArmed then return false end
+    if passengerTransport and passengerTransport:IsActive() then return false end
     setCivilianUnitInternalStateMode(unitID, GameConfig.civilians.activityStates.started, "phone")
     queueEventThread("behaviour", civilianPhoneCall, 1, duration)
     return true
@@ -374,6 +467,7 @@ function script.Create()
     StartThread(headAnimationLoop)
     StartThread(speedControl)
     StartThread(noCapesControl, LowArm1, LowArm2)
+    StartThread(civilianTransportLoop)
   
     orgHousePosTable = sharedComputationResult("orgHousePosTable",
                                                computeOrgHouseTable, UnitDefs,
@@ -394,7 +488,8 @@ function animationTestLoop()
 end
 
 function umbrellaCondition(boolSunUmbrella)
-    return not humanShieldCarrier and isANormalDay() and (isRaining() or boolSunUmbrella and not isNight())
+    return not humanShieldCarrier and not passengerTransport:IsActive() and
+        isANormalDay() and (isRaining() or boolSunUmbrella and not isNight())
 end
 
 function rainyDayCare()
@@ -522,10 +617,12 @@ function speedControl()
 end
 
 function headAnimationLoop()
-    while true do
-        if boolAiming == false and not boolStunImpact and not humanShieldCarrier then
+    while not boolDying do
+        if boolAiming == false and not boolStunImpact and not humanShieldCarrier and
+           not passengerTransport:OwnsUpperBody() then
             WaitForTurns(Head1)
-            while humanShieldCarrier do Sleep(100) end
+            while not boolDying and (humanShieldCarrier or passengerTransport:OwnsUpperBody()) do Sleep(100) end
+            if boolDying then return end
             headTurnValue = math.random(-10,10)
             if TablesOfPiecesGroups["Eye"] then
                 rx,ry,rz = math.random(-40,40)/10, math.random(-40,40)/10, math.random(-40,40)/10
@@ -756,6 +853,7 @@ end
 
 function startInterrogationStun()
     if boolStunImpact or humanShieldCarrier then return end
+    if passengerTransport then passengerTransport:Stop(false) end
     paradeParticipation:Stop(false)
     boolStunImpact = true
     StartThread(stunImpactAnimation)
@@ -803,6 +901,11 @@ function setCivilianUnitInternalStateMode(unitID, State, name)
         paradeParticipation:Stop(false)
     end
     local currentState = GG.CivilianUnitInternalLogicActive[unitID]
+    if humanShieldEscapeSprint and
+       (State ~= GameConfig.civilians.activityStates.started or behaviour ~= "fleeing") then
+        humanShieldEscapeSprint = false
+        setSpeedEnv(unitID, NORMAL_WALK_SPEED)
+    end
     if type(currentState) == "table" and currentState.behaviour == "pray" and
        (State ~= GameConfig.civilians.activityStates.started or behaviour ~= "pray") then
         -- A signal can terminate pray() before its normal speed cleanup.
@@ -821,6 +924,7 @@ filmLocation = {}
 boolStartFilming = false
 function startFilmLocation(ux, uy, uz, time)
     if humanShieldCarrier then return false end
+    if passengerTransport and passengerTransport:IsActive() then return false end
     setCivilianUnitInternalStateMode(unitID, GameConfig.civilians.activityStates.started, "filming")
     filmLocation.x=ux
     filmLocation.y=uy
@@ -835,6 +939,7 @@ wailingTime = 0
 boolStartWailing = false
 function startWailing(time)
     if humanShieldCarrier then return false end
+    if passengerTransport and passengerTransport:IsActive() then return false end
     setCivilianUnitInternalStateMode(unitID, GameConfig.civilians.activityStates.started, "wailing")
     wailingTime = time
     boolStartWailing = true
@@ -847,6 +952,7 @@ chatPartner = nil
 boolStartChatting = false
 function startChatting(time, chatPartners)
     if humanShieldCarrier then return false end
+    if passengerTransport and passengerTransport:IsActive() then return false end
     setCivilianUnitInternalStateMode(unitID, GameConfig.civilians.activityStates.started, "talk")
     chattingTime = time
     chatPartner = chatPartners
@@ -859,6 +965,7 @@ attackerID = 0
 boolStartFleeing = false 
 function startFleeing(enemyID)
     if humanShieldCarrier then return false end
+    if passengerTransport and passengerTransport:IsActive() then return false end
     attackerID = enemyID
     setCivilianUnitInternalStateMode(unitID, GameConfig.civilians.activityStates.started, "fleeing")
     boolStartFleeing = true
@@ -870,6 +977,7 @@ boolStartPeaceFullProtest = false
 socialEngineerID = nil
 function startPeacefullProtest( id)
     if humanShieldCarrier then return false end
+    if passengerTransport and passengerTransport:IsActive() then return false end
     setCivilianUnitInternalStateMode(unitID, GameConfig.civilians.activityStates.started, "protest")
 	socialEngineerID= id
     boolStartPeaceFullProtest = true
@@ -1001,6 +1109,7 @@ end
 boolStartPraying = false
 function startPraying(callIndex)
     if humanShieldCarrier then return false end
+    if passengerTransport and passengerTransport:IsActive() then return false end
     prayerAnimationName = PrayerAnimations.name(callIndex)
     setCivilianUnitInternalStateMode(unitID, GameConfig.civilians.activityStates.started, "pray")
     boolStartPraying = true
@@ -1032,6 +1141,7 @@ end
 boolStartAnarchyBehaviour = false
 function startAnarchyBehaviour()
     if humanShieldCarrier then return false end
+    if passengerTransport and passengerTransport:IsActive() then return false end
     setCivilianUnitInternalStateMode(unitID, GameConfig.civilians.activityStates.started, "anarchy")
     boolStartAnarchyBehaviour = true
     queueEventThread("behaviour", threadStateStarter, 250)
@@ -1081,6 +1191,7 @@ function startAerosolBehaviour(extAerosolStateToSet)
     if humanShieldCarrier and GG.HumanShield and GG.HumanShield.Release then
         GG.HumanShield.Release(humanShieldCarrier)
     end
+    if passengerTransport then passengerTransport:Stop(false) end
     boolStartAerosolBehaviour= true
     queueEventThread("behaviour", threadStateStarter, 250)
     aeroSolType = extAerosolStateToSet
@@ -1236,7 +1347,12 @@ function fleeEnemy(enemyID)
     flightTime =  GameConfig.civilians.panic.maxFlightTimeMs
     while doesUnitExistAlive(enemyID) == true and flightTime > 0 and distanceUnitToUnit(unitID, enemyID) < GameConfig.civilians.panic.radius do
         throwArmsUp()
-        runAwayFrom(unitID, enemyID, GG.GameConfig.civilians.panic.fleeDistance)
+        if humanShieldEscapeSprint then
+            setSpeedEnv(unitID, SPRINT_SPEED)
+            runFromHumanShieldCarrier(enemyID)
+        else
+            runAwayFrom(unitID, enemyID, GG.GameConfig.civilians.panic.fleeDistance)
+        end
         distribution = math.random(1,10)
         Sleep(125 + distribution)
         flightTime = flightTime - 125
@@ -1362,6 +1478,7 @@ function PlayAnimation(animname, piecesToFilterOutTable, speed)
                 end
 
                 if not boolStunImpact and not bagAlignment.owns(cmd.p) and not piecesToFilterOutTable[cmd.p] and
+                   not (passengerTransport and passengerTransport:OwnsPiece(cmd.p)) and
                    not (isPrayerGestureActive() and upperBodyPieces[cmd.p] and
                         animname ~= prayerAnimationName) then
                     bagAlignment.poseCommand(cmd.p, cmd.a, axisSign[cmd.a] * (cmd.t + randoffset), cmd.s * speedFactor, cmd.c)
@@ -1598,6 +1715,7 @@ normalBehavourStateMachine = {
 local behaviourDispatcherClosed = false
 function threadStateStarter()
     if behaviourDispatcherClosed or humanShieldCarrier then return end
+    if passengerTransport and passengerTransport:IsActive() and not boolStartAerosolBehaviour then return end
     if boolStartFilming == true then
         boolStartFilming = false
         -- conditionalEcho(boolDebugActive,"Starting filming at location "..locationstring(unitID))
@@ -1645,6 +1763,11 @@ function deferedOverrideAnimationState(AnimationstateUpperOverride,
                                        AnimationstateLowerOverride,
                                        boolInstantOverride, conditionFunction)
     if humanShieldCarrier then return end
+    if passengerTransport and passengerTransport:IsActive() then
+        AnimationstateLowerOverride = nil
+        if passengerTransport:OwnsUpperBody() then AnimationstateUpperOverride = nil end
+        if not AnimationstateUpperOverride then return end
+    end
 
     if boolInstantOverride == true then
         if AnimationstateUpperOverride then
@@ -1669,6 +1792,11 @@ end
 function setAnimationState(AnimationstateUpperOverride,
                            AnimationstateLowerOverride)
     if humanShieldCarrier then return end
+    if passengerTransport and passengerTransport:IsActive() then
+        AnimationstateLowerOverride = nil
+        if passengerTransport:OwnsUpperBody() then AnimationstateUpperOverride = nil end
+        if not AnimationstateUpperOverride then return end
+    end
     -- if we are already animating correctly early out
     if AnimationstateUpperOverride == UpperAnimationState and
         AnimationstateLowerOverride == LowerAnimationState then return end
@@ -1709,6 +1837,11 @@ function setOverrideAnimationState(AnimationstateUpperOverride,
                                    boolInstantOverride, conditionFunction,
                                    boolDecoupledStates)
     if boolStunImpact or humanShieldCarrier then return end
+    if passengerTransport and passengerTransport:IsActive() then
+        AnimationstateLowerOverride = nil
+        if passengerTransport:OwnsUpperBody() then AnimationstateUpperOverride = nil end
+        if not AnimationstateUpperOverride then return end
+    end
     boolDecoupled = boolDecoupledStates
     locAnimationstateUpperOverride = AnimationstateUpperOverride
     locAnimationstateLowerOverride = AnimationstateLowerOverride
@@ -1988,7 +2121,8 @@ LowerAnimationStateFunctions = {
         return eAnimState.walking
     end,
     [eAnimState.transported] = function()
-        --echo("TODO: Civilian State transported")
+        -- The dedicated passenger owner writes the seated/suspended pose.
+        Sleep(100)
         return eAnimState.transported
     end,
     [eAnimState.slaved] = function()
@@ -2128,10 +2262,15 @@ function script.StartMoving()
     -- it is already moving again.
     Signal(SIG_STOP)
     boolWalking = true
+    if passengerTransport and passengerTransport:IsActive() then return end
     setOverrideAnimationState(eAnimState.walking, eAnimState.walking, true, nil, true)
 end
 
 function script.StopMoving()
+    if passengerTransport and passengerTransport:IsActive() then
+        boolWalking = false
+        return
+    end
     if not boolDying and not humanShieldCarrier then StartThread(delayedStop) end
 end
 ---------------------------------------------------------------------ANIMATIONS-------------------------------------
@@ -2343,6 +2482,7 @@ deathAnimation = include('lib_civilian_death.lua')(unitID, {
 
 function script.Killed(recentDamage, maxHealth)
     boolDying = true
+    if passengerTransport then passengerTransport:Stop(false) end
     if humanShieldCarrier and GG.HumanShield and GG.HumanShield.Release then
         GG.HumanShield.Release(humanShieldCarrier)
     end
@@ -2354,7 +2494,7 @@ function script.Killed(recentDamage, maxHealth)
     if ShoppingBag then bagAlignment.remove(ShoppingBag) end
     SetSignalMask(0)
     Signal(SIG_ANIM+SIG_UP+SIG_LOW+SIG_COVER_WALK+SIG_BEHAVIOUR_STATE_MACHINE+
-        SIG_PISTOL+SIG_MOLOTOW+SIG_INTERNAL+SIG_STOP+SIG_PARADE+SIG_RPG)
+        SIG_PISTOL+SIG_MOLOTOW+SIG_INTERNAL+SIG_STOP+SIG_PARADE+SIG_RPG+SIG_HUMAN_SHIELD+SIG_TRANSPORT)
     setSpeedEnv(unitID, 0)
     dropLoot()
     boolStunImpact = false

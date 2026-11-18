@@ -1,5 +1,5 @@
 -- Run in the civilian's unit-script environment. The gadget owns attachment;
--- this helper only places the visible body and restores every changed transform.
+-- this helper owns captive motion and restores every changed transform.
 return function(unitID, pieces)
     local saved
     local pose = {}
@@ -31,32 +31,14 @@ return function(unitID, pieces)
                 turn = {Spring.UnitScript.GetPieceRotation(part)},
             }
             for axis = 1, 3 do
-                if part ~= pieces.root then moveNow(part, axis, 0) end
+                moveNow(part, axis, 0)
                 turnNow(part, axis, 0)
             end
         end
 
-        local carrierPieces = Spring.GetUnitPieceMap(carrierID) or {}
-        local anchor = carrierPieces.center or carrierPieces.root
-        local ax, ay, az = 0, 0, 0
-        if anchor then
-            ax, ay, az = Spring.GetUnitPiecePosition(carrierID, anchor)
-            ax, ay, az = ax or 0, ay or 0, az or 0
-        end
-        local _, _, carrierDepth = Spring.GetUnitCollisionVolumeData(carrierID)
-        local _, _, civilianDepth = Spring.GetUnitCollisionVolumeData(unitID)
-        -- Both hull depths are engine model units. Their combined half-depths
-        -- keep the bodies just apart, with a little overlap for the hold.
-        local forward = math.max(2, ((carrierDepth or 10) + (civilianDepth or 10)) * 0.4)
-        local rootMove = saved[pieces.root].move
-        -- These read APIs return native engine XYZ. The unit-script header's
-        -- animation labels swap y_axis/z_axis for the exported civilian rig;
-        -- keep physical placement in raw XYZ so vertical compensation remains
-        -- vertical and forward separation remains on the unit's Z axis.
-        moveNow(pieces.root, 1, rootMove[1] - ax)
-        moveNow(pieces.root, 2, rootMove[2] - ay)
-        moveNow(pieces.root, 3, rootMove[3] + forward - az)
-
+        -- UnitAttach places the model at the authored hostagePoint. Neutralize
+        -- transient animation deltas without compensating for that point's
+        -- position or collision hull; either would undo the artist's placement.
         turnNow(pieces.UpBody, x_axis, math.rad(8))
         turnNow(pieces.Head1, x_axis, math.rad(-8))
         turnNow(pieces.UpArm1, x_axis, math.rad(-65))
@@ -65,6 +47,48 @@ return function(unitID, pieces)
         turnNow(pieces.LowArm2, x_axis, math.rad(-80))
         turnNow(pieces.LowArm1, z_axis, math.rad(-20))
         turnNow(pieces.LowArm2, z_axis, math.rad(20))
+        turnNow(pieces.UpLeg1, x_axis, math.rad(-4))
+        turnNow(pieces.UpLeg2, x_axis, math.rad(-4))
+        turnNow(pieces.LowLeg1, x_axis, math.rad(12))
+        turnNow(pieces.LowLeg2, x_axis, math.rad(12))
+        turnNow(pieces.Feet1, x_axis, math.rad(-8))
+        turnNow(pieces.Feet2, x_axis, math.rad(-8))
+    end
+
+    function pose:Animate(carrierID, frame)
+        if not saved then return false end
+        local seated = Spring.GetUnitTransporter(carrierID) ~= nil
+        local vx, _, vz = Spring.GetUnitVelocity(carrierID)
+        local moving = not seated and vx and vz and vx * vx + vz * vz > 0.01
+        local seconds = frame / 30
+        local breath = math.sin(seconds * 2.1)
+        local struggle = math.sin(seconds * 3.7) * math.sin(seconds * 0.7)^4
+        -- The operative uses the same global-frame phase. Both bodies take
+        -- short matching steps while the restrained upper body keeps its hold.
+        local stride = moving and math.sin(seconds * 2 * math.pi * 1.2) or 0
+        local leftLift, rightLift = math.max(0, -stride), math.max(0, stride)
+        local hipRest, kneeRest, footRest = -4, 12, -8
+        if seated then hipRest, kneeRest, footRest = -60, 75, -15 end
+        local speed = 2.5
+        local function turn(part, axis, degrees)
+            Turn(part, axis, math.rad(degrees), speed)
+        end
+
+        turn(pieces.UpBody, x_axis, 8 + 1.5 * breath)
+        turn(pieces.UpBody, y_axis, 2 * struggle)
+        turn(pieces.Head1, x_axis, -8 - 1.5 * breath)
+        turn(pieces.Head1, y_axis, 6 * struggle)
+        turn(pieces.UpArm1, x_axis, -65 + 3 * struggle)
+        turn(pieces.UpArm2, x_axis, -65 - 3 * struggle)
+        turn(pieces.LowArm1, x_axis, -80 - 5 * struggle)
+        turn(pieces.LowArm2, x_axis, -80 + 5 * struggle)
+        turn(pieces.UpLeg1, x_axis, hipRest + 14 * stride)
+        turn(pieces.UpLeg2, x_axis, hipRest - 14 * stride)
+        turn(pieces.LowLeg1, x_axis, kneeRest + 10 * leftLift)
+        turn(pieces.LowLeg2, x_axis, kneeRest + 10 * rightLift)
+        turn(pieces.Feet1, x_axis, footRest - 4 * leftLift)
+        turn(pieces.Feet2, x_axis, footRest - 4 * rightLift)
+        return true
     end
 
     function pose:Release()
