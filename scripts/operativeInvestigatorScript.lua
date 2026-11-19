@@ -182,6 +182,8 @@ function externalAimFunction(targetPosWorldT, remainderRotation, boolIsMoving)
 end
 
 local meleeFootworkClip = "WALKCYCLE_RUNNING"
+local boolWalking = false
+
 function closeCombatOS()
     Sleep(5)
     oldState = 1
@@ -207,13 +209,15 @@ function closeCombatOS()
                 Sleep(500)
             end
             setViewRadius(unitID, FAR_SIGHTED)
-            boolInClosedCombat = false 
+            boolInClosedCombat = false
+            -- Combat chose its own lower state; native StopMoving need not fire
+            -- when a stationary passenger detaches from the arena.
+            setOverrideAnimationState(nil, boolWalking and eAnimState.walking or eAnimState.standing, true, nil, false)
         end
     Sleep(100)
     end
 end
 
-local boolWalking = false
 local boolTurning = false
 local boolTurnLeft = false
 local boolDecoupled = false

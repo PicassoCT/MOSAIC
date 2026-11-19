@@ -255,7 +255,10 @@ function closeCombatOS()
                 Sleep(500)
             end
             --Spring.Echo("Operativeasset: Is leaving close combat")
-            boolInClosedCombat = false 
+            boolInClosedCombat = false
+            -- Combat chose its own lower state; native StopMoving need not fire
+            -- when a stationary passenger detaches from the arena.
+            setOverrideAnimationState(nil, boolWalking and eAnimState.walking or eAnimState.standing, true, nil, false)
             setViewRadius(unitID, NEAR_SIGHTED)
         end
     Sleep(100)
