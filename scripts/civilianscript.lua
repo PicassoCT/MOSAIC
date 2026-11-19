@@ -1446,38 +1446,29 @@ end
 -- -Collapsing, Shivering, Coiling Up
 
 function setupAnimation()
-
-    local switchAxis = function(axis)
+    local function switchAxis(axis)
         if axis == z_axis then return y_axis end
         if axis == y_axis then return z_axis end
         return axis
     end
-
-    local offsets = constructSkeleton(unitID, map.center, {0, 0, 0});
-
-    for a, anim in pairs(Animations) do
-        for i, keyframe in pairs(anim) do
-            local commands = keyframe.commands;
-            for k, command in pairs(commands) do
-                if command.p and type(command.p) == "string" then
-                    if not  map[command.p] then                        
-                        commands[k] = nil                        
-                    else
-                        command.p = map[command.p]
-
-                        if (command.c == "move") then
-                            local adjusted = command.t - (offsets[command.p][command.a]);
-                            Animations[a][i]['commands'][k].t =
-                                command.t - (offsets[command.p][command.a]);
-                        end
-
-                        Animations[a][i]['commands'][k].a = switchAxis(command.a)        
+    local offsets = constructSkeleton(unitID, map.center, {0, 0, 0})
+    for _,anim in pairs(Animations) do
+        for _,keyframe in ipairs(anim) do
+            local resolved = {}
+            for _,command in ipairs(keyframe.commands) do
+                local id = type(command.p) == "string" and map[command.p] or command.p
+                -- A missing optional prop must not leave a hole that truncates
+                -- the following body commands in this model's keyframe.
+                if type(id) == "number" then
+                    command.p = id
+                    if command.c == "move" then
+                        command.t = command.t - offsets[id][command.a]
                     end
+                    command.a = switchAxis(command.a)
+                    resolved[#resolved + 1] = command
                 end
-                -- commands are described in (c)ommand,(p)iece,(a)xis,(t)arget,(s)peed format
-                -- the t attribute needs to be adjusted for move commands from blender's absolute values
-                
             end
+            keyframe.commands = resolved
         end
     end
 end
