@@ -4,6 +4,10 @@ include "lib_UnitScript.lua"
 include "lib_Animation.lua"
 --include "lib_Build.lua"
 
+-- The shared header maps Y/Z for authored Z-up actors. This S3O arena
+-- uses engine-native Y-up coordinates, including its transport matrices.
+local x_axis, y_axis, z_axis = 1, 2, 3
+
 local TablesOfPiecesGroups = {}
 TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
 local move1 = TablesOfPiecesGroups["move"][1]
