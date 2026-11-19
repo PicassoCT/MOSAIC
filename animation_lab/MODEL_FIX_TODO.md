@@ -21,6 +21,15 @@ All composed center-axis directions agree within export rounding. Raw scale diff
 
 Latest measurements: `/home/picasso/MosaicDev/transform-audit/civilian-centers/audit.json` and `pivot-comparison.png`. Earlier reports and unchecked historical table rows below describe the initial audit, not the present export state.
 
+## November 20 animation review: artist follow-up
+
+The repaired core hierarchies pass the fresh static audit in `review_inventory_polish_91e2f260`. **No additional blanket re-export is justified by hierarchy checks.** Keep the existing proportions and accessory systems.
+
+- [ ] `operative_asset.dae`, `operative_propagator.dae`, `operative_investigator.DAE`: review the hand silhouette in close combat. The native propagator/investigator capture shows open palms during guards and strikes. If closed fists are required, author compatible fist poses or optional closed-hand geometry while retaining the existing open hands, sockets and equipment. Do not change coat/hair physics or rename body pieces to solve this.
+- [ ] `operative_propagator.dae`: preserve its T-pose bind geometry. New combat code calibrates semantic arm directions to it; do not force an A-pose re-export merely to match the other operatives.
+- [ ] All 12 civilians: final resting contact still needs model-by-model captures. The Western 0 raised-leg problem in run `civilian-06` is an animation solver issue, not evidence that its mesh or pelvis should be re-exported.
+- [x] Missing optional accessory commands now leave a dense ordered body-command list. This prevents truncated playback; it does not resolve the missing Western 2 bag target or approve prop motion.
+
 ## The target standard
 
 Use **civilian0_western.dae as the initial civilian hierarchy reference**, not as a requirement to copy its body shape, scale, clothes, or proportions. Its hierarchy supplies the common body names plus hands. Verify its pivots and axis directions in Recoil before treating its transforms as a reference.

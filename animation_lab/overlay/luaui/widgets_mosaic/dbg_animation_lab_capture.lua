@@ -15,6 +15,7 @@ local captureDirectory = config.capture_dir or directory .. '/captures'
 local log, started, oldCamera, oldGUI, basis, cameraState, pending = nil, nil, nil, nil, nil, nil, {}
 local lastFrame, lastPhase, lastReady, forcedStart, finished, failure = nil, nil, -1, false, false, nil
 local armed, readyDraws = false, 0
+local drawnFrame, steppedFrame
 local targetName = scenario.camera.target or scenario.units[1].name
 local subjectIndex, pieceCache = {}, {}
 local simFPS = Game.gameSpeed or 30
@@ -85,7 +86,9 @@ local function camera()
     local dx, dy, dz = x - px, targetY - py, z - pz
     local length = math.sqrt(dx * dx + dy * dy + dz * dz)
     cameraState = {name = 'free', mode = 4, px = px, py = py, pz = pz,
-        dx = dx / length, dy = dy / length, dz = dz / length, fov = 40,
+        dx = dx / length, dy = dy / length, dz = dz / length,
+        -- FreeController reconstructs direction from these angles each update.
+        rx = math.asin(dy / length), ry = math.atan2(dx, dz), rz = 0, fov = 40,
         gndLock = 0, gravity = 0, slide = 0, autoTilt = 0,
         vx = 0, vy = 0, vz = 0, avx = 0, avy = 0, avz = 0}
     Spring.SetCameraState(cameraState, 0)
@@ -112,13 +115,14 @@ end
 
 local function collectUnit(index, spec, width, height)
     local id = unitID(index)
-    if not id or not Spring.ValidUnitID(id) or Spring.GetUnitIsDead(id) then
+    if not id or not Spring.ValidUnitID(id) or (Spring.GetUnitIsDead(id) and not spec.piece_geometry) then
         return {name = spec.name, id = id or -1, alive = false, camera_subject = spec.name == targetName,
             expected_destroyed = Spring.GetGameRulesParam('animlab_destroyed_' .. index) == 1}
     end
     local x, y, z = Spring.GetUnitPosition(id)
     local sx, sy, sz = Spring.WorldToScreenCoords(x, y + scenario.camera.target_height, z)
-    local record = {name = spec.name, id = id, unit_def = spec.def, alive = true,
+    local record = {name = spec.name, id = id, unit_def = spec.def, alive = not Spring.GetUnitIsDead(id),
+        expected_destroyed = Spring.GetGameRulesParam('animlab_destroyed_' .. index) == 1,
         camera_subject = spec.name == targetName, position = {x, y, z},
         heading = Spring.GetUnitHeading(id), direction = {Spring.GetUnitDirection(id)},
         velocity = {Spring.GetUnitVelocity(id)}, transporter = Spring.GetUnitTransporter(id),
@@ -128,8 +132,13 @@ local function collectUnit(index, spec, width, height)
             lower = Spring.GetGameRulesParam('animlab_lower_' .. index)},
         rules = {}, pieces = json.array()}
     local diagnosticRules = {'text_fx_test_mode', 'text_fx_test_rotation', 'text_fx_test_speed',
-        'human_shield_hostage', 'human_shield_carrier'}
+        'human_shield_hostage', 'human_shield_carrier',
+        'melee_style', 'melee_attacker', 'melee_exchange'}
     for _, key in ipairs(diagnosticRules) do record.rules[key] = Spring.GetUnitRulesParam(id, key) end
+    if spec.piece_geometry then
+        local front,up,right=Spring.GetUnitVectors(id)
+        record.orientation={front=front,up=up,right=right}
+    end
     local selected = pieceNames(id, spec)
     record.total_pieces, record.sampled_pieces = selected.total, #selected.pieces
     local minX, minY, maxX, maxY
@@ -139,6 +148,11 @@ local function collectUnit(index, spec, width, height)
             local qx, qy, depth = Spring.WorldToScreenCoords(px, py, pz)
             record.pieces[#record.pieces + 1] = {name = piece.name, position_kind = 'emission_point', position = {px, py, pz},
                 ground_y = Spring.GetGroundHeight(px, pz), screen = {qx, qy}, screen_depth = depth}
+            if spec.piece_geometry then
+                piece.geometry=piece.geometry or Spring.GetUnitPieceInfo(id,piece.id)
+                record.pieces[#record.pieces].geometry=piece.geometry
+                record.pieces[#record.pieces].model_matrix={Spring.GetUnitPieceMatrix(id,piece.id)}
+            end
             if depth and depth >= 0 and depth <= 1 then
                 minX, minY = math.min(minX or qx, qx), math.min(minY or qy, qy)
                 maxX, maxY = math.max(maxX or qx, qx), math.max(maxY or qy, qy)
@@ -199,6 +213,18 @@ function widget:Update()
     if status == 3 then fail(Spring.GetGameRulesParam('animlab_error') or 'scenario controller failed') end
     if failure then finish('failed')
     elseif status == 2 and #pending == 0 then finish('complete') end
+    if config.single_step_capture and armed and not finished and status == 1
+        and (Spring.GetGameRulesParam('animlab_phase') or 0)>0 then
+        local _,_,paused = Spring.GetGameSpeed()
+        if not paused then
+            Spring.SendCommands('pause 1')
+        elseif drawnFrame == frame and steppedFrame ~= frame and #pending == 0 then
+            -- Advance the isolated host by exactly one real simulation frame.
+            -- Wait for the completed PNG before requesting another frame.
+            steppedFrame = frame
+            Spring.SendCommands('singlestep')
+        end
+    end
 end
 
 function widget:DrawScreenPost()
@@ -225,7 +251,9 @@ function widget:DrawScreenPost()
     local phaseIndex = Spring.GetGameRulesParam('animlab_phase') or 0
     if phaseIndex == 0 then return end
     local frame = Spring.GetGameFrame()
+    drawnFrame = frame
     local phaseStart = Spring.GetGameRulesParam('animlab_phase_start')
+    if lastFrame == frame then return end
     if lastFrame and lastPhase == phaseIndex and frame - lastFrame < capture.interval_frames then return end
     local width, height, offsetX, offsetY = Spring.GetViewGeometry()
     offsetX, offsetY = offsetX or 0, offsetY or 0

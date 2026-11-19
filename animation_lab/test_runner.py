@@ -207,6 +207,52 @@ class IsolatedRunTests(unittest.TestCase):
         self.assertLess(result["elapsed_seconds"], 5)
         self.assertIsNotNone(result["engine_exit_code"])
 
+    def test_capture_window_position_is_explicit_and_recorded(self):
+        manifest = self.prepare(window_position=(1000, 100))
+        self.assertEqual(manifest["engine_settings"]["WindowPosX"], 1000)
+        self.assertIn("WindowPosY = 100", (self.output / "springsettings.cfg").read_text())
+
+    def test_disable_fontconfig_is_explicit_and_recorded(self):
+        manifest = self.prepare(disable_fontconfig=True)
+        self.assertEqual(manifest["engine_settings"]["UseFontConfigLib"], 0)
+        self.assertIn("UseFontConfigLib = 0", (self.output / "springsettings.cfg").read_text())
+
+    def test_piece_geometry_flag_is_typed(self):
+        spec = example_scenario()
+        spec['units'][0]['piece_geometry'] = 'yes'
+        with self.assertRaisesRegex(LabError, 'piece_geometry'):
+            validate_scenario(spec)
+        spec['units'][0]['piece_geometry'] = True
+        self.assertTrue(validate_scenario(spec)['units'][0]['piece_geometry'])
+
+    def test_single_step_capture_is_recorded(self):
+        result = self.prepare(single_step_capture=True)
+        self.assertTrue(result["single_step_capture"])
+        config = Path(result["staged_game"]) / "luarules/configs/animation_lab_run.lua"
+        self.assertIn('["single_step_capture"] = true', config.read_text())
+
+    def test_stationary_fixture_is_explicit_and_typed(self):
+        spec = example_scenario()
+        self.assertNotIn('stationary_fixture', validate_scenario(spec)['units'][0])
+        spec['units'][0]['stationary_fixture'] = 'yes'
+        with self.assertRaisesRegex(LabError, 'stationary_fixture'):
+            validate_scenario(spec)
+        spec['units'][0]['stationary_fixture'] = True
+        result = self.prepare(scenario=spec)
+        config = Path(result['staged_game']) / 'luarules/configs/animation_lab_run.lua'
+        self.assertIn('["stationary_fixture"] = true', config.read_text())
+
+    def test_observer_only_ui_is_opt_in_and_hashed(self):
+        fixture = self.harness / "observer_only_luaui.lua"
+        fixture.write_text("-- synthetic observer fixture\n")
+        original = self.game / "luaui.lua"
+        original.write_text("-- production UI\n")
+        result = self.prepare(observer_only_ui=True)
+        self.assertTrue(result["observer_only_ui"])
+        self.assertEqual(original.read_text(), "-- production UI\n")
+        self.assertTrue(any(record["path"] == "luaui.lua" and record["sha256"] == digest_file(fixture)
+                            for record in result["instrumentation"]))
+
     def fake_engine(self, body):
         engine = self.root / "fake graphical engine"
         engine.write_text(f"#!{sys.executable}\n" + 'import json, sys\nfrom pathlib import Path\nif "--version" in sys.argv:\n    print("Synthetic runner fixture, not Recoil")\n    raise SystemExit(0)\nmanifest=json.loads(Path("manifest.json").read_text())\ncompletion=Path(manifest["completion_path"])\n' + body)

@@ -236,6 +236,8 @@ do
 
     -- Per-piece filtering also protects against any unsignalled old clip.
     env.animCmd={turn=env.Turn,move=env.Move}; env.axisSign={1,1,1}
+    env.ConversationAnimations=dofile("scripts/animations_civilian_conversation.lua")
+    env.previousConversationClip={}
     env.upperBodyPieces={[p.UpArm1]=true}; env.isPrayerGestureActive=function() return false end
     env.bagAlignment={owns=function() return false end,poseCommand=function() end}
     env.addBagsSwingImpulse=function() end

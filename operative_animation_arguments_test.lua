@@ -15,6 +15,7 @@ for _,path in ipairs(paths) do
         eAnimState = {fighting='fighting',walking='walking',standing='standing',slaved='slaved',riding='riding'},
         boolInClosedCombat = true,
         unitID = 1,
+        hasHumanShield = function() return false end,
         isTransported = function() return true end,
     }, {__index = _G})
     local function run(code)
@@ -26,6 +27,7 @@ for _,path in ipairs(paths) do
     run(setter)
     for line in source:gmatch('[^\n]+') do
         if line:find('setOverrideAnimationState%(') and line:find('function%(') then
+            env.boolInClosedCombat = not line:find("isTransported",1,true)
             run(line)
             assert(type(env.locConditionFunction)=='function',path..': missing callback')
             assert(env.locConditionFunction()==true,path..': callback was lost')

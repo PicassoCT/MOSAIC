@@ -50,7 +50,7 @@ for _, script in ipairs({"civilianscript.lua", "civilianagentscript.lua"}) do
     assert(animations.UPBODY_PRAY[1].commands[1].c == "move")
     local src = read("scripts/" .. script)
     local setup = assert(src:match("(function setupAnimation%(%).-)local animCmd"))
-    local env = {Animations=selected, map=map, unitID=1, x_axis=1, y_axis=2, z_axis=3,
+    local env = {GetSharedOneTimeResult=function()end, SetSharedOneTimeResult=function()end, Animations=selected, map=map, unitID=1, x_axis=1, y_axis=2, z_axis=3,
         constructSkeleton=function() return offsets end}
     compile(setup .. "\nsetupAnimation()", env)()
     for cmd, sourceAxis in pairs(originalAxes) do

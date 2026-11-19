@@ -1,0 +1,148 @@
+{
+  "schema_version": 1,
+  "fixture_kind": "script-entry fixture",
+  "modoptions": {
+    "culture": "western",
+    "unitfactor": 0.1,
+    "maxspeed": 0.25,
+    "minspeed": 0.25
+  },
+  "warmup_frames": 450,
+  "capture": {
+    "interval_frames": 2,
+    "width": 1280,
+    "height": 720
+  },
+  "name": "Propagator and investigator melee",
+  "description": "Public melee entry after arrival effects settle; production paired roles, death and survivor release. Scripted fixture, not native attack-to-arena creation.",
+  "units": [
+    {
+      "name": "arena",
+      "def": "closecombatarena",
+      "pieces": [
+        "center",
+        "move1",
+        "move2",
+        "attach1",
+        "attach2"
+      ]
+    },
+    {
+      "name": "fighter_a",
+      "def": "operativepropagator",
+      "x": -30,
+      "pieces": [
+        "center",
+        "Torso",
+        "Head",
+        "UpArm1",
+        "UpArm2",
+        "LowArm1",
+        "LowArm2",
+        "UpLeg1",
+        "UpLeg2",
+        "LowLeg1",
+        "LowLeg2"
+      ]
+    },
+    {
+      "name": "fighter_b",
+      "def": "operativeinvestigator",
+      "x": 30,
+      "pieces": [
+        "center",
+        "Torso",
+        "Head",
+        "UpArm1",
+        "UpArm2",
+        "LowArm1",
+        "LowArm2",
+        "UpLeg1",
+        "UpLeg2",
+        "LowLeg1",
+        "LowLeg2"
+      ]
+    }
+  ],
+  "camera": {
+    "target": "fighter_a",
+    "distance": 130,
+    "height": 48,
+    "target_height": 20
+  },
+  "phases": [
+    {
+      "name": "entry",
+      "frames": 60,
+      "actions": []
+    },
+    {
+      "name": "exchanges",
+      "frames": 600,
+      "expected_motion": true,
+      "actions": [
+        {
+          "type": "call",
+          "unit": "fighter_a",
+          "function": "isNowInCloseCombat",
+          "args": [
+            {
+              "ref": "arena"
+            }
+          ]
+        },
+        {
+          "type": "call",
+          "unit": "fighter_b",
+          "function": "isNowInCloseCombat",
+          "args": [
+            {
+              "ref": "arena"
+            }
+          ]
+        },
+        {
+          "type": "call",
+          "unit": "arena",
+          "function": "addCloseCombatants",
+          "args": [
+            {
+              "ref": "fighter_a"
+            },
+            {
+              "ref": "fighter_b"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "death_and_release",
+      "frames": 180,
+      "actions": [
+        {
+          "type": "expect_death",
+          "unit": "arena"
+        },
+        {
+          "type": "destroy",
+          "unit": "fighter_a"
+        }
+      ],
+      "checks": [
+        {
+          "type": "destroyed",
+          "unit": "arena"
+        },
+        {
+          "type": "detached",
+          "unit": "fighter_b"
+        },
+        {
+          "type": "alive",
+          "unit": "fighter_b"
+        }
+      ]
+    }
+  ]
+}

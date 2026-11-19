@@ -34,12 +34,14 @@ ACTION_FIELDS = {
     "detach": {"type", "unit", "x", "z"},
     "attack": {"type", "unit", "target"},
     "destroy": {"type", "unit"},
+    "expect_death": {"type", "unit"},
 }
 CHECK_FIELDS = {
     "displaced": {"type", "unit", "min"},
     "transported": {"type", "unit", "transporter"},
     "detached": {"type", "unit"},
     "alive": {"type", "unit"},
+    "destroyed": {"type", "unit"},
 }
 IGNORED_SOURCE_NAMES = {".git", "__pycache__", ".pytest_cache", ".DS_Store"}
 REQUIRED_GAME_DIRS = ("scripts", "luarules", "luaui", "units", "gamedata", "objects3d", "unittextures")
@@ -150,7 +152,7 @@ def validate_scenario(raw: Any) -> dict[str, Any]:
     names: set[str] = set()
     for index, unit in enumerate(units):
         label = f"units[{index}]"
-        _object(unit, label, {"name", "def", "team", "x", "z", "facing", "pieces"}, {"name", "def"})
+        _object(unit, label, {"name", "def", "team", "x", "z", "facing", "pieces", "piece_geometry", "stationary_fixture"}, {"name", "def"})
         name = _text(unit["name"], f"{label}.name", True)
         _text(unit["def"], f"{label}.def", True)
         if name in names:
@@ -160,6 +162,10 @@ def validate_scenario(raw: Any) -> dict[str, Any]:
         _number(unit.setdefault("facing", 0), f"{label}.facing", 0, 3, True)
         for coordinate in ("x", "z"):
             _number(unit.setdefault(coordinate, 0), f"{label}.{coordinate}", -100000, 100000)
+        if "stationary_fixture" in unit and not isinstance(unit["stationary_fixture"], bool):
+            raise LabError(f"{label}.stationary_fixture must be a boolean")
+        if "piece_geometry" in unit and not isinstance(unit["piece_geometry"], bool):
+            raise LabError(f"{label}.piece_geometry must be a boolean")
         if "pieces" in unit:
             if not isinstance(unit["pieces"], list) or len(unit["pieces"]) > 128:
                 raise LabError(f"{label}.pieces must be a list with at most 128 names")
@@ -430,12 +436,17 @@ def make_startscript(game_type: str, map_name: str, seed: int, modoptions: dict[
 """
 
 
-def prepare_run(*, game: Path, scenario: dict[str, Any], output: Path, map_name: str, engine: Path | None = None, data_dirs: list[Path] | None = None, map_archive: Path | None = None, seed: int = 1337, view: str = "threequarter", harness_root: Path | None = None, allow_unversioned_game: bool = False, materialize_internal_symlinks: bool = False, local_server_compat: bool = False) -> dict[str, Any]:
+def prepare_run(*, game: Path, scenario: dict[str, Any], output: Path, map_name: str, engine: Path | None = None, data_dirs: list[Path] | None = None, map_archive: Path | None = None, seed: int = 1337, view: str = "threequarter", harness_root: Path | None = None, allow_unversioned_game: bool = False, materialize_internal_symlinks: bool = False, local_server_compat: bool = False, disable_fontconfig: bool = False, observer_only_ui: bool = False, single_step_capture: bool = False, window_position: tuple[int, int] | None = None) -> dict[str, Any]:
     """Snapshot complete input files and add instrumentation only to that copy."""
     game = game.expanduser().resolve()
     output = output.expanduser().resolve()
     harness_root = (harness_root or Path(__file__).parent).resolve()
     scenario = validate_scenario(scenario)
+    if window_position is not None:
+        if len(window_position) != 2:
+            raise LabError("window_position needs x and y")
+        for coordinate in window_position:
+            _number(coordinate, "window_position", 0, 32767, True)
     _number(seed, "seed", 1, 2147483647, True)
     if view not in VIEWS:
         raise LabError(f"view must be one of {', '.join(VIEWS)}")
@@ -524,6 +535,12 @@ def prepare_run(*, game: Path, scenario: dict[str, Any], output: Path, map_name:
                 destination.chmod(destination.stat().st_mode | stat.S_IWUSR)
             shutil.copy2(path, destination)
             overlay_records.append({"path": relative.as_posix(), "sha256": digest_file(destination)})
+        if observer_only_ui:
+            fixture = harness_root / "observer_only_luaui.lua"
+            shutil.copy2(fixture, stage / "luaui.lua")
+            overlay_records.append({"path": "luaui.lua", "sha256": digest_file(stage / "luaui.lua")})
+        manifest["observer_only_ui"] = observer_only_ui
+        manifest["single_step_capture"] = single_step_capture
         manifest["instrumentation"] = overlay_records
         game_name = f"MOSAIC Animation Lab {run_id}"
         original_modinfo = (stage / "modinfo.lua").read_text(encoding="utf-8-sig")
@@ -535,7 +552,7 @@ def prepare_run(*, game: Path, scenario: dict[str, Any], output: Path, map_name:
         manifest["game_type"] = stage.name
         manifest["game_display_name"] = game_name
         manifest["staged_modinfo_sha256"] = digest_file(stage / "modinfo.lua")
-        config = {"scenario": scenario, "seed": seed, "view": view, "run_id": run_id, "output_dir": "animlab", "capture_dir": "animlab/captures"}
+        config = {"scenario": scenario, "seed": seed, "view": view, "run_id": run_id, "output_dir": "animlab", "capture_dir": "animlab/captures", "single_step_capture": single_step_capture}
         config_path = stage / "luarules" / "configs" / "animation_lab_run.lua"
         config_path.parent.mkdir(parents=True, exist_ok=True)
         if config_path.exists():
@@ -554,6 +571,11 @@ def prepare_run(*, game: Path, scenario: dict[str, Any], output: Path, map_name:
             "LuaUI": 1, "LuaRules": 1, "Sound": 0, "MaxSounds": 0, "HangTimeout": 120,
             "ShowFPS": 0, "ShowClock": 0,
         }
+        if window_position is not None:
+            settings["WindowPosX"], settings["WindowPosY"] = window_position
+        if disable_fontconfig:
+            settings["UseFontConfigLib"] = 0
+        manifest["engine_settings"] = settings.copy()
         settings_path = output / "springsettings.cfg"
         settings_path.write_text("\n".join(f"{key} = {value}" for key, value in sorted(settings.items())) + "\n", encoding="utf-8")
         script_path = output / "startscript.txt"

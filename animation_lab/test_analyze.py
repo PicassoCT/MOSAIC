@@ -56,6 +56,17 @@ class EvidenceAnalysisTests(unittest.TestCase):
         self.assertEqual(review["status"], "unreviewed")
         self.assertIn("SYNTHETIC TEST FIXTURE", (self.run / "analysis" / "index.html").read_text())
 
+    def test_integral_lua_numbers_are_valid_frame_counts(self):
+        for event in self.events:
+            for key in ("frame", "duration_frames", "phase_index", "phase_frame", "capture_every_frames"):
+                if key in event:
+                    event[key] = float(event[key])
+        report = self.analyze()
+        self.assertEqual(report["status"], "needs_visual_review")
+        self.assertEqual(report["captured_samples"], 4)
+        for value in (True, -1, 1.5, float("inf"), float("nan"), "30"):
+            self.assertFalse(analyze._frame(value))
+
     def test_missing_png_and_completion_are_not_success(self):
         (self.data / self.events[3]["image"]).unlink()
         self.events.pop()

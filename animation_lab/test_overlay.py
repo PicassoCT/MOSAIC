@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from contextlib import contextmanager
 import json
+import math
 import os
 from pathlib import Path
 import tempfile
@@ -183,6 +184,50 @@ class OverlayTests(unittest.TestCase):
             if widget:
                 self.lua.execute("widget:Update();widget:DrawScreenPost()")
 
+    def test_single_step_waits_for_draw_and_does_not_repeat_requests(self):
+        with tempfile.TemporaryDirectory() as directory, current_directory(directory):
+            lua = self.setup_lua(with_widget=True)
+            lua.execute("lab_config.single_step_capture=true; Test.paused=false; Test.steps=0; Spring.GetGameSpeed=function()return 1,1,Test.paused end; Spring.SendCommands=function(c)Test.lastCommand=c;if c=='pause 1' then Test.paused=true elseif c=='singlestep' then Test.steps=Test.steps+1 end end")
+            self.drive(6, widget=True)
+            lua.execute("widget:Update()")
+            self.assertTrue(lua.globals().Test.paused)
+            steps = lua.globals().Test.steps
+            self.assertGreater(steps, 0)
+            lua.execute("widget:Update();widget:DrawScreenPost();widget:Update()")
+            self.assertEqual(lua.globals().Test.steps, steps)
+            lua.execute("Test.step(7);gadget:GameFrame(7);widget:Update()")
+            self.assertEqual(lua.globals().Test.steps, steps)
+            lua.execute("widget:DrawScreenPost();widget:Update()")
+            self.assertEqual(lua.globals().Test.steps, steps + 1)
+
+    def test_optional_geometry_records_dying_body_until_removal(self):
+        with tempfile.TemporaryDirectory() as directory, current_directory(directory):
+            spec = scenario()
+            spec["units"][0]["piece_geometry"] = True
+            lua = self.setup_lua(spec, with_widget=True)
+            lua.execute("Spring.GetUnitVectors=function()return {0,0,1},{0,1,0},{-1,0,0}end; Spring.GetUnitPieceInfo=function()return {min={-1,-1,-1},max={1,1,1},offset={0,0,0},parent='root'}end; Spring.GetUnitPieceMatrix=function()return 1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1 end")
+            self.drive(8, widget=True)
+            lua.execute("Test.units[1].dead=true;Test.rules.animlab_destroyed_1=1;Test.frame=12;widget:Update();widget:DrawScreenPost();widget:Update()")
+            rows = [json.loads(line) for line in Path('animlab/events.jsonl').read_text().splitlines()]
+            body = [row for row in rows if row.get('kind')=='sample'][-1]['units'][0]
+            self.assertFalse(body['alive'])
+            self.assertTrue(body['expected_destroyed'])
+            self.assertEqual(body['orientation']['up'], [0,1,0])
+            self.assertEqual(len(body['pieces'][0]['model_matrix']), 16)
+            self.assertEqual(body['pieces'][0]['geometry']['min'], [-1,-1,-1])
+
+    def test_stationary_fixture_only_locks_declared_subject(self):
+        spec = scenario(units=[
+            {"name": "subject", "def": "mock_human", "stationary_fixture": True},
+            {"name": "free", "def": "mock_human", "x": 20},
+        ])
+        lua = self.setup_lua(spec)
+        lua.execute("Spring.MoveCtrl={Enable=function(id)Test.units[id].locked=true end,SetPosition=function(id,x,y,z)Test.units[id].fixture={x,y,z}end};gadget:RecvLuaMsg('animlab_ready:synthetic-run',0)")
+        self.drive(4)
+        self.assertTrue(lua.globals().Test.units[1].locked)
+        self.assertIsNone(lua.globals().Test.units[2].locked)
+        self.assertEqual(lua.globals().Test.units[1].fixture[1], 1024)
+
     def test_json_escaping_and_nonfinite_rejection(self):
         lua = LuaRuntime(unpack_returned_tuples=True)
         encode = lua.execute(JSON_LUA.read_text())["encode"]
@@ -249,6 +294,18 @@ class OverlayTests(unittest.TestCase):
         self.assertEqual(lua.globals().Test.rules.animlab_destroyed_1, 1)
         self.assertEqual(lua.globals().Test.rules.animlab_status, 2)
 
+    def test_expected_native_destruction_and_cleanup_check(self):
+        spec = scenario(phases=[{"name": "native_cleanup", "frames": 9, "actions": [
+            {"type": "expect_death", "unit": "subject"}],
+            "checks": [{"type": "destroyed", "unit": "subject"}]}])
+        lua = self.setup_lua(spec)
+        lua.execute("gadget:RecvLuaMsg('animlab_ready:synthetic-run',0)")
+        self.drive(6)
+        self.assertFalse(lua.globals().Test.units[1].dead)
+        lua.execute("Test.units[1].dead=true")
+        self.drive(16)
+        self.assertEqual(lua.globals().Test.rules.animlab_status, 2)
+
     def test_real_png_widget_contract_and_analyzer(self):
         from analyze import analyze_run
         with tempfile.TemporaryDirectory() as directory:
@@ -264,6 +321,10 @@ class OverlayTests(unittest.TestCase):
                 samples = [e for e in events if e["kind"] == "sample"]
                 self.assertEqual([s["frame"] for s in samples], [5, 8, 11, 14, 17])
                 self.assertTrue(all(s["units"][0]["pieces"][0]["position_kind"] == "emission_point" for s in samples))
+                camera = samples[0]["camera"]
+                self.assertAlmostEqual(math.sin(camera["rx"]), camera["dy"], places=6)
+                self.assertAlmostEqual(math.sin(camera["ry"]) * math.cos(camera["rx"]), camera["dx"], places=6)
+                self.assertAlmostEqual(math.cos(camera["ry"]) * math.cos(camera["rx"]), camera["dz"], places=6)
             (run / "manifest.json").write_text(json.dumps({"schema_version": 1, "run_id": "synthetic-run", "status": "captured", "synthetic_fixture": True, "scenario": self.spec}))
             report = analyze_run(run, make_video=False)
             self.assertEqual(report["status"], "needs_visual_review", report["capture_problems"])

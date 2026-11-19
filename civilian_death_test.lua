@@ -15,8 +15,10 @@ local angles,moves,time,trace,initial
 local function matrix(p)
  local a=angles[p];local t=identity();for axis=1,3 do t[12+axis]=offsets[p][axis]+moves[p][axis] end
  if p==1 then t=mul(t,{1,0,0,0,0,0,-1,0,0,1,0,0,0,0,0,1}) end
+ -- ComposeTransform uses clockwise RotateEulerYXZ(-r): positive script angles
+ -- therefore produce the right-handed rotations below (Coil 058c8ea).
  for _,axis in ipairs({2,1,3}) do
-  local c,s=math.cos(-a[axis]),math.sin(-a[axis]);local r=identity()
+  local c,s=math.cos(a[axis]),math.sin(a[axis]);local r=identity()
   if axis==1 then r[6],r[7],r[10],r[11]=c,s,-s,c
   elseif axis==2 then r[1],r[3],r[9],r[11]=c,-s,s,c
   else r[1],r[2],r[5],r[6]=c,s,-s,c end
@@ -24,7 +26,10 @@ local function matrix(p)
  end
  return parents[p]>0 and mul(matrix(parents[p]),t) or t
 end
-Spring={UnitScript={GetPieceRotation=function(p)return unpack(angles[p])end,
+Spring={UnitScript={GetPieceRotation=function(p)
+ -- Native Spring Turn stores the equivalent positive angle, not signed input.
+ return angles[p][1]%(2*math.pi),angles[p][2]%(2*math.pi),angles[p][3]%(2*math.pi)
+ end,
  GetPieceTranslation=function(p)return unpack(moves[p])end},
  GetUnitPieceMatrix=function(_,p)return unpack(matrix(p))end,
  GetUnitHeight=function()return 25 end,GetUnitPieceMap=function()return pieces end,
@@ -52,18 +57,51 @@ for seed=1,35 do
  math.randomseed(seed)
  for _,damage in ipairs({10,1000}) do
   angles,moves,trace,time={},{},{},0
-  for p=1,#names do angles[p]={0.05,-0.03,0.02};moves[p]={0,0,0} end
+ for p=1,#names do angles[p]={0.05,-0.03,0.02};moves[p]={0,0,0} end
+ -- Raised arms can exceed resting limits; death must inherit that pose.
+ angles[pieces.UpArm1][1]=-2.5
   local selected=play(damage,100,seed%3-1,1)
   seen[selected]=true
   assert(time<5000 and time>2000,'fall must finish with a visible settle')
   local endPose=trace[#trace];local previous=trace[#trace-5]
   for axis=1,3 do assert(math.abs(endPose[axis]-previous[axis])<0.08,'joint failed to settle') end
   local head=matrix(pieces.Head1);assert(head[14]>-1,'head remained below the floor')
+  local torso=matrix(pieces.UpBody)
+  assert(torso[14]<5,'a distal limb left the torso suspended above the floor: '..torso[14]..' seed '..seed..' damage '..damage)
  end
 end
 for _,name in ipairs({'collapse','backwards','sideways','coiling','shivering','blasted','swirling'}) do
  assert(seen[name],'unreachable death variation: '..name)
 end
+-- A previously horizontal root must not be interpreted as the bind frame.
+math.randomseed(3)
+angles,moves,trace,time={},{},{},0
+for p=1,#names do angles[p]={0,0,0};moves[p]={0,0,0}end
+angles[pieces.root][1]=math.pi/2
+play(10,100,0,-1)
+local fallen=matrix(pieces.root)
+assert(math.abs(fallen[10])<.2 and fallen[11]>.9,'pre-rotated root lost its fall direction or ended upright')
+
+-- Operatives use the pelvis as the root and have no separate center/foot joints.
+-- Exercise the shared solver from a non-neutral fighting pose on that topology.
+local operativePieces={root=pieces.center}
+for name,piece in pairs(pieces) do
+ if name~='root' and name~='center' and name~='Feet1' and name~='Feet2' then
+  operativePieces[name]=piece
+ end
+end
+local operativeFall=dofile('scripts/lib_civilian_death.lua')(1,operativePieces)
+for seed=1,14 do
+ math.randomseed(seed)
+ angles,moves,trace,time={},{},{},0
+ for p=1,#names do angles[p]={0.12,-0.1,0.15};moves[p]={0,0,0} end
+ angles[pieces.UpArm1]={-0.9,-0.25,0.1}
+ angles[pieces.LowArm1]={-1.5,0,0.2}
+ operativeFall(1000,100,1,0)
+ assert(time<5000)
+ assert(matrix(pieces.Head1)[14]>-1,'operative head remained below floor')
+end
+
 -- Both script entry points must use their real head piece and record impact
 -- direction, and bomber cook-off remains a distinct path.
 for _,path in ipairs({'scripts/civilianscript.lua','scripts/civilianagentscript.lua'}) do
@@ -72,4 +110,4 @@ for _,path in ipairs({'scripts/civilianscript.lua','scripts/civilianagentscript.
  assert(source:find('unitID, Head1, bloodyHell',1,true))
  assert(source:find("include('lib_civilian_death.lua')",1,true))
 end
-print('PASS: seven death variations, inherited poses, bounded joints/motion, finite settling, floor contact and both civilian scripts')
+print('PASS: operative pelvis-root topology, seven death variations, inherited poses, bounded joints/motion, finite settling, floor contact and both civilian scripts')

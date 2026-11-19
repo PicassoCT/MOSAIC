@@ -22,6 +22,7 @@ from typing import Any
 
 
 SCHEMA_VERSION = 1
+EXPECTED_DEATH_ACTIONS = {"destroy", "expect_death"}
 RENDER_ERROR_PATTERNS = (
     re.compile(r"(?:Error|ERROR).*?(?:LuaRules|LuaUI|Lua unit script|unit script).*", re.I),
     re.compile(r"(?:LuaRules|LuaUI|Lua unit script).*?(?:error|call-in failed|stack traceback)", re.I),
@@ -44,7 +45,8 @@ def _number(value: Any) -> bool:
 
 
 def _frame(value: Any) -> bool:
-    return isinstance(value, int) and not isinstance(value, bool) and value >= 0
+    # Lua 5.1/engine JSON may spell integral numbers as 30.00000000000000.
+    return _number(value) and value >= 0 and value == math.floor(value)
 
 
 def _vector(value: Any) -> bool:
@@ -403,7 +405,7 @@ def analyze_run(run_dir: Path, make_video: bool = True) -> dict:
             name = _phase_name(phase)
             phases[name] = {**phase, **phases.get(name, {})}
             for action in phase.get("actions", []):
-                if isinstance(action, dict) and action.get("type") == "destroy" and isinstance(action.get("unit"), str):
+                if isinstance(action, dict) and action.get("type") in EXPECTED_DEATH_ACTIONS and isinstance(action.get("unit"), str):
                     destroyed_names.add(action["unit"])
             destroyed_by_phase[name] = set(destroyed_names)
         else:

@@ -17,10 +17,10 @@ NS = {'c': 'http://www.collada.org/2005/11/COLLADASchema'}
 CIV_CORE = 'root center UpBody Head1 UpArm1 UpArm2 LowArm1 LowArm2 UpLeg1 UpLeg2 LowLeg1 LowLeg2 Feet1 Feet2'.split()
 OP_CORE = 'center Torso Head UpArm1 UpArm2 LowArm1 LowArm2 UpLeg1 UpLeg2 LowLeg1 LowLeg2'.split()
 FAMILIES = {
-    'civilian': ('animations_civilian_female.lua', ['animations_civilian_prayers.lua', 'animations_civilian_aerosols.lua']),
-    'asset': ('animation_assasin_male.lua', []),
-    'propagator': ('animation_operativepropagator_male.lua', []),
-    'investigator': ('animation_operativeinvestigator_female.lua', []),
+    'civilian': ('animations_civilian_female.lua', ['animations_civilian_prayers.lua', 'animations_civilian_aerosols.lua', 'animations_civilian_conversation.lua']),
+    'asset': ('animation_assasin_male.lua', ['animations_melee_exchanges.lua']),
+    'propagator': ('animation_operativepropagator_male.lua', ['animations_melee_exchanges.lua']),
+    'investigator': ('animation_operativeinvestigator_female.lua', ['animations_melee_exchanges.lua']),
 }
 
 def digest(path):
@@ -129,6 +129,15 @@ def main():
         fields = ['family','clip','source','keyframes','commands','last_time','status','scenario','evidence','reviewer','decision']
         writer = csv.DictWriter(f, fieldnames=fields); writer.writeheader()
         for clip in clips: writer.writerow({k: clip.get(k, '') for k in fields})
+    with (OUT/'model-clip-review.csv').open('w', newline='') as f:
+        fields = ['model','family','clip','static_target_gap','status','scenario','run','frames','reviewer','decision','notes']
+        writer = csv.DictWriter(f, fieldnames=fields); writer.writeheader()
+        for model in models:
+            names = {node['name'] for node in model['nodes']}
+            for clip in clips:
+                if clip['family'] == model['family']:
+                    writer.writerow({'model': model['file'], 'family': model['family'], 'clip': clip['clip'],
+                        'static_target_gap': ';'.join(sorted(set(clip['pieces'])-names)), 'status': 'not_reviewed'})
     summary = {'models': len(models), 'civilian_models': sum(m['family']=='civilian' for m in models),
         'clips_by_family': dict(Counter(c['family'] for c in clips)),
         'models_with_missing_core': [m['file'] for m in models if m['missing_core']],

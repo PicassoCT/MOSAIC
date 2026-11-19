@@ -1,0 +1,118 @@
+{
+  "schema_version": 1,
+  "fixture_kind": "script-entry fixture",
+  "modoptions": {
+    "culture": "western",
+    "unitfactor": 0.1,
+    "maxspeed": 0.25,
+    "minspeed": 0.25
+  },
+  "warmup_frames": 90,
+  "capture": {
+    "interval_frames": 2,
+    "width": 1280,
+    "height": 720
+  },
+  "name": "Civilian conversation and death contact diagnostic",
+  "description": "Public conversation/fleeing and native destruction, with actual piece bounds/matrices retained through dying to diagnose support. Rendered pixels remain the visual evidence.",
+  "units": [
+    {
+      "name": "subject",
+      "def": "civilian_western0",
+      "x": 0,
+      "z": 0,
+      "pieces": [
+        "root",
+        "center",
+        "UpBody",
+        "Head1",
+        "UpArm1",
+        "UpArm2",
+        "LowArm1",
+        "LowArm2",
+        "UpLeg1",
+        "UpLeg2",
+        "LowLeg1",
+        "LowLeg2",
+        "Feet1",
+        "Feet2"
+      ],
+      "piece_geometry": true
+    },
+    {
+      "name": "partner",
+      "def": "civilian_arab0",
+      "x": 28,
+      "z": 0
+    }
+  ],
+  "camera": {
+    "target": "subject",
+    "distance": 110,
+    "height": 42,
+    "target_height": 17
+  },
+  "phases": [
+    {
+      "name": "idle",
+      "frames": 60,
+      "actions": []
+    },
+    {
+      "name": "conversation",
+      "frames": 480,
+      "expected_motion": true,
+      "actions": [
+        {
+          "type": "call",
+          "unit": "subject",
+          "function": "startChatting",
+          "args": [
+            15000,
+            {
+              "ref": "partner"
+            }
+          ]
+        },
+        {
+          "type": "call",
+          "unit": "partner",
+          "function": "startChatting",
+          "args": [
+            15000,
+            {
+              "ref": "subject"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "flee",
+      "frames": 150,
+      "expected_motion": true,
+      "actions": [
+        {
+          "type": "call",
+          "unit": "subject",
+          "function": "startFleeing",
+          "args": [
+            {
+              "ref": "partner"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "death_and_settle",
+      "frames": 180,
+      "actions": [
+        {
+          "type": "destroy",
+          "unit": "subject"
+        }
+      ]
+    }
+  ]
+}

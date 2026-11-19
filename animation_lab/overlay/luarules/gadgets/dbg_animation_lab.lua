@@ -136,14 +136,22 @@ function actions.detach(action)
     Spring.SetUnitPosition(id, x, z)
     Spring.GiveOrderToUnit(id, CMD.STOP, {}, {})
 end
-function actions.destroy(action)
-    local id = subject(action.unit)
+function actions.expect_death(action)
+    subject(action.unit) -- must exist when its expected lifecycle is declared
     expectedDestroyed[action.unit] = true
     Spring.SetGameRulesParam('animlab_destroyed_' .. subjectIndices[action.unit], 1, public)
+end
+function actions.destroy(action)
+    local id = subject(action.unit)
+    actions.expect_death(action)
     Spring.DestroyUnit(id, false, false)
 end
 
 local checks = {}
+function checks.destroyed(check)
+    local id = subjects[check.unit]
+    return id and (not Spring.ValidUnitID(id) or Spring.GetUnitIsDead(id)), 'unit destruction'
+end
 function checks.displaced(check)
     local id, origin = subject(check.unit), phaseOrigins[check.unit]
     local x, _, z = Spring.GetUnitPosition(id)
@@ -206,6 +214,12 @@ local function spawnSubjects(frame)
         local x, y, z = destination(spec.x, spec.z)
         local id = assert(Spring.CreateUnit(spec.def, x, y, z, spec.facing or 0, spec.team or 0),
             'failed to create ' .. spec.def)
+        if spec.stationary_fixture then
+            -- Explicit pose fixture: lock only the container's map movement.
+            -- Production script/piece animation and attachment remain active.
+            Spring.MoveCtrl.Enable(id)
+            Spring.MoveCtrl.SetPosition(id,x,y,z)
+        end
         subjects[spec.name] = id
         subjectIndices[spec.name] = index
         Spring.SetUnitAlwaysVisible(id, true)

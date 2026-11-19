@@ -19,6 +19,10 @@ def parser() -> argparse.ArgumentParser:
         sub.add_argument("--allow-unversioned-game", action="store_true", help="Explicitly allow an exported game without a Git index; its completeness cannot be verified against tracked files")
         sub.add_argument("--materialize-internal-symlinks", action="store_true", help="Copy in-checkout file symlinks as regular snapshot files; reject external links and directory links")
         sub.add_argument("--local-server-compat", action="store_true", help="Use --server=127.0.0.1 for older Coil engines without --only-local")
+        sub.add_argument("--disable-fontconfig", action="store_true", help="Use bundled fonts without the legacy engine system-fontconfig integration")
+        sub.add_argument("--observer-only-ui", action="store_true", help="Isolated fixture: load only the capture observer, bypassing game HUD widgets")
+        sub.add_argument("--single-step-capture", action="store_true", help="Pause the isolated engine and advance only after each simulation frame is drawn")
+        sub.add_argument("--window-position", nargs=2, type=int, metavar=("X", "Y"), help="Place the capture window entirely on one monitor")
         sub.add_argument("--scenario", type=Path, required=True, help="Declarative animation scenario JSON")
         sub.add_argument("--output", type=Path, required=True, help="New or empty run directory, outside the source game and lab")
         sub.add_argument("--map", dest="map_name", required=True, help="Engine map name, including its version")
@@ -61,7 +65,11 @@ def main(argv: list[str] | None = None) -> int:
                                map_archive=arguments.map_archive, seed=arguments.seed, view=arguments.view,
                                allow_unversioned_game=arguments.allow_unversioned_game,
                                materialize_internal_symlinks=arguments.materialize_internal_symlinks,
-                               local_server_compat=arguments.local_server_compat)
+                               local_server_compat=arguments.local_server_compat,
+                               disable_fontconfig=arguments.disable_fontconfig,
+                               observer_only_ui=arguments.observer_only_ui,
+                               single_step_capture=arguments.single_step_capture,
+                               window_position=arguments.window_position)
         print(f"Prepared {manifest['run_id']}: {arguments.output.resolve()}")
         if arguments.command == "prepare":
             print("Game source unchanged. No animation has been observed yet.")
