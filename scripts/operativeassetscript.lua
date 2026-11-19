@@ -258,7 +258,7 @@ function closeCombatOS()
             boolInClosedCombat = false 
             setViewRadius(unitID, NEAR_SIGHTED)
         end
-    Sleep(250)
+    Sleep(100)
     end
 end
 
@@ -433,29 +433,30 @@ boolTransportedNoFiring = false
 motorBikeTypeTable = getMotorBikeTypeTable(UnitDefs)
 parachuteDefId = UnitDefNames["air_parachut"].id
 function transportControl()
-    Sleep(10)  
+    Sleep(10)
 
     waitTillComplete(unitID)
     while true do
-        if isTransported(unitID) == true then
+        if not boolInClosedCombat and isTransported(unitID) == true then
+            local transporterID = Spring.GetUnitTransporter(unitID)
             if not (GG.HumanShield and GG.HumanShield.IsTransportAllowed
                 and GG.HumanShield.IsTransportAllowed(unitID)) then releaseHumanShield() end
-            transporterdefID = Spring.GetUnitDefID(Spring.GetUnitTransporter(unitID))
+            transporterdefID = Spring.GetUnitDefID(transporterID)
 
             if  motorBikeTypeTable[transporterdefID] then
-                boolTransportedNoFiring = true 
-                setOverrideAnimationState(eAnimState.slaved, eAnimState.riding, true, function() return isTransported(unitID) end,    false)
+                boolTransportedNoFiring = true
+                setOverrideAnimationState(eAnimState.slaved, eAnimState.riding, true, function() return not boolInClosedCombat and isTransported(unitID) end,    false)
             end
-               
-            while isTransported(unitID) == true do    
+
+            while not boolInClosedCombat and isTransported(unitID) and Spring.GetUnitTransporter(unitID) == transporterID do
                 Sleep(100)
-                if transporterdefID == parachuteDefId then
+                if not boolInClosedCombat and Spring.GetUnitTransporter(unitID) == transporterID and transporterdefID == parachuteDefId then
                     PlayAnimation("PARACHUTE_POSE")
                 end
             end
-            
+
             boolTransportedNoFiring = false
-        
+
         end
         Sleep(1000)
     end

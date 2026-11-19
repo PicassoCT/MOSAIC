@@ -209,7 +209,7 @@ function closeCombatOS()
             setViewRadius(unitID, FAR_SIGHTED)
             boolInClosedCombat = false 
         end
-    Sleep(1000)
+    Sleep(100)
     end
 end
 
@@ -321,26 +321,27 @@ boolTransportedNoFiring = false
 motorBikeTypeTable = getMotorBikeTypeTable(UnitDefs)
 parachuteDefId = UnitDefNames["air_parachut"].id
 function transportControl()
-    Sleep(10)  
+    Sleep(10)
 
     waitTillComplete(unitID)
     while true do
-        if isTransported(unitID) == true then
-        	transporterdefID = spGetUnitDefID(Spring.GetUnitTransporter(unitID))
+        if not boolInClosedCombat and isTransported(unitID) == true then
+            local transporterID = Spring.GetUnitTransporter(unitID)
+            transporterdefID = spGetUnitDefID(transporterID)
 
-        	if  motorBikeTypeTable[transporterdefID] then boolTransportedNoFiring = true end
+            if  motorBikeTypeTable[transporterdefID] then boolTransportedNoFiring = true end
 
-            setOverrideAnimationState(eAnimState.slaved, eAnimState.riding, true, function() return isTransported(unitID) end,    false)
-	           
-            while isTransported(unitID) == true do    
+            setOverrideAnimationState(eAnimState.slaved, eAnimState.riding, true, function() return not boolInClosedCombat and isTransported(unitID) end,    false)
+
+            while not boolInClosedCombat and isTransported(unitID) and Spring.GetUnitTransporter(unitID) == transporterID do
                 Sleep(100)
-                if transporterdefID == parachuteDefId then
-                	PlayAnimation("PARACHUTE_POSE")
-            	end
+                if not boolInClosedCombat and Spring.GetUnitTransporter(unitID) == transporterID and transporterdefID == parachuteDefId then
+                    PlayAnimation("PARACHUTE_POSE")
+                end
             end
-        	
+
             boolTransportedNoFiring = false
-        
+
         end
         Sleep(1000)
     end
