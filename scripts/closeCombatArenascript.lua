@@ -87,8 +87,26 @@ function fightAnimation()
     local previousStyle
     speed = 2
     scale = 0.1
-    Turn(turn1, z_axis, math.rad(90), 0)
-    Turn(turn2, z_axis, math.rad(-90 ), 0)
+    -- The arena is an S3O with Y-up offsets, unlike the actors' baked Z-up rigs.
+    -- Turning it about Z rolls both attached bodies onto their sides.
+    local heightA = Spring.GetUnitHeight(fighterOne) or 28
+    local heightB = Spring.GetUnitHeight(fighterTwo) or 28
+    local separation = math.max(12, math.min(28, (heightA + heightB) * 0.24))
+    local reach = separation * 0.12
+    local stride = separation * 0.22
+    local function offset(chain, axis)
+        local value = 0
+        for _,id in ipairs(chain) do value = value + Spring.GetUnitPieceInfo(unitID, id).offset[axis] end
+        return value
+    end
+    local stance1 = -separation/2 - offset({move1, turn1}, 1)
+    local stance2 = separation/2 - offset({move2, turn2}, 1)
+    Move(move1, y_axis, -offset({move1, turn1, attach1}, 2), 0)
+    Move(move2, y_axis, -offset({move2, turn2, attach2}, 2), 0)
+    Move(move1, x_axis, stance1, 0)
+    Move(move2, x_axis, stance2, 0)
+    Turn(turn1, y_axis, math.rad(90), 0)
+    Turn(turn2, y_axis, math.rad(-90), 0)
     Move(move1, z_axis, -5, 0)
     Move(move2, z_axis, -5, 0)
     twoZeroOffset = -400
@@ -96,7 +114,7 @@ function fightAnimation()
         StartThread(PlaySoundByUnitDefID, unitDefID, "sounds/cqb/cqb"..math.random(1,4)..".ogg", 1.0, 22000, 1)
         initiative = math.random(1, 2)
         initivativeSign = -1
-        StopSpin(arena, z_axis, 0.1)
+        StopSpin(arena, y_axis, 0.1)
         for k = 0, initiative do
             initivativeSign = initivativeSign * -1
         end
@@ -115,11 +133,11 @@ function fightAnimation()
             Spring.SetUnitRulesParam(unitID, "melee_style", style)
             Spring.SetUnitRulesParam(unitID, "melee_attacker", initivativeSign == -1 and fighterOne or fighterTwo)
             Spring.SetUnitRulesParam(unitID, "melee_exchange", exchange)
-            Spin(arena, z_axis, math.rad(4.2 * randSign()), 0.2)
+            Spin(arena, y_axis, math.rad(4.2 * randSign()), 0.2)
             if initivativeSign == -1 then
                 Move(move2, 
                     x_axis, 
-                    scale * initivativeSign * i * 100, 
+                    stance2 + initivativeSign * i * stride - reach,
                     400 * intensityMultiplicator * speed * scale)
                 Sleep(100)
                 if i==1 then  spawnCegAtPiece(unitID, move2, "dirt"); spawnCegAtPiece(unitID, move1, "dirt")  end
@@ -127,18 +145,18 @@ function fightAnimation()
                 WMove(
                     move1,
                     x_axis,
-                    scale * initivativeSign * i * 100*1.1 ,
+                    stance1 + initivativeSign * i * stride,
                     400 * intensityMultiplicator * speed * scale*1.4
                 )
                 val = math.random(-10, 10)
-                Turn(turn2, z_axis, math.rad(-90 + val), 150)
-                Turn(turn2, y_axis, math.rad(5) * randSign(), 150) 
+                Turn(turn2, y_axis, math.rad(-90 + val), 4)
+                Turn(turn2, z_axis, math.rad(5) * randSign(), 2)
                 Turn(turn1, x_axis, math.rad(0) , 6)
                 if i==1 then  spawnCegAtPiece(unitID, move2, "dirt"); spawnCegAtPiece(unitID, move1, "dirt")  end
             else
                 Move(move1,
                  x_axis, 
-                 scale * initivativeSign * i * 100,
+                 stance1 + initivativeSign * i * stride + reach,
                  400 * intensityMultiplicator * speed * scale)
                 Sleep(100)
                 if i==1 then  spawnCegAtPiece(unitID, move2, "dirt"); spawnCegAtPiece(unitID, move1, "dirt")  end
@@ -146,12 +164,12 @@ function fightAnimation()
                 WMove(
                     move2,
                     x_axis,
-                    scale * initivativeSign * i * 100*1.1,
+                    stance2 + initivativeSign * i * stride,
                     400 * intensityMultiplicator * speed * scale*1.4
                 )
                 val = math.random(-10, 10)
-                Turn(turn1, z_axis, math.rad(90 + val), 150)
-                Turn(turn1, y_axis, math.rad(5)*randSign(), 150)    
+                Turn(turn1, y_axis, math.rad(90 + val), 4)
+                Turn(turn1, z_axis, math.rad(5)*randSign(), 2)
                 Turn(turn2, x_axis, math.rad(0) , 6)
                 if i==1 then  spawnCegAtPiece(unitID, move2, "dirt"); spawnCegAtPiece(unitID, move1, "dirt")  end
             end
@@ -163,19 +181,19 @@ function fightAnimation()
             if i==1 then  spawnCegAtPiece(unitID, move2, "dirt"); spawnCegAtPiece(unitID, move1, "dirt")  end
            if math.random(1,10) > 9  then spawnCegAtPiece(unitID, move1, "bloodslay") end
         end
-        Spin(arena, z_axis, math.rad(42 * randSign()), 4.2)
+        Spin(arena, y_axis, math.rad(42 * randSign()), 4.2)
        
         --circling break& catch breath, reset Flee roll, places Change
         -- Keep balance changes grounded; the arena supplies horizontal circling.
         Turn(center, x_axis, math.rad(math.random(-4,4)), 1.5)
-        Turn(center, y_axis, math.rad(math.random(-4,4)), 1.5)
-        Turn(center, z_axis, math.rad(math.random(-15,15)), 2)
+        Turn(center, y_axis, math.rad(math.random(-15,15)), 2)
+        Turn(center, z_axis, math.rad(math.random(-4,4)), 1.5)
         if initiative == 1 then
-            Move(move1, x_axis, 0, 1500 * scale)
-            WMove(move2, x_axis, 0, 1500 * scale)
+            Move(move1, x_axis, stance1, 1500 * scale)
+            WMove(move2, x_axis, stance2, 1500 * scale)
         else
-            Move(move2, x_axis, 0, 1500 * scale)
-            WMove(move1, x_axis, 0, 1500 * scale)
+            Move(move2, x_axis, stance2, 1500 * scale)
+            WMove(move1, x_axis, stance1, 1500 * scale)
         end
       
         Sleep(100)
