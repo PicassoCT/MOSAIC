@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "name": "Operative locomotion and idle props",
+  "description": "Production propagator with disguise requested off: inspect walking, arm and coat motion, stop timing, and idle props.",
+  "fixture_kind": "gameplay",
+  "modoptions": {"culture": "western", "unitfactor": 0.1},
+  "units": [{"name": "subject", "def": "operativepropagator", "x": -120, "z": 0, "facing": 0,
+    "pieces": ["center", "Torso", "Head", "UpArm1", "UpArm2", "LowArm1", "LowArm2", "Hand1", "Hand2", "UpLeg1", "UpLeg2", "LowLeg1", "LowLeg2", "FoldtopFolded", "FoldtopUnfolded"]}],
+  "warmup_frames": 90,
+  "camera": {"target": "subject", "distance": 150, "height": 60, "target_height": 22},
+  "phases": [
+    {"name": "visible_idle", "frames": 120, "actions": [{"type": "call", "unit": "subject", "function": "setWantCloak", "args": [false]}]},
+    {"name": "walk", "frames": 150, "expected_motion": true, "actions": [{"type": "move", "unit": "subject", "x": 240, "z": 0}], "checks": [{"type": "displaced", "unit": "subject", "min": 15}]},
+    {"name": "stop_and_unfold", "frames": 180, "actions": [{"type": "stop", "unit": "subject"}]},
+    {"name": "restart_walk", "frames": 150, "expected_motion": true, "actions": [{"type": "move", "unit": "subject", "x": -120, "z": 180}], "checks": [{"type": "displaced", "unit": "subject", "min": 15}]},
+    {"name": "recover_idle", "frames": 180, "actions": [{"type": "stop", "unit": "subject"}], "checks": [{"type": "alive", "unit": "subject"}]}
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "name": "Civilian prayer interruption",
+  "description": "Requests production prayer behaviour, waits for the queued gesture, interrupts it, then checks native walking recovery.",
+  "fixture_kind": "script_behaviour",
+  "modoptions": {"culture": "arabic", "unitfactor": 0.1},
+  "units": [{"name": "subject", "def": "civilian_arab0", "x": -120, "z": 0, "facing": 0,
+    "pieces": ["root", "center", "UpBody", "Head1", "UpArm1", "UpArm2", "LowArm1", "LowArm2", "UpLeg1", "UpLeg2", "LowLeg1", "LowLeg2", "Feet1", "Feet2"]}],
+  "warmup_frames": 90,
+  "camera": {"target": "subject", "distance": 140, "height": 55, "target_height": 18},
+  "phases": [
+    {"name": "idle_before_prayer", "frames": 90, "actions": []},
+    {"name": "prayer", "frames": 240, "expected_motion": true, "actions": [{"type": "call", "unit": "subject", "function": "startPraying", "args": [1]}]},
+    {"name": "interrupt", "frames": 90, "actions": [{"type": "call", "unit": "subject", "function": "externalInterruptCivilian", "args": []}]},
+    {"name": "walk_after_interrupt", "frames": 150, "expected_motion": true, "actions": [{"type": "move", "unit": "subject", "x": 220, "z": 0}], "checks": [{"type": "displaced", "unit": "subject", "min": 15}]},
+    {"name": "recovered_idle", "frames": 90, "actions": [{"type": "stop", "unit": "subject"}], "checks": [{"type": "alive", "unit": "subject"}]}
+  ]
+}

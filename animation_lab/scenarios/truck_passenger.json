@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "name": "Civilian truck passenger pose",
+  "description": "Attachment fixture for the real passenger pose: seat, move, brake, detach and walk. Does not certify boarding command logic.",
+  "fixture_kind": "attachment_fixture",
+  "modoptions": {"culture": "arabic", "unitfactor": 0.1},
+  "units": [
+    {"name": "truck", "def": "truck_arab0", "x": -140, "z": 0, "facing": 0, "pieces": ["attachPoint"]},
+    {"name": "subject", "def": "civilian_arab0", "x": -100, "z": 0, "facing": 0,
+      "pieces": ["root", "center", "UpBody", "Head1", "UpArm1", "UpArm2", "LowArm1", "LowArm2", "UpLeg1", "UpLeg2", "LowLeg1", "LowLeg2", "Feet1", "Feet2"]}
+  ],
+  "warmup_frames": 90,
+  "camera": {"target": "subject", "distance": 230, "height": 100, "target_height": 15},
+  "phases": [
+    {"name": "before_loading", "frames": 90, "actions": []},
+    {"name": "seated", "frames": 120, "actions": [{"type": "attach", "unit": "subject", "transporter": "truck", "piece": "attachPoint"}], "checks": [{"type": "transported", "unit": "subject", "transporter": "truck"}]},
+    {"name": "accelerating", "frames": 150, "actions": [{"type": "move", "unit": "truck", "x": 300, "z": 0}], "checks": [{"type": "displaced", "unit": "truck", "min": 20}, {"type": "transported", "unit": "subject", "transporter": "truck"}]},
+    {"name": "braking", "frames": 90, "actions": [{"type": "stop", "unit": "truck"}], "checks": [{"type": "transported", "unit": "subject", "transporter": "truck"}]},
+    {"name": "unloaded", "frames": 90, "actions": [{"type": "detach", "unit": "subject", "x": 0, "z": 100}], "checks": [{"type": "detached", "unit": "subject"}]},
+    {"name": "walking_again", "frames": 150, "expected_motion": true, "actions": [{"type": "move", "unit": "subject", "x": 220, "z": 100}], "checks": [{"type": "displaced", "unit": "subject", "min": 15}]}
+  ]
+}

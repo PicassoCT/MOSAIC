@@ -1,0 +1,334 @@
+{
+  "models": 15,
+  "civilian_models": 12,
+  "clips_by_family": {
+    "civilian": 36,
+    "asset": 9,
+    "propagator": 11,
+    "investigator": 18
+  },
+  "models_with_missing_core": [],
+  "clips_with_authored_missing_targets": 3,
+  "clips_with_command_warnings": 1,
+  "comparisons": [
+    {
+      "group": "civilian",
+      "baseline": "objects3d/civilian0_arab.dae",
+      "model": "objects3d/civilian0_western.dae",
+      "missing_core": [],
+      "different_core_parents": [],
+      "different_core_authored_transforms": [
+        "root",
+        "center",
+        "UpBody",
+        "Head1",
+        "UpArm1",
+        "UpArm2",
+        "LowArm1",
+        "LowArm2",
+        "UpLeg1",
+        "UpLeg2",
+        "LowLeg1",
+        "LowLeg2",
+        "Feet1",
+        "Feet2"
+      ],
+      "same_asset_units_and_up_axis": true
+    },
+    {
+      "group": "civilian",
+      "baseline": "objects3d/civilian0_arab.dae",
+      "model": "objects3d/civilian1_arab.dae",
+      "missing_core": [],
+      "different_core_parents": [],
+      "different_core_authored_transforms": [
+        "root",
+        "center",
+        "UpBody",
+        "Head1",
+        "UpArm1",
+        "UpArm2",
+        "LowArm1",
+        "LowArm2",
+        "UpLeg1",
+        "UpLeg2",
+        "LowLeg1",
+        "LowLeg2",
+        "Feet1",
+        "Feet2"
+      ],
+      "same_asset_units_and_up_axis": true
+    },
+    {
+      "group": "civilian",
+      "baseline": "objects3d/civilian0_arab.dae",
+      "model": "objects3d/civilian1_western.dae",
+      "missing_core": [],
+      "different_core_parents": [],
+      "different_core_authored_transforms": [
+        "root",
+        "center",
+        "UpBody",
+        "Head1",
+        "UpArm1",
+        "UpArm2",
+        "LowArm1",
+        "LowArm2",
+        "UpLeg1",
+        "UpLeg2",
+        "LowLeg1",
+        "LowLeg2",
+        "Feet1",
+        "Feet2"
+      ],
+      "same_asset_units_and_up_axis": true
+    },
+    {
+      "group": "civilian",
+      "baseline": "objects3d/civilian0_arab.dae",
+      "model": "objects3d/civilian2_arab.dae",
+      "missing_core": [],
+      "different_core_parents": [
+        "center",
+        "UpBody"
+      ],
+      "different_core_authored_transforms": [
+        "root",
+        "center",
+        "UpBody",
+        "Head1",
+        "UpArm1",
+        "UpArm2",
+        "LowArm1",
+        "LowArm2",
+        "UpLeg1",
+        "UpLeg2",
+        "LowLeg1",
+        "LowLeg2",
+        "Feet1",
+        "Feet2"
+      ],
+      "same_asset_units_and_up_axis": true
+    },
+    {
+      "group": "civilian",
+      "baseline": "objects3d/civilian0_arab.dae",
+      "model": "objects3d/civilian2_western.dae",
+      "missing_core": [],
+      "different_core_parents": [],
+      "different_core_authored_transforms": [
+        "root",
+        "center",
+        "UpBody",
+        "Head1",
+        "UpArm1",
+        "UpArm2",
+        "LowArm1",
+        "LowArm2",
+        "UpLeg1",
+        "UpLeg2",
+        "LowLeg1",
+        "LowLeg2",
+        "Feet1",
+        "Feet2"
+      ],
+      "same_asset_units_and_up_axis": true
+    },
+    {
+      "group": "civilian",
+      "baseline": "objects3d/civilian0_arab.dae",
+      "model": "objects3d/civilian3_arab.dae",
+      "missing_core": [],
+      "different_core_parents": [
+        "center",
+        "UpBody"
+      ],
+      "different_core_authored_transforms": [
+        "root",
+        "center",
+        "UpBody",
+        "Head1",
+        "UpArm1",
+        "UpArm2",
+        "LowArm1",
+        "LowArm2",
+        "UpLeg1",
+        "UpLeg2",
+        "LowLeg1",
+        "LowLeg2",
+        "Feet1",
+        "Feet2"
+      ],
+      "same_asset_units_and_up_axis": true
+    },
+    {
+      "group": "civilian",
+      "baseline": "objects3d/civilian0_arab.dae",
+      "model": "objects3d/civilian3_western.dae",
+      "missing_core": [],
+      "different_core_parents": [
+        "UpLeg1",
+        "UpLeg2"
+      ],
+      "different_core_authored_transforms": [
+        "root",
+        "center",
+        "UpBody",
+        "Head1",
+        "UpArm1",
+        "UpArm2",
+        "LowArm1",
+        "LowArm2",
+        "UpLeg1",
+        "UpLeg2",
+        "LowLeg1",
+        "LowLeg2",
+        "Feet1",
+        "Feet2"
+      ],
+      "same_asset_units_and_up_axis": true
+    },
+    {
+      "group": "civilian",
+      "baseline": "objects3d/civilian0_arab.dae",
+      "model": "objects3d/civilian4_arab.dae",
+      "missing_core": [],
+      "different_core_parents": [],
+      "different_core_authored_transforms": [
+        "root",
+        "center",
+        "UpBody",
+        "Head1",
+        "UpArm1",
+        "UpArm2",
+        "LowArm1",
+        "LowArm2",
+        "UpLeg1",
+        "UpLeg2",
+        "LowLeg1",
+        "Feet1",
+        "Feet2"
+      ],
+      "same_asset_units_and_up_axis": true
+    },
+    {
+      "group": "civilian",
+      "baseline": "objects3d/civilian0_arab.dae",
+      "model": "objects3d/civilian4_western.dae",
+      "missing_core": [],
+      "different_core_parents": [
+        "UpLeg1",
+        "UpLeg2"
+      ],
+      "different_core_authored_transforms": [
+        "root",
+        "center",
+        "UpBody",
+        "Head1",
+        "UpArm1",
+        "UpArm2",
+        "LowArm1",
+        "LowArm2",
+        "UpLeg1",
+        "UpLeg2",
+        "LowLeg1",
+        "LowLeg2",
+        "Feet1",
+        "Feet2"
+      ],
+      "same_asset_units_and_up_axis": true
+    },
+    {
+      "group": "civilian",
+      "baseline": "objects3d/civilian0_arab.dae",
+      "model": "objects3d/civilian5_arab.dae",
+      "missing_core": [],
+      "different_core_parents": [],
+      "different_core_authored_transforms": [
+        "root",
+        "center",
+        "UpBody",
+        "Head1",
+        "UpArm1",
+        "UpArm2",
+        "LowArm1",
+        "LowArm2",
+        "UpLeg1",
+        "UpLeg2",
+        "LowLeg1",
+        "LowLeg2",
+        "Feet1",
+        "Feet2"
+      ],
+      "same_asset_units_and_up_axis": true
+    },
+    {
+      "group": "civilian",
+      "baseline": "objects3d/civilian0_arab.dae",
+      "model": "objects3d/civilian5_western.dae",
+      "missing_core": [],
+      "different_core_parents": [
+        "UpLeg1",
+        "UpLeg2"
+      ],
+      "different_core_authored_transforms": [
+        "center",
+        "UpBody",
+        "Head1",
+        "UpArm1",
+        "UpArm2",
+        "LowArm1",
+        "LowArm2",
+        "UpLeg1",
+        "UpLeg2",
+        "LowLeg1",
+        "LowLeg2",
+        "Feet1",
+        "Feet2"
+      ],
+      "same_asset_units_and_up_axis": true
+    },
+    {
+      "group": "operative",
+      "baseline": "objects3d/operative_asset.dae",
+      "model": "objects3d/operative_investigator.DAE",
+      "missing_core": [],
+      "different_core_parents": [],
+      "different_core_authored_transforms": [
+        "center",
+        "Torso",
+        "Head",
+        "UpArm1",
+        "UpArm2",
+        "LowArm1",
+        "LowArm2",
+        "UpLeg1",
+        "UpLeg2",
+        "LowLeg1",
+        "LowLeg2"
+      ],
+      "same_asset_units_and_up_axis": true
+    },
+    {
+      "group": "operative",
+      "baseline": "objects3d/operative_asset.dae",
+      "model": "objects3d/operative_propagator.dae",
+      "missing_core": [],
+      "different_core_parents": [],
+      "different_core_authored_transforms": [
+        "center",
+        "Torso",
+        "Head",
+        "UpArm1",
+        "UpArm2",
+        "LowArm1",
+        "LowArm2",
+        "UpLeg1",
+        "UpLeg2",
+        "LowLeg1",
+        "LowLeg2"
+      ],
+      "same_asset_units_and_up_axis": true
+    }
+  ]
+}

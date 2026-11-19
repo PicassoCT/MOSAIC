@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "name": "Existing text FX test unit observation",
+  "description": "Observes the real text_fx_test unit and its published mode, rotation and speed. Requires a game revision containing that unit.",
+  "fixture_kind": "existing_test_unit",
+  "modoptions": {"culture": "western", "unitfactor": 0.1},
+  "units": [{"name": "subject", "def": "text_fx_test", "x": 0, "z": 0, "facing": 0}],
+  "warmup_frames": 90,
+  "capture": {"interval_frames": 3, "width": 1280, "height": 720},
+  "camera": {"target": "subject", "distance": 850, "height": 340, "target_height": 100},
+  "phases": [{"name": "text_fx_observation", "frames": 900, "actions": [], "checks": [{"type": "alive", "unit": "subject"}]}]
+}

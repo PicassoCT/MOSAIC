@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "name": "Civilian locomotion and recovery",
+  "description": "Production civilian: idle, native movement, stop, change direction, recover. Inspect foot sliding and transitions.",
+  "fixture_kind": "gameplay",
+  "modoptions": {"culture": "western", "unitfactor": 0.1},
+  "units": [{"name": "subject", "def": "civilian_western0", "x": -120, "z": 0, "facing": 0,
+    "pieces": ["root", "center", "UpBody", "Head1", "UpArm1", "UpArm2", "LowArm1", "LowArm2", "UpLeg1", "UpLeg2", "LowLeg1", "LowLeg2", "Feet1", "Feet2"]}],
+  "warmup_frames": 90,
+  "capture": {"interval_frames": 3, "width": 1280, "height": 720},
+  "camera": {"target": "subject", "distance": 145, "height": 55, "target_height": 19},
+  "phases": [
+    {"name": "idle", "frames": 90, "actions": [], "checks": [{"type": "alive", "unit": "subject"}]},
+    {"name": "walk", "frames": 150, "expected_motion": true, "actions": [{"type": "move", "unit": "subject", "x": 220, "z": 0}], "checks": [{"type": "displaced", "unit": "subject", "min": 15}]},
+    {"name": "stop", "frames": 90, "actions": [{"type": "stop", "unit": "subject"}]},
+    {"name": "turn_and_walk", "frames": 150, "expected_motion": true, "actions": [{"type": "move", "unit": "subject", "x": -120, "z": 180}], "checks": [{"type": "displaced", "unit": "subject", "min": 15}]},
+    {"name": "recover_idle", "frames": 120, "actions": [{"type": "stop", "unit": "subject"}], "checks": [{"type": "alive", "unit": "subject"}]}
+  ]
+}

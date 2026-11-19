@@ -60,7 +60,10 @@ e.Spring={
     end,
     GetUnitDefID=function(id)return units[id] and units[id].def end,
     GetUnitTeam=function(id)return units[id] and units[id].team end,
-    GetUnitTransporter=function()return nil end,
+    GetUnitTransporter=function(id)
+        assert(type(id)=="number" and id==id,"[GetUnitTransporter] unitID not a real number")
+        return units[id] and units[id].transporter
+    end,
     GetUnitRadius=function()return 50 end,
     GetGroundHeight=function()return 0 end,
     TestMoveOrder=function()return true end,
@@ -72,6 +75,12 @@ e.Spring={
 local factory=chunk(read("luarules/gadgets/include/civilian_daily_life.lua"),e)
 local life=factory({gameConfig=gameConfig,walkers={[1]=true},trucks={},raining=function()return false end})
 life:Register(10,100)
+assert(not life:IsProtected(10),"ordinary pedestrian starts without passenger protection")
+units[10].transporter=200
+assert(life:IsProtected(10) and not life:CanSocialize(10),
+    "ordinary transported civilian must be protected from ambient activity and population cleanup")
+units[10].transporter=nil
+assert(not life:IsProtected(10),"disembarking clears passenger-only protection")
 local candidates={"101",false,{},101,102}
 local target=life:SelectTarget(10,100,candidates)
 assert(target==101 or target==102,"nonnumeric candidate was selected")
@@ -98,6 +107,10 @@ life:UnitDestroyed(103)
 assert(life.people[10].work==nil,"destroyed venue remained remembered as work")
 
 local source=read("luarules/gadgets/game_civilians.lua")
+if source:find("local function isCivilianPassenger(",1,true) then
+    e.isCivilianPassenger,e.isHostageWitness=chunk(section(source,"local function isCivilianPassenger(",
+        "function startInternalBehaviourOfState(").."\nreturn isCivilianPassenger,isHostageWitness",e)
+end
 local events={}
 e.RouteTabel={[100]={"101",false,{},101,102,103}}
 e.civilianLife=life
@@ -127,6 +140,11 @@ assert(next(e.GG.UnitArrivedAtTarget)==nil,"arrival queue not cleared")
 e.RouteTabel[100]={"101","103",false,{}}
 assert(e.giveWaypointsToUnit(10,1,100)==false,"invalid targets should be skipped")
 assert(#events==2,"invalid targets scheduled a movement event")
+
+units[10].transporter=200
+assert(e.giveWaypointsToUnit(10,1,100)==false and #events==2,
+    "an ordinary truck rider must not receive pedestrian route orders")
+units[10].transporter=nil
 
 -- A completed everyday trip may already be queued when its civilian joins a
 -- parade. Keep that arrival pending without creating a competing travel event.

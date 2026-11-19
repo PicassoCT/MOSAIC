@@ -1,0 +1,2 @@
+-r requirements.txt
+lupa>=2,<3
