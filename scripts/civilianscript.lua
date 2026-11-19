@@ -1308,7 +1308,12 @@ function turnUnitTowardsUnit( blendFactor, startRotation)
     local resultRotation = blendShortestPath(targetRotation, startRotation, factor)
 
     -- Use a direction vector: Euler yaw uses the opposite handedness here.
-    Spring.SetUnitDirection(unitID, math.sin(resultRotation), 0, math.cos(resultRotation))
+    local dirX, dirZ = math.sin(resultRotation), math.cos(resultRotation)
+    -- Coil's heading approximation can reverse east/west for tiny positive Z
+    -- (cos(pi/2) is not exactly zero). Snap cardinal residues before conversion.
+    if math.abs(dirX)<1e-5 then dirX=0 end
+    if math.abs(dirZ)<1e-5 then dirZ=0 end
+    Spring.SetUnitDirection(unitID, dirX, 0, dirZ)
 end
 
 function chatting()
@@ -2126,8 +2131,8 @@ LowerAnimationStateFunctions = {
                 PlayAnimation("LOWBODY_WALKING_ZOMBIE")
                 return eAnimState.walking
             else
-                PlayAnimation(randT(lowerBodyAnimations[eAnimState.wounded],
-                                    conditionalFilterOutUpperBodyTable()))
+                PlayAnimation(randT(lowerBodyAnimations[eAnimState.wounded]),
+                                    conditionalFilterOutUpperBodyTable())
                 return eAnimState.walking
             end
         end
@@ -2141,8 +2146,8 @@ LowerAnimationStateFunctions = {
         Turn(center, y_axis, math.rad(0), 12)
 
         if bodyConfig.boolWounded == true then
-            PlayAnimation(randT(lowerBodyAnimations[eAnimState.wounded],
-                                conditionalFilterOutUpperBodyTable()))
+            PlayAnimation(randT(lowerBodyAnimations[eAnimState.wounded]),
+                                conditionalFilterOutUpperBodyTable())
             return eAnimState.walking
         end
 
@@ -2305,7 +2310,8 @@ function script.StartMoving()
     Signal(SIG_STOP)
     boolWalking = true
     if passengerTransport and passengerTransport:IsActive() then return end
-    setOverrideAnimationState(eAnimState.walking, eAnimState.walking, true, nil, true)
+    local walkingState = getWalkingState()
+    setOverrideAnimationState(walkingState, walkingState, true, nil, true)
 end
 
 function script.StopMoving()
