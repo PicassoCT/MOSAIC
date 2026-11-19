@@ -647,7 +647,7 @@ function PlayAnimation(animname, piecesToFilterOutTable, speed)
         end
         if(i < #anim) then
             local t = anim[i+1]['time'] - anim[i]['time'];
-            Sleep(t*33* math.abs(1/speedFactor)); -- sleep works on milliseconds
+            if not MeleeExchanges.wait(meleeArena, meleeEpoch, t * 33 * math.abs(1 / speedFactor)) then return 0 end
         end
     end
 end

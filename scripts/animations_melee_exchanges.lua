@@ -110,7 +110,8 @@ function M.select(name,arena,id)
 end
 function M.duration(style)
  local profile=profiles[style]
- return profile and (profile.frames+6)*1000/30 or 800
+ -- Original FIGHTING banks end at frame 50. Preserve that complete variation.
+ return profile and (profile.frames+6)*1000/30 or 1800
 end
 function M.footwork(arena,id,legacy,standing)
  if standing then return 'MELEE_BRACE' end
@@ -122,5 +123,17 @@ end
 function M.stale(arena,epoch)
  return epoch and (not arena or not Spring.ValidUnitID(arena) or Spring.GetUnitIsDead(arena)
      or Spring.GetUnitRulesParam(arena,'melee_exchange')~=epoch)
+end
+function M.wait(arena,epoch,milliseconds)
+ if not epoch then Sleep(milliseconds);return true end
+ -- Stay in the existing player coroutine, but observe a new paired beat on
+ -- the next simulation frame instead of sleeping through a long keyframe.
+ while milliseconds>0 do
+  local step=math.min(33,milliseconds)
+  Sleep(step)
+  if M.stale(arena,epoch) then return false end
+  milliseconds=milliseconds-step
+ end
+ return true
 end
 return M
