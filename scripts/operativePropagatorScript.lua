@@ -53,7 +53,7 @@ local axisSign ={
 
 Animations = include('animation_operativepropagator_male.lua')
 local MeleeExchanges = include("animations_melee_exchanges.lua")
-MeleeExchanges.register(Animations)
+MeleeExchanges.register(Animations, unitID)
 x_axis = 1
 y_axis = 2
 z_axis = 3
@@ -1095,7 +1095,7 @@ LowerAnimationStateFunctions ={
 						if boolFlying == true then return eAnimState.walking end
 						if not boolAiming and not boolInClosedCombat then reset(center, 1.3, false) end
 						if boolInClosedCombat then
-                            playMaskedAnimation(pieceMask, meleeFootworkClip, upperBodyPieces, 1.0)
+                            playMaskedAnimation(pieceMask, MeleeExchanges.footwork(closeCombat.arenaID, unitID, meleeFootworkClip), upperBodyPieces, 1.0)
                         else
                             playMaskedAnimation(pieceMask, randT(lowerBodyAnimations[eAnimState.walking]))
                         end
@@ -1104,7 +1104,11 @@ LowerAnimationStateFunctions ={
 [eAnimState.standing] = 	function(pieceMask) 
 						if boolFlying == true then return eAnimState.standing end
 
-						resetT(lowerBodyPieces, 12)
+						if boolInClosedCombat then
+                            playMaskedAnimation(pieceMask, MeleeExchanges.footwork(closeCombat.arenaID, unitID, nil, true), upperBodyPieces, 1.0)
+                            return eAnimState.standing
+                        end
+                        resetT(lowerBodyPieces, 12)
 						Sleep(100)
 						return eAnimState.standing
 					end,

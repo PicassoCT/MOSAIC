@@ -1,4 +1,4 @@
-return {
+local effects = {
     ["dirt"] = {
         dirtg = {
             air = true,
@@ -57,3 +57,26 @@ return {
         }
     }
 }
+
+-- Human foot scuffs use the existing dirt/water effect at one eighth scale.
+-- The normal dirt effect remains unchanged for vehicles and larger impacts.
+local lengthFields = {
+    particlesize=true, particlesizespread=true, particlespeed=true,
+    particlespeedspread=true, gravity=true, pos=true, sizegrowth=true,
+}
+local footstep = {}
+for name, component in pairs(effects.dirt) do
+    local copy = {}
+    for key, value in pairs(component) do copy[key] = value end
+    copy.properties = {}
+    for key, value in pairs(component.properties) do
+        if lengthFields[key] then
+            if type(value) == 'number' then value = value * .125
+            else value = value:gsub('[%-+]?%d*%.?%d+', function(n) return tostring(tonumber(n)*.125) end) end
+        end
+        copy.properties[key] = value
+    end
+    footstep[name] = copy
+end
+effects.melee_footstep = footstep
+return effects

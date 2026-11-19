@@ -7,6 +7,7 @@ include "lib_Animation.lua"
 -- The shared header maps Y/Z for authored Z-up actors. This S3O arena
 -- uses engine-native Y-up coordinates, including its transport matrices.
 local x_axis, y_axis, z_axis = 1, 2, 3
+local MeleeExchanges = include("animations_melee_exchanges.lua")
 
 local TablesOfPiecesGroups = {}
 TablesOfPiecesGroups = getPieceTableByNameGroups(false, true)
@@ -132,6 +133,7 @@ function fightAnimation()
             -- gives varied but replayable exchanges, with no immediate repeat.
             local style = math.random(1, previousStyle and 7 or 8)
             if previousStyle and style >= previousStyle then style = style + 1 end
+            local beatStarted = Spring.GetGameFrame()
             previousStyle = style
             exchange = exchange + 1
             Spring.SetUnitRulesParam(unitID, "melee_style", style)
@@ -144,7 +146,7 @@ function fightAnimation()
                     stance2 + initivativeSign * i * stride - reach,
                     400 * intensityMultiplicator * speed * scale)
                 Sleep(100)
-                if i==1 then  spawnCegAtPiece(unitID, move2, "dirt"); spawnCegAtPiece(unitID, move1, "dirt")  end
+                if i==1 then  spawnCegAtPieceGround(unitID, move2, "melee_footstep", 0); spawnCegAtPieceGround(unitID, move1, "melee_footstep", 0)  end
                 Turn(turn1, x_axis, math.rad(-5) * initivativeSign, 70)
                 WMove(
                     move1,
@@ -156,14 +158,14 @@ function fightAnimation()
                 Turn(turn2, y_axis, math.rad(-90 + val), 4)
                 Turn(turn2, z_axis, math.rad(5) * randSign(), 2)
                 Turn(turn1, x_axis, math.rad(0) , 6)
-                if i==1 then  spawnCegAtPiece(unitID, move2, "dirt"); spawnCegAtPiece(unitID, move1, "dirt")  end
+                if i==1 then  spawnCegAtPieceGround(unitID, move2, "melee_footstep", 0); spawnCegAtPieceGround(unitID, move1, "melee_footstep", 0)  end
             else
                 Move(move1,
                  x_axis, 
                  stance1 + initivativeSign * i * stride + reach,
                  400 * intensityMultiplicator * speed * scale)
                 Sleep(100)
-                if i==1 then  spawnCegAtPiece(unitID, move2, "dirt"); spawnCegAtPiece(unitID, move1, "dirt")  end
+                if i==1 then  spawnCegAtPieceGround(unitID, move2, "melee_footstep", 0); spawnCegAtPieceGround(unitID, move1, "melee_footstep", 0)  end
                 Turn(turn2, x_axis, math.rad(5) * initivativeSign, 70)
                 WMove(
                     move2,
@@ -175,15 +177,17 @@ function fightAnimation()
                 Turn(turn1, y_axis, math.rad(90 + val), 4)
                 Turn(turn1, z_axis, math.rad(5)*randSign(), 2)
                 Turn(turn2, x_axis, math.rad(0) , 6)
-                if i==1 then  spawnCegAtPiece(unitID, move2, "dirt"); spawnCegAtPiece(unitID, move1, "dirt")  end
+                if i==1 then  spawnCegAtPieceGround(unitID, move2, "melee_footstep", 0); spawnCegAtPieceGround(unitID, move1, "melee_footstep", 0)  end
             end
               if i == 1 then 
                 stopSpins(center,0.1)
                 reset(center, 3)
              end
             Sleep(restInterval)
-            if i==1 then  spawnCegAtPiece(unitID, move2, "dirt"); spawnCegAtPiece(unitID, move1, "dirt")  end
+            if i==1 then  spawnCegAtPieceGround(unitID, move2, "melee_footstep", 0); spawnCegAtPieceGround(unitID, move1, "melee_footstep", 0)  end
            if math.random(1,10) > 9  then spawnCegAtPiece(unitID, move1, "bloodslay") end
+           local remaining = MeleeExchanges.duration(style) - (Spring.GetGameFrame()-beatStarted)*1000/30
+           if remaining>0 then Sleep(remaining) end
         end
         Spin(arena, y_axis, math.rad(42 * randSign()), 4.2)
        
@@ -205,7 +209,7 @@ function fightAnimation()
         time = time + (2000 / (intensity + 1)) * attackPulses + 500 * attackPulses
         time = time + 100
         intensity = intensity + 1
-        spawnCegAtUnit(unitID, "dirt")
+        spawnCegAtUnit(unitID, "melee_footstep")
     end
 end
 

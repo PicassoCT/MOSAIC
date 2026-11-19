@@ -44,7 +44,7 @@ SIG_SNIPER_LASER=1024
 SIG_ANIM = 4096 -- independent of the 2048 rooftop animation channel
 local Animations = include('animation_assasin_male.lua')
 local MeleeExchanges = include("animations_melee_exchanges.lua")
-MeleeExchanges.register(Animations)
+MeleeExchanges.register(Animations, unitID)
 local center = piece('center');
 local hostagePoint = (Spring.GetUnitPieceMap(unitID) or {}).hostagePoint
 local Torso = piece('Torso');
@@ -922,7 +922,9 @@ LowerAnimationStateFunctions = {
     [eAnimState.walking] = function(pieceMask)
 	if boolFlying == true then return eAnimState.walking end
 
-        if boolAiming == true or boolInClosedCombat then
+        if boolInClosedCombat then
+            playMaskedAnimation(pieceMask, MeleeExchanges.footwork(closeCombat.arenaID, unitID, randT(lowerBodyAnimations[eAnimState.walking])), upperBodyPieces, 1.0)
+        elseif boolAiming == true then
             playMaskedAnimation(pieceMask, randT(lowerBodyAnimations[eAnimState.walking]),
                           upperBodyPieces)
         else
@@ -932,6 +934,10 @@ LowerAnimationStateFunctions = {
     end,
     [eAnimState.standing] = function(pieceMask)
 	if boolFlying == true then return eAnimState.standing end
+        if boolInClosedCombat then
+            playMaskedAnimation(pieceMask, MeleeExchanges.footwork(closeCombat.arenaID, unitID, nil, true), upperBodyPieces, 1.0)
+            return eAnimState.standing
+        end
         resetT(lowerBodyPieces, 12)
         Sleep(100)
         return eAnimState.standing
