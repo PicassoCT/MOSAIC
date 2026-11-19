@@ -18,13 +18,19 @@ include "lib_mosaic.lua"
 
 
 local boolDebugActive = GG.BoolDebug and false
-local Animations = include('animations_civilian_female.lua')
+-- Resolved keyframes are immutable during playback. Reuse the existing
+-- shared-result cache per definition, so crowd size does not multiply banks.
+local animationCacheKey = "civilian-body-keyframes-v2:" .. unitDefID
+local Animations = GetSharedOneTimeResult(animationCacheKey)
 local PrayerAnimations = include('animations_civilian_prayers.lua')
-PrayerAnimations.register(Animations)
 local AerosolAnimations = include("animations_civilian_aerosols.lua")
-AerosolAnimations.register(Animations)
 local ConversationAnimations = include("animations_civilian_conversation.lua")
-ConversationAnimations.register(Animations)
+if not Animations then
+    Animations = include('animations_civilian_female.lua')
+    PrayerAnimations.register(Animations)
+    AerosolAnimations.register(Animations)
+    ConversationAnimations.register(Animations)
+end
 local previousConversationClip = {}
 local signMessages = include('protestSignMessages.lua')
 local peacfulProtestSignMessages = include('PeacefullProtestSignMessages.lua')
@@ -1446,6 +1452,8 @@ end
 -- -Collapsing, Shivering, Coiling Up
 
 function setupAnimation()
+    local cached = GetSharedOneTimeResult(animationCacheKey)
+    if cached then Animations = cached; return end
     local function switchAxis(axis)
         if axis == z_axis then return y_axis end
         if axis == y_axis then return z_axis end
@@ -1471,6 +1479,7 @@ function setupAnimation()
             keyframe.commands = resolved
         end
     end
+    SetSharedOneTimeResult(animationCacheKey, Animations)
 end
 
 local animCmd = {['turn'] = Turn, ['move'] = Move};
