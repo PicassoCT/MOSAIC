@@ -1038,8 +1038,8 @@ function turnUnitTowardsUnit(unitID, chatPartner, blendFactor, startRotation)
     -- Interpolate rotation
     local resultRotation = blendShortestPath(targetRotation, startRotation, factor)
 
-    -- Apply rotation: note Spring.SetUnitRotation(x, y, z) uses radians around axes
-    Spring.SetUnitRotation(unitID, 0, resultRotation, 0)
+    -- Use a direction vector: Euler yaw uses the opposite handedness here.
+    Spring.SetUnitDirection(unitID, math.sin(resultRotation), 0, math.cos(resultRotation))
 end
 
 function chatting()
@@ -1047,28 +1047,31 @@ function chatting()
     SetSignalMask(SIG_INTERNAL)
     setOverrideAnimationState(eAnimState.slaved, eAnimState.standing, true, nil, true)
     -- conditionalEcho(boolDebugActive, "Debugging chat civilianscript: active at ".. locationstring(unitID))
-    accumulated = 0
-    _, startRotation,_ = Spring.GetUnitRotation(unitID)
-    timeTillFullRotatedMs = 3500
-    turnStep = 1/(timeTillFullRotatedMs/100)
+    local fx, _, fz = Spring.GetUnitDirection(unitID)
+    local startRotation = math.atan2(fx, fz)
+    local turnStartFrame = spGetGameFrame()
+    local function updateFacing()
+        local factor = math.min(1, frameToMs(spGetGameFrame() - turnStartFrame) / 3500)
+        turnUnitTowardsUnit(unitID, chatPartner, factor, startRotation)
+    end
     while 
         chattingTime > 0 and 
         doesUnitExistAlive(chatPartner) and 
         distanceUnitToUnit(unitID, chatPartner) < GameConfig.civilians.conversation.range do
             
         local iterationStartFrame = spGetGameFrame()
+        updateFacing()
         if maRa() then
             if randChance(75) then
-                durationFrames = PlayAnimation("UPBODY_NORMAL_TALK", lowerBodyPieces, math.random(10,20)/10)
+                durationFrames = PlayAnimation("UPBODY_NORMAL_TALK", lowerBodyPieces, math.random(10,20)/10, updateFacing)
             else
-                durationFrames = PlayAnimation("UPBODY_AGGRO_TALK", lowerBodyPieces, math.random(10,30)/10)
+                durationFrames = PlayAnimation("UPBODY_AGGRO_TALK", lowerBodyPieces, math.random(10,30)/10, updateFacing)
             end     
         else
-            playUpperBodyIdleAnimation()
+            playUpperBodyIdleAnimation(updateFacing)
         end
-        turnUnitTowardsUnit(unitID, chatPartner, accumulated, startRotation)
+        updateFacing()
 
-       accumulated = accumulated + turnStep
        Sleep(100)
        chattingTime = chattingTime - frameToMs(spGetGameFrame() - iterationStartFrame)
     end
@@ -1201,7 +1204,7 @@ local animCmd = {['turn'] = Turn, ['move'] = Move};
 
 local axisSign = {[x_axis] = 1, [y_axis] = 1, [z_axis] = 1}
 
-function PlayAnimation(animname, piecesToFilterOutTable, speed)
+function PlayAnimation(animname, piecesToFilterOutTable, speed, onFrame)
     if boolDying then return 0 end
     local speedFactor = speed or 1.0
     if not piecesToFilterOutTable then piecesToFilterOutTable = {} end
@@ -1216,6 +1219,7 @@ function PlayAnimation(animname, piecesToFilterOutTable, speed)
     local randoffset
     for i = 1, #anim do
         if boolDying then return 0 end
+        if onFrame then onFrame() end
         local commands = anim[i].commands;
         for j = 1, #commands do
             local cmd = commands[j];
@@ -1589,13 +1593,13 @@ function showHideProps(selectedIdleFunction, bShow)
     end
 end
 
-function playUpperBodyIdleAnimation()
+function playUpperBodyIdleAnimation(onFrame)
     if bodyConfig.boolLoaded == false then
         selectedIdleFunction =
             (unitID % #uppperBodyAnimations[eAnimState.idle]) + 1
         showHideProps(selectedIdleFunction, true)
         PlayAnimation(
-            uppperBodyAnimations[eAnimState.idle][selectedIdleFunction])
+            uppperBodyAnimations[eAnimState.idle][selectedIdleFunction], nil, nil, onFrame)
         showHideProps(selectedIdleFunction, false)
     end
 end
