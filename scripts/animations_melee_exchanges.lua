@@ -1,6 +1,7 @@
 -- Short paired exchanges for the existing arena and keyframe players.
 -- Source axes, as in the operative animation banks; setupAnimation converts once.
 local M={}
+local pairedFootwork={MELEE_STEP_ADVANCE=true,MELEE_STEP_RETREAT=true,MELEE_BRACE=true}
 local axes={x_axis,y_axis,z_axis}
 local parts={'center','Torso','Head','UpArm1','UpArm2','LowArm1','LowArm2'}
 local profiles={
@@ -100,8 +101,9 @@ function M.register(bank,id)
  end
 end
 function M.select(name,arena,id)
- if name~='FIGHTING' or not arena or not Spring.ValidUnitID(arena) or Spring.GetUnitIsDead(arena) then return name end
+ if (name~='FIGHTING' and not pairedFootwork[name]) or not arena or not Spring.ValidUnitID(arena) or Spring.GetUnitIsDead(arena) then return name end
  local epoch=Spring.GetUnitRulesParam(arena,'melee_exchange')
+ if pairedFootwork[name] then return name,epoch end
  local index=Spring.GetUnitRulesParam(arena,'melee_style')
  local profile=profiles[index]
  if not profile then return name,epoch end -- retain the original authored fight as a variation
