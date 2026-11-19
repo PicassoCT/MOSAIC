@@ -1,3 +1,5 @@
+local bodyDying = false
+local lastDamageDirX, lastDamageDirZ = 0, 0
 -- Independent filters for the two animation channels; callback remains argument 4.
 local upperOverrideMask, lowerOverrideMask
 local upperMaskState, lowerMaskState
@@ -41,6 +43,8 @@ SIG_ROOF_TOP = 512
 SIG_SNIPER_LASER=1024
 SIG_ANIM = 4096 -- independent of the 2048 rooftop animation channel
 local Animations = include('animation_assasin_male.lua')
+local MeleeExchanges = include("animations_melee_exchanges.lua")
+MeleeExchanges.register(Animations)
 local center = piece('center');
 local hostagePoint = (Spring.GetUnitPieceMap(unitID) or {}).hostagePoint
 local Torso = piece('Torso');
@@ -234,11 +238,11 @@ function closeCombatOS()
     Hide(Gun)
     StartThread(delayedPieceDrop, Pistol, math.random(3,12)*1000)
     oldState = 1
-    setOverrideAnimationState(eAnimState.fighting, eAnimState.walking, true, function() return boolInClosedCombat end,    false)
     while true do
         if boolInClosedCombat then
+            setOverrideAnimationState(eAnimState.fighting, eAnimState.walking, true, function() return boolInClosedCombat end,    false)
             --Spring.Echo("Operativeasset: Is now in close combat")
-            while(doesUnitExistAlive(closeCombat.arenaID))do
+            while(boolInClosedCombat and doesUnitExistAlive(closeCombat.arenaID))do
                 newState = math.random(1,3) 
                 if newState ~= oldState then
                     if newState == 1   then 
@@ -407,6 +411,7 @@ function gunVisibleOS()
 end
 
 function script.HitByWeapon(x, z, weaponDefID, damage) 
+    lastDamageDirX, lastDamageDirZ = x or 0, z or 0
     return damage 
 end
 
@@ -622,6 +627,7 @@ local animCmd = {['turn'] = Turn, ['move'] = Move};
 local axisSign = {[x_axis] = 1, [y_axis] = 1, [z_axis] = 1}
 
 function PlayAnimation(animname, piecesToFilterOutTable, speed)
+    if bodyDying and animname ~= "DEATH" then return 0 end
     if hasHumanShield() then return 0 end
     local speedFactor = speed or 1.0
     if not piecesToFilterOutTable then piecesToFilterOutTable = {} end
@@ -629,9 +635,13 @@ function PlayAnimation(animname, piecesToFilterOutTable, speed)
     assert(type(animname) == "string",
            "Animname is not string " .. toString(animname))
     assert(Animations[animname], "No animation with name "..animname)
+    local meleeArena = closeCombat and closeCombat.arenaID
+    local meleeEpoch
+    animname, meleeEpoch = MeleeExchanges.select(animname, meleeArena, unitID)
     local anim = Animations[animname];
     local randoffset
     for i = 1, #anim do
+        if MeleeExchanges.stale(meleeArena, meleeEpoch) then return 0 end
         if hasHumanShield() then return 0 end
         local commands = anim[i].commands;
         for j = 1, #commands do
@@ -691,14 +701,30 @@ end
 
 
 
-function script.Killed(recentDamage, _)
+local proceduralDeath = include('lib_civilian_death.lua')(unitID, {
+    root=center, UpBody=Torso, Head1=Head,
+    UpArm1=UpArm1, UpArm2=UpArm2, LowArm1=LowArm1, LowArm2=LowArm2,
+    UpLeg1=UpLeg1, UpLeg2=UpLeg2, LowLeg1=LowLeg1, LowLeg2=LowLeg2,
+})
+
+function script.Killed(recentDamage, maxHealth)
     humanShieldDying = true
     releaseHumanShield()
     setHumanShieldActive(false)
     if doesUnitExistAlive(civilianID) == true then
         Spring.DestroyUnit(civilianID, true, true)
     end
-    PlayAnimation("DEATH")
+    -- Stop body animation owners while leaving independent accessory systems intact.
+    bodyDying = true
+    boolInClosedCombat = false
+    SetSignalMask(0)
+    Signal(SIG_ANIM + SIG_UP + SIG_LOW + SIG_STOP)
+    -- Preserve the authored death as a variation alongside the procedural falls.
+    if math.random(1,8) == 1 then
+        PlayAnimation("DEATH")
+    else
+        proceduralDeath(recentDamage, maxHealth, lastDamageDirX, lastDamageDirZ)
+    end
     return 1
 end
 
@@ -792,6 +818,7 @@ function setOverrideAnimationState(AnimationstateUpperOverride,
                                    AnimationstateLowerOverride,
                                    boolInstantOverride, conditionFunction,
                                    boolDecoupledStates, upperPieceMask, lowerPieceMask)
+    if bodyDying then return end
     if hasHumanShield() then return end
     assert(conditionFunction == nil or type(conditionFunction) == "function",
         "setOverrideAnimationState: argument 4 must be a callback or nil")
@@ -894,7 +921,7 @@ LowerAnimationStateFunctions = {
     [eAnimState.walking] = function(pieceMask)
 	if boolFlying == true then return eAnimState.walking end
 
-        if boolAiming == true then
+        if boolAiming == true or boolInClosedCombat then
             playMaskedAnimation(pieceMask, randT(lowerBodyAnimations[eAnimState.walking]),
                           upperBodyPieces)
         else

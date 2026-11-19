@@ -46,7 +46,7 @@ return function(unitID, pieces)
         local function joint(piece,target,delay,limit)
             if not piece then return end
             local angles={Spring.UnitScript.GetPieceRotation(piece)}
-            local state={piece=piece,angle=angles,velocity={0,0,0},target=target,
+            local state={piece=piece,angle=angles,initial={angles[1],angles[2],angles[3]},velocity={0,0,0},target=target,
                 delay=delay,stiffness=math.random(55,85),limit=math.rad(limit or 120)}
             for axis=1,3 do StopSpin(piece,axis,0) end
             joints[#joints+1]=state
@@ -54,7 +54,7 @@ return function(unitID, pieces)
         local function degrees(x,y,z) return {math.rad(x),math.rad(y),math.rad(z)} end
         local asymmetry=math.random(6,18)*side
         joint(root,{pitch,roll,math.rad(profile.twist*side)},0,175)
-        joint(center,degrees(0,0,math.random(-12,12)),0.03,45)
+        if center and center~=root then joint(center,degrees(0,0,math.random(-12,12)),0.03,45) end
         joint(pieces.UpBody,degrees(profile.curl,asymmetry*0.4,side*8),0.08,65)
         joint(pieces.Head1,degrees(profile.curl*0.6,asymmetry,side*10),0.18,55)
         joint(pieces.UpArm1,degrees(profile.arm+asymmetry,-15,32),0.10,110)
@@ -68,8 +68,10 @@ return function(unitID, pieces)
         joint(pieces.Feet1,degrees(-12-asymmetry*0.5,0,0),0.18,45)
         joint(pieces.Feet2,degrees(-12+asymmetry*0.5,0,0),0.23,45)
         local startMove={Spring.UnitScript.GetPieceTranslation(root)}
-        local centerMove={Spring.UnitScript.GetPieceTranslation(center)}
-        for axis=1,3 do Move(center,axis,0,math.abs(centerMove[axis] or 0)/fallTime) end
+        if center and center~=root then
+            local centerMove={Spring.UnitScript.GetPieceTranslation(center)}
+            for axis=1,3 do Move(center,axis,0,math.abs(centerMove[axis] or 0)/fallTime) end
+        end
         local rootInfo=Spring.GetUnitPieceInfo(unitID,root)
         local parent=Spring.GetUnitPieceMap(unitID)[rootInfo.parent]
         local parentMatrix=parent and {Spring.GetUnitPieceMatrix(unitID,parent)}
@@ -107,23 +109,30 @@ return function(unitID, pieces)
             end
             return clearance
         end
+        -- Root gravity follows the posed body down to support instead of only
+        -- lifting penetrations. This keeps a collapsing pelvis from hovering.
+        -- All motion stays on the body rig; secondary physics owners are untouched.
         local dt,groundLift=1/30,0
+        local verticalVelocity=blast and stature*1.6 or 0
+        local gravity=stature*5
+        local impactTime
+        local skin=0.04
         local previousMove=startMove
         for frame=1,math.ceil(duration/dt) do
             local t=frame*dt
-            local landed=t>=fallTime
+            local landed=impactTime~=nil
             for _,j in ipairs(joints) do
                 local response=ease((t-j.delay)/fallTime)
                 if j.piece==root then response=response*response end
                 local damping=landed and 18 or 8
                 for axis=1,3 do
-                    local target=j.target[axis]*response
+                    local target=j.initial[axis]+(j.target[axis]-j.initial[axis])*response
                     if name=='shivering' and landed and j.piece~=root then
-                        target=target+math.rad(profile.shiver)*math.sin(t*42+j.delay*20)*math.exp(-(t-fallTime)*5)
+                        target=target+math.rad(profile.shiver)*math.sin(t*42+j.delay*20)*math.exp(-(t-impactTime)*5)
                     end
                     -- One small impact rebound; head and distal limbs lag behind.
                     if landed and j.piece~=root then
-                        target=target+math.rad(8*side)*math.sin((t-fallTime)*18)*math.exp(-(t-fallTime)*7)
+                        target=target+math.rad(8*side)*math.sin((t-impactTime)*18)*math.exp(-(t-impactTime)*7)
                     end
                     local v=j.velocity[axis]+(j.stiffness*(target-j.angle[axis])-damping*j.velocity[axis])*dt
                     local angle=clamp(j.angle[axis]+v*dt,-j.limit,j.limit)
@@ -135,13 +144,23 @@ return function(unitID, pieces)
             -- Terrain contact lifts the whole skeleton instead of allowing the
             -- head or a knee to disappear through the pavement. Blast arcs and
             -- slides are model offsets, so pathing and combat orders are untouched.
-            groundLift=math.max(0,groundLift-groundClearance())
+            local clearance=groundClearance()
+            verticalVelocity=verticalVelocity-gravity*dt
+            local verticalStep=verticalVelocity*dt
+            if clearance+verticalStep<skin then
+                verticalStep=skin-clearance
+                -- Ignore initial foot support; the later body impact starts
+                -- distal follow-through and settling, once per fall.
+                if not impactTime and t>=fallTime*.7 then impactTime=t end
+                verticalVelocity=0
+            end
+            groundLift=groundLift+verticalStep
             local travel=ease(t/fallTime)
             local slide=stature*(blast and 0.55 or 0.08)*travel
-            local arc=blast and stature*0.35*math.sin(math.pi*clamp(t/fallTime,0,1)) or 0
+            -- Blast lift is the initial vertical impulse above, integrated with gravity.
             local nextMove={}
             for axis=1,3 do
-                nextMove[axis]=(startMove[axis] or 0)+parentDelta(dx*slide,groundLift+arc,dz*slide,axis)
+                nextMove[axis]=(startMove[axis] or 0)+parentDelta(dx*slide,groundLift,dz*slide,axis)
                 Move(root,axis,nextMove[axis],math.abs(nextMove[axis]-(previousMove[axis] or 0))/dt)
             end
             previousMove=nextMove

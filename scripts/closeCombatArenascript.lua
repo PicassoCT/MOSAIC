@@ -81,8 +81,10 @@ end
 center = piece"center"
 
 function fightAnimation()
-    intensity = 0
-    time = 0
+    local intensity = 0
+    local time = 0
+    local exchange = 0
+    local previousStyle
     speed = 2
     scale = 0.1
     Turn(turn1, z_axis, math.rad(90), 0)
@@ -102,8 +104,17 @@ function fightAnimation()
 
         intensityMultiplicator =
             math.max(1, 1 + math.abs(math.cos(intensity * math.pi / 4)) + (math.sin(time / 60000) * 0.5))
-        restInterval = math.ceil(2000 / ((intensity % 5) + 2))
+        restInterval = math.random(160, 340) + ((intensity % 5) == 4 and 180 or 0)
         for i = 1, attackPulses do
+            -- Both participants observe the same beat/role; shared synced RNG
+            -- gives varied but replayable exchanges, with no immediate repeat.
+            local style = math.random(1, previousStyle and 7 or 8)
+            if previousStyle and style >= previousStyle then style = style + 1 end
+            previousStyle = style
+            exchange = exchange + 1
+            Spring.SetUnitRulesParam(unitID, "melee_style", style)
+            Spring.SetUnitRulesParam(unitID, "melee_attacker", initivativeSign == -1 and fighterOne or fighterTwo)
+            Spring.SetUnitRulesParam(unitID, "melee_exchange", exchange)
             Spin(arena, z_axis, math.rad(4.2 * randSign()), 0.2)
             if initivativeSign == -1 then
                 Move(move2, 
@@ -155,7 +166,10 @@ function fightAnimation()
         Spin(arena, z_axis, math.rad(42 * randSign()), 4.2)
        
         --circling break& catch breath, reset Flee roll, places Change
-        spinRand(center,-120, 120, 25)
+        -- Keep balance changes grounded; the arena supplies horizontal circling.
+        Turn(center, x_axis, math.rad(math.random(-4,4)), 1.5)
+        Turn(center, y_axis, math.rad(math.random(-4,4)), 1.5)
+        Turn(center, z_axis, math.rad(math.random(-15,15)), 2)
         if initiative == 1 then
             Move(move1, x_axis, 0, 1500 * scale)
             WMove(move2, x_axis, 0, 1500 * scale)
@@ -166,7 +180,7 @@ function fightAnimation()
       
         Sleep(100)
 
-        time = time + (2000 / intensity) * attackPulses + 500 * attackPulses
+        time = time + (2000 / (intensity + 1)) * attackPulses + 500 * attackPulses
         time = time + 100
         intensity = intensity + 1
         spawnCegAtUnit(unitID, "dirt")

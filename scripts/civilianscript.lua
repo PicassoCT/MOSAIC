@@ -23,6 +23,9 @@ local PrayerAnimations = include('animations_civilian_prayers.lua')
 PrayerAnimations.register(Animations)
 local AerosolAnimations = include("animations_civilian_aerosols.lua")
 AerosolAnimations.register(Animations)
+local ConversationAnimations = include("animations_civilian_conversation.lua")
+ConversationAnimations.register(Animations)
+local previousConversationClip = {}
 local signMessages = include('protestSignMessages.lua')
 local peacfulProtestSignMessages = include('PeacefullProtestSignMessages.lua')
 
@@ -1487,6 +1490,9 @@ function PlayAnimation(animname, piecesToFilterOutTable, speed)
 
     local startTimeFrame = spGetGameFrame()
 
+    local requestedName = animname
+    animname = ConversationAnimations.select(animname, previousConversationClip[animname])
+    previousConversationClip[requestedName] = animname
     local anim = Animations[animname];
     if not anim then echo("animation named:"..animname .." does not exist"); return end
     local randoffset

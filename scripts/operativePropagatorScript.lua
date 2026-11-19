@@ -1,3 +1,5 @@
+local bodyDying = false
+local lastDamageDirX, lastDamageDirZ = 0, 0
 -- Independent filters for the two animation channels; callback remains argument 4.
 local upperOverrideMask, lowerOverrideMask
 local upperMaskState, lowerMaskState
@@ -49,7 +51,9 @@ local axisSign ={
 }
 
 
-Animations = include('animation_operativepropagator_male.lua') 
+Animations = include('animation_operativepropagator_male.lua')
+local MeleeExchanges = include("animations_melee_exchanges.lua")
+MeleeExchanges.register(Animations)
 x_axis = 1
 y_axis = 2
 z_axis = 3
@@ -198,31 +202,30 @@ function externalAimFunction(targetPosT, remainderRotationRad, boolIsMoving)
     SwayCoatWithTorso(remainderRotationRad)
 end
 
+local meleeFootworkClip = "WALKCYCLE_RUNNING"
 function closeCombatOS()
     Sleep(5)
     oldState = 1
-    setOverrideAnimationState(eAnimState.fighting, eAnimState.walking, true, function() return boolInClosedCombat end,    false)
     while true do
         if boolInClosedCombat == true then
+            setOverrideAnimationState(eAnimState.fighting, eAnimState.walking, true, function() return boolInClosedCombat end,    false)
              Hide(backpack)
              Hide(Pistol)
              Hide(Gun)
              Hide(FoldtopFolded)
              Hide(FoldtopUnfolded)
-            while(doesUnitExistAlive(closeCombat.arenaID))do
-                newState = math.random(1,3) 
-                StartThread(PlayAnimation, "FIGHTING", lowerBodyPieces,1.0)
-                    if oldState~= newState then
-                        PlayAnimation("WALKCYCLE_RUNNING", upperBodyPieces,1.0)
-                    else 
-                        if maRa() then               
-                            PlayAnimation("WALKCYCLE_WALK", upperBodyPieces,1.0)
-                        else
-                            PlayAnimation("UPBODY_STANDING_PISTOL", upperBodyPieces,1.0)
-                        end
-                    end
+            while(boolInClosedCombat and doesUnitExistAlive(closeCombat.arenaID))do
+                -- Keep all three existing footwork choices, played by one owner.
+                local newState = math.random(1,3)
+                if oldState ~= newState then
+                    meleeFootworkClip = "WALKCYCLE_RUNNING"
+                elseif maRa() then
+                    meleeFootworkClip = "WALKCYCLE_WALK"
+                else
+                    meleeFootworkClip = "UPBODY_STANDING_PISTOL"
+                end
                 oldState = newState
-                Sleep(20)
+                Sleep(500)
             end
             setViewRadius(unitID, FAR_SIGHTED)
             boolInClosedCombat = false 
@@ -640,7 +643,18 @@ function dropHatIfWorrn()
 
 end
 
-function script.Killed(recentDamage, _)
+function script.HitByWeapon(x, z, weaponDefID, damage)
+    lastDamageDirX, lastDamageDirZ = x or 0, z or 0
+    return damage
+end
+
+local proceduralDeath = include('lib_civilian_death.lua')(unitID, {
+    root=center, UpBody=Torso, Head1=Head,
+    UpArm1=UpArm1, UpArm2=UpArm2, LowArm1=LowArm1, LowArm2=LowArm2,
+    UpLeg1=UpLeg1, UpLeg2=UpLeg2, LowLeg1=LowLeg1, LowLeg2=LowLeg2,
+})
+
+function script.Killed(recentDamage, maxHealth)
     humanShieldDying = true
     releaseHumanShield()
     setHumanShieldActive(false)
@@ -649,7 +663,17 @@ function script.Killed(recentDamage, _)
 		Spring.DestroyUnit(civilianID,true,true) 
 	end
 	StartThread(dropHatIfWorrn)
-	PlayAnimation("DEATH")
+	-- Stop body animation owners while leaving independent accessory systems intact.
+    bodyDying = true
+    boolInClosedCombat = false
+    SetSignalMask(0)
+    Signal(SIG_ANIM + SIG_UP + SIG_LOW + SIG_STOP)
+    -- Preserve the authored death as a variation alongside the procedural falls.
+    if math.random(1,8) == 1 then
+        PlayAnimation("DEATH")
+    else
+        proceduralDeath(recentDamage, maxHealth, lastDamageDirX, lastDamageDirZ)
+    end
    return 1
 end
 
@@ -737,6 +761,7 @@ local animCmd = {['turn']=Turn,['move']=Move};
 
 
 function PlayAnimation(animname, piecesToFilterOutTable, speed)
+    if bodyDying and animname ~= "DEATH" then return 0 end
     if hasHumanShield() then return 0 end
 	--echo("PlayAnimation "..animname)
 	local speedFactor = speed or 1.0
@@ -744,9 +769,13 @@ function PlayAnimation(animname, piecesToFilterOutTable, speed)
 	assert(animname, "animation name is nil")
     assert(type(animname)=="string", "Animname is not string "..toString(animname))
 	assert(Animations[animname], "No animation with name "..animname)
+    local meleeArena = closeCombat and closeCombat.arenaID
+    local meleeEpoch
+    animname, meleeEpoch = MeleeExchanges.select(animname, meleeArena, unitID)
     local anim = Animations[animname];
 	local randoffset 
     for i = 1, #anim do
+        if MeleeExchanges.stale(meleeArena, meleeEpoch) then return 0 end
         if hasHumanShield() then return 0 end
         local commands = anim[i].commands;
         for j = 1,#commands do
@@ -882,6 +911,7 @@ function setOverrideAnimationStateOnDiff( AnimationstateUpperOverride, Animation
 end
 
 function setOverrideAnimationState( AnimationstateUpperOverride, AnimationstateLowerOverride,  boolInstantOverride, conditionFunction, boolDecoupledStates, upperPieceMask, lowerPieceMask)
+    if bodyDying then return end
     if hasHumanShield() then return end
     assert(conditionFunction == nil or type(conditionFunction) == "function",
         "setOverrideAnimationState: argument 4 must be a callback or nil")
@@ -1062,8 +1092,12 @@ LowerAnimationStateFunctions ={
 					end,
 [eAnimState.walking] = function(pieceMask)
 						if boolFlying == true then return eAnimState.walking end
-						if not boolAiming then reset(center, 1.3, false) end
-						playMaskedAnimation(pieceMask, randT(lowerBodyAnimations[eAnimState.walking]))					
+						if not boolAiming and not boolInClosedCombat then reset(center, 1.3, false) end
+						if boolInClosedCombat then
+                            playMaskedAnimation(pieceMask, meleeFootworkClip, upperBodyPieces, 1.0)
+                        else
+                            playMaskedAnimation(pieceMask, randT(lowerBodyAnimations[eAnimState.walking]))
+                        end
 						return eAnimState.walking
 						end,
 [eAnimState.standing] = 	function(pieceMask) 
