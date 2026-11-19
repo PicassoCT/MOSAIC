@@ -14,6 +14,21 @@ restores the ordinary animation systems and movement.
 
 ## Rules while holding a hostage
 
+- Each held hostage costs **40 money per second**, or **80 while a nearby civilian
+  is filming that hold**. The money actually collected is split equally among
+  living, non-allied teams; Gaia and allies receive nothing. Multiple holds add
+  their costs. Charges are prorated, including on release, so brief captures
+  cannot bypass upkeep. Money is the metal resource; supply is unaffected.
+- The drain stops at zero money, without debt, allied charges, building damage,
+  or forced release. An impoverished team keeps the shield but loses available
+  income while holding it. This upkeep does not use collateral-fine escalation.
+- Taking a hostage alerts eligible nearby pedestrians to flee. Once per second,
+  each hold has a 25% chance to make a fleeing civilian within 300 units stop and
+  film for up to 10 seconds. The higher rate begins when filming actually starts;
+  additional witnesses do not multiply it. Transported civilians, hostages,
+  disguise bodies, armed/influenced civilians and incapacitated pedestrians
+  cannot film. Ending filming or leaving range restores the base rate; ending
+  the hold stops its filming reaction and upkeep.
 - The operative moves at **60% of normal speed**. The factor composes with later
   scripted speed changes and does not slow a car carrying the operative.
 - Hostile **Protagon** units cannot attack, damage, or interrogate the operative
@@ -74,7 +89,8 @@ other airborne transport keep their own activity rules.
 
 ## Configuration and model integration
 
-`luarules/configs/human_shield.lua` defines capture range, movement factor,
+`luarules/configs/human_shield.lua` defines capture range, movement factor, money
+rates, witness range/chance/duration,
 eligible carrier names, the attachment piece name, and sniper and melee weapon names.
 The command IDs are 33461 and 33462. `game_operative_human_shield.lua` owns
 attachment, owner/activity eligibility, targeting, damage filtering, accepted

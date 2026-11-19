@@ -15,12 +15,17 @@ VFS.Include("luarules/configs/commandsIDs.lua")
 VFS.Include("scripts/lib_UnitScript.lua")
 VFS.Include("scripts/lib_mosaic.lua")
 local config = VFS.Include("luarules/configs/human_shield.lua")
+local activityStarted = getGameConfig().civilians.activityStates.started
+local fps = Game.gameSpeed or 30
 local TAKE, RELEASE = CMD_HUMAN_SHIELD, CMD_RELEASE_HUMAN_SHIELD
 local gaia = Spring.GetGaiaTeamID()
 local civilianDefs = getCultureUnitModelTypes("international", "civilian", UnitDefs)
 -- The ordinary civilian road-vehicle pool excludes motorcycles and aircraft.
 local carDefs = getCultureUnitModelTypes("international", "truck", UnitDefs)
 local carriers, hostages = {}, {}
+local witnessCarriers = {}
+local teamIDs = Spring.GetTeamList()
+table.sort(teamIDs)
 local pendingFireOrders = {}
 local operativeUnits, carrierDefs, sniperWeapons, meleeWeapons, counterUnits, factionStarters = {}, {}, {}, {}, {}, {}
 local fireCommands, workCommands = {}, {}
@@ -141,6 +146,96 @@ function api.IsHostage(id)
     return hostages[id] ~= nil
 end
 
+function api.CanWitness(civilian, carrier)
+    if not api.HasShield(carrier) or not alive(civilian) or hostages[civilian]
+        or not civilianDefs[Spring.GetUnitDefID(civilian)]
+        or Spring.GetUnitTeam(civilian) ~= gaia or Spring.GetUnitTransporter(civilian)
+        or detained(civilian) or (GG.DisguiseCivilianFor or {})[civilian]
+        or callScript(civilian, "canBeHumanShield") ~= true then return false end
+    local x, _, z = Spring.GetUnitPosition(carrier)
+    local cx, _, cz = Spring.GetUnitPosition(civilian)
+    return x ~= nil and cx ~= nil and (cx-x)^2 + (cz-z)^2 <= config.witnessRange^2
+end
+
+function api.IsWitness(civilian)
+    local carrier = witnessCarriers[civilian]
+    return carrier ~= nil and api.CanWitness(civilian, carrier)
+        and callScript(civilian, "isFilmingHostage", carrier, true) == true
+end
+
+local function removeWitness(state)
+    if not state.witness then return end
+    local civilian = state.witness
+    witnessCarriers[civilian], state.witness = nil, nil
+    if alive(civilian) then callScript(civilian, "stopFilmingHostage") end
+end
+
+local function nearbyCivilians(id)
+    local x, _, z = Spring.GetUnitPosition(id)
+    local nearby = Spring.GetUnitsInCylinder(x, z, config.witnessRange, gaia) or {}
+    table.sort(nearby)
+    return nearby
+end
+
+local function alertWitnesses(id)
+    for _, civilian in ipairs(nearbyCivilians(id)) do
+        local activity = (GG.CivilianUnitInternalLogicActive or {})[civilian]
+        local state = type(activity) == "table" and activity.state or activity
+        if not witnessCarriers[civilian] and api.CanWitness(civilian, id)
+            and (state ~= activityStarted or (type(activity) == "table" and activity.behaviour == "fleeing")) then
+            if GG.CivilianLife then GG.CivilianLife:Interrupt(civilian) end
+            callScript(civilian, "startFleeing", id)
+        end
+    end
+end
+
+local function updateWitness(id, state, frame)
+    if state.witness and not api.IsWitness(state.witness) then removeWitness(state) end
+    if frame >= state.nextWitnessFrame then
+        state.nextWitnessFrame = frame + fps
+        if not state.witness and math.random(1, 100) <= config.witnessChancePercent then
+            for _, civilian in ipairs(nearbyCivilians(id)) do
+                local activity = (GG.CivilianUnitInternalLogicActive or {})[civilian]
+                if not witnessCarriers[civilian] and type(activity) == "table"
+                    and activity.state == activityStarted and activity.behaviour == "fleeing"
+                    and api.CanWitness(civilian, id) then
+                    if GG.CivilianLife then GG.CivilianLife:Interrupt(civilian) end
+                    if callScript(civilian, "startFilmingHostage", id, config.witnessDurationMs) == true then
+                        state.witness, witnessCarriers[civilian] = civilian, id
+                        break
+                    end
+                end
+            end
+        end
+    end
+    local filmed = state.witness and callScript(state.witness, "isFilmingHostage", id) == true
+    local rate = filmed and config.filmedMoneyPerSecond or config.moneyPerSecond
+    if state.rate ~= rate then
+        state.rate = rate
+        Spring.SetUnitRulesParam(id, "human_shield_cost_per_second", rate, visibility)
+    end
+end
+
+local function chargeHolding(state, frame)
+    local amount = (frame - state.lastChargeFrame) * state.rate / fps
+    state.lastChargeFrame = frame
+    if amount <= 0 then return end
+    -- This upkeep is a cash transfer, not collateral debt: never charge allies,
+    -- damage buildings, create money, or remove the shield from an empty team.
+    local available = math.max(0, Spring.GetTeamResources(state.team, "metal") or 0)
+    local paid = math.min(amount, available)
+    if paid <= 0 or not Spring.UseTeamResource(state.team, "metal", paid) then return end
+    local recipients = {}
+    for _, team in ipairs(teamIDs) do
+        local _, _, dead = Spring.GetTeamInfo(team, false)
+        if team ~= gaia and team ~= state.team and not dead
+            and not Spring.AreTeamsAllied(state.team, team) then
+            recipients[#recipients + 1] = team
+        end
+    end
+    for _, team in ipairs(recipients) do Spring.AddTeamResource(team, "metal", paid / #recipients) end
+end
+
 function api.IsProtected(target, attackerTeam, weaponDefID)
     if sniperWeapons[weaponDefID] or meleeWeapons[weaponDefID] then return false end
     local carrier = hostages[target] or target
@@ -185,6 +280,8 @@ end
 local function release(id, reason)
     local state = carriers[id]
     if not state then return end
+    chargeHolding(state, Spring.GetGameFrame())
+    removeWitness(state)
     pendingFireOrders[id] = nil
     carriers[id], hostages[state.civilian] = nil, nil
     if next(carriers) == nil then gadgetHandler:RemoveCallIn("AllowWeaponTarget") end
@@ -202,6 +299,7 @@ local function release(id, reason)
         callScript(civilian, "setHumanShieldCarrier", nil, reason)
     end
     if alive(id) then
+        Spring.SetUnitRulesParam(id, "human_shield_cost_per_second", 0, visibility)
         callScript(id, "setHumanShieldActive", false)
         refresh(id)
         setSpeedEnv(id, state.baseSpeed or 1)
@@ -227,6 +325,10 @@ local function take(id, civilian)
         civilian = civilian,
         blocking = {Spring.GetUnitBlocking(civilian)},
         baseSpeed = 1,
+        team = Spring.GetUnitTeam(id),
+        rate = config.moneyPerSecond,
+        lastChargeFrame = Spring.GetGameFrame(),
+        nextWitnessFrame = Spring.GetGameFrame() + fps,
     }
     if GG.CivilianLife then GG.CivilianLife:Interrupt(civilian) end
     Spring.GiveOrderToUnit(civilian, CMD.STOP, {}, {})
@@ -259,6 +361,8 @@ local function take(id, civilian)
     callScript(id, "setHumanShieldActive", true)
     setSpeedEnv(id, 1)
     refresh(id)
+    Spring.SetUnitRulesParam(id, "human_shield_cost_per_second", state.rate, visibility)
+    alertWitnesses(id)
     return true
 end
 
@@ -407,7 +511,7 @@ local function updateCommands(id)
         Spring.InsertUnitCmdDesc(id, {
             id = TAKE, type = CMDTYPE.ICON_UNIT, name = "Human Shield", action = "humanshield",
             cursor = "HumanShield", texture = "luaui/images/commands/human_shield.png",
-            tooltip = "Take a civilian hostage. Move at 60% speed; sniper weapons can hit you and melee lets the hostage escape. Aim mode keeps the hostage; a fire order kills them. No disguise, building, parachuting or rooftops. Cars remain vulnerable.",
+            tooltip = "Take a civilian hostage. Costs " .. config.moneyPerSecond .. " money/sec (" .. config.filmedMoneyPerSecond .. " while filmed), split among living enemy teams. Drains available money without debt; an empty treasury keeps the shield. Move at 60% speed; sniper weapons can hit you and melee lets the hostage escape. Aim mode keeps the hostage; a fire order kills them. No disguise, building, parachuting or rooftops. Cars remain vulnerable.",
         })
     end
     if not Spring.FindUnitCmdDesc(id, RELEASE) then
@@ -442,6 +546,8 @@ function gadget:GameFrame(frame)
             or Spring.GetUnitTeam(state.civilian) ~= gaia then
             release(id, releaseReason(id))
         else
+            chargeHolding(state, frame)
+            updateWitness(id, state, frame)
             Spring.SetUnitCloak(id, false)
         end
     end

@@ -122,6 +122,10 @@ local function isCivilianPassenger(id)
         and Spring.GetUnitTransporter(id) ~= nil
 end
 
+local function isHostageWitness(id)
+    return GG.HumanShield and GG.HumanShield.IsWitness and GG.HumanShield.IsWitness(id)
+end
+
 function startInternalBehaviourOfState(unitID, name, ...)
     if isCivilianPassenger(unitID) then return false end
     if not GG.CivilianUnitInternalLogicActive then
@@ -1322,7 +1326,7 @@ function travellFunction(evtID, frame, persPack, startFrame)
     end
     -- Passengers keep the same traffic record, but their carrier owns movement.
     -- Pause before arrival, stuck detection or social routines can remove him.
-    if isCivilianPassenger(myID) then
+    if isCivilianPassenger(myID) or isHostageWitness(myID) then
         if not doesUnitExistAlive(myID) then return nil, persPack end
         persPack.stuckCounter = 0
         persPack.currPos = nil
@@ -1455,7 +1459,7 @@ function issueArrivedUnitsCommands()
             -- Invalid arrivals must not reach an engine unit-ID argument.
         elseif spGetUnitTeam(id) ~= gaiaTeamID then
             GG.CivilianTable[id] = nil
-        elseif isCivilianPassenger(id) then
+        elseif isCivilianPassenger(id) or isHostageWitness(id) then
             held[id] = true
         elseif GG.CityParade and GG.CityParade:OwnsUnit(id) then
             held[id] = true

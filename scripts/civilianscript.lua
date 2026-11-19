@@ -280,6 +280,7 @@ function externalInterruptCivilian()
     Signal(SIG_INTERNAL)
     boolStartChatting, boolStartPraying, boolStartFilming, boolStartWailing = false, false, false, false
     boolStartFleeing, boolStartPeaceFullProtest = false, false
+    if filmLocation then filmLocation.hostage, filmLocation.active = nil, false end
     humanShieldEscapeSprint = false
     chattingTime = 0
     Hide(cellphone1)
@@ -930,9 +931,33 @@ function startFilmLocation(ux, uy, uz, time)
     filmLocation.y=uy
     filmLocation.z=uz
     filmLocation.time = time
+    filmLocation.hostage, filmLocation.active = nil, false
     boolStartFilming = true
     queueEventThread("behaviour", threadStateStarter, 250)
     return true
+end
+
+function startFilmingHostage(carrierID, durationMs)
+    if not GG.HumanShield or not GG.HumanShield.CanWitness(unitID, carrierID) then return false end
+    local x, y, z = Spring.GetUnitPosition(carrierID)
+    if not x or not externalInterruptCivilian() then return false end
+    Spring.GiveOrderToUnit(unitID, CMD.STOP, {}, {})
+    Spring.ClearUnitGoal(unitID)
+    if not startFilmLocation(x, y, z, durationMs) then return false end
+    filmLocation.hostage = carrierID
+    return true
+end
+
+function isFilmingHostage(carrierID, includePending)
+    local activity = (GG.CivilianUnitInternalLogicActive or {})[unitID]
+    return filmLocation.hostage == carrierID and filmLocation.time > 0
+        and (filmLocation.active or (includePending and boolStartFilming))
+        and type(activity) == "table" and activity.state == GameConfig.civilians.activityStates.started
+        and activity.behaviour == "filming"
+end
+
+function stopFilmingHostage()
+    if filmLocation.hostage then externalInterruptCivilian() end
 end
 
 wailingTime = 0
@@ -1318,12 +1343,19 @@ function filmingLocation()
     Signal(SIG_INTERNAL)
     SetSignalMask(SIG_INTERNAL)
     Show(cellphone1)
+    filmLocation.active = true
     while filmLocation.time > 0 do
+        if filmLocation.hostage then
+            if not GG.HumanShield or not GG.HumanShield.CanWitness(unitID, filmLocation.hostage) then break end
+            filmLocation.x, filmLocation.y, filmLocation.z = Spring.GetUnitPosition(filmLocation.hostage)
+        end
         durationMs = frameToMs(PlayAnimation("UPBODY_FILMING", lowerBodyPieces, 1.0))
         filmLocation.time = filmLocation.time - durationMs
         setUnitRotationToPoint(unitID, filmLocation.x, filmLocation.y, filmLocation.z)
         Sleep(100)
     end
+    if filmLocation.hostage then Hide(cellphone1) end
+    filmLocation.hostage, filmLocation.active = nil, false
     setCivilianUnitInternalStateMode(unitID, GameConfig.civilians.activityStates.ended, "filming")
 end
 
