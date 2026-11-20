@@ -727,6 +727,7 @@ end
 
     --function gadget:DrawWorld(deferredPass, drawReflection, drawRefraction)
     function gadget:DrawWorld()
+        if Script.LuaUI('MosaicBenchmarkHideHolograms') then return end
         RenderAllNeonUnitsDrawWorld()
         --RenderBlurApplyBlur()
     end
