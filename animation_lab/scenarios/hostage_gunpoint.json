@@ -1,0 +1,100 @@
+{
+  "schema_version": 1,
+  "fixture_kind": "script-entry fixture",
+  "name": "Hostage gunpoint and gripping arm",
+  "description": "Direct production animation call-ins and authored attachment; does not validate capture command or police gameplay.",
+  "warmup_frames": 450,
+  "modoptions": {
+    "culture": "western",
+    "unitfactor": 0.1,
+    "maxspeed": 0.25,
+    "minspeed": 0.25
+  },
+  "capture": {
+    "interval_frames": 2,
+    "width": 1280,
+    "height": 720
+  },
+  "units": [
+    {
+      "name": "carrier",
+      "def": "operativepropagator",
+      "pieces": [
+        "Torso",
+        "Head",
+        "UpArm1",
+        "LowArm1",
+        "UpArm2",
+        "LowArm2",
+        "Pistol",
+        "hostagePoint"
+      ],
+      "piece_geometry": true
+    },
+    {
+      "name": "captive",
+      "def": "civilian_western0",
+      "x": 25,
+      "pieces": [
+        "center",
+        "UpBody",
+        "Head1",
+        "UpArm1",
+        "LowArm1",
+        "UpArm2",
+        "LowArm2"
+      ],
+      "piece_geometry": true
+    }
+  ],
+  "camera": {
+    "target": "carrier",
+    "distance": 105,
+    "height": 42,
+    "target_height": 20
+  },
+  "phases": [
+    {
+      "name": "entry",
+      "frames": 30,
+      "actions": []
+    },
+    {
+      "name": "gunpoint",
+      "frames": 150,
+      "actions": [
+        {
+          "type": "call",
+          "unit": "carrier",
+          "function": "setHumanShieldActive",
+          "args": [
+            true
+          ]
+        },
+        {
+          "type": "call",
+          "unit": "captive",
+          "function": "setHumanShieldCarrier",
+          "args": [
+            {
+              "ref": "carrier"
+            }
+          ]
+        },
+        {
+          "type": "attach",
+          "unit": "captive",
+          "transporter": "carrier",
+          "piece": "hostagePoint"
+        }
+      ],
+      "checks": [
+        {
+          "type": "transported",
+          "unit": "captive",
+          "transporter": "carrier"
+        }
+      ]
+    }
+  ]
+}

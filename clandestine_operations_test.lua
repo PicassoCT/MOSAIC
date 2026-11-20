@@ -19,7 +19,7 @@ local function world()
     WeaponDefNames={closecombat={id=5}}
     gadgetHandler={IsSyncedCode=function() return true end}
     VFS={Include=function(path)
-        if path=='luarules/gadgets/include/police_bribery.lua' then return dofile(path) end
+        if path=='luarules/gadgets/include/police_bribery.lua' or path=='luarules/gadgets/include/police_hostages.lua' then return dofile(path) end
     end}
     function w:position(id,x,z) self.units[id].x=x;self.units[id].z=z end
     function w:finish(id)

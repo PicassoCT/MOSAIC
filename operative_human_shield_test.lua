@@ -912,3 +912,14 @@ w=decoyWorld(); w:capture(1,10); w:issue(1,CMD.ATTACK,{21}); w:tick(5)
 check(w.units[10].dead and w.units[20].dead,'accepted execution order kills the operative behind the captive')
 eq(w.destroyed[2].attacker,1,'execution keeps attacker attribution on the underlying operative')
 eq(#GG.RevealedLocations,1,'execution cannot retract the recruiter disclosure')
+
+w=world(); local reports,ends=0,{}
+GG.PoliceHostages={Report=function(carrier,civilian)
+    eq(carrier,1,'police get captor');eq(civilian,10,'police get visible hostage');reports=reports+1
+end,End=function(carrier,civilian,dead)ends[#ends+1]={carrier,civilian,dead}end}
+w:capture(1,10);eq(reports,1,'successful capture reports to police once')
+Spring.DestroyUnit(10,false,false,21)
+check(ends[1][3],'hostage death requests police retaliation')
+w=world();local deadReason
+GG.PoliceHostages={Report=function()end,End=function(_,_,dead)deadReason=dead end}
+w:capture(1,10);w.api.Release(1);eq(deadReason,false,'peaceful release does not request retaliation')
