@@ -25,7 +25,10 @@ local function world()
     CMDTYPE = {ICON = 0, ICON_UNIT = 12}
     Game = {gameSpeed = 30, mapSizeX = 8192, mapSizeZ = 8192}
     GG = {DisguiseCivilianFor = {}, InterrogationTable = {}, CloseCombatInvolved = {}, CivilianUnitInternalLogicActive = {}}
-    function getGameConfig() return {civilians = {activityStates = {started = 'STARTED', ended = 'ENDED'}}} end
+    function getGameConfig() return {civilians = {panic = {fleeDistance = 300}, activityStates = {started = 'STARTED', ended = 'ENDED'}}, espionage = {raids = {revealedGraphLifetimeFrames = 9000}}} end
+    function getParentOfUnit(team, id)
+        for parent, children in pairs(GG.InheritanceTable[team]) do if children[id] then return parent end end
+    end
     UnitDefNames = {operativepropagator = {id = 1}, civilian_arab0 = {id = 2},
         truck = {id = 3}, operativeinvestigator = {id = 4}, operativeasset = {id = 5},
         air_plane_sniper = {id = 6}, air_parachut = {id = 7}, closecombatarena = {id = 8},
@@ -145,16 +148,16 @@ local function world()
         ClearUnitGoal = function(id) w.units[id].goal = nil end,
         GiveOrderToUnit = function(id, cmd) if cmd == CMD.STOP then w.stopped[id] = true end end,
         UnitAttach = function(carrier, civilian, piece, force)
-            eq(piece, 2, 'attachment uses authored hostagePoint, never the center'); check(force, 'forced Lua attachment')
+            eq(piece, GG.DisguiseCivilianFor[10] == civilian and 0 or 2, 'visible body uses hostagePoint; hidden identity uses native invisible slot'); check(force, 'forced Lua attachment')
             w.attached = w.attached + 1
-            if not w.failAttach then w.units[civilian].transporter = carrier end
+            if not w.failAttach and w.failAttachUnit ~= civilian then w.units[civilian].transporter = carrier end
         end,
         UnitDetach = function(id) w.detached = w.detached + 1; w.units[id].transporter = nil end,
         DestroyUnit = function(id, selfDestruct, reclaimed, attacker)
             w.destroyed[#w.destroyed + 1] = {id=id, selfDestruct=selfDestruct,
                 reclaimed=reclaimed, attacker=attacker, held=GG.HumanShield.IsHostage(id)}
             w.units[id].dead = true
-            if w.gadget then w.gadget:UnitDestroyed(id, w.units[id].def, w.units[id].team) end
+            if w.gadget then w.gadget:UnitDestroyed(id, w.units[id].def, w.units[id].team, attacker) end
         end,
         FindUnitCmdDesc = function(id, cmd) return w.units[id].descs[cmd] and cmd end,
         InsertUnitCmdDesc = function(id, desc) w.units[id].descs[desc.id] = desc end,
@@ -314,7 +317,7 @@ end
 civilian.team = 3; check(not w:order(1, TAKE, {10}), 'player-owned civilians excluded'); civilian.team = 0
 civilian.capturable = false; check(not w:order(1, TAKE, {10}), 'civilian script may veto capture'); civilian.capturable = true
 GG.DisguiseCivilianFor[10] = 20
-check(not w:order(1, TAKE, {10}), 'disguised operatives are not innocent hostages')
+check(w:order(1, TAKE, {10}), 'decoys accept capture orders exactly like innocent hostages')
 GG.DisguiseCivilianFor[10] = nil
 w.units[1].stunned = true; check(not w:order(1, TAKE, {10}), 'stunned carrier cannot acquire protection'); w.units[1].stunned = nil
 GG.InterrogationTable[1] = {[20] = true}
@@ -826,3 +829,75 @@ check(not w.api.CanWitness(11,1),'stunned civilian cannot film')
 w.units[11].stunned=nil; w.units[11].capturable=false
 check(not w.api.CanWitness(11,1),'armed or influenced civilian cannot film')
 print('PASS: hostage money rates, conserved enemy payouts, poverty, fractional release, witnesses and bounded searches')
+
+-- Poisonous hostages: test the actual gadget, including both attachment lifecycles.
+local function decoyWorld()
+    local w = world()
+    GG.DisguiseCivilianFor[10] = 20
+    GG.InheritanceTable = {[2] = {[21] = {[20] = true}, [20] = {[22] = true}}}
+    return w
+end
+w = decoyWorld()
+w.units[20].weaponStates[1].salvoLeft = 4
+w:capture(1,10)
+eq(w.units[20].transporter,1,'underlying operative is restrained with the visible captive')
+check(w.api.IsHostage(10) and w.api.IsHostage(20),'both identities resolve as the same hostage')
+check(not w:order(20,CMD.MOVE,{700,0,700}),'hidden captive cannot walk away')
+check(not w:order(20,CMD.INSERT,{0,CMD.ATTACK,0,1}),'insert cannot bypass captive restraint')
+check(w.api.BlockShot(20,1,1),'hidden captive cannot fire an existing target')
+eq(w.units[20].weaponStates[1].salvoLeft,0,'existing salvo cancelled on capture')
+check(w.api.IsProtected(20,2,11) and w.api.IsProtected(10,2,11),'both captive identities inherit ordinary protection')
+check(not w.api.IsProtected(20,2,12) and not w.api.IsProtected(10,2,12),'snipers still bypass protection')
+eq(w.units[1].rules.human_shield_hostage,10,'public hostage ID remains the civilian')
+check(next(w.units[20].rules)==nil,'no hidden identity parameter is published')
+local disclosure=GG.RevealedLocations[1]
+check(disclosure.revealedUnits[21] and not disclosure.revealedUnits[22] and not disclosure.revealedUnits[20],
+    'only actual recruiter is disclosed, not captive or children')
+eq(disclosure.endFrame,9000,'existing intelligence lifetime reused')
+w:tick(30)
+eq(#GG.RevealedLocations,1,'holding does not duplicate disclosure')
+near(w.money[1],9960,'decoy charges the same ordinary upkeep')
+w.api.Release(1)
+check(not w.api.IsHostage(20) and not w.units[20].transporter and not w.units[10].transporter,'release frees both bodies')
+check(w.units[20].blocking[1] and w.units[10].blocking[1],'blocking restored for both bodies')
+check(w:order(20,CMD.MOVE,{700,0,700}),'released operative accepts orders again')
+eq(GG.RevealedLocations[1],disclosure,'release does not erase intelligence')
+
+w=decoyWorld(); w.failAttachUnit=20
+w:execute(1,TAKE,{10})
+check(not w.api.HasShield(1) and not w.api.IsHostage(10) and not w.api.IsHostage(20),'failed hidden attachment rolls back both identities')
+check(not w.units[10].transporter and not GG.RevealedLocations,'failed capture neither holds nor reveals')
+w=decoyWorld(); w.failAttach=true; w:execute(1,TAKE,{10})
+check(not GG.RevealedLocations and not w.api.IsHostage(20),'failed first attachment has no hidden side effects')
+w=decoyWorld(); w.units[10].rejectCapture=true; w:execute(1,TAKE,{10})
+check(not GG.RevealedLocations,'script veto cannot disclose secrets')
+w=decoyWorld(); w.units[21].dead=true; w:capture(1,10)
+check(not GG.RevealedLocations,'dead recruiter does not create false intelligence')
+w=decoyWorld(); GG.InheritanceTable=nil; w:capture(1,10)
+check(not GG.RevealedLocations,'unrecruited operative is still capturable')
+w=world(); w:capture(1,10); check(not GG.RevealedLocations,'ordinary civilian does not reveal anything')
+
+for _, killed in ipairs({10,20}) do
+    w=decoyWorld(); w:capture(1,10); Spring.DestroyUnit(killed,false,false,21)
+    check(w.units[10].dead and w.units[20].dead,'death of either body kills the same captive identity')
+    eq(#w.destroyed,2,'counterpart death is not recursive or duplicated')
+    check(not w.api.HasShield(1) and not w.api.IsHostage(20),'death clears hostage ownership')
+    eq(#GG.RevealedLocations,1,'sniping cannot undo already disclosed recruiter')
+end
+w=decoyWorld(); w:capture(1,10); w.api.Release(1,'melee')
+check(w.units[20].goal and not w.units[20].transporter,'melee escape moves the underlying operative too')
+w=decoyWorld(); w:capture(1,10); w.gadget:UnitTaken(20)
+check(not w.api.HasShield(1) and not w.units[10].transporter,'team transfer frees both identities')
+w=decoyWorld(); w:capture(1,10); GG.DisguiseCivilianFor[10]=nil; w:tick(5)
+check(not w.api.HasShield(1) and not w.units[20].transporter,'broken identity link releases cleanly')
+w=decoyWorld(); w:capture(1,10); w.gadget:Shutdown()
+check(not w.units[10].transporter and not w.units[20].transporter,'shutdown detaches both identities')
+print('PASS: decoy capture, hidden restraint, recruiter-only disclosure, sniper/death persistence and release rollback')
+
+w=decoyWorld(); w:capture(1,10); Spring.DestroyUnit(1,false,false,21)
+check(not w.units[10].dead and not w.units[20].dead,'captor death preserves both living captive bodies')
+check(not w.units[10].transporter and not w.units[20].transporter,'captor death detaches both bodies')
+w=decoyWorld(); w:capture(1,10); w:issue(1,CMD.ATTACK,{21}); w:tick(5)
+check(w.units[10].dead and w.units[20].dead,'accepted execution order kills the operative behind the captive')
+eq(w.destroyed[2].attacker,1,'execution keeps attacker attribution on the underlying operative')
+eq(#GG.RevealedLocations,1,'execution cannot retract the recruiter disclosure')
