@@ -172,12 +172,19 @@ return function(unitID, pieces)
                                     basis[axis]=world(m[k]/norm,m[k+1]/norm,m[k+2]/norm)
                                 end
                                 local pivot=world(m[13],m[14],m[15],true)
-                                local _,_,rz=Spring.UnitScript.GetPieceRotation(piece)
+                                local rx,_,rz=Spring.UnitScript.GetPieceRotation(piece)
                                 -- Script rotations compose Ry*Rx*Rz. The X hinge
                                 -- precedes Rz, so remove that final twist first.
                                 local axes={{basis[1][1]*math.cos(rz)-basis[2][1]*math.sin(rz),
-                                    basis[1][2]*math.cos(rz)-basis[2][2]*math.sin(rz),basis[1][3]*math.cos(rz)-basis[2][3]*math.sin(rz)},nil,basis[3]}
-                                for _,axis in ipairs(i==1 and {1,3} or {1}) do
+                                    basis[1][2]*math.cos(rz)-basis[2][2]*math.sin(rz),basis[1][3]*math.cos(rz)-basis[2][3]*math.sin(rz)},{},basis[3]}
+                                -- Y precedes both X and Z. T-pose shoulders need
+                                -- this degree of freedom; X merely twists their
+                                -- upper arm and cannot relax it toward the floor.
+                                for component=1,3 do
+                                    axes[2][component]=(basis[1][component]*math.sin(rz)+basis[2][component]*math.cos(rz))*math.cos(rx)
+                                        -basis[3][component]*math.sin(rx)
+                                end
+                                for _,axis in ipairs(i==1 and {1,2,3} or {1}) do
                                     local v=axes[axis]
                                     local dx,dy,dz=contact.point[1]-pivot[1],contact.point[2]-pivot[2],contact.point[3]-pivot[3]
                                     local n=contact.normal
