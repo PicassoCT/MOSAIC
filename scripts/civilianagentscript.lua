@@ -2274,8 +2274,15 @@ function cloakLoop()
     boolCloaked = spGetUnitIsCloaked(unitID)
     --	echoOverload("invisible")
     while true do
+        -- Keep the captured cover body until the hostage is released.
+        while GG.HumanShield and GG.HumanShield.IsHostage(unitID) do Sleep(100) end
         boolCloaked = spGetUnitIsCloaked(unitID)
         Sleep(100)
+        -- Capture may have happened during the sleep above.
+        while GG.HumanShield and GG.HumanShield.IsHostage(unitID) do
+            Sleep(100)
+            boolCloaked = spGetUnitIsCloaked(unitID)
+        end
 
         if boolCloaked == false and boolDeCloaked == false then
             --			echoOverload("revealed")

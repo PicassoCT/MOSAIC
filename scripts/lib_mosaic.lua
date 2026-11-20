@@ -3185,6 +3185,17 @@ end
                     return nil, persPack
                 end
 
+                -- Both identities are native passengers during a hostage hold.
+                -- Preserve the visible captive's attachment and pose; ordinary
+                -- following/transport mirroring must not take ownership back.
+                if GG.HumanShield and GG.HumanShield.IsHostage(persPack.myID) then
+                    transferUnitStatusToUnit(persPack.myID, persPack.syncedID)
+                    persPack.boolMoving, persPack.boolTransported = false, false
+                    persPack.followGoal, persPack.stuckSince = nil, nil
+                    persPack.oldSyncedPos, persPack.currPos = nil, nil
+                    return frame + 5, persPack
+                end
+
                 if GG.CivilianLife then
                     GG.CivilianLife:GuardedVisit(persPack.myID,persPack.syncedID,frame)
                 end

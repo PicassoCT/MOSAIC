@@ -1,7 +1,7 @@
 # Antagon Human Shield and passenger animations
 
 Select an **Antagon-owned Propagator or Asset**, choose **Human Shield**, and
-click an ordinary civilian. The operative approaches within 80 world units and
+click a civilian (including a disguised operative). The operative approaches within 80 world units and
 attaches the civilian to the model's authored **`hostagePoint`**. Protagon-owned
 versions of either unit do not receive the ability. The command also checks the
 current owner when it executes, including after a capture or team transfer.
@@ -72,11 +72,34 @@ extends to the enclosing vehicle. Building the Steal Vehicle icon is still a
 building activity and releases a hostage; boarding an existing car can retain
 the hold.
 
-The capture target must be a living, visible, unarmed Gaia pedestrian. Disguise
-bodies, player-owned agents, already transported civilians, and participants in
+The capture target must be a living, visible, unarmed Gaia pedestrian. Exposed
+player-owned agents, already transported civilians, and participants in
 interrogation or close combat cannot be taken. Aerosol effects release a hostage
 before continuing their existing behaviour. Safehouse human-shield purchases
 and propaganda retain their existing rules.
+
+## Disguised operatives: poisonous hostages
+
+A disguise body accepts the same capture command and uses the same restrained
+animation, upkeep and protection as an ordinary civilian. Successful capture
+also restrains the underlying operative as an invisible native passenger. Their
+commands, weapon fire and pending bursts are blocked; ordinary decoy-following
+and disguise cleanup cannot pull the visible hostage out of the hold.
+
+After both attachments succeed, the captive's **actual living recruiter** is
+recorded in the existing revealed-intelligence graph for its normal duration
+(currently five minutes). This reveals only that parent, not the captive's
+children or an invented nearby handler. A missing/dead recruiter produces no
+record. Failed capture attempts never disclose anything. There is no special
+public hostage parameter or capture rejection identifying a decoy.
+
+Disclosure happens immediately and survives release, execution or sniper death;
+killing the captive afterward cannot retract that intelligence. Sniper and melee
+exceptions remain unchanged. Killing either captive identity ends the hold and
+kills its counterpart, with only the visible civilian death presentation. Release
+restores both bodies; melee liberation also sends the underlying operative away.
+The reveal uses the existing intelligence-map presentation, not a forced cloak
+change on the recruiter.
 
 ## Ordinary truck passengers
 
@@ -143,7 +166,12 @@ An in-engine visual and multiplayer smoke test remains necessary:
 6. Load ordinary male and female civilian variants onto trucks, drive, stop,
    and unload. Check seated bracing, absence of parachute/walking poses on the
    truck, and normal ambient behaviour after unloading.
-7. Repeat release and death cases with parade participants, rain, aerosol
+7. Capture disguise bodies backed by each operative and a recruited civilian
+   agent. Check hidden passenger attachment, recruiter-only intelligence, car
+   transport, nonlethal damage synchronization, release, and native sniper death.
+   Repeat with no recruiter, a dead recruiter and failed attachment. Verify the
+   disclosure persists after death and expires normally.
+8. Repeat release and death cases with parade participants, rain, aerosol
    effects, and multiple capture/transport cycles.
 
 Lua regression results do not establish native visual alignment, frame rate,

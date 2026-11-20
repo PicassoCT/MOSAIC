@@ -140,6 +140,7 @@ function api.HasShield(id)
     local state = carriers[id]
     return state ~= nil and eligibleCarrier(id) and alive(state.civilian)
         and Spring.GetUnitTransporter(state.civilian) == id
+        and (not state.agent or (alive(state.agent) and Spring.GetUnitTransporter(state.agent) == id))
 end
 
 function api.IsHostage(id)
@@ -284,6 +285,30 @@ local function release(id, reason)
     removeWitness(state)
     pendingFireOrders[id] = nil
     carriers[id], hostages[state.civilian] = nil, nil
+    if state.agent and state.agentBlocking then
+        hostages[state.agent] = nil
+        if Spring.ValidUnitID(state.agent) and Spring.GetUnitTransporter(state.agent) == id then
+            Spring.UnitDetach(state.agent)
+        end
+        if alive(state.agent) then
+            local x, _, z = Spring.GetUnitPosition(state.civilian)
+            if x then Spring.SetUnitPosition(state.agent, x, z) end
+            Spring.SetUnitBlocking(state.agent, unpack(state.agentBlocking, 1, 7))
+            -- The visible captive runs away on melee liberation. Give its
+            -- underlying identity the same destination before normal following resumes.
+            if reason == "melee" and x then
+                local cx, _, cz = Spring.GetUnitPosition(id)
+                local dx, dz = x - cx, z - cz
+                local length = math.sqrt(dx * dx + dz * dz)
+                if length < 0.01 then dx, dz, length = 1, 0, 1 end
+                local distance = getGameConfig().civilians.panic.fleeDistance
+                Spring.SetUnitMoveGoal(state.agent,
+                    math.max(0, math.min(Game.mapSizeX, x + dx / length * distance)),
+                    Spring.GetGroundHeight(x, z),
+                    math.max(0, math.min(Game.mapSizeZ, z + dz / length * distance)))
+            end
+        end
+    end
     if next(carriers) == nil then gadgetHandler:RemoveCallIn("AllowWeaponTarget") end
     local civilian = state.civilian
     -- UnitDestroyed precedes the dying civilian's animation. Detach immediately
@@ -312,10 +337,34 @@ local function canTake(id, civilian)
     if not alive(civilian) or Spring.GetUnitTeam(civilian) ~= gaia
         or not civilianDefs[Spring.GetUnitDefID(civilian)] or hostages[civilian]
         or Spring.GetUnitTransporter(civilian) or detained(civilian) then return false end
-    if GG.DisguiseCivilianFor and GG.DisguiseCivilianFor[civilian] then return false end
+    local agent = (GG.DisguiseCivilianFor or {})[civilian]
+    if agent and (agent == id or not alive(agent) or hostages[agent]
+        or Spring.GetUnitTransporter(agent)) then return false end
     local los = Spring.GetUnitLosState(civilian, Spring.GetUnitAllyTeam(id))
     if not los or not los.los then return false end
     return callScript(civilian, "canBeHumanShield") == true
+end
+
+local function revealRecruiter(state)
+    if not state.agent then return end
+    local team = Spring.GetUnitTeam(state.agent)
+    if not (GG.InheritanceTable and GG.InheritanceTable[team]) then return end
+    local parent = getParentOfUnit(team, state.agent)
+    if not alive(parent) then return end
+    local x, y, z = Spring.GetUnitPosition(state.civilian)
+    local px, py, pz = Spring.GetUnitPosition(parent)
+    if not x or not px then return end
+    local defID = Spring.GetUnitDefID(parent)
+    -- Disclose just the actual recruiter, through the existing intelligence
+    -- graph. This record outlives release/death; killing a witness cannot undo it.
+    GG.RevealedLocations = GG.RevealedLocations or {}
+    GG.RevealedLocations[#GG.RevealedLocations + 1] = {
+        teamID = team, x = x, y = y, z = z, radius = 40,
+        endFrame = Spring.GetGameFrame() + getGameConfig().espionage.raids.revealedGraphLifetimeFrames,
+        revealedUnits = {[parent] = {pos = {x = px, y = py, z = pz},
+            defID = defID, boolIsParent = true,
+            name = UnitDefs[defID].humanName or UnitDefs[defID].name}},
+    }
 end
 
 local function take(id, civilian)
@@ -329,6 +378,7 @@ local function take(id, civilian)
         rate = config.moneyPerSecond,
         lastChargeFrame = Spring.GetGameFrame(),
         nextWitnessFrame = Spring.GetGameFrame() + fps,
+        agent = (GG.DisguiseCivilianFor or {})[civilian],
     }
     if GG.CivilianLife then GG.CivilianLife:Interrupt(civilian) end
     Spring.GiveOrderToUnit(civilian, CMD.STOP, {}, {})
@@ -338,6 +388,22 @@ local function take(id, civilian)
     if Spring.GetUnitTransporter(civilian) ~= id then
         release(id)
         return false
+    end
+    if state.agent then
+        state.agentBlocking = {Spring.GetUnitBlocking(state.agent)}
+        Spring.GiveOrderToUnit(state.agent, CMD.STOP, {}, {})
+        hostages[state.agent] = id
+        -- A nonpositive native attachment piece is an invisible passenger.
+        -- Restrain both identities without exposing a second model or changing
+        -- the civilian's authored hostage pose, selection or public parameters.
+        Spring.UnitAttach(id, state.agent, 0, true)
+        if Spring.GetUnitTransporter(state.agent) ~= id then
+            release(id)
+            return false
+        end
+        for weaponNum in ipairs(UnitDefs[Spring.GetUnitDefID(state.agent)].weapons or {}) do
+            Spring.SetUnitWeaponState(state.agent, weaponNum, {salvoLeft = 0})
+        end
     end
     -- Avoid new targeting callbacks before anyone has used the ability. Watch
     -- flags are shared with other gadgets, so never clear somebody else's flag.
@@ -362,6 +428,7 @@ local function take(id, civilian)
     setSpeedEnv(id, 1)
     refresh(id)
     Spring.SetUnitRulesParam(id, "human_shield_cost_per_second", state.rate, visibility)
+    revealRecruiter(state)
     alertWitnesses(id)
     return true
 end
@@ -543,7 +610,8 @@ function gadget:GameFrame(frame)
     if frame % 5 ~= 0 then return end
     for id, state in pairs(carriers) do
         if not api.HasShield(id) or not carrierReady(id)
-            or Spring.GetUnitTeam(state.civilian) ~= gaia then
+            or Spring.GetUnitTeam(state.civilian) ~= gaia
+            or (state.agent and (GG.DisguiseCivilianFor or {})[state.civilian] ~= state.agent) then
             release(id, releaseReason(id))
         else
             chargeHolding(state, frame)
@@ -556,8 +624,21 @@ function gadget:GameFrame(frame)
     end
 end
 
-function gadget:UnitDestroyed(id)
-    release(hostages[id] or id)
+function gadget:UnitDestroyed(id, defID, team, attackerID)
+    local carrier = hostages[id] or id
+    local state = carriers[carrier]
+    local counterpart = state and (id == state.agent and state.civilian or
+        (id == state.civilian and state.agent))
+    release(carrier)
+    -- Native hidden passengers cannot be shot separately. Damage/death to the
+    -- visible disguise still belongs to the captive, just as outside a hold.
+    if counterpart and alive(counterpart) then
+        if id == state.civilian then
+            GG.DiedPeacefully = GG.DiedPeacefully or {}
+            GG.DiedPeacefully[id] = true -- prevent the decoy event killing twice
+        end
+        Spring.DestroyUnit(counterpart, false, counterpart == state.agent, attackerID)
+    end
     operativeUnits[id] = nil
 end
 

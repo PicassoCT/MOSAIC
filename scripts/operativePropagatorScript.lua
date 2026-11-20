@@ -1294,6 +1294,7 @@ end
 
 myCollideData = getCollideData(unitID)
 function transitionToUncloaked()
+    if GG.HumanShield and GG.HumanShield.IsHostage(unitID) then return "cloaked" end
 	setSpeedEnv(unitID, 1.0)
 	setWantCloak(false)
 	restoreCollide(unitID, myCollideData)
@@ -1315,6 +1316,7 @@ function setWantCloak(boolWantCloak)
 end
 
 function transitionToCloaked()
+    if GG.HumanShield and GG.HumanShield.IsHostage(unitID) then return "cloaked" end
     if hasHumanShield() then return transitionToUncloaked() end
     if Spring.GetUnitRulesParam(unitID, "betrayal_defector") == 1 or Spring.GetUnitRulesParam(unitID, "betrayal_pending") == 1 then return transitionToUncloaked() end
 	setWantCloak(true)
