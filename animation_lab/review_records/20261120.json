@@ -1,0 +1,4847 @@
+{
+  "schema_version": 1,
+  "updated_utc": "2026-11-20T00:19:58.707646+00:00",
+  "note": "Versioned review decisions and source/evidence fingerprints. Original PNGs, videos, source snapshots and full manifests remain at each artifact_path. Unreviewed/incomplete records do not approve animation quality.",
+  "runs": [
+    {
+      "run": "animation-polish-baseline-01",
+      "artifact_path": "/home/picasso/MosaicDev/animation-runs/animation-polish-baseline-01",
+      "run_id": "20261119T215301-06b77d13",
+      "source_snapshot_sha256": "f9941d9c72abb1995c1a5b3813331a0b1d22257b7da584a67cb62346b9037468",
+      "scenario_sha256": "d581239de960a3cc50edad854261ac3a2baa80b6baf8d36d2c56b28ae46632f9",
+      "engine_sha256": "1332c641e9c4d393393c41453878d5cebef089e9cc26a813dd4ff481dd79502e",
+      "seed": 1337,
+      "view": "threequarter",
+      "capture_status": "timed_out",
+      "capture_error": "Recoil did not emit a complete capture before the deadline",
+      "evidence_status": "failed",
+      "captured_samples": 0,
+      "capture_problems": [
+        {
+          "code": "invalid_interval",
+          "message": "Capture interval must be a positive integer frame count."
+        },
+        {
+          "code": "invalid_completion",
+          "message": "Completion must report an explicit status and simulation frame."
+        },
+        {
+          "code": "no_captures",
+          "message": "There are no validated rendered frames to review."
+        },
+        {
+          "code": "missing_phase",
+          "message": "No captured samples for required phase idle.",
+          "phase": "idle"
+        },
+        {
+          "code": "missing_phase",
+          "message": "No captured samples for required phase walk.",
+          "phase": "walk"
+        },
+        {
+          "code": "missing_phase",
+          "message": "No captured samples for required phase stop.",
+          "phase": "stop"
+        },
+        {
+          "code": "missing_phase",
+          "message": "No captured samples for required phase turn_and_walk.",
+          "phase": "turn_and_walk"
+        },
+        {
+          "code": "missing_phase",
+          "message": "No captured samples for required phase recover_idle.",
+          "phase": "recover_idle"
+        }
+      ],
+      "runtime_failures": [
+        {
+          "code": "runner_failed",
+          "message": "The runner finished with status timed_out."
+        },
+        {
+          "code": "run_failed",
+          "message": "The runtime marked the scenario failed.",
+          "detail": {
+            "frame": 116.0,
+            "kind": "complete",
+            "message": "capture widget shut down before scenario completion",
+            "run_id": "20261119T215301-06b77d13",
+            "schema_version": 1.0,
+            "status": "failed"
+          }
+        },
+        {
+          "code": "runtime_error",
+          "message": "capture widget shut down before scenario completion",
+          "event": {
+            "frame": 116.0,
+            "kind": "error",
+            "message": "capture widget shut down before scenario completion",
+            "run_id": "20261119T215301-06b77d13"
+          }
+        }
+      ],
+      "review": {
+        "schema_version": 1,
+        "status": "unreviewed",
+        "reviewer": null,
+        "reviewed_at_utc": null,
+        "evidence_sha256": "286659841c8e23a5e4c36f023dda43686781cf357d4254ac17357acff6b0bc1c",
+        "views_reviewed": [],
+        "phases_reviewed": [],
+        "issues": [],
+        "evidence": [],
+        "conclusion": null
+      }
+    },
+    {
+      "run": "animation-polish-baseline-02",
+      "artifact_path": "/home/picasso/MosaicDev/animation-runs/animation-polish-baseline-02",
+      "run_id": "20261119T215913-26251414",
+      "source_snapshot_sha256": "34d5826f59d3de17493b31c071f5c1c9eba812f5b6bf5d9ec87a62d33104855a",
+      "scenario_sha256": "d581239de960a3cc50edad854261ac3a2baa80b6baf8d36d2c56b28ae46632f9",
+      "engine_sha256": "2a97141c5ff164f28dc3e8c49f8dbdff9d43a062c8e5489233ad686fdb5b1d71",
+      "seed": 1337,
+      "view": "threequarter",
+      "capture_status": "timed_out",
+      "capture_error": "Recoil did not emit a complete capture before the deadline",
+      "evidence_status": "failed",
+      "captured_samples": 0,
+      "capture_problems": [
+        {
+          "code": "missing_events",
+          "message": "The rendered capture event stream does not exist."
+        },
+        {
+          "code": "session_count",
+          "message": "Expected one capture session, found 0."
+        },
+        {
+          "code": "missing_completion",
+          "message": "No capture-complete event; the session may have stopped early."
+        },
+        {
+          "code": "no_captures",
+          "message": "There are no validated rendered frames to review."
+        },
+        {
+          "code": "missing_phase",
+          "message": "No captured samples for required phase idle.",
+          "phase": "idle"
+        },
+        {
+          "code": "missing_phase",
+          "message": "No captured samples for required phase walk.",
+          "phase": "walk"
+        },
+        {
+          "code": "missing_phase",
+          "message": "No captured samples for required phase stop.",
+          "phase": "stop"
+        },
+        {
+          "code": "missing_phase",
+          "message": "No captured samples for required phase turn_and_walk.",
+          "phase": "turn_and_walk"
+        },
+        {
+          "code": "missing_phase",
+          "message": "No captured samples for required phase recover_idle.",
+          "phase": "recover_idle"
+        }
+      ],
+      "runtime_failures": [
+        {
+          "code": "runner_failed",
+          "message": "The runner finished with status timed_out."
+        },
+        {
+          "code": "engine_error",
+          "message": "[t=00:00:40.030469][f=-000001] Error: [FATAL ERROR]: could not load model \"animated_hologramv2.dae\" (reason: A model has too many pieces (>254)objects3d/animated_hologramv2.dae)",
+          "file": "engine-data/infolog.txt",
+          "line": 516
+        },
+        {
+          "code": "engine_error",
+          "message": "[t=00:00:40.057148][f=-000001] Error: [FATAL ERROR]: could not load model \"animated_hologram.dae\" (reason: A model has too many pieces (>254)objects3d/animated_hologram.dae)",
+          "file": "engine-data/infolog.txt",
+          "line": 517
+        },
+        {
+          "code": "engine_error",
+          "message": "[t=00:00:40.057163][f=-000001] Error: [FATAL ERROR]: could not load model \"house_arab.dae\" (reason: A model has too many pieces (>254)objects3d/house_arab.dae)",
+          "file": "engine-data/infolog.txt",
+          "line": 518
+        },
+        {
+          "code": "engine_error",
+          "message": "[t=00:00:40.057170][f=-000001] Error: [FATAL ERROR]: could not load model \"house_asian_standalone.dae\" (reason: A model has too many pieces (>254)objects3d/house_asian_standalone.dae)",
+          "file": "engine-data/infolog.txt",
+          "line": 519
+        },
+        {
+          "code": "engine_error",
+          "message": "[t=00:00:40.057177][f=-000001] Error: [FATAL ERROR]: could not load model \"house_asian_hologram.dae\" (reason: A model has too many pieces (>254)objects3d/house_asian_hologram.dae)",
+          "file": "engine-data/infolog.txt",
+          "line": 520
+        },
+        {
+          "code": "engine_error",
+          "message": "[t=00:00:40.057191][f=-000001] Error: [FATAL ERROR]: could not load model \"house_asian.dae\" (reason: A model has too many pieces (>254)objects3d/house_asian.dae)",
+          "file": "engine-data/infolog.txt",
+          "line": 521
+        },
+        {
+          "code": "engine_error",
+          "message": "[t=00:00:40.057198][f=-000001] Error: [FATAL ERROR]: could not load model \"house_asian_split_1_3.dae\" (reason: A model has too many pieces (>254)objects3d/house_asian_split_1_3.dae)",
+          "file": "engine-data/infolog.txt",
+          "line": 522
+        },
+        {
+          "code": "engine_error",
+          "message": "[t=00:00:40.057215][f=-000001] Error: [FATAL ERROR]: could not load model \"house_asian_split_1_2.dae\" (reason: A model has too many pieces (>254)objects3d/house_asian_split_1_2.dae)",
+          "file": "engine-data/infolog.txt",
+          "line": 523
+        },
+        {
+          "code": "engine_error",
+          "message": "[t=00:00:40.057221][f=-000001] Error: [FATAL ERROR]: could not load model \"house_asian_split_1_1.dae\" (reason: A model has too many pieces (>254)objects3d/house_asian_split_1_1.dae)",
+          "file": "engine-data/infolog.txt",
+          "line": 524
+        },
+        {
+          "code": "engine_error",
+          "message": "[t=00:00:40.057227][f=-000001] Error: [FATAL ERROR]: could not load model \"house_asian_split_2_2.dae\" (reason: A model has too many pieces (>254)objects3d/house_asian_split_2_2.dae)",
+          "file": "engine-data/infolog.txt",
+          "line": 525
+        },
+        {
+          "code": "engine_error",
+          "message": "[t=00:00:40.057233][f=-000001] Error: [FATAL ERROR]: could not load model \"house_asian_split_2_3.dae\" (reason: A model has too many pieces (>254)objects3d/house_asian_split_2_3.dae)",
+          "file": "engine-data/infolog.txt",
+          "line": 526
+        },
+        {
+          "code": "engine_error",
+          "message": "[t=00:00:40.057238][f=-000001] Error: [FATAL ERROR]: could not load model \"house_asian_split_1_4.dae\" (reason: A model has too many pieces (>254)objects3d/house_asian_split_1_4.dae)",
+          "file": "engine-data/infolog.txt",
+          "line": 527
+        },
+        {
+          "code": "engine_error",
+          "message": "[t=00:00:40.057243][f=-000001] Error: [FATAL ERROR]: could not load model \"house_asian_split_3_3.dae\" (reason: A model has too many pieces (>254)objects3d/house_asian_split_3_3.dae)",
+          "file": "engine-data/infolog.txt",
+          "line": 528
+        },
+        {
+          "code": "engine_error",
+          "message": "[t=00:00:40.057249][f=-000001] Error: [FATAL ERROR]: could not load model \"house_asian_split_3_4.dae\" (reason: A model has too many pieces (>254)objects3d/house_asian_split_3_4.dae)",
+          "file": "engine-data/infolog.txt",
+          "line": 529
+        },
+        {
+          "code": "engine_error",
+          "message": "[t=00:00:40.057254][f=-000001] Error: [FATAL ERROR]: could not load model \"house_western.dae\" (reason: A model has too many pieces (>254)objects3d/house_western.dae)",
+          "file": "engine-data/infolog.txt",
+          "line": 530
+        },
+        {
+          "code": "engine_error",
+          "message": "[t=00:00:40.057260][f=-000001] Error: [FATAL ERROR]: could not load model \"house_asian_split_2_4.dae\" (reason: A model has too many pieces (>254)objects3d/house_asian_split_2_4.dae)",
+          "file": "engine-data/infolog.txt",
+          "line": 531
+        },
+        {
+          "code": "engine_error",
+          "message": "[t=00:00:40.057266][f=-000001] Error: [FATAL ERROR]: could not load model \"house_western_hologram.dae\" (reason: A model has too many pieces (>254)objects3d/house_western_hologram.dae)",
+          "file": "engine-data/infolog.txt",
+          "line": 532
+        },
+        {
+          "code": "engine_error",
+          "message": "[t=00:00:40.057271][f=-000001] Error: [FATAL ERROR]: could not load model \"house_asian_split_4_4.dae\" (reason: A model has too many pieces (>254)objects3d/house_asian_split_4_4.dae)",
+          "file": "engine-data/infolog.txt",
+          "line": 533
+        },
+        {
+          "code": "engine_error",
+          "message": "[t=00:00:40.057277][f=-000001] Error: [FATAL ERROR]: could not load model \"house_western_brothel_hologram.dae\" (reason: A model has too many pieces (>254)objects3d/house_western_brothel_hologram.dae)",
+          "file": "engine-data/infolog.txt",
+          "line": 534
+        },
+        {
+          "code": "engine_error",
+          "message": "[t=00:00:40.057282][f=-000001] Error: [FATAL ERROR]: could not load model \"objective_printerdock.dae\" (reason: A model has too many pieces (>254)objects3d/objective_printerdock.dae)",
+          "file": "engine-data/infolog.txt",
+          "line": 535
+        },
+        {
+          "code": "engine_error",
+          "message": "[t=00:00:40.049182][f=-000001] Error: [FATAL ERROR]: could not load model \"animated_hologramv2.dae\" (reason: A model has too many pieces (>254)objects3d/animated_hologramv2.dae)",
+          "file": "engine-console.log",
+          "line": 653
+        },
+        {
+          "code": "engine_error",
+          "message": "[t=00:00:40.057155][f=-000001] Error: [FATAL ERROR]: could not load model \"animated_hologram.dae\" (reason: A model has too many pieces (>254)objects3d/animated_hologram.dae)",
+          "file": "engine-console.log",
+          "line": 654
+        },
+        {
+          "code": "engine_error",
+          "message": "[t=00:00:40.057164][f=-000001] Error: [FATAL ERROR]: could not load model \"house_arab.dae\" (reason: A model has too many pieces (>254)objects3d/house_arab.dae)",
+          "file": "engine-console.log",
+          "line": 655
+        },
+        {
+          "code": "engine_error",
+          "message": "[t=00:00:40.057172][f=-000001] Error: [FATAL ERROR]: could not load model \"house_asian_standalone.dae\" (reason: A model has too many pieces (>254)objects3d/house_asian_standalone.dae)",
+          "file": "engine-console.log",
+          "line": 656
+        },
+        {
+          "code": "engine_error",
+          "message": "[t=00:00:40.057178][f=-000001] Error: [FATAL ERROR]: could not load model \"house_asian_hologram.dae\" (reason: A model has too many pieces (>254)objects3d/house_asian_hologram.dae)",
+          "file": "engine-console.log",
+          "line": 657
+        },
+        {
+          "code": "engine_error",
+          "message": "[t=00:00:40.057193][f=-000001] Error: [FATAL ERROR]: could not load model \"house_asian.dae\" (reason: A model has too many pieces (>254)objects3d/house_asian.dae)",
+          "file": "engine-console.log",
+          "line": 658
+        },
+        {
+          "code": "engine_error",
+          "message": "[t=00:00:40.057209][f=-000001] Error: [FATAL ERROR]: could not load model \"house_asian_split_1_3.dae\" (reason: A model has too many pieces (>254)objects3d/house_asian_split_1_3.dae)",
+          "file": "engine-console.log",
+          "line": 659
+        },
+        {
+          "code": "engine_error",
+          "message": "[t=00:00:40.057216][f=-000001] Error: [FATAL ERROR]: could not load model \"house_asian_split_1_2.dae\" (reason: A model has too many pieces (>254)objects3d/house_asian_split_1_2.dae)",
+          "file": "engine-console.log",
+          "line": 660
+        },
+        {
+          "code": "engine_error",
+          "message": "[t=00:00:40.057222][f=-000001] Error: [FATAL ERROR]: could not load model \"house_asian_split_1_1.dae\" (reason: A model has too many pieces (>254)objects3d/house_asian_split_1_1.dae)",
+          "file": "engine-console.log",
+          "line": 661
+        },
+        {
+          "code": "engine_error",
+          "message": "[t=00:00:40.057228][f=-000001] Error: [FATAL ERROR]: could not load model \"house_asian_split_2_2.dae\" (reason: A model has too many pieces (>254)objects3d/house_asian_split_2_2.dae)",
+          "file": "engine-console.log",
+          "line": 662
+        },
+        {
+          "code": "engine_error",
+          "message": "[t=00:00:40.057234][f=-000001] Error: [FATAL ERROR]: could not load model \"house_asian_split_2_3.dae\" (reason: A model has too many pieces (>254)objects3d/house_asian_split_2_3.dae)",
+          "file": "engine-console.log",
+          "line": 663
+        },
+        {
+          "code": "engine_error",
+          "message": "[t=00:00:40.057239][f=-000001] Error: [FATAL ERROR]: could not load model \"house_asian_split_1_4.dae\" (reason: A model has too many pieces (>254)objects3d/house_asian_split_1_4.dae)",
+          "file": "engine-console.log",
+          "line": 664
+        },
+        {
+          "code": "engine_error",
+          "message": "[t=00:00:40.057245][f=-000001] Error: [FATAL ERROR]: could not load model \"house_asian_split_3_3.dae\" (reason: A model has too many pieces (>254)objects3d/house_asian_split_3_3.dae)",
+          "file": "engine-console.log",
+          "line": 665
+        },
+        {
+          "code": "engine_error",
+          "message": "[t=00:00:40.057250][f=-000001] Error: [FATAL ERROR]: could not load model \"house_asian_split_3_4.dae\" (reason: A model has too many pieces (>254)objects3d/house_asian_split_3_4.dae)",
+          "file": "engine-console.log",
+          "line": 666
+        },
+        {
+          "code": "engine_error",
+          "message": "[t=00:00:40.057256][f=-000001] Error: [FATAL ERROR]: could not load model \"house_western.dae\" (reason: A model has too many pieces (>254)objects3d/house_western.dae)",
+          "file": "engine-console.log",
+          "line": 667
+        },
+        {
+          "code": "engine_error",
+          "message": "[t=00:00:40.057261][f=-000001] Error: [FATAL ERROR]: could not load model \"house_asian_split_2_4.dae\" (reason: A model has too many pieces (>254)objects3d/house_asian_split_2_4.dae)",
+          "file": "engine-console.log",
+          "line": 668
+        },
+        {
+          "code": "engine_error",
+          "message": "[t=00:00:40.057267][f=-000001] Error: [FATAL ERROR]: could not load model \"house_western_hologram.dae\" (reason: A model has too many pieces (>254)objects3d/house_western_hologram.dae)",
+          "file": "engine-console.log",
+          "line": 669
+        },
+        {
+          "code": "engine_error",
+          "message": "[t=00:00:40.057272][f=-000001] Error: [FATAL ERROR]: could not load model \"house_asian_split_4_4.dae\" (reason: A model has too many pieces (>254)objects3d/house_asian_split_4_4.dae)",
+          "file": "engine-console.log",
+          "line": 670
+        },
+        {
+          "code": "engine_error",
+          "message": "[t=00:00:40.057278][f=-000001] Error: [FATAL ERROR]: could not load model \"house_western_brothel_hologram.dae\" (reason: A model has too many pieces (>254)objects3d/house_western_brothel_hologram.dae)",
+          "file": "engine-console.log",
+          "line": 671
+        },
+        {
+          "code": "engine_error",
+          "message": "[t=00:00:40.057284][f=-000001] Error: [FATAL ERROR]: could not load model \"objective_printerdock.dae\" (reason: A model has too many pieces (>254)objects3d/objective_printerdock.dae)",
+          "file": "engine-console.log",
+          "line": 672
+        }
+      ],
+      "review": {
+        "schema_version": 1,
+        "status": "unreviewed",
+        "reviewer": null,
+        "reviewed_at_utc": null,
+        "evidence_sha256": "e7f5394dbee2153e6a7b79a1acc0ebc49e25debbb4226de5b2bd6bf8fa9a97a5",
+        "views_reviewed": [],
+        "phases_reviewed": [],
+        "issues": [],
+        "evidence": [],
+        "conclusion": null
+      }
+    },
+    {
+      "run": "animation-polish-baseline-03",
+      "artifact_path": "/home/picasso/MosaicDev/animation-runs/animation-polish-baseline-03",
+      "run_id": "20261119T220806-9ae4de5d",
+      "source_snapshot_sha256": "34d5826f59d3de17493b31c071f5c1c9eba812f5b6bf5d9ec87a62d33104855a",
+      "scenario_sha256": "d581239de960a3cc50edad854261ac3a2baa80b6baf8d36d2c56b28ae46632f9",
+      "engine_sha256": "1332c641e9c4d393393c41453878d5cebef089e9cc26a813dd4ff481dd79502e",
+      "seed": 1337,
+      "view": "threequarter",
+      "capture_status": "timed_out",
+      "capture_error": "Recoil did not emit a complete capture before the deadline",
+      "evidence_status": "failed",
+      "captured_samples": 0,
+      "capture_problems": [
+        {
+          "code": "invalid_interval",
+          "message": "Capture interval must be a positive integer frame count."
+        },
+        {
+          "code": "invalid_completion",
+          "message": "Completion must report an explicit status and simulation frame."
+        },
+        {
+          "code": "no_captures",
+          "message": "There are no validated rendered frames to review."
+        },
+        {
+          "code": "missing_phase",
+          "message": "No captured samples for required phase idle.",
+          "phase": "idle"
+        },
+        {
+          "code": "missing_phase",
+          "message": "No captured samples for required phase walk.",
+          "phase": "walk"
+        },
+        {
+          "code": "missing_phase",
+          "message": "No captured samples for required phase stop.",
+          "phase": "stop"
+        },
+        {
+          "code": "missing_phase",
+          "message": "No captured samples for required phase turn_and_walk.",
+          "phase": "turn_and_walk"
+        },
+        {
+          "code": "missing_phase",
+          "message": "No captured samples for required phase recover_idle.",
+          "phase": "recover_idle"
+        }
+      ],
+      "runtime_failures": [
+        {
+          "code": "runner_failed",
+          "message": "The runner finished with status timed_out."
+        },
+        {
+          "code": "run_failed",
+          "message": "The runtime marked the scenario failed.",
+          "detail": {
+            "frame": 112.0,
+            "kind": "complete",
+            "message": "capture widget shut down before scenario completion",
+            "run_id": "20261119T220806-9ae4de5d",
+            "schema_version": 1.0,
+            "status": "failed"
+          }
+        },
+        {
+          "code": "runtime_error",
+          "message": "capture widget shut down before scenario completion",
+          "event": {
+            "frame": 112.0,
+            "kind": "error",
+            "message": "capture widget shut down before scenario completion",
+            "run_id": "20261119T220806-9ae4de5d"
+          }
+        }
+      ],
+      "review": {
+        "schema_version": 1,
+        "status": "unreviewed",
+        "reviewer": null,
+        "reviewed_at_utc": null,
+        "evidence_sha256": "c101c39b21a47d0cf10cef5cb0d3b8c053eb37bb5af4a75fd2179cc7ffb11d42",
+        "views_reviewed": [],
+        "phases_reviewed": [],
+        "issues": [],
+        "evidence": [],
+        "conclusion": null
+      }
+    },
+    {
+      "run": "animation-polish-baseline-04",
+      "artifact_path": "/home/picasso/MosaicDev/animation-runs/animation-polish-baseline-04",
+      "run_id": "20261119T221307-9bcd0141",
+      "source_snapshot_sha256": "34d5826f59d3de17493b31c071f5c1c9eba812f5b6bf5d9ec87a62d33104855a",
+      "scenario_sha256": "d581239de960a3cc50edad854261ac3a2baa80b6baf8d36d2c56b28ae46632f9",
+      "engine_sha256": "1332c641e9c4d393393c41453878d5cebef089e9cc26a813dd4ff481dd79502e",
+      "seed": 1337,
+      "view": "threequarter",
+      "capture_status": "captured",
+      "capture_error": null,
+      "evidence_status": "capture_incomplete",
+      "captured_samples": 0,
+      "capture_problems": [
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 122.0: subject is outside the camera view.",
+          "frame": 122.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 126.0: subject is outside the camera view.",
+          "frame": 126.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 139.0: subject is outside the camera view.",
+          "frame": 139.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 154.0: subject is outside the camera view.",
+          "frame": 154.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 168.0: subject is outside the camera view.",
+          "frame": 168.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 173.0: subject is outside the camera view.",
+          "frame": 173.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 184.0: subject is outside the camera view.",
+          "frame": 184.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 188.0: subject is outside the camera view.",
+          "frame": 188.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 195.0: subject is outside the camera view.",
+          "frame": 195.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 199.0: subject is outside the camera view.",
+          "frame": 199.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 204.0: subject is outside the camera view.",
+          "frame": 204.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 208.0: subject is outside the camera view.",
+          "frame": 208.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 215.0: subject is outside the camera view.",
+          "frame": 215.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 219.0: subject is outside the camera view.",
+          "frame": 219.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 226.0: subject is outside the camera view.",
+          "frame": 226.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 230.0: subject is outside the camera view.",
+          "frame": 230.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 235.0: subject is outside the camera view.",
+          "frame": 235.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 238.0: subject is outside the camera view.",
+          "frame": 238.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 246.0: subject is outside the camera view.",
+          "frame": 246.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 249.0: subject is outside the camera view.",
+          "frame": 249.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 255.0: subject is outside the camera view.",
+          "frame": 255.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 258.0: subject is outside the camera view.",
+          "frame": 258.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 263.0: subject is outside the camera view.",
+          "frame": 263.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 266.0: subject is outside the camera view.",
+          "frame": 266.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 273.0: subject is outside the camera view.",
+          "frame": 273.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 279.0: subject is outside the camera view.",
+          "frame": 279.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 284.0: subject is outside the camera view.",
+          "frame": 284.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 287.0: subject is outside the camera view.",
+          "frame": 287.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 291.0: subject is outside the camera view.",
+          "frame": 291.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 295.0: subject is outside the camera view.",
+          "frame": 295.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 299.0: subject is outside the camera view.",
+          "frame": 299.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 304.0: subject is outside the camera view.",
+          "frame": 304.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 309.0: subject is outside the camera view.",
+          "frame": 309.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 312.0: subject is outside the camera view.",
+          "frame": 312.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 316.0: subject is outside the camera view.",
+          "frame": 316.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 320.0: subject is outside the camera view.",
+          "frame": 320.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 324.0: subject is outside the camera view.",
+          "frame": 324.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 327.0: subject is outside the camera view.",
+          "frame": 327.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 333.0: subject is outside the camera view.",
+          "frame": 333.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 336.0: subject is outside the camera view.",
+          "frame": 336.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 340.0: subject is outside the camera view.",
+          "frame": 340.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 343.0: subject is outside the camera view.",
+          "frame": 343.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 347.0: subject is outside the camera view.",
+          "frame": 347.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 350.0: subject is outside the camera view.",
+          "frame": 350.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 354.0: subject is outside the camera view.",
+          "frame": 354.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 357.0: subject is outside the camera view.",
+          "frame": 357.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 363.0: subject is outside the camera view.",
+          "frame": 363.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 366.0: subject is outside the camera view.",
+          "frame": 366.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 370.0: subject is outside the camera view.",
+          "frame": 370.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 373.0: subject is outside the camera view.",
+          "frame": 373.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 378.0: subject is outside the camera view.",
+          "frame": 378.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 381.0: subject is outside the camera view.",
+          "frame": 381.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 386.0: subject is outside the camera view.",
+          "frame": 386.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 389.0: subject is outside the camera view.",
+          "frame": 389.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 395.0: subject is outside the camera view.",
+          "frame": 395.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 398.0: subject is outside the camera view.",
+          "frame": 398.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 403.0: subject is outside the camera view.",
+          "frame": 403.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 406.0: subject is outside the camera view.",
+          "frame": 406.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 411.0: subject is outside the camera view.",
+          "frame": 411.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 414.0: subject is outside the camera view.",
+          "frame": 414.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 418.0: subject is outside the camera view.",
+          "frame": 418.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 423.0: subject is outside the camera view.",
+          "frame": 423.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 428.0: subject is outside the camera view.",
+          "frame": 428.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 431.0: subject is outside the camera view.",
+          "frame": 431.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 435.0: subject is outside the camera view.",
+          "frame": 435.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 438.0: subject is outside the camera view.",
+          "frame": 438.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 444.0: subject is outside the camera view.",
+          "frame": 444.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 447.0: subject is outside the camera view.",
+          "frame": 447.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 452.0: subject is outside the camera view.",
+          "frame": 452.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 455.0: subject is outside the camera view.",
+          "frame": 455.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 459.0: subject is outside the camera view.",
+          "frame": 459.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 463.0: subject is outside the camera view.",
+          "frame": 463.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 467.0: subject is outside the camera view.",
+          "frame": 467.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 470.0: subject is outside the camera view.",
+          "frame": 470.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 474.0: subject is outside the camera view.",
+          "frame": 474.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 477.0: subject is outside the camera view.",
+          "frame": 477.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 482.0: subject is outside the camera view.",
+          "frame": 482.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 485.0: subject is outside the camera view.",
+          "frame": 485.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 488.0: subject is outside the camera view.",
+          "frame": 488.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 492.0: subject is outside the camera view.",
+          "frame": 492.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 497.0: subject is outside the camera view.",
+          "frame": 497.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 502.0: subject is outside the camera view.",
+          "frame": 502.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 505.0: subject is outside the camera view.",
+          "frame": 505.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 509.0: subject is outside the camera view.",
+          "frame": 509.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 512.0: subject is outside the camera view.",
+          "frame": 512.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 517.0: subject is outside the camera view.",
+          "frame": 517.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 520.0: subject is outside the camera view.",
+          "frame": 520.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 524.0: subject is outside the camera view.",
+          "frame": 524.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 527.0: subject is outside the camera view.",
+          "frame": 527.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 532.0: subject is outside the camera view.",
+          "frame": 532.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 535.0: subject is outside the camera view.",
+          "frame": 535.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 539.0: subject is outside the camera view.",
+          "frame": 539.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 542.0: subject is outside the camera view.",
+          "frame": 542.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 547.0: subject is outside the camera view.",
+          "frame": 547.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 552.0: subject is outside the camera view.",
+          "frame": 552.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 556.0: subject is outside the camera view.",
+          "frame": 556.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 560.0: subject is outside the camera view.",
+          "frame": 560.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 564.0: subject is outside the camera view.",
+          "frame": 564.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 567.0: subject is outside the camera view.",
+          "frame": 567.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 571.0: subject is outside the camera view.",
+          "frame": 571.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 574.0: subject is outside the camera view.",
+          "frame": 574.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 579.0: subject is outside the camera view.",
+          "frame": 579.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 582.0: subject is outside the camera view.",
+          "frame": 582.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 587.0: subject is outside the camera view.",
+          "frame": 587.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 590.0: subject is outside the camera view.",
+          "frame": 590.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 594.0: subject is outside the camera view.",
+          "frame": 594.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 597.0: subject is outside the camera view.",
+          "frame": 597.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 601.0: subject is outside the camera view.",
+          "frame": 601.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 607.0: subject is outside the camera view.",
+          "frame": 607.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 611.0: subject is outside the camera view.",
+          "frame": 611.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 614.0: subject is outside the camera view.",
+          "frame": 614.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 619.0: subject is outside the camera view.",
+          "frame": 619.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 622.0: subject is outside the camera view.",
+          "frame": 622.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 626.0: subject is outside the camera view.",
+          "frame": 626.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 629.0: subject is outside the camera view.",
+          "frame": 629.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 633.0: subject is outside the camera view.",
+          "frame": 633.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 636.0: subject is outside the camera view.",
+          "frame": 636.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 640.0: subject is outside the camera view.",
+          "frame": 640.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 643.0: subject is outside the camera view.",
+          "frame": 643.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 647.0: subject is outside the camera view.",
+          "frame": 647.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 650.0: subject is outside the camera view.",
+          "frame": 650.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 654.0: subject is outside the camera view.",
+          "frame": 654.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 657.0: subject is outside the camera view.",
+          "frame": 657.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 662.0: subject is outside the camera view.",
+          "frame": 662.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 665.0: subject is outside the camera view.",
+          "frame": 665.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 669.0: subject is outside the camera view.",
+          "frame": 669.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 672.0: subject is outside the camera view.",
+          "frame": 672.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 676.0: subject is outside the camera view.",
+          "frame": 676.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 679.0: subject is outside the camera view.",
+          "frame": 679.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 683.0: subject is outside the camera view.",
+          "frame": 683.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 686.0: subject is outside the camera view.",
+          "frame": 686.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 690.0: subject is outside the camera view.",
+          "frame": 690.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 693.0: subject is outside the camera view.",
+          "frame": 693.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 697.0: subject is outside the camera view.",
+          "frame": 697.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 700.0: subject is outside the camera view.",
+          "frame": 700.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 704.0: subject is outside the camera view.",
+          "frame": 704.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 707.0: subject is outside the camera view.",
+          "frame": 707.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 711.0: subject is outside the camera view.",
+          "frame": 711.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 714.0: subject is outside the camera view.",
+          "frame": 714.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 718.0: subject is outside the camera view.",
+          "frame": 718.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 721.0: subject is outside the camera view.",
+          "frame": 721.0
+        },
+        {
+          "code": "no_captures",
+          "message": "There are no validated rendered frames to review."
+        },
+        {
+          "code": "missing_phase",
+          "message": "No captured samples for required phase idle.",
+          "phase": "idle"
+        },
+        {
+          "code": "missing_phase",
+          "message": "No captured samples for required phase walk.",
+          "phase": "walk"
+        },
+        {
+          "code": "missing_phase",
+          "message": "No captured samples for required phase stop.",
+          "phase": "stop"
+        },
+        {
+          "code": "missing_phase",
+          "message": "No captured samples for required phase turn_and_walk.",
+          "phase": "turn_and_walk"
+        },
+        {
+          "code": "missing_phase",
+          "message": "No captured samples for required phase recover_idle.",
+          "phase": "recover_idle"
+        }
+      ],
+      "runtime_failures": [],
+      "review": {
+        "schema_version": 1,
+        "status": "unreviewed",
+        "reviewer": null,
+        "reviewed_at_utc": null,
+        "evidence_sha256": "309cd52b4c96f0fd37913f2bc0f808d2af5703a242eb696094fc5b030a7c79f0",
+        "views_reviewed": [],
+        "phases_reviewed": [],
+        "issues": [],
+        "evidence": [],
+        "conclusion": null
+      }
+    },
+    {
+      "run": "animation-polish-civilian-01",
+      "artifact_path": "/home/picasso/MosaicDev/animation-runs/animation-polish-civilian-01",
+      "run_id": "20261119T221608-00902dbe",
+      "source_snapshot_sha256": "97e3c7dfc699d635ccdff879bd432277778a85170e652dd29f1e554cf5bdb852",
+      "scenario_sha256": "b8af6faf6b30b6c04a4851b91a720a18ec0e0deaf53b1e9952c6424f5eaf38e6",
+      "engine_sha256": "1332c641e9c4d393393c41453878d5cebef089e9cc26a813dd4ff481dd79502e",
+      "seed": 1337,
+      "view": "threequarter",
+      "capture_status": "captured",
+      "capture_error": null,
+      "evidence_status": "capture_incomplete",
+      "captured_samples": 69,
+      "capture_problems": [
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 123.0: subject is outside the camera view.",
+          "frame": 123.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 127.0: subject is outside the camera view.",
+          "frame": 127.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 136.0: subject is outside the camera view.",
+          "frame": 136.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 147.0: subject is outside the camera view.",
+          "frame": 147.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 157.0: subject is outside the camera view.",
+          "frame": 157.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 163.0: subject is outside the camera view.",
+          "frame": 163.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 174.0: subject is outside the camera view.",
+          "frame": 174.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 183.0: subject is outside the camera view.",
+          "frame": 183.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 189.0: subject is outside the camera view.",
+          "frame": 189.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 194.0: subject is outside the camera view.",
+          "frame": 194.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 199.0: subject is outside the camera view.",
+          "frame": 199.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 204.0: subject is outside the camera view.",
+          "frame": 204.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 209.0: subject is outside the camera view.",
+          "frame": 209.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 216.0: subject is outside the camera view.",
+          "frame": 216.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 222.0: subject is outside the camera view.",
+          "frame": 222.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 226.0: subject is outside the camera view.",
+          "frame": 226.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 230.0: subject is outside the camera view.",
+          "frame": 230.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 234.0: subject is outside the camera view.",
+          "frame": 234.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 239.0: subject is outside the camera view.",
+          "frame": 239.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 245.0: subject is outside the camera view.",
+          "frame": 245.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 249.0: subject is outside the camera view.",
+          "frame": 249.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 252.0: subject is outside the camera view.",
+          "frame": 252.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 256.0: subject is outside the camera view.",
+          "frame": 256.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 259.0: subject is outside the camera view.",
+          "frame": 259.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 263.0: subject is outside the camera view.",
+          "frame": 263.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 267.0: subject is outside the camera view.",
+          "frame": 267.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 271.0: subject is outside the camera view.",
+          "frame": 271.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 276.0: subject is outside the camera view.",
+          "frame": 276.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 279.0: subject is outside the camera view.",
+          "frame": 279.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 282.0: subject is outside the camera view.",
+          "frame": 282.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 286.0: subject is outside the camera view.",
+          "frame": 286.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 289.0: subject is outside the camera view.",
+          "frame": 289.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 292.0: subject is outside the camera view.",
+          "frame": 292.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 295.0: subject is outside the camera view.",
+          "frame": 295.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 297.0: subject is outside the camera view.",
+          "frame": 297.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 302.0: subject is outside the camera view.",
+          "frame": 302.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 305.0: subject is outside the camera view.",
+          "frame": 305.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 307.0: subject is outside the camera view.",
+          "frame": 307.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 309.0: subject is outside the camera view.",
+          "frame": 309.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 312.0: subject is outside the camera view.",
+          "frame": 312.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 314.0: subject is outside the camera view.",
+          "frame": 314.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 317.0: subject is outside the camera view.",
+          "frame": 317.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 319.0: subject is outside the camera view.",
+          "frame": 319.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 322.0: subject is outside the camera view.",
+          "frame": 322.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 324.0: subject is outside the camera view.",
+          "frame": 324.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 326.0: subject is outside the camera view.",
+          "frame": 326.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 328.0: subject is outside the camera view.",
+          "frame": 328.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 332.0: subject is outside the camera view.",
+          "frame": 332.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 335.0: subject is outside the camera view.",
+          "frame": 335.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 337.0: subject is outside the camera view.",
+          "frame": 337.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 339.0: subject is outside the camera view.",
+          "frame": 339.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 341.0: subject is outside the camera view.",
+          "frame": 341.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 343.0: subject is outside the camera view.",
+          "frame": 343.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 345.0: subject is outside the camera view.",
+          "frame": 345.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 347.0: subject is outside the camera view.",
+          "frame": 347.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 349.0: subject is outside the camera view.",
+          "frame": 349.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 351.0: subject is outside the camera view.",
+          "frame": 351.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 353.0: subject is outside the camera view.",
+          "frame": 353.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 355.0: subject is outside the camera view.",
+          "frame": 355.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 357.0: subject is outside the camera view.",
+          "frame": 357.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 359.0: subject is outside the camera view.",
+          "frame": 359.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 362.0: subject is outside the camera view.",
+          "frame": 362.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 364.0: subject is outside the camera view.",
+          "frame": 364.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 366.0: subject is outside the camera view.",
+          "frame": 366.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 368.0: subject is outside the camera view.",
+          "frame": 368.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 370.0: subject is outside the camera view.",
+          "frame": 370.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 372.0: subject is outside the camera view.",
+          "frame": 372.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 374.0: subject is outside the camera view.",
+          "frame": 374.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 376.0: subject is outside the camera view.",
+          "frame": 376.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 378.0: subject is outside the camera view.",
+          "frame": 378.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 380.0: subject is outside the camera view.",
+          "frame": 380.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 382.0: subject is outside the camera view.",
+          "frame": 382.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 384.0: subject is outside the camera view.",
+          "frame": 384.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 387.0: subject is outside the camera view.",
+          "frame": 387.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 391.0: subject is outside the camera view.",
+          "frame": 391.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 394.0: subject is outside the camera view.",
+          "frame": 394.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 397.0: subject is outside the camera view.",
+          "frame": 397.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 400.0: subject is outside the camera view.",
+          "frame": 400.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 403.0: subject is outside the camera view.",
+          "frame": 403.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 406.0: subject is outside the camera view.",
+          "frame": 406.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 409.0: subject is outside the camera view.",
+          "frame": 409.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 411.0: subject is outside the camera view.",
+          "frame": 411.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 414.0: subject is outside the camera view.",
+          "frame": 414.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 417.0: subject is outside the camera view.",
+          "frame": 417.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 421.0: subject is outside the camera view.",
+          "frame": 421.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 424.0: subject is outside the camera view.",
+          "frame": 424.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 427.0: subject is outside the camera view.",
+          "frame": 427.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 429.0: subject is outside the camera view.",
+          "frame": 429.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 432.0: subject is outside the camera view.",
+          "frame": 432.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 434.0: subject is outside the camera view.",
+          "frame": 434.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 437.0: subject is outside the camera view.",
+          "frame": 437.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 440.0: subject is outside the camera view.",
+          "frame": 440.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 442.0: subject is outside the camera view.",
+          "frame": 442.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 444.0: subject is outside the camera view.",
+          "frame": 444.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 447.0: subject is outside the camera view.",
+          "frame": 447.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 449.0: subject is outside the camera view.",
+          "frame": 449.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 453.0: subject is outside the camera view.",
+          "frame": 453.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 455.0: subject is outside the camera view.",
+          "frame": 455.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 457.0: subject is outside the camera view.",
+          "frame": 457.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 460.0: subject is outside the camera view.",
+          "frame": 460.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 462.0: subject is outside the camera view.",
+          "frame": 462.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 464.0: subject is outside the camera view.",
+          "frame": 464.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 466.0: subject is outside the camera view.",
+          "frame": 466.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 468.0: subject is outside the camera view.",
+          "frame": 468.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 470.0: subject is outside the camera view.",
+          "frame": 470.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 472.0: subject is outside the camera view.",
+          "frame": 472.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 474.0: subject is outside the camera view.",
+          "frame": 474.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 476.0: subject is outside the camera view.",
+          "frame": 476.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 478.0: subject is outside the camera view.",
+          "frame": 478.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 481.0: subject is outside the camera view.",
+          "frame": 481.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 483.0: subject is outside the camera view.",
+          "frame": 483.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 485.0: subject is outside the camera view.",
+          "frame": 485.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 487.0: subject is outside the camera view.",
+          "frame": 487.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 489.0: subject is outside the camera view.",
+          "frame": 489.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 491.0: subject is outside the camera view.",
+          "frame": 491.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 493.0: subject is outside the camera view.",
+          "frame": 493.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 495.0: subject is outside the camera view.",
+          "frame": 495.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 497.0: subject is outside the camera view.",
+          "frame": 497.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 499.0: subject is outside the camera view.",
+          "frame": 499.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 501.0: subject is outside the camera view.",
+          "frame": 501.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 503.0: subject is outside the camera view.",
+          "frame": 503.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 505.0: subject is outside the camera view.",
+          "frame": 505.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 507.0: subject is outside the camera view.",
+          "frame": 507.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 509.0: subject is outside the camera view.",
+          "frame": 509.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 512.0: subject is outside the camera view.",
+          "frame": 512.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 514.0: subject is outside the camera view.",
+          "frame": 514.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 516.0: subject is outside the camera view.",
+          "frame": 516.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 519.0: subject is outside the camera view.",
+          "frame": 519.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 522.0: subject is outside the camera view.",
+          "frame": 522.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 524.0: subject is outside the camera view.",
+          "frame": 524.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 527.0: subject is outside the camera view.",
+          "frame": 527.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 530.0: subject is outside the camera view.",
+          "frame": 530.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 533.0: subject is outside the camera view.",
+          "frame": 533.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 536.0: subject is outside the camera view.",
+          "frame": 536.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 539.0: subject is outside the camera view.",
+          "frame": 539.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 542.0: subject is outside the camera view.",
+          "frame": 542.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 545.0: subject is outside the camera view.",
+          "frame": 545.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 548.0: subject is outside the camera view.",
+          "frame": 548.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 552.0: subject is outside the camera view.",
+          "frame": 552.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 554.0: subject is outside the camera view.",
+          "frame": 554.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 557.0: subject is outside the camera view.",
+          "frame": 557.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 560.0: subject is outside the camera view.",
+          "frame": 560.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 563.0: subject is outside the camera view.",
+          "frame": 563.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 565.0: subject is outside the camera view.",
+          "frame": 565.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 568.0: subject is outside the camera view.",
+          "frame": 568.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 571.0: subject is outside the camera view.",
+          "frame": 571.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 574.0: subject is outside the camera view.",
+          "frame": 574.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 576.0: subject is outside the camera view.",
+          "frame": 576.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 579.0: subject is outside the camera view.",
+          "frame": 579.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 581.0: subject is outside the camera view.",
+          "frame": 581.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 584.0: subject is outside the camera view.",
+          "frame": 584.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 586.0: subject is outside the camera view.",
+          "frame": 586.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 589.0: subject is outside the camera view.",
+          "frame": 589.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 591.0: subject is outside the camera view.",
+          "frame": 591.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 593.0: subject is outside the camera view.",
+          "frame": 593.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 596.0: subject is outside the camera view.",
+          "frame": 596.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 598.0: subject is outside the camera view.",
+          "frame": 598.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 600.0: subject is outside the camera view.",
+          "frame": 600.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 603.0: subject is outside the camera view.",
+          "frame": 603.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 606.0: subject is outside the camera view.",
+          "frame": 606.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 608.0: subject is outside the camera view.",
+          "frame": 608.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 610.0: subject is outside the camera view.",
+          "frame": 610.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 612.0: subject is outside the camera view.",
+          "frame": 612.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 614.0: subject is outside the camera view.",
+          "frame": 614.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 617.0: subject is outside the camera view.",
+          "frame": 617.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 619.0: subject is outside the camera view.",
+          "frame": 619.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 621.0: subject is outside the camera view.",
+          "frame": 621.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 623.0: subject is outside the camera view.",
+          "frame": 623.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 625.0: subject is outside the camera view.",
+          "frame": 625.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 627.0: subject is outside the camera view.",
+          "frame": 627.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 629.0: subject is outside the camera view.",
+          "frame": 629.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 631.0: subject is outside the camera view.",
+          "frame": 631.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 633.0: subject is outside the camera view.",
+          "frame": 633.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 635.0: subject is outside the camera view.",
+          "frame": 635.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 637.0: subject is outside the camera view.",
+          "frame": 637.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 639.0: subject is outside the camera view.",
+          "frame": 639.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 641.0: subject is outside the camera view.",
+          "frame": 641.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 643.0: subject is outside the camera view.",
+          "frame": 643.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 645.0: subject is outside the camera view.",
+          "frame": 645.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 647.0: subject is outside the camera view.",
+          "frame": 647.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 649.0: subject is outside the camera view.",
+          "frame": 649.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 651.0: subject is outside the camera view.",
+          "frame": 651.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 653.0: subject is outside the camera view.",
+          "frame": 653.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 655.0: subject is outside the camera view.",
+          "frame": 655.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 657.0: subject is outside the camera view.",
+          "frame": 657.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 659.0: subject is outside the camera view.",
+          "frame": 659.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 661.0: subject is outside the camera view.",
+          "frame": 661.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 664.0: subject is outside the camera view.",
+          "frame": 664.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 666.0: subject is outside the camera view.",
+          "frame": 666.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 668.0: subject is outside the camera view.",
+          "frame": 668.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 671.0: subject is outside the camera view.",
+          "frame": 671.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 673.0: subject is outside the camera view.",
+          "frame": 673.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 675.0: subject is outside the camera view.",
+          "frame": 675.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 678.0: subject is outside the camera view.",
+          "frame": 678.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 680.0: subject is outside the camera view.",
+          "frame": 680.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 682.0: subject is outside the camera view.",
+          "frame": 682.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 684.0: subject is outside the camera view.",
+          "frame": 684.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 686.0: subject is outside the camera view.",
+          "frame": 686.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 688.0: subject is outside the camera view.",
+          "frame": 688.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 690.0: subject is outside the camera view.",
+          "frame": 690.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 693.0: subject is outside the camera view.",
+          "frame": 693.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 695.0: subject is outside the camera view.",
+          "frame": 695.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 697.0: subject is outside the camera view.",
+          "frame": 697.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 699.0: subject is outside the camera view.",
+          "frame": 699.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 701.0: subject is outside the camera view.",
+          "frame": 701.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 703.0: subject is outside the camera view.",
+          "frame": 703.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 705.0: subject is outside the camera view.",
+          "frame": 705.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 707.0: subject is outside the camera view.",
+          "frame": 707.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 709.0: subject is outside the camera view.",
+          "frame": 709.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 711.0: subject is outside the camera view.",
+          "frame": 711.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 713.0: subject is outside the camera view.",
+          "frame": 713.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 715.0: subject is outside the camera view.",
+          "frame": 715.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 717.0: subject is outside the camera view.",
+          "frame": 717.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 719.0: subject is outside the camera view.",
+          "frame": 719.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 721.0: subject is outside the camera view.",
+          "frame": 721.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 723.0: subject is outside the camera view.",
+          "frame": 723.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 725.0: subject is outside the camera view.",
+          "frame": 725.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 727.0: subject is outside the camera view.",
+          "frame": 727.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 729.0: subject is outside the camera view.",
+          "frame": 729.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 731.0: subject is outside the camera view.",
+          "frame": 731.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 733.0: subject is outside the camera view.",
+          "frame": 733.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 735.0: subject is outside the camera view.",
+          "frame": 735.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 737.0: subject is outside the camera view.",
+          "frame": 737.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 739.0: subject is outside the camera view.",
+          "frame": 739.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 741.0: subject is outside the camera view.",
+          "frame": 741.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 743.0: subject is outside the camera view.",
+          "frame": 743.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 746.0: subject is outside the camera view.",
+          "frame": 746.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 748.0: subject is outside the camera view.",
+          "frame": 748.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 751.0: subject is outside the camera view.",
+          "frame": 751.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 754.0: subject is outside the camera view.",
+          "frame": 754.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 756.0: subject is outside the camera view.",
+          "frame": 756.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 759.0: subject is outside the camera view.",
+          "frame": 759.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 761.0: subject is outside the camera view.",
+          "frame": 761.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 764.0: subject is outside the camera view.",
+          "frame": 764.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 766.0: subject is outside the camera view.",
+          "frame": 766.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 769.0: subject is outside the camera view.",
+          "frame": 769.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 771.0: subject is outside the camera view.",
+          "frame": 771.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 773.0: subject is outside the camera view.",
+          "frame": 773.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 776.0: subject is outside the camera view.",
+          "frame": 776.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 778.0: subject is outside the camera view.",
+          "frame": 778.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 781.0: subject is outside the camera view.",
+          "frame": 781.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 783.0: subject is outside the camera view.",
+          "frame": 783.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 786.0: subject is outside the camera view.",
+          "frame": 786.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 788.0: subject is outside the camera view.",
+          "frame": 788.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 790.0: subject is outside the camera view.",
+          "frame": 790.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 792.0: subject is outside the camera view.",
+          "frame": 792.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 794.0: subject is outside the camera view.",
+          "frame": 794.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 796.0: subject is outside the camera view.",
+          "frame": 796.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 798.0: subject is outside the camera view.",
+          "frame": 798.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 800.0: subject is outside the camera view.",
+          "frame": 800.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 803.0: subject is outside the camera view.",
+          "frame": 803.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 805.0: subject is outside the camera view.",
+          "frame": 805.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 807.0: subject is outside the camera view.",
+          "frame": 807.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 809.0: subject is outside the camera view.",
+          "frame": 809.0
+        },
+        {
+          "code": "subject_out_of_view",
+          "message": "Frame 811.0: subject is outside the camera view.",
+          "frame": 811.0
+        },
+        {
+          "code": "missing_phase",
+          "message": "No captured samples for required phase idle.",
+          "phase": "idle"
+        },
+        {
+          "code": "missing_phase",
+          "message": "No captured samples for required phase conversation.",
+          "phase": "conversation"
+        },
+        {
+          "code": "missing_phase",
+          "message": "No captured samples for required phase flee.",
+          "phase": "flee"
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase death_and_settle skipped simulation frames between captures.",
+          "phase": "death_and_settle",
+          "frames": [
+            861.0,
+            865.0
+          ],
+          "observed_gap_frames": 4.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase death_and_settle skipped simulation frames between captures.",
+          "phase": "death_and_settle",
+          "frames": [
+            928.0,
+            932.0
+          ],
+          "observed_gap_frames": 4.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase death_and_settle skipped simulation frames between captures.",
+          "phase": "death_and_settle",
+          "frames": [
+            938.0,
+            942.0
+          ],
+          "observed_gap_frames": 4.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase death_and_settle skipped simulation frames between captures.",
+          "phase": "death_and_settle",
+          "frames": [
+            942.0,
+            946.0
+          ],
+          "observed_gap_frames": 4.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase death_and_settle skipped simulation frames between captures.",
+          "phase": "death_and_settle",
+          "frames": [
+            946.0,
+            950.0
+          ],
+          "observed_gap_frames": 4.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase death_and_settle skipped simulation frames between captures.",
+          "phase": "death_and_settle",
+          "frames": [
+            950.0,
+            954.0
+          ],
+          "observed_gap_frames": 4.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase death_and_settle skipped simulation frames between captures.",
+          "phase": "death_and_settle",
+          "frames": [
+            954.0,
+            958.0
+          ],
+          "observed_gap_frames": 4.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase death_and_settle skipped simulation frames between captures.",
+          "phase": "death_and_settle",
+          "frames": [
+            958.0,
+            962.0
+          ],
+          "observed_gap_frames": 4.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase death_and_settle skipped simulation frames between captures.",
+          "phase": "death_and_settle",
+          "frames": [
+            962.0,
+            966.0
+          ],
+          "observed_gap_frames": 4.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase death_and_settle skipped simulation frames between captures.",
+          "phase": "death_and_settle",
+          "frames": [
+            972.0,
+            976.0
+          ],
+          "observed_gap_frames": 4.0,
+          "requested_interval_frames": 2.0
+        }
+      ],
+      "runtime_failures": [],
+      "review": {
+        "schema_version": 1,
+        "status": "unreviewed",
+        "reviewer": null,
+        "reviewed_at_utc": null,
+        "evidence_sha256": "7e2fcb353c7bafc4818c1702a2fa924d35edb24522e93f321ac464cdc4602d66",
+        "views_reviewed": [],
+        "phases_reviewed": [],
+        "issues": [],
+        "evidence": [],
+        "conclusion": null
+      }
+    },
+    {
+      "run": "animation-polish-civilian-02",
+      "artifact_path": "/home/picasso/MosaicDev/animation-runs/animation-polish-civilian-02",
+      "run_id": "20261119T222338-1bcc25eb",
+      "source_snapshot_sha256": "a1c4934b67f161fe741f1904d759c624424c764885c5363fadf4b29cc557bab9",
+      "scenario_sha256": "b8af6faf6b30b6c04a4851b91a720a18ec0e0deaf53b1e9952c6424f5eaf38e6",
+      "engine_sha256": "1332c641e9c4d393393c41453878d5cebef089e9cc26a813dd4ff481dd79502e",
+      "seed": 1337,
+      "view": "threequarter",
+      "capture_status": "captured",
+      "capture_error": null,
+      "evidence_status": "capture_incomplete",
+      "captured_samples": 311,
+      "capture_problems": [
+        {
+          "code": "missing_phase_end",
+          "message": "Phase idle is missing its final capture window.",
+          "phase": "idle",
+          "frames": [
+            169.0,
+            182.0
+          ]
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase idle skipped simulation frames between captures.",
+          "phase": "idle",
+          "frames": [
+            123.0,
+            130.0
+          ],
+          "observed_gap_frames": 7.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase idle skipped simulation frames between captures.",
+          "phase": "idle",
+          "frames": [
+            130.0,
+            139.0
+          ],
+          "observed_gap_frames": 9.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase idle skipped simulation frames between captures.",
+          "phase": "idle",
+          "frames": [
+            139.0,
+            154.0
+          ],
+          "observed_gap_frames": 15.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase idle skipped simulation frames between captures.",
+          "phase": "idle",
+          "frames": [
+            154.0,
+            169.0
+          ],
+          "observed_gap_frames": 15.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase conversation skipped simulation frames between captures.",
+          "phase": "conversation",
+          "frames": [
+            184.0,
+            195.0
+          ],
+          "observed_gap_frames": 11.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase conversation skipped simulation frames between captures.",
+          "phase": "conversation",
+          "frames": [
+            195.0,
+            202.0
+          ],
+          "observed_gap_frames": 7.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase conversation skipped simulation frames between captures.",
+          "phase": "conversation",
+          "frames": [
+            202.0,
+            213.0
+          ],
+          "observed_gap_frames": 11.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase conversation skipped simulation frames between captures.",
+          "phase": "conversation",
+          "frames": [
+            213.0,
+            222.0
+          ],
+          "observed_gap_frames": 9.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase conversation skipped simulation frames between captures.",
+          "phase": "conversation",
+          "frames": [
+            222.0,
+            227.0
+          ],
+          "observed_gap_frames": 5.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase conversation skipped simulation frames between captures.",
+          "phase": "conversation",
+          "frames": [
+            227.0,
+            232.0
+          ],
+          "observed_gap_frames": 5.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase conversation skipped simulation frames between captures.",
+          "phase": "conversation",
+          "frames": [
+            232.0,
+            237.0
+          ],
+          "observed_gap_frames": 5.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase conversation skipped simulation frames between captures.",
+          "phase": "conversation",
+          "frames": [
+            237.0,
+            245.0
+          ],
+          "observed_gap_frames": 8.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase conversation skipped simulation frames between captures.",
+          "phase": "conversation",
+          "frames": [
+            248.0,
+            253.0
+          ],
+          "observed_gap_frames": 5.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase conversation skipped simulation frames between captures.",
+          "phase": "conversation",
+          "frames": [
+            253.0,
+            257.0
+          ],
+          "observed_gap_frames": 4.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase conversation skipped simulation frames between captures.",
+          "phase": "conversation",
+          "frames": [
+            257.0,
+            261.0
+          ],
+          "observed_gap_frames": 4.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase conversation skipped simulation frames between captures.",
+          "phase": "conversation",
+          "frames": [
+            264.0,
+            268.0
+          ],
+          "observed_gap_frames": 4.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase conversation skipped simulation frames between captures.",
+          "phase": "conversation",
+          "frames": [
+            268.0,
+            272.0
+          ],
+          "observed_gap_frames": 4.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase conversation skipped simulation frames between captures.",
+          "phase": "conversation",
+          "frames": [
+            272.0,
+            276.0
+          ],
+          "observed_gap_frames": 4.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase conversation skipped simulation frames between captures.",
+          "phase": "conversation",
+          "frames": [
+            334.0,
+            338.0
+          ],
+          "observed_gap_frames": 4.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase conversation skipped simulation frames between captures.",
+          "phase": "conversation",
+          "frames": [
+            341.0,
+            345.0
+          ],
+          "observed_gap_frames": 4.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase conversation skipped simulation frames between captures.",
+          "phase": "conversation",
+          "frames": [
+            375.0,
+            380.0
+          ],
+          "observed_gap_frames": 5.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase conversation skipped simulation frames between captures.",
+          "phase": "conversation",
+          "frames": [
+            419.0,
+            423.0
+          ],
+          "observed_gap_frames": 4.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase conversation skipped simulation frames between captures.",
+          "phase": "conversation",
+          "frames": [
+            449.0,
+            453.0
+          ],
+          "observed_gap_frames": 4.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase conversation skipped simulation frames between captures.",
+          "phase": "conversation",
+          "frames": [
+            545.0,
+            549.0
+          ],
+          "observed_gap_frames": 4.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase conversation skipped simulation frames between captures.",
+          "phase": "conversation",
+          "frames": [
+            645.0,
+            649.0
+          ],
+          "observed_gap_frames": 4.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase conversation skipped simulation frames between captures.",
+          "phase": "conversation",
+          "frames": [
+            649.0,
+            653.0
+          ],
+          "observed_gap_frames": 4.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase conversation skipped simulation frames between captures.",
+          "phase": "conversation",
+          "frames": [
+            656.0,
+            660.0
+          ],
+          "observed_gap_frames": 4.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase flee skipped simulation frames between captures.",
+          "phase": "flee",
+          "frames": [
+            727.0,
+            731.0
+          ],
+          "observed_gap_frames": 4.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase flee skipped simulation frames between captures.",
+          "phase": "flee",
+          "frames": [
+            731.0,
+            736.0
+          ],
+          "observed_gap_frames": 5.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase flee skipped simulation frames between captures.",
+          "phase": "flee",
+          "frames": [
+            736.0,
+            740.0
+          ],
+          "observed_gap_frames": 4.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase flee skipped simulation frames between captures.",
+          "phase": "flee",
+          "frames": [
+            740.0,
+            745.0
+          ],
+          "observed_gap_frames": 5.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase flee skipped simulation frames between captures.",
+          "phase": "flee",
+          "frames": [
+            745.0,
+            749.0
+          ],
+          "observed_gap_frames": 4.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase flee skipped simulation frames between captures.",
+          "phase": "flee",
+          "frames": [
+            749.0,
+            753.0
+          ],
+          "observed_gap_frames": 4.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase flee skipped simulation frames between captures.",
+          "phase": "flee",
+          "frames": [
+            753.0,
+            757.0
+          ],
+          "observed_gap_frames": 4.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase flee skipped simulation frames between captures.",
+          "phase": "flee",
+          "frames": [
+            760.0,
+            764.0
+          ],
+          "observed_gap_frames": 4.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase flee skipped simulation frames between captures.",
+          "phase": "flee",
+          "frames": [
+            764.0,
+            768.0
+          ],
+          "observed_gap_frames": 4.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase flee skipped simulation frames between captures.",
+          "phase": "flee",
+          "frames": [
+            777.0,
+            781.0
+          ],
+          "observed_gap_frames": 4.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase death_and_settle skipped simulation frames between captures.",
+          "phase": "death_and_settle",
+          "frames": [
+            889.0,
+            893.0
+          ],
+          "observed_gap_frames": 4.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase death_and_settle skipped simulation frames between captures.",
+          "phase": "death_and_settle",
+          "frames": [
+            893.0,
+            897.0
+          ],
+          "observed_gap_frames": 4.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase death_and_settle skipped simulation frames between captures.",
+          "phase": "death_and_settle",
+          "frames": [
+            900.0,
+            904.0
+          ],
+          "observed_gap_frames": 4.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase death_and_settle skipped simulation frames between captures.",
+          "phase": "death_and_settle",
+          "frames": [
+            913.0,
+            917.0
+          ],
+          "observed_gap_frames": 4.0,
+          "requested_interval_frames": 2.0
+        }
+      ],
+      "runtime_failures": [],
+      "review": {
+        "schema_version": 1,
+        "status": "changes_required",
+        "reviewer": "Codex rendered-image inspection",
+        "reviewed_at_utc": "2026-11-19T22:54:43.348599+00:00",
+        "evidence_sha256": "a3b91d9655373f306f51dd97b321e2d461a8ae8ea421c2513f0e012965518409",
+        "views_reviewed": [
+          "threequarter"
+        ],
+        "phases_reviewed": [
+          "conversation"
+        ],
+        "issues": [
+          {
+            "severity": "high",
+            "phase": "conversation",
+            "frames": [
+              345
+            ],
+            "images": [
+              "engine-data/animlab/captures/frame_000000345.png",
+              "analysis/contact_02.jpg"
+            ],
+            "observed": "The civilian faces away from the conversation partner through much of the sampled conversation. Facing progresses too slowly.",
+            "expected": "Face the partner within the entry blend and retain coherent gestures.",
+            "confidence": "high"
+          }
+        ],
+        "evidence": [
+          "engine-data/animlab/captures/frame_000000345.png",
+          "analysis/contact_02.jpg"
+        ],
+        "conclusion": "Changes required. This capture is not visual approval; capture gaps also prevent full motion-continuity assessment."
+      }
+    },
+    {
+      "run": "animation-polish-civilian-03",
+      "artifact_path": "/home/picasso/MosaicDev/animation-runs/animation-polish-civilian-03",
+      "run_id": "20261119T224353-925731d8",
+      "source_snapshot_sha256": "5da6fb0e0bd5381ac911f7559602ea0de99333d2eda4d40fe585effffcd1cad9",
+      "scenario_sha256": "d052de90d4239ec577c52a366cb8a9a0d1ebe188f3e488de579090246c1c40b4",
+      "engine_sha256": "1332c641e9c4d393393c41453878d5cebef089e9cc26a813dd4ff481dd79502e",
+      "seed": 2026,
+      "view": "front",
+      "capture_status": "captured",
+      "capture_error": null,
+      "evidence_status": "capture_incomplete",
+      "captured_samples": 411,
+      "capture_problems": [
+        {
+          "code": "capture_gap",
+          "message": "Phase idle skipped simulation frames between captures.",
+          "phase": "idle",
+          "frames": [
+            124.0,
+            128.0
+          ],
+          "observed_gap_frames": 4.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase conversation skipped simulation frames between captures.",
+          "phase": "conversation",
+          "frames": [
+            228.0,
+            232.0
+          ],
+          "observed_gap_frames": 4.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase conversation skipped simulation frames between captures.",
+          "phase": "conversation",
+          "frames": [
+            492.0,
+            496.0
+          ],
+          "observed_gap_frames": 4.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase conversation skipped simulation frames between captures.",
+          "phase": "conversation",
+          "frames": [
+            598.0,
+            602.0
+          ],
+          "observed_gap_frames": 4.0,
+          "requested_interval_frames": 2.0
+        }
+      ],
+      "runtime_failures": [],
+      "review": {
+        "schema_version": 1,
+        "status": "changes_required",
+        "reviewer": "Codex rendered-image inspection",
+        "reviewed_at_utc": "2026-11-19T23:07:13.946229+00:00",
+        "evidence_sha256": "f1afd390e38899c91e5e696761e0d4930cf59b04f2c83fa25fa6f1d2182f1026",
+        "views_reviewed": [
+          "front"
+        ],
+        "phases_reviewed": [
+          "conversation",
+          "death_and_settle"
+        ],
+        "issues": [
+          {
+            "severity": "high",
+            "phase": "death_and_settle",
+            "frames": [
+              877,
+              908
+            ],
+            "images": [
+              "engine-data/animlab/captures/frame_000000877.png",
+              "analysis/contact_04.jpg"
+            ],
+            "observed": "The hand reaches the pavement while the torso and legs remain suspended through the resting portion.",
+            "expected": "The torso settles with limb contact adapting to the supporting surface.",
+            "confidence": "high"
+          }
+        ],
+        "evidence": [
+          "engine-data/animlab/captures/frame_000000257.png",
+          "analysis/contact_04.jpg"
+        ],
+        "conclusion": "Conversation facing improved in this view. Death is rejected for torso suspension. Capture gaps still prevent continuous-motion approval."
+      }
+    },
+    {
+      "run": "animation-polish-civilian-05",
+      "artifact_path": "/home/picasso/MosaicDev/animation-runs/animation-polish-civilian-05",
+      "run_id": "20261119T230713-93f6694b",
+      "source_snapshot_sha256": "cb828b91108550a60b670b5ba83ca4cd98ffa4dfc36149f93239ab7b2da76ee5",
+      "scenario_sha256": "d052de90d4239ec577c52a366cb8a9a0d1ebe188f3e488de579090246c1c40b4",
+      "engine_sha256": "1332c641e9c4d393393c41453878d5cebef089e9cc26a813dd4ff481dd79502e",
+      "seed": 2026,
+      "view": "front",
+      "capture_status": "captured",
+      "capture_error": null,
+      "evidence_status": "needs_visual_review",
+      "captured_samples": 435,
+      "capture_problems": [],
+      "runtime_failures": [],
+      "review": {
+        "schema_version": 1,
+        "status": "changes_required",
+        "reviewer": "Codex rendered-image inspection",
+        "reviewed_at_utc": "2026-11-19T23:24:19.273499+00:00",
+        "evidence_sha256": "2a85340ac0ef0509695b8093fa8e430589d6e3b1f89ace5c7aa7640026922adc",
+        "views_reviewed": [
+          "front"
+        ],
+        "phases_reviewed": [
+          "idle",
+          "conversation",
+          "flee",
+          "death_and_settle"
+        ],
+        "issues": [
+          {
+            "severity": "high",
+            "phase": "conversation",
+            "frames": [
+              294,
+              296,
+              312,
+              600
+            ],
+            "images": [
+              "analysis/contact_02.jpg",
+              "engine-data/animlab/captures/frame_000000296.png"
+            ],
+            "observed": "Speaker turns correctly until the cardinal endpoint, then reverses away from the partner. Synced direction flips from positive X to negative X at frame 296.",
+            "expected": "Remain facing the conversation partner after the entry blend.",
+            "confidence": "high"
+          },
+          {
+            "severity": "medium",
+            "phase": "death_and_settle",
+            "frames": [
+              860,
+              884,
+              892
+            ],
+            "images": [
+              "analysis/contact_04.jpg",
+              "engine-data/animlab/captures/frame_000000884.png"
+            ],
+            "observed": "Body settles substantially lower than the previous capture, but legs remain raised and the torso/support gap needs a closer geometry check.",
+            "expected": "Convincing torso/limb support with relaxed final contact.",
+            "confidence": "medium"
+          }
+        ],
+        "evidence": [
+          "analysis/contact_01.jpg",
+          "analysis/contact_02.jpg",
+          "analysis/contact_03.jpg",
+          "analysis/contact_04.jpg"
+        ],
+        "conclusion": "First complete gap-free capture: recording mode is usable. Not visual approval. Cardinal endpoint reversal needs the numerical fix; death contact needs further inspection."
+      }
+    },
+    {
+      "run": "animation-polish-civilian-06",
+      "artifact_path": "/home/picasso/MosaicDev/animation-runs/animation-polish-civilian-06",
+      "run_id": "20261119T232357-40ed9ba3",
+      "source_snapshot_sha256": "8ed45efb039e47337e0757b4baf36987bfc88e5fc3c396c2ea0135940a3e994a",
+      "scenario_sha256": "4f83e0368648af51897e39027a0129ed21cc1a93c2e30c2d2459aad2c35d6ff6",
+      "engine_sha256": "1332c641e9c4d393393c41453878d5cebef089e9cc26a813dd4ff481dd79502e",
+      "seed": 2026,
+      "view": "front",
+      "capture_status": "captured",
+      "capture_error": null,
+      "evidence_status": "needs_visual_review",
+      "captured_samples": 435,
+      "capture_problems": [],
+      "runtime_failures": [],
+      "review": {
+        "schema_version": 1,
+        "status": "changes_required",
+        "reviewer": "Codex rendered-image inspection",
+        "reviewed_at_utc": "2026-11-19T23:42:24.424805+00:00",
+        "evidence_sha256": "7c97422e87b274d033f40381bb29273026c57969023afa988b7b7bcfdd8e6bfa",
+        "views_reviewed": [
+          "front"
+        ],
+        "phases_reviewed": [
+          "idle",
+          "conversation",
+          "flee",
+          "death_and_settle"
+        ],
+        "issues": [
+          {
+            "severity": "medium",
+            "phase": "death_and_settle",
+            "frames": [
+              871,
+              891
+            ],
+            "observed": "Torso now reaches ground, but bent lower legs remain raised. Native rounded-support telemetry at frame 891: torso clearance 0.26, feet 5.85 and 3.67.",
+            "expected": "Distal limbs relax onto a credible resting support.",
+            "confidence": "high"
+          },
+          {
+            "severity": "medium",
+            "phase": "idle",
+            "frames": [
+              111,
+              169
+            ],
+            "observed": "Both subjects retain broad arms-out bind-like posture in this entry interval.",
+            "expected": "Natural resting posture after entry.",
+            "confidence": "high"
+          },
+          {
+            "severity": "medium",
+            "phase": "flee",
+            "frames": [
+              705,
+              799
+            ],
+            "observed": "Flee is a slow walk with continuously raised arms.",
+            "expected": "Convincing panic movement and transitions, with existing variants retained.",
+            "confidence": "high"
+          }
+        ],
+        "evidence": [
+          "analysis/contact_01.jpg",
+          "analysis/contact_02.jpg",
+          "analysis/contact_03.jpg",
+          "analysis/contact_04.jpg",
+          "engine-data/animlab/captures/frame_000000451.png",
+          "engine-data/animlab/captures/frame_000000891.png"
+        ],
+        "conclusion": "Gap-free capture, 435 images and no reported runtime failures. Cardinal partner-facing defect is corrected throughout the conversation. Death support improved but final limb relaxation and survival/idle coverage remain unapproved."
+      }
+    },
+    {
+      "run": "animation-polish-civilian-07",
+      "artifact_path": "/home/picasso/MosaicDev/animation-runs/animation-polish-civilian-07",
+      "run_id": "20261119T235116-35b2a80d",
+      "source_snapshot_sha256": "4a89675313b86b37c23d58d208913b6083224a7bdc241a76d718d878b8637a7b",
+      "scenario_sha256": "4f83e0368648af51897e39027a0129ed21cc1a93c2e30c2d2459aad2c35d6ff6",
+      "engine_sha256": "1332c641e9c4d393393c41453878d5cebef089e9cc26a813dd4ff481dd79502e",
+      "seed": 2026,
+      "view": "front",
+      "capture_status": "captured",
+      "capture_error": null,
+      "evidence_status": "needs_visual_review",
+      "captured_samples": 435,
+      "capture_problems": [],
+      "runtime_failures": [],
+      "review": {
+        "schema_version": 1,
+        "status": "changes_required",
+        "reviewer": "Codex rendered-image inspection",
+        "reviewed_at_utc": "2026-11-20T00:02:49.853089+00:00",
+        "evidence_sha256": "ba53c8baaca53f70fa8248a3c8312a485a03f091d0f1ab1fee603d78ba89a3ac",
+        "views_reviewed": [
+          "front"
+        ],
+        "phases_reviewed": [
+          "idle",
+          "conversation",
+          "flee",
+          "death_and_settle"
+        ],
+        "issues": [
+          {
+            "severity": "medium",
+            "phase": "idle",
+            "frames": [
+              113,
+              171
+            ],
+            "images": [
+              "analysis/contact_01.jpg"
+            ],
+            "observed": "Broad bind-like arms-out entry posture persists.",
+            "expected": "Natural resting pose after initial entry.",
+            "confidence": "high"
+          },
+          {
+            "severity": "medium",
+            "phase": "flee",
+            "frames": [
+              707,
+              801
+            ],
+            "images": [
+              "analysis/contact_03.jpg"
+            ],
+            "observed": "Ordinary fleeing remains a slow walk with arms overhead.",
+            "expected": "Convincing panic locomotion and transitions while retaining existing variants.",
+            "confidence": "high"
+          }
+        ],
+        "evidence": [
+          "analysis/contact_01.jpg",
+          "analysis/contact_02.jpg",
+          "analysis/contact_03.jpg",
+          "analysis/contact_04.jpg",
+          "engine-data/animlab/captures/frame_000000803.png",
+          "engine-data/animlab/captures/frame_000000889.png"
+        ],
+        "conclusion": "435 gap-free images, no reported runtime failures. Partner facing remains stable. Death entry inherits the visible walk pose instead of snapping into a raised leg; final distal support improves substantially (native rounded foot clearances -0.04 and 0.58 at frame 889, torso 1.05). Body settles into a readable grounded pose and hands over to the corpse. This confirms those fixes for this model/seed/view, not universal visual approval. Idle/fleeing and wider coverage remain open."
+      }
+    },
+    {
+      "run": "animation-polish-melee-01",
+      "artifact_path": "/home/picasso/MosaicDev/animation-runs/animation-polish-melee-01",
+      "run_id": "20261119T222146-74528417",
+      "source_snapshot_sha256": "22d62ffd819dd5ec546726b4c54ad1876a8fdb121c563d8596f680678d075a0b",
+      "scenario_sha256": "5fa25aa1ca348faaf33a7e6b9d3429a3b052ea6b48016bb37c64c0eb594d6bbf",
+      "engine_sha256": "1332c641e9c4d393393c41453878d5cebef089e9cc26a813dd4ff481dd79502e",
+      "seed": 1337,
+      "view": "front",
+      "capture_status": "capture_failed",
+      "capture_error": "The runtime did not report an explicit complete status; inspect completion and events",
+      "evidence_status": "failed",
+      "captured_samples": 204,
+      "capture_problems": [
+        {
+          "code": "capture_gap",
+          "message": "Phase entry skipped simulation frames between captures.",
+          "phase": "entry",
+          "frames": [
+            122.0,
+            127.0
+          ],
+          "observed_gap_frames": 5.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase entry skipped simulation frames between captures.",
+          "phase": "entry",
+          "frames": [
+            127.0,
+            137.0
+          ],
+          "observed_gap_frames": 10.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase entry skipped simulation frames between captures.",
+          "phase": "entry",
+          "frames": [
+            137.0,
+            151.0
+          ],
+          "observed_gap_frames": 14.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase entry skipped simulation frames between captures.",
+          "phase": "entry",
+          "frames": [
+            151.0,
+            166.0
+          ],
+          "observed_gap_frames": 15.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase entry skipped simulation frames between captures.",
+          "phase": "entry",
+          "frames": [
+            166.0,
+            181.0
+          ],
+          "observed_gap_frames": 15.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "missing_phase_start",
+          "message": "Phase exchanges is missing its initial capture window.",
+          "phase": "exchanges",
+          "frames": [
+            182.0,
+            196.0
+          ]
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase exchanges skipped simulation frames between captures.",
+          "phase": "exchanges",
+          "frames": [
+            196.0,
+            211.0
+          ],
+          "observed_gap_frames": 15.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase exchanges skipped simulation frames between captures.",
+          "phase": "exchanges",
+          "frames": [
+            211.0,
+            226.0
+          ],
+          "observed_gap_frames": 15.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase exchanges skipped simulation frames between captures.",
+          "phase": "exchanges",
+          "frames": [
+            226.0,
+            234.0
+          ],
+          "observed_gap_frames": 8.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase exchanges skipped simulation frames between captures.",
+          "phase": "exchanges",
+          "frames": [
+            234.0,
+            243.0
+          ],
+          "observed_gap_frames": 9.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase exchanges skipped simulation frames between captures.",
+          "phase": "exchanges",
+          "frames": [
+            243.0,
+            248.0
+          ],
+          "observed_gap_frames": 5.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase exchanges skipped simulation frames between captures.",
+          "phase": "exchanges",
+          "frames": [
+            248.0,
+            252.0
+          ],
+          "observed_gap_frames": 4.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase exchanges skipped simulation frames between captures.",
+          "phase": "exchanges",
+          "frames": [
+            252.0,
+            258.0
+          ],
+          "observed_gap_frames": 6.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase exchanges skipped simulation frames between captures.",
+          "phase": "exchanges",
+          "frames": [
+            258.0,
+            263.0
+          ],
+          "observed_gap_frames": 5.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase exchanges skipped simulation frames between captures.",
+          "phase": "exchanges",
+          "frames": [
+            263.0,
+            268.0
+          ],
+          "observed_gap_frames": 5.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase exchanges skipped simulation frames between captures.",
+          "phase": "exchanges",
+          "frames": [
+            268.0,
+            276.0
+          ],
+          "observed_gap_frames": 8.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase exchanges skipped simulation frames between captures.",
+          "phase": "exchanges",
+          "frames": [
+            276.0,
+            281.0
+          ],
+          "observed_gap_frames": 5.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase exchanges skipped simulation frames between captures.",
+          "phase": "exchanges",
+          "frames": [
+            281.0,
+            286.0
+          ],
+          "observed_gap_frames": 5.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase exchanges skipped simulation frames between captures.",
+          "phase": "exchanges",
+          "frames": [
+            286.0,
+            292.0
+          ],
+          "observed_gap_frames": 6.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase exchanges skipped simulation frames between captures.",
+          "phase": "exchanges",
+          "frames": [
+            292.0,
+            297.0
+          ],
+          "observed_gap_frames": 5.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase exchanges skipped simulation frames between captures.",
+          "phase": "exchanges",
+          "frames": [
+            297.0,
+            303.0
+          ],
+          "observed_gap_frames": 6.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase exchanges skipped simulation frames between captures.",
+          "phase": "exchanges",
+          "frames": [
+            303.0,
+            308.0
+          ],
+          "observed_gap_frames": 5.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase exchanges skipped simulation frames between captures.",
+          "phase": "exchanges",
+          "frames": [
+            308.0,
+            312.0
+          ],
+          "observed_gap_frames": 4.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase exchanges skipped simulation frames between captures.",
+          "phase": "exchanges",
+          "frames": [
+            312.0,
+            317.0
+          ],
+          "observed_gap_frames": 5.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase exchanges skipped simulation frames between captures.",
+          "phase": "exchanges",
+          "frames": [
+            317.0,
+            321.0
+          ],
+          "observed_gap_frames": 4.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase exchanges skipped simulation frames between captures.",
+          "phase": "exchanges",
+          "frames": [
+            321.0,
+            325.0
+          ],
+          "observed_gap_frames": 4.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase exchanges skipped simulation frames between captures.",
+          "phase": "exchanges",
+          "frames": [
+            325.0,
+            329.0
+          ],
+          "observed_gap_frames": 4.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase exchanges skipped simulation frames between captures.",
+          "phase": "exchanges",
+          "frames": [
+            329.0,
+            334.0
+          ],
+          "observed_gap_frames": 5.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase exchanges skipped simulation frames between captures.",
+          "phase": "exchanges",
+          "frames": [
+            359.0,
+            363.0
+          ],
+          "observed_gap_frames": 4.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase exchanges skipped simulation frames between captures.",
+          "phase": "exchanges",
+          "frames": [
+            419.0,
+            424.0
+          ],
+          "observed_gap_frames": 5.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase exchanges skipped simulation frames between captures.",
+          "phase": "exchanges",
+          "frames": [
+            509.0,
+            513.0
+          ],
+          "observed_gap_frames": 4.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase exchanges skipped simulation frames between captures.",
+          "phase": "exchanges",
+          "frames": [
+            519.0,
+            523.0
+          ],
+          "observed_gap_frames": 4.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase exchanges skipped simulation frames between captures.",
+          "phase": "exchanges",
+          "frames": [
+            523.0,
+            527.0
+          ],
+          "observed_gap_frames": 4.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase exchanges skipped simulation frames between captures.",
+          "phase": "exchanges",
+          "frames": [
+            530.0,
+            534.0
+          ],
+          "observed_gap_frames": 4.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase exchanges skipped simulation frames between captures.",
+          "phase": "exchanges",
+          "frames": [
+            543.0,
+            547.0
+          ],
+          "observed_gap_frames": 4.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase exchanges skipped simulation frames between captures.",
+          "phase": "exchanges",
+          "frames": [
+            625.0,
+            629.0
+          ],
+          "observed_gap_frames": 4.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase exchanges skipped simulation frames between captures.",
+          "phase": "exchanges",
+          "frames": [
+            629.0,
+            634.0
+          ],
+          "observed_gap_frames": 5.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase exchanges skipped simulation frames between captures.",
+          "phase": "exchanges",
+          "frames": [
+            637.0,
+            641.0
+          ],
+          "observed_gap_frames": 4.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase exchanges skipped simulation frames between captures.",
+          "phase": "exchanges",
+          "frames": [
+            644.0,
+            648.0
+          ],
+          "observed_gap_frames": 4.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase exchanges skipped simulation frames between captures.",
+          "phase": "exchanges",
+          "frames": [
+            648.0,
+            652.0
+          ],
+          "observed_gap_frames": 4.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase exchanges skipped simulation frames between captures.",
+          "phase": "exchanges",
+          "frames": [
+            734.0,
+            738.0
+          ],
+          "observed_gap_frames": 4.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase exchanges skipped simulation frames between captures.",
+          "phase": "exchanges",
+          "frames": [
+            738.0,
+            742.0
+          ],
+          "observed_gap_frames": 4.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase exchanges skipped simulation frames between captures.",
+          "phase": "exchanges",
+          "frames": [
+            745.0,
+            749.0
+          ],
+          "observed_gap_frames": 4.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase exchanges skipped simulation frames between captures.",
+          "phase": "exchanges",
+          "frames": [
+            749.0,
+            753.0
+          ],
+          "observed_gap_frames": 4.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase exchanges skipped simulation frames between captures.",
+          "phase": "exchanges",
+          "frames": [
+            753.0,
+            757.0
+          ],
+          "observed_gap_frames": 4.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase exchanges skipped simulation frames between captures.",
+          "phase": "exchanges",
+          "frames": [
+            763.0,
+            767.0
+          ],
+          "observed_gap_frames": 4.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "insufficient_phase_samples",
+          "message": "Phase death_and_release has fewer than two captured samples.",
+          "phase": "death_and_release"
+        },
+        {
+          "code": "missing_phase_end",
+          "message": "Phase death_and_release is missing its final capture window.",
+          "phase": "death_and_release",
+          "frames": [
+            783.0,
+            961.0
+          ]
+        }
+      ],
+      "runtime_failures": [
+        {
+          "code": "runner_failed",
+          "message": "The runner finished with status capture_failed."
+        },
+        {
+          "code": "run_failed",
+          "message": "The runtime marked the scenario failed.",
+          "detail": {
+            "frame": 786.0,
+            "kind": "complete",
+            "message": "unexpected subject death: arena",
+            "run_id": "20261119T222146-74528417",
+            "schema_version": 1.0,
+            "status": "failed"
+          }
+        },
+        {
+          "code": "runtime_error",
+          "message": "unexpected subject death: arena",
+          "event": {
+            "frame": 786.0,
+            "kind": "error",
+            "message": "unexpected subject death: arena",
+            "phase": "death_and_release",
+            "phase_index": 3.0,
+            "run_id": "20261119T222146-74528417"
+          }
+        },
+        {
+          "code": "runtime_error",
+          "message": "unexpected subject death: arena",
+          "event": {
+            "frame": 786.0,
+            "kind": "error",
+            "message": "unexpected subject death: arena",
+            "run_id": "20261119T222146-74528417"
+          }
+        }
+      ],
+      "review": {
+        "schema_version": 1,
+        "status": "unreviewed",
+        "reviewer": null,
+        "reviewed_at_utc": null,
+        "evidence_sha256": "e66617531d7819cfd8dbabaf920aa35398feb1238c1f0f3bf7c3869bc4fcf737",
+        "views_reviewed": [],
+        "phases_reviewed": [],
+        "issues": [],
+        "evidence": [],
+        "conclusion": null
+      }
+    },
+    {
+      "run": "animation-polish-melee-02",
+      "artifact_path": "/home/picasso/MosaicDev/animation-runs/animation-polish-melee-02",
+      "run_id": "20261119T223156-3f0e1054",
+      "source_snapshot_sha256": "831995ef2a18f30ce645029b19c15db05fa756b374056da7f1a791c68cac18b1",
+      "scenario_sha256": "2d466d2ed0b5d9589d57a20cb76874d86a99fe48eaa6bcfd022bae0df9e74e77",
+      "engine_sha256": "1332c641e9c4d393393c41453878d5cebef089e9cc26a813dd4ff481dd79502e",
+      "seed": 1337,
+      "view": "threequarter",
+      "capture_status": "captured",
+      "capture_error": null,
+      "evidence_status": "capture_incomplete",
+      "captured_samples": 368,
+      "capture_problems": [
+        {
+          "code": "capture_gap",
+          "message": "Phase entry skipped simulation frames between captures.",
+          "phase": "entry",
+          "frames": [
+            121.0,
+            125.0
+          ],
+          "observed_gap_frames": 4.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase entry skipped simulation frames between captures.",
+          "phase": "entry",
+          "frames": [
+            125.0,
+            129.0
+          ],
+          "observed_gap_frames": 4.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase entry skipped simulation frames between captures.",
+          "phase": "entry",
+          "frames": [
+            129.0,
+            133.0
+          ],
+          "observed_gap_frames": 4.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase entry skipped simulation frames between captures.",
+          "phase": "entry",
+          "frames": [
+            133.0,
+            137.0
+          ],
+          "observed_gap_frames": 4.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase entry skipped simulation frames between captures.",
+          "phase": "entry",
+          "frames": [
+            137.0,
+            141.0
+          ],
+          "observed_gap_frames": 4.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase entry skipped simulation frames between captures.",
+          "phase": "entry",
+          "frames": [
+            141.0,
+            145.0
+          ],
+          "observed_gap_frames": 4.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase entry skipped simulation frames between captures.",
+          "phase": "entry",
+          "frames": [
+            145.0,
+            149.0
+          ],
+          "observed_gap_frames": 4.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase entry skipped simulation frames between captures.",
+          "phase": "entry",
+          "frames": [
+            149.0,
+            153.0
+          ],
+          "observed_gap_frames": 4.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase entry skipped simulation frames between captures.",
+          "phase": "entry",
+          "frames": [
+            153.0,
+            157.0
+          ],
+          "observed_gap_frames": 4.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase entry skipped simulation frames between captures.",
+          "phase": "entry",
+          "frames": [
+            163.0,
+            167.0
+          ],
+          "observed_gap_frames": 4.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase exchanges skipped simulation frames between captures.",
+          "phase": "exchanges",
+          "frames": [
+            268.0,
+            272.0
+          ],
+          "observed_gap_frames": 4.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase exchanges skipped simulation frames between captures.",
+          "phase": "exchanges",
+          "frames": [
+            357.0,
+            361.0
+          ],
+          "observed_gap_frames": 4.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase exchanges skipped simulation frames between captures.",
+          "phase": "exchanges",
+          "frames": [
+            384.0,
+            388.0
+          ],
+          "observed_gap_frames": 4.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase exchanges skipped simulation frames between captures.",
+          "phase": "exchanges",
+          "frames": [
+            419.0,
+            423.0
+          ],
+          "observed_gap_frames": 4.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase exchanges skipped simulation frames between captures.",
+          "phase": "exchanges",
+          "frames": [
+            766.0,
+            770.0
+          ],
+          "observed_gap_frames": 4.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase death_and_release skipped simulation frames between captures.",
+          "phase": "death_and_release",
+          "frames": [
+            907.0,
+            911.0
+          ],
+          "observed_gap_frames": 4.0,
+          "requested_interval_frames": 2.0
+        }
+      ],
+      "runtime_failures": [],
+      "review": {
+        "schema_version": 1,
+        "status": "changes_required",
+        "reviewer": "Codex rendered-image inspection",
+        "reviewed_at_utc": "2026-11-19T22:54:43.441628+00:00",
+        "evidence_sha256": "4d3c73389cd5a0d2ae8b85f7ed4f812ce01e8e2fb40c2c8dd7db6249c65b5126",
+        "views_reviewed": [
+          "threequarter"
+        ],
+        "phases_reviewed": [
+          "exchanges"
+        ],
+        "issues": [
+          {
+            "severity": "high",
+            "phase": "exchanges",
+            "frames": [
+              500
+            ],
+            "images": [
+              "engine-data/animlab/captures/frame_000000500.png"
+            ],
+            "observed": "The attached fighters roll horizontally and sink into the pavement. One body is largely occluded below the ground.",
+            "expected": "Keep both fighters upright with feet supported while turning and exchanging strikes.",
+            "confidence": "high"
+          }
+        ],
+        "evidence": [
+          "engine-data/animlab/captures/frame_000000500.png"
+        ],
+        "conclusion": "Changes required. This capture is not visual approval; capture gaps also prevent full motion-continuity assessment."
+      }
+    },
+    {
+      "run": "animation-polish-melee-03",
+      "artifact_path": "/home/picasso/MosaicDev/animation-runs/animation-polish-melee-03",
+      "run_id": "20261119T225410-793b78f8",
+      "source_snapshot_sha256": "526b8fee1cf81ab6b7fccd64aeaa57bd250c4efe7268d29550f6e0756ccdb5ea",
+      "scenario_sha256": "2d466d2ed0b5d9589d57a20cb76874d86a99fe48eaa6bcfd022bae0df9e74e77",
+      "engine_sha256": "1332c641e9c4d393393c41453878d5cebef089e9cc26a813dd4ff481dd79502e",
+      "seed": 1337,
+      "view": "threequarter",
+      "capture_status": "captured",
+      "capture_error": null,
+      "evidence_status": "capture_incomplete",
+      "captured_samples": 394,
+      "capture_problems": [
+        {
+          "code": "capture_gap",
+          "message": "Phase entry skipped simulation frames between captures.",
+          "phase": "entry",
+          "frames": [
+            118.0,
+            122.0
+          ],
+          "observed_gap_frames": 4.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase entry skipped simulation frames between captures.",
+          "phase": "entry",
+          "frames": [
+            122.0,
+            126.0
+          ],
+          "observed_gap_frames": 4.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase entry skipped simulation frames between captures.",
+          "phase": "entry",
+          "frames": [
+            126.0,
+            130.0
+          ],
+          "observed_gap_frames": 4.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase entry skipped simulation frames between captures.",
+          "phase": "entry",
+          "frames": [
+            136.0,
+            140.0
+          ],
+          "observed_gap_frames": 4.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase exchanges skipped simulation frames between captures.",
+          "phase": "exchanges",
+          "frames": [
+            329.0,
+            333.0
+          ],
+          "observed_gap_frames": 4.0,
+          "requested_interval_frames": 2.0
+        },
+        {
+          "code": "capture_gap",
+          "message": "Phase exchanges skipped simulation frames between captures.",
+          "phase": "exchanges",
+          "frames": [
+            478.0,
+            482.0
+          ],
+          "observed_gap_frames": 4.0,
+          "requested_interval_frames": 2.0
+        }
+      ],
+      "runtime_failures": [],
+      "review": {
+        "schema_version": 1,
+        "status": "changes_required",
+        "reviewer": "Codex rendered-image inspection",
+        "reviewed_at_utc": "2026-11-19T23:07:41.187981+00:00",
+        "evidence_sha256": "025f28338a2e5457ff4fbc2f5135cc0ef6b189183e58180aa3504120c04a6e19",
+        "views_reviewed": [
+          "threequarter"
+        ],
+        "phases_reviewed": [
+          "exchanges"
+        ],
+        "issues": [
+          {
+            "severity": "medium",
+            "phase": "exchanges",
+            "frames": [
+              356,
+              389,
+              552
+            ],
+            "images": [
+              "engine-data/animlab/captures/frame_000000356.png",
+              "engine-data/animlab/captures/frame_000000552.png",
+              "analysis/contact_02.jpg"
+            ],
+            "observed": "Actors remain upright and separated, but parachute visuals intrude on the fixture and footwork/guard continuity still needs tuning. Multiple capture gaps prevent judging fast contacts.",
+            "expected": "Unobstructed paired exchanges with credible support, recovery and contact timing.",
+            "confidence": "high"
+          }
+        ],
+        "evidence": [
+          "analysis/contact_02.jpg"
+        ],
+        "conclusion": "Arena orientation and separation improved. Do not approve choreography or performance from this incomplete single-view capture. Repeat after arrival effects finish and capture without missing simulation frames."
+      }
+    },
+    {
+      "run": "animation-polish-melee-asset-04",
+      "artifact_path": "/home/picasso/MosaicDev/animation-runs/animation-polish-melee-asset-04",
+      "run_id": "20261119T234728-e7ae50be",
+      "source_snapshot_sha256": "a1a1995120e221bebfc0c58b0a069ea712af3971ea80a2ca0b189d194d21ce37",
+      "scenario_sha256": "40efbcd526a352154cdc2874e8766247f07c8739ff8cec94603e1640a885762b",
+      "engine_sha256": "1332c641e9c4d393393c41453878d5cebef089e9cc26a813dd4ff481dd79502e",
+      "seed": 9173,
+      "view": "threequarter",
+      "capture_status": "captured",
+      "capture_error": null,
+      "evidence_status": "needs_visual_review",
+      "captured_samples": 420,
+      "capture_problems": [],
+      "runtime_failures": [],
+      "review": {
+        "schema_version": 1,
+        "status": "changes_required",
+        "reviewer": "Codex rendered-image inspection",
+        "reviewed_at_utc": "2026-11-19T23:58:21.430026+00:00",
+        "evidence_sha256": "4dfdc416b907c74db5012f31e63eed0dd9bb498db0afa50b188b22baea3e7361",
+        "views_reviewed": [
+          "threequarter"
+        ],
+        "phases_reviewed": [
+          "entry",
+          "exchanges",
+          "death_and_release"
+        ],
+        "issues": [
+          {
+            "severity": "high",
+            "phase": "death_and_release",
+            "frames": [
+              1220,
+              1312
+            ],
+            "images": [
+              "analysis/contact_03.jpg"
+            ],
+            "observed": "Survivor continues running in place after detachment. Native StopMoving is not guaranteed on arena exit.",
+            "expected": "Restore ordinary stationary or moving lower-body state.",
+            "confidence": "high"
+          },
+          {
+            "severity": "medium",
+            "phase": "exchanges",
+            "frames": [
+              998,
+              1220
+            ],
+            "images": [
+              "engine-data/animlab/captures/frame_000000998.png",
+              "engine-data/animlab/captures/frame_000001220.png"
+            ],
+            "observed": "A long asset cable remains visible in combat and death; original legacy fight also has a much broader running silhouette. Secondary physics were preserved.",
+            "expected": "Review accessory visibility lifecycle and legacy pose quality separately without silently altering independent physics.",
+            "confidence": "high"
+          }
+        ],
+        "evidence": [
+          "analysis/contact_01.jpg",
+          "analysis/contact_02.jpg",
+          "analysis/contact_03.jpg",
+          "engine-data/animlab/captures/frame_000000998.png",
+          "engine-data/animlab/captures/frame_000001220.png"
+        ],
+        "conclusion": "Complete gap-free capture, no reported runtime failures. Native-angle normalization improves death entry and grounded resting silhouette; body is visibly on the ground by frame 1220. Pair remains upright and separated. Survivor lower-state restoration and latest beat synchronization are required follow-ups. No movie-ready approval."
+      }
+    },
+    {
+      "run": "animation-polish-melee-propagator-01",
+      "artifact_path": "/home/picasso/MosaicDev/animation-runs/animation-polish-melee-propagator-01",
+      "run_id": "20261119T230958-78c0e0ff",
+      "source_snapshot_sha256": "6f2aed6028bb9e1895c808d55a4ea88c7e4f953c5e0a2f94c327820f9c472ec9",
+      "scenario_sha256": "fd787e08f37efdd9b152f53d0419e379919bcf86db26061c98b78ae4f77ff5b4",
+      "engine_sha256": "1332c641e9c4d393393c41453878d5cebef089e9cc26a813dd4ff481dd79502e",
+      "seed": 1337,
+      "view": "threequarter",
+      "capture_status": "captured",
+      "capture_error": null,
+      "evidence_status": "needs_visual_review",
+      "captured_samples": 420,
+      "capture_problems": [],
+      "runtime_failures": [],
+      "review": {
+        "schema_version": 1,
+        "status": "changes_required",
+        "reviewer": "Codex rendered-image inspection",
+        "reviewed_at_utc": "2026-11-19T23:30:38.009353+00:00",
+        "evidence_sha256": "0581def942d8377e5fcd87cb2eefd1b7ea688a5854e425676fd4bed69304c091",
+        "views_reviewed": [
+          "threequarter"
+        ],
+        "phases_reviewed": [
+          "exchanges",
+          "death_and_release"
+        ],
+        "issues": [
+          {
+            "severity": "high",
+            "phase": "exchanges",
+            "frames": [
+              564,
+              588,
+              698
+            ],
+            "images": [
+              "engine-data/animlab/captures/frame_000000564.png",
+              "analysis/contact_02.jpg"
+            ],
+            "observed": "Propagator retains a wide open arm silhouette instead of a protective guard or connected strike. Full running steps dominate the close-range exchanges.",
+            "expected": "Model-calibrated guard/strike directions and short controlled combat footwork.",
+            "confidence": "high"
+          },
+          {
+            "severity": "high",
+            "phase": "death_and_release",
+            "frames": [
+              1182,
+              1198
+            ],
+            "images": [
+              "analysis/contact_03.jpg"
+            ],
+            "observed": "The fallen propagator remains visibly above its ground shadow before corpse handover.",
+            "expected": "Body support and limb settling on the ground.",
+            "confidence": "high"
+          }
+        ],
+        "evidence": [
+          "analysis/contact_02.jpg",
+          "analysis/contact_03.jpg"
+        ],
+        "conclusion": "Recording completed without gaps. Longer arrival lead-in and scaled foot dust improve visibility. Choreography and death support still need changes; no visual acceptance."
+      }
+    },
+    {
+      "run": "animation-polish-melee-propagator-02",
+      "artifact_path": "/home/picasso/MosaicDev/animation-runs/animation-polish-melee-propagator-02",
+      "run_id": "20261119T232358-066f7b4c",
+      "source_snapshot_sha256": "a64d92e5b35e55385c6a4cb46ad2edd8e627e242af4700c51ad2df19ecee442c",
+      "scenario_sha256": "fd787e08f37efdd9b152f53d0419e379919bcf86db26061c98b78ae4f77ff5b4",
+      "engine_sha256": "1332c641e9c4d393393c41453878d5cebef089e9cc26a813dd4ff481dd79502e",
+      "seed": 1337,
+      "view": "threequarter",
+      "capture_status": "capture_failed",
+      "capture_error": "Runner tool session ended with SIGTERM (exit 143); engine exited without a completion marker. Partial captured frames preserved.",
+      "evidence_status": null,
+      "captured_samples": null,
+      "capture_problems": [],
+      "runtime_failures": [],
+      "review": {
+        "schema_version": 1,
+        "status": "inconclusive",
+        "reviewer": "Codex rendered-image inspection",
+        "reviewed_at_utc": "2026-11-19T23:46:34.381194+00:00",
+        "source_snapshot_sha256": "a64d92e5b35e55385c6a4cb46ad2edd8e627e242af4700c51ad2df19ecee442c",
+        "frames_reviewed": [
+          547,
+          881
+        ],
+        "evidence": [
+          "engine-data/animlab/captures/frame_000000547.png",
+          "engine-data/animlab/captures/frame_000000881.png"
+        ],
+        "conclusion": "Frame 547 has substantially improved compact guard and grounded stance. Frame 881 camera is inside a building. Execution tool interrupted the capture before native completion; partial evidence cannot validate continuity or final lifecycle."
+      }
+    },
+    {
+      "run": "animation-polish-melee-propagator-03",
+      "artifact_path": "/home/picasso/MosaicDev/animation-runs/animation-polish-melee-propagator-03",
+      "run_id": "20261119T233817-6b2aaf39",
+      "source_snapshot_sha256": "8ed45efb039e47337e0757b4baf36987bfc88e5fc3c396c2ea0135940a3e994a",
+      "scenario_sha256": "80560c751550dbdec255a9a561045d3e7e9f67e9685c7f16d4a96924a8742b2e",
+      "engine_sha256": "1332c641e9c4d393393c41453878d5cebef089e9cc26a813dd4ff481dd79502e",
+      "seed": 2026,
+      "view": "threequarter",
+      "capture_status": "captured",
+      "capture_error": null,
+      "evidence_status": "needs_visual_review",
+      "captured_samples": 420,
+      "capture_problems": [],
+      "runtime_failures": [],
+      "review": {
+        "schema_version": 1,
+        "status": "changes_required",
+        "reviewer": "Codex rendered-image inspection",
+        "reviewed_at_utc": "2026-11-19T23:49:34.177607+00:00",
+        "evidence_sha256": "7db484d2f434f82faf5c67c8784e600842cbb4182f8a796dba10fead9fd911b8",
+        "views_reviewed": [
+          "threequarter"
+        ],
+        "phases_reviewed": [
+          "entry",
+          "exchanges",
+          "death_and_release"
+        ],
+        "issues": [
+          {
+            "severity": "medium",
+            "phase": "exchanges",
+            "frames": [
+              679,
+              695,
+              1057,
+              1071
+            ],
+            "images": [
+              "inspection/jab-adjacent.png",
+              "inspection/elbow-adjacent.png"
+            ],
+            "observed": "Compact guards and leg motion are improved, but clips notice shared beat changes late; striking and defending do not have precise contact timing. Arena translations still slide planted feet.",
+            "expected": "Immediate shared-beat response, credible strike/block contact and foot support.",
+            "confidence": "high"
+          },
+          {
+            "severity": "high",
+            "phase": "death_and_release",
+            "frames": [
+              1131,
+              1147,
+              1229
+            ],
+            "images": [
+              "analysis/contact_03.jpg"
+            ],
+            "observed": "Death entry abruptly lifts a leg and resting feet remain raised. This snapshot predates native-angle normalization.",
+            "expected": "Inherited pose at impact and relaxed grounded body.",
+            "confidence": "high"
+          }
+        ],
+        "evidence": [
+          "analysis/contact_01.jpg",
+          "analysis/contact_02.jpg",
+          "analysis/contact_03.jpg",
+          "inspection/jab-adjacent.png",
+          "inspection/elbow-adjacent.png",
+          "engine-data/animlab/captures/frame_000000597.png",
+          "engine-data/animlab/captures/frame_000000659.png"
+        ],
+        "conclusion": "420 gap-free images, no runtime failures, all eight styles and both initiative roles observed. Stable stationary camera, calibrated guards and compact footwork are usable improvements; not cinematic approval. Arena destruction and survivor release occur. Follow with signed death angles and frame-level beat cancellation; validate native navigation separately."
+      }
+    },
+    {
+      "run": "animation-polish-melee-propagator-05",
+      "artifact_path": "/home/picasso/MosaicDev/animation-runs/animation-polish-melee-propagator-05",
+      "run_id": "20261119T235118-50e3fbbe",
+      "source_snapshot_sha256": "95260269d8d689f646a275bdfc54a3a2f7e04dabae74405b347f3f12c7f94afb",
+      "scenario_sha256": "80560c751550dbdec255a9a561045d3e7e9f67e9685c7f16d4a96924a8742b2e",
+      "engine_sha256": "1332c641e9c4d393393c41453878d5cebef089e9cc26a813dd4ff481dd79502e",
+      "seed": 2026,
+      "view": "threequarter",
+      "capture_status": "captured",
+      "capture_error": null,
+      "evidence_status": "needs_visual_review",
+      "captured_samples": 420,
+      "capture_problems": [],
+      "runtime_failures": [],
+      "review": {
+        "schema_version": 1,
+        "status": "changes_required",
+        "reviewer": "Codex rendered-image inspection",
+        "reviewed_at_utc": "2026-11-20T00:11:39.235258+00:00",
+        "evidence_sha256": "662b85d56d2bde1849e394829d716c13ffacc21d99a9222963959d0df876723c",
+        "views_reviewed": [
+          "threequarter"
+        ],
+        "phases_reviewed": [
+          "entry",
+          "exchanges",
+          "death_and_release"
+        ],
+        "issues": [
+          {
+            "severity": "medium",
+            "phase": "exchanges",
+            "frames": [
+              717,
+              729,
+              731,
+              739
+            ],
+            "images": [
+              "inspection/jab-adjacent.png"
+            ],
+            "observed": "Shared beat response improves, with a complete jab/recovery, but planted feet still slide with arena movement and hand contact needs precise tuning.",
+            "expected": "Planted support and credible strike/block contact.",
+            "confidence": "high"
+          },
+          {
+            "severity": "high",
+            "phase": "death_and_release",
+            "frames": [
+              1177,
+              1211
+            ],
+            "images": [
+              "engine-data/animlab/captures/frame_000001211.png"
+            ],
+            "observed": "Propagator settles into a braced pose with one arm/leg supporting the torso, rather than fully relaxing. Ground correction lacks the Y shoulder degree of freedom needed by this T-pose bind.",
+            "expected": "Relaxed grounded T-pose body chains without persistent bracing.",
+            "confidence": "high"
+          }
+        ],
+        "evidence": [
+          "analysis/contact_01.jpg",
+          "analysis/contact_02.jpg",
+          "analysis/contact_03.jpg",
+          "inspection/jab-adjacent.png",
+          "engine-data/animlab/captures/frame_000001211.png",
+          "engine-data/animlab/captures/frame_000001237.png"
+        ],
+        "conclusion": "420 gap-free images, no runtime failures. Frame-level epoch response and full legacy clip duration operate; survivor is alive, detached and STATE_STANDING on both channels at frame 1237, fixing running in place. Choreography contact and T-pose death settling still require work; no movie-ready approval."
+      }
+    },
+    {
+      "run": "animation-polish-melee-propagator-06",
+      "artifact_path": "/home/picasso/MosaicDev/animation-runs/animation-polish-melee-propagator-06",
+      "run_id": "20261120T000952-1cc092b6",
+      "source_snapshot_sha256": "368257f9044a984410d9f6a66080c96f267afdb5700bc2cf96652825aeef7a8a",
+      "scenario_sha256": "f2dba0d8d8341b3332959dc360e4aed4a85120461adb9589ff08531e32e60af0",
+      "engine_sha256": "1332c641e9c4d393393c41453878d5cebef089e9cc26a813dd4ff481dd79502e",
+      "seed": 2026,
+      "view": "threequarter",
+      "capture_status": "captured",
+      "capture_error": null,
+      "evidence_status": "needs_visual_review",
+      "captured_samples": 210,
+      "capture_problems": [],
+      "runtime_failures": [],
+      "review": {
+        "schema_version": 1,
+        "status": "changes_required",
+        "reviewer": "Codex rendered-image inspection",
+        "reviewed_at_utc": "2026-11-20T00:19:57.775328+00:00",
+        "evidence_sha256": "7b433a6e41f86e623f8e9fecedfa143cd4d4dc16db1bc5062186d357f2c4e16b",
+        "views_reviewed": [
+          "threequarter"
+        ],
+        "phases_reviewed": [
+          "entry",
+          "exchanges",
+          "death_and_release"
+        ],
+        "issues": [
+          {
+            "severity": "medium",
+            "phase": "death_and_release",
+            "frames": [
+              775,
+              791
+            ],
+            "images": [
+              "engine-data/animlab/captures/frame_000000775.png",
+              "engine-data/animlab/captures/frame_000000791.png"
+            ],
+            "observed": "Body now rests prone with hands near the ground instead of an upright arm brace. One lower leg remains visibly raised; final limb contact still needs refinement.",
+            "expected": "Credible relaxed limb support, judged across multiple views, models and hit directions.",
+            "confidence": "high"
+          },
+          {
+            "severity": "medium",
+            "phase": "exchanges",
+            "frames": [
+              547,
+              579,
+              645,
+              693
+            ],
+            "images": [
+              "analysis/contact_02.jpg"
+            ],
+            "observed": "Guard and attack silhouettes are readable, but this short stationary diagnostic does not resolve the previously recorded planted-foot sliding and strike/block contact deficiencies.",
+            "expected": "Precise strike/block contact and planted support during native arena travel.",
+            "confidence": "medium"
+          }
+        ],
+        "evidence": [
+          "analysis/contact_01.jpg",
+          "analysis/contact_02.jpg",
+          "analysis/contact_03.jpg",
+          "engine-data/animlab/captures/frame_000000775.png",
+          "engine-data/animlab/captures/frame_000000791.png"
+        ],
+        "conclusion": "210 gap-free native images with no reported runtime failures. Additional shoulder Y freedom removes the persistent upright brace in this propagator fall; frames 775 and 791 show a prone body. At frame 873 the survivor is alive, detached and STATE_STANDING on both channels. This is a focused stationary-fixture regression check, not approval of all deaths, normal-speed fights, navigation or movie-ready quality. Residual limb settling and earlier choreography contact issues remain."
+      }
+    }
+  ]
+}

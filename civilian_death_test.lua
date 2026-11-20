@@ -102,6 +102,34 @@ for seed=1,14 do
  assert(matrix(pieces.Head1)[14]>-1,'operative head remained below floor')
 end
 
+-- Validate the actual contact Jacobian against independent finite differences
+-- of the native Y-X-Z transform, including a rotated ancestor chain.
+local f=assert(io.open('scripts/lib_civilian_death.lua'));local solver=f:read('*a');f:close()
+local formula=assert(solver:match('(local axes=%b{}.-)for _,axis in ipairs'))
+angles,moves,trace,time={},{},{},1
+for p=1,#names do angles[p]={.12,-.2,.3};moves[p]={0,0,0}end
+local part=pieces.UpArm2;angles[part]={.4,-.5,.7}
+local m=matrix(part);local basis={}
+for axis=1,3 do
+ local k=(axis-1)*4+1;local n=math.sqrt(m[k]^2+m[k+1]^2+m[k+2]^2)
+ basis[axis]={m[k]/n,m[k+1]/n,m[k+2]/n}
+end
+local env=setmetatable({basis=basis,rx=.4,rz=.7},{__index=_G})
+local fn
+if setfenv then fn=setfenv(assert(loadstring(formula..'return axes')),env)
+else fn=assert(load(formula..'return axes','contact Jacobian','t',env))end
+local axes=fn();local point={2,-3,1}
+local function transformed(a,row)return a[row]*point[1]+a[4+row]*point[2]+a[8+row]*point[3]+a[12+row]end
+local dx,dz=transformed(m,1)-m[13],transformed(m,3)-m[15]
+for axis=1,3 do
+ local v=assert(axes[axis],'missing usable joint axis')
+ local predicted=v[3]*dx-v[1]*dz
+ local old=angles[part][axis];angles[part][axis]=old+1e-6
+ local actual=(transformed(matrix(part),2)-transformed(m,2))/1e-6
+ angles[part][axis]=old
+ assert(math.abs(predicted-actual)<1e-4,'contact gradient disagrees with native rotation on axis '..axis)
+end
+
 -- Both script entry points must use their real head piece and record impact
 -- direction, and bomber cook-off remains a distinct path.
 for _,path in ipairs({'scripts/civilianscript.lua','scripts/civilianagentscript.lua'}) do

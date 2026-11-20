@@ -2,6 +2,8 @@
 
 Review skeleton compatibility first, then civilian behavior, operative behavior, and close combat. Each result needs an actual rendered capture plus a separate reviewer decision. Script tests and static model checks help find defects but do not approve an animation's appearance.
 
+November 20 continuation: see [animation polish status](ANIMATION_POLISH_STATUS.md) for the committed feature branch, native capture findings and remaining acceptance work. The latest [model/clip ledger](review_inventory_polish_91e2f260/model-clip-review.csv) contains 617 pending candidates; the initial inventory below is retained as historical evidence. Current model repairs supersede the original hierarchy findings.
+
 The separate artist/model work list is [MODEL_FIX_TODO.md](MODEL_FIX_TODO.md). Use it for exact filenames and proposed rig corrections. This plan organizes the capture and review work; it does not authorize deleting content, reducing procedural variety, or treating all models as visually identical.
 
 ## Scope and current inventory
