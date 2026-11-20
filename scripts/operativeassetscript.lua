@@ -23,6 +23,10 @@ include "lib_Animation.lua"
 include "lib_mosaic.lua"
 
 local TablesOfPiecesGroups = {}
+local humanShieldAnimation
+local humanShieldActive, humanShieldDying = false, false
+local hasHumanShield, releaseHumanShield
+local SIG_HUMAN_SHIELD_AMBIENT = 131072
 
 SIG_PISTOL = 1
 SIG_GUN = 2
@@ -35,8 +39,10 @@ SIG_DELAYEDRECLOAK = 128
 SIG_STAB = 256
 SIG_ROOF_TOP = 512
 SIG_SNIPER_LASER=1024
+SIG_ANIM = 4096 -- independent of the 2048 rooftop animation channel
 local Animations = include('animation_assasin_male.lua')
 local center = piece('center');
+local hostagePoint = (Spring.GetUnitPieceMap(unitID) or {}).hostagePoint
 local Torso = piece('Torso');
 local Pistol = piece('Pistol');
 local Gun = piece('Gun');
@@ -132,7 +138,37 @@ local CLOSE_COMBAT_SIGHTED = 0.1
 
 -- The gadget owns movement and cancellation; these callbacks only own visuals.
 local rooftopMotion
+hasHumanShield = function()
+    return humanShieldActive or (GG.HumanShield and GG.HumanShield.HasShield(unitID))
+end
+releaseHumanShield = function(reason)
+    if GG.HumanShield then GG.HumanShield.Release(unitID, reason) end
+end
+
+function canUseHumanShield()
+    if humanShieldDying or boolIsBuilding or boolInClosedCombat or boolOnRoof or rooftopMotion then return false end
+    if Spring.GetUnitTransporter(unitID) then
+        return GG.HumanShield and GG.HumanShield.IsTransportAllowed
+            and GG.HumanShield.IsTransportAllowed(unitID) == true
+    end
+    return not boolFlying and not isUnitFlying(unitID)
+end
+
+humanShieldAnimation = include('lib_human_shield_carrier_animation.lua')(unitID, {
+    center = center, Torso = Torso, Head = Head,
+    UpArm1 = UpArm1, UpArm2 = UpArm2, LowArm1 = LowArm1, LowArm2 = LowArm2,
+    UpLeg1 = UpLeg1, UpLeg2 = UpLeg2, LowLeg1 = LowLeg1, LowLeg2 = LowLeg2,
+}, {
+    yawAxis = y_axis,
+    onAimChanged = function(aiming)
+        Hide(Gun)
+        Hide(SniperRifle)
+        Show(HolsteredGun)
+        if aiming then Show(Pistol) else Hide(Pistol) end
+    end,
+})
 function onRooftop()
+    releaseHumanShield()
     setViewRadius(unitID, FAR_SIGHTED)
     boolOnRoof = true
 end
@@ -173,6 +209,7 @@ local function rooftopAnimation(mode)
 end
 
 function setRooftopMotion(mode)
+    if mode then releaseHumanShield() end
     Signal(SIG_ROOFTOP_ANIMATION)
     rooftopMotion = mode
     boolOnRoof = mode ~= nil
@@ -186,6 +223,7 @@ local civilianWalkingTypeTable = getCultureUnitModelTypes(  GameConfig.game.cult
 boolInClosedCombat = false
 closeCombat= {}
 function isNowInCloseCombat( arenaID)
+    releaseHumanShield("melee")
 	boolInClosedCombat = true
     setViewRadius(unitID, CLOSE_COMBAT_SIGHTED)
 	closeCombat= { arenaID = arenaID}
@@ -255,6 +293,13 @@ function hideGun()
 end
 
  function showFireArm()
+    if hasHumanShield() then
+        Hide(Gun)
+        Hide(SniperRifle)
+        Show(HolsteredGun)
+        if humanShieldAnimation:IsAiming() then Show(Pistol) else Hide(Pistol) end
+        return
+    end
 	Hide(Gun)
 	Hide(Pistol)
     Hide(SniperRifle)
@@ -277,6 +322,13 @@ end
 
 boolOldIsMoving = nil
 function externalAimFunction(targetPosT, remainderRotationRad, boolIsMoving)
+    if hasHumanShield() then
+        local x, y, z = Spring.GetUnitPosition(unitID)
+        local dx, dz = targetPosT.x - x, targetPosT.z - z
+        local pitch = math.atan2((targetPosT.y or y) - y, math.sqrt(dx * dx + dz * dz))
+        humanShieldAnimation:Aim(remainderRotationRad, pitch)
+        return
+    end
     showFireArm()
     
     Turn(Torso, y_axis, remainderRotationRad, 55)
@@ -293,6 +345,7 @@ function externalAimFunction(targetPosT, remainderRotationRad, boolIsMoving)
 end
 
 function script.Create()
+    if hostagePoint then Hide(hostagePoint) end
     makeWeaponsTable()
     GG.OperativesDiscovered[unitID] = nil
     hideGun()
@@ -359,6 +412,7 @@ end
 
 
 function flyingPose(id)
+    releaseHumanShield()
 	Turn(center, x_axis, math.rad(45),0)
 	Turn(UpArm1, z_axis, math.rad(-40),0)
 	Turn(UpArm2, z_axis, math.rad(40),0)
@@ -379,6 +433,8 @@ function transportControl()
     waitTillComplete(unitID)
     while true do
         if isTransported(unitID) == true then
+            if not (GG.HumanShield and GG.HumanShield.IsTransportAllowed
+                and GG.HumanShield.IsTransportAllowed(unitID)) then releaseHumanShield() end
             transporterdefID = Spring.GetUnitDefID(Spring.GetUnitTransporter(unitID))
 
             if  motorBikeTypeTable[transporterdefID] then
@@ -455,9 +511,10 @@ end
 
 
 function breathing()
+    SetSignalMask(SIG_HUMAN_SHIELD_AMBIENT)
     local breathSpeed = 0.1 / 3
     while true do
-        if boolAiming == false and boolWalking == false then
+        if not hasHumanShield() and boolAiming == false and boolWalking == false then
             Turn(Head, x_axis, math.rad(-1), breathSpeed)
             WTurn(Torso, x_axis, math.rad(1), breathSpeed)
             Turn(Head, x_axis, math.rad(0), breathSpeed)
@@ -472,9 +529,9 @@ function breathing()
 
 end
 
-local boolFlying = false
 function script.Falling()
     boolFlying = Spring.GetUnitTransporter(unitID) == nil
+    if boolFlying then releaseHumanShield() end
 end
 
 function script.Landed()
@@ -487,10 +544,16 @@ function flyingMonitored()
 		if boolFlying == true then		
 			while(boolFlying == true) do
 				Sleep(100)
-				flyingPose(unitID)
+				if hasHumanShield() and Spring.GetUnitTransporter(unitID) then
+                    boolFlying = false
+                else
+                    flyingPose(unitID)
+                end
 			end
-			WaitForTurns(TablesOfPiecesGroups)
-			reset(center)
+            if not hasHumanShield() then
+                WaitForTurns(TablesOfPiecesGroups)
+                if not hasHumanShield() then reset(center) end
+            end
 		end
 		Sleep(100)
 	end
@@ -559,6 +622,7 @@ local animCmd = {['turn'] = Turn, ['move'] = Move};
 local axisSign = {[x_axis] = 1, [y_axis] = 1, [z_axis] = 1}
 
 function PlayAnimation(animname, piecesToFilterOutTable, speed)
+    if hasHumanShield() then return 0 end
     local speedFactor = speed or 1.0
     if not piecesToFilterOutTable then piecesToFilterOutTable = {} end
     assert(animname, "animation name is nil")
@@ -568,6 +632,7 @@ function PlayAnimation(animname, piecesToFilterOutTable, speed)
     local anim = Animations[animname];
     local randoffset
     for i = 1, #anim do
+        if hasHumanShield() then return 0 end
         local commands = anim[i].commands;
         for j = 1, #commands do
             local cmd = commands[j];
@@ -627,6 +692,9 @@ end
 
 
 function script.Killed(recentDamage, _)
+    humanShieldDying = true
+    releaseHumanShield()
+    setHumanShieldActive(false)
     if doesUnitExistAlive(civilianID) == true then
         Spring.DestroyUnit(civilianID, true, true)
     end
@@ -660,6 +728,7 @@ end
 function deferedOverrideAnimationState(AnimationstateUpperOverride,
                                        AnimationstateLowerOverride,
                                        boolInstantOverride, conditionFunction)
+    if hasHumanShield() then return end
     if boolInstantOverride == true then
         if AnimationstateUpperOverride then
             UpperAnimationState = AnimationstateUpperOverride
@@ -680,6 +749,7 @@ end
 
 function setAnimationState(AnimationstateUpperOverride,
                            AnimationstateLowerOverride)
+    if hasHumanShield() then return end
     -- if we are already animating correctly early out
     if AnimationstateUpperOverride == UpperAnimationState and
         AnimationstateLowerOverride == LowerAnimationState then return end
@@ -692,6 +762,7 @@ function setAnimationState(AnimationstateUpperOverride,
 
     while AnimationstateLowerOverride and boolLowerAnimationEnded == false or
         AnimationstateUpperOverride and boolUpperAnimationEnded == false do
+        if hasHumanShield() then return end
         Sleep(30)
         if AnimationstateUpperOverride == true then
             boolUpperStateWaitForEnd = true
@@ -704,6 +775,7 @@ function setAnimationState(AnimationstateUpperOverride,
         Sleep(30)
     end
 
+    if hasHumanShield() then return end
     if AnimationstateUpperOverride then
         UpperAnimationState = AnimationstateUpperOverride
     end
@@ -720,6 +792,7 @@ function setOverrideAnimationState(AnimationstateUpperOverride,
                                    AnimationstateLowerOverride,
                                    boolInstantOverride, conditionFunction,
                                    boolDecoupledStates, upperPieceMask, lowerPieceMask)
+    if hasHumanShield() then return end
     assert(conditionFunction == nil or type(conditionFunction) == "function",
         "setOverrideAnimationState: argument 4 must be a callback or nil")
     assert(upperPieceMask == nil or type(upperPieceMask) == "table")
@@ -864,6 +937,7 @@ function animationStateMachineLower(AnimationTable)
     local animationTable = AnimationTable
     -- Spring.Echo("lower Animation StateMachine Cycle")
     while true do
+        while hasHumanShield() do Sleep(100) end
         assert(LowerAnimationState)
         assert(animationTable[LowerAnimationState],
                "Animationstate not existing " .. LowerAnimationState)
@@ -897,6 +971,7 @@ function animationStateMachineUpper(AnimationTable)
     local animationTable = AnimationTable
 
     while true do
+        while hasHumanShield() do Sleep(100) end
         assert(UpperAnimationState)
         assert(animationTable[UpperAnimationState],
                "Upper Animationstate not existing " .. UpperAnimationState)
@@ -915,10 +990,12 @@ function animationStateMachineUpper(AnimationTable)
 end
 
 function delayedStop()
+    if hasHumanShield() then boolWalking = false; return end
     Turn(center,x_axis, math.rad(-10), 1)
     Signal(SIG_STOP)
     SetSignalMask(SIG_STOP)
     Sleep(250)
+    if hasHumanShield() then return end
     if not GG.OperativeTurnTable then GG.OperativeTurnTable = {} end
     GG.OperativeTurnTable[unitID] = nil
     boolWalking = false
@@ -951,6 +1028,7 @@ end
 
 
 function script.StartMoving()
+    if hasHumanShield() then boolWalking = true; return end
     if rooftopMotion then return end
     Signal(SIG_STOP)
     boolWalking = true
@@ -961,6 +1039,7 @@ function script.StartMoving()
 end
 
 function script.StopMoving() 
+    if hasHumanShield() then boolWalking = false; return end
     if rooftopMotion then return end
     StartThread(delayedStop) 
 end
@@ -970,6 +1049,7 @@ local civilianID
 function spawnDecoyCivilian()
     -- spawnDecoyCivilian
     Sleep(10)
+    if hasHumanShield() then return end
     if civilianID ~= nil and doesUnitExistAlive(civilianID) == true then
         return
     end
@@ -1026,6 +1106,7 @@ end
 
 
 function setWantCloak(boolWantCloak)
+    if hasHumanShield() then boolWantCloak = false end
     if Spring.GetUnitRulesParam(unitID, "betrayal_defector") == 1 or Spring.GetUnitRulesParam(unitID, "betrayal_pending") == 1 then boolWantCloak = false end
     if boolWantCloak == true then
         SetUnitValue(COB.WANT_CLOAK, 1)
@@ -1035,6 +1116,7 @@ function setWantCloak(boolWantCloak)
 end
 
 function transitionToCloaked()
+    if hasHumanShield() then return transitionToUncloaked() end
     if Spring.GetUnitRulesParam(unitID, "betrayal_defector") == 1 or Spring.GetUnitRulesParam(unitID, "betrayal_pending") == 1 then return transitionToUncloaked() end
     setWantCloak(true)
     boolRunningPossible = false
@@ -1045,6 +1127,7 @@ function transitionToCloaked()
 end
 
 function OperativesDiscovered()
+    if hasHumanShield() then return true end
     if Spring.GetUnitRulesParam(unitID, "betrayal_defector") == 1 or Spring.GetUnitRulesParam(unitID, "betrayal_pending") == 1 then return true end
     if GG.PoliceExposureUntil and (GG.PoliceExposureUntil[unitID] or 0) > Spring.GetGameFrame() then
         return true
@@ -1063,6 +1146,45 @@ end
 currentCloakState = "cloaked"
 previousState = currentCloakState
 boolRecloakOnceDone = false
+function setHumanShieldActive(active)
+    if humanShieldActive == (active == true) then return end
+    humanShieldActive = active == true
+    if humanShieldActive then
+        boolRecloakOnceDone = boolRecloakOnceDone or currentCloakState == "cloaked" or getWantCloak()
+        currentCloakState = transitionToUncloaked()
+        previousState = currentCloakState
+        -- Retire both ordinary animation channels and any sleeping weapon/idle
+        -- coroutines before the dedicated restraint animation owns the limbs.
+        Signal(SIG_HUMAN_SHIELD_AMBIENT)
+        if SIG_UP then Signal(SIG_UP) end
+        if SIG_LOW then Signal(SIG_LOW) end
+        if SIG_ANIM then Signal(SIG_ANIM) end
+        if SIG_STOP then Signal(SIG_STOP) end
+        Signal(SIG_PISTOL)
+        Signal(SIG_GUN)
+        Signal(SIG_SNIPER)
+        Signal(SIG_SNIPER_LASER)
+        Signal(SIG_STAB)
+        boolStartThread = false
+        boolAiming = false
+        humanShieldAnimation:Capture()
+        Hide(Pistol)
+        Hide(Gun)
+        Hide(SniperRifle)
+        Show(HolsteredGun)
+    else
+        humanShieldAnimation:Release()
+        if not humanShieldDying then
+            boolOldIsMoving = nil
+            StartThread(breathing)
+            setOverrideAnimationState(boolWalking and eAnimState.slaved or eAnimState.standing,
+                boolWalking and eAnimState.walking or eAnimState.standing, true, nil, false)
+            showFireArm()
+        end
+    end
+    -- The existing cloak loop resumes any saved disguise request after release.
+end
+
 function cloakLoop()
     local cloakStateMachine = {
         ["cloaked"] = function(boolCloakRequest, boolPreviouslyCloaked,
@@ -1131,9 +1253,11 @@ function cloakLoop()
     waitTillComplete(unitID)
 
     -- initialisation
-    setSpeedEnv(unitID, speedCloaked)
-    StartThread(spawnDecoyCivilian)
-    showHideIcon(true)
+    if not hasHumanShield() then
+        setSpeedEnv(unitID, speedCloaked)
+        StartThread(spawnDecoyCivilian)
+        showHideIcon(true)
+    end
 
     while true do
         currentCloakState = cloakStateMachine[currentCloakState]()
@@ -1168,6 +1292,7 @@ function script.StopBuilding()
 end
 
 function script.StartBuilding(heading, pitch)
+    releaseHumanShield()
     Signal(SIG_DELAYEDRECLOAK)
     boolIsBuilding = true
     SetUnitValue(COB.INBUILDSTANCE, 1)
@@ -1191,6 +1316,7 @@ function pistolAimFunction(weaponID, heading, pitch)
     end
     WTurn(center, y_axis, heading, 22)
     WaitForTurns(UpArm1, UpArm2, LowArm1, LowArm2)
+    if hasHumanShield() then return false end
     return true
 end
 
@@ -1206,6 +1332,7 @@ function gunAimFunction(weaponID, heading, pitch)
     end
     WTurn(center, y_axis, heading, 22)
     WaitForTurns(UpArm1, UpArm2, LowArm1, LowArm2)
+    if hasHumanShield() then return false end
     return true
 end
 
@@ -1223,6 +1350,7 @@ function sniperAimFunction(weaponID, heading, pitch)
     end
     WTurn(center, y_axis, heading, 22)
     WaitForTurns(UpArm1, UpArm2, LowArm1, LowArm2)
+    if hasHumanShield() then return false end
     return true
 end
 
@@ -1357,6 +1485,7 @@ function script.QueryWeapon(weaponID)
 end
 
 function script.FireWeapon(weaponID)
+    if hasHumanShield() then return false end
     return WeaponsTable[weaponID].firefunc(weaponID, heading, pitch)
 end
 
@@ -1364,6 +1493,7 @@ end
 lastShownWeapon = Pistol
 gunMaxRange = WeaponDefNames["submachingegun"].range
 function script.AimWeapon(weaponID, heading, pitch)
+    if hasHumanShield() then return false end
      if rooftopMotion == "grapple" or rooftopMotion == "walk" then return false end
      local kind, _, target = Spring.GetUnitWeaponTarget(unitID, weaponID)
      if kind == 1 then
@@ -1437,6 +1567,7 @@ Spring.SetUnitNanoPieces(unitID, {center})
 Icon = piece("Icon")
 
 function showHideIcon(boolCloaked)
+    if hasHumanShield() then boolCloaked = false end
     if boolCloaked == true then
         hideAll(unitID)
         Show(Icon)
@@ -1449,10 +1580,12 @@ function showHideIcon(boolCloaked)
         hideT(TablesOfPiecesGroups["Shell"])
         Hide(Icon)
     end
+    if hostagePoint then Hide(hostagePoint) end
 end
 
 -- Also reject automatic building targets and targets acquired after aiming.
 function script.BlockShot(weaponID, targetID)
+    if hasHumanShield() then return true end
     if rooftopMotion == "grapple" or rooftopMotion == "walk" then return true end
     local defID = targetID and Spring.GetUnitDefID(targetID)
     local def = defID and UnitDefs[defID]

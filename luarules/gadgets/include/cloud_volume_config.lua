@@ -73,6 +73,9 @@ M.presets.risingSmoke=variant('soot',{
 -- Opacity multiplies the integrated volume, so density alone cannot overcome
 -- the ordinary steam preset's .65 alpha ceiling. Keep this tuning spaceport-only.
 M.presets.launchVapour=variant('steam',{
+    -- Recovery sucks these volumes down with their animated sphere pieces.
+    -- Hide must end them, never freeze a detached copy above the ventilation.
+    linger=false,
     density=8.5, color={.78,.80,.82}, lifetime=70,
     opacityCurve={{0,0},{.6,.97},{1.2,.995},{18,.995},{28,.96},{42,.72},{58,.22},{70,0}},
     densityCurve={{0,.85},{2,1},{28,1},{50,.65},{70,.15}},

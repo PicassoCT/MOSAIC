@@ -41,6 +41,7 @@ local OperativePropagator = Human:New{
 	showNanoFrame= true,
 	onoffable = false,
 	transportByEnemy  = true,
+	releaseHeld = true, -- a hostage survives when the operative is killed
 
 	--cloaking behaviour
 	canCloak =true,
@@ -104,7 +105,7 @@ local OperativePropagator = Human:New{
 			},
 		},
 		
-	category = [[GROUND ARRESTABLE]],
+	category = [[GROUND ARRESTABLE CLOSECOMBATABLE]],
 }
 
 

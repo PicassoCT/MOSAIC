@@ -51,6 +51,7 @@ local OperativeAsset = Human:New{
 	fireState= 1,
 	moveState = 0,
 	transportByEnemy = true,
+	releaseHeld = true, -- release a living hostage when the operative dies
 	
 	weapons={
 			[1]={name  = "pistol",

@@ -6,6 +6,9 @@ include "lib_mosaic.lua"
 include "lib_radiance_emitters.lua"
 local scramjetFlames = include('lib_airport_scramjet_flames.lua')(unitID)
 local planeContrails = include('lib_airport_contrails.lua')(unitID)
+local flyFerry = include('lib_airport_ferry_flight.lua')(unitID)
+local activePlane
+local flaplessPlaneVariants = {[piece('MainBirdBody004')] = true}
 
 local TablesOfPiecesGroups = {}
 Airport = piece "Airport"
@@ -257,7 +260,7 @@ function turnPlaneAround()
            
             degShare = 50 / ferryGoRound
             for i = 1, ferryGoRound do
-                timeToArrivalMS = (((ferryGoRound - i) * degShare) / (0.1 * 30)) * 1000
+                local timeToArrivalMS = math.rad((ferryGoRound - i + 1) * degShare) / 0.1 * 1000
                 StartThread(ferryGoUp, math.random(1, #TablesOfPiecesGroups["Shuttle"]), timeToArrivalMS)
                 WTurn(TablesOfPiecesGroups["SwingCenter"][1], PlanePositionTurnAxis, math.rad(-300 - i * degShare), 0.1)
             end
@@ -280,7 +283,7 @@ function turnPlaneAround()
             playAircraftSounds()
             degShare = 50 / ferryGoRound
             for i = 1, ferryGoRound do
-                timeToArrivalMS = (((ferryGoRound - i) * degShare) / (0.1 * 30)) * 1000
+                local timeToArrivalMS = math.rad((ferryGoRound - i + 1) * degShare) / 0.1 * 1000
                 StartThread(ferryGoUp, math.random(1, #TablesOfPiecesGroups["Shuttle"]), timeToArrivalMS)
                 WTurn(TablesOfPiecesGroups["SwingCenter"][2], PlanePositionTurnAxis, math.rad(310 + i * degShare), 0.1)
             end
@@ -304,6 +307,7 @@ LeftWing = piece("LeftWing")
 TailStrike = piece("TailStrike")
 
 function hidePlane()
+    activePlane = nil
     planeContrails.Stop()
     hideT(TablesOfPiecesGroups["MainBirdBody"])
     Hide(RightWing)
@@ -312,11 +316,14 @@ function hidePlane()
 end
 
 function showPlane()
-    Show(RightWing)
-    Show(LeftWing)
-    Show(TailStrike)
-    showOne(TablesOfPiecesGroups["MainBirdBody"])
-    planeContrails.Start(LeftWing, RightWing, TablesOfPiecesGroups["MainBirdBody"][1])
+    hidePlane()
+    activePlane = showOne(TablesOfPiecesGroups["MainBirdBody"])
+    if activePlane and not flaplessPlaneVariants[activePlane] then
+        Show(RightWing)
+        Show(LeftWing)
+        Show(TailStrike)
+        planeContrails.Start(LeftWing, RightWing, TablesOfPiecesGroups["MainBirdBody"][1])
+    end
 end
 
 function ferryGoUp(selectedFerryNr, times)
@@ -328,6 +335,8 @@ function ferryGoUp(selectedFerryNr, times)
         return
     end   
 
+    if not activePlane then return end
+    local hull = activePlane
     if not ferryFreeTable[selectedFerryNr] then
         ferryFreeTable[selectedFerryNr] = false
     end
@@ -335,7 +344,7 @@ function ferryGoUp(selectedFerryNr, times)
         return
     end
     ferryFreeTable[selectedFerryNr] = true
-    awayValue = math.random(15,45)*randSign()
+    local awayValue = math.random(15,45)*randSign()
 
     local ferry = TablesOfPiecesGroups["Shuttle"][selectedFerryNr]
     local engine = TablesOfPiecesGroups["Engine"][selectedFerryNr]
@@ -343,18 +352,11 @@ function ferryGoUp(selectedFerryNr, times)
     Show(ferry)
     Show(engine)
     WTurn(TablesOfPiecesGroups["Gateway"][selectedFerryNr],y_axis, math.rad(awayValue), 5)
-    speed = distanceUp / (times / 1000)
+    local val = math.random(-5, 5)
+    Turn(engine, x_axis, math.rad(val), 0.125)
+    flyFerry(ferry, engine, hull, TablesOfPiecesGroups["MainBirdBody"][1], times, true, selectedFerryNr)
     val = math.random(-5, 5)
     Turn(engine, x_axis, math.rad(val), 0.125)
-    WMove(ferry, ferryUpAxis, distanceUp * 0.05, speed * 0.5)
-    if selectedFerryNr < 6 then
-        Turn(ferry, ferryTurnAxis, math.rad(180), 0.5)
-    else
-        Turn(ferry, ferryTurnAxis, math.rad(0), 0.5)
-    end
-    val = math.random(-5, 5)
-    Turn(engine, x_axis, math.rad(val), 0.125)
-    WMove(ferry, ferryUpAxis, distanceUp, speed * 1.05)
 
     Hide(ferry)
     Hide(engine)
@@ -374,6 +376,8 @@ function ferryGoDown(selectedFerryNr, times)
         return
     end   
 
+    if not activePlane then return end
+    local hull = activePlane
     if not ferryFreeTable[selectedFerryNr] then
         ferryFreeTable[selectedFerryNr] = false
     end
@@ -383,34 +387,19 @@ function ferryGoDown(selectedFerryNr, times)
     ferryFreeTable[selectedFerryNr] = true
     Sleep(selectedFerryNr * 50)
 
-    rVal = math.random(-45, 45)
-    if selectedFerryNr < 6 then
-        Turn(ferry, ferryTurnAxis, math.rad(180 + rVal), 0)
-    else
-        Turn(ferry, ferryTurnAxis, math.rad(rVal), 0)
-    end
-    val = math.random(-5, 5)
+    Hide(ferry)
+    Hide(engine)
+    reset(ferry)
+    local variation = {yaw=math.random(-45, 45)}
+    local val = math.random(-5, 5)
     Turn(engine, x_axis, math.rad(val), 0)
-
-    Move(ferry, ferryUpAxis, distanceUp, 0)
-    rval = math.random(250, 750) * randSign()
-    Move(ferry, 1, rval, 0)
-    rval = math.random(250, 750) * randSign()
-    Move(ferry, 3, rval, 0)
-
-    Show(ferry)
-    Show(engine)
-    speed = distanceUp / (times / 1000)
-    Turn(ferry, ferryTurnAxis, math.rad(0), 0.25)
-    Move(ferry, 1, 0, speed)
-    Move(ferry, 3, 0, speed)
+    variation.side = math.random(250, 750)*randSign()/750
+    variation.trail = math.random(250, 750)*randSign()/750
     val = math.random(-5, 5)
     Turn(engine, x_axis, math.rad(val), 0.125)
-    WMove(ferry, ferryUpAxis, distanceUp * 0.2, speed)
-    Turn(ferry, ferryTurnAxis, math.rad(0), 0.5)
+    flyFerry(ferry, engine, hull, TablesOfPiecesGroups["MainBirdBody"][1], times, false, selectedFerryNr, variation)
     val = math.random(-5, 5)
     Turn(engine, x_axis, math.rad(val), 0.125)
-    WMove(ferry, ferryUpAxis, 0, speed * 0.25)
     WaitForMoves(ferry)
     Turn(engine, x_axis, math.rad(0), 0.125)
     WTurn(TablesOfPiecesGroups["Gateway"][selectedFerryNr], y_axis, math.rad(0), 5)
@@ -572,13 +561,15 @@ function PlaneLights()
 end
 
 function departure()
+    -- Release the last ferries while the carrier is still visible. Their
+    -- detached trajectories continue independently as the carrier leaves.
+    for i = 1, dockedShuttleCount do
+        local touchDownTime = math.random(8, 18)
+        StartThread(ferryGoDown, math.random(1, #TablesOfPiecesGroups["Shuttle"]), touchDownTime * 1000)
+    end
     boolCircling = false
     while boolCirclingDone == false do
         Sleep(10)
-    end
-   for i = 1, dockedShuttleCount do
-        touchDownTime = math.random(8, 18)
-        StartThread(ferryGoDown, math.random(1, #TablesOfPiecesGroups["Shuttle"]), touchDownTime * 1000)
     end
 
     minutes = math.random(3, 6) * 60 * 1000

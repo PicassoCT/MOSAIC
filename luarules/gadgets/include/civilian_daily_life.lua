@@ -25,6 +25,7 @@ return function(context)
         return alive(id) and G.CivilianTable[id] and context.walkers[S.GetUnitDefID(id)]
             and S.GetUnitTeam(id) == gaia and not (G.DisguiseCivilianFor or {})[id]
             and not S.GetUnitTransporter(id) and not (G.AerosolAffectedCivilians or {})[id]
+            and not (G.HumanShield and G.HumanShield.IsHostage(id))
     end
     local function hash(text)
         local n = 17
@@ -690,6 +691,8 @@ return function(context)
         if point then return point.x,point.y,point.z end
     end
     function life:IsProtected(id)
+        if G.HumanShield and G.HumanShield.IsHostage(id) then return true end
+        if alive(id) and S.GetUnitTransporter(id) then return true end
         local frame=S.GetGameFrame()
         if (guardedUntil[id] or 0)>frame then return true end
         local p=people[id]; local group=p and p.group and groups[p.group]

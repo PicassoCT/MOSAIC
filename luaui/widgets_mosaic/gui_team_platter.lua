@@ -105,6 +105,7 @@ local ignoredUnitDefs = {
 [UnitDefNames["icon_hijacksatellite"].id]= true,
 [UnitDefNames["icon_blackout"].id]= true,
 [UnitDefNames["icon_emc"].id]= true,
+[UnitDefNames["icon_cameradeception"].id]= true,
 [UnitDefNames["recruitcivilian"].id]= true,
 [UnitDefNames["icon_cybercrime"].id]= true,
 [UnitDefNames["innercitydeco_inter1"].id]= true,

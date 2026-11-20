@@ -208,6 +208,22 @@ local ElectronicCounterMeasureIcon =
     category = "NOTARGET ABSTRACT"
 }
 
+-- Uses the existing software icon art; false feeds require a nearby carrier.
+local CameraDeceptionIcon = ElectronicCounterMeasureIcon:New {
+    name = "Phantom Feed",
+    description = "Projects false enemy activity through nearby hostile cameras",
+    script = "cameradeceptionscript.lua",
+    CanAttack = false,
+    onOffable = false,
+    customparams = {
+        helptext = "Stay within 180 elmos of a hostile camera to project false contacts. Leaving range or losing the carrier stops the feed. ECM counters it; enemies of Phantom Feed inside the cone temporarily dissolve the contacts.",
+        baseclass = "Abstract",
+        normaltex = "unittextures/component_atlas_normal.dds",
+    },
+}
+-- Prototype inheritance merges arrays, so clear the inherited marker afterwards.
+CameraDeceptionIcon.weapons = {}
+
 local RevealDoubleAgentsIcon =
     Abstract:New {
     corpse = "",
@@ -703,6 +719,7 @@ return lowerkeys(
         --Temp
         ["icon_hijacksatellite"] = HiJackSatteliteIcon:New(),
         ["icon_emc"] = ElectronicCounterMeasureIcon:New(),
+        ["icon_cameradeception"] = CameraDeceptionIcon:New(),
         ["revealdoubleagent"] = RevealDoubleAgentsIcon:New(),
         ["doubleagent"] = DoubleAgent:New(),
         ["interrogationicon"] = InterrogationIcon:New(),

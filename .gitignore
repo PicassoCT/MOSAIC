@@ -51,3 +51,20 @@ __pycache__/
 
 # Tiglil animation retargeting helper
 !scripts/lib_tiglil_retarget.lua
+
+# Airport ferry flight controller
+!scripts/lib_airport_ferry_flight.lua
+
+# Shared civilian death animation
+!scripts/lib_civilian_death.lua
+
+# Prometheus engagement adaptation
+!luarules/gadgets/prometheus/adaptation.lua
+
+# Asian house vehicle assembly choreography
+!scripts/lib_house_asian_vehicle_assembly.lua
+
+# Camera deception gameplay and presentation
+!scripts/cameradeceptionscript.lua
+!scripts/lib_camera_deception.lua
+!luarules/gadgets/game_camera_deception.lua

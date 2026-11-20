@@ -137,6 +137,7 @@ local function recovery(target,team)
 end
 local function validTarget(actor,target,team)
     if actor==target or not complete(actor) or not complete(target) then return false end
+    if GG.HumanShield and GG.HumanShield.IsProtected(target,team) then return false end
     if not operatives[Spring.GetUnitDefID(actor)] then return false end
     local def=Spring.GetUnitDefID(target)
     if not operatives[def] and not hubs[def] then return false end

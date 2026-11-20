@@ -116,8 +116,14 @@ local civilianLife = newCivilianLife({gameConfig=GameConfig, walkers=civilianWal
 GG.CivilianLife = civilianLife
 local lastDangerReport = {}
 
+local function isCivilianPassenger(id)
+    if GG.HumanShield and GG.HumanShield.IsHostage(id) then return true end
+    return type(id) == "number" and id == id and Spring.ValidUnitID(id)
+        and Spring.GetUnitTransporter(id) ~= nil
+end
 
 function startInternalBehaviourOfState(unitID, name, ...)
+    if isCivilianPassenger(unitID) then return false end
     if not GG.CivilianUnitInternalLogicActive then
         GG.CivilianUnitInternalLogicActive = {}
     end
@@ -1314,6 +1320,14 @@ function travellFunction(evtID, frame, persPack, startFrame)
         GG.UnitArrivedAtTarget[myID] = nil
         return nil, persPack
     end
+    -- Passengers keep the same traffic record, but their carrier owns movement.
+    -- Pause before arrival, stuck detection or social routines can remove him.
+    if isCivilianPassenger(myID) then
+        if not doesUnitExistAlive(myID) then return nil, persPack end
+        persPack.stuckCounter = 0
+        persPack.currPos = nil
+        return frame + 15, packStep(persPack, frame + 15, frame)
+    end
     if GG.CityParade and GG.CityParade:OwnsUnit(myID) then
         if not doesUnitExistAlive(myID) then return nil, persPack end
         persPack.stuckCounter = 0
@@ -1383,6 +1397,7 @@ return defaultTargetNode
 end
 
 function giveWaypointsToUnit(uID, uType, startNodeID)
+    if isCivilianPassenger(uID) then return false end
     -- RouteTabel is rebuilt from buildings, some of which can subsequently
     -- disappear. Never feed stale/non-numeric IDs into Spring C callins.
     if type(uID)~="number" or type(startNodeID)~="number"
@@ -1440,6 +1455,8 @@ function issueArrivedUnitsCommands()
             -- Invalid arrivals must not reach an engine unit-ID argument.
         elseif spGetUnitTeam(id) ~= gaiaTeamID then
             GG.CivilianTable[id] = nil
+        elseif isCivilianPassenger(id) then
+            held[id] = true
         elseif GG.CityParade and GG.CityParade:OwnsUnit(id) then
             held[id] = true
         elseif GG.CityParade and GG.CityParade:OnArrived(id) then
@@ -1466,6 +1483,7 @@ function decimateArrivedCivilians(nrToDecimate, typeTable)
             doesUnitExistAlive(GG.CivilianTable[id].startID) == true and
             doesUnitExistAlive(id) == true and 
             GG.DisguiseCivilianFor[id] == nil and
+            not isCivilianPassenger(id) and
             not (GG.CityParade and GG.CityParade:OwnsUnit(id)) and
             not civilianLife:IsProtected(id) and
             typeTable[GG.CivilianTable[id].defID] then

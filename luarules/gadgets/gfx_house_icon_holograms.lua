@@ -108,13 +108,13 @@ local function ensureTargets()
     releaseTargets()
     viewWidth,viewHeight = width,height
     -- One shared ID mask for all visible houses, not one texture per house.
-    -- BAR105 omits DEPTH_COMPONENT24 from the Lua GL table. Use the OpenGL
-    -- enum when absent so the depth attachment does not default to RGBA8.
     maskTexture = gl.CreateTexture(width,height, {
         format=GL.RGBA8 or 0x8058, min_filter=GL.NEAREST, mag_filter=GL.NEAREST,
         wrap_s=GL.CLAMP_TO_EDGE, wrap_t=GL.CLAMP_TO_EDGE,
     })
     depthTexture = gl.CreateTexture(width,height, {
+        -- BAR105 does not export this enum to Lua; omitting it creates an
+        -- RGBA8 texture, which cannot be used as the FBO's depth attachment.
         format=GL.DEPTH_COMPONENT24 or 0x81A6, min_filter=GL.NEAREST, mag_filter=GL.NEAREST,
         wrap_s=GL.CLAMP_TO_EDGE, wrap_t=GL.CLAMP_TO_EDGE,
     })

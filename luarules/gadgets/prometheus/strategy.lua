@@ -10,15 +10,28 @@ function CreateMosaicStrategy(teamID, allyTeamID, side)
     local operative=side=="antagon" and "operativepropagator" or "operativeinvestigator"
     local assembly=side.."assembly"
     local gaia=Spring.GetGaiaTeamID()
+    local adaptation=VFS.Include("luarules/gadgets/prometheus/adaptation.lua")(teamID,gaia,caps)
+    local counters={
+        air={"ground_truck_rocket","ground_turret_rocket","air_copter_mg","ground_walker_mg"},
+        armor={"air_copter_antiarmor","ground_walker_grenade"},
+        raids={"operativeasset","ground_walker_mg","air_copter_mg"},
+        fortified={"ground_walker_grenade","air_copter_antiarmor","ground_walker_flame"},
+        expansion={"operativeasset","ground_walker_mg"},
+        balanced={},
+    }
     local morphs=VFS.Include("luarules/configs/side_morph_defs/"..(side=="antagon" and "Antagon" or "Protagon")..".lua")
     local morphOptions=morphs[safe] or {}
     local frame=0
     local owned,ready,counts={}, {}, {}
     local pending,orders,settings,missions,visited,blockedSites={}, {}, {}, {}, {}, {}
     local houses,targets,threats={}, {}, {}
+    local surveyedSectors={}
+    local sectorSize=math.max(512,math.max(Game.mapSizeX,Game.mapSizeZ)/6)
+    local sectorPenalty=Game.mapSizeX^2+Game.mapSizeZ^2
+    local function sector(p) return math.floor(p.x/sectorSize)..":"..math.floor(p.z/sectorSize) end
     local budgetM,budgetE=0,0
     local diagnostics={ticks=0,queued=0,rejected=0,economy="not started",recon="not started",tactics="not started"}
-    local nextReport,reportCount=0,0
+    local nextReport=0
     local home={x=Game.mapSizeX/2,z=Game.mapSizeZ/2}
     local economicNames={[safe]=true,propagandaserver=true,[assembly]=true}
     local specialistNames={[operative]=true,operativeasset=true,civilianagent=true,air_copter_scoutlett=true}
@@ -246,9 +259,9 @@ function CreateMosaicStrategy(teamID, allyTeamID, side)
     local function economy()
         diagnostics.economy="waiting: producers busy / roster at role limits"
         diagnostics.economyBlocker=nil
-        local desiredServers=math.min(caps.servers,1+math.floor(frame/5400))
+        local desiredServers=math.min(caps.servers,1+math.floor(frame/5400)+math.min(2,adaptation.tier))
         local wantedUpgrade=count("propagandaserver")<desiredServers and "propagandaserver"
-            or (count(assembly)<1 and count("propagandaserver")>=2 and assembly or nil)
+            or (count(assembly)<1+math.floor(adaptation.tier/3) and count("propagandaserver")>=2 and assembly or nil)
         -- Keep one active recruitment hub while another converts. Upgrades
         -- require separate city buildings, not stacking everything at home.
         local desiredSafe=wantedUpgrade and 2 or 1
@@ -286,6 +299,21 @@ function CreateMosaicStrategy(teamID, allyTeamID, side)
             local def=UnitDefNames[p.target]
             if def and mobile(def) and not specialistNames[p.target] and #(def.weapons or {})>0 then combatCount=combatCount+1 end
         end
+        -- Bank the next economy step before optional replacements consume
+        -- it. Otherwise one income server can be trapped funding small losses
+        -- forever, without ever affording the next 2,000-metal safehouse.
+        local reserveMetal,reserveEnergy=0,0
+        if wantedUpgrade then
+            if count(safe)<desiredSafe then
+                local def=UnitDefNames[safe]
+                reserveMetal,reserveEnergy=def.metalCost or 0,def.energyCost or 0
+            else
+                for _,spec in ipairs(morphOptions) do
+                    if spec.into==wantedUpgrade then reserveMetal,reserveEnergy=spec.metal or 0,spec.energy or 0;break end
+                end
+            end
+        end
+        diagnostics.reserveMetal,diagnostics.reserveEnergy=reserveMetal,reserveEnergy
         local armored,airborne=0,0
         for _,t in ipairs(threats) do
             if t.def.canFly then airborne=airborne+1 end
@@ -295,6 +323,17 @@ function CreateMosaicStrategy(teamID, allyTeamID, side)
             local def=definition(id)
             if available(id) and def.isFactory and not busy(id) then
                 local choices={}
+                -- Keep essential builders/scouting, then counter observed forces
+                -- before filling optional specialist slots. Actual build menus
+                -- and costs below still decide what this producer can supply.
+                if count(operative)<2 then choices[#choices+1]=operative end
+                if count("air_copter_scoutlett")<1 then choices[#choices+1]="air_copter_scoutlett" end
+                if count("civilianagent")<1 then choices[#choices+1]="civilianagent" end
+                if combatCount<caps.combat and count("propagandaserver")>=1 then
+                    for _,name in ipairs(counters[adaptation.mode]) do
+                        if count(name)<2+math.floor(adaptation.tier/2) then choices[#choices+1]=name end
+                    end
+                end
                 if count(operative)<caps.operatives then choices[#choices+1]=operative end
                 if count("air_copter_scoutlett")<caps.scouts then choices[#choices+1]="air_copter_scoutlett" end
                 if count("operativeasset")<caps.assets and count("propagandaserver")>=1 then choices[#choices+1]="operativeasset" end
@@ -304,12 +343,16 @@ function CreateMosaicStrategy(teamID, allyTeamID, side)
                         or {"ground_walker_mg","ground_truck_mg","air_copter_mg","air_copter_antiarmor"}
                     if armored>0 then table.insert(roster,1,"air_copter_antiarmor") end
                     if airborne>0 then table.insert(roster,1,"ground_truck_rocket") end
-                    for _,name in ipairs(roster) do if count(name)<3 then choices[#choices+1]=name end end
+                    for _,name in ipairs(roster) do if count(name)<3+math.floor(adaptation.tier/2) then choices[#choices+1]=name end end
                 end
                 for _,name in ipairs(choices) do
-                    -- Avoid consuming the recovery economy's last funds on
-                    -- optional combat when a server is still missing.
-                    if not wantedUpgrade or name==operative or count("propagandaserver")>=1 then
+                    local def=UnitDefNames[name]
+                    local essential=(name==operative and count(operative)<2)
+                        or (name=="civilianagent" and count(name)<1)
+                        or (name=="air_copter_scoutlett" and count(name)<1)
+                    local funded=def and budgetM-(def.metalCost or 0)>=reserveMetal
+                        and budgetE-(def.energyCost or 0)>=reserveEnergy
+                    if essential or funded then
                         if build(id,name) then
                             if not specialistNames[name] then combatCount=combatCount+1 end
                             break
@@ -341,22 +384,27 @@ function CreateMosaicStrategy(teamID, allyTeamID, side)
         local mission=missions[id]
         if mission then
             if distance(p,mission.pos)<140^2 or frame-mission.start>1200 or risk(mission.pos,600)>3 then
-                visited[mission.site]=frame+3600;missions[id]=nil
+                visited[mission.site]=frame+3600
+                surveyedSectors[mission.sector]=(surveyedSectors[mission.sector] or 0)+1
+                missions[id]=nil
             else move(id,mission.pos,"reconnaissance");return end
         end
         local best,score
         for _,h in ipairs(houses) do
             if (visited[h.id] or 0)<=frame and risk(h.pos,650)<2 then
+                local region=sector(h.pos)
                 local assigned=false
-                for _,m in pairs(missions) do if m.site==h.id then assigned=true end end
-                local s=distance(p,h.pos)+distance(home,h.pos)*0.15
+                for _,m in pairs(missions) do if m.sector==region then assigned=true end end
+                -- Prefer a new part of the city over another nearby building.
+                -- The sector visit count survives individual-site cooldowns.
+                local s=distance(p,h.pos)+(surveyedSectors[region] or 0)*sectorPenalty
                 if not assigned and (not score or s<score) then best,score=h,s end
             end
         end
         if best then
-            missions[id]={site=best.id,pos=best.pos,start=frame}
+            missions[id]={site=best.id,pos=best.pos,start=frame,sector=sector(best.pos)}
             move(id,best.pos,"scout city block")
-            diagnostics.recon="scouting separate city blocks"
+            diagnostics.recon="scouting separate city sectors"
         else diagnostics.recon="waiting: no safe unexplored block" end
     end
     local function recon()
@@ -380,7 +428,7 @@ function CreateMosaicStrategy(teamID, allyTeamID, side)
             if attacker.name=="ground_truck_rocket" and not t.def.canFly then eligible=false end
             if attacker.name=="air_copter_antiarmor" and t.def.canFly then eligible=false end
             if role and t.def.canFly then eligible=false end
-            if eligible and (assignments[t.id] or 0)<(role and 1 or 3) then
+            if eligible and (assignments[t.id] or 0)<(role and 1 or (3+math.floor(adaptation.tier/2))) then
                 local danger=risk(t.pos,650)
                 if danger<=math.max(group*2,role and (attacker.metalCost or 500)/500*1.5 or 0) then
                     local s=t.value/(1+distance(p,t.pos)/1000000+danger)
@@ -423,7 +471,7 @@ function CreateMosaicStrategy(teamID, allyTeamID, side)
                     for _,t in ipairs(threats) do
                         if distance(t.pos,home)<900^2 and Spring.GetUnitTeam(t.id)~=gaia then intruder=t;break end
                     end
-                    if intruder and not isOp and (assignments[intruder.id] or 0)<3
+                    if intruder and not isOp and (assignments[intruder.id] or 0)<3+math.floor(adaptation.tier/2)
                         and not (def.name=="ground_truck_rocket" and not intruder.def.canFly)
                         and not (def.name=="air_copter_antiarmor" and intruder.def.canFly) then
                         assignments[intruder.id]=(assignments[intruder.id] or 0)+1
@@ -431,7 +479,7 @@ function CreateMosaicStrategy(teamID, allyTeamID, side)
                         diagnostics.tactics="defending threatened network"
                     else
                         local role=def.name==operative and "raid" or (def.name=="operativeasset" and "assassin" or nil)
-                        local target=selectTarget(p,role,isOp and 1 or math.min(3,#fighters),assignments,def)
+                        local target=selectTarget(p,role,isOp and 1 or math.min(3+math.floor(adaptation.tier/2),#fighters),assignments,def)
                         if target then
                             assignments[target.id]=(assignments[target.id] or 0)+1
                             if isOp then
@@ -443,10 +491,10 @@ function CreateMosaicStrategy(teamID, allyTeamID, side)
                                     send(id,CMD.ATTACK,{target.id},role=="assassin" and "attack exposed operative" or "raid exposed network")
                                 end
                             else
-                                -- At most three combat units assigned per target.
+                                -- Successful opponents face larger coordinated groups.
                                 -- Approach from alternating offsets, then engage.
                                 if distance(p,target.pos)>500^2 then
-                                    local offset=(index%2==0 and -1 or 1)*200
+                                    local offset=(index%2==0 and -1 or 1)*(200+adaptation.tier*25)
                                     move(id,{x=target.pos.x+offset,z=target.pos.z-offset},"attack flank",CMD.FIGHT)
                                 else send(id,CMD.ATTACK,{target.id},"attack strategic target") end
                             end
@@ -470,15 +518,24 @@ function CreateMosaicStrategy(teamID, allyTeamID, side)
     end
     function S.GameFrame(f)
         frame=f;diagnostics.ticks=diagnostics.ticks+1
-        scan();economy();recon();tactics()
+        scan()
+        adaptation.Observe(targets,home,frame)
+        adaptation.Update(frame)
+        caps=adaptation.Caps()
+        economy();recon();tactics()
         if frame>=nextReport then
-            nextReport=frame+900;reportCount=reportCount+1
-            if reportCount<=5 or gadget.IsDebug(teamID) then
-                Spring.Echo("Prometheus team "..teamID..": managers="..diagnostics.ticks.." queued="..diagnostics.queued
-                    .." rejected="..diagnostics.rejected.."; economy="..diagnostics.economy
-                    .."; economy blocker="..(diagnostics.economyBlocker or "none")
-                    .."; recon="..diagnostics.recon.."; tactics="..diagnostics.tactics)
-            end
+            nextReport=frame+900
+            local readyCount=0
+            for _ in pairs(ready) do readyCount=readyCount+1 end
+            Spring.Echo("Prometheus team "..teamID..": ticks="..diagnostics.ticks.." units="..#owned.." ready="..readyCount
+                .." queued_total="..diagnostics.queued.." rejected_total="..diagnostics.rejected.."; economy="..diagnostics.economy
+                .."; economy blocker="..(diagnostics.economyBlocker or "none")
+                .."; recon="..diagnostics.recon.."; tactics="..diagnostics.tactics
+                .."; response_tier="..adaptation.tier.." opponent_victories="..adaptation.opponentVictories
+                .." counter="..adaptation.mode.." visible_enemies="..adaptation.visible.." visible_material="..adaptation.material
+                .." metal="..math.floor(Spring.GetTeamResources(teamID,"metal") or 0)
+                .." energy="..math.floor(Spring.GetTeamResources(teamID,"energy") or 0)
+                .." reserve_metal="..(diagnostics.reserveMetal or 0).." reserve_energy="..(diagnostics.reserveEnergy or 0))
         end
     end
     function S.UnitCreated(id,defID,t,builder)
@@ -486,9 +543,21 @@ function CreateMosaicStrategy(teamID, allyTeamID, side)
         if p and UnitDefs[defID] and UnitDefs[defID].name==p.target then pending[builder]=nil end
     end
     function S.UnitFinished() end -- inventory reconciliation covers delayed spawn, reload and transfers
-    function S.UnitDestroyed(id)
+    local function eventFrame() return Spring.GetGameFrame and Spring.GetGameFrame() or frame end
+    function S.UnitDamaged(id,defID,t,damage,paralyzer,weapon,projectile,attacker,attackerDef,attackerTeam)
+        adaptation.Damaged(id,damage,paralyzer,attackerTeam,eventFrame())
+    end
+    function S.EnemyDestroyed(id,defID,t,attacker,attackerDef,attackerTeam)
+        adaptation.EnemyDestroyed(id,attackerTeam,eventFrame())
+    end
+    function S.UnitTaken(id)
+        adaptation.Forget(id)
         pending[id],orders[id],settings[id],missions[id]=nil,nil,nil,nil
     end
-    function S.GetDiagnostics() return diagnostics end
+    function S.UnitDestroyed(id,defID)
+        adaptation.Lost(id,UnitDefs[defID or 0],eventFrame())
+        pending[id],orders[id],settings[id],missions[id]=nil,nil,nil,nil
+    end
+    function S.GetDiagnostics() diagnostics.adaptation=adaptation;return diagnostics end
     return S
 end
