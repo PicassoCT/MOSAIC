@@ -834,7 +834,10 @@ print('PASS: hostage money rates, conserved enemy payouts, poverty, fractional r
 local function decoyWorld()
     local w = world()
     GG.DisguiseCivilianFor[10] = 20
-    GG.InheritanceTable = {[2] = {[21] = {[20] = true}, [20] = {[22] = true}}}
+    GG.InheritanceTable = {
+        [1] = {[2] = {[1] = true}, [1] = {[23] = true}},
+        [2] = {[21] = {[20] = true}, [20] = {[22] = true}},
+    }
     return w
 end
 w = decoyWorld()
@@ -851,8 +854,11 @@ check(not w.api.IsProtected(20,2,12) and not w.api.IsProtected(10,2,12),'snipers
 eq(w.units[1].rules.human_shield_hostage,10,'public hostage ID remains the civilian')
 check(next(w.units[20].rules)==nil,'no hidden identity parameter is published')
 local disclosure=GG.RevealedLocations[1]
-check(disclosure.revealedUnits[21] and not disclosure.revealedUnits[22] and not disclosure.revealedUnits[20],
-    'only actual recruiter is disclosed, not captive or children')
+check(disclosure.revealedUnits[2] and not disclosure.revealedUnits[21]
+    and not disclosure.revealedUnits[22] and not disclosure.revealedUnits[20]
+    and not disclosure.revealedUnits[23],
+    'only captor boss is disclosed, never captive recruiter or either network children')
+eq(disclosure.teamID,1,'disclosed network belongs to the captor team')
 eq(disclosure.endFrame,9000,'existing intelligence lifetime reused')
 w:tick(30)
 eq(#GG.RevealedLocations,1,'holding does not duplicate disclosure')
@@ -871,11 +877,16 @@ w=decoyWorld(); w.failAttach=true; w:execute(1,TAKE,{10})
 check(not GG.RevealedLocations and not w.api.IsHostage(20),'failed first attachment has no hidden side effects')
 w=decoyWorld(); w.units[10].rejectCapture=true; w:execute(1,TAKE,{10})
 check(not GG.RevealedLocations,'script veto cannot disclose secrets')
-w=decoyWorld(); w.units[21].dead=true; w:capture(1,10)
-check(not GG.RevealedLocations,'dead recruiter does not create false intelligence')
+w=decoyWorld(); w.units[2].dead=true; w:capture(1,10)
+check(not GG.RevealedLocations,'dead captor boss cannot fall back to living captive recruiter')
+w=decoyWorld(); GG.InheritanceTable[1]={}; w:capture(1,10)
+check(not GG.RevealedLocations,'missing captor boss cannot disclose captive recruiter')
+w=decoyWorld(); GG.InheritanceTable[2]=nil; w:capture(1,10)
+check(GG.RevealedLocations[1].revealedUnits[2],'captive needs no recruiter to expose the captor boss')
 w=decoyWorld(); GG.InheritanceTable=nil; w:capture(1,10)
 check(not GG.RevealedLocations,'unrecruited operative is still capturable')
-w=world(); w:capture(1,10); check(not GG.RevealedLocations,'ordinary civilian does not reveal anything')
+w=world(); GG.InheritanceTable={[1]={[2]={[1]=true}}}; w:capture(1,10)
+check(not GG.RevealedLocations,'ordinary civilian does not expose even a captor with a boss')
 
 for _, killed in ipairs({10,20}) do
     w=decoyWorld(); w:capture(1,10); Spring.DestroyUnit(killed,false,false,21)
