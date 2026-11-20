@@ -43,6 +43,12 @@ def sync_version(version):
     return version.removeprefix('BAR105-') + ' BAR105' if version.startswith('BAR105-') else version
 
 
+def has_exact_output_line(text, expected):
+    # Recoil writes the version among startup diagnostics. Runner/CPU-dependent
+    # warnings may follow it, so the final output line is not stable.
+    return any(line.strip() == expected for line in text.splitlines())
+
+
 def native_probe(root):
     """Load unitsync in a disposable child; a native crash cannot lose the report."""
     root = Path(root).resolve()
@@ -244,7 +250,7 @@ def smoke(artifacts, output):
             report['checks'].append('Bundled Windows Java accepts production JVM flags')
             expected_version = sync_version(manifest['inputs']['engine']['version'])
             _, text = execute('engine-sync-version', [str(engine / 'spring-headless.exe'), '--sync-version'], output, data, env)
-            require(text.strip().splitlines()[-1] == expected_version, 'Native engine version differs from input lock')
+            require(has_exact_output_line(text, expected_version), 'Native engine version differs from input lock')
             report['checks'].append('Bundled native engine sync version matches lock')
             launcher = (root / 'Start-Mosaic.cmd').read_text(encoding='utf-8')
             require(launcher.count('--no-update-check') == 1, 'Production launcher shape changed; update smoke diagnostic')
