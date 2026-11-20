@@ -164,7 +164,7 @@ end
 
  function showFireArm()
     if hasHumanShield() then
-        if humanShieldAnimation:IsAiming() then Show(Pistol) else Hide(Pistol) end
+        Show(Pistol)
         return
     end
  	if not boolInClosedCombat then
@@ -268,8 +268,9 @@ humanShieldAnimation = include('lib_human_shield_carrier_animation.lua')(unitID,
     UpLeg1 = UpLeg1, UpLeg2 = UpLeg2, LowLeg1 = LowLeg1, LowLeg2 = LowLeg2,
 }, {
     yawAxis = 3,
+    retarget = include('lib_animation_arm_retarget.lua').new(unitID),
     onAimChanged = function(aiming)
-        if aiming then Show(Pistol) else Hide(Pistol) end
+        if humanShieldActive then Show(Pistol) else Hide(Pistol) end
     end,
 })
 if not GG.OperativesDiscovered then GG.OperativesDiscovered = {} end
@@ -1368,7 +1369,7 @@ function setHumanShieldActive(active)
         humanShieldAnimation:Capture()
         Hide(FoldtopUnfolded)
         Show(FoldtopFolded)
-        Hide(Pistol)
+        Show(Pistol)
     else
         humanShieldAnimation:Release()
         if not humanShieldDying then

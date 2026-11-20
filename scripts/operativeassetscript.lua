@@ -164,11 +164,12 @@ humanShieldAnimation = include('lib_human_shield_carrier_animation.lua')(unitID,
     UpLeg1 = UpLeg1, UpLeg2 = UpLeg2, LowLeg1 = LowLeg1, LowLeg2 = LowLeg2,
 }, {
     yawAxis = y_axis,
+    retarget = include('lib_animation_arm_retarget.lua').new(unitID),
     onAimChanged = function(aiming)
         Hide(Gun)
         Hide(SniperRifle)
         Show(HolsteredGun)
-        if aiming then Show(Pistol) else Hide(Pistol) end
+        if humanShieldActive then Show(Pistol) else Hide(Pistol) end
     end,
 })
 function onRooftop()
@@ -304,7 +305,7 @@ end
         Hide(Gun)
         Hide(SniperRifle)
         Show(HolsteredGun)
-        if humanShieldAnimation:IsAiming() then Show(Pistol) else Hide(Pistol) end
+        Show(Pistol)
         return
     end
 	Hide(Gun)
@@ -1207,7 +1208,7 @@ function setHumanShieldActive(active)
         boolStartThread = false
         boolAiming = false
         humanShieldAnimation:Capture()
-        Hide(Pistol)
+        Show(Pistol)
         Hide(Gun)
         Hide(SniperRifle)
         Show(HolsteredGun)

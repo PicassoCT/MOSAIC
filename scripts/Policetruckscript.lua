@@ -136,7 +136,8 @@ end
 
 function tearGasState()
     while true do
-        if boolHasBeenHitBy == true and GG.GlobalGameState ~= GameConfig.game.states.normal then
+        if not (GG.PoliceHostages and GG.PoliceHostages.IsHoldingFire(unitID)) and
+            boolHasBeenHitBy == true and GG.GlobalGameState ~= GameConfig.game.states.normal then
             boolHasBeenHitBy = false
             StartThread(spawnRiotPolice)
         end
@@ -178,3 +179,8 @@ function script.QueryWeapon2() return center end
 function script.AimWeapon2(Heading, pitch) return true end
 
 function script.FireWeapon2() return true end
+
+-- Includes queued targets: roadblock cars never discharge during a live hold.
+function script.BlockShot(weaponID, targetID)
+    return GG.PoliceHostages and GG.PoliceHostages.IsHoldingFire(unitID) or false
+end

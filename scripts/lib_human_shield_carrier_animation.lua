@@ -11,6 +11,18 @@ return function(unitID, pieces, options)
     local rollAxis = yawAxis == 3 and 2 or 3
     local signal = options.signal or 65536
     local owned = {}
+    local gripUpper, gripLower, gunUpper, gunLower
+    local function calibrateGun(pitch)
+        if not options.retarget then return end
+        -- Semantic torso frame: forward -Y, up Z. Aim rotates the forearm
+        -- direction; the other arm stays wrapped across the captive's chest.
+        gunUpper, gunLower = options.retarget(1, {-0.30, -0.75, -0.30},
+            {0.12, -math.cos(pitch), 0.12 + math.sin(pitch)})
+    end
+    if options.retarget then
+        gripUpper, gripLower = options.retarget(2, {0.35, -0.85, -0.30}, {-0.85, -0.5, 0.15})
+        calibrateGun(0)
+    end
     for _, name in ipairs({"center", "Torso", "Head", "UpArm1", "UpArm2",
         "LowArm1", "LowArm2", "Hand1", "Hand2", "UpLeg1", "UpLeg2",
         "LowLeg1", "LowLeg2"}) do
@@ -40,6 +52,7 @@ return function(unitID, pieces, options)
         if not active then return end
         aimYaw = type(yaw) == "number" and yaw == yaw and yaw or 0
         aimPitch = type(pitch) == "number" and pitch == pitch and pitch or 0
+        calibrateGun(aimPitch)
         aimUntil = Spring.GetGameFrame() + 33
     end
 
@@ -47,6 +60,7 @@ return function(unitID, pieces, options)
         if not active then return end
         local aiming = frame <= aimUntil
         if aiming ~= wasAiming then
+            if not aiming then calibrateGun(0) end
             wasAiming = aiming
             if options.onAimChanged then options.onAimChanged(aiming) end
         end
@@ -60,17 +74,28 @@ return function(unitID, pieces, options)
         Turn(pieces.Head, yawAxis, aiming and aimYaw * -0.2 or 0, 8)
 
         -- The left arm remains across the captive's upper body. The right arm
-        -- can track aim mode, but the gadget blocks all weapon discharges.
-        turn("UpArm2", 1, -65 + breath)
-        turn("UpArm2", rollAxis, 20)
-        turn("LowArm2", 1, -55)
-        turn("LowArm2", yawAxis, -35)
-        turn("LowArm2", rollAxis, -25)
+        -- stays at gunpoint even outside aim mode; the gadget blocks discharges.
+        if gripUpper then
+            -- Each operative has different bind axes (notably the T-pose
+            -- Propagator). Compile once per aim change, then play native Turns.
+            for axis=1,3 do
+                turn("UpArm2", axis, gripUpper[axis])
+                turn("LowArm2", axis, gripLower[axis])
+                turn("UpArm1", axis, gunUpper[axis])
+                turn("LowArm1", axis, gunLower[axis])
+            end
+        else
+            turn("UpArm2", 1, -65 + breath)
+            turn("UpArm2", rollAxis, 20)
+            turn("LowArm2", 1, -55)
+            turn("LowArm2", yawAxis, -35)
+            turn("LowArm2", rollAxis, -25)
+            turn("UpArm1", 1, -80 - (aiming and math.deg(aimPitch) or 0))
+            turn("UpArm1", rollAxis, -8)
+            turn("LowArm1", 1, -12)
+            turn("LowArm1", rollAxis, 0)
+        end
         turn("Hand2", rollAxis, -12)
-        turn("UpArm1", 1, aiming and -80 - math.deg(aimPitch) or -20)
-        turn("UpArm1", rollAxis, -8)
-        turn("LowArm1", 1, aiming and -12 or -55)
-        turn("LowArm1", rollAxis, aiming and 0 or 12)
         turn("Hand1", 1, 0)
 
         turn("UpLeg1", 1, seated and -60 or -4 + 14 * stride)
@@ -94,6 +119,7 @@ return function(unitID, pieces, options)
         generation = generation + 1
         active, saved = true, {}
         aimYaw, aimPitch, aimUntil, wasAiming = 0, 0, -1, false
+        calibrateGun(0)
         for _, part in ipairs(owned) do
             saved[part] = {
                 move = {Spring.UnitScript.GetPieceTranslation(part)},

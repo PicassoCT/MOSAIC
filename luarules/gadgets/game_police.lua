@@ -21,7 +21,7 @@ local houses = getCultureUnitModelTypes(config.game.culture,"house",UnitDefs)
 local scraps = getScrapheapTypeTable(UnitDefs)
 local incidents, officers = {}, {}
 local revealedSafehouses = {}
-local bribery
+local bribery, hostages
 local damageToPolice = 0
 local reportDelay = cfg.dispatch.reportDelayFrames or 240
 local escapeTime = cfg.pursuit.escapeFrames or 900
@@ -112,11 +112,13 @@ local function spawnLocation(p)
     end
 end
 
+hostages = VFS.Include("luarules/gadgets/include/police_hostages.lua").New(config, officers, position, move, spawnLocation)
+
 local function dispatch(incident,frame)
     local officer, count = nil,0
     for id,state in pairs(officers) do
         count=count+1
-        if not state.incident and not GG.PoliceBribes[id] and alive(id) and
+        if not state.incident and not state.cordon and not GG.PoliceBribes[id] and alive(id) and
             (not officer or id<officer) then officer=id end
     end
     if not officer and count < cfg.population.maxOfficers then
@@ -178,13 +180,14 @@ function gadget:AllowCommand(id,defID,team,command,params)
     return bribery.Command(id,defID,team,command,params)
 end
 function gadget:AllowWeaponTarget(id,target,weaponNum,weaponDef,priority)
-    return bribery.AllowWeaponTarget(id,target),priority
+    return not hostages.IsHoldingFire(id) and bribery.AllowWeaponTarget(id,target),priority
 end
 function gadget:AllowUnitCloak(id)
     local exposure = revealedSafehouses[id]
     return not exposure or Spring.GetGameFrame() >= exposure.untilFrame
 end
 function gadget:UnitTaken(id,defID)
+    hostages.Destroyed(id)
     bribery.Destroyed(id)
     if defID == UnitDefNames.icon_bribe.id and alive(id) then Spring.DestroyUnit(id,false,true) end
     if officers[id] then
@@ -207,6 +210,7 @@ function gadget:UnitCreated(id,defID,team,builder)
     end
 end
 function gadget:UnitDestroyed(id,defID)
+    hostages.Destroyed(id)
     bribery.Destroyed(id)
     if officers[id] then
         local incident=officers[id].incident
@@ -240,6 +244,7 @@ function gadget:UnitDamaged(id,defID,team,damage,paralyzer,weaponID,projectileID
     end
 end
 function gadget:Initialize()
+    GG.PoliceHostages = hostages
     GG.ReportCyberCrime = reportCyberCrime
     GG.CancelCyberCrimeReport = cancelCyberCrime
     GG.PoliceActionSoundInterVallStartFrame=Spring.GetGameFrame()
@@ -252,6 +257,7 @@ end
 function gadget:GameFrame(frame)
     if frame%15~=0 then return end
     bribery.Update(frame)
+    hostages.Update(frame)
     for attacker,incident in pairs(incidents) do
         if not alive(attacker) or frame>=incident.expires then
             if incident.officer then releaseOfficer(incident.officer,frame) end
@@ -262,7 +268,13 @@ function gadget:GameFrame(frame)
     end
     for id,state in pairs(officers) do
         local incident=state.incident
-        if GG.PoliceBribes[id] then
+        if incident and incident.kind=="hostage_death" and
+            (not alive(incident.attacker) or frame>=state.expires) then
+            releaseOfficer(id,frame);incident=nil
+        end
+        if state.cordon then
+            -- The containment controller owns road placement and holds fire.
+        elseif GG.PoliceBribes[id] then
             -- Movement and target suppression are owned by the active bribe.
         elseif incident and incident.kind=="cybercrime" then
             local p=position(id)
@@ -315,6 +327,8 @@ function gadget:GameFrame(frame)
 end
 
 function gadget:Shutdown()
+    hostages.Shutdown()
+    if GG.PoliceHostages == hostages then GG.PoliceHostages=nil end
     GG.ReportCyberCrime,GG.CancelCyberCrimeReport=nil,nil
     GG.PoliceBribes=nil
 end

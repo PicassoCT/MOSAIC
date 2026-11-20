@@ -281,6 +281,7 @@ end
 local function release(id, reason)
     local state = carriers[id]
     if not state then return end
+    if GG.PoliceHostages then GG.PoliceHostages.End(id, state.civilian, reason == "hostage_dead") end
     chargeHolding(state, Spring.GetGameFrame())
     removeWitness(state)
     pendingFireOrders[id] = nil
@@ -428,6 +429,7 @@ local function take(id, civilian)
     setSpeedEnv(id, 1)
     refresh(id)
     Spring.SetUnitRulesParam(id, "human_shield_cost_per_second", state.rate, visibility)
+    if GG.PoliceHostages then GG.PoliceHostages.Report(id, civilian) end
     revealCaptorRecruiter(id, state)
     alertWitnesses(id)
     return true
@@ -629,7 +631,7 @@ function gadget:UnitDestroyed(id, defID, team, attackerID)
     local state = carriers[carrier]
     local counterpart = state and (id == state.agent and state.civilian or
         (id == state.civilian and state.agent))
-    release(carrier)
+    release(carrier, (counterpart or (state and id == state.civilian)) and "hostage_dead" or nil)
     -- Native hidden passengers cannot be shot separately. Damage/death to the
     -- visible disguise still belongs to the captive, just as outside a hold.
     if counterpart and alive(counterpart) then

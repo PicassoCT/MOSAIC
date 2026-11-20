@@ -517,6 +517,14 @@ function getGameConfig()
                 minSpawnDistance = 2200,
                 reportDelayFrames = 8 * 30,
             },
+            hostages = {
+                cars = 2,
+                radius = 260,
+                minDistance = 140,
+                maxDistance = 750,
+                separation = 180,
+                arrivalDistance = 35,
+            },
             pursuit = {
                 escapeFrames = 30 * 30,
                 searchFrames = 45 * 30,

@@ -7,13 +7,22 @@ versions of either unit do not receive the ability. The command also checks the
 current owner when it executes, including after a capture or team transfer.
 
 The civilian stops normal city and parade activities while held. The operative
-uses a restraint stance with breathing, short matching steps, and a one-arm
-aiming pose. The hostage breathes, struggles, and shuffles with the operative.
+uses a restraint stance with breathing and short matching steps. One arm wraps
+across the captive while the other keeps the pistol visible at gunpoint, including
+outside aim mode. Arm directions use the existing per-model bind calibration.
+The hostage breathes, struggles, and shuffles with the operative.
 Inside an allowed car, both use a seated restraint pose. Releasing the civilian
 restores the ordinary animation systems and movement.
 
 ## Rules while holding a hostage
 
+- A successful capture reports a two-car police containment response after the
+  normal report delay. Cars use the existing police pool and population cap,
+  select nearby city-road positions, park across the road and hold fire while
+  the hostage lives. Missing road positions or capacity delay deployment.
+  Hostage death sends the assigned cars into the existing sighting/search pursuit
+  of the captor; peaceful release ends containment without an attack. Ending a
+  hold before deployment currently cancels that containment request.
 - Each held hostage costs **40 money per second**, or **80 while a nearby civilian
   is filming that hold**. The money actually collected is split equally among
   living, non-allied teams; Gaia and allies receive nothing. Multiple holds add
@@ -174,6 +183,13 @@ An in-engine visual and multiplayer smoke test remains necessary:
    disclosure persists after death and expires normally.
 8. Repeat release and death cases with parade participants, rain, aerosol
    effects, and multiple capture/transport cycles.
+9. Wait for both containment cars, check their road positions and hold-fire,
+   then compare peaceful release with hostage death. Verify the same cars pursue
+   the captor after death and obey the existing sighting and escape rules.
+
+The external lab's `hostage_gunpoint.json` stages the production hold animation
+and attachment for visual review. The revised arm alignment has not yet passed
+an in-engine visual review; the fixture alone does not validate police gameplay.
 
 Lua regression results do not establish native visual alignment, frame rate,
 or multiplayer synchronization results.
