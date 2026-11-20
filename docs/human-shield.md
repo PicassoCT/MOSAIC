@@ -86,10 +86,11 @@ also restrains the underlying operative as an invisible native passenger. Their
 commands, weapon fire and pending bursts are blocked; ordinary decoy-following
 and disguise cleanup cannot pull the visible hostage out of the hold.
 
-After both attachments succeed, the captive's **actual living recruiter** is
+After both attachments succeed, the captor's **actual living recruiter (boss)** is
 recorded in the existing revealed-intelligence graph for its normal duration
-(currently five minutes). This reveals only that parent, not the captive's
-children or an invented nearby handler. A missing/dead recruiter produces no
+(currently five minutes). The disguised captive is the trap: this exposes only
+the captor's parent, never the captive's recruiter or either unit's children.
+A missing/dead captor recruiter produces no
 record. Failed capture attempts never disclose anything. There is no special
 public hostage parameter or capture rejection identifying a decoy.
 

@@ -345,18 +345,18 @@ local function canTake(id, civilian)
     return callScript(civilian, "canBeHumanShield") == true
 end
 
-local function revealRecruiter(state)
+local function revealCaptorRecruiter(carrier, state)
     if not state.agent then return end
-    local team = Spring.GetUnitTeam(state.agent)
+    local team = Spring.GetUnitTeam(carrier)
     if not (GG.InheritanceTable and GG.InheritanceTable[team]) then return end
-    local parent = getParentOfUnit(team, state.agent)
+    local parent = getParentOfUnit(team, carrier)
     if not alive(parent) then return end
     local x, y, z = Spring.GetUnitPosition(state.civilian)
     local px, py, pz = Spring.GetUnitPosition(parent)
     if not x or not px then return end
     local defID = Spring.GetUnitDefID(parent)
-    -- Disclose just the actual recruiter, through the existing intelligence
-    -- graph. This record outlives release/death; killing a witness cannot undo it.
+    -- A disguised captive poisons the captor's secrecy: disclose the captor's
+    -- recruiter, never the captive's network. Release/death cannot undo it.
     GG.RevealedLocations = GG.RevealedLocations or {}
     GG.RevealedLocations[#GG.RevealedLocations + 1] = {
         teamID = team, x = x, y = y, z = z, radius = 40,
@@ -428,7 +428,7 @@ local function take(id, civilian)
     setSpeedEnv(id, 1)
     refresh(id)
     Spring.SetUnitRulesParam(id, "human_shield_cost_per_second", state.rate, visibility)
-    revealRecruiter(state)
+    revealCaptorRecruiter(id, state)
     alertWitnesses(id)
     return true
 end
