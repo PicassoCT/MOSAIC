@@ -19,6 +19,7 @@ on:
       - 'scripts/lib_parade_clearance.lua'
       - 'luarules/gadgets/game_city_parade.lua'
       - 'luarules/configs/city_parade.lua'
+      - 'gamedata/explosions/parade.lua'
       - 'luarules/gadgets/game_city_roads.lua'
       - 'scripts/lib_UnitScript.lua'
       - 'scripts/lib_building_damage.lua'
@@ -42,6 +43,7 @@ jobs:
             /.github/actions/external-tests/
             /.github/mosaic-tests.ref
             /modinfo.lua
+            /gamedata/explosions/parade.lua
             /luarules/
             /luaui/widgets_mosaic/include/city_road_mesh.lua
             /luaui/widgets_mosaic/gui_city_roads.lua
