@@ -3,6 +3,8 @@ name: Cinder flame collision regression
 on:
   pull_request:
     paths:
+      - 'scripts/lib_mosaic.lua'
+      - 'scripts/lib_graphene_arc.lua'
       - 'luaui/widgets_mosaic/include/pyro_flame_collision.lua'
       - 'luaui/widgets_mosaic/include/pyro_flame_budget.lua'
       - 'luaui/widgets_mosaic/include/combat_light_sources.lua'
@@ -26,6 +28,8 @@ jobs:
             /.github/actions/external-tests/
             /.github/mosaic-tests.ref
             /modinfo.lua
+            /scripts/lib_mosaic.lua
+            /scripts/lib_graphene_arc.lua
             /luaui/widgets_mosaic/include/
             /luaui/widgets_mosaic/shaders/
             luaui/widgets_mosaic/gfx_light_effects.lua
