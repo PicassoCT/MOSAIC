@@ -18,6 +18,7 @@ jobs:
             /.github/
             /tools/
             /packaging/
+            /objects3d/truckPayloadParade.dae
             *.lua
       - uses: actions/setup-python@v5
         with:
