@@ -1,0 +1,64 @@
+name: Release gameplay regressions
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /.github/
+            /tools/
+            /packaging/
+            *.lua
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install lupa==2.8
+      - uses: ./.github/actions/external-tests
+      - name: Verify release gameplay on Lua 5.1
+        working-directory: ${{ runner.temp }}/mosaic-validation
+        run: |
+          python - <<'PYTEST'
+          from pathlib import Path
+          from lupa.lua51 import LuaRuntime
+          for name in (
+              'bird_swarm_lifetime_test.lua',
+              'civilian_daily_life_invalid_targets_test.lua',
+              'civilian_spawn_type_guard_test.lua',
+              'clandestine_operations_test.lua',
+              'counterintelligence_test.lua',
+              'event_thread_optimizations_test.lua',
+              'operative_human_shield_integrations_test.lua',
+              'police_response_test.lua',
+              'sniper_birds_test.lua',
+              'truck_parade_payloads_test.lua',
+              'truck_service_payloads_test.lua',
+              'airport_ferry_flight_test.lua',
+              'civilian_traffic_activities_test.lua',
+              'civilian_vehicle_dynamics_test.lua',
+              'civilian_weather_masks_test.lua',
+              'helicopter_rotor_blur_test.lua',
+              'investigation_hologram_test.lua',
+              'investigation_placement_ui_test.lua',
+              'police_scanner_test.lua',
+              'steal_car_command_test.lua',
+              'counterintelligence_helpers_test.lua',
+              'operative_human_shield_test.lua',
+              'betrayal_runners_test.lua',
+              'betrayal_visibility_test.lua',
+              'sticky_bombs_test.lua',
+          ):
+              LuaRuntime().execute(Path('tests', name).read_text(encoding='utf-8'))
+          PYTEST
+      - name: Verify release packaging
+        working-directory: ${{ runner.temp }}/mosaic-validation
+        run: python -m unittest discover -s tests -p test_windows_release.py -q

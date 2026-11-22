@@ -18,7 +18,8 @@ import zipfile
 VERSION = re.compile(r'^\s*GameVersion\s*=\s*[\'\"](\d+\.\d+(?:\.\d+)?)[\'\"]', re.M)
 MOD_VERSION = re.compile(r'(?m)^\s*version\s*=\s*([\'\"])([^\'\"]+)\1\s*,')
 EXCLUDED = {'.github', 'docs', 'Documents', 'tests', 'tools', 'packaging', 'release', 'dist',
-            'pack_mosaic.sh', 'pack_mosaic_full.sh', 'TODO', 'UnitStats.ods'}
+            'pack_mosaic.sh', 'pack_mosaic_full.sh', 'TODO', 'UnitStats.ods',
+            'AGENTS.md', 'DEBUG-INSTRUMENTATION.md', 'sync↑↓'}
 REQUIRED_GAME = ('modinfo.lua', 'scripts/lib_mosaic.lua', 'gamedata', 'units', 'weapons', 'objects3d', 'unittextures', 'luarules', 'luaui')
 
 
@@ -101,6 +102,19 @@ def safe_name(name):
     return p
 
 
+def add_zip_file(archive, name, source, size):
+    safe_name(name)
+    info = zipfile.ZipInfo(name, (2000, 1, 1, 0, 0, 0))
+    info.compress_type = zipfile.ZIP_DEFLATED
+    info._compresslevel = 9
+    info.external_attr = 0o100644 << 16
+    # The game SDZ can exceed 2 GiB. Supply its size before opening the writer so
+    # zipfile reserves a ZIP64 header instead of failing after streaming it all.
+    info.file_size = size
+    with archive.open(info, 'w') as target:
+        shutil.copyfileobj(source, target)
+
+
 def zip_tree(root, destination):
     with zipfile.ZipFile(destination, 'w', zipfile.ZIP_DEFLATED, compresslevel=9) as z:
         for path in sorted(root.rglob('*')):
@@ -108,19 +122,34 @@ def zip_tree(root, destination):
                 raise ValueError(f'Symlink in payload: {path}')
             if path.is_file():
                 name = path.relative_to(root).as_posix()
-                safe_name(name)
-                info = zipfile.ZipInfo(name, (2000, 1, 1, 0, 0, 0))
-                info.compress_type = zipfile.ZIP_DEFLATED
-                info._compresslevel = 9
-                info.external_attr = 0o100644 << 16
-                with path.open('rb') as src, z.open(info, 'w') as dst:
-                    shutil.copyfileobj(src, dst)
+                with path.open('rb') as src:
+                    add_zip_file(z, name, src, path.stat().st_size)
     with zipfile.ZipFile(destination) as z:
         if z.testzip():
             raise ValueError(f'Corrupt generated archive: {destination}')
 
 
-def build_game(repo, target, expected=None):
+def sd7_tree(root, destination):
+    exe = shutil.which('7z') or shutil.which('7zz')
+    if not exe:
+        raise ValueError('7-Zip is required for an SD7 game archive')
+    names = sorted(p.relative_to(root).as_posix() for p in root.rglob('*') if p.is_file())
+    for name in names:
+        safe_name(name)
+    # Bounded solid blocks avoid decompressing the entire game to read one file.
+    # Exclude timestamps for reproducible output with the same 7-Zip version.
+    with tempfile.TemporaryDirectory(prefix='mosaic-sd7-list-') as temp:
+        listing = Path(temp) / 'files.txt'
+        listing.write_text('\n'.join(names) + '\n', encoding='utf-8')
+        subprocess.run([exe, 'a', '-t7z', '-m0=LZMA2', '-mx=7', '-md=64m', '-ms=64m',
+                        '-mmt=2', '-mtm=off', '-mta=off', '-mtc=off', '-scsUTF-8',
+                        str(destination.resolve()), '@' + str(listing)], cwd=root, check=True)
+    subprocess.run([exe, 't', str(destination)], check=True, stdout=subprocess.DEVNULL)
+
+
+def build_game(repo, target, expected=None, game_format='sdz'):
+    if game_format not in ('sdz', 'sd7'):
+        raise ValueError('Unsupported game archive format')
     # Build only committed HEAD, never untracked build outputs or local modifications.
     if run(repo, 'status', '--porcelain', '--untracked-files=no').strip():
         raise ValueError('Tracked working tree is dirty; commit changes before packaging')
@@ -135,7 +164,7 @@ def build_game(repo, target, expected=None):
                 metadata, raw_name = entry.split(b'\t', 1)
                 mode, kind, oid = metadata.decode().split()
                 name = raw_name.decode('utf-8')
-                if name.split('/')[0] in EXCLUDED or name.startswith('.'):
+                if name.split('/')[0] in EXCLUDED or any(part.startswith('.') for part in name.split('/')):
                     continue
                 if mode not in ('100644', '100755') or kind != 'blob':
                     raise ValueError(f'Unsupported tracked entry: {name}')
@@ -149,18 +178,25 @@ def build_game(repo, target, expected=None):
                 raise ValueError(f'Missing required game asset: {name}')
         version, mod = resolve_version((root / 'scripts/lib_mosaic.lua').read_text(), (root / 'modinfo.lua').read_text(), expected)
         (root / 'modinfo.lua').write_text(mod, encoding='utf-8', newline='\n')
-        archive = target / f'Mosaic_v{version}.sdz'
-        zip_tree(root, archive)
-        with zipfile.ZipFile(archive) as z:
-            packaged_version, _ = resolve_version(z.read('scripts/lib_mosaic.lua').decode(), z.read('modinfo.lua').decode(), version)
-            assert packaged_version == version
+        archive = target / f'Mosaic_v{version}.{game_format}'
+        if game_format == 'sd7':
+            sd7_tree(root, archive)
+            exe = shutil.which('7z') or shutil.which('7zz')
+            lib = subprocess.check_output([exe, 'x', '-so', str(archive), 'scripts/lib_mosaic.lua']).decode()
+            info = subprocess.check_output([exe, 'x', '-so', str(archive), 'modinfo.lua']).decode()
+            resolve_version(lib, info, version)
+        else:
+            zip_tree(root, archive)
+            with zipfile.ZipFile(archive) as z:
+                packaged_version, _ = resolve_version(z.read('scripts/lib_mosaic.lua').decode(), z.read('modinfo.lua').decode(), version)
+                assert packaged_version == version
     return version, commit, archive
 
 
 def validate_lock(lock):
     if lock.get('schema_version') != 1:
         raise ValueError('Input lock schema_version must be 1')
-    for role in ('engine', 'lobby', 'map'):
+    for role in ('engine', 'lobby', 'runtime', 'map'):
         asset = lock.get(role, {})
         if not isinstance(asset, dict):
             raise ValueError(f'Invalid {role} lock')
@@ -172,23 +208,37 @@ def validate_lock(lock):
             raise ValueError(f'{role}: specify exactly one HTTPS url or local path')
         if asset.get('url') and urllib.parse.urlparse(asset['url']).scheme != 'https':
             raise ValueError(f'{role}: downloads require HTTPS')
-        if role != 'map':
+        if role in ('engine', 'runtime'):
             if not isinstance(asset.get('required_files'), list) or not asset['required_files']:
                 raise ValueError(f'{role}: required_files cannot be empty')
             safe_name(asset.get('root', '.')) if asset.get('root', '.') != '.' else None
             for name in asset['required_files']:
                 safe_name(name)
-            if not any(name.lower().endswith('.exe') for name in asset['required_files']):
-                raise ValueError(f'{role}: required_files must include its Windows executable')
+            executable = 'spring.exe' if role == 'engine' else 'bin/java.exe'
+            if executable not in [name.replace('\\', '/').lower() for name in asset['required_files']]:
+                raise ValueError(f'{role}: required_files must include {executable}')
+        elif role == 'lobby':
+            name = asset.get('filename', '')
+            safe_name(name)
+            if '/' in name or not name.lower().endswith('.jar') or asset.get('format') != 'file':
+                raise ValueError('lobby: filename must be a JAR basename and format must be file')
         else:
             name = asset.get('filename', '')
             safe_name(name)
             if '/' in name or not name.lower().endswith(('.sdz', '.sd7')):
                 raise ValueError('map: filename must be an SDZ or SD7 basename')
+            root = asset.get('root', '.')
+            if root != '.':
+                safe_name(root)
+                if not name.lower().endswith('.sdz'):
+                    raise ValueError('map: a wrapped source archive requires an SDZ output filename')
 
 
 def acquire(asset, base, temp, role):
-    path = temp / (role + ('.7z' if asset.get('format') == '7z' else '.zip'))
+    suffix = {"7z": ".7z", "zip": ".zip", "file": Path(asset.get('filename', '')).suffix}.get(asset.get('format'))
+    if not suffix:
+        raise ValueError(f'{role}: unsupported input format')
+    path = temp / (role + suffix)
     if asset.get('path'):
         shutil.copyfile(base / asset['path'], path)
     else:
@@ -202,6 +252,49 @@ def acquire(asset, base, temp, role):
     return path
 
 
+def validate_archive_paths(entries):
+    # Source ZIPs can repeat directory entries with different casing. They are
+    # the same directory on Windows; files and file/directory aliases must never
+    # overwrite one another, including through an implicit parent directory.
+    paths = {}
+    for name, is_directory in entries:
+        path = safe_name(name)
+        for parent in path.parents:
+            if parent == PurePosixPath('.'):
+                continue
+            key = parent.as_posix().casefold()
+            if key in paths and not paths[key]:
+                raise ValueError('File/directory collision in archive paths')
+            paths[key] = True
+        key = path.as_posix().casefold()
+        if key in paths and not (is_directory and paths[key]):
+            raise ValueError('Duplicate/case-colliding archive paths')
+        paths[key] = is_directory
+
+
+def repack_map_zip(archive, destination, root):
+    # Copy directly between archives so case-insensitive Windows filesystems
+    # cannot change member spelling while removing GitHub's source wrapper.
+    prefix = root.rstrip('/') + '/'
+    with zipfile.ZipFile(archive) as source:
+        entries = source.infolist()
+        validate_archive_paths((item.filename, item.is_dir()) for item in entries)
+        if any(stat.S_ISLNK(item.external_attr >> 16) for item in entries):
+            raise ValueError('Archive symlink rejected')
+        members = [(item.filename[len(prefix):], item) for item in entries
+                   if not item.is_dir() and item.filename.startswith(prefix)]
+        names = {name for name, _ in members}
+        if 'mapinfo.lua' not in names or not any(name.endswith('.smf') for name in names):
+            raise ValueError('Map archive lacks mapinfo.lua or SMF terrain')
+        with zipfile.ZipFile(destination, 'w', zipfile.ZIP_DEFLATED, compresslevel=9) as target:
+            for name, item in sorted(members, key=lambda member: member[0]):
+                with source.open(item) as data:
+                    add_zip_file(target, name, data, item.file_size)
+    with zipfile.ZipFile(destination) as result:
+        if result.testzip():
+            raise ValueError('Corrupt generated map archive')
+
+
 def extract(archive, destination, format):
     destination.mkdir(parents=True)
     names = []
@@ -213,9 +306,8 @@ def extract(archive, destination, format):
                 safe_name(item.filename)
                 if stat.S_ISLNK(item.external_attr >> 16):
                     raise ValueError('Archive symlink rejected')
-                names.append(item.filename.rstrip('/').casefold())
-            if len(set(names)) != len(names):
-                raise ValueError('Duplicate/case-colliding archive paths')
+                names.append((item.filename, item.is_dir()))
+            validate_archive_paths(names)
             z.extractall(destination)
     elif format == '7z':
         exe = shutil.which('7z') or shutil.which('7zz')
@@ -232,9 +324,11 @@ def extract(archive, destination, format):
             safe_name(fields['Path'])
             if 'Symbolic Link' in fields or 'Hard Link' in fields or 'l' in fields.get('Attributes', ''):
                 raise ValueError('Archive links rejected')
-            names.append(fields['Path'].rstrip('/').casefold())
-        if not names or len(set(names)) != len(names):
-            raise ValueError('Empty or duplicate/case-colliding 7z paths')
+            is_directory = fields.get('Folder') == '+' or fields.get('Attributes', '').startswith('D')
+            names.append((fields['Path'], is_directory))
+        if not names:
+            raise ValueError('Empty 7z archive')
+        validate_archive_paths(names)
         subprocess.run([exe, 't', str(archive)], check=True, stdout=subprocess.DEVNULL)
         subprocess.run([exe, 'x', '-y', '-o' + str(destination), str(archive)], check=True, stdout=subprocess.DEVNULL)
     else:
@@ -253,7 +347,7 @@ def write_json(path, value):
     path.write_text(json.dumps(value, indent=2, sort_keys=True) + '\n', encoding='utf-8')
 
 
-def package(repo, output, lock_path=None, expected=None):
+def package(repo, output, lock_path=None, expected=None, game_format='sdz'):
     repo, output = repo.resolve(), output.resolve()
     if output.exists():
         raise ValueError('Output path already exists; choose a fresh directory')
@@ -267,25 +361,42 @@ def package(repo, output, lock_path=None, expected=None):
         temp = Path(temp)
         result = temp / 'artifacts'
         result.mkdir()
-        version, commit, game = build_game(repo, result, expected)
+        version, commit, game = build_game(repo, result, expected, game_format)
         manifest = {'schema_version': 1, 'game_version': version, 'source_commit': commit,
-                    'portable': lock is not None, 'inputs': lock, 'artifacts': []}
+                    'portable': lock is not None, 'inputs': lock, 'artifacts': [], 'game_format': game_format,
+                    'performance_gate': {'minimum_zoomed_out_fps': 25, 'status': 'unverified'}}
         if lock:
             portable = temp / f'Mosaic_v{version}_windows-portable'
             portable.mkdir()
-            for role in ('engine', 'lobby', 'map'):
+            for role in ('engine', 'lobby', 'runtime', 'map'):
                 asset = lock[role]
                 archive = acquire(asset, lock_path.resolve().parent, temp, role)
+                if role == 'lobby':
+                    lobby = portable / 'lobby'
+                    lobby.mkdir()
+                    shutil.copyfile(archive, lobby / 'skylobby.jar')
+                    continue
                 unpack = temp / (role + '-unpacked')
                 fmt = asset.get('format') or ('7z' if asset.get('filename', '').endswith('.sd7') else 'zip')
+                if role == 'map' and fmt == 'zip' and asset.get('root', '.') != '.':
+                    maps = portable / 'data/maps'
+                    maps.mkdir(parents=True)
+                    repack_map_zip(archive, maps / asset['filename'], asset['root'])
+                    continue
                 extract(archive, unpack, fmt)
                 if role == 'map':
+                    source = unpack if asset.get('root', '.') == '.' else unpack / asset['root']
                     # A Spring map needs metadata AND compiled map terrain.
-                    if not any(p.name.lower() == 'mapinfo.lua' for p in unpack.rglob('*')) or not any(unpack.rglob('*.smf')):
+                    if not (source / 'mapinfo.lua').is_file() or not any(source.rglob('*.smf')):
                         raise ValueError('Map archive lacks mapinfo.lua or SMF terrain')
                     maps = portable / 'data/maps'
                     maps.mkdir(parents=True)
-                    shutil.copyfile(archive, maps / asset['filename'])
+                    if asset.get('root', '.') == '.':
+                        shutil.copyfile(archive, maps / asset['filename'])
+                    else:
+                        # GitHub source archives have a commit-named wrapper;
+                        # Spring needs mapinfo.lua at the SDZ archive root.
+                        zip_tree(source, maps / asset['filename'])
                 else:
                     source = unpack if asset.get('root', '.') == '.' else unpack / asset['root']
                     for name in asset['required_files']:
@@ -298,7 +409,16 @@ def package(repo, output, lock_path=None, expected=None):
                                 raise ValueError(f'Engine lacks {name}')
                         if not any((source / 'base').rglob('*.sdz')):
                             raise ValueError('Engine lacks base SDZ assets')
-                    shutil.copytree(source, portable / role)
+                        destination = portable / 'data/engine/mosaic-pinned'
+                    else:
+                        release = (source / 'release').read_text(encoding='utf-8')
+                        java_version = re.search(r'JAVA_VERSION="(\d+)', release)
+                        if (not java_version or int(java_version.group(1)) < 21 or
+                                not re.search(r'OS_ARCH="(?:amd64|x86_64)"', release) or
+                                not re.search(r'OS_NAME="Windows"', release)):
+                            raise ValueError('Runtime must be a complete Windows x64 Java 21 or newer build')
+                        destination = portable / 'runtime'
+                    shutil.copytree(source, destination)
             games = portable / 'data/games'
             games.mkdir(parents=True)
             shutil.copyfile(game, games / game.name)
@@ -306,13 +426,24 @@ def package(repo, output, lock_path=None, expected=None):
             if not config.is_file() or not config.stat().st_size:
                 raise ValueError('Missing packaging/springsettings.cfg')
             shutil.copyfile(config, portable / 'data/springsettings.cfg')
-            # SPRING_DATADIR is inherited by lobby/engine; isolation config is explicit.
-            lobby_exe = next(n for n in lock['lobby']['required_files'] if n.lower().endswith('.exe'))
-            if any(c in lobby_exe for c in '%!&|<>^\"\r\n'):
-                raise ValueError('Lobby executable path cannot be safely launched by cmd.exe')
-            launcher = '@echo off\r\nsetlocal\r\nset "SPRING_DATADIR=%~dp0data"\r\ncd /d "%~dp0lobby"\r\nstart "MOSAIC" "' + lobby_exe.replace('/', '\\') + '"\r\n'
+            # Use the accepted maintained Skylobby JAR and an isolated bundled Java runtime.
+            launcher = ('@echo off\r\nsetlocal DisableDelayedExpansion\r\ncd /d "%~dp0"\r\n'
+                        'set "SPRING_DATADIR=%~dp0data"\r\n'
+                        'set "SPRING_WRITEDIR=%~dp0data"\r\n'
+                        'set "SPRING_ISOLATED=%~dp0data\\engine\\mosaic-pinned"\r\n'
+                        'if not exist "state\\lobby" mkdir "state\\lobby"\r\n'
+                        'if not exist "state\\home" mkdir "state\\home"\r\n'
+                        'if not exist "state\\tmp" mkdir "state\\tmp"\r\n'
+                        '"%~dp0runtime\\bin\\java.exe" -XX:+UseZGC -Xmx2g -XX:+ExitOnOutOfMemoryError '
+                        '--add-opens=java.base/java.nio=ALL-UNNAMED --add-opens=java.base/sun.nio.ch=ALL-UNNAMED '
+                        '-Duser.home="%~dp0state\\home" -Djava.io.tmpdir="%~dp0state\\tmp" '
+                        '-Dprism.allowhidpi=true -Dglass.win.minHiDPI=1 -jar "%~dp0lobby\\skylobby.jar" '
+                        '--skylobby-root "%~dp0state\\lobby" --spring-root "%~dp0data" '
+                        '--server-url "lobby.springrts.com:8200" --filter-battles "MOSAIC" --no-update-check\r\n'
+                        'set "MOSAIC_EXIT=%ERRORLEVEL%"\r\nif not "%MOSAIC_EXIT%"=="0" pause\r\n'
+                        'exit /b %MOSAIC_EXIT%\r\n')
             (portable / 'Start-Mosaic.cmd').write_bytes(launcher.encode())
-            (portable / 'PLAY.txt').write_text('Run Start-Mosaic.cmd. In Skylobby configure the engine path to engine/spring.exe and the data directory to data (both beside this file). Select MOSAIC ' + version + ' and the bundled map. Lobby/server access requires internet.\n', encoding='utf-8')
+            (portable / 'PLAY.txt').write_text('Run Start-Mosaic.cmd, sign in to Spring Official, and join the agreed MOSAIC room. The launcher uses the bundled Java runtime and data tree, filters for MOSAIC rooms, and does not provide matchmaking. Select MOSAIC ' + version + ' and the bundled map. Lobby/server access requires internet.\n', encoding='utf-8')
             manifest['payload_files'] = file_manifest(portable)
             write_json(portable / 'manifest.json', manifest)
             bundle = result / (portable.name + '.zip')
@@ -330,10 +461,11 @@ def main():
     parser.add_argument('--repo', type=Path, default=Path(__file__).resolve().parents[1])
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--inputs', type=Path, help='Validated portable input lock; omit for SDZ only')
+    parser.add_argument('--game-format', choices=('sdz', 'sd7'), default='sdz')
     parser.add_argument('--expected-version', help='Must match GameVersion; accepts a v prefix')
     args = parser.parse_args()
     try:
-        manifest = package(args.repo, args.output, args.inputs, args.expected_version)
+        manifest = package(args.repo, args.output, args.inputs, args.expected_version, args.game_format)
     except (ValueError, OSError, subprocess.CalledProcessError, zipfile.BadZipFile) as error:
         parser.exit(1, f'Packaging failed: {error}\n')
     print(f"Validated MOSAIC {manifest['game_version']} from {manifest['source_commit']}: {args.output}")
