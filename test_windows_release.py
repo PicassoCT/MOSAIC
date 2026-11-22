@@ -91,6 +91,27 @@ class ReleaseTests(unittest.TestCase):
             digest, name = line.split('  ', 1)
             self.assertEqual(digest, p.sha256(self.out / name))
 
+    @unittest.skipUnless(shutil.which('7z') or shutil.which('7zz'), '7-Zip required')
+    def test_sd7_game_and_ignored_development_files(self):
+        self.write('AGENTS.md', 'development instructions')
+        self.write('scripts/.private/notes.txt', 'hidden development data')
+        self.write('.gitignore', '*.secret\n')
+        self.commit()
+        self.write('sounds/local.secret', 'untracked ignored input')
+        manifest = p.package(self.repo, self.out, expected='1.034', game_format='sd7')
+        archive = self.out / 'Mosaic_v1.034.sd7'
+        self.assertEqual(manifest['game_format'], 'sd7')
+        exe = shutil.which('7z') or shutil.which('7zz')
+        listing = subprocess.check_output([exe, 'l', '-slt', str(archive)], text=True)
+        self.assertNotIn('AGENTS.md', listing)
+        self.assertNotIn('notes.txt', listing)
+        self.assertNotIn('local.secret', listing)
+        data = subprocess.check_output([exe, 'x', '-so', str(archive), 'modinfo.lua']).decode()
+        self.assertIn("version = '1.034'", data)
+        second = self.base / 'sd7-repeat'
+        p.package(self.repo, second, expected='1.034', game_format='sd7')
+        self.assertEqual(archive.read_bytes(), (second/archive.name).read_bytes())
+
     def test_portable_payload_and_manifest(self):
         path, lock = self.lock()
         manifest = p.package(self.repo, self.out, path, '1.034')
