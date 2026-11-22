@@ -492,8 +492,12 @@ mobile:CaptureSources(policeCapture,0,128,policeDomain,nil)
 police_metadata = pixels(g.mobile.sourceAtlas)[:, 512:]
 assert (police_metadata[:, :, 3] == 72).any(), 'police source owner lost before mobile shadows'
 shadowed_scene = police_scene(g.mobile)
-front = (road_x < 240) & (road_x > 210) & (np.abs(road_z - 256) < 8)
+# This depth-copy fixture reconstructs a flat ground plane, even beneath the
+# car. Restrict the outward-road check to pixels outside its proxy: pixels at
+# x=237/239 lie inside the car and correctly receive model-surface incidence.
+front = outside_vehicle & (road_x < 240) & (road_x > 210) & (np.abs(road_z - 256) < 8)
 behind = (road_x > 330) & (road_x < 360) & (np.abs(road_z - 256) < 6)
+assert front.any() and blue_scene[front].sum() > 1, 'outward police-light receiver fixture is empty or unlit'
 assert np.allclose(shadowed_scene[front], blue_scene[front], atol=.001), 'own police proxy erased outward illumination'
 assert shadowed_scene[behind].sum() < blue_scene[behind].sum() * .1, 'separate mobile blocker did not cast a police-light shadow'
 moving_scene = police_step(10, x=360)

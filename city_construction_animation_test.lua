@@ -10,12 +10,19 @@ local function execute(s,env)
 end
 local plot={elapsed=0,paused=false}
 local shown,moves,destroyed={}, {}, false
+local threads,excavatorStarted={},false
 local env={GG={CityConstructionSites={[1]=plot},CityRubble={[1]=plot},ManualRenderedBuildingWithWindowsVisiblePieces={}},
  unitID=1,Icon=99,boolDoneShowing=true,ToShowTable={1,2,3},toShowDict={[1]=true,[2]=true,[3]=true},
  GameConfig={city={rubble={decayFrames=30,constructionFrames=30}}},
  Spring={GetUnitPiecePosDir=function(_,p)return 0,({30,10,20})[p],0 end,
  DestroyUnit=function()destroyed=true end},
- Sleep=function()coroutine.yield()end,Show=function(id)shown[id]=true end,Hide=function(id)shown[id]=nil end,
+ Sleep=function(delay)coroutine.yield(delay)end,Show=function(id)shown[id]=true end,Hide=function(id)shown[id]=nil end,
+ StartThread=function(fn)
+  local thread=coroutine.create(fn)
+  local ok,delay=coroutine.resume(thread);assert(ok,delay)
+  threads[#threads+1]={thread=thread,delay=delay};return thread
+ end,
+ excavator=function()excavatorStarted=true end,
  SetRadiancePlaceables=function()end,hideT=function()end,
  Move=function(_,_,position)moves[#moves+1]=position end,
  center=1,z_axis=3,distanceToGoDown=90,ExcavatorTable={}}
@@ -38,6 +45,9 @@ execute(section('scripts/gCScrapHeap.lua','function waitForAnEnd()'),env)
 plot.elapsed=15;plot.paused=true
 c=coroutine.create(env.waitForAnEnd);assert(coroutine.resume(c));assert(coroutine.resume(c))
 assert(moves[#moves]==-45 and not destroyed)
+assert(#threads==1 and threads[1].delay==60000 and not excavatorStarted,
+ 'excavator arrival must wait independently of the rubble clock')
 assert(coroutine.resume(c));assert(moves[#moves]==-45 and not destroyed)
 env.GG.CityRubble[1]=nil;assert(coroutine.resume(c));assert(not destroyed)
+assert(coroutine.resume(threads[1].thread));assert(excavatorStarted)
 print('PASS reconstruction animations: deterministic height sort, peace-gated partial assembly and clock-driven rubble decay')

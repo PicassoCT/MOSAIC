@@ -226,7 +226,12 @@ check('failed payload, variant and ordinary-trip setup clean up assembly',functi
         local f=fixture({[key]=true}); local t=when(7,19)
         f:step(t); f:step(t+15)
         assert(count(f.d.vehicles)==0 and count(f.destroyed)>0,key..' leaked a float')
-        f:step(when(7,20)); assert(f.d.phase=='idle' and f.rules.city_parade_last_stop=='assembly incomplete')
+        -- Eight-float assembly may continue beyond the scheduled tour hour.
+        -- Failed payloads still get the full assembly window before cleanup.
+        f:step(when(7,20)); assert(f.d.phase=='assembling')
+        local deadline=t+15+f.config.assemblyTimeoutFrames
+        f:step(deadline-f.config.tickFrames); assert(f.d.phase=='assembling')
+        f:step(deadline); assert(f.d.phase=='idle' and f.rules.city_parade_last_stop=='assembly incomplete')
     end
 end)
 
