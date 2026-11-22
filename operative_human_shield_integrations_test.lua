@@ -125,6 +125,7 @@ local city = {
     end,
     giveWaypointsToUnit = function(id) assigned[id] = true end,
     civilianLife = {IsProtected = function() return false end},
+    trafficActivities = {Cancel=function() end, Remove=function() end, Step=function() return false end},
     spDestroyUnit = function(id) destroyed[id], alive[id] = true, nil end,
 }
 local civilians = source('luarules/gadgets/game_civilians.lua')
@@ -137,12 +138,14 @@ run(heldHelper .. travel .. arrivals .. decimate .. '\n' .. internal .. '\npasse
 assert(not city.passenger('10') and not city.passenger(0/0) and not city.passenger({}),
     'invalid IDs do not reach a native transporter query')
 local pack = {unitID = 10, myTeam = 0, stuckCounter = 99, currPos = {0, 0, 0}}
+pack.trafficRegistration=cityGG.CivilianTable[10]
 local due, samePack = city.travellFunction(5, 100, pack, 0)
 eq(due, 115, 'held traffic checks again without advancing its journey')
 assert(samePack == pack and initialized == 0, 'held traffic skips ordinary initialization')
 assert(pack.stuckCounter == 0 and pack.currPos == nil, 'stale stuck detection cannot kill a hostage')
 eq(transportReads[10],nil,'known hostage ownership takes priority over the generic transport query')
 local passengerPack={unitID=12,myTeam=0,stuckCounter=99,currPos={0,0,0}}
+passengerPack.trafficRegistration=cityGG.CivilianTable[12]
 due,samePack=city.travellFunction(6,100,passengerPack,0)
 assert(due==115 and samePack==passengerPack and initialized==0,
     'ordinary truck rider retains a paused traffic journey')
@@ -235,6 +238,7 @@ local witnessing=true
 alive[11]=true; cityGG.CivilianTable[11]={startID=50,defID=2}
 cityGG.HumanShield={IsHostage=function() return false end,IsWitness=function(id) return witnessing and id==11 end}
 local witnessPack={unitID=11,myTeam=0,stuckCounter=99,currPos={0,0,0}}
+witnessPack.trafficRegistration=cityGG.CivilianTable[11]
 local beforeInit=initialized
 city.travellFunction(7,200,witnessPack,0)
 assert(initialized==beforeInit and witnessPack.stuckCounter==0 and witnessPack.currPos==nil)

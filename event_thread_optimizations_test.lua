@@ -163,6 +163,7 @@ end
 
 for _,path in ipairs({'scripts/Truckscript.lua','scripts/LongTruckscript.lua'}) do
     local r=runtime(); local e=r.unit(1); local enemy
+    e.GG={CivilianTable={[1]={}}}
     e.fleeEnemy=function(id) enemy=id; e.Sleep(33) end
     run(fn(path,'startFleeing'),e)
     r.call(e,e.startFleeing,42); r.call(e,e.startFleeing,99)
@@ -171,6 +172,47 @@ end
 
 -- Ownership call-in supplies all arguments and acts in the correct unit
 -- context. Multiple same-frame captures transfer the loadout only once.
+for _,path in ipairs({'scripts/Truckscript.lua','scripts/LongTruckscript.lua'}) do
+    for _,phase in ipairs({'pending','running'}) do
+        local r=runtime();local e=r.unit(1);local orders,states=0,0
+        e.GG={CivilianTable={[1]={}}};e.SIG_INTERNAL=4
+        e.GameConfig={civilians={activityStates={started=1,ended=2},panic={radius=100,fleeDistance=200}}}
+        e.Spring.GetUnitTeam=function() return 0 end
+        e.Spring.GetGaiaTeamID=function() return 0 end
+        e.doesUnitExistAlive=function() return true end
+        e.distanceUnitToUnit=function() return 1 end
+        e.runAwayFrom=function() orders=orders+1 end
+        e.setCivilianUnitInternalStateMode=function() states=states+1 end
+        run(fn(path,'fleeEnemy')..'\n'..fn(path,'startFleeing'),e)
+        r.call(e,e.startFleeing,99)
+        if phase=='running' then r.tick(8);assert(orders==1) end
+        -- UnitTaken revokes the old registration before GetUnitTeam changes;
+        -- later re-registration must not reactivate this old request either.
+        e.GG.CivilianTable[1]={}
+        local beforeOrders,beforeStates=orders,states
+        r.tick(30)
+        assert(orders==beforeOrders and states==beforeStates and r.pending()==0,
+            path..' '..phase..' flee job survived ownership deregistration')
+    end
+end
+do
+    local r=runtime();local e=r.unit(1);local orders,features=0,0
+    e.GG={CivilianTable={[2]={}}};e.gaiaTeamID=0
+    e.GameConfig={civilians={emergency={locationLifetimeMs=10000}}}
+    e.Spring.GetUnitTeam=function() return 0 end
+    e.Spring.GetUnitTransporter=function() return 2 end
+    e.getEmergency=function() return 100,100 end
+    e.doesUnitExistAlive=function() return true end
+    e.Command=function() orders=orders+1 end
+    e.displayedPiece=1;e.EMT=1
+    e.getFeaturesInCircleAroundUnit=function() features=features+1 end
+    run(fn('scripts/truckPayloadScript.lua','FireTruckEmergencyBehaviour'),e)
+    r.call(e,function() e.StartThread(e.FireTruckEmergencyBehaviour) end)
+    r.tick(2);assert(orders==1)
+    e.GG.CivilianTable[2]={}
+    r.tick(80)
+    assert(orders==1 and features==0,'emergency job retained control after registration changed')
+end
 do
     local r=runtime(); local e=r.unit(1); local team, transfers=2,{}
     e.Spring.GetUnitTeam=function() return team end

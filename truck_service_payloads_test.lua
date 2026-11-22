@@ -201,7 +201,10 @@ local function scriptFixture(previousSpawns, missingPieces)
     end
     local env=environment({arg=false,unitID=7,unitDefID=20,script={},
         Game={mapSizeX=1024,mapSizeZ=1024},
-        GG={CivilianServicePayloadVariants={spawns=previousSpawns or 0}},
+        GG={CivilianServicePayloadVariants={spawns=previousSpawns or 0},
+            CivilianVehicles={SetPayload=function(id,family,key)
+                assert(id==7 and family=='service');f.drivingPayload=key
+            end}},
         UnitDefs={[20]={name='truckpayloadservice'},[1]={name='truck_arab6'},
             [2]={name='truck_arab7'},[3]={name='truck_arab8'}},
         y_axis=2,z_axis=3,Spring={}})
@@ -243,6 +246,7 @@ end
 check('one complete piece is visible and only sleeper reuses existing bus routines',function()
     for index=1,13 do
         local f=scriptFixture(index-1)
+        assert(f.drivingPayload==catalog.variants[index].key)
         local count=0; for piece in pairs(f.shown) do count=count+1; assert(piece==index) end
         assert(count==1 and f.hidden[0])
         assert(f.flags.SetUnitNeutral and f.flags.SetUnitAlwaysVisible and f.flags.SetUnitNoSelect)
@@ -300,6 +304,7 @@ check('team platters remain on carriers and skip old and new payload bodies',fun
             GetTimer=function() return 0 end,
             GetSelectedUnits=function() return {} end,
             GetAllUnits=function() return units end,
+            GetVisibleUnits=function() return units end,
             IsUnitVisible=function() return true end,
             GetUnitTeam=function() return 0 end,
             GetUnitDefID=function(id) return id end,

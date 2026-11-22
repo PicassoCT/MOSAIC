@@ -115,6 +115,7 @@ local events={}
 e.RouteTabel={[100]={"101",false,{},101,102,103}}
 e.civilianLife=life
 e.civilianWalkingTypeTable={[1]=true}
+e.trafficVehicleTypes={}
 e.spGetUnitPosition=e.Spring.GetUnitPosition
 e.spGetUnitTeam=e.Spring.GetUnitTeam
 e.spGetGameFrame=e.Spring.GetGameFrame

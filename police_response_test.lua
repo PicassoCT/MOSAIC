@@ -12,7 +12,7 @@ UnitDefs={[4]={name='policetruck'}}
 UnitDefNames={policetruck={id=4},icon_cybercrime={id=8},icon_bribe={id=9}}
 WeaponDefNames={closecombat={id=5}}
 gadget={};gadgetHandler={IsSyncedCode=function() return true end};VFS={Include=function(path)
-    if path=='luarules/gadgets/include/police_bribery.lua' or path=='luarules/gadgets/include/police_hostages.lua' then return dofile(path) end
+    if path:match('^luarules/gadgets/include/police_') then return dofile(path) end
 end}
 getGameConfig=function() return cfg end
 getPoliceTypes=function() return {[4]=true} end
@@ -23,7 +23,10 @@ getCultureUnitModelTypes=function(_,kind) return kind=='civilian' and {[2]=true}
 getScrapheapTypeTable=function() return {} end
 isOffenceIcon=function() return false end
 registerEmergency=function() end
+local radio={}
 Spring={
+ GetGameRulesParam=function(key) return radio[key] end,
+ SetGameRulesParam=function(key,value,visibility) assert(visibility.public);radio[key]=value end,
  GetGaiaTeamID=function() return 0 end,GetTeamAllyTeamID=function() return 0 end,
  ValidUnitID=function(id) return pos[id]~=nil end,GetUnitIsDead=function(id) return not pos[id] end,
  GetUnitPosition=function(id) if pos[id] then return (table.unpack or unpack)(pos[id]) end end,
@@ -44,9 +47,10 @@ Spring={
 dofile('luarules/gadgets/game_police.lua');gadget:Initialize()
 local function tick(f) frame=f;gadget:GameFrame(f) end
 local function shoot(weapon) gadget:UnitDamaged(2,2,0,20,false,weapon,nil,1,1,1) end
-shoot(5);tick(240);assert(created==0 and not GG.PoliceExposureUntil[1],'stabbing stays silent')
+shoot(5);tick(240);assert(not radio.police_scanner_frame,'silent stabbing creates no radio report');assert(created==0 and not GG.PoliceExposureUntil[1],'stabbing stays silent')
 frame=0;shoot(6);assert(GG.PoliceExposureUntil[1]==900)
 tick(225);assert(created==0,'dispatch delay')
+assert(radio.police_scanner_kind=='violence' and radio.police_scanner_x==300 and radio.police_scanner_frame==0,'radio uses victim location and actual event time')
 tick(240);assert(created==1 and GG.PoliceInPursuit[101]==1,'new officer retains incident')
 assert(orders[101].cmd==CMD.MOVE and orders[101].p[1]==300,'drive to victim, not attacker')
 assert(pos[101][1]>2200,'spawn at distant building')
@@ -73,7 +77,7 @@ print('PASS: silent stab, delay, remote spawn, assignment, victim response, sigh
 Spring.DestroyUnit(102);pos[1]=nil;tick(3000);pos[1]={300,0,300};pos[2]={300,0,300};defs[2]=2
 GG.CityRoadNetwork={roads={{points={{0,300},{10000,300}}}}}
 frame=3000;GG.PoliceHostages.Report(1,2);GG.PoliceHostages.Report(1,2)
-tick(3225);assert(created==2,'hostage report respects ordinary dispatch delay')
+tick(3225);assert(radio.police_scanner_kind=='hostage' and radio.police_scanner_frame==3000);assert(created==2,'hostage report respects ordinary dispatch delay')
 tick(3240);assert(created==4,'one report assigns exactly two police cars')
 local cars={103,104}
 for _,id in ipairs(cars) do
@@ -89,6 +93,7 @@ for _,id in ipairs(cars) do
 end
 tick(3285);assert(created==4,'live hold never duplicates the two-car response')
 GG.PoliceHostages.End(1,2,true);tick(3300)
+assert(radio.police_scanner_kind=='hostage_death','hostage death reaches scanner')
 for _,id in ipairs(cars) do
  assert(not GG.PoliceHostages.IsHoldingFire(id),'hostage death lifts ceasefire')
  assert(orders[id].cmd==CMD.ATTACK and orders[id].p[1]==1,'same cars attack captor after hostage death')

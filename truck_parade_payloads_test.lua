@@ -28,7 +28,9 @@ local function fixture()
         map = {center = 1}, blocks = {}, selects = {}, rules = {}}
     for name, id in pairs(exportedPieces) do f.map[name] = id end
     local function noop() end
-    local env = {unitID = 5, script = {}, GG = {}, Spring = {},
+    local env = {unitID = 5, script = {}, GG = {CivilianVehicles={SetPayload=function(id,family,index)
+        assert(id==5 and family=='parade');f.drivingVariant=index
+    end}}, Spring = {},
         x_axis = 1, y_axis = 2, z_axis = 3,
         UnitDefs = {[1] = {name = "truck_arab6"}, [2] = {name = "truck_arab8"}},
         VFS = {Include = function(path) return dofile(path) end}, include = noop,
@@ -152,6 +154,7 @@ check("all 24 exported floats select with their exact children and only Float24 
     for index, entry in ipairs(catalog.variants) do
         local f = fixture(); f.parent = 20
         assert(f.env.SetParadeVariant(index)); f.env.script.Create()
+        assert(f.drivingVariant==index)
         assert(#f.destroyed == 0 and f.rules.city_parade_variant == index)
         assert(entry.description and #entry.description > 30)
         assert(not entry.title:match("^Lantern Float"))
@@ -196,6 +199,7 @@ check("missing center or articulated child fails before starting animations", fu
         local f = fixture(); f.map[missing] = nil
         local index = missing == "Float24Sub1" and 24 or 2
         assert(f.env.SetParadeVariant(index)); f.env.script.Create()
+        assert(f.drivingVariant==nil)
         assert(#f.destroyed == 1 and next(f.visible) == nil)
     end
 end)

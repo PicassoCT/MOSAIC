@@ -7,9 +7,9 @@ local function world()
     Game={gameSpeed=30,mapSizeX=10000,mapSizeZ=10000}
     CMD={STOP=0,INSERT=1,MOVE=10,ATTACK=20,REPAIR=40,FIRE_STATE=45,MOVE_STATE=50,SELFD=65,
         LOAD_UNITS=75,ONOFF=85,CLOAK=95}
-    CMDTYPE={ICON=0,ICON_UNIT=12}
+    CMDTYPE={ICON=0,ICON_UNIT=12,ICON_MAP=5}
     UnitDefs={
-        [1]={name='operative',humanName='Operative',speed=60,buildOptions={6},buildSpeed=1},
+        [1]={name='operative',humanName='Operative',speed=60,buildOptions={6,12},buildSpeed=1},
         [2]={name='safehouse',humanName='Safehouse',speed=0,buildOptions={1,3}},
         [3]={name='robot',speed=60},[4]={name='factory',speed=0,buildOptions={3}},
         [5]={name='doubleagent',modCategories={notarget=true}},
@@ -18,7 +18,8 @@ local function world()
         [9]={name='civilian',speed=60},[10]={name='nimrod',speed=0,buildOptions={3}},
         [11]={name='effect',customParams={baseclass='Abstract'}},
     }
-    UnitDefNames={operativeasset={id=1},protagonsafehouse={id=2},protagonassembly={id=4},
+    UnitDefs[12]={name='icon_investigation',modCategories={notarget=true},metalCost=300,buildTime=30}
+    UnitDefNames={icon_investigation={id=12},operativeasset={id=1},protagonsafehouse={id=2},protagonassembly={id=4},
         doubleagent={id=5},ground_stickybomb={id=6},deaddropicon={id=7},nimrod={id=10}}
     local function units(predicate)
         local out={};for id,u in pairs(w.units) do if not u.dead and predicate(id,u) then out[#out+1]=id end end
@@ -58,7 +59,8 @@ local function world()
         for _,id in ipairs(units(function(_,u) return u.def==def and u.team==team and (not x or x==u.x) end)) do return id end
     end
     function w:investigate(actor,target,frames)
-        assert(self:issue(actor,CMD_INVESTIGATE,{target}),'investigation order rejected')
+        self:issue(actor,-UnitDefNames.icon_investigation.id,{target})
+        assert(self.units[actor].command and self.units[actor].command.id==CMD_BUILD_INVESTIGATION,'Investigation build order rejected')
         self:tick(frames or 900)
     end
     Spring={
@@ -81,6 +83,8 @@ local function world()
         GetUnitRotation=function(id) return unpack(w.units[id].rotation) end,
         SetUnitRotation=function(id,x,y,z) w.units[id].rotation={x,y,z} end,
         GetUnitRadius=function() return 15 end,
+        GetUnitHeight=function() return 40 end,
+        UnitScript={GetScriptEnv=function() return {} end},
         GetUnitIsStunned=function(id) local u=w.units[id];return u.stunned,false,u.built<1 end,
         GetUnitTransporter=function(id) return w.units[id].transport end,
         GetUnitLosState=function(id) return {los=not w.units[id].hidden} end,
@@ -172,11 +176,11 @@ w.units[15].built=1;w:tick(15)
 eq(w:count(5),1,'completed last product never needs another build or another icon')
 local icon=GG.DoubleAgents[10]
 eq(w.units[icon].x,1000,'marker world coordinates');eq(w.units[icon].y,64)
-assert(not w:issue(10,CMD_INVESTIGATE,{11}),'safehouses cannot investigate')
-assert(not w:issue(12,CMD_INVESTIGATE,{11}),'factories cannot investigate')
-assert(not w:issue(11,CMD_INVESTIGATE,{11}),'no self investigation')
-assert(not w:issue(14,CMD_INVESTIGATE,{20}),'no probing arbitrary enemy operatives')
-assert(not w:issue(14,CMD_INVESTIGATE,{0/0}),'reject malformed target')
+assert(not w:issue(10,CMD_BUILD_INVESTIGATION,{11}),'safehouses cannot investigate')
+assert(not w:issue(12,CMD_BUILD_INVESTIGATION,{11}),'factories cannot investigate')
+assert(not w:issue(11,CMD_BUILD_INVESTIGATION,{11}),'no self investigation')
+assert(not w:issue(14,CMD_BUILD_INVESTIGATION,{20}),'no probing arbitrary enemy operatives')
+assert(not w:issue(14,CMD_BUILD_INVESTIGATION,{0/0}),'reject malformed target')
 w.units[11].queue={{id=CMD.ATTACK,p={20}}};w.units[11].hp=73
 w:issue(11,CMD_STICKY_BUILD);w:tick(30)
 eq(w.units[11].rules.sticky_bombs,1,'bomb ready before conversion')
@@ -223,7 +227,7 @@ assert(not w.betrayal:AllowUnitCloak(runner))
 
 w=setup();GG.Counterintelligence.Register(12,2);w:tick(15)
 local money,supply=w.money[1],w.supply[1]
-w:investigate(14,12,2699);assert(GG.DoubleAgents[12],'factory cleanup is not instant')
+w:investigate(14,12,899);assert(GG.DoubleAgents[12],'factory cleanup is not instant')
 w:tick(1);near(w.money[1],money-2000);near(w.supply[1],supply-1000)
 assert(not GG.DoubleAgents[12] and not GG.Counterintelligence.IsProductionDisabled(12))
 assert(not GG.Counterintelligence.Register(12,2),'secured factory loses backdoor ability')
@@ -234,21 +238,21 @@ eq(w.units[12].team,1);eq(w.units[13].team,1);eq(w.units[15].team,1,'secured pro
 w=setup();GG.Counterintelligence.Register(12,2);w:tick(15)
 w:issue(GG.DoubleAgents[12],CMD_ACTIVATE_NETWORK)
 local factory=w:find(4,2,1010);assert(factory)
-w:investigate(14,factory,2700)
+w:investigate(14,factory,900)
 assert(w:find(4,1,1010) and w:find(3,1,1015),'expensive cleanup restores captured factory and its products')
 eq(w:count(5),0)
 
 w=setup();GG.Counterintelligence.Register(10,2);w:tick(15)
 w:issue(GG.DoubleAgents[10],CMD_ACTIVATE_NETWORK)
 factory=w:find(4,2,1010);assert(factory)
-w:investigate(14,factory,2700)
+w:investigate(14,factory,900)
 assert(w:find(4,1,1010) and w:find(3,1,1015),'recover a factory hijacked through an ancestor safehouse')
 assert(w:find(2,2),'recovering one factory does not recover the whole enemy-held network')
 
 w=setup();GG.Counterintelligence.Register(10,2);w:tick(15)
 w:issue(GG.DoubleAgents[10],CMD_ACTIVATE_NETWORK)
 factory=w:find(4,2,1010);w.units[factory].team=3;w.ci:UnitGiven(factory)
-assert(not w:issue(14,CMD_INVESTIGATE,{factory}),'factory recovery cannot target a subsequent third-party owner')
+assert(not w:issue(14,CMD_BUILD_INVESTIGATION,{factory}),'factory recovery cannot target a subsequent third-party owner')
 
 w=setup();w.failDef=5;GG.Counterintelligence.Register(10,2);w:tick(30)
 eq(w:count(5),0);w.failDef=nil;w:tick(15);assert(GG.DoubleAgents[10],'marker creation retries safely')
@@ -275,7 +279,7 @@ eq(#w.messages,0,'bombing a hub does not announce compromised recruits')
 assert(GG.Counterintelligence.Register(12,2));w:tick(15)
 eq(w:count(5),0,'re-registering an orphan does not create a successor channel')
 assert(not GG.Counterintelligence.IsProductionDisabled(12),'hub loss does not automatically shut down production')
-w:investigate(14,12,2700)
+w:investigate(14,12,900)
 assert(w.units[12].rules.ci_secured==1 and w.units[13].rules.ci_secured==1,'orphan machinery remains cleanable')
 eq(w:count(5),0,'cleanup creates no successor trigger')
 w:investigate(14,11);w:tick(1);assert(next(GG.BetrayalRunners))
@@ -298,7 +302,7 @@ w:issue(icon,CMD_ACTIVATE_NETWORK);assert(w:find(10,2) and not w.units[11],'morp
 
 w=setup();GG.Counterintelligence.Register(10,2);w:tick(15)
 GG.Counterintelligence.BeginMorph(10);w:kill(10);w:add(10,10,1);GG.Counterintelligence.EndMorph(10,10)
-w:investigate(14,10,2700)
+w:investigate(14,10,900)
 assert(GG.Counterintelligence.IsProductionDisabled(11),'factory software repair does not reset historical human loyalty')
 assert(not GG.Counterintelligence.IsProductionDisabled(10),'factory itself can resume production')
 w:investigate(14,11);w:tick(1);assert(next(GG.BetrayalRunners),'historical human sleeper is still discoverable')
@@ -319,11 +323,11 @@ local stop=assert(source:find('\nend',start,true))
 local update=assert(loadstring(source:sub(start,stop+3)..'\nreturn UpdateMorph'))()
 local morph={progress=0,increment=1,def={resTable={m=50,e=50}}}
 local before=w.money[1];assert(update(12,morph));eq(morph.progress,0);eq(w.money[1],before,'burned morph consumes no resources')
-w:investigate(14,12,2700)
+w:investigate(14,12,900)
 assert(not GG.Counterintelligence.IsProductionDisabled(12),'costly factory repair releases shutdown')
 assert(w.units[12].command and w.units[12].command.id==CMD.ONOFF and w.units[12].command.p[1]==1,'repaired factory is switched on')
 
-w=setup();w:issue(14,CMD_INVESTIGATE,{11});w.money[1]=0;w:tick(300)
+w=setup();w:issue(14,CMD_BUILD_INVESTIGATION,{11});w.money[1]=0;w:tick(300)
 eq(w.units[14].rules.ci_progress,nil,'insufficient funds pause progress')
 w.money[1]=1000;w.units[14].stunned=true;w:tick(300)
 eq(w.units[14].rules.ci_progress,nil,'stun pauses progress')
@@ -331,4 +335,68 @@ w.units[14].stunned=false;w:tick(450);near(w.units[14].rules.ci_progress,0.5)
 w:issue(14,CMD.STOP);w:tick(15);eq(w.units[14].rules.ci_investigating,0,'cancel releases investigator')
 near(w.money[1],850,'cancel does not refund work already performed')
 
-print('PASS counterintelligence: operative-only targeting, historical hub rosters, no icon spam, mass activation, false accusations, silent shutdown, real runners, bomb migration, factory cure/recovery, unit caps, morphs, recycled IDs, resource/stun/cancel handling')
+print('PASS counterintelligence: operative builders and owned physical targets, historical hub rosters, no icon spam, mass activation, false accusations, silent shutdown, real runners, bomb migration, factory cure/recovery, unit caps, morphs, recycled IDs, resource/stun/cancel handling')
+
+-- Build-menu conversion uses the same investigation outcomes, with a physical
+-- interrogation hologram and a single 30-second work phase for every target.
+w=setup()
+local build=-UnitDefNames.icon_investigation.id
+assert(not w.units[14].descs[CMD_INVESTIGATE],'former action button removed')
+eq(w.units[14].descs[build].name,'Investigation')
+eq(w.units[14].descs[build].action,'buildunit_icon_investigation','appears in build menu')
+eq(w.units[14].descs[build].type,CMDTYPE.ICON_MAP,'abstract placement does not use a repair/unit cursor')
+eq(w.units[14].descs[build].cursor,'Build')
+assert(not w:issue(14,CMD_INVESTIGATE,{11}),'retired direct action cannot start an investigation')
+assert(not w.ci:AllowUnitCreation(12,14),'unbound native markers cannot be created')
+-- Coordinate builds from AI/saved queues bind once to the nearest valid suspect.
+w:issue(14,build,{1005,0,1000,0});w:tick(15)
+local investigation=w:find(12,1)
+assert(investigation,'actual abstract unit is created')
+eq(w.units[investigation].rules.ci_target,11,'placement selects exact nearest suspect')
+eq(w.units[investigation].y,104,'hologram hovers over suspect roof/head')
+near(w.units[investigation].rules.ci_progress,15/900)
+near(w.units[investigation].built,15/900,'abstract unit uses actual construction progress')
+near(w.units[investigation].hp,1+100*15/900,'construction gradually adds health')
+assert(not w.ci:AllowUnitBuildStep(14,1,investigation,12,.9),'assistance cannot bypass 30-second build')
+assert(not w.ci:AllowUnitBuildStep(14,1,investigation,12,-.9),'hologram cannot be reclaimed for free money')
+assert(not w.ci:AllowUnitTransfer(investigation),'hologram cannot be captured')
+w.units[11].x=1018;w:tick(15)
+eq(w.units[investigation].x,1018,'marker stays above locked suspect')
+eq(w.units[investigation].rules.ci_target,11,'moving suspect does not retarget a neighbor')
+w:issue(14,CMD.STOP);w:tick(15)
+assert(not w.units[investigation],'cancel removes buildable marker')
+near(w.money[1],100000-10)
+-- Destruction cancels the job rather than immediately respawning another icon.
+w:investigate(14,11,15);investigation=w:find(12,1);w:kill(investigation);w:tick(30)
+eq(w:count(12),0,'destroyed investigation stays cancelled')
+eq(w.units[14].rules.ci_investigating,0)
+w=setup();w.failDef=12;w:investigate(14,11,60)
+eq(w:count(12),0,'unit cap leaves no orphan marker');near(w.money[1],100000)
+w.failDef=nil;w:tick(900);near(w.money[1],99700);eq(w:count(12),0,'successful completion consumes marker')
+w=setup();w:issue(14,build,{9000,0,9000});w:tick(30)
+eq(w:count(12),0,'empty placement cannot investigate arbitrary nearby units')
+w:issue(14,build,{0/0,0,1000});w:tick(30);eq(w:count(12),0,'malformed coordinates rejected')
+w=setup();w:investigate(14,11,15);investigation=w:find(12,1)
+w.units[11].team=2;w.ci:UnitGiven(11);assert(not w.units[investigation],'ownership change cancels build')
+w=setup();w:investigate(14,11,15);investigation=w:find(12,1)
+w.ci:Shutdown();assert(not w.units[investigation],'reload/shutdown removes unfinished build')
+
+-- Ordinary owned machinery can be investigated without a guilt-dependent gate.
+w=setup();w:investigate(14,13,900)
+near(w.money[1],99700);near(w.money[2],100000,'only false operative accusations pay opposition')
+eq(w.units[13].team,1);eq(w:count(12),0)
+w:add(90,11,1);assert(not w:issue(14,CMD_BUILD_INVESTIGATION,{90}),'abstract effects are not suspects')
+w:add(91,3,2);assert(not w:issue(14,CMD_BUILD_INVESTIGATION,{91}),'enemy machinery is not an own unit')
+
+-- The build menu must issue a unit-target order before native ground placement
+-- attempts to reject the suspect's occupied footprint. Preserve queue modifiers.
+widget={};local issued
+Spring.GiveOrder=function(cmd,p,opts) issued={cmd=cmd,p=p,opts=opts} end
+VFS.Include=dofile
+dofile('luaui/widgets_mosaic/cmd_investigation_build.lua')
+assert(widget:CommandNotify(build,{11},{coded=32}))
+eq(issued.cmd,CMD_BUILD_INVESTIGATION);eq(issued.p[1],11);eq(issued.opts,32)
+assert(widget:CommandNotify(build,{11},{shift=true,alt=true}))
+eq(issued.opts[1],'shift');eq(issued.opts[2],'alt')
+assert(not widget:CommandNotify(CMD.MOVE,{10,0,10},{}),'unrelated UI actions untouched')
+print('PASS Investigation builds: menu routing, exact placement, hologram lifetime/progress, 30-second factory work, cancellation and resource conservation')

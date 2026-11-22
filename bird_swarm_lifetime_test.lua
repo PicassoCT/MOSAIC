@@ -4,11 +4,21 @@ local file=assert(io.open('scripts/birdswarmscript.lua'))
 local source=file:read('*a');file:close()
 local function run(height,kind,stallFlight)
     local now,dead,destroyed,disabled,goals=0,false,0,0,{}
+    local samples,retargetCalls={},0
     local position={20,height,20}
     local threads,current={},nil
     local env=setmetatable({unitID=99,unitDefID=1,UnitDefs={[1]={name=kind}},
         script={},y_axis=2},{__index=_G})
     env._G=env
+    env.math=setmetatable({random=function(a,b)
+        if a==-250 and b==250 then
+            retargetCalls=retargetCalls+1
+            if retargetCalls%2==1 then goals[#goals+1]=now end
+        end
+        if a==nil then return math.random() end
+        if b==nil then return math.random(a) end
+        return math.random(a,b)
+    end},{__index=math})
     env.include=function()end;env.piece=function()return 1 end
     env.getPieceTableByNameGroups=function()return {Raven={2,3},Gull={4,5}}end
     env.Hide=function()end;env.Show=function()end;env.Spin=function()end
@@ -35,10 +45,14 @@ local function run(height,kind,stallFlight)
             assert(id==99 and not selfDestruct and reclaimed)
             dead=true;destroyed=destroyed+1
         end,
-        MoveCtrl={Enable=function()end,Disable=function()disabled=disabled+1 end,
+        MoveCtrl={Enable=function()end,Disable=function()
+            disabled=disabled+1
+            position[2]=0 -- reproduce native ground-movement altitude snapping
+        end,
             SetPosition=function(id,x,y,z)
                 assert(id==99 and x==x and y==y and z==z)
                 position={x,y,z}
+                samples[#samples+1]={x=x,y=y,z=z,time=now}
             end},
     }
     local chunk
@@ -61,8 +75,29 @@ local function run(height,kind,stallFlight)
     if stallFlight or height>1000 then assert(now==60000,'hard expiry did not run')
     else assert(now>30000 and now<60000,'normal flight/descent lifetime changed unexpectedly')end
     if not stallFlight then
-        assert(disabled==1 and #goals==4,'wandering handoff or five-second retarget interval changed')
+        assert(disabled==0,'bird must not hand flight to native ground movement')
+        assert(#goals==4,'five-second wandering retarget cadence changed')
         for i=2,#goals do assert(goals[i]-goals[i-1]>=4980 and goals[i]-goals[i-1]<=5020)end
+    end
+    if not stallFlight then
+        for i=2,#samples do
+            local a,b=samples[i-1],samples[i]
+            assert(math.abs(b.y-a.y)<=1.001,'altitude jumped instead of a bounded descent')
+            assert((b.x-a.x)^2+(b.z-a.z)^2<=4.001,'flight steering snapped sideways')
+            if b.time>=10000 and b.time<29000 then
+                assert(b.y>=height+179,'wandering flock dropped out of the sky')
+            end
+        end
+        if height<=1000 then
+            local last=samples[#samples]
+            assert(math.abs(last.y-36)<1e-6,'descent did not reach the original perch clearance')
+            assert(math.abs(last.y-samples[#samples-1].y)<.02,'touchdown was not eased')
+            local first
+            for i=2,#samples do
+                if samples[i].time>=29733 and samples[i].y<samples[i-1].y then first=i;break end
+            end
+            assert(first and samples[first-1].y-samples[first].y<.02,'descent did not ease in')
+        end
     end
     assert(env.sx==nil and env.sy==nil and env.sz==nil and env.gh==nil,'flight leaked globals')
 end
@@ -71,4 +106,4 @@ for _,kind in ipairs({'ravenswarm','gullswarm'}) do
     run(3000,kind,false)
     run(180,kind,true)
 end
-print('PASS: gull/raven flight and descent finish below 60s; tall/stalled flights expire at 60s; wandering retargets every 5s without extending flight')
+print('PASS: gull/raven flight never snaps to native ground movement; bounded steering and eased landing preserve 5-second wandering and 60-second hard expiry')

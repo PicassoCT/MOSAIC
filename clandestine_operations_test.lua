@@ -19,7 +19,7 @@ local function world()
     WeaponDefNames={closecombat={id=5}}
     gadgetHandler={IsSyncedCode=function() return true end}
     VFS={Include=function(path)
-        if path=='luarules/gadgets/include/police_bribery.lua' or path=='luarules/gadgets/include/police_hostages.lua' then return dofile(path) end
+        if path:match('^luarules/gadgets/include/police_') then return dofile(path) end
     end}
     function w:position(id,x,z) self.units[id].x=x;self.units[id].z=z end
     function w:finish(id)
@@ -45,6 +45,8 @@ local function world()
         self.police:UnitDamaged(victim,v.def,v.team,20,false,weapon or 6,nil,attacker,a.def,a.team)
     end
     Spring={
+        GetGameRulesParam=function(key) return w.radio and w.radio[key] end,
+        SetGameRulesParam=function(key,value,visibility) assert(visibility.public);w.radio=w.radio or {};w.radio[key]=value end,
         GetGaiaTeamID=function() return 0 end,GetTeamAllyTeamID=function(t) return t end,
         GetGameFrame=function() return w.frame end,
         ValidUnitID=function(id) return w.units[id]~=nil end,
@@ -208,7 +210,10 @@ end
 -- Police wait, spawn remotely, investigate the building and terminate extraction on arrival.
 do
     local w=world();node(w,20);w:tick(1785);assert(#w.created==0)
+    assert(not w.radio, 'cybercrime stays off the public scanner until reporting delay')
     w:tick(1800);assert(#w.created==1)
+    assert(w.radio.police_scanner_kind=='cybercrime' and w.radio.police_scanner_x==1000,
+        'delayed cybercrime report identifies the building')
     local cop=w.created[1];assert(w.units[cop].x>3000 and w.orders[cop].p[1]==1000)
     w:position(cop,1100,1000);w:tick(1815)
     assert(w.units[20].dead and not GG.PoliceInPursuit[cop])

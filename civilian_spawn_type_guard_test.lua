@@ -311,5 +311,45 @@ for _,culture in ipairs({'arabic','western','asian','international'}) do
     assert(#env._orders==0 and not env._destroyed[50000] and live[50000],
         'captured carrier received a city command or was destroyed')
 end
+
+-- Revocation must take effect during UnitTaken, while GetUnitTeam can still
+-- report Gaia. Also reject a stale event after a later Gaia re-registration.
+do
+    local env,names,_,live=fixture('arabic')
+    env.regenerateRoutesTable()
+    local id=50001
+    local def=names.truck_arab6.id
+    live[id]={def=def,x=400,z=420,team=0}
+    env.GG.CivilianTable[id]={defID=def,startID=100,goalID=101}
+    local scheduled={}
+    env.GG.EventStream={CreateEvent=function(_,fn,pack,frame)
+        scheduled[#scheduled+1]={fn=fn,pack=pack,frame=frame}
+    end}
+    assert(env.GG.CivilianTraffic.BeginTravel(id))
+    local pending=scheduled[1]
+    env.temporaryStoppedTilFrame[id]=100
+    env.GG.UnitArrivedAtTarget[id]=true
+    env.gadget:UnitTaken(id,def,0,1)
+    assert(not env.GG.CivilianTable[id] and not env.GG.UnitArrivedAtTarget[id]
+        and not env.temporaryStoppedTilFrame[id])
+    assert(pending.fn(1,20,pending.pack,0)==nil and #env._orders==0,
+        'deregistered callback executed before engine team update')
+    assert(not env.giveWaypointsToUnit(id,def,100), 'deregistered vehicle was routed again')
+    assert(not env.startInternalBehaviourOfState(id,'startFleeing'), 'deregistered vehicle received a flee callback')
+    live[id].team=1;env.gadget:UnitGiven(id,def,1,0)
+    env.GG.CivilianTable[id]={defID=def,startID=100,goalID=101}
+    assert(not env.giveWaypointsToUnit(id,def,100), 'player vehicle admitted by stale registration')
+    pending.pack.trafficRegistration=env.GG.CivilianTable[id]
+    pending.pack.myTeam=1
+    assert(pending.fn(1,30,pending.pack,0)==nil and #env._orders==0,
+        'cached player team bypassed live ownership check')
+    live[id].team=0;env.gadget:UnitGiven(id,def,0,1)
+    env.GG.CivilianTable[id]={defID=def,startID=100,goalID=101}
+    local replacement=env.GG.CivilianTable[id]
+    assert(pending.fn(1,40,pending.pack,0)==nil and env.GG.CivilianTable[id]==replacement,
+        'stale event resumed or deleted a new registration')
+    assert(env.GG.CivilianTraffic.BeginTravel(id) and #scheduled==2,
+        'explicit fresh Gaia registration could not begin a new trip')
+end
 print('PASS civilian spawn guard: rejected static units and contaminated pools; ' ..
     checked .. ' culture mobile variants, cross-culture parade loads, quotas, future events and capture preserved')
