@@ -68,7 +68,7 @@ local function revealSafehouses(incidentUnit, frame)
         end
     end
 end
-local function report(victim,attacker)
+local function report(victim,attacker,kind)
     local p = position(victim)
     if not p or not alive(attacker) then return end
     local frame = Spring.GetGameFrame()
@@ -79,8 +79,8 @@ local function report(victim,attacker)
     end
     -- The caller reports the victim's location, not the shooter's live coordinates.
     incident.location,incident.expires = p,frame+reportDelay+searchTime
-    incident.kind = "violence"
-    scanner.Report("violence", p)
+    incident.kind = kind or "violence"
+    scanner.Report(incident.kind, p)
     expose(attacker,frame)
     bribery.Witness(attacker)
     GG.PoliceActionSoundInterVallStartFrame = frame
@@ -246,6 +246,10 @@ function gadget:UnitDamaged(id,defID,team,damage,paralyzer,weaponID,projectileID
     end
 end
 function gadget:Initialize()
+    GG.ReportBomberCharge = function(id)
+        report(id,id,"bomber")
+        scanner.Flush()
+    end
     GG.PoliceHostages = hostages
     GG.ReportCyberCrime = reportCyberCrime
     GG.CancelCyberCrimeReport = cancelCyberCrime
@@ -334,6 +338,7 @@ function gadget:GameFrame(frame)
 end
 
 function gadget:Shutdown()
+    GG.ReportBomberCharge = nil
     hostages.Shutdown()
     if GG.PoliceHostages == hostages then GG.PoliceHostages=nil end
     GG.ReportCyberCrime,GG.CancelCyberCrimeReport=nil,nil

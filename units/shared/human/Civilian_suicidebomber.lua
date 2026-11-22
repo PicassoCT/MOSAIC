@@ -1,9 +1,9 @@
 local Suicidebomber = Human:New{
 	name = "Civilian Suicide Bomber",
-	Description = " fanatic ready to blow up",
+	Description = "Disguised bomber; attack a target to approach and commit to a final sprint",
 
 	corpse = "bodybag",
-	maxDamage         	  = 500,
+	maxDamage         	  = 150,
 	mass                = 100,
 	buildCostEnergy    	  = 150,
 	buildCostMetal     	  = 500,
@@ -39,7 +39,8 @@ local Suicidebomber = Human:New{
 	stealth = true,
 	
 	fireState = 0,
-	kamikaze = true,
+	-- The bomber charge gadget owns contact detonation, never proximity alone.
+	kamikaze = false,
 	kamikazeDistance  = 70,
 	kamikazeUseLOS = true,
 	
@@ -48,7 +49,7 @@ local Suicidebomber = Human:New{
 	category = [[GROUND]],
 	
 	customParams = {
-		helptext		= "Civilian ",
+		helptext		= "Surveillance marks this bomber even in disguise. Attack a target: within sprint range, cover is lost and control is locked until detonation on contact. Gunfire kills have a 50% chance to detonate the bomb.",
 		baseclass		= "Human", -- TODO: hacks
 		normaltex = "unittextures/arab_civilian_normal.dds",
     },

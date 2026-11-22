@@ -708,6 +708,10 @@ function getGameConfig()
         military = {
             suicideBomber = {
                 waitTimeMs = 4000,
+                sprintRange = 180,
+                sprintSpeedMultiplier = 2,
+                contactRange = 12,
+                panicRadius = 350,
             },
             closeCombat = {
                 healthLossPerSecond = 10,

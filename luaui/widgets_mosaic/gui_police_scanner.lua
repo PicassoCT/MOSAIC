@@ -4,6 +4,7 @@ function widget:GetInfo()
 end
 
 local labels = {violence='Police incident', cybercrime='Cybercrime reported',
+    bomber='Bomber charging',
     hostage='Hostage taken', hostage_death='Hostage killed', enemy='Enemy sighting'}
 local contacts = {}
 local history, team, ally, sequence = {}, nil, nil, 0

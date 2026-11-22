@@ -832,6 +832,7 @@ end
 
 local startFrame = Spring.GetGameFrame() + 30*5
 function gadget:Initialize()
+    GG.StartCivilianBehaviour = startInternalBehaviourOfState
     -- Initialize global tables
 
     GG.CivilianTable = {}
@@ -867,6 +868,7 @@ end
 
 function gadget:Shutdown()
     GG.CivilianTraffic = nil
+    GG.StartCivilianBehaviour = nil
     trafficActivities:Shutdown()
     civilianLife:Shutdown()
 end

@@ -165,6 +165,53 @@ end
 
 local trackedUnitsCount = 0
 local nextTrackMarker = 0
+local observedBombers = {}
+local observationAllyTeam
+
+local function trackUnit(unitID, defID, automatic)
+  if trackedUnits[unitID] or not defID then return end
+  local name = spGetUnitToolTip(unitID) or "Civilian"
+  local separator = string.find(name, "<")
+  if separator then name = string.sub(name, 1, separator - 1) end
+  trackedUnits[unitID] = {marker = "SUSPECT " .. nextTrackMarker,
+    name = name, unitDefID = defID, automatic = automatic}
+  nextTrackMarker = nextTrackMarker + 1
+  trackedUnitsCount = trackedUnitsCount + 1
+  setTrackedUnit(unitID)
+end
+
+local function untrackUnit(unitID)
+  if not trackedUnits[unitID] then return end
+  trackedUnits[unitID] = nil
+  worldDialogueCache[unitID] = nil
+  trackedUnitsCount = math.max(0, trackedUnitsCount - 1)
+  setUntrackedUnit(unitID)
+end
+
+function widget:GameFrame(frame)
+  if frame % 15 ~= 0 then return end
+  local allyTeam = Spring.GetMyAllyTeamID()
+  if allyTeam ~= observationAllyTeam then
+    for id, entry in pairs(trackedUnits) do
+      if entry.automatic then untrackUnit(id) end
+    end
+    observedBombers = {}
+    observationAllyTeam = allyTeam
+  end
+  -- Read only locally visible bodies. Cloaked originals and detections made by
+  -- other alliances must not create markers or expose their hidden identity.
+  for _, id in ipairs(Spring.GetVisibleUnits(-1, nil, false) or {}) do
+    local flagged = Spring.GetUnitRulesParam(id, "bomber_observed_" .. allyTeam)
+    if flagged == 1 and not observedBombers[id] then
+      observedBombers[id] = true
+      trackUnit(id, spGetUnitDefID(id), true)
+    elseif flagged == 0 and observedBombers[id] then
+      observedBombers[id] = nil
+      if trackedUnits[id] and trackedUnits[id].automatic then untrackUnit(id) end
+    end
+  end
+end
+
 function widget:KeyRelease(key)
   if (key == trackKey) then
     local mouseX, mouseZ = Spring.GetMouseState ( )
@@ -173,23 +220,9 @@ function widget:KeyRelease(key)
       local defID = spGetUnitDefID(unitID)
       if not houseTypeTable[defID] then
         if trackedUnits[unitID] then
-          trackedUnits[unitID] = nil
-          worldDialogueCache[unitID] = nil
-          trackedUnitsCount = math.max(0,trackedUnitsCount-1)
-          setUntrackedUnit(unitID)
+          untrackUnit(unitID)
         else
-          setTrackedUnit(unitID)
-          trackedUnits[unitID] = {}
-          trackedUnits[unitID].marker ="SUSPECT "..nextTrackMarker
-          nextTrackMarker = nextTrackMarker + 1
-          trackedUnits[unitID].name  = spGetUnitToolTip(unitID) or "Civilian"
-          if string.find(trackedUnits[unitID].name,"<") then
-          trackedUnits[unitID].name  = string.sub(trackedUnits[unitID].name ,1, string.find(trackedUnits[unitID].name,"<")-1)
-          end
-          trackedUnits[unitID].unitDefID  = defID
-
-          
-          trackedUnitsCount = trackedUnitsCount +1
+          trackUnit(unitID, defID, false)
         end
       end
     end
@@ -204,6 +237,7 @@ function widget:KeyRelease(key)
 end
 
 function widget:UnitDestroyed(id)
+  observedBombers[id] = nil
   if trackedUnits[id] then
     trackedUnits[id]=nil
     worldDialogueCache[id]=nil

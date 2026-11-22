@@ -3,6 +3,7 @@ local queueEventThread = include "lib_event_threads.lua"
 local newParadeParticipation = include "lib_civilian_parade.lua"
 local paradeParticipation
 local boolDying = false
+local boolBomberCharging = false
 local deathAnimation
 local lastDamageDirX, lastDamageDirZ = 0, 0
 
@@ -684,6 +685,7 @@ accumulatedTimeInSeconds = 0
 function script.HitByWeapon(x, z, weaponDefID, damage)
     if boolDying then return damage end
     lastDamageDirX, lastDamageDirZ = x or 0, z or 0
+    if boolBomberCharging then return damage end
     if bodyConfig.boolInfluenced then return damage end
     paradeParticipation:Stop(false)
     clampedDamage = math.max(math.min(damage, 10), 35)
@@ -1686,6 +1688,15 @@ UpperAnimationStateFunctions = {
         return eAnimState.standing
     end,
     [eAnimState.walking] = function()
+        if boolBomberCharging then
+            Turn(LowArm1, x_axis, math.rad(-80), 12)
+            Turn(LowArm2, x_axis, math.rad(-80), 12)
+            local swing = math.sin(Spring.GetGameFrame() * 0.5) * math.rad(55)
+            Turn(UpArm1, x_axis, swing, 12)
+            Turn(UpArm2, x_axis, -swing, 12)
+            Sleep(100)
+            return eAnimState.walking
+        end
         if bodyConfig.boolInfluenced then
             if playAerosolAnimation(true, true) then return eAnimState.walking end
             PlayAnimation("UPBODY_WALK_ZOMBIE", walkMotionExcludeTable)
@@ -1817,6 +1828,11 @@ LowerAnimationStateFunctions = {
         return eAnimState.aiming
     end,
     [eAnimState.walking] = function()
+        if boolBomberCharging then
+            PlayAnimation("WALKCYCLE_UNLOADED", upperBodyPieces,
+                GameConfig.military.suicideBomber.sprintSpeedMultiplier)
+            return eAnimState.walking
+        end
         if bodyConfig.boolInfluenced then
             if playAerosolAnimation(false, true) then return eAnimState.walking end
             if maRa() == true then
@@ -1980,6 +1996,7 @@ function delayedStop()
 end
 
 function getWalkingState()
+    if boolBomberCharging then return eAnimState.walking end
     if bodyConfig.boolCoverWalk == true then return eAnimState.coverwalk end
     if bodyConfig.boolWounded == true then return eAnimState.wounded end
 
@@ -2158,11 +2175,29 @@ function script.QueryWeapon(weaponID)
     end
 end
 
+function beginBomberCharge(restoring)
+    if not boolIsBomberMan or boolDying or boolBomberCharging then return end
+    boolBomberCharging = true
+    boolCloaked = false
+    SetUnitValue(COB.WANT_CLOAK, 0)
+    SetUnitValue(COB.CLOAKED, 0)
+    Signal(SIG_INTERNAL + SIG_COVER_WALK + SIG_STOP)
+    setSpeedEnv(unitID, SPRINT_SPEED)
+    local x, y, z = Spring.GetUnitPosition(unitID)
+    if not restoring then Spring.PlaySoundFile(GetShoutByIdeology(unitID), 1.0, x, y, z) end
+    queueEventThread("bomberCharge", function()
+        paradeParticipation:Stop(false)
+        setOverrideAnimationState(eAnimState.walking, eAnimState.walking, true, nil, true)
+    end, 1)
+end
+
 function startCookingOff()
     scream = "sounds/civilian/bomberman/scream"..math.random(1,3)..".ogg"
     Spring.PlaySoundFile(scream, 1.0)
-    shoutFilePath = GetShoutByIdeology(unitID)
-    Spring.PlaySoundFile(shoutFilePath, 1.0)
+    if not boolBomberCharging then
+        shoutFilePath = GetShoutByIdeology(unitID)
+        Spring.PlaySoundFile(shoutFilePath, 1.0)
+    end
     -- decloak 
     SetUnitValue(COB.WANT_CLOAK, 0)
     SetUnitValue(COB.CLOAKED, 0)    
@@ -2228,6 +2263,7 @@ local civilianID
 function spawnDecoyCivilian()
     -- spawnDecoyCivilian
     Sleep(10)
+    if boolBomberCharging then return end
     x, y, z = Spring.GetUnitPosition(unitID)
 
     civilianID = Spring.CreateUnit(randT(civilianWalkingTypeTable),
@@ -2274,14 +2310,14 @@ function cloakLoop()
     Sleep(100)
 
     Spring.GiveOrderToUnit(unitID, CMD.FIRE_STATE, {0}, {})
-    if Spring.GetUnitRulesParam(unitID, "betrayal_defector") ~= 1 and Spring.GetUnitRulesParam(unitID, "betrayal_pending") ~= 1 then
+    if not boolBomberCharging and Spring.GetUnitRulesParam(unitID, "betrayal_defector") ~= 1 and Spring.GetUnitRulesParam(unitID, "betrayal_pending") ~= 1 then
         SetUnitValue(COB.WANT_CLOAK, 1)
         SetUnitValue(COB.CLOAKED, 1)
-        while spGetUnitIsCloaked(unitID) == false do
+        while spGetUnitIsCloaked(unitID) == false and not boolBomberCharging do
             if Spring.GetUnitRulesParam(unitID, "betrayal_defector") == 1 or Spring.GetUnitRulesParam(unitID, "betrayal_pending") == 1 then break end
             Sleep(100)
         end
-        if Spring.GetUnitRulesParam(unitID, "betrayal_defector") ~= 1 and Spring.GetUnitRulesParam(unitID, "betrayal_pending") ~= 1 then
+        if not boolBomberCharging and Spring.GetUnitRulesParam(unitID, "betrayal_defector") ~= 1 and Spring.GetUnitRulesParam(unitID, "betrayal_pending") ~= 1 then
             StartThread(spawnDecoyCivilian)
         end
     end
