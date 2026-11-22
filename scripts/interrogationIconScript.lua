@@ -9,9 +9,10 @@ TablesOfPiecesGroups = {}
 center = piece "Center"
 Rotator = piece "Rotator"
 GameConfig = getGameConfig()
+local isInvestigation = UnitDefs[unitDefID].name == "icon_investigation"
 
 function script.Create()
-    Spring.SetUnitAlwaysVisible(unitID, true)
+    Spring.SetUnitAlwaysVisible(unitID, not isInvestigation)
     Spring.SetUnitNeutral(unitID, true)
     Spring.SetUnitNoSelect(unitID, true)
     Spring.MoveCtrl.Enable(unitID)
@@ -44,6 +45,7 @@ function showTime()
 end
 
 function getCurrentPercent()
+    if isInvestigation then return Spring.GetUnitRulesParam(unitID, "ci_progress") or 0 end
     return ((startCountDown - countDown) / startCountDown)
 end
 
@@ -79,6 +81,11 @@ function interrogatePercentage()
 
     timer = 0
     StartThread(showTime)
+    -- The buildable Investigation uses the same rings, pulse and progress
+    -- animation. Its build job owns completion; it is not an interrogation raid.
+    if isInvestigation then
+        while true do Sleep(100) end
+    end
     while not GG.raidStatus or not GG.raidStatus[unitID] do --test
         Sleep(100)
         timer = timer + 100

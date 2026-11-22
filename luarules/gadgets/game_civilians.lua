@@ -98,6 +98,7 @@ assert(civilianWalkingTypeTable)
 assert(count(civilianWalkingTypeTable) > 0)
 
 local loadableTruckType = getLoadAbleTruckTypes(UnitDefs, GameConfig.game.culture)
+local motorcycleTypes = getMotorBikeTypeTable(UnitDefs)
 --echo("Loadable TruckTypes: ".. toString(loadableTruckType))
 local refugeeableTruckType = getRefugeeAbleTruckTypes(UnitDefs, TruckTypeTable, GameConfig.game.culture)
 local gaiaTeamID = Spring.GetGaiaTeamID() 
@@ -111,8 +112,12 @@ local servicePayloadSelector = servicePayloadCatalog.newSelector({
 local trafficPoint
 local OpimizationFleeing = {accumulatedCivilianDamage = 0}
 local chanceOfCivilianSpawningFromTruck = GameConfig.civilians.traffic.passengerSpawnChance
+local newTrafficActivities = VFS.Include("luarules/gadgets/include/civilian_traffic_activities.lua")
+local trafficActivities = newTrafficActivities({gameConfig=GameConfig,
+    types=trafficVehicleTypes, freight=loadableTruckType, motorcycles=motorcycleTypes})
 local newCivilianLife = VFS.Include("luarules/gadgets/include/civilian_daily_life.lua")
-local civilianLife = newCivilianLife({gameConfig=GameConfig, walkers=civilianWalkingTypeTable, trucks=trafficVehicleTypes, raining=isRaining})
+local civilianLife = newCivilianLife({gameConfig=GameConfig, walkers=civilianWalkingTypeTable,
+    trucks=trafficVehicleTypes, raining=isRaining, trafficManaged=true})
 GG.CivilianLife = civilianLife
 local lastDangerReport = {}
 
@@ -127,6 +132,7 @@ local function isHostageWitness(id)
 end
 
 function startInternalBehaviourOfState(unitID, name, ...)
+    if not GG.CivilianTable[unitID] or spGetUnitTeam(unitID) ~= gaiaTeamID then return false end
     if isCivilianPassenger(unitID) then return false end
     if not GG.CivilianUnitInternalLogicActive then
         GG.CivilianUnitInternalLogicActive = {}
@@ -146,6 +152,7 @@ function startInternalBehaviourOfState(unitID, name, ...)
     local args = {...}
     local env = Spring.UnitScript.GetScriptEnv(unitID)
     if env and env[name] then
+        trafficActivities:Cancel(unitID)
         return Spring.UnitScript.CallAsUnit(unitID,
                                             env[name],
                                             args[1],
@@ -177,6 +184,7 @@ function makePasserBysLook(unitID)
             end
         end, 
         function(id)
+        if not GG.CivilianTable[id] or spGetUnitTeam(id) ~= gaiaTeamID then return end
         if math.random(0, 100) > GameConfig.civilians.curiosity.disasterInterestPercent then
             offx, offz = math.random(25, 50) * randSign(),
                          math.random(25, 50) * randSign()
@@ -195,6 +203,7 @@ function makePasserBysLook(unitID)
 end
 
 function gadget:UnitDestroyed(unitID, unitDefID, teamID, attackerID)
+    trafficActivities:Remove(unitID)
     civilianLife:UnitDestroyed(unitID, attackerID)
     -- Explicit parade carriers may be outside this culture's ordinary pool,
     -- so their records cannot rely on that pool's periodic population sweep.
@@ -214,6 +223,7 @@ function gadget:UnitDestroyed(unitID, unitDefID, teamID, attackerID)
 end
 
 function gadget:UnitCreated(unitID, unitDefID, teamID, attackerID)
+    if teamID == gaiaTeamID then trafficActivities:Register(unitID, unitDefID) end
     civilianLife:UnitCreated(unitID, unitDefID)
     -- if bble
     if teamID == gaiaTeamID and unitDefID == closeCombatArenaDefID then
@@ -223,6 +233,31 @@ function gadget:UnitCreated(unitID, unitDefID, teamID, attackerID)
   
     if individualNamedTypes[unitDefID] then
         name = setIndividualCivilianName(unitID, GG.GameConfig.game.culture, UnitDefs)
+    end
+end
+
+function gadget:UnitTaken(unitID, unitDefID, oldTeam, newTeam)
+    trafficActivities:Remove(unitID)
+    if GG.CivilianTable[unitID] and GG.CivilianUnitInternalLogicActive then
+        GG.CivilianUnitInternalLogicActive[unitID] = nil
+    end
+    GG.CivilianTable[unitID] = nil
+    GG.UnitArrivedAtTarget[unitID] = nil
+    if GG.TravelFunctionRegistry then GG.TravelFunctionRegistry[unitID] = nil end
+    if temporaryStoppedTilFrame then temporaryStoppedTilFrame[unitID] = nil end
+end
+
+function gadget:UnitGiven(unitID, unitDefID, newTeam, oldTeam)
+    trafficActivities:Remove(unitID)
+    if GG.CivilianTable[unitID] and GG.CivilianUnitInternalLogicActive then
+        GG.CivilianUnitInternalLogicActive[unitID] = nil
+    end
+    GG.CivilianTable[unitID] = nil
+    GG.UnitArrivedAtTarget[unitID] = nil
+    if GG.TravelFunctionRegistry then GG.TravelFunctionRegistry[unitID] = nil end
+    if temporaryStoppedTilFrame then temporaryStoppedTilFrame[unitID] = nil end
+    if newTeam == gaiaTeamID then
+        trafficActivities:Register(unitID, unitDefID)
     end
 end
 
@@ -273,6 +308,7 @@ function gadget:UnitDamaged(unitID, unitDefID, unitTeam, damage, paralyzer,
                             attackerTeam)
     if damage and damage > 0 and (MobileCivilianDefIds[unitDefID] or trafficVehicleTypes[unitDefID] or houseTypeTable[unitDefID]) then
         local frame = Spring.GetGameFrame()
+        trafficActivities:Cancel(unitID, frame + 30 * 30)
         if frame >= (lastDangerReport[unitID] or 0) then
             lastDangerReport[unitID] = frame + 30
             civilianLife:ReportDanger(unitID, damage)
@@ -462,7 +498,9 @@ function checkResetTemporaryStopped(frame)
     local temporaryCopy = temporaryStoppedTilFrame
     for id, endFrame in pairs(temporaryCopy) do
         if endFrame and frame > endFrame then
-            if doesUnitExistAlive(id) then setSpeedEnv(id, 1.0) end
+            if GG.CivilianTable[id] and spGetUnitTeam(id)==gaiaTeamID and doesUnitExistAlive(id) then
+                setSpeedEnv(id, 1.0)
+            end
             temporaryStoppedTilFrame[id] = nil
         end
     end
@@ -470,6 +508,7 @@ end
 
 
 function setTemporaryStopped(busId)
+    if not GG.CivilianTable[busId] or spGetUnitTeam(busId)~=gaiaTeamID then return end
     setSpeedEnv(busId, 0.0)
     temporaryStoppedTilFrame[busId] = spGetGameFrame() + 3 * 30
 end
@@ -679,6 +718,7 @@ function buildRouteSquareFromTwoUnits(unitOne, unitTwo, uType)
     Route[index].x = x2
     Route[index].y = y2
     Route[index].z = z2
+    if trafficVehicleTypes[uType] then Route[index].trafficDestination = unitTwo end
 
     index = index + 1
     Route[index] = {}
@@ -697,6 +737,8 @@ function buildRouteSquareFromTwoUnits(unitOne, unitTwo, uType)
     Route[index].x = x1
     Route[index].y = y1
     Route[index].z = z1
+
+    if trafficVehicleTypes[uType] then Route[index].trafficDestination = unitOne end
 
     return Route
 end
@@ -817,11 +859,15 @@ function gadget:Initialize()
         end,
     }
     local units = Spring.GetAllUnits(); table.sort(units)
-    for _, id in ipairs(units) do civilianLife:UnitCreated(id,spGetUnitDefID(id)) end
+    for _, id in ipairs(units) do
+        civilianLife:UnitCreated(id,spGetUnitDefID(id))
+        if spGetUnitTeam(id)==gaiaTeamID then trafficActivities:Register(id,spGetUnitDefID(id)) end
+    end
 end
 
 function gadget:Shutdown()
     GG.CivilianTraffic = nil
+    trafficActivities:Shutdown()
     civilianLife:Shutdown()
 end
 
@@ -847,17 +893,7 @@ function travelInitialization(evtID, frame, persPack, startFrame, myID)
     if hp < maxHp * 0.5 then persPack.boolDamaged = true end
 
     if persPack.isTruck == nil then persPack.isTruck = trafficVehicleTypes[spGetUnitDefID(myID)] ~= nil end
-    if persPack.isTruck == true then
-        if not persPack.hasBreaks then 
-            persPack.hasBreaks = maRa() == true
-            if  persPack.hasBreaks == true  then 
-                persPack.Break= {
-                                 startFrame= math.ceil((myID% 100)/100)*GameConfig.game.dayLengthFrames + 1,
-                                 lengthFrames = math.random(GameConfig.civilians.traffic.truckBreakMinSeconds,GameConfig.civilians.traffic.truckBreakMaxSeconds)*30
-                                }
-            end
-        end
-    end
+    -- Vehicle breaks now happen at reserved destinations, after native braking.
 
     x, y, z = spGetUnitPosition(myID)
 
@@ -1195,22 +1231,6 @@ end
 function travelInPeaceTimes(evtID, frame, persPack, startFrame, myID)
     boolDone = false
 
-    if  persPack.isTruck == true and persPack.hasBreaks == true then
-        if  persPack.Break.startFrame < frame and 
-            frame < persPack.Break.startFrame + persPack.Break.lengthFrames  then
-            ----echo(myID.." is on a break for "..((persPack.Break.startFrame + persPack.Break.lengthFrames -frame)/30).." seconds")
-            --Just stand there like a idiot
-            return boolDone, nil, persPack
-        end
-        --schedule next break
-        if  persPack.Break.startFrame < frame and 
-            frame > persPack.Break.startFrame + persPack.Break.lengthFrames  then
-            --compute new break time
-            persPack.Break.lengthFrames = math.random(GameConfig.civilians.traffic.truckBreakMinSeconds, GameConfig.civilians.traffic.truckBreakMaxSeconds)*30
-            persPack.Break.startFrame = frame + math.random(1000, GameConfig.game.dayLengthFrames)
-        end
-    end
-
     -- if near Destination increase goalIndex
     if distanceUnitToPoint(myID, persPack.goalList[persPack.goalIndex].x, persPack.goalList[persPack.goalIndex].y,
                            persPack.goalList[persPack.goalIndex].z) < 100 then
@@ -1318,8 +1338,12 @@ function travellFunction(evtID, frame, persPack, startFrame)
     --  only apply if Unit is still alive
     local myID = persPack.unitID
 
-    -- Captured city traffic belongs to its new owner, including after a parade.
-    if persPack.myTeam == gaiaTeamID and spGetUnitTeam(myID) ~= gaiaTeamID then
+    -- Ownership callbacks revoke registration immediately, including UnitTaken
+    -- before the engine publishes the new team. Pending events then expire.
+    local registration=GG.CivilianTable[myID]
+    if not registration or registration~=persPack.trafficRegistration then return nil,persPack end
+    if spGetUnitTeam(myID) ~= gaiaTeamID then
+        trafficActivities:Remove(myID)
         GG.CivilianTable[myID] = nil
         GG.UnitArrivedAtTarget[myID] = nil
         return nil, persPack
@@ -1327,12 +1351,14 @@ function travellFunction(evtID, frame, persPack, startFrame)
     -- Passengers keep the same traffic record, but their carrier owns movement.
     -- Pause before arrival, stuck detection or social routines can remove him.
     if isCivilianPassenger(myID) or isHostageWitness(myID) then
+        trafficActivities:Cancel(myID)
         if not doesUnitExistAlive(myID) then return nil, persPack end
         persPack.stuckCounter = 0
         persPack.currPos = nil
         return frame + 15, packStep(persPack, frame + 15, frame)
     end
     if GG.CityParade and GG.CityParade:OwnsUnit(myID) then
+        trafficActivities:Cancel(myID)
         if not doesUnitExistAlive(myID) then return nil, persPack end
         persPack.stuckCounter = 0
         return frame + 15, packStep(persPack, frame + 15, frame)
@@ -1340,6 +1366,9 @@ function travellFunction(evtID, frame, persPack, startFrame)
 
     boolDone, retFrame, persPack, x,y,z, hp = travelInitialization(evtID, frame, persPack, startFrame, myID)
     if boolDone == true then return retFrame,packStep(persPack, retFrame, frame) end
+
+    local holding, nextTrafficFrame = trafficActivities:Step(myID,persPack,frame)
+    if holding then return nextTrafficFrame,packStep(persPack,nextTrafficFrame,frame) end
 
     if civilianLife:Step(myID,persPack,frame) then
         return frame + 15, packStep(persPack,frame+15,frame)
@@ -1410,6 +1439,9 @@ function giveWaypointsToUnit(uID, uType, startNodeID)
         return false
     end
 
+    local registration=GG.CivilianTable[uID]
+    if not registration or spGetUnitTeam(uID)~=gaiaTeamID then return false end
+
     local candidates=RouteTabel[startNodeID]
     if type(candidates)~="table" then return false end
     local validCandidates={}
@@ -1434,11 +1466,13 @@ function giveWaypointsToUnit(uID, uType, startNodeID)
     local route=walking and civilianLife:BuildRoute(uID,startNodeID,targetNodeID)
     route=route or buildRouteSquareFromTwoUnits(startNodeID,targetNodeID,uType)
     if not route or not route[1] then return false end
+    if trafficVehicleTypes[uType] then route=trafficActivities:PrepareRoute(uID,route) end
 
     GG.EventStream:CreateEvent(travellFunction, { -- persistance Pack
         mydefID = uType,
         myTeam = spGetUnitTeam(uID),
         unitID = uID,
+        trafficRegistration = registration,
         goalIndex = 1,
         goalList = route
     }, spGetGameFrame() + math.max(1, uID % 100))
@@ -1503,6 +1537,7 @@ function decimateArrivedCivilians(nrToDecimate, typeTable)
 end
 
 function gadget:GameFrame(frame)
+    trafficActivities:Frame(frame)
     civilianLife:Frame(frame)
 
     if boolInitialized == false then       

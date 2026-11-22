@@ -7,6 +7,7 @@ VFS.Include("scripts/lib_UnitScript.lua")
 VFS.Include("scripts/lib_mosaic.lua")
 
 local config = getGameConfig()
+local scanner = VFS.Include("luarules/gadgets/include/police_scanner_reports.lua").New()
 local cfg = config.police
 local gaia = Spring.GetGaiaTeamID()
 local ally = Spring.GetTeamAllyTeamID(gaia)
@@ -79,6 +80,7 @@ local function report(victim,attacker)
     -- The caller reports the victim's location, not the shooter's live coordinates.
     incident.location,incident.expires = p,frame+reportDelay+searchTime
     incident.kind = "violence"
+    scanner.Report("violence", p)
     expose(attacker,frame)
     bribery.Witness(attacker)
     GG.PoliceActionSoundInterVallStartFrame = frame
@@ -112,7 +114,7 @@ local function spawnLocation(p)
     end
 end
 
-hostages = VFS.Include("luarules/gadgets/include/police_hostages.lua").New(config, officers, position, move, spawnLocation)
+hostages = VFS.Include("luarules/gadgets/include/police_hostages.lua").New(config, officers, position, move, spawnLocation, scanner.Report)
 
 local function dispatch(incident,frame)
     local officer, count = nil,0
@@ -263,6 +265,10 @@ function gadget:GameFrame(frame)
             if incident.officer then releaseOfficer(incident.officer,frame) end
             incidents[attacker]=nil
         elseif not incident.officer and frame>=incident.due then
+            if incident.kind == "cybercrime" and not incident.scannerReported then
+                scanner.Report("cybercrime", incident.location)
+                incident.scannerReported = true
+            end
             if not dispatch(incident,frame) then incident.due=frame+90 end
         end
     end
@@ -324,6 +330,7 @@ function gadget:GameFrame(frame)
             if alive(id) and exposure.restore then Spring.SetUnitCloak(id,true) end
         end
     end
+    scanner.Flush()
 end
 
 function gadget:Shutdown()

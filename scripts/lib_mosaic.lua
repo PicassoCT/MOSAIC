@@ -264,7 +264,7 @@ if MOSAIC_CONFIG_ONLY then
 end
 
  GG.unitFactor = 0.80
- GameVersion = "1.036"  --UpdateFlag
+ GameVersion = "1.037"  --UpdateFlag
  function setUnitFactor(modOptions)
     GG.unitFactor = modOptions.unitfactor or 0.8
  end
@@ -1151,6 +1151,7 @@ end
             [UnitDefNames["icon_raid"].id] = true,
             [UnitDefNames["doubleagent"].id] = true,
             [UnitDefNames["interrogationicon"].id] = true,
+            [UnitDefNames["icon_investigation"].id] = true,
             [UnitDefNames["recruitcivilian"].id] = true,
             [UnitDefNames["icon_bribe"].id] = true,
             [UnitDefNames["icon_socialengineering"].id] = true,

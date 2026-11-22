@@ -89,6 +89,7 @@ function script.Create()
         return
     end
     Show(displayedPiece)
+    if GG.CivilianVehicles then GG.CivilianVehicles.SetPayload(unitID,'service',variant.key) end
     -- CONTAINER<NR>Spin<id> belongs only to the selected payload body.
     -- Keep legacy lowercase names working; spinner IDs may have gaps.
     local spinners = {}

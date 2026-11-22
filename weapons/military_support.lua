@@ -18,6 +18,7 @@ end
 local weapons = {}
 weapons.escortmachinegun = variant("weapons/submachinegun.lua", "submachingegun", {
     name = "Weevil escort gun",
+    soundstartvolume = 0.5,
     reloadtime = 3.5,
     customparams = {wall_damage_multiplier = 0.05, night_tracer = 1},
 })

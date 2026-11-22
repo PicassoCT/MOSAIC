@@ -66,7 +66,8 @@ local OperativePropagator = Human:New{
 		"icon_bribe",
 
 		"air_parachut",
-		"stealvehicleicon",		
+		"stealvehicleicon",
+		"icon_investigation",
 		"recruitcivilian",
 
 		"ground_turret_ssied",

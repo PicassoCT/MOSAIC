@@ -8,7 +8,9 @@ VFS.Include("scripts/lib_mosaic.lua")
 VFS.Include("luarules/configs/commandsIDs.lua")
 local cfg = VFS.Include("luarules/configs/counterintelligence.lua")
 local replaceUnit = VFS.Include("scripts/lib_unit_replacement.lua")
-local INVESTIGATE, ACTIVATE = CMD_INVESTIGATE, CMD_ACTIVATE_NETWORK
+local INVESTIGATE, ACTIVATE = CMD_BUILD_INVESTIGATION, CMD_ACTIVATE_NETWORK
+local investigationDef = UnitDefNames.icon_investigation.id
+local BUILD = -investigationDef
 local operatives, safehouses = getOperativeTypeTable(UnitDefs), getSafeHouseTypeTable(UnitDefs)
 local factories, hubs = {}, {}
 for def in pairs(safehouses) do hubs[def]=true end
@@ -25,6 +27,8 @@ local rosters, ancestors, parents = {}, {}, {}
 local networks, markers, burned, secured, morphing = {}, {}, {}, {}, {}
 local orphans = {} -- surviving members reference a detached record, never a dead unit ID
 local jobs, actorJobs = {}, {}
+local investigations = {} -- physical buildable hologram -> locked suspect
+local creatingInvestigation = false
 local internal = false
 local api = {}
 local function alive(id)
@@ -47,6 +51,13 @@ local function productionUnit(def)
     return cp.baseclass~="Abstract" and not categories.abstract and not categories.notarget
         and not ud.name:find("_morph_",1,true)
 end
+-- Physical units that can carry production provenance may be investigated;
+-- effects, morph placeholders and hidden abstract markers are not suspects.
+local investigationTargets={}
+for def in pairs(UnitDefs) do
+    if productionUnit(def) then investigationTargets[def]=true end
+end
+
 local function order(id,cmd,p)
     internal=true;Spring.GiveOrderToUnit(id,cmd,p or {},{});internal=false
 end
@@ -96,13 +107,21 @@ local function burnNetwork(root,n)
     n.blocked=true -- deliberately do not change the handler's icon or notify them
     for _,id in ipairs(sorted(targets(root,n))) do burnUnit(id) end
 end
+local function buildPose(actor, building)
+    local env = Spring.UnitScript.GetScriptEnv(actor)
+    local fn = env and env.script and env.script[building and "StartBuilding" or "StopBuilding"]
+    if fn and env.StartThread then Spring.UnitScript.CallAsUnit(actor, env.StartThread, fn, 0, 0) end
+end
 local function finishJob(target)
     local job=jobs[target]
     if not job then return end
     jobs[target]=nil;actorJobs[job.actor]=nil
+    if job.icon then
+        investigations[job.icon]=nil
+        if alive(job.icon) then Spring.DestroyUnit(job.icon,false,true) end
+    end
     if alive(job.actor) then
-        local index=Spring.FindUnitCmdDesc(job.actor,INVESTIGATE)
-        if index then Spring.EditUnitCmdDesc(job.actor,index,{name="Investigate"}) end
+        buildPose(job.actor,false)
         Spring.SetUnitRulesParam(job.actor,"ci_investigating",0,allied)
         Spring.SetUnitRulesParam(job.actor,"ci_progress",0,allied)
         Spring.ClearUnitGoal(job.actor)
@@ -140,7 +159,7 @@ local function validTarget(actor,target,team)
     if GG.HumanShield and GG.HumanShield.IsProtected(target,team) then return false end
     if not operatives[Spring.GetUnitDefID(actor)] then return false end
     local def=Spring.GetUnitDefID(target)
-    if not operatives[def] and not hubs[def] then return false end
+    if not investigationTargets[def] then return false end
     if Spring.GetUnitRulesParam(actor,"betrayal_runner")==1 or Spring.GetUnitRulesParam(actor,"betrayal_pending")==1
         or Spring.GetUnitRulesParam(target,"betrayal_runner")==1 or Spring.GetUnitRulesParam(target,"betrayal_pending")==1 then return false end
     if Spring.GetUnitTeam(actor)~=team then return false end
@@ -150,6 +169,29 @@ local function validTarget(actor,target,team)
         if not los or not los.los then return false end
     end
     return true
+end
+local function placementTarget(actor,team,p)
+    if not p then return end
+    if #p==1 then return validTarget(actor,p[1],team) and p[1] or nil end
+    if #p~=3 and #p~=4 then return end
+    for _,v in ipairs(p) do
+        if type(v)~="number" or v~=v or math.abs(v)==math.huge then return end
+    end
+    local best,bestDistance
+    for _,id in ipairs(Spring.GetUnitsInCylinder(p[1],p[3],cfg.placementRange)) do
+        if validTarget(actor,id,team) then
+            local x,_,z=Spring.GetUnitPosition(id)
+            local distance=(x-p[1])^2+(z-p[3])^2
+            if not bestDistance or distance<bestDistance or (distance==bestDistance and id<best) then
+                best,bestDistance=id,distance
+            end
+        end
+    end
+    return best
+end
+local function hoverInvestigation(target,job)
+    local x,y,z=Spring.GetUnitPosition(target)
+    Spring.MoveCtrl.SetPosition(job.icon,x,y+(Spring.GetUnitHeight(target) or 0)+cfg.markerHeight,z)
 end
 local function factoryCleanup(target,team,n)
     local sourceRoot, sourceNetwork=compromise(target)
@@ -208,12 +250,12 @@ local function resolve(target,job)
             GG.StartBetrayalRunner(target,n.beneficiary)
             message(job.team,"Double agent exposed. The compromised network is disabled; the suspect is fleeing.")
         else
-            message(job.team,"Compromised safehouse network disabled. Its handler has not been notified. Production is shut down.")
+            message(job.team,"Compromised network disabled. Its handler has not been notified. Production is shut down.")
         end
     elseif operatives[def] then
         rewardOpposition(job.team)
         message(job.team,"The accusation was unfounded. The opposition gains "..cfg.falseAccusationReward.." money.")
-    else message(job.team,"Safehouse investigation complete. No subversion found.") end
+    else message(job.team,"Investigation complete. No subversion found.") end
 end
 function api.Register(root,beneficiary)
     if not alive(root) or secured[root] then return false end
@@ -339,9 +381,14 @@ local function refreshMarker(root,n)
 end
 function gadget:UnitCreated(id,def,team,builder)
     if operatives[def] then
-        Spring.InsertUnitCmdDesc(id,{id=INVESTIGATE,type=CMDTYPE.ICON_UNIT,name="Investigate",
-            action="investigatesubversion",cursor="Repair",
-            tooltip="Investigate another operative, safehouse or factory. Stay nearby for 30s / 300 money; factories 90s / 2000 money + 1000 supply. False operative accusations reward the enemy 500 money."})
+        local old=Spring.FindUnitCmdDesc(id,CMD_INVESTIGATE)
+        if old then Spring.RemoveUnitCmdDesc(id,old) end
+        local desc={id=BUILD,type=CMDTYPE.ICON_MAP,name="Investigation",params={},
+            action="buildunit_icon_investigation",cursor="Build",
+            texture="unitpics/interrogationicon.png",
+            tooltip="Place the Investigation hologram over one of your units. 30 seconds; 300 money, or 2000 money + 1000 supply for factories. False operative accusations pay opponents 500 money."}
+        local index=Spring.FindUnitCmdDesc(id,BUILD)
+        if index then Spring.EditUnitCmdDesc(id,index,desc) else Spring.InsertUnitCmdDesc(id,desc) end
     end
     if GG.UnitReplacement or morphing[id] or team==gaia or not productionUnit(def) then return end
     if hubs[def] then rosters[id]=rosters[id] or {} end
@@ -363,6 +410,12 @@ function gadget:UnitCreated(id,def,team,builder)
 end
 function gadget:UnitDestroyed(id)
     if morphing[id] then return end
+    if investigations[id] then
+        local target=investigations[id]
+        local actor=jobs[target].actor
+        finishJob(target)
+        if alive(actor) then order(actor,CMD.STOP) end
+    end
     if markers[id] then
         local root=markers[id];markers[id]=nil
         local n=networks[root]
@@ -387,22 +440,36 @@ function gadget:UnitDestroyed(id)
     finishJob(id);if actorJobs[id] then finishJob(actorJobs[id]) end
 end
 function gadget:UnitGiven(id)
+    if investigations[id] then finishJob(investigations[id]) end
     finishJob(id);if actorJobs[id] then finishJob(actorJobs[id]) end
     -- Giving/capturing a unit never makes it eligible to steal from an unrelated team.
     if networks[id] and Spring.GetUnitTeam(id)~=networks[id].owner then removeNetwork(id) end
 end
-function gadget:AllowCommand(id,def,team,cmd,p)
+function gadget:AllowCommand(id,def,team,cmd,p,options)
     if internal then return true end
+    if cmd==CMD_INVESTIGATE then return false end -- retired action-button command
+    if cmd==BUILD then
+        local target=not burned[id] and placementTarget(id,team,p)
+        if target then Spring.GiveOrderToUnit(id,INVESTIGATE,{target},options or {}) end
+        return false -- construction is placed over a unit, never a blocking ground footprint
+    end
     if markers[id] then
         if cmd==ACTIVATE then local root=markers[id];activate(root,networks[root]) end
         return false
     end
     if cmd==INVESTIGATE then
-        return p and #p==1 and validTarget(id,p[1],team) and (not jobs[p[1]] or jobs[p[1]].actor==id)
+        return not burned[id] and p and #p==1 and validTarget(id,p[1],team) and (not jobs[p[1]] or jobs[p[1]].actor==id)
     end
     if burned[id] and (cmd<0 or cmd==CMD.REPAIR or cmd==CMD.ONOFF or cmd==CMD_STICKY_BUILD) then return false end
     if cmd==CMD.INSERT and p and type(p[2])=="number" then
-        if p[2]==INVESTIGATE then return #p==4 and validTarget(id,p[4],team) end
+        if p[2]==CMD_INVESTIGATE then return false end
+        if p[2]==BUILD then
+            local placement={};for i=4,#p do placement[#placement+1]=p[i] end
+            local target=not burned[id] and placementTarget(id,team,placement)
+            if target then Spring.GiveOrderToUnit(id,CMD.INSERT,{p[1],INVESTIGATE,p[3],target},options or {}) end
+            return false
+        end
+        if p[2]==INVESTIGATE then return not burned[id] and #p==4 and validTarget(id,p[4],team) end
         if burned[id] and (p[2]<0 or p[2]==CMD.REPAIR or p[2]==CMD.ONOFF or p[2]==CMD_STICKY_BUILD) then return false end
     end
     return cmd~=ACTIVATE
@@ -410,7 +477,7 @@ end
 function gadget:CommandFallback(id,def,team,cmd,p)
     if cmd~=INVESTIGATE then return false end
     local target=p and p[1]
-    if not validTarget(id,target,team) then
+    if burned[id] or not validTarget(id,target,team) then
         if actorJobs[id] then finishJob(actorJobs[id]) end
         return true,true
     end
@@ -424,21 +491,35 @@ function gadget:CommandFallback(id,def,team,cmd,p)
     Spring.ClearUnitGoal(id)
     if not jobs[target] then
         if actorJobs[id] then finishJob(actorJobs[id]) end
-        jobs[target]={actor=id,team=team,progress=0,factory=factories[Spring.GetUnitDefID(target)] or false}
+        creatingInvestigation=true
+        local icon=Spring.CreateUnit("icon_investigation",tx,ty,tz,0,team,true,false,nil,id)
+        creatingInvestigation=false
+        if not icon then return true,false end
+        Spring.SetUnitHealth(icon,{build=0,health=1})
+        jobs[target]={actor=id,team=team,icon=icon,progress=0,factory=factories[Spring.GetUnitDefID(target)] or false}
+        investigations[icon]=target
         actorJobs[id]=target
+        Spring.MoveCtrl.Enable(icon)
+        Spring.SetUnitBlocking(icon,false,false,false,false,false,false,false)
+        Spring.SetUnitRulesParam(icon,"ci_target",target,allied)
+        hoverInvestigation(target,jobs[target])
+        if GG.HumanShield then GG.HumanShield.Release(id) end
+        Spring.SetUnitCloak(id,false)
+        buildPose(id,true)
         Spring.SetUnitRulesParam(id,"ci_investigating",target,allied)
     end
     return true,false
 end
 function gadget:AllowUnitCreation(def,builder)
+    if def==investigationDef and not creatingInvestigation then return false end
     return not burned[builder]
 end
 function gadget:AllowUnitBuildStep(builder,team,id,def,part)
-    if markers[id] then return false end
+    if markers[id] or investigations[id] then return false end
     if part>0 then return not burned[builder] and not ((burned[id] or burned[parents[id]]) and not complete(id)) end
     return true
 end
-function gadget:AllowUnitTransfer(id) return not markers[id] end
+function gadget:AllowUnitTransfer(id) return not markers[id] and not investigations[id] end
 function gadget:AllowUnitDecloak(id) return not markers[id] end
 function gadget:UnitPreDamaged(id,def,team,damage)
     if markers[id] then return 0,0 end
@@ -453,9 +534,11 @@ function gadget:GameFrame(frame)
     for _,target in ipairs(sorted(jobs)) do
         local job=jobs[target]
         local cmd,_,_,commandTarget=Spring.GetUnitCurrentCommand(job.actor)
-        if cmd~=INVESTIGATE or commandTarget~=target or not validTarget(job.actor,target,job.team) then
+        if cmd~=INVESTIGATE or commandTarget~=target or burned[job.actor]
+            or not alive(job.icon) or not validTarget(job.actor,target,job.team) then
             finishJob(target)
         else
+            hoverInvestigation(target,job)
             local x,y,z=Spring.GetUnitPosition(job.actor)
             local tx,ty,tz=Spring.GetUnitPosition(target)
             local range=cfg.range+(Spring.GetUnitRadius(target) or 0)
@@ -463,15 +546,17 @@ function gadget:GameFrame(frame)
             local targetStunned=Spring.GetUnitIsStunned(target)
             if not stunned and not targetStunned and not Spring.GetUnitTransporter(job.actor)
                 and not Spring.GetUnitTransporter(target) and (x-tx)^2+(y-ty)^2+(z-tz)^2<=range^2 then
-                local duration=job.factory and cfg.factoryFrames or cfg.investigationFrames
+                local duration=cfg.investigationFrames
                 local increment=math.min(cfg.updateFrames/duration,1-job.progress)
                 local money=job.factory and cfg.factoryMoney or cfg.investigationMoney
                 local supply=job.factory and cfg.factorySupply or cfg.investigationSupply
                 if Spring.UseUnitResource(job.actor,{m=money*increment,e=supply*increment}) then
                     job.progress=job.progress+increment
                     Spring.SetUnitRulesParam(job.actor,"ci_progress",job.progress,allied)
-                    local index=Spring.FindUnitCmdDesc(job.actor,INVESTIGATE)
-                    if index then Spring.EditUnitCmdDesc(job.actor,index,{name="Investigate "..math.floor(job.progress*100).."%"}) end
+                    Spring.SetUnitRulesParam(job.icon,"ci_progress",job.progress,allied)
+                    local health,maxHealth=Spring.GetUnitHealth(job.icon)
+                    Spring.SetUnitHealth(job.icon,{build=job.progress,
+                        health=math.min(maxHealth,health+maxHealth*increment)})
                     if job.progress>=1-1e-9 then
                         finishJob(target)
                         order(job.actor,CMD.STOP)
@@ -485,8 +570,12 @@ end
 function gadget:Initialize()
     GG.DoubleAgents={};GG.Counterintelligence=api
     gadgetHandler:RegisterCMDID(INVESTIGATE);gadgetHandler:RegisterCMDID(ACTIVATE)
-    for _,id in ipairs(Spring.GetAllUnits()) do self:UnitCreated(id,Spring.GetUnitDefID(id),Spring.GetUnitTeam(id)) end
+    for _,id in ipairs(Spring.GetAllUnits()) do
+        if Spring.GetUnitDefID(id)==investigationDef then Spring.DestroyUnit(id,false,true)
+        else self:UnitCreated(id,Spring.GetUnitDefID(id),Spring.GetUnitTeam(id)) end
+    end
 end
 function gadget:Shutdown()
+    for _,target in ipairs(sorted(jobs)) do finishJob(target) end
     GG.Counterintelligence=nil;GG.DoubleAgents=nil
 end

@@ -303,8 +303,11 @@ function script.TransportPickup(passengerID)
         if NotTruckLoadableUnitType[defID] then return end
 
         if  boolIsCivilianTruck then
-            Spring.SetUnitNoSelect(passengerID, true)
             Spring.UnitAttach(unitID, passengerID, attachPoint)
+            -- Cargo may already occupy the native transport capacity. Failed
+            -- boarding must not leave the operative invisible to selection.
+            if Spring.GetUnitTransporter(passengerID) ~= unitID then return end
+            Spring.SetUnitNoSelect(passengerID, true)
             passenger = passengerID
             StartThread(tranferOrdersToLoadedUnit, passengerID)
         end
@@ -323,7 +326,12 @@ function tranferOrdersToLoadedUnit(passengerID)
 end
 
 
-function fleeEnemy(enemyID)
+function fleeEnemy(enemyID, registration)
+    local function ownsTraffic()
+        return registration and GG.CivilianTable[unitID] == registration
+            and Spring.GetUnitTeam(unitID) == Spring.GetGaiaTeamID()
+    end
+    if not ownsTraffic() then return end
     Signal(SIG_INTERNAL)
     SetSignalMask(SIG_INTERNAL)
     setCivilianUnitInternalStateMode(unitID, GameConfig.civilians.activityStates.started, "fleeing")
@@ -332,19 +340,21 @@ function fleeEnemy(enemyID)
         return 
     end
 
-    while doesUnitExistAlive(enemyID) and distanceUnitToUnit(unitID, enemyID) < GameConfig.civilians.panic.radius do
+    while ownsTraffic() and doesUnitExistAlive(enemyID) and distanceUnitToUnit(unitID, enemyID) < GameConfig.civilians.panic.radius do
         runAwayFrom(unitID, enemyID, GameConfig.civilians.panic.fleeDistance)
         Sleep(500)
     end
 
+    if not ownsTraffic() then return end
     setCivilianUnitInternalStateMode(unitID, GameConfig.civilians.activityStates.ended, "fleeings")
 end
 
 attackerID = 0
 
 function startFleeing(enemyID)
-    if not enemyID then return end
-    queueEventThread("flee", fleeEnemy, 250, enemyID)
+    local registration = GG.CivilianTable and GG.CivilianTable[unitID]
+    if not enemyID or not registration then return end
+    queueEventThread("flee", fleeEnemy, 250, enemyID, registration)
 end
 
 function script.TransportDrop(passengerID, x, y, z)

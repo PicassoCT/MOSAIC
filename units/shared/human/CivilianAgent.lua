@@ -42,6 +42,16 @@ local CivilianAgent = Human:New{
 	category = [[GROUND]],
 	
 	canSelfDestruct = true, -- betrayal gadget handles the countdown
+	Builder = true,
+	canAssist = false,
+	canRepair = false,
+	canReclaim = false,
+	canCapture = false,
+	canResurrect = false,
+	canRestore = false,
+	workerTime = 1,
+	buildDistance = 120,
+	buildoptions = {"icon_investigation"},
 	customParams = {
 		helptext		= "Civilian ",
 		baseclass		= "Human", -- TODO: hacks

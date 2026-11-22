@@ -5,7 +5,7 @@ return {
     investigationFrames = 30 * 30,
     investigationMoney = 300,
     investigationSupply = 0,
-    factoryFrames = 90 * 30,
+    placementRange = 24, -- tolerate build-grid snapping around the suspect's center
     factoryMoney = 2000,
     factorySupply = 1000,
     falseAccusationReward = 500,

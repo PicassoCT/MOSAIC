@@ -92,6 +92,19 @@ local Feet1 = piece('Feet1');
 local Feet2 = piece('Feet2');
 local Head1 = piece('Head1');
 local MilitiaMask = nil
+local civilianMaskVisible = false
+
+-- Preserve the authored outfit/protest/armed mask independently of weather.
+function updateWeatherMask()
+    if not MilitiaMask or boolDying then return end
+    if civilianMaskVisible or GG.CivilianWeatherMasks then Show(MilitiaMask)
+    else Hide(MilitiaMask) end
+end
+
+function setCivilianMask(visible)
+    civilianMaskVisible = visible
+    updateWeatherMask()
+end
 local LowArm1 = piece('LowArm1');
 local LowArm2 = piece('LowArm2');
 local LowLeg1 = piece('LowLeg1');
@@ -450,7 +463,7 @@ function script.Create()
     end
 
     MilitiaMask = randomMultipleByNameOrDefault("MilitiaMask")
-    if maRa() and MilitiaMask then Show(MilitiaMask) end
+    if maRa() and MilitiaMask then setCivilianMask(true) end
 
     --Handbag does not rotate with the pieces, its 
     cofee = randomMultipleByNameOrDefault("cofee")
@@ -672,6 +685,7 @@ end
 
 function bodyBuild()
     hideAll(unitID)
+    setCivilianMask(false)
     Show(UpBody)
     Show(center)
     showT(TablesOfPiecesGroups["UpLeg"])
@@ -688,10 +702,10 @@ function bodyBuild()
         showAllSubsSpinsOfPiece(TablesOfPiecesGroups, "Deco", index)
     end
 
-    if math.random(0, 4) > 3 or GG.GlobalGameState ~=  GameConfig.game.states.normal then Show(MilitiaMask) end
+    if math.random(0, 4) > 3 or GG.GlobalGameState ~=  GameConfig.game.states.normal then setCivilianMask(true) end
 
     if bodyConfig.boolArmed == true then
-        Show(MilitiaMask) 
+        setCivilianMask(true)
         if bodyConfig.boolRPGCarrying == true then
             bodyConfig.boolRPGArmed = true
             RPG7 = piece("RPG7")
@@ -746,7 +760,7 @@ function carriesShoppingBag()
 end
 
 function hideAllProps()
-    Hide(MilitiaMask)
+    setCivilianMask(false)
     Hide(ak47)    
     hideT(TablesOfPiecesGroups["Weapons"])
     Hide(molotow)
@@ -1674,7 +1688,7 @@ normalBehavourStateMachine = {
                 Hide(cofee)
             if bodyConfig.boolArmed == true then
                 Show(myGun)
-                Show(MilitiaMask)
+                setCivilianMask(true)
                 if maRa()  then
                     attachToTruckNearby()
                 end
@@ -1683,7 +1697,7 @@ normalBehavourStateMachine = {
                 if bodyConfig.boolProtest == true then
                     playerName = getRandomPlayerName()
                     makeProtestSign(8, 3, 34, 62, signMessages[math.random(1,#signMessages)],playerName)
-                    Show(MilitiaMask)
+                    setCivilianMask(true)
                     Show(molotow)
                     setOverrideAnimationState(eAnimState.protest, eAnimState.walking, false)
                 end

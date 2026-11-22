@@ -94,6 +94,7 @@ local OperativeAsset = Human:New{
 		"ground_stickybomb",
 		"icon_bribe",
 		"stealvehicleicon",
+		"icon_investigation",
 		"air_parachut",
 		"air_copter_scoutlett"
 	},

@@ -1,8 +1,14 @@
 # Double agents and counterintelligence
 
-Only operatives issue **Investigate**, targeting another unit. Safehouses and
-factories cannot investigate themselves. The command approaches the chosen unit,
-then requires the operative to stay nearby. Progress appears on its command button.
+Operatives build an abstract **Investigation** from their build menu, placing it
+directly over one of their own units. Selecting it shows a hovering preview of
+the interrogation hologram; clicking the unit places the abstract construction,
+even over an occupied factory footprint. It uses a placement cursor, not Repair.
+The former Investigate action button is removed.
+The operative approaches the chosen unit and spends **30 seconds** building the
+Investigation nearby. The existing interrogation hologram shows progress over the
+suspect. This is the entire investigation time, including for factories; there is
+no second timer after building. Safehouses and factories cannot investigate themselves.
 There is no global paranoia/reveal action, automatic suspicion meter or third faction.
 
 ## Subversion and activation
@@ -44,14 +50,21 @@ Initial tuning lives in `luarules/configs/counterintelligence.lua`:
 | Target | Work and cost | Outcome |
 | --- | --- | --- |
 | Another own operative | 30 seconds, 300 money | A double agent becomes a betrayal runner seeking its real handler's side. A false accusation gives opposing live teams 500 money in total, divided equally. |
+| Other own physical unit | 30 seconds, 300 money | Investigates its production provenance; discovered networks are disabled. Innocent machinery stays unchanged, without the operative false-accusation penalty. |
 | Own safehouse | 30 seconds, 300 money | A discovered network loses its takeover ability and stops production. An innocent target stays unchanged. |
-| Factory / Nimrod / production hub | 90 seconds, 2,000 money and 1,000 supply | Compromised machinery and its surviving products are secured. If already hijacked, the former owner can investigate it in LOS to restore the factory and its machinery. |
+| Factory / Nimrod / production hub | 30 seconds, 2,000 money and 1,000 supply | Compromised machinery and its surviving products are secured. If already hijacked, the former owner can investigate it in LOS to restore the factory and its machinery. |
 
-All own targets are valid independently of whether they are compromised; the
+Completed own physical units are eligible; abstract effects and morph placeholders
+are not investigation targets. All own targets are valid independently of whether they are compromised; the
 command cursor and initial cost never reveal guilt. Allied teammates' units and
 arbitrary enemy units are not eligible. Nobody can investigate themselves.
 Resource shortages, stun, transport and leaving range pause work. Death, ownership
 change, a replacement or a new order cancels it. Work already performed is not refunded.
+The hologram is removed on completion, cancellation or destruction. Assistance
+cannot shorten the 30-second build. The hologram is an unfinished abstract unit whose construction progress advances
+with the investigation. Costs are paid during progress and retain the
+existing target-specific amounts. Civilian agents retain this ability through
+their Investigation-only build menu.
 
 A human-network discovery silently disables its trigger and stops its production.
 The handler receives no discovery notification or special status flag. Normal

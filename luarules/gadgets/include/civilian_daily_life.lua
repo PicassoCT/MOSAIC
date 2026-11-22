@@ -441,7 +441,10 @@ return function(context)
         for _,member in ipairs(members) do record(member).group=id end
     end
     function life:Step(id, pack, frame)
-        if vehicles[id] then return self:VehiclePause(id,pack,frame) end
+        if vehicles[id] then
+            if context.trafficManaged then return false end
+            return self:VehiclePause(id,pack,frame)
+        end
         if not ambient(id) then return false end
         local p=record(id); local x,z=position(id)
         if not normal() then

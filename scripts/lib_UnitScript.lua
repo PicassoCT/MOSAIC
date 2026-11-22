@@ -339,6 +339,7 @@ end
 function setSpeedEnv(k, val)
     val = math.max(0.000000001, math.min(val, 1.0))
     if GG.HumanShield then val = GG.HumanShield.AdjustSpeed(k, val) end
+    if GG.CivilianVehicles and GG.CivilianVehicles.ScaleSpeed(k, val) then return end
     env = Spring.UnitScript.GetScriptEnv(k)
 
     if env then
@@ -353,6 +354,7 @@ end
 function setSpeedIntern(k, val)
     val = math.max(0.000000001, math.min(val, 1.0))
     if GG.HumanShield then val = GG.HumanShield.AdjustSpeed(k, val) end
+    if GG.CivilianVehicles and GG.CivilianVehicles.ScaleSpeed(k, val) then return end
         udef = Spring.GetUnitDefID(k)
         SetUnitValue(COB.MAX_SPEED, math.ceil( UnitDefs[udef].speed * val * 2184.53))
 end

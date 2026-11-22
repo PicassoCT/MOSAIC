@@ -209,10 +209,12 @@ function script.Create()
     hideAll(unitID)
 
     if unitDefID == UnitDefNames["truckpayloadrefugee"].id then
+        if GG.CivilianVehicles then GG.CivilianVehicles.SetPayload(unitID,'legacy','refugee') end
      	refugeeTruckBehaviour()
     else
     	if randChance(2) and isFairOnMap(x, z, "moneytransport") then
     		displayedPiece = piece("FortNox")
+            if GG.CivilianVehicles then GG.CivilianVehicles.SetPayload(unitID,'legacy','FortNox') end
     		StartThread(delayedSetParentDescription, "Fort Nox - Dont even try it")
     		Show(displayedPiece)
     	else
@@ -223,6 +225,11 @@ end
 
 function selectPayloadPiece()
       displayedPiece =  showOnePiece(TablesOfPiecesGroups["container"])
+      if GG.CivilianVehicles then
+          for index, selected in pairs(TablesOfPiecesGroups['container']) do
+              if selected == displayedPiece then GG.CivilianVehicles.SetPayload(unitID,'legacy',index); break end
+          end
+      end
       description = getSetPayLoadDescription(displayedPiece)
 	  StartThread(delayedSetParentDescription, description)
 	  if (displayedPiece == fireTruck or displayedPiece == EMT) then StartThread(FireTruckEmergencyBehaviour) end
@@ -308,15 +315,22 @@ function FireTruckEmergencyBehaviour()
 	while true do
 		intervallTime = GameConfig.civilians.emergency.locationLifetimeMs
 		x, z = getEmergency()
-		if x then
-		 transporterID = Spring.GetUnitTransporter(unitID)
-		 if transporterID then
-			while doesUnitExistAlive(transporterID) and intervallTime > 0 do
+		if x and Spring.GetUnitTeam(unitID) == gaiaTeamID then
+		 local transporterID = Spring.GetUnitTransporter(unitID)
+		 local registration = transporterID and GG.CivilianTable and GG.CivilianTable[transporterID]
+		 local function ownsTraffic()
+			return registration and GG.CivilianTable[transporterID] == registration
+				and Spring.GetUnitTeam(unitID) == gaiaTeamID
+				and Spring.GetUnitTransporter(unitID) == transporterID
+				and Spring.GetUnitTeam(transporterID) == gaiaTeamID
+		 end
+		 if ownsTraffic() then
+			while ownsTraffic() and doesUnitExistAlive(transporterID) and intervallTime > 0 do
 				Command(transporterID, "go", transporterID, {x=x,y=0, z=z})
 				Sleep(2500)
 				intervallTime = intervallTime -2500
 			end
-			if displayedPiece == EMT then
+			if ownsTraffic() and displayedPiece == EMT then
 				T= getFeaturesInCircleAroundUnit(unitID, 50)
 				if T then
 					foreach(T,
@@ -337,6 +351,6 @@ end
 function delayedAttachCivilianLoot()
     Sleep(500)
     --Spring.Echo("createUnitAtUnit ".."truckPayloadScript.lua") 
-    civilianLootID = createUnitAtUnit(myTeamID, "civilianloot", unitID)
+    civilianLootID = createUnitAtUnit(Spring.GetUnitTeam(unitID), "civilianloot", unitID)
     attachPayload(civilianLootID, unitID)
 end

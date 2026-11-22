@@ -88,6 +88,11 @@ function showAndTell()
 
     if TablesOfPiecesGroups["Truck"] then
         myTruck =  showOne(TablesOfPiecesGroups["Truck"])
+        if GG.CivilianVehicles then
+            for index, selected in pairs(TablesOfPiecesGroups["Truck"]) do
+                if selected == myTruck then GG.CivilianVehicles.SetLongBody(unitID,index); break end
+            end
+        end
 
         if  myTruck == TablesOfPiecesGroups["Truck"][3] or 
             myTruck == TablesOfPiecesGroups["Truck"][4]
@@ -226,7 +231,12 @@ function script.Create()
 end
 
 
-function fleeEnemy(enemyID)
+function fleeEnemy(enemyID, registration)
+    local function ownsTraffic()
+        return registration and GG.CivilianTable[unitID] == registration
+            and Spring.GetUnitTeam(unitID) == Spring.GetGaiaTeamID()
+    end
+    if not ownsTraffic() then return end
     Signal(SIG_INTERNAL)
     SetSignalMask(SIG_INTERNAL)
     setCivilianUnitInternalStateMode(unitID, GameConfig.civilians.activityStates.started, "fleeing")
@@ -236,19 +246,21 @@ function fleeEnemy(enemyID)
     end
 
 
-    while doesUnitExistAlive(enemyID) and distanceUnitToUnit(unitID, enemyID) < GameConfig.civilians.panic.radius do
+    while ownsTraffic() and doesUnitExistAlive(enemyID) and distanceUnitToUnit(unitID, enemyID) < GameConfig.civilians.panic.radius do
         runAwayFrom(unitID, enemyID, GameConfig.civilians.panic.fleeDistance)
         Sleep(500)
     end
 
+    if not ownsTraffic() then return end
     setCivilianUnitInternalStateMode(unitID,  GameConfig.civilians.activityStates.ended, "fleeing")
 end
 
 attackerID = 0
 
 function startFleeing(enemyID)
-    if not enemyID then return end
-    queueEventThread("flee", fleeEnemy, 250, enemyID)
+    local registration = GG.CivilianTable and GG.CivilianTable[unitID]
+    if not enemyID or not registration then return end
+    queueEventThread("flee", fleeEnemy, 250, enemyID, registration)
 end
 
 function script.TransportDrop(passengerID, x, y, z)

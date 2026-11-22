@@ -840,8 +840,7 @@ local function RefreshCommands()
 			local cmdUnitdefs = {}
 			for index, cmd in pairs(activeCmdDescs) do
 				if type(cmd) == "table" then
-					if string_sub(cmd.action, 1, 10) == 'buildunit_' then
-						-- not cmd.disabled and cmd.type == 20 or
+					if not cmd.disabled and string_sub(cmd.action, 1, 10) == 'buildunit_' then
 						cmdUnitdefs[cmd.id * -1] = index
 					end
 				end
@@ -855,8 +854,7 @@ local function RefreshCommands()
 		else
 			for index, cmd in pairs(activeCmdDescs) do
 				if type(cmd) == "table" then
-					if string_sub(cmd.action, 1, 10) == 'buildunit_' then
-						-- not cmd.disabled and cmd.type == 20 or
+					if not cmd.disabled and string_sub(cmd.action, 1, 10) == 'buildunit_' then
 						cmdsCount = cmdsCount + 1
 						cmds[cmdsCount] = cmd
 					end
@@ -1886,6 +1884,11 @@ function widget:UnitCommand(unitID, unitDefID, unitTeam, cmdID, cmdOpts, cmdPara
 			doUpdateClock = os_clock() + 0.01
 		end
 	end
+end
+
+function widget:CommandsChanged()
+	-- Build permissions can change without a new selection (for example on capture).
+	doUpdate = true
 end
 
 function widget:SelectionChanged(sel)

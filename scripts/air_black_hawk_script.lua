@@ -20,7 +20,7 @@ assert(rotor)
 rotors = piece "rotors"
 assert(rotors)
 
-nightlight = piece "rotors"
+nightlight = piece "nightlight"
 turret = piece "turrret"
 assert(turret)
 gun = piece "gun001"
@@ -54,10 +54,10 @@ local boolShortStop = false
 local boolLongStop = false
 
 function rotorsUp()
+    SetSignalMask(SIG_UP)
     Sleep(200)
     Turn(center, x_axis, math.rad(0), 6.5)
     Move(center, y_axis, 0, 8.8)
-    SetSignalMask(SIG_UP)
     Spin(rotor, y_axis, math.rad(-105192), 35.4)
     Spin(nightlight, y_axis, math.rad(105192), 35.4)
 
@@ -66,10 +66,7 @@ function rotorsUp()
     Spin(rotors, y_axis, math.rad(272), 15.5)
     Spin(tailrotors, x_axis, math.rad(72), 15)
     Sleep(2000)
-    if boolAir == true then
-        Show(tailrotors)
-        Show(rotors)
-    end
+    -- The opaque disc meshes stay hidden; the unsynced renderer supplies blur.
     if isNight() == true then 
         Show(nightlight)
     else
@@ -79,6 +76,7 @@ function rotorsUp()
     Sleep(350)
     HideAssert(rotor, "rotor")
     HideAssert(tailrotor, "tailrotor")
+    Spring.SetUnitRulesParam(unitID, "helicopter_rotor_blur", boolAir and 1 or 0, {inlos = true})
 end
 
 function rotorsDown()
@@ -100,12 +98,14 @@ function rotorsDown()
         Show(rotor)
         Show(tailrotor)
     end
+    Spring.SetUnitRulesParam(unitID, "helicopter_rotor_blur", 0, {inlos = true})
     Sleep(1000)
 end
 
 function script.Activate()
     --activates the secondary weapon
     Signal(SIG_Down)
+    Signal(SIG_UP)
     StartThread(rotorsUp)
     return 1
 end
@@ -113,6 +113,7 @@ end
 function script.Deactivate()
     --deactivates the secondary weapon
     Signal(SIG_UP)
+    Signal(SIG_Down)
     StartThread(rotorsDown)
     --return 0
     return 0
@@ -239,7 +240,8 @@ end
 
 boolAir = true
 function script.Create()
-
+    Spring.SetUnitRulesParam(unitID, "helicopter_rotor_blur", 0, {inlos = true})
+    HideAssert(nightlight, "nightlight")
     HideAssert(rotoscope, "rotoscope")
     HideAssert(dirtemit1, "dirtemit1")
     HideAssert(dirtemit2, "dirtemit2")
@@ -269,7 +271,7 @@ function emitSmoke()
 end
 
 function script.Killed()
-
+    Spring.SetUnitRulesParam(unitID, "helicopter_rotor_blur", 0, {inlos = true})
     EmitSfx(bady, rlexplode)
     createCorpseCUnitGeneric()
     return 0

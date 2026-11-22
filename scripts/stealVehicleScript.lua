@@ -57,8 +57,6 @@ function stealVehicle()
     local recruitmentRange = GameConfig.espionage.recruitment.range
     local spGetUnitTeam = Spring.GetUnitTeam
     local spGetUnitDefID = Spring.GetUnitDefID
-    local spGetUnitPosition = Spring.GetUnitPosition
-    local spDestroyUnit = Spring.DestroyUnit
     waitTillComplete(unitID)
     StartThread(lifeTime, unitID, 15000, true, false)
 
@@ -71,20 +69,11 @@ function stealVehicle()
         function(id)
             recruitedDefID = spGetUnitDefID(id)
             if TruckTypeTable[recruitedDefID] then
-               ad = copyUnit(id, teamID)
-                fatherID = fatherID or unitID
-                x,y,z = Spring.GetUnitPosition(fatherID)
-                if doesUnitExistAlive(id) == true and
-                   doesUnitExistAlive(fatherID) then
-                     Spring.SetUnitLoadingTransport(fatherID, ad)
-                     env = Spring.UnitScript.GetScriptEnv(ad) 
-                    if env and env.TransportPickup then
-                        Spring.UnitScript.CallAsUnit(ad, env.TransportPickup,fatherID)
-                    end
+                if GG.CivilianVehicles and GG.CivilianVehicles.RequestHijack(id, unitID, recruitmentRange) then
+                    -- Keep the built hologram alive until the frame callback
+                    -- completes the transfer. Never recreate the car or cargo.
+                    return
                 end
-               spDestroyUnit(id, false, true)
-               spDestroyUnit(unitID, false, true)
-               endIcon()
             end
         end
         )

@@ -29,30 +29,46 @@ local function flight()
     local sx,sz = x,z
     local floor = launchHeight or y
     local milliSeconds = 0
-    local wandering, nextWander = false, 10000
+    local nextWander = 10000
+    local goalX, goalZ = x, z
+    local vx, vz = fleeX*2, fleeZ*2
+    local cruiseHeight = math.max(floor+180,y)
     for step=1,900 do
         if milliSeconds < 10000 then
             x,z = x+fleeX*2,z+fleeZ*2
             y = math.max(floor + math.min(180,step*0.8), Spring.GetGroundHeight(x,z)+40)
             Spring.MoveCtrl.SetPosition(unitID,x,y,z)
         else
-            if not wandering then
-                Spring.MoveCtrl.Disable(unitID)
-                wandering = true
-            end
+            -- These visual swarms have ground-unit movement definitions. Giving
+            -- control back to the engine here snaps their altitude to terrain.
+            -- Keep the same wandering destinations/cadence, steering in flight.
             if milliSeconds >= nextWander then
-                Spring.SetUnitMoveGoal(unitID, sx+math.random(-250,250), y, sz+math.random(-250,250))
+                goalX,goalZ = sx+math.random(-250,250),sz+math.random(-250,250)
                 nextWander = nextWander + 5000
             end
+            local dx,dz = goalX-x,goalZ-z
+            local distance = math.sqrt(dx*dx+dz*dz)
+            local speed = math.min(2,distance/30) * math.min(1,(900-step)*33/2000)
+            local desiredX,desiredZ = 0,0
+            if distance > 0.001 then desiredX,desiredZ = dx/distance*speed,dz/distance*speed end
+            vx,vz = vx+(desiredX-vx)*0.08,vz+(desiredZ-vz)*0.08
+            x,z = x+vx,z+vz
+            local altitude = math.max(cruiseHeight,Spring.GetGroundHeight(x,z)+40)
+            y = y+(altitude-y)*0.05
+            Spring.MoveCtrl.SetPosition(unitID,x,y,z)
         end        
         milliSeconds = milliSeconds + 33
         Sleep(33)
     end
-    Spring.MoveCtrl.Enable(unitID)
-    x,y,z = Spring.GetUnitPosition(unitID)
     local gh = Spring.GetGroundHeight(x,z) + (12 * 3) --buildingheight
-    for h = y, gh , -1 do
-        Spring.MoveCtrl.SetPosition(unitID,x, h,z)
+    -- Ease into and out of descent, keeping the original perch clearance and
+    -- a maximum descent rate of about 30 units/second. The independent expiry
+    -- thread still bounds exceptionally tall rooftop launches to 60 seconds.
+    local steps = math.max(45,math.ceil(math.abs(y-gh)*1.5/0.99))
+    for step=1,steps do
+        local t = step/steps
+        local eased = t*t*(3-2*t)
+        Spring.MoveCtrl.SetPosition(unitID,x,y+(gh-y)*eased,z)
         Sleep(33)
     end
     

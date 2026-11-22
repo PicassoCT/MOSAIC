@@ -179,7 +179,7 @@ boolForward = true
 boolGotIdleTokken = false
 function walkAnimationLoop()
     waitTillComplete(unitID)
-    StartThread(PlaySoundByUnitDefID, unitDefID, "sounds/walker/boot.wav",1.0, 1000, 1)
+    StartThread(PlaySoundByUnitDefID, unitDefID, "sounds/walker/boot.wav",0.5, 1000, 1)
     Landing()
 
     while true do
@@ -446,7 +446,7 @@ end
 boolWalking = false
 function script.StartMoving(boolReverse)
     boolForward =  (boolReverse == 0)
-    StartThread(PlaySoundByUnitDefID, unitDefID, "sounds/walker/servo"..math.random(1,7)..".ogg", 0.75, 3000, 2)
+    StartThread(PlaySoundByUnitDefID, unitDefID, "sounds/walker/servo"..math.random(1,7)..".ogg", 0.375, 3000, 2)
     boolWalking = true 
 end
 

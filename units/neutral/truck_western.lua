@@ -65,7 +65,7 @@ CivilianTrucks ={}
 for i=0, 3 do
 	CivilianTruck.objectName = "truck_western"..i..".dae"
 	CivilianTruck.customparams.normaltex = "unittextures/house_europe_normal.dds"
-	CivilianTruck.customparams.maxVelocity = Velocity[i]
+	CivilianTruck.maxVelocity = Velocity[i] or 2.5
 	CivilianTrucks["truck_western"..i] = CivilianTruck:New()
 end
 

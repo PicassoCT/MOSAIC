@@ -1,6 +1,6 @@
 -- Two-car containment uses the police pool and city roads, not combat dispatch.
 local M = {}
-function M.New(config, officers, position, move, spawnLocation)
+function M.New(config, officers, position, move, spawnLocation, report)
     local cfg = config.police.hostages
     local records, api = {}, {}
     local gaia, carDef = Spring.GetGaiaTeamID(), UnitDefNames.policetruck.id
@@ -59,6 +59,7 @@ function M.New(config, officers, position, move, spawnLocation)
         if not record or record.civilian~=civilian then return end
         records[carrier]=nil
         local frame=Spring.GetGameFrame()
+        if dead and report then report('hostage_death', position(civilian) or record.location) end
         for _,id in ipairs(sorted(record.cars)) do
             local state=officers[id]
             if state and state.cordon==record then
@@ -83,6 +84,7 @@ function M.New(config, officers, position, move, spawnLocation)
         records[carrier]={carrier=carrier,civilian=civilian,location=p,cars={},
             due=Spring.GetGameFrame()+config.police.dispatch.reportDelayFrames}
         GG.PoliceActionSoundInterVallStartFrame=Spring.GetGameFrame()
+        if report then report('hostage', p) end
     end
     function api.Update(frame)
         for _,carrier in ipairs(sorted(records)) do

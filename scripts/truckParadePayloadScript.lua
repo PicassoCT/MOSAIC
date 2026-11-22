@@ -79,6 +79,7 @@ function SetParadeVariant(index)
         end
     end
     variant = selected
+    if GG.CivilianVehicles then GG.CivilianVehicles.SetPayload(unitID,'parade',index) end
     for _, name in ipairs(variant.pieces) do Show(pieceMap[name]) end
     -- The unsynced pixel decorations must follow the actual selected payload,
     -- including selections queued before Create and later variant changes.

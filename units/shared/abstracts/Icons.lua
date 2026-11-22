@@ -460,6 +460,23 @@ local InterrogationIcon =
     category = "NOTARGET"
 }
 
+local Investigation = InterrogationIcon:New {
+    name = "Investigation",
+    description = "Build over one of your units to investigate it. 30 seconds; 300 money, or 2000 money and 1000 supply for factories. False operative accusations pay opponents 500 money.",
+    buildCostMetal = 300,
+    buildCostEnergy = 0,
+    buildTime = 30,
+    blocking = false,
+    reclaimable = false,
+    capturable = false,
+    canMove = false,
+    canPatrol = false,
+    canStop = false,
+    onoffable = false,
+    customparams = {baseclass = "Abstract", helptext = "Place the Investigation hologram over one of your units."},
+    category = "NOTARGET ABSTRACT",
+}
+
 local SnipeIcon =
     Abstract:New {
     corpse = "",
@@ -723,6 +740,7 @@ return lowerkeys(
         ["revealdoubleagent"] = RevealDoubleAgentsIcon:New(),
         ["doubleagent"] = DoubleAgent:New(),
         ["interrogationicon"] = InterrogationIcon:New(),
+        ["icon_investigation"] = Investigation:New(),
         ["stealvehicleicon"] = StealVehicle:New(),
         ["icon_raid"] = RaidIcon:New(),
         ["raidiconbaseplate"] = RaidIconBasePlate:New(),
