@@ -307,6 +307,12 @@ function script.TransportPickup(passengerID)
             -- Cargo may already occupy the native transport capacity. Failed
             -- boarding must not leave the operative invisible to selection.
             if Spring.GetUnitTransporter(passengerID) ~= unitID then return end
+            -- Preserve the boarding operative's fire discipline. After this
+            -- handover, the selected truck controls its passenger as usual.
+            local passengerStates = Spring.GetUnitStates(passengerID)
+            if passengerStates and passengerStates.firestate ~= nil then
+                setFireState(unitID, passengerStates.firestate)
+            end
             Spring.SetUnitNoSelect(passengerID, true)
             passenger = passengerID
             StartThread(tranferOrdersToLoadedUnit, passengerID)
