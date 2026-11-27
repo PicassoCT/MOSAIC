@@ -1,3 +1,8 @@
+# Tooling location
+
+- Store new authoring, export, and validation tooling outside the game checkout, under `/home/picasso/MosaicDev/Tools`.
+- Do not add tooling to the game folder. External regression tests continue to use the dedicated location below.
+
 # Preserve decision sets
 
 - Read [Decision set style for agents](docs/decision-set-style.md) when adding or changing classification, eligibility, dispatch, or per-kind configuration.
