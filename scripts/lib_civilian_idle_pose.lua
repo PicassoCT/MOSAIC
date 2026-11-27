@@ -1,5 +1,5 @@
--- Civilian rigs are Z-up beneath their baked root transform. Script Y lowers
--- shoulders; script Z swings them forward. Calibrate each model's A/T bind pose.
+-- Civilian rigs are Z-up beneath their baked root transform. Native Y lowers
+-- shoulders; native Z swings them forward. The script header swaps Y/Z names.
 local M = {}
 local names = {'Head1','UpBody','UpArm1','UpArm2','LowArm1','LowArm2'}
 local armPieces = {'UpArm1','UpArm2','LowArm1','LowArm2','Hand1','Hand2'}
@@ -46,7 +46,7 @@ end
 
 function M.correctAnimationAxes(animations, calibration)
     -- Source Y/Z will be swapped by setupAnimation; convert signs likewise.
-    local sourceAxes = {[x_axis]=1,[y_axis]=3,[z_axis]=2}
+    local sourceAxes = {[x_axis]=x_axis,[y_axis]=z_axis,[z_axis]=y_axis}
     for _,clip in pairs(animations) do
         for _,frame in ipairs(clip) do
             for _,cmd in ipairs(frame.commands) do
@@ -61,7 +61,7 @@ function M.correctAnimationAxes(animations, calibration)
 end
 
 function M.conversationRest(calibration)
-    -- Source keyframes swap Y/Z in setupAnimation: source Z becomes script Y.
+    -- Profile field Z becomes native Y after setupAnimation swaps axes.
     return {UpArm1={0,0,-(78-calibration[1])},UpArm2={0,0,78-calibration[2]}}
 end
 
@@ -74,7 +74,7 @@ function M.apply(pieces, unitID, speed, turn, calibration, carrying)
         values['UpArm'..side]={arm.shoulder,sign*(arm.drop-calibration[side]),-sign*arm.forward}
         values['LowArm'..side]={arm.elbow+(arm.stagger and sign*8 or 0),sign*arm.fold,0}
     end
-    local axes = {pieces.x_axis,pieces.y_axis,pieces.z_axis}
+    local axes = {1,2,3} -- native Turn axes, independent of header aliases
     for _, name in ipairs(names) do
         if pieces[name] then
             for axis, degrees in ipairs(values[name]) do
@@ -84,5 +84,24 @@ function M.apply(pieces, unitID, speed, turn, calibration, carrying)
         end
     end
     return profile.name
+end
+
+function M.walk(pieces, unitID, frame, turn, calibration)
+    local swing = 16*math.sin(unitID+frame/15)
+    for side=1,2 do
+        local sign = side==1 and -1 or 1
+        local values = {
+            ['UpArm'..side]={-sign*swing,sign*(78-calibration[side]),-sign*3},
+            ['LowArm'..side]={-12,0,0},
+        }
+        for _,name in ipairs({'UpArm'..side,'LowArm'..side}) do
+            if pieces[name] then
+                local signs = calibration.axisSigns and calibration.axisSigns[name]
+                for axis,degrees in ipairs(values[name]) do
+                    turn(pieces[name],axis,math.rad(degrees)*(signs and signs[axis] or 1),math.pi*2)
+                end
+            end
+        end
+    end
 end
 return M

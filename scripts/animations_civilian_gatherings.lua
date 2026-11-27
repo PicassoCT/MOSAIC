@@ -13,7 +13,7 @@ local profiles={
 }
 function M.register(bank, rest)
     local names={"Head1","UpBody","UpArm1","UpArm2","LowArm1","LowArm2"}
-    local axes={x_axis,y_axis,z_axis}
+    local axes={1,2,3} -- profile X/Z/Y; setupAnimation swaps to native X/Y/Z
     for name,profile in pairs(profiles) do
         local clip={}
         -- At key 4 the forward stroke has completed: the held prop is released.

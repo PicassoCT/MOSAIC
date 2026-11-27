@@ -46,19 +46,21 @@ local function basis(m)
  end
  return r,scale
 end
-function M.new(id)
+function M.new(id, options)
+ options=options or {}
  local map=Spring.GetUnitPieceMap(id)
- local torso=basis({Spring.GetUnitPieceMatrix(id,map.Torso)})
+ local torso=basis({Spring.GetUnitPieceMatrix(id,map[options.torso or 'Torso'])})
  local arms={}
  for i=1,2 do
   local upper,lower=map['UpArm'..i],map['LowArm'..i]
   local u,us=basis({Spring.GetUnitPieceMatrix(id,upper)})
   local l,ls=basis({Spring.GetUnitPieceMatrix(id,lower)})
   local info=Spring.GetUnitPieceInfo(id,lower)
+  local hand=options.hands and Spring.GetUnitPieceInfo(id,map['Hand'..i])
   local upperVector,lowerVector={},{}
   for axis=1,3 do
    upperVector[axis]=info.offset[axis]*us[axis]
-   lowerVector[axis]=(info.min[axis]+info.max[axis])*.5*ls[axis]
+   lowerVector[axis]=(hand and hand.offset[axis] or (info.min[axis]+info.max[axis])*.5)*ls[axis]
   end
   arms[i]={upper=u,lower=l,upperVector=normal(upperVector),lowerVector=normal(lowerVector)}
  end

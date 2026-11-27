@@ -21,7 +21,7 @@ include "lib_staticstring.lua"
 
 -- Resolved keyframes are immutable during playback. Reuse the existing
 -- shared-result cache per definition, so crowd size does not multiply banks.
-local animationCacheKey = "civilian-body-keyframes-v5:" .. unitDefID
+local animationCacheKey = "civilian-body-keyframes-v6:" .. unitDefID
 local Animations = GetSharedOneTimeResult(animationCacheKey)
 local PrayerAnimations = include('animations_civilian_prayers.lua')
 local AerosolAnimations = include("animations_civilian_aerosols.lua")
@@ -36,6 +36,8 @@ if not Animations then
     ConversationAnimations.register(Animations, IdlePoses.conversationRest(idleCalibration))
     GatheringAnimations.register(Animations, IdlePoses.conversationRest(idleCalibration))
     IdlePoses.correctAnimationAxes(Animations, idleCalibration)
+    include('animations_civilian_phone.lua').register(Animations,
+        include('lib_animation_arm_retarget.lua').new(unitID,{torso='UpBody',hands=true}))
 end
 local previousConversationClip = {}
 local signMessages = include('protestSignMessages.lua')
@@ -1176,6 +1178,8 @@ end
 function filmingLocation()
     Signal(SIG_INTERNAL)
     SetSignalMask(SIG_INTERNAL)
+    Signal(SIG_UP) -- Filming owns the arms until it finishes or is interrupted.
+    setOverrideAnimationState(eAnimState.slaved, eAnimState.standing, true, nil, true)
     Show(cellphone1)
     while filmLocation.time > 0 do
         durationMs = frameToMs(PlayAnimation("UPBODY_FILMING", lowerBodyPieces, 1.0))
@@ -1183,7 +1187,11 @@ function filmingLocation()
         setUnitRotationToPoint(unitID, filmLocation.x, filmLocation.y, filmLocation.z)
         Sleep(100)
     end
+    Hide(cellphone1)
     setCivilianUnitInternalStateMode(unitID, GameConfig.civilians.activityStates.ended, "filming")
+    resetUpperBodyNoTPose(true)
+    local state = boolWalking and getWalkingState() or eAnimState.standing
+    setOverrideAnimationState(state,state,true,nil,true)
 end
 
 function throwArmsUp()
@@ -1808,15 +1816,7 @@ UpperAnimationStateFunctions = {
                 -- resetT(upperBodyPieces, math.pi,false, true)
                 return eAnimState.walking
             else
-                GameFrame = Spring.GetGameFrame()
-                Turn(UpArm1, z_axis, math.rad(-25), math.pi)
-                Turn(UpArm2, z_axis, math.rad(25), math.pi)
-                Turn(UpArm1, x_axis,
-                     math.rad(25 * math.sin(unitID + GameFrame / 15)),
-                     math.pi * 2)
-                Turn(UpArm2, x_axis,
-                     math.rad(25 * math.cos(unitID + GameFrame / 15)),
-                     math.pi * 2)
+                IdlePoses.walk(idlePieces,unitID,Spring.GetGameFrame(),Turn,idleCalibration)
                 WaitForTurns(upperBodyPieces)
                 return eAnimState.walking
             end
@@ -2068,15 +2068,20 @@ function animationStateMachineUpper(AnimationTable)
     end
 end
 
+local internalUpperBodyBehaviours = {phone=true, talk=true, filming=true}
+local function internalBehaviourOwnsUpperBody()
+    local internal = GG.CivilianUnitInternalLogicActive and GG.CivilianUnitInternalLogicActive[unitID]
+    return type(internal) == "table" and internal.state == GameConfig.civilians.activityStates.started
+        and internalUpperBodyBehaviours[internal.behaviour] == true
+end
+
 function delayedStop()
     Signal(SIG_STOP)
     SetSignalMask(SIG_STOP)
     Sleep(250)
     boolWalking = false
     -- Spring.Echo("Stopping")
-    local internal = GG.CivilianUnitInternalLogicActive and GG.CivilianUnitInternalLogicActive[unitID]
-    local upper = type(internal) == "table" and (internal.behaviour == "phone" or internal.behaviour == "talk")
-        and eAnimState.slaved or eAnimState.standing
+    local upper = internalBehaviourOwnsUpperBody() and eAnimState.slaved or eAnimState.standing
     setOverrideAnimationState(upper, eAnimState.standing, true, nil, true)
 end
 
@@ -2093,7 +2098,8 @@ function script.StartMoving()
     Signal(SIG_STOP)
     boolWalking = true
     local walkingState = getWalkingState()
-    setOverrideAnimationState(walkingState, walkingState, true, nil, true)
+    local upper = internalBehaviourOwnsUpperBody() and eAnimState.slaved or walkingState
+    setOverrideAnimationState(upper, walkingState, true, nil, true)
 end
 
 function script.StopMoving() if not boolDying then StartThread(delayedStop) end end

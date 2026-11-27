@@ -2,7 +2,9 @@
 -- Uses the existing Turn-keyframe player; no extra coroutine or physics owner.
 local M = {}
 local pieces = {'Head1','UpBody','UpArm1','UpArm2','LowArm1','LowArm2'}
-local axes = {x_axis,y_axis,z_axis}
+-- These profiles were authored as X/Z/Y. Compensate the header aliases before
+-- setupAnimation's swap so their tested native shoulder axes remain X/Y/Z.
+local axes = {1,2,3}
 local neutral = {
     Head1={0,0,0}, UpBody={0,0,0},
     UpArm1={0,0,-33}, UpArm2={0,0,33},
@@ -97,7 +99,7 @@ end
 -- Keep all keyframes and props; do not affect aiming, carrying or prayer clips.
 local ambientClips = {
     UPBODY_NORMAL_TALK={bothArms=true}, UPBODY_AGGRO_TALK={bothArms=true},
-    UPBODY_PHONE={bothArms=false}, UPBODY_CONSUMPTION={bothArms=false},
+    UPBODY_CONSUMPTION={bothArms=false},
 }
 local function retargetAmbient(animations, rest)
     local transforms = {}
@@ -130,6 +132,10 @@ local function retargetAmbient(animations, rest)
                             local low,high=(cmd.rl or 0)*scale,(cmd.ru or .01)*scale
                             cmd.rl,cmd.ru=math.min(low,high),math.max(low,high)
                         end
+                        -- This retarget's Y/Z profile fields describe the old
+                        -- source convention, not the header's numeric aliases.
+                        if cmd.a==y_axis then cmd.a=2
+                        elseif cmd.a==z_axis then cmd.a=3 end
                     end
                 end
             end
