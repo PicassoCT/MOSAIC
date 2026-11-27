@@ -10,9 +10,14 @@ return function(id, team, options)
     local experience = Spring.GetUnitExperience(id)
     local rx,ry,rz = Spring.GetUnitRotation(id)
     local previous = GG.UnitReplacement
+    local trace = GG.SafehouseTrace
+    local traceContext = trace and trace.BeginTransform(id,def,team,options.reason or "ownership_replacement")
     GG.UnitReplacement = {oldID=id, team=team}
     local newID = Spring.CreateUnit(def,x,y,z,Spring.GetUnitBuildFacing(id) or 0,team,false,false)
-    if not newID then GG.UnitReplacement=previous;return end
+    if not newID then
+        if trace then trace.EndTransform(traceContext,nil) end
+        GG.UnitReplacement=previous;return
+    end
     GG.UnitReplacement.newID = newID
     Spring.SetUnitHealth(newID,{health=hp,paralyze=paralyze,capture=capture,build=built})
     Spring.SetUnitExperience(newID,experience or 0)
@@ -27,7 +32,9 @@ return function(id, team, options)
         end
     end
     if options.beforeDestroy then options.beforeDestroy(newID) end
+    if trace then trace.Removal(id,options.reason or "ownership_replacement",{new_unit=newID,new_team=team}) end
     Spring.DestroyUnit(id,false,true)
+    if trace then trace.EndTransform(traceContext,newID) end
     GG.UnitReplacement = previous
     return newID
 end

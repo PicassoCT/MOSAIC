@@ -559,6 +559,10 @@ if (gadgetHandler:IsSyncedCode()) then
                             GG.OperativesDiscovered[parent] = true
                             spSetUnitAlwaysVisible(parent, true)
                         end                    
+                        if GG.SafehouseTrace then
+                            GG.SafehouseTrace.Removal(persPack.raidedSafeHouseOrHouse_ID, "raid_lost",
+                                {raider=persPack.attackerID,raider_team=persPack.attackerTeam})
+                        end
                         Spring.DestroyUnit(persPack.raidedSafeHouseOrHouse_ID, false, true)
                         postRaidCleanup(persPack)
                         persPack.boolRaidHasEnded = true

@@ -380,6 +380,10 @@ local function StartMorph(unitID, unitDefID, teamID, morphDef, cmdParams)
   -- do not allow morph for unfinsihed units
   if not isFinished(unitID) then return true end
 
+  if GG.SafehouseTrace then
+    GG.SafehouseTrace.Event(unitID, "morph_started", {new_type = UnitDefs[morphDef.into].name})
+  end
+
   Spring.SetUnitHealth(unitID, { paralyze = 1.0e9 })    --// turns mexes and mm off (paralyze the unit)
   Spring.MoveCtrl.Enable(unitID)
   Spring.SetUnitRulesParam(unitID, "movectrl", 1)
@@ -404,6 +408,10 @@ end
 
 
 local function StopMorph(unitID, morphData)
+  if GG.SafehouseTrace then
+    GG.SafehouseTrace.Event(unitID, "morph_cancelled", {progress = morphData.progress,
+      new_type = UnitDefs[morphData.def.into].name})
+  end
   morphUnits[unitID] = nil
 
   Spring.SetUnitHealth(unitID, { paralyze = -1})
@@ -758,7 +766,11 @@ local function FinishMorph(unitID, morphData)
 
   containingHouseID = getContainingHouse(unitID)
   if not doesUnitExistAlive(containingHouseID) then
-      Spring.Echo(unitID .." containing House "..containingHouseID .. " is dead ")
+      if GG.SafehouseTrace then
+        GG.SafehouseTrace.Event(unitID, "morph_aborted", {reason = "host_missing_or_dead",
+          new_type = unitDefNameAfterMorph})
+      end
+      Spring.Echo(unitID .." containing House "..tostring(containingHouseID) .. " is dead ")
       --GG.UnitsToKill:PushKillUnit(unitID, true, false)
       return
   end
@@ -766,6 +778,9 @@ local function FinishMorph(unitID, morphData)
   -- DESTROY UNIT, this syntax is for spring 104+ only (parameter #5 does not exist in 103)
   -- selfd = false, reclaim = true, attacker = 0, recycleID = true
   --echo("unitMorph: Destroying unit:".. unitID)
+  local trace = GG.SafehouseTrace
+  local traceContext = trace and trace.BeginTransform(unitID,morphData.def.into,unitTeam,"morph")
+  if trace then trace.Removal(unitID,"morph",{new_type=unitDefNameAfterMorph}) end
   if GG.Counterintelligence then GG.Counterintelligence.BeginMorph(unitID) end
   Spring.DestroyUnit(unitID, false, true, 0, true)
 
@@ -805,6 +820,10 @@ local function FinishMorph(unitID, morphData)
     --echo("unitMorph: Created unit:".. newUnitID)
     GG.houseHasSafeHouseTable[containingHouseID] = newUnitID
     if newUnitID and GG.SetHouseIconHost then GG.SetHouseIconHost(newUnitID, containingHouseID) end
+    if trace then
+      trace.EndTransform(traceContext,newUnitID)
+      if newUnitID then trace.Event(newUnitID,"attached",{house=containingHouseID}) end
+    end
 end
 
 local function UpdateMorph(unitID, morphData)

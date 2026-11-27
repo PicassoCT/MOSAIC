@@ -81,6 +81,7 @@ __pycache__/
 !luarules/gadgets/game_civilian_gatherings.lua
 !weapons/civilianstone.lua
 !features/civilianstones.lua
+!luarules/gadgets/game_safehouse_trace.lua
 !luarules/gadgets/game_assembly_turret_exit.lua
 !scripts/animations_civilian_phone.lua
 !objects3d/civilian_stone1.dae.lua

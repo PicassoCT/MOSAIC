@@ -26,6 +26,10 @@ if (gadgetHandler:IsSyncedCode()) then
             for i=1, #GG.mortallyDependant[unitID] do
                 local dependent = GG.mortallyDependant[unitID][i]
                 if doesUnitExistAlive(dependent.id) then
+                    if GG.SafehouseTrace then
+                        GG.SafehouseTrace.Removal(dependent.id,"dependency_destroyed",{dependency=unitID,
+                            self_destruct=dependent.boolSelfDestruct,reclaimed=dependent.boolReclaimed})
+                    end
                     Spring.DestroyUnit(dependent.id, dependent.boolSelfDestruct, dependent.boolReclaimed)
                 end
             end

@@ -212,7 +212,7 @@ local function factoryCleanup(target,team,n)
                 else
                 local restored=id
                 local wasBurned=burned[id]
-                if current~=team then restored=replaceUnit(id,team) end
+                if current~=team then restored=replaceUnit(id,team,{reason="counterintelligence_restoration"}) end
                 if restored then
                     detachOrphan(restored)
                     secured[restored]=true;burned[restored]=nil
@@ -341,7 +341,7 @@ local function activate(root,n)
     local failed=false
     for _,id in ipairs(list) do
         if complete(id) and Spring.GetUnitTeam(id)==n.owner and not secured[id] and not burned[id] then
-            local newID=replaceUnit(id,n.beneficiary)
+            local newID=replaceUnit(id,n.beneficiary,{reason="sleeper_activation"})
             if not newID then failed=true else n.used=true;if id==root then root=newID end end
         end
     end

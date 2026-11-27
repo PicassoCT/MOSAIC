@@ -75,6 +75,7 @@ end
 function killDelayed()
     Sleep(1)
     echo("Killing due safehouse being near a predecessor")
+    if GG.SafehouseTrace then GG.SafehouseTrace.Removal(unitID, "near_existing_safehouse") end
     destroyUnitConditional(unitID, false, true)
 end
 
@@ -116,6 +117,10 @@ function houseAttach()
                 attachDoubleAgentToUnit(unitID ,enemyTeamID, boolIsSafeHouse)
                 -- destroy the previous created safehouse
                 echo("Previous Safehouse detected destroying "..getUnitName(GG.houseHasSafeHouseTable[houseID]))
+                if GG.SafehouseTrace then
+                    GG.SafehouseTrace.Removal(GG.houseHasSafeHouseTable[houseID], "enemy_overbuild",
+                        {replacement = unitID, replacement_team = myTeamID, host = houseID})
+                end
                 Spring.DestroyUnit(GG.houseHasSafeHouseTable[houseID], true, false)
             end
         end
@@ -127,9 +132,13 @@ function houseAttach()
             GG.houseHasSafeHouseTable[houseID] = unitID
             if GG.SetHouseIconHost then GG.SetHouseIconHost(unitID, houseID) end
             moveUnitToUnit(unitID, houseID)
+            if GG.SafehouseTrace then GG.SafehouseTrace.Event(unitID, "attached", {house = houseID}) end
             return houseID
         end
     end)
+    if not containingHouseID and GG.SafehouseTrace then
+        GG.SafehouseTrace.Event(unitID, "attachment_failed", {reason = "no_available_habitable_house"})
+    end
 end
 
 local safeHouseTypes = getSafeHouseTypeTable(UnitDefs)
@@ -151,6 +160,10 @@ function checkPreExistingKill(toKillId, notID)
 
         if #OtherUpgradeTypesAliveAtLocation > 0 then
             echo("Safehousescript: Previous Upgrade active - killing  unit".. getUnitName(toKillId))
+            if GG.SafehouseTrace then
+                GG.SafehouseTrace.Removal(toKillId, "existing_upgrade",
+                    {upgrades = table.concat(OtherUpgradeTypesAliveAtLocation, ",")})
+            end
             Spring.DestroyUnit(toKillId, false, true)
         end
 end
