@@ -44,6 +44,7 @@ __pycache__/
 
 *.db
 *.lua
+!gamedata/unit_icon_variants.lua
 
 # Regression sources are maintained outside the playable game checkout.
 /tests/

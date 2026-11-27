@@ -4,8 +4,8 @@ local AIR_F35 =
     Description = "Air-superiority fighter; one area bomb, rearms near an Armybase",
     objectName = "air_plane_F35.dae",
     script = "airplanefighterjetscript.lua",
-    buildPic = "air_sniper.png",
-    iconType = "air_sniper",
+    buildPic = "air_fighter.png",
+    iconType = "air_fighter",
     --floater = true,
     --cost
     buildCostMetal = 6000,

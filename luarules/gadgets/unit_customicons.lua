@@ -76,6 +76,12 @@ local icons = {
 
 }
 
+-- Keep role variants responsive to the player's UnitIconScale setting.
+local unitIconVariants = VFS.Include("gamedata/unit_icon_variants.lua")
+for name, bitmap in pairs(unitIconVariants) do
+    icons[#icons + 1] = {name, bitmap:gsub("%.png$", ""), 1.0}
+end
+
 for i = 0, 3 do icons[#icons + 1] = {"civilian_arab" .. i, "civilian", 0.5} end
 
 for i = 0, 8 do icons[#icons + 1] = {"truck_arab" .. i, "truck", 0.5} end

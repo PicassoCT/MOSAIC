@@ -1,0 +1,21 @@
+-- Distinct role icons shared by engine definitions and the icon-scale gadget.
+return {
+    air_blackhawk = "air_blackhawk.png",
+    air_fighter = "air_fighter.png",
+    air_gliderbomb = "air_gliderbomb.png",
+    air_scout = "air_scout.png",
+    air_strike = "air_strike.png",
+    armybase = "armybase.png",
+    barricade = "barricade.png",
+    ground_turret_sniper = "ground_turret_sniper.png",
+    technical_mg = "technical_mg.png",
+    technical_mortar = "technical_mortar.png",
+    technical_rocket = "technical_rocket.png",
+    truck_mortar = "truck_mortar.png",
+    turret_antitank = "turret_antitank.png",
+    turret_drone = "turret_drone.png",
+    turret_mortar = "turret_mortar.png",
+    walker_flame = "walker_flame.png",
+    walker_drone = "walker_drone.png",
+    warheadfactory = "warheadfactory.png",
+}

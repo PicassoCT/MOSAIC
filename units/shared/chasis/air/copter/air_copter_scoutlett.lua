@@ -4,8 +4,8 @@ local AIRC_COPTER_SCOUTLET = VTOL:New{
 	Description = "  ",	
 	objectName = "air_copter_scoutlett.dae",
 	script = "aircopterscoutlettscript.lua",
-	buildPic = "air_antiarmour.png",
-	iconType = "air_antiarmour",
+	buildPic = "air_scout.png",
+	iconType = "air_scout",
 	--floater = true,
 	--cost
 	buildCostMetal = 25,

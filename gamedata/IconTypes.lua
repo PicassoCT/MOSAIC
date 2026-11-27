@@ -113,6 +113,17 @@ radiusadjust = true,
     distance = 100,
 },
 }
+-- Role variants use the same defaults as the existing unit icons.
+local unitIconVariants = VFS.Include("gamedata/unit_icon_variants.lua")
+for name, bitmap in pairs(unitIconVariants) do
+    iconTypes[name] = {
+        bitmap = "icons/" .. bitmap,
+        size = 1.5,
+        radiusadjust = true,
+        distance = 100,
+    }
+end
+
 --TODO: Make context dependent
 for i=1,nrOfCivilianTypes do
 	iconTypes["civilian_arab"..i] = {

@@ -4,8 +4,8 @@ local AIR_ROCKET = AIRCRAFT:New{
 	Description = "Area-strike drone: salvo attacks punish concentrations; vulnerable to AA",
 	objectName = "air_plane_rocket.dae",
 	script = "airplanerocketscript.lua",
-	buildPic = "air_sniper.png",
-	iconType = "air_sniper",
+	buildPic = "air_strike.png",
+	iconType = "air_strike",
 	--floater = true,
 	--cost
 	buildCostMetal = 1250,

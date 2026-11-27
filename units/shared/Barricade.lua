@@ -32,7 +32,8 @@ local Barricade = Building:New{
 
 	name = "Add hoc fortification",
 	description = "Area denial: channels ground forces into defended approaches",
-	buildPic = "Brehmerwall.png",
+	buildPic = "barricade.png",
+	iconType = "barricade",
 	
 	customparams = {
 		helptext		= "MOSAIC Checkpoint",

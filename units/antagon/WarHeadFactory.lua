@@ -26,8 +26,8 @@ local WarHeadFactory = Building:New{
 		customParams        = {
 		normaltex = "unittextures/component_atlas_normal.dds",
 	},
-	buildPic = "blacksite.png",
-	iconType = "blacksite",
+	buildPic = "warheadfactory.png",
+	iconType = "warheadfactory",
 	name = "Wardhead Labratory",
 	description = "develops a lethal warhead to launch with a ICBM",
 

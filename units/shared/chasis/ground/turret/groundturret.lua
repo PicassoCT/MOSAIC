@@ -151,8 +151,8 @@ local groundturretmortar =  Turret:New{
 	mass = 2500,
 	
 	script = "ground_turret_mortar_script.lua",
-	buildPic = "ground_turret_mg.png",
-	iconType = "ground_turret_mg",
+	buildPic = "turret_mortar.png",
+	iconType = "turret_mortar",
 
 	--cost
 	buildCostEnergy  = 250,
@@ -218,8 +218,8 @@ local ground_turret_sniper =  Turret:New{
 	mass = 2500,
 	
 	script = "groundturretsniperscript.lua",
-	buildPic = "ground_turret_mg.png",
-	iconType = "ground_turret_mg",
+	buildPic = "ground_turret_sniper.png",
+	iconType = "ground_turret_sniper",
 	pushResistant = true,
 	--cost
 	buildCostEnergy  = 900,
@@ -287,7 +287,8 @@ local ground_turret_antiarmor =  Turret:New{
 	
 	objectName = "ground_turret_antiarmor.DAE",
 	script = "groundturretantitankscript.lua",
-	buildPic = "ground_turret_rocket.png",
+	buildPic = "turret_antitank.png",
+	iconType = "turret_antitank",
 	--floater = true,
 	--cost
 	buildCostEnergy  = 500,
@@ -360,8 +361,8 @@ local ground_turret_dronegrenades =  Turret:New{
 	mass = 750,
 	objectName = "ground_turret_grenadeDrone.DAE",
 	script = "ground_turret_drone_script.lua",
-	buildPic = "ground_turret_rocket.png",
-	iconType = "ground_turret_rocket",
+	buildPic = "turret_drone.png",
+	iconType = "turret_drone",
 	--floater = true,
 	--cost
 	buildCostEnergy  = 250,

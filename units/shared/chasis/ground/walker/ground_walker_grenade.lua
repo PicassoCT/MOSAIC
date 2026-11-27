@@ -27,8 +27,8 @@ local ground_walker_grenade = Walker:New{
 	footprintZ = 2,
 	script 			= "groundwalkerscript.lua",
 	objectName 	= "ground_walker_grenade.dae",
-	buildPic = "ground_walker_mg.png",
-	iconType ="ground_walker_mg",
+	buildPic = "walker_drone.png",
+	iconType ="walker_drone",
 	strafeToAttack = true,
 
 	category = "GROUND",

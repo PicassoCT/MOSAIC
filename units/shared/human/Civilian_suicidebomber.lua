@@ -26,7 +26,7 @@ local Suicidebomber = Human:New{
 	CanStop = true,
 	script 				= "civilianagentscript.lua",
 	objectName        	= "civilian0_arab.dae",
-	buildPic 			= "civilianagent.png",
+	buildPic 			= "bomber.png",
 	iconType 			= "civilianagent",
 
 --cloaking behaviour

@@ -27,7 +27,8 @@ local ArmyBase = Building:New{
 
 		name 				= "Armybase",
 		description 		= " recruits armed local forces",
-		buildPic			= "assembly.png",
+		buildPic			= "armybase.png",
+		iconType = "armybase",
 		canCloak 			= false,
 		canMove 		 	= true,
 		ActivateWhenBuilt	= 1,

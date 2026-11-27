@@ -4,8 +4,8 @@ local AIR_ARTILLERY = AIRCRAFT:New{
 	Description = "Burning the angles of orc fell/ Loitering Ammonition",
 	objectName = "air_plane_artillery.dae",
 	script = "airplaneartilleryscript.lua",
-	buildPic = "air_sniper.png",
-	iconType = "air_sniper",
+	buildPic = "air_gliderbomb.png",
+	iconType = "air_gliderbomb",
 	--floater = true,
 	--cost
 	buildCostMetal = 250,
