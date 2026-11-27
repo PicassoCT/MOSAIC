@@ -69,7 +69,6 @@ local spSelectUnitArray        = Spring.SelectUnitArray
 local spSelectUnitMap          = Spring.SelectUnitMap
 local spSendCommands           = Spring.SendCommands
 local spIsGUIHidden            = Spring.IsGUIHidden
-local spGetUnitsInRectangle    = Spring.GetUnitsInRectangle
 local unitNames = {}
 local unitHumanNames = {}
 for unitDefID, unitDef in pairs(UnitDefs) do
@@ -78,33 +77,7 @@ for unitDefID, unitDef in pairs(UnitDefs) do
 end
 
 local spGetUnitDefID = Spring.GetUnitDefID
-local spGetUnitPosition = Spring.GetUnitPosition
-local spTraceScreenRay = Spring.TraceScreenRay
-local sizeOfHouse = 256/2
-local myTeamID = spGetMyTeamID()
-local civilianHousesTypeTable = {}
-local civilianHousesName = {
-  ["house_western0"]=true,
-  ["house_arab0"]=true
-}
-local secretPluginsTypeTable = {}
-local secretPluginsName= {
-  ["antagonsafehouse"]=true,
-  ["protagonsafehouse"]=true,
-  ["propagandaserver"]=true,
-  ["protagonassembly"]=true,
-  ["antagonassembly"]=true,
-  ["hivemind"]=true,
-  ["launcher"]=true,
-  ["launcherstep"]=true,
-  ["warheadfactory"]=true,
-  ["nimrod"]=true
-}
-
-for id, data in pairs(UnitDefs) do
-  if civilianHousesName[data.name] then civilianHousesTypeTable[id] = data end
-  if secretPluginsName[data.name] then secretPluginsTypeTable[id] = data end
-end
+local houseClickSelection = VFS.Include('luaui/widgets_mosaic/include/house_click_selection.lua')(Spring)
 
 -------------------------------------------------------------------------------
 -------------------------------------------------------------------------------
@@ -170,8 +143,6 @@ end
 -------------------------------------------------------------------------------
 -------------------------------------------------------------------------------
 
-local boolLeftClickActive = false
-local sX,sY = 0,0
 
 local function updateGuishader()
   if WG['guishader'] then
@@ -192,26 +163,6 @@ local function updateGuishader()
       end
     end
   end
-end
-
-local function handleHouseSelected()
-    if sX then
-      local xmin = sX - sizeOfHouse 
-      local zmin = sY - sizeOfHouse
-      local xmax = sX + sizeOfHouse
-      local zmax = sY + sizeOfHouse
-      local unitsInRect = spGetUnitsInRectangle( xmin, zmin, xmax,zmax, myTeamID)
-
-      if unitsInRect then
-        for nr, id in ipairs(unitsInRect)  do
-          local subUnitDefID = spGetUnitDefID(id)
-          if secretPluginsTypeTable[subUnitDefID] then
-            map={id}
-            spSelectUnitArray(map)  
-          end     
-        end       
-      end             
-    end             
 end
 
 local selectedUnits = Spring.GetSelectedUnits()
@@ -342,11 +293,7 @@ end
 local uiOpacitySec = 0
 local selChangedSec = 0
 function widget:Update(dt)
-  if boolLeftClickActive == true then
---    Spring.Echo("LeftClickUpdate")
-    handleHouseSelected()
-    boolLeftClickActive = false
-  end
+  houseClickSelection:Update()
   uiOpacitySec = uiOpacitySec + dt
   if uiOpacitySec>0.5 then
     uiOpacitySec = 0
@@ -584,17 +531,7 @@ end
 function widget:MousePress(x, y, button)
   mouseIcon = MouseOverIcon(x, y)
   activePress = (mouseIcon >= 0)
-  if button == 1  then
-
-    local selType,pos = spTraceScreenRay( x,y)
-    if selType == "unit" then
-      local defID = spGetUnitDefID(pos)
-      if civilianHousesTypeTable[defID] then
-        sX,_, sY = Spring.GetUnitPosition(pos)
-        boolLeftClickActive = true
-      end
-    end
-  end
+  if not activePress then houseClickSelection:MousePress(x, y, button) end
   return activePress
 end
 
