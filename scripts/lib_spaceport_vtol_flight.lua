@@ -27,7 +27,10 @@ return function(unitID)
             local scale = math.sqrt(rest[index]^2+rest[index+1]^2+rest[index+2]^2)
             length = math.max(length,(info.max[axis]-info.min[axis])*scale)
         end
-        local forward = normalized({rest[5],0,rest[7]})
+        -- The VTOL mesh is Z-up with its nose along local -Y. Positive
+        -- native-Z Turn rotates that nose toward local +X (Spring's piece
+        -- transform negates its left-handed Euler angles).
+        local forward = normalized({-rest[5],0,-rest[7]})
         local right = normalized({rest[1],0,rest[3]})
         local outward = {rest[13]-parent[13],0,rest[15]-parent[15]}
         if dot(outward,outward)<0.001 then outward=forward end
