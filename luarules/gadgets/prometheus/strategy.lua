@@ -13,9 +13,9 @@ function CreateMosaicStrategy(teamID, allyTeamID, side)
     local adaptation=VFS.Include("luarules/gadgets/prometheus/adaptation.lua")(teamID,gaia,caps)
     local counters={
         air={"ground_truck_rocket","ground_turret_rocket","air_copter_mg","ground_walker_mg"},
-        armor={"air_copter_antiarmor","walker_drone"},
+        armor={"air_copter_antiarmor","ground_walker_drone"},
         raids={"operativeasset","ground_walker_mg","air_copter_mg"},
-        fortified={"walker_drone","air_copter_antiarmor","ground_walker_flame"},
+        fortified={"ground_walker_drone","air_copter_antiarmor","ground_walker_flame"},
         expansion={"operativeasset","ground_walker_mg"},
         balanced={},
     }
@@ -339,7 +339,7 @@ function CreateMosaicStrategy(teamID, allyTeamID, side)
                 if count("operativeasset")<caps.assets and count("propagandaserver")>=1 then choices[#choices+1]="operativeasset" end
                 if count("civilianagent")<caps.agents then choices[#choices+1]="civilianagent" end
                 if combatCount<caps.combat and count("propagandaserver")>=1 then
-                    local roster=side=="antagon" and {"ground_walker_mg","walker_drone","civilian_truck_mg","ground_walker_flame","air_copter_antiarmor"}
+                    local roster=side=="antagon" and {"ground_walker_mg","ground_walker_drone","civilian_truck_mg","ground_walker_flame","air_copter_antiarmor"}
                         or {"ground_walker_mg","ground_truck_mg","air_copter_mg","air_copter_antiarmor"}
                     if armored>0 then table.insert(roster,1,"air_copter_antiarmor") end
                     if airborne>0 then table.insert(roster,1,"ground_truck_rocket") end

@@ -16,6 +16,6 @@ return {
     turret_drone = "turret_drone.png",
     turret_mortar = "turret_mortar.png",
     walker_flame = "walker_flame.png",
-    walker_drone = "walker_drone.png",
+    ground_walker_drone = "ground_walker_drone.png",
     warheadfactory = "warheadfactory.png",
 }

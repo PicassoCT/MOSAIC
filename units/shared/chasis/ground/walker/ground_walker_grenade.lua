@@ -1,5 +1,5 @@
-local walker_drone = Walker:New{
-	name = "walker_drone",
+local ground_walker_drone = Walker:New{
+	name = "ground_walker_drone",
 	description = "Walker <Guided Flying Drones>",
 	
 	corpse				= "",
@@ -27,8 +27,8 @@ local walker_drone = Walker:New{
 	footprintZ = 2,
 	script 			= "groundwalkerscript.lua",
 	objectName 	= "ground_walker_grenade.dae",
-	buildPic = "walker_drone.png",
-	iconType ="walker_drone",
+	buildPic = "ground_walker_drone.png",
+	iconType ="ground_walker_drone",
 	strafeToAttack = true,
 
 	category = "GROUND",
@@ -49,5 +49,5 @@ local walker_drone = Walker:New{
 }
 
 return lowerkeys({
-	["walker_drone"]	= walker_drone:New(),
+	["ground_walker_drone"]	= ground_walker_drone:New(),
 })

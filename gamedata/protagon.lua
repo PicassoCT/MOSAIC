@@ -35,7 +35,7 @@ local protagonUnits = {
 	"ground_turret_ssied",				   "ground_turret_mg",	                  "ground_turret_rocket",
   "ground_turret_antiarmor",       "ground_turret_dronegrenade" ,         "ground_turret_cm_airtransport",
 	"ground_turret_cm_airstrike",		 "ground_turret_cm_antiarmor", 					"ground_turret_cm_transport", 
-	"ground_walker_mg",					     "walker_drone", 					    "ground_truck_assembly",
+	"ground_walker_mg",					     "ground_walker_drone", 					    "ground_truck_assembly",
 	"ground_truck_mg", 					     "ground_truck_ssied", 							    "ground_truck_antiarmor",
 	"ground_tank_day",               "truck_arab6" ,                        "air_copter_blackhawk",
   "ground_truck_rocket", 					 
@@ -57,7 +57,7 @@ local protagonUnits = {
         "ground_turret_ssied",
         "ground_turret_mg",
         "ground_walker_mg",
-        "walker_drone",
+        "ground_walker_drone",
         "ground_turret_cm_airstrike",
         "ground_turret_cm_transport",
         "brehmerwall"
