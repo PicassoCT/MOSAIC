@@ -17,16 +17,19 @@ include "lib_staticstring.lua"
 
 -- Resolved keyframes are immutable during playback. Reuse the existing
 -- shared-result cache per definition, so crowd size does not multiply banks.
-local animationCacheKey = "civilian-body-keyframes-v2:" .. unitDefID
+local animationCacheKey = "civilian-body-keyframes-v4:" .. unitDefID
 local Animations = GetSharedOneTimeResult(animationCacheKey)
 local PrayerAnimations = include('animations_civilian_prayers.lua')
 local AerosolAnimations = include("animations_civilian_aerosols.lua")
 local ConversationAnimations = include("animations_civilian_conversation.lua")
+local IdlePoses = include("lib_civilian_idle_pose.lua")
+local idleCalibration = IdlePoses.calibrate(Spring, unitID)
 if not Animations then
     Animations = include('animations_civilian_female.lua')
     PrayerAnimations.register(Animations)
     AerosolAnimations.register(Animations)
-    ConversationAnimations.register(Animations)
+    ConversationAnimations.register(Animations, IdlePoses.conversationRest(idleCalibration))
+    IdlePoses.correctAnimationAxes(Animations, idleCalibration)
 end
 local previousConversationClip = {}
 local signMessages = include('protestSignMessages.lua')
@@ -101,6 +104,11 @@ local UpArm2 = piece('UpArm2');
 local UpBody = piece('UpBody');
 local UpLeg1 = piece('UpLeg1');
 local UpLeg2 = piece('UpLeg2');
+local idlePieces = {
+    Head1=Head1, UpBody=UpBody, UpArm1=UpArm1, UpArm2=UpArm2,
+    LowArm1=LowArm1, LowArm2=LowArm2,
+    x_axis=x_axis, y_axis=y_axis, z_axis=z_axis,
+}
 local cigarett = piece('cigarett');
 local Handbag = randomMultipleByNameOrDefault("Handbag")
 local SittingBaby = piece('SittingBaby');
@@ -340,6 +348,7 @@ function script.Create()
     bodyBuild()
 
     setupAnimation()
+    noTPoses(15, 0) -- Establish a resting pose before the deferred state machines.
 
     setOverrideAnimationState(eAnimState.standing, eAnimState.standing, true, nil, false)
     --StartThread(animationTestLoop)
@@ -787,32 +796,13 @@ function startPeacefullProtest( id)
 end
 
 function noTPoses(range, speed)
-    val =math.random(-range,range)
-    Turn(UpArm1,x_axis, math.rad(val),speed)
-    val =math.random(-range,range)
-    Turn(UpArm1,z_axis, math.rad(val),speed)
-    val =math.random(-range, 0)    
-    Turn(UpArm1,y_axis, math.rad(val),speed)
-
-    val =math.random(-range,range)  
-    Turn(LowArm1,x_axis, math.rad(val),speed)
-    val =math.random(-range,range)
-    Turn(LowArm1,z_axis, math.rad(val),speed)    
-    val =math.random(-range,0)
-    Turn(LowArm1,y_axis, math.rad(val),speed)
-
-    Turn(UpArm2,x_axis, math.rad(val),speed)
-    val =math.random(-range,range)
-    Turn(UpArm2,z_axis, math.rad(val),speed)  
-
-    val =math.random(0, range)    
-    Turn(UpArm2,y_axis, math.rad(val),speed)
-    val =math.random(-range,range)
-    Turn(LowArm2,x_axis, math.rad(val),speed)
-    val =math.random(-range,range)
-    Turn(LowArm2,z_axis, math.rad(val),speed)
-    val =math.random(0,range)
-    Turn(LowArm2,y_axis, math.rad(val),speed)
+    if boolDying then return end
+    IdlePoses.apply(idlePieces, unitID, speed, function(p, axis, target, rate)
+        if not bagAlignment.owns(p) then
+            bagAlignment.poseCommand(p, axis, target, rate, "turn")
+            Turn(p, axis, target, rate)
+        end
+    end, idleCalibration, bodyConfig.boolLoaded or bodyConfig.boolHandbag or carriesShoppingBag())
 end
 
 function peacefullProtest()
@@ -845,8 +835,7 @@ function peacefullProtest()
 end
 
 function resetUpperBodyNoTPose(boolWait)
-    randSpeed = math.random(20, 30)/10
-    resetT(upperBodyPieces, randSpeed)
+    local randSpeed = math.random(20, 30)/10
     noTPoses(15.0, randSpeed)
     if boolWait then
       WaitForTurns(upperBodyPieces)
@@ -1072,6 +1061,8 @@ end
 function chatting()
     Signal(SIG_INTERNAL)
     SetSignalMask(SIG_INTERNAL)
+    Signal(SIG_UP) -- Stop an old idle from overwriting the first talking frames.
+    noTPoses(15, 3)
     setOverrideAnimationState(eAnimState.slaved, eAnimState.standing, true, nil, true)
     -- conditionalEcho(boolDebugActive, "Debugging chat civilianscript: active at ".. locationstring(unitID))
     local fx, _, fz = Spring.GetUnitDirection(unitID)
@@ -1242,7 +1233,14 @@ function PlayAnimation(animname, piecesToFilterOutTable, speed, onFrame)
     animname = ConversationAnimations.select(animname, previousConversationClip[animname])
     previousConversationClip[requestedName] = animname
     local anim = Animations[animname];
-    if not anim then echo("animation named:"..animname .." does not exist"); return end
+    if not anim then
+        echo("animation named:"..animname .." does not exist")
+        if requestedName:sub(1,7) == "UPBODY_" and not isPrayerGestureActive()
+            and not piecesToFilterOutTable[UpArm1] and not piecesToFilterOutTable[UpArm2] then
+            noTPoses(15, 3)
+        end
+        return 0
+    end
     local randoffset
     for i = 1, #anim do
         if boolDying then return 0 end
@@ -1622,12 +1620,22 @@ end
 
 function playUpperBodyIdleAnimation(onFrame)
     if bodyConfig.boolLoaded == false then
-        selectedIdleFunction =
+        local selectedIdleFunction =
             (unitID % #uppperBodyAnimations[eAnimState.idle]) + 1
+        if uppperBodyAnimations[eAnimState.idle][selectedIdleFunction] == "SLAVED" then
+            noTPoses(15, 2.5)
+        end
         showHideProps(selectedIdleFunction, true)
         PlayAnimation(
             uppperBodyAnimations[eAnimState.idle][selectedIdleFunction], nil, nil, onFrame)
         showHideProps(selectedIdleFunction, false)
+    elseif bodyConfig.boolCarrysBaby or bodyConfig.boolTrolley then
+        PlayAnimation("UPBODY_LOADED", lowerBodyPieces, 1, onFrame)
+    else
+        -- Bags hang from the hands: keep shoulders down while waiting.
+        noTPoses(15, 2.5)
+        Sleep(100)
+        if onFrame then onFrame() end
     end
 end
 
@@ -1646,7 +1654,9 @@ UpperAnimationStateFunctions = {
     end,
     [eAnimState.talking] = function()
         if bodyConfig.boolLoaded == false then
-            PlayAnimation(randT(uppperBodyAnimations[eAnimState.talking]))
+            PlayAnimation(randT(uppperBodyAnimations[eAnimState.talking]), lowerBodyPieces)
+        else
+            playUpperBodyIdleAnimation()
         end
         return eAnimState.talking
     end,
@@ -1670,13 +1680,13 @@ UpperAnimationStateFunctions = {
             return eAnimState.standing
         end
 
-        if bodyConfig.boolLoaded == true then return eAnimState.standing end
-
-        if bodyConfig.boolLoaded == false then
-            Turn(LowArm1, y_axis, math.rad(12), 1)
-            Turn(LowArm2, y_axis, math.rad(-12), 1)
-            WaitForTurns(TablesOfPiecesGroups["LowArm"])
+        if bodyConfig.boolLoaded == true then
+            playUpperBodyIdleAnimation()
+            return eAnimState.standing
         end
+
+        noTPoses(15, 2.5)
+        WaitForTurns(upperBodyPieces)
 
         if boolDecoupled == true then
             if math.random(1, 10) > 5 then
