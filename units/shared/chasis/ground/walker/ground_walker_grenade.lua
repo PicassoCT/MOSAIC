@@ -1,6 +1,6 @@
-local ground_walker_grenade = Walker:New{
-	name = "Weevil",
-	description = "Walker <Self Guided Mine Drone>",
+local walker_drone = Walker:New{
+	name = "walker_drone",
+	description = "Walker <Guided Flying Drones>",
 	
 	corpse				= "",
 	maxDamage = 800,
@@ -49,5 +49,5 @@ local ground_walker_grenade = Walker:New{
 }
 
 return lowerkeys({
-	["ground_walker_grenade"]	= ground_walker_grenade:New(),	
+	["walker_drone"]	= walker_drone:New(),
 })

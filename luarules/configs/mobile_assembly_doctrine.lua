@@ -11,7 +11,7 @@ return {
         "ground_truck_mg", "ground_truck_rocket",
     },
     antagon = {
-        "air_copter_ssied", "ground_turret_ssied", "ground_walker_grenade",
+        "air_copter_ssied", "ground_turret_ssied", "walker_drone",
         "ground_turret_dronegrenade", "ground_turret_mortar", "barricade",
         "civilian_truck_mg", "civilian_truck_mortar", "civilian_truck_ssied",
     },
