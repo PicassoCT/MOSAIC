@@ -131,6 +131,7 @@ local function isHostageWitness(id)
     return GG.HumanShield and GG.HumanShield.IsWitness and GG.HumanShield.IsWitness(id)
 end
 
+local civilianIntercepts = VFS.Include("scripts/lib_civilian_intercepts.lua")
 function startInternalBehaviourOfState(unitID, name, ...)
     if not GG.CivilianTable[unitID] or spGetUnitTeam(unitID) ~= gaiaTeamID then return false end
     if isCivilianPassenger(unitID) then return false end
@@ -143,8 +144,12 @@ function startInternalBehaviourOfState(unitID, name, ...)
     if type(internalState) == "table" then
         state = internalState.state
     end
+    local takeover=civilianIntercepts.crowdTakeovers[name]
+    if takeover and (civilianIntercepts.IsDetained(GG,unitID) or
+        civilianIntercepts.IsStunned(Spring,unitID) or (GG.AerosolAffectedCivilians or {})[unitID]) then return false end
     if state == GameConfig.civilians.activityStates.started then
-        if name ~= "startFleeing" and name ~= "startAnarchyBehaviour" then return false end
+        local crowd=type(internalState)=="table" and civilianIntercepts.crowdActivities[internalState.behaviour]
+        if not civilianIntercepts.emergencyStarts[name] and not (takeover and crowd) then return false end
         if type(internalState)=="table" and internalState.behaviour=="aerosol" then return false end
         civilianLife:Interrupt(unitID)
     end
@@ -1359,7 +1364,8 @@ function travellFunction(evtID, frame, persPack, startFrame)
         persPack.currPos = nil
         return frame + 15, packStep(persPack, frame + 15, frame)
     end
-    if GG.CityParade and GG.CityParade:OwnsUnit(myID) then
+    if (GG.CityParade and GG.CityParade:OwnsUnit(myID)) or
+       (GG.CivilianGatherings and GG.CivilianGatherings:OwnsUnit(myID)) then
         trafficActivities:Cancel(myID)
         if not doesUnitExistAlive(myID) then return nil, persPack end
         persPack.stuckCounter = 0
@@ -1497,7 +1503,8 @@ function issueArrivedUnitsCommands()
             GG.CivilianTable[id] = nil
         elseif isCivilianPassenger(id) or isHostageWitness(id) then
             held[id] = true
-        elseif GG.CityParade and GG.CityParade:OwnsUnit(id) then
+        elseif (GG.CityParade and GG.CityParade:OwnsUnit(id)) or
+            (GG.CivilianGatherings and GG.CivilianGatherings:OwnsUnit(id)) then
             held[id] = true
         elseif GG.CityParade and GG.CityParade:OnArrived(id) then
             -- A float retires at an ordinary traffic destination.
@@ -1525,6 +1532,7 @@ function decimateArrivedCivilians(nrToDecimate, typeTable)
             GG.DisguiseCivilianFor[id] == nil and
             not isCivilianPassenger(id) and
             not (GG.CityParade and GG.CityParade:OwnsUnit(id)) and
+            not (GG.CivilianGatherings and GG.CivilianGatherings:OwnsUnit(id)) and
             not civilianLife:IsProtected(id) and
             typeTable[GG.CivilianTable[id].defID] then
             spDestroyUnit(id, false, true)

@@ -16,6 +16,7 @@ VFS.Include("scripts/lib_UnitScript.lua")
 VFS.Include("scripts/lib_mosaic.lua")
 local config = VFS.Include("luarules/configs/human_shield.lua")
 local activityStarted = getGameConfig().civilians.activityStates.started
+local witnessInterruptibleActivities={fleeing=true,gathering=true,parade=true}
 local fps = Game.gameSpeed or 30
 local TAKE, RELEASE = CMD_HUMAN_SHIELD, CMD_RELEASE_HUMAN_SHIELD
 local gaia = Spring.GetGaiaTeamID()
@@ -183,7 +184,7 @@ local function alertWitnesses(id)
         local activity = (GG.CivilianUnitInternalLogicActive or {})[civilian]
         local state = type(activity) == "table" and activity.state or activity
         if not witnessCarriers[civilian] and api.CanWitness(civilian, id)
-            and (state ~= activityStarted or (type(activity) == "table" and activity.behaviour == "fleeing")) then
+            and (state ~= activityStarted or (type(activity) == "table" and witnessInterruptibleActivities[activity.behaviour])) then
             if GG.CivilianLife then GG.CivilianLife:Interrupt(civilian) end
             callScript(civilian, "startFleeing", id)
         end

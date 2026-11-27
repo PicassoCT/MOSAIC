@@ -26,6 +26,7 @@ return function(context)
             and S.GetUnitTeam(id) == gaia and not (G.DisguiseCivilianFor or {})[id]
             and not S.GetUnitTransporter(id) and not (G.AerosolAffectedCivilians or {})[id]
             and not (G.HumanShield and G.HumanShield.IsHostage(id))
+            and not (G.CivilianGatherings and G.CivilianGatherings:OwnsUnit(id))
     end
     local function hash(text)
         local n = 17
@@ -595,6 +596,36 @@ return function(context)
         end
         return false
     end
+    -- Weather-driven gatherings release their ownership before requesting an
+    -- ordinary shelter visit. Reuse daily-life approach/visit/return semantics.
+    function life:SeekShelter(id)
+        if not ambient(id) or not normal() or busy(id) then return false end
+        local p=record(id)
+        if p.fear or p.board then return false end
+        local x,z=position(id)
+        if not x then return false end
+        local candidates={}
+        for _,venue in ipairs(sorted(venues)) do
+            local vx,vz=position(venue)
+            if vx and distance(x,z,vx,vz)<config.venueRadius^2 and
+                not unsafe(vx,vz,S.GetGameFrame(),p) then
+                candidates[#candidates+1]={id=venue,d=distance(x,z,vx,vz)}
+            end
+        end
+        table.sort(candidates,function(a,b) return a.d<b.d or (a.d==b.d and a.id<b.id) end)
+        for _,candidate in ipairs(candidates) do
+            local spot=approach(id,candidate.id,id)
+            if spot and not unsafe(spot.x,spot.z,S.GetGameFrame(),p) then
+                removeFromGroup(id)
+                spot.kind="shelter"
+                if self:Arrive(id,spot,S.GetGameFrame())~=false then
+                    move(id,spot.x,spot.z)
+                    return true
+                end
+            end
+        end
+        return false
+    end
     function life:CanSocialize(id)
         local p=people[id]
         return ambient(id) and not busy(id) and not (p and (p.visit or p.board or p.fear))
@@ -706,6 +737,7 @@ return function(context)
         return false
     end
     local function passengerVehicle(id)
+        if G.CivilianGatherings and G.CivilianGatherings:OwnsUnit(id) then return false end
         local def=UnitDefs[S.GetUnitDefID(id)]
         return busVehicles[id] or (def and (def.name:match("^truck_western[01]$") or def.name:match("^truck_arab[01]$")))
     end

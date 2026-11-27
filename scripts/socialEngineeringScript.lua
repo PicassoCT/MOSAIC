@@ -102,6 +102,13 @@ function socialEngineeringPosWriteUp()
 					defID = spGetUnitDefID(id)
 					if civilianWalkingTypeTable[defID] then
 						GG.SocialEngineeredPeople[id] = unitID
+						-- Reserved crowds skip ordinary travel/social polling. Dispatch
+						-- their takeover here; the shared gate protects higher priorities.
+						local reserved=(GG.CivilianGatherings and GG.CivilianGatherings:OwnsUnit(id)) or
+						    (GG.CityParade and GG.CityParade:OwnsUnit(id))
+						if reserved and GG.GlobalGameState==GameConfig.game.states.normal and GG.StartCivilianBehaviour then
+						    GG.StartCivilianBehaviour(id,"startPeacefullProtest",unitID)
+						end
 						return id
 					end
 				end
@@ -112,10 +119,9 @@ function socialEngineeringPosWriteUp()
 end
 
 function script.Killed(recentDamage, _)
-	for k,v in pairs(GG.SocialEngineeredPeople[id]) do
-		if v == unitID then
-			GG.SocialEngineers[v] = nil
-		end
+	if GG.SocialEngineers then GG.SocialEngineers[unitID]=nil end
+	for civilian,engineer in pairs(GG.SocialEngineeredPeople or {}) do
+		if engineer==unitID then GG.SocialEngineeredPeople[civilian]=nil end
 	end
 	
 	Explode(center,  SFX.SHATTER)

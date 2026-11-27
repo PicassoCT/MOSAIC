@@ -2,6 +2,10 @@ local bagAlignment = include "lib_bag_alignment.lua"
 local queueEventThread = include "lib_event_threads.lua"
 local newParadeParticipation = include "lib_civilian_parade.lua"
 local paradeParticipation
+local newGatheringParticipation = include "lib_civilian_gathering.lua"
+local gatheringParticipation
+local civilianIntercepts = include "lib_civilian_intercepts.lua"
+local SIG_GATHERING = 8192
 local boolDying = false
 local humanShieldCarrier
 local humanShieldGeneration = 0
@@ -20,11 +24,12 @@ include "lib_mosaic.lua"
 local boolDebugActive = GG.BoolDebug and false
 -- Resolved keyframes are immutable during playback. Reuse the existing
 -- shared-result cache per definition, so crowd size does not multiply banks.
-local animationCacheKey = "civilian-body-keyframes-v4:" .. unitDefID
+local animationCacheKey = "civilian-body-keyframes-v5:" .. unitDefID
 local Animations = GetSharedOneTimeResult(animationCacheKey)
 local PrayerAnimations = include('animations_civilian_prayers.lua')
 local AerosolAnimations = include("animations_civilian_aerosols.lua")
 local ConversationAnimations = include("animations_civilian_conversation.lua")
+local GatheringAnimations = include("animations_civilian_gatherings.lua")
 local IdlePoses = include("lib_civilian_idle_pose.lua")
 local idleCalibration = IdlePoses.calibrate(Spring, unitID)
 if not Animations then
@@ -32,6 +37,7 @@ if not Animations then
     PrayerAnimations.register(Animations)
     AerosolAnimations.register(Animations)
     ConversationAnimations.register(Animations, IdlePoses.conversationRest(idleCalibration))
+    GatheringAnimations.register(Animations, IdlePoses.conversationRest(idleCalibration))
     IdlePoses.correctAnimationAxes(Animations, idleCalibration)
 end
 local previousConversationClip = {}
@@ -96,11 +102,12 @@ local Feet2 = piece('Feet2');
 local Head1 = piece('Head1');
 local MilitiaMask = nil
 local civilianMaskVisible = false
+local gatheringMaskVisible = false
 
 -- Preserve the authored outfit/protest/armed mask independently of weather.
 function updateWeatherMask()
     if not MilitiaMask or boolDying then return end
-    if civilianMaskVisible or GG.CivilianWeatherMasks then Show(MilitiaMask)
+    if civilianMaskVisible or gatheringMaskVisible or GG.CivilianWeatherMasks then Show(MilitiaMask)
     else Hide(MilitiaMask) end
 end
 
@@ -306,6 +313,7 @@ end
 
 function externalInterruptCivilian()
     if bodyConfig.boolInfluenced then return false end
+    if gatheringParticipation then gatheringParticipation:Stop(nil, false) end
     paradeParticipation:Stop(false)
     Signal(SIG_INTERNAL)
     boolStartChatting, boolStartPraying, boolStartFilming, boolStartWailing = false, false, false, false
@@ -887,6 +895,7 @@ end
 function startInterrogationStun()
     if boolStunImpact or humanShieldCarrier then return end
     if passengerTransport then passengerTransport:Stop(false) end
+    if gatheringParticipation then gatheringParticipation:Stop(nil, false) end
     paradeParticipation:Stop(false)
     boolStunImpact = true
     StartThread(stunImpactAnimation)
@@ -897,6 +906,7 @@ function script.HitByWeapon(x, z, weaponDefID, damage)
     lastDamageDirX, lastDamageDirZ = x or 0, z or 0
     if humanShieldCarrier then return damage end
     if bodyConfig.boolInfluenced then return damage end
+    if gatheringParticipation then gatheringParticipation:Stop(nil, false) end
     paradeParticipation:Stop(false)
     if weaponDefID == stunPistolDefID then return damage end
     transportID = spGetUnitIsTransporting(unitID)
@@ -931,6 +941,7 @@ function setCivilianUnitInternalStateMode(unitID, State, name)
 
     local behaviour = name or "unknown"
     if behaviour ~= "parade" or State ~= GameConfig.civilians.activityStates.started then
+        if gatheringParticipation then gatheringParticipation:Stop(nil, false) end
         paradeParticipation:Stop(false)
     end
     local currentState = GG.CivilianUnitInternalLogicActive[unitID]
@@ -1033,6 +1044,10 @@ end
 boolStartPeaceFullProtest = false
 socialEngineerID = nil
 function startPeacefullProtest( id)
+    if boolDying or boolStunImpact or bodyConfig.boolInfluenced or boolStartAerosolBehaviour or
+        bodyConfig.boolWounded or bodyConfig.boolCoverWalk or Spring.GetUnitTransporter(unitID) or
+        civilianIntercepts.IsDetained(GG,unitID) or civilianIntercepts.IsStunned(Spring,unitID) or
+        (GG.AerosolAffectedCivilians or {})[unitID] then return false end
     if humanShieldCarrier then return false end
     if passengerTransport and passengerTransport:IsActive() then return false end
     setCivilianUnitInternalStateMode(unitID, GameConfig.civilians.activityStates.started, "protest")
@@ -1089,6 +1104,65 @@ function resetUpperBodyNoTPose(boolWait)
       WaitForTurns(upperBodyPieces)
     end
 end
+
+local gatheringStonePieces = {Spring.GetUnitPieceMap(unitID).stone1, Spring.GetUnitPieceMap(unitID).stone2}
+local gatheringSign, gatheringPhone = false, false
+local function hideGatheringStones()
+    for i=1,2 do if gatheringStonePieces[i] then Hide(gatheringStonePieces[i]) end end
+end
+local function gatheringFreeHands()
+    return not bodyConfig.boolLoaded and not bodyConfig.boolHandbag and
+        not bodyConfig.boolCarrysBaby and not bodyConfig.boolTrolley and not carriesShoppingBag()
+end
+gatheringParticipation = newGatheringParticipation({
+    signal=SIG_GATHERING, started=GameConfig.civilians.activityStates.started,
+    ended=GameConfig.civilians.activityStates.ended, queue=queueEventThread,
+    releaseKey=GatheringAnimations.releaseKey,
+    eligible=function()
+        return not boolDying and not humanShieldCarrier and not boolBomberCharging and
+            GG.GlobalGameState==GameConfig.game.states.normal and spGetUnitTeam(unitID)==gaiaTeamID and
+            not bodyConfig.boolInfluenced and not bodyConfig.boolArmed and not bodyConfig.boolWounded and
+            not bodyConfig.boolCoverWalk and not boolStunImpact and not boolAiming and damagedCoolDown<=0 and
+            not civilianIntercepts.IsDetained(GG,unitID) and not civilianIntercepts.IsStunned(Spring,unitID) and
+            not Spring.GetUnitTransporter(unitID) and not (GG.DisguiseCivilianFor or {})[unitID] and
+            not (GG.AerosolAffectedCivilians or {})[unitID]
+    end,
+    freeHands=gatheringFreeHands,
+    stoneAvailable=function() return gatheringStonePieces[1] or gatheringStonePieces[2] end,
+    mask=function(visible) gatheringMaskVisible=visible; updateWeatherMask() end,
+    props=function(visible,role)
+        if not visible then
+            hideGatheringStones()
+            if gatheringSign then hideProtestSign(); gatheringSign=false end
+            if gatheringPhone then Hide(cellphone1); gatheringPhone=false end
+        elseif role=="sign" and not gatheringSign then
+            makeProtestSign(8,3,34,62,signMessages[unitID%#signMessages+1],playerName)
+            gatheringSign=true
+        elseif role=="filming" then Show(cellphone1); gatheringPhone=true end
+    end,
+    hideStones=hideGatheringStones,
+    holdStone=function()
+        hideGatheringStones()
+        local variant=unitID%2+1
+        if not gatheringStonePieces[variant] then variant=3-variant end
+        if gatheringStonePieces[variant] then Show(gatheringStonePieces[variant]) end
+        return variant
+    end,
+    release=function(target,variant,token)
+        if GG.CivilianGatherings then GG.CivilianGatherings:ReleaseStone(unitID,token,target,variant) end
+    end,
+    play=function(clip,onFrame) PlayAnimation(clip,lowerBodyPieces,1,onFrame) end,
+    restore=function()
+        resetUpperBodyNoTPose()
+        local animation=boolWalking and getWalkingState() or eAnimState.standing
+        setOverrideAnimationState(animation,animation,true,nil,true)
+    end,
+})
+function startGathering(token,kind,role) return gatheringParticipation:Start(token,kind,role) end
+function arriveGathering(token) return gatheringParticipation:Arrive(token) end
+function stopGathering(token,restore) return gatheringParticipation:Stop(token,restore) end
+function isGatheringActive(token) return gatheringParticipation:IsActive(token) end
+function throwGatheringStone(token,target) return gatheringParticipation:Throw(token,target) end
 
 local prayerAnimationName = PrayerAnimations.name(1)
 
@@ -1520,7 +1594,7 @@ function PlayAnimation(animname, piecesToFilterOutTable, speed, onFrame)
     for i = 1, #anim do
         while boolStunImpact do Sleep(33) end
         if boolDying or humanShieldCarrier then return 0 end
-        if onFrame then onFrame() end
+        if onFrame then onFrame(i) end
         local commands = anim[i].commands;
         for j = 1, #commands do
             local cmd = commands[j];
@@ -1539,6 +1613,8 @@ function PlayAnimation(animname, piecesToFilterOutTable, speed, onFrame)
 
                 if not boolStunImpact and not bagAlignment.owns(cmd.p) and not piecesToFilterOutTable[cmd.p] and
                    not (passengerTransport and passengerTransport:OwnsPiece(cmd.p)) and
+                   not (gatheringParticipation and gatheringParticipation:OwnsUpperBody() and upperBodyPieces[cmd.p] and
+                        requestedName ~= gatheringParticipation.animation) and
                    not (isPrayerGestureActive() and upperBodyPieces[cmd.p] and
                         animname ~= prayerAnimationName) then
                     bagAlignment.poseCommand(cmd.p, cmd.a, axisSign[cmd.a] * (cmd.t + randoffset), cmd.s * speedFactor, cmd.c)
@@ -2281,7 +2357,7 @@ function animationStateMachineUpper(AnimationTable)
     local animationTable = AnimationTable
 
     while true do
-        while isPrayerGestureActive() do Sleep(33) end
+        while isPrayerGestureActive() or (gatheringParticipation and gatheringParticipation:OwnsUpperBody()) do Sleep(33) end
         assert(UpperAnimationState)
         assert(animationTable[UpperAnimationState],
                "Upper Animationstate not existing " .. UpperAnimationState)
@@ -2562,6 +2638,7 @@ function script.Killed(recentDamage, maxHealth)
     -- The gadget deliberately avoids normal script callbacks on dead units.
     -- Restore the local body before the existing death animation takes over.
     setHumanShieldCarrier(nil)
+    if gatheringParticipation then gatheringParticipation:Stop(nil, false) end
     paradeParticipation:Stop(false)
     if Handbag then bagAlignment.remove(Handbag) end
     if ShoppingBag then bagAlignment.remove(ShoppingBag) end

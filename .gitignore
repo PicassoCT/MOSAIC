@@ -68,3 +68,17 @@ __pycache__/
 !scripts/cameradeceptionscript.lua
 !scripts/lib_camera_deception.lua
 !luarules/gadgets/game_camera_deception.lua
+
+# Scheduled civilian gatherings and stone projectiles
+!scripts/lib_city_calendar.lua
+!scripts/lib_civilian_intercepts.lua
+!scripts/lib_civilian_gathering.lua
+!scripts/animations_civilian_gatherings.lua
+!luarules/configs/civilian_gatherings.lua
+!luarules/gadgets/include/civilian_gatherings.lua
+!luarules/gadgets/include/civilian_stones.lua
+!luarules/gadgets/game_civilian_gatherings.lua
+!weapons/civilianstone.lua
+!features/civilianstones.lua
+!objects3d/civilian_stone1.dae.lua
+!objects3d/civilian_stone2.dae.lua

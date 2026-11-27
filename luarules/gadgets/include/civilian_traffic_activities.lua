@@ -68,6 +68,7 @@ return function(context)
         state=type(state)=="table" and state.state or state
         return not alive(id) or S.GetUnitTeam(id)~=gaia or S.GetUnitTransporter(id)
             or (G.CityParade and G.CityParade:OwnsUnit(id))
+            or (G.CivilianGatherings and G.CivilianGatherings:OwnsUnit(id))
             or (G.DisguiseCivilianFor or {})[id] or (G.AerosolAffectedCivilians or {})[id]
             or state==context.gameConfig.civilians.activityStates.started
             or G.GlobalGameState~=context.gameConfig.game.states.normal

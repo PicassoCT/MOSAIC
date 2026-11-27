@@ -1,6 +1,9 @@
 # Civilian weekend events proposal
 
-Status: design proposal, not implemented. Add public gatherings that assemble
+Status: initial implementation available; see [behaviour, tuning and validation](civilian-gatherings.md).
+The design below includes optional follow-ups beyond the initial implementation.
+
+Add public gatherings that assemble
 gradually, respond to weather and danger, and release civilians back into their
 daily routines. Preserve existing player-triggered protests and the city parade.
 

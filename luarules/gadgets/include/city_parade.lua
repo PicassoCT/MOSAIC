@@ -4,10 +4,7 @@ local M = {}
 local floor, sqrt = math.floor, math.sqrt
 local public = {public = true}
 
-function M.Clock(frame, dayLength)
-    local shifted = frame + dayLength / 2
-    return floor(shifted / dayLength) + 1, (shifted % dayLength) * 24 / dayLength
-end
+M.Clock = VFS.Include("scripts/lib_city_calendar.lua").Clock
 
 function M.EndFrame(day, dayLength, endHour)
     return floor((day + endHour / 24 - 0.5) * dayLength)
@@ -783,6 +780,9 @@ function M.New(context)
             return
         end
         if not requestedPreview and not normal() then consumeDay(day); pendingRoute,pendingDay=nil,nil; return end
+        if G.CivilianGatherings and G.CivilianGatherings:HasEvents() then
+            G.CivilianGatherings:Stop("parade assembly")
+        end
         if not G.CitySpawnComplete or not G.CivilianTraffic then waiting("waiting for city traffic"); return end
         if pendingRoute and pendingDay == day then
             local status = routeBuilder:Poll(pendingRoute)
