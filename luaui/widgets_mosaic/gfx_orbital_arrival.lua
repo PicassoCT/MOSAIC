@@ -10,7 +10,6 @@ local timer, texture, age, fade, descent
 local riskPacket, targetName
 local lastWallElapsed = 0
 local guiWasHidden, hasCapture, started = false, false, false
-local artworkReady = false
 local holotableDraws, handoverReported = 0, false
 local savedEdges = {}
 local finished = false
@@ -53,10 +52,12 @@ end
 function widget:Shutdown() finish() end
 
 local function readArtwork()
-  if artworkReady then return end
+  -- LuaUI can initialize before LuaIntro displays its final slide. Follow
+  -- handoff updates while waiting, then pin that exact image for the zoom.
+  if started then return end
   local image, handoffAge = Arrival.readHandoff()
   if image ~= nil then
-    texture, age, artworkReady = image, handoffAge, true
+    texture, age = image, handoffAge
   end
 end
 
