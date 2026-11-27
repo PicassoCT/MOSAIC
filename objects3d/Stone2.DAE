@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="utf-8"?>
+<COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1">
+  <asset><contributor><author></author><authoring_tool>FBX COLLADA exporter</authoring_tool><comments></comments></contributor><created>2026-11-27T14:42:23Z</created><keywords></keywords><modified>2026-11-27T14:42:23Z</modified><revision></revision><subject></subject><title></title><unit meter="0.025400" name="centimeter"></unit><up_axis>Y_UP</up_axis></asset>
+  <library_images>
+    <image id="Map #1-image" name="Map #1"><init_from>file://Z:\Mosaic.sdd\unittextures\arab_civilian_diffuse.DDS</init_from></image>
+  </library_images>
+  <library_materials>
+    <material id="_01 - Default" name="_01 - Default">
+      <instance_effect url="#_01 - Default-fx"/>
+    </material>
+  </library_materials>
+  <library_effects>
+    <effect id="_01 - Default-fx" name="_01 - Default">
+      <profile_COMMON>
+        <technique sid="standard">
+          <phong>
+            <emission>
+              <color sid="emission">0.000000  0.000000 0.000000 1.000000</color>
+            </emission>
+            <ambient>
+              <color sid="ambient">0.588235  0.588235 0.588235 1.000000</color>
+            </ambient>
+            <diffuse>
+              <texture texture="Map #1-image" texcoord="CHANNEL0">
+                <extra>
+                  <technique profile="MAYA">
+                    <wrapU sid="wrapU0">TRUE</wrapU>
+                    <wrapV sid="wrapV0">TRUE</wrapV>
+                    <blend_mode>ADD</blend_mode>
+                  </technique>
+                </extra>
+              </texture>
+            </diffuse>
+            <specular>
+              <color sid="specular">0.000000  0.000000 0.000000 1.000000</color>
+            </specular>
+            <shininess>
+              <float sid="shininess">2.000000</float>
+            </shininess>
+            <reflective>
+              <color sid="reflective">0.000000  0.000000 0.000000 1.000000</color>
+            </reflective>
+            <reflectivity>
+              <float sid="reflectivity">1.000000</float>
+            </reflectivity>
+            <transparent opaque="RGB_ZERO">
+              <color sid="transparent">1.000000  1.000000 1.000000 1.000000</color>
+            </transparent>
+            <transparency>
+              <float sid="transparency">0.000000</float>
+            </transparency>
+          </phong>
+        </technique>
+      </profile_COMMON>
+    </effect>
+  </library_effects>
+  <library_geometries>
+    <geometry id="Stone2te qui-lib" name="Stone2te quiMesh">
+      <mesh>
+        <source id="Stone2te qui-POSITION">
+          <float_array id="Stone2te qui-POSITION-array" count="24">
+-13.848105 0.000005 -28.048214
+13.848105 0.000005 -28.048214
+-13.848105 -0.000005 28.048214
+13.848105 -0.000005 28.048214
+-13.848105 -16.223637 -28.048216
+13.848105 -16.223637 -28.048216
+-13.848105 -16.223644 28.048212
+13.848105 -16.223644 28.048212
+</float_array>
+          <technique_common>
+            <accessor source="#Stone2te qui-POSITION-array" count="8" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="Stone2te qui-Normal0">
+          <float_array id="Stone2te qui-Normal0-array" count="108">
+0.000000 1.000000 0.000000
+0.000000 1.000000 0.000000
+0.000000 1.000000 0.000000
+0.000000 1.000000 0.000000
+0.000000 1.000000 0.000000
+0.000000 1.000000 0.000000
+0.000000 -1.000000 -0.000000
+0.000000 -1.000000 -0.000000
+0.000000 -1.000000 -0.000000
+0.000000 -1.000000 -0.000000
+0.000000 -1.000000 -0.000000
+0.000000 -1.000000 -0.000000
+0.000000 0.000000 -1.000000
+0.000000 0.000000 -1.000000
+0.000000 0.000000 -1.000000
+0.000000 0.000000 -1.000000
+0.000000 0.000000 -1.000000
+0.000000 0.000000 -1.000000
+1.000000 0.000000 0.000000
+1.000000 0.000000 0.000000
+1.000000 0.000000 0.000000
+1.000000 0.000000 0.000000
+1.000000 0.000000 0.000000
+1.000000 0.000000 0.000000
+0.000000 -0.000000 1.000000
+0.000000 -0.000000 1.000000
+0.000000 -0.000000 1.000000
+0.000000 -0.000000 1.000000
+0.000000 -0.000000 1.000000
+0.000000 -0.000000 1.000000
+-1.000000 0.000000 0.000000
+-1.000000 0.000000 0.000000
+-1.000000 0.000000 0.000000
+-1.000000 0.000000 0.000000
+-1.000000 0.000000 0.000000
+-1.000000 0.000000 0.000000
+</float_array>
+          <technique_common>
+            <accessor source="#Stone2te qui-Normal0-array" count="36" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="Stone2te qui-UV0">
+          <float_array id="Stone2te qui-UV0-array" count="24">
+0.851959 0.556836
+0.858672 0.549833
+0.853753 0.558556
+0.860466 0.551554
+0.857070 0.555079
+0.860166 0.551849
+0.858864 0.556800
+0.861961 0.553569
+0.851959 0.556836
+0.858672 0.549833
+0.853753 0.558556
+0.860466 0.551554
+</float_array>
+          <technique_common>
+            <accessor source="#Stone2te qui-UV0-array" count="12" stride="2">
+              <param name="S" type="float"/>
+              <param name="T" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="Stone2te qui-VERTEX">
+          <input semantic="POSITION" source="#Stone2te qui-POSITION"/>
+        </vertices>
+        <triangles count="12" material="_01 - Default"><input semantic="VERTEX" offset="0" source="#Stone2te qui-VERTEX"/><input semantic="NORMAL" offset="1" source="#Stone2te qui-Normal0"/><input semantic="TEXCOORD" offset="2" set="0" source="#Stone2te qui-UV0"/><p> 3 0 10 0 1 9 2 2 11 0 3 9 3 4 10 1 5 8 6 6 10 4 7 8 7 8 11 7 9 11 4 10 8 5 11 9 5 12 7 4 13 6 0 14 4 5 15 7 0 16 4 1 17 5 3 18 1 5 19 2 1 20 0 5 21 2 3 22 1 7 23 3 2 24 5 6 25 7 3 26 4 3 27 4 6 28 7 7 29 6 4 30 3 6 31 2 2 32 0 2 33 0 0 34 1 4 35 3</p></triangles>
+      </mesh>
+    </geometry>
+  </library_geometries>
+  <library_visual_scenes>
+    <visual_scene id="Stone2" name="Stone2">
+      <node name="Stone2te qui" id="Stone2te qui" sid="Stone2te qui"><matrix sid="matrix">1.000000 0.000000 0.000000 -1.373779 0.000000 0.000000 1.000000 -6.352331 0.000000 -1.000000 0.000000 -31.461914 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#Stone2te qui-lib"><bind_material><technique_common><instance_material symbol="_01 - Default" target="#_01 - Default"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node>
+      <extra><technique profile="MAX3D"><frame_rate>30.000000</frame_rate></technique><technique profile="FCOLLADA"><start_time>0.000000</start_time><end_time>3.333333</end_time></technique></extra>
+    </visual_scene>
+  </library_visual_scenes>
+  <scene>
+    <instance_visual_scene url="#Stone2"></instance_visual_scene>
+  </scene>
+</COLLADA>
