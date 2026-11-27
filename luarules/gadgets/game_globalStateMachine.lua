@@ -121,9 +121,14 @@ local GameStateMachine = {
                 for id, launchedFrame in pairs(launchedT) do
                     if id and doesUnitExistAlive(id) == true and launchedFrame +
                         GameConfig.game.phaseTimers.interceptionFrames < frame then
-                        winners = {teamID}
-                        spGameOver(winners)
-                        return GameConfig.game.states.gameOver
+                        -- Launch records are keyed by team, but GameOver takes
+                        -- ally-team IDs. Resolve the launching team's alliance
+                        -- only once a surviving missile reaches its deadline.
+                        local winnerAllyTeamID = select(6, spGetTeamInfo(teamID, false))
+                        if winnerAllyTeamID ~= nil then
+                            spGameOver({winnerAllyTeamID})
+                            return GameConfig.game.states.gameOver
+                        end
                     end
                 end
             end
