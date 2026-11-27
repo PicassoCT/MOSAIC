@@ -84,5 +84,7 @@ __pycache__/
 !luarules/gadgets/game_safehouse_trace.lua
 !luarules/gadgets/game_assembly_turret_exit.lua
 !scripts/animations_civilian_phone.lua
+!luarules/gadgets/gfx_raid_interiors.lua
+!luarules/gadgets/include/raid_exposure.lua
 !objects3d/civilian_stone1.dae.lua
 !objects3d/civilian_stone2.dae.lua

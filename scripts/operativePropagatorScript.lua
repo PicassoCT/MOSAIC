@@ -1307,6 +1307,7 @@ function transitionToUncloaked()
 end
 
 function setWantCloak(boolWantCloak)
+    if GG.RaidersActive and GG.RaidersActive[unitID] then boolWantCloak = false end
     if hasHumanShield() then boolWantCloak = false end
     if Spring.GetUnitRulesParam(unitID, "betrayal_defector") == 1 or Spring.GetUnitRulesParam(unitID, "betrayal_pending") == 1 then boolWantCloak = false end
 	if boolWantCloak == true then
@@ -1317,6 +1318,7 @@ function setWantCloak(boolWantCloak)
 end
 
 function transitionToCloaked()
+    if GG.RaidersActive and GG.RaidersActive[unitID] then return transitionToUncloaked() end
     if GG.HumanShield and GG.HumanShield.IsHostage(unitID) then return "cloaked" end
     if hasHumanShield() then return transitionToUncloaked() end
     if Spring.GetUnitRulesParam(unitID, "betrayal_defector") == 1 or Spring.GetUnitRulesParam(unitID, "betrayal_pending") == 1 then return transitionToUncloaked() end
@@ -1328,6 +1330,7 @@ function transitionToCloaked()
 end
 
 function OperativesDiscovered()
+    if GG.RaidersActive and GG.RaidersActive[unitID] then return true end
     if hasHumanShield() then return true end
     if Spring.GetUnitRulesParam(unitID, "betrayal_defector") == 1 or Spring.GetUnitRulesParam(unitID, "betrayal_pending") == 1 then return true end
 	if  GG.OperativesDiscovered == nil then

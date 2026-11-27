@@ -345,6 +345,68 @@ local function nonLinearRoundProgress(timeFraction)
     end
 end
 
+-- Keep arena decoration and crowd clearance separate from the round timer.
+local arenaProtectedTypes = {}
+for _, types in ipairs({getSafeHouseUpgradeTypeTable(UnitDefs, unitDefID),
+    getSafeHouseTypeTable(UnitDefs), getRaidIconTypeTable(UnitDefs),
+    getOperativeTypeTable(UnitDefs), getHouseTypeTable(UnitDefs, GameConfig.game.culture),
+    ecmIconTypes}) do
+    for defID in pairs(types) do arenaProtectedTypes[defID] = true end
+end
+function shoveAllNonCombatantsOut()
+    Sleep(1000)
+    radius = 140
+
+    while true do
+        sx, sy, sz = Spring.GetUnitPosition(unitID)
+        foreach(getAllNearUnit(unitID, radius), function(id)
+            defID = Spring.GetUnitDefID(id)
+            if arenaProtectedTypes[defID] or (GG.DisguiseCivilianFor or {})[id] then
+            else
+                return id
+            end
+        end, function(id)
+            tx, ty, tz = Spring.GetUnitPosition(id)
+            factor = distanceUnitToUnit(id, unitID) / radius -- 0
+            factor = math.max(0.1, math.min(2, (factor)))
+
+            px, py, pz = (tx - sx), 0, (tz - sz)
+            norm = math.max(0.1, math.max(math.abs(px), math.abs(pz)))
+
+            px, pz = px / norm, pz / norm
+            px, pz = px * factor, pz * factor
+
+            Spring.AddUnitImpulse(id, px, py, pz, 0.95)
+            Command(id, "go", {
+                x = tx+math.random(50,70)*randSign(),
+                y = ty,
+                z = tz +math.random(50,70)*randSign()}, {}
+                )
+        end)
+        Sleep(10)
+    end
+end
+
+function waveSpins()
+    index = 0
+    foreach(ring, function(id)
+        index = index + 1
+        Spin(id, y_axis, math.rad(index * 4.2) * randSign(), 2.5)
+        if index > 3 and index < 8 then
+            StartThread(waveSpin, id, math.random(1, 4), math.random(4, 40),
+                        500, false)
+        end
+    end)
+    Spin(Progresscenter, y_axis, math.rad(42), 0.5)
+    Spin(ring[8], y_axis, math.rad(42), 0.5)
+    foreach(whirl, function(id)
+        Spin(id, y_axis, math.rad(42) * randSign(), 2.5)
+        StartThread(waveSpin, id, math.random(1, 6), math.random(4, 800), 100,
+                    true)
+    end)
+
+end
+
 function raidAnimationLoop()
     Sleep(1)
     resetAll(unitID)

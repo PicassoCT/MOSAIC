@@ -170,6 +170,7 @@ else
         if not iconUnits[unitID] then
             return
         end
+        if Spring.GetUnitRulesParam(unitID, 'raid_interior_hidden') == 1 then return true end
 
         glDepthMask(false)
         glBlending(GL_SRC_ALPHA, GL_ONE)
@@ -208,7 +209,8 @@ else
         for unitID, unitDefID in pairs(iconUnits) do
             if not spValidUnitID(unitID) then
                 iconUnits[unitID] = nil
-            elseif Spring.IsUnitInView(unitID) and not Spring.GetUnitIsCloaked(unitID) then
+            elseif Spring.IsUnitInView(unitID) and not Spring.GetUnitIsCloaked(unitID)
+                and Spring.GetUnitRulesParam(unitID, 'raid_interior_hidden') ~= 1 then
                 local los = Spring.GetUnitLosState(unitID, allyTeamID)
                 if fullView or (los and los.los) then
                     local x, y, z = spGetUnitDrawPosition(unitID)

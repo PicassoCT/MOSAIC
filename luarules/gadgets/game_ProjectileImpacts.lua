@@ -14,6 +14,15 @@ if (gadgetHandler:IsSyncedCode()) then
     VFS.Include("scripts/lib_OS.lua")
     VFS.Include("scripts/lib_UnitScript.lua")
     VFS.Include("scripts/lib_mosaic.lua")
+    local raidExposure = VFS.Include("luarules/gadgets/include/raid_exposure.lua")(Spring, GG)
+
+    function gadget:AllowUnitCloak(id)
+        return not GG.RaidersActive[id]
+    end
+
+    function gadget:AllowCommand(id, defID, teamID, command, params)
+        return not (GG.RaidersActive[id] and command == CMD.CLOAK and params[1] ~= 0)
+    end
 
     if not GG.AerosolAffectedCivilians then GG.AerosolAffectedCivilians = {} end
     --boolDebugProjectile = false
@@ -351,8 +360,12 @@ if (gadgetHandler:IsSyncedCode()) then
 
         conditionalEcho(boolDebugProjectile,"Raid: EventStream  Called")
 
-        postRaidCleanup =   function (persPack, boolDoesTargetExistAlive, boolDoesInterrogatorExistAlive)
-                                   conditionalEcho(boolDebugProjectile,"Raid: CleanUp ")
+        local postRaidCleanup = function(persPack, reason)
+                                    raidExposure.End(persPack.interrogatorID)
+                                   Spring.Echo(string.format("[Raid] end target=%s house=%s raider=%s body=%s icon=%s reason=%s",
+                                        tostring(persPack.raidedSafeHouseOrHouse_ID), tostring(persPack.civilianHouseID),
+                                        tostring(persPack.interrogatorID), tostring(persPack.visibleRaiderID),
+                                        tostring(persPack.IconID), reason or "resolved"))
 
                                     if doesUnitExistAlive(persPack.civilianHouseID) == true then
                                         Spring.SetUnitHealth (persPack.civilianHouseID, {paralyze= 0})
@@ -361,8 +374,8 @@ if (gadgetHandler:IsSyncedCode()) then
                                     end
 
                                     --Stop Attacker form reintterogating the same building
-                                    if doesUnitExistAlive(persPack.AttackerID) == true then
-                                       Command(persPack.AttackerID, "stop")
+                                    if doesUnitExistAlive(persPack.attackerID) == true then
+                                       Command(persPack.attackerID, "stop")
                                     end  
 
                                     if persPack.basePlateID and doesUnitExistAlive(persPack.basePlateID) then
@@ -371,8 +384,8 @@ if (gadgetHandler:IsSyncedCode()) then
 
                                     if persPack.IconID and doesUnitExistAlive(persPack.IconID) == true then
                                         Spring.DestroyUnit(persPack.IconID, false, true)
-                                         GG.raidStatus[persPack.IconID] = nil
                                     end
+                                    if persPack.IconID then GG.raidStatus[persPack.IconID] = nil end
 
                                     GG.InterrogationTable[persPack.raidedSafeHouseOrHouse_ID] = nil
                                     GG.HouseRaidIconMap[persPack.civilianHouseID] = nil
@@ -403,19 +416,21 @@ if (gadgetHandler:IsSyncedCode()) then
 
         if GG.InterrogationTable[raidedSafeHouseOrHouse_ID][attackerID] == false then
             GG.InterrogationTable[raidedSafeHouseOrHouse_ID][attackerID] = true
+            raidExposure.Begin(attackerID)
             -- Stun
-            raidFunction = function(persPack)
+            local raidFunction = function(persPack)
             boolDebugProjectile = true
            -- conditionalEcho(boolDebugProjectile,"raidEventStream  Ongoing")
 
-                -- check Target is still existing
-                if false == doesUnitExistAlive(persPack.raidedSafeHouseOrHouse_ID) then
+                -- These checks must run even after an actor is destroyed.
+                if not doesUnitExistAlive(persPack.raidedSafeHouseOrHouse_ID)
+                    or not doesUnitExistAlive(persPack.civilianHouseID) then
                     conditionalEcho(boolDebugProjectile,"Raid: failed check Target is still existing ")
                     if persPack.IconID and GG.raidStatus[persPack.IconID] then
                         GG.raidStatus[persPack.IconID].state = raidStates.Aborted
                         GG.raidStatus[persPack.IconID].boolInterogationComplete = true
                     end
-                    postRaidCleanup(persPack)
+                    postRaidCleanup(persPack, "target_or_host_destroyed")
                     return true, persPack
                 end
 
@@ -426,19 +441,39 @@ if (gadgetHandler:IsSyncedCode()) then
                         GG.raidStatus[persPack.IconID].state = raidStates.Aborted
                         GG.raidStatus[persPack.IconID].boolInterogationComplete = true
                     end
-                    postRaidCleanup(persPack)
+                    postRaidCleanup(persPack, "raider_destroyed")
                     return true, persPack
                 end
 
-                -- check distance is still okay
-                if distanceUnitToUnit(persPack.interrogatorID, persPack.raidedSafeHouseOrHouse_ID) > GameConfig.espionage.raids.range then
+                -- A disguised operative has two units. Require the visible body
+                -- to stay at the raid too, rather than accepting its hidden parent.
+                local body = persPack.interrogatorID
+                for disguise, agent in pairs(GG.DisguiseCivilianFor or {}) do
+                    if agent == persPack.interrogatorID and not (GG.DiedPeacefully or {})[disguise] then
+                        body = disguise
+                        break
+                    end
+                end
+                persPack.visibleRaiderID = body
+                if not doesUnitExistAlive(body) then
+                    postRaidCleanup(persPack, "raider_body_destroyed")
+                    return true, persPack
+                end
+                if persPack.IconID and not doesUnitExistAlive(persPack.IconID) then
+                    postRaidCleanup(persPack, "icon_destroyed")
+                    return true, persPack
+                end
+
+                -- Both the operative and its visible representation must be in range.
+                if distanceUnitToUnit(persPack.interrogatorID, persPack.raidedSafeHouseOrHouse_ID) > GameConfig.espionage.raids.range
+                    or distanceUnitToUnit(body, persPack.raidedSafeHouseOrHouse_ID) > GameConfig.espionage.raids.range then
                     conditionalEcho(boolDebugProjectile,"Raid: failed check distance is still okay5 ")
                     if persPack.IconID and GG.raidStatus[persPack.IconID] then
                         GG.raidStatus[persPack.IconID].state = raidStates.Aborted
                         GG.raidStatus[persPack.IconID].boolInterogationComplete = true
                     end
                     persPack.boolRaidHasEnded = true
-                    postRaidCleanup(persPack)
+                    postRaidCleanup(persPack, "raider_out_of_range")
                     return true, persPack
                 end
                 
@@ -479,6 +514,9 @@ if (gadgetHandler:IsSyncedCode()) then
 
                         GG.raidStatus[persPack.IconID] = GG.raidStatus[persPack.IconID] or {}
                         GG.raidStatus[persPack.IconID].boolInterogationComplete = false
+                        Spring.Echo(string.format("[Raid] start target=%s house=%s raider=%s body=%s icon=%s",
+                            tostring(persPack.raidedSafeHouseOrHouse_ID), tostring(persPack.civilianHouseID),
+                            tostring(persPack.interrogatorID), tostring(persPack.visibleRaiderID), tostring(persPack.IconID)))
                     else
                         conditionalEcho(boolDebugProjectile,"Raid: No IconID")
                         postRaidCleanup(persPack)
@@ -574,7 +612,13 @@ if (gadgetHandler:IsSyncedCode()) then
         end
         
             echo("Starting Raid Event Stream")
-            createStreamEvent(raidedSafeHouseOrHouse_ID, raidFunction, 31, {
+            -- A unit-bound stream silently ends when its target dies, skipping
+            -- restoration and leaving the icon behind. The raid owns its cleanup.
+            GG.EventStream:CreateEvent(function(_, frame, pack)
+                local done = raidFunction(pack)
+                if done then return nil end
+                return frame + 31, pack
+            end, {
                 interrogatorID = attackerID,
                 raidedSafeHouseOrHouse_ID = raidedSafeHouseOrHouse_ID,
                 suspectDefID = unitDefID,
@@ -583,7 +627,7 @@ if (gadgetHandler:IsSyncedCode()) then
                 houseTypeTable = houseTypeTable,
                 civilianHouseID = civilianHouseID,
                 boolRaidedEmptyHouse = boolRaidedEmptyHouse
-            })
+            }, Spring.GetGameFrame() + 1)
         end
 
         -- on Complete Raid/Interrogation
@@ -1039,6 +1083,7 @@ if (gadgetHandler:IsSyncedCode()) then
     local shotBirdSwarms = GG.ShotBirdSwarms
 
     function gadget:UnitDestroyed(unitID)
+        raidExposure.End(unitID)
         for i = #shotBirdSwarms, 1, -1 do
             if shotBirdSwarms[i] == unitID then table.remove(shotBirdSwarms, i) end
         end
