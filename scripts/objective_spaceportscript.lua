@@ -11,6 +11,8 @@ include "lib_debug.lua"
 --include "lib_Build.lua"
 
 local TableOfPiecesGroups = {}
+local vtolPieces = {}
+local vtolTrafficStarted = false
 
 local ReturningBooster1ThrusterPlumN = "ReturningBooster1ThrusterPlum"
 local ReturningBooster2ThrusterPlumN = "ReturningBooster2ThrusterPlum"
@@ -67,6 +69,7 @@ end
 function script.Create()
     -- generatepiecesTableAndArrayCode(unitID)
     TableOfPiecesGroups = getPieceTableByNameGroups(false, true)
+    for _, id in pairs(TableOfPiecesGroups.VTOL or {}) do vtolPieces[id] = true end
     hideAll(unitID)
     Show(FireTruck)
     initialSetup()
@@ -79,7 +82,18 @@ function script.Create()
 end
 
 function initialSetup()
-    resetAll(unitID)
+    if not vtolTrafficStarted then
+        resetAll(unitID)
+    else
+        -- Rocket turnaround must not teleport arriving or departing aircraft.
+        for _, id in pairs(Spring.GetUnitPieceMap(unitID)) do
+            if not vtolPieces[id] then
+                reset(id)
+                WaitForTurns(id)
+                WaitForMoves(id)
+            end
+        end
+    end
     showT(TableOfPiecesGroups[GroundRearDoorN])
     showT(TableOfPiecesGroups[GroundFrontDoorN])
     showT(TableOfPiecesGroups[CraneHeadClawN])
@@ -713,40 +727,31 @@ function launchAnimation()
 end
 
 function vtolLoop()
-    local landed = {}
+    local fly = include('lib_spaceport_vtol_flight.lua')(unitID)
+    local landed, busy, readyAt = {}, {}, {}
+    local active = 0
+    vtolTrafficStarted = true
+    local function flight(id)
+        -- Recheck inside the worker: a queued thread must not lift off after
+        -- the rocket controller has switched to its launch phase.
+        if launchState == "launching" then
+            busy[id], active = nil, active-1
+            return
+        end
+        local departing = landed[id] == true
+        fly(id,departing)
+        landed[id] = not departing
+        readyAt[id] = Spring.GetGameFrame()+30*math.random(12,25)
+        busy[id], active = nil, active-1
+    end
     while true do
         while launchState == "prepareForLaunch" or launchState == "recovery" do
-            local _, rando = randDict(TableOfPiecesGroups["VTOL"])
-            if rando then
-                if landed[rando] then -- start and hide
-                    Show(rando)
-                    WMove(rando, y_axis, 5500, 1500)
-                    xval = math.random(0,800) *randSign()
-                    zval = math.random(0,800) *randSign()
-                    Move(rando, x_axis, xval, 250)
-                    Move(rando, z_axis, zval, 250)
-                    WaitForMoves(rando)
-                    Hide(rando)
-                    landed[rando] = nil
-                else
-                    xval = math.random(0,800) *randSign()
-                    zval = math.random(0,800) *randSign()
-                    Move(rando, x_axis, xval, 0)
-                    Move(rando, z_axis, zval, 0)
-                    WMove(rando, y_axis, 4500, 0)
-                    WaitForMoves(rando)
-                    rVal = math.random(0,360)
-                    Turn(rando, y_axis, math.rad(rVal),0)
-                    Show(rando)
-                    Move(rando, x_axis, 0, 250)
-                    Move(rando, z_axis, 0, 250)
-                    WaitForMoves(rando)
-                    Turn(rando, y_axis, math.rad(0),10)
-                    WMove(rando, y_axis, 0, 800)         
-                    landed[rando] = true
-                end
+            local _, id = randDict(TableOfPiecesGroups.VTOL)
+            if id and not busy[id] and active < 2 and Spring.GetGameFrame() >= (readyAt[id] or 0) then
+                busy[id], active = true, active+1
+                StartThread(flight,id)
             end
-            Sleep(100)
+            Sleep(math.random(4000,8000))
         end
         Sleep(1000)
     end

@@ -55,6 +55,7 @@ __pycache__/
 
 # Airport ferry flight controller
 !scripts/lib_airport_ferry_flight.lua
+!scripts/lib_spaceport_vtol_flight.lua
 
 # Shared civilian death animation
 !scripts/lib_civilian_death.lua
