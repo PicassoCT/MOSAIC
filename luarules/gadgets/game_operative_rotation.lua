@@ -24,12 +24,39 @@ if (gadgetHandler:IsSyncedCode()) then
     local spGetGameFrame = Spring.GetGameFrame
     local spGetCommandQueue= Spring.GetCommandQueue
     local spGiveOrderToUnit = Spring.GiveOrderToUnit
+    local spGetPlayerInfo = Spring.GetPlayerInfo
+    local spValidUnitID = Spring.ValidUnitID
+    local spGetUnitIsDead = Spring.GetUnitIsDead
+    local spGetUnitDefID = Spring.GetUnitDefID
 
     local GameConfig = getGameConfig()
 
     local storedCommands = {}
-    LastAimFrame = {}
+    local LastAimFrame = {}
     local Cache = {}
+
+    -- Match the three scripts/UI selections that implement manual aiming;
+    -- getOperativeTypeTable also includes civilianagent, which has no aim hook.
+    local manualAimNames = {
+        operativeasset = true,
+        operativepropagator = true,
+        operativeinvestigator = true,
+    }
+    local manualAimDefs = {}
+    for defID, def in pairs(UnitDefs) do
+        if manualAimNames[def.name] then manualAimDefs[defID] = true end
+    end
+
+    -- Immediate updates, not a timer/debounce: 64 packets per simulation frame
+    -- leaves room for high-refresh clients even at 0.4x slow motion (40 updates
+    -- per sim frame at 480 render FPS). Excess work is dropped, never queued.
+    -- The stock UI sends one unit; bounded lists remain supported.
+    local MAX_MESSAGE_BYTES = 512
+    local MAX_UNITS_PER_MESSAGE = 8
+    local MAX_MESSAGES_PER_FRAME = 64
+    local MAX_PLAYER_AIMS_PER_FRAME = 128
+    local MAX_UNIT_AIMS_PER_FRAME = 64
+    local playerBudgets, unitBudgets = {}, {}
 
     local moveCommands = {
         [CMD.MOVE] = true,
@@ -41,7 +68,6 @@ if (gadgetHandler:IsSyncedCode()) then
     local GaiaTeamID = Spring.GetGaiaTeamID()
 
     local anglesUpperBodyTurnRad = math.rad(55)
-    local OneSecondFrames = 30
 
     local civilianWalkingTypeTable = getCultureUnitModelTypes(
                                          GameConfig.game.culture,
@@ -58,8 +84,8 @@ if (gadgetHandler:IsSyncedCode()) then
             arg.n = #arg
         end
 
-        env = Spring.UnitScript.GetScriptEnv(id)
-        if env  then
+        local env = Spring.UnitScript.GetScriptEnv(id)
+        if env and type(env[name]) == "function" then
            Spring.UnitScript.CallAsUnit(id, 
                          env[name],
                          arg[1] or nil,
@@ -119,7 +145,7 @@ if (gadgetHandler:IsSyncedCode()) then
 
         if  gf - LastAimFrame[id] > 5 and boolIsMoving then
             LastAimFrame[id] = gf
-            dx,dz = positionT.x, positionT.z --fallback to mouseTargetPosition
+            local dx,dz = positionT.x, positionT.z --fallback to mouseTargetPosition
             if len > 0 then
                 dx = x + ((dx - x)/len) * 128
                 dz = z + ((dz - z)/len) * 128
@@ -129,37 +155,36 @@ if (gadgetHandler:IsSyncedCode()) then
     end
 
 
-    function rotateUnitTowardsPoint(id, positionT)
-        local gameFrame = spGetGameFrame()
+    local function rotateUnitTowardsPoint(id, positionT, gameFrame)
         local x,y,z = spGetUnitPosition(id)
- 
-        distanceToPoint = distance(x,y,z, positionT.x, positionT.y, positionT.z) 
-        if distanceToPoint > 964 or distanceToPoint < 15  then return end --sniperrifle or to close
-        yaw, pitch, roll = spGetUnitRotation(id)
-        newPitch = math.pi - math.atan2(x-positionT.x, z-positionT.z) 
-        boolIsMoving = IsUnitMoving(id)
+        if not x then return end
+        local dx, dy, dz = x-positionT.x, y-positionT.y, z-positionT.z
+        local distanceSquared = dx*dx + dy*dy + dz*dz
+        if distanceSquared > 964*964 or distanceSquared < 15*15 then return end
+        local yaw, pitch, roll = spGetUnitRotation(id)
+        if not yaw or not pitch or not roll then return end
+        local env = Spring.UnitScript.GetScriptEnv(id)
+        if not env or type(env.externalAimFunction) ~= "function" then return end
+        local distanceToPoint = math.sqrt(distanceSquared)
+        local newPitch = math.pi - math.atan2(dx, dz)
+        local boolIsMoving = IsUnitMoving(id)
 
         optionalSmoothOutMovement(id, gameFrame, x,y,z, positionT, distanceToPoint, boolIsMoving)
    
-        pitchDiff = pitch - newPitch
-        rotationSign = pitchDiff/math.abs(pitchDiff)
-        pitchDiff = math.abs(pitchDiff)
-        internalPitch = 0
-        if pitchDiff >  anglesUpperBodyTurnRad then
+        local pitchDiff = pitch - newPitch
+        local internalPitch = 0
+        if math.abs(pitchDiff) > anglesUpperBodyTurnRad then
             spSetUnitRotation(id, yaw, newPitch, roll) 
         else           
-            internalPitch = pitchDiff * rotationSign 
+            internalPitch = pitchDiff -- including exact alignment: never 0/0
         end
         
-        if (GG.OperativeTurnTable[id] == nil) or GG.OperativeTurnTable[id] < gameFrame + OneSecondFrames then
-            GG.OperativeTurnTable[id] = gameFrame
-            env = Spring.UnitScript.GetScriptEnv(id)
-            if env and env.setOverrideAnimationState then
-                Spring.UnitScript.CallAsUnit(id, env.externalAimFunction, positionT, internalPitch, boolIsMoving)                 
-            end      
-        end   
+        GG.OperativeTurnTable[id] = gameFrame
+        Spring.UnitScript.CallAsUnit(id, env.externalAimFunction, positionT, internalPitch, boolIsMoving)
 
-        if not Cache[id] or Cache[id] < gameFrame + (15*30) then
+        -- Mouse updates can outnumber simulation frames. Aim stays immediate;
+        -- civilian queries/emergencies need run only once per unit per frame.
+        if Cache[id] ~= gameFrame then
             if Cache[id] then
                 registerEmergency(x, z)
             end
@@ -169,7 +194,7 @@ if (gadgetHandler:IsSyncedCode()) then
                 getAllOfTypeNearUnit(id, civilianWalkingTypeTable, 256),
                  function(civId)
                   
-                    if spGetUnitTeam(civId) == GaiaTeamID and not GG.AerosolAffectedCivilians[civId] then                            
+                    if spGetUnitTeam(civId) == GaiaTeamID and not (GG.AerosolAffectedCivilians and GG.AerosolAffectedCivilians[civId]) then
                         startInternalBehaviourOfState(civId , "startFleeing", id)
                         return civId
                     end
@@ -178,21 +203,80 @@ if (gadgetHandler:IsSyncedCode()) then
         end
     end
 
+    local function finiteNumber(value)
+        return value and value == value and value > -math.huge and value < math.huge
+    end
+
+    local function ownedManualAimUnit(id, team)
+        return spValidUnitID(id) and not spGetUnitIsDead(id)
+            and spGetUnitTeam(id) == team and manualAimDefs[spGetUnitDefID(id)] == true
+    end
+
     function gadget:RecvLuaMsg(msg, playerID)
-        if msg and string.find(msg, "OPROTPOS") then
-            T = split(msg, "|")
-            position = {}
-            position.x = tonumber(T[2])
-            position.y = tonumber(T[3])
-            position.z = tonumber(T[4])
-            for i = 5, #T do
-                local unitID = T[i]
-                if string.len(unitID) > 0 then
-                    rotateUnitTowardsPoint(tonumber(unitID), position)
-                end
+        if type(msg) ~= "string" or msg:sub(1, 9) ~= "OPROTPOS|"
+            or #msg > MAX_MESSAGE_BYTES then return end
+
+        local name, active, spectator, team = spGetPlayerInfo(playerID, false)
+        if not name or not active or spectator or team == nil then return end
+        local frame = spGetGameFrame()
+        local budget = playerBudgets[playerID]
+        if not budget then
+            budget = {}; playerBudgets[playerID] = budget
+        end
+        if budget.frame ~= frame then
+            budget.frame, budget.messages, budget.aims = frame, 0, 0
+        end
+        if budget.messages >= MAX_MESSAGES_PER_FRAME then return end
+        budget.messages = budget.messages + 1 -- malformed packets also cost budget
+
+        local sx, sy, sz, ids = msg:match("^OPROTPOS|([^|]+)|([^|]+)|([^|]+)|(.+)$")
+        if not ids then return end
+        local x, y, z = tonumber(sx), tonumber(sy), tonumber(sz)
+        if not finiteNumber(x) or not finiteNumber(y) or not finiteNumber(z)
+            or x < 0 or x > Game.mapSizeX or z < 0 or z > Game.mapSizeZ
+            or math.abs(y) > 1000000 then return end
+
+        -- Validate the entire bounded list before any rotation/order mutation.
+        -- Empty separators are emitted by the existing three-type UI serializer.
+        local units, seen, count = {}, {}, 0
+        for token in ids:gmatch("[^|]+") do
+            count = count + 1
+            if count > MAX_UNITS_PER_MESSAGE or #token > 10 or not token:match("^%d+$") then return end
+            local id = tonumber(token)
+            if id > 2147483647 or not ownedManualAimUnit(id, team) then return end
+            if not seen[id] then
+                seen[id] = true
+                units[#units+1] = id
+            end
+        end
+        if #units == 0 or budget.aims + #units > MAX_PLAYER_AIMS_PER_FRAME then return end
+        budget.aims = budget.aims + #units
+        local position = {x=x, y=y, z=z}
+        for i = 1, #units do
+            local id = units[i]
+            local unitBudget = unitBudgets[id]
+            if not unitBudget then
+                unitBudget = {}; unitBudgets[id] = unitBudget
+            end
+            if unitBudget.frame ~= frame then
+                unitBudget.frame, unitBudget.aims = frame, 0
+            end
+            -- Recheck live ownership before executing each unit's script.
+            if unitBudget.aims < MAX_UNIT_AIMS_PER_FRAME and ownedManualAimUnit(id, team) then
+                unitBudget.aims = unitBudget.aims + 1
+                rotateUnitTowardsPoint(id, position, frame)
             end
         end
     end
+
+    local function clearUnitState(id)
+        storedCommands[id], LastAimFrame[id], Cache[id], unitBudgets[id] = nil, nil, nil, nil
+        if GG.OperativeTurnTable then GG.OperativeTurnTable[id] = nil end
+    end
+
+    function gadget:UnitDestroyed(id) clearUnitState(id) end
+    function gadget:UnitTaken(id) clearUnitState(id) end
+    function gadget:UnitGiven(id) clearUnitState(id) end
 
 
 
