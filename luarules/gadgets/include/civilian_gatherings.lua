@@ -400,11 +400,13 @@ function M.New(c)
     function api:Frame(frame)
         if frame%C.tickFrames~=0 then return end
         if not normal() then self:Stop("peacetime ended");goodSince=nil;return end
-        c.clearance:Refresh(frame)
         local day,hour=Calendar.Clock(frame,c.gameConfig.game.dayLengthFrames)
         local good=c.weather(frame,hour)
         if good then goodSince=goodSince or frame;badSince=nil else badSince=badSince or frame;goodSince=nil end
         if paradeBusy() then self:Stop("parade has priority");return end
+        if self:HasEvents() then
+            c.clearance:Refresh(frame)
+        end
         for _,token in ipairs(sorted(self.events)) do
             local e=self.events[token]
             if not alive(e.objective) or dangerous(e.center) then self:Stop("venue unsafe",token)
