@@ -24,6 +24,7 @@ function CreateMosaicStrategy(teamID, allyTeamID, side)
     local frame=0
     local owned,ready,counts={}, {}, {}
     local pending,orders,settings,missions,visited,blockedSites={}, {}, {}, {}, {}, {}
+    local siteRetryPolicy={baseDelay=1800,maxDelay=18000}
     local houses,targets,threats={}, {}, {}
     local surveyedSectors={}
     local sectorSize=math.max(512,math.max(Game.mapSizeX,Game.mapSizeZ)/6)
@@ -118,7 +119,15 @@ function CreateMosaicStrategy(teamID, allyTeamID, side)
             elseif frame>p.expires then
                 -- No creation/progress before deadline: release the job and choose
                 -- another building, rather than leaving the producer idle forever.
-                if p.house then blockedSites[p.house]=frame+1800 end
+                if p.house then
+                    local failure=blockedSites[p.house] or {failures=0}
+                    failure.failures=failure.failures+1
+                    failure.retryFrame=frame+math.min(siteRetryPolicy.maxDelay,
+                        siteRetryPolicy.baseDelay*2^math.min(4,failure.failures-1))
+                    blockedSites[p.house]=failure
+                    Spring.Echo('Prometheus team '..teamID..': expansion site '..p.house
+                        ..' stalled; attempts='..failure.failures..'; retry_after='..failure.retryFrame)
+                end
                 send(id,CMD.STOP,{},"cancel stalled production",true)
                 pending[id]=nil
             else
@@ -174,7 +183,7 @@ function CreateMosaicStrategy(teamID, allyTeamID, side)
     local function site(builder)
         local origin=position(builder)
         if not origin then return end
-        local best,score
+        local best,score,bestFailures
         for _,h in ipairs(houses) do
             local occupied=false
             for _,id in ipairs(owned) do
@@ -183,12 +192,18 @@ function CreateMosaicStrategy(teamID, allyTeamID, side)
                 if p and distance(p,h.pos)<180^2 then occupied=true;break end
             end
             for _,p in pairs(pending) do if p.house==h.id then occupied=true end end
-            if not occupied and (blockedSites[h.id] or 0)<=frame and risk(h.pos,650)<2 then
+            local failure=blockedSites[h.id]
+            if not occupied and (not failure or failure.retryFrame<=frame) and risk(h.pos,650)<2 then
                 local y=Spring.GetGroundHeight(h.pos.x,h.pos.z)
                 local def=UnitDefNames[safe]
                 if def and Spring.TestBuildOrder(def.id,h.pos.x,y,h.pos.z,0)>0 then
                     local s=distance(origin,h.pos)+risk(h.pos,1000)*500000
-                    if not score or s<score then best,score=h,s end
+                    local failures=failure and failure.failures or 0
+                    -- A cooldown alone alternates forever between the nearest
+                    -- two failures. Try untested sites before recycling either.
+                    if not score or failures<bestFailures or (failures==bestFailures and s<score) then
+                        best,score,bestFailures=h,s,failures
+                    end
                 end
             end
         end
@@ -540,7 +555,10 @@ function CreateMosaicStrategy(teamID, allyTeamID, side)
     end
     function S.UnitCreated(id,defID,t,builder)
         local p=pending[builder]
-        if p and UnitDefs[defID] and UnitDefs[defID].name==p.target then pending[builder]=nil end
+        if p and UnitDefs[defID] and UnitDefs[defID].name==p.target then
+            if p.house then blockedSites[p.house]=nil end
+            pending[builder]=nil
+        end
     end
     function S.UnitFinished() end -- inventory reconciliation covers delayed spawn, reload and transfers
     local function eventFrame() return Spring.GetGameFrame and Spring.GetGameFrame() or frame end
