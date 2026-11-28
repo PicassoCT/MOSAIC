@@ -19,6 +19,7 @@ for _, name in ipairs(cfg.factories) do
     if def then factories[def.id]=true;hubs[def.id]=true end
 end
 local markerDef = UnitDefNames.doubleagent.id
+local markerSensors={"los","airLos","radar","sonar","seismic","radarJammer","sonarJammer"}
 local gaia = Spring.GetGaiaTeamID()
 local allied = {allied=true}
 -- rosters include every surviving descendant, even after an intermediate builder
@@ -380,6 +381,14 @@ local function refreshMarker(root,n)
     end
 end
 function gadget:UnitCreated(id,def,team,builder)
+    if def==markerDef then
+        -- Keep ownership/selectability for Turn network, but contribute no
+        -- detection or jamming. Neutral excludes this abstract unit from the
+        -- engine's proximity-decloak query, including for mobile double agents.
+        Spring.SetUnitNeutral(id,true)
+        for _,sensor in ipairs(markerSensors) do Spring.SetUnitSensorRadius(id,sensor,0) end
+        return
+    end
     if operatives[def] then
         local old=Spring.FindUnitCmdDesc(id,CMD_INVESTIGATE)
         if old then Spring.RemoveUnitCmdDesc(id,old) end

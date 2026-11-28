@@ -145,7 +145,12 @@ local DoubleAgent =
     canCloak = true,
     cloakCost = 0,
     cloakCostMoving = 0,
-    sightDistance = 50,
+    -- Handler UI only: this marker must not scout the compromised building.
+    sightDistance = 0,
+    airSightDistance = 0,
+    radarDistance = 0,
+    sonarDistance = 0,
+    seismicDistance = 0,
     minCloakDistance = 0,
     initCloaked = true,
     onOffable = false,
