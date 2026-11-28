@@ -1,7 +1,7 @@
 -- Native cannon gravity/bounce/collisions, with one terminal ground feature.
 -- Explosion is only a visual veto; impactOnly supplies exactly one direct hit.
 local M={}
-function M.New(S,Game,weapons)
+function M.New(S,Game,weapons,onImpact)
     local api={flying={},pending={},debris={}}
     local cap,lifetime=96,4*60*30
     local gravity=math.abs(Game.gravity or 120)/(Game.gameSpeed or 30)^2
@@ -44,13 +44,13 @@ function M.New(S,Game,weapons)
         local p=self.flying[id]
         if p then
             self.pending[id]={variant=p.variant,x=x,y=y,z=z,frame=S.GetGameFrame(),
-                expired=S.GetGameFrame()>=p.expires-1,hit=p.hit}
+                expired=S.GetGameFrame()>=p.expires-1,hit=p.hit,kind=p.kind}
         end
         return true -- suppress CEG; engine still applies impactOnly damage
     end
-    function api:Hit(id)
-        if self.flying[id] then self.flying[id].hit=true end
-        if self.pending[id] then self.pending[id].hit=true end
+    function api:Hit(id,kind)
+        if self.flying[id] then self.flying[id].hit=true;self.flying[id].kind=kind end
+        if self.pending[id] then self.pending[id].hit=true;self.pending[id].kind=kind end
     end
     function api:Destroyed(id) self.flying[id]=nil end
     function api:Frame(frame)
@@ -62,8 +62,9 @@ function M.New(S,Game,weapons)
             elseif frame>=p.expires then S.DeleteProjectile(id);self.flying[id]=nil
             elseif vx then
                 local ground=S.GetGroundHeight(x,z)
-                if p.vy and p.vy<0 and vy>0 and y-ground<10 and ground>=0 then
-                    S.PlaySoundFile("sounds/physics/civilian_stone.wav",.25,x,y,z)
+                if p.vy and p.vy<0 and vy>0 and y-ground<10 and ground>=0
+                    and not self.pending[id] and onImpact then
+                    onImpact("building_ground",x,y,z,id,true)
                 end
                 -- Delete without Collision, so a nearly stationary stone cannot
                 -- explode/hit again. Native three-bounce terminal impacts use
@@ -80,6 +81,11 @@ function M.New(S,Game,weapons)
             -- Damage callins follow Explosion within the collision frame.
             if frame>p.frame then
                 if not p.hit and not p.expired then groundFeature(p,frame) end
+                local ground=S.GetGroundHeight(p.x,p.z)
+                local groundContact=not p.expired and ground>=0 and math.abs(p.y-ground)<=3
+                if onImpact and (p.hit or groundContact) then
+                    onImpact(p.kind or "building_ground",p.x,p.y,p.z,id,false)
+                end
                 self.pending[id]=nil
             end
         end

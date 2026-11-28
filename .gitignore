@@ -79,6 +79,7 @@ __pycache__/
 !luarules/configs/civilian_gatherings.lua
 !luarules/gadgets/include/civilian_gatherings.lua
 !luarules/gadgets/include/civilian_stones.lua
+!luarules/gadgets/include/civilian_stone_audio.lua
 !luarules/gadgets/game_civilian_gatherings.lua
 !weapons/civilianstone.lua
 !features/civilianstones.lua

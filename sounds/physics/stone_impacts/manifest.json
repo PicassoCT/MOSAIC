@@ -1,0 +1,681 @@
+[
+  {
+    "name": "stone_vehicle_01_door_skin",
+    "category": "vehicle",
+    "duration": 0.95,
+    "echo_delays": [
+      45,
+      95
+    ],
+    "echo_gains": [
+      0.16,
+      0.08
+    ],
+    "layers": [
+      {
+        "candidate": 2,
+        "gain": 1,
+        "hp": 65,
+        "lp": 8000,
+        "pitch": 1,
+        "duration": 0.6,
+        "delay_ms": 0,
+        "eq": [
+          [
+            180,
+            3
+          ]
+        ],
+        "fade": 0.08
+      },
+      {
+        "candidate": 11,
+        "gain": 0.36,
+        "hp": 65,
+        "lp": 5000,
+        "pitch": 1,
+        "duration": 0.7,
+        "delay_ms": 8,
+        "eq": [],
+        "fade": 0.08
+      },
+      {
+        "candidate": 1,
+        "gain": 0.12,
+        "hp": 900,
+        "lp": 7500,
+        "pitch": 1,
+        "duration": 0.45,
+        "delay_ms": 16,
+        "eq": [],
+        "fade": 0.08
+      },
+      {
+        "candidate": 12,
+        "gain": 0.07,
+        "hp": 45,
+        "lp": 350,
+        "pitch": 1,
+        "duration": 0.55,
+        "delay_ms": 0,
+        "eq": [],
+        "fade": 0.08
+      },
+      {
+        "candidate": 5,
+        "gain": 0.055,
+        "hp": 400,
+        "lp": 5000,
+        "pitch": 1,
+        "duration": 0.16,
+        "delay_ms": 0,
+        "eq": [],
+        "fade": 0.06
+      }
+    ],
+    "file": "stone_vehicle_01_door_skin.ogg",
+    "channels": 1,
+    "sample_rate": 48000,
+    "primary_candidate": "02_metal_hit__417785.wav",
+    "sources": [
+      "417785__michalwa2003__metal-hit.wav",
+      "addins/831891__crimsonblaze__car-door-shutting.wav",
+      "addins/406562__anthousai__hit-metallic-01.wav",
+      "addins/653294__osvoldon__big-structure-collision-heard-from-inside.wav",
+      "757927__robinhood76__13080-stone-crushing-hit.wav"
+    ],
+    "integrated_lufs": -20.95,
+    "true_peak_dbtp": -4.91,
+    "sha256": "91be912544e691e8f77d8d8bf3e89b6db3750a24a1c366ddd3b28e1582499f6f"
+  },
+  {
+    "name": "stone_vehicle_02_metal_panel",
+    "category": "vehicle",
+    "duration": 1.3,
+    "echo_delays": [
+      55,
+      115
+    ],
+    "echo_gains": [
+      0.15,
+      0.07
+    ],
+    "layers": [
+      {
+        "candidate": 4,
+        "gain": 1,
+        "hp": 60,
+        "lp": 7000,
+        "pitch": 0.88,
+        "duration": 0.75,
+        "delay_ms": 0,
+        "eq": [
+          [
+            210,
+            2
+          ]
+        ],
+        "fade": 0.08
+      },
+      {
+        "candidate": 11,
+        "gain": 0.3,
+        "hp": 65,
+        "lp": 4000,
+        "pitch": 1,
+        "duration": 0.7,
+        "delay_ms": 5,
+        "eq": [],
+        "fade": 0.08
+      },
+      {
+        "candidate": 3,
+        "gain": 0.12,
+        "hp": 500,
+        "lp": 5000,
+        "pitch": 1,
+        "duration": 1.1,
+        "delay_ms": 20,
+        "eq": [],
+        "fade": 0.08
+      },
+      {
+        "candidate": 5,
+        "gain": 0.055,
+        "hp": 400,
+        "lp": 5000,
+        "pitch": 1,
+        "duration": 0.16,
+        "delay_ms": 0,
+        "eq": [],
+        "fade": 0.06
+      }
+    ],
+    "file": "stone_vehicle_02_metal_panel.ogg",
+    "channels": 1,
+    "sample_rate": 48000,
+    "primary_candidate": "04_metal_hit__593729.wav",
+    "sources": [
+      "593729__christiaanackermann21100333__hitting-metal-sound-effect.wav",
+      "addins/831891__crimsonblaze__car-door-shutting.wav",
+      "addins/468837__christianand__25_metal_chocando.wav",
+      "757927__robinhood76__13080-stone-crushing-hit.wav"
+    ],
+    "integrated_lufs": -20.95,
+    "true_peak_dbtp": -4.55,
+    "sha256": "bb32bc15c48dd2677c2bb174ee31806360fb9911ec595ea26de7edd03be31ecc"
+  },
+  {
+    "name": "stone_vehicle_03_heavy_panel",
+    "category": "vehicle",
+    "duration": 1.7,
+    "echo_delays": [
+      65,
+      125
+    ],
+    "echo_gains": [
+      0.17,
+      0.08
+    ],
+    "layers": [
+      {
+        "candidate": 10,
+        "gain": 1,
+        "hp": 55,
+        "lp": 8000,
+        "pitch": 0.9,
+        "duration": 1.45,
+        "delay_ms": 0,
+        "eq": [],
+        "fade": 0.08
+      },
+      {
+        "candidate": 11,
+        "gain": 0.26,
+        "hp": 70,
+        "lp": 5000,
+        "pitch": 1,
+        "duration": 0.7,
+        "delay_ms": 8,
+        "eq": [],
+        "fade": 0.08
+      },
+      {
+        "candidate": 1,
+        "gain": 0.16,
+        "hp": 1000,
+        "lp": 7000,
+        "pitch": 1,
+        "duration": 0.45,
+        "delay_ms": 22,
+        "eq": [],
+        "fade": 0.08
+      },
+      {
+        "candidate": 5,
+        "gain": 0.055,
+        "hp": 400,
+        "lp": 5000,
+        "pitch": 1,
+        "duration": 0.16,
+        "delay_ms": 0,
+        "eq": [],
+        "fade": 0.06
+      }
+    ],
+    "file": "stone_vehicle_03_heavy_panel.ogg",
+    "channels": 1,
+    "sample_rate": 48000,
+    "primary_candidate": "10_heavy_panel__801936.wav",
+    "sources": [
+      "801936__artninja__tf_one_inspired_megatron_heavy_panel_sound_transformation_04252025.wav",
+      "addins/831891__crimsonblaze__car-door-shutting.wav",
+      "addins/406562__anthousai__hit-metallic-01.wav",
+      "757927__robinhood76__13080-stone-crushing-hit.wav"
+    ],
+    "integrated_lufs": -21.07,
+    "true_peak_dbtp": -3.85,
+    "sha256": "5f9c3487719b94469906d5e8bb8663cfb13bafc0021cbc45894556108044f1f7"
+  },
+  {
+    "name": "stone_person_01_dull_thud",
+    "category": "person",
+    "duration": 0.9,
+    "echo_delays": [
+      24,
+      46
+    ],
+    "echo_gains": [
+      0.075,
+      0.035
+    ],
+    "layers": [
+      {
+        "candidate": 6,
+        "gain": 1,
+        "hp": 80,
+        "lp": 1500,
+        "pitch": 0.82,
+        "duration": 0.72,
+        "delay_ms": 0,
+        "eq": [
+          [
+            220,
+            4
+          ],
+          [
+            700,
+            -5
+          ]
+        ],
+        "fade": 0.16
+      },
+      {
+        "candidate": 11,
+        "gain": 0.22,
+        "hp": 80,
+        "lp": 650,
+        "pitch": 1,
+        "duration": 0.36,
+        "delay_ms": 3,
+        "eq": [],
+        "fade": 0.12
+      },
+      {
+        "candidate": 12,
+        "gain": 0.035,
+        "hp": 75,
+        "lp": 250,
+        "pitch": 1,
+        "duration": 0.25,
+        "delay_ms": 0,
+        "eq": [],
+        "fade": 0.1
+      },
+      {
+        "candidate": 5,
+        "gain": 0.025,
+        "hp": 200,
+        "lp": 1800,
+        "pitch": 1,
+        "duration": 0.12,
+        "delay_ms": 0,
+        "eq": [],
+        "fade": 0.05
+      }
+    ],
+    "file": "stone_person_01_dull_thud.ogg",
+    "channels": 1,
+    "sample_rate": 48000,
+    "primary_candidate": "06_basin_bar_hit_01__801823.wav",
+    "sources": [
+      "801823__sadiquecat__plastic-bassin-metal-bar-hit.wav",
+      "addins/831891__crimsonblaze__car-door-shutting.wav",
+      "addins/653294__osvoldon__big-structure-collision-heard-from-inside.wav",
+      "757927__robinhood76__13080-stone-crushing-hit.wav"
+    ],
+    "integrated_lufs": -21.0,
+    "true_peak_dbtp": -2.54,
+    "sha256": "2eb34f9216c609c7f6bcc04989f9b3396ebcc7beb8d3fd54688f729543d62012"
+  },
+  {
+    "name": "stone_person_02_compact_hit",
+    "category": "person",
+    "duration": 0.82,
+    "echo_delays": [
+      20,
+      42
+    ],
+    "echo_gains": [
+      0.07,
+      0.03
+    ],
+    "layers": [
+      {
+        "candidate": 8,
+        "gain": 1,
+        "hp": 85,
+        "lp": 1750,
+        "pitch": 0.9,
+        "duration": 0.65,
+        "delay_ms": 0,
+        "eq": [
+          [
+            260,
+            3
+          ],
+          [
+            850,
+            -5
+          ]
+        ],
+        "fade": 0.14
+      },
+      {
+        "candidate": 11,
+        "gain": 0.18,
+        "hp": 90,
+        "lp": 650,
+        "pitch": 1,
+        "duration": 0.34,
+        "delay_ms": 3,
+        "eq": [],
+        "fade": 0.12
+      },
+      {
+        "candidate": 12,
+        "gain": 0.03,
+        "hp": 85,
+        "lp": 280,
+        "pitch": 1,
+        "duration": 0.23,
+        "delay_ms": 0,
+        "eq": [],
+        "fade": 0.1
+      },
+      {
+        "candidate": 5,
+        "gain": 0.025,
+        "hp": 200,
+        "lp": 1800,
+        "pitch": 1,
+        "duration": 0.12,
+        "delay_ms": 0,
+        "eq": [],
+        "fade": 0.05
+      }
+    ],
+    "file": "stone_person_02_compact_hit.ogg",
+    "channels": 1,
+    "sample_rate": 48000,
+    "primary_candidate": "08_basin_bar_hit_03__801823.wav",
+    "sources": [
+      "801823__sadiquecat__plastic-bassin-metal-bar-hit.wav",
+      "addins/831891__crimsonblaze__car-door-shutting.wav",
+      "addins/653294__osvoldon__big-structure-collision-heard-from-inside.wav",
+      "757927__robinhood76__13080-stone-crushing-hit.wav"
+    ],
+    "integrated_lufs": -20.94,
+    "true_peak_dbtp": -2.57,
+    "sha256": "2132f91f4eb3aa373beaf3948283c01a9efa4ba52729d83064a7a99f53ce7f0b"
+  },
+  {
+    "name": "stone_person_03_weighted_thud",
+    "category": "person",
+    "duration": 0.85,
+    "echo_delays": [
+      27,
+      52
+    ],
+    "echo_gains": [
+      0.08,
+      0.035
+    ],
+    "layers": [
+      {
+        "candidate": 9,
+        "gain": 1,
+        "hp": 75,
+        "lp": 1600,
+        "pitch": 0.8,
+        "duration": 0.65,
+        "delay_ms": 0,
+        "eq": [
+          [
+            190,
+            4
+          ],
+          [
+            750,
+            -4
+          ]
+        ],
+        "fade": 0.14
+      },
+      {
+        "candidate": 11,
+        "gain": 0.24,
+        "hp": 75,
+        "lp": 700,
+        "pitch": 1,
+        "duration": 0.38,
+        "delay_ms": 4,
+        "eq": [],
+        "fade": 0.13
+      },
+      {
+        "candidate": 12,
+        "gain": 0.04,
+        "hp": 70,
+        "lp": 300,
+        "pitch": 1,
+        "duration": 0.28,
+        "delay_ms": 0,
+        "eq": [],
+        "fade": 0.1
+      },
+      {
+        "candidate": 5,
+        "gain": 0.025,
+        "hp": 200,
+        "lp": 1800,
+        "pitch": 1,
+        "duration": 0.12,
+        "delay_ms": 0,
+        "eq": [],
+        "fade": 0.05
+      }
+    ],
+    "file": "stone_person_03_weighted_thud.ogg",
+    "channels": 1,
+    "sample_rate": 48000,
+    "primary_candidate": "09_basin_bar_hit_04__801823.wav",
+    "sources": [
+      "801823__sadiquecat__plastic-bassin-metal-bar-hit.wav",
+      "addins/831891__crimsonblaze__car-door-shutting.wav",
+      "addins/653294__osvoldon__big-structure-collision-heard-from-inside.wav",
+      "757927__robinhood76__13080-stone-crushing-hit.wav"
+    ],
+    "integrated_lufs": -21.13,
+    "true_peak_dbtp": -2.47,
+    "sha256": "d86174431c4a6c5d877d9d97ebe7a40061018cfb33e81e21af2b2ecc6848e092"
+  },
+  {
+    "name": "stone_building_ground_01_stone_grit",
+    "category": "building_ground",
+    "duration": 2.15,
+    "echo_delays": [
+      75,
+      150,
+      260
+    ],
+    "echo_gains": [
+      0.18,
+      0.1,
+      0.05
+    ],
+    "layers": [
+      {
+        "candidate": 5,
+        "gain": 1,
+        "hp": 45,
+        "lp": 10000,
+        "pitch": 1,
+        "duration": 1.5,
+        "delay_ms": 0,
+        "eq": [],
+        "fade": 0.12
+      },
+      {
+        "candidate": 12,
+        "gain": 0.22,
+        "hp": 45,
+        "lp": 800,
+        "pitch": 1,
+        "duration": 1.8,
+        "delay_ms": 0,
+        "eq": [],
+        "fade": 0.35
+      },
+      {
+        "candidate": 1,
+        "gain": 0.07,
+        "hp": 900,
+        "lp": 5500,
+        "pitch": 1,
+        "duration": 0.45,
+        "delay_ms": 12,
+        "eq": [],
+        "fade": 0.08
+      }
+    ],
+    "file": "stone_building_ground_01_stone_grit.ogg",
+    "channels": 1,
+    "sample_rate": 48000,
+    "primary_candidate": "05_stone_crushing__757927.wav",
+    "sources": [
+      "757927__robinhood76__13080-stone-crushing-hit.wav",
+      "addins/653294__osvoldon__big-structure-collision-heard-from-inside.wav",
+      "addins/406562__anthousai__hit-metallic-01.wav"
+    ],
+    "integrated_lufs": -21.11,
+    "true_peak_dbtp": -2.33,
+    "sha256": "6794a67f007986931b4803b772006ffe6a552b645a02656ca3596434700a8a42"
+  },
+  {
+    "name": "stone_building_ground_02_hard_surface",
+    "category": "building_ground",
+    "duration": 2.4,
+    "echo_delays": [
+      85,
+      180,
+      300
+    ],
+    "echo_gains": [
+      0.2,
+      0.11,
+      0.055
+    ],
+    "layers": [
+      {
+        "candidate": 7,
+        "gain": 1,
+        "hp": 45,
+        "lp": 6500,
+        "pitch": 0.74,
+        "duration": 1.65,
+        "delay_ms": 0,
+        "eq": [],
+        "fade": 0.3
+      },
+      {
+        "candidate": 12,
+        "gain": 0.25,
+        "hp": 50,
+        "lp": 950,
+        "pitch": 1,
+        "duration": 2.0,
+        "delay_ms": 0,
+        "eq": [],
+        "fade": 0.4
+      },
+      {
+        "candidate": 3,
+        "gain": 0.09,
+        "hp": 400,
+        "lp": 2800,
+        "pitch": 1,
+        "duration": 0.8,
+        "delay_ms": 18,
+        "eq": [],
+        "fade": 0.08
+      },
+      {
+        "candidate": 5,
+        "gain": 0.18,
+        "hp": 350,
+        "lp": 6500,
+        "pitch": 1,
+        "duration": 0.75,
+        "delay_ms": 12,
+        "eq": [],
+        "fade": 0.2
+      }
+    ],
+    "file": "stone_building_ground_02_hard_surface.ogg",
+    "channels": 1,
+    "sample_rate": 48000,
+    "primary_candidate": "07_basin_bar_hit_02__801823.wav",
+    "sources": [
+      "801823__sadiquecat__plastic-bassin-metal-bar-hit.wav",
+      "addins/653294__osvoldon__big-structure-collision-heard-from-inside.wav",
+      "addins/468837__christianand__25_metal_chocando.wav",
+      "757927__robinhood76__13080-stone-crushing-hit.wav"
+    ],
+    "integrated_lufs": -21.12,
+    "true_peak_dbtp": -2.46,
+    "sha256": "556c6e6f6873dc117c5191b41562b48c0c9924984c230b72887b84d263fdee30"
+  },
+  {
+    "name": "stone_building_ground_03_heavy_structure",
+    "category": "building_ground",
+    "duration": 3.1,
+    "echo_delays": [
+      100,
+      210,
+      340
+    ],
+    "echo_gains": [
+      0.2,
+      0.12,
+      0.06
+    ],
+    "layers": [
+      {
+        "candidate": 12,
+        "gain": 0.75,
+        "hp": 45,
+        "lp": 5500,
+        "pitch": 1.1,
+        "duration": 2.65,
+        "delay_ms": 0,
+        "eq": [],
+        "fade": 0.55
+      },
+      {
+        "candidate": 5,
+        "gain": 0.24,
+        "hp": 200,
+        "lp": 7500,
+        "pitch": 1,
+        "duration": 1.2,
+        "delay_ms": 8,
+        "eq": [],
+        "fade": 0.2
+      },
+      {
+        "candidate": 1,
+        "gain": 0.08,
+        "hp": 1000,
+        "lp": 6000,
+        "pitch": 1,
+        "duration": 0.5,
+        "delay_ms": 15,
+        "eq": [],
+        "fade": 0.08
+      }
+    ],
+    "file": "stone_building_ground_03_heavy_structure.ogg",
+    "channels": 1,
+    "sample_rate": 48000,
+    "primary_candidate": "12_structure_collision__653294.wav",
+    "sources": [
+      "addins/653294__osvoldon__big-structure-collision-heard-from-inside.wav",
+      "757927__robinhood76__13080-stone-crushing-hit.wav",
+      "addins/406562__anthousai__hit-metallic-01.wav"
+    ],
+    "integrated_lufs": -21.06,
+    "true_peak_dbtp": -2.53,
+    "sha256": "a4f67491f247c53c3c44b87dcdba45f81355b0e1b401e5b898bc13f604cddc92"
+  }
+]

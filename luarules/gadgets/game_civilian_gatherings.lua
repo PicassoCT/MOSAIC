@@ -2,7 +2,19 @@ function gadget:GetInfo()
     return {name="Civilian weekend gatherings",desc="Peacetime protests, weddings, yoga and ordinary-car convoys",
         author="MOSAIC contributors",license="GPL3",layer=3,enabled=true}
 end
-if not gadgetHandler:IsSyncedCode() then return false end
+local StoneAudio=VFS.Include("luarules/gadgets/include/civilian_stone_audio.lua")
+if not gadgetHandler:IsSyncedCode() then
+    local player
+    local function impact(_,kind,x,y,z,projectile,bounce)
+        player:Receive(kind,x,y,z,projectile,bounce)
+    end
+    function gadget:Initialize()
+        player=StoneAudio.NewPlayer(Spring,Game)
+        gadgetHandler:AddSyncAction(StoneAudio.event,impact)
+    end
+    function gadget:Shutdown() gadgetHandler:RemoveSyncAction(StoneAudio.event) end
+    return
+end
 VFS.Include("scripts/lib_UnitScript.lua")
 VFS.Include("scripts/lib_mosaic.lua")
 local config=VFS.Include("luarules/configs/civilian_gatherings.lua")
@@ -10,6 +22,7 @@ local Controller=VFS.Include("luarules/gadgets/include/civilian_gatherings.lua")
 local Stones=VFS.Include("luarules/gadgets/include/civilian_stones.lua")
 local controller,stones
 local stoneWeapons,stoneDefs={},{}
+local stoneUnitKinds
 local obscuringWeather={smog=true,sandstorm=true,fog=true}
 local weather
 local weatherMode=(Spring.GetMapOptions() or {}).dhubai_weather or "automatic"
@@ -42,7 +55,8 @@ function gadget:Initialize()
         if def then stoneWeapons[variant]=def.id;stoneDefs[def.id]=true
             Script.SetWatchProjectile(def.id,true);Script.SetWatchExplosion(def.id,true) end
     end
-    stones=Stones.New(Spring,Game,stoneWeapons)
+    stoneUnitKinds=StoneAudio.UnitKinds(UnitDefs)
+    stones=Stones.New(Spring,Game,stoneWeapons,StoneAudio.NewEmitter(Spring,SendToUnsynced))
     local cars={}
     for _,name in ipairs({"truck_arab0","truck_arab1","truck_western0","truck_western1"}) do
         if UnitDefNames[name] then cars[UnitDefNames[name].id]=true end
@@ -72,11 +86,11 @@ function gadget:Explosion(def,x,y,z,owner,id)
     if stoneDefs[def] then return stones:Explosion(id,x,y,z) end
 end
 function gadget:UnitPreDamaged(id,def,team,damage,paralyzer,weapon,projectile)
-    if stoneDefs[weapon] then stones:Hit(projectile) end
+    if stoneDefs[weapon] then stones:Hit(projectile,stoneUnitKinds[def] or "building_ground") end
     return damage,1
 end
 function gadget:FeaturePreDamaged(id,def,team,damage,weapon,projectile)
-    if stoneDefs[weapon] then stones:Hit(projectile) end
+    if stoneDefs[weapon] then stones:Hit(projectile,"building_ground") end
     return damage,1
 end
 function gadget:Shutdown()
