@@ -23,6 +23,12 @@ together. An individually compromised operative has **Turn agent**, affecting
 only itself. Ordinary products never get additional markers. Decloaking is no
 longer an activation mechanism, and damaging/deleting a marker cannot cure a network.
 
+The marker supplies no sight, radar, sonar, seismic detection or jamming and
+does not trigger proximity decloaking. Its ownership grants access to the
+activation command, not targeting visibility of the building beneath it.
+Automatic and explicit unit-targeted weapons retain the engine's normal
+LOS/radar checks; independent reconnaissance can still make the building a target.
+
 Production provenance is recorded from actual builder IDs, including products
 made before compromise and surviving descendants whose intermediate recruiter
 has died. Hub descendants form the network. Abstract effects and morph placeholders

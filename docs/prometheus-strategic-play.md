@@ -42,6 +42,10 @@ combat rules change. Runtime skirmish strength has **not** been validated in Rec
 - Betrayal rescue retains priority. The strategy cannot commandeer a runner or
   overwrite its reserved receiver. Production intents expire; a failed building
   site is quarantined before a retry rather than trapping the operative forever.
+  Prefer sites with fewer failed attempts before comparing travel distance, so
+  two nearby failures cannot starve an untested third site. Repeated failures
+  double the retry delay from one minute up to ten minutes; successful construction
+  clears the site's failure history. Each timeout logs the site and retry frame.
 
 Decisions run once per 90 simulation frames per team. Unit/site iteration is
 sorted and no random strategy choice is introduced. Identical observed state
